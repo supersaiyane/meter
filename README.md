@@ -30,8 +30,8 @@ than an afterthought. See `docs/01-ROADMAP.md`, sub project P2.
 | `docs/adr/` | Architecture decision records, one per significant choice |
 | `docs/specs/` | Approved design specs, one per sub project |
 | `docs/plans/` | Implementation plans and task docs for Claude Code |
-| `init_docs/project_map.md` | Module level map, kept current |
-| `init_docs/checkpoint.md` | Session continuity log with resume vectors |
+| `project_map.md` | Module level map, kept current |
+| `docs/checkpoint.md` | Session continuity log with resume vectors |
 | `context_index.md` | Function level index, name to file and line |
 | `tasks/STATUS.md` | What is done, in progress, and remaining |
 | `tasks/ISSUES.md` | Issue and open question tracker with fixed status |

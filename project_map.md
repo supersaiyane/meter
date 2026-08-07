@@ -20,18 +20,17 @@ meter/
 ├── .gitignore
 ├── context_index.md           function level index, empty until code exists
 │
+├── project_map.md             this file, module level map
+│
 ├── docs/
 │   ├── 00-GOAL.md             goal, success criteria, north star, non goals
 │   ├── 01-ROADMAP.md          the eight sub projects, build order, status
 │   ├── 02-ARCHITECTURE.md     cross cutting architecture, ports, FOCUS, ingestion
+│   ├── checkpoint.md          session continuity log with resume vectors
 │   ├── adr/                   architecture decision records, 0001 to 0008
 │   ├── specs/                 approved design specs, one per sub project
 │   │   └── 2026-08-23-p0-foundation-design.md
 │   └── plans/                 implementation plans and task docs (empty)
-│
-├── init_docs/
-│   ├── project_map.md         this file
-│   └── checkpoint.md          session continuity log with resume vectors
 │
 ├── tasks/
 │   ├── STATUS.md              done, in progress, remaining
@@ -73,7 +72,7 @@ continuous integration, not by good intentions.
 | What exactly is P0 delivering | `docs/specs/2026-08-23-p0-foundation-design.md` |
 | What is done and what is left | `tasks/STATUS.md` |
 | What is broken, what is risky, what is undecided | `tasks/ISSUES.md` |
-| Where did the last session stop | `init_docs/checkpoint.md` |
+| Where did the last session stop | `docs/checkpoint.md` |
 | What rules must a change follow | `CLAUDE.md` |
 | Where is a specific function | `context_index.md` |
 

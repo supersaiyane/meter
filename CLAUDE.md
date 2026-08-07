@@ -28,8 +28,8 @@ part of the same change that makes it stale.
 | --- | --- | --- |
 | `tasks/STATUS.md` | End of every work session | Whoever did the work |
 | `tasks/ISSUES.md` | The moment an issue or open question is found or closed | Finder |
-| `init_docs/checkpoint.md` | End of every completed task | Whoever did the work |
-| `init_docs/project_map.md` | Any new module, moved module, or changed responsibility | Author of the change |
+| `docs/checkpoint.md` | End of every completed task | Whoever did the work |
+| `project_map.md` | Any new module, moved module, or changed responsibility | Author of the change |
 | `context_index.md` | Any new or removed public function or class | Author of the change |
 | `docs/01-ROADMAP.md` | Sub project status change | Whoever changed the status |
 | `docs/adr/` | Any decision that is expensive to reverse | Decision maker |
@@ -45,7 +45,7 @@ A change is done when all of the following are true.
 - Tests exist and pass, and coverage for the changed area is at or above 80 percent.
 - Errors are typed and surfaced, never swallowed and never collapsed into zero.
 - No secrets, no hardcoded account identifiers, no hardcoded region strings.
-- `tasks/STATUS.md` and `init_docs/checkpoint.md` reflect the change.
+- `tasks/STATUS.md` and `docs/checkpoint.md` reflect the change.
 - Commit message follows the format below.
 - A staff engineer would approve it in review.
 
@@ -96,6 +96,7 @@ finops-api/         FastAPI application and scope enforcement
 finops-web/         React and TypeScript frontend
 infra/terraform/    hub stack, member StackSet, org reader role
 docs/               goal, roadmap, architecture, ADRs, specs, plans
-init_docs/          project map and checkpoint log
+project_map.md      module level map, kept current
+docs/checkpoint.md  session continuity log with resume vectors
 tasks/              status, issues, lessons
 ```
