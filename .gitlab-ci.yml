@@ -1,0 +1,239 @@
+# Meter delivery pipeline.
+#
+# Flow: push to GitLab, verify, build three images with Kaniko, push to ECR,
+# then Terraform applies the hub stack with the new image tag. Terraform owns
+# the ECS task definition, so the deploy is a Terraform apply rather than a
+# separate aws ecs update-service call. One system owns the desired state,
+# which means no drift between what Terraform believes and what is running.
+#
+# Authentication uses GitLab OIDC into an AWS role. No long lived AWS keys are
+# stored as CI variables.
+
+stages:
+  - verify
+  - build
+  - plan
+  - deploy
+
+variables:
+  AWS_REGION: eu-west-1
+  ECR_REGISTRY: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+  IMAGE_TAG: "${CI_COMMIT_SHORT_SHA}"
+  TF_ROOT: "${CI_PROJECT_DIR}/infra/terraform/hub"
+  PIP_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/pip"
+
+default:
+  interruptible: true
+
+cache:
+  key:
+    files:
+      - pyproject.toml
+      - finops-web/package-lock.json
+  paths:
+    - .cache/pip
+    - finops-web/node_modules
+
+# Reusable OIDC assume role. GitLab mints a JWT, AWS trades it for a session.
+.aws_oidc: &aws_oidc
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  before_script:
+    - >
+      export $(aws sts assume-role-with-web-identity
+      --role-arn "${AWS_DEPLOY_ROLE_ARN}"
+      --role-session-name "gitlab-${CI_PIPELINE_ID}"
+      --web-identity-token "${GITLAB_OIDC_TOKEN}"
+      --duration-seconds 3600
+      --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]'
+      --output text
+      | awk '{print "AWS_ACCESS_KEY_ID="$1" AWS_SECRET_ACCESS_KEY="$2" AWS_SESSION_TOKEN="$3}')
+
+# ------------------------------------------------------------------ verify
+
+lint:
+  stage: verify
+  image: python:3.12-slim
+  script:
+    - pip install -e ".[dev]"
+    - make lint
+
+writing-rules:
+  stage: verify
+  image: alpine:3.20
+  script:
+    - apk add --no-cache grep make bash
+    - make check-writing
+
+test:
+  stage: verify
+  image: python:3.12-slim
+  services:
+    - name: postgres:16-alpine
+      alias: postgres
+  variables:
+    POSTGRES_USER: meter
+    POSTGRES_PASSWORD: ci_only
+    POSTGRES_DB: meter_test
+    METER_DATABASE_URL: "postgresql+psycopg://meter:ci_only@postgres:5432/meter_test"
+  script:
+    - pip install -e ".[dev]"
+    - pytest --cov-report=term-missing --cov-report=xml --junitxml=report.xml
+  coverage: '/^TOTAL.*\s+(\d+(?:\.\d+)?)%$/'
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+
+test-frontend:
+  stage: verify
+  image: node:22-alpine
+  script:
+    - cd finops-web
+    - npm ci
+    - npm run lint
+    - npm run test -- --run
+
+terraform-validate:
+  stage: verify
+  image:
+    name: hashicorp/terraform:1.9
+    entrypoint: [""]
+  script:
+    - terraform -chdir=infra/terraform/hub fmt -check -recursive
+    - terraform -chdir=infra/terraform/hub init -backend=false
+    - terraform -chdir=infra/terraform/hub validate
+    - terraform -chdir=infra/terraform/member init -backend=false
+    - terraform -chdir=infra/terraform/member validate
+
+# ------------------------------------------------------------------ build
+
+# Kaniko rather than docker-in-docker. No privileged runner is required, which
+# is the difference between a pipeline a platform team will approve and one
+# they will not.
+.build_image: &build_image
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  script:
+    - >
+      /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/${DOCKERFILE}"
+      --destination "${ECR_REGISTRY}/meter-${SERVICE}:${IMAGE_TAG}"
+      --destination "${ECR_REGISTRY}/meter-${SERVICE}:${CI_COMMIT_REF_SLUG}"
+      --cache=true
+      --cache-repo "${ECR_REGISTRY}/meter-cache"
+      --build-arg "GIT_SHA=${CI_COMMIT_SHA}"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+build:api:
+  <<: *build_image
+  variables:
+    SERVICE: api
+    DOCKERFILE: docker/Dockerfile.api
+
+build:worker:
+  <<: *build_image
+  variables:
+    SERVICE: worker
+    DOCKERFILE: docker/Dockerfile.worker
+
+build:web:
+  <<: *build_image
+  variables:
+    SERVICE: web
+    DOCKERFILE: docker/Dockerfile.web
+
+# ------------------------------------------------------------------ plan
+
+terraform-plan:
+  <<: *aws_oidc
+  stage: plan
+  image:
+    name: hashicorp/terraform:1.9
+    entrypoint: [""]
+  script:
+    - terraform -chdir=${TF_ROOT} init -backend-config=envs/${TF_ENV}.backend.hcl
+    - >
+      terraform -chdir=${TF_ROOT} plan
+      -var-file=envs/${TF_ENV}.tfvars
+      -var="image_tag=${IMAGE_TAG}"
+      -out=tfplan
+    - terraform -chdir=${TF_ROOT} show -no-color tfplan > plan.txt
+  artifacts:
+    paths:
+      - infra/terraform/hub/tfplan
+      - infra/terraform/hub/plan.txt
+    expire_in: 7 days
+  parallel:
+    matrix:
+      - TF_ENV: [dev, prod]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      variables:
+        TF_ENV: dev
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# ------------------------------------------------------------------ deploy
+
+# The apply is the deploy. Terraform writes a new ECS task definition revision
+# carrying the new image tag, and ECS performs a rolling replacement behind the
+# ALB. The container health check gates the rollout, so a container that cannot
+# reach its database never receives traffic.
+.deploy: &deploy
+  <<: *aws_oidc
+  stage: deploy
+  image:
+    name: hashicorp/terraform:1.9
+    entrypoint: [""]
+  script:
+    - terraform -chdir=${TF_ROOT} init -backend-config=envs/${TF_ENV}.backend.hcl
+    - terraform -chdir=${TF_ROOT} apply -auto-approve tfplan
+    - >
+      aws ecs wait services-stable
+      --cluster "meter-${TF_ENV}"
+      --services "meter-api-${TF_ENV}" "meter-worker-${TF_ENV}" "meter-web-${TF_ENV}"
+  environment:
+    name: ${TF_ENV}
+
+deploy:dev:
+  <<: *deploy
+  variables:
+    TF_ENV: dev
+  needs: ["build:api", "build:worker", "build:web", "terraform-plan"]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+deploy:prod:
+  <<: *deploy
+  variables:
+    TF_ENV: prod
+  needs: ["deploy:dev"]
+  when: manual
+  allow_failure: false
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# Database migrations run as a one off ECS task before the service rollout, on
+# the same image. Migrations must be backward compatible, because during a
+# rolling deploy the old and new revisions run against the same schema at once.
+migrate:dev:
+  <<: *aws_oidc
+  stage: deploy
+  image: python:3.12-slim
+  variables:
+    TF_ENV: dev
+  script:
+    - pip install awscli
+    - ./scripts/run_migration_task.sh "${TF_ENV}" "${IMAGE_TAG}"
+  needs: ["build:api"]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
