@@ -24,8 +24,12 @@ grep -rn $'—\|–' --include='*.md' --include='*.py' --include='*.ts' --includ
 Documentation is not optional output produced at the end. It is updated as
 part of the same change that makes it stale.
 
+**Routing rule: `docs/03-CHANGE-CONTROL.md` states where each kind of change
+is recorded. Read it before writing anything down.**
+
 | Document | Update trigger | Owner |
 | --- | --- | --- |
+| `INDEX.md` | Every material change. It is the only document a newcomer is guaranteed to read | Author of the change |
 | `tasks/STATUS.md` | End of every work session | Whoever did the work |
 | `tasks/ISSUES.md` | The moment an issue or open question is found or closed | Finder |
 | `docs/checkpoint.md` | End of every completed task | Whoever did the work |
@@ -47,6 +51,7 @@ A change is done when all of the following are true.
 - No secrets, no hardcoded account identifiers, no hardcoded region strings.
 - `tasks/STATUS.md` and `docs/checkpoint.md` reflect the change.
 - Commit message follows the format below.
+- `INDEX.md` reflects the change, and `make check-docs` passes.
 - A staff engineer would approve it in review.
 
 Reading your own code back is not evidence. Running the test and pasting the
@@ -89,6 +94,12 @@ trailer.
 ## Repository layout
 
 ```
+INDEX.md            master index, the entry point for the project
+Makefile            every routine task, run `make help`
+docker/             three Dockerfiles plus the nginx config
+docker-compose.yml  local stack only, never used to deploy
+.gitlab-ci.yml      verify, build, plan, deploy
+scripts/            index consistency check, migration runner
 finops-core/        domain entities and ports, no cloud SDK
 finops-providers/   aws/ adapter, gcp/ and azure/ reserved
 finops-ingest/      dispatcher, workers, run ledger, watermarks

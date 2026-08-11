@@ -2,6 +2,7 @@
 
 Last updated: 2026-08-23
 Update trigger: end of every work session
+Master index: `INDEX.md`
 
 Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
@@ -23,39 +24,49 @@ user reviewing the P0 foundation specification.
 | `[x]` | Write goal, roadmap and architecture documents | `docs/00`, `docs/01`, `docs/02` |
 | `[x]` | Write the eight foundational architecture decision records | `docs/adr/` |
 | `[x]` | Write the P0 foundation design specification | `docs/specs/2026-08-23-p0-foundation-design.md` |
-| `[~]` | User review of the P0 specification | Current gate |
-| `[ ]` | Write the P0 implementation plan and task docs | Blocked on the review above |
+| `[x]` | Write the master index | `INDEX.md`, 41 features, 8 ADRs, 5 changes, 32 issues, 6 open questions |
+| `[x]` | Write the change control process | `docs/03-CHANGE-CONTROL.md`, routing rule plus the anti hallucination contract |
+| `[x]` | Write five document templates | `docs/templates/` |
+| `[x]` | Build layer: Makefile, three Dockerfiles, compose, nginx | 28 make targets, all parse |
+| `[x]` | Deployment: GitLab pipeline and deployment document | `.gitlab-ci.yml`, `docs/04-DEPLOYMENT.md` |
+| `[x]` | Index consistency checker and migration runner | `scripts/check_index.py` passes, `scripts/run_migration_task.sh` |
+| `[x]` | Write the P0 implementation plan | `docs/plans/P0-implementation-plan.md`, 28 tasks in 8 waves |
+| `[~]` | User review of the P0 specification | Current gate. The plan is provisional until it passes |
 
 ## Phase 1: P0 foundation build
 
-Not started. Every item below is blocked on the specification review.
+Not started. Every item is blocked on the specification review.
 
-| | Item |
+The authoritative task list is `docs/plans/P0-implementation-plan.md`, which
+carries acceptance criteria, named tests, and a "do not" list per task. The
+table below is the summary view only.
+
+| | Item | Task |
 | --- | --- |
-| `[ ]` | Repository scaffold, Python packaging, linting, import linter rule, continuous integration |
-| `[ ]` | `finops-core` domain entities and the eight ports |
-| `[ ]` | Typed error taxonomy |
-| `[ ]` | `FakeProvider` implementing every port |
-| `[ ]` | Port contract test suite |
-| `[ ]` | PostgreSQL schema and migrations |
-| `[ ]` | Terraform: management account organization reader role |
-| `[ ]` | Terraform: member account StackSet for the collector role |
-| `[ ]` | Terraform: hub stack |
-| `[ ]` | AWS `CredentialBroker` adapter |
-| `[ ]` | AWS `AccountDiscovery` adapter |
-| `[ ]` | Ingestion framework: dispatcher, worker, run ledger, watermarks |
-| `[ ]` | Collector: organization tree |
-| `[ ]` | Collector: account role health |
-| `[ ]` | Collector: platform self cost |
-| `[ ]` | Identity and entitlement ports with the local configuration provider |
-| `[ ]` | Scope dependency and repository guard, with the adversarial test |
-| `[ ]` | FastAPI routes |
-| `[ ]` | Frontend shell and navigation |
-| `[ ]` | Frontend: accounts screen |
-| `[ ]` | Frontend: organization map, tree and graph views |
-| `[ ]` | Frontend: ingest and freshness screen |
-| `[ ]` | Frontend: platform cost screen |
-| `[ ]` | End to end test, login through to the organization map |
+| `[ ]` | Repository scaffold, Python packaging, linting, import linter rule, continuous integration | TASK-P0-001, 004 |
+| `[ ]` | `finops-core` domain entities and the eight ports | TASK-P0-006, 007 |
+| `[ ]` | Typed error taxonomy | TASK-P0-005 |
+| `[ ]` | `FakeProvider` implementing every port | TASK-P0-008 |
+| `[ ]` | Port contract test suite | TASK-P0-009 |
+| `[ ]` | PostgreSQL schema and migrations | TASK-P0-010 |
+| `[ ]` | Terraform: management account organization reader role | TASK-P0-013 |
+| `[ ]` | Terraform: member account StackSet for the collector role | TASK-P0-014 |
+| `[ ]` | Terraform: hub stack | TASK-P0-015, 016 |
+| `[ ]` | AWS `CredentialBroker` adapter | TASK-P0-017 |
+| `[ ]` | AWS `AccountDiscovery` adapter | TASK-P0-018, 019 |
+| `[ ]` | Ingestion framework: dispatcher, worker, run ledger, watermarks | TASK-P0-020, 021 |
+| `[ ]` | Collector: organization tree | TASK-P0-022 |
+| `[ ]` | Collector: account role health | TASK-P0-022 |
+| `[ ]` | Collector: platform self cost | TASK-P0-023 |
+| `[ ]` | Identity and entitlement ports with the local configuration provider | TASK-P0-012 |
+| `[ ]` | Scope dependency and repository guard, with the adversarial test | TASK-P0-011, 024 |
+| `[ ]` | FastAPI routes | TASK-P0-025 |
+| `[ ]` | Frontend shell and navigation | TASK-P0-002, 026 |
+| `[ ]` | Frontend: accounts screen | TASK-P0-027 |
+| `[ ]` | Frontend: organization map, tree and graph views | TASK-P0-027 |
+| `[ ]` | Frontend: ingest and freshness screen | TASK-P0-028 |
+| `[ ]` | Frontend: platform cost screen | TASK-P0-028 |
+| `[ ]` | End to end test, login through to the organization map | TASK-P0-028 |
 
 ## Remaining sub projects
 

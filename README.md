@@ -20,10 +20,18 @@ Nothing detected it, nothing prevented it, and nobody owned it.
 Meter treats that class of problem as a first class product feature rather
 than an afterthought. See `docs/01-ROADMAP.md`, sub project P2.
 
+## Start here
+
+**[INDEX.md](INDEX.md) is the master index.** Every feature, decision, change,
+issue and open question is listed there with a pointer to the document holding
+the detail. If something is not in the index, it does not exist as far as the
+project is concerned.
+
 ## Documentation map
 
 | Document | Purpose |
 | --- | --- |
+| `INDEX.md` | Master index. Features, ADRs, changes, issues, open questions |
 | `docs/00-GOAL.md` | Goal, success criteria, non goals, north star metric |
 | `docs/01-ROADMAP.md` | The eight sub projects, build order, current status |
 | `docs/02-ARCHITECTURE.md` | Cross cutting architecture, ports, canonical schema |
@@ -36,11 +44,24 @@ than an afterthought. See `docs/01-ROADMAP.md`, sub project P2.
 | `tasks/STATUS.md` | What is done, in progress, and remaining |
 | `tasks/ISSUES.md` | Issue and open question tracker with fixed status |
 | `tasks/lessons.md` | Corrections captured so they are not repeated |
+| `docs/03-CHANGE-CONTROL.md` | Where each kind of change is recorded |
+| `docs/04-DEPLOYMENT.md` | GitLab to ECR to Terraform to ECS |
+| `docs/templates/` | Templates for specs, tasks, ADRs, changes, issues |
 
 ## Current state
 
-Design phase. No application code has been written yet.
+Design phase. The documentation spine, the build layer and the deployment
+pipeline exist. No application code has been written yet.
 See `tasks/STATUS.md` for the authoritative position.
+
+## Quick start
+
+```bash
+make help     # every available target
+make setup    # virtualenv plus frontend dependencies
+make up       # PostgreSQL, LocalStack, API, worker, web
+make verify   # what CI runs on a merge request
+```
 
 ## House rules
 

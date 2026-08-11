@@ -5,17 +5,24 @@ searching. If it does not answer the question, the map is wrong and should be
 rebuilt from source rather than worked around.
 
 Last updated: 2026-08-23
+Master index: `INDEX.md`
 Update trigger: any new module, moved module, or changed responsibility.
 
 ## Current reality
 
-The repository currently contains documentation only. No application code has
-been written. The tree below marks planned modules as `PLANNED` so the map is
-never mistaken for a description of what exists.
+The repository contains documentation, the build layer and the deployment
+pipeline. No application code has been written. The tree below marks planned
+modules as `PLANNED` so the map is never mistaken for a description of what
+exists.
 
 ```
 meter/
+├── INDEX.md                   master index, the entry point for the project
 ├── README.md                  what Meter is, and the documentation map
+├── Makefile                   28 targets, run `make help`
+├── pyproject.toml             dependencies, lint rules, import linter contract
+├── docker-compose.yml         local stack only, never used to deploy
+├── .gitlab-ci.yml             verify, build with Kaniko, plan, deploy
 ├── CLAUDE.md                  binding project rules, writing rules, definition of done
 ├── .gitignore
 ├── context_index.md           function level index, empty until code exists
@@ -26,16 +33,23 @@ meter/
 │   ├── 00-GOAL.md             goal, success criteria, north star, non goals
 │   ├── 01-ROADMAP.md          the eight sub projects, build order, status
 │   ├── 02-ARCHITECTURE.md     cross cutting architecture, ports, FOCUS, ingestion
+│   ├── 03-CHANGE-CONTROL.md   where each kind of change is recorded
+│   ├── 04-DEPLOYMENT.md       GitLab to ECR to Terraform to ECS
+│   ├── templates/             spec, task, ADR, change and issue templates
 │   ├── checkpoint.md          session continuity log with resume vectors
 │   ├── adr/                   architecture decision records, 0001 to 0008
 │   ├── specs/                 approved design specs, one per sub project
 │   │   └── 2026-08-23-p0-foundation-design.md
-│   └── plans/                 implementation plans and task docs (empty)
+│   └── plans/                 implementation plans and task docs
+│       └── P0-implementation-plan.md   28 tasks in 8 waves
 │
 ├── tasks/
 │   ├── STATUS.md              done, in progress, remaining
 │   ├── ISSUES.md              issue and open question register with fixed status
 │   └── lessons.md             corrections converted into rules
+│
+├── docker/                    Dockerfile.api, Dockerfile.worker, Dockerfile.web, nginx.conf
+├── scripts/                   check_index.py, run_migration_task.sh
 │
 ├── finops-core/               PLANNED  domain and ports. No boto3, no framework
 ├── finops-providers/          PLANNED  aws/, fake/, gcp/, azure/
@@ -65,6 +79,10 @@ continuous integration, not by good intentions.
 
 | Question | Answer lives in |
 | --- | --- |
+| Anything at all, as a starting point | `INDEX.md` |
+| Where do I record this change | `docs/03-CHANGE-CONTROL.md` |
+| How does code reach production | `docs/04-DEPLOYMENT.md` |
+| What exactly do I build next, and how | `docs/plans/P0-implementation-plan.md` |
 | Why does this project exist, what counts as success | `docs/00-GOAL.md` |
 | What are we building and in what order | `docs/01-ROADMAP.md` |
 | Why was a technology chosen | `docs/adr/` |
