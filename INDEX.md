@@ -145,9 +145,9 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | --- | --- | --- | --- | --- | --- |
 | CHG-0001 | 2026-08-23 | Process | Repository initialized. Goal, roadmap, architecture, eight ADRs, P0 specification, status, issues, lessons, project map, checkpoint | `e604ea9` to `6e2afcc` | [docs/checkpoint.md](docs/checkpoint.md) |
 | CHG-0002 | 2026-08-23 | Process | Checkpoint log and project map moved to the paths the session enforcement script requires | `93e15aa` | [docs/checkpoint.md](docs/checkpoint.md) |
-| CHG-0003 | 2026-08-23 | Infrastructure | Build and deployment layer added: Makefile, three Dockerfiles, docker-compose, GitLab pipeline, deployment document | pending | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
-| CHG-0004 | 2026-08-23 | Process | This index, the change control process, five document templates, and the index consistency checker | pending | [docs/03-CHANGE-CONTROL.md](docs/03-CHANGE-CONTROL.md) |
-| CHG-0005 | 2026-08-23 | Design | P0 implementation plan written, 28 tasks across eight waves, each carrying the seven anti hallucination fields | pending | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0003 | 2026-08-23 | Infrastructure | Build and deployment layer added: Makefile, three Dockerfiles, docker-compose, GitLab pipeline, deployment document | `6f71c6e` | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
+| CHG-0004 | 2026-08-23 | Process | This index, the change control process, five document templates, and the index consistency checker | `cdc22bb` | [docs/03-CHANGE-CONTROL.md](docs/03-CHANGE-CONTROL.md) |
+| CHG-0005 | 2026-08-23 | Design | P0 implementation plan written, 28 tasks across eight waves, each carrying the seven anti hallucination fields | `d4c3cfb` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 ---
 
