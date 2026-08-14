@@ -1,10 +1,22 @@
-# Meter API. Multi stage so the runtime image carries no build toolchain.
+# Meter API on Minimus. See ADR-0010.
 #
-# Build context is the repository root:
 #   docker build -f docker/Dockerfile.api -t meter-api .
+#
+# Two things about this file are not obvious and must not be tidied away.
+#
+# 1. The runtime stage has no shell and no package manager. Every CMD and
+#    ENTRYPOINT is therefore in exec form. A CMD ["sh", "-c", ...] will not run,
+#    it fails at container start with no useful message.
+#
+# 2. There is no HEALTHCHECK instruction. The runtime image has no curl and no
+#    wget, and the ALB target group is what ECS actually gates a rollout on. A
+#    Docker level health check here would be a second, weaker copy of a control
+#    that already exists. Health checking lives in infra/terraform/hub/alb.tf.
 
-# ---------- builder ----------
-FROM public.ecr.aws/docker/library/python:3.12-slim AS builder
+ARG PYTHON_VERSION=3.12
+
+# ---------- builder: has a shell, pip, and a compiler ----------
+FROM reg.mini.dev/python:${PYTHON_VERSION}-dev AS builder
 
 ENV PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -12,15 +24,14 @@ ENV PIP_NO_CACHE_DIR=1 \
 
 WORKDIR /build
 
-RUN apt-get update \
- && apt-get install -y --no-install-recommends build-essential \
- && apt-get clean
-
-# Dependency layer first so a source change does not reinstall the world.
+# Dependency layer first, so a source change does not reinstall the world.
+# --no-compile keeps bytecode out of the image entirely rather than generating
+# it and deleting it afterwards. Smaller image, one fewer layer. The cost is a
+# slightly slower first import, which is irrelevant for a long running process.
 COPY pyproject.toml ./
 RUN python -m venv /opt/venv \
  && /opt/venv/bin/pip install --upgrade pip setuptools wheel \
- && /opt/venv/bin/pip install .
+ && /opt/venv/bin/pip install --no-compile .
 
 COPY finops_core/      ./finops_core/
 COPY finops_providers/ ./finops_providers/
@@ -29,33 +40,31 @@ COPY finops_api/       ./finops_api/
 COPY alembic.ini       ./
 COPY migrations/       ./migrations/
 
-RUN /opt/venv/bin/pip install --no-deps .
+RUN /opt/venv/bin/pip install --no-compile --no-deps .
 
-# ---------- runtime ----------
-FROM public.ecr.aws/docker/library/python:3.12-slim AS runtime
+# ---------- runtime: no shell, no package manager, near zero CVE ----------
+FROM reg.mini.dev/python:${PYTHON_VERSION}
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH="/opt/venv/bin:$PATH"
 
-# Non root. The ECS task role supplies AWS credentials, so no secret is baked
-# into the image at any layer.
-RUN groupadd --gid 10001 meter \
- && useradd --uid 10001 --gid meter --no-create-home --shell /usr/sbin/nologin meter
-
 WORKDIR /app
 
 COPY --from=builder /opt/venv /opt/venv
-COPY --from=builder /build/alembic.ini /build/migrations ./
+COPY --from=builder /build/alembic.ini /app/alembic.ini
+COPY --from=builder /build/migrations /app/migrations
 
-USER meter
+# Minimus runtime images already run as a non root user. Stated explicitly so a
+# future edit does not quietly reintroduce root.
+USER 65532:65532
 
 EXPOSE 8000
 
-# The health route reports database reachability and ingestion freshness, so a
-# container that cannot see its data is unhealthy rather than quietly serving
-# stale numbers.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=4).status==200 else 1)"
+ARG GIT_SHA=unknown
+LABEL org.opencontainers.image.title="meter-api" \
+      org.opencontainers.image.revision="${GIT_SHA}" \
+      io.meter.module="api"
 
-CMD ["uvicorn", "finops_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
+ENTRYPOINT ["/opt/venv/bin/uvicorn"]
+CMD ["finops_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]

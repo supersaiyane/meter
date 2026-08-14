@@ -1,8 +1,18 @@
-# Meter ingestion worker. Same dependency set as the API, different entry point.
+# Meter ingestion worker on Minimus. See ADR-0010.
 #
 #   docker build -f docker/Dockerfile.worker -t meter-worker .
+#
+# The dispatcher and the worker ship in one image so there is a single artefact
+# to promote through environments.
+#
+# The role used to be selected with CMD ["sh", "-c", "python -m
+# finops_ingest.${METER_ROLE}"]. That cannot work here: the runtime image has no
+# shell, so nothing expands ${METER_ROLE}. The role is now a command argument,
+# and the ECS task definition overrides `command` per service.
 
-FROM public.ecr.aws/docker/library/python:3.12-slim AS builder
+ARG PYTHON_VERSION=3.12
+
+FROM reg.mini.dev/python:${PYTHON_VERSION}-dev AS builder
 
 ENV PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -10,14 +20,14 @@ ENV PIP_NO_CACHE_DIR=1 \
 
 WORKDIR /build
 
-RUN apt-get update \
- && apt-get install -y --no-install-recommends build-essential \
- && apt-get clean
-
+# Dependency layer first, so a source change does not reinstall the world.
+# --no-compile keeps bytecode out of the image entirely rather than generating
+# it and deleting it afterwards. Smaller image, one fewer layer. The cost is a
+# slightly slower first import, which is irrelevant for a long running process.
 COPY pyproject.toml ./
 RUN python -m venv /opt/venv \
  && /opt/venv/bin/pip install --upgrade pip setuptools wheel \
- && /opt/venv/bin/pip install .
+ && /opt/venv/bin/pip install --no-compile .
 
 COPY finops_core/      ./finops_core/
 COPY finops_providers/ ./finops_providers/
@@ -25,27 +35,27 @@ COPY finops_ingest/    ./finops_ingest/
 COPY alembic.ini       ./
 COPY migrations/       ./migrations/
 
-RUN /opt/venv/bin/pip install --no-deps .
+RUN /opt/venv/bin/pip install --no-compile --no-deps .
 
-FROM public.ecr.aws/docker/library/python:3.12-slim AS runtime
+FROM reg.mini.dev/python:${PYTHON_VERSION}
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH="/opt/venv/bin:$PATH"
 
-RUN groupadd --gid 10001 meter \
- && useradd --uid 10001 --gid meter --no-create-home --shell /usr/sbin/nologin meter
-
 WORKDIR /app
 
 COPY --from=builder /opt/venv /opt/venv
-COPY --from=builder /build/alembic.ini /build/migrations ./
+COPY --from=builder /build/alembic.ini /app/alembic.ini
+COPY --from=builder /build/migrations /app/migrations
 
-USER meter
+USER 65532:65532
 
-# METER_ROLE selects the process. The dispatcher enumerates units of work and
-# publishes them, the worker consumes them. Both ship in one image so there is
-# a single artifact to promote through environments.
-ENV METER_ROLE=worker
+ARG GIT_SHA=unknown
+LABEL org.opencontainers.image.title="meter-worker" \
+      org.opencontainers.image.revision="${GIT_SHA}" \
+      io.meter.module="ingest"
 
-CMD ["sh", "-c", "python -m finops_ingest.${METER_ROLE}"]
+# Override `command` in the ECS task definition to ["finops_ingest.dispatcher"].
+ENTRYPOINT ["/opt/venv/bin/python", "-m"]
+CMD ["finops_ingest.worker"]

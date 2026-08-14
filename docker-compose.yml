@@ -63,8 +63,10 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.worker
+    # The runtime image has no shell, so the role is a command argument rather
+    # than an environment variable the entrypoint expands. See ADR-0010.
+    command: ["finops_ingest.dispatcher"]
     environment:
-      METER_ROLE: dispatcher
       METER_ENV: local
       METER_DATABASE_URL: postgresql+psycopg://meter:meter_local_only@postgres:5432/meter
       METER_QUEUE_URL: http://localstack:4566/000000000000/meter-ingest
@@ -82,8 +84,8 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.worker
+    command: ["finops_ingest.worker"]
     environment:
-      METER_ROLE: worker
       METER_ENV: local
       METER_DATABASE_URL: postgresql+psycopg://meter:meter_local_only@postgres:5432/meter
       METER_QUEUE_URL: http://localstack:4566/000000000000/meter-ingest
