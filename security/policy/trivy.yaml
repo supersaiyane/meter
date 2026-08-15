@@ -1,0 +1,26 @@
+# trivy configuration. Second vulnerability opinion, plus infrastructure as
+# code misconfiguration scanning that grype does not do.
+
+severity:
+  - UNKNOWN
+  - LOW
+  - MEDIUM
+  - HIGH
+  - CRITICAL
+
+exit-code: 1
+ignore-unfixed: false
+
+scan:
+  scanners:
+    - vuln
+    - secret
+    - misconfig
+
+db:
+  skip-update: false
+
+misconfiguration:
+  # Terraform is scanned separately from images. High and critical
+  # misconfigurations block, medium and below are reported.
+  include-non-failures: false

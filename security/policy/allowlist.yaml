@@ -1,0 +1,25 @@
+# Time boxed security exceptions.
+#
+# An entry here is a decision by a named person to ship a known finding. It is
+# not a way to make a scanner quiet.
+#
+# Every entry MUST carry all six fields. scripts/security/scan.sh fails the
+# scan if a field is missing or if `expires` is in the past. An expired entry
+# does not silently lapse into acceptance, it breaks the build.
+#
+# Maximum expiry is 90 days from `added`. Renewal requires a fresh decision,
+# recorded as a new entry, not an edited date.
+#
+# Example, do not uncomment:
+#
+# - id: CVE-2026-00000
+#   package: example-lib
+#   target: meter-api
+#   reason: >
+#     Vulnerable code path is the XML parser, which this service never calls.
+#     Upstream fix is expected in 2.4.0.
+#   owner: name@example.com
+#   added: 2026-08-23
+#   expires: 2026-11-21
+
+exceptions: []

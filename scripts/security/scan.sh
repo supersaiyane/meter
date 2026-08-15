@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+# Full security scan. Writes a timestamped report under security/reports/.
+#
+# Usage: scripts/security/scan.sh [--images] [--digest <sha256:...>]
+#
+#   default        scan the working tree: dependencies, secrets, terraform
+#   --images       also build and scan the three container images
+#   --digest       scan a specific deployed digest instead of a local build.
+#                  This is what the nightly job uses. See security/README.md
+#                  for why scanning the running digest matters more than
+#                  scanning the build.
+#
+# Exit code 1 on any finding that is not covered by a valid allowlist entry.
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+STAMP="$(date -u +%Y-%m-%d-%H%M%S)"
+OUT="${ROOT}/security/reports/${STAMP}"
+POLICY="${ROOT}/security/policy"
+SCAN_IMAGES=0
+DIGEST=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --images) SCAN_IMAGES=1; shift ;;
+    --digest) DIGEST="$2"; shift 2 ;;
+    *) echo "unknown argument: $1" >&2; exit 2 ;;
+  esac
+done
+
+mkdir -p "${OUT}"
+echo "Report directory: ${OUT}"
+
+require() {
+  command -v "$1" >/dev/null 2>&1 || {
+    echo "MISSING TOOL: $1. Install it, see security/README.md" >&2
+    exit 2
+  }
+}
+
+# ---------------------------------------------------------------- allowlist
+# An expired allowlist entry must break the build rather than silently lapse
+# into permanent acceptance. This runs first so an expired entry fails fast.
+echo "==> Validating the allowlist"
+python3 "${ROOT}/scripts/security/validate_allowlist.py" "${POLICY}/allowlist.yaml" \
+  --emit-grype-ignore "${OUT}/grype-ignore.yaml"
+
+# ---------------------------------------------------------------- secrets
+echo "==> Scanning for secrets"
+require gitleaks
+gitleaks detect --source "${ROOT}" --report-format json \
+  --report-path "${OUT}/gitleaks.json" --redact --no-banner \
+  || echo "gitleaks reported findings"
+
+# ---------------------------------------------------------------- python deps
+if [[ -f "${ROOT}/pyproject.toml" ]]; then
+  echo "==> Scanning Python dependencies"
+  require pip-audit
+  pip-audit --format json --output "${OUT}/pip-audit.json" --strict \
+    || echo "pip-audit reported findings"
+fi
+
+# ---------------------------------------------------------------- node deps
+if [[ -f "${ROOT}/finops-web/package-lock.json" ]]; then
+  echo "==> Scanning frontend dependencies"
+  (cd "${ROOT}/finops-web" && npm audit --json > "${OUT}/npm-audit.json") \
+    || echo "npm audit reported findings"
+fi
+
+# ---------------------------------------------------------------- terraform
+if [[ -d "${ROOT}/infra/terraform" ]]; then
+  echo "==> Scanning Terraform for misconfiguration"
+  require trivy
+  trivy config "${ROOT}/infra/terraform" --format json \
+    --output "${OUT}/trivy-terraform.json" --config "${POLICY}/trivy.yaml" \
+    || echo "trivy config reported findings"
+fi
+
+# ---------------------------------------------------------------- images
+scan_image() {
+  local name="$1" ref="$2"
+  echo "==> SBOM for ${name}"
+  syft "${ref}" -o spdx-json > "${ROOT}/security/sbom/${name}-${STAMP}.spdx.json"
+  cp "${ROOT}/security/sbom/${name}-${STAMP}.spdx.json" "${OUT}/sbom-${name}.spdx.json"
+
+  echo "==> grype ${name}"
+  grype "${ref}" -o json --config "${POLICY}/grype.yaml" \
+    > "${OUT}/grype-${name}.json" || echo "grype reported findings for ${name}"
+
+  echo "==> trivy ${name}"
+  trivy image "${ref}" --format json --output "${OUT}/trivy-${name}.json" \
+    --config "${POLICY}/trivy.yaml" || echo "trivy reported findings for ${name}"
+}
+
+if [[ -n "${DIGEST}" ]]; then
+  require grype; require syft; require trivy
+  scan_image "deployed" "${DIGEST}"
+elif [[ "${SCAN_IMAGES}" -eq 1 ]]; then
+  require grype; require syft; require trivy
+  for svc in api worker web; do
+    scan_image "${svc}" "meter-${svc}:$(git -C "${ROOT}" rev-parse --short HEAD)"
+  done
+fi
+
+# ---------------------------------------------------------------- report
+echo "==> Building the HTML report"
+python3 "${ROOT}/scripts/security/report.py" \
+  --input "${OUT}" --allowlist "${POLICY}/allowlist.yaml" \
+  --output "${OUT}/index.html" --summary "${OUT}/summary.json" \
+  --posture "${ROOT}/security/POSTURE.md"
+
+ln -sfn "${OUT}" "${ROOT}/security/reports/latest"
+
+# ---------------------------------------------------------------- gate
+UNRESOLVED=$(python3 -c "import json,sys; print(json.load(open('${OUT}/summary.json'))['unresolved_total'])")
+echo
+echo "Report:  ${OUT}/index.html"
+echo "Posture: ${ROOT}/security/POSTURE.md"
+
+if [[ "${UNRESOLVED}" -gt 0 ]]; then
+  echo
+  echo "FAIL: ${UNRESOLVED} finding(s) not covered by a valid allowlist entry."
+  echo "Run 'make security-fix' to apply the available upgrades, or add a"
+  echo "time boxed allowlist entry with an owner. Do not change a threshold."
+  exit 1
+fi
+
+echo
+echo "PASS: zero unresolved findings."

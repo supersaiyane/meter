@@ -1,0 +1,26 @@
+# grype configuration. See docs/05-SECURITY.md and ADR-0010.
+#
+# fail-on-severity is set to negligible, which means any finding at any
+# severity fails the scan. That is the intent. A finding that genuinely cannot
+# be fixed is handled by an allowlist entry with an owner and an expiry, not by
+# raising this threshold.
+
+output: "json"
+fail-on-severity: "negligible"
+
+# Only report findings that have a fix available? No. An unfixable finding is
+# still a finding, and a financial services audit will ask about it.
+only-fixed: false
+
+db:
+  auto-update: true
+  validate-age: true
+  # Refuse to scan against a database older than 5 days. A stale database
+  # produces a clean report for the wrong reason, which is worse than a failure.
+  max-allowed-built-age: "120h"
+
+# Exceptions are read from the allowlist, which carries owner and expiry
+# metadata that a bare grype ignore rule cannot express. scripts/security/scan.sh
+# translates allowlist.yaml into ignore rules at scan time and fails if any
+# entry is past its expiry date.
+ignore: []
