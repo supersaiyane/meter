@@ -18,7 +18,7 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 INDEX = ROOT / "INDEX.md"
 
 # Directories whose markdown must be reachable from INDEX.md.
@@ -27,6 +27,9 @@ INDEXED_DIRS = ("docs", "tasks")
 # Files exempt from the reachability check, with the reason.
 EXEMPT = {
     "docs/templates/README.md": "templates are reached through their directory entry",
+    "docs/templates/FEATURE-TEMPLATE.md": "template",
+    "docs/features/README.md": "reached through the feature tables",
+    "docs/architecture/file-graph.md": "generated, linked from INDEX section 10",
     "docs/templates/SPEC-TEMPLATE.md": "template",
     "docs/templates/TASK-TEMPLATE.md": "template",
     "docs/templates/ADR-TEMPLATE.md": "template",

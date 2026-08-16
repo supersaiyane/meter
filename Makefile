@@ -66,8 +66,19 @@ check-writing: ## Fail if an em dash or en dash appears anywhere. See CLAUDE.md
 	fi
 
 .PHONY: check-docs
-check-docs: ## Fail if INDEX.md is stale against the documents it indexes
-	@$(PY) scripts/check_index.py
+check-docs: ## Fail if the index, the feature docs or the graph are stale
+	@$(PY) scripts/docs/check_index.py
+	@$(PY) scripts/docs/check_feature_docs.py
+	@$(PY) scripts/docs/build_file_graph.py --check
+
+.PHONY: graph
+graph: ## Rebuild the file dependency graph and check the layering
+	@$(PY) scripts/docs/build_file_graph.py
+	@echo "docs/architecture/file-graph.md and file-graph.html"
+
+.PHONY: review
+review: ## Automated code review of the working tree. See ADR-0011
+	@$(PY) scripts/ci/code_review.py --output security/reviews
 
 # ---------------------------------------------------------------- tests
 
@@ -128,6 +139,63 @@ migration: ## Autogenerate a migration. Usage: make migration m="add org_node"
 	@test -n "$(m)" || (echo 'Usage: make migration m="description"'; exit 1)
 	$(COMPOSE) run --rm api alembic revision --autogenerate -m "$(m)"
 
+# ---------------------------------------------------------------- security
+
+.PHONY: security-scan
+security-scan: ## Full scan: deps, secrets, terraform. Writes a timestamped report
+	@bash scripts/security/scan.sh
+
+.PHONY: security-scan-images
+security-scan-images: build ## Scan the built images as well
+	@bash scripts/security/scan.sh --images
+
+.PHONY: security-scan-deployed
+security-scan-deployed: ## Scan a running digest. What the nightly job uses
+	@test -n "$(DIGEST)" || (echo 'Usage: make security-scan-deployed DIGEST=sha256:...'; exit 1)
+	@bash scripts/security/scan.sh --digest "$(DIGEST)"
+
+.PHONY: security-report
+security-report: ## Rebuild the HTML report from the latest scan
+	@$(PY) scripts/security/report.py \
+	  --input security/reports/latest \
+	  --allowlist security/policy/allowlist.yaml \
+	  --output security/reports/latest/index.html \
+	  --summary security/reports/latest/summary.json \
+	  --posture security/POSTURE.md
+	@echo "security/reports/latest/index.html"
+
+.PHONY: security-fix
+security-fix: ## Apply available fixes on a branch, run tests, re scan. Never merges
+	@$(PY) scripts/security/autofix.py --summary security/reports/latest/summary.json --apply
+
+.PHONY: security-fix-dry
+security-fix-dry: ## Show what security-fix would change
+	@$(PY) scripts/security/autofix.py --summary security/reports/latest/summary.json
+
+.PHONY: dep-check
+dep-check: ## Admission gate before adding a dependency. Usage: make dep-check pkg=name
+	@test -n "$(pkg)" || (echo 'Usage: make dep-check pkg=<package>  [npm=1]'; exit 1)
+	@if [ -n "$(npm)" ]; then \
+	  bash scripts/security/check_dependency.sh --npm "$(pkg)"; \
+	else \
+	  bash scripts/security/check_dependency.sh "$(pkg)"; \
+	fi
+
+.PHONY: sbom
+sbom: ## Generate an SBOM for each image
+	@for svc in api worker web; do \
+	  syft "meter-$$svc:$(IMAGE_TAG)" -o spdx-json \
+	    > "security/sbom/$$svc-$(IMAGE_TAG).spdx.json"; \
+	  echo "security/sbom/$$svc-$(IMAGE_TAG).spdx.json"; \
+	done
+
+.PHONY: security-tools
+security-tools: ## Install the scanners. macOS via brew, Linux via the install scripts
+	@echo "grype, syft, trivy, gitleaks, cosign, pip-audit"
+	@command -v brew >/dev/null && brew install grype syft trivy gitleaks cosign || \
+	  echo "Install manually, see security/README.md"
+	@$(BIN)/pip install pip-audit
+
 # ---------------------------------------------------------------- images
 
 .PHONY: build
@@ -172,7 +240,7 @@ tf-member: ## Apply the member account StackSet. Needs management account creden
 # ---------------------------------------------------------------- gates
 
 .PHONY: verify
-verify: lint check-writing test ## Everything CI runs on a merge request
+verify: lint check-writing check-docs test security-scan ## Everything CI runs on a merge request
 	@echo "verify passed"
 
 .PHONY: ci
