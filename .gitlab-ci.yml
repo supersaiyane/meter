@@ -11,7 +11,9 @@
 
 stages:
   - verify
+  - security
   - build
+  - scan
   - plan
   - deploy
 
@@ -98,6 +100,15 @@ test-frontend:
     - npm run lint
     - npm run test -- --run
 
+docs-consistency:
+  stage: verify
+  image: python:3.12-slim
+  script:
+    - pip install pyyaml
+    - python scripts/docs/check_index.py
+    - python scripts/docs/check_feature_docs.py
+    - python scripts/docs/build_file_graph.py --check
+
 terraform-validate:
   stage: verify
   image:
@@ -109,6 +120,73 @@ terraform-validate:
     - terraform -chdir=infra/terraform/hub validate
     - terraform -chdir=infra/terraform/member init -backend=false
     - terraform -chdir=infra/terraform/member validate
+
+# ------------------------------------------------------------------ security
+#
+# Policy is zero vulnerabilities at any severity, see docs/05-SECURITY.md and
+# ADR-0010. These jobs do not warn, they fail.
+
+.security_tools: &security_tools
+  image: python:3.12-slim
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends curl ca-certificates git
+    - curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+    - curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh  | sh -s -- -b /usr/local/bin
+    - curl -sSfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+    - pip install pyyaml pip-audit
+
+secrets-scan:
+  stage: security
+  image:
+    name: zricethezav/gitleaks:latest
+    entrypoint: [""]
+  script:
+    - gitleaks detect --source . --report-format json --report-path gitleaks.json --redact --no-banner
+  artifacts:
+    when: always
+    paths: [gitleaks.json]
+
+dependency-scan:
+  <<: *security_tools
+  stage: security
+  script:
+    - bash scripts/security/scan.sh
+  artifacts:
+    when: always
+    paths:
+      - security/reports/
+      - security/POSTURE.md
+    expire_in: 90 days
+
+# The admission gate, re run on any manifest change so it cannot be skipped by
+# editing pyproject.toml directly instead of using make dep-check.
+dependency-admission:
+  <<: *security_tools
+  stage: security
+  script:
+    - |
+      git fetch origin "${CI_DEFAULT_BRANCH}" --depth=1
+      CHANGED=$(git diff --name-only "origin/${CI_DEFAULT_BRANCH}...HEAD" || true)
+      if echo "$CHANGED" | grep -qE 'pyproject.toml|package-lock.json'; then
+        echo "Dependency manifest changed. Running the admission gate."
+        bash scripts/security/scan.sh
+      else
+        echo "No dependency manifest change. Gate not required."
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+code-review:
+  stage: security
+  image: python:3.12-slim
+  script:
+    - pip install -e ".[dev]"
+    - python scripts/ci/code_review.py --diff "origin/${CI_DEFAULT_BRANCH}" --output security/reviews
+  artifacts:
+    when: always
+    paths: [security/reviews/]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 # ------------------------------------------------------------------ build
 
@@ -151,6 +229,44 @@ build:web:
   variables:
     SERVICE: web
     DOCKERFILE: docker/Dockerfile.web
+
+# ------------------------------------------------------------------ scan
+#
+# Every image is scanned after it is built and before it can be deployed. An
+# image with a finding never reaches an environment.
+
+.scan_image: &scan_image
+  <<: *security_tools
+  stage: scan
+  script:
+    - syft "${ECR_REGISTRY}/meter-${SERVICE}:${IMAGE_TAG}" -o spdx-json > "security/sbom/${SERVICE}-${IMAGE_TAG}.spdx.json"
+    - grype "${ECR_REGISTRY}/meter-${SERVICE}:${IMAGE_TAG}" -o json --config security/policy/grype.yaml > "grype-${SERVICE}.json"
+    - trivy image "${ECR_REGISTRY}/meter-${SERVICE}:${IMAGE_TAG}" --format json --output "trivy-${SERVICE}.json" --config security/policy/trivy.yaml
+    - |
+      mkdir -p scanout && cp grype-*.json trivy-*.json scanout/
+      python scripts/security/report.py --gate-only --input scanout \
+        --allowlist security/policy/allowlist.yaml --label "meter-${SERVICE}:${IMAGE_TAG}"
+    - cosign sign --yes "${ECR_REGISTRY}/meter-${SERVICE}:${IMAGE_TAG}"
+    - cosign attest --yes --predicate "security/sbom/${SERVICE}-${IMAGE_TAG}.spdx.json" --type spdxjson "${ECR_REGISTRY}/meter-${SERVICE}:${IMAGE_TAG}"
+  artifacts:
+    when: always
+    paths: [security/sbom/]
+    expire_in: 90 days
+
+scan:api:
+  <<: *scan_image
+  variables: { SERVICE: api }
+  needs: ["build:api"]
+
+scan:worker:
+  <<: *scan_image
+  variables: { SERVICE: worker }
+  needs: ["build:worker"]
+
+scan:web:
+  <<: *scan_image
+  variables: { SERVICE: web }
+  needs: ["build:web"]
 
 # ------------------------------------------------------------------ plan
 
@@ -237,3 +353,40 @@ migrate:dev:
   needs: ["build:api"]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# ------------------------------------------------------------------ nightly
+#
+# The most important security job in this file.
+#
+# A CVE published tonight against a dependency shipped last week turns a green
+# build red with no change to the code. A pipeline that scans only at build
+# time reports zero forever while the deployed image degrades silently. So this
+# scans the digest that is actually running, not the last thing that was built.
+#
+# Schedule it in GitLab with CI_NIGHTLY_SCAN set. It raises an issue rather
+# than rolling back, because an automatic rollback triggered by a newly
+# published advisory is its own outage risk.
+
+nightly-posture-scan:
+  <<: *security_tools
+  stage: scan
+  script:
+    - |
+      for env in dev prod; do
+        for svc in api worker web; do
+          DIGEST=$(aws ecs describe-task-definition \
+            --task-definition "meter-${svc}-${env}" \
+            --query 'taskDefinition.containerDefinitions[0].image' --output text)
+          echo "Scanning ${env}/${svc} at ${DIGEST}"
+          bash scripts/security/scan.sh --digest "${DIGEST}" || FAILED=1
+        done
+      done
+      test -z "${FAILED:-}" || exit 1
+  artifacts:
+    when: always
+    paths:
+      - security/reports/
+      - security/POSTURE.md
+    expire_in: 365 days
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $CI_NIGHTLY_SCAN == "true"
