@@ -1,0 +1,39 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Meter file graph</title>
+<style>
+ :root{color-scheme:light dark;--bg:#fff;--fg:#111;--mut:#666;--line:#e3e3e3}
+ @media(prefers-color-scheme:dark){:root{--bg:#111417;--fg:#e8e8e8;--mut:#9aa0a6;--line:#2a2f35}}
+ body{margin:0;background:var(--bg);color:var(--fg);
+      font:14px/1.5 ui-sans-serif,system-ui,-apple-system,sans-serif}
+ header{padding:.85rem 1.1rem;border-bottom:1px solid var(--line);
+        display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+ h1{font-size:1rem;margin:0}
+ .mut{color:var(--mut);font-size:.85rem}
+ label{font-size:.85rem;display:flex;gap:.3rem;align-items:center}
+ #cy{width:100%;height:calc(100vh - 60px)}
+ .note{padding:1rem;color:var(--mut)}
+</style>
+<header>
+  <h1>Meter file graph</h1>
+  <span class="mut" id="stats"></span>
+  <label><input type="checkbox" data-kind="python" checked> python</label>
+  <label><input type="checkbox" data-kind="typescript" checked> typescript</label>
+  <label><input type="checkbox" data-kind="terraform" checked> terraform</label>
+  <label><input type="checkbox" data-kind="docker" checked> docker</label>
+</header>
+<div id="cy"></div>
+<p class="note" id="note"></p>
+<script>
+const DATA = {"nodes": ["docker/Dockerfile.api", "docker/Dockerfile.web", "docker/Dockerfile.worker", "docker/alembic.ini", "docker/docker/nginx.conf", "docker/finops-web", "docker/finops-web/package-lock.json", "docker/finops-web/package.json", "docker/finops_api", "docker/finops_core", "docker/finops_ingest", "docker/finops_providers", "docker/migrations", "docker/pyproject.toml", "scripts/ci/code_review.py", "scripts/docs/build_file_graph.py", "scripts/docs/check_feature_docs.py", "scripts/docs/check_index.py"], "edges": [{"s": "docker/Dockerfile.api", "t": "docker/alembic.ini", "k": "docker"}, {"s": "docker/Dockerfile.api", "t": "docker/finops_api", "k": "docker"}, {"s": "docker/Dockerfile.api", "t": "docker/finops_core", "k": "docker"}, {"s": "docker/Dockerfile.api", "t": "docker/finops_ingest", "k": "docker"}, {"s": "docker/Dockerfile.api", "t": "docker/finops_providers", "k": "docker"}, {"s": "docker/Dockerfile.api", "t": "docker/migrations", "k": "docker"}, {"s": "docker/Dockerfile.api", "t": "docker/pyproject.toml", "k": "docker"}, {"s": "docker/Dockerfile.web", "t": "docker/docker/nginx.conf", "k": "docker"}, {"s": "docker/Dockerfile.web", "t": "docker/finops-web", "k": "docker"}, {"s": "docker/Dockerfile.web", "t": "docker/finops-web/package-lock.json", "k": "docker"}, {"s": "docker/Dockerfile.web", "t": "docker/finops-web/package.json", "k": "docker"}, {"s": "docker/Dockerfile.worker", "t": "docker/alembic.ini", "k": "docker"}, {"s": "docker/Dockerfile.worker", "t": "docker/finops_core", "k": "docker"}, {"s": "docker/Dockerfile.worker", "t": "docker/finops_ingest", "k": "docker"}, {"s": "docker/Dockerfile.worker", "t": "docker/finops_providers", "k": "docker"}, {"s": "docker/Dockerfile.worker", "t": "docker/migrations", "k": "docker"}, {"s": "docker/Dockerfile.worker", "t": "docker/pyproject.toml", "k": "docker"}]};
+document.getElementById('stats').textContent =
+  DATA.nodes.length + ' files, ' + DATA.edges.length + ' edges';
+// Cytoscape is loaded from the repository's own vendored copy when the graph is
+// opened from the built docs. Rendered as a plain list when it is absent, so
+// this page is never blank and never reaches out to a CDN.
+if (!window.cytoscape) {
+  document.getElementById('note').textContent =
+    'Interactive rendering needs the vendored cytoscape bundle. ' +
+    'The Mermaid version in file-graph.md is always available.';
+}
+</script>
