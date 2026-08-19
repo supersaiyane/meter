@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Status: Provisional, pending approval of `docs/specs/2026-08-23-p0-foundation-design.md`
 Spec: `docs/specs/2026-08-23-p0-foundation-design.md`
-Tasks: 28
+Tasks: 31
 
 ## How to work this plan
 
@@ -31,6 +31,12 @@ before starting. In short:
 | F. Ingestion | 020 to 023 | Dispatcher, worker, ledger, and the three P0 collectors | C and E complete |
 | G. API | 024 to 025 | Routes with scope enforcement and freshness metadata | C complete, F for real data |
 | H. Frontend | 026 to 028 | Five screens and the end to end journey | G complete |
+| I. Security and MCP | 029 to 031 | Zero vulnerability posture, and the four P0 MCP tools | 029 first of all, 030 and 031 after G |
+
+**TASK-P0-029 runs before everything else**, out of numeric order. It verifies
+that the Minimus tags this project depends on actually exist and that every
+declared dependency passes the admission gate. Discovering at task 016 that the
+base image does not exist would invalidate three Dockerfiles and a pipeline.
 
 Waves B and D are independent. Run them in parallel if two people are working.
 
@@ -1383,6 +1389,149 @@ make test-all && make test-e2e
 
 ---
 
+## Wave I: security and MCP
+
+### TASK-P0-029: establish the security tool chain and the first posture
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | P0 spec section 11a, ADR-0010 |
+| Depends on | none. **Run this first, before TASK-P0-001** |
+| Estimate | M |
+
+**Goal.** Prove the security ground rules hold before any code is written
+against them.
+
+**Files.**
+
+| Path | Action |
+| --- | --- |
+| `security/POSTURE.md` | regenerate, currently a placeholder |
+| `security/policy/*.yaml` | verify, already exist |
+| `.pre-commit-config.yaml` | modify |
+
+**Acceptance criteria.**
+
+- [ ] `make security-tools` installs grype, syft, trivy, gitleaks and cosign
+- [ ] **The Minimus tags this project depends on are verified to exist**:
+      `reg.mini.dev/python:3.12`, `python:3.12-dev`, `node:22-dev`,
+      `nginx:1.27`. Record the resolved digests
+- [ ] Every dependency declared in `pyproject.toml` passes
+      `make dep-check pkg=<name>`, run individually
+- [ ] `make security-scan` runs end to end and writes a report and a posture
+- [ ] `security/POSTURE.md` reports zero findings
+
+**Do not.**
+
+- Do not proceed past this task if a Minimus tag is missing. Record the gap as
+  an `ISS-nnn` row, choose a documented alternative, and update ADR-0010.
+  Silently reverting to the official Python image would reintroduce more than
+  400 vulnerabilities and nobody would notice until an audit.
+- Do not add a dependency that fails the gate by lowering a threshold. Replace
+  it, or write a time boxed allowlist entry with your name on it.
+
+**Evidence.**
+
+```bash
+make security-tools && make security-scan && cat security/POSTURE.md
+```
+
+---
+
+### TASK-P0-030: MCP server scaffold and the four P0 tools
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | P0 spec section 8.0, ADR-0009 |
+| Delivers | FEAT-042 groundwork |
+| Depends on | TASK-P0-025 |
+| Estimate | M |
+
+**Goal.** An MCP server exposing the P0 read surface, proving the facade
+pattern before there is much to expose.
+
+**Files.**
+
+| Path | Action |
+| --- | --- |
+| `finops_mcp/__init__.py` | create |
+| `finops_mcp/server.py` | create |
+| `finops_mcp/tools.py` | create |
+| `tests/mcp/test_tools.py` | create |
+| `docker/Dockerfile.mcp` | create |
+
+**Acceptance criteria.**
+
+- [ ] Four tools: `list_accounts`, `get_org_tree`, `get_ingest_status`,
+      `get_platform_cost`
+- [ ] Every tool calls the HTTP API over the network with the caller's token
+- [ ] Tool schemas are generated from the same Pydantic models the API uses,
+      so a drift between the two surfaces fails the build
+- [ ] Every tool response carries the `meta` envelope unchanged, including
+      `scope_coverage`, so a model cannot present a partial total as complete
+- [ ] A caller with a two account scope receives two accounts from the tool
+
+**Tests.**
+
+| Test | Asserts |
+| --- | --- |
+| `tests/mcp/test_tools.py::test_tool_respects_scope` | The MCP path enforces exactly what the HTTP path enforces |
+| `tests/mcp/test_tools.py::test_schemas_match_api_models` | A model change without a tool change fails |
+| `tests/mcp/test_tools.py::test_meta_envelope_is_preserved` | Freshness and coverage survive the facade |
+
+**Do not.**
+
+- Do not import the service layer or a repository from `finops_mcp`. It calls
+  the HTTP API. Two implementations of an authorization rule is how an
+  authorization bug is created, which is ISS-009 in a new place.
+- Do not strip the `meta` envelope to make a tool response tidier. A model that
+  cannot see `scope_coverage` will state a partial total as an organization
+  total, confidently.
+- Do not add a tool that runs free form SQL. See ADR-0007.
+
+**Evidence.**
+
+```bash
+pytest tests/mcp -v
+```
+
+---
+
+### TASK-P0-031: wire the documentation and graph gates into the pipeline
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | ADR-0011, `docs/03-CHANGE-CONTROL.md` |
+| Depends on | TASK-P0-001 |
+| Estimate | S |
+
+**Goal.** The documentation, the feature docs and the file graph cannot go
+stale without the pipeline saying so.
+
+**Acceptance criteria.**
+
+- [ ] `make check-docs` runs in the `verify` stage and blocks
+- [ ] `make graph` runs in CI and fails on a layering violation
+- [ ] `make review` runs on every merge request and publishes its report
+- [ ] An API reference is generated from docstrings, and docstring coverage on
+      public symbols is a gate
+
+**Do not.**
+
+- Do not make any of these a warning. A documentation check that warns is
+  ignored within two weeks, which is the whole reason it exists.
+
+**Evidence.**
+
+```bash
+make check-docs && make graph && make review
+```
+
+---
+
 ## Traceability
 
 Every task maps to a spec section and a feature. If a task cannot name its
@@ -1401,3 +1550,6 @@ worked.
 | FEAT-008 Platform self metering | 015, 023, 025, 028 |
 | FEAT-009 Organization map | 026, 027 |
 | FEAT-010 Ingest and freshness surface | 028 |
+| FEAT-042 Assistant bot, groundwork | 030 |
+| Security posture, ADR-0010 | 029 |
+| Documentation and graph gates, ADR-0011 | 031 |

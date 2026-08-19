@@ -35,6 +35,10 @@ meter/
 │   ├── 02-ARCHITECTURE.md     cross cutting architecture, ports, FOCUS, ingestion
 │   ├── 03-CHANGE-CONTROL.md   where each kind of change is recorded
 │   ├── 04-DEPLOYMENT.md       GitLab to ECR to Terraform to ECS
+│   ├── 05-SECURITY.md         zero vulnerability policy, scanners, gates
+│   ├── 06-DATA-FRESHNESS.md   refresh cadence per collector, and its limits
+│   ├── features/              one document per feature, 42 of them
+│   ├── architecture/          generated file dependency graph
 │   ├── templates/             spec, task, ADR, change and issue templates
 │   ├── checkpoint.md          session continuity log with resume vectors
 │   ├── adr/                   architecture decision records, 0001 to 0008
@@ -48,14 +52,28 @@ meter/
 │   ├── ISSUES.md              issue and open question register with fixed status
 │   └── lessons.md             corrections converted into rules
 │
-├── docker/                    Dockerfile.api, Dockerfile.worker, Dockerfile.web, nginx.conf
-├── scripts/                   check_index.py, run_migration_task.sh
+├── docker/                    three Dockerfiles on Minimus, plus nginx.conf
+│
+├── security/                  everything a scan produces, and the policy
+│   ├── POSTURE.md             current posture, generated, never hand edited
+│   ├── policy/                grype.yaml, trivy.yaml, allowlist.yaml
+│   ├── reports/               one directory per scan, committed
+│   ├── sbom/                  one SBOM per image per build
+│   └── reviews/               automated code review reports
+│
+├── scripts/                   every script in the project, nothing executable elsewhere
+│   ├── README.md              what each script does and how it is run
+│   ├── security/              scan, admission gate, report, auto fix, allowlist
+│   ├── docs/                  index check, feature doc check, file graph
+│   ├── ci/                    code review
+│   └── deploy/                migration task runner
 │
 ├── finops-core/               PLANNED  domain and ports. No boto3, no framework
 ├── finops-providers/          PLANNED  aws/, fake/, gcp/, azure/
 ├── finops-ingest/             PLANNED  dispatcher, worker, ledger, collectors
 ├── finops-api/                PLANNED  FastAPI, scope enforcement, routes
 ├── finops-web/                PLANNED  React and TypeScript
+├── finops-mcp/                PLANNED  MCP server, a facade over the HTTP API
 └── infra/terraform/           PLANNED  hub/, member/, management/
 ```
 
@@ -69,6 +87,7 @@ meter/
 | `finops-ingest` | Dispatcher, worker, run ledger, watermarks, collectors | `finops-core`, a provider | `finops-web` |
 | `finops-api` | HTTP surface, scope dependency, repository guard | `finops-core`, a provider | boto3 directly |
 | `finops-web` | User interface | `finops-api` over HTTP | anything Python |
+| `finops-mcp` | MCP tools for any model client | `finops-api` over HTTP | the service layer, repositories, boto3 |
 | `infra/terraform` | Hub stack, member StackSet, management role | nothing | nothing |
 
 The rule that keeps multi cloud cheap: `finops-core` never imports a cloud
@@ -83,6 +102,12 @@ continuous integration, not by good intentions.
 | Where do I record this change | `docs/03-CHANGE-CONTROL.md` |
 | How does code reach production | `docs/04-DEPLOYMENT.md` |
 | What exactly do I build next, and how | `docs/plans/P0-implementation-plan.md` |
+| What does this feature do | `docs/features/FEAT-nnn-*.md` |
+| How do these files depend on each other | `docs/architecture/file-graph.md`, `make graph` |
+| What is the security policy | `docs/05-SECURITY.md` |
+| Is the posture currently clean | `security/POSTURE.md` |
+| How often does this data refresh | `docs/06-DATA-FRESHNESS.md` |
+| What does this script do | `scripts/README.md` |
 | Why does this project exist, what counts as success | `docs/00-GOAL.md` |
 | What are we building and in what order | `docs/01-ROADMAP.md` |
 | Why was a technology chosen | `docs/adr/` |

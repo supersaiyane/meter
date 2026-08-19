@@ -31,6 +31,20 @@ user reviewing the P0 foundation specification.
 | `[x]` | Deployment: GitLab pipeline and deployment document | `.gitlab-ci.yml`, `docs/04-DEPLOYMENT.md` |
 | `[x]` | Index consistency checker and migration runner | `scripts/check_index.py` passes, `scripts/run_migration_task.sh` |
 | `[x]` | Write the P0 implementation plan | `docs/plans/P0-implementation-plan.md`, 28 tasks in 8 waves |
+| `[x]` | Answer whether MCP replaces the HTTP API | ADR-0009. Both, MCP is a facade over the API |
+| `[x]` | Rebase all images on Minimus for a zero CVE posture | ADR-0010, three Dockerfiles rewritten |
+| `[x]` | Security folder, seven scanners, policy and allowlist | `security/`, `docs/05-SECURITY.md` |
+| `[x]` | Dependency admission gate | `make dep-check`, plus a pipeline job on any manifest change |
+| `[x]` | HTML vulnerability report with suggested fixes | `scripts/security/report.py`, verified against sample scanner output |
+| `[x]` | Branch scoped auto fix, gated on the full test suite | `scripts/security/autofix.py`, verified in dry run |
+| `[x]` | Nightly posture scan of the running digest | `.gitlab-ci.yml`, `nightly-posture-scan` |
+| `[x]` | Adopt the decision ladder and output discipline | ADR-0011, `CLAUDE.md` |
+| `[x]` | Automated code review as a pipeline stage | `scripts/ci/code_review.py`, `make review` |
+| `[x]` | One document per feature | 42 documents in `docs/features/`, enforced by `check_feature_docs.py` |
+| `[x]` | File dependency graph, with layering enforced | `make graph`, 16 files and 17 edges at present |
+| `[x]` | Consolidate every script under `scripts/` | `scripts/README.md`, four subdirectories |
+| `[x]` | Decide refresh cadence per collector | ADR-0012, `docs/06-DATA-FRESHNESS.md`. Grafana audit at 6 hours |
+| `[x]` | Extend the P0 plan for security and MCP | 31 tasks. TASK-P0-029 runs first |
 | `[~]` | User review of the P0 specification | Current gate. The plan is provisional until it passes |
 
 ## Phase 1: P0 foundation build
@@ -67,6 +81,9 @@ table below is the summary view only.
 | `[ ]` | Frontend: ingest and freshness screen | TASK-P0-028 |
 | `[ ]` | Frontend: platform cost screen | TASK-P0-028 |
 | `[ ]` | End to end test, login through to the organization map | TASK-P0-028 |
+| `[ ]` | Security tool chain, Minimus tag verification, first zero posture | TASK-P0-029 |
+| `[ ]` | MCP server and the four P0 tools | TASK-P0-030 |
+| `[ ]` | Documentation and graph gates in the pipeline | TASK-P0-031 |
 
 ## Remaining sub projects
 
@@ -94,3 +111,8 @@ repository. Tracked in `tasks/ISSUES.md`.
 | `[ ]` | Enable Data Exports CUR 2.0 with resource identifiers and split cost allocation data | ISS-003 |
 | `[ ]` | Opt in to Compute Optimizer at organization level | ISS-004 |
 | `[ ]` | Confirm the identity provider approach | OPEN-01 |
+| `[ ]` | Confirm single or multiple payer accounts | OPEN-02 |
+| `[ ]` | Confirm the support tier for Trusted Advisor limit checks | OPEN-03 |
+| `[ ]` | Confirm whether self hosted Grafana and Grafana Cloud are in scope | OPEN-04 |
+| `[ ]` | Confirm the ticketing system for the recommendation lifecycle | OPEN-05 |
+| `[ ]` | Confirm which regions beyond Ireland and London | OPEN-06 |

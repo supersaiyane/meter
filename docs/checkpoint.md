@@ -19,6 +19,13 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-08-23 | Add the build and deployment layer | Done | `Makefile` with 28 targets, `docker/Dockerfile.api`, `Dockerfile.worker`, `Dockerfile.web`, `docker/nginx.conf`, `docker-compose.yml`, `.gitlab-ci.yml`, `pyproject.toml`, `.dockerignore`, `docs/04-DEPLOYMENT.md`, `scripts/run_migration_task.sh` | `make help` lists all targets. Nothing builds until P0 code exists, which is deliberate: the deployment contract is fixed before the code. Tracked as CHG-0003 |
 | 2026-08-23 | Add the master index and the change control process | Done | `INDEX.md` with 41 features, 8 ADRs, 5 changes, 32 issues, 6 open questions. `docs/03-CHANGE-CONTROL.md` with the routing rule and the anti hallucination contract. Five templates in `docs/templates/`. `scripts/check_index.py` enforcing consistency | `make check-docs` passes, 24 references checked. Tracked as CHG-0004 |
 | 2026-08-23 | Write the P0 implementation plan | Done | `docs/plans/P0-implementation-plan.md`, 28 tasks across 8 waves. Every task carries implements, files, acceptance criteria, named tests, depends on, do not, and evidence | Provisional until the P0 specification is approved. Tracked as CHG-0005 |
+| 2026-08-23 | Answer whether MCP replaces the HTTP API | Done | ADR-0009. Both. The HTTP API stays the single enforcement point, the MCP server is a facade calling it over the network with the caller's token. Four P0 tools. FEAT-042 assistant bot added | `docs/adr/ADR-0009-mcp-alongside-http-api.md`, P0 spec section 8.0 |
+| 2026-08-23 | Rebase every image on Minimus and establish a zero vulnerability posture | Done | ADR-0010. Three Dockerfiles rewritten against `reg.mini.dev`. Runtime images have no shell, so exec form only and health checking moved to the ALB. `--no-compile` keeps bytecode out. `security/` created with policy, allowlist, SBOM and report directories. Seven scanners. `docs/05-SECURITY.md` | `docker/`, `security/`, `docs/05-SECURITY.md`. ISS-033 to ISS-036, ISS-039 to ISS-041 |
+| 2026-08-23 | Build the security tooling | Done | `scripts/security/scan.sh`, `check_dependency.sh`, `validate_allowlist.py`, `report.py`, `autofix.py`. Report generator verified against sample grype and trivy output, cross scanner dedup confirmed. Auto fix verified in dry run, classification confirmed | `scripts/security/`, `make security-scan`, `make dep-check`, `make security-fix` |
+| 2026-08-23 | Adopt the ponytail and caveman ground rules | Done | ADR-0011. Six rung decision ladder before any new code, output discipline, automated code review and generated documentation as pipeline stages | `docs/adr/ADR-0011-minimal-code-decision-ladder.md`, `CLAUDE.md` section "Before writing any new code" |
+| 2026-08-23 | Document every feature and build the file graph | Done | 42 feature documents, 10 full for P0 and 32 planned. `scripts/docs/check_feature_docs.py` enforces both directions. `scripts/docs/build_file_graph.py` builds a Mermaid and an interactive graph from Python, TypeScript, Terraform and Dockerfile edges, and fails on a layering violation | `docs/features/`, `docs/architecture/file-graph.md`, `make graph`. ISS-042, ISS-043 |
+| 2026-08-23 | Decide refresh cadence | Done | ADR-0012. Cadence is a row in `collector_schedule` with its reason and cost, not a constant. Grafana audit at 6 hours as requested, kill switch event driven because a 6 hour gap on the original failure is still roughly 25,000 USD. Two timestamps on every figure | `docs/06-DATA-FRESHNESS.md`. ISS-037, ISS-038 |
+| 2026-08-23 | Consolidate scripts and extend the P0 plan | Done | Every script under `scripts/` in four subdirectories with a README. P0 plan extended to 31 tasks, wave I added. TASK-P0-029 runs before everything else because it verifies the Minimus tags exist | `scripts/README.md`, `docs/plans/P0-implementation-plan.md`. ISS-044 |
 
 ## Next action
 
@@ -40,10 +47,21 @@ P0.
 | The task list to execute | `docs/plans/P0-implementation-plan.md`, TASK-P0-001 through TASK-P0-028 |
 | How to run anything | `make help`. `make verify` is the merge request gate |
 | Where a change gets recorded | `docs/03-CHANGE-CONTROL.md`, the routing rule table |
+| Start here for anything | `INDEX.md`, 12 sections, 75 checked references |
+| What every feature does | `docs/features/`, 42 documents |
+| The security policy and the current posture | `docs/05-SECURITY.md`, `security/POSTURE.md` |
+| How often data refreshes and why | `docs/06-DATA-FRESHNESS.md`, ADR-0012 |
+| The first task to run | TASK-P0-029, before TASK-P0-001, because it verifies the Minimus tags exist |
 
 ### On approval, the next task
 
-Execute `docs/plans/P0-implementation-plan.md` from TASK-P0-001. Waves A and D
+Execute `docs/plans/P0-implementation-plan.md`, starting with **TASK-P0-029**,
+not TASK-P0-001. It verifies that the Minimus tags this project depends on
+actually exist and that every declared dependency passes the admission gate.
+Discovering at task 016 that a base image does not exist would invalidate three
+Dockerfiles and a pipeline.
+
+Then TASK-P0-001 onward. Waves A and D
 are independent of waves B and C, so two people can work in parallel. One task,
 one commit, and the commit body names the task identifier.
 

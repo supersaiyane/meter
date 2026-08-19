@@ -60,6 +60,10 @@ every account with role health status, see an ingest and freshness dashboard
 with typed per account errors, see Meter's own monthly cost. A newly vended
 account appears automatically within one hour.
 
+**Also in P0.** The security tool chain and the first zero vulnerability
+posture, and the MCP server exposing the four P0 read tools. Both are cheaper
+to establish now than to retrofit.
+
 **Explicitly not in P0.** Cost data, recommendations, alerting, Config
 ingest, any non AWS connector.
 
@@ -230,6 +234,13 @@ security story from read only IAM roles. Coupling it to P0 would slow P0 down.
 3. Remediation authoring. Generate the Terraform or CloudFormation diff, or
    the Grafana panel patch, and open a pull request for human approval.
 4. Weekly per team digests and executive summaries.
+
+**The assistant bot, FEAT-042.** A conversational interface, in the product and
+through any MCP client, that can find anything in the tool: an account, a
+resource, a cost, a recommendation, a quota, a dashboard. Its backend is the
+MCP server from ADR-0009, which calls the HTTP API with the caller's token, so
+scope filtering, the audit log and rate limiting apply unchanged and cannot be
+bypassed by adding a tool.
 
 **Where it must never be.** Sizing arithmetic and cost figures stay
 deterministic. The model explains a recommendation, it never computes one. A

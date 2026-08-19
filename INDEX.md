@@ -36,89 +36,94 @@ pointer, the referenced document is the truth.
 
 ## 2. Features
 
-41 features across eight sub projects. Status is `Planned`, `Specified`,
+42 features across eight sub projects. Status is `Planned`, `Specified`,
 `In build`, or `Delivered`.
+
+**Every feature has its own document under `docs/features/`.** The identifier in
+the first column links to it. `make check-docs` fails if a feature has no
+document, or a document has no feature.
 
 ### P0 Foundation
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| FEAT-001 | Account onboarding and organization topology, parent to child map | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.2, 7 |
-| FEAT-002 | Cross account credential brokering by StackSet deployed role | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 10, [ADR-0004](docs/adr/ADR-0004-cross-account-access.md) |
-| FEAT-003 | Provider port abstraction, eight ports | Specified | [architecture](docs/02-ARCHITECTURE.md) section "Ports" |
-| FEAT-004 | FOCUS 1.1 canonical cost schema | Specified | [ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md) |
-| FEAT-005 | Ingestion framework, idempotent and partial failure tolerant | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 7 |
-| FEAT-006 | Typed error taxonomy and data freshness contract | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6 |
-| FEAT-007 | Authorization scope enforcement, two independent points | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6, [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md) |
-| FEAT-008 | Platform self metering | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.5 |
-| FEAT-009 | Organization map, tree and graph views | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
-| FEAT-010 | Ingest and freshness surface | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
+| [FEAT-001](docs/features/FEAT-001-account-onboarding-and-org-topology.md) | Account onboarding and organization topology, parent to child map | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.2, 7 |
+| [FEAT-002](docs/features/FEAT-002-cross-account-credential-brokering.md) | Cross account credential brokering by StackSet deployed role | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 10, [ADR-0004](docs/adr/ADR-0004-cross-account-access.md) |
+| [FEAT-003](docs/features/FEAT-003-provider-port-abstraction.md) | Provider port abstraction, eight ports | Specified | [architecture](docs/02-ARCHITECTURE.md) section "Ports" |
+| [FEAT-004](docs/features/FEAT-004-focus-canonical-cost-schema.md) | FOCUS 1.1 canonical cost schema | Specified | [ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md) |
+| [FEAT-005](docs/features/FEAT-005-ingestion-framework.md) | Ingestion framework, idempotent and partial failure tolerant | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 7 |
+| [FEAT-006](docs/features/FEAT-006-typed-errors-and-freshness.md) | Typed error taxonomy and data freshness contract | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6 |
+| [FEAT-007](docs/features/FEAT-007-authorization-scope-enforcement.md) | Authorization scope enforcement, two independent points | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6, [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md) |
+| [FEAT-008](docs/features/FEAT-008-platform-self-metering.md) | Platform self metering | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.5 |
+| [FEAT-009](docs/features/FEAT-009-organization-map.md) | Organization map, tree and graph views | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
+| [FEAT-010](docs/features/FEAT-010-ingest-and-freshness-surface.md) | Ingest and freshness surface | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
 
 ### P2 Query Cost Governance
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| FEAT-011 | Grafana workspace, dashboard and alert rule scanner | Planned | [roadmap](docs/01-ROADMAP.md) P2. Prototype exists |
-| FEAT-012 | Query cost model, Logs Insights and metric engines | Planned | [roadmap](docs/01-ROADMAP.md) P2. Prototype exists |
-| FEAT-013 | Measured overlay from CloudTrail and DescribeQueries | Planned | [roadmap](docs/01-ROADMAP.md) P2. Prototype exists |
-| FEAT-014 | Preventive controls: refresh floor and CI policy gate | Planned | [roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-020 |
-| FEAT-015 | Near real time kill switch with Budgets Actions | Planned | [roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-020 |
-| FEAT-016 | Owner attribution from folder, team and last editor | Planned | [roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-021 |
-| FEAT-017 | Auto remediation with change record and undo | Planned | [roadmap](docs/01-ROADMAP.md) P2 |
-| FEAT-018 | Cost model calibration against actual CUR usage types | Planned | [roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-022 |
-| FEAT-019 | Multi platform query governance: QuickSight, Athena, Redshift, OpenSearch | Planned | [roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-025 |
+| [FEAT-011](docs/features/FEAT-011-grafana-workspace-scanner.md) | Grafana workspace, dashboard and alert rule scanner | Planned | [roadmap](docs/01-ROADMAP.md) P2. Prototype exists |
+| [FEAT-012](docs/features/FEAT-012-query-cost-model.md) | Query cost model, Logs Insights and metric engines | Planned | [roadmap](docs/01-ROADMAP.md) P2. Prototype exists |
+| [FEAT-013](docs/features/FEAT-013-measured-query-overlay.md) | Measured overlay from CloudTrail and DescribeQueries | Planned | [roadmap](docs/01-ROADMAP.md) P2. Prototype exists |
+| [FEAT-014](docs/features/FEAT-014-preventive-query-controls.md) | Preventive controls: refresh floor and CI policy gate | Planned | [roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-020 |
+| [FEAT-015](docs/features/FEAT-015-query-cost-kill-switch.md) | Near real time kill switch with Budgets Actions | Planned | [roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-020 |
+| [FEAT-016](docs/features/FEAT-016-query-owner-attribution.md) | Owner attribution from folder, team and last editor | Planned | [roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-021 |
+| [FEAT-017](docs/features/FEAT-017-query-auto-remediation.md) | Auto remediation with change record and undo | Planned | [roadmap](docs/01-ROADMAP.md) P2 |
+| [FEAT-018](docs/features/FEAT-018-cost-model-calibration.md) | Cost model calibration against actual CUR usage types | Planned | [roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-022 |
+| [FEAT-019](docs/features/FEAT-019-multi-platform-query-governance.md) | Multi platform query governance: QuickSight, Athena, Redshift, OpenSearch | Planned | [roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-025 |
 
 ### P1 Cost Intelligence
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| FEAT-020 | CUR 2.0 ingest with resource identifiers and split cost allocation | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
-| FEAT-021 | Cost rollups, trends and per resource attribution | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
-| FEAT-022 | Allocation, showback and the unallocated bucket | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
-| FEAT-023 | Anomaly detection and ingest of AWS Cost Anomaly Detection | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
-| FEAT-024 | Savings Plan and Reserved Instance utilization and coverage | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
+| [FEAT-020](docs/features/FEAT-020-cur-focus-ingest.md) | CUR 2.0 ingest with resource identifiers and split cost allocation | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
+| [FEAT-021](docs/features/FEAT-021-cost-rollups-and-trends.md) | Cost rollups, trends and per resource attribution | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
+| [FEAT-022](docs/features/FEAT-022-allocation-and-showback.md) | Allocation, showback and the unallocated bucket | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
+| [FEAT-023](docs/features/FEAT-023-cost-anomaly-detection.md) | Anomaly detection and ingest of AWS Cost Anomaly Detection | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
+| [FEAT-024](docs/features/FEAT-024-commitment-coverage.md) | Savings Plan and Reserved Instance utilization and coverage | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
 
 ### P3 Utilization and Rightsizing
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| FEAT-025 | Cost Optimization Hub, Compute Optimizer and Trusted Advisor ingest | Planned | [ADR-0006](docs/adr/ADR-0006-aws-native-recommendations-first.md) |
-| FEAT-026 | Bespoke waste collectors where AWS is blind | Planned | [ADR-0006](docs/adr/ADR-0006-aws-native-recommendations-first.md) |
-| FEAT-027 | CloudWatch cost module: retention, unqueried logs, stale alarms | Planned | [roadmap](docs/01-ROADMAP.md) P3 |
-| FEAT-028 | Recommendation lifecycle with owner and ticketing | Planned | [roadmap](docs/01-ROADMAP.md) P3. Addresses ISS-028 |
-| FEAT-029 | Realized savings verification, the north star metric | Planned | [docs/00-GOAL.md](docs/00-GOAL.md). Addresses ISS-029 |
+| [FEAT-025](docs/features/FEAT-025-aws-native-recommendation-ingest.md) | Cost Optimization Hub, Compute Optimizer and Trusted Advisor ingest | Planned | [ADR-0006](docs/adr/ADR-0006-aws-native-recommendations-first.md) |
+| [FEAT-026](docs/features/FEAT-026-bespoke-waste-collectors.md) | Bespoke waste collectors where AWS is blind | Planned | [ADR-0006](docs/adr/ADR-0006-aws-native-recommendations-first.md) |
+| [FEAT-027](docs/features/FEAT-027-cloudwatch-cost-module.md) | CloudWatch cost module: retention, unqueried logs, stale alarms | Planned | [roadmap](docs/01-ROADMAP.md) P3 |
+| [FEAT-028](docs/features/FEAT-028-recommendation-lifecycle.md) | Recommendation lifecycle with owner and ticketing | Planned | [roadmap](docs/01-ROADMAP.md) P3. Addresses ISS-028 |
+| [FEAT-029](docs/features/FEAT-029-realized-savings-verification.md) | Realized savings verification, the north star metric | Planned | [docs/00-GOAL.md](docs/00-GOAL.md). Addresses ISS-029 |
 
 ### P4 Inventory and Topology
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| FEAT-030 | AWS Config aggregator inventory by region and zone | Planned | [roadmap](docs/01-ROADMAP.md) P4 |
-| FEAT-031 | Topology graph, node and edge model | Planned | [ADR-0005](docs/adr/ADR-0005-postgres-adjacency-for-topology.md) |
-| FEAT-032 | Topology map interface | Planned | [roadmap](docs/01-ROADMAP.md) P4 |
+| [FEAT-030](docs/features/FEAT-030-config-aggregator-inventory.md) | AWS Config aggregator inventory by region and zone | Planned | [roadmap](docs/01-ROADMAP.md) P4 |
+| [FEAT-031](docs/features/FEAT-031-topology-graph.md) | Topology graph, node and edge model | Planned | [ADR-0005](docs/adr/ADR-0005-postgres-adjacency-for-topology.md) |
+| [FEAT-032](docs/features/FEAT-032-topology-map-interface.md) | Topology map interface | Planned | [roadmap](docs/01-ROADMAP.md) P4 |
 
 ### P5 Quotas and Limits
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| FEAT-033 | Quota utilization per service per region, with stated coverage gaps | Planned | [roadmap](docs/01-ROADMAP.md) P5 |
-| FEAT-034 | Quota increase request workflow | Planned | [roadmap](docs/01-ROADMAP.md) P5 |
+| [FEAT-033](docs/features/FEAT-033-quota-utilization.md) | Quota utilization per service per region, with stated coverage gaps | Planned | [roadmap](docs/01-ROADMAP.md) P5 |
+| [FEAT-034](docs/features/FEAT-034-quota-increase-workflow.md) | Quota increase request workflow | Planned | [roadmap](docs/01-ROADMAP.md) P5 |
 
 ### P6 Containers
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| FEAT-035 | EKS pod level cost from split cost allocation data | Planned | [roadmap](docs/01-ROADMAP.md) P6 |
-| FEAT-036 | In cluster telemetry, requested versus used | Planned | [roadmap](docs/01-ROADMAP.md) P6 |
-| FEAT-037 | ECS task and Fargate utilization, snapped to valid sizes | Planned | [roadmap](docs/01-ROADMAP.md) P6 |
+| [FEAT-035](docs/features/FEAT-035-eks-split-cost-allocation.md) | EKS pod level cost from split cost allocation data | Planned | [roadmap](docs/01-ROADMAP.md) P6 |
+| [FEAT-036](docs/features/FEAT-036-k8s-in-cluster-telemetry.md) | In cluster telemetry, requested versus used | Planned | [roadmap](docs/01-ROADMAP.md) P6 |
+| [FEAT-037](docs/features/FEAT-037-ecs-task-utilization.md) | ECS task and Fargate utilization, snapped to valid sizes | Planned | [roadmap](docs/01-ROADMAP.md) P6 |
 
 ### P7 Insight and LLM layer
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| FEAT-038 | Natural language cost query over a governed semantic layer | Planned | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
-| FEAT-039 | Anomaly narration correlating cost, Config and CloudTrail | Planned | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
-| FEAT-040 | Remediation authoring as an infrastructure as code pull request | Planned | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
-| FEAT-041 | Per team digests and executive summaries | Planned | [roadmap](docs/01-ROADMAP.md) P7 |
+| [FEAT-038](docs/features/FEAT-038-natural-language-cost-query.md) | Natural language cost query over a governed semantic layer | Planned | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
+| [FEAT-039](docs/features/FEAT-039-anomaly-narration.md) | Anomaly narration correlating cost, Config and CloudTrail | Planned | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
+| [FEAT-040](docs/features/FEAT-040-remediation-authoring.md) | Remediation authoring as an infrastructure as code pull request | Planned | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
+| [FEAT-041](docs/features/FEAT-041-digests-and-summaries.md) | Per team digests and executive summaries | Planned | [roadmap](docs/01-ROADMAP.md) P7 |
+| [FEAT-042](docs/features/FEAT-042-assistant-bot.md) | Assistant bot, chat and find anything in the tool | Planned | [ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md) |
 
 ---
 
@@ -134,6 +139,10 @@ pointer, the referenced document is the truth.
 | ADR-0006 | Ingest AWS native recommendation services before building a collector | Accepted | [ADR-0006](docs/adr/ADR-0006-aws-native-recommendations-first.md) |
 | ADR-0007 | The language model never computes a number | Accepted | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
 | ADR-0008 | Identity adapter deferred, isolated behind two ports | Accepted | [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md) |
+| ADR-0009 | An MCP server alongside the HTTP API, not instead of it | Accepted | [ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md) |
+| ADR-0010 | Minimus base images and a continuously maintained zero CVE posture | Accepted | [ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md) |
+| ADR-0011 | A decision ladder before any new code, and token economy | Accepted | [ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md) |
+| ADR-0012 | Collection cadence is data, not code, and is bounded by the source | Accepted | [ADR-0012](docs/adr/ADR-0012-collector-cadence-registry.md) |
 
 Index of records: [docs/adr/README.md](docs/adr/README.md)
 
@@ -147,13 +156,19 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0002 | 2026-08-23 | Process | Checkpoint log and project map moved to the paths the session enforcement script requires | `93e15aa` | [docs/checkpoint.md](docs/checkpoint.md) |
 | CHG-0003 | 2026-08-23 | Infrastructure | Build and deployment layer added: Makefile, three Dockerfiles, docker-compose, GitLab pipeline, deployment document | `6f71c6e` | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | CHG-0004 | 2026-08-23 | Process | This index, the change control process, five document templates, and the index consistency checker | `cdc22bb` | [docs/03-CHANGE-CONTROL.md](docs/03-CHANGE-CONTROL.md) |
-| CHG-0005 | 2026-08-23 | Design | P0 implementation plan written, 28 tasks across eight waves, each carrying the seven anti hallucination fields | `d4c3cfb` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0005 | 2026-08-23 | Design | P0 implementation plan written, 28 tasks across eight waves, each carrying the seven anti hallucination fields | `d4c3cfb` |
+| CHG-0006 | 2026-08-23 | Design | MCP server added as a facade over the HTTP API, not a replacement. FEAT-042 assistant bot added | pending |
+| CHG-0007 | 2026-08-23 | Infrastructure | Images rebased on Minimus, shell free runtime, no bytecode, exec form only. Health checking moved to the ALB | pending |
+| CHG-0008 | 2026-08-23 | Process | Security folder, seven scanners, dependency admission gate, HTML report with fixes, branch scoped auto fix, nightly posture scan | pending |
+| CHG-0009 | 2026-08-23 | Process | Decision ladder and output discipline adopted from ponytail and caveman. Code review and documentation generation added as pipeline stages | pending |
+| CHG-0010 | 2026-08-23 | Design | Collection cadence moved into a table with its reason and cost. Grafana audit at 6 hours, kill switch event driven | pending |
+| CHG-0011 | 2026-08-23 | Process | One document per feature, 42 of them. File dependency graph generated and layering enforced. All scripts consolidated under scripts/ | pending | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 ---
 
 ## 5. Issues
 
-**14 FIXED, 18 OPEN, 1 PARKED.** Full detail with evidence and resolution in
+**26 FIXED, 18 OPEN, 1 PARKED.** Full detail with evidence and resolution in
 [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists.
@@ -199,6 +214,23 @@ Assessed 2026-08-23. `sample_lambda.py`, 2,740 lines. These become the P2 backlo
 | ISS-025 | MEDIUM | The pattern is Grafana specific but the failure mode is not | OPEN | FEAT-019 |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
+
+### Found in the 2026-08-23 review of images, dependencies and cadence
+
+| ID | Severity | Issue | Status | Detail |
+| --- | --- | --- | --- | --- |
+| ISS-033 | CRITICAL | The official Python base image ships with more than 400 known vulnerabilities before any application code is added | FIXED | [ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md) |
+| ISS-034 | CRITICAL | Scanning only at build time reports zero forever while the deployed image degrades silently | FIXED | [docs/05-SECURITY.md](docs/05-SECURITY.md), nightly posture scan |
+| ISS-035 | HIGH | A dependency was addable with no vulnerability check, and most vulnerable code arrives transitively | FIXED | `make dep-check`, and a pipeline job on any manifest change |
+| ISS-036 | HIGH | An unattended dependency upgrade that breaks production is worse than the vulnerability it closed | FIXED | Auto fix applies on a branch, gated on the full test suite, never auto merged |
+| ISS-037 | HIGH | A single global refresh interval would be wasteful for billing data and useless for a cost control | FIXED | [ADR-0012](docs/adr/ADR-0012-collector-cadence-registry.md) |
+| ISS-038 | HIGH | Reporting one timestamp lets a freshly collected copy of yesterday's data look current | FIXED | `as_of` and `collected_at` on every figure |
+| ISS-039 | MEDIUM | A shell form CMD and a curl based HEALTHCHECK both break on a shell free runtime image | FIXED | Exec form only, health checking moved to the ALB target group |
+| ISS-040 | MEDIUM | An allowlist entry with no expiry lapses silently into permanent acceptance | FIXED | `validate_allowlist.py` fails the build on an expired entry |
+| ISS-041 | MEDIUM | Two vulnerability scanners disagree, and the disagreement is where a missed finding lives | FIXED | grype and trivy are merged, not chosen between, with the scanner recorded per finding |
+| ISS-042 | MEDIUM | A feature with no document is a promise with nothing behind it | FIXED | 42 feature documents, enforced by `check_feature_docs.py` |
+| ISS-043 | MEDIUM | Nothing showed how files actually depend on each other, so a layering violation was invisible | FIXED | `make graph`, which also fails on a layering violation |
+| ISS-044 | LOW | Scripts were scattered between the root and one flat directory | FIXED | All under `scripts/`, grouped by purpose |
 
 ### Requirement gaps found in review
 
@@ -255,14 +287,86 @@ Templates for new documents: [docs/templates/](docs/templates/README.md)
 | Local stack | `docker-compose.yml` | PostgreSQL, LocalStack, API, dispatcher, worker, web |
 | Pipeline | `.gitlab-ci.yml` | verify, build with Kaniko, plan, deploy |
 | Packaging | `pyproject.toml` | Dependencies, lint rules, and the import linter contract |
-| Index checker | `scripts/check_index.py` | Fails when this document drifts |
-| Migration runner | `scripts/run_migration_task.sh` | One off ECS task before rollout |
+| Index checker | `scripts/docs/check_index.py` | Fails when this document drifts |
+| Feature doc checker | `scripts/docs/check_feature_docs.py` | Fails when a feature has no document |
+| File graph | `scripts/docs/build_file_graph.py` | Builds the graph, fails on a layering violation |
+| Migration runner | `scripts/deploy/run_migration_task.sh` | One off ECS task before rollout |
+| Code review | `scripts/ci/code_review.py` | Deterministic checks, then the review checklist |
+| Script index | `scripts/README.md` | Every script, what it does, how it is run |
+
+Base images are Minimus from `reg.mini.dev`. The runtime images have no shell
+and no package manager, so every `CMD` and `ENTRYPOINT` is in exec form and
+health checking is done by the ALB target group. See
+[ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md).
 
 Full description: [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md)
 
 ---
 
-## 9. Traceability
+## 9. Security
+
+Policy is **zero vulnerabilities at any severity, at all times**. Not zero
+critical, not zero high. Zero.
+
+| Artefact | Path |
+| --- | --- |
+| Policy and controls | [docs/05-SECURITY.md](docs/05-SECURITY.md) |
+| Current posture | `security/POSTURE.md`, generated |
+| Scan reports | `security/reports/`, one directory per run, committed |
+| SBOMs | `security/sbom/`, one per image per build |
+| Code review reports | `security/reviews/` |
+| Allowlist | `security/policy/allowlist.yaml`, owner and expiry required |
+| Scanner configuration | `security/policy/grype.yaml`, `trivy.yaml` |
+
+Seven tools: `grype`, `syft`, `trivy`, `pip-audit`, `npm audit`, `gitleaks`,
+`cosign`. Two vulnerability scanners deliberately, because their databases
+differ and the difference is where a missed finding lives.
+
+```bash
+make dep-check pkg=x    # admission gate, before adding a dependency
+make security-scan      # everything, writes a timestamped HTML report
+make security-fix       # apply fixes on a branch, run tests, re scan
+```
+
+---
+
+## 10. Data freshness
+
+Full detail: [docs/06-DATA-FRESHNESS.md](docs/06-DATA-FRESHNESS.md), decided in
+[ADR-0012](docs/adr/ADR-0012-collector-cadence-registry.md).
+
+Freshness is capped by AWS, not by Meter. CUR refreshes at most three times a
+day, Cost Explorer is roughly a day behind, Compute Optimizer rebuilds daily.
+Every figure therefore carries two timestamps: `as_of`, when the data was true
+at the source, and `collected_at`, when Meter fetched it.
+
+| Collector | Cadence |
+| --- | --- |
+| `org_tree`, `account_health` | 1 hour |
+| `cur_focus` | 4 hours |
+| **`grafana_query_audit`** | **6 hours** |
+| **`grafana_kill_switch`** | **Event driven** |
+| `config_inventory`, `quotas`, `cost_anomaly` | 6 hours |
+| `platform_cost`, `compute_optimizer`, `metrics_rightsizing` | 24 hours |
+| `k8s_telemetry` | 15 minutes, pushed |
+
+Cadence lives in a `collector_schedule` table with its reason and its estimated
+cost per run, not in code.
+
+---
+
+## 11. Architecture graph
+
+[docs/architecture/file-graph.md](docs/architecture/file-graph.md) shows how
+every file depends on every other: Python imports, TypeScript imports,
+Terraform module references and Dockerfile COPY edges, read out of the source.
+
+`make graph` rebuilds it. It also fails on a layering violation, so the graph
+is a gate rather than only a picture.
+
+---
+
+## 12. Traceability
 
 Every feature traces to a specification section, and every task traces to a
 feature. The mapping from features to P0 tasks is in the

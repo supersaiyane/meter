@@ -195,8 +195,35 @@ P0 collectors.
 
 ## 8. API surface
 
-All responses carry a `meta` block: `{ as_of, scope_coverage: { visible, total },
-degraded: bool }`.
+### 8.0 Why an HTTP API rather than only an MCP server
+
+The question was raised whether MCP could replace the API. It cannot, and it
+does not need to, because both exist. Decided in ADR-0009.
+
+The HTTP API is the **single enforcement point**. Scope filtering, the audit
+log, rate limiting and the freshness envelope are implemented once here.
+
+The MCP server, in `finops-mcp`, is a thin facade that calls this API over the
+network with the caller's token. It does not reach into the service layer,
+because the scope dependency lives at the HTTP boundary and reimplementing it
+inside the MCP layer is exactly the defect ISS-009 describes.
+
+Four reasons MCP alone is not sufficient. A browser cannot speak MCP, and the
+frontend needs REST. MCP has no notion of a browser session, of pagination for
+a table, or of HTTP caching. Authorization would need a second implementation.
+Operational tooling, load balancer health checks, access logs, tracing and WAF
+rules, all work on HTTP and none work on stdio JSON-RPC.
+
+P0 exposes four MCP tools: `list_accounts`, `get_org_tree`, `get_ingest_status`
+and `get_platform_cost`. The tool schemas are generated from the same Pydantic
+models the API uses, so a drift between the two surfaces is a build failure.
+
+### 8.1 Routes
+
+All responses carry a `meta` block: `{ as_of, collected_at, scope_coverage:
+{ visible, total }, degraded }`. Two timestamps, not one: `as_of` is when the
+data was true at the source, `collected_at` is when Meter fetched it. See
+ADR-0012 and ISS-038.
 
 | Method and path | Purpose |
 | --- | --- |
@@ -274,6 +301,21 @@ Three tests that specifically encode the lessons of this design.
 3. Selecting `LocalConfigIdentityProvider` while the environment is production
    must prevent the application from starting.
 
+## 11a. Security
+
+Governed by `docs/05-SECURITY.md` and ADR-0010. The parts that bind P0.
+
+- Base images are Minimus from `reg.mini.dev`. The runtime images have no shell
+  and no package manager, so every `CMD` and `ENTRYPOINT` is in exec form, and
+  health checking is done by the ALB target group rather than a `HEALTHCHECK`
+  instruction.
+- No dependency is added without `make dep-check` passing against its whole
+  transitive tree.
+- The policy is zero findings at any severity. `make security-scan` runs as
+  part of `make verify`.
+- A nightly job scans the digest actually running in each environment, because
+  a build time scan reports zero forever while the deployed image degrades.
+
 ## 12. Risks
 
 | Risk | Impact | Mitigation |
@@ -283,6 +325,8 @@ Three tests that specifically encode the lessons of this design.
 | Organizations API throttling at 300 accounts | Slow or failed tree refresh | Exponential backoff, hourly rather than continuous refresh, and the tree is cached with `as_of` |
 | Cost Explorer charges per request | Self metering becomes a cost of its own | Daily rather than hourly, one grouped request, and the cost is itself shown in `platform_cost` |
 | Scope enforcement bypass | Data leak across accounts | Two independent enforcement points plus an adversarial test |
+| A Minimus tag for Python 3.12 or a `-dev` variant is unavailable or named differently | The images do not build | Verified at TASK-P0-029 before any image work. Fallback is a distroless equivalent, recorded as a change, never a silent return to the official image |
+| A dependency cannot pass the admission gate | A build is blocked | Intended. The escape is a time boxed allowlist entry with an owner, never a threshold change |
 
 ## 13. Open questions
 
