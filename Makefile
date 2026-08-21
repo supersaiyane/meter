@@ -14,6 +14,12 @@ IMAGE_TAG     ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo local)
 AWS_REGION    ?= eu-west-1
 ECR_REGISTRY  ?= $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 
+# The target servers are amd64. A build on Apple Silicon produces arm64 by
+# default and `docker push` does not convert it, so the amd64 host fails at
+# runtime with "exec format error". Every build path below pins the platform.
+# Override only if you genuinely need a different target.
+PLATFORM      ?= linux/amd64
+
 PY_SRC := finops_core finops_providers finops_ingest finops_api tests
 
 .PHONY: help
@@ -66,10 +72,29 @@ check-writing: ## Fail if an em dash or en dash appears anywhere. See CLAUDE.md
 	fi
 
 .PHONY: check-docs
-check-docs: ## Fail if the index, the feature docs or the graph are stale
+check-docs: ## Fail if any generated document is out of step with the registry
+	@$(PY) scripts/docs/sync.py --check
 	@$(PY) scripts/docs/check_index.py
 	@$(PY) scripts/docs/check_feature_docs.py
 	@$(PY) scripts/docs/build_file_graph.py --check
+
+.PHONY: doc-sync
+doc-sync: ## Regenerate every derived document from docs/registry.yaml
+	@$(PY) scripts/docs/sync.py
+	@$(PY) scripts/docs/build_file_graph.py
+	@echo "Derived documents regenerated. Review the diff before committing."
+
+.PHONY: session-end
+session-end: doc-sync ## Run at the end of every work session
+	@$(PY) scripts/docs/check_index.py
+	@$(PY) scripts/docs/check_feature_docs.py
+	@$(MAKE) check-writing
+	@echo
+	@echo "Remaining, by hand:"
+	@echo "  1. Add a row to docs/checkpoint.md with a resume vector"
+	@echo "  2. Update tasks/STATUS.md if a task changed state"
+	@echo "  3. Add a lesson to tasks/lessons.md if you were corrected"
+	@echo "  4. Commit. The generated files are already updated." 
 
 .PHONY: graph
 graph: ## Rebuild the file dependency graph and check the layering
@@ -199,10 +224,36 @@ security-tools: ## Install the scanners. macOS via brew, Linux via the install s
 # ---------------------------------------------------------------- images
 
 .PHONY: build
-build: ## Build all three images locally, tagged with the short commit
-	docker build -f docker/Dockerfile.api    -t meter-api:$(IMAGE_TAG)    .
-	docker build -f docker/Dockerfile.worker -t meter-worker:$(IMAGE_TAG) .
-	docker build -f docker/Dockerfile.web    -t meter-web:$(IMAGE_TAG)    .
+build: ## Build all three images for $(PLATFORM), tagged with the short commit
+	docker buildx build --platform $(PLATFORM) --load \
+	  --build-arg GIT_SHA=$(IMAGE_TAG) \
+	  -f docker/Dockerfile.api    -t meter-api:$(IMAGE_TAG)    .
+	docker buildx build --platform $(PLATFORM) --load \
+	  --build-arg GIT_SHA=$(IMAGE_TAG) \
+	  -f docker/Dockerfile.worker -t meter-worker:$(IMAGE_TAG) .
+	docker buildx build --platform $(PLATFORM) --load \
+	  --build-arg GIT_SHA=$(IMAGE_TAG) \
+	  -f docker/Dockerfile.web    -t meter-web:$(IMAGE_TAG)    .
+	@$(MAKE) verify-platform
+
+.PHONY: verify-platform
+verify-platform: ## Fail if a built image is not $(PLATFORM). Catches the arm64 mistake
+	@expected="$(PLATFORM)"; \
+	for svc in api worker web; do \
+	  actual=$$(docker image inspect meter-$$svc:$(IMAGE_TAG) \
+	    --format '{{.Os}}/{{.Architecture}}' 2>/dev/null || echo "missing"); \
+	  if [ "$$actual" != "$$expected" ]; then \
+	    echo "FAIL: meter-$$svc is $$actual, expected $$expected."; \
+	    echo "      A push will not convert it. Rebuild with 'make build'."; \
+	    exit 1; \
+	  fi; \
+	  echo "OK: meter-$$svc is $$actual"; \
+	done
+
+.PHONY: buildx-setup
+buildx-setup: ## Create the buildx builder needed for cross platform builds
+	docker buildx create --name meter --use --bootstrap 2>/dev/null || docker buildx use meter
+	docker buildx inspect --bootstrap
 
 .PHONY: ecr-login
 ecr-login: ## Authenticate Docker against ECR
@@ -210,11 +261,31 @@ ecr-login: ## Authenticate Docker against ECR
 	  | docker login --username AWS --password-stdin $(ECR_REGISTRY)
 
 .PHONY: push
-push: ecr-login ## Push all three images to ECR. Normally done by GitLab CI
+push: ecr-login verify-platform ## Push all three images to ECR. Normally done by GitLab CI
 	@test -n "$(AWS_ACCOUNT_ID)" || (echo "AWS_ACCOUNT_ID is required"; exit 1)
 	for svc in api worker web; do \
 	  docker tag meter-$$svc:$(IMAGE_TAG) $(ECR_REGISTRY)/meter-$$svc:$(IMAGE_TAG); \
 	  docker push $(ECR_REGISTRY)/meter-$$svc:$(IMAGE_TAG); \
+	done
+	@$(MAKE) verify-pushed-platform
+
+.PHONY: verify-pushed-platform
+verify-pushed-platform: ## Confirm the registry manifest reports $(PLATFORM)
+	@for svc in api worker web; do \
+	  echo "$$svc: $$(docker buildx imagetools inspect \
+	    $(ECR_REGISTRY)/meter-$$svc:$(IMAGE_TAG) --format '{{json .Manifest}}' \
+	    2>/dev/null | head -c 200)"; \
+	done
+
+.PHONY: buildx-push
+buildx-push: ecr-login ## Build for $(PLATFORM) and push in one step, no local load
+	@test -n "$(AWS_ACCOUNT_ID)" || (echo "AWS_ACCOUNT_ID is required"; exit 1)
+	for svc in api worker web; do \
+	  docker buildx build --platform $(PLATFORM) --push \
+	    --build-arg GIT_SHA=$(IMAGE_TAG) \
+	    --provenance=true --sbom=true \
+	    -f docker/Dockerfile.$$svc \
+	    -t $(ECR_REGISTRY)/meter-$$svc:$(IMAGE_TAG) .; \
 	done
 
 # ---------------------------------------------------------------- terraform

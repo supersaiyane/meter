@@ -12,11 +12,35 @@
 #    wget, and the ALB target group is what ECS actually gates a rollout on. A
 #    Docker level health check here would be a second, weaker copy of a control
 #    that already exists. Health checking lives in infra/terraform/hub/alb.tf.
+#
+# CROSS PLATFORM BUILD. Read this before changing any FROM line.
+#
+# The target is linux/amd64. A build on an Apple Silicon machine produces a
+# linux/arm64 image by default, and `docker push` does not convert it. The
+# image lands in the registry as arm64, and the amd64 server fails at runtime
+# with "exec format error", which reads like a broken binary rather than a
+# wrong architecture.
+#
+# Two ARGs solve it, and both are needed for different reasons.
+#
+#   BUILDPLATFORM   the machine doing the building. The builder stage runs
+#                   natively here, so compilation is fast rather than emulated.
+#   TARGETPLATFORM  the machine that will run the image. The runtime stage is
+#                   pinned to this.
+#
+# Build with buildx so the values are populated:
+#   docker buildx build --platform linux/amd64 -f docker/Dockerfile.api -t meter-api .
+#
+# `make build` and `make buildx` already pass --platform. The pipeline passes
+# --custom-platform to Kaniko for the same reason.
+#
 
 ARG PYTHON_VERSION=3.12
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 
 # ---------- builder: has a shell, pip, and a compiler ----------
-FROM reg.mini.dev/python:${PYTHON_VERSION}-dev AS builder
+FROM --platform=${BUILDPLATFORM} reg.mini.dev/python:${PYTHON_VERSION}-dev AS builder
 
 ENV PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -43,7 +67,9 @@ COPY migrations/       ./migrations/
 RUN /opt/venv/bin/pip install --no-compile --no-deps .
 
 # ---------- runtime: no shell, no package manager, near zero CVE ----------
-FROM reg.mini.dev/python:${PYTHON_VERSION}
+FROM --platform=${TARGETPLATFORM} reg.mini.dev/python:${PYTHON_VERSION}
+
+ARG TARGETPLATFORM
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -64,6 +90,8 @@ EXPOSE 8000
 ARG GIT_SHA=unknown
 LABEL org.opencontainers.image.title="meter-api" \
       org.opencontainers.image.revision="${GIT_SHA}" \
+      org.opencontainers.image.base.name="reg.mini.dev/python:${PYTHON_VERSION}" \
+      io.meter.platform="${TARGETPLATFORM}" \
       io.meter.module="api"
 
 ENTRYPOINT ["/opt/venv/bin/uvicorn"]

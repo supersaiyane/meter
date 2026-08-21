@@ -9,10 +9,34 @@
 # finops_ingest.${METER_ROLE}"]. That cannot work here: the runtime image has no
 # shell, so nothing expands ${METER_ROLE}. The role is now a command argument,
 # and the ECS task definition overrides `command` per service.
+#
+# CROSS PLATFORM BUILD. Read this before changing any FROM line.
+#
+# The target is linux/amd64. A build on an Apple Silicon machine produces a
+# linux/arm64 image by default, and `docker push` does not convert it. The
+# image lands in the registry as arm64, and the amd64 server fails at runtime
+# with "exec format error", which reads like a broken binary rather than a
+# wrong architecture.
+#
+# Two ARGs solve it, and both are needed for different reasons.
+#
+#   BUILDPLATFORM   the machine doing the building. The builder stage runs
+#                   natively here, so compilation is fast rather than emulated.
+#   TARGETPLATFORM  the machine that will run the image. The runtime stage is
+#                   pinned to this.
+#
+# Build with buildx so the values are populated:
+#   docker buildx build --platform linux/amd64 -f docker/Dockerfile.api -t meter-api .
+#
+# `make build` and `make buildx` already pass --platform. The pipeline passes
+# --custom-platform to Kaniko for the same reason.
+#
 
 ARG PYTHON_VERSION=3.12
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 
-FROM reg.mini.dev/python:${PYTHON_VERSION}-dev AS builder
+FROM --platform=${BUILDPLATFORM} reg.mini.dev/python:${PYTHON_VERSION}-dev AS builder
 
 ENV PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -37,7 +61,9 @@ COPY migrations/       ./migrations/
 
 RUN /opt/venv/bin/pip install --no-compile --no-deps .
 
-FROM reg.mini.dev/python:${PYTHON_VERSION}
+FROM --platform=${TARGETPLATFORM} reg.mini.dev/python:${PYTHON_VERSION}
+
+ARG TARGETPLATFORM
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -54,6 +80,8 @@ USER 65532:65532
 ARG GIT_SHA=unknown
 LABEL org.opencontainers.image.title="meter-worker" \
       org.opencontainers.image.revision="${GIT_SHA}" \
+      org.opencontainers.image.base.name="reg.mini.dev/python:${PYTHON_VERSION}" \
+      io.meter.platform="${TARGETPLATFORM}" \
       io.meter.module="ingest"
 
 # Override `command` in the ECS task definition to ["finops_ingest.dispatcher"].

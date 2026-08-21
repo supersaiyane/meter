@@ -4,11 +4,35 @@
 #
 # No HEALTHCHECK, for the same reason as the API image: the runtime has no wget
 # and no curl, and the ALB target group is the control that gates the rollout.
+#
+# CROSS PLATFORM BUILD. Read this before changing any FROM line.
+#
+# The target is linux/amd64. A build on an Apple Silicon machine produces a
+# linux/arm64 image by default, and `docker push` does not convert it. The
+# image lands in the registry as arm64, and the amd64 server fails at runtime
+# with "exec format error", which reads like a broken binary rather than a
+# wrong architecture.
+#
+# Two ARGs solve it, and both are needed for different reasons.
+#
+#   BUILDPLATFORM   the machine doing the building. The builder stage runs
+#                   natively here, so compilation is fast rather than emulated.
+#   TARGETPLATFORM  the machine that will run the image. The runtime stage is
+#                   pinned to this.
+#
+# Build with buildx so the values are populated:
+#   docker buildx build --platform linux/amd64 -f docker/Dockerfile.api -t meter-api .
+#
+# `make build` and `make buildx` already pass --platform. The pipeline passes
+# --custom-platform to Kaniko for the same reason.
+#
 
 ARG NODE_VERSION=22
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 ARG NGINX_VERSION=1.27
 
-FROM reg.mini.dev/node:${NODE_VERSION}-dev AS builder
+FROM --platform=${BUILDPLATFORM} reg.mini.dev/node:${NODE_VERSION}-dev AS builder
 
 WORKDIR /build
 
@@ -18,7 +42,9 @@ RUN npm ci --no-audit --no-fund
 COPY finops-web/ ./
 RUN npm run build
 
-FROM reg.mini.dev/nginx:${NGINX_VERSION}
+FROM --platform=${TARGETPLATFORM} reg.mini.dev/nginx:${NGINX_VERSION}
+
+ARG TARGETPLATFORM
 
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /build/dist /usr/share/nginx/html
@@ -30,4 +56,5 @@ EXPOSE 8080
 ARG GIT_SHA=unknown
 LABEL org.opencontainers.image.title="meter-web" \
       org.opencontainers.image.revision="${GIT_SHA}" \
+      io.meter.platform="${TARGETPLATFORM}" \
       io.meter.module="web"

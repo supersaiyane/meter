@@ -22,6 +22,10 @@ variables:
   ECR_REGISTRY: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
   IMAGE_TAG: "${CI_COMMIT_SHORT_SHA}"
   TF_ROOT: "${CI_PROJECT_DIR}/infra/terraform/hub"
+  # Target servers are amd64. Kaniko builds for the runner's architecture
+  # unless told otherwise, and a push never converts an image, so this is
+  # pinned rather than inferred.
+  TARGET_PLATFORM: "linux/amd64"
   PIP_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/pip"
 
 default:
@@ -205,6 +209,7 @@ code-review:
       --dockerfile "${CI_PROJECT_DIR}/${DOCKERFILE}"
       --destination "${ECR_REGISTRY}/meter-${SERVICE}:${IMAGE_TAG}"
       --destination "${ECR_REGISTRY}/meter-${SERVICE}:${CI_COMMIT_REF_SLUG}"
+      --custom-platform "${TARGET_PLATFORM}"
       --cache=true
       --cache-repo "${ECR_REGISTRY}/meter-cache"
       --build-arg "GIT_SHA=${CI_COMMIT_SHA}"
@@ -240,6 +245,15 @@ build:web:
   stage: scan
   script:
     - syft "${ECR_REGISTRY}/meter-${SERVICE}:${IMAGE_TAG}" -o spdx-json > "security/sbom/${SERVICE}-${IMAGE_TAG}.spdx.json"
+    # Confirm the pushed manifest is the target architecture before anything
+    # is allowed to deploy. An arm64 image in an amd64 environment fails with
+    # "exec format error", which reads like a broken binary rather than a
+    # wrong architecture, and costs an afternoon to diagnose.
+    - |
+      ARCH=$(crane config "${ECR_REGISTRY}/meter-${SERVICE}:${IMAGE_TAG}" | grep -o '"architecture":"[^"]*"' | cut -d'"' -f4)
+      OS=$(crane config "${ECR_REGISTRY}/meter-${SERVICE}:${IMAGE_TAG}" | grep -o '"os":"[^"]*"' | cut -d'"' -f4)
+      echo "manifest reports ${OS}/${ARCH}, expected ${TARGET_PLATFORM}"
+      test "${OS}/${ARCH}" = "${TARGET_PLATFORM}" || { echo "FAIL: wrong platform"; exit 1; }
     - grype "${ECR_REGISTRY}/meter-${SERVICE}:${IMAGE_TAG}" -o json --config security/policy/grype.yaml > "grype-${SERVICE}.json"
     - trivy image "${ECR_REGISTRY}/meter-${SERVICE}:${IMAGE_TAG}" --format json --output "trivy-${SERVICE}.json" --config security/policy/trivy.yaml
     - |

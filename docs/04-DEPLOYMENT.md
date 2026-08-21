@@ -57,6 +57,43 @@ role at runtime.
 the `METER_ROLE` environment variable. One artifact is promoted through
 environments rather than two that could drift apart.
 
+## Platform: the images must be amd64
+
+The target servers are `linux/amd64`. A build on an Apple Silicon machine
+produces `linux/arm64` by default, and **`docker push` does not convert it**.
+The image lands in the registry as arm64, and the amd64 host fails at start
+with `exec format error`, which reads like a corrupt binary rather than a wrong
+architecture and costs an afternoon to diagnose.
+
+Four controls, because one is not enough when the failure is this silent.
+
+| Control | Where |
+| --- | --- |
+| `FROM --platform=${TARGETPLATFORM}` on every runtime stage | the Dockerfiles |
+| `FROM --platform=${BUILDPLATFORM}` on every builder stage, so compilation runs natively rather than emulated | the Dockerfiles |
+| `--platform linux/amd64` on every build command | `make build`, `make buildx-push` |
+| `make verify-platform`, which inspects the built image and fails on a mismatch | runs automatically after `make build` and before `make push` |
+
+The pipeline adds a fifth: after the push, it reads the architecture back out
+of the **registry manifest** and fails the scan stage on a mismatch. That is
+the only check that sees what actually reached the registry rather than what
+was intended locally.
+
+Cross platform builds need buildx:
+
+```bash
+make buildx-setup
+```
+
+Each image also carries an `io.meter.platform` label, so an artifact repository
+that inspects labels rather than manifests can read the architecture directly.
+
+To target a different architecture, override once:
+
+```bash
+make build PLATFORM=linux/arm64
+```
+
 ## Health checks
 
 The API health route reports database reachability and ingestion freshness, not
