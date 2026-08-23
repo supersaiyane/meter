@@ -16,3 +16,9 @@ Status values: `Proposed`, `Accepted`, `Superseded by ADR-NNNN`, `Rejected`.
 | 0006 | Ingest AWS native recommendation services before building a collector | Accepted |
 | 0007 | The language model never computes a number | Accepted |
 | 0008 | Identity adapter deferred, isolated behind two ports | Accepted |
+| 0009 | An MCP server alongside the HTTP API, not instead of it | Accepted |
+| 0010 | Minimus base images and a continuously maintained zero CVE posture | Accepted |
+| 0011 | A decision ladder before any new code, and token economy | Superseded by ADR-0013 |
+| 0012 | Collection cadence is data, not code | Accepted |
+| 0013 | Seven rung ladder, disqualification record, security sign off | Accepted |
+| 0014 | Derived documentation is generated from a registry | Accepted |
