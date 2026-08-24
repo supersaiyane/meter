@@ -1,0 +1,702 @@
+meta:
+  note: Single source of truth for features, decisions, changes, issues and open questions. INDEX.md,
+    the roadmap status table and the feature document headers are GENERATED from this file by scripts/docs/sync.py.
+    Edit here, then run make doc-sync. See ADR-0014.
+subprojects:
+- id: P0
+  name: Foundation
+- id: P1
+  name: Cost Intelligence
+- id: P2
+  name: Query Cost Governance
+- id: P3
+  name: Utilization and Rightsizing
+- id: P4
+  name: Inventory and Topology
+- id: P5
+  name: Quotas and Limits
+- id: P6
+  name: Containers
+- id: P7
+  name: Insight and LLM layer
+features:
+- id: FEAT-001
+  name: Account onboarding and organization topology, parent to child map
+  subproject: P0
+  status: Specified
+  detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.2, 7'
+  doc: docs/features/FEAT-001-account-onboarding-and-org-topology.md
+- id: FEAT-002
+  name: Cross account credential brokering by StackSet deployed role
+  subproject: P0
+  status: Specified
+  detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 10, [ADR-0004](docs/adr/ADR-0004-cross-account-access.md)'
+  doc: docs/features/FEAT-002-cross-account-credential-brokering.md
+- id: FEAT-003
+  name: Provider port abstraction, eight ports
+  subproject: P0
+  status: Specified
+  detail: '[architecture](docs/02-ARCHITECTURE.md) section "Ports"'
+  doc: docs/features/FEAT-003-provider-port-abstraction.md
+- id: FEAT-004
+  name: FOCUS 1.1 canonical cost schema
+  subproject: P0
+  status: Specified
+  detail: '[ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md)'
+  doc: docs/features/FEAT-004-focus-canonical-cost-schema.md
+- id: FEAT-005
+  name: Ingestion framework, idempotent and partial failure tolerant
+  subproject: P0
+  status: Specified
+  detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 7'
+  doc: docs/features/FEAT-005-ingestion-framework.md
+- id: FEAT-006
+  name: Typed error taxonomy and data freshness contract
+  subproject: P0
+  status: Specified
+  detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6'
+  doc: docs/features/FEAT-006-typed-errors-and-freshness.md
+- id: FEAT-007
+  name: Authorization scope enforcement, two independent points
+  subproject: P0
+  status: Specified
+  detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6, [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md)'
+  doc: docs/features/FEAT-007-authorization-scope-enforcement.md
+- id: FEAT-008
+  name: Platform self metering
+  subproject: P0
+  status: Specified
+  detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.5'
+  doc: docs/features/FEAT-008-platform-self-metering.md
+- id: FEAT-009
+  name: Organization map, tree and graph views
+  subproject: P0
+  status: Specified
+  detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9'
+  doc: docs/features/FEAT-009-organization-map.md
+- id: FEAT-010
+  name: Ingest and freshness surface
+  subproject: P0
+  status: Specified
+  detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9'
+  doc: docs/features/FEAT-010-ingest-and-freshness-surface.md
+- id: FEAT-011
+  name: Grafana workspace, dashboard and alert rule scanner
+  subproject: P2
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P2. Prototype exists'
+  doc: docs/features/FEAT-011-grafana-workspace-scanner.md
+- id: FEAT-012
+  name: Query cost model, Logs Insights and metric engines
+  subproject: P2
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P2. Prototype exists'
+  doc: docs/features/FEAT-012-query-cost-model.md
+- id: FEAT-013
+  name: Measured overlay from CloudTrail and DescribeQueries
+  subproject: P2
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P2. Prototype exists'
+  doc: docs/features/FEAT-013-measured-query-overlay.md
+- id: FEAT-014
+  name: 'Preventive controls: refresh floor and CI policy gate'
+  subproject: P2
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-020'
+  doc: docs/features/FEAT-014-preventive-query-controls.md
+- id: FEAT-015
+  name: Near real time kill switch with Budgets Actions
+  subproject: P2
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-020'
+  doc: docs/features/FEAT-015-query-cost-kill-switch.md
+- id: FEAT-016
+  name: Owner attribution from folder, team and last editor
+  subproject: P2
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-021'
+  doc: docs/features/FEAT-016-query-owner-attribution.md
+- id: FEAT-017
+  name: Auto remediation with change record and undo
+  subproject: P2
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P2'
+  doc: docs/features/FEAT-017-query-auto-remediation.md
+- id: FEAT-018
+  name: Cost model calibration against actual CUR usage types
+  subproject: P2
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-022'
+  doc: docs/features/FEAT-018-cost-model-calibration.md
+- id: FEAT-019
+  name: 'Multi platform query governance: QuickSight, Athena, Redshift, OpenSearch'
+  subproject: P2
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-025'
+  doc: docs/features/FEAT-019-multi-platform-query-governance.md
+- id: FEAT-020
+  name: CUR 2.0 ingest with resource identifiers and split cost allocation
+  subproject: P1
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P1'
+  doc: docs/features/FEAT-020-cur-focus-ingest.md
+- id: FEAT-021
+  name: Cost rollups, trends and per resource attribution
+  subproject: P1
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P1'
+  doc: docs/features/FEAT-021-cost-rollups-and-trends.md
+- id: FEAT-022
+  name: Allocation, showback and the unallocated bucket
+  subproject: P1
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P1'
+  doc: docs/features/FEAT-022-allocation-and-showback.md
+- id: FEAT-023
+  name: Anomaly detection and ingest of AWS Cost Anomaly Detection
+  subproject: P1
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P1'
+  doc: docs/features/FEAT-023-cost-anomaly-detection.md
+- id: FEAT-024
+  name: Savings Plan and Reserved Instance utilization and coverage
+  subproject: P1
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P1'
+  doc: docs/features/FEAT-024-commitment-coverage.md
+- id: FEAT-025
+  name: Cost Optimization Hub, Compute Optimizer and Trusted Advisor ingest
+  subproject: P3
+  status: Planned
+  detail: '[ADR-0006](docs/adr/ADR-0006-aws-native-recommendations-first.md)'
+  doc: docs/features/FEAT-025-aws-native-recommendation-ingest.md
+- id: FEAT-026
+  name: Bespoke waste collectors where AWS is blind
+  subproject: P3
+  status: Planned
+  detail: '[ADR-0006](docs/adr/ADR-0006-aws-native-recommendations-first.md)'
+  doc: docs/features/FEAT-026-bespoke-waste-collectors.md
+- id: FEAT-027
+  name: 'CloudWatch cost module: retention, unqueried logs, stale alarms'
+  subproject: P3
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P3'
+  doc: docs/features/FEAT-027-cloudwatch-cost-module.md
+- id: FEAT-028
+  name: Recommendation lifecycle with owner and ticketing
+  subproject: P3
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P3. Addresses ISS-028'
+  doc: docs/features/FEAT-028-recommendation-lifecycle.md
+- id: FEAT-029
+  name: Realized savings verification, the north star metric
+  subproject: P3
+  status: Planned
+  detail: '[docs/00-GOAL.md](docs/00-GOAL.md). Addresses ISS-029'
+  doc: docs/features/FEAT-029-realized-savings-verification.md
+- id: FEAT-030
+  name: AWS Config aggregator inventory by region and zone
+  subproject: P4
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P4'
+  doc: docs/features/FEAT-030-config-aggregator-inventory.md
+- id: FEAT-031
+  name: Topology graph, node and edge model
+  subproject: P4
+  status: Planned
+  detail: '[ADR-0005](docs/adr/ADR-0005-postgres-adjacency-for-topology.md)'
+  doc: docs/features/FEAT-031-topology-graph.md
+- id: FEAT-032
+  name: Topology map interface
+  subproject: P4
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P4'
+  doc: docs/features/FEAT-032-topology-map-interface.md
+- id: FEAT-033
+  name: Quota utilization per service per region, with stated coverage gaps
+  subproject: P5
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P5'
+  doc: docs/features/FEAT-033-quota-utilization.md
+- id: FEAT-034
+  name: Quota increase request workflow
+  subproject: P5
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P5'
+  doc: docs/features/FEAT-034-quota-increase-workflow.md
+- id: FEAT-035
+  name: EKS pod level cost from split cost allocation data
+  subproject: P6
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P6'
+  doc: docs/features/FEAT-035-eks-split-cost-allocation.md
+- id: FEAT-036
+  name: In cluster telemetry, requested versus used
+  subproject: P6
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P6'
+  doc: docs/features/FEAT-036-k8s-in-cluster-telemetry.md
+- id: FEAT-037
+  name: ECS task and Fargate utilization, snapped to valid sizes
+  subproject: P6
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P6'
+  doc: docs/features/FEAT-037-ecs-task-utilization.md
+- id: FEAT-038
+  name: Natural language cost query over a governed semantic layer
+  subproject: P7
+  status: Planned
+  detail: '[ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md)'
+  doc: docs/features/FEAT-038-natural-language-cost-query.md
+- id: FEAT-039
+  name: Anomaly narration correlating cost, Config and CloudTrail
+  subproject: P7
+  status: Planned
+  detail: '[ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md)'
+  doc: docs/features/FEAT-039-anomaly-narration.md
+- id: FEAT-040
+  name: Remediation authoring as an infrastructure as code pull request
+  subproject: P7
+  status: Planned
+  detail: '[ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md)'
+  doc: docs/features/FEAT-040-remediation-authoring.md
+- id: FEAT-041
+  name: Per team digests and executive summaries
+  subproject: P7
+  status: Planned
+  detail: '[roadmap](docs/01-ROADMAP.md) P7'
+  doc: docs/features/FEAT-041-digests-and-summaries.md
+- id: FEAT-042
+  name: Assistant bot, chat and find anything in the tool
+  subproject: P7
+  status: Planned
+  detail: '[ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md)'
+  doc: docs/features/FEAT-042-assistant-bot.md
+adrs:
+- id: ADR-0001
+  decision: Decompose into eight sub projects, build P0 then P2 then P1
+  status: Accepted
+  doc: docs/adr/ADR-0001-decompose-into-sub-projects.md
+- id: ADR-0002
+  decision: FOCUS 1.1 is the canonical cost schema
+  status: Accepted
+  doc: docs/adr/ADR-0002-focus-canonical-schema.md
+- id: ADR-0003
+  decision: PostgreSQL only for the serving layer, no ClickHouse in P0
+  status: Accepted
+  doc: docs/adr/ADR-0003-postgres-only-serving-layer.md
+- id: ADR-0004
+  decision: Cross account access by StackSet deployed role, curated policy
+  status: Accepted
+  doc: docs/adr/ADR-0004-cross-account-access.md
+- id: ADR-0005
+  decision: PostgreSQL adjacency tables for topology, not a graph database
+  status: Accepted
+  doc: docs/adr/ADR-0005-postgres-adjacency-for-topology.md
+- id: ADR-0006
+  decision: Ingest AWS native recommendation services before building a collector
+  status: Accepted
+  doc: docs/adr/ADR-0006-aws-native-recommendations-first.md
+- id: ADR-0007
+  decision: The language model never computes a number
+  status: Accepted
+  doc: docs/adr/ADR-0007-llm-never-computes-a-number.md
+- id: ADR-0008
+  decision: Identity adapter deferred, isolated behind two ports
+  status: Accepted
+  doc: docs/adr/ADR-0008-identity-adapter-deferred.md
+- id: ADR-0009
+  decision: An MCP server alongside the HTTP API, not instead of it
+  status: Accepted
+  doc: docs/adr/ADR-0009-mcp-alongside-http-api.md
+- id: ADR-0010
+  decision: Minimus base images and a continuously maintained zero CVE posture
+  status: Accepted
+  doc: docs/adr/ADR-0010-minimus-zero-cve-base-images.md
+- id: ADR-0011
+  decision: A decision ladder before any new code, and token economy
+  status: Superseded by ADR-0013
+  doc: docs/adr/ADR-0011-minimal-code-decision-ladder.md
+- id: ADR-0012
+  decision: Collection cadence is data, not code, and is bounded by the source
+  status: Accepted
+  doc: docs/adr/ADR-0012-collector-cadence-registry.md
+- id: ADR-0013
+  decision: Seven rung ladder with a Rung Disqualification Record and a security sign off gate
+  status: Accepted
+  doc: docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md
+- id: ADR-0014
+  decision: Derived documentation is generated from a registry, not hand maintained
+  status: Accepted
+  doc: docs/adr/ADR-0014-generated-documentation.md
+changes:
+- id: CHG-0001
+  date: '2026-08-23'
+  type: Process
+  what: Repository initialized. Goal, roadmap, architecture, eight ADRs, P0 specification, status, issues,
+    lessons, project map, checkpoint
+  commit: e604ea9` to `6e2afcc
+  detail: '[docs/checkpoint.md](docs/checkpoint.md)'
+- id: CHG-0002
+  date: '2026-08-23'
+  type: Process
+  what: Checkpoint log and project map moved to the paths the session enforcement script requires
+  commit: 93e15aa
+  detail: '[docs/checkpoint.md](docs/checkpoint.md)'
+- id: CHG-0003
+  date: '2026-08-23'
+  type: Infrastructure
+  what: 'Build and deployment layer added: Makefile, three Dockerfiles, docker-compose, GitLab pipeline,
+    deployment document'
+  commit: 6f71c6e
+  detail: '[docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md)'
+- id: CHG-0004
+  date: '2026-08-23'
+  type: Process
+  what: This index, the change control process, five document templates, and the index consistency checker
+  commit: cdc22bb
+  detail: '[docs/03-CHANGE-CONTROL.md](docs/03-CHANGE-CONTROL.md)'
+- id: CHG-0005
+  date: '2026-08-23'
+  type: Design
+  what: P0 implementation plan written, 28 tasks across eight waves, each carrying the seven anti hallucination
+    fields
+  commit: d4c3cfb
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0006
+  date: '2026-08-23'
+  type: Design
+  what: MCP server added as a facade over the HTTP API, not a replacement. FEAT-042 assistant bot added
+  commit: e3ba443
+  detail: '[ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md)'
+- id: CHG-0007
+  date: '2026-08-23'
+  type: Infrastructure
+  what: Images rebased on Minimus, shell free runtime, no bytecode, exec form only. Health checking moved
+    to the ALB
+  commit: 4b9c32f
+  detail: '[ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md)'
+- id: CHG-0008
+  date: '2026-08-23'
+  type: Process
+  what: Security folder, seven scanners, dependency admission gate, HTML report with fixes, branch scoped
+    auto fix, nightly posture scan
+  commit: b9fdd3f
+  detail: '[docs/05-SECURITY.md](docs/05-SECURITY.md)'
+- id: CHG-0009
+  date: '2026-08-23'
+  type: Process
+  what: Decision ladder and output discipline adopted from ponytail and caveman. Code review and documentation
+    generation added as pipeline stages
+  commit: e3ba443
+  detail: '[ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md)'
+- id: CHG-0010
+  date: '2026-08-23'
+  type: Design
+  what: Collection cadence moved into a table with its reason and cost. Grafana audit at 6 hours, kill
+    switch event driven
+  commit: e3ba443
+  detail: '[docs/06-DATA-FRESHNESS.md](docs/06-DATA-FRESHNESS.md)'
+- id: CHG-0011
+  date: '2026-08-23'
+  type: Process
+  what: One document per feature, 42 of them. File dependency graph generated and layering enforced. All
+    scripts consolidated under scripts/
+  commit: 97c78b0
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0012
+  date: '2026-08-23'
+  type: Infrastructure
+  what: Platform pinned to linux/amd64 at five points, because a push never converts an arm64 image
+  commit: pending
+  detail: '[docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md)'
+- id: CHG-0013
+  date: '2026-08-23'
+  type: Design
+  what: Database schema documented in full, with Alembic migration rules and constraint level invariants
+  commit: pending
+  detail: '[docs/07-DATA-MODEL.md](docs/07-DATA-MODEL.md)'
+- id: CHG-0014
+  date: '2026-08-23'
+  type: Process
+  what: Ponytail ladder replaced by the seven rung version with a Rung Disqualification Record, imported
+    from a prior project
+  commit: pending
+  detail: '[ADR-0013](docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md)'
+- id: CHG-0015
+  date: '2026-08-23'
+  type: Process
+  what: Derived documentation generated from docs/registry.yaml instead of hand maintained in four places
+  commit: pending
+  detail: '[ADR-0014](docs/adr/ADR-0014-generated-documentation.md)'
+issues:
+- id: ISS-001
+  severity: CRITICAL
+  summary: Nine requirement areas as one project would produce a shallow scaffold of everything
+  status: FIXED
+  detail: '[ADR-0001](docs/adr/ADR-0001-decompose-into-sub-projects.md)'
+- id: ISS-005
+  severity: HIGH
+  summary: A bespoke cost schema forces a migration per cloud provider
+  status: FIXED
+  detail: '[ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md)'
+- id: ISS-006
+  severity: HIGH
+  summary: Serving dashboards from Athena recreates the runaway query cost problem inside Meter
+  status: FIXED
+  detail: '[ADR-0003](docs/adr/ADR-0003-postgres-only-serving-layer.md)'
+- id: ISS-007
+  severity: HIGH
+  summary: Unblended per resource cost is meaningless with commitments in play
+  status: FIXED
+  detail: '[architecture](docs/02-ARCHITECTURE.md)'
+- id: ISS-008
+  severity: HIGH
+  summary: CUR is restated all month, so naive ingest double counts
+  status: FIXED
+  detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.3'
+- id: ISS-009
+  severity: HIGH
+  summary: Interface only scope enforcement is bypassable
+  status: FIXED
+  detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 8'
+- id: ISS-010
+  severity: HIGH
+  summary: ReadOnlyAccess grants data plane reads that cannot be defended
+  status: FIXED
+  detail: '[ADR-0004](docs/adr/ADR-0004-cross-account-access.md)'
+- id: ISS-015
+  severity: HIGH
+  summary: A failed collection rendered as zero silently produces wrong totals
+  status: FIXED
+  detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6'
+- id: ISS-016
+  severity: HIGH
+  summary: Entitlement based visibility silently makes organization totals partial
+  status: FIXED
+  detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6'
+- id: ISS-011
+  severity: MEDIUM
+  summary: A model producing sizing numbers destroys trust on the first hallucination
+  status: FIXED
+  detail: '[ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md)'
+- id: ISS-012
+  severity: MEDIUM
+  summary: Organization wide AWS Config recording is a five figure monthly cost
+  status: OPEN
+  detail: '[tasks/ISSUES.md](tasks/ISSUES.md), resolved in P4'
+- id: ISS-013
+  severity: MEDIUM
+  summary: Hundreds of describe loops for inventory is a year of work
+  status: FIXED
+  detail: '[roadmap](docs/01-ROADMAP.md) P4'
+- id: ISS-014
+  severity: MEDIUM
+  summary: Neptune is a second database for capability not shown to be needed
+  status: FIXED
+  detail: '[ADR-0005](docs/adr/ADR-0005-postgres-adjacency-for-topology.md)'
+- id: ISS-017
+  severity: MEDIUM
+  summary: A local identity provider reaching production is a total auth bypass
+  status: FIXED
+  detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 11'
+- id: ISS-018
+  severity: MEDIUM
+  summary: Meter's own ingestion makes paid API calls and can become the cost problem
+  status: FIXED
+  detail: '[P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.5'
+- id: ISS-019
+  severity: LOW
+  summary: A NAT Gateway for chatty cross account calls is billed per gigabyte
+  status: FIXED
+  detail: '[docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md)'
+- id: ISS-020
+  severity: CRITICAL
+  summary: It reports, it does not prevent
+  status: OPEN
+  detail: FEAT-014, FEAT-015
+- id: ISS-021
+  severity: HIGH
+  summary: No owner attribution, and an unowned finding is never fixed
+  status: OPEN
+  detail: FEAT-016
+- id: ISS-022
+  severity: HIGH
+  summary: The cost model is never back tested against the bill
+  status: OPEN
+  detail: FEAT-018
+- id: ISS-023
+  severity: MEDIUM
+  summary: History as S3 snapshots cannot be queried or joined
+  status: OPEN
+  detail: '[roadmap](docs/01-ROADMAP.md) P2'
+- id: ISS-024
+  severity: MEDIUM
+  summary: Only Amazon Managed Grafana is supported
+  status: OPEN
+  detail: Blocked on OPEN-04
+- id: ISS-025
+  severity: MEDIUM
+  summary: The pattern is Grafana specific but the failure mode is not
+  status: OPEN
+  detail: FEAT-019
+- id: ISS-026
+  severity: LOW
+  summary: 2,740 lines in one file, against the 800 line ceiling
+  status: OPEN
+  detail: '[roadmap](docs/01-ROADMAP.md) P2'
+- id: ISS-027
+  severity: LOW
+  summary: No automated tests in the prototype
+  status: OPEN
+  detail: '[roadmap](docs/01-ROADMAP.md) P2'
+- id: ISS-033
+  severity: CRITICAL
+  summary: The official Python base image ships with more than 400 known vulnerabilities before any application
+    code is added
+  status: FIXED
+  detail: '[ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md)'
+- id: ISS-034
+  severity: CRITICAL
+  summary: Scanning only at build time reports zero forever while the deployed image degrades silently
+  status: FIXED
+  detail: '[docs/05-SECURITY.md](docs/05-SECURITY.md), nightly posture scan'
+- id: ISS-035
+  severity: HIGH
+  summary: A dependency was addable with no vulnerability check, and most vulnerable code arrives transitively
+  status: FIXED
+  detail: '`make dep-check`, and a pipeline job on any manifest change'
+- id: ISS-036
+  severity: HIGH
+  summary: An unattended dependency upgrade that breaks production is worse than the vulnerability it
+    closed
+  status: FIXED
+  detail: Auto fix applies on a branch, gated on the full test suite, never auto merged
+- id: ISS-037
+  severity: HIGH
+  summary: A single global refresh interval would be wasteful for billing data and useless for a cost
+    control
+  status: FIXED
+  detail: '[ADR-0012](docs/adr/ADR-0012-collector-cadence-registry.md)'
+- id: ISS-038
+  severity: HIGH
+  summary: Reporting one timestamp lets a freshly collected copy of yesterday's data look current
+  status: FIXED
+  detail: '`as_of` and `collected_at` on every figure'
+- id: ISS-039
+  severity: MEDIUM
+  summary: A shell form CMD and a curl based HEALTHCHECK both break on a shell free runtime image
+  status: FIXED
+  detail: Exec form only, health checking moved to the ALB target group
+- id: ISS-040
+  severity: MEDIUM
+  summary: An allowlist entry with no expiry lapses silently into permanent acceptance
+  status: FIXED
+  detail: '`validate_allowlist.py` fails the build on an expired entry'
+- id: ISS-041
+  severity: MEDIUM
+  summary: Two vulnerability scanners disagree, and the disagreement is where a missed finding lives
+  status: FIXED
+  detail: grype and trivy are merged, not chosen between, with the scanner recorded per finding
+- id: ISS-042
+  severity: MEDIUM
+  summary: A feature with no document is a promise with nothing behind it
+  status: FIXED
+  detail: 42 feature documents, enforced by `check_feature_docs.py`
+- id: ISS-043
+  severity: MEDIUM
+  summary: Nothing showed how files actually depend on each other, so a layering violation was invisible
+  status: FIXED
+  detail: '`make graph`, which also fails on a layering violation'
+- id: ISS-044
+  severity: LOW
+  summary: Scripts were scattered between the root and one flat directory
+  status: FIXED
+  detail: All under `scripts/`, grouped by purpose
+- id: ISS-028
+  severity: HIGH
+  summary: No recommendation lifecycle, so recommendations are ignored
+  status: OPEN
+  detail: FEAT-028
+- id: ISS-029
+  severity: HIGH
+  summary: No realized savings verification
+  status: OPEN
+  detail: FEAT-029
+- id: ISS-030
+  severity: MEDIUM
+  summary: No data freshness contract
+  status: OPEN
+  detail: FEAT-006
+- id: ISS-031
+  severity: MEDIUM
+  summary: No audit log for scope evaluation
+  status: OPEN
+  detail: FEAT-007
+- id: ISS-032
+  severity: MEDIUM
+  summary: No accuracy contract on modelled figures
+  status: OPEN
+  detail: FEAT-018
+- id: ISS-045
+  severity: HIGH
+  summary: A dependency blocked by the zero vulnerability rule had no defined escalation path, so the
+    reuse ladder and the security gate deadlock each other
+  status: FIXED
+  detail: '[ADR-0013](docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md)'
+- id: ISS-046
+  severity: HIGH
+  summary: Feature status was maintained by hand in four places, the index, the roadmap, the status tracker
+    and each feature document, which guarantees drift
+  status: FIXED
+  detail: '[ADR-0014](docs/adr/ADR-0014-generated-documentation.md)'
+- id: ISS-047
+  severity: HIGH
+  summary: A build on Apple Silicon produces an arm64 image and a push does not convert it, so an amd64
+    host fails with exec format error
+  status: FIXED
+  detail: '[docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md)'
+- id: ISS-048
+  severity: MEDIUM
+  summary: The database schema existed only inside a specification section, with no constraints, indexes,
+    partitioning or migration rules recorded
+  status: FIXED
+  detail: '[docs/07-DATA-MODEL.md](docs/07-DATA-MODEL.md)'
+- id: ISS-049
+  severity: MEDIUM
+  summary: Six change log rows were missing their detail column, found by the registry parser rather than
+    by a reader
+  status: FIXED
+  detail: Registry generation makes a missing column impossible
+open_questions:
+- id: OPEN-01
+  question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS
+    relying party'
+  status: PARKED at user request
+  blocks: Production login. Not the P0 build
+  detail: '[ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md)'
+- id: OPEN-02
+  question: Single payer or multiple payer accounts
+  status: OPEN
+  blocks: P1 design
+  detail: '[tasks/ISSUES.md](tasks/ISSUES.md)'
+- id: OPEN-03
+  question: Is Business or Enterprise support available
+  status: OPEN
+  blocks: P3 and P5 coverage
+  detail: '[tasks/ISSUES.md](tasks/ISSUES.md)'
+- id: OPEN-04
+  question: Amazon Managed Grafana only, or self hosted and Grafana Cloud too
+  status: OPEN
+  blocks: P2 scope
+  detail: '[tasks/ISSUES.md](tasks/ISSUES.md)'
+- id: OPEN-05
+  question: Jira or ServiceNow for the recommendation lifecycle
+  status: OPEN
+  blocks: P3 design
+  detail: '[tasks/ISSUES.md](tasks/ISSUES.md)'
+- id: OPEN-06
+  question: Which regions beyond Ireland and London
+  status: OPEN
+  blocks: P0 dispatcher configuration
+  detail: '[tasks/ISSUES.md](tasks/ISSUES.md)'

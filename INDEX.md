@@ -15,6 +15,12 @@ pointer, the referenced document is the truth.
 
 ---
 
+**How this document is maintained.** Sections 2 to 6 are **generated** from
+`docs/registry.yaml` by `make doc-sync`. Change a status in the registry, run
+one command, and every derived view updates together. Hand editing a generated
+block is caught by `make check-docs`. See
+[ADR-0014](docs/adr/ADR-0014-generated-documentation.md).
+
 ## 1. Where to start
 
 | I want to know | Read |
@@ -23,6 +29,8 @@ pointer, the referenced document is the truth.
 | What is being built and in what order | [docs/01-ROADMAP.md](docs/01-ROADMAP.md) |
 | How the pieces fit together | [docs/02-ARCHITECTURE.md](docs/02-ARCHITECTURE.md) |
 | Where a change is recorded | [docs/03-CHANGE-CONTROL.md](docs/03-CHANGE-CONTROL.md) |
+| The database schema and migration rules | [docs/07-DATA-MODEL.md](docs/07-DATA-MODEL.md) |
+| The registry every derived document comes from | [docs/registry.yaml](docs/registry.yaml) |
 | How code reaches production | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | The rules a change must follow | [CLAUDE.md](CLAUDE.md) |
 | What is done and what is left | [tasks/STATUS.md](tasks/STATUS.md) |
@@ -36,12 +44,12 @@ pointer, the referenced document is the truth.
 
 ## 2. Features
 
-42 features across eight sub projects. Status is `Planned`, `Specified`,
-`In build`, or `Delivered`.
+<!-- generated:features start -->
+<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**Every feature has its own document under `docs/features/`.** The identifier in
-the first column links to it. `make check-docs` fails if a feature has no
-document, or a document has no feature.
+42 features across 8 sub projects. 10 specified, 32 planned, 0 in build, 0 delivered.
+
+**Every feature has its own document.** The identifier links to it.
 
 ### P0 Foundation
 
@@ -125,9 +133,14 @@ document, or a document has no feature.
 | [FEAT-041](docs/features/FEAT-041-digests-and-summaries.md) | Per team digests and executive summaries | Planned | [roadmap](docs/01-ROADMAP.md) P7 |
 | [FEAT-042](docs/features/FEAT-042-assistant-bot.md) | Assistant bot, chat and find anything in the tool | Planned | [ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md) |
 
+<!-- generated:features end -->
+
 ---
 
 ## 3. Architecture decision records
+
+<!-- generated:adrs start -->
+<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
 | ID | Decision | Status | Detail |
 | --- | --- | --- | --- |
@@ -141,14 +154,21 @@ document, or a document has no feature.
 | ADR-0008 | Identity adapter deferred, isolated behind two ports | Accepted | [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md) |
 | ADR-0009 | An MCP server alongside the HTTP API, not instead of it | Accepted | [ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md) |
 | ADR-0010 | Minimus base images and a continuously maintained zero CVE posture | Accepted | [ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md) |
-| ADR-0011 | A decision ladder before any new code, and token economy | Accepted | [ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md) |
+| ADR-0011 | A decision ladder before any new code, and token economy | Superseded by ADR-0013 | [ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md) |
 | ADR-0012 | Collection cadence is data, not code, and is bounded by the source | Accepted | [ADR-0012](docs/adr/ADR-0012-collector-cadence-registry.md) |
+| ADR-0013 | Seven rung ladder with a Rung Disqualification Record and a security sign off gate | Accepted | [ADR-0013](docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md) |
+| ADR-0014 | Derived documentation is generated from a registry, not hand maintained | Accepted | [ADR-0014](docs/adr/ADR-0014-generated-documentation.md) |
 
 Index of records: [docs/adr/README.md](docs/adr/README.md)
+
+<!-- generated:adrs end -->
 
 ---
 
 ## 4. Change log
+
+<!-- generated:changes start -->
+<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
 | ID | Date | Type | What changed | Commit | Detail |
 | --- | --- | --- | --- | --- | --- |
@@ -156,29 +176,37 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0002 | 2026-08-23 | Process | Checkpoint log and project map moved to the paths the session enforcement script requires | `93e15aa` | [docs/checkpoint.md](docs/checkpoint.md) |
 | CHG-0003 | 2026-08-23 | Infrastructure | Build and deployment layer added: Makefile, three Dockerfiles, docker-compose, GitLab pipeline, deployment document | `6f71c6e` | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | CHG-0004 | 2026-08-23 | Process | This index, the change control process, five document templates, and the index consistency checker | `cdc22bb` | [docs/03-CHANGE-CONTROL.md](docs/03-CHANGE-CONTROL.md) |
-| CHG-0005 | 2026-08-23 | Design | P0 implementation plan written, 28 tasks across eight waves, each carrying the seven anti hallucination fields | `d4c3cfb` |
-| CHG-0006 | 2026-08-23 | Design | MCP server added as a facade over the HTTP API, not a replacement. FEAT-042 assistant bot added | `e3ba443` |
-| CHG-0007 | 2026-08-23 | Infrastructure | Images rebased on Minimus, shell free runtime, no bytecode, exec form only. Health checking moved to the ALB | `4b9c32f` |
-| CHG-0008 | 2026-08-23 | Process | Security folder, seven scanners, dependency admission gate, HTML report with fixes, branch scoped auto fix, nightly posture scan | `b9fdd3f` |
-| CHG-0009 | 2026-08-23 | Process | Decision ladder and output discipline adopted from ponytail and caveman. Code review and documentation generation added as pipeline stages | `e3ba443` |
-| CHG-0010 | 2026-08-23 | Design | Collection cadence moved into a table with its reason and cost. Grafana audit at 6 hours, kill switch event driven | `e3ba443` |
+| CHG-0005 | 2026-08-23 | Design | P0 implementation plan written, 28 tasks across eight waves, each carrying the seven anti hallucination fields | `d4c3cfb` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0006 | 2026-08-23 | Design | MCP server added as a facade over the HTTP API, not a replacement. FEAT-042 assistant bot added | `e3ba443` | [ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md) |
+| CHG-0007 | 2026-08-23 | Infrastructure | Images rebased on Minimus, shell free runtime, no bytecode, exec form only. Health checking moved to the ALB | `4b9c32f` | [ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md) |
+| CHG-0008 | 2026-08-23 | Process | Security folder, seven scanners, dependency admission gate, HTML report with fixes, branch scoped auto fix, nightly posture scan | `b9fdd3f` | [docs/05-SECURITY.md](docs/05-SECURITY.md) |
+| CHG-0009 | 2026-08-23 | Process | Decision ladder and output discipline adopted from ponytail and caveman. Code review and documentation generation added as pipeline stages | `e3ba443` | [ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md) |
+| CHG-0010 | 2026-08-23 | Design | Collection cadence moved into a table with its reason and cost. Grafana audit at 6 hours, kill switch event driven | `e3ba443` | [docs/06-DATA-FRESHNESS.md](docs/06-DATA-FRESHNESS.md) |
 | CHG-0011 | 2026-08-23 | Process | One document per feature, 42 of them. File dependency graph generated and layering enforced. All scripts consolidated under scripts/ | `97c78b0` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0012 | 2026-08-23 | Infrastructure | Platform pinned to linux/amd64 at five points, because a push never converts an arm64 image | `pending` | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
+| CHG-0013 | 2026-08-23 | Design | Database schema documented in full, with Alembic migration rules and constraint level invariants | `pending` | [docs/07-DATA-MODEL.md](docs/07-DATA-MODEL.md) |
+| CHG-0014 | 2026-08-23 | Process | Ponytail ladder replaced by the seven rung version with a Rung Disqualification Record, imported from a prior project | `pending` | [ADR-0013](docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md) |
+| CHG-0015 | 2026-08-23 | Process | Derived documentation generated from docs/registry.yaml instead of hand maintained in four places | `pending` | [ADR-0014](docs/adr/ADR-0014-generated-documentation.md) |
+
+<!-- generated:changes end -->
 
 ---
 
 ## 5. Issues
 
-**26 FIXED, 18 OPEN, 1 PARKED.** Full detail with evidence and resolution in
-[tasks/ISSUES.md](tasks/ISSUES.md).
+<!-- generated:issues start -->
+<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-FIXED means the design decision is recorded, not that code exists.
-Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
+**32 FIXED, 14 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
-### Critical and high, design
+FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
 | ID | Severity | Issue | Status | Detail |
 | --- | --- | --- | --- | --- |
 | ISS-001 | CRITICAL | Nine requirement areas as one project would produce a shallow scaffold of everything | FIXED | [ADR-0001](docs/adr/ADR-0001-decompose-into-sub-projects.md) |
+| ISS-020 | CRITICAL | It reports, it does not prevent | OPEN | FEAT-014, FEAT-015 |
+| ISS-033 | CRITICAL | The official Python base image ships with more than 400 known vulnerabilities before any application code is added | FIXED | [ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md) |
+| ISS-034 | CRITICAL | Scanning only at build time reports zero forever while the deployed image degrades silently | FIXED | [docs/05-SECURITY.md](docs/05-SECURITY.md), nightly posture scan |
 | ISS-005 | HIGH | A bespoke cost schema forces a migration per cloud provider | FIXED | [ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md) |
 | ISS-006 | HIGH | Serving dashboards from Athena recreates the runaway query cost problem inside Meter | FIXED | [ADR-0003](docs/adr/ADR-0003-postgres-only-serving-layer.md) |
 | ISS-007 | HIGH | Unblended per resource cost is meaningless with commitments in play | FIXED | [architecture](docs/02-ARCHITECTURE.md) |
@@ -187,66 +215,49 @@ Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 | ISS-010 | HIGH | ReadOnlyAccess grants data plane reads that cannot be defended | FIXED | [ADR-0004](docs/adr/ADR-0004-cross-account-access.md) |
 | ISS-015 | HIGH | A failed collection rendered as zero silently produces wrong totals | FIXED | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6 |
 | ISS-016 | HIGH | Entitlement based visibility silently makes organization totals partial | FIXED | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6 |
-
-### Medium and low, design
-
-| ID | Severity | Issue | Status | Detail |
-| --- | --- | --- | --- | --- |
+| ISS-021 | HIGH | No owner attribution, and an unowned finding is never fixed | OPEN | FEAT-016 |
+| ISS-022 | HIGH | The cost model is never back tested against the bill | OPEN | FEAT-018 |
+| ISS-028 | HIGH | No recommendation lifecycle, so recommendations are ignored | OPEN | FEAT-028 |
+| ISS-029 | HIGH | No realized savings verification | OPEN | FEAT-029 |
+| ISS-035 | HIGH | A dependency was addable with no vulnerability check, and most vulnerable code arrives transitively | FIXED | `make dep-check`, and a pipeline job on any manifest change |
+| ISS-036 | HIGH | An unattended dependency upgrade that breaks production is worse than the vulnerability it closed | FIXED | Auto fix applies on a branch, gated on the full test suite, never auto merged |
+| ISS-037 | HIGH | A single global refresh interval would be wasteful for billing data and useless for a cost control | FIXED | [ADR-0012](docs/adr/ADR-0012-collector-cadence-registry.md) |
+| ISS-038 | HIGH | Reporting one timestamp lets a freshly collected copy of yesterday's data look current | FIXED | `as_of` and `collected_at` on every figure |
+| ISS-045 | HIGH | A dependency blocked by the zero vulnerability rule had no defined escalation path, so the reuse ladder and the security gate deadlock each other | FIXED | [ADR-0013](docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md) |
+| ISS-046 | HIGH | Feature status was maintained by hand in four places, the index, the roadmap, the status tracker and each feature document, which guarantees drift | FIXED | [ADR-0014](docs/adr/ADR-0014-generated-documentation.md) |
+| ISS-047 | HIGH | A build on Apple Silicon produces an arm64 image and a push does not convert it, so an amd64 host fails with exec format error | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-011 | MEDIUM | A model producing sizing numbers destroys trust on the first hallucination | FIXED | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
 | ISS-012 | MEDIUM | Organization wide AWS Config recording is a five figure monthly cost | OPEN | [tasks/ISSUES.md](tasks/ISSUES.md), resolved in P4 |
 | ISS-013 | MEDIUM | Hundreds of describe loops for inventory is a year of work | FIXED | [roadmap](docs/01-ROADMAP.md) P4 |
 | ISS-014 | MEDIUM | Neptune is a second database for capability not shown to be needed | FIXED | [ADR-0005](docs/adr/ADR-0005-postgres-adjacency-for-topology.md) |
 | ISS-017 | MEDIUM | A local identity provider reaching production is a total auth bypass | FIXED | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 11 |
 | ISS-018 | MEDIUM | Meter's own ingestion makes paid API calls and can become the cost problem | FIXED | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.5 |
-| ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
-
-### Existing Grafana prototype
-
-Assessed 2026-08-23. `sample_lambda.py`, 2,740 lines. These become the P2 backlog.
-
-| ID | Severity | Issue | Status | Becomes |
-| --- | --- | --- | --- | --- |
-| ISS-020 | CRITICAL | It reports, it does not prevent | OPEN | FEAT-014, FEAT-015 |
-| ISS-021 | HIGH | No owner attribution, and an unowned finding is never fixed | OPEN | FEAT-016 |
-| ISS-022 | HIGH | The cost model is never back tested against the bill | OPEN | FEAT-018 |
 | ISS-023 | MEDIUM | History as S3 snapshots cannot be queried or joined | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-024 | MEDIUM | Only Amazon Managed Grafana is supported | OPEN | Blocked on OPEN-04 |
 | ISS-025 | MEDIUM | The pattern is Grafana specific but the failure mode is not | OPEN | FEAT-019 |
-| ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
-| ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
-
-### Found in the 2026-08-23 review of images, dependencies and cadence
-
-| ID | Severity | Issue | Status | Detail |
-| --- | --- | --- | --- | --- |
-| ISS-033 | CRITICAL | The official Python base image ships with more than 400 known vulnerabilities before any application code is added | FIXED | [ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md) |
-| ISS-034 | CRITICAL | Scanning only at build time reports zero forever while the deployed image degrades silently | FIXED | [docs/05-SECURITY.md](docs/05-SECURITY.md), nightly posture scan |
-| ISS-035 | HIGH | A dependency was addable with no vulnerability check, and most vulnerable code arrives transitively | FIXED | `make dep-check`, and a pipeline job on any manifest change |
-| ISS-036 | HIGH | An unattended dependency upgrade that breaks production is worse than the vulnerability it closed | FIXED | Auto fix applies on a branch, gated on the full test suite, never auto merged |
-| ISS-037 | HIGH | A single global refresh interval would be wasteful for billing data and useless for a cost control | FIXED | [ADR-0012](docs/adr/ADR-0012-collector-cadence-registry.md) |
-| ISS-038 | HIGH | Reporting one timestamp lets a freshly collected copy of yesterday's data look current | FIXED | `as_of` and `collected_at` on every figure |
+| ISS-030 | MEDIUM | No data freshness contract | OPEN | FEAT-006 |
+| ISS-031 | MEDIUM | No audit log for scope evaluation | OPEN | FEAT-007 |
+| ISS-032 | MEDIUM | No accuracy contract on modelled figures | OPEN | FEAT-018 |
 | ISS-039 | MEDIUM | A shell form CMD and a curl based HEALTHCHECK both break on a shell free runtime image | FIXED | Exec form only, health checking moved to the ALB target group |
 | ISS-040 | MEDIUM | An allowlist entry with no expiry lapses silently into permanent acceptance | FIXED | `validate_allowlist.py` fails the build on an expired entry |
 | ISS-041 | MEDIUM | Two vulnerability scanners disagree, and the disagreement is where a missed finding lives | FIXED | grype and trivy are merged, not chosen between, with the scanner recorded per finding |
 | ISS-042 | MEDIUM | A feature with no document is a promise with nothing behind it | FIXED | 42 feature documents, enforced by `check_feature_docs.py` |
 | ISS-043 | MEDIUM | Nothing showed how files actually depend on each other, so a layering violation was invisible | FIXED | `make graph`, which also fails on a layering violation |
+| ISS-048 | MEDIUM | The database schema existed only inside a specification section, with no constraints, indexes, partitioning or migration rules recorded | FIXED | [docs/07-DATA-MODEL.md](docs/07-DATA-MODEL.md) |
+| ISS-049 | MEDIUM | Six change log rows were missing their detail column, found by the registry parser rather than by a reader | FIXED | Registry generation makes a missing column impossible |
+| ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
+| ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
+| ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-044 | LOW | Scripts were scattered between the root and one flat directory | FIXED | All under `scripts/`, grouped by purpose |
 
-### Requirement gaps found in review
-
-Not in the original brief, but required for production grade.
-
-| ID | Severity | Gap | Status | Becomes |
-| --- | --- | --- | --- | --- |
-| ISS-028 | HIGH | No recommendation lifecycle, so recommendations are ignored | OPEN | FEAT-028 |
-| ISS-029 | HIGH | No realized savings verification | OPEN | FEAT-029 |
-| ISS-030 | MEDIUM | No data freshness contract | OPEN | FEAT-006 |
-| ISS-031 | MEDIUM | No audit log for scope evaluation | OPEN | FEAT-007 |
-| ISS-032 | MEDIUM | No accuracy contract on modelled figures | OPEN | FEAT-018 |
+<!-- generated:issues end -->
 
 ---
 
 ## 6. Open questions
+
+<!-- generated:open-questions start -->
+<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
 | ID | Question | Status | Blocks | Detail |
 | --- | --- | --- | --- | --- |
@@ -256,6 +267,8 @@ Not in the original brief, but required for production grade.
 | OPEN-04 | Amazon Managed Grafana only, or self hosted and Grafana Cloud too | OPEN | P2 scope | [tasks/ISSUES.md](tasks/ISSUES.md) |
 | OPEN-05 | Jira or ServiceNow for the recommendation lifecycle | OPEN | P3 design | [tasks/ISSUES.md](tasks/ISSUES.md) |
 | OPEN-06 | Which regions beyond Ireland and London | OPEN | P0 dispatcher configuration | [tasks/ISSUES.md](tasks/ISSUES.md) |
+
+<!-- generated:open-questions end -->
 
 ---
 

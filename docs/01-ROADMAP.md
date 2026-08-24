@@ -31,6 +31,24 @@ P0 Foundation
                    +--> P7 Insight and LLM layer
 ```
 
+## Sub project status
+
+<!-- generated:roadmap-status start -->
+<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
+
+| ID | Name | Features | Specified | Planned |
+| --- | --- | --- | --- | --- |
+| P0 | Foundation | 10 | 10 | 0 |
+| P1 | Cost Intelligence | 5 | 0 | 5 |
+| P2 | Query Cost Governance | 9 | 0 | 9 |
+| P3 | Utilization and Rightsizing | 5 | 0 | 5 |
+| P4 | Inventory and Topology | 3 | 0 | 3 |
+| P5 | Quotas and Limits | 2 | 0 | 2 |
+| P6 | Containers | 3 | 0 | 3 |
+| P7 | Insight and LLM layer | 5 | 0 | 5 |
+
+<!-- generated:roadmap-status end -->
+
 ## Sub projects
 
 | ID | Name | Status | Spec | Plan | Depends on |
