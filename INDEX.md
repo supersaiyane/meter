@@ -172,21 +172,21 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 
 | ID | Date | Type | What changed | Commit | Detail |
 | --- | --- | --- | --- | --- | --- |
-| CHG-0001 | 2026-08-23 | Process | Repository initialized. Goal, roadmap, architecture, eight ADRs, P0 specification, status, issues, lessons, project map, checkpoint | `e604ea9` to `6e2afcc` | [docs/checkpoint.md](docs/checkpoint.md) |
-| CHG-0002 | 2026-08-23 | Process | Checkpoint log and project map moved to the paths the session enforcement script requires | `93e15aa` | [docs/checkpoint.md](docs/checkpoint.md) |
-| CHG-0003 | 2026-08-23 | Infrastructure | Build and deployment layer added: Makefile, three Dockerfiles, docker-compose, GitLab pipeline, deployment document | `6f71c6e` | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
-| CHG-0004 | 2026-08-23 | Process | This index, the change control process, five document templates, and the index consistency checker | `cdc22bb` | [docs/03-CHANGE-CONTROL.md](docs/03-CHANGE-CONTROL.md) |
-| CHG-0005 | 2026-08-23 | Design | P0 implementation plan written, 28 tasks across eight waves, each carrying the seven anti hallucination fields | `d4c3cfb` | [P0 plan](docs/plans/P0-implementation-plan.md) |
-| CHG-0006 | 2026-08-23 | Design | MCP server added as a facade over the HTTP API, not a replacement. FEAT-042 assistant bot added | `e3ba443` | [ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md) |
-| CHG-0007 | 2026-08-23 | Infrastructure | Images rebased on Minimus, shell free runtime, no bytecode, exec form only. Health checking moved to the ALB | `4b9c32f` | [ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md) |
-| CHG-0008 | 2026-08-23 | Process | Security folder, seven scanners, dependency admission gate, HTML report with fixes, branch scoped auto fix, nightly posture scan | `b9fdd3f` | [docs/05-SECURITY.md](docs/05-SECURITY.md) |
-| CHG-0009 | 2026-08-23 | Process | Decision ladder and output discipline adopted from ponytail and caveman. Code review and documentation generation added as pipeline stages | `e3ba443` | [ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md) |
-| CHG-0010 | 2026-08-23 | Design | Collection cadence moved into a table with its reason and cost. Grafana audit at 6 hours, kill switch event driven | `e3ba443` | [docs/06-DATA-FRESHNESS.md](docs/06-DATA-FRESHNESS.md) |
-| CHG-0011 | 2026-08-23 | Process | One document per feature, 42 of them. File dependency graph generated and layering enforced. All scripts consolidated under scripts/ | `97c78b0` | [P0 plan](docs/plans/P0-implementation-plan.md) |
-| CHG-0012 | 2026-08-23 | Infrastructure | Platform pinned to linux/amd64 at five points, because a push never converts an arm64 image | `pending` | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
-| CHG-0013 | 2026-08-23 | Design | Database schema documented in full, with Alembic migration rules and constraint level invariants | `pending` | [docs/07-DATA-MODEL.md](docs/07-DATA-MODEL.md) |
-| CHG-0014 | 2026-08-23 | Process | Ponytail ladder replaced by the seven rung version with a Rung Disqualification Record, imported from a prior project | `pending` | [ADR-0013](docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md) |
-| CHG-0015 | 2026-08-23 | Process | Derived documentation generated from docs/registry.yaml instead of hand maintained in four places | `pending` | [ADR-0014](docs/adr/ADR-0014-generated-documentation.md) |
+| CHG-0001 | 2026-08-23 | Process | Repository initialized. Goal, roadmap, architecture, eight ADRs, P0 specification, status, issues, lessons, project map, checkpoint | `f6d7603 to 9adb1aa` | [docs/checkpoint.md](docs/checkpoint.md) |
+| CHG-0002 | 2026-08-23 | Process | Checkpoint log and project map moved to the paths the session enforcement script requires | `a3ea1cf` | [docs/checkpoint.md](docs/checkpoint.md) |
+| CHG-0003 | 2026-08-23 | Infrastructure | Build and deployment layer added: Makefile, three Dockerfiles, docker-compose, GitLab pipeline, deployment document | `9f9e5ff` | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
+| CHG-0004 | 2026-08-23 | Process | This index, the change control process, five document templates, and the index consistency checker | `3c531e0` | [docs/03-CHANGE-CONTROL.md](docs/03-CHANGE-CONTROL.md) |
+| CHG-0005 | 2026-08-23 | Design | P0 implementation plan written, 28 tasks across eight waves, each carrying the seven anti hallucination fields | `7e5525a` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0006 | 2026-08-23 | Design | MCP server added as a facade over the HTTP API, not a replacement. FEAT-042 assistant bot added | `7e4cc01` | [ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md) |
+| CHG-0007 | 2026-08-23 | Infrastructure | Images rebased on Minimus, shell free runtime, no bytecode, exec form only. Health checking moved to the ALB | `2e22413` | [ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md) |
+| CHG-0008 | 2026-08-23 | Process | Security folder, seven scanners, dependency admission gate, HTML report with fixes, branch scoped auto fix, nightly posture scan | `0c87ae5` | [docs/05-SECURITY.md](docs/05-SECURITY.md) |
+| CHG-0009 | 2026-08-23 | Process | Decision ladder and output discipline adopted from ponytail and caveman. Code review and documentation generation added as pipeline stages | `7e4cc01` | [ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md) |
+| CHG-0010 | 2026-08-23 | Design | Collection cadence moved into a table with its reason and cost. Grafana audit at 6 hours, kill switch event driven | `7e4cc01` | [docs/06-DATA-FRESHNESS.md](docs/06-DATA-FRESHNESS.md) |
+| CHG-0011 | 2026-08-23 | Process | One document per feature, 42 of them. File dependency graph generated and layering enforced. All scripts consolidated under scripts/ | `02eca11` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0012 | 2026-08-23 | Infrastructure | Platform pinned to linux/amd64 at five points, because a push never converts an arm64 image | `3591a1f` | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
+| CHG-0013 | 2026-08-23 | Design | Database schema documented in full, with Alembic migration rules and constraint level invariants | `0f0f1e9` | [docs/07-DATA-MODEL.md](docs/07-DATA-MODEL.md) |
+| CHG-0014 | 2026-08-23 | Process | Ponytail ladder replaced by the seven rung version with a Rung Disqualification Record, imported from a prior project | `3d93f76` | [ADR-0013](docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md) |
+| CHG-0015 | 2026-08-23 | Process | Derived documentation generated from docs/registry.yaml instead of hand maintained in four places | `5355ac3` | [ADR-0014](docs/adr/ADR-0014-generated-documentation.md) |
 
 <!-- generated:changes end -->
 

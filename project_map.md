@@ -37,6 +37,8 @@ meter/
 │   ├── 04-DEPLOYMENT.md       GitLab to ECR to Terraform to ECS
 │   ├── 05-SECURITY.md         zero vulnerability policy, scanners, gates
 │   ├── 06-DATA-FRESHNESS.md   refresh cadence per collector, and its limits
+│   ├── 07-DATA-MODEL.md       every table, constraint, index, Alembic rules
+│   ├── registry.yaml          SOURCE OF TRUTH for the generated documents
 │   ├── features/              one document per feature, 42 of them
 │   ├── architecture/          generated file dependency graph
 │   ├── templates/             spec, task, ADR, change and issue templates
@@ -64,7 +66,7 @@ meter/
 ├── scripts/                   every script in the project, nothing executable elsewhere
 │   ├── README.md              what each script does and how it is run
 │   ├── security/              scan, admission gate, report, auto fix, allowlist
-│   ├── docs/                  index check, feature doc check, file graph
+│   ├── docs/                  sync, index check, feature doc check, file graph
 │   ├── ci/                    code review
 │   └── deploy/                migration task runner
 │
@@ -105,6 +107,8 @@ continuous integration, not by good intentions.
 | What does this feature do | `docs/features/FEAT-nnn-*.md` |
 | How do these files depend on each other | `docs/architecture/file-graph.md`, `make graph` |
 | What is the security policy | `docs/05-SECURITY.md` |
+| What does the database look like | `docs/07-DATA-MODEL.md` |
+| Where do I change a feature status | `docs/registry.yaml`, then `make doc-sync` |
 | Is the posture currently clean | `security/POSTURE.md` |
 | How often does this data refresh | `docs/06-DATA-FRESHNESS.md` |
 | What does this script do | `scripts/README.md` |

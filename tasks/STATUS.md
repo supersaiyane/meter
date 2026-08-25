@@ -6,6 +6,23 @@ Master index: `INDEX.md`
 
 Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
+## Registers at a glance
+
+<!-- generated:status-summary start -->
+<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
+
+| Register | Counts |
+| --- | --- |
+| Features | 42 total, 10 specified, 0 in build, 0 delivered |
+| Decisions | 14 architecture decision records |
+| Changes | 15 recorded |
+| Issues | 32 fixed, 14 open, 0 parked |
+| Open questions | 6 awaiting a decision |
+
+Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
+
+<!-- generated:status-summary end -->
+
 ## Where the project stands right now
 
 Design phase. No application code has been written. The current gate is the
@@ -45,6 +62,10 @@ user reviewing the P0 foundation specification.
 | `[x]` | Consolidate every script under `scripts/` | `scripts/README.md`, four subdirectories |
 | `[x]` | Decide refresh cadence per collector | ADR-0012, `docs/06-DATA-FRESHNESS.md`. Grafana audit at 6 hours |
 | `[x]` | Extend the P0 plan for security and MCP | 31 tasks. TASK-P0-029 runs first |
+| `[x]` | Pin the image platform to linux/amd64 | Five controls, including a registry manifest check after push |
+| `[x]` | Document the database schema and the Alembic rules | `docs/07-DATA-MODEL.md` |
+| `[x]` | Import the seven rung ladder and disqualification protocol | ADR-0013, supersedes the ladder in ADR-0011 |
+| `[x]` | Make derived documentation generated from a registry | ADR-0014, `make doc-sync`, `make session-end` |
 | `[~]` | User review of the P0 specification | Current gate. The plan is provisional until it passes |
 
 ## Phase 1: P0 foundation build

@@ -26,6 +26,10 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-08-23 | Document every feature and build the file graph | Done | 42 feature documents, 10 full for P0 and 32 planned. `scripts/docs/check_feature_docs.py` enforces both directions. `scripts/docs/build_file_graph.py` builds a Mermaid and an interactive graph from Python, TypeScript, Terraform and Dockerfile edges, and fails on a layering violation | `docs/features/`, `docs/architecture/file-graph.md`, `make graph`. ISS-042, ISS-043 |
 | 2026-08-23 | Decide refresh cadence | Done | ADR-0012. Cadence is a row in `collector_schedule` with its reason and cost, not a constant. Grafana audit at 6 hours as requested, kill switch event driven because a 6 hour gap on the original failure is still roughly 25,000 USD. Two timestamps on every figure | `docs/06-DATA-FRESHNESS.md`. ISS-037, ISS-038 |
 | 2026-08-23 | Consolidate scripts and extend the P0 plan | Done | Every script under `scripts/` in four subdirectories with a README. P0 plan extended to 31 tasks, wave I added. TASK-P0-029 runs before everything else because it verifies the Minimus tags exist | `scripts/README.md`, `docs/plans/P0-implementation-plan.md`. ISS-044 |
+| 2026-08-23 | Pin the image platform to linux/amd64 | Done | `FROM --platform` on every stage, `--platform` on every build command, `make verify-platform` after build and before push, and a registry manifest check in the pipeline. A push never converts an arm64 image, and the failure reads as `exec format error` | `docker/`, `Makefile` targets `build`, `verify-platform`, `buildx-setup`, `buildx-push`. ISS-047 |
+| 2026-08-23 | Document the database schema | Done | `docs/07-DATA-MODEL.md`, 502 lines. Every table with its constraints, indexes, partitioning and the Alembic migration rules. Invariants are database constraints rather than conventions, because application code alone will eventually let a bad row through | `docs/07-DATA-MODEL.md`. ISS-048 |
+| 2026-08-23 | Import the seven rung ladder from a prior project | Done | ADR-0013 supersedes the ladder in ADR-0011. Resolves the deadlock where ADR-0010 forbids a dependency and the ladder requires reusing it. Adds the disqualification record, the same rung check and the security sign off gate | `docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md`. Source: `PayVault/.kiro/reference/ponytail-rung-disqualification-guide.md`. ISS-045 |
+| 2026-08-23 | Make derived documentation generated | Done | `docs/registry.yaml` is now the single source of truth. `scripts/docs/sync.py` regenerates the index tables, the roadmap status, the status summary and every feature header. Feature status previously lived in four places by hand. Building the registry immediately found six change rows missing a column | `make doc-sync`, `make check-docs`, `make session-end`. ADR-0014. ISS-046, ISS-049 |
 
 ## Next action
 
@@ -52,6 +56,9 @@ P0.
 | The security policy and the current posture | `docs/05-SECURITY.md`, `security/POSTURE.md` |
 | How often data refreshes and why | `docs/06-DATA-FRESHNESS.md`, ADR-0012 |
 | The first task to run | TASK-P0-029, before TASK-P0-001, because it verifies the Minimus tags exist |
+| The database schema | `docs/07-DATA-MODEL.md`, and Alembic is the only way it changes |
+| Where a status changes | `docs/registry.yaml`, then `make doc-sync`. Never in four places by hand |
+| The reuse ladder | ADR-0013, seven rungs with a disqualification protocol |
 
 ### On approval, the next task
 

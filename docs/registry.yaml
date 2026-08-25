@@ -335,99 +335,99 @@ changes:
   type: Process
   what: Repository initialized. Goal, roadmap, architecture, eight ADRs, P0 specification, status, issues,
     lessons, project map, checkpoint
-  commit: e604ea9` to `6e2afcc
+  commit: f6d7603 to 9adb1aa
   detail: '[docs/checkpoint.md](docs/checkpoint.md)'
 - id: CHG-0002
   date: '2026-08-23'
   type: Process
   what: Checkpoint log and project map moved to the paths the session enforcement script requires
-  commit: 93e15aa
+  commit: a3ea1cf
   detail: '[docs/checkpoint.md](docs/checkpoint.md)'
 - id: CHG-0003
   date: '2026-08-23'
   type: Infrastructure
   what: 'Build and deployment layer added: Makefile, three Dockerfiles, docker-compose, GitLab pipeline,
     deployment document'
-  commit: 6f71c6e
+  commit: 9f9e5ff
   detail: '[docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md)'
 - id: CHG-0004
   date: '2026-08-23'
   type: Process
   what: This index, the change control process, five document templates, and the index consistency checker
-  commit: cdc22bb
+  commit: 3c531e0
   detail: '[docs/03-CHANGE-CONTROL.md](docs/03-CHANGE-CONTROL.md)'
 - id: CHG-0005
   date: '2026-08-23'
   type: Design
   what: P0 implementation plan written, 28 tasks across eight waves, each carrying the seven anti hallucination
     fields
-  commit: d4c3cfb
+  commit: 7e5525a
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 - id: CHG-0006
   date: '2026-08-23'
   type: Design
   what: MCP server added as a facade over the HTTP API, not a replacement. FEAT-042 assistant bot added
-  commit: e3ba443
+  commit: 7e4cc01
   detail: '[ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md)'
 - id: CHG-0007
   date: '2026-08-23'
   type: Infrastructure
   what: Images rebased on Minimus, shell free runtime, no bytecode, exec form only. Health checking moved
     to the ALB
-  commit: 4b9c32f
+  commit: 2e22413
   detail: '[ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md)'
 - id: CHG-0008
   date: '2026-08-23'
   type: Process
   what: Security folder, seven scanners, dependency admission gate, HTML report with fixes, branch scoped
     auto fix, nightly posture scan
-  commit: b9fdd3f
+  commit: 0c87ae5
   detail: '[docs/05-SECURITY.md](docs/05-SECURITY.md)'
 - id: CHG-0009
   date: '2026-08-23'
   type: Process
   what: Decision ladder and output discipline adopted from ponytail and caveman. Code review and documentation
     generation added as pipeline stages
-  commit: e3ba443
+  commit: 7e4cc01
   detail: '[ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md)'
 - id: CHG-0010
   date: '2026-08-23'
   type: Design
   what: Collection cadence moved into a table with its reason and cost. Grafana audit at 6 hours, kill
     switch event driven
-  commit: e3ba443
+  commit: 7e4cc01
   detail: '[docs/06-DATA-FRESHNESS.md](docs/06-DATA-FRESHNESS.md)'
 - id: CHG-0011
   date: '2026-08-23'
   type: Process
   what: One document per feature, 42 of them. File dependency graph generated and layering enforced. All
     scripts consolidated under scripts/
-  commit: 97c78b0
+  commit: 02eca11
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 - id: CHG-0012
   date: '2026-08-23'
   type: Infrastructure
   what: Platform pinned to linux/amd64 at five points, because a push never converts an arm64 image
-  commit: pending
+  commit: 3591a1f
   detail: '[docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md)'
 - id: CHG-0013
   date: '2026-08-23'
   type: Design
   what: Database schema documented in full, with Alembic migration rules and constraint level invariants
-  commit: pending
+  commit: 0f0f1e9
   detail: '[docs/07-DATA-MODEL.md](docs/07-DATA-MODEL.md)'
 - id: CHG-0014
   date: '2026-08-23'
   type: Process
   what: Ponytail ladder replaced by the seven rung version with a Rung Disqualification Record, imported
     from a prior project
-  commit: pending
+  commit: 3d93f76
   detail: '[ADR-0013](docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md)'
 - id: CHG-0015
   date: '2026-08-23'
   type: Process
   what: Derived documentation generated from docs/registry.yaml instead of hand maintained in four places
-  commit: pending
+  commit: 5355ac3
   detail: '[ADR-0014](docs/adr/ADR-0014-generated-documentation.md)'
 issues:
 - id: ISS-001

@@ -13,47 +13,16 @@ top of the global rules and override them where they conflict.
 3. Every number in a document states whether it is measured or modelled.
 4. Absolute dates only. Write `2026-08-23`, never `tomorrow` or `last week`.
 
-A pre commit hook enforces rule 1 once tooling lands. Until then, run:
+Enforced by `make check-writing`, which runs inside `make verify` and in the
+pipeline. It scans markdown, Python, TypeScript, Terraform and YAML.
 
 ```bash
-grep -rn $'—\|–' --include='*.md' --include='*.py' --include='*.ts' --include='*.tsx' . && echo "EM DASH FOUND" || echo "clean"
+make check-writing
 ```
 
-## Before writing any new code: the ladder
-
-From ADR-0011. Walk it in order, and stop at the first rung that answers.
-
-1. **Does this need to exist at all?** Delete the requirement if it does not.
-2. **Does it already exist in this repository?** Reuse it. Check
-   `context_index.md` and `docs/architecture/file-graph.md` first.
-3. **Is it in the standard library?** Use that.
-4. **Does AWS already provide it?** See ADR-0006.
-5. **Is there a maintained dependency that scans clean?**
-   `make dep-check pkg=<name>` decides, not an opinion. See ADR-0010.
-6. **Only now, write it**, and write the smallest version that passes the test.
-
-The ladder never removes input validation, error handling, security controls,
-accessibility, or the tests that encode this project's hard rules. Minimal
-means no unnecessary code, not no necessary code.
-
-## Output discipline
-
-No preamble. No recap. No restating the request. One sentence of status, then
-the work. The documents carry the narrative, a working message does not need to.
-
-## Security is a gate, not a review
-
-- **No dependency is added without `make dep-check pkg=<name>` passing.** It
-  scans the whole transitive tree, because most vulnerable code arrives as a
-  transitive dependency nobody chose.
-- **The policy is zero findings at any severity.** Never lower a threshold. An
-  unavoidable finding gets a time boxed entry in
-  `security/policy/allowlist.yaml` with a named owner and an expiry.
-- **Never edit a file under `security/reports/` or `security/POSTURE.md`.**
-  They are generated.
-- **Every script goes under `scripts/`**, in the right subdirectory. Nothing
-  executable lives anywhere else.
-- The runtime images have no shell. Exec form only in `CMD` and `ENTRYPOINT`.
+The literal characters are deliberately not reproduced in this file. Writing
+them here would make the check fail on its own documentation, which is exactly
+what happened the first time this rule was written down.
 
 ## Documentation maintenance
 
@@ -128,6 +97,16 @@ These are not style preferences. Breaking them costs a rewrite.
 10. **Two timestamps on every figure.** `as_of` is when the data was true at the
     source, `collected_at` is when Meter fetched it. Conflating them makes a
     stale number look fresh.
+11. **Invariants are database constraints, not conventions.** If application
+    code is the only thing preventing a bad row, the bad row will eventually
+    exist. See `docs/07-DATA-MODEL.md`.
+12. **Migrations are backward compatible, always.** Old and new task
+    definitions run against the same schema during a rolling deploy. Add,
+    backfill, then drop in a later release. Never rename or drop in the release
+    that stops using the thing.
+13. **Images are built for `linux/amd64`.** A push never converts an arm64
+    image, and the failure reads as `exec format error`. `make build` pins it
+    and `make verify-platform` checks it.
 
 ## Commit format
 
@@ -155,6 +134,7 @@ scripts/docs/       index check, feature doc check, file graph
 scripts/ci/         pipeline helpers including the code review
 scripts/deploy/     deployment helpers
 docs/features/      one document per feature, 42 of them
+docs/registry.yaml  single source of truth for the derived documents
 docs/architecture/  the generated file dependency graph
 finops-mcp/         MCP server, a facade over the HTTP API
 docker-compose.yml  local stack only, never used to deploy
