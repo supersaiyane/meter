@@ -30,12 +30,29 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-08-23 | Document the database schema | Done | `docs/07-DATA-MODEL.md`, 502 lines. Every table with its constraints, indexes, partitioning and the Alembic migration rules. Invariants are database constraints rather than conventions, because application code alone will eventually let a bad row through | `docs/07-DATA-MODEL.md`. ISS-048 |
 | 2026-08-23 | Import the seven rung ladder from a prior project | Done | ADR-0013 supersedes the ladder in ADR-0011. Resolves the deadlock where ADR-0010 forbids a dependency and the ladder requires reusing it. Adds the disqualification record, the same rung check and the security sign off gate | `docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md`. Source: `PayVault/.kiro/reference/ponytail-rung-disqualification-guide.md`. ISS-045 |
 | 2026-08-23 | Make derived documentation generated | Done | `docs/registry.yaml` is now the single source of truth. `scripts/docs/sync.py` regenerates the index tables, the roadmap status, the status summary and every feature header. Feature status previously lived in four places by hand. Building the registry immediately found six change rows missing a column | `make doc-sync`, `make check-docs`, `make session-end`. ADR-0014. ISS-046, ISS-049 |
+| 2026-08-23 | Session checkpoint before context limit | Done | No code written. 25 commits, all gates green: registry sync, index 79 references, 42 feature documents, 0 layering violations, no banned characters. `make check-writing` ran for the first time and correctly failed on `CLAUDE.md`, which quoted the banned characters inside its own rule. Fixed by referencing the Makefile target instead | Everything below under "Next action". The gate is unchanged: user review of the P0 specification |
 
 ## Next action
 
 **Blocked on user review of the P0 foundation specification.** Nothing else
 should start until it is approved, because every other sub project depends on
 P0.
+
+### Source of truth, in order
+
+| Question | Document |
+| --- | --- |
+| Anything at all, start here | `INDEX.md` |
+| Feature, decision, change, issue or open question status | `docs/registry.yaml`. Everything else derives from it |
+| Why a decision was made | `docs/adr/`, 14 records |
+| What P0 delivers | `docs/specs/2026-08-23-p0-foundation-design.md` |
+| What to build, in order | `docs/plans/P0-implementation-plan.md`, 31 tasks |
+| The database | `docs/07-DATA-MODEL.md` |
+| Security policy and posture | `docs/05-SECURITY.md`, `security/POSTURE.md` |
+| Refresh cadence | `docs/06-DATA-FRESHNESS.md` |
+| Deployment | `docs/04-DEPLOYMENT.md` |
+| Where a change gets recorded | `docs/03-CHANGE-CONTROL.md` |
+| Rules binding every change | `CLAUDE.md` |
 
 ### Resume vector
 
