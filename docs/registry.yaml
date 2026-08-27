@@ -940,7 +940,7 @@ changes:
     removed with it, including the one suppressing the urllib.request rule that CVE-2026-15806's
     acceptance depends on. The Grafana adapter raises typed causes rather than returning an
     empty list on failure
-  commit: pending
+  commit: 'f3f0758'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
 issues:
 - id: ISS-001
