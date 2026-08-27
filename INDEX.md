@@ -281,7 +281,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0063 | 2026-08-29 | Feature | TASK-P0-013 to 016, the three Terraform stacks. Management account reader role, member account StackSet, and the hub with its network, data layer, ECR, ECS, load balancer and scheduler. No NAT Gateway, no ReadOnlyAccess, and no fifth image for the MCP server | `eb8a507` | [Deployment](docs/04-DEPLOYMENT.md) |
 | CHG-0064 | 2026-08-29 | Feature | TASK-P0-033, four SLOs, ten alarms of which four page, three dashboards provisioned as code, and three runbooks. The plan said two alerts page and the specification's own table says four | `eb8a507` | [Observability](docs/10-OBSERVABILITY.md) |
 | CHG-0065 | 2026-08-31 | Fix | The security report never read trivy's infrastructure as code findings. Seven were dropped and the gate printed PASS over them. Parser fixed, four real findings fixed, five deliberate ones accepted with a reachability argument | `74e9d28` | [ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md) |
-| CHG-0066 | 2026-09-02 | Chore | Lint and type check every directory that holds Python. scripts, migrations and the test suite were outside one or both, and the scripts that were missed are the ones implementing the gates. A test now asks the filesystem rather than trusting the list | `pending` | [Change control](docs/03-CHANGE-CONTROL.md) |
+| CHG-0066 | 2026-09-02 | Chore | Lint and type check every directory that holds Python. scripts, migrations and the test suite were outside one or both, and the scripts that were missed are the ones implementing the gates. A test now asks the filesystem rather than trusting the list | `045b5b8` | [Change control](docs/03-CHANGE-CONTROL.md) |
 
 <!-- generated:changes end -->
 

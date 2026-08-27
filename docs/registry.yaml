@@ -907,7 +907,7 @@ changes:
   what: Lint and type check every directory that holds Python. scripts, migrations and the test
     suite were outside one or both, and the scripts that were missed are the ones implementing
     the gates. A test now asks the filesystem rather than trusting the list
-  commit: pending
+  commit: '045b5b8'
   detail: '[Change control](docs/03-CHANGE-CONTROL.md)'
 issues:
 - id: ISS-001
