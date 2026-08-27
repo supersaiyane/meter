@@ -429,6 +429,13 @@ changes:
   what: Derived documentation generated from docs/registry.yaml instead of hand maintained in four places
   commit: 5355ac3
   detail: '[ADR-0014](docs/adr/ADR-0014-generated-documentation.md)'
+- id: CHG-0016
+  date: '2026-08-23'
+  type: Process
+  what: 'README rewritten as the operational entry point: source of truth table, common tasks, the four
+    security gates, the remediation path, and a gotchas table'
+  commit: 46bd6ce
+  detail: '[README.md](README.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -668,6 +675,12 @@ issues:
     by a reader
   status: FIXED
   detail: Registry generation makes a missing column impossible
+- id: ISS-050
+  severity: MEDIUM
+  summary: The README described the project but did not tell a returning human where to look, what to
+    run, or what happens to a security finding, so the knowledge lived only in conversation
+  status: FIXED
+  detail: '[README.md](README.md)'
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS
