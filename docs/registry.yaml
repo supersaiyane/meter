@@ -915,7 +915,7 @@ changes:
   what: OPEN-04 re answered as Amazon Managed Grafana only, superseding the 2026-08-23 answer of
     all three behind per tenant flags. TASK-P2-007 and TASK-P2-008 descoped rather than deleted,
     and ISS-024 closed as by design rather than fixed
-  commit: pending
+  commit: 'a2304cf'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
 - id: CHG-0068
   date: '2026-09-02'
@@ -923,7 +923,7 @@ changes:
   what: TASK-P2-001, the prototype imported byte identical and its behaviour pinned by 15 golden
     files across 14 dashboards and 4 alert rules. Runs entirely offline through the prototype's
     own switches rather than through mocks
-  commit: pending
+  commit: 'a2304cf'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
 issues:
 - id: ISS-001
