@@ -2005,7 +2005,7 @@ make test-all && make test-e2e
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-27, with one criterion deferred to TASK-P0-015 |
 | Implements | `docs/09-DATA-CLASSIFICATION.md` |
 | Depends on | TASK-P0-021 |
 | Estimate | M |
@@ -2016,21 +2016,61 @@ make test-all && make test-e2e
 
 | Path | Action |
 | --- | --- |
-| `finops_ingest/collectors/retention.py` | create |
-| `scripts/ops/erase_principal.py` | create |
-| `tests/ingest/collectors/test_retention.py` | create |
+| `finops_ingest/collectors/retention.py` | created |
+| `finops_ingest/collectors/partitions.py` | created, not planned. See the deviation below |
+| `scripts/ops/erase_principal.py` | created |
+| `tests/ingest/collectors/test_retention.py` | created, 14 integration tests |
+| `tests/ingest/collectors/test_partitions.py` | created, 6 tests that need no container |
+| `migrations/versions/0002_cost_monthly.py` | created, additive |
 
 **Acceptance criteria.**
 
-- [ ] Five jobs: `retention_principal`, `retention_operational`,
+- [x] Five jobs: `retention_principal`, `retention_operational`,
       `retention_audit`, `retention_cost`, `retention_scope_cache`
-- [ ] Each writes an `ingest_run`, so a stopped retention job appears on the
+- [x] Each writes an `ingest_run`, so a stopped retention job appears on the
       freshness screen exactly like a stopped collector
-- [ ] `retention_principal` anonymises rather than removing rows, so audit
+- [x] `retention_principal` anonymises rather than removing rows, so audit
       joins do not dangle
-- [ ] `erase_principal.py` performs all five erasure steps in one transaction
+- [x] `erase_principal.py` performs all five erasure steps in one transaction
       and prints what it changed
-- [ ] Backup retention set in Terraform to match the table policy
+- [ ] Backup retention set in Terraform to match the table policy. Deferred to
+      TASK-P0-015, which is where the Aurora cluster is defined. There is
+      nowhere to set it until that file exists
+
+**Deviations.**
+
+1. **A sixth job, `partition_maintenance`, and a new module.**
+   `cost_focus_daily` and `cost_provider_extra` are declared `PARTITION BY
+   RANGE` and nothing anywhere created a partition, so both tables rejected
+   every row with "no partition of relation found for row". The checkpoint for
+   TASK-P0-010 already said this job belonged here. It is the other half of
+   retention rather than a separate concern: one job creates the months, the
+   other removes them.
+2. **`retention_cost` drops partitions instead of deleting rows.** The
+   aggregate is written first, in the same transaction, on the same month
+   boundary that is then dropped. A partition drop is one catalog operation
+   against a scan, a mass delete and a vacuum on the largest table in the
+   system. The consequence is documented: the boundary is the first of the
+   month containing the cutoff, so days still inside the window are never taken
+   with it.
+3. **`retention_operational` also clears dead watermarks.**
+   `docs/09-DATA-CLASSIFICATION.md` said it should and the first implementation
+   did not. The document was right and the code was changed to match it.
+4. **A schema change.** `cost_focus_monthly` did not exist, so there was
+   nothing to aggregate into. Added as migration `0002`, additive per
+   constraint 12.
+5. **The `retention_jobs` feature flag was declared and enforced nowhere.**
+   `docs/feature-flags.yaml` calls it a permanent operational control for
+   stopping a suspected retention bug immediately. Nothing read it, so an
+   operator turning it off would have believed retention had stopped while it
+   continued. `due_collectors()` in `finops_ingest/registry.py` now applies it,
+   takes the predicate rather than importing the resolver because this package
+   sits below `finops_api`, and has no default, since a default of "everything
+   is on" is the same silent pass in a different place.
+6. **One existing test corrected.**
+   `test_healthz_reports_a_recent_collection_as_healthy` listed three
+   collectors by hand and so reported a tenant healthy while six scheduled
+   collectors had never run. It now derives the list from `DEFAULT_SCHEDULE`.
 
 **Do not.**
 

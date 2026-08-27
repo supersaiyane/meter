@@ -37,6 +37,7 @@ SCOPED_TABLES: dict[str, tuple[str, str] | None] = {
     "ingest_watermark": None,
     "sync_error": None,
     "cost_focus_daily": None,
+    "cost_focus_monthly": None,
     "cost_provider_extra": None,
     "platform_cost": None,
     "principal": None,

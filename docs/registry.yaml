@@ -852,6 +852,15 @@ changes:
     budgets measured. The restore drill is not performed and is recorded as open
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0060
+  date: '2026-08-27'
+  type: Feature
+  what: TASK-P0-032, six retention jobs and the erasure script. Two tables were declared
+    PARTITION BY RANGE with no partition anywhere, so both rejected every row. Partition
+    maintenance added, and the cost roll up now aggregates into cost_focus_monthly
+    then drops whole partitions
+  commit: pending
+  detail: '[Data classification](docs/09-DATA-CLASSIFICATION.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL

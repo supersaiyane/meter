@@ -311,11 +311,14 @@ def test_healthz_is_not_a_liveness_probe(
 def test_healthz_reports_a_recent_collection_as_healthy(
     engine: Engine, tenant_id: UUID, settings: Settings
 ) -> None:
-    from finops_ingest.registry import install_default_schedule
+    from finops_ingest.registry import DEFAULT_SCHEDULE, install_default_schedule
 
     with engine.begin() as connection:
         install_default_schedule(connection, tenant_id, updated_by="test")
-        for collector in ("org_tree", "account_health", "platform_cost"):
+        # Every scheduled collector, taken from the schedule rather than listed
+        # here. A hardcoded list would leave a newly added collector permanently
+        # stale and this test asserting health over a tenant that is not healthy.
+        for collector in (entry.collector for entry in DEFAULT_SCHEDULE):
             connection.execute(
                 text(
                     "INSERT INTO ingest_run (run_id, tenant_id, collector, scope_key, "

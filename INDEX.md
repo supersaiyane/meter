@@ -272,6 +272,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0057 | 2026-08-27 | Feature | TASK-P0-027, the accounts screen and organization map. Broken onboarding is one click, the tree is the default, and unreachable branches are drawn and marked | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0058 | 2026-08-27 | Chore | TASK-P0-003 and TASK-P0-004, the index checker's own tests and a demonstrated rejection of the banned dash by the local hook. Wave A complete | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 | CHG-0059 | 2026-08-27 | Feature | TASK-P0-028, the last three screens, the Playwright journey and both performance budgets measured. The restore drill is not performed and is recorded as open | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0060 | 2026-08-27 | Feature | TASK-P0-032, six retention jobs and the erasure script. Two tables were declared PARTITION BY RANGE with no partition anywhere, so both rejected every row. Partition maintenance added, and the cost roll up now aggregates into cost_focus_monthly then drops whole partitions | `pending` | [Data classification](docs/09-DATA-CLASSIFICATION.md) |
 
 <!-- generated:changes end -->
 

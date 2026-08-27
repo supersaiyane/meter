@@ -299,6 +299,25 @@ cost_focus_daily = Table(
     postgresql_partition_by="RANGE (billing_period_start)",
 )
 
+# Where retention puts cost data before it drops the line items. See
+# docs/09-DATA-CLASSIFICATION.md: 37 months of line items, then a monthly
+# aggregate that keeps the trend a year on year comparison needs.
+cost_focus_monthly = Table(
+    "cost_focus_monthly",
+    metadata,
+    Column("tenant_id", UUID(as_uuid=True), primary_key=True),
+    Column("billing_month", Date, primary_key=True),
+    Column("sub_account_id", Text, primary_key=True),
+    Column("service_name", Text, primary_key=True),
+    Column("region_id", Text, primary_key=True),
+    Column("billed_cost", Numeric(20, 10), nullable=False),
+    Column("effective_cost", Numeric(20, 10), nullable=False),
+    Column("line_items", BigInteger, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    Index("ix_cost_focus_monthly__tenant_month", "tenant_id", "billing_month"),
+)
+
 cost_provider_extra = Table(
     "cost_provider_extra",
     metadata,
@@ -349,5 +368,6 @@ FACT_TABLES = (
     "cloud_account",
     "org_node",
     "cost_focus_daily",
+    "cost_focus_monthly",
     "platform_cost",
 )

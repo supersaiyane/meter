@@ -97,6 +97,7 @@ class Worker:
         connections: Connections,
         claim_timeout_minutes: int,
         broker: Any = None,
+        settings: Any = None,
         clock: Clock = _system_clock,
         logger: logging.Logger = LOGGER,
     ) -> None:
@@ -104,6 +105,7 @@ class Worker:
         self._connections = connections
         self._timeout = claim_timeout_minutes
         self._broker = broker
+        self._settings = settings
         self._clock = clock
         self._log = logger
 
@@ -132,7 +134,12 @@ class Worker:
             try:
                 session = self._session_for(unit, collector.scope)
                 result = collector.run(
-                    CollectorContext(unit=unit, connection=connection, session=session)
+                    CollectorContext(
+                        unit=unit,
+                        connection=connection,
+                        session=session,
+                        settings=self._settings,
+                    )
                 )
             except CollectionError as failure:
                 # Exactly the six, and nothing wider. An unexpected exception is

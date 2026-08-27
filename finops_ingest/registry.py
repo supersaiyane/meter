@@ -15,8 +15,11 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import datetime
 from enum import StrEnum
 from typing import Any
+
+from sqlalchemy import text
 
 
 class CollectorScope(StrEnum):
@@ -54,6 +57,10 @@ class CollectorContext:
     #: The assumed session for account scoped work. None for organization scope,
     #: which runs on the hub's own credentials.
     session: Any = None
+    #: Runtime configuration. On the context rather than on the unit, because a
+    #: unit is a message that outlives the process that wrote it and settings
+    #: are whatever the worker running it was started with.
+    settings: Any = None
 
 
 #: A collector receives one context and reports what it did.
@@ -85,6 +92,10 @@ class ScheduleEntry:
 
 HOURLY = 3600
 DAILY = 86400
+#: Thirty days. The cost roll up is not calendar aware and does not need to be:
+#: it aggregates everything past a cutoff, so running a day early or a day late
+#: changes nothing except how many line items are left over until next time.
+MONTHLY = 2592000
 
 #: What a new tenant starts with. Installed at onboarding rather than in a
 #: migration, because the table is keyed by tenant and a migration knows none.
@@ -122,7 +133,132 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         # is the point of metering ourselves.
         est_cost_per_run="0.01",
     ),
+    ScheduleEntry(
+        collector="retention_principal",
+        cadence_seconds=DAILY,
+        reason=(
+            "The retention window is stated in days, so checking it more than once "
+            "a day cannot make the promise more true. Daily is also what makes a "
+            "stopped retention job visible on the freshness screen within a day."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="retention_operational",
+        cadence_seconds=DAILY,
+        reason=(
+            "Run history is the largest table by row count and the least valuable "
+            "row for row. Daily keeps the deletion small enough to stay inside one "
+            "transaction, which a weekly cadence would not."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="retention_audit",
+        cadence_seconds=DAILY,
+        reason=(
+            "Thirteen months is a regulatory floor rather than a preference, so the "
+            "job runs on the same daily cadence as the rest and is never the thing "
+            "that made the window drift."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="retention_cost",
+        cadence_seconds=MONTHLY,
+        reason=(
+            "Aggregating three year old line items is expensive and the answer does "
+            "not change between runs, because nothing new becomes three years old "
+            "inside a day. Monthly is the cheapest cadence that still bounds the "
+            "table's growth."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="partition_maintenance",
+        cadence_seconds=DAILY,
+        reason=(
+            "Partitions are created months ahead, so this could run weekly and still "
+            "be correct. It runs daily because a stopped job is then visible within a "
+            "day on the freshness screen, and the failure it prevents is every cost "
+            "insert failing at midnight on the first of a month."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="retention_scope_cache",
+        cadence_seconds=HOURLY,
+        reason=(
+            "An expired entitlement row is already ignored by the reader, so this is "
+            "housekeeping and not enforcement. Hourly keeps the table small without "
+            "anyone having to think about it."
+        ),
+        est_cost_per_run="0",
+    ),
 )
+
+
+#: The flag that stops every retention job at once. Declared in
+#: `docs/feature-flags.yaml` as a permanent operational control: retention
+#: removes data, so a suspected bug in one has to be stoppable now rather than
+#: after a deploy.
+RETENTION_FLAG = "retention_jobs"
+
+#: Which collectors that flag governs. Derived from the name rather than listed,
+#: because a list here and the collectors in `retention.py` is two places to add
+#: a job and one place to forget.
+RETENTION_PREFIXES = ("retention_", "partition_")
+
+
+def governed_by_retention_flag(collector: str) -> bool:
+    return collector.startswith(RETENTION_PREFIXES)
+
+
+def due_collectors(
+    connection: Any,
+    tenant_id: Any,
+    is_enabled: Callable[[str], bool],
+    now: datetime,
+) -> tuple[str, ...]:
+    """Which of a tenant's collectors are due, honouring the kill switch.
+
+    `is_enabled` is passed in rather than imported. The flag resolver lives in
+    `finops_api` and this package sits below it, so taking the predicate is what
+    keeps the layering intact. It has no default: a default of "everything is
+    on" would turn a missing wire up into a silently ignored kill switch, which
+    is the one failure an operational control must not have.
+
+    A collector the flag turns off produces no unit and therefore no
+    `ingest_run`, so it reads as stale on the freshness screen rather than as a
+    successful run that removed nothing. That is the honest rendering: retention
+    is not running, and the flag's own reason calls that a deliberate,
+    temporary and auditable act.
+    """
+    rows = connection.execute(
+        text(
+            "SELECT s.collector, s.cadence_seconds, latest.finished_at "
+            "FROM collector_schedule s LEFT JOIN LATERAL ("
+            "  SELECT MAX(r.finished_at) AS finished_at FROM ingest_run r "
+            "  WHERE r.tenant_id = s.tenant_id AND r.collector = s.collector "
+            "  AND r.status IN ('SUCCEEDED', 'PARTIAL')"
+            ") latest ON true WHERE s.tenant_id = :tenant AND s.is_enabled "
+            "ORDER BY s.collector"
+        ),
+        {"tenant": tenant_id},
+    ).mappings()
+
+    retention_on = is_enabled(RETENTION_FLAG)
+    due = []
+    for row in rows:
+        name = str(row["collector"])
+        if governed_by_retention_flag(name) and not retention_on:
+            continue
+        last = row["finished_at"]
+        # Never run is due. An absent last run is the case the first dispatch
+        # after onboarding depends on.
+        if last is None or (now - last).total_seconds() >= int(row["cadence_seconds"]):
+            due.append(name)
+    return tuple(due)
 
 
 def install_default_schedule(connection: Any, tenant_id: Any, updated_by: str) -> int:
@@ -131,8 +267,6 @@ def install_default_schedule(connection: Any, tenant_id: Any, updated_by: str) -
     An operator who has deliberately slowed a collector down should not have that
     undone by a redeploy, so an existing row is left alone.
     """
-    from sqlalchemy import text
-
     written = 0
     for entry in DEFAULT_SCHEDULE:
         result = connection.execute(

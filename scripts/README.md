@@ -17,6 +17,7 @@ executable lives outside this directory.
 | `docs/` | Index consistency, feature document completeness, the file graph, checkpoint rotation |
 | `ci/` | Pipeline helpers, including the automated code review and the memory gate |
 | `deploy/` | Deployment helpers, including the migration task runner |
+| `ops/` | Things a person runs against a live database, deliberately not API routes |
 
 | Script | Entry point | Purpose |
 | --- | --- | --- |
@@ -37,6 +38,7 @@ executable lives outside this directory.
 | `ci/check_flags.py` | `make check-docs` | Fails on an expired feature flag, or one missing an owner, reason or removal plan |
 | `ci/check_hardcoded.py` | `make check-docs` | Fails on a region, account id, ARN, URL, role name or bare threshold written into application code |
 | `ci/check_forbidden_imports.py` | `make check-docs` | Enforces the reachability claims in `security/policy/accepted.yaml`. Importing a module an acceptance depends on not importing fails the build |
+| `ops/erase_principal.py` | run by hand | Answers an erasure request in one transaction and prints what it changed, including the zero audit rows it removed. Defaults to a dry run. Not an API route, because an erasure endpoint is a deletion primitive exposed to the network |
 | `ci/check_memory.py` | `make check-memory` | Fails when a resume vector points at a path that does not exist, a cited commit does not resolve, an identifier is defined nowhere, or a lesson is unfinished. Reports the lesson harvest rate every run |
 | `ci/refresh_base_images.py` | `make base-images` | Re resolves the Minimus tags to digests and rewrites `docker/base-images.lock` |
 | `deploy/run_migration_task.sh` | GitLab pipeline | Runs migrations as a one off ECS task before rollout |

@@ -184,7 +184,9 @@ meter/
 │   └── collectors/
 │       ├── org_tree.py        whole tree replaced in one transaction, never emptied
 │       ├── account_health.py  role_health written every run, including failed ones
-│       └── platform_cost.py   one grouped request a day. Untagged cost is named
+│       ├── platform_cost.py   one grouped request a day. Untagged cost is named
+│       ├── retention.py       six jobs. Anonymises, never removes a principal row
+│       └── partitions.py      months created ahead. Without one, cost rows are refused
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
 │   ├── flags.py               flag resolution, tenant then environment then declared
 │   ├── main.py                app factory. Refuses to start on a bare route

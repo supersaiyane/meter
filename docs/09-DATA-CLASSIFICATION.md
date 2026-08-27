@@ -73,13 +73,28 @@ Retention is a scheduled job, not a policy nobody runs. Nothing here is left as
 | Job | Cadence | Action |
 | --- | --- | --- |
 | `retention_principal` | Daily | Anonymise `principal` rows unseen for 90 days: `display_name` and `email` set to a tombstone, `subject` hashed. The row survives so audit joins do not dangle |
-| `retention_operational` | Daily | Delete `ingest_run`, `sync_error` and `ingest_watermark` history older than 90 days |
+| `retention_operational` | Daily | Remove `ingest_run` and `sync_error` history older than 90 days, and `ingest_watermark` rows untouched for 90 days. A watermark is a resume point, so removing one means a scope that returns is collected from the start, which is correct for an account closed three months ago |
 | `retention_audit` | Daily | Delete `audit_event` older than 13 months |
-| `retention_cost` | Monthly | Aggregate `cost_focus_daily` older than 37 months to month, account, service and region, then drop the line items |
+| `retention_cost` | Monthly | Aggregate `cost_focus_daily` older than 37 months to month, account, service and region into `cost_focus_monthly`, then remove the line items by dropping their partitions. Both halves are one transaction, so there is no instant at which the line items are gone and the monthly shape is not there |
+| `partition_maintenance` | Daily | Create the current month plus three for `cost_focus_daily` and `cost_provider_extra`. Not an optimisation: a range partitioned table with no partition for a row rejects the row outright, so this is what makes those tables writable |
 | `retention_scope_cache` | Hourly | Delete expired `principal_scope` rows |
 
 Each job writes an `ingest_run`, so a retention job that silently stops shows
 up on the freshness screen exactly like a collector that stopped.
+
+The cost roll up drops whole partitions rather than deleting rows. A partition
+drop is one catalog operation; the equivalent delete is a scan, a mass delete
+and a vacuum on the largest table in the system, inside a scheduled job's
+transaction. The consequence is that the boundary is the first of the month
+containing the cutoff rather than the cutoff itself, because a partition holding
+even one day still inside the window cannot be removed. Those days wait for the
+next run, which is why the cadence is monthly.
+
+`retention_cost` aggregates on the same boundary it drops on. Aggregating on a
+different boundary is how a month ends up counted twice or not at all.
+`cost_provider_extra` has no aggregate: it holds the provider's own fields that
+FOCUS has no column for, which are only meaningful against the line item they
+came from, so summing them would produce a number with no definition.
 
 **37 months** for cost data is chosen so that a full three year trend plus the
 current month is always available, which is what a year on year comparison
@@ -97,10 +112,25 @@ A request to erase a person:
    step 1.
 5. Record the request and its completion in the audit log.
 
-`scripts/ops/erase_principal.py`, to be written in P0, performs all five in one
-transaction and prints what it changed. It is deliberately a script a person
-runs, not an API, because an erasure endpoint is a deletion primitive exposed
-to the network.
+`scripts/ops/erase_principal.py` performs all five in one transaction and
+prints what it changed, including the count of audit events removed, which is
+always zero and is printed rather than left to be inferred from an absence. It
+is deliberately a script a person runs, not an API, because an erasure endpoint
+is a deletion primitive exposed to the network.
+
+It defaults to a dry run. The transaction is rolled back and the report printed
+unless `--commit` is passed, so the answer to "what would this remove" is
+obtained by running it rather than by reading it.
+
+```bash
+python scripts/ops/erase_principal.py --tenant <uuid> --principal <uuid> \
+    --requested-by <operator> --request-id <ticket> --commit
+```
+
+The cadence row in step 3 keeps its change and loses only its attribution. A
+cadence change is operational history rather than personal data, and removing
+the row would silently reset a deliberately slowed collector back to its
+default.
 
 ## What Meter deliberately does not hold
 

@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-222 public symbols across 4 packages.
+240 public symbols across 4 packages.
 
 ## finops_core
 
@@ -132,9 +132,25 @@ a duplicate.
 | `AccountHealthCollector` | class | `finops_ingest/collectors/account_health.py:34` | Checks one account's collector role and records the answer. | nothing in this tree |
 | `compute_paths` | function | `finops_ingest/collectors/org_tree.py:45` | The materialised path and depth of every node. | nothing in this tree |
 | `OrgTreeCollector` | class | `finops_ingest/collectors/org_tree.py:79` | Reads the organization and writes it, whole, in one transaction. | nothing in this tree |
+| `month_floor` | function | `finops_ingest/collectors/partitions.py:55` |  | `finops_ingest/collectors/retention.py` |
+| `next_month` | function | `finops_ingest/collectors/partitions.py:59` |  | nothing in this tree |
+| `months_from` | function | `finops_ingest/collectors/partitions.py:65` | `count` consecutive month starts, beginning at the month containing `start`. | nothing in this tree |
+| `partition_name` | function | `finops_ingest/collectors/partitions.py:73` |  | nothing in this tree |
+| `month_of` | function | `finops_ingest/collectors/partitions.py:77` | The month a partition name encodes, or None if it is not one of ours. | nothing in this tree |
+| `existing_partitions` | function | `finops_ingest/collectors/partitions.py:85` | What the database actually has, asked rather than remembered. | nothing in this tree |
+| `ensure_partition` | function | `finops_ingest/collectors/partitions.py:99` | Create one month's partition. Returns whether it had to be created. | nothing in this tree |
+| `detach_partitions_before` | function | `finops_ingest/collectors/partitions.py:116` | Remove partitions whose whole month is before `cutoff`. Returns their names. | `finops_ingest/collectors/retention.py` |
+| `partition_maintenance` | function | `finops_ingest/collectors/partitions.py:135` | Create the current month and the next few, for every partitioned table. | nothing in this tree |
 | `attribute` | function | `finops_ingest/collectors/platform_cost.py:51` | Name the module a charge belongs to. Never returns an empty string. | nothing in this tree |
 | `PlatformCostCollector` | class | `finops_ingest/collectors/platform_cost.py:58` | One grouped request a day, written by module and service. | nothing in this tree |
 | `total` | function | `finops_ingest/collectors/platform_cost.py:106` | What the platform cost over the set, for a caller that wants one figure. | nothing in this tree |
+| `hashed_subject` | function | `finops_ingest/collectors/retention.py:65` | A stable, non reversible stand in, so a duplicate sign in is still one row. | nothing in this tree |
+| `retention_principal` | function | `finops_ingest/collectors/retention.py:74` | Anonymise principals unseen past the window. Never removes a row. | nothing in this tree |
+| `retention_operational` | function | `finops_ingest/collectors/retention.py:96` | Remove run history, resolved errors and dead watermarks past the window. | nothing in this tree |
+| `retention_audit` | function | `finops_ingest/collectors/retention.py:125` | Remove audit records past their own window, and only past their own window. | nothing in this tree |
+| `retention_cost` | function | `finops_ingest/collectors/retention.py:141` | Aggregate line items past the window to month, account, service and region, | nothing in this tree |
+| `retention_scope_cache` | function | `finops_ingest/collectors/retention.py:190` | Remove expired entitlement cache rows. It is a cache, so this costs nothing. | nothing in this tree |
+| `register_retention` | function | `finops_ingest/collectors/retention.py:224` | Add the five to a registry. Returns how many, so a caller can assert on it. | nothing in this tree |
 | `WorkUnit` | class | `finops_ingest/dispatcher.py:29` | One thing one worker will do, once. | nothing in this tree |
 | `WorkUnit.scope_key` | method | `finops_ingest/dispatcher.py:40` | The identifier this unit is recorded and reported under. | nothing in this tree |
 | `WorkUnit.dedup_key` | method | `finops_ingest/dispatcher.py:52` | Identical to the key the ledger claims on, deliberately. | nothing in this tree |
@@ -157,24 +173,26 @@ a duplicate.
 | `RunLedger.record_sync_error` | method | `finops_ingest/ledger.py:244` | Keep one open row per scope and cause, counting repeats. | `finops_ingest/worker.py` |
 | `RunLedger.clear_sync_error` | method | `finops_ingest/ledger.py:274` | A scope that has succeeded no longer has an open error against it. | `finops_ingest/worker.py` |
 | `RunLedger.watermark` | method | `finops_ingest/ledger.py:289` | How far this collector has read for this scope, or None if never. | nothing in this tree |
-| `CollectorScope` | class | `finops_ingest/registry.py:22` | What one unit of this collector's work covers. | nothing in this tree |
-| `CollectorOutcome` | class | `finops_ingest/registry.py:32` | What a collector did, for the run ledger to record. | `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/org_tree.py`, `finops_ingest/collectors/platform_cost.py` |
-| `CollectorContext` | class | `finops_ingest/registry.py:40` | Everything a collector is given, and nothing it is not. | `finops_ingest/worker.py` |
-| `Collector` | class | `finops_ingest/registry.py:64` |  | nothing in this tree |
-| `ScheduleEntry` | class | `finops_ingest/registry.py:71` | One collector's cadence, with the reason it is that number. | nothing in this tree |
-| `install_default_schedule` | function | `finops_ingest/registry.py:128` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
-| `CollectorRegistry` | class | `finops_ingest/registry.py:158` | The collectors this process knows how to run. | nothing in this tree |
-| `CollectorRegistry.register` | method | `finops_ingest/registry.py:164` |  | nothing in this tree |
-| `CollectorRegistry.get` | method | `finops_ingest/registry.py:172` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 17 more |
-| `CollectorRegistry.names` | method | `finops_ingest/registry.py:181` |  | nothing in this tree |
+| `CollectorScope` | class | `finops_ingest/registry.py:25` | What one unit of this collector's work covers. | nothing in this tree |
+| `CollectorOutcome` | class | `finops_ingest/registry.py:35` | What a collector did, for the run ledger to record. | `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/org_tree.py`, `finops_ingest/collectors/partitions.py`, `finops_ingest/collectors/platform_cost.py`, and 1 more |
+| `CollectorContext` | class | `finops_ingest/registry.py:43` | Everything a collector is given, and nothing it is not. | `finops_ingest/worker.py` |
+| `Collector` | class | `finops_ingest/registry.py:71` |  | `finops_ingest/collectors/retention.py` |
+| `ScheduleEntry` | class | `finops_ingest/registry.py:78` | One collector's cadence, with the reason it is that number. | nothing in this tree |
+| `governed_by_retention_flag` | function | `finops_ingest/registry.py:213` |  | nothing in this tree |
+| `due_collectors` | function | `finops_ingest/registry.py:217` | Which of a tenant's collectors are due, honouring the kill switch. | nothing in this tree |
+| `install_default_schedule` | function | `finops_ingest/registry.py:264` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
+| `CollectorRegistry` | class | `finops_ingest/registry.py:292` | The collectors this process knows how to run. | nothing in this tree |
+| `CollectorRegistry.register` | method | `finops_ingest/registry.py:298` |  | `finops_ingest/collectors/retention.py` |
+| `CollectorRegistry.get` | method | `finops_ingest/registry.py:306` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 17 more |
+| `CollectorRegistry.names` | method | `finops_ingest/registry.py:315` |  | nothing in this tree |
 | `Outcome` | class | `finops_ingest/worker.py:46` | What happened to one unit. Every one of these is a normal result. | nothing in this tree |
 | `BatchResult` | class | `finops_ingest/worker.py:59` |  | nothing in this tree |
 | `BatchResult.count` | method | `finops_ingest/worker.py:62` |  | `finops_api/db/repositories/accounts.py` |
 | `BatchResult.is_partial` | method | `finops_ingest/worker.py:66` | True when the batch wrote something and something also failed. | nothing in this tree |
 | `log_fields` | function | `finops_ingest/worker.py:77` | The three fields every line carries, so a failure can be joined up. | nothing in this tree |
 | `Worker` | class | `finops_ingest/worker.py:91` | Claims a unit, resolves credentials, runs the collector, records the outcome. | nothing in this tree |
-| `Worker.handle_batch` | method | `finops_ingest/worker.py:110` | One transaction per unit. Never one transaction for the batch. | nothing in this tree |
-| `Worker.handle` | method | `finops_ingest/worker.py:116` |  | nothing in this tree |
+| `Worker.handle_batch` | method | `finops_ingest/worker.py:112` | One transaction per unit. Never one transaction for the batch. | nothing in this tree |
+| `Worker.handle` | method | `finops_ingest/worker.py:118` |  | nothing in this tree |
 
 ## finops_api
 
@@ -210,12 +228,12 @@ a duplicate.
 | `get_scope` | function | `finops_api/deps.py:77` | The scope this request may read. Resolved, never supplied by the caller. | nothing in this tree |
 | `get_access_context` | function | `finops_api/deps.py:83` | What every audit row this request writes is stamped with. | nothing in this tree |
 | `FlagResolver` | class | `finops_api/flags.py:39` | Reads a flag for a tenant, caching the per tenant override briefly. | nothing in this tree |
-| `FlagResolver.is_enabled` | method | `finops_api/flags.py:55` |  | nothing in this tree |
+| `FlagResolver.is_enabled` | method | `finops_api/flags.py:55` |  | `finops_ingest/registry.py` |
 | `ScopeViolationError` | class | `finops_api/guards.py:26` | A query was about to run against a scoped table without a scope. | nothing in this tree |
-| `require_scope` | function | `finops_api/guards.py:49` | Refuse anything that is not a scope, including None. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/base.py` |
-| `scope_predicate` | function | `finops_api/guards.py:65` | The WHERE clause that confines a read to what the scope permits. | nothing in this tree |
-| `scoped_select` | function | `finops_api/guards.py:92` | The only constructor of a select against a scoped table. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/freshness.py`, `finops_api/db/repositories/ingest.py`, and 1 more |
-| `assert_scoped` | function | `finops_api/guards.py:102` | Backstop. Refuse to run a select that did not come from `scoped_select`. | `finops_api/db/repositories/base.py` |
+| `require_scope` | function | `finops_api/guards.py:50` | Refuse anything that is not a scope, including None. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/base.py` |
+| `scope_predicate` | function | `finops_api/guards.py:66` | The WHERE clause that confines a read to what the scope permits. | nothing in this tree |
+| `scoped_select` | function | `finops_api/guards.py:93` | The only constructor of a select against a scoped table. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/freshness.py`, `finops_api/db/repositories/ingest.py`, and 1 more |
+| `assert_scoped` | function | `finops_api/guards.py:103` | Backstop. Refuse to run a select that did not come from `scoped_select`. | `finops_api/db/repositories/base.py` |
 | `ScopeCoverage` | class | `finops_api/identity/coverage.py:19` | Visible accounts against every account the organization holds. | nothing in this tree |
 | `ScopeCoverage.is_partial` | method | `finops_api/identity/coverage.py:36` | True when the figures on the page describe part of the organization. | nothing in this tree |
 | `ScopeCoverage.fraction` | method | `finops_api/identity/coverage.py:41` | Visible share, between 0 and 1. An empty organization is fully covered. | nothing in this tree |
@@ -325,10 +343,10 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `AccountHealthCollector` in `finops_ingest/collectors/account_health.py:34`
 - `compute_paths` in `finops_ingest/collectors/org_tree.py:45`
 - `OrgTreeCollector` in `finops_ingest/collectors/org_tree.py:79`
-- `attribute` in `finops_ingest/collectors/platform_cost.py:51`
-- `PlatformCostCollector` in `finops_ingest/collectors/platform_cost.py:58`
-- `total` in `finops_ingest/collectors/platform_cost.py:106`
-- `WorkUnit` in `finops_ingest/dispatcher.py:29`
-- `WorkUnit.scope_key` in `finops_ingest/dispatcher.py:40`
-- `WorkUnit.dedup_key` in `finops_ingest/dispatcher.py:52`
-- `Publisher` in `finops_ingest/dispatcher.py:57`
+- `next_month` in `finops_ingest/collectors/partitions.py:59`
+- `months_from` in `finops_ingest/collectors/partitions.py:65`
+- `partition_name` in `finops_ingest/collectors/partitions.py:73`
+- `month_of` in `finops_ingest/collectors/partitions.py:77`
+- `existing_partitions` in `finops_ingest/collectors/partitions.py:85`
+- `ensure_partition` in `finops_ingest/collectors/partitions.py:99`
+- `partition_maintenance` in `finops_ingest/collectors/partitions.py:135`

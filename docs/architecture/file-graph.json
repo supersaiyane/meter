@@ -204,7 +204,9 @@
     "finops_ingest/collectors/__init__.py",
     "finops_ingest/collectors/account_health.py",
     "finops_ingest/collectors/org_tree.py",
+    "finops_ingest/collectors/partitions.py",
     "finops_ingest/collectors/platform_cost.py",
+    "finops_ingest/collectors/retention.py",
     "finops_ingest/dispatcher.py",
     "finops_ingest/ledger.py",
     "finops_ingest/registry.py",
@@ -222,6 +224,7 @@
     "finops_providers/fake/provider.py",
     "migrations/env.py",
     "migrations/versions/0001_initial.py",
+    "migrations/versions/0002_cost_monthly.py",
     "scripts/ci/check_flags.py",
     "scripts/ci/check_forbidden_imports.py",
     "scripts/ci/check_hardcoded.py",
@@ -235,6 +238,7 @@
     "scripts/docs/check_index.py",
     "scripts/docs/rotate_checkpoint.py",
     "scripts/docs/sync.py",
+    "scripts/ops/erase_principal.py",
     "tests/__init__.py",
     "tests/api/__init__.py",
     "tests/api/test_identity_local.py",
@@ -258,7 +262,9 @@
     "tests/ingest/collectors/__init__.py",
     "tests/ingest/collectors/test_account_health.py",
     "tests/ingest/collectors/test_org_tree.py",
+    "tests/ingest/collectors/test_partitions.py",
     "tests/ingest/collectors/test_platform_cost.py",
+    "tests/ingest/collectors/test_retention.py",
     "tests/ingest/test_dispatcher.py",
     "tests/ingest/test_ledger.py",
     "tests/ingest/test_worker.py",
@@ -2011,12 +2017,27 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/partitions.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/platform_cost.py",
       "t": "finops_core/domain/platform.py",
       "k": "python"
     },
     {
       "s": "finops_ingest/collectors/platform_cost.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/retention.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/retention.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
@@ -2616,6 +2637,21 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_partitions.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_partitions.py",
+      "t": "finops_ingest/collectors/retention.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_partitions.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_platform_cost.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -2653,6 +2689,26 @@
     {
       "s": "tests/ingest/collectors/test_platform_cost.py",
       "t": "finops_providers/aws/platform_cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_retention.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_retention.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_retention.py",
+      "t": "finops_ingest/collectors/retention.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_retention.py",
+      "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {
