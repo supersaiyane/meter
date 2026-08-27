@@ -931,7 +931,7 @@ changes:
   what: TASK-P2-002, the cost model and the engine classifier extracted from the prototype under
     the golden files. Thirteen rates and thresholds moved from literals into settings. One string
     diverges, the em dash the writing rules forbid, and it is enumerated rather than absorbed
-  commit: pending
+  commit: '70da3ae'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
 issues:
 - id: ISS-001
