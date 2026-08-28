@@ -47,8 +47,47 @@ SOURCES = {"task-status": "docs/plans/"}
 DEFAULT_SOURCE = "docs/registry.yaml"
 
 
+class DuplicateIdentifierError(RuntimeError):
+    """Two entries in one section share an identifier."""
+
+
+def assert_identifiers_unique(registry: dict) -> int:
+    """Every ISS, CHG, ADR and FEAT number names exactly one thing.
+
+    ISS-110 and ISS-111 each named two different issues for a while, which made
+    half of them impossible to refer to: a checkpoint citing ISS-111 pointed at
+    two entries with different severities and different fixes. Nothing caught it
+    because every document generated from the registry rendered both rows
+    happily.
+
+    Returns how many identifiers it checked, so a caller can tell the difference
+    between agreement and an empty registry.
+    """
+    seen = 0
+    for section, entries in registry.items():
+        if not isinstance(entries, list):
+            continue
+        counts: dict[str, int] = {}
+        for entry in entries:
+            if not isinstance(entry, dict) or "id" not in entry:
+                continue
+            counts[entry["id"]] = counts.get(entry["id"], 0) + 1
+            seen += 1
+        repeated = sorted(key for key, count in counts.items() if count > 1)
+        if repeated:
+            raise DuplicateIdentifierError(
+                f"{section}: {', '.join(repeated)} used more than once. "
+                "An identifier that names two things cannot be cited."
+            )
+    if seen == 0:
+        raise DuplicateIdentifierError("the registry declared no identifiers at all")
+    return seen
+
+
 def load() -> dict:
-    return yaml.safe_load(REGISTRY.read_text(encoding="utf-8"))
+    registry = yaml.safe_load(REGISTRY.read_text(encoding="utf-8"))
+    assert_identifiers_unique(registry)
+    return registry
 
 
 def replace_block(text: str, name: str, body: str) -> str:

@@ -17,7 +17,6 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, ConfigDict
 from sqlalchemy.engine import Connection
 
 from finops_api.db.repositories import (
@@ -28,39 +27,13 @@ from finops_api.db.repositories import (
 )
 from finops_api.deps import get_access_context, get_connection, get_scope
 from finops_api.routes import API_PREFIX, build_meta
-from finops_api.schemas import Envelope
+from finops_api.schemas import Envelope, FreshnessOut, RunOut
 from finops_core.constants import STALE_AFTER_CADENCE_MULTIPLE
 from finops_core.domain.tenant import Scope
 
 router = APIRouter(prefix=API_PREFIX, tags=["ingest"])
 
 RECENT_RUNS = 50
-
-
-class RunOut(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    run_id: str
-    collector: str
-    scope_key: str
-    status: str
-    started_at: datetime
-    finished_at: datetime | None
-    items_written: int
-    #: One of the six causes, or None. Never a free text exception message.
-    error_type: str | None
-    error_detail: str | None
-
-
-class FreshnessOut(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    collector: str
-    scope_key: str
-    as_of: datetime
-    cadence_seconds: int | None
-    age_seconds: float
-    is_stale: bool
 
 
 @router.get("/ingest/runs", response_model=Envelope[list[RunOut]])

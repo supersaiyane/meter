@@ -77,6 +77,7 @@ services:
       METER_DATABASE_URL: postgresql+psycopg://meter:meter_local_only@postgres:5432/meter
       METER_IDENTITY_PROVIDER: local_config
       METER_LOCAL_AUTH_FILE: /app/local-auth.yaml
+      METER_LOCAL_TENANT_ID: 00000000-0000-0000-0000-000000000001
       AWS_ENDPOINT_URL: http://localstack:4566
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
@@ -90,6 +91,29 @@ services:
         condition: service_healthy
       localstack:
         condition: service_healthy
+
+  # The same image as `api`, with a different command. That is the whole of
+  # ADR-0009's deployment claim, and running it here is what stops the claim
+  # from being true only on paper. It talks to the API over the network, as any
+  # other caller does, and holds no credential of its own.
+  mcp:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    command:
+      - /opt/venv/bin/uvicorn
+      - finops_mcp.server:bootstrap
+      - --factory
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8001"
+    environment:
+      METER_API_BASE_URL: http://api:8000
+    ports:
+      - "8001:8001"
+    depends_on:
+      - api
 
   dispatcher:
     build:

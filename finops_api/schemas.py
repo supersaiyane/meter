@@ -16,7 +16,8 @@ flag that will be wrong exactly when it matters.
 from __future__ import annotations
 
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import date, datetime
+from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, computed_field
 
@@ -96,6 +97,97 @@ class Envelope[T](BaseModel):
 
     data: T
     meta: Meta
+
+
+# --- the response models ------------------------------------------------------
+#
+# These describe what leaves the API, so they live here rather than beside the
+# route that returns them. `finops_mcp` generates its tool schemas from these
+# exact classes, and it may not import a route module, because every one of them
+# imports SQLAlchemy and the facade is forbidden from reaching the service
+# layer. The alternative was a second set of models in `finops_mcp` kept equal by
+# hand, which is the drift the generation was meant to remove.
+
+
+class MeOut(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    principal_id: str
+    display_name: str
+    tenant_id: str
+    tiers: tuple[str, ...]
+    is_global: bool
+    accounts_in_scope: int
+
+
+class AccountOut(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    provider: str
+    account_id: str
+    name: str
+    status: str
+    role_health: str
+    role_health_checked_at: datetime | None
+    #: The provider's own words about why the role is unusable. Never a stack trace.
+    role_health_error: str | None
+    as_of: datetime
+    collected_at: datetime
+
+
+class OrgNodeOut(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    node_id: str
+    node_type: str
+    parent_node_id: str | None
+    name: str
+    path: str
+    depth: int
+    #: False when the caller's scope does not reach this account. The node is
+    #: still here; what it means is that no figure may be shown against it.
+    reachable: bool
+    as_of: datetime
+    collected_at: datetime
+
+
+class RunOut(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    run_id: str
+    collector: str
+    scope_key: str
+    status: str
+    started_at: datetime
+    finished_at: datetime | None
+    items_written: int
+    #: One of the six causes, or None. Never a free text exception message.
+    error_type: str | None
+    error_detail: str | None
+
+
+class FreshnessOut(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    collector: str
+    scope_key: str
+    as_of: datetime
+    cadence_seconds: int | None
+    age_seconds: float
+    is_stale: bool
+
+
+class PlatformCostOut(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    day: date
+    module: str
+    service: str
+    #: Decimal, never float. A float total over a month of line items is wrong
+    #: in the last places, and a figure that will not reconcile is not used twice.
+    amortized_cost: Decimal
+    as_of: datetime
+    collected_at: datetime
 
 
 class CollectorHealth(BaseModel):

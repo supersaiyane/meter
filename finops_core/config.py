@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 from typing import Literal
+from uuid import UUID
 
 from pydantic import Field, ValidationError, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -66,6 +67,12 @@ class Settings(BaseSettings):
     # Identity
     identity_provider: str = Field(min_length=1)
     local_auth_file: str = Field(min_length=1)
+    #: Which tenant the local provider issues principals for. It exists only
+    #: because that provider has no directory to read a tenant from. A real
+    #: identity provider carries the tenant in the assertion, and the production
+    #: guard already refuses to start with the local provider, so this value can
+    #: never decide anything in production.
+    local_tenant_id: UUID
     session_ttl_hours: int = Field(ge=1)
     entitlement_cache_ttl_minutes: int = Field(ge=1)
     session_signing_key: str = Field(min_length=1)

@@ -2188,7 +2188,7 @@ therefore partly done. Recorded rather than absorbed.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-27 |
 | Implements | P0 spec section 8.0, ADR-0009 |
 | Delivers | FEAT-042 groundwork |
 | Depends on | TASK-P0-025 |
@@ -2201,31 +2201,70 @@ pattern before there is much to expose.
 
 | Path | Action |
 | --- | --- |
-| `finops_mcp/__init__.py` | create |
-| `finops_mcp/server.py` | create |
-| `finops_mcp/tools.py` | create |
-| `tests/mcp/test_tools.py` | create |
+| `finops_mcp/api.py` | created. The only way this package reaches Meter |
+| `finops_mcp/server.py` | created |
+| `finops_mcp/tools.py` | created |
+| `tests/mcp/test_contract.py` | created, 10 tests that need no container |
+| `tests/mcp/test_tools.py` | created, 5 against the real application |
+| `tests/scripts/test_layer_agreement.py` | created, not planned. See deviation 4 |
+| `finops_api/schemas.py` | the six response models moved here. See deviation 1 |
+| `finops_api/main.py` | `bootstrap()` added. See deviation 3 |
+| `docker/Dockerfile.api` | the MCP command, and a corrected API command |
 
 **Acceptance criteria.**
 
-- [ ] Ships as a second process in the `meter-api` image, selected by the
+- [x] Ships as a second process in the `meter-api` image, selected by the
       container command. No fourth image, see ADR-0009
-- [ ] Four tools: `list_accounts`, `get_org_tree`, `get_ingest_status`,
-      `get_platform_cost`
-- [ ] Every tool calls the HTTP API over the network with the caller's token
-- [ ] Tool schemas are generated from the same Pydantic models the API uses,
+- [x] Four tools: `list_accounts`, `get_org_tree`, `get_ingest_status`,
+      `get_platform_cost`. Six were built, see deviation 2
+- [x] Every tool calls the HTTP API over the network with the caller's token
+- [x] Tool schemas are generated from the same Pydantic models the API uses,
       so a drift between the two surfaces fails the build
-- [ ] Every tool response carries the `meta` envelope unchanged, including
+- [x] Every tool response carries the `meta` envelope unchanged, including
       `scope_coverage`, so a model cannot present a partial total as complete
-- [ ] A caller with a two account scope receives two accounts from the tool
+- [x] A caller with a two account scope receives two accounts from the tool
+
+**Deviations.**
+
+1. **The six response models moved from the route modules into
+   `finops_api/schemas.py`.** Generating a tool schema from the API's own model
+   means importing it, and every route module imports SQLAlchemy, which the
+   facade contract forbids both directly and through the chain. The alternative
+   was a second set of models inside `finops_mcp` kept equal by hand, which is
+   the drift the generation was meant to remove.
+2. **Six tools rather than four.** `get_freshness` and `whoami` were added. The
+   first question a model should ask about a small or stale answer is what it is
+   allowed to see and how old the data is, and without a tool for each the only
+   route to that is inference from a coverage fraction.
+3. **The API image could never have started.** Its `CMD` named
+   `finops_api.main:app`, and no such module level symbol has ever existed. Every
+   deploy of that image would have failed at startup and nothing in the build
+   would have caught it. Fixed with a `bootstrap()` factory and `--factory`, and
+   a test now imports every target the Dockerfile names. ISS-114. It also needed
+   one new setting, `METER_LOCAL_TENANT_ID`, because the local identity provider
+   has no directory to read a tenant from.
+4. **The layer ordering was written down twice and the two disagreed.**
+   `pyproject.toml` put `finops_mcp` above `finops_api`, which is correct per
+   constraint 8, and `scripts/docs/build_file_graph.py` put it below, so the
+   graph check was enforcing the opposite of the rule for that pair. Neither
+   check noticed, because each was internally consistent. ISS-115.
+5. **Two issue numbers named two issues each.** ISS-110 and ISS-111 were both
+   used twice, so half of them could not be cited unambiguously. Renumbered, and
+   `scripts/docs/sync.py` now fails the build on a duplicate identifier in any
+   section of the registry. ISS-116.
+6. **ISS-109 re-probed and confirmed closed.** The facade contract's
+   `finops_api.guards` entry was inert when the module did not exist. Importing
+   it from `finops_mcp/tools.py` now breaks the contract, and breaks the
+   `sqlalchemy` clause through the chain as well.
 
 **Tests.**
 
 | Test | Asserts |
 | --- | --- |
-| `tests/mcp/test_tools.py::test_tool_respects_scope` | The MCP path enforces exactly what the HTTP path enforces |
-| `tests/mcp/test_tools.py::test_schemas_match_api_models` | A model change without a tool change fails |
-| `tests/mcp/test_tools.py::test_meta_envelope_is_preserved` | Freshness and coverage survive the facade |
+| `tests/mcp/test_tools.py::test_a_tool_returns_exactly_what_the_caller_is_entitled_to` | The MCP path enforces exactly what the HTTP path enforces |
+| `tests/mcp/test_contract.py::test_every_tool_declares_the_route_s_own_model` | A model change without a tool change fails |
+| `tests/mcp/test_tools.py::test_the_meta_envelope_survives_the_facade` | Freshness and coverage survive the facade |
+| `tests/mcp/test_contract.py::test_both_container_commands_name_something_that_exists` | An image whose command names a missing symbol fails the build |
 
 **Do not.**
 

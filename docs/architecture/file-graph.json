@@ -11,6 +11,7 @@
     "docker/finops_api",
     "docker/finops_core",
     "docker/finops_ingest",
+    "docker/finops_mcp",
     "docker/finops_providers",
     "docker/migrations",
     "docker/pyproject.toml",
@@ -212,6 +213,9 @@
     "finops_ingest/registry.py",
     "finops_ingest/worker.py",
     "finops_mcp/__init__.py",
+    "finops_mcp/api.py",
+    "finops_mcp/server.py",
+    "finops_mcp/tools.py",
     "finops_providers/__init__.py",
     "finops_providers/aws/__init__.py",
     "finops_providers/aws/accounts.py",
@@ -268,6 +272,9 @@
     "tests/ingest/test_dispatcher.py",
     "tests/ingest/test_ledger.py",
     "tests/ingest/test_worker.py",
+    "tests/mcp/__init__.py",
+    "tests/mcp/test_contract.py",
+    "tests/mcp/test_tools.py",
     "tests/perf/__init__.py",
     "tests/perf/test_budgets.py",
     "tests/providers/__init__.py",
@@ -278,6 +285,7 @@
     "tests/providers/test_fake.py",
     "tests/scripts/__init__.py",
     "tests/scripts/test_check_index.py",
+    "tests/scripts/test_layer_agreement.py",
     "tests/test_checkpoint_rotation.py"
   ],
   "edges": [
@@ -299,6 +307,11 @@
     {
       "s": "docker/Dockerfile.api",
       "t": "docker/finops_ingest",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.api",
+      "t": "docker/finops_mcp",
       "k": "docker"
     },
     {
@@ -1573,6 +1586,16 @@
     },
     {
       "s": "finops_api/main.py",
+      "t": "finops_api/identity/local_config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/main.py",
+      "t": "finops_api/identity/session.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/main.py",
       "t": "finops_api/middleware.py",
       "k": "python"
     },
@@ -2084,6 +2107,21 @@
     {
       "s": "finops_ingest/worker.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_mcp/server.py",
+      "t": "finops_mcp/api.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_mcp/server.py",
+      "t": "finops_mcp/tools.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_mcp/tools.py",
+      "t": "finops_api/schemas.py",
       "k": "python"
     },
     {
@@ -2764,6 +2802,76 @@
     {
       "s": "tests/ingest/test_worker.py",
       "t": "finops_ingest/worker.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/mcp/test_contract.py",
+      "t": "finops_api/main.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/mcp/test_contract.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/mcp/test_contract.py",
+      "t": "finops_mcp/api.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/mcp/test_contract.py",
+      "t": "finops_mcp/server.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/mcp/test_contract.py",
+      "t": "finops_mcp/tools.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/mcp/test_tools.py",
+      "t": "finops_api/identity/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/mcp/test_tools.py",
+      "t": "finops_api/main.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/mcp/test_tools.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/mcp/test_tools.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/mcp/test_tools.py",
+      "t": "finops_core/domain/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/mcp/test_tools.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/mcp/test_tools.py",
+      "t": "finops_mcp/api.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/mcp/test_tools.py",
+      "t": "finops_mcp/server.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/mcp/test_tools.py",
+      "t": "finops_mcp/tools.py",
       "k": "python"
     },
     {

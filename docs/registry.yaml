@@ -859,8 +859,16 @@ changes:
     PARTITION BY RANGE with no partition anywhere, so both rejected every row. Partition
     maintenance added, and the cost roll up now aggregates into cost_focus_monthly
     then drops whole partitions
-  commit: pending
+  commit: 'b5750f3'
   detail: '[Data classification](docs/09-DATA-CLASSIFICATION.md)'
+- id: CHG-0061
+  date: '2026-08-27'
+  type: Feature
+  what: TASK-P0-030, the MCP server as a facade over the HTTP API, with six read tools
+    whose schemas are generated from the API's own models. Found that the API image could
+    never have started, because its command named a symbol that has never existed
+  commit: pending
+  detail: '[ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1487,14 +1495,14 @@ issues:
     it was not providing'
   detail: 'Set in `pyproject.toml`, and verified by probe: finops_core importing boto3 now breaks the
     contract'
-- id: ISS-111
+- id: ISS-112
   severity: MEDIUM
   status: FIXED
   summary: TASK-P0-029 was marked done without running the dependency admission gate, one of its acceptance
     criteria
   detail: 'Run 2026-10-07 against the full resolved tree: grype 0 findings across 97 packages, pip-audit
     0 advisories across 113. Recorded in the task evidence'
-- id: ISS-110
+- id: ISS-113
   severity: LOW
   status: FIXED
   summary: make lint failed on a terraform directory that Wave D has not created yet, leaving
@@ -1506,6 +1514,30 @@ issues:
   summary: The restore drill required by TASK-P0-028 has not been performed, because it needs
     an Aurora cluster to restore into a scratch database. P0 is not signed off until it is
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md) TASK-P0-028'
+- id: ISS-114
+  severity: HIGH
+  status: FIXED
+  summary: The API image could never have started. Its CMD named finops_api.main:app and no such
+    module level symbol has ever existed, so every deploy of that image would have failed at
+    startup with an attribute error and nothing in the build would have caught it
+  detail: Found while adding the MCP server's command to the same image. Fixed with a bootstrap
+    factory and `--factory`, and a test in `tests/mcp/test_contract.py` now imports every target
+    the Dockerfile names
+- id: ISS-115
+  severity: MEDIUM
+  status: FIXED
+  summary: The layer ordering was written down twice and the two disagreed. pyproject.toml put
+    finops_mcp above finops_api, correctly, and scripts/docs/build_file_graph.py put it below,
+    so the graph check was enforcing the opposite of constraint 8 for that pair
+  detail: Neither check noticed, because each was internally consistent. Corrected in the graph
+    builder and held equal by `tests/scripts/test_layer_agreement.py`
+- id: ISS-116
+  severity: MEDIUM
+  status: FIXED
+  summary: Two issue numbers were used twice each. ISS-110 and ISS-111 each named two different
+    issues, so half of them could not be referred to unambiguously
+  detail: The later entries renumbered to ISS-112 and ISS-113. `scripts/docs/sync.py` now fails
+    on a duplicate identifier in any section of the registry
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS

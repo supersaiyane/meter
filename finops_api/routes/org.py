@@ -13,38 +13,20 @@ not to render a figure against it.
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, ConfigDict
 from sqlalchemy.engine import Connection
 
 from finops_api.db.repositories import AccessContext, OrgRepository
 from finops_api.deps import get_access_context, get_connection, get_scope
 from finops_api.routes import API_PREFIX, build_meta
-from finops_api.schemas import Envelope
+from finops_api.schemas import Envelope, OrgNodeOut
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.org import OrgNodeType
 from finops_core.domain.tenant import Scope
 
 router = APIRouter(prefix=API_PREFIX, tags=["org"])
-
-
-class OrgNodeOut(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    node_id: str
-    node_type: str
-    parent_node_id: str | None
-    name: str
-    path: str
-    depth: int
-    #: False when the caller's scope does not reach this account. The node is
-    #: still here; what it means is that no figure may be shown against it.
-    reachable: bool
-    as_of: datetime
-    collected_at: datetime
 
 
 def reachable_for(row: Any, scope: Scope) -> bool:

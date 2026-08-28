@@ -213,7 +213,10 @@ meter/
 │   ├── env.py                 URL from settings, overridable by a test
 │   └── versions/              0001_initial, raw SQL, faithful to 07-DATA-MODEL
 ├── finops-web/                PLANNED  React and TypeScript
-├── finops_mcp/                PLANNED  MCP server, a facade over the HTTP API
+├── finops_mcp/                IN BUILD  MCP server, a facade over the HTTP API
+│   ├── api.py                the only way out of this package, and it is HTTP
+│   ├── tools.py              six rows. Schemas generated from the API's own models
+│   └── server.py             binds the table to the SDK. No credential of its own
 │                              Directory exists, __init__.py only. Ships as a
 │                              second process on the api image, ADR-0009
 └── infra/terraform/           PLANNED  hub/, member/, management/

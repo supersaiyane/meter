@@ -62,6 +62,7 @@ COPY finops_core/      ./finops_core/
 COPY finops_providers/ ./finops_providers/
 COPY finops_ingest/    ./finops_ingest/
 COPY finops_api/       ./finops_api/
+COPY finops_mcp/       ./finops_mcp/
 COPY alembic.ini       ./
 COPY migrations/       ./migrations/
 
@@ -87,7 +88,8 @@ COPY --from=builder /build/migrations /app/migrations
 # future edit does not quietly reintroduce root.
 USER 65532:65532
 
-EXPOSE 8000
+# 8000 is the API, 8001 the MCP server when this image is run with that command.
+EXPOSE 8000 8001
 
 ARG GIT_SHA=unknown
 LABEL org.opencontainers.image.title="meter-api" \
@@ -96,5 +98,18 @@ LABEL org.opencontainers.image.title="meter-api" \
       io.meter.platform="${TARGETPLATFORM}" \
       io.meter.module="api"
 
-ENTRYPOINT ["/opt/venv/bin/uvicorn"]
-CMD ["finops_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
+# The whole command is the CMD and there is no ENTRYPOINT, so a task definition
+# selects which process runs by overriding it. That is how the MCP server ships
+# as a second process in this image rather than as a fourth image, which would
+# need its own build, scan, signature and repository. ADR-0009, A001-F08.
+#
+#   API  uvicorn finops_api.main:bootstrap  --factory --port 8000
+#   MCP  uvicorn finops_mcp.server:bootstrap --factory --port 8001
+#
+# `--factory` because both targets are functions. They are functions so that
+# importing either module for a test or a documentation gate does not open a
+# database connection as a side effect. A test holds these two targets against
+# the code, because a CMD naming a symbol that does not exist is a container
+# that never starts and nothing else in the build would notice.
+CMD ["/opt/venv/bin/uvicorn", "finops_api.main:bootstrap", "--factory", \
+     "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]

@@ -24,16 +24,16 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-240 public symbols across 4 packages.
+255 public symbols across 5 packages.
 
 ## finops_core
 
 | Symbol | Kind | Location | Purpose | Called by |
 | --- | --- | --- | --- | --- |
-| `ConfigurationError` | class | `finops_core/config.py:33` | The process cannot start with the configuration it was given. | nothing in this tree |
-| `Settings` | class | `finops_core/config.py:37` | Every `METER_` variable in `.env.example`, typed, with no hidden defaults. | nothing in this tree |
-| `Settings.region_list` | method | `finops_core/config.py:147` | `regions` is held as text because a comma separated list from the | nothing in this tree |
-| `load_settings` | function | `finops_core/config.py:167` | Build the settings, or refuse to start and say which variable is at fault. | `finops_api/deps.py` |
+| `ConfigurationError` | class | `finops_core/config.py:34` | The process cannot start with the configuration it was given. | nothing in this tree |
+| `Settings` | class | `finops_core/config.py:38` | Every `METER_` variable in `.env.example`, typed, with no hidden defaults. | nothing in this tree |
+| `Settings.region_list` | method | `finops_core/config.py:154` | `regions` is held as text because a comma separated list from the | nothing in this tree |
+| `load_settings` | function | `finops_core/config.py:174` | Build the settings, or refuse to start and say which variable is at fault. | `finops_api/deps.py` |
 | `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | `finops_api/identity/session.py`, `finops_api/routes/accounts.py`, `finops_ingest/collectors/org_tree.py` |
 | `AccountStatus` | class | `finops_core/domain/account.py:26` | What the provider says about the account, not what we infer. | nothing in this tree |
 | `RoleHealth` | class | `finops_core/domain/account.py:47` | Whether the collector role in a member account is actually usable. | `finops_ingest/collectors/account_health.py` |
@@ -183,7 +183,7 @@ a duplicate.
 | `install_default_schedule` | function | `finops_ingest/registry.py:264` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
 | `CollectorRegistry` | class | `finops_ingest/registry.py:292` | The collectors this process knows how to run. | nothing in this tree |
 | `CollectorRegistry.register` | method | `finops_ingest/registry.py:298` |  | `finops_ingest/collectors/retention.py` |
-| `CollectorRegistry.get` | method | `finops_ingest/registry.py:306` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 17 more |
+| `CollectorRegistry.get` | method | `finops_ingest/registry.py:306` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 19 more |
 | `CollectorRegistry.names` | method | `finops_ingest/registry.py:315` |  | nothing in this tree |
 | `Outcome` | class | `finops_ingest/worker.py:46` | What happened to one unit. Every one of these is a normal result. | nothing in this tree |
 | `BatchResult` | class | `finops_ingest/worker.py:59` |  | nothing in this tree |
@@ -240,59 +240,79 @@ a duplicate.
 | `ScopeCoverage.as_dict` | method | `finops_api/identity/coverage.py:47` | The shape every API response carries alongside its numbers. | nothing in this tree |
 | `LocalUser` | class | `finops_api/identity/local_config.py:43` |  | nothing in this tree |
 | `load_users` | function | `finops_api/identity/local_config.py:51` | Read the file, refusing anything malformed rather than skipping it. | nothing in this tree |
-| `LocalConfigIdentityProvider` | class | `finops_api/identity/local_config.py:92` | Satisfies both `IdentityProvider` and `EntitlementResolver`. | nothing in this tree |
+| `LocalConfigIdentityProvider` | class | `finops_api/identity/local_config.py:92` | Satisfies both `IdentityProvider` and `EntitlementResolver`. | `finops_api/main.py` |
 | `LocalConfigIdentityProvider.authenticate` | method | `finops_api/identity/local_config.py:110` | In local development the token is the subject. Unknown is refused. | nothing in this tree |
 | `LocalConfigIdentityProvider.resolve` | method | `finops_api/identity/local_config.py:126` | The scope this principal holds, cached until an explicit expiry. | `finops_api/deps.py`, `finops_ingest/collectors/org_tree.py` |
 | `Session` | class | `finops_api/identity/session.py:38` | A verified session. Never constructed from an unverified token. | `finops_providers/aws/credentials.py` |
-| `SessionSigner` | class | `finops_api/identity/session.py:67` | Issues and verifies session tokens. | nothing in this tree |
+| `SessionSigner` | class | `finops_api/identity/session.py:67` | Issues and verifies session tokens. | `finops_api/main.py` |
 | `SessionSigner.issue` | method | `finops_api/identity/session.py:77` |  | nothing in this tree |
 | `SessionSigner.verify` | method | `finops_api/identity/session.py:91` |  | `finops_api/deps.py` |
-| `EnvelopeContractError` | class | `finops_api/main.py:50` | A data route was registered without the response envelope. | nothing in this tree |
-| `returns_envelope` | function | `finops_api/main.py:54` | True when the declared model is the envelope, parameterised or not. | nothing in this tree |
-| `iter_api_routes` | function | `finops_api/main.py:70` | Every API route in the routers this application registers. | nothing in this tree |
-| `assert_envelope_contract` | function | `finops_api/main.py:86` | Refuse to start if a data route returns something bare. | nothing in this tree |
-| `collector_health` | function | `finops_api/main.py:110` | How long since each enabled collector last succeeded, against its cadence. | nothing in this tree |
-| `build_router` | function | `finops_api/main.py:149` |  | nothing in this tree |
-| `p0_routers` | function | `finops_api/main.py:172` | The seven P0 routes, from the spec's section 8 table. | nothing in this tree |
-| `create_app` | function | `finops_api/main.py:179` | Build the application, refusing to start on a broken envelope contract. | nothing in this tree |
+| `EnvelopeContractError` | class | `finops_api/main.py:51` | A data route was registered without the response envelope. | nothing in this tree |
+| `returns_envelope` | function | `finops_api/main.py:55` | True when the declared model is the envelope, parameterised or not. | nothing in this tree |
+| `iter_api_routes` | function | `finops_api/main.py:71` | Every API route in the routers this application registers. | nothing in this tree |
+| `assert_envelope_contract` | function | `finops_api/main.py:87` | Refuse to start if a data route returns something bare. | nothing in this tree |
+| `collector_health` | function | `finops_api/main.py:111` | How long since each enabled collector last succeeded, against its cadence. | nothing in this tree |
+| `build_router` | function | `finops_api/main.py:150` |  | nothing in this tree |
+| `p0_routers` | function | `finops_api/main.py:173` | The seven P0 routes, from the spec's section 8 table. | nothing in this tree |
+| `create_app` | function | `finops_api/main.py:180` | Build the application, refusing to start on a broken envelope contract. | nothing in this tree |
+| `bootstrap` | function | `finops_api/main.py:217` | Build the application the container runs, from the environment alone. | nothing in this tree |
 | `RequestIdMiddleware` | class | `finops_api/middleware.py:27` | Give every request an id, log it, and hand it back on the response. | nothing in this tree |
 | `RequestIdMiddleware.dispatch` | method | `finops_api/middleware.py:30` |  | nothing in this tree |
 | `freshness_of` | function | `finops_api/routes/__init__.py:35` | The stalest `as_of` and `collected_at` in a set, or None when it is empty. | nothing in this tree |
 | `open_failures` | function | `finops_api/routes/__init__.py:55` | Everything currently broken in this scope, with what to do about it. | nothing in this tree |
 | `build_meta` | function | `finops_api/routes/__init__.py:78` | The envelope every route returns, assembled the same way each time. | `finops_api/routes/accounts.py`, `finops_api/routes/ingest.py`, `finops_api/routes/me.py`, `finops_api/routes/org.py`, and 1 more |
-| `AccountOut` | class | `finops_api/routes/accounts.py:27` |  | nothing in this tree |
-| `to_out` | function | `finops_api/routes/accounts.py:42` |  | nothing in this tree |
-| `list_accounts` | function | `finops_api/routes/accounts.py:57` |  | `finops_ingest/collectors/org_tree.py` |
-| `recheck` | function | `finops_api/routes/accounts.py:70` | Force a role health recheck. A read only call, per constraint 6. | nothing in this tree |
-| `RunOut` | class | `finops_api/routes/ingest.py:40` |  | nothing in this tree |
-| `FreshnessOut` | class | `finops_api/routes/ingest.py:55` |  | nothing in this tree |
-| `recent_runs` | function | `finops_api/routes/ingest.py:67` |  | nothing in this tree |
-| `staleness` | function | `finops_api/routes/ingest.py:90` |  | nothing in this tree |
-| `freshness` | function | `finops_api/routes/ingest.py:107` |  | nothing in this tree |
-| `MeOut` | class | `finops_api/routes/me.py:25` |  | nothing in this tree |
-| `me` | function | `finops_api/routes/me.py:37` |  | nothing in this tree |
-| `OrgNodeOut` | class | `finops_api/routes/org.py:34` |  | nothing in this tree |
-| `reachable_for` | function | `finops_api/routes/org.py:50` | Structure is always visible. Whether an account can be read is the scope's answer. | nothing in this tree |
-| `org_tree` | function | `finops_api/routes/org.py:58` |  | nothing in this tree |
-| `PlatformCostOut` | class | `finops_api/routes/platform.py:30` |  | nothing in this tree |
-| `platform_cost` | function | `finops_api/routes/platform.py:44` |  | nothing in this tree |
-| `CoverageOut` | class | `finops_api/schemas.py:24` | Visible accounts against every account the organization holds. ISS-016. | nothing in this tree |
-| `CoverageOut.is_partial` | method | `finops_api/schemas.py:34` |  | nothing in this tree |
-| `FailureOut` | class | `finops_api/schemas.py:38` | One thing that is broken, and what the reader should do about it. | `finops_api/routes/__init__.py` |
-| `Meta` | class | `finops_api/schemas.py:52` | What the numbers beside this are worth. | nothing in this tree |
-| `Meta.degraded` | method | `finops_api/schemas.py:66` | True when the reader must not take these figures at face value. | nothing in this tree |
-| `Meta.build` | method | `finops_api/schemas.py:76` |  | `finops_api/routes/__init__.py` |
-| `Envelope` | class | `finops_api/schemas.py:92` | Every route returns this. There is no bare data variant. | `finops_api/routes/accounts.py`, `finops_api/routes/ingest.py`, `finops_api/routes/me.py`, `finops_api/routes/org.py`, and 1 more |
-| `CollectorHealth` | class | `finops_api/schemas.py:101` | How long since a collector last succeeded, against its own cadence. | `finops_api/main.py` |
-| `HealthOut` | class | `finops_api/schemas.py:113` | `/healthz`. Deliberately not a bare liveness probe. | `finops_api/main.py` |
+| `to_out` | function | `finops_api/routes/accounts.py:26` |  | nothing in this tree |
+| `list_accounts` | function | `finops_api/routes/accounts.py:41` |  | `finops_ingest/collectors/org_tree.py` |
+| `recheck` | function | `finops_api/routes/accounts.py:54` | Force a role health recheck. A read only call, per constraint 6. | nothing in this tree |
+| `recent_runs` | function | `finops_api/routes/ingest.py:40` |  | nothing in this tree |
+| `staleness` | function | `finops_api/routes/ingest.py:63` |  | nothing in this tree |
+| `freshness` | function | `finops_api/routes/ingest.py:80` |  | nothing in this tree |
+| `me` | function | `finops_api/routes/me.py:25` |  | nothing in this tree |
+| `reachable_for` | function | `finops_api/routes/org.py:32` | Structure is always visible. Whether an account can be read is the scope's answer. | nothing in this tree |
+| `org_tree` | function | `finops_api/routes/org.py:40` |  | nothing in this tree |
+| `platform_cost` | function | `finops_api/routes/platform.py:27` |  | nothing in this tree |
+| `CoverageOut` | class | `finops_api/schemas.py:25` | Visible accounts against every account the organization holds. ISS-016. | nothing in this tree |
+| `CoverageOut.is_partial` | method | `finops_api/schemas.py:35` |  | nothing in this tree |
+| `FailureOut` | class | `finops_api/schemas.py:39` | One thing that is broken, and what the reader should do about it. | `finops_api/routes/__init__.py` |
+| `Meta` | class | `finops_api/schemas.py:53` | What the numbers beside this are worth. | nothing in this tree |
+| `Meta.degraded` | method | `finops_api/schemas.py:67` | True when the reader must not take these figures at face value. | nothing in this tree |
+| `Meta.build` | method | `finops_api/schemas.py:77` |  | `finops_api/routes/__init__.py` |
+| `Envelope` | class | `finops_api/schemas.py:93` | Every route returns this. There is no bare data variant. | `finops_api/routes/accounts.py`, `finops_api/routes/ingest.py`, `finops_api/routes/me.py`, `finops_api/routes/org.py`, and 1 more |
+| `MeOut` | class | `finops_api/schemas.py:112` |  | `finops_api/routes/me.py` |
+| `AccountOut` | class | `finops_api/schemas.py:123` |  | `finops_api/routes/accounts.py` |
+| `OrgNodeOut` | class | `finops_api/schemas.py:138` |  | `finops_api/routes/org.py` |
+| `RunOut` | class | `finops_api/schemas.py:154` |  | `finops_api/routes/ingest.py` |
+| `FreshnessOut` | class | `finops_api/schemas.py:169` |  | `finops_api/routes/ingest.py` |
+| `PlatformCostOut` | class | `finops_api/schemas.py:180` |  | `finops_api/routes/platform.py` |
+| `CollectorHealth` | class | `finops_api/schemas.py:193` | How long since a collector last succeeded, against its own cadence. | `finops_api/main.py` |
+| `HealthOut` | class | `finops_api/schemas.py:205` | `/healthz`. Deliberately not a bare liveness probe. | `finops_api/main.py` |
+
+## finops_mcp
+
+| Symbol | Kind | Location | Purpose | Called by |
+| --- | --- | --- | --- | --- |
+| `ApiError` | class | `finops_mcp/api.py:32` | The API refused or could not answer. Carries the status for the caller. | nothing in this tree |
+| `EnvelopeMissingError` | class | `finops_mcp/api.py:41` | A 200 with no `meta`. Not the contract, so not treated as data. | nothing in this tree |
+| `Transport` | class | `finops_mcp/api.py:45` | What the client needs from an HTTP library, and nothing more. | nothing in this tree |
+| `Transport.get` | method | `finops_mcp/api.py:53` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 18 more |
+| `MeterApi` | class | `finops_mcp/api.py:56` | A caller of the Meter HTTP API. Holds no scope and no credential. | `finops_mcp/server.py` |
+| `MeterApi.get` | method | `finops_mcp/api.py:68` | One GET, returning the envelope exactly as the API sent it. | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 18 more |
+| `MissingTokenError` | class | `finops_mcp/server.py:37` | No caller token. The tool refuses rather than answering as somebody else. | nothing in this tree |
+| `token_from` | function | `finops_mcp/server.py:41` | The caller's bearer token, or an error. | nothing in this tree |
+| `make_handler` | function | `finops_mcp/server.py:59` | Bind one row of the tool table to one handler. | nothing in this tree |
+| `build_server` | function | `finops_mcp/server.py:82` | Register every tool in the table. Returns the server for a caller to run. | nothing in this tree |
+| `api_base_url` | function | `finops_mcp/server.py:99` | Where the API is, from the environment, with no default. | nothing in this tree |
+| `bootstrap` | function | `finops_mcp/server.py:111` | The ASGI application the container serves. | nothing in this tree |
+| `ToolSpec` | class | `finops_mcp/tools.py:32` | One tool. The envelope model is the single source of both schemas. | nothing in this tree |
+| `ToolSpec.output_schema` | method | `finops_mcp/tools.py:40` | What the model is told to expect, taken from the API's own model. | nothing in this tree |
 
 ## Called by nothing in this tree
 
 Each is an entry point, part of a public interface, or dead. Check each one, and delete what is dead. Rung zero of ADR-0013.
 
-- `ConfigurationError` in `finops_core/config.py:33`
-- `Settings` in `finops_core/config.py:37`
-- `Settings.region_list` in `finops_core/config.py:147`
+- `ConfigurationError` in `finops_core/config.py:34`
+- `Settings` in `finops_core/config.py:38`
+- `Settings.region_list` in `finops_core/config.py:154`
 - `AccountStatus` in `finops_core/domain/account.py:26`
 - `CloudAccount.provider` in `finops_core/domain/account.py:90`
 - `AccountHealth.is_usable` in `finops_core/domain/account.py:105`

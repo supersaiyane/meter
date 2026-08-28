@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Iterable, Iterator
+from pathlib import Path
 from typing import Any, get_origin
 
 from fastapi import APIRouter, Depends, FastAPI
@@ -211,3 +212,42 @@ def create_app(
         return JSONResponse(status_code=500, content={"detail": "internal error"})
 
     return app
+
+
+def bootstrap() -> FastAPI:
+    """Build the application the container runs, from the environment alone.
+
+    A factory rather than a module level `app`, so importing this module for a
+    test, a migration or the documentation gate does not open a database
+    connection as a side effect of the import.
+
+    The identity provider is chosen by configuration and the choice is not
+    silent: an unrecognised one raises here rather than falling back to the
+    local file, because a fallback to local authentication in an environment
+    that asked for something else is an authentication bypass. `Settings`
+    already refuses to load with the local provider in production.
+    """
+    from sqlalchemy import create_engine
+
+    from finops_api.identity.local_config import LocalConfigIdentityProvider
+    from finops_api.identity.session import SessionSigner
+    from finops_core.constants import LOCAL_IDENTITY_PROVIDER
+
+    settings = get_settings()
+    if settings.identity_provider != LOCAL_IDENTITY_PROVIDER:
+        raise RuntimeError(
+            f"identity provider {settings.identity_provider!r} is configured but not "
+            "implemented. TASK-P0-012 delivered the local provider only."
+        )
+
+    provider = LocalConfigIdentityProvider(
+        path=Path(settings.local_auth_file),
+        tenant_id=settings.local_tenant_id,
+        cache_ttl_minutes=settings.entitlement_cache_ttl_minutes,
+    )
+    return create_app(
+        engine=create_engine(settings.database_url, pool_pre_ping=True),
+        entitlements=provider,
+        signer=SessionSigner(settings.session_signing_key, ttl_hours=settings.session_ttl_hours),
+        settings=settings,
+    )

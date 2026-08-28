@@ -9,28 +9,16 @@ and it is on every response anyway.
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, ConfigDict
 from sqlalchemy.engine import Connection
 
 from finops_api.db.repositories import AccessContext
 from finops_api.deps import get_access_context, get_connection, get_principal, get_scope
 from finops_api.routes import API_PREFIX, build_meta
-from finops_api.schemas import Envelope
+from finops_api.schemas import Envelope, MeOut
 from finops_core.domain.identity import Principal
 from finops_core.domain.tenant import Scope
 
 router = APIRouter(prefix=API_PREFIX, tags=["me"])
-
-
-class MeOut(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    principal_id: str
-    display_name: str
-    tenant_id: str
-    tiers: tuple[str, ...]
-    is_global: bool
-    accounts_in_scope: int
 
 
 @router.get("/me", response_model=Envelope[MeOut])

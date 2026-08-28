@@ -11,33 +11,16 @@ that under counts is worse than none because it is believed.
 
 from __future__ import annotations
 
-from datetime import date, datetime
-from decimal import Decimal
-
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, ConfigDict
 from sqlalchemy.engine import Connection
 
 from finops_api.db.repositories import AccessContext, PlatformCostRepository
 from finops_api.deps import get_access_context, get_connection, get_scope
 from finops_api.routes import API_PREFIX, build_meta
-from finops_api.schemas import Envelope
+from finops_api.schemas import Envelope, PlatformCostOut
 from finops_core.domain.tenant import Scope
 
 router = APIRouter(prefix=API_PREFIX, tags=["platform"])
-
-
-class PlatformCostOut(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    day: date
-    module: str
-    service: str
-    #: Decimal, never float. A float total over a month of line items is wrong
-    #: in the last places, and a figure that will not reconcile is not used twice.
-    amortized_cost: Decimal
-    as_of: datetime
-    collected_at: datetime
 
 
 @router.get("/platform/cost", response_model=Envelope[list[PlatformCostOut]])

@@ -11,32 +11,16 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import BaseModel, ConfigDict
 from sqlalchemy.engine import Connection
 
 from finops_api.db.repositories import AccessContext, AccountRepository
 from finops_api.deps import get_access_context, get_connection, get_scope
 from finops_api.routes import API_PREFIX, build_meta
-from finops_api.schemas import Envelope
+from finops_api.schemas import AccountOut, Envelope
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.tenant import Scope
 
 router = APIRouter(prefix=API_PREFIX, tags=["accounts"])
-
-
-class AccountOut(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    provider: str
-    account_id: str
-    name: str
-    status: str
-    role_health: str
-    role_health_checked_at: datetime | None
-    #: The provider's own words about why the role is unusable. Never a stack trace.
-    role_health_error: str | None
-    as_of: datetime
-    collected_at: datetime
 
 
 def to_out(row: Any) -> AccountOut:

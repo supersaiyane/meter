@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 50 total, 8 specified, 7 in build, 5 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 60 recorded |
-| Issues | 75 fixed, 35 open, 0 parked |
+| Changes | 61 recorded |
+| Issues | 78 fixed, 35 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -51,7 +51,7 @@ pytest harness and `conftest.py` do not.
 
 | Sub project | Done | Partly | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- |
-| P0 | 28 | 0 | 7 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P0 | 29 | 0 | 6 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P2 | 0 | 0 | 22 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -86,6 +86,7 @@ pytest harness and `conftest.py` do not.
 | `TASK-P0-028` | Done, 2026-08-27, with one criterion not performed | ingest, freshness and platform cost screens, plus the end to end journey |
 | `TASK-P0-032` | Done, 2026-08-27, with one criterion deferred to TASK-P0-015 | retention jobs and the erasure script |
 | `TASK-P0-029` | **Done 2026-08-23**, commit `9754a59` | establish the security tool chain and the first posture |
+| `TASK-P0-030` | Done, 2026-08-27 | MCP server scaffold and the four P0 tools |
 
 <!-- generated:task-status end -->
 

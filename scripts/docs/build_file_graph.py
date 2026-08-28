@@ -48,7 +48,13 @@ PY_PACKAGES = ("finops_core", "finops_providers", "finops_ingest", "finops_api",
 
 # Allowed direction. A layer may import anything below it, never above.
 # Index 0 is the top of the stack.
-LAYERS = ["finops_api", "finops_mcp", "finops_ingest", "finops_providers", "finops_core"]
+#: Highest first. This must equal the `layers are respected` contract in
+#: pyproject.toml, and for a while it did not: this list had finops_mcp below
+#: finops_api, which is backwards. The MCP server is a facade in front of the
+#: API, constraint 8, so it sits above it. A test holds the two equal, because
+#: two definitions of one ordering that disagree means one of the two checks is
+#: enforcing the opposite of the rule.
+LAYERS = ["finops_mcp", "finops_api", "finops_ingest", "finops_providers", "finops_core"]
 LAYER_RANK = {name: index for index, name in enumerate(LAYERS)}
 
 SKIP_DIRS = {
