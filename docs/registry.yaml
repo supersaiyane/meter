@@ -434,7 +434,7 @@ changes:
   type: Process
   what: 'README rewritten as the operational entry point: source of truth table, common tasks, the four
     security gates, the remediation path, and a gotchas table'
-  commit: 46bd6ce
+  commit: aaf6a6a
   detail: '[README.md](README.md)'
 issues:
 - id: ISS-001

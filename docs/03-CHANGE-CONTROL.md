@@ -66,7 +66,11 @@ probably a defect in this table, so fix the table.
    FIXED in `tasks/ISSUES.md` means the decision is recorded. Implementation
    status lives only in `tasks/STATUS.md`. Conflating those two is how a
    tracker starts lying.
-4. **Never leave `INDEX.md` behind.** It is the only document a newcomer is
+4. **Never fill a commit reference by amending the commit it names.** Amending
+   changes the SHA, so the reference is wrong again immediately. Record it in
+   the next commit instead, which is why rows like CHG-0003 and CHG-0016 are
+   completed one commit later.
+5. **Never leave `INDEX.md` behind.** It is the only document a newcomer is
    guaranteed to read.
 
 ## Identifier scheme

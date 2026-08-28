@@ -187,7 +187,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0013 | 2026-08-23 | Design | Database schema documented in full, with Alembic migration rules and constraint level invariants | `0f0f1e9` | [docs/07-DATA-MODEL.md](docs/07-DATA-MODEL.md) |
 | CHG-0014 | 2026-08-23 | Process | Ponytail ladder replaced by the seven rung version with a Rung Disqualification Record, imported from a prior project | `3d93f76` | [ADR-0013](docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md) |
 | CHG-0015 | 2026-08-23 | Process | Derived documentation generated from docs/registry.yaml instead of hand maintained in four places | `5355ac3` | [ADR-0014](docs/adr/ADR-0014-generated-documentation.md) |
-| CHG-0016 | 2026-08-23 | Process | README rewritten as the operational entry point: source of truth table, common tasks, the four security gates, the remediation path, and a gotchas table | `46bd6ce` | [README.md](README.md) |
+| CHG-0016 | 2026-08-23 | Process | README rewritten as the operational entry point: source of truth table, common tasks, the four security gates, the remediation path, and a gotchas table | `aaf6a6a` | [README.md](README.md) |
 
 <!-- generated:changes end -->
 
