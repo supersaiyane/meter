@@ -64,11 +64,21 @@ cache:
       --output text
       | awk '{print "AWS_ACCESS_KEY_ID="$1" AWS_SECRET_ACCESS_KEY="$2" AWS_SESSION_TOKEN="$3}')
 
+# python:slim is Debian without build tools, so `make` is not in it. Every job
+# below that invokes a Makefile target needs this first. The jobs used to call
+# make on an image that does not have it, which fails with "make: command not
+# found" before running a single check.
+.needs_make: &needs_make
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq --no-install-recommends make
+      > /dev/null
+
 # ------------------------------------------------------------------ verify
 
 lint:
   stage: verify
-  image: python:3.12-slim
+  image: python:3.13-slim
+  <<: *needs_make
   script:
     - pip install -e ".[dev]"
     - make lint
@@ -82,7 +92,7 @@ writing-rules:
 
 test:
   stage: verify
-  image: python:3.12-slim
+  image: python:3.13-slim
   services:
     - name: postgres:16-alpine
       alias: postgres
@@ -112,14 +122,48 @@ test-frontend:
     - npm run lint
     - npm run test -- --run
 
+# `make check-docs` rather than three of its eight checks, which is what this
+# job used to run. The five it was missing were the registry sync check, the
+# context index check, the feature flag check, the hardcoded value check and the
+# forbidden import check, all of which ran locally in `make verify` and nowhere
+# in the pipeline. A gate that only runs on the machine of whoever remembers is
+# not a gate. ADR-0011.
 docs-consistency:
   stage: verify
-  image: python:3.12-slim
+  image: python:3.13-slim
+  <<: *needs_make
   script:
     - pip install pyyaml
-    - python scripts/docs/check_index.py
-    - python scripts/docs/check_feature_docs.py
-    - python scripts/docs/build_file_graph.py --check
+    - make check-docs
+
+# The memory log is checked the same way the code is. A resume vector pointing
+# at a path that no longer exists, or a checkpoint citing a commit that does not
+# resolve, is a document that will mislead the next person to read it.
+memory-consistency:
+  stage: verify
+  image: python:3.13-slim
+  <<: *needs_make
+  script:
+    - pip install pyyaml
+    - make check-memory
+
+# The reference is generated and published, never committed: it is four
+# megabytes of derived HTML that changes on every docstring. The coverage gate
+# is a ratchet set to the measured figure, so it fails when the number drops.
+api-reference:
+  stage: verify
+  image: python:3.13-slim
+  <<: *needs_make
+  script:
+    - pip install -e ".[dev]"
+    - make check-docstrings
+    - make api-reference
+  artifacts:
+    when: always
+    expose_as: "API reference"
+    paths:
+      - docs/api/
+    expire_in: 30 days
 
 terraform-validate:
   stage: verify
@@ -139,7 +183,7 @@ terraform-validate:
 # ADR-0010. These jobs do not warn, they fail.
 
 .security_tools: &security_tools
-  image: python:3.12-slim
+  image: python:3.13-slim
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends curl ca-certificates git
     - curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
@@ -196,15 +240,20 @@ dependency-admission:
 
 code-review:
   stage: security
-  image: python:3.12-slim
+  image: python:3.13-slim
   script:
     - pip install -e ".[dev]"
     - python scripts/ci/code_review.py --diff "origin/${CI_DEFAULT_BRANCH}" --output security/reviews
   artifacts:
     when: always
+    expose_as: "Code review"
     paths: [security/reviews/]
+    expire_in: 30 days
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    # Also on the default branch. Without this the branch everything is
+    # deployed from is the one branch nothing reviews.
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # ------------------------------------------------------------------ build
 
@@ -405,7 +454,7 @@ deploy:prod:
 migrate:dev:
   <<: *aws_oidc
   stage: deploy
-  image: python:3.12-slim
+  image: python:3.13-slim
   variables:
     TF_ENV: dev
   script:

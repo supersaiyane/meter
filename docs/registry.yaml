@@ -869,6 +869,14 @@ changes:
     never have started, because its command named a symbol that has never existed
   commit: pending
   detail: '[ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md)'
+- id: CHG-0062
+  date: '2026-08-28'
+  type: Chore
+  what: TASK-P0-031, the documentation, memory and docstring gates wired into the pipeline.
+    Found that five jobs called make on images without make, that the documentation job ran
+    three of its eight checks, and that a duplicate job name silently deletes a job
+  commit: pending
+  detail: '[ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1538,6 +1546,35 @@ issues:
     issues, so half of them could not be referred to unambiguously
   detail: The later entries renumbered to ISS-112 and ISS-113. `scripts/docs/sync.py` now fails
     on a duplicate identifier in any section of the registry
+- id: ISS-117
+  severity: LOW
+  status: OPEN
+  summary: Docstring coverage on public symbols is 70.8 percent and the gate is set to that
+    figure, so it blocks a drop but does not yet require 80 to match the test coverage floor
+  detail: 'The gap is real work rather than noise: the missing entries are classes and public
+    methods such as OrgRepository and its list_tree, not restatements of a name. Raise
+    fail-under in `[tool.interrogate]` as they are written. Never lower it'
+- id: ISS-118
+  severity: HIGH
+  status: FIXED
+  summary: Five pipeline jobs called make on images that do not have it, so each would have
+    failed with "make - command not found" before running a single check
+  detail: '`python:slim` is Debian with no build tools. Fixed with a shared before_script, and
+    `tests/scripts/test_pipeline.py` now fails when a job calls make on an image without it'
+- id: ISS-119
+  severity: MEDIUM
+  status: FIXED
+  summary: The pipeline documentation gate ran three of the eight checks in make check-docs.
+    The other five ran only in `make verify` on a contributor's own machine
+  detail: The five were the registry sync check, the context index check, the feature flag check,
+    the hardcoded value check and the forbidden import check. The job now runs the target
+- id: ISS-120
+  severity: MEDIUM
+  status: FIXED
+  summary: The automated code review ran on merge requests only, leaving the default branch,
+    the one everything deploys from, as the one branch nothing reviewed
+  detail: A default branch rule added, and the report is now exposed on the pipeline rather than
+    only attached
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS

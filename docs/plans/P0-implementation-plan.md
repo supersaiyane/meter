@@ -2291,7 +2291,7 @@ pytest tests/mcp -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-28 |
 | Implements | ADR-0011, `docs/03-CHANGE-CONTROL.md` |
 | Depends on | TASK-P0-001 |
 | Estimate | S |
@@ -2299,23 +2299,65 @@ pytest tests/mcp -v
 **Goal.** The documentation, the feature docs and the file graph cannot go
 stale without the pipeline saying so.
 
+**Files.**
+
+| Path | Action |
+| --- | --- |
+| `.gitlab-ci.yml` | four jobs added or corrected |
+| `Makefile` | `check-docstrings` and `api-reference` targets, both in `verify` |
+| `pyproject.toml` | the docstring ratchet, and two admitted dev dependencies |
+| `tests/scripts/test_pipeline.py` | created, not planned. See deviation 2 |
+| `.gitignore` | the generated reference, which is published not committed |
+
 **Acceptance criteria.**
 
-- [ ] `make check-docs` runs in the `verify` stage and blocks
-- [ ] `make graph` runs in CI and fails on a layering violation
-- [ ] `make review` runs on every merge request and publishes its report
-- [ ] An API reference is generated from docstrings, and docstring coverage on
+- [x] `make check-docs` runs in the `verify` stage and blocks. It previously ran
+      three of its eight checks. ISS-119
+- [x] `make graph` runs in CI and fails on a layering violation, through
+      `check-docs`
+- [x] `make review` runs on every merge request and publishes its report, and
+      now on the default branch too. ISS-120
+- [x] An API reference is generated from docstrings, and docstring coverage on
       public symbols is a gate
+
+**Deviations.**
+
+1. **The docstring gate is a ratchet at 70, not 80.** Measured coverage is 70.8
+   percent, so the gate is set to the measured figure: it fails the moment
+   coverage drops and never passes on a promise. Setting it above reality would
+   have meant either writing about thirty five docstrings inside this task or
+   shipping a gate that fails on the first run. ISS-117 tracks reaching 80, and
+   the configuration says in as many words that the number may only go up. The
+   fake provider is excluded, because it implements ports whose Protocols
+   already document every method including which of the six causes each raises,
+   and a copy on the double would drift from the Protocol within a release.
+2. **Five jobs called `make` on images that do not have it.** `python:slim` is
+   Debian with no build tools, so `lint` and three of the new jobs would have
+   failed with "make: command not found" before running a single check. ISS-118.
+   A test now reads the pipeline and fails when a job calls make on an image
+   without it, and that test was itself probed by breaking the pipeline and
+   confirming it fails.
+3. **A duplicate job name silently deleted a job.** Adding a `code-review` job
+   in `verify` replaced the existing one in `security`, because YAML resolves a
+   repeated key in favour of the last. Nothing errors. The duplicate was
+   removed, the existing job strengthened, and the same test now counts job
+   names in the raw text rather than through the parser, since the parser is
+   what hides the problem.
+4. **The generated reference is not committed.** It is four megabytes of derived
+   HTML that changes on every docstring. It is published as a pipeline artifact
+   with a thirty day expiry and added to `.gitignore` and `make clean`.
 
 **Do not.**
 
 - Do not make any of these a warning. A documentation check that warns is
   ignored within two weeks, which is the whole reason it exists.
+- Do not lower `fail-under`. Lowering a ratchet is how a gate becomes a
+  formality.
 
 **Evidence.**
 
 ```bash
-make check-docs && make graph && make review
+make check-docs && make check-docstrings && make api-reference
 ```
 
 ---

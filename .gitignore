@@ -54,3 +54,7 @@ tmp/
 
 # Claude Code local session state
 .claude/state/
+
+# The generated API reference. Published as a pipeline artifact rather than
+# stored, because it is 4 MB of derived HTML that changes on every docstring.
+docs/api/

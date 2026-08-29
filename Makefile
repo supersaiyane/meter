@@ -33,7 +33,8 @@ ECR_REGISTRY  ?= $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 # Override only if you genuinely need a different target.
 PLATFORM      ?= linux/amd64
 
-PY_SRC := finops_core finops_providers finops_ingest finops_api finops_mcp tests
+PY_PKGS := finops_core finops_providers finops_ingest finops_api finops_mcp
+PY_SRC := $(PY_PKGS) tests
 
 # The documentation and policy scripts need pyyaml, which a system interpreter
 # will not have and PEP 668 will not let us add. So they run from the venv when
@@ -62,7 +63,7 @@ setup: security-tools ## Create the virtualenv and install everything, including
 clean: ## Remove build artefacts and caches. Does not touch the database volume
 	find . -type d -name __pycache__ -prune -exec $(RM) -r {} +
 	find . -type d -name '*.egg-info' -prune -exec $(RM) -r {} +
-	$(RM) -r .pytest_cache .mypy_cache .ruff_cache htmlcov .coverage finops-web/dist finops-web/dist-types finops-web/dist-types-node
+	$(RM) -r .pytest_cache .mypy_cache .ruff_cache htmlcov .coverage docs/api finops-web/dist finops-web/dist-types finops-web/dist-types-node
 
 # ---------------------------------------------------------------- quality
 
@@ -131,6 +132,15 @@ session-end: doc-sync ## Run at the end of every work session
 	@echo "  2. Update tasks/STATUS.md if a task changed state"
 	@echo "  3. Were you corrected? make lesson m=\"short name\""
 	@echo "  4. Commit. The generated files are already updated." 
+
+.PHONY: check-docstrings
+check-docstrings: ## Fail if docstring coverage on public symbols has dropped
+	@$(BIN)/interrogate $(PY_PKGS)
+
+.PHONY: api-reference
+api-reference: ## Generate the API reference from docstrings into docs/api
+	@$(BIN)/pdoc --output-directory docs/api --no-search $(PY_PKGS)
+	@echo "docs/api/index.html"
 
 .PHONY: check-memory
 check-memory: ## Fail if a resume vector, a cited commit or a lesson has rotted
@@ -449,7 +459,7 @@ tf-member: ## Apply the member account StackSet. Needs management account creden
 # ---------------------------------------------------------------- gates
 
 .PHONY: verify
-verify: lint check-writing check-docs check-memory test security-scan ## Everything CI runs on a merge request
+verify: lint check-writing check-docs check-docstrings check-memory test security-scan ## Everything CI runs on a merge request
 	@echo "verify passed"
 
 .PHONY: ci

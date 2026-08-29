@@ -41,6 +41,10 @@ dev = [
     "ruff>=0.8",
     "mypy>=1.13",
     "import-linter>=2.1",
+    # The docstring gate and the reference it generates. Both admitted through
+    # make dep-check. Development only: neither ships in an image.
+    "interrogate>=1.7",
+    "pdoc>=15.0",
 ]
 
 [build-system]
@@ -188,3 +192,28 @@ layers = [
     "finops_providers",
     "finops_core",
 ]
+
+# ---------------------------------------------------------------- docstrings
+#
+# The gate behind `make check-docstrings`, and the input to the generated API
+# reference. It exists because a reference generated from docstrings is only as
+# good as the docstrings, and nothing else in the build looks at them.
+#
+# `fail-under` is a RATCHET. It is the measured figure at the time it was set,
+# not an aspiration, so the build fails the moment coverage drops and never
+# passes on a promise. Raise it when the number rises. Never lower it: lowering
+# it is how a gate becomes a formality. ISS-117 tracks reaching 80.
+#
+# The fake provider is excluded. It is a test double implementing ports whose
+# Protocols already document every method, including which of the six causes
+# each one raises, and a copy of that text on the double would drift from the
+# Protocol within a release.
+[tool.interrogate]
+fail-under = 70
+exclude = ["finops_providers/fake", "tests", "migrations", "scripts", "finops-web"]
+ignore-init-module = true
+ignore-init-method = true
+ignore-private = true
+ignore-magic = true
+ignore-nested-functions = true
+ignore-property-decorators = true
