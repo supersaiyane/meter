@@ -158,7 +158,10 @@ meter/
 │       ├── resource.py        ResourceRef. Opaque identifier, never parsed
 │       └── quota.py           QuotaUsage. Unpublished usage is None, never zero
 │   └── ports/                 nine protocols. No implementation, no cloud import
-│       └── query.py           QuerySurface. The first port not about a cloud
+│       └── query.py           QuerySurface, the first port not about a cloud,
+│                              plus QueryParser. An adapter may not import
+│                              finops_query, so it names the parsing it needs
+│                              here and a collector supplies it
 │       ├── accounts.py        AccountDiscovery
 │       ├── credentials.py     CredentialBroker plus the opaque ProviderSession
 │       ├── cost.py            CostExport
@@ -174,11 +177,18 @@ meter/
 │   │   ├── health.py          is the role usable, and if not, whose fix is it
 │   │   └── platform_cost.py   the one Cost Explorer request, grouped
 │   ├── grafana/               AMG only, per OPEN-04 re answered 2026-09-02
-│   │   └── client.py          raises a typed cause. A workspace it cannot read
-│   │                          must not report zero dashboards
-│   └── fake/                  in memory, the eight provider ports, no network, no clock
+│   │   ├── client.py          raises a typed cause. A workspace it cannot read
+│   │   │                      must not report zero dashboards
+│   │   └── amg.py             QuerySurface over AMG. A region it cannot list
+│   │                          becomes a visible unreachable instance, never a
+│   │                          shorter list. The token is a loan, revoked in a
+│   │                          finally. v1 writes nothing, constraint 6
+│   └── fake/                  in memory, the ports, no network, no clock
 │       ├── fixtures.py        one root, two units, five accounts, one denied
-│       └── provider.py        the failure plan. Any of the six, for any scope
+│       ├── provider.py        the failure plan. Any of the six, for any scope
+│       └── surface.py         QuerySurface in memory. discover raises only when
+│                              nothing could be enumerated, and an empty listing
+│                              means empty rather than a failed read
 ├── finops-web/                IN BUILD  Vite, React and TypeScript
 │   ├── README.md              why the versions are pinned where they are
 │   ├── eslint.config.js       flat config. eslintrc is not read by ESLint 9
@@ -301,7 +311,10 @@ meter/
 │   │                          no clock, no client. Every figure is modelled
 │   ├── policy.py              fingerprinting. Template aware, so a dashboard with
 │   │                          a $region variable is one query and not four
-│   └── ownership.py           who ran it, and measured against modelled
+│   ├── ownership.py           who ran it, and measured against modelled
+│   └── parser.py              the QueryParser port, bound to this package. It
+│                              exists so the adapter below can parse without
+│                              importing the layer above it
 │
 ├── finops_mcp/                IN BUILD  MCP server, a facade over the HTTP API
 │   ├── api.py                the only way out of this package, and it is HTTP
