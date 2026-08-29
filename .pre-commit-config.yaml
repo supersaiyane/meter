@@ -1,0 +1,78 @@
+# Local gates, run before a commit is created.
+#
+# These are the cheapest place to catch a problem: on the machine, before the
+# change leaves it. The pipeline repeats every one of them, because a local
+# hook can be skipped and a pipeline gate cannot.
+#
+# Install once:
+#   pip install pre-commit && pre-commit install && pre-commit install --hook-type pre-push
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  # Secrets. A leaked credential is not a vulnerability class a CVE scanner
+  # finds, and it is the one mistake that cannot be undone by a later commit.
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: writing-rules
+        name: no em dash or en dash
+        entry: make check-writing
+        language: system
+        pass_filenames: false
+
+      - id: doc-sync
+        name: generated documents match the registry
+        entry: make check-docs
+        language: system
+        pass_filenames: false
+        files: '^(docs/registry\.yaml|INDEX\.md|docs/features/|docs/01-ROADMAP\.md|tasks/STATUS\.md)'
+
+      # Runs only when a dependency manifest changed. Scanning the whole
+      # transitive tree on every commit would make committing unbearable.
+      - id: dependency-admission
+        name: dependency admission gate
+        entry: bash scripts/security/pre_commit_deps.sh
+        language: system
+        pass_filenames: false
+        files: '^(pyproject\.toml|finops-web/package-lock\.json)$'
+
+  # Pre push. Slower checks that belong before the change leaves the machine,
+  # not before every commit.
+  - repo: local
+    hooks:
+      - id: security-scan
+        name: full security scan
+        stages: [pre-push]
+        entry: bash scripts/security/scan.sh
+        language: system
+        pass_filenames: false
+
+      - id: tests
+        name: unit and contract tests
+        stages: [pre-push]
+        entry: make test
+        language: system
+        pass_filenames: false

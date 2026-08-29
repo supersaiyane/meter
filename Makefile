@@ -174,6 +174,35 @@ security-scan: ## Full scan: deps, secrets, terraform. Writes a timestamped repo
 security-scan-images: build ## Scan the built images as well
 	@bash scripts/security/scan.sh --images
 
+.PHONY: scan-local
+scan-local: build ## Scan the locally built images using the compose security profile
+	IMAGE_TAG=$(IMAGE_TAG) $(COMPOSE) --profile security run --rm sbom
+	IMAGE_TAG=$(IMAGE_TAG) $(COMPOSE) --profile security run --rm grype  || true
+	IMAGE_TAG=$(IMAGE_TAG) $(COMPOSE) --profile security run --rm trivy  || true
+	@$(MAKE) security-report
+
+.PHONY: hooks-install
+hooks-install: ## Install the pre commit and pre push gates
+	$(BIN)/pip install pre-commit
+	$(BIN)/pre-commit install
+	$(BIN)/pre-commit install --hook-type pre-push
+	@echo "Installed. Pre commit: writing rules, secrets, lint, doc sync."
+	@echo "Pre push: full security scan and tests."
+
+.PHONY: verify-provenance
+verify-provenance: ## Verify an image signature and SBOM attestation before deploy
+	@test -n "$(AWS_ACCOUNT_ID)" || (echo "AWS_ACCOUNT_ID is required"; exit 1)
+	@for svc in api worker web; do \
+	  cosign verify $(ECR_REGISTRY)/meter-$$svc:$(IMAGE_TAG) \
+	    --certificate-identity-regexp "$(COSIGN_IDENTITY_REGEXP)" \
+	    --certificate-oidc-issuer "$(COSIGN_OIDC_ISSUER)"; \
+	  cosign verify-attestation --type spdxjson \
+	    $(ECR_REGISTRY)/meter-$$svc:$(IMAGE_TAG) \
+	    --certificate-identity-regexp "$(COSIGN_IDENTITY_REGEXP)" \
+	    --certificate-oidc-issuer "$(COSIGN_OIDC_ISSUER)" > /dev/null; \
+	  echo "OK: meter-$$svc signed and attested"; \
+	done
+
 .PHONY: security-scan-deployed
 security-scan-deployed: ## Scan a running digest. What the nightly job uses
 	@test -n "$(DIGEST)" || (echo 'Usage: make security-scan-deployed DIGEST=sha256:...'; exit 1)

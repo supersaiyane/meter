@@ -282,6 +282,39 @@ scan:web:
   variables: { SERVICE: web }
   needs: ["build:web"]
 
+# The gate that actually stops an unscanned image reaching an environment.
+#
+# Signing at build time proves an image came from this pipeline. Verifying at
+# deploy time is what makes that useful, because without verification anyone
+# who can push to ECR can put an unscanned image where the deploy will find it.
+#
+# This is the admission control for this project. It runs before every deploy.
+verify-provenance:
+  <<: *aws_oidc
+  stage: scan
+  image:
+    name: gcr.io/projectsigstore/cosign:v2.4.1
+    entrypoint: [""]
+  script:
+    - |
+      for svc in api worker web; do
+        REF="${ECR_REGISTRY}/meter-${svc}:${IMAGE_TAG}"
+        echo "== ${REF}"
+        cosign verify \
+          --certificate-identity-regexp "${COSIGN_IDENTITY_REGEXP}" \
+          --certificate-oidc-issuer "${COSIGN_OIDC_ISSUER}" \
+          "${REF}"
+        # An image with no SBOM attestation was not scanned by this pipeline.
+        cosign verify-attestation --type spdxjson \
+          --certificate-identity-regexp "${COSIGN_IDENTITY_REGEXP}" \
+          --certificate-oidc-issuer "${COSIGN_OIDC_ISSUER}" \
+          "${REF}" > /dev/null
+        echo "   signature and SBOM attestation verified"
+      done
+  needs: ["scan:api", "scan:worker", "scan:web"]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
 # ------------------------------------------------------------------ plan
 
 terraform-plan:
@@ -338,7 +371,7 @@ deploy:dev:
   <<: *deploy
   variables:
     TF_ENV: dev
-  needs: ["build:api", "build:worker", "build:web", "terraform-plan"]
+  needs: ["verify-provenance", "terraform-plan"]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 

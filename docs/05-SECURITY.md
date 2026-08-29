@@ -37,6 +37,71 @@ So there are two scan cadences, and the second one matters more.
 
 `security/POSTURE.md` reflects the posture scan, not the last build.
 
+## Where a finding is caught, and where it is stopped
+
+Six layers. They are not equivalent, and it matters which ones actually stop
+something.
+
+| # | Layer | When | Can it stop a deploy | Skippable |
+| --- | --- | --- | --- | --- |
+| 1 | Dependency admission, `make dep-check` | Before a dependency is added | No, it stops the addition | Yes, locally |
+| 2 | Pre commit hooks | Before a commit exists | No | Yes, locally |
+| 3 | Pre push hooks | Before code leaves the machine | No | Yes, locally |
+| 4 | Pipeline scan stage | After build, before deploy | **Yes** | **No** |
+| 5 | **Provenance verification** | Immediately before deploy | **Yes** | **No** |
+| 6 | Nightly posture scan | Against the running digest | Raises, does not roll back | **No** |
+
+Layers 1 to 3 are convenience. They make the answer arrive in seconds instead
+of minutes, and a developer who skips them only defers the same answer to layer
+4. That is fine, and it is why they are allowed to be skippable.
+
+**Layer 5 is the admission control for this project**, and it is the one most
+projects leave out. Signing an image at build time proves it came from this
+pipeline. Verifying that signature immediately before deploy is what makes the
+signature useful, because without verification anyone who can push to ECR can
+put an unscanned image where the deploy will find it. The verification also
+requires an SBOM attestation, and an image with no attestation was never
+scanned by this pipeline.
+
+### Why compose is not a gate
+
+A reasonable instinct is to put a scanner in `docker-compose.yml` so nothing
+runs unscanned. It does not work, for a structural reason.
+
+**A container cannot gate an image that already exists and is already
+running.** By the time a compose service starts, the image is built, on disk,
+and startable by anyone with Docker. A scanner service alongside it reports on
+a thing that has already happened.
+
+Worse, it produces a false sense of enforcement, which is more dangerous than
+no enforcement, because it stops people looking for the real gate.
+
+So the scanners are in a `security` **profile** that does not start with
+`make up`:
+
+```bash
+make scan-local     # build, then scan with the compose security profile
+```
+
+That gives the convenience of scanning locally in one command, without
+pretending it is a control. The controls are layers 4, 5 and 6.
+
+### The local loop
+
+```bash
+make hooks-install   # once per machine
+```
+
+Then, without doing anything else:
+
+- **Every commit**: secrets, writing rules, lint, generated document drift, and
+  the dependency admission gate if and only if a manifest changed.
+- **Every push**: the full security scan and the test suite.
+
+The manifest condition matters. Scanning the whole transitive tree on every
+commit would make committing unbearable and the hook would be disabled within a
+week, which is how a security control dies.
+
 ## Controls
 
 ### 1. Base images
@@ -116,7 +181,15 @@ each needs a judgement a script cannot make.
 
 ### 5. Supply chain
 
-- Images signed with `cosign`, SBOM attached as an attestation.
+- Images signed with `cosign`, SBOM attached as an attestation, and **both
+  verified immediately before deploy**. Signing without verifying proves
+  nothing.
+- **Enable ECR enhanced scanning** (Amazon Inspector) on every repository. It
+  continuously rescans stored images as new advisories are published, which is
+  a registry side backstop for the nightly job. If both are silent, an image is
+  genuinely clean rather than merely unscanned.
+- ECR repositories set to `IMMUTABLE` tags, so a tag cannot be repointed at a
+  different image after it was scanned and signed.
 - Base image digests pinned, and mirrored into the project's own ECR so a
   registry outage does not stop a deploy.
 - GitLab OIDC into an AWS role. No long lived AWS key exists as a CI variable.

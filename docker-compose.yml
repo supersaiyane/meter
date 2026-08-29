@@ -1,8 +1,14 @@
 # Local development only. Production runs on ECS Fargate, provisioned by
 # Terraform. See docs/04-DEPLOYMENT.md.
 #
-# LocalStack stands in for AWS so that a developer can run the ingestion
-# framework end to end with no AWS account and no cost.
+# Two profiles:
+#   default            the running application, started by `make up`
+#   security           one shot scanners, run by `make scan-local`
+#
+# The security profile does NOT start with `make up`. Scanners are one shot
+# jobs, not services, and blocking application startup on a vulnerability
+# database download would make the development loop slow and flaky for no
+# security gain. See docs/05-SECURITY.md, "Why compose is not a gate".
 
 name: meter
 
@@ -23,6 +29,29 @@ services:
       timeout: 3s
       retries: 10
 
+  # LocalStack emulates the AWS APIs Meter calls, on this machine.
+  #
+  # WHY IT IS HERE
+  #   Meter's whole job is reading from AWS: assume a role, list an
+  #   organization, read a queue, fetch cost data. Without an emulator, running
+  #   the ingestion loop locally needs a real AWS account, real credentials on
+  #   every developer machine, and it bills for every Cost Explorer and
+  #   GetMetricData call. For a product that exists to stop runaway cloud
+  #   spend, a development loop that quietly bills per keystroke is the wrong
+  #   default.
+  #
+  # WHAT IT IS NOT
+  #   LocalStack is not AWS. Community edition does not enforce IAM, its
+  #   pagination and throttling behaviour differ, and its error codes are not
+  #   always the real ones. So it proves the plumbing works. It does NOT prove
+  #   the AWS semantics are right.
+  #
+  #   Correctness against real AWS behaviour is covered by moto and the port
+  #   contract suite in tests/contract/, which is exactly why that suite is
+  #   parameterised over providers. Never conclude "it works" from LocalStack
+  #   alone, and never test a permission boundary against it.
+  #
+  # NEVER USED TO DEPLOY ANYTHING.
   localstack:
     image: localstack/localstack:3
     environment:
@@ -108,5 +137,52 @@ services:
     depends_on:
       - api
 
+  # ------------------------------------------------------------------ security
+  #
+  # One shot scanners, in the `security` profile so they never start with
+  # `make up`. Run them with `make scan-local`, which is the local mirror of
+  # what the pipeline does after every build.
+  #
+  # These are a convenience, not a gate. A container cannot gate an image that
+  # already exists and is already running. The real gates are the pre push
+  # hook, the pipeline scan stage, the cosign verification at deploy, and the
+  # nightly scan of the running digest. See docs/05-SECURITY.md.
+
+  sbom:
+    profiles: ["security"]
+    image: anchore/syft:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./security/sbom:/out
+    command: >
+      packages docker:meter-api:${IMAGE_TAG:-local}
+      -o spdx-json=/out/api-${IMAGE_TAG:-local}.spdx.json
+
+  grype:
+    profiles: ["security"]
+    image: anchore/grype:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./security:/security
+    environment:
+      GRYPE_DB_AUTO_UPDATE: "true"
+    command: >
+      docker:meter-api:${IMAGE_TAG:-local}
+      --config /security/policy/grype.yaml
+      --output json --file /security/reports/local-grype-api.json
+
+  trivy:
+    profiles: ["security"]
+    image: aquasec/trivy:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./security:/security
+      - trivy_cache:/root/.cache/trivy
+    command: >
+      image meter-api:${IMAGE_TAG:-local}
+      --config /security/policy/trivy.yaml
+      --format json --output /security/reports/local-trivy-api.json
+
 volumes:
   postgres_data:
+  trivy_cache:

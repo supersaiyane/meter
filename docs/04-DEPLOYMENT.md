@@ -177,8 +177,35 @@ make up
 ```
 
 `docker-compose.yml` runs PostgreSQL, LocalStack, the API, the dispatcher, the
-worker and the frontend. LocalStack stands in for AWS, so the ingestion
-framework runs end to end with no AWS account and no cost.
+worker and the frontend.
+
+**What LocalStack is doing.** It emulates the AWS APIs Meter calls: STS, SQS,
+S3, Secrets Manager, Organizations, Cost Explorer, Logs and CloudWatch. Without
+it, running the ingestion loop locally needs a real AWS account, real
+credentials on every developer machine, and it bills for every Cost Explorer
+and `GetMetricData` call. For a product whose purpose is stopping runaway cloud
+spend, a development loop that quietly bills per keystroke is the wrong default.
+
+**What LocalStack is not.** It is not AWS. Community edition does not enforce
+IAM, its pagination and throttling behaviour differ, and its error codes are
+not always the real ones. It proves the plumbing works. It does **not** prove
+the AWS semantics are right.
+
+Correctness against real AWS behaviour is covered by `moto` and the port
+contract suite in `tests/contract/`, which is why that suite is parameterised
+over providers and runs against both the fake and the AWS adapter. Never
+conclude "it works" from LocalStack alone, and never test a permission boundary
+against it.
+
+A second profile holds one shot scanners:
+
+```bash
+make scan-local     # build, then scan with the compose security profile
+```
+
+They do not start with `make up`. Scanners are jobs, not services, and a
+container cannot gate an image that already exists and is already running. See
+`docs/05-SECURITY.md`, "Why compose is not a gate".
 
 Local is not production. `docker-compose.yml` is never used to deploy anything.
 
