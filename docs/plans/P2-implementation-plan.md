@@ -34,7 +34,7 @@ else touches it.
 | G. Prevention | 017 to 018 | Workspace floor and the CI gate | B |
 | H. Remediation | 019 | Panel rewrite with undo | G |
 | I. Calibration | 020 | The published accuracy figure | D, and P1 cost data |
-| J. Surface | 021 | Routes and MCP tools | D to H |
+| J. Surface | 021 | Routes and MCP tools | D to E. **F is parked**, so the enforcement route lands with TASK-P2-016 |
 | K. Screens | 022 to 025 | Four screens, fixture backed and reviewable | TASK-P0-037. **Not D to H** |
 
 Waves F and G do not depend on D. With two people, one takes the audit path and
@@ -645,11 +645,17 @@ the person who could act.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Parked, 2026-08-29 |
 | Implements | P2 spec section 7.2 |
 | Delivers | FEAT-015 |
 | Depends on | TASK-P2-009 |
 | Estimate | L |
+
+**Parked 2026-08-29.** Needs EventBridge, a Lambda and Budgets Actions. ISS-122
+records that no Terraform stack has ever been planned or applied, so this can be
+built and unit tested but not verified against AWS. Parked rather than descoped:
+the kill switch is the feature that stops the bleed, and TASK-P2-007 and 008
+already show what descoped looks like when the answer is really no.
 
 **Acceptance criteria.**
 
@@ -669,10 +675,16 @@ started this project a six hour gap is roughly 25,000 USD.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Parked, 2026-08-29 |
 | Delivers | FEAT-015 |
 | Depends on | TASK-P2-015 |
 | Estimate | L |
+
+**Parked 2026-08-29.** Needs EventBridge, a Lambda and Budgets Actions. ISS-122
+records that no Terraform stack has ever been planned or applied, so this can be
+built and unit tested but not verified against AWS. Parked rather than descoped:
+the kill switch is the feature that stops the bleed, and TASK-P2-007 and 008
+already show what descoped looks like when the answer is really no.
 
 **Acceptance criteria.**
 
@@ -809,8 +821,15 @@ the measurement, and let a person decide what to change. ISS-093.
 | --- | --- |
 | Status | Not started |
 | Implements | P2 spec section 8.2 |
-| Depends on | TASK-P2-014, TASK-P2-016 |
+| Depends on | TASK-P2-014. TASK-P2-016 is parked |
 | Estimate | M |
+
+**Scoped by the parking of wave F on 2026-08-29.** Seven of the eight routes
+read data that TASK-P2-014 produces. The eighth, enforcement, has nothing behind
+it until TASK-P2-016 lands, so it is not built and `/api/v1/query/enforcement`
+stays in `FIXTURE_SURFACES`. The enforcement screen therefore stays fixture
+backed and keeps saying so on screen, which is the behaviour that seam exists
+for.
 
 **Acceptance criteria.**
 

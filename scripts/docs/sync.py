@@ -302,8 +302,8 @@ def render_task_status(_reg: Registry) -> str:
     import re
 
     lines = [
-        "| Sub project | Done | Partly | Descoped | Not started | Total | Plan |",
-        "| --- | --- | --- | --- | --- | --- | --- |",
+        "| Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     detail: list[str] = []
 
@@ -313,7 +313,7 @@ def render_task_status(_reg: Registry) -> str:
             continue
         text = path.read_text(encoding="utf-8")
         blocks = re.split(rf"\n### (TASK-{sub}-\d{{3}}): ", text)
-        done = partly = descoped = notstarted = 0
+        done = partly = parked = descoped = notstarted = 0
         rows = []
         for i in range(1, len(blocks), 2):
             tid, body = blocks[i], blocks[i + 1]
@@ -325,6 +325,12 @@ def render_task_status(_reg: Registry) -> str:
                 rows.append((tid, title, status))
             elif "Partly" in status:
                 partly += 1
+                rows.append((tid, title, status))
+            elif "Parked" in status:
+                # Deferred on a dependency this repository cannot satisfy, and
+                # counted apart from descoped because the intent differs: parked
+                # is still wanted, descoped is not.
+                parked += 1
                 rows.append((tid, title, status))
             elif "Descoped" in status:
                 descoped += 1
@@ -338,12 +344,12 @@ def render_task_status(_reg: Registry) -> str:
                 # the task out of the table below as well.
                 raise ValueError(
                     f"{sub} {tid}: status {status!r} is not one of Done, Partly, "
-                    "Descoped or Not started. Add a bucket for it rather than "
-                    "letting it be counted as not started."
+                    "Parked, Descoped or Not started. Add a bucket for it rather "
+                    "than letting it be counted as not started."
                 )
-        total = done + partly + descoped + notstarted
+        total = done + partly + parked + descoped + notstarted
         lines.append(
-            f"| {sub} | {done} | {partly} | {descoped} | {notstarted} | {total} | "
+            f"| {sub} | {done} | {partly} | {parked} | {descoped} | {notstarted} | {total} | "
             f"[plan](../docs/plans/{sub}-implementation-plan.md) |"
         )
         if rows:

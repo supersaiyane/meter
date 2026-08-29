@@ -80,10 +80,10 @@ ISS-003.
 <!-- generated:task-status start -->
 <!-- This block is GENERATED from docs/plans/ by scripts/docs/sync.py. Edit docs/plans/, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-| Sub project | Done | Partly | Descoped | Not started | Total | Plan |
-| --- | --- | --- | --- | --- | --- | --- |
-| P0 | 39 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P2 | 9 | 1 | 2 | 13 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
+| Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P2 | 9 | 1 | 2 | 2 | 11 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -141,6 +141,8 @@ ISS-003.
 | `TASK-P2-006` | Done, 2026-09-24 | the AMG connection strategy |
 | `TASK-P2-007` | Descoped, 2026-09-02 | the self hosted connection strategy |
 | `TASK-P2-008` | Descoped, 2026-09-02 | the Grafana Cloud connection strategy |
+| `TASK-P2-015` | Parked, 2026-08-29 | detection and alerting |
+| `TASK-P2-016` | Parked, 2026-08-29 | throttle and deny, with the guardrails |
 | `TASK-P2-022` | Done, 2026-09-13 | the query findings screen |
 | `TASK-P2-023` | Done, 2026-09-15 | the finding detail screen |
 | `TASK-P2-024` | Done, 2026-09-17 | the query surfaces screen |
