@@ -126,6 +126,7 @@ make verify     # lint, writing rules, doc checks, tests, security scan
 ### Local development
 
 ```bash
+make hooks-install  # once per machine: pre commit and pre push gates
 make setup      # virtualenv plus frontend dependencies
 make up         # PostgreSQL, LocalStack, API, dispatcher, worker, web
 make migrate    # apply Alembic migrations
@@ -133,12 +134,17 @@ make psql       # database shell
 make down       # stop, keep data.  make nuke  deletes the volume
 ```
 
-### Building images
+### Building and scanning images
 
 ```bash
 make buildx-setup   # once, creates the cross platform builder
 make build          # builds linux/amd64 and verifies it
+make scan-local     # scans the built images via the compose security profile
 ```
+
+`make up` does not start the scanners. They live in a `security` profile,
+because a container cannot gate an image that already exists and is already
+running. See section 4.
 
 ---
 
@@ -222,18 +228,265 @@ repository, not from memory.
 
 ## 5. Gotchas that will bite you
 
-Written down because each one costs an afternoon the first time.
+Each one costs an afternoon the first time. Each entry shows what you actually
+see, and what to type.
 
-| Symptom | Cause | Fix |
-| --- | --- | --- |
-| `exec format error` on the server | Built on Apple Silicon, so the image is arm64. **A push does not convert it** | `make build` pins `linux/amd64` and `make verify-platform` checks it |
-| `docker exec` into a container fails | The runtime images have **no shell and no package manager** | Debug from the builder stage, or from logs. This is deliberate, see ADR-0010 |
-| A `CMD ["sh", "-c", ...]` container will not start | Same reason. Exec form only | Pass arguments in the ECS task definition `command` |
-| `make check-docs` fails after you edited a doc | You edited a generated block | Edit `docs/registry.yaml`, then `make doc-sync` |
-| The build fails on a dependency that worked yesterday | A new CVE was published against it | `make security-fix`, or escalate per ADR-0013 |
-| The build fails and the allowlist "looks fine" | An allowlist entry expired | Make a fresh decision and add a new entry. Do not edit the date |
-| `make check-writing` fails on a file you did not touch | An em dash or en dash crept in, often from a paste | Replace with a comma, a colon, or parentheses |
-| Cost numbers look stale | They probably are. CUR refreshes **at most three times a day** | Check `as_of` versus `collected_at`. See docs/06 |
+---
+
+### 5.1 `exec format error` on the server
+
+**You see**
+
+```
+standard_init_linux.go:228: exec user process caused: exec format error
+Essential container in task exited
+```
+
+**What happened.** You built on an Apple Silicon machine, so the image is
+`linux/arm64`. **A push does not convert it.** The registry now holds an arm64
+image and the amd64 host cannot run it. The message looks like a corrupt
+binary, which is why this costs an afternoon.
+
+**Check**
+
+```bash
+docker image inspect meter-api:$(git rev-parse --short HEAD) --format '{{.Os}}/{{.Architecture}}'
+# want: linux/amd64
+# bad:  linux/arm64
+```
+
+**Fix**
+
+```bash
+make buildx-setup     # once per machine
+make build            # pins linux/amd64, then verify-platform checks it
+```
+
+---
+
+### 5.2 `docker exec` into a running container fails
+
+**You see**
+
+```
+OCI runtime exec failed: exec failed: unable to start container process:
+exec: "sh": executable file not found in $PATH
+```
+
+**What happened.** The runtime images have **no shell and no package manager**.
+That is deliberate: it is most of why the image has near zero vulnerabilities.
+See ADR-0010.
+
+**Fix.** Do not add a shell back. Debug from outside instead.
+
+```bash
+docker compose logs -f api                          # local
+aws logs tail /ecs/meter-api-dev --follow            # deployed
+
+# Need a shell to poke at dependencies? Use the builder stage, which has one.
+docker build --target builder -f docker/Dockerfile.api -t meter-api-dbg .
+docker run --rm -it meter-api-dbg sh
+```
+
+---
+
+### 5.3 A container will not start, and the logs are empty
+
+**You see** the task starting and stopping with no application output.
+
+**What happened.** Something in the image uses shell form, for example
+`CMD ["sh", "-c", "python -m finops_ingest.${METER_ROLE}"]`. With no shell,
+nothing expands `${METER_ROLE}` and there is no shell to report the failure.
+
+**Fix.** Exec form only, and pass the variable part as an argument.
+
+```dockerfile
+ENTRYPOINT ["/opt/venv/bin/python", "-m"]
+CMD ["finops_ingest.worker"]
+```
+
+```json
+// ECS task definition, dispatcher service
+"command": ["finops_ingest.dispatcher"]
+```
+
+---
+
+### 5.4 `make check-docs` fails after you edited a document
+
+**You see**
+
+```
+FAIL: 1 generated document(s) out of step
+
+  INDEX.md: generated block differs from the registry
+
+Run 'make doc-sync'. Do not hand edit a generated block, see ADR-0014.
+```
+
+**What happened.** You edited inside a block marked
+`<!-- generated:features start -->`. Those are rebuilt from
+`docs/registry.yaml`, so your edit would be silently lost on the next sync.
+
+**Fix.** Make the change where the fact lives.
+
+```bash
+$EDITOR docs/registry.yaml    # change status: Planned -> Specified
+make doc-sync                 # index, roadmap, status and the feature header all update
+```
+
+---
+
+### 5.5 The build fails on a dependency that worked yesterday
+
+**You see**
+
+```
+FAIL: 1 finding(s) not covered by a valid allowlist entry.
+  [High      ] CVE-2026-11111       examplelib 2.3.0 -> 2.4.1
+```
+
+**What happened.** Nothing you did. A new advisory was published against a
+dependency you already shipped. This is normal and it is why the nightly scan
+exists.
+
+**Fix**
+
+```bash
+make security-fix-dry    # what it would change, and what it will not touch
+make security-fix        # applies on a branch, runs tests, re scans
+```
+
+If there is no published fix, or it is a major version bump, the script will
+say so with the reason. Then follow ADR-0013: look for a patched version, then
+an alternative package, then escalate one rung. **Do not write custom code
+because a dependency has a CVE.** That is the single most common wrong turn.
+
+---
+
+### 5.6 The build fails and the allowlist "looks fine"
+
+**You see**
+
+```
+FAIL: 1 problem(s) in security/policy/allowlist.yaml
+
+  CVE-2026-11111: EXPIRED on 2026-08-20. Make a fresh decision and add a
+  new entry. Do not edit the date.
+```
+
+**What happened.** An exception someone accepted 90 days ago has expired. That
+is the entire point of the expiry: an accepted risk gets re examined rather
+than becoming permanent by forgetting.
+
+**Fix.** Re examine it. Is there a fix now? Then take it and delete the entry.
+Still no fix and still acceptable? Add a **new** entry with today's date and a
+current reason.
+
+```yaml
+exceptions:
+  - id: CVE-2026-11111
+    package: examplelib
+    target: meter-api
+    reason: >
+      Re examined 2026-08-23. Vulnerable path is the XML parser, which this
+      service does not call. Upstream fix still unreleased, tracked at
+      https://github.com/example/examplelib/issues/412
+    owner: name@example.com
+    added: 2026-08-23
+    expires: 2026-11-21
+```
+
+Editing the old date instead is how an accepted risk quietly becomes permanent.
+
+---
+
+### 5.7 `make check-writing` fails on a file you did not touch
+
+**You see** the check print the offending file and line, with the line quoted
+back at you, and then:
+
+```
+FAIL: em dash or en dash found. See CLAUDE.md writing rules.
+```
+
+**What happened.** An em dash or en dash arrived in a paste, or from an editor
+that auto converts a double hyphen while you type.
+
+**Fix.** Replace it with a comma, a colon, or parentheses.
+
+```bash
+make check-writing        # prints file and line for every instance
+```
+
+Note the trap: writing the offending characters into a document **about** the
+rule makes the check fail on its own documentation. That happened twice while
+writing this project, once in `CLAUDE.md` and once in this very section. Refer
+to the characters by name, never by reproducing them.
+
+Turn off smart substitution in your editor. On macOS: System Settings,
+Keyboard, Text Input, Text Replacements, and disable smart dashes.
+
+---
+
+### 5.8 Cost numbers look stale
+
+**You see** a figure that has not moved since yesterday, and a screen showing
+`as_of 2026-08-22` while `collected_at` says twenty minutes ago.
+
+**What happened.** Probably nothing wrong. **CUR refreshes at most three times
+a day** and Cost Explorer is roughly 24 hours behind. Freshness is capped by
+AWS, not by Meter, which is why every figure carries two timestamps.
+
+**Check.** Is the collector actually running, or is the source simply that old?
+
+```bash
+curl -s localhost:8000/api/v1/health/freshness | jq
+```
+
+A collector past its configured cadence is flagged stale even when it has data.
+If the collector is healthy and the number is old, the number is correct and
+the source is old. See `docs/06-DATA-FRESHNESS.md`.
+
+---
+
+### 5.9 A number is zero and you are not sure whether that is real
+
+**You see** an account showing 0 in a total.
+
+**What happened.** One of two completely different things, and telling them
+apart is a design goal of this product. Either the source genuinely returned no
+data, or a collection failed and something rendered the failure as a zero. The
+second is a defect, tracked as ISS-015.
+
+**Check.** The ingest screen distinguishes them, and so does the API.
+
+```bash
+curl -s localhost:8000/api/v1/ingest/runs | jq '.data[] | {collector, scope_key, status, error_type}'
+```
+
+`NoData` is the only error type that legitimately renders as zero.
+`AccessDenied`, `Throttled`, `NotOptedIn`, `Unreachable` and `SchemaDrift` must
+never do so.
+
+---
+
+### 5.10 LocalStack says it works, then real AWS does not
+
+**You see** a collector that passes locally and returns `AccessDenied` or a
+truncated result against a real account.
+
+**What happened.** LocalStack is not AWS. Community edition **does not enforce
+IAM**, and its pagination and throttling behaviour differ. It proves the
+plumbing, not the semantics.
+
+**Fix.** Never conclude "it works" from LocalStack, and never test a permission
+boundary against it.
+
+```bash
+pytest -m contract -v    # runs the same contract against fake and aws adapters
+pytest tests/providers/aws -v    # moto backed, closer to real behaviour
+```
 
 ---
 

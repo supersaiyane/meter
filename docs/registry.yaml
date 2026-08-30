@@ -436,6 +436,20 @@ changes:
     security gates, the remediation path, and a gotchas table'
   commit: aaf6a6a
   detail: '[README.md](README.md)'
+- id: CHG-0017
+  date: '2026-08-23'
+  type: Process
+  what: 'Layered security gates documented and completed: pre commit and pre push hooks, a compose security
+    profile for local scanning, and provenance verification before every deploy'
+  commit: pending
+  detail: '[docs/05-SECURITY.md](docs/05-SECURITY.md)'
+- id: CHG-0018
+  date: '2026-08-23'
+  type: Process
+  what: README gotchas expanded into ten worked examples, each showing the actual output and the exact
+    commands
+  commit: pending
+  detail: '[README.md](README.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -681,6 +695,30 @@ issues:
     run, or what happens to a security finding, so the knowledge lived only in conversation
   status: FIXED
   detail: '[README.md](README.md)'
+- id: ISS-051
+  severity: HIGH
+  summary: Images were signed at build time but the signature was never verified, so anyone able to push
+    to ECR could place an unscanned image where the deploy would find it
+  status: FIXED
+  detail: '[docs/05-SECURITY.md](docs/05-SECURITY.md), verify-provenance runs before every deploy'
+- id: ISS-052
+  severity: MEDIUM
+  summary: No local gate existed, so the first feedback on a secret, a writing rule breach or a bad dependency
+    was the pipeline, minutes later
+  status: FIXED
+  detail: Pre commit and pre push hooks, make hooks-install
+- id: ISS-053
+  severity: MEDIUM
+  summary: 'LocalStack was undocumented, so its limits were invisible: it does not enforce IAM and its
+    pagination and error codes differ from AWS'
+  status: FIXED
+  detail: '[docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) and inline in docker-compose.yml'
+- id: ISS-054
+  severity: LOW
+  summary: ECR tags were mutable, so a tag could be repointed at a different image after it was scanned
+    and signed
+  status: OPEN
+  detail: Set IMMUTABLE tags in TASK-P0-016
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS
