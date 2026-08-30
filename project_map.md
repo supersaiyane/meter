@@ -297,13 +297,22 @@ meter/
 │   │   ├── session.py         signed, carries the scope, always expires
 │   │   └── coverage.py        visible over the organization total, never over visible
 │   └── db/
-│       ├── models.py          thirteen tables as SQLAlchemy Core
+│       ├── models.py          twenty tables as SQLAlchemy Core. A second
+│       │                      description of the schema, and the drift test is
+│       │                      what stops the two disagreeing
 │       └── repositories/      the only path to a scoped table, audited on read
 │
 ├── alembic.ini                no database URL in it, env.py reads the settings
 ├── migrations/                the only way the schema changes
 │   ├── env.py                 URL from settings, overridable by a test
-│   └── versions/              0001_initial, raw SQL, faithful to 07-DATA-MODEL
+│   └── versions/              raw SQL, faithful to 07-DATA-MODEL and to the P2
+│                              spec section 5. Additive only, per constraint 12
+│       ├── 0001_initial.py    the thirteen P0 tables
+│       ├── 0002_cost_monthly.py  somewhere for retention to aggregate into
+│       └── 0003_p2_tables.py  the six P2 tables. Three of its constraints are
+│                              the feature: a deny cannot be written without an
+│                              expiry, a modelled row cannot claim a measured
+│                              count, and a change cannot exist without its undo
 ├── finops_query/              IN BUILD  P2, query cost governance
 │   ├── classify.py            what engine a target runs on. Separate from the
 │   │                          arithmetic, so a new engine is a branch not a rate
