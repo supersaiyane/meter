@@ -490,21 +490,21 @@ changes again.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-30 |
 | Implements | P2 spec section 5 |
 | Depends on | P0 TASK-P0-010 |
 | Estimate | L |
 
 **Acceptance criteria.**
 
-- [ ] `grafana_instance`, `query_definition`, `query_finding`,
+- [x] `grafana_instance`, `query_definition`, `query_finding`,
       `folder_team_map`, `enforcement_action`, `remediation_change`
-- [ ] `ck_enforcement_action__restrictive_expires`: a `DENY` or `THROTTLE` row
+- [x] `ck_enforcement_action__restrictive_expires`: a `DENY` or `THROTTLE` row
       **cannot be inserted without an expiry**
-- [ ] `ck_query_finding__measured_has_runs`: a modelled row cannot carry a
+- [x] `ck_query_finding__measured_has_runs`: a modelled row cannot carry a
       measured run count, and a measured row cannot omit one
-- [ ] `remediation_change.before` is `NOT NULL`
-- [ ] Every table classified in `docs/09-DATA-CLASSIFICATION.md`, with a
+- [x] `remediation_change.before` is `NOT NULL`
+- [x] Every table classified in `docs/09-DATA-CLASSIFICATION.md`, with a
       retention period
 
 **Tests.**
@@ -514,6 +514,13 @@ changes again.
 | `test_deny_requires_expiry` | The database rejects a DENY with no expiry |
 | `test_modelled_cannot_claim_measured` | Both directions of the provenance constraint |
 | `test_remediation_requires_undo` | A change with no before value is rejected |
+
+**One constraint added beyond the specification.**
+`ck_grafana_instance__unreachable_has_reason` mirrors the invariant
+`SurfaceInstance.__post_init__` already enforces in the domain. An unexplained
+absence is what makes an estate look smaller than it is, and the domain being
+careful is not a reason for the table not to be. The specification was updated
+rather than left to diverge.
 
 **Do not.**
 

@@ -120,7 +120,13 @@ CREATE TABLE grafana_instance (
     -- AMG rows are discovered and must carry their location. The others are
     -- entered by a person and must not pretend to have one.
     CONSTRAINT ck_grafana_instance__amg_located
-        CHECK ((kind = 'AMG') = (account_id IS NOT NULL AND region_id IS NOT NULL))
+        CHECK ((kind = 'AMG') = (account_id IS NOT NULL AND region_id IS NOT NULL)),
+    -- Added at TASK-P2-009. The same invariant SurfaceInstance enforces in the
+    -- domain: an unexplained absence is what makes an estate look smaller than
+    -- it is, and the domain being careful is not a reason for the table not to
+    -- be.
+    CONSTRAINT ck_grafana_instance__unreachable_has_reason
+        CHECK (reachable OR unreachable_reason IS NOT NULL)
 );
 
 CREATE TABLE query_definition (

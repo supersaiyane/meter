@@ -360,6 +360,198 @@ audit_event = Table(
     Index("ix_audit_event__tenant_occurred", "tenant_id", "occurred_at"),
 )
 
+#: The P2 vocabularies. Closed sets, mirrored from the P2 specification section
+#: 5, so a new value needs a migration rather than a deploy.
+INSTANCE_KINDS = ("AMG", "SELF_HOSTED", "CLOUD")
+QUERY_ORIGINS = ("PANEL", "ALERT_RULE")
+QUERY_ENGINES = ("LOGS_INSIGHTS", "METRIC_SEARCH", "METRIC_INSIGHTS", "PROMQL", "OTHER")
+PROVENANCES = ("measured", "modelled")
+ENFORCEMENT_LEVELS = ("ALERT", "THROTTLE", "DENY")
+REMEDIATION_KINDS = ("WORKSPACE_FLOOR", "PANEL_REWRITE")
+
+grafana_instance = Table(
+    "grafana_instance",
+    metadata,
+    Column("instance_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("kind", Text, nullable=False),
+    Column("name", Text, nullable=False),
+    Column("endpoint", Text, nullable=False),
+    Column("account_id", Text),
+    Column("region_id", Text),
+    #: A Secrets Manager name. Never a value, so a database dump carries no
+    #: credential.
+    Column("credential_ref", Text),
+    Column("reachable", Boolean, nullable=False, server_default=text("true")),
+    Column("unreachable_reason", Text),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint("tenant_id", "endpoint", name="uq_grafana_instance__tenant_endpoint"),
+    CheckConstraint(_in_list("kind", INSTANCE_KINDS), name="ck_grafana_instance__kind_valid"),
+    # AMG rows are discovered and must carry their location. The others are
+    # entered by a person and must not pretend to have one.
+    CheckConstraint(
+        "(kind = 'AMG') = (account_id IS NOT NULL AND region_id IS NOT NULL)",
+        name="ck_grafana_instance__amg_located",
+    ),
+    # The same invariant `SurfaceInstance` enforces in the domain. An
+    # unexplained absence is what makes an estate look smaller than it is, and
+    # the domain being careful is not a reason for the table not to be.
+    CheckConstraint(
+        "reachable OR unreachable_reason IS NOT NULL",
+        name="ck_grafana_instance__unreachable_has_reason",
+    ),
+)
+
+query_definition = Table(
+    "query_definition",
+    metadata,
+    Column("query_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column(
+        "instance_id",
+        UUID(as_uuid=True),
+        ForeignKey("grafana_instance.instance_id"),
+        nullable=False,
+    ),
+    Column("origin", Text, nullable=False),
+    Column("dashboard_uid", Text),
+    Column("dashboard_title", Text),
+    Column("folder_uid", Text),
+    Column("panel_id", Text),
+    Column("ref_id", Text),
+    Column("engine", Text, nullable=False),
+    Column("query_text", Text, nullable=False),
+    #: Normalised, with template variables removed, so a dashboard with a
+    #: $region variable is one query and not four.
+    Column("fingerprint", Text, nullable=False),
+    Column("target", JSONB, nullable=False),
+    Column("refresh_seconds", Integer),
+    Column("range_seconds", Integer, nullable=False),
+    Column("last_editor", Text),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint(
+        "tenant_id", "instance_id", "fingerprint", name="uq_query_definition__fingerprint"
+    ),
+    CheckConstraint(_in_list("origin", QUERY_ORIGINS), name="ck_query_definition__origin_valid"),
+    CheckConstraint(_in_list("engine", QUERY_ENGINES), name="ck_query_definition__engine_valid"),
+    # A panel has a refresh interval. An alert rule runs on its own schedule and
+    # must not borrow one.
+    CheckConstraint(
+        "(origin = 'ALERT_RULE') OR (refresh_seconds IS NOT NULL)",
+        name="ck_query_definition__panel_has_refresh",
+    ),
+)
+
+query_finding = Table(
+    "query_finding",
+    metadata,
+    Column("finding_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("query_id", UUID(as_uuid=True), ForeignKey("query_definition.query_id"), nullable=False),
+    Column("run_date", Date, nullable=False),
+    Column("runs_per_day", Numeric(12, 2), nullable=False),
+    Column("scan_bytes_per_run", BigInteger),
+    Column("metrics_per_call", Integer),
+    Column("cost_month_usd", Numeric(20, 10), nullable=False),
+    Column("provenance", Text, nullable=False),
+    Column("measured_runs", Integer),
+    Column("severity", Text, nullable=False),
+    Column("owner_email", Text),
+    Column("owner_source", Text),
+    #: What drives the cost, in words. A ranked number says what to look at; this
+    #: is what says what to do about it.
+    Column("why", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint("tenant_id", "query_id", "run_date", name="uq_query_finding__query_day"),
+    CheckConstraint(_in_list("provenance", PROVENANCES), name="ck_query_finding__provenance_valid"),
+    # Both directions. A measured row must say how many runs it measured, and a
+    # modelled row must not claim to have measured any. A figure that says
+    # measured and measured nothing is the lie this product exists to prevent.
+    CheckConstraint(
+        "(provenance = 'modelled' AND measured_runs IS NULL)"
+        " OR (provenance = 'measured' AND measured_runs IS NOT NULL)",
+        name="ck_query_finding__measured_has_runs",
+    ),
+    Index("ix_query_finding__cost", "tenant_id", "run_date", text("cost_month_usd DESC")),
+)
+
+folder_team_map = Table(
+    "folder_team_map",
+    metadata,
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), primary_key=True),
+    Column(
+        "instance_id",
+        UUID(as_uuid=True),
+        ForeignKey("grafana_instance.instance_id"),
+        primary_key=True,
+    ),
+    Column("folder_uid", Text, primary_key=True),
+    Column("owner_email", Text, nullable=False),
+    Column("team", Text),
+    Column("updated_by", Text, nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False, server_default=NOW),
+)
+
+enforcement_action = Table(
+    "enforcement_action",
+    metadata,
+    Column("action_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("level", Text, nullable=False),
+    Column("principal_arn", Text, nullable=False),
+    Column("trigger_reason", Text, nullable=False),
+    Column("observed_rate", Numeric(12, 2), nullable=False),
+    Column("threshold", Numeric(12, 2), nullable=False),
+    Column("applied_at", DateTime(timezone=True), nullable=False, server_default=NOW),
+    Column("expires_at", DateTime(timezone=True)),
+    Column("removed_at", DateTime(timezone=True)),
+    Column("removed_by", Text),
+    CheckConstraint(
+        _in_list("level", ENFORCEMENT_LEVELS), name="ck_enforcement_action__level_valid"
+    ),
+    # The rule that stops a deny becoming permanent. Here rather than in the
+    # service layer because two paths write this table, the control function and
+    # the API, and application code is not what holds when that is true.
+    CheckConstraint(
+        "level = 'ALERT' OR expires_at IS NOT NULL",
+        name="ck_enforcement_action__restrictive_expires",
+    ),
+    Index(
+        "ix_enforcement_action__active",
+        "tenant_id",
+        "expires_at",
+        postgresql_where=text("removed_at IS NULL"),
+    ),
+)
+
+remediation_change = Table(
+    "remediation_change",
+    metadata,
+    Column("change_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("query_id", UUID(as_uuid=True), ForeignKey("query_definition.query_id")),
+    Column(
+        "instance_id",
+        UUID(as_uuid=True),
+        ForeignKey("grafana_instance.instance_id"),
+        nullable=False,
+    ),
+    Column("kind", Text, nullable=False),
+    #: The undo, and it is NOT NULL. A change that cannot say what it replaced is
+    #: a change nobody will dare apply.
+    Column("before", JSONB, nullable=False),
+    Column("after", JSONB, nullable=False),
+    Column("applied_by", Text, nullable=False),
+    Column("applied_at", DateTime(timezone=True), nullable=False, server_default=NOW),
+    Column("reverted_at", DateTime(timezone=True)),
+    Column("reverted_by", Text),
+    CheckConstraint(_in_list("kind", REMEDIATION_KINDS), name="ck_remediation_change__kind_valid"),
+)
+
+
 #: Every table in the schema. Used by the drift test and by the repository layer.
 ALL_TABLES = tuple(metadata.sorted_tables)
 
