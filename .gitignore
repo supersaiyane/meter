@@ -28,9 +28,23 @@ build/
 .terraform/
 *.tfstate
 *.tfstate.*
+# A stray tfvars anywhere is ignored, because that is where somebody puts a
+# secret while debugging.
 *.tfvars
 !*.tfvars.example
-.terraform.lock.hcl
+# The environment files under envs/ are the exception and are committed. They
+# hold sizes, counts and retention windows, no secrets, and `make tf-plan`
+# names them directly: ignoring them would leave the deploy targets pointing at
+# files that cannot exist after a clone. Every secret they would otherwise
+# carry, the ExternalId, the certificate and the alert topics, is passed at
+# apply time instead, and production refuses to start without the last three.
+!infra/terraform/*/envs/*.tfvars
+.terraform.tfstate.lock.info
+# .terraform.lock.hcl is deliberately NOT ignored. It pins the exact provider
+# versions and their checksums, which is the same reproducibility argument that
+# pins base images by digest in docker/base-images.lock. Ignoring it lets `~> 6.0`
+# resolve to a different provider in the pipeline than on a contributor's machine,
+# and the difference shows up as a plan nobody can reproduce.
 
 # Secrets and local config
 .env

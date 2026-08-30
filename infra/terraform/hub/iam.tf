@@ -1,0 +1,199 @@
+# What the running tasks may do.
+#
+# Two roles per the ECS split. The execution role is what Fargate itself uses to
+# pull the image and open the log stream, before the container starts. The task
+# role is what the application code holds once it is running. Collapsing them
+# would give application code the ability to pull any image and decrypt the log
+# key, neither of which it needs.
+
+data "aws_iam_policy_document" "ecs_assume" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+
+    # Without this an ECS task in any account could assume these roles. It is
+    # the same confused deputy problem as the cross account roles, in the
+    # account's own back yard.
+    condition {
+      test     = "ArnLike"
+      variable = "aws:SourceArn"
+      values   = ["arn:${data.aws_partition.current.partition}:ecs:${var.region}:${data.aws_caller_identity.current.account_id}:*"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+  }
+}
+
+resource "aws_iam_role" "execution" {
+  name               = "FinOpsHubExecutionRole"
+  description        = "Used by Fargate to pull the image and open the log stream. Never by application code."
+  assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
+}
+
+resource "aws_iam_role_policy_attachment" "execution_managed" {
+  role       = aws_iam_role.execution.name
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+data "aws_iam_policy_document" "execution_extra" {
+  statement {
+    sid    = "DecryptImageAndLogKeys"
+    effect = "Allow"
+
+    actions = ["kms:Decrypt", "kms:GenerateDataKey"]
+    resources = [
+      aws_kms_key.storage.arn,
+      aws_kms_key.logs.arn,
+    ]
+  }
+
+  # The database password, injected as a secret into the container definition.
+  # Read by the execution role at task start rather than by application code,
+  # so the running process never holds permission to read it again.
+  statement {
+    sid       = "ReadInjectedSecrets"
+    effect    = "Allow"
+    actions   = ["secretsmanager:GetSecretValue"]
+    resources = [aws_rds_cluster.hub.master_user_secret[0].secret_arn]
+  }
+}
+
+resource "aws_iam_role_policy" "execution_extra" {
+  name   = "PullAndLog"
+  role   = aws_iam_role.execution.id
+  policy = data.aws_iam_policy_document.execution_extra.json
+}
+
+# --- the task role -----------------------------------------------------------
+
+resource "aws_iam_role" "task" {
+  name               = "FinOpsHubTaskRole"
+  description        = "Held by Meter's own code. Named in the trust policy of every collector role."
+  assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
+}
+
+data "aws_iam_policy_document" "task" {
+  # The one permission the whole product depends on, and the one most worth
+  # getting wrong. Scoped to the collector role NAME in any account, not to
+  # `*`: a compromised container can then assume FinOpsCollectorRole and
+  # nothing else, and only inside this organization.
+  statement {
+    sid       = "AssumeTheCollectorRoleAndNothingElse"
+    effect    = "Allow"
+    actions   = ["sts:AssumeRole"]
+    resources = ["arn:${data.aws_partition.current.partition}:iam::*:role/${var.collector_role_name}"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:PrincipalOrgID"
+      values   = [var.organization_id]
+    }
+  }
+
+  # The management account role, which is a different name in one known
+  # account, so it is named exactly.
+  dynamic "statement" {
+    for_each = var.org_reader_role_arn == "" ? [] : [var.org_reader_role_arn]
+
+    content {
+      sid       = "AssumeTheOrganizationReader"
+      effect    = "Allow"
+      actions   = ["sts:AssumeRole"]
+      resources = [statement.value]
+    }
+  }
+
+  statement {
+    sid    = "WorkTheQueue"
+    effect = "Allow"
+
+    actions = [
+      "sqs:ReceiveMessage",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes",
+      "sqs:SendMessage",
+      "sqs:ChangeMessageVisibility",
+    ]
+
+    resources = [aws_sqs_queue.work.arn, aws_sqs_queue.dead_letter.arn]
+  }
+
+  statement {
+    sid       = "ReadTheExternalId"
+    effect    = "Allow"
+    actions   = ["secretsmanager:GetSecretValue"]
+    resources = [aws_secretsmanager_secret.external_id.arn]
+  }
+
+  statement {
+    sid    = "UseTheBucket"
+    effect = "Allow"
+
+    actions   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+    resources = ["${aws_s3_bucket.data.arn}/*"]
+  }
+
+  statement {
+    sid       = "ListTheBucket"
+    effect    = "Allow"
+    actions   = ["s3:ListBucket"]
+    resources = [aws_s3_bucket.data.arn]
+  }
+
+  statement {
+    sid    = "UseTheDataKeys"
+    effect = "Allow"
+
+    actions = ["kms:Decrypt", "kms:GenerateDataKey"]
+    resources = [
+      aws_kms_key.storage.arn,
+      aws_kms_key.queue.arn,
+      aws_kms_key.database.arn,
+    ]
+  }
+
+  # Meter's own cost, which is the front page. Cost Explorer has no resource
+  # level permissions, so this is a wildcard AWS will not let us narrow.
+  statement {
+    sid    = "ReadOurOwnCost"
+    effect = "Allow"
+
+    actions = [
+      "ce:GetCostAndUsage",
+      "ce:GetDimensionValues",
+      "ce:GetTags",
+    ]
+
+    resources = ["*"]
+  }
+
+  # Metrics the collectors publish about themselves. Restricted to the Meter
+  # namespace, so a bug cannot overwrite another team's metrics.
+  statement {
+    sid       = "PublishOurOwnMetrics"
+    effect    = "Allow"
+    actions   = ["cloudwatch:PutMetricData"]
+    resources = ["*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "cloudwatch:namespace"
+      values   = [var.metric_namespace]
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "task" {
+  name   = "MeterHubTask"
+  role   = aws_iam_role.task.id
+  policy = data.aws_iam_policy_document.task.json
+}

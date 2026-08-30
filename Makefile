@@ -80,15 +80,12 @@ lint: ## Lint everything, no changes written
 	$(BIN)/mypy finops_core finops_providers finops_ingest finops_api
 	$(BIN)/lint-imports
 	cd finops-web && npm run lint
-# Terraform arrives in TASK-P0-013 to 016. Until then the directory does not
-# exist, and failing here would leave verify red for a reason unrelated to any
-# change under review, which is how a gate stops being read. The skip is printed
-# rather than silent, so it cannot quietly outlive the reason for it.
-	@if [ -d infra/terraform/hub ]; then \
-		$(TF) -chdir=infra/terraform/hub fmt -check -recursive; \
-	else \
-		echo "SKIPPED: terraform fmt, infra/terraform/hub does not exist yet. TASK-P0-013 creates it"; \
-	fi
+# The three stacks. The skip that used to be here, for a directory TASK-P0-013
+# had not created yet, was removed by TASK-P0-013 as one of its own acceptance
+# criteria. An allowance that outlives its reason is an allowance nobody removes.
+	$(TF) -chdir=infra/terraform/management fmt -check -recursive
+	$(TF) -chdir=infra/terraform/member fmt -check -recursive
+	$(TF) -chdir=infra/terraform/hub fmt -check -recursive
 
 .PHONY: check-writing
 check-writing: ## Fail if an em dash or en dash appears anywhere. See CLAUDE.md

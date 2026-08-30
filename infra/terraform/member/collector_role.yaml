@@ -1,0 +1,119 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+# The role Meter reads a member account through.
+#
+# This is a CloudFormation template rather than Terraform because it is deployed
+# by a service managed StackSet, and a service managed StackSet takes
+# CloudFormation. That is also the whole reason for the choice: it deploys into
+# every account in the organization automatically, including accounts created
+# after this was applied. A newly vended account is therefore readable with no
+# human step, which is the P0 definition of done for onboarding. A self managed
+# StackSet does not do that, and neither does Terraform on its own without a
+# provider alias per account.
+
+Description: >-
+  Read only collector role for Meter. Assumed by the hub task role only, and
+  only from inside this organization.
+
+Parameters:
+  HubAccountId:
+    Type: String
+    AllowedPattern: "^[0-9]{12}$"
+    Description: The account Meter's hub runs in.
+
+  HubTaskRoleName:
+    Type: String
+    Default: FinOpsHubTaskRole
+    Description: The exact role in the hub account that may assume this one.
+
+  ExternalId:
+    Type: String
+    NoEcho: true
+    MinLength: 32
+    Description: >-
+      Shared secret required on every assume. At least 32 characters, because a
+      guessable ExternalId is not a control.
+
+  OrganizationId:
+    Type: String
+    AllowedPattern: "^o-[a-z0-9]{10,32}$"
+    Description: >-
+      Used in the aws:PrincipalOrgID condition. Without it, the ExternalId is
+      the only thing standing between this role and a confused deputy.
+
+  RoleName:
+    Type: String
+    Default: FinOpsCollectorRole
+    Description: Must match METER_COLLECTOR_ROLE_NAME on the hub side.
+
+Resources:
+  CollectorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref RoleName
+      Description: Read only access for Meter. See the Meter repository, ADR-0004.
+      MaxSessionDuration: 3600
+      Tags:
+        - Key: "finops:module"
+          Value: member
+        - Key: ManagedBy
+          Value: cloudformation-stackset
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          # Three conditions, all required. The principal is the hub's task role
+          # by name, the ExternalId is a secret, and PrincipalOrgID means a
+          # principal outside this organization cannot assume the role even if
+          # it holds both of the other two.
+          - Sid: HubTaskRoleInsideThisOrganization
+            Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${HubAccountId}:role/${HubTaskRoleName}"
+            Condition:
+              StringEquals:
+                sts:ExternalId: !Ref ExternalId
+                aws:PrincipalOrgID: !Ref OrganizationId
+
+      Policies:
+        - PolicyName: MeterCollectorRead
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # One block, and every action annotated with the collector that
+              # needs it. ReadOnlyAccess appears nowhere: it grants S3 object
+              # reads and SSM parameter reads that Meter never makes, which is
+              # ISS-010.
+              - Sid: MeterReadsOnly
+                Effect: Allow
+                Action:
+                  # account_health, the probe that proves the role works.
+                  - sts:GetCallerIdentity
+                  # platform_cost and the P1 cost collectors.
+                  - ce:GetCostAndUsage
+                  - ce:GetCostAndUsageWithResources
+                  - ce:GetDimensionValues
+                  - ce:GetTags
+                  # P3 utilization. Listed now so the StackSet is not
+                  # redeployed across three hundred accounts to add one action.
+                  - cloudwatch:GetMetricData
+                  - cloudwatch:ListMetrics
+                  - compute-optimizer:GetEC2InstanceRecommendations
+                  - compute-optimizer:GetAutoScalingGroupRecommendations
+                  - compute-optimizer:GetEBSVolumeRecommendations
+                  - compute-optimizer:GetLambdaFunctionRecommendations
+                  # P4 inventory and topology.
+                  - tag:GetResources
+                  - tag:GetTagKeys
+                  - config:SelectResourceConfig
+                  # P5 quotas.
+                  - servicequotas:ListServiceQuotas
+                  - servicequotas:GetServiceQuota
+                  - support:DescribeTrustedAdvisorChecks
+                  - support:DescribeTrustedAdvisorCheckResult
+                Resource: "*"
+
+Outputs:
+  RoleArn:
+    Description: The collector role in this account.
+    Value: !GetAtt CollectorRole.Arn

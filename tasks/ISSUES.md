@@ -44,7 +44,7 @@ Status: `OPEN`, `IN PROGRESS`, `FIXED`, `WONT FIX`, `PARKED`, `CLOSED`.
 <!-- generated:issue-register start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-117 issues. 81 fixed, 36 open, 0 parked.
+120 issues. 83 fixed, 37 open, 0 parked.
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in `tasks/STATUS.md`.
 
@@ -91,6 +91,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-111 | HIGH | The restore drill required by TASK-P0-028 has not been performed, because it needs an Aurora cluster to restore into a scratch database. P0 is not signed off until it is | OPEN | [P0 plan](docs/plans/P0-implementation-plan.md) TASK-P0-028 |
 | ISS-114 | HIGH | The API image could never have started. Its CMD named finops_api.main:app and no such module level symbol has ever existed, so every deploy of that image would have failed at startup with an attribute error and nothing in the build would have caught it | FIXED | Found while adding the MCP server's command to the same image. Fixed with a bootstrap factory and `--factory`, and a test in `tests/mcp/test_contract.py` now imports every target the Dockerfile names |
 | ISS-118 | HIGH | Five pipeline jobs called make on images that do not have it, so each would have failed with "make - command not found" before running a single check | FIXED | `python:slim` is Debian with no build tools. Fixed with a shared before_script, and `tests/scripts/test_pipeline.py` now fails when a job calls make on an image without it |
+| ISS-122 | HIGH | No Terraform stack has been planned or applied. terraform validate and fmt pass on all three, which checks syntax, provider schema and references, and checks nothing about whether the stack builds | OPEN | A plan needs real credentials for the S3 state backend and for the caller identity data sources. Also outstanding from TASK-P0-033: the screenshot of a stalled collector in ALARM. P0 is not signed off until a plan runs |
 | ISS-011 | MEDIUM | A model producing sizing numbers destroys trust on the first hallucination | FIXED | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
 | ISS-012 | MEDIUM | Organization wide AWS Config recording is a five figure monthly cost | OPEN | [tasks/ISSUES.md](tasks/ISSUES.md), resolved in P4 |
 | ISS-013 | MEDIUM | Hundreds of describe loops for inventory is a year of work | FIXED | [roadmap](docs/01-ROADMAP.md) P4 |
@@ -153,6 +154,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-116 | MEDIUM | Two issue numbers were used twice each. ISS-110 and ISS-111 each named two different issues, so half of them could not be referred to unambiguously | FIXED | The later entries renumbered to ISS-112 and ISS-113. `scripts/docs/sync.py` now fails on a duplicate identifier in any section of the registry |
 | ISS-119 | MEDIUM | The pipeline documentation gate ran three of the eight checks in make check-docs. The other five ran only in `make verify` on a contributor's own machine | FIXED | The five were the registry sync check, the context index check, the feature flag check, the hardcoded value check and the forbidden import check. The job now runs the target |
 | ISS-120 | MEDIUM | The automated code review ran on merge requests only, leaving the default branch, the one everything deploys from, as the one branch nothing reviewed | FIXED | A default branch rule added, and the report is now exposed on the pipeline rather than only attached |
+| ISS-123 | MEDIUM | .terraform.lock.hcl was gitignored, so the provider version could differ between the pipeline and a contributor's machine while base images were pinned by digest | FIXED | The constraint is `~> 6.0`, which lets any 6.x resolve. The lock files are now committed for linux_amd64 and darwin_arm64, matching the reproducibility argument in docker/base-images.lock |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
@@ -167,6 +169,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-101 | LOW | The doc and policy scripts claimed to run before make setup, but pyyaml is absent from a system interpreter and PEP 668 blocks adding it | FIXED | They now run from the project venv, and `scripts/README.md` states this rather than the previous claim |
 | ISS-113 | LOW | make lint failed on a terraform directory that Wave D has not created yet, leaving verify red for a reason unrelated to the change under review | FIXED | [P0 plan](docs/plans/P0-implementation-plan.md) TASK-P0-002 |
 | ISS-117 | LOW | Docstring coverage on public symbols is 70.8 percent and the gate is set to that figure, so it blocks a drop but does not yet require 80 to match the test coverage floor | OPEN | The gap is real work rather than noise: the missing entries are classes and public methods such as OrgRepository and its list_tree, not restatements of a name. Raise fail-under in `[tool.interrogate]` as they are written. Never lower it |
+| ISS-121 | LOW | The plan and the runbook index both said two alerts page. The alert table in docs/10-OBSERVABILITY.md marks four | FIXED | Both were misreadings of the sentence under the table: two of the four are unusual, which is not the same as two being the total. The table was followed, the two summaries corrected, and a test now holds the paging set against the four names |
 
 <!-- generated:issue-register end -->
 

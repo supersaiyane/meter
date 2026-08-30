@@ -187,6 +187,7 @@ meter/
 │       ├── platform_cost.py   one grouped request a day. Untagged cost is named
 │       ├── retention.py       six jobs. Anonymises, never removes a principal row
 │       └── partitions.py      months created ahead. Without one, cost rows are refused
+│   └── metrics.py             only SLO 1 needs a custom metric. The other three are AWS's
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
 │   ├── flags.py               flag resolution, tenant then environment then declared
 │   ├── main.py                app factory. Refuses to start on a bare route
@@ -219,7 +220,10 @@ meter/
 │   └── server.py             binds the table to the SDK. No credential of its own
 │                              Directory exists, __init__.py only. Ships as a
 │                              second process on the api image, ADR-0009
-└── infra/terraform/           PLANNED  hub/, member/, management/
+└── infra/terraform/           IN BUILD  three root modules, none applied yet
+    ├── management/            one read only role in the management account
+    ├── member/                a service managed StackSet, so new accounts self onboard
+    └── hub/                   the VPC with no NAT, Aurora, SQS, ECR, ECS, ALB, alarms
 ```
 
 ## Planned module responsibilities

@@ -1,0 +1,150 @@
+# Private subnets and interface endpoints. No NAT Gateway.
+#
+# `docs/04-DEPLOYMENT.md` records that this was once justified on cost and that
+# the justification was wrong: NAT is cheaper below roughly 1,560 GB per month
+# and Meter's egress is nowhere near that. The reasoning was corrected and the
+# conclusion kept, on two grounds that do hold.
+#
+# A NAT Gateway gives every task a route to the whole internet. A collector that
+# only ever calls AWS APIs does not need one, and a container that cannot reach
+# the internet cannot exfiltrate to it. Endpoints also have no single point of
+# failure per zone, which a NAT Gateway is.
+#
+# The consequence is real and worth stating: adding a dependency that talks to a
+# non AWS endpoint means adding an endpoint or a proxy, not just writing the
+# call. That is a design question worth being forced to answer.
+
+locals {
+  name = "meter-${var.env}"
+
+  # Two /24s for the private subnets and two /26s for the public ones. Public
+  # exists only for the load balancer, which needs a handful of addresses.
+  private_cidrs = [for i, _ in var.availability_zones : cidrsubnet(var.vpc_cidr, 4, i)]
+  public_cidrs  = [for i, _ in var.availability_zones : cidrsubnet(var.vpc_cidr, 6, i + 8)]
+
+  # Every AWS service the tasks call. Cost Explorer is `ce`, which is only
+  # available in us-east-1 as a global endpoint, so it is not in this list: the
+  # collector reaches it through the same path as any other global service.
+  interface_endpoints = [
+    "sts",
+    "sqs",
+    "secretsmanager",
+    "logs",
+    "ecr.api",
+    "ecr.dkr",
+  ]
+}
+
+resource "aws_vpc" "hub" {
+  cidr_block           = var.vpc_cidr
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+
+  tags = { Name = local.name }
+}
+
+resource "aws_subnet" "private" {
+  count = length(var.availability_zones)
+
+  vpc_id            = aws_vpc.hub.id
+  cidr_block        = local.private_cidrs[count.index]
+  availability_zone = var.availability_zones[count.index]
+
+  # Stated rather than left to the default, so a later edit that wants a public
+  # task has to say so in the diff.
+  map_public_ip_on_launch = false
+
+  tags = { Name = "${local.name}-private-${var.availability_zones[count.index]}" }
+}
+
+resource "aws_subnet" "public" {
+  count = length(var.availability_zones)
+
+  vpc_id                  = aws_vpc.hub.id
+  cidr_block              = local.public_cidrs[count.index]
+  availability_zone       = var.availability_zones[count.index]
+  map_public_ip_on_launch = false
+
+  tags = { Name = "${local.name}-public-${var.availability_zones[count.index]}" }
+}
+
+resource "aws_internet_gateway" "hub" {
+  vpc_id = aws_vpc.hub.id
+  tags   = { Name = local.name }
+}
+
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.hub.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.hub.id
+  }
+
+  tags = { Name = "${local.name}-public" }
+}
+
+resource "aws_route_table_association" "public" {
+  count = length(aws_subnet.public)
+
+  subnet_id      = aws_subnet.public[count.index].id
+  route_table_id = aws_route_table.public.id
+}
+
+# The private route table has no default route, deliberately. Everything the
+# tasks reach, they reach through an endpoint in this file.
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.hub.id
+  tags   = { Name = "${local.name}-private" }
+}
+
+resource "aws_route_table_association" "private" {
+  count = length(aws_subnet.private)
+
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.private.id
+}
+
+# --- endpoints ---------------------------------------------------------------
+
+resource "aws_security_group" "endpoints" {
+  name        = "${local.name}-endpoints"
+  description = "Interface endpoints. Reachable from inside the VPC only."
+  vpc_id      = aws_vpc.hub.id
+
+  tags = { Name = "${local.name}-endpoints" }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "endpoints_https" {
+  security_group_id = aws_security_group.endpoints.id
+  description       = "HTTPS from anywhere inside the VPC. The endpoint itself enforces IAM."
+  cidr_ipv4         = aws_vpc.hub.cidr_block
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+}
+
+resource "aws_vpc_endpoint" "interface" {
+  for_each = toset(local.interface_endpoints)
+
+  vpc_id              = aws_vpc.hub.id
+  service_name        = "com.amazonaws.${var.region}.${each.value}"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = aws_subnet.private[*].id
+  security_group_ids  = [aws_security_group.endpoints.id]
+  private_dns_enabled = true
+
+  tags = { Name = "${local.name}-${replace(each.value, ".", "-")}" }
+}
+
+# S3 is a gateway endpoint, which is free and attaches to a route table rather
+# than a subnet. ECR pulls image layers from S3, so this is required for a task
+# to start at all, not only for the object storage in storage.tf.
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id            = aws_vpc.hub.id
+  service_name      = "com.amazonaws.${var.region}.s3"
+  vpc_endpoint_type = "Gateway"
+  route_table_ids   = [aws_route_table.private.id]
+
+  tags = { Name = "${local.name}-s3" }
+}

@@ -1,0 +1,296 @@
+{
+  "schemaVersion": 39,
+  "editable": false,
+  "refresh": "1m",
+  "timezone": "utc",
+  "templating": {
+    "list": [
+      {
+        "name": "cloudwatch",
+        "type": "datasource",
+        "query": "cloudwatch",
+        "current": {},
+        "hide": 0
+      },
+      {
+        "name": "region",
+        "type": "constant",
+        "query": "eu-west-1",
+        "hide": 2
+      },
+      {
+        "name": "load_balancer",
+        "type": "constant",
+        "query": "",
+        "hide": 2
+      },
+      {
+        "name": "work_queue",
+        "type": "constant",
+        "query": "",
+        "hide": 2
+      },
+      {
+        "name": "dlq",
+        "type": "constant",
+        "query": "",
+        "hide": 2
+      },
+      {
+        "name": "db_cluster",
+        "type": "constant",
+        "query": "",
+        "hide": 2
+      }
+    ]
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h"
+    ],
+    "time_options": [
+      "1h",
+      "3h",
+      "6h",
+      "12h",
+      "24h"
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "uid": "meter-service-health",
+  "title": "Meter: service health",
+  "description": "Latency, error rate, saturation and queue depth. SLOs 2, 3 and 4.",
+  "tags": [
+    "meter",
+    "service"
+  ],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Target response time, p95 against the 500 ms objective",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "${cloudwatch}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "namespace": "AWS/ApplicationELB",
+          "metricName": "TargetResponseTime",
+          "statistic": "p95",
+          "period": "300",
+          "region": "$region",
+          "dimensions": {
+            "LoadBalancer": "$load_balancer"
+          },
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch}"
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Requests and server errors",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "${cloudwatch}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "namespace": "AWS/ApplicationELB",
+          "metricName": "RequestCount",
+          "statistic": "Sum",
+          "period": "300",
+          "region": "$region",
+          "dimensions": {
+            "LoadBalancer": "$load_balancer"
+          },
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch}"
+          }
+        },
+        {
+          "refId": "B",
+          "namespace": "AWS/ApplicationELB",
+          "metricName": "HTTPCode_Target_5XX_Count",
+          "statistic": "Sum",
+          "period": "300",
+          "region": "$region",
+          "dimensions": {
+            "LoadBalancer": "$load_balancer"
+          },
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch}"
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Queue depth, which is what the workers scale on",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "${cloudwatch}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "namespace": "AWS/SQS",
+          "metricName": "ApproximateNumberOfMessagesVisible",
+          "statistic": "Average",
+          "period": "300",
+          "region": "$region",
+          "dimensions": {
+            "QueueName": "$work_queue"
+          },
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch}"
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Dead letter queue. Anything above zero is a ticket",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "${cloudwatch}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "namespace": "AWS/SQS",
+          "metricName": "ApproximateNumberOfMessagesVisible",
+          "statistic": "Maximum",
+          "period": "300",
+          "region": "$region",
+          "dimensions": {
+            "QueueName": "$dlq"
+          },
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch}"
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Database connections and capacity",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "${cloudwatch}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "namespace": "AWS/RDS",
+          "metricName": "DatabaseConnections",
+          "statistic": "Maximum",
+          "period": "300",
+          "region": "$region",
+          "dimensions": {
+            "DBClusterIdentifier": "$db_cluster"
+          },
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch}"
+          }
+        },
+        {
+          "refId": "B",
+          "namespace": "AWS/RDS",
+          "metricName": "ServerlessDatabaseCapacity",
+          "statistic": "Average",
+          "period": "300",
+          "region": "$region",
+          "dimensions": {
+            "DBClusterIdentifier": "$db_cluster"
+          },
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch}"
+          }
+        }
+      ]
+    }
+  ]
+}

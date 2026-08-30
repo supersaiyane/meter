@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 39,
+  "editable": false,
+  "refresh": "1m",
+  "timezone": "utc",
+  "templating": {
+    "list": [
+      {
+        "name": "cloudwatch",
+        "type": "datasource",
+        "query": "cloudwatch",
+        "current": {},
+        "hide": 0
+      },
+      {
+        "name": "region",
+        "type": "constant",
+        "query": "eu-west-1",
+        "hide": 2
+      },
+      {
+        "name": "load_balancer",
+        "type": "constant",
+        "query": "",
+        "hide": 2
+      },
+      {
+        "name": "work_queue",
+        "type": "constant",
+        "query": "",
+        "hide": 2
+      },
+      {
+        "name": "dlq",
+        "type": "constant",
+        "query": "",
+        "hide": 2
+      },
+      {
+        "name": "db_cluster",
+        "type": "constant",
+        "query": "",
+        "hide": 2
+      }
+    ]
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h"
+    ],
+    "time_options": [
+      "1h",
+      "3h",
+      "6h",
+      "12h",
+      "24h"
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "uid": "meter-platform-cost",
+  "title": "Meter: platform cost",
+  "description": "Meter's own spend by module, against the estimate in docs/04-DEPLOYMENT.md. Constraint 7: the platform meters itself, and this is the internal view of the figure that is on the front page.",
+  "tags": [
+    "meter",
+    "cost"
+  ],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Daily cost against the modelled 420 USD",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "${cloudwatch}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 28
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "namespace": "Meter",
+          "metricName": "PlatformDailyCost",
+          "statistic": "Maximum",
+          "period": "86400",
+          "region": "$region",
+          "dimensions": {},
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch}"
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Cost by module. Untagged spend appears as unallocated rather than vanishing",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "${cloudwatch}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "namespace": "Meter",
+          "metricName": "PlatformDailyCost",
+          "statistic": "Maximum",
+          "period": "86400",
+          "region": "$region",
+          "dimensions": {},
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "${cloudwatch}"
+          }
+        }
+      ]
+    }
+  ]
+}

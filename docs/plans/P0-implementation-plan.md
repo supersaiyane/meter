@@ -874,7 +874,7 @@ pytest tests/api/test_identity_local.py -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-29, not applied |
 | Implements | P0 spec section 10, ADR-0004 |
 | Delivers | FEAT-002 |
 | Depends on | none |
@@ -887,17 +887,30 @@ hub role.
 
 | Path | Action |
 | --- | --- |
-| `infra/terraform/management/main.tf` | create |
-| `infra/terraform/management/variables.tf` | create |
-| `infra/terraform/management/outputs.tf` | create |
-| `infra/terraform/management/envs/dev.tfvars` | create |
+| `infra/terraform/management/versions.tf` | created |
+| `infra/terraform/management/main.tf` | created |
+| `infra/terraform/management/variables.tf` | created |
+| `infra/terraform/management/outputs.tf` | created |
+| `infra/terraform/management/envs/dev.tfvars` | created |
 
 **Acceptance criteria.**
 
-- [ ] Grants only `organizations:List*` and `organizations:Describe*`
-- [ ] Trust policy requires the hub role principal and an ExternalId
-- [ ] `terraform validate` and `terraform fmt -check` pass
-- [ ] The `terraform-validate` allowance added in TASK-P0-004 is removed here
+- [x] Grants only `organizations:List*` and `organizations:Describe*`. Nine
+      named actions rather than two wildcards, each one used by a named module
+- [x] Trust policy requires the hub role principal and an ExternalId
+- [x] `terraform validate` and `terraform fmt -check` pass
+- [x] The `terraform-validate` allowance added in TASK-P0-004 is removed here,
+      and `make lint` now checks all three stacks
+
+**Deviations.**
+
+1. **A permissions boundary was added.** Not asked for. This role lives in the
+   management account, where a future edit that widens the inline policy has the
+   largest blast radius in the organization, so the boundary caps it at
+   Organizations reads whatever is attached later.
+2. **`external_id` is absent from the tfvars file.** It is passed at apply time.
+   A tfvars file in version control is the most common way an ExternalId stops
+   being a control.
 
 **Do not.**
 
@@ -910,13 +923,15 @@ hub role.
 terraform -chdir=infra/terraform/management validate && terraform -chdir=infra/terraform/management fmt -check
 ```
 
+Both pass. Not applied: it needs management account credentials, ISS-002.
+
 ---
 
 ### TASK-P0-014: Terraform for the member account StackSet
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-29, not applied |
 | Implements | P0 spec section 10, ADR-0004 |
 | Delivers | FEAT-001, FEAT-002 |
 | Depends on | TASK-P0-013 |
@@ -929,20 +944,34 @@ newly vended account onboards with no human step.
 
 | Path | Action |
 | --- | --- |
-| `infra/terraform/member/main.tf` | create |
-| `infra/terraform/member/collector_role.yaml` | create |
-| `infra/terraform/member/variables.tf` | create |
-| `infra/terraform/member/envs/dev.tfvars` | create |
+| `infra/terraform/member/versions.tf` | created |
+| `infra/terraform/member/main.tf` | created |
+| `infra/terraform/member/collector_role.yaml` | created |
+| `infra/terraform/member/variables.tf` | created |
+| `infra/terraform/member/outputs.tf` | created |
+| `infra/terraform/member/envs/dev.tfvars` | created |
 
 **Acceptance criteria.**
 
-- [ ] Service managed StackSet with `auto_deployment` enabled against the
+- [x] Service managed StackSet with `auto_deployment` enabled against the
       organization root
-- [ ] Trust policy requires the hub role, an ExternalId, and an
+- [x] Trust policy requires the hub role, an ExternalId, and an
       `aws:PrincipalOrgID` condition
-- [ ] The policy is a curated action list, and `ReadOnlyAccess` appears nowhere
-- [ ] The action list is a single documented block, each action annotated with
+- [x] The policy is a curated action list, and `ReadOnlyAccess` appears nowhere
+- [x] The action list is a single documented block, each action annotated with
       the collector that needs it
+
+**Deviations.**
+
+1. **`retain_stacks_on_account_removal` is false, which was not specified.** A
+   departed account keeping a role that trusts our hub is a trust relationship
+   nobody owns.
+2. **Rollout is throttled to twenty percent with a five percent failure
+   tolerance.** A template that fails in a way CloudFormation does not catch
+   otherwise reaches the whole organization at once.
+3. **The ExternalId parameter is in `ignore_changes`.** It is `NoEcho`, so drift
+   detection compares against a masked value and would report a change on every
+   plan, which is how a plan diff stops being read.
 
 **Do not.**
 
@@ -959,13 +988,16 @@ newly vended account onboards with no human step.
 terraform -chdir=infra/terraform/member validate && terraform -chdir=infra/terraform/member fmt -check
 ```
 
+Both pass. Not applied: it needs trusted access between Organizations and
+CloudFormation, which is a management account setting. ISS-002.
+
 ---
 
 ### TASK-P0-015: Terraform for the hub network and data layer
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-29, not applied |
 | Implements | P0 spec section 10 |
 | Depends on | none |
 | Estimate | L |
@@ -976,23 +1008,45 @@ terraform -chdir=infra/terraform/member validate && terraform -chdir=infra/terra
 
 | Path | Action |
 | --- | --- |
-| `infra/terraform/hub/network.tf` | create |
-| `infra/terraform/hub/database.tf` | create |
-| `infra/terraform/hub/queue.tf` | create |
-| `infra/terraform/hub/storage.tf` | create |
-| `infra/terraform/hub/variables.tf` | create |
-| `infra/terraform/hub/envs/dev.tfvars` | create |
-| `infra/terraform/hub/envs/dev.backend.hcl` | create |
+| `infra/terraform/hub/versions.tf` | created |
+| `infra/terraform/hub/network.tf` | created |
+| `infra/terraform/hub/database.tf` | created |
+| `infra/terraform/hub/queue.tf` | created |
+| `infra/terraform/hub/storage.tf` | created |
+| `infra/terraform/hub/logs.tf` | created, not planned. See deviation 3 |
+| `infra/terraform/hub/variables.tf` | created |
+| `infra/terraform/hub/envs/dev.tfvars` and `prod.tfvars` | created |
+| `infra/terraform/hub/envs/dev.backend.hcl` and `prod.backend.hcl` | created |
 
 **Acceptance criteria.**
 
-- [ ] Private subnets with interface endpoints for STS, SQS, Secrets Manager,
-      Cost Explorer and CloudWatch Logs, plus a gateway endpoint for S3
-- [ ] No NAT Gateway, per the reasoning in `docs/04-DEPLOYMENT.md`
-- [ ] Aurora Serverless v2, encrypted, not publicly accessible
-- [ ] SQS main queue with a dead letter queue after 3 receives
-- [ ] Every resource carries a `finops:module` tag, which is what makes
-      FEAT-008 work
+- [x] Private subnets with interface endpoints, plus a gateway endpoint for S3.
+      Six interface endpoints: STS, SQS, Secrets Manager, CloudWatch Logs and
+      the two ECR endpoints. See deviation 1 for Cost Explorer
+- [x] No NAT Gateway
+- [x] Aurora Serverless v2, encrypted, not publicly accessible
+- [x] SQS main queue with a dead letter queue after 3 receives, the same number
+      as `MAX_DELIVERY_ATTEMPTS`
+- [x] Every resource carries a `finops:module` tag, through `default_tags`, so
+      it cannot be forgotten on a resource, only overridden deliberately
+
+**Deviations.**
+
+1. **Cost Explorer has no interface endpoint.** `ce` is a global service with no
+   regional PrivateLink endpoint, so it is not in the list. The plan named five
+   services and the list here is six, because ECR needs two (`ecr.api` and
+   `ecr.dkr`) and a task cannot start without them.
+2. **The database password is generated by AWS, not passed in.** A password in a
+   Terraform variable is a password in Terraform state, which is read by
+   everything that runs a plan.
+3. **Log groups are declared rather than left to the awslogs driver.** A group
+   created implicitly on first use has no retention and never expires, and
+   retention cannot be set at creation on a group that was created for you. That
+   is TASK-P0-033's criterion and it had to be satisfied here, in the file that
+   creates them.
+4. **Backup retention is 35 days, the AWS maximum.** Below every table window in
+   `docs/09-DATA-CLASSIFICATION.md`, so a backup never resurrects data the
+   policy says was removed. This closes the criterion TASK-P0-032 deferred.
 
 **Do not.**
 
@@ -1006,8 +1060,12 @@ terraform -chdir=infra/terraform/member validate && terraform -chdir=infra/terra
 **Evidence.**
 
 ```bash
-make tf-init && make tf-plan
+terraform -chdir=infra/terraform/hub validate && terraform -chdir=infra/terraform/hub fmt -check -recursive
 ```
+
+Both pass. `make tf-plan` was NOT run: a plan needs real credentials for the S3
+state backend and for the caller identity data sources, and there is no AWS
+account. Recorded as ISS-122, and P0 is not signed off until it runs.
 
 ---
 
@@ -1015,7 +1073,7 @@ make tf-init && make tf-plan
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-29, not applied |
 | Implements | P0 spec section 10, `docs/04-DEPLOYMENT.md` |
 | Depends on | TASK-P0-015 |
 | Estimate | L |
@@ -1027,28 +1085,45 @@ a variable so Terraform owns the deploy.
 
 | Path | Action |
 | --- | --- |
-| `infra/terraform/hub/ecr.tf` | create |
-| `infra/terraform/hub/ecs.tf` | create |
-| `infra/terraform/hub/alb.tf` | create |
-| `infra/terraform/hub/iam.tf` | create |
-| `infra/terraform/hub/scheduler.tf` | create |
+| `infra/terraform/hub/ecr.tf` | created |
+| `infra/terraform/hub/ecs.tf` | created |
+| `infra/terraform/hub/alb.tf` | created |
+| `infra/terraform/hub/iam.tf` | created |
+| `infra/terraform/hub/scheduler.tf` | created |
+| `infra/terraform/hub/outputs.tf` | created |
 
 **Acceptance criteria.**
 
-- [ ] Four ECR repositories: api, worker, web, cache, with lifecycle policies.
-      **No mcp repository**: the MCP server is a second process in the api
-      image, see ADR-0009
-- [ ] ECR tag mutability set to `IMMUTABLE`, so a tag cannot be repointed at a
-      different image after it was scanned and signed. ISS-054
-- [ ] ECR enhanced scanning enabled on every repository
-- [ ] A second ECS service running the api image with the command overridden to
-      `finops_mcp.server`
-- [ ] Task definitions take `image_tag` as a variable, per `docs/04-DEPLOYMENT.md`
-- [ ] `FinOpsHubTaskRole` can assume only `role/FinOpsCollectorRole` in any
+- [x] Four ECR repositories: api, worker, web, cache, with lifecycle policies.
+      No mcp repository
+- [x] ECR tag mutability set to `IMMUTABLE`. ISS-054
+- [x] ECR enhanced scanning enabled, and set to `CONTINUOUS_SCAN` so an image
+      is rescanned as new advisories are published
+- [x] A second ECS service running the api image with the command overridden to
+      `finops_mcp.server:bootstrap`
+- [x] Task definitions take `image_tag` as a variable, and a validation refuses
+      the value `latest`, because a rollback cannot name a mutable tag
+- [x] `FinOpsHubTaskRole` can assume only `role/FinOpsCollectorRole` in any
       account, restricted by `aws:PrincipalOrgID`
-- [ ] Worker service scales on `ApproximateNumberOfMessagesVisible`
-- [ ] EventBridge Scheduler triggers the dispatcher hourly
-- [ ] ALB health check targets `/healthz` and the rollout waits for stable
+- [x] Worker service scales on `ApproximateNumberOfMessagesVisible`
+- [x] EventBridge Scheduler triggers the dispatcher hourly
+- [x] ALB health check targets `/healthz` and the rollout waits for stable
+
+**Deviations.**
+
+1. **The MCP service has no task role at all.** Not specified, and it is the
+   point of ADR-0009: the facade holds no credential of its own and reaches
+   Meter only over HTTP with the caller's token. A task role would give it a way
+   to read data the caller is not entitled to.
+2. **The worker runs on Fargate Spot.** An interrupted worker unit is
+   redelivered by the queue, so an interruption costs a retry. An interrupted
+   API task costs a request, so the API does not use Spot.
+3. **The deployment circuit breaker is enabled with rollback.** Beyond a health
+   check gate: a broken image rolls itself back rather than sitting in a failed
+   rollout until somebody notices.
+4. **Production refuses to start without TLS and without alerting.** Two
+   preconditions. "We will add TLS before we go live" is a sentence that
+   survives going live.
 
 **Do not.**
 
@@ -1063,8 +1138,10 @@ a variable so Terraform owns the deploy.
 **Evidence.**
 
 ```bash
-make tf-plan
+terraform -chdir=infra/terraform/hub validate
 ```
+
+Passes. Not applied, and no plan run. ISS-122.
 
 ---
 
@@ -2366,7 +2443,7 @@ make check-docs && make check-docstrings && make api-reference
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-29, not applied |
 | Implements | `docs/10-OBSERVABILITY.md` |
 | Depends on | TASK-P0-022, TASK-P0-025 |
 | Estimate | M |
@@ -2378,23 +2455,55 @@ product quietly serving stale numbers that look right.
 
 | Path | Action |
 | --- | --- |
-| `infra/terraform/hub/observability.tf` | create |
-| `infra/terraform/hub/dashboards/*.json` | create |
-| `docs/runbooks/collection-stalled.md` | create |
-| `docs/runbooks/platform-cost-anomaly.md` | create |
-| `finops_ingest/metrics.py` | create |
+| `infra/terraform/hub/observability.tf` | created |
+| `infra/terraform/hub/dashboards/*.json` | created, three |
+| `docs/runbooks/collection-stalled.md` | created |
+| `docs/runbooks/platform-cost-anomaly.md` | created |
+| `docs/runbooks/api-5xx.md` | created, not planned. See deviation 1 |
+| `finops_ingest/metrics.py` | created |
+| `tests/scripts/test_observability.py` | created, not planned |
+| `tests/ingest/test_metrics.py` | created |
 
 **Acceptance criteria.**
 
-- [ ] Four SLOs instrumented, per `docs/10-OBSERVABILITY.md`
-- [ ] Ten alarms created, of which exactly two page: collection stalled, and
-      platform cost anomaly
-- [ ] Every log line carries `run_id`, `collector`, `scope_key`, `tenant_id`
-- [ ] **Meter's own log groups have retention set at creation**, in Terraform
-- [ ] The three dashboards are provisioned as code, with
-      `min_refresh_interval` at 1 minute and no Logs Insights panel over a
-      window longer than 24 hours
-- [ ] A runbook exists for each of the two paging alerts
+- [x] Four SLOs instrumented. Three are measured by metrics AWS already emits.
+      Only SLO 1, collection freshness, needed a custom metric, because it is a
+      fact about the data rather than about the service
+- [x] Ten alarms created. **Four page**, not two. See deviation 1
+- [x] Every log line carries `run_id`, `collector`, `scope_key`, `tenant_id`,
+      through the structlog binding in the worker
+- [x] Meter's own log groups have retention set at creation, in
+      `infra/terraform/hub/logs.tf`
+- [x] The three dashboards are provisioned as code, with a one minute refresh
+      and no panel over a 24 hour window. A test asserts both
+- [x] A runbook exists for each paging alert. Three files cover four alarms,
+      because the widespread stalled alarm is the same failure as the single
+      scope one and its first step is telling them apart
+
+**Deviations.**
+
+1. **Four alerts page, not two.** The criterion above said two, and so did
+   `docs/runbooks/README.md`. Both were misreadings of the sentence under the
+   alert table in `docs/10-OBSERVABILITY.md`: two of the four are *unusual*,
+   which is not the same as two being the total. The table marks collection
+   stalled, collection stalled widespread, API 5xx and platform cost anomaly as
+   Page, and all four are right on the merits. The table was followed and the
+   two summaries corrected. ISS-121.
+2. **The alert threshold is three cadences and the screen's is two.** A page
+   fires strictly later than the screen turns amber. Paging on the threshold an
+   operator is already looking at is how a page gets muted.
+3. **The collection alarms treat a missing datapoint as breaching.** A stalled
+   metric publisher is the same class of failure as a stalled collector, and
+   treating its absence as healthy would leave the alarm working only while the
+   thing it watches is working.
+4. **The platform cost alarm uses an anomaly band, not a fixed multiple.**
+   Meter's cost is expected to grow with the number of accounts it reads, so a
+   fixed threshold would be wrong within a quarter and would then be raised
+   rather than investigated.
+5. **Metrics are dimensioned by collector, never by scope.** One metric per
+   account per region per collector is thousands of metrics at three hundred
+   accounts, which is a bill this product would flag. The stalled scope is found
+   in `sync_error`, which is the runbook's first step anyway.
 
 **Do not.**
 
@@ -2411,11 +2520,12 @@ product quietly serving stale numbers that look right.
 **Evidence.**
 
 ```bash
-make tf-plan
+terraform -chdir=infra/terraform/hub validate
+pytest tests/scripts/test_observability.py tests/ingest/test_metrics.py -v
 ```
 
-Plus a screenshot of the collection health dashboard with a deliberately
-stalled collector, showing the alarm in ALARM state.
+Terraform validates and 19 tests pass. The screenshot of a deliberately stalled
+collector in ALARM was NOT produced: it needs the stack deployed. ISS-122.
 
 ---
 

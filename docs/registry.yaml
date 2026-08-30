@@ -877,6 +877,22 @@ changes:
     three of its eight checks, and that a duplicate job name silently deletes a job
   commit: pending
   detail: '[ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md)'
+- id: CHG-0063
+  date: '2026-08-29'
+  type: Feature
+  what: TASK-P0-013 to 016, the three Terraform stacks. Management account reader role, member
+    account StackSet, and the hub with its network, data layer, ECR, ECS, load balancer and
+    scheduler. No NAT Gateway, no ReadOnlyAccess, and no fifth image for the MCP server
+  commit: pending
+  detail: '[Deployment](docs/04-DEPLOYMENT.md)'
+- id: CHG-0064
+  date: '2026-08-29'
+  type: Feature
+  what: TASK-P0-033, four SLOs, ten alarms of which four page, three dashboards provisioned as
+    code, and three runbooks. The plan said two alerts page and the specification's own table
+    says four
+  commit: pending
+  detail: '[Observability](docs/10-OBSERVABILITY.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1575,6 +1591,31 @@ issues:
     the one everything deploys from, as the one branch nothing reviewed
   detail: A default branch rule added, and the report is now exposed on the pipeline rather than
     only attached
+- id: ISS-121
+  severity: LOW
+  status: FIXED
+  summary: The plan and the runbook index both said two alerts page. The alert table in
+    docs/10-OBSERVABILITY.md marks four
+  detail: 'Both were misreadings of the sentence under the table: two of the four are unusual,
+    which is not the same as two being the total. The table was followed, the two summaries
+    corrected, and a test now holds the paging set against the four names'
+- id: ISS-122
+  severity: HIGH
+  status: OPEN
+  summary: No Terraform stack has been planned or applied. terraform validate and fmt pass on
+    all three, which checks syntax, provider schema and references, and checks nothing about
+    whether the stack builds
+  detail: 'A plan needs real credentials for the S3 state backend and for the caller identity
+    data sources. Also outstanding from TASK-P0-033: the screenshot of a stalled collector in
+    ALARM. P0 is not signed off until a plan runs'
+- id: ISS-123
+  severity: MEDIUM
+  status: FIXED
+  summary: .terraform.lock.hcl was gitignored, so the provider version could differ between the
+    pipeline and a contributor's machine while base images were pinned by digest
+  detail: The constraint is `~> 6.0`, which lets any 6.x resolve. The lock files are now
+    committed for linux_amd64 and darwin_arm64, matching the reproducibility argument in
+    docker/base-images.lock
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS

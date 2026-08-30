@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 50 total, 8 specified, 7 in build, 5 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 62 recorded |
-| Issues | 81 fixed, 36 open, 0 parked |
+| Changes | 64 recorded |
+| Issues | 83 fixed, 37 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -51,7 +51,7 @@ pytest harness and `conftest.py` do not.
 
 | Sub project | Done | Partly | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- |
-| P0 | 30 | 0 | 5 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P0 | 35 | 0 | 0 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P2 | 0 | 0 | 22 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -71,6 +71,10 @@ pytest harness and `conftest.py` do not.
 | `TASK-P0-010` | Done, 2026-08-24 | create the database schema and migrations |
 | `TASK-P0-011` | Done, 2026-08-24 | implement repositories with the scope guard |
 | `TASK-P0-012` | Done, 2026-08-24 | implement the identity ports with the local provider |
+| `TASK-P0-013` | Done, 2026-08-29, not applied | Terraform for the management account role |
+| `TASK-P0-014` | Done, 2026-08-29, not applied | Terraform for the member account StackSet |
+| `TASK-P0-015` | Done, 2026-08-29, not applied | Terraform for the hub network and data layer |
+| `TASK-P0-016` | Done, 2026-08-29, not applied | Terraform for ECS, ALB and ECR |
 | `TASK-P0-017` | Done, 2026-08-24 | implement the AWS credential broker |
 | `TASK-P0-018` | Done, 2026-08-24 | implement AWS account discovery |
 | `TASK-P0-019` | Done, 2026-08-24 | implement the account health check |
@@ -88,6 +92,7 @@ pytest harness and `conftest.py` do not.
 | `TASK-P0-029` | **Done 2026-08-23**, commit `9754a59` | establish the security tool chain and the first posture |
 | `TASK-P0-030` | Done, 2026-08-27 | MCP server scaffold and the four P0 tools |
 | `TASK-P0-031` | Done, 2026-08-28 | wire the documentation and graph gates into the pipeline |
+| `TASK-P0-033` | Done, 2026-08-29, not applied | SLOs, alerts and runbooks |
 
 <!-- generated:task-status end -->
 

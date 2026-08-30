@@ -168,14 +168,20 @@ api-reference:
 terraform-validate:
   stage: verify
   image:
-    name: hashicorp/terraform:1.9
+    name: hashicorp/terraform:1.15
     entrypoint: [""]
   script:
     - terraform -chdir=infra/terraform/hub fmt -check -recursive
     - terraform -chdir=infra/terraform/hub init -backend=false
     - terraform -chdir=infra/terraform/hub validate
+    - terraform -chdir=infra/terraform/member fmt -check -recursive
     - terraform -chdir=infra/terraform/member init -backend=false
     - terraform -chdir=infra/terraform/member validate
+    # The management stack was validated nowhere. It holds the one role with
+    # organization wide read, which makes it the least good place to skip.
+    - terraform -chdir=infra/terraform/management fmt -check -recursive
+    - terraform -chdir=infra/terraform/management init -backend=false
+    - terraform -chdir=infra/terraform/management validate
 
 # ------------------------------------------------------------------ security
 #
@@ -384,7 +390,7 @@ terraform-plan:
   <<: *aws_oidc
   stage: plan
   image:
-    name: hashicorp/terraform:1.9
+    name: hashicorp/terraform:1.15
     entrypoint: [""]
   script:
     - terraform -chdir=${TF_ROOT} init -backend-config=envs/${TF_ENV}.backend.hcl
@@ -418,7 +424,7 @@ terraform-plan:
   <<: *aws_oidc
   stage: deploy
   image:
-    name: hashicorp/terraform:1.9
+    name: hashicorp/terraform:1.15
     entrypoint: [""]
   script:
     - terraform -chdir=${TF_ROOT} init -backend-config=envs/${TF_ENV}.backend.hcl

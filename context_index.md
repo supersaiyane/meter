@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-255 public symbols across 5 packages.
+262 public symbols across 5 packages.
 
 ## finops_core
 
@@ -173,6 +173,13 @@ a duplicate.
 | `RunLedger.record_sync_error` | method | `finops_ingest/ledger.py:244` | Keep one open row per scope and cause, counting repeats. | `finops_ingest/worker.py` |
 | `RunLedger.clear_sync_error` | method | `finops_ingest/ledger.py:274` | A scope that has succeeded no longer has an open error against it. | `finops_ingest/worker.py` |
 | `RunLedger.watermark` | method | `finops_ingest/ledger.py:289` | How far this collector has read for this scope, or None if never. | nothing in this tree |
+| `Measurement` | class | `finops_ingest/metrics.py:54` | One datum, ready for PutMetricData. | nothing in this tree |
+| `Measurement.as_datum` | method | `finops_ingest/metrics.py:62` |  | nothing in this tree |
+| `stalled_scopes` | function | `finops_ingest/metrics.py:72` | Every collector and scope pair whose watermark has not advanced in time. | nothing in this tree |
+| `scope_totals` | function | `finops_ingest/metrics.py:99` | How many scopes each enabled collector has, stalled or not. | nothing in this tree |
+| `freshness_measurements` | function | `finops_ingest/metrics.py:118` | The three SLO 1 metrics, from one pass over the watermarks. | nothing in this tree |
+| `publish` | function | `finops_ingest/metrics.py:146` | Send the measurements. Returns how many were sent. | `finops_ingest/dispatcher.py` |
+| `screen_and_alert_thresholds` | function | `finops_ingest/metrics.py:175` | The two multiples, returned together so a test can hold them apart. | nothing in this tree |
 | `CollectorScope` | class | `finops_ingest/registry.py:25` | What one unit of this collector's work covers. | nothing in this tree |
 | `CollectorOutcome` | class | `finops_ingest/registry.py:35` | What a collector did, for the run ledger to record. | `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/org_tree.py`, `finops_ingest/collectors/partitions.py`, `finops_ingest/collectors/platform_cost.py`, and 1 more |
 | `CollectorContext` | class | `finops_ingest/registry.py:43` | Everything a collector is given, and nothing it is not. | `finops_ingest/worker.py` |
@@ -183,7 +190,7 @@ a duplicate.
 | `install_default_schedule` | function | `finops_ingest/registry.py:264` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
 | `CollectorRegistry` | class | `finops_ingest/registry.py:292` | The collectors this process knows how to run. | nothing in this tree |
 | `CollectorRegistry.register` | method | `finops_ingest/registry.py:298` |  | `finops_ingest/collectors/retention.py` |
-| `CollectorRegistry.get` | method | `finops_ingest/registry.py:306` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 19 more |
+| `CollectorRegistry.get` | method | `finops_ingest/registry.py:306` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 20 more |
 | `CollectorRegistry.names` | method | `finops_ingest/registry.py:315` |  | nothing in this tree |
 | `Outcome` | class | `finops_ingest/worker.py:46` | What happened to one unit. Every one of these is a normal result. | nothing in this tree |
 | `BatchResult` | class | `finops_ingest/worker.py:59` |  | nothing in this tree |
@@ -294,9 +301,9 @@ a duplicate.
 | `ApiError` | class | `finops_mcp/api.py:32` | The API refused or could not answer. Carries the status for the caller. | nothing in this tree |
 | `EnvelopeMissingError` | class | `finops_mcp/api.py:41` | A 200 with no `meta`. Not the contract, so not treated as data. | nothing in this tree |
 | `Transport` | class | `finops_mcp/api.py:45` | What the client needs from an HTTP library, and nothing more. | nothing in this tree |
-| `Transport.get` | method | `finops_mcp/api.py:53` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 18 more |
+| `Transport.get` | method | `finops_mcp/api.py:53` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 19 more |
 | `MeterApi` | class | `finops_mcp/api.py:56` | A caller of the Meter HTTP API. Holds no scope and no credential. | `finops_mcp/server.py` |
-| `MeterApi.get` | method | `finops_mcp/api.py:68` | One GET, returning the envelope exactly as the API sent it. | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 18 more |
+| `MeterApi.get` | method | `finops_mcp/api.py:68` | One GET, returning the envelope exactly as the API sent it. | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 19 more |
 | `MissingTokenError` | class | `finops_mcp/server.py:37` | No caller token. The tool refuses rather than answering as somebody else. | nothing in this tree |
 | `token_from` | function | `finops_mcp/server.py:41` | The caller's bearer token, or an error. | nothing in this tree |
 | `make_handler` | function | `finops_mcp/server.py:59` | Bind one row of the tool table to one handler. | nothing in this tree |
