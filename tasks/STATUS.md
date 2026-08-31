@@ -9,7 +9,7 @@
      own content rather than scaffolding, and is not tagged.
 -->
 
-Last updated: 2026-08-24
+Last updated: 2026-08-30
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -34,15 +34,32 @@ Generated from `docs/registry.yaml`. Change a status there, then run `make doc-s
 
 ## Where the project stands right now
 
-**P0 specification approved. P0 is in build.**
+**P0 is code complete and is NOT signed off.**
 
-No application code exists yet. What exists is a verified toolchain, base
-images pinned by digest and chosen by measurement, a corrected security policy
-with a real posture, and a designed interface.
+All 35 tasks are written, tested and committed. `make verify` passes: lint,
+the writing rules, the eight documentation checks, the docstring gate, the
+memory gate, the full test suite at 98 percent, and a security scan with zero
+findings.
 
-The next task is TASK-P0-001, which is partly done: the Python packages and the
-virtualenv exist because TASK-P0-029 needed them, and the editable install, the
-pytest harness and `conftest.py` do not.
+What that sentence does not cover is the part that matters for a sign off.
+
+**Nothing has ever run against AWS.** The three Terraform stacks pass
+`validate` and `fmt`, which checks syntax, provider schema and references, and
+checks nothing about whether the stack builds. No plan has been produced and
+nothing has been applied. ISS-122.
+
+**The restore drill has not been performed.** It needs an Aurora cluster to
+restore into a scratch database. ISS-111.
+
+Both are open and both are acceptance criteria. P0 is not done until they are
+closed, and calling it done before then would be exactly the kind of claim this
+project's verification rule exists to prevent: reading the code back is not
+evidence.
+
+Three external dependencies remain and none can be unblocked from inside the
+repository. Trusted access between Organizations and CloudFormation, the
+management account role deployment, and CUR 2.0. All three are ISS-002 and
+ISS-003.
 
 ## Tasks
 

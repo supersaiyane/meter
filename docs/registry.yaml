@@ -867,7 +867,7 @@ changes:
   what: TASK-P0-030, the MCP server as a facade over the HTTP API, with six read tools
     whose schemas are generated from the API's own models. Found that the API image could
     never have started, because its command named a symbol that has never existed
-  commit: pending
+  commit: '2d6982c'
   detail: '[ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md)'
 - id: CHG-0062
   date: '2026-08-28'
@@ -875,7 +875,7 @@ changes:
   what: TASK-P0-031, the documentation, memory and docstring gates wired into the pipeline.
     Found that five jobs called make on images without make, that the documentation job ran
     three of its eight checks, and that a duplicate job name silently deletes a job
-  commit: pending
+  commit: '46147cc'
   detail: '[ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md)'
 - id: CHG-0063
   date: '2026-08-29'
@@ -883,7 +883,7 @@ changes:
   what: TASK-P0-013 to 016, the three Terraform stacks. Management account reader role, member
     account StackSet, and the hub with its network, data layer, ECR, ECS, load balancer and
     scheduler. No NAT Gateway, no ReadOnlyAccess, and no fifth image for the MCP server
-  commit: pending
+  commit: 'eb8a507'
   detail: '[Deployment](docs/04-DEPLOYMENT.md)'
 - id: CHG-0064
   date: '2026-08-29'
@@ -891,7 +891,7 @@ changes:
   what: TASK-P0-033, four SLOs, ten alarms of which four page, three dashboards provisioned as
     code, and three runbooks. The plan said two alerts page and the specification's own table
     says four
-  commit: pending
+  commit: 'eb8a507'
   detail: '[Observability](docs/10-OBSERVABILITY.md)'
 issues:
 - id: ISS-001
