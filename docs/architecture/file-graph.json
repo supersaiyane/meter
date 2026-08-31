@@ -255,6 +255,7 @@
     "finops_ingest/collectors/org_tree.py",
     "finops_ingest/collectors/partitions.py",
     "finops_ingest/collectors/platform_cost.py",
+    "finops_ingest/collectors/query_audit.py",
     "finops_ingest/collectors/retention.py",
     "finops_ingest/dispatcher.py",
     "finops_ingest/ledger.py",
@@ -356,6 +357,7 @@
     "tests/ingest/test_dispatcher.py",
     "tests/ingest/test_ledger.py",
     "tests/ingest/test_metrics.py",
+    "tests/ingest/test_query_audit.py",
     "tests/ingest/test_worker.py",
     "tests/mcp/__init__.py",
     "tests/mcp/test_contract.py",
@@ -2638,6 +2640,31 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_query/classify.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_query/cost_model.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/retention.py",
       "t": "finops_ingest/collectors/partitions.py",
       "k": "python"
@@ -3440,6 +3467,31 @@
     {
       "s": "tests/ingest/test_metrics.py",
       "t": "finops_ingest/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_query_audit.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_query_audit.py",
+      "t": "finops_ingest/collectors/query_audit.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_query_audit.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_query_audit.py",
+      "t": "finops_providers/fake/surface.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_query_audit.py",
+      "t": "finops_query/cost_model.py",
       "k": "python"
     },
     {

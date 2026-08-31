@@ -91,6 +91,9 @@ class ScheduleEntry:
 
 
 HOURLY = 3600
+#: Six hours. The interval the P2 specification asks for, named rather than
+#: written as a multiplication at the call site.
+SIX_HOURLY = 21600
 DAILY = 86400
 #: Thirty days. The cost roll up is not calendar aware and does not need to be:
 #: it aggregates everything past a cutoff, so running a day early or a day late
@@ -117,6 +120,18 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
             "A broken collector role is invisible until something tries to read the "
             "account, so the check runs as often as the tree it belongs to. The calls "
             "are free, and the alternative is finding out from a missing number."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="query_audit",
+        cadence_seconds=SIX_HOURLY,
+        reason=(
+            "A dashboard is edited by a person, so the population changes on a human "
+            "timescale rather than a machine one. Six hours catches a bad panel within "
+            "one working day, which is fast enough to matter and slow enough that the "
+            "survey itself is not the thing being audited: every run reads every "
+            "dashboard in every workspace, and the Grafana API is the cost."
         ),
         est_cost_per_run="0",
     ),

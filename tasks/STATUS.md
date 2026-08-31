@@ -83,7 +83,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P2 | 10 | 1 | 2 | 2 | 10 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
+| P2 | 11 | 1 | 2 | 2 | 9 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -142,6 +142,7 @@ ISS-003.
 | `TASK-P2-007` | Descoped, 2026-09-02 | the self hosted connection strategy |
 | `TASK-P2-008` | Descoped, 2026-09-02 | the Grafana Cloud connection strategy |
 | `TASK-P2-009` | Done, 2026-08-30 | the six P2 tables |
+| `TASK-P2-010` | Done, 2026-08-31 | the query audit collector |
 | `TASK-P2-015` | Parked, 2026-08-29 | detection and alerting |
 | `TASK-P2-016` | Parked, 2026-08-29 | throttle and deny, with the guardrails |
 | `TASK-P2-022` | Done, 2026-09-13 | the query findings screen |

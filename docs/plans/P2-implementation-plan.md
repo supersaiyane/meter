@@ -538,7 +538,7 @@ rather than left to diverge.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-31 |
 | Implements | P2 spec section 7.1 |
 | Delivers | FEAT-011, FEAT-012 |
 | Depends on | TASK-P2-006, TASK-P2-009 |
@@ -546,12 +546,17 @@ rather than left to diverge.
 
 **Acceptance criteria.**
 
-- [ ] Registered in `collector_schedule` at **6 hours**, with its reason and
+- [x] Registered in `collector_schedule` at **6 hours**, with its reason and
       its estimated cost per run, per ADR-0012
-- [ ] Walks every reachable instance, upserts `query_definition` and today's
+- [x] Walks every reachable instance, upserts `query_definition` and today's
       `query_finding`
-- [ ] One unreachable instance does not fail the run
-- [ ] Idempotent: three runs in one day write one `query_finding` per query
+- [x] One unreachable instance does not fail the run
+- [x] Idempotent: three runs in one day write one `query_finding` per query
+
+**Where the parser is wired.** `AmgQuerySurface` takes a `QueryParser`, and
+the collector takes an already built surface, so the wiring point is wherever
+the collector is constructed. The tests build it with `FakeQuerySurface`;
+production builds it with `AmgQuerySurface(parser=GrafanaQueryParser(), ...)`.
 
 **Do not.**
 
