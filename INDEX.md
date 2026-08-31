@@ -188,8 +188,8 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0014 | 2026-08-23 | Process | Ponytail ladder replaced by the seven rung version with a Rung Disqualification Record, imported from a prior project | `3d93f76` | [ADR-0013](docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md) |
 | CHG-0015 | 2026-08-23 | Process | Derived documentation generated from docs/registry.yaml instead of hand maintained in four places | `5355ac3` | [ADR-0014](docs/adr/ADR-0014-generated-documentation.md) |
 | CHG-0016 | 2026-08-23 | Process | README rewritten as the operational entry point: source of truth table, common tasks, the four security gates, the remediation path, and a gotchas table | `aaf6a6a` | [README.md](README.md) |
-| CHG-0017 | 2026-08-23 | Process | Layered security gates documented and completed: pre commit and pre push hooks, a compose security profile for local scanning, and provenance verification before every deploy | `pending` | [docs/05-SECURITY.md](docs/05-SECURITY.md) |
-| CHG-0018 | 2026-08-23 | Process | README gotchas expanded into ten worked examples, each showing the actual output and the exact commands | `pending` | [README.md](README.md) |
+| CHG-0017 | 2026-08-23 | Process | Layered security gates documented and completed: pre commit and pre push hooks, a compose security profile for local scanning, and provenance verification before every deploy | `061c351` | [docs/05-SECURITY.md](docs/05-SECURITY.md) |
+| CHG-0018 | 2026-08-23 | Process | README gotchas expanded into ten worked examples, each showing the actual output and the exact commands | `403c57b` | [README.md](README.md) |
 
 <!-- generated:changes end -->
 

@@ -441,14 +441,14 @@ changes:
   type: Process
   what: 'Layered security gates documented and completed: pre commit and pre push hooks, a compose security
     profile for local scanning, and provenance verification before every deploy'
-  commit: pending
+  commit: 061c351
   detail: '[docs/05-SECURITY.md](docs/05-SECURITY.md)'
 - id: CHG-0018
   date: '2026-08-23'
   type: Process
   what: README gotchas expanded into ten worked examples, each showing the actual output and the exact
     commands
-  commit: pending
+  commit: 403c57b
   detail: '[README.md](README.md)'
 issues:
 - id: ISS-001
