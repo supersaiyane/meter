@@ -280,7 +280,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0062 | 2026-08-28 | Chore | TASK-P0-031, the documentation, memory and docstring gates wired into the pipeline. Found that five jobs called make on images without make, that the documentation job ran three of its eight checks, and that a duplicate job name silently deletes a job | `46147cc` | [ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md) |
 | CHG-0063 | 2026-08-29 | Feature | TASK-P0-013 to 016, the three Terraform stacks. Management account reader role, member account StackSet, and the hub with its network, data layer, ECR, ECS, load balancer and scheduler. No NAT Gateway, no ReadOnlyAccess, and no fifth image for the MCP server | `eb8a507` | [Deployment](docs/04-DEPLOYMENT.md) |
 | CHG-0064 | 2026-08-29 | Feature | TASK-P0-033, four SLOs, ten alarms of which four page, three dashboards provisioned as code, and three runbooks. The plan said two alerts page and the specification's own table says four | `eb8a507` | [Observability](docs/10-OBSERVABILITY.md) |
-| CHG-0065 | 2026-08-31 | Fix | The security report never read trivy's infrastructure as code findings. Seven were dropped and the gate printed PASS over them. Parser fixed, four real findings fixed, five deliberate ones accepted with a reachability argument | `pending` | [ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md) |
+| CHG-0065 | 2026-08-31 | Fix | The security report never read trivy's infrastructure as code findings. Seven were dropped and the gate printed PASS over them. Parser fixed, four real findings fixed, five deliberate ones accepted with a reachability argument | `74e9d28` | [ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md) |
 
 <!-- generated:changes end -->
 

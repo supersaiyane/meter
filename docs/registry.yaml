@@ -899,7 +899,7 @@ changes:
   what: The security report never read trivy's infrastructure as code findings. Seven were
     dropped and the gate printed PASS over them. Parser fixed, four real findings fixed, five
     deliberate ones accepted with a reachability argument
-  commit: pending
+  commit: '74e9d28'
   detail: '[ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md)'
 issues:
 - id: ISS-001

@@ -1,0 +1,111 @@
+{
+  "generated": "2026-08-27 07:14:26Z",
+  "label": "working tree",
+  "unresolved_total": 6,
+  "allowlisted_total": 0,
+  "unfixable_accepted_total": 0,
+  "by_severity": {
+    "Critical": 1,
+    "High": 2,
+    "Medium": 2,
+    "Low": 1
+  },
+  "findings": [
+    {
+      "id": "AWS-0054",
+      "severity": "Critical",
+      "package": "hub/alb.tf",
+      "installed": "",
+      "fixed_in": "Switch to HTTPS to benefit from TLS security features",
+      "ecosystem": "iac",
+      "target": "terraform",
+      "description": "Use of plain HTTP.. Plain HTTP is unencrypted and human-readable. This means that if a malicious actor was to eavesdrop on your connection, they would be able to see all of your data flowing back and forth.\nYou should use HTTPS, which is HTTP over an encrypted (TLS) connection, meaning eavesdroppers cannot read your traffic.\n",
+      "url": "https://avd.aquasec.com/misconfig/aws-0054",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Upgrade hub/alb.tf to Switch to HTTPS to benefit from TLS security features. If it comes from the base image, rebuild against the current Minimus tag, which is rebuilt daily."
+    },
+    {
+      "id": "AWS-0053",
+      "severity": "High",
+      "package": "hub/alb.tf",
+      "installed": "",
+      "fixed_in": "Switch to an internal load balancer or add a tfsec ignore",
+      "ecosystem": "iac",
+      "target": "terraform",
+      "description": "Load balancer is exposed to the internet.. There are many scenarios in which you would want to expose a load balancer to the wider internet, but this check exists as a warning to prevent accidental exposure of internal assets. You should ensure that this resource should be exposed publicly.\n",
+      "url": "https://avd.aquasec.com/misconfig/aws-0053",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Upgrade hub/alb.tf to Switch to an internal load balancer or add a tfsec ignore. If it comes from the base image, rebuild against the current Minimus tag, which is rebuilt daily."
+    },
+    {
+      "id": "AWS-0132",
+      "severity": "High",
+      "package": "hub/storage.tf",
+      "installed": "",
+      "fixed_in": "Use SSE-KMS with a customer managed key (CMK)",
+      "ecosystem": "iac",
+      "target": "terraform",
+      "description": "S3 encryption should use Customer Managed Keys. Encryption using AWS keys provides protection for your S3 buckets. To gain greater control over encryption, such as key rotation, access policies, and auditability, use customer managed keys (CMKs) with SSE-KMS.\nNote that SSE-KMS is not supported for S3 server access logging destination buckets; in such cases, use SSE-S3 instead.\n",
+      "url": "https://avd.aquasec.com/misconfig/aws-0132",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Upgrade hub/storage.tf to Use SSE-KMS with a customer managed key (CMK). If it comes from the base image, rebuild against the current Minimus tag, which is rebuilt daily."
+    },
+    {
+      "id": "AWS-0343",
+      "severity": "Medium",
+      "package": "hub/database.tf",
+      "installed": "",
+      "fixed_in": "Modify the RDS clusters to enable deletion protection.",
+      "ecosystem": "iac",
+      "target": "terraform",
+      "description": "RDS Cluster Deletion Protection Disabled. Ensure deletion protection is enabled for RDS clusters.",
+      "url": "https://avd.aquasec.com/misconfig/aws-0343",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Upgrade hub/database.tf to Modify the RDS clusters to enable deletion protection.. If it comes from the base image, rebuild against the current Minimus tag, which is rebuilt daily."
+    },
+    {
+      "id": "AWS-0090",
+      "severity": "Medium",
+      "package": "hub/storage.tf",
+      "installed": "",
+      "fixed_in": "Enable versioning to protect against accidental/malicious removal or modification",
+      "ecosystem": "iac",
+      "target": "terraform",
+      "description": "S3 Data should be versioned. Versioning in Amazon S3 is a means of keeping multiple variants of an object in the same bucket.\n\nYou can use the S3 Versioning feature to preserve, retrieve, and restore every version of every object stored in your buckets.\n\nWith versioning you can recover more easily from both unintended user actions and application failures.\n\nWhen you enable versioning, also keep in",
+      "url": "https://avd.aquasec.com/misconfig/aws-0090",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Upgrade hub/storage.tf to Enable versioning to protect against accidental/malicious removal or modification. If it comes from the base image, rebuild against the current Minimus tag, which is rebuilt daily."
+    },
+    {
+      "id": "AWS-0089",
+      "severity": "Low",
+      "package": "hub/storage.tf",
+      "installed": "",
+      "fixed_in": "Add a logging block to the resource to enable access logging",
+      "ecosystem": "iac",
+      "target": "terraform",
+      "description": "S3 Bucket Logging. Ensures S3 bucket logging is enabled for S3 buckets",
+      "url": "https://avd.aquasec.com/misconfig/aws-0089",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Upgrade hub/storage.tf to Add a logging block to the resource to enable access logging. If it comes from the base image, rebuild against the current Minimus tag, which is rebuilt daily."
+    }
+  ]
+}
