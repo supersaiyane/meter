@@ -276,6 +276,9 @@ meter/
 │       ├── org_tree.py        whole tree replaced in one transaction, never emptied
 │       ├── account_health.py  role_health written every run, including failed ones
 │       ├── platform_cost.py   one grouped request a day. Untagged cost is named
+│       ├── query_audit.py     six hourly. An instance it cannot read is written
+│       │                      unreachable and the run continues, and the upsert
+│       │                      is keyed on the day so three runs leave one finding
 │       ├── retention.py       six jobs. Anonymises, never removes a principal row
 │       └── partitions.py      months created ahead. Without one, cost rows are refused
 │   └── metrics.py             only SLO 1 needs a custom metric. The other three are AWS's
@@ -309,6 +312,8 @@ meter/
 │                              spec section 5. Additive only, per constraint 12
 │       ├── 0001_initial.py    the thirteen P0 tables
 │       ├── 0002_cost_monthly.py  somewhere for retention to aggregate into
+│       ├── 0004_query_key.py  a nullable query_key, so evidence can attach to a
+│       │                      query rather than to one panel drawing it
 │       └── 0003_p2_tables.py  the six P2 tables. Three of its constraints are
 │                              the feature: a deny cannot be written without an
 │                              expiry, a modelled row cannot claim a measured
@@ -318,8 +323,12 @@ meter/
 │   │                          arithmetic, so a new engine is a branch not a rate
 │   ├── cost_model.py          runs per day, cost per run, quota pressure. No IO,
 │   │                          no clock, no client. Every figure is modelled
-│   ├── policy.py              fingerprinting. Template aware, so a dashboard with
-│   │                          a $region variable is one query and not four
+│   ├── policy.py              two keys, and the difference is the point.
+│   │                          fingerprint identifies one definition, because the
+│   │                          unique constraint makes it a row's identity.
+│   │                          query_key identifies the query itself, so measured
+│   │                          evidence attaches to every panel running it. Both
+│   │                          ignore template values, whitespace and comments
 │   ├── ownership.py           who ran it, and measured against modelled
 │   └── parser.py              the QueryParser port, bound to this package. It
 │                              exists so the adapter below can parse without
