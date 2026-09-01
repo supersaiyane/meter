@@ -102,4 +102,7 @@ resource "aws_rds_cluster_instance" "writer" {
   # accounts is found here or by guessing.
   performance_insights_enabled          = true
   performance_insights_retention_period = 7
+  # The same key the cluster storage uses. Performance Insights holds query
+  # text, which for this product means the shape of a customer's cost queries.
+  performance_insights_kms_key_id = aws_kms_key.database.arn
 }

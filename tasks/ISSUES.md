@@ -44,7 +44,7 @@ Status: `OPEN`, `IN PROGRESS`, `FIXED`, `WONT FIX`, `PARKED`, `CLOSED`.
 <!-- generated:issue-register start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-120 issues. 83 fixed, 37 open, 0 parked.
+122 issues. 85 fixed, 37 open, 0 parked.
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in `tasks/STATUS.md`.
 
@@ -56,6 +56,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-034 | CRITICAL | Scanning only at build time reports zero forever while the deployed image degrades silently | FIXED | [docs/05-SECURITY.md](docs/05-SECURITY.md), nightly posture scan |
 | ISS-055 | CRITICAL | No threat model exists for a platform holding organization wide financial data and cross account credentials in a financial services environment | FIXED | [A001-F11](audits/AUDIT-001-2026-08-23-full-project.md) -> [docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md) |
 | ISS-097 | CRITICAL | The stated policy of zero vulnerabilities at any severity is unachievable: every Python base image carries unfixable CPython findings, so the rule would have been routed around rather than met | FIXED | [ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md). Threshold is now zero findings that have a published fix |
+| ISS-124 | CRITICAL | The security report parsed only the Vulnerabilities array from the trivy output and never the Misconfigurations array, so every infrastructure as code finding was dropped and the gate printed PASS over them | FIXED | Invisible while infra/terraform did not exist, because the scanner then had nothing to find and agreed with the parser. The first Terraform commit produced seven findings, two CRITICAL, and make security-scan reported zero. Four were real and were fixed: unrestricted egress, Performance Insights without a customer managed key, no VPC flow logs, and no S3 access logging. Five are deliberate and are now recorded in accepted.yaml with an argument |
 | ISS-005 | HIGH | A bespoke cost schema forces a migration per cloud provider | FIXED | [ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md) |
 | ISS-006 | HIGH | Serving dashboards from Athena recreates the runaway query cost problem inside Meter | FIXED | [ADR-0003](docs/adr/ADR-0003-postgres-only-serving-layer.md) |
 | ISS-007 | HIGH | Unblended per resource cost is meaningless with commitments in play | FIXED | [architecture](docs/02-ARCHITECTURE.md) |
@@ -155,6 +156,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-119 | MEDIUM | The pipeline documentation gate ran three of the eight checks in make check-docs. The other five ran only in `make verify` on a contributor's own machine | FIXED | The five were the registry sync check, the context index check, the feature flag check, the hardcoded value check and the forbidden import check. The job now runs the target |
 | ISS-120 | MEDIUM | The automated code review ran on merge requests only, leaving the default branch, the one everything deploys from, as the one branch nothing reviewed | FIXED | A default branch rule added, and the report is now exposed on the pipeline rather than only attached |
 | ISS-123 | MEDIUM | .terraform.lock.hcl was gitignored, so the provider version could differ between the pipeline and a contributor's machine while base images were pinned by digest | FIXED | The constraint is `~> 6.0`, which lets any 6.x resolve. The lock files are now committed for linux_amd64 and darwin_arm64, matching the reproducibility argument in docker/base-images.lock |
+| ISS-125 | MEDIUM | Mapping trivy's Resolution field onto fixed_in made the gate treat every misconfiguration as fixable by upgrade, so an acceptance record could never apply to one | FIXED | Resolution is advice text rather than a version. A misconfiguration is a design choice, so it is either changed or accepted under ADR-0018, and the advice now goes in the description |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |

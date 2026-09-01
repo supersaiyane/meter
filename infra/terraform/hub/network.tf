@@ -148,3 +148,71 @@ resource "aws_vpc_endpoint" "s3" {
 
   tags = { Name = "${local.name}-s3" }
 }
+
+# Flow logs, rejects and accepts both.
+#
+# This is what turns "the tasks have no route to the internet" from a claim into
+# something a reviewer can check. It is also the only record of an attempted
+# connection that a security group refused, which is exactly the evidence needed
+# when the question is whether a container tried to reach somewhere it should
+# not have.
+
+resource "aws_cloudwatch_log_group" "flow_logs" {
+  name              = "/meter/${var.env}/vpc-flow-logs"
+  retention_in_days = var.log_retention_days
+  kms_key_id        = aws_kms_key.logs.arn
+}
+
+data "aws_iam_policy_document" "flow_logs_assume" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["vpc-flow-logs.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "flow_logs" {
+  statement {
+    sid    = "WriteFlowLogs"
+    effect = "Allow"
+
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:DescribeLogStreams",
+    ]
+
+    resources = ["${aws_cloudwatch_log_group.flow_logs.arn}:*"]
+  }
+}
+
+resource "aws_iam_role" "flow_logs" {
+  name               = "FinOpsHubFlowLogsRole"
+  description        = "Lets VPC Flow Logs write to one log group, and nothing else."
+  assume_role_policy = data.aws_iam_policy_document.flow_logs_assume.json
+}
+
+resource "aws_iam_role_policy" "flow_logs" {
+  name   = "WriteFlowLogs"
+  role   = aws_iam_role.flow_logs.id
+  policy = data.aws_iam_policy_document.flow_logs.json
+}
+
+resource "aws_flow_log" "hub" {
+  vpc_id          = aws_vpc.hub.id
+  traffic_type    = "ALL"
+  iam_role_arn    = aws_iam_role.flow_logs.arn
+  log_destination = aws_cloudwatch_log_group.flow_logs.arn
+
+  tags = { Name = "${local.name}-flow-logs" }
+}

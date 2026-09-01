@@ -62,10 +62,26 @@ resource "aws_vpc_security_group_ingress_rule" "tasks_from_tasks" {
   ip_protocol                  = "tcp"
 }
 
-resource "aws_vpc_security_group_egress_rule" "tasks_https" {
+# To the endpoints by security group, not to 0.0.0.0/0. The private route table
+# has no default route, so a wider rule would have reached nothing extra, but a
+# rule that says "anywhere" is read as "anywhere" by the next person and by the
+# scanner. Narrowing it costs nothing and makes the intent legible.
+resource "aws_vpc_security_group_egress_rule" "tasks_endpoints" {
+  security_group_id            = aws_security_group.tasks.id
+  description                  = "HTTPS to the interface endpoints, which is every AWS call Meter makes."
+  referenced_security_group_id = aws_security_group.endpoints.id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
+}
+
+# The S3 gateway endpoint is a route rather than a security group, so egress to
+# it is expressed as a prefix list. Without this an image layer pull fails, and
+# the failure looks like a task that will not start rather than a network rule.
+resource "aws_vpc_security_group_egress_rule" "tasks_s3" {
   security_group_id = aws_security_group.tasks.id
-  description       = "HTTPS to the endpoints. There is no route to the internet regardless."
-  cidr_ipv4         = "0.0.0.0/0"
+  description       = "HTTPS to S3 through the gateway endpoint. ECR layers come from here."
+  prefix_list_id    = aws_vpc_endpoint.s3.prefix_list_id
   from_port         = 443
   to_port           = 443
   ip_protocol       = "tcp"

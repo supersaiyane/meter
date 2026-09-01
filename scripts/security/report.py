@@ -83,9 +83,46 @@ def parse_grype(path: Path) -> list[dict[str, Any]]:
 
 
 def parse_trivy(path: Path) -> list[dict[str, Any]]:
+    """Both kinds of trivy finding, not one of them.
+
+    This read only `Vulnerabilities` for a long time, so every infrastructure
+    as code misconfiguration was parsed into nothing and the report said zero.
+    It was invisible while `infra/terraform` did not exist, because the scanner
+    then had nothing to find and agreed with the parser. The first Terraform
+    commit produced seven findings, two of them CRITICAL, and the gate printed
+    "PASS: zero unresolved findings" over them.
+
+    A parser that silently drops a category is worse than a scanner that was
+    never run, because the report asserts that it looked.
+    """
     data = json.loads(path.read_text() or "{}")
     findings = []
     for result in data.get("Results", []) or []:
+        for misconfiguration in result.get("Misconfigurations", []) or []:
+            findings.append(
+                {
+                    "id": misconfiguration.get("ID", "UNKNOWN"),
+                    "severity": _norm_sev(misconfiguration.get("Severity")),
+                    "package": result.get("Target", "unknown"),
+                    "installed": "",
+                    # Deliberately empty. Trivy's Resolution field is advice
+                    # ("Use HTTPS"), not a version that fixes anything, and
+                    # putting it here would make the gate treat every
+                    # misconfiguration as fixable by upgrade. It is not: a
+                    # misconfiguration is a design choice, so it is either
+                    # changed or accepted with an argument under ADR-0018.
+                    "fixed_in": "",
+                    "ecosystem": "iac",
+                    "target": path.stem.replace("trivy-", ""),
+                    "scanner": "trivy",
+                    "description": (
+                        f"{misconfiguration.get('Title', '')}. "
+                        f"{(misconfiguration.get('Description') or '')} "
+                        f"Resolution: {misconfiguration.get('Resolution', '')}"
+                    )[:400],
+                    "url": misconfiguration.get("PrimaryURL", ""),
+                }
+            )
         for vuln in result.get("Vulnerabilities", []) or []:
             findings.append(
                 {

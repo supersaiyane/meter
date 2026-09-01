@@ -893,6 +893,14 @@ changes:
     says four
   commit: 'eb8a507'
   detail: '[Observability](docs/10-OBSERVABILITY.md)'
+- id: CHG-0065
+  date: '2026-08-31'
+  type: Fix
+  what: The security report never read trivy's infrastructure as code findings. Seven were
+    dropped and the gate printed PASS over them. Parser fixed, four real findings fixed, five
+    deliberate ones accepted with a reachability argument
+  commit: pending
+  detail: '[ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1616,6 +1624,24 @@ issues:
   detail: The constraint is `~> 6.0`, which lets any 6.x resolve. The lock files are now
     committed for linux_amd64 and darwin_arm64, matching the reproducibility argument in
     docker/base-images.lock
+- id: ISS-124
+  severity: CRITICAL
+  status: FIXED
+  summary: The security report parsed only the Vulnerabilities array from the trivy output and
+    never the Misconfigurations array, so every infrastructure as code finding was dropped and
+    the gate printed PASS over them
+  detail: 'Invisible while infra/terraform did not exist, because the scanner then had nothing
+    to find and agreed with the parser. The first Terraform commit produced seven findings, two
+    CRITICAL, and make security-scan reported zero. Four were real and were fixed: unrestricted
+    egress, Performance Insights without a customer managed key, no VPC flow logs, and no S3
+    access logging. Five are deliberate and are now recorded in accepted.yaml with an argument'
+- id: ISS-125
+  severity: MEDIUM
+  status: FIXED
+  summary: Mapping trivy's Resolution field onto fixed_in made the gate treat every
+    misconfiguration as fixable by upgrade, so an acceptance record could never apply to one
+  detail: Resolution is advice text rather than a version. A misconfiguration is a design choice,
+    so it is either changed or accepted under ADR-0018, and the advice now goes in the description
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS

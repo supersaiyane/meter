@@ -95,3 +95,70 @@ resource "aws_secretsmanager_secret" "external_id" {
 
   recovery_window_in_days = var.env == "prod" ? 30 : 7
 }
+
+# Access logs for the data bucket, in a bucket of their own.
+#
+# A bucket cannot log to itself without producing an infinite regress, which is
+# why this is a second bucket rather than a prefix. It is the record of who read
+# a raw provider export, and raw exports are the most sensitive thing Meter
+# stores.
+
+resource "aws_s3_bucket" "access_logs" {
+  bucket = "${local.name}-access-logs-${random_id.bucket_suffix.hex}"
+}
+
+resource "aws_s3_bucket_public_access_block" "access_logs" {
+  bucket = aws_s3_bucket.access_logs.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# SSE-S3 rather than the KMS key used elsewhere. S3 server access logging cannot
+# write to a bucket encrypted with a customer managed key, and the alternative
+# is no access log at all.
+resource "aws_s3_bucket_server_side_encryption_configuration" "access_logs" {
+  bucket = aws_s3_bucket.access_logs.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "access_logs" {
+  bucket = aws_s3_bucket.access_logs.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "access_logs" {
+  bucket = aws_s3_bucket.access_logs.id
+
+  rule {
+    id     = "expire"
+    status = "Enabled"
+
+    filter {}
+
+    # Ninety days, matching the operational retention window.
+    expiration {
+      days = 90
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 90
+    }
+  }
+}
+
+resource "aws_s3_bucket_logging" "data" {
+  bucket        = aws_s3_bucket.data.id
+  target_bucket = aws_s3_bucket.access_logs.id
+  target_prefix = "data/"
+}

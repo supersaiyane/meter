@@ -72,3 +72,84 @@ accepted:
     owner: PLACEHOLDER-security
     added: 2026-08-23
     review: 2026-11-21
+
+  # --- infrastructure as code -------------------------------------------------
+  #
+  # These five were invisible until 2026-08-27. The report parser read only the
+  # Vulnerabilities array from the trivy output and never the Misconfigurations
+  # array, so every one of these was parsed into nothing and the gate printed
+  # "PASS: zero unresolved findings" over them. The parser is fixed. Four of the
+  # findings it then surfaced were real and were fixed; these five are
+  # deliberate and are recorded here with the argument rather than silenced.
+
+  - id: AWS-0053
+    package: hub/alb.tf
+    target: terraform
+    unfixable: true
+    reachability: >
+      The load balancer is internet facing because Meter is a web product that
+      people sign into from a browser. It is the only resource in the hub with a
+      public address, every task sits in a private subnet with no route to the
+      internet, and the tasks accept traffic from this security group only.
+      Making it internal would mean the product is not reachable, which is not a
+      fix.
+    owner: PLACEHOLDER-security
+    added: 2026-08-27
+    review: 2026-11-27
+
+  - id: AWS-0054
+    package: hub/alb.tf
+    target: terraform
+    unfixable: true
+    reachability: >
+      The plain HTTP listener serves only when certificate_arn is empty, which
+      is development. With a certificate it does nothing but redirect to HTTPS
+      with a 301. Production cannot be applied without a certificate: a
+      precondition in alb.tf fails the plan, because "we will add TLS before we
+      go live" is a sentence that survives going live. The scanner reads the
+      dynamic block statically and cannot see the precondition.
+    owner: PLACEHOLDER-security
+    added: 2026-08-27
+    review: 2026-11-27
+
+  - id: AWS-0343
+    package: hub/database.tf
+    target: terraform
+    unfixable: true
+    reachability: >
+      Deletion protection is set to var.env == "prod", so production has it and
+      development does not. A development cluster that cannot be destroyed is a
+      development cluster somebody works around by creating a second one. The
+      scanner evaluates the conditional statically and reports the development
+      branch.
+    owner: PLACEHOLDER-security
+    added: 2026-08-27
+    review: 2026-11-27
+
+  - id: AWS-0089
+    package: hub/storage.tf
+    target: terraform
+    unfixable: true
+    reachability: >
+      This finding is against the access log bucket itself. A bucket that logs
+      its own access to itself produces a log entry for every log entry, which
+      does not terminate. The bucket it exists to log, aws_s3_bucket.data, does
+      have access logging, which is what this same rule asked for and what was
+      fixed on the same day.
+    owner: PLACEHOLDER-security
+    added: 2026-08-27
+    review: 2026-11-27
+
+  - id: AWS-0132
+    package: hub/storage.tf
+    target: terraform
+    unfixable: true
+    reachability: >
+      S3 server access logging cannot deliver to a bucket encrypted with a
+      customer managed key. The delivery is performed by the S3 log delivery
+      group, which has no grant on the key and cannot be given one. The choice
+      is SSE-S3 on the log bucket or no access log at all, and no access log is
+      worse. The data bucket it logs uses the customer managed key.
+    owner: PLACEHOLDER-security
+    added: 2026-08-27
+    review: 2026-11-27
