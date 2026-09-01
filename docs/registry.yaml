@@ -450,6 +450,13 @@ changes:
     commands
   commit: 403c57b
   detail: '[README.md](README.md)'
+- id: CHG-0019
+  date: '2026-08-23'
+  type: Process
+  what: README security section rewritten around the six layer gate model, with LocalStack explained and
+    its limits stated
+  commit: pending
+  detail: '[README.md](README.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL

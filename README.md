@@ -39,6 +39,7 @@ off the shelf substitute.
 | 4 | **Never render a failed collection as zero.** | A confidently wrong total destroys trust in every other number permanently |
 | 5 | **Images are `linux/amd64`.** A push never converts an arm64 image | The failure reads as `exec format error`, which looks like a corrupt binary |
 | 6 | **No em dashes or en dashes anywhere.** | Enforced by `make check-writing`, in code, docs, commits and UI copy |
+| 7 | **Signing without verifying proves nothing.** Every deploy verifies the signature and the SBOM attestation first | Otherwise anyone able to push to ECR can place an unscanned image where the deploy finds it |
 
 Full rules: [CLAUDE.md](CLAUDE.md). Read it before making any change.
 
@@ -127,12 +128,33 @@ make verify     # lint, writing rules, doc checks, tests, security scan
 
 ```bash
 make hooks-install  # once per machine: pre commit and pre push gates
-make setup      # virtualenv plus frontend dependencies
-make up         # PostgreSQL, LocalStack, API, dispatcher, worker, web
-make migrate    # apply Alembic migrations
-make psql       # database shell
-make down       # stop, keep data.  make nuke  deletes the volume
+make setup          # virtualenv plus frontend dependencies
+make up             # PostgreSQL, LocalStack, API, dispatcher, worker, web
+make migrate        # apply Alembic migrations
+make psql           # database shell
+make down           # stop, keep data.  make nuke  deletes the volume
 ```
+
+**What LocalStack is doing in the stack.** It emulates the AWS APIs Meter
+calls: STS, SQS, S3, Secrets Manager, Organizations, Cost Explorer, Logs and
+CloudWatch. Without it, running the ingestion loop locally needs a real AWS
+account, real credentials on every developer machine, and it **bills for every
+Cost Explorer and `GetMetricData` call**. For a product whose purpose is
+stopping runaway cloud spend, a development loop that quietly bills per
+keystroke is the wrong default.
+
+**What it is not.** LocalStack is not AWS. Community edition **does not enforce
+IAM**, its pagination and throttling behaviour differ, and its error codes are
+not always the real ones. It proves the plumbing works. It does not prove the
+AWS semantics are right.
+
+```bash
+pytest -m contract -v         # the real check: same contract, fake and aws adapters
+pytest tests/providers/aws    # moto backed, closer to real behaviour
+```
+
+Never conclude "it works" from LocalStack alone, and **never test a permission
+boundary against it**. See gotcha 5.10.
 
 ### Building and scanning images
 
@@ -153,19 +175,87 @@ running. See section 4.
 **The threshold is zero findings at any severity.** Not zero critical, not zero
 high. Zero.
 
-### Four gates
+### Six layers, and which ones actually stop something
 
-| # | Gate | When | What it does |
-| --- | --- | --- | --- |
-| 1 | **Dependency admission** | Before a dependency enters | Resolves it into a throwaway environment and scans the **whole transitive tree**, not just the named package. A CI job repeats it on any manifest change, so it cannot be skipped by editing `pyproject.toml` directly |
-| 2 | **Base images** | Every build | Minimus from `reg.mini.dev`, built from source with only runtime dependencies, rebuilt continuously. The official Python image ships 400 plus known vulnerabilities before your first line of code |
-| 3 | **Image scan** | After build, before deploy | grype plus trivy plus a syft SBOM plus a cosign signature. Two scanners deliberately, because their databases differ and the difference is where a missed finding lives. An image with a finding never reaches an environment |
-| 4 | **Nightly posture scan** | Every night | Scans the digest **actually running** in each environment, read from the ECS task definition |
+They are not equivalent. It matters which ones can stop a deploy.
 
-**Gate 4 is the one people forget, and it matters most.** A CVE published
-tonight against a dependency shipped last week turns a green build red with no
-code change. A pipeline that scans only at build time reports zero forever
-while the deployed image degrades silently.
+| # | Layer | When | Stops a deploy | Skippable |
+| --- | --- | --- | --- | --- |
+| 1 | Dependency admission, `make dep-check` | Before a dependency is added | Stops the addition | Yes, locally |
+| 2 | Pre commit hooks | Before a commit exists | No | Yes, locally |
+| 3 | Pre push hooks | Before code leaves the machine | No | Yes, locally |
+| 4 | Pipeline scan stage | After build, before deploy | **Yes** | **No** |
+| 5 | **Provenance verification** | Immediately before deploy | **Yes** | **No** |
+| 6 | Nightly posture scan | Against the running digest | Raises, does not roll back | **No** |
+
+Layers 1 to 3 are convenience. They make the answer arrive in seconds rather
+than minutes. Skipping them only defers the same answer to layer 4, which is
+why they are allowed to be skippable.
+
+```bash
+make hooks-install   # once per machine, gives you layers 2 and 3
+```
+
+Every commit: secrets, writing rules, lint, generated document drift, and the
+dependency gate **only when a manifest changed**. Scanning the whole transitive
+tree on every commit would make committing unbearable and the hook would be
+disabled within a week, which is how a security control dies. Every push: the
+full scan and the tests.
+
+### What each layer does
+
+| # | Detail |
+| --- | --- |
+| 1 | Resolves the dependency into a throwaway environment and scans the **whole transitive tree**, not just the named package. A CI job repeats it on any manifest change, so it cannot be skipped by editing `pyproject.toml` directly |
+| 4 | grype plus trivy plus a syft SBOM plus a cosign signature, on every image. Two scanners deliberately, because their databases differ and the difference is where a missed finding lives |
+| 5 | Verifies the cosign signature **and** the SBOM attestation before deploy. An image with no attestation was never scanned by this pipeline |
+| 6 | Scans the digest **actually running** in each environment, read from the ECS task definition |
+
+**Layer 5 is the admission control for this project, and it is the one most
+projects leave out.** Signing at build time proves an image came from this
+pipeline. Verifying immediately before deploy is what makes the signature
+useful, because without verification anyone able to push to ECR can put an
+unscanned image where the deploy will find it.
+
+**Layer 6 is the one people forget.** A CVE published tonight against a
+dependency shipped last week turns a green build red with no code change. A
+pipeline that scans only at build time reports zero forever while the deployed
+image degrades silently.
+
+Two registry side settings complete the posture:
+
+- **ECR enhanced scanning** (Amazon Inspector) on every repository, which
+  continuously rescans stored images as advisories are published. If both it
+  and the nightly job are silent, an image is genuinely clean rather than
+  merely unscanned.
+- **Immutable tags**, so a tag cannot be repointed at a different image after
+  it was scanned and signed.
+
+### Base images
+
+Minimus from `reg.mini.dev`, built from source with only runtime dependencies,
+rebuilt continuously. For contrast, the official Python image ships 400 plus
+known vulnerabilities before your first line of code.
+
+### Why the scanners are not a compose service
+
+A reasonable instinct is to put a scanner in `docker-compose.yml` so nothing
+runs unscanned. It does not work, for a structural reason.
+
+**A container cannot gate an image that already exists and is already
+running.** By the time a compose service starts, the image is built, on disk,
+and startable by anyone with Docker. Worse, it produces a false sense of
+enforcement, which is more dangerous than none because it stops people looking
+for the real gate.
+
+So the scanners live in a `security` profile that does not start with
+`make up`:
+
+```bash
+make scan-local     # build, then scan with the compose security profile
+```
+
+Convenience, not a control. The controls are layers 4, 5 and 6.
 
 ### If a finding does get through
 
@@ -561,6 +651,8 @@ See `tasks/STATUS.md`.
 | Analytics | Athena and Glue over CUR 2.0 Parquet, extract and load only |
 | Base images | Minimus, `reg.mini.dev` |
 | Canonical cost schema | FOCUS 1.1 |
+| Local AWS emulation | LocalStack, development only, never a permission test |
+| Scanners | grype, syft, trivy, pip-audit, npm audit, gitleaks, cosign |
 | Scale assumption | 50 to 300 accounts, 10 to 100 GB CUR per month |
 
 Deliberately excluded for now: ClickHouse, Redshift, Neptune, Kubernetes.
