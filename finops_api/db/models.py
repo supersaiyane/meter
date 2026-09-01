@@ -423,8 +423,13 @@ query_definition = Table(
     Column("engine", Text, nullable=False),
     Column("query_text", Text, nullable=False),
     #: Normalised, with template variables removed, so a dashboard with a
-    #: $region variable is one query and not four.
+    #: $region variable is one query and not four. Identifies this definition,
+    #: which is why it carries the dashboard and the panel.
     Column("fingerprint", Text, nullable=False),
+    #: What the query is, independent of where it is drawn, so two panels
+    #: running it on different dashboards share one and measured evidence
+    #: attaches to both. Nullable until backfilled, per constraint 12.
+    Column("query_key", Text),
     Column("target", JSONB, nullable=False),
     Column("refresh_seconds", Integer),
     Column("range_seconds", Integer, nullable=False),
@@ -442,6 +447,7 @@ query_definition = Table(
         "(origin = 'ALERT_RULE') OR (refresh_seconds IS NOT NULL)",
         name="ck_query_definition__panel_has_refresh",
     ),
+    Index("ix_query_definition__query_key", "tenant_id", "query_key"),
 )
 
 query_finding = Table(

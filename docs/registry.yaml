@@ -1060,6 +1060,17 @@ changes:
   commit: 'd5c8cdc'
   detail: '[ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md)'
 issues:
+- id: ISS-142
+  severity: LOW
+  summary: strip_comments removes a comment marker that begins a line or follows whitespace, so a
+    hash or a double hyphen inside a quoted string in a query is treated as the start of a comment
+    and the rest of that line is dropped from the key. It affects the fingerprint and the query key
+    only, never the stored query text, the targets or the cost, so the consequence is that two
+    queries differing only after such a marker could share a key. Judged unlikely enough to accept
+    for now against the alternative, which is a parser per query language. Found 2026-09-01 while
+    implementing TASK-P2-011
+  status: OPEN
+  detail: '`finops_query/policy.py`, TASK-P2-011'
 - id: ISS-141
   severity: MEDIUM
   summary: TASK-P2-006 asked for the contract suite under moto, and moto implements no Grafana

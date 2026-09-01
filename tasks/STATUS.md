@@ -25,7 +25,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | Features | 50 total, 8 specified, 7 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
 | Changes | 81 recorded |
-| Issues | 93 fixed, 43 open, 0 parked |
+| Issues | 93 fixed, 44 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -83,7 +83,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P2 | 11 | 1 | 2 | 2 | 9 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
+| P2 | 12 | 1 | 2 | 2 | 8 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -143,6 +143,7 @@ ISS-003.
 | `TASK-P2-008` | Descoped, 2026-09-02 | the Grafana Cloud connection strategy |
 | `TASK-P2-009` | Done, 2026-08-30 | the six P2 tables |
 | `TASK-P2-010` | Done, 2026-08-31 | the query audit collector |
+| `TASK-P2-011` | Done, 2026-09-01 | fingerprinting and template variables |
 | `TASK-P2-015` | Parked, 2026-08-29 | detection and alerting |
 | `TASK-P2-016` | Parked, 2026-08-29 | throttle and deny, with the guardrails |
 | `TASK-P2-022` | Done, 2026-09-13 | the query findings screen |

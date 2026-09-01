@@ -186,7 +186,7 @@ a duplicate.
 | `attribute` | function | `finops_ingest/collectors/platform_cost.py:51` | Name the module a charge belongs to. Never returns an empty string. | nothing in this tree |
 | `PlatformCostCollector` | class | `finops_ingest/collectors/platform_cost.py:58` | One grouped request a day, written by module and service. | nothing in this tree |
 | `total` | function | `finops_ingest/collectors/platform_cost.py:106` | What the platform cost over the set, for a caller that wants one figure. | nothing in this tree |
-| `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:72` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
+| `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:73` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
 | `hashed_subject` | function | `finops_ingest/collectors/retention.py:65` | A stable, non reversible stand in, so a duplicate sign in is still one row. | nothing in this tree |
 | `retention_principal` | function | `finops_ingest/collectors/retention.py:74` | Anonymise principals unseen past the window. Never removes a row. | nothing in this tree |
 | `retention_operational` | function | `finops_ingest/collectors/retention.py:96` | Remove run history, resolved errors and dead watermarks past the window. | nothing in this tree |

@@ -44,7 +44,7 @@ Status: `OPEN`, `IN PROGRESS`, `FIXED`, `WONT FIX`, `PARKED`, `CLOSED`.
 <!-- generated:issue-register start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-138 issues. 93 fixed, 43 open, 0 parked.
+139 issues. 93 fixed, 44 open, 0 parked.
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in `tasks/STATUS.md`.
 
@@ -188,6 +188,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-121 | LOW | The plan and the runbook index both said two alerts page. The alert table in docs/10-OBSERVABILITY.md marks four | FIXED | Both were misreadings of the sentence under the table: two of the four are unusual, which is not the same as two being the total. The table was followed, the two summaries corrected, and a test now holds the paging set against the four names |
 | ISS-129 | LOW | The QuerySurface port has one implementation rather than three, so the abstraction is carrying no weight and could be read as speculative generality | BY DESIGN | Kept deliberately. The port exists for the fake, which is what lets the cost model be tested without a Grafana at all, and that is weight enough on its own. A second real strategy is a connector rather than a rewrite if OPEN-04 is ever re answered again |
 | ISS-131 | LOW | The prototype emitted em dashes into generated UI copy, which the project's writing rules forbid, and its copy was excluded from make check-writing while it was a frozen baseline | FIXED | Fixed by deletion at TASK-P2-003 rather than by editing, which was never permitted while the file was a baseline. The exclusion went with the directory. One of the six survives as a recorded divergence in tests/query/test_cost_model.py, because the golden files still hold the string the prototype produced |
+| ISS-142 | LOW | strip_comments removes a comment marker that begins a line or follows whitespace, so a hash or a double hyphen inside a quoted string in a query is treated as the start of a comment and the rest of that line is dropped from the key. It affects the fingerprint and the query key only, never the stored query text, the targets or the cost, so the consequence is that two queries differing only after such a marker could share a key. Judged unlikely enough to accept for now against the alternative, which is a parser per query language. Found 2026-09-01 while implementing TASK-P2-011 | OPEN | `finops_query/policy.py`, TASK-P2-011 |
 
 <!-- generated:issue-register end -->
 

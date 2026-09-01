@@ -40,6 +40,7 @@ from finops_query.classify import (
     Classification,
 )
 from finops_query.cost_model import ALERT, PANEL, IngestRate, Rates, price, runs_per_day
+from finops_query.policy import query_key
 
 COLLECTOR = "query_audit"
 
@@ -189,12 +190,13 @@ class QueryAuditCollector:
             text(
                 "INSERT INTO query_definition (query_id, tenant_id, instance_id, origin, "
                 "dashboard_uid, dashboard_title, folder_uid, panel_id, ref_id, engine, "
-                "query_text, fingerprint, target, refresh_seconds, range_seconds, last_editor, "
-                "as_of, collected_at) VALUES (:id, :tenant, :instance, :origin, :uid, :title, "
-                "NULL, :panel, :ref, :engine, :query_text, :fp, CAST(:target AS JSONB), "
-                ":refresh, :range, :editor, :as_of, :now) "
+                "query_text, fingerprint, query_key, target, refresh_seconds, range_seconds, "
+                "last_editor, as_of, collected_at) VALUES (:id, :tenant, :instance, :origin, "
+                ":uid, :title, NULL, :panel, :ref, :engine, :query_text, :fp, :qkey, "
+                "CAST(:target AS JSONB), :refresh, :range, :editor, :as_of, :now) "
                 "ON CONFLICT (tenant_id, instance_id, fingerprint) DO UPDATE SET "
-                "query_text = EXCLUDED.query_text, dashboard_title = EXCLUDED.dashboard_title, "
+                "query_text = EXCLUDED.query_text, query_key = EXCLUDED.query_key, "
+                "dashboard_title = EXCLUDED.dashboard_title, "
                 "panel_id = EXCLUDED.panel_id, refresh_seconds = EXCLUDED.refresh_seconds, "
                 "range_seconds = EXCLUDED.range_seconds, last_editor = EXCLUDED.last_editor, "
                 "as_of = EXCLUDED.as_of, collected_at = EXCLUDED.collected_at "
@@ -212,6 +214,7 @@ class QueryAuditCollector:
                 "engine": _ENGINE_COLUMN.get(definition.engine, "OTHER"),
                 "query_text": definition.query,
                 "fp": definition.fingerprint,
+                "qkey": query_key(definition.engine, definition.query, definition.targets),
                 "target": _targets_json(definition),
                 # An alert rule runs on its own schedule, and the table refuses a
                 # panel that has no refresh.

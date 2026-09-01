@@ -190,3 +190,36 @@ def test_every_finding_carries_prose_saying_what_drives_the_cost(
         )
     assert whys
     assert all(why.strip() for why in whys)
+
+
+def test_every_definition_is_written_with_its_query_key(engine: Engine, tenant_id: UUID) -> None:
+    # TASK-P2-013 attaches measured evidence by this key, so a null one is a
+    # definition no measurement can ever reach.
+    run(engine, tenant_id, FakeQuerySurface())
+    with engine.connect() as connection:
+        keys = (
+            connection.execute(
+                text("SELECT query_key FROM query_definition WHERE tenant_id = :t"),
+                {"t": tenant_id},
+            )
+            .scalars()
+            .all()
+        )
+    assert keys
+    assert all(key for key in keys)
+    # The fixture's panel and alert run the same text against the same log
+    # group, so they share a key, which is the designed behaviour rather than a
+    # collision: a measured execution cannot tell which one produced it, and
+    # attaching the evidence to both is the honest answer. They keep separate
+    # fingerprints, so neither definition is lost.
+    assert len(set(keys)) == 1
+    with engine.connect() as connection:
+        prints = (
+            connection.execute(
+                text("SELECT fingerprint FROM query_definition WHERE tenant_id = :t"),
+                {"t": tenant_id},
+            )
+            .scalars()
+            .all()
+        )
+    assert len(set(prints)) == 2

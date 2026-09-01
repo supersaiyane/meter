@@ -570,16 +570,27 @@ production builds it with `AmgQuerySurface(parser=GrafanaQueryParser(), ...)`.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-01 |
 | Depends on | TASK-P2-010 |
 | Estimate | M |
 
 **Acceptance criteria.**
 
-- [ ] Fingerprint is stable across template variable substitution
-- [ ] Two panels running the same query on different dashboards share a
-      fingerprint, so measured evidence matches both
-- [ ] Whitespace and comment changes do not change the fingerprint
+- [x] Fingerprint is stable across template variable substitution
+- [x] Two panels running the same query on different dashboards share a
+      fingerprint, so measured evidence matches both. **Delivered as a second
+      key rather than a wider first one. `fingerprint` cannot be widened:
+      `uq_query_definition__fingerprint` makes it the identity of a row, so two
+      panels sharing one would upsert over each other and a panel would vanish
+      from the estate. `policy.query_key` carries the query shape and is what
+      evidence attaches to, on a new nullable `query_definition.query_key`
+      column added additively in migration 0004.**
+- [x] Whitespace and comment changes do not change the fingerprint
+
+**A comment marker inside a quoted string is treated as a comment**, so the rest
+of that line is dropped from the key. It affects the key only, never the stored
+query, the targets or the cost. Accepted as ISS-142 rather than writing a parser
+per query language.
 
 **Do not.** Do not fingerprint the raw query text. A dashboard variable makes
 every render unique, and measured evidence would then match nothing.
