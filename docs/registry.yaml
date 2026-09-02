@@ -455,7 +455,7 @@ changes:
   type: Process
   what: README security section rewritten around the six layer gate model, with LocalStack explained and
     its limits stated
-  commit: pending
+  commit: f3b5aef
   detail: '[README.md](README.md)'
 issues:
 - id: ISS-001
