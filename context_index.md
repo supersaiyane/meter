@@ -187,8 +187,8 @@ a duplicate.
 | `PlatformCostCollector` | class | `finops_ingest/collectors/platform_cost.py:58` | One grouped request a day, written by module and service. | nothing in this tree |
 | `total` | function | `finops_ingest/collectors/platform_cost.py:106` | What the platform cost over the set, for a caller that wants one figure. | nothing in this tree |
 | `rates_from` | function | `finops_ingest/collectors/query_audit.py:69` | Build the model's rates from configuration. | nothing in this tree |
-| `default_ingest_rate` | function | `finops_ingest/collectors/query_audit.py:97` | The fallback used when ingestion cannot be measured for a log group. | nothing in this tree |
-| `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:115` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
+| `default_ingest_rate` | function | `finops_ingest/collectors/query_audit.py:104` | The fallback used when ingestion cannot be measured for a log group. | nothing in this tree |
+| `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:127` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
 | `hashed_subject` | function | `finops_ingest/collectors/retention.py:65` | A stable, non reversible stand in, so a duplicate sign in is still one row. | nothing in this tree |
 | `retention_principal` | function | `finops_ingest/collectors/retention.py:74` | Anonymise principals unseen past the window. Never removes a row. | nothing in this tree |
 | `retention_operational` | function | `finops_ingest/collectors/retention.py:96` | Remove run history, resolved errors and dead watermarks past the window. | nothing in this tree |

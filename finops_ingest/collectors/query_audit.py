@@ -94,16 +94,28 @@ def rates_from(settings: Any) -> Rates:
     )
 
 
+#: `IngestRate` is per hour, because `_logs_insights_cost` multiplies it by a
+#: window measured in hours. The setting is per day. Getting this conversion
+#: wrong overstates every Logs Insights figure by exactly 24, which is large
+#: enough to be obvious in a total and small enough to look like a bad dashboard.
+HOURS_PER_DAY = 24.0
+
+
 def default_ingest_rate(settings: Any) -> IngestRate:
     """The fallback used when ingestion cannot be measured for a log group.
 
     A Logs Insights scan estimate is this multiplied by the window, so it is the
     assumption the whole Logs Insights cost rests on. TASK-P2-013 replaces it
     with a measurement where one exists.
+
+    Returns GB per hour. The setting is GB per day, and the division is the
+    whole point of this function existing rather than passing the setting
+    straight through.
     """
+    per_hour = float(settings.query_default_ingest_gb_per_day) / HOURS_PER_DAY
 
     def rate(_account: str, _region: str) -> float:
-        return float(settings.query_default_ingest_gb_per_day)
+        return per_hour
 
     return rate
 

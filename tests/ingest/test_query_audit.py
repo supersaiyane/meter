@@ -16,7 +16,11 @@ import pytest
 from sqlalchemy import Engine, text
 
 from finops_core.errors import AccessDenied
-from finops_ingest.collectors.query_audit import COLLECTOR, QueryAuditCollector
+from finops_ingest.collectors.query_audit import (
+    COLLECTOR,
+    QueryAuditCollector,
+    default_ingest_rate,
+)
 from finops_ingest.registry import DEFAULT_SCHEDULE, CollectorContext
 from finops_providers.fake.surface import FakeQuerySurface
 from finops_query.cost_model import Rates
@@ -223,3 +227,20 @@ def test_every_definition_is_written_with_its_query_key(engine: Engine, tenant_i
             .all()
         )
     assert len(set(prints)) == 2
+
+
+def test_the_default_ingest_rate_is_per_hour_not_per_day() -> None:
+    """The unit conversion, pinned.
+
+    `_logs_insights_cost` multiplies this by a window in hours, so the callable
+    must return GB per hour while the setting is GB per day. Passing the setting
+    straight through overstates every Logs Insights figure by exactly 24, which
+    is large enough to be obvious in a total and small enough to be mistaken for
+    one very bad dashboard.
+    """
+
+    class Settings:
+        query_default_ingest_gb_per_day = 48.0
+
+    rate = default_ingest_rate(Settings())
+    assert rate("111122223333", "eu-west-2") == 2.0

@@ -138,6 +138,9 @@ class QuotaImpact:
 #: rather than measured here, because measuring means a CloudWatch call and this
 #: module has no business opening a client. The fallback is the caller's to
 #: decide, which is what lets the whole model run offline against a fixture.
+#: Returns **GB per hour**, because the window it is multiplied by below is
+#: measured in hours. A caller handing this a per day figure overstates every
+#: Logs Insights cost by 24.
 IngestRate = Callable[[str, str], float]
 
 

@@ -1060,6 +1060,26 @@ changes:
   commit: 'd5c8cdc'
   detail: '[ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md)'
 issues:
+- id: ISS-143
+  severity: HIGH
+  summary: make up cannot build. The builder stage of docker/Dockerfile.api runs python -m venv
+    /opt/venv as a non root user and fails with Permission denied, so no image builds and the local
+    stack cannot start. Independently, docker-compose.yml binds host port 5432 with no override, so
+    a machine already running another postgres cannot start the stack either. Neither is caused by
+    application code and both block make up, make seed and make unseed, which run through the api
+    container. Found 2026-09-02 when the seed was first run for real
+  status: OPEN
+  detail: '`docker/Dockerfile.api` line 57, `docker-compose.yml` postgres ports'
+- id: ISS-144
+  severity: HIGH
+  summary: default_ingest_rate passed the per day ingest setting into IngestRate, which
+    _logs_insights_cost multiplies by a window measured in hours, overstating every Logs Insights
+    figure by exactly 24. The seeded demo panel read 3,888,000 dollars a month against a correct
+    162,000. Introduced with the seed tooling on 2026-09-02 and fixed the same day, with the unit
+    documented on IngestRate and pinned by a test, because the type carried no unit and nothing
+    else in the codebase supplied one to compare against
+  status: FIXED
+  detail: '`finops_ingest/collectors/query_audit.py`, `finops_query/cost_model.py`'
 - id: ISS-142
   severity: LOW
   summary: strip_comments removes a comment marker that begins a line or follows whitespace, so a
