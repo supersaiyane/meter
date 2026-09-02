@@ -122,7 +122,12 @@ meter/
 │   │                          refresh_base_images.py, flag and hardcoding checks,
 │   │                          forbidden imports, the memory gate, base image resolver
 │   ├── ops/                   erase_principal.py, run by a person against a live
-│   │                          database. Deliberately not an API route
+│   │                          database. Deliberately not an API route.
+│   │                          seed_demo.py fills a local database by running the
+│   │                          real collector against the fake surface, so seeded
+│   │                          rows cannot drift from collected ones. Refuses any
+│   │                          non local host before an engine exists, and
+│   │                          make unseed clears it by its fixed tenant
 │   └── deploy/                migration task runner
 │
 ├── tests/                     the suite. conftest.py refuses to run against a
