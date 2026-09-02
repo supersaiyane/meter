@@ -276,6 +276,14 @@ psql: ## Open a psql shell against the local database
 migrate: ## Apply migrations to the local database
 	$(COMPOSE) run --rm api alembic upgrade head
 
+.PHONY: seed
+seed: ## Fill the local database with a demo estate. Refuses a non local database
+	$(COMPOSE) run --rm api python scripts/ops/seed_demo.py
+
+.PHONY: unseed
+unseed: ## Clear the demo estate. Every row it wrote, in one command
+	$(COMPOSE) run --rm api python scripts/ops/seed_demo.py --remove
+
 .PHONY: migration
 migration: ## Autogenerate a migration. Usage: make migration m="add org_node"
 	@test -n "$(m)" || (echo 'Usage: make migration m="description"'; exit 1)

@@ -66,6 +66,48 @@ _KIND_COLUMN: dict[str, str] = {
 }
 
 
+def rates_from(settings: Any) -> Rates:
+    """Build the model's rates from configuration.
+
+    The cost model deliberately knows nothing about `Settings`, so that the
+    arithmetic has no opinion about where a number came from. Something still
+    has to do the binding, and this is the layer that wires the collector, so it
+    happens here rather than there.
+
+    Every one of these is an assumption a modelled figure rests on, which is why
+    they are configuration and why the figure carries the assumption with it.
+    """
+    return Rates(
+        logs_scan_price_per_gb=float(settings.query_logs_scan_price_per_gb),
+        metrics_price_per_1000=float(settings.query_metrics_price_per_1000),
+        manual_loads_per_day=settings.query_manual_loads_per_day,
+        viewing_hours_per_day=settings.query_viewing_hours_per_day,
+        metrics_per_call=settings.query_metrics_per_call,
+        default_ingest_gb_per_day=settings.query_default_ingest_gb_per_day,
+        assumed_query_seconds=settings.query_assumed_query_seconds,
+        refresh_warn_seconds=settings.query_refresh_warn_seconds,
+        refresh_crit_seconds=settings.query_refresh_crit_seconds,
+        timerange_warn_hours=settings.query_timerange_warn_hours,
+        timerange_crit_hours=settings.query_timerange_crit_hours,
+        quota_logs_concurrent=settings.query_quota_logs_concurrent,
+        quota_getmetricdata_tps=settings.query_quota_getmetricdata_tps,
+    )
+
+
+def default_ingest_rate(settings: Any) -> IngestRate:
+    """The fallback used when ingestion cannot be measured for a log group.
+
+    A Logs Insights scan estimate is this multiplied by the window, so it is the
+    assumption the whole Logs Insights cost rests on. TASK-P2-013 replaces it
+    with a measurement where one exists.
+    """
+
+    def rate(_account: str, _region: str) -> float:
+        return float(settings.query_default_ingest_gb_per_day)
+
+    return rate
+
+
 def _system_clock() -> datetime:
     return datetime.now(UTC)
 
