@@ -109,6 +109,8 @@ meter/
 ├── local-auth.example.yaml    development identity, copied to a gitignored file
 │
 ├── scripts/                   every script in the project, nothing executable elsewhere
+│                              Linted and type checked since 2026-09-02. They are
+│                              the gates, and were outside the linter until then
 │   ├── README.md              what each script does and how it is run
 │   ├── security/              scan, admission gate, pre commit deps, report,
 │   │                          auto fix, allowlist validation
@@ -119,14 +121,20 @@ meter/
 │   │                          check_forbidden_imports.py, check_memory.py,
 │   │                          refresh_base_images.py, flag and hardcoding checks,
 │   │                          forbidden imports, the memory gate, base image resolver
+│   ├── ops/                   erase_principal.py, run by a person against a live
+│   │                          database. Deliberately not an API route
 │   └── deploy/                migration task runner
 │
 ├── tests/                     the suite. conftest.py refuses to run against a
 │                              real AWS account when no endpoint override is set.
 │                              test_checkpoint_rotation.py covers the only script
 │                              that deletes rows from the memory log.
-│   └── contract/              one suite, parameterised over providers. Run with
-│                              make test or pytest -m contract
+│   ├── contract/              one suite, parameterised over providers. Run with
+│   │                          make test or pytest -m contract
+│   └── scripts/               the gates tested as code: the index checker, the
+│                              pipeline shape, the layer orderings held equal, the
+│                              alarms against their runbooks, and the lint scope
+│                              asked of the filesystem rather than of a list
 │
 ├── finops_core/               IN BUILD  domain and ports. No boto3, no framework
 │   ├── errors.py              the six typed failure causes, closed set, no catch all

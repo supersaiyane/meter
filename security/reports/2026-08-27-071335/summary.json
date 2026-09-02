@@ -1,0 +1,127 @@
+{
+  "generated": "2026-08-27 07:13:37Z",
+  "label": "working tree",
+  "unresolved_total": 7,
+  "allowlisted_total": 0,
+  "unfixable_accepted_total": 0,
+  "by_severity": {
+    "Critical": 2,
+    "High": 1,
+    "Medium": 2,
+    "Low": 2
+  },
+  "findings": [
+    {
+      "id": "AWS-0054",
+      "severity": "Critical",
+      "package": "hub/alb.tf",
+      "installed": "",
+      "fixed_in": "Switch to HTTPS to benefit from TLS security features",
+      "ecosystem": "iac",
+      "target": "terraform",
+      "description": "Use of plain HTTP.. Plain HTTP is unencrypted and human-readable. This means that if a malicious actor was to eavesdrop on your connection, they would be able to see all of your data flowing back and forth.\nYou should use HTTPS, which is HTTP over an encrypted (TLS) connection, meaning eavesdroppers cannot read your traffic.\n",
+      "url": "https://avd.aquasec.com/misconfig/aws-0054",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Upgrade hub/alb.tf to Switch to HTTPS to benefit from TLS security features. If it comes from the base image, rebuild against the current Minimus tag, which is rebuilt daily."
+    },
+    {
+      "id": "AWS-0104",
+      "severity": "Critical",
+      "package": "hub/alb.tf",
+      "installed": "",
+      "fixed_in": "Set a more restrictive cidr range",
+      "ecosystem": "iac",
+      "target": "terraform",
+      "description": "A security group rule should not allow unrestricted egress to any IP address.. Opening up ports to connect out to the public internet is generally to be avoided. You should restrict access to IP addresses or ranges that are explicitly required where possible.\n",
+      "url": "https://avd.aquasec.com/misconfig/aws-0104",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Upgrade hub/alb.tf to Set a more restrictive cidr range. If it comes from the base image, rebuild against the current Minimus tag, which is rebuilt daily."
+    },
+    {
+      "id": "AWS-0053",
+      "severity": "High",
+      "package": "hub/alb.tf",
+      "installed": "",
+      "fixed_in": "Switch to an internal load balancer or add a tfsec ignore",
+      "ecosystem": "iac",
+      "target": "terraform",
+      "description": "Load balancer is exposed to the internet.. There are many scenarios in which you would want to expose a load balancer to the wider internet, but this check exists as a warning to prevent accidental exposure of internal assets. You should ensure that this resource should be exposed publicly.\n",
+      "url": "https://avd.aquasec.com/misconfig/aws-0053",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Upgrade hub/alb.tf to Switch to an internal load balancer or add a tfsec ignore. If it comes from the base image, rebuild against the current Minimus tag, which is rebuilt daily."
+    },
+    {
+      "id": "AWS-0343",
+      "severity": "Medium",
+      "package": "hub/database.tf",
+      "installed": "",
+      "fixed_in": "Modify the RDS clusters to enable deletion protection.",
+      "ecosystem": "iac",
+      "target": "terraform",
+      "description": "RDS Cluster Deletion Protection Disabled. Ensure deletion protection is enabled for RDS clusters.",
+      "url": "https://avd.aquasec.com/misconfig/aws-0343",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Upgrade hub/database.tf to Modify the RDS clusters to enable deletion protection.. If it comes from the base image, rebuild against the current Minimus tag, which is rebuilt daily."
+    },
+    {
+      "id": "AWS-0178",
+      "severity": "Medium",
+      "package": "hub/network.tf",
+      "installed": "",
+      "fixed_in": "Enable flow logs for VPC",
+      "ecosystem": "iac",
+      "target": "terraform",
+      "description": "VPC Flow Logs is a feature that enables you to capture information about the IP traffic going to and from network interfaces in your VPC. After you've created a flow log, you can view and retrieve its data in Amazon CloudWatch Logs. It is recommended that VPC Flow Logs be enabled for packet \"Rejects\" for VPCs.. VPC Flow Logs provide visibility into network traffic that traverses the VPC and can be",
+      "url": "https://avd.aquasec.com/misconfig/aws-0178",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Upgrade hub/network.tf to Enable flow logs for VPC. If it comes from the base image, rebuild against the current Minimus tag, which is rebuilt daily."
+    },
+    {
+      "id": "AWS-0078",
+      "severity": "Low",
+      "package": "hub/database.tf",
+      "installed": "",
+      "fixed_in": "Use Customer Managed Keys to encrypt Performance Insights data",
+      "ecosystem": "iac",
+      "target": "terraform",
+      "description": "Performance Insights encryption should use Customer Managed Keys. Amazon RDS uses the AWS managed key for your new DB instance. For complete control over KMS keys, including establishing and maintaining their key policies, IAM policies, and grants, enabling and disabling them, and rotating their cryptographic material, use a customer managed keys.\nThe encryption key specified in `performance_insig",
+      "url": "https://avd.aquasec.com/misconfig/aws-0078",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Upgrade hub/database.tf to Use Customer Managed Keys to encrypt Performance Insights data. If it comes from the base image, rebuild against the current Minimus tag, which is rebuilt daily."
+    },
+    {
+      "id": "AWS-0089",
+      "severity": "Low",
+      "package": "hub/storage.tf",
+      "installed": "",
+      "fixed_in": "Add a logging block to the resource to enable access logging",
+      "ecosystem": "iac",
+      "target": "terraform",
+      "description": "S3 Bucket Logging. Ensures S3 bucket logging is enabled for S3 buckets",
+      "url": "https://avd.aquasec.com/misconfig/aws-0089",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Upgrade hub/storage.tf to Add a logging block to the resource to enable access logging. If it comes from the base image, rebuild against the current Minimus tag, which is rebuilt daily."
+    }
+  ]
+}

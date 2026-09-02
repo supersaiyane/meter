@@ -86,18 +86,33 @@ def table_rows(text: str) -> list[list[str]]:
     return rows
 
 
-def repo_paths(cell: str) -> list[str]:
-    """Backticked tokens in a cell that are claims about a path in this repo."""
-    found: list[str] = []
+def repo_paths(cell: str) -> list[tuple[str, int | None]]:
+    """Backticked tokens in a cell that are claims about a path in this repo.
+
+    A token may carry a line number as `path.py:88`. CLAUDE.md asks a resume
+    vector for "exact files and line numbers", and this used to treat the suffix
+    as part of the filename, so the one format the convention requires was the
+    one format that failed. Now it is split off and checked, which verifies more
+    than the path alone did: a line number past the end of a file is a citation
+    that will send the next reader to nothing.
+    """
+    found: list[tuple[str, int | None]] = []
     for raw in BACKTICKED.findall(cell):
-        token = raw.strip().rstrip(".,;:")
+        token = raw.strip().rstrip(".,;")
         if not token or " " in token or "$" in token:
             continue
         if token.startswith(("~", "/", "http")):
             continue
+
+        line: int | None = None
+        path, _, suffix = token.rpartition(":")
+        if path and suffix.isdigit():
+            token, line = path, int(suffix)
+        token = token.rstrip(":")
+
         if "/" not in token:
             continue
-        found.append(token)
+        found.append((token, line))
     return found
 
 
@@ -123,10 +138,22 @@ def check_row(row: list[str], haystack: str) -> list[str]:
     found: list[str] = []
     joined = " ".join(row)
 
-    for path in repo_paths(row[4]):
-        if not (ROOT / path).exists():
+    for path, line in repo_paths(row[4]):
+        target = ROOT / path
+        if not target.exists():
             found.append(f"{label}: resume vector points at '{path}', which does not exist")
-    for path in repo_paths(row[3]):
+            continue
+        if line is None or target.is_dir():
+            continue
+        # A line past the end of a file sends the next reader to nothing, which
+        # is the same failure as a path that does not exist, one step later.
+        total = len(target.read_text(encoding="utf-8", errors="replace").splitlines())
+        if line > total:
+            found.append(
+                f"{label}: resume vector cites '{path}:{line}' and the file has {total} lines"
+            )
+    # The "what changed" cell, where a line number is noise rather than a claim.
+    for path, _ in repo_paths(row[3]):
         if not (ROOT / path).exists():
             found.append(f"{label}: cites '{path}', which does not exist")
 

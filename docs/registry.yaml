@@ -1668,6 +1668,15 @@ issues:
     longer existed and standing ready to silence whatever landed on those lines next
   detail: Found the moment mypy was pointed at tests/ for the first time. All twelve removed
     rather than narrowed, and the four genuinely needed ones now carry a comment saying why
+- id: ISS-128
+  severity: MEDIUM
+  status: FIXED
+  summary: The memory gate rejected the one resume vector format CLAUDE.md asks for. It read
+    `file.py:88` as a filename ending in colon eighty eight, so every citation with a line number
+    failed as a path that does not exist
+  detail: CLAUDE.md asks a resume vector for exact files and line numbers. The suffix is now split
+    off and the line checked against the length of the file, so a citation past the end of a file
+    fails too. Probed by citing line 9999 and confirming it is caught
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS

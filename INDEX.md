@@ -292,7 +292,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**87 FIXED, 37 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**88 FIXED, 37 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -407,6 +407,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-125 | MEDIUM | Mapping trivy's Resolution field onto fixed_in made the gate treat every misconfiguration as fixable by upgrade, so an acceptance record could never apply to one | FIXED | Resolution is advice text rather than a version. A misconfiguration is a design choice, so it is either changed or accepted under ADR-0018, and the advice now goes in the description |
 | ISS-126 | MEDIUM | scripts/ and migrations/ were outside PY_SRC, so neither was linted or format checked, and mypy was pointed at four packages by name, silently skipping finops_mcp, both directories and the whole test suite | FIXED | 10 ruff findings and 36 mypy errors had accumulated unreported. Two were real: a list annotated flat while it held groups, and load_allowlist declaring a str key while the code keyed on a tuple, which is the only place a reader learns what an entry must match on. tests/scripts/test_lint_scope.py now asks the filesystem which directories hold Python and fails when one is not covered |
 | ISS-127 | MEDIUM | Twelve type ignore comments in the test suite were stale, silencing errors that no longer existed and standing ready to silence whatever landed on those lines next | FIXED | Found the moment mypy was pointed at tests/ for the first time. All twelve removed rather than narrowed, and the four genuinely needed ones now carry a comment saying why |
+| ISS-128 | MEDIUM | The memory gate rejected the one resume vector format CLAUDE.md asks for. It read `file.py:88` as a filename ending in colon eighty eight, so every citation with a line number failed as a path that does not exist | FIXED | CLAUDE.md asks a resume vector for exact files and line numbers. The suffix is now split off and the line checked against the length of the file, so a citation past the end of a file fails too. Probed by citing line 9999 and confirming it is caught |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
