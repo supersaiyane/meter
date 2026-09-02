@@ -36,6 +36,13 @@ import ast
 import sys
 from collections import defaultdict
 from pathlib import Path
+from typing import Any
+
+#: One public class or function, as the index renders it: kind, name, file,
+#: line, doc and package. A plain mapping rather than a dataclass because it is
+#: written straight to JSON and read back by the check, and a dataclass would
+#: buy a constructor for something with no behaviour.
+Symbol = dict[str, Any]
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 OUT = ROOT / "context_index.md"
@@ -77,14 +84,20 @@ a duplicate.
 """
 
 
-def first_line(node: ast.AST) -> str:
+#: The four node kinds `ast.get_docstring` accepts. Spelled out rather than
+#: taking `ast.AST`, because the wider type compiles and then raises at runtime
+#: on any other node.
+Documentable = ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef
+
+
+def first_line(node: Documentable) -> str:
     doc = ast.get_docstring(node) or ""
     line = doc.strip().split("\n", 1)[0].strip()
     return line[:110]
 
 
-def collect() -> tuple[list[dict], dict[str, set[str]]]:
-    symbols: list[dict] = []
+def collect() -> tuple[list[Symbol], dict[str, set[str]]]:
+    symbols: list[Symbol] = []
     calls: dict[str, set[str]] = defaultdict(set)
 
     for package in PACKAGES:
@@ -139,10 +152,12 @@ def collect() -> tuple[list[dict], dict[str, set[str]]]:
                         }
                     )
 
-            for node in ast.walk(tree):
-                if not isinstance(node, ast.Call):
+            # A distinct name from the loop above. Reusing `node` bound it to
+            # `stmt` there and to `AST` here, which is two types for one name.
+            for called in ast.walk(tree):
+                if not isinstance(called, ast.Call):
                     continue
-                func = node.func
+                func = called.func
                 name = (
                     func.id
                     if isinstance(func, ast.Name)
@@ -156,7 +171,7 @@ def collect() -> tuple[list[dict], dict[str, set[str]]]:
     return symbols, calls
 
 
-def render(symbols: list[dict], calls: dict[str, set[str]]) -> str:
+def render(symbols: list[Symbol], calls: dict[str, set[str]]) -> str:
     out = [HEADER]
 
     if not symbols:
@@ -177,7 +192,7 @@ def render(symbols: list[dict], calls: dict[str, set[str]]) -> str:
         )
         return "".join(out)
 
-    by_package: dict[str, list[dict]] = defaultdict(list)
+    by_package: dict[str, list[Symbol]] = defaultdict(list)
     for sym in symbols:
         by_package[sym["package"]].append(sym)
 
@@ -234,7 +249,7 @@ def main() -> int:
         return 0
 
     OUT.write_text(content, encoding="utf-8")
-    print(f"context_index.md regenerated")
+    print("context_index.md regenerated")
     return 0
 
 

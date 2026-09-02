@@ -54,7 +54,7 @@ def test_the_advertised_schema_is_the_api_s_schema() -> None:
     """Generated, not written out again. The two would drift within a release."""
     spec = TOOLS_BY_NAME["list_accounts"]
     inner = spec.envelope.__pydantic_generic_metadata__["args"][0]
-    assert spec.output_schema() == Envelope[inner].model_json_schema()
+    assert spec.output_schema() == Envelope[inner].model_json_schema()  # type: ignore[valid-type]
 
 
 def test_the_server_registers_every_tool_and_not_zero() -> None:

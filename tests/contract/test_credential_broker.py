@@ -9,6 +9,8 @@ TASK-P0-005 built is gone.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import pytest
 
 from finops_core import errors
@@ -19,7 +21,7 @@ pytestmark = pytest.mark.contract
 
 
 @pytest.fixture(autouse=True)
-def _skip_when_unimplemented(requires_port) -> None:
+def _skip_when_unimplemented(requires_port: Callable[[str], None]) -> None:
     requires_port(CREDENTIAL_BROKER)
 
 
@@ -34,7 +36,7 @@ def test_a_known_account_yields_a_session(subject: ProviderUnderTest) -> None:
 def test_a_session_says_when_it_expires(subject: ProviderUnderTest) -> None:
     """A long run has to renew before the handle dies, so the expiry is part of it."""
     session = subject.provider.session_for(subject.known_account, subject.region)
-    assert session.expires_at.tzinfo is not None  # type: ignore[attr-defined]
+    assert session.expires_at.tzinfo is not None
 
 
 def test_a_denied_account_raises_access_denied_from_every_provider(

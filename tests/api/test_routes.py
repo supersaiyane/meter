@@ -185,7 +185,9 @@ def auth(token: str) -> dict[str, str]:
 
 def test_all_seven_routes_from_the_specification_exist() -> None:
     paths = {
-        (route.path, method) for route in iter_api_routes(p0_routers()) for method in route.methods
+        (route.path, method)
+        for route in iter_api_routes(p0_routers())
+        for method in (route.methods or set())
     }
     assert ("/api/v1/me", "GET") in paths
     assert ("/api/v1/accounts", "GET") in paths

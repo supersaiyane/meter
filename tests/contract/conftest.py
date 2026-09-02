@@ -13,7 +13,7 @@ passed. A port nobody has implemented yet reports as skipped, by name.
 from __future__ import annotations
 
 import re
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
@@ -208,7 +208,7 @@ def subject(
 
 
 @pytest.fixture
-def requires_port(subject: ProviderUnderTest) -> object:
+def requires_port(subject: ProviderUnderTest) -> Callable[[str], None]:
     """Skip by name when a provider has not implemented the port under test."""
 
     def check(port: str) -> None:

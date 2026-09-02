@@ -901,6 +901,14 @@ changes:
     deliberate ones accepted with a reachability argument
   commit: '74e9d28'
   detail: '[ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md)'
+- id: CHG-0066
+  date: '2026-09-02'
+  type: Chore
+  what: Lint and type check every directory that holds Python. scripts, migrations and the test
+    suite were outside one or both, and the scripts that were missed are the ones implementing
+    the gates. A test now asks the filesystem rather than trusting the list
+  commit: pending
+  detail: '[Change control](docs/03-CHANGE-CONTROL.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1642,6 +1650,24 @@ issues:
     misconfiguration as fixable by upgrade, so an acceptance record could never apply to one
   detail: Resolution is advice text rather than a version. A misconfiguration is a design choice,
     so it is either changed or accepted under ADR-0018, and the advice now goes in the description
+- id: ISS-126
+  severity: MEDIUM
+  status: FIXED
+  summary: scripts/ and migrations/ were outside PY_SRC, so neither was linted or format checked,
+    and mypy was pointed at four packages by name, silently skipping finops_mcp, both directories
+    and the whole test suite
+  detail: '10 ruff findings and 36 mypy errors had accumulated unreported. Two were real: a list
+    annotated flat while it held groups, and load_allowlist declaring a str key while the code
+    keyed on a tuple, which is the only place a reader learns what an entry must match on.
+    tests/scripts/test_lint_scope.py now asks the filesystem which directories hold Python and
+    fails when one is not covered'
+- id: ISS-127
+  severity: MEDIUM
+  status: FIXED
+  summary: Twelve type ignore comments in the test suite were stale, silencing errors that no
+    longer existed and standing ready to silence whatever landed on those lines next
+  detail: Found the moment mypy was pointed at tests/ for the first time. All twelve removed
+    rather than narrowed, and the four genuinely needed ones now carry a comment saying why
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS

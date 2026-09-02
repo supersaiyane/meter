@@ -310,6 +310,7 @@
     "tests/scripts/__init__.py",
     "tests/scripts/test_check_index.py",
     "tests/scripts/test_layer_agreement.py",
+    "tests/scripts/test_lint_scope.py",
     "tests/scripts/test_observability.py",
     "tests/scripts/test_pipeline.py",
     "tests/test_checkpoint_rotation.py"

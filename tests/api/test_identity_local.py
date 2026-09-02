@@ -48,7 +48,9 @@ class MovableClock:
         return self.at
 
 
-def provider(clock: MovableClock | None = None, ttl_minutes: int = 15):
+def provider(
+    clock: MovableClock | None = None, ttl_minutes: int = 15
+) -> LocalConfigIdentityProvider:
     return LocalConfigIdentityProvider(
         AUTH_FILE, TENANT, ttl_minutes, clock=clock or MovableClock(START)
     )

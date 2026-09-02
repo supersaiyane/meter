@@ -9,7 +9,7 @@
      own content rather than scaffolding, and is not tagged.
 -->
 
-Last updated: 2026-08-30
+Last updated: 2026-09-02
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 50 total, 8 specified, 7 in build, 5 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 65 recorded |
-| Issues | 85 fixed, 37 open, 0 parked |
+| Changes | 66 recorded |
+| Issues | 87 fixed, 37 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -38,8 +38,11 @@ Generated from `docs/registry.yaml`. Change a status there, then run `make doc-s
 
 All 35 tasks are written, tested and committed. `make verify` passes: lint,
 the writing rules, the eight documentation checks, the docstring gate, the
-memory gate, the full test suite at 98 percent, and a security scan with zero
-findings.
+memory gate, 443 tests at 98 percent, and a security scan with zero findings.
+
+Lint and type checking now cover every directory that holds Python, which is
+143 files under mypy where it was 25. `scripts/`, `migrations/` and the test
+suite had all been outside one or both.
 
 What that sentence does not cover is the part that matters for a sign off.
 

@@ -85,4 +85,6 @@ def test_cause_is_the_type_name() -> None:
 def test_arguments_are_keyword_only() -> None:
     """Positional arguments make a scope and a collector easy to swap silently."""
     with pytest.raises(TypeError):
-        errors.NoData("acct:666666666666", "org_tree")  # type: ignore[misc]
+        # Deliberately wrong, which is the assertion. The ignore is what lets
+        # the type checker agree that it is wrong.
+        errors.NoData("acct:666666666666", "org_tree")  # type: ignore[call-arg]

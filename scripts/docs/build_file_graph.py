@@ -39,7 +39,14 @@ import json
 import re
 import sys
 from collections import defaultdict
+from collections.abc import Iterator
 from pathlib import Path
+
+#: One dependency: the file that depends, the file depended on, and how the
+#: dependency was found. A tuple rather than a dataclass because it is built in
+#: two hot loops and never mutated, and naming it here is what lets four
+#: signatures say what they carry instead of saying `list`.
+Edge = tuple[str, str, str]
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 OUT_DIR = ROOT / "docs" / "architecture"
@@ -83,7 +90,7 @@ TF_MODULE = re.compile(r'source\s*=\s*"(\.[^"]+)"')
 DOCKER_COPY = re.compile(r"^\s*COPY\s+(?:--from=\S+\s+)?(.+?)\s+\S+\s*$", re.MULTILINE)
 
 
-def walk(root: Path):
+def walk(root: Path) -> Iterator[Path]:
     for path in root.rglob("*"):
         if path.is_dir():
             continue
@@ -110,7 +117,7 @@ def module_to_path(module: str) -> str | None:
     return None
 
 
-def python_edges(path: Path, rel: str, edges: list, unresolved: list) -> None:
+def python_edges(path: Path, rel: str, edges: list[Edge], unresolved: list[str]) -> None:
     try:
         tree = ast.parse(path.read_text(encoding="utf-8"))
     except (SyntaxError, UnicodeDecodeError) as exc:
@@ -128,7 +135,9 @@ def python_edges(path: Path, rel: str, edges: list, unresolved: list) -> None:
                 edges.append((rel, target, "python"))
 
 
-def text_edges(path: Path, rel: str, pattern: re.Pattern, kind: str, edges: list) -> None:
+def text_edges(
+    path: Path, rel: str, pattern: re.Pattern[str], kind: str, edges: list[Edge]
+) -> None:
     try:
         content = path.read_text(encoding="utf-8")
     except UnicodeDecodeError:
@@ -154,7 +163,7 @@ def text_edges(path: Path, rel: str, pattern: re.Pattern, kind: str, edges: list
                 edges.append((rel, target, kind))
 
 
-def build() -> tuple[list[tuple[str, str, str]], list[str], list[str]]:
+def build() -> tuple[list[Edge], list[str], list[str]]:
     edges: list[tuple[str, str, str]] = []
     unresolved: list[str] = []
     nodes: set[str] = set()
@@ -202,7 +211,7 @@ def check_layers(edges: list[tuple[str, str, str]]) -> list[str]:
     return violations
 
 
-def render_mermaid(edges, nodes) -> str:
+def render_mermaid(edges: list[Edge], nodes: list[str]) -> str:
     groups: dict[str, list[str]] = defaultdict(list)
     for node in nodes:
         groups[node.split("/", 1)[0]].append(node)

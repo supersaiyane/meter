@@ -23,8 +23,9 @@ import argparse
 import json
 import sys
 import urllib.request
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 LOCK = ROOT / "docker" / "base-images.lock"
@@ -55,7 +56,9 @@ IMAGES = [
 def token(repo: str) -> str:
     url = f"{AUTH}?service={REGISTRY}&scope=repository:{repo}:pull"
     with urllib.request.urlopen(url, timeout=25) as response:
-        return json.load(response)["token"]
+        # str() rather than a cast. json.load returns Any, and a registry that
+        # answered with a number here would otherwise flow onward as a token.
+        return str(json.load(response)["token"])
 
 
 def resolve(repo: str, tag: str) -> tuple[str, list[str]]:
@@ -76,7 +79,7 @@ def resolve(repo: str, tag: str) -> tuple[str, list[str]]:
     return digest, platforms
 
 
-def render(entries: list[dict], stamp: str) -> str:
+def render(entries: list[dict[str, Any]], stamp: str) -> str:
     lines = [
         "# Basic boiler Plate Doc | Grade B",
         "# Why this file exists: Pins every base image by digest, because a tag moves",
@@ -157,7 +160,7 @@ def main() -> int:
         print(f"OK: {len(entries)} base image pins current")
         return 0
 
-    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ")
+    stamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%SZ")
     LOCK.write_text(render(entries, stamp))
     print(f"Wrote {LOCK.relative_to(ROOT)}, {len(entries)} images")
     for d in drift:

@@ -164,7 +164,10 @@ def test_every_domain_class_is_a_frozen_dataclass() -> None:
         loaded = importlib.import_module(f"{domain_package.__name__}.{module.name}")
         for attribute in vars(loaded).values():
             if dataclasses.is_dataclass(attribute) and isinstance(attribute, type):
-                assert attribute.__dataclass_params__.frozen, attribute.__name__
+                # __dataclass_params__ is set by the decorator and is not on
+                # the protocol the type checker uses for a dataclass type.
+                params = attribute.__dataclass_params__  # type: ignore[attr-defined]
+                assert params.frozen, attribute.__name__
 
 
 def test_updates_return_a_new_instance() -> None:

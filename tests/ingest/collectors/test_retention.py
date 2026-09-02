@@ -153,13 +153,14 @@ def test_cost_is_aggregated_before_its_partition_is_removed(
 
         outcome = retention_cost(context(connection, tenant_id, settings), clock=at)
 
-        rolled = connection.execute(
+        rolled_rows = connection.execute(
             text(
                 "SELECT billing_month, billed_cost, line_items FROM cost_focus_monthly "
                 "WHERE tenant_id = :t"
             ),
             {"t": tenant_id},
         ).all()
+        rolled = [tuple(row) for row in rolled_rows]
         surviving = connection.execute(
             text("SELECT count(*) FROM cost_focus_daily WHERE tenant_id = :t"),
             {"t": tenant_id},

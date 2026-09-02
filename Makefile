@@ -34,7 +34,23 @@ ECR_REGISTRY  ?= $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 PLATFORM      ?= linux/amd64
 
 PY_PKGS := finops_core finops_providers finops_ingest finops_api finops_mcp
-PY_SRC := $(PY_PKGS) tests
+# scripts/ and migrations/ are here because they were outside the linter for
+# long enough to accumulate 10 ruff findings and 36 mypy errors that nothing
+# ever reported. Two of those were real: a list annotated flat while holding
+# groups, and an allowlist loader whose signature said its key was a string
+# while the code keyed on a tuple. That second one is the only place a reader
+# can learn what an allowlist entry has to match on, and it was wrong.
+#
+# The scripts are the gates. A gate nobody checks is the thing this project
+# keeps finding, and leaving the checkers themselves unchecked was an instance
+# of it.
+#
+# `tests` was linted but never type checked, which had left twelve stale
+# `type: ignore` comments in place. A stale ignore is worse than none: it
+# silences whatever real error lands on that line next.
+#
+# One variable now, so ruff and mypy cannot be pointed at different things.
+PY_SRC := $(PY_PKGS) tests scripts migrations
 
 # The documentation and policy scripts need pyyaml, which a system interpreter
 # will not have and PEP 668 will not let us add. So they run from the venv when
@@ -77,7 +93,7 @@ fmt: ## Format Python and TypeScript in place
 lint: ## Lint everything, no changes written
 	$(BIN)/ruff format --check $(PY_SRC)
 	$(BIN)/ruff check $(PY_SRC)
-	$(BIN)/mypy finops_core finops_providers finops_ingest finops_api
+	$(BIN)/mypy $(PY_SRC)
 	$(BIN)/lint-imports
 	cd finops-web && npm run lint
 # The three stacks. The skip that used to be here, for a directory TASK-P0-013

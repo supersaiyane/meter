@@ -37,7 +37,7 @@ import html
 import json
 import sys
 from collections import Counter
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -222,19 +222,22 @@ PARSERS = (
 
 
 def collect(directory: Path) -> list[dict[str, Any]]:
-    findings: list[dict[str, Any]] = []
+    # One group per scanner output file, flattened on the way out. Annotated as
+    # a list of lists because that is what it is: it was declared flat, and the
+    # flatten on the return line was the only thing saying otherwise.
+    groups: list[list[dict[str, Any]]] = []
     for path in sorted(directory.glob("*.json")):
         for prefix, parser in PARSERS:
             if path.name.startswith(prefix):
                 try:
-                    findings.append(parser(path))
+                    groups.append(parser(path))
                 except (json.JSONDecodeError, KeyError, TypeError) as exc:
                     # A scanner output we cannot parse is loud, never silent.
                     # A silently skipped file reports a clean scan for the
                     # wrong reason, which is worse than a failure.
                     print(f"WARN: could not parse {path.name}: {exc}", file=sys.stderr)
                 break
-    return [item for group in findings for item in group]
+    return [item for group in groups for item in group]
 
 
 # ------------------------------------------------------------------ merging
@@ -275,11 +278,19 @@ def load_accepted(path: Path) -> dict[tuple[str, str], dict[str, Any]]:
     return {(e.get("id"), e.get("package")): e for e in data.get("accepted") or []}
 
 
-def load_allowlist(path: Path, today: date) -> dict[str, dict[str, Any]]:
+def load_allowlist(path: Path, today: date) -> dict[tuple[str, str], dict[str, Any]]:
+    """Time boxed suppressions, keyed the way a finding is identified.
+
+    The key is (id, package), the same pair `load_accepted` uses, and the
+    annotation said `str` until 2026-09-01. That is not cosmetic: this
+    signature is the only place a reader can learn what an entry has to match
+    on, and getting it wrong costs an afternoon of entries that silently match
+    nothing.
+    """
     if not path.exists():
         return {}
     data = yaml.safe_load(path.read_text()) or {}
-    valid = {}
+    valid: dict[tuple[str, str], dict[str, Any]] = {}
     for entry in data.get("exceptions") or []:
         expires = entry.get("expires")
         if isinstance(expires, date) and expires < today:
@@ -373,7 +384,7 @@ def render_html(
     counts = Counter(f["severity"] for f in findings)
     passing = not findings
     out = [HTML_HEAD]
-    out.append(f"<h1>Meter security report</h1>")
+    out.append("<h1>Meter security report</h1>")
     out.append(
         f'<p class="sub">{html.escape(label)} &middot; generated {html.escape(generated)}</p>'
     )
@@ -565,7 +576,7 @@ def main() -> int:
     parser.add_argument("--gate-only", action="store_true")
     args = parser.parse_args()
 
-    generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ")
+    generated = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%SZ")
     raw = collect(args.input)
     for finding in raw:
         finding["scanner_family"] = "secrets" if finding["scanner"] == "gitleaks" else "vuln"

@@ -64,7 +64,10 @@ def test_all_ports_are_protocols() -> None:
     for port in port_types():
         assert getattr(port, "_is_protocol", False), port.__name__
         assert getattr(port, "_is_runtime_protocol", False), port.__name__
-        assert Protocol in port.__mro__ or issubclass(port, Protocol)  # type: ignore[arg-type]
+        # Protocol really is in the mro of a Protocol subclass at runtime, but
+        # it is a typing special form and the type system does not model it as
+        # a class, so the containment check cannot be expressed.
+        assert Protocol in port.__mro__ or issubclass(port, Protocol)  # type: ignore[comparison-overlap, arg-type]  # type: ignore[arg-type]
 
 
 def test_every_port_declares_at_least_one_method() -> None:
@@ -138,7 +141,7 @@ def test_port_annotations_resolve_to_real_types() -> None:
     for port in port_types():
         for name, method in port_methods(port):
             try:
-                get_type_hints(method)  # type: ignore[arg-type]
+                get_type_hints(method)
             except Exception as failure:  # pragma: no cover - the assert reports it
                 pytest.fail(f"{port.__name__}.{name}: {failure}")
 

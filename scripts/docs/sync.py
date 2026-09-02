@@ -30,8 +30,18 @@ import re
 import sys
 from collections import Counter
 from pathlib import Path
+from typing import Any
 
 import yaml
+
+#: The parsed registry. Named rather than repeated on ten renderers, so the one
+#: place a reader looks to find out what a renderer is given is here.
+#:
+#: `Any` for the values is deliberate and is not laziness. pyyaml ships no type
+#: information, so everything below the top level is genuinely untyped at this
+#: boundary, and pretending otherwise with a nested TypedDict would be a claim
+#: the parser cannot support. Values are narrowed where they are used.
+Registry = dict[str, Any]
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 REGISTRY = ROOT / "docs" / "registry.yaml"
@@ -51,7 +61,7 @@ class DuplicateIdentifierError(RuntimeError):
     """Two entries in one section share an identifier."""
 
 
-def assert_identifiers_unique(registry: dict) -> int:
+def assert_identifiers_unique(registry: Registry) -> int:
     """Every ISS, CHG, ADR and FEAT number names exactly one thing.
 
     ISS-110 and ISS-111 each named two different issues for a while, which made
@@ -84,8 +94,18 @@ def assert_identifiers_unique(registry: dict) -> int:
     return seen
 
 
-def load() -> dict:
-    registry = yaml.safe_load(REGISTRY.read_text(encoding="utf-8"))
+def load() -> Registry:
+    """Parse the registry, refusing anything that is not a mapping.
+
+    An empty or malformed file parses to None, and returning that would fail
+    several function calls later with an error about NoneType rather than about
+    the file. Narrowed here because this is the boundary where yaml stops being
+    typed.
+    """
+    parsed = yaml.safe_load(REGISTRY.read_text(encoding="utf-8"))
+    if not isinstance(parsed, dict):
+        raise TypeError(f"{REGISTRY} did not parse to a mapping, got {type(parsed).__name__}")
+    registry: Registry = parsed
     assert_identifiers_unique(registry)
     return registry
 
@@ -106,7 +126,7 @@ def replace_block(text: str, name: str, body: str) -> str:
 # ---------------------------------------------------------------- renderers
 
 
-def render_features(reg: dict) -> str:
+def render_features(reg: Registry) -> str:
     subs = {s["id"]: s["name"] for s in reg["subprojects"]}
     counts = Counter(f["status"] for f in reg["features"])
     lines = [
@@ -136,7 +156,7 @@ def render_features(reg: dict) -> str:
     return "\n".join(lines)
 
 
-def render_adrs(reg: dict) -> str:
+def render_adrs(reg: Registry) -> str:
     lines = ["| ID | Decision | Status | Detail |", "| --- | --- | --- | --- |"]
     lines += [
         f"| {a['id']} | {a['decision']} | {a['status']} | [{a['id']}]({a['doc']}) |"
@@ -146,7 +166,7 @@ def render_adrs(reg: dict) -> str:
     return "\n".join(lines)
 
 
-def render_changes(reg: dict) -> str:
+def render_changes(reg: Registry) -> str:
     lines = [
         "| ID | Date | Type | What changed | Commit | Detail |",
         "| --- | --- | --- | --- | --- | --- |",
@@ -158,7 +178,7 @@ def render_changes(reg: dict) -> str:
     return "\n".join(lines)
 
 
-def render_issues(reg: dict) -> str:
+def render_issues(reg: Registry) -> str:
     counts = Counter(i["status"] for i in reg["issues"])
     lines = [
         f"**{counts.get('FIXED', 0)} FIXED, {counts.get('OPEN', 0)} OPEN, "
@@ -179,7 +199,7 @@ def render_issues(reg: dict) -> str:
     return "\n".join(lines)
 
 
-def render_issue_register(reg: dict) -> str:
+def render_issue_register(reg: Registry) -> str:
     """The full issue register. Generated so identifiers cannot diverge.
 
     tasks/ISSUES.md used to hold this by hand, and inside one session it had
@@ -205,7 +225,7 @@ def render_issue_register(reg: dict) -> str:
     return "\n".join(lines)
 
 
-def render_open(reg: dict) -> str:
+def render_open(reg: Registry) -> str:
     lines = [
         "| ID | Question | Status | Blocks | Detail |",
         "| --- | --- | --- | --- | --- |",
@@ -217,9 +237,9 @@ def render_open(reg: dict) -> str:
     return "\n".join(lines)
 
 
-def render_roadmap_status(reg: dict) -> str:
+def render_roadmap_status(reg: Registry) -> str:
     subs = {s["id"]: s["name"] for s in reg["subprojects"]}
-    counts: dict[str, Counter] = {s: Counter() for s in subs}
+    counts: dict[str, Counter[str]] = {s: Counter() for s in subs}
     for f in reg["features"]:
         counts[f["subproject"]][f["status"]] += 1
     lines = [
@@ -235,13 +255,13 @@ def render_roadmap_status(reg: dict) -> str:
     return "\n".join(lines)
 
 
-def render_subprojects(reg: dict) -> str:
+def render_subprojects(reg: Registry) -> str:
     """The sub project table, previously hand written alongside a generated one.
 
     Two tables describing the same thing is the drift ADR-0014 exists to
     prevent. AUDIT-001, finding A001-F10.
     """
-    counts: dict[str, Counter] = {s["id"]: Counter() for s in reg["subprojects"]}
+    counts: dict[str, Counter[str]] = {s["id"]: Counter() for s in reg["subprojects"]}
     for f in reg["features"]:
         counts[f["subproject"]][f["status"]] += 1
     lines = [
@@ -266,13 +286,18 @@ def render_subprojects(reg: dict) -> str:
     return "\n".join(lines)
 
 
-def render_task_status(reg: dict) -> str:
+def render_task_status(_reg: Registry) -> str:
     """Task state, read from the plan files rather than copied into STATUS.md.
 
     STATUS.md used to hand-maintain a second copy of the plan's task list. That
     is the drift ADR-0014 exists to prevent, and it had already drifted: the
     list still showed 31 tasks and TASK-P0-029 as not started after it was
     done. The plan is the source, this is a view of it.
+
+    The registry argument is unused and is underscored to say so. It stays in
+    the signature because every renderer shares one, and a dispatch table whose
+    entries have different shapes is a dispatch table with a special case in it.
+    This is the one renderer whose source is not the registry.
     """
     import re
 
@@ -320,7 +345,7 @@ def render_task_status(reg: dict) -> str:
     return "\n".join(lines + detail)
 
 
-def render_status_summary(reg: dict) -> str:
+def render_status_summary(reg: Registry) -> str:
     fc = Counter(f["status"] for f in reg["features"])
     ic = Counter(i["status"] for i in reg["issues"])
     oc = Counter(o["status"].split()[0] for o in reg["open_questions"])
@@ -341,7 +366,7 @@ def render_status_summary(reg: dict) -> str:
     )
 
 
-def sync_feature_headers(reg: dict, check: bool) -> list[str]:
+def sync_feature_headers(reg: Registry, check: bool) -> list[str]:
     """Regenerate the field table at the top of each feature document."""
     changed = []
     for feature in reg["features"]:

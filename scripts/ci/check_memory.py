@@ -81,7 +81,7 @@ def table_rows(text: str) -> list[list[str]]:
         if len(parts) < 5:
             continue
         if len(parts) > 5:
-            parts = parts[:4] + ["|".join(parts[4:])]
+            parts = [*parts[:4], "|".join(parts[4:])]
         rows.append(parts)
     return rows
 

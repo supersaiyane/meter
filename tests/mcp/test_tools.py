@@ -129,7 +129,7 @@ def test_the_registered_handler_returns_the_envelope_and_not_just_the_data(
     api, token = api_for(engine, scoped_to(tenant_id, ("a-1",)), settings)
     handler = make_handler(TOOLS_BY_NAME["list_accounts"], api)
 
-    result = handler(StubContext({"Authorization": f"Bearer {token}"}))
+    result = handler(StubContext({"Authorization": f"Bearer {token}"}))  # type: ignore[arg-type]
 
     assert set(result) >= {"data", "meta"}
     assert [row["account_id"] for row in result["data"]] == ["a-1"]
@@ -143,7 +143,7 @@ def test_a_handler_with_no_caller_token_refuses_before_it_calls_anything(
     handler = make_handler(TOOLS_BY_NAME["list_accounts"], api)
 
     with pytest.raises(MissingTokenError):
-        handler(StubContext({}))
+        handler(StubContext({}))  # type: ignore[arg-type]
 
 
 def test_an_unauthenticated_call_is_refused_by_the_api_not_by_the_facade(

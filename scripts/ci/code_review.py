@@ -23,10 +23,9 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import json
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -74,7 +73,7 @@ def main() -> int:
     parser.add_argument("--diff", default=None, help="base ref, for example origin/main")
     args = parser.parse_args()
 
-    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d-%H%M%S")
+    stamp = datetime.now(UTC).strftime("%Y-%m-%d-%H%M%S")
     args.output.mkdir(parents=True, exist_ok=True)
     report = args.output / f"review-{stamp}.md"
 
@@ -82,7 +81,7 @@ def main() -> int:
     lines = [
         "# Automated code review",
         "",
-        f"Generated {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%SZ')}",
+        f"Generated {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%SZ')}",
         f"Scope: {args.diff + '...HEAD' if args.diff else 'working tree'}",
         f"Files changed: {len(files)}",
         "",
@@ -111,7 +110,7 @@ def main() -> int:
 
     lines.append("")
     if details:
-        lines += ["## Findings", ""] + details
+        lines += ["## Findings", "", *details]
 
     lines += [
         "## Review checklist",

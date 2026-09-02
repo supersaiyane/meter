@@ -19,6 +19,7 @@ from __future__ import annotations
 import re
 from collections import Counter
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -39,8 +40,10 @@ def raw() -> str:
     return PIPELINE.read_text(encoding="utf-8")
 
 
-def loaded() -> dict:
-    return yaml.safe_load(raw())
+def loaded() -> dict[str, Any]:
+    parsed = yaml.safe_load(raw())
+    assert isinstance(parsed, dict), "the pipeline did not parse to a mapping"
+    return parsed
 
 
 def test_no_two_jobs_share_a_name() -> None:

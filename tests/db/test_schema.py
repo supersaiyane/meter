@@ -12,11 +12,12 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime
 from pathlib import Path
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from alembic import command
 from sqlalchemy import Engine, text
+from sqlalchemy.engine import Connection
 from sqlalchemy.exc import DBAPIError, IntegrityError
 
 from finops_api.db import models
@@ -64,7 +65,7 @@ def test_every_specified_table_exists(engine: Engine) -> None:
 # --- the invariants the database enforces ------------------------------------
 
 
-def insert_run(connection, tenant, key: str, status: str = "SUCCEEDED") -> None:
+def insert_run(connection: Connection, tenant: UUID, key: str, status: str = "SUCCEEDED") -> None:
     connection.execute(
         text(
             "INSERT INTO ingest_run (run_id, tenant_id, collector, scope_key, "
@@ -82,7 +83,7 @@ def insert_run(connection, tenant, key: str, status: str = "SUCCEEDED") -> None:
     )
 
 
-def test_idempotency_key_is_unique(engine: Engine, tenant_id) -> None:
+def test_idempotency_key_is_unique(engine: Engine, tenant_id: UUID) -> None:
     """This is what holds when two workers claim the same unit at once. ISS-008."""
     with engine.begin() as connection:
         insert_run(connection, tenant_id, "the-same-key")
@@ -90,7 +91,7 @@ def test_idempotency_key_is_unique(engine: Engine, tenant_id) -> None:
         insert_run(connection, tenant_id, "the-same-key")
 
 
-def test_as_of_is_not_nullable(engine: Engine, tenant_id) -> None:
+def test_as_of_is_not_nullable(engine: Engine, tenant_id: UUID) -> None:
     with pytest.raises(IntegrityError), engine.begin() as connection:
         connection.execute(
             text(
@@ -102,7 +103,7 @@ def test_as_of_is_not_nullable(engine: Engine, tenant_id) -> None:
         )
 
 
-def test_an_unknown_error_type_is_refused(engine: Engine, tenant_id) -> None:
+def test_an_unknown_error_type_is_refused(engine: Engine, tenant_id: UUID) -> None:
     """The taxonomy staying closed is what stops every future failure becoming generic."""
     with pytest.raises(IntegrityError), engine.begin() as connection:
         connection.execute(
@@ -115,7 +116,7 @@ def test_an_unknown_error_type_is_refused(engine: Engine, tenant_id) -> None:
         )
 
 
-def test_a_run_window_cannot_end_before_it_starts(engine: Engine, tenant_id) -> None:
+def test_a_run_window_cannot_end_before_it_starts(engine: Engine, tenant_id: UUID) -> None:
     with pytest.raises(IntegrityError), engine.begin() as connection:
         connection.execute(
             text(
@@ -136,7 +137,14 @@ def test_a_run_window_cannot_end_before_it_starts(engine: Engine, tenant_id) -> 
 # --- the organization tree ---------------------------------------------------
 
 
-def insert_node(connection, tenant, node_id, node_type, parent, depth) -> None:
+def insert_node(
+    connection: Connection,
+    tenant: UUID,
+    node_id: str,
+    node_type: str,
+    parent: str | None,
+    depth: int,
+) -> None:
     connection.execute(
         text(
             "INSERT INTO org_node (node_pk, tenant_id, node_id, node_type, parent_node_id, "
@@ -158,7 +166,7 @@ def insert_node(connection, tenant, node_id, node_type, parent, depth) -> None:
     )
 
 
-def test_org_tree_recursive_query(engine: Engine, tenant_id) -> None:
+def test_org_tree_recursive_query(engine: Engine, tenant_id: UUID) -> None:
     """Four levels, resolved by the recursive CTE the read path will use."""
     with engine.begin() as connection:
         insert_node(connection, tenant_id, "root", "ROOT", None, 0)
@@ -184,7 +192,7 @@ def test_org_tree_recursive_query(engine: Engine, tenant_id) -> None:
     assert [row[1] for row in rows] == [0, 1, 2, 3]
 
 
-def test_a_root_with_a_parent_is_refused(engine: Engine, tenant_id) -> None:
+def test_a_root_with_a_parent_is_refused(engine: Engine, tenant_id: UUID) -> None:
     """A root with a parent means two roots, and a walk over the tree does not end."""
     with engine.begin() as connection:
         insert_node(connection, tenant_id, "root", "ROOT", None, 0)
@@ -194,7 +202,7 @@ def test_a_root_with_a_parent_is_refused(engine: Engine, tenant_id) -> None:
 
 def test_a_node_naming_a_parent_that_does_not_exist_is_refused(
     engine: Engine,
-    tenant_id,
+    tenant_id: UUID,
 ) -> None:
     """Without this, a dropped parent leaves a subtree nothing reports as missing."""
     with pytest.raises(IntegrityError), engine.begin() as connection:
@@ -204,7 +212,7 @@ def test_a_node_naming_a_parent_that_does_not_exist_is_refused(
 # --- partitioning ------------------------------------------------------------
 
 
-def cost_row(connection, tenant, period: date) -> None:
+def cost_row(connection: Connection, tenant: UUID, period: date) -> None:
     connection.execute(
         text(
             "INSERT INTO cost_focus_daily (tenant_id, ingest_run_id, source_fingerprint, "
@@ -230,14 +238,14 @@ def cost_row(connection, tenant, period: date) -> None:
 
 def test_a_missing_partition_raises_rather_than_misfiling_the_cost(
     engine: Engine,
-    tenant_id,
+    tenant_id: UUID,
 ) -> None:
     """A default partition would turn a scheduling bug into silently misfiled cost."""
     with pytest.raises(DBAPIError), engine.begin() as connection:
         cost_row(connection, tenant_id, date(2031, 1, 1))
 
 
-def test_a_row_lands_once_the_partition_exists(engine: Engine, tenant_id) -> None:
+def test_a_row_lands_once_the_partition_exists(engine: Engine, tenant_id: UUID) -> None:
     with engine.begin() as connection:
         connection.execute(
             text(

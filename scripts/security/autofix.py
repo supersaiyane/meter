@@ -56,9 +56,12 @@ def is_major_bump(installed: str, fixed: str) -> bool:
     return bool(a and b and b[0] > a[0])
 
 
-def classify(findings: list[dict[str, Any]]) -> tuple[list, list]:
+def classify(
+    findings: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Split findings into automatically applicable and human decisions."""
-    auto, manual = [], []
+    auto: list[dict[str, Any]] = []
+    manual: list[dict[str, Any]] = []
     for finding in findings:
         fixed = finding.get("fixed_in")
         if not fixed:
@@ -167,7 +170,8 @@ def main() -> int:
     print(f"Working on branch {branch}\n")
 
     pyproject = ROOT / "pyproject.toml"
-    applied, failed = [], []
+    applied: list[dict[str, Any]] = []
+    failed: list[dict[str, Any]] = []
     for finding in auto:
         ok = (
             apply_python(finding, pyproject)

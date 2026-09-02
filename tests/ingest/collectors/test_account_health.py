@@ -50,7 +50,9 @@ def seed_account(engine: Engine, tenant: UUID) -> None:
         )
 
 
-def unit_for(tenant: UUID, account: AccountKey | None = ACCOUNT, region: str | None = REGION):
+def unit_for(
+    tenant: UUID, account: AccountKey | None = ACCOUNT, region: str | None = REGION
+) -> WorkUnit:
     return WorkUnit(
         tenant_id=tenant,
         collector="account_health",
@@ -61,7 +63,7 @@ def unit_for(tenant: UUID, account: AccountKey | None = ACCOUNT, region: str | N
     )
 
 
-def run(engine: Engine, tenant: UUID, check: StubHealthCheck, unit=None) -> int:
+def run(engine: Engine, tenant: UUID, check: StubHealthCheck, unit: WorkUnit | None = None) -> int:
     with engine.begin() as connection:
         outcome = AccountHealthCollector(check, clock=lambda: AT)(
             CollectorContext(unit=unit or unit_for(tenant), connection=connection)
