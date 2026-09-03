@@ -34,8 +34,14 @@ meter/
 ├── INDEX.md                   master index, the entry point for the project
 ├── README.md                  what Meter is, and the documentation map
 ├── Makefile                   every routine task, run `make help`
-├── pyproject.toml             dependencies, lint rules, import linter contract
-├── docker-compose.yml         local stack only, never used to deploy
+├── pyproject.toml             dependencies, lint rules, import linter contract.
+│                              Packages are found, not listed: an explicit list
+│                              is top level only and left subpackages out of the
+│                              built wheel
+├── docker-compose.yml         local stack only, never used to deploy. Every
+│                              python service takes env_file, so a new setting
+│                              does not have to be added twice, and the postgres
+│                              host port is overridable with METER_POSTGRES_PORT
 ├── .gitlab-ci.yml             verify, security, build, scan, plan, deploy
 ├── .env.example               every value, what it does, which file reads it
 ├── .pre-commit-config.yaml    local gates: secrets, writing rules, lint, doc drift,
@@ -86,7 +92,12 @@ meter/
 │   ├── ISSUES.md              issue and open question register with fixed status
 │   └── lessons.md             corrections converted into rules
 │
-├── docker/                    three Dockerfiles on Minimus, plus nginx.conf
+├── docker/                    three Dockerfiles on Minimus, plus nginx.conf.
+│                              Builder stages run as root and are discarded; the
+│                              runtime stages keep USER 65532:65532, which is the
+│                              posture ADR-0010 protects. The api image also
+│                              carries scripts/ops, because those are run by a
+│                              person against a live database
 │   └── base-images.lock       pinned digests, chosen by measurement. ADR-0010
 │   └── base-images.lock       pinned digests, resolved by measurement at TASK-P0-029
 ├── docker-compose.yml         local stack, plus a `security` profile of one shot
