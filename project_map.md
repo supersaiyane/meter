@@ -22,7 +22,10 @@ meter/
 ├── Makefile                   28 targets, run `make help`
 ├── pyproject.toml             dependencies, lint rules, import linter contract
 ├── docker-compose.yml         local stack only, never used to deploy
-├── .gitlab-ci.yml             verify, build with Kaniko, plan, deploy
+├── .gitlab-ci.yml             verify, security, build, scan, plan, deploy
+├── .pre-commit-config.yaml    local gates: secrets, writing rules, lint, doc drift,
+│                              dependency admission on manifest change. Pre push
+│                              runs the full scan and the tests
 ├── CLAUDE.md                  binding project rules, writing rules, definition of done
 ├── .gitignore
 ├── context_index.md           function level index, empty until code exists
@@ -55,6 +58,8 @@ meter/
 │   └── lessons.md             corrections converted into rules
 │
 ├── docker/                    three Dockerfiles on Minimus, plus nginx.conf
+├── docker-compose.yml         local stack, plus a `security` profile of one shot
+│                              scanners that does NOT start with `make up`
 │
 ├── security/                  everything a scan produces, and the policy
 │   ├── POSTURE.md             current posture, generated, never hand edited
@@ -65,7 +70,8 @@ meter/
 │
 ├── scripts/                   every script in the project, nothing executable elsewhere
 │   ├── README.md              what each script does and how it is run
-│   ├── security/              scan, admission gate, report, auto fix, allowlist
+│   ├── security/              scan, admission gate, pre commit deps, report,
+│   │                          auto fix, allowlist validation
 │   ├── docs/                  sync, index check, feature doc check, file graph
 │   ├── ci/                    code review
 │   └── deploy/                migration task runner
@@ -109,6 +115,9 @@ continuous integration, not by good intentions.
 | What is the security policy | `docs/05-SECURITY.md` |
 | What does the database look like | `docs/07-DATA-MODEL.md` |
 | Where do I change a feature status | `docs/registry.yaml`, then `make doc-sync` |
+| What stops an unscanned image deploying | `docs/05-SECURITY.md`, layer 5, and `.gitlab-ci.yml` `verify-provenance` |
+| Why LocalStack is in the stack, and its limits | `docker-compose.yml` inline, and `docs/04-DEPLOYMENT.md` |
+| What breaks and how to fix it | `README.md` section 5, ten worked examples |
 | Is the posture currently clean | `security/POSTURE.md` |
 | How often does this data refresh | `docs/06-DATA-FRESHNESS.md` |
 | What does this script do | `scripts/README.md` |

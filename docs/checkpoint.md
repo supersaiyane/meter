@@ -31,6 +31,8 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-08-23 | Import the seven rung ladder from a prior project | Done | ADR-0013 supersedes the ladder in ADR-0011. Resolves the deadlock where ADR-0010 forbids a dependency and the ladder requires reusing it. Adds the disqualification record, the same rung check and the security sign off gate | `docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md`. Source: `PayVault/.kiro/reference/ponytail-rung-disqualification-guide.md`. ISS-045 |
 | 2026-08-23 | Make derived documentation generated | Done | `docs/registry.yaml` is now the single source of truth. `scripts/docs/sync.py` regenerates the index tables, the roadmap status, the status summary and every feature header. Feature status previously lived in four places by hand. Building the registry immediately found six change rows missing a column | `make doc-sync`, `make check-docs`, `make session-end`. ADR-0014. ISS-046, ISS-049 |
 | 2026-08-23 | Session checkpoint before context limit | Done | No code written. 25 commits, all gates green: registry sync, index 79 references, 42 feature documents, 0 layering violations, no banned characters. `make check-writing` ran for the first time and correctly failed on `CLAUDE.md`, which quoted the banned characters inside its own rule. Fixed by referencing the Makefile target instead | Everything below under "Next action". The gate is unchanged: user review of the P0 specification |
+| 2026-08-23 | Complete the security gate chain and explain LocalStack | Done | Found and closed a real gap: images were signed with cosign but the signature was never verified, so anyone able to push to ECR could place an unscanned image where the deploy would find it. Added `verify-provenance` before every deploy, checking the signature and the SBOM attestation. Added pre commit and pre push hooks, and a compose `security` profile of one shot scanners that does not start with `make up`. Documented LocalStack and its limits | `.gitlab-ci.yml` job `verify-provenance`, `.pre-commit-config.yaml`, `docker-compose.yml` security profile, `docs/05-SECURITY.md` six layer table. ISS-051 to ISS-054 |
+| 2026-08-23 | Rewrite the README as the operational anchor | Done | 721 lines, 12 sections. Six layer gate model, LocalStack explained where a developer looks for it, and ten worked gotcha examples each showing real output and exact commands. The writing rules gotcha had to be rewritten after it failed the check by reproducing the banned characters, which is the second time that trap has been hit | `README.md`. CHG-0016, CHG-0018, CHG-0019 |
 
 ## Next action
 
@@ -54,7 +56,19 @@ P0.
 | Where a change gets recorded | `docs/03-CHANGE-CONTROL.md` |
 | Rules binding every change | `CLAUDE.md` |
 
-### Resume vector
+### Resume vector, as of 2026-09-02
+
+| What | Where |
+| --- | --- |
+| Git position | branch `main`, 33 commits, working tree clean |
+| The gate, unchanged | User review of `docs/specs/2026-08-23-p0-foundation-design.md` |
+| First task to run on approval | `docs/plans/P0-implementation-plan.md`, **TASK-P0-029**, not 001. It verifies the Minimus tags exist |
+| Registers | 42 features, 14 decisions, 19 changes, 51 issues, 6 open questions |
+| One command to check everything | `make check-docs && make check-writing` |
+| One command to end a session | `make session-end` |
+| Known open items needing code | ISS-054, set ECR tags to IMMUTABLE, in TASK-P0-016 |
+
+### Earlier resume vector
 
 | What | Where |
 | --- | --- |
