@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "folderTitle": "General"
+  },
+  "dashboard": {
+    "uid": "bad-1",
+    "title": "Malformed",
+    "refresh": null,
+    "time": {
+      "from": null,
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "No targets at all",
+        "type": "timeseries",
+        "targets": []
+      },
+      {
+        "id": 2,
+        "title": "Empty target",
+        "type": "timeseries",
+        "targets": [
+          {}
+        ],
+        "datasource": {
+          "type": "cloudwatch",
+          "uid": "cw-1"
+        }
+      },
+      {
+        "id": 3,
+        "title": "Hidden target",
+        "type": "timeseries",
+        "targets": [
+          {
+            "refId": "A",
+            "hide": true,
+            "expr": "up"
+          }
+        ],
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prom-1"
+        }
+      }
+    ]
+  }
+}

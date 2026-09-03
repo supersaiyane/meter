@@ -1,0 +1,39 @@
+{
+  "findings": [
+    {
+      "bytes_measured": false,
+      "bytes_per_run": 0.0,
+      "cost_day": 0.0,
+      "cost_month": 0.0,
+      "dashboard": "Unknown datasource",
+      "dashboard_uid": "unk-1",
+      "engine": "postgres",
+      "folder": "General",
+      "log_groups": [],
+      "measured": false,
+      "measured_runs_total": 0,
+      "namespace": null,
+      "origin": "panel",
+      "panel": "Postgres",
+      "query": "SELECT count(*) FROM orders WHERE created_at > now() - interval '1 day'",
+      "quota_impact": {
+        "detail": "",
+        "kind": null,
+        "pct": 0.0
+      },
+      "range_seconds": 3600,
+      "ref_id": "A",
+      "refresh_seconds": 300,
+      "region": "eu-west-1",
+      "risk_level": "LOW",
+      "runs_per_day": 24.0,
+      "target_label": "postgres",
+      "why": []
+    }
+  ],
+  "folder": "General",
+  "range_seconds": 3600,
+  "refresh_seconds": 300,
+  "title": "Unknown datasource",
+  "uid": "unk-1"
+}

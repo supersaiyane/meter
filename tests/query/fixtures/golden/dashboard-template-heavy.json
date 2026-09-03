@@ -1,0 +1,78 @@
+{
+  "findings": [
+    {
+      "bytes_measured": false,
+      "bytes_per_run": 107374182400.0,
+      "cost_day": 60.0,
+      "cost_month": 1800.0,
+      "dashboard": "Template heavy",
+      "dashboard_uid": "tpl-1",
+      "engine": "logs_insights",
+      "folder": "General",
+      "log_groups": [
+        "/app/$env"
+      ],
+      "measured": false,
+      "measured_runs_total": 0,
+      "namespace": null,
+      "origin": "panel",
+      "panel": "Per environment",
+      "query": "fields @timestamp | filter service = '$service' and region = '${region}' | stats count() by $groupby",
+      "quota_impact": {
+        "detail": "~120 runs/day x 5s vs 30 concurrent-query quota",
+        "kind": "Logs Insights concurrency",
+        "pct": 0.02314814814814815
+      },
+      "range_seconds": 172800,
+      "ref_id": "A",
+      "refresh_seconds": 60,
+      "region": "eu-west-1",
+      "risk_level": "HIGH",
+      "runs_per_day": 120.0,
+      "target_label": "/app/$env",
+      "why": [
+        "Logs Insights is billed per GB scanned.",
+        "Wide window (2d) increases scan per run.",
+        "Fast auto-refresh (1m) multiplies run count."
+      ]
+    },
+    {
+      "bytes_measured": false,
+      "bytes_per_run": 0.0,
+      "cost_day": 0.0012,
+      "cost_month": 0.036,
+      "dashboard": "Template heavy",
+      "dashboard_uid": "tpl-1",
+      "engine": "metric_search",
+      "folder": "General",
+      "log_groups": [],
+      "measured": false,
+      "measured_runs_total": 0,
+      "namespace": "AWS/$namespace",
+      "origin": "panel",
+      "panel": "Per region metric",
+      "query": "$metric",
+      "quota_impact": {
+        "detail": "~0.001 calls/s vs 50 TPS quota",
+        "kind": "GetMetricData TPS",
+        "pct": 0.002777777777777778
+      },
+      "range_seconds": 172800,
+      "ref_id": "A",
+      "refresh_seconds": 60,
+      "region": "$region",
+      "risk_level": "MEDIUM",
+      "runs_per_day": 120.0,
+      "target_label": "AWS/$namespace $metric",
+      "why": [
+        "Billed per metric requested per GetMetricData call.",
+        "Fast auto-refresh (1m) multiplies run count."
+      ]
+    }
+  ],
+  "folder": "General",
+  "range_seconds": 172800,
+  "refresh_seconds": 60,
+  "title": "Template heavy",
+  "uid": "tpl-1"
+}

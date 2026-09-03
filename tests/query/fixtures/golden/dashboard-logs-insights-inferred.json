@@ -1,0 +1,43 @@
+{
+  "findings": [
+    {
+      "bytes_measured": false,
+      "bytes_per_run": 53687091200.0,
+      "cost_day": 30.0,
+      "cost_month": 900.0,
+      "dashboard": "Logs Insights, inferred",
+      "dashboard_uid": "li-inferred",
+      "engine": "logs_insights",
+      "folder": "General",
+      "log_groups": [],
+      "measured": false,
+      "measured_runs_total": 0,
+      "namespace": null,
+      "origin": "panel",
+      "panel": "Slow requests",
+      "query": "fields @duration | filter @duration > 1000 | sort @duration desc",
+      "quota_impact": {
+        "detail": "~120 runs/day x 5s vs 30 concurrent-query quota",
+        "kind": "Logs Insights concurrency",
+        "pct": 0.02314814814814815
+      },
+      "range_seconds": 86400,
+      "ref_id": "A",
+      "refresh_seconds": 60,
+      "region": "eu-west-1",
+      "risk_level": "HIGH",
+      "runs_per_day": 120.0,
+      "target_label": "(log groups not specified)",
+      "why": [
+        "Logs Insights is billed per GB scanned.",
+        "Wide window (1d) increases scan per run.",
+        "Fast auto-refresh (1m) multiplies run count."
+      ]
+    }
+  ],
+  "folder": "General",
+  "range_seconds": 86400,
+  "refresh_seconds": 60,
+  "title": "Logs Insights, inferred",
+  "uid": "li-inferred"
+}

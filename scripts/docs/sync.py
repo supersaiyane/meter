@@ -169,7 +169,7 @@ def render_adrs(reg: Registry) -> str:
 def render_changes(reg: Registry) -> str:
     lines = [
         "| ID | Date | Type | What changed | Commit | Detail |",
-        "| --- | --- | --- | --- | --- | --- |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
     ]
     lines += [
         f"| {c['id']} | {c['date']} | {c['type']} | {c['what']} | `{c['commit']}` | {c['detail']} |"
@@ -302,8 +302,8 @@ def render_task_status(_reg: Registry) -> str:
     import re
 
     lines = [
-        "| Sub project | Done | Partly | Not started | Total | Plan |",
-        "| --- | --- | --- | --- | --- | --- |",
+        "| Sub project | Done | Partly | Descoped | Not started | Total | Plan |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
     ]
     detail: list[str] = []
 
@@ -313,7 +313,7 @@ def render_task_status(_reg: Registry) -> str:
             continue
         text = path.read_text(encoding="utf-8")
         blocks = re.split(rf"\n### (TASK-{sub}-\d{{3}}): ", text)
-        done = partly = notstarted = 0
+        done = partly = descoped = notstarted = 0
         rows = []
         for i in range(1, len(blocks), 2):
             tid, body = blocks[i], blocks[i + 1]
@@ -326,11 +326,24 @@ def render_task_status(_reg: Registry) -> str:
             elif "Partly" in status:
                 partly += 1
                 rows.append((tid, title, status))
-            else:
+            elif "Descoped" in status:
+                descoped += 1
+                rows.append((tid, title, status))
+            elif "Not started" in status:
                 notstarted += 1
-        total = done + partly + notstarted
+            else:
+                # Loud rather than bucketed. Every status word used to fall
+                # through to "not started" unless it said Done or Partly, so
+                # adding one silently understated the work remaining and left
+                # the task out of the table below as well.
+                raise ValueError(
+                    f"{sub} {tid}: status {status!r} is not one of Done, Partly, "
+                    "Descoped or Not started. Add a bucket for it rather than "
+                    "letting it be counted as not started."
+                )
+        total = done + partly + descoped + notstarted
         lines.append(
-            f"| {sub} | {done} | {partly} | {notstarted} | {total} | "
+            f"| {sub} | {done} | {partly} | {descoped} | {notstarted} | {total} | "
             f"[plan](../docs/plans/{sub}-implementation-plan.md) |"
         )
         if rows:

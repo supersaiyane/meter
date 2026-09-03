@@ -1,0 +1,42 @@
+{
+  "findings": [
+    {
+      "bytes_measured": false,
+      "bytes_per_run": 0.0,
+      "cost_day": 3.9999999999999996e-05,
+      "cost_month": 0.0012,
+      "dashboard": "No refresh, no range",
+      "dashboard_uid": "plain-1",
+      "engine": "metric_search",
+      "folder": "General",
+      "log_groups": [],
+      "measured": false,
+      "measured_runs_total": 0,
+      "namespace": "AWS/S3",
+      "origin": "panel",
+      "panel": "Static",
+      "query": "BucketSizeBytes",
+      "quota_impact": {
+        "detail": "~0.000 calls/s vs 50 TPS quota",
+        "kind": "GetMetricData TPS",
+        "pct": 9.259259259259259e-05
+      },
+      "range_seconds": null,
+      "ref_id": "A",
+      "refresh_seconds": 0,
+      "region": "eu-west-1",
+      "risk_level": "LOW",
+      "runs_per_day": 4.0,
+      "target_label": "AWS/S3 BucketSizeBytes",
+      "why": [
+        "Billed per metric requested per GetMetricData call.",
+        "No auto-refresh; assumed manual loads/day."
+      ]
+    }
+  ],
+  "folder": "General",
+  "range_seconds": null,
+  "refresh_seconds": 0,
+  "title": "No refresh, no range",
+  "uid": "plain-1"
+}

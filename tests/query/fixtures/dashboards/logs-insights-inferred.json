@@ -1,0 +1,31 @@
+{
+  "meta": {
+    "folderTitle": "General"
+  },
+  "dashboard": {
+    "uid": "li-inferred",
+    "title": "Logs Insights, inferred",
+    "refresh": "1m",
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Slow requests",
+        "type": "timeseries",
+        "targets": [
+          {
+            "refId": "A",
+            "expression": "fields @duration | filter @duration > 1000 | sort @duration desc"
+          }
+        ],
+        "datasource": {
+          "type": "cloudwatch",
+          "uid": "cw-1"
+        }
+      }
+    ]
+  }
+}

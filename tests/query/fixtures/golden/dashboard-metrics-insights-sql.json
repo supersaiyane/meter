@@ -1,0 +1,43 @@
+{
+  "findings": [
+    {
+      "bytes_measured": false,
+      "bytes_per_run": 0.0,
+      "cost_day": 0.0024,
+      "cost_month": 0.072,
+      "dashboard": "Metric Insights SQL",
+      "dashboard_uid": "mi-1",
+      "engine": "metrics_insights",
+      "folder": "General",
+      "log_groups": [],
+      "measured": false,
+      "measured_runs_total": 0,
+      "namespace": "AWS/EC2",
+      "origin": "panel",
+      "panel": "Top instances",
+      "query": "SELECT AVG(CPUUtilization) FROM \"AWS/EC2\" GROUP BY InstanceId ORDER BY AVG() DESC LIMIT 10",
+      "quota_impact": {
+        "detail": "~0.003 calls/s vs 50 TPS quota",
+        "kind": "GetMetricData TPS",
+        "pct": 0.005555555555555556
+      },
+      "range_seconds": 21600,
+      "ref_id": "A",
+      "refresh_seconds": 30,
+      "region": "eu-west-1",
+      "risk_level": "HIGH",
+      "runs_per_day": 240.0,
+      "target_label": "AWS/EC2",
+      "why": [
+        "Billed per metric requested per GetMetricData call.",
+        "Metric Insights (SQL) can scan many metrics per run.",
+        "Very fast auto-refresh (30s) re-runs the query continuously."
+      ]
+    }
+  ],
+  "folder": "General",
+  "range_seconds": 21600,
+  "refresh_seconds": 30,
+  "title": "Metric Insights SQL",
+  "uid": "mi-1"
+}

@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "folderTitle": "General"
+  },
+  "dashboard": {
+    "uid": "li-basic",
+    "title": "Logs Insights, basic",
+    "refresh": "30s",
+    "time": {
+      "from": "now-7d",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Errors by service",
+        "type": "timeseries",
+        "targets": [
+          {
+            "refId": "A",
+            "queryMode": "Logs",
+            "logGroups": [
+              {
+                "arn": "arn:aws:logs:eu-west-1:000000000000:log-group:/app/api:*",
+                "name": "/app/api"
+              }
+            ],
+            "expression": "fields @timestamp, @message | filter @message like /ERROR/ | stats count() by bin(5m)"
+          }
+        ],
+        "datasource": {
+          "type": "cloudwatch",
+          "uid": "cw-1"
+        }
+      }
+    ]
+  }
+}

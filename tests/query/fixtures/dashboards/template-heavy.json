@@ -1,0 +1,55 @@
+{
+  "meta": {
+    "folderTitle": "General"
+  },
+  "dashboard": {
+    "uid": "tpl-1",
+    "title": "Template heavy",
+    "refresh": "1m",
+    "time": {
+      "from": "now-2d",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Per environment",
+        "type": "timeseries",
+        "targets": [
+          {
+            "refId": "A",
+            "queryMode": "Logs",
+            "logGroups": [
+              {
+                "arn": "arn:aws:logs:eu-west-1:000000000000:log-group:/app/$env:*",
+                "name": "/app/$env"
+              }
+            ],
+            "expression": "fields @timestamp | filter service = '$service' and region = '${region}' | stats count() by $groupby"
+          }
+        ],
+        "datasource": {
+          "type": "cloudwatch",
+          "uid": "cw-1"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Per region metric",
+        "type": "timeseries",
+        "targets": [
+          {
+            "refId": "A",
+            "namespace": "AWS/$namespace",
+            "metricName": "$metric",
+            "region": "$region"
+          }
+        ],
+        "datasource": {
+          "type": "cloudwatch",
+          "uid": "cw-1"
+        }
+      }
+    ]
+  }
+}

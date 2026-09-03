@@ -1,0 +1,112 @@
+{
+  "findings": [
+    {
+      "bytes_measured": false,
+      "bytes_per_run": 0.0,
+      "cost_day": 0.0024,
+      "cost_month": 0.072,
+      "dashboard": "Multiple targets",
+      "dashboard_uid": "mt-1",
+      "engine": "metric_search",
+      "folder": "General",
+      "log_groups": [],
+      "measured": false,
+      "measured_runs_total": 0,
+      "namespace": "AWS/ELB",
+      "origin": "panel",
+      "panel": "Mixed",
+      "query": "RequestCount",
+      "quota_impact": {
+        "detail": "~0.003 calls/s vs 50 TPS quota",
+        "kind": "GetMetricData TPS",
+        "pct": 0.005555555555555556
+      },
+      "range_seconds": 86400,
+      "ref_id": "A",
+      "refresh_seconds": 30,
+      "region": "eu-west-1",
+      "risk_level": "HIGH",
+      "runs_per_day": 240.0,
+      "target_label": "AWS/ELB RequestCount",
+      "why": [
+        "Billed per metric requested per GetMetricData call.",
+        "Very fast auto-refresh (30s) re-runs the query continuously."
+      ]
+    },
+    {
+      "bytes_measured": false,
+      "bytes_per_run": 53687091200.0,
+      "cost_day": 60.0,
+      "cost_month": 1800.0,
+      "dashboard": "Multiple targets",
+      "dashboard_uid": "mt-1",
+      "engine": "logs_insights",
+      "folder": "General",
+      "log_groups": [
+        "/app/lb"
+      ],
+      "measured": false,
+      "measured_runs_total": 0,
+      "namespace": null,
+      "origin": "panel",
+      "panel": "Mixed",
+      "query": "fields @message | filter status >= 500",
+      "quota_impact": {
+        "detail": "~240 runs/day x 5s vs 30 concurrent-query quota",
+        "kind": "Logs Insights concurrency",
+        "pct": 0.0462962962962963
+      },
+      "range_seconds": 86400,
+      "ref_id": "B",
+      "refresh_seconds": 30,
+      "region": "eu-west-1",
+      "risk_level": "CRITICAL",
+      "runs_per_day": 240.0,
+      "target_label": "/app/lb",
+      "why": [
+        "Logs Insights is billed per GB scanned.",
+        "Wide window (1d) increases scan per run.",
+        "Very fast auto-refresh (30s) re-runs the query continuously."
+      ]
+    },
+    {
+      "bytes_measured": false,
+      "bytes_per_run": 0.0,
+      "cost_day": 0.0024,
+      "cost_month": 0.072,
+      "dashboard": "Multiple targets",
+      "dashboard_uid": "mt-1",
+      "engine": "metrics_insights",
+      "folder": "General",
+      "log_groups": [],
+      "measured": false,
+      "measured_runs_total": 0,
+      "namespace": "AWS/ELB",
+      "origin": "panel",
+      "panel": "Mixed",
+      "query": "SELECT SUM(RequestCount) FROM \"AWS/ELB\"",
+      "quota_impact": {
+        "detail": "~0.003 calls/s vs 50 TPS quota",
+        "kind": "GetMetricData TPS",
+        "pct": 0.005555555555555556
+      },
+      "range_seconds": 86400,
+      "ref_id": "C",
+      "refresh_seconds": 30,
+      "region": "eu-west-1",
+      "risk_level": "HIGH",
+      "runs_per_day": 240.0,
+      "target_label": "AWS/ELB",
+      "why": [
+        "Billed per metric requested per GetMetricData call.",
+        "Metric Insights (SQL) can scan many metrics per run.",
+        "Very fast auto-refresh (30s) re-runs the query continuously."
+      ]
+    }
+  ],
+  "folder": "General",
+  "range_seconds": 86400,
+  "refresh_seconds": 30,
+  "title": "Multiple targets",
+  "uid": "mt-1"
+}

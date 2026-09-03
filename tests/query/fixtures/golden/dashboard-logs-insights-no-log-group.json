@@ -1,0 +1,41 @@
+{
+  "findings": [
+    {
+      "bytes_measured": false,
+      "bytes_per_run": 2236962133.3333335,
+      "cost_day": 0.25,
+      "cost_month": 7.5,
+      "dashboard": "Logs Insights, no log group",
+      "dashboard_uid": "li-nolg",
+      "engine": "logs_insights",
+      "folder": "General",
+      "log_groups": [],
+      "measured": false,
+      "measured_runs_total": 0,
+      "namespace": null,
+      "origin": "panel",
+      "panel": "Anything",
+      "query": "fields @message | limit 20",
+      "quota_impact": {
+        "detail": "~24 runs/day x 5s vs 30 concurrent-query quota",
+        "kind": "Logs Insights concurrency",
+        "pct": 0.004629629629629629
+      },
+      "range_seconds": 3600,
+      "ref_id": "A",
+      "refresh_seconds": 300,
+      "region": "eu-west-1",
+      "risk_level": "MEDIUM",
+      "runs_per_day": 24.0,
+      "target_label": "(log groups not specified)",
+      "why": [
+        "Logs Insights is billed per GB scanned."
+      ]
+    }
+  ],
+  "folder": "General",
+  "range_seconds": 3600,
+  "refresh_seconds": 300,
+  "title": "Logs Insights, no log group",
+  "uid": "li-nolg"
+}

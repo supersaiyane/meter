@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "folderTitle": "General"
+  },
+  "dashboard": {
+    "uid": "row-1",
+    "title": "Nested rows",
+    "refresh": "1m",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "A row",
+        "type": "row",
+        "panels": [
+          {
+            "id": 2,
+            "title": "Inside the row",
+            "type": "timeseries",
+            "targets": [
+              {
+                "refId": "A",
+                "namespace": "AWS/RDS",
+                "metricName": "DatabaseConnections"
+              }
+            ],
+            "datasource": {
+              "type": "cloudwatch",
+              "uid": "cw-1"
+            }
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Outside the row",
+        "type": "timeseries",
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "up"
+          }
+        ],
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prom-1"
+        }
+      }
+    ]
+  }
+}

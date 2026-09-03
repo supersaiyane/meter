@@ -1,0 +1,136 @@
+[
+  {
+    "bytes_measured": false,
+    "bytes_per_run": 2236962133.3333335,
+    "cost_day": 15.0,
+    "cost_month": 450.0,
+    "dashboard": "(alert rule)",
+    "dashboard_uid": "",
+    "engine": "logs_insights",
+    "folder": "alerts",
+    "log_groups": [
+      "/app/api"
+    ],
+    "measured": false,
+    "measured_runs_total": 0,
+    "namespace": null,
+    "origin": "alert",
+    "panel": "Error rate above threshold",
+    "query": "fields @message | filter @message like /ERROR/ | stats count()",
+    "quota_impact": {
+      "detail": "~1,440 runs/day x 5s vs 30 concurrent-query quota",
+      "kind": "Logs Insights concurrency",
+      "pct": 0.2777777777777778
+    },
+    "range_seconds": null,
+    "ref_id": "A",
+    "refresh_seconds": 60,
+    "region": "eu-west-1",
+    "risk_level": "HIGH",
+    "runs_per_day": 1440.0,
+    "target_label": "/app/api",
+    "why": [
+      "Logs Insights is billed per GB scanned.",
+      "Alert rule: runs 24x7 regardless of viewers."
+    ]
+  },
+  {
+    "bytes_measured": false,
+    "bytes_per_run": 0.0,
+    "cost_day": 0.0288,
+    "cost_month": 0.864,
+    "dashboard": "(alert rule)",
+    "dashboard_uid": "",
+    "engine": "metric_search",
+    "folder": "alerts",
+    "log_groups": [],
+    "measured": false,
+    "measured_runs_total": 0,
+    "namespace": "AWS/EC2",
+    "origin": "alert",
+    "panel": "CPU high",
+    "query": "CPUUtilization",
+    "quota_impact": {
+      "detail": "~0.033 calls/s vs 50 TPS quota",
+      "kind": "GetMetricData TPS",
+      "pct": 0.06666666666666667
+    },
+    "range_seconds": null,
+    "ref_id": "A",
+    "refresh_seconds": 30,
+    "region": "eu-west-1",
+    "risk_level": "MEDIUM",
+    "runs_per_day": 2880.0,
+    "target_label": "AWS/EC2 CPUUtilization",
+    "why": [
+      "Billed per metric requested per GetMetricData call.",
+      "Alert rule: runs 24x7 regardless of viewers."
+    ]
+  },
+  {
+    "bytes_measured": false,
+    "bytes_per_run": 0.0,
+    "cost_day": 0.0,
+    "cost_month": 0.0,
+    "dashboard": "(alert rule)",
+    "dashboard_uid": "",
+    "engine": "prometheus",
+    "folder": "alerts",
+    "log_groups": [],
+    "measured": false,
+    "measured_runs_total": 0,
+    "namespace": null,
+    "origin": "alert",
+    "panel": "Threshold on the query above",
+    "query": "up",
+    "quota_impact": {
+      "detail": "",
+      "kind": null,
+      "pct": 0.0
+    },
+    "range_seconds": null,
+    "ref_id": "A",
+    "refresh_seconds": 60,
+    "region": "eu-west-1",
+    "risk_level": "LOW",
+    "runs_per_day": 1440.0,
+    "target_label": "Prometheus",
+    "why": [
+      "Prometheus/AMP query \u2014 no CloudWatch scan cost.",
+      "Alert rule: runs 24x7 regardless of viewers."
+    ]
+  },
+  {
+    "bytes_measured": false,
+    "bytes_per_run": 0.0,
+    "cost_day": 0.0144,
+    "cost_month": 0.432,
+    "dashboard": "(alert rule)",
+    "dashboard_uid": "",
+    "engine": "metric_search",
+    "folder": "alerts",
+    "log_groups": [],
+    "measured": false,
+    "measured_runs_total": 0,
+    "namespace": "AWS/Lambda",
+    "origin": "alert",
+    "panel": "No interval",
+    "query": "Errors",
+    "quota_impact": {
+      "detail": "~0.017 calls/s vs 50 TPS quota",
+      "kind": "GetMetricData TPS",
+      "pct": 0.03333333333333333
+    },
+    "range_seconds": null,
+    "ref_id": "A",
+    "refresh_seconds": 60,
+    "region": "eu-west-1",
+    "risk_level": "MEDIUM",
+    "runs_per_day": 1440.0,
+    "target_label": "AWS/Lambda Errors",
+    "why": [
+      "Billed per metric requested per GetMetricData call.",
+      "Alert rule: runs 24x7 regardless of viewers."
+    ]
+  }
+]

@@ -1,0 +1,42 @@
+{
+  "findings": [
+    {
+      "bytes_measured": false,
+      "bytes_per_run": 0.0,
+      "cost_day": 0.0012,
+      "cost_month": 0.036,
+      "dashboard": "Region override",
+      "dashboard_uid": "reg-1",
+      "engine": "metric_search",
+      "folder": "General",
+      "log_groups": [],
+      "measured": false,
+      "measured_runs_total": 0,
+      "namespace": "AWS/EC2",
+      "origin": "panel",
+      "panel": "Elsewhere",
+      "query": "CPUUtilization",
+      "quota_impact": {
+        "detail": "~0.001 calls/s vs 50 TPS quota",
+        "kind": "GetMetricData TPS",
+        "pct": 0.002777777777777778
+      },
+      "range_seconds": 3600,
+      "ref_id": "A",
+      "refresh_seconds": 60,
+      "region": "us-east-1",
+      "risk_level": "LOW",
+      "runs_per_day": 120.0,
+      "target_label": "AWS/EC2 CPUUtilization",
+      "why": [
+        "Billed per metric requested per GetMetricData call.",
+        "Fast auto-refresh (1m) multiplies run count."
+      ]
+    }
+  ],
+  "folder": "General",
+  "range_seconds": 3600,
+  "refresh_seconds": 60,
+  "title": "Region override",
+  "uid": "reg-1"
+}

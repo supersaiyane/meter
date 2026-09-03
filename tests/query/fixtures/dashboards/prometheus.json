@@ -1,0 +1,31 @@
+{
+  "meta": {
+    "folderTitle": "General"
+  },
+  "dashboard": {
+    "uid": "prom-1",
+    "title": "Prometheus",
+    "refresh": "15s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Request rate",
+        "type": "timeseries",
+        "targets": [
+          {
+            "refId": "A",
+            "expr": "sum(rate(http_requests_total[5m])) by (service)"
+          }
+        ],
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prom-1"
+        }
+      }
+    ]
+  }
+}

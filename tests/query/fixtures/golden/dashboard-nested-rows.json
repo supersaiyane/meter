@@ -1,0 +1,75 @@
+{
+  "findings": [
+    {
+      "bytes_measured": false,
+      "bytes_per_run": 0.0,
+      "cost_day": 0.0012,
+      "cost_month": 0.036,
+      "dashboard": "Nested rows",
+      "dashboard_uid": "row-1",
+      "engine": "metric_search",
+      "folder": "General",
+      "log_groups": [],
+      "measured": false,
+      "measured_runs_total": 0,
+      "namespace": "AWS/RDS",
+      "origin": "panel",
+      "panel": "Inside the row",
+      "query": "DatabaseConnections",
+      "quota_impact": {
+        "detail": "~0.001 calls/s vs 50 TPS quota",
+        "kind": "GetMetricData TPS",
+        "pct": 0.002777777777777778
+      },
+      "range_seconds": 3600,
+      "ref_id": "A",
+      "refresh_seconds": 60,
+      "region": "eu-west-1",
+      "risk_level": "LOW",
+      "runs_per_day": 120.0,
+      "target_label": "AWS/RDS DatabaseConnections",
+      "why": [
+        "Billed per metric requested per GetMetricData call.",
+        "Fast auto-refresh (1m) multiplies run count."
+      ]
+    },
+    {
+      "bytes_measured": false,
+      "bytes_per_run": 0.0,
+      "cost_day": 0.0,
+      "cost_month": 0.0,
+      "dashboard": "Nested rows",
+      "dashboard_uid": "row-1",
+      "engine": "prometheus",
+      "folder": "General",
+      "log_groups": [],
+      "measured": false,
+      "measured_runs_total": 0,
+      "namespace": null,
+      "origin": "panel",
+      "panel": "Outside the row",
+      "query": "up",
+      "quota_impact": {
+        "detail": "",
+        "kind": null,
+        "pct": 0.0
+      },
+      "range_seconds": 3600,
+      "ref_id": "A",
+      "refresh_seconds": 60,
+      "region": "eu-west-1",
+      "risk_level": "LOW",
+      "runs_per_day": 120.0,
+      "target_label": "Prometheus",
+      "why": [
+        "Prometheus/AMP query \u2014 no CloudWatch scan cost.",
+        "Fast auto-refresh (1m) multiplies run count."
+      ]
+    }
+  ],
+  "folder": "General",
+  "range_seconds": 3600,
+  "refresh_seconds": 60,
+  "title": "Nested rows",
+  "uid": "row-1"
+}

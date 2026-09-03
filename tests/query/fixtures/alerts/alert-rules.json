@@ -1,0 +1,105 @@
+[
+  {
+    "uid": "alert-logs",
+    "title": "Error rate above threshold",
+    "folderUID": "alerts",
+    "interval": "1m",
+    "data": [
+      {
+        "refId": "A",
+        "relativeTimeRange": {
+          "from": 3600,
+          "to": 0
+        },
+        "model": {
+          "refId": "A",
+          "queryMode": "Logs",
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "cw-1"
+          },
+          "logGroups": [
+            {
+              "arn": "arn:aws:logs:eu-west-1:000000000000:log-group:/app/api:*",
+              "name": "/app/api"
+            }
+          ],
+          "expression": "fields @message | filter @message like /ERROR/ | stats count()"
+        }
+      }
+    ]
+  },
+  {
+    "uid": "alert-metric",
+    "title": "CPU high",
+    "folderUID": "alerts",
+    "interval": "30s",
+    "data": [
+      {
+        "refId": "A",
+        "relativeTimeRange": {
+          "from": 300,
+          "to": 0
+        },
+        "model": {
+          "refId": "A",
+          "namespace": "AWS/EC2",
+          "metricName": "CPUUtilization",
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "cw-1"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "alert-expr",
+    "title": "Threshold on the query above",
+    "folderUID": "alerts",
+    "interval": "1m",
+    "data": [
+      {
+        "refId": "A",
+        "model": {
+          "refId": "A",
+          "expr": "up",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prom-1"
+          }
+        }
+      },
+      {
+        "refId": "B",
+        "model": {
+          "refId": "B",
+          "type": "threshold",
+          "datasource": {
+            "type": "__expr__",
+            "uid": "__expr__"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "uid": "alert-no-interval",
+    "title": "No interval",
+    "folderUID": "alerts",
+    "data": [
+      {
+        "refId": "A",
+        "model": {
+          "refId": "A",
+          "namespace": "AWS/Lambda",
+          "metricName": "Errors",
+          "datasource": {
+            "type": "cloudwatch",
+            "uid": "cw-1"
+          }
+        }
+      }
+    ]
+  }
+]

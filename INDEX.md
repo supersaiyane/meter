@@ -215,7 +215,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
 | ID | Date | Type | What changed | Commit | Detail |
-| --- | --- | --- | --- | --- | --- |
+| --- | --- | --- | --- | --- | --- | --- |
 | CHG-0001 | 2026-08-23 | Process | Repository initialized. Goal, roadmap, architecture, eight ADRs, P0 specification, status, issues, lessons, project map, checkpoint | `f6d7603 to 9adb1aa` | [docs/checkpoint.md](docs/checkpoint.md) |
 | CHG-0002 | 2026-08-23 | Process | Checkpoint log and project map moved to the paths the session enforcement script requires | `a3ea1cf` | [docs/checkpoint.md](docs/checkpoint.md) |
 | CHG-0003 | 2026-08-23 | Infrastructure | Build and deployment layer added: Makefile, three Dockerfiles, docker-compose, GitLab pipeline, deployment document | `9f9e5ff` | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
@@ -282,6 +282,8 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0064 | 2026-08-29 | Feature | TASK-P0-033, four SLOs, ten alarms of which four page, three dashboards provisioned as code, and three runbooks. The plan said two alerts page and the specification's own table says four | `eb8a507` | [Observability](docs/10-OBSERVABILITY.md) |
 | CHG-0065 | 2026-08-31 | Fix | The security report never read trivy's infrastructure as code findings. Seven were dropped and the gate printed PASS over them. Parser fixed, four real findings fixed, five deliberate ones accepted with a reachability argument | `74e9d28` | [ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md) |
 | CHG-0066 | 2026-09-02 | Chore | Lint and type check every directory that holds Python. scripts, migrations and the test suite were outside one or both, and the scripts that were missed are the ones implementing the gates. A test now asks the filesystem rather than trusting the list | `045b5b8` | [Change control](docs/03-CHANGE-CONTROL.md) |
+| CHG-0067 | 2026-09-02 | Decision | OPEN-04 re answered as Amazon Managed Grafana only, superseding the 2026-08-23 answer of all three behind per tenant flags. TASK-P2-007 and TASK-P2-008 descoped rather than deleted, and ISS-024 closed as by design rather than fixed | `pending` | [P2 plan](docs/plans/P2-implementation-plan.md) |
+| CHG-0068 | 2026-09-02 | Feature | TASK-P2-001, the prototype imported byte identical and its behaviour pinned by 15 golden files across 14 dashboards and 4 alert rules. Runs entirely offline through the prototype's own switches rather than through mocks | `pending` | [P2 plan](docs/plans/P2-implementation-plan.md) |
 
 <!-- generated:changes end -->
 
@@ -292,7 +294,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**88 FIXED, 37 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**89 FIXED, 37 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -348,7 +350,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-017 | MEDIUM | A local identity provider reaching production is a total auth bypass | FIXED | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 11 |
 | ISS-018 | MEDIUM | Meter's own ingestion makes paid API calls and can become the cost problem | FIXED | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.5 |
 | ISS-023 | MEDIUM | History as S3 snapshots cannot be queried or joined | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
-| ISS-024 | MEDIUM | Only Amazon Managed Grafana is supported | OPEN | Blocked on OPEN-04 |
+| ISS-024 | MEDIUM | Only Amazon Managed Grafana is supported | BY DESIGN | Raised against the prototype as a gap. OPEN-04 was re answered on 2026-09-02 as Amazon Managed Grafana only, so this is the decision rather than a defect. It is not FIXED: nothing was built. Reopen it if self hosted or Grafana Cloud is ever wanted, and reinstate TASK-P2-007 and TASK-P2-008 with it |
 | ISS-025 | MEDIUM | The pattern is Grafana specific but the failure mode is not | OPEN | FEAT-019 |
 | ISS-030 | MEDIUM | No data freshness contract | OPEN | FEAT-006 |
 | ISS-031 | MEDIUM | No audit log for scope evaluation | OPEN | FEAT-007 |
@@ -408,6 +410,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-126 | MEDIUM | scripts/ and migrations/ were outside PY_SRC, so neither was linted or format checked, and mypy was pointed at four packages by name, silently skipping finops_mcp, both directories and the whole test suite | FIXED | 10 ruff findings and 36 mypy errors had accumulated unreported. Two were real: a list annotated flat while it held groups, and load_allowlist declaring a str key while the code keyed on a tuple, which is the only place a reader learns what an entry must match on. tests/scripts/test_lint_scope.py now asks the filesystem which directories hold Python and fails when one is not covered |
 | ISS-127 | MEDIUM | Twelve type ignore comments in the test suite were stale, silencing errors that no longer existed and standing ready to silence whatever landed on those lines next | FIXED | Found the moment mypy was pointed at tests/ for the first time. All twelve removed rather than narrowed, and the four genuinely needed ones now carry a comment saying why |
 | ISS-128 | MEDIUM | The memory gate rejected the one resume vector format CLAUDE.md asks for. It read `file.py:88` as a filename ending in colon eighty eight, so every citation with a line number failed as a path that does not exist | FIXED | CLAUDE.md asks a resume vector for exact files and line numbers. The suffix is now split off and the line checked against the length of the file, so a citation past the end of a file fails too. Probed by citing line 9999 and confirming it is caught |
+| ISS-130 | MEDIUM | sync.py counted any task status it did not recognise as not started, so descoping two P2 tasks left the plan reading as 22 tasks of work remaining rather than 20, and the descoped tasks did not appear in the exceptions table either | FIXED | A Descoped bucket added, and an unrecognised status now raises rather than being absorbed. Probed by setting a status of Parked and confirming the generator refuses it |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
@@ -423,6 +426,8 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-113 | LOW | make lint failed on a terraform directory that Wave D has not created yet, leaving verify red for a reason unrelated to the change under review | FIXED | [P0 plan](docs/plans/P0-implementation-plan.md) TASK-P0-002 |
 | ISS-117 | LOW | Docstring coverage on public symbols is 70.8 percent and the gate is set to that figure, so it blocks a drop but does not yet require 80 to match the test coverage floor | OPEN | The gap is real work rather than noise: the missing entries are classes and public methods such as OrgRepository and its list_tree, not restatements of a name. Raise fail-under in `[tool.interrogate]` as they are written. Never lower it |
 | ISS-121 | LOW | The plan and the runbook index both said two alerts page. The alert table in docs/10-OBSERVABILITY.md marks four | FIXED | Both were misreadings of the sentence under the table: two of the four are unusual, which is not the same as two being the total. The table was followed, the two summaries corrected, and a test now holds the paging set against the four names |
+| ISS-129 | LOW | The QuerySurface port has one implementation rather than three, so the abstraction is carrying no weight and could be read as speculative generality | BY DESIGN | Kept deliberately. The port exists for the fake, which is what lets the cost model be tested without a Grafana at all, and that is weight enough on its own. A second real strategy is a connector rather than a rewrite if OPEN-04 is ever re answered again |
+| ISS-131 | LOW | The prototype emits em dashes into generated UI copy, which the project's writing rules forbid, and its copy is excluded from make check-writing while it is a frozen baseline | OPEN | Six occurrences in finops_query/_legacy/sample_lambda.py, four of them in HTML the renderer produces. Not fixable now: the file is byte identical by design and pinned by hash. Fixed when the renderer is rewritten, and the exclusion in the Makefile goes with the directory at TASK-P2-003 |
 
 <!-- generated:issues end -->
 
@@ -438,7 +443,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | OPEN-01 | Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS relying party | PARKED at user request | Production login. Not the P0 build | [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md) |
 | OPEN-02 | Single payer or multiple payer accounts | OPEN | P1 design | [tasks/ISSUES.md](tasks/ISSUES.md) |
 | OPEN-03 | Is Business or Enterprise support available | OPEN | P3 and P5 coverage | [tasks/ISSUES.md](tasks/ISSUES.md) |
-| OPEN-04 | Amazon Managed Grafana only, or self hosted and Grafana Cloud too. ANSWERED 2026-08-23: all three, behind per tenant flags | ANSWERED | nothing | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 4.1 |
+| OPEN-04 | Amazon Managed Grafana only, or self hosted and Grafana Cloud too. ANSWERED 2026-08-23: all three, behind per tenant flags. RE ANSWERED 2026-09-02, superseding that: Amazon Managed Grafana only. The earlier answer is kept rather than overwritten, because the two connection strategies it authorised were planned as TASK-P2-007 and TASK-P2-008 and those tasks are now descoped rather than deleted, so the record has to say what changed | ANSWERED | nothing | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 4.1 |
 | OPEN-05 | Jira or ServiceNow for the recommendation lifecycle | OPEN | P3 design | [tasks/ISSUES.md](tasks/ISSUES.md) |
 | OPEN-06 | Which regions beyond Ireland and London. ANSWERED 2026-08-23: those two only, eu-west-1 and eu-west-2 | ANSWERED | nothing | Set in METER_REGIONS, see .env.example section 3 |
 

@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "folderTitle": "General"
+  },
+  "dashboard": {
+    "uid": "plain-1",
+    "title": "No refresh, no range",
+    "refresh": null,
+    "time": {
+      "from": null,
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Static",
+        "type": "timeseries",
+        "targets": [
+          {
+            "refId": "A",
+            "namespace": "AWS/S3",
+            "metricName": "BucketSizeBytes"
+          }
+        ],
+        "datasource": {
+          "type": "cloudwatch",
+          "uid": "cw-1"
+        }
+      }
+    ]
+  }
+}

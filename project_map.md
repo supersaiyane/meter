@@ -222,6 +222,12 @@ meter/
 │   ├── env.py                 URL from settings, overridable by a test
 │   └── versions/              0001_initial, raw SQL, faithful to 07-DATA-MODEL
 ├── finops-web/                PLANNED  React and TypeScript
+├── finops_query/              IN BUILD  P2, query cost governance
+│   └── _legacy/               the prototype, byte identical and pinned by hash.
+│                              Excluded from ruff, mypy, coverage, the writing
+│                              rule and the docstring gate, all for one reason
+│                              and all removed together at TASK-P2-003
+│
 ├── finops_mcp/                IN BUILD  MCP server, a facade over the HTTP API
 │   ├── api.py                the only way out of this package, and it is HTTP
 │   ├── tools.py              six rows. Schemas generated from the API's own models

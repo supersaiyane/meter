@@ -1,0 +1,45 @@
+{
+  "findings": [
+    {
+      "bytes_measured": false,
+      "bytes_per_run": 375809638400.0,
+      "cost_day": 420.0,
+      "cost_month": 12600.0,
+      "dashboard": "Logs Insights, basic",
+      "dashboard_uid": "li-basic",
+      "engine": "logs_insights",
+      "folder": "General",
+      "log_groups": [
+        "/app/api"
+      ],
+      "measured": false,
+      "measured_runs_total": 0,
+      "namespace": null,
+      "origin": "panel",
+      "panel": "Errors by service",
+      "query": "fields @timestamp, @message | filter @message like /ERROR/ | stats count() by bin(5m)",
+      "quota_impact": {
+        "detail": "~240 runs/day x 5s vs 30 concurrent-query quota",
+        "kind": "Logs Insights concurrency",
+        "pct": 0.0462962962962963
+      },
+      "range_seconds": 604800,
+      "ref_id": "A",
+      "refresh_seconds": 30,
+      "region": "eu-west-1",
+      "risk_level": "CRITICAL",
+      "runs_per_day": 240.0,
+      "target_label": "/app/api",
+      "why": [
+        "Logs Insights is billed per GB scanned.",
+        "Very wide window (1w) scans a large volume each run.",
+        "Very fast auto-refresh (30s) re-runs the query continuously."
+      ]
+    }
+  ],
+  "folder": "General",
+  "range_seconds": 604800,
+  "refresh_seconds": 30,
+  "title": "Logs Insights, basic",
+  "uid": "li-basic"
+}

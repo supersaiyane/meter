@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "folderTitle": "General"
+  },
+  "dashboard": {
+    "uid": "li-nolg",
+    "title": "Logs Insights, no log group",
+    "refresh": "5m",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Anything",
+        "type": "timeseries",
+        "targets": [
+          {
+            "refId": "A",
+            "queryMode": "Logs",
+            "expression": "fields @message | limit 20"
+          }
+        ],
+        "datasource": {
+          "type": "cloudwatch",
+          "uid": "cw-1"
+        }
+      }
+    ]
+  }
+}

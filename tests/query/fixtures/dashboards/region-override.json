@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "folderTitle": "General"
+  },
+  "dashboard": {
+    "uid": "reg-1",
+    "title": "Region override",
+    "refresh": "1m",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Elsewhere",
+        "type": "timeseries",
+        "targets": [
+          {
+            "refId": "A",
+            "namespace": "AWS/EC2",
+            "metricName": "CPUUtilization",
+            "region": "us-east-1"
+          }
+        ],
+        "datasource": {
+          "type": "cloudwatch",
+          "uid": "cw-1"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "folderTitle": "General"
+  },
+  "dashboard": {
+    "uid": "mi-2",
+    "title": "Metric Insights, inferred",
+    "refresh": "10s",
+    "time": {
+      "from": "now-12h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Lambda duration",
+        "type": "timeseries",
+        "targets": [
+          {
+            "refId": "A",
+            "namespace": "AWS/Lambda",
+            "sqlExpression": "SELECT MAX(Duration) FROM SCHEMA(\"AWS/Lambda\", FunctionName)"
+          }
+        ],
+        "datasource": {
+          "type": "cloudwatch",
+          "uid": "cw-1"
+        }
+      }
+    ]
+  }
+}

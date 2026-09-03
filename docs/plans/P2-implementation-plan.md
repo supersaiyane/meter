@@ -48,7 +48,7 @@ thing that actually stops the bleed.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-02 |
 | Implements | P2 spec section 1 |
 | Depends on | none |
 | Estimate | M |
@@ -60,20 +60,49 @@ it is changed.
 
 | Path | Action |
 | --- | --- |
-| `finops_query/_legacy/sample_lambda.py` | create, unmodified copy |
-| `tests/query/fixtures/dashboards/*.json` | create |
-| `tests/query/fixtures/golden/*.json` | create |
-| `tests/query/test_legacy_baseline.py` | create |
+| `finops_query/_legacy/sample_lambda.py` | created, byte identical, sha256 `80854e42` |
+| `tests/query/fixtures/dashboards/*.json` | created, 14 |
+| `tests/query/fixtures/alerts/alert-rules.json` | created, 4 rules |
+| `tests/query/fixtures/golden/*.json` | created, 15 |
+| `tests/query/conftest.py` | created, the offline harness |
+| `tests/query/test_legacy_baseline.py` | created |
+| `tests/query/test_legacy_is_frozen.py` | created, not planned. See deviation 2 |
 
 **Acceptance criteria.**
 
-- [ ] At least 12 fixture dashboards covering every engine: Logs Insights,
+- [x] At least 12 fixture dashboards covering every engine: Logs Insights,
       metric search, Metric Insights SQL, PromQL, plus a malformed panel, a
-      template heavy panel and an alert rule
-- [ ] The unmodified prototype runs against each fixture and its output is
+      template heavy panel and an alert rule. Fourteen, and a test asserts both
+      the count and that all four engines actually appear in the output
+- [x] The unmodified prototype runs against each fixture and its output is
       committed as a golden file
-- [ ] `test_legacy_baseline.py` asserts the prototype reproduces every golden
+- [x] `test_legacy_baseline.py` asserts the prototype reproduces every golden
       file exactly
+
+**Deviations.**
+
+1. **Only two entry points are pinned**, `analyze_dashboard` and
+   `analyze_alert_rules`. They are the only parts of the file reachable without
+   AWS, because every other path opens a client. Pinning the rest would mean
+   mocking boto3 inside a baseline test, and a baseline whose shape is decided
+   by the mocks is not a baseline. The harness passes `None` as the session and
+   a second test passes an object that raises on any attribute access, so a
+   reintroduced AWS call fails rather than quietly finding ambient credentials.
+2. **The copy is pinned by hash.** `_legacy` is excluded from ruff, from mypy
+   and from coverage, and the cost of those three exclusions is that nothing
+   else in the build would notice the file being edited. A golden regenerated
+   alongside an edit would hide it too.
+3. **Regeneration is deliberately awkward.** It needs
+   `METER_REGENERATE_GOLDEN=yes-i-mean-it` rather than a pytest flag, and a
+   missing golden fails rather than being created. A test that writes its own
+   expectation on first run passes on every first run, including the one after
+   somebody deletes the file to make a failure go away.
+4. **Two defects found in this project's own tooling**, both surfaced by adding
+   the package. `sync.py` counted any task status it did not recognise as "not
+   started", so descoping TASK-P2-007 and 008 read as 22 tasks remaining rather
+   than 20. And `finops_query` was invisible to the linter until the scope test
+   written on 2026-09-02 failed on it, which is the first time that test caught
+   something it was not written for. ISS-130.
 
 **Do not.**
 
@@ -87,8 +116,13 @@ it is changed.
 **Evidence.**
 
 ```bash
-pytest tests/query/test_legacy_baseline.py -v
+pytest tests/query -v
 ```
+
+21 tests pass. The baseline records, among other things, that a 30 second
+refresh over a 7 day window on a 50 GB per day log group models at 12,600 USD
+per month and is rated CRITICAL. That figure is modelled, not measured, and
+TASK-P2-020 is what back tests it against a bill.
 
 ---
 
@@ -251,9 +285,15 @@ instance case has its own test in the spec and needs a fixture that produces it.
 
 ### TASK-P2-007: the self hosted connection strategy
 
+**Descoped 2026-09-02.** OPEN-04 was re answered as Amazon Managed Grafana only,
+superseding the 2026-08-23 answer of all three behind per tenant flags. The task
+is kept rather than deleted, because deleting it loses the record that the
+option was considered and priced. Reinstate it with ISS-024 if the answer
+changes again.
+
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Descoped, 2026-09-02 |
 | Delivers | FEAT-011 |
 | Depends on | TASK-P2-005 |
 | Estimate | M |
@@ -277,9 +317,15 @@ instance case has its own test in the spec and needs a fixture that produces it.
 
 ### TASK-P2-008: the Grafana Cloud connection strategy
 
+**Descoped 2026-09-02.** OPEN-04 was re answered as Amazon Managed Grafana only,
+superseding the 2026-08-23 answer of all three behind per tenant flags. The task
+is kept rather than deleted, because deleting it loses the record that the
+option was considered and priced. Reinstate it with ISS-024 if the answer
+changes again.
+
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Descoped, 2026-09-02 |
 | Delivers | FEAT-011 |
 | Depends on | TASK-P2-005 |
 | Estimate | S |

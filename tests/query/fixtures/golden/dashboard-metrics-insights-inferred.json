@@ -1,0 +1,43 @@
+{
+  "findings": [
+    {
+      "bytes_measured": false,
+      "bytes_per_run": 0.0,
+      "cost_day": 0.0072,
+      "cost_month": 0.216,
+      "dashboard": "Metric Insights, inferred",
+      "dashboard_uid": "mi-2",
+      "engine": "metrics_insights",
+      "folder": "General",
+      "log_groups": [],
+      "measured": false,
+      "measured_runs_total": 0,
+      "namespace": "AWS/Lambda",
+      "origin": "panel",
+      "panel": "Lambda duration",
+      "query": "SELECT MAX(Duration) FROM SCHEMA(\"AWS/Lambda\", FunctionName)",
+      "quota_impact": {
+        "detail": "~0.008 calls/s vs 50 TPS quota",
+        "kind": "GetMetricData TPS",
+        "pct": 0.016666666666666666
+      },
+      "range_seconds": 43200,
+      "ref_id": "A",
+      "refresh_seconds": 10,
+      "region": "eu-west-1",
+      "risk_level": "HIGH",
+      "runs_per_day": 720.0,
+      "target_label": "AWS/Lambda",
+      "why": [
+        "Billed per metric requested per GetMetricData call.",
+        "Metric Insights (SQL) can scan many metrics per run.",
+        "Very fast auto-refresh (10s) re-runs the query continuously."
+      ]
+    }
+  ],
+  "folder": "General",
+  "range_seconds": 43200,
+  "refresh_seconds": 10,
+  "title": "Metric Insights, inferred",
+  "uid": "mi-2"
+}

@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 50 total, 8 specified, 7 in build, 5 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 66 recorded |
-| Issues | 88 fixed, 37 open, 0 parked |
+| Changes | 68 recorded |
+| Issues | 89 fixed, 37 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -69,10 +69,10 @@ ISS-003.
 <!-- generated:task-status start -->
 <!-- This block is GENERATED from docs/plans/ by scripts/docs/sync.py. Edit docs/plans/, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-| Sub project | Done | Partly | Not started | Total | Plan |
-| --- | --- | --- | --- | --- | --- |
-| P0 | 35 | 0 | 0 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P2 | 0 | 0 | 22 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
+| Sub project | Done | Partly | Descoped | Not started | Total | Plan |
+| --- | --- | --- | --- | --- | --- | --- |
+| P0 | 35 | 0 | 0 | 0 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P2 | 1 | 0 | 2 | 19 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -113,6 +113,14 @@ ISS-003.
 | `TASK-P0-030` | Done, 2026-08-27 | MCP server scaffold and the four P0 tools |
 | `TASK-P0-031` | Done, 2026-08-28 | wire the documentation and graph gates into the pipeline |
 | `TASK-P0-033` | Done, 2026-08-29, not applied | SLOs, alerts and runbooks |
+
+**P2, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P2-001` | Done, 2026-09-02 | import the prototype and pin its behaviour |
+| `TASK-P2-007` | Descoped, 2026-09-02 | the self hosted connection strategy |
+| `TASK-P2-008` | Descoped, 2026-09-02 | the Grafana Cloud connection strategy |
 
 <!-- generated:task-status end -->
 

@@ -1,0 +1,42 @@
+{
+  "findings": [
+    {
+      "bytes_measured": false,
+      "bytes_per_run": 0.0,
+      "cost_day": 0.0,
+      "cost_month": 0.0,
+      "dashboard": "Prometheus",
+      "dashboard_uid": "prom-1",
+      "engine": "prometheus",
+      "folder": "General",
+      "log_groups": [],
+      "measured": false,
+      "measured_runs_total": 0,
+      "namespace": null,
+      "origin": "panel",
+      "panel": "Request rate",
+      "query": "sum(rate(http_requests_total[5m])) by (service)",
+      "quota_impact": {
+        "detail": "",
+        "kind": null,
+        "pct": 0.0
+      },
+      "range_seconds": 3600,
+      "ref_id": "A",
+      "refresh_seconds": 15,
+      "region": "eu-west-1",
+      "risk_level": "MEDIUM",
+      "runs_per_day": 480.0,
+      "target_label": "Prometheus",
+      "why": [
+        "Prometheus/AMP query \u2014 no CloudWatch scan cost.",
+        "Very fast auto-refresh (15s) re-runs the query continuously."
+      ]
+    }
+  ],
+  "folder": "General",
+  "range_seconds": 3600,
+  "refresh_seconds": 15,
+  "title": "Prometheus",
+  "uid": "prom-1"
+}

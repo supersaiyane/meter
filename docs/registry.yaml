@@ -909,6 +909,22 @@ changes:
     the gates. A test now asks the filesystem rather than trusting the list
   commit: '045b5b8'
   detail: '[Change control](docs/03-CHANGE-CONTROL.md)'
+- id: CHG-0067
+  date: '2026-09-02'
+  type: Decision
+  what: OPEN-04 re answered as Amazon Managed Grafana only, superseding the 2026-08-23 answer of
+    all three behind per tenant flags. TASK-P2-007 and TASK-P2-008 descoped rather than deleted,
+    and ISS-024 closed as by design rather than fixed
+  commit: pending
+  detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+- id: CHG-0068
+  date: '2026-09-02'
+  type: Feature
+  what: TASK-P2-001, the prototype imported byte identical and its behaviour pinned by 15 golden
+    files across 14 dashboards and 4 alert rules. Runs entirely offline through the prototype's
+    own switches rather than through mocks
+  commit: pending
+  detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1013,8 +1029,11 @@ issues:
 - id: ISS-024
   severity: MEDIUM
   summary: Only Amazon Managed Grafana is supported
-  status: OPEN
-  detail: Blocked on OPEN-04
+  status: BY DESIGN
+  detail: 'Raised against the prototype as a gap. OPEN-04 was re answered on 2026-09-02 as Amazon
+    Managed Grafana only, so this is the decision rather than a defect. It is not FIXED: nothing
+    was built. Reopen it if self hosted or Grafana Cloud is ever wanted, and reinstate TASK-P2-007
+    and TASK-P2-008 with it'
 - id: ISS-025
   severity: MEDIUM
   summary: The pattern is Grafana specific but the failure mode is not
@@ -1677,6 +1696,31 @@ issues:
   detail: CLAUDE.md asks a resume vector for exact files and line numbers. The suffix is now split
     off and the line checked against the length of the file, so a citation past the end of a file
     fails too. Probed by citing line 9999 and confirming it is caught
+- id: ISS-129
+  severity: LOW
+  status: BY DESIGN
+  summary: The QuerySurface port has one implementation rather than three, so the abstraction is
+    carrying no weight and could be read as speculative generality
+  detail: 'Kept deliberately. The port exists for the fake, which is what lets the cost model be
+    tested without a Grafana at all, and that is weight enough on its own. A second real strategy
+    is a connector rather than a rewrite if OPEN-04 is ever re answered again'
+- id: ISS-130
+  severity: MEDIUM
+  status: FIXED
+  summary: sync.py counted any task status it did not recognise as not started, so descoping two
+    P2 tasks left the plan reading as 22 tasks of work remaining rather than 20, and the descoped
+    tasks did not appear in the exceptions table either
+  detail: A Descoped bucket added, and an unrecognised status now raises rather than being
+    absorbed. Probed by setting a status of Parked and confirming the generator refuses it
+- id: ISS-131
+  severity: LOW
+  status: OPEN
+  summary: The prototype emits em dashes into generated UI copy, which the project's writing
+    rules forbid, and its copy is excluded from make check-writing while it is a frozen baseline
+  detail: 'Six occurrences in finops_query/_legacy/sample_lambda.py, four of them in HTML the
+    renderer produces. Not fixable now: the file is byte identical by design and pinned by hash.
+    Fixed when the renderer is rewritten, and the exclusion in the Makefile goes with the
+    directory at TASK-P2-003'
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS
@@ -1695,8 +1739,11 @@ open_questions:
   blocks: P3 and P5 coverage
   detail: '[tasks/ISSUES.md](tasks/ISSUES.md)'
 - id: OPEN-04
-  question: 'Amazon Managed Grafana only, or self hosted and Grafana Cloud too. ANSWERED 2026-08-23: all
-    three, behind per tenant flags'
+  question: 'Amazon Managed Grafana only, or self hosted and Grafana Cloud too. ANSWERED 2026-08-23:
+    all three, behind per tenant flags. RE ANSWERED 2026-09-02, superseding that: Amazon Managed
+    Grafana only. The earlier answer is kept rather than overwritten, because the two connection
+    strategies it authorised were planned as TASK-P2-007 and TASK-P2-008 and those tasks are now
+    descoped rather than deleted, so the record has to say what changed'
   status: ANSWERED
   blocks: nothing
   detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 4.1'

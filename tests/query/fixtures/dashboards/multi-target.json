@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "folderTitle": "General"
+  },
+  "dashboard": {
+    "uid": "mt-1",
+    "title": "Multiple targets",
+    "refresh": "30s",
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Mixed",
+        "type": "timeseries",
+        "targets": [
+          {
+            "refId": "A",
+            "namespace": "AWS/ELB",
+            "metricName": "RequestCount"
+          },
+          {
+            "refId": "B",
+            "queryMode": "Logs",
+            "logGroups": [
+              {
+                "arn": "arn:aws:logs:eu-west-1:000000000000:log-group:/app/lb:*",
+                "name": "/app/lb"
+              }
+            ],
+            "expression": "fields @message | filter status >= 500"
+          },
+          {
+            "refId": "C",
+            "metricQueryType": 1,
+            "namespace": "AWS/ELB",
+            "sqlExpression": "SELECT SUM(RequestCount) FROM \"AWS/ELB\""
+          }
+        ],
+        "datasource": {
+          "type": "cloudwatch",
+          "uid": "cw-1"
+        }
+      }
+    ]
+  }
+}

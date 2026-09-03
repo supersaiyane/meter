@@ -65,6 +65,10 @@ LESSON_FIELDS = ("Mistake", "Correction", "Rule", "Triggers")
 PLACEHOLDERS = ("TODO", "FIXME", "XXX")
 
 BACKTICKED = re.compile(r"`([^`]+)`")
+#: A git object name, which is 7 to 40 hex characters. Bounded at 40 on purpose:
+#: a 64 character token is a sha256 file digest rather than a commit, and
+#: checkpoint entries do cite those. Widening this would send every file hash to
+#: `git cat-file` and report each one as a commit that does not resolve.
 SHA = re.compile(r"^[0-9a-f]{7,40}$")
 IDENTIFIER = re.compile(
     r"\b(?:TASK-P\d-\d{3}|ISS-\d{3}|ADR-\d{4}|CHG-\d{4}|FEAT-\d{3}|OPEN-\d{2})\b"
