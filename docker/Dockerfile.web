@@ -35,6 +35,11 @@ ARG NGINX_VERSION=1.30
 # reg.mini.dev/node:22-dev, pinned per ADR-0010. See docker/base-images.lock
 FROM --platform=${BUILDPLATFORM} reg.mini.dev/node@sha256:bec08ecc878a1735f8b0ac2e49ea31c4b8a5f1b1bca9fd226d17991d0626bc3e AS builder
 
+# Same reason as the python images: the base image defaults to a non root user
+# and this stage writes into /build. The builder is discarded and the runtime
+# stage below keeps USER 65532:65532, so ADR-0010's posture is untouched.
+USER root
+
 WORKDIR /build
 
 COPY finops-web/package.json finops-web/package-lock.json ./

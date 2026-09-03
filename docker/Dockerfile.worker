@@ -39,6 +39,13 @@ ARG BUILDPLATFORM
 # reg.mini.dev/python:3.13-dev, pinned per ADR-0010. See docker/base-images.lock
 FROM --platform=${BUILDPLATFORM} reg.mini.dev/python@sha256:4253ed59c60f7c926330ee548b5c014b5ad7551f60d5feaa10a4a98f6d951a15 AS builder
 
+# The base image defaults to a non root user, and this stage has to write
+# /opt/venv. Root here is safe and is not the posture ADR-0010 protects: the
+# builder is discarded, nothing from it runs, and the runtime stage below keeps
+# USER 65532:65532. Without this the build fails on `Permission denied:
+# /opt/venv` and no image is produced at all. ISS-143.
+USER root
+
 ENV PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PYTHONDONTWRITEBYTECODE=1
@@ -50,13 +57,24 @@ WORKDIR /build
 # it and deleting it afterwards. Smaller image, one fewer layer. The cost is a
 # slightly slower first import, which is irrelevant for a long running process.
 COPY pyproject.toml ./
+# pyproject declares six packages, and setuptools needs every one of them to
+# exist before it can build metadata. Empty ones are enough for the dependency
+# resolve below, and the real sources land in the COPY that follows. Without
+# this the dependency layer fails on `package directory 'finops_core' does not
+# exist`, which is why this stage never built. ISS-143.
+RUN mkdir -p finops_core finops_providers finops_ingest finops_api finops_mcp finops_query \
+ && touch finops_core/__init__.py finops_providers/__init__.py finops_ingest/__init__.py finops_api/__init__.py finops_mcp/__init__.py finops_query/__init__.py
+
 RUN python -m venv /opt/venv \
  && /opt/venv/bin/pip install --upgrade pip setuptools wheel \
  && /opt/venv/bin/pip install --no-compile .
 
-COPY finops_core/      ./finops_core/
-COPY finops_providers/ ./finops_providers/
-COPY finops_ingest/    ./finops_ingest/
+COPY finops_core/       ./finops_core/
+COPY finops_providers/  ./finops_providers/
+COPY finops_ingest/     ./finops_ingest/
+COPY finops_api/        ./finops_api/
+COPY finops_mcp/        ./finops_mcp/
+COPY finops_query/      ./finops_query/
 COPY alembic.ini       ./
 COPY migrations/       ./migrations/
 

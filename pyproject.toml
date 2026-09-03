@@ -51,14 +51,20 @@ dev = [
 requires = ["setuptools>=75"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = [
-    "finops_core",
-    "finops_providers",
-    "finops_ingest",
-    "finops_api",
-    "finops_mcp",
-    "finops_query",
+# Found rather than listed, because an explicit list is a list of TOP LEVEL
+# packages only: subpackages like finops_api.db and finops_ingest.collectors
+# were never installed into the wheel. Nothing noticed locally, where the
+# repository is on the path, and the image then failed on
+# `No module named 'finops_api.db'` the first time a migration ran inside it.
+# ISS-143.
+[tool.setuptools.packages.find]
+include = [
+    "finops_core*",
+    "finops_providers*",
+    "finops_ingest*",
+    "finops_api*",
+    "finops_mcp*",
+    "finops_query*",
 ]
 
 [tool.ruff]

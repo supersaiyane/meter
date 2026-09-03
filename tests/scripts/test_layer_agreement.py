@@ -41,9 +41,18 @@ def test_the_two_layer_orderings_are_the_same() -> None:
 
 
 def declared_packages() -> list[str]:
-    """The distribution's own package list, which is the closest thing to truth."""
+    """The distribution's own package list, which is the closest thing to truth.
+
+    Read from the `find` include patterns since 2026-09-02. They were an
+    explicit list until subpackages turned out to be missing from the built
+    wheel, and the patterns are still one line per top level package, which is
+    what this file is about.
+    """
     config = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-    return list(config["tool"]["setuptools"]["packages"])
+    declared = config["tool"]["setuptools"]["packages"]
+    if isinstance(declared, list):
+        return list(declared)
+    return [pattern.removesuffix("*") for pattern in declared["find"]["include"]]
 
 
 def test_every_package_is_placed_in_the_layer_ordering() -> None:

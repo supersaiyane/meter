@@ -1062,14 +1062,26 @@ changes:
 issues:
 - id: ISS-143
   severity: HIGH
-  summary: make up cannot build. The builder stage of docker/Dockerfile.api runs python -m venv
-    /opt/venv as a non root user and fails with Permission denied, so no image builds and the local
-    stack cannot start. Independently, docker-compose.yml binds host port 5432 with no override, so
-    a machine already running another postgres cannot start the stack either. Neither is caused by
-    application code and both block make up, make seed and make unseed, which run through the api
-    container. Found 2026-09-02 when the seed was first run for real
-  status: OPEN
-  detail: '`docker/Dockerfile.api` line 57, `docker-compose.yml` postgres ports'
+  summary: make up could not build or start, for six independent reasons found by running it. The
+    builder stages ran as the base image's non root user and could not write /opt/venv. The
+    dependency layer ran pip install with only pyproject.toml present, which setuptools cannot
+    resolve without the package directories. pyproject listed top level packages explicitly, so
+    subpackages like finops_api.db were never in the wheel and a migration inside the image failed
+    on ModuleNotFoundError. finops_query was never added to either Dockerfile after TASK-P2-003
+    created it. docker-compose bound host port 5432 with no override. The services enumerated
+    environment variables by hand and had never been given the query or retention settings. Fixed
+    2026-09-02 and make up, make seed and make unseed all verified working
+  status: FIXED
+  detail: '`docker/Dockerfile.api`, `docker/Dockerfile.worker`, `docker/Dockerfile.web`,
+    `docker-compose.yml`, `pyproject.toml`, `.dockerignore`'
+- id: ISS-145
+  severity: MEDIUM
+  summary: scripts/ops was in no image, so erase_principal.py could not be run in a deployed
+    environment even though docs/09-DATA-CLASSIFICATION.md commits to that erasure procedure. The
+    api image now carries scripts/ops. Found 2026-09-02 while making make seed work, which failed
+    for the same reason
+  status: FIXED
+  detail: '`docker/Dockerfile.api`, [docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md)'
 - id: ISS-144
   severity: HIGH
   summary: default_ingest_rate passed the per day ingest setting into IngestRate, which

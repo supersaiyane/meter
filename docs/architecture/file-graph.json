@@ -13,8 +13,10 @@
     "docker/finops_ingest",
     "docker/finops_mcp",
     "docker/finops_providers",
+    "docker/finops_query",
     "docker/migrations",
     "docker/pyproject.toml",
+    "docker/scripts/ops",
     "finops-web/dist-types-node/vite.config.d.ts",
     "finops-web/dist-types/src/App.d.ts",
     "finops-web/dist-types/src/App.test.d.ts",
@@ -424,12 +426,22 @@
     },
     {
       "s": "docker/Dockerfile.api",
+      "t": "docker/finops_query",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.api",
       "t": "docker/migrations",
       "k": "docker"
     },
     {
       "s": "docker/Dockerfile.api",
       "t": "docker/pyproject.toml",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.api",
+      "t": "docker/scripts/ops",
       "k": "docker"
     },
     {
@@ -459,6 +471,11 @@
     },
     {
       "s": "docker/Dockerfile.worker",
+      "t": "docker/finops_api",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.worker",
       "t": "docker/finops_core",
       "k": "docker"
     },
@@ -469,7 +486,17 @@
     },
     {
       "s": "docker/Dockerfile.worker",
+      "t": "docker/finops_mcp",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.worker",
       "t": "docker/finops_providers",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.worker",
+      "t": "docker/finops_query",
       "k": "docker"
     },
     {
