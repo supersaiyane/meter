@@ -38,13 +38,27 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 
-PACKAGES = ("finops_core", "finops_providers", "finops_ingest", "finops_api", "finops_mcp")
+#: Every application package. `finops_query` was missing until 2026-09-03, so
+#: TASK-P2-002's criterion that this gate passes was being satisfied over code
+#: the gate never read. `check_forbidden_imports.py` had already been given the
+#: package and this one had not, which is what two lists of one thing does.
+PACKAGES = (
+    "finops_core",
+    "finops_providers",
+    "finops_ingest",
+    "finops_api",
+    "finops_mcp",
+    "finops_query",
+)
 
 EXEMPT_FILES = {
     "finops_core/config.py",  # the one place values are declared
     "finops_core/constants.py",  # genuine domain constants, closed sets
 }
-EXEMPT_DIRS = ("tests", "migrations", "__pycache__")
+#: `_legacy` is the frozen prototype copy: 2,740 lines of literals that cannot be
+#: changed, because it is a baseline pinned by hash. TASK-P2-003 deletes the
+#: directory and this exemption goes with it.
+EXEMPT_DIRS = ("tests", "migrations", "__pycache__", "_legacy")
 
 CHECKS = [
     (

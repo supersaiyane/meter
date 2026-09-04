@@ -98,6 +98,39 @@ class Settings(BaseSettings):
     # Topology
     max_graph_nodes: int = Field(ge=1)
 
+    # Query cost governance, P2. Every one of these was a literal in the
+    # prototype and every one is a policy decision: a price the tenant is
+    # charged, an assumption about how people use a dashboard, or a threshold
+    # that decides what gets flagged. ADR-0017 and TASK-P2-002.
+    #
+    # The prices are list prices and they are modelled, not measured. TASK-P2-020
+    # back tests the model against a real bill and publishes the accuracy, which
+    # is ISS-093 until it does.
+    query_logs_scan_price_per_gb: Decimal
+    query_metrics_price_per_1000: Decimal
+    #: What a dashboard nobody has open still costs. A panel with no auto
+    #: refresh is assumed to be loaded this many times a day.
+    query_manual_loads_per_day: float = Field(ge=0)
+    #: How long a dashboard is assumed to be open and refreshing. The single
+    #: biggest lever on a modelled figure, which is why it is configurable and
+    #: why the figure carries the assumption with it.
+    query_viewing_hours_per_day: float = Field(ge=0)
+    query_metrics_per_call: float = Field(ge=0)
+    #: Used when ingestion cannot be measured for a log group. A Logs Insights
+    #: scan estimate is this multiplied by the window, so it is the assumption
+    #: the whole Logs Insights cost rests on.
+    query_default_ingest_gb_per_day: float = Field(ge=0)
+    query_assumed_query_seconds: float = Field(ge=0)
+    #: Refresh intervals at or below these are flagged. Seconds.
+    query_refresh_warn_seconds: int = Field(ge=1)
+    query_refresh_crit_seconds: int = Field(ge=1)
+    #: Dashboard time ranges at or above these are flagged. Hours.
+    query_timerange_warn_hours: float = Field(ge=0)
+    query_timerange_crit_hours: float = Field(ge=0)
+    #: Service quotas the model measures pressure against, not limits it sets.
+    query_quota_logs_concurrent: int = Field(ge=1)
+    query_quota_getmetricdata_tps: int = Field(ge=1)
+
     # Retention, in days. docs/09-DATA-CLASSIFICATION.md.
     retention_principal_days: int = Field(ge=1)
     retention_operational_days: int = Field(ge=1)

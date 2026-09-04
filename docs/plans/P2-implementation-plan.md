@@ -130,7 +130,7 @@ TASK-P2-020 is what back tests it against a bill.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-03 |
 | Implements | P2 spec section 4 |
 | Delivers | FEAT-012 |
 | Depends on | TASK-P2-001 |
@@ -143,19 +143,50 @@ output to the prototype.
 
 | Path | Action |
 | --- | --- |
-| `finops_query/cost_model.py` | create |
-| `finops_query/classify.py` | create |
-| `tests/query/test_cost_model.py` | create |
+| `finops_query/cost_model.py` | created, 370 lines |
+| `finops_query/classify.py` | created, 254 lines |
+| `tests/query/test_cost_model.py` | created, 27 tests |
+| `tests/query/test_classify.py` | created, not planned. See deviation 3 |
+| `finops_core/config.py` | 13 fields added |
+| `.env.example` | 13 values documented |
 
 **Acceptance criteria.**
 
-- [ ] Every golden file from TASK-P2-001 reproduces exactly through the new
-      module
-- [ ] Every rate, assumption and window is a setting, not a literal.
-      `check_hardcoded.py` passes
-- [ ] The engine classifier is separate from the cost model, because a new
-      engine must not require touching the arithmetic
-- [ ] Each module is under the 800 line ceiling
+- [x] Every golden file from TASK-P2-001 reproduces exactly through the new
+      module, with one enumerated divergence. See deviation 1
+- [x] Every rate, assumption and window is a setting, not a literal.
+      `check_hardcoded.py` passes, and now actually reads the package. See
+      deviation 2
+- [x] The engine classifier is separate from the cost model
+- [x] Each module is under the 800 line ceiling, 370 and 254, and a test
+      asserts it
+
+**Deviations.**
+
+1. **One string diverges, and it is enumerated rather than absorbed.** The
+   prototype writes an em dash into the Prometheus reason string. This project's
+   writing rules forbid the character anywhere, and the frozen copy is exempt
+   only because it is frozen. New code is not, so the extraction writes a comma.
+   `KNOWN_DIVERGENCES` in the test names the exact pair, a second test asserts
+   the list has one entry and that both halves really occur in the two files,
+   and any other difference at all fails. A comparison that normalised
+   punctuation would also have hidden a real change to a reason string, and the
+   reasons are the part of a finding a person reads.
+2. **`check_hardcoded.py` never scanned `finops_query`.** The criterion above
+   would have been satisfied over code the gate had not read.
+   `check_forbidden_imports.py` already listed the package and this one did not.
+   ISS-134, and probed by planting a region literal and confirming it is caught.
+3. **Two defects found and deliberately not fixed.** `classify` decides a
+   CloudWatch target is Logs Insights if its expression merely contains
+   "filter ", which matches the metric maths `FILTER` function and prices a
+   metric query as a log scan. And an unrecognised datasource reports its own
+   type as the engine, so a Postgres panel is priced at zero, and zero reads as
+   free rather than as not understood. Both are pinned by tests that say they
+   are pinned rather than endorsed. ISS-132 and ISS-133.
+4. **The risk score keeps its point values as module constants**, not settings.
+   They were bare numbers in a comparison chain, which is a policy hidden in an
+   expression, but they are the definition of the score rather than something a
+   tenant tunes. The thresholds they are compared against are the settings.
 
 **Do not.**
 
@@ -168,8 +199,11 @@ output to the prototype.
 **Evidence.**
 
 ```bash
-pytest tests/query/test_cost_model.py -v && make check-docs
+pytest tests/query -v && make check-docs
 ```
+
+53 tests pass and every golden reproduces. Coverage is 98 percent on both new
+modules.
 
 ---
 

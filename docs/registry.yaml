@@ -925,6 +925,14 @@ changes:
     own switches rather than through mocks
   commit: 'a2304cf'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+- id: CHG-0069
+  date: '2026-09-03'
+  type: Refactor
+  what: TASK-P2-002, the cost model and the engine classifier extracted from the prototype under
+    the golden files. Thirteen rates and thresholds moved from literals into settings. One string
+    diverges, the em dash the writing rules forbid, and it is enumerated rather than absorbed
+  commit: pending
+  detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1721,6 +1729,31 @@ issues:
     renderer produces. Not fixable now: the file is byte identical by design and pinned by hash.
     Fixed when the renderer is rewritten, and the exclusion in the Makefile goes with the
     directory at TASK-P2-003'
+- id: ISS-132
+  severity: HIGH
+  status: OPEN
+  summary: A CloudWatch metric maths expression using the FILTER function is classified as Logs
+    Insights, because the engine test is a substring match on "filter " in the expression
+  detail: 'Pinned by tests/query/test_classify.py rather than fixed, because TASK-P2-002 is an
+    extraction and changing it moves real numbers. The consequence is a metric query priced as a
+    log scan, which overstates it by orders of magnitude. Fix in its own commit where the golden
+    diff shows which figures moved'
+- id: ISS-133
+  severity: MEDIUM
+  status: OPEN
+  summary: An unrecognised datasource reports its own type as the engine, so a Postgres panel is
+    priced at zero rather than reported as not understood
+  detail: 'Zero reads as free. The honest answer for an engine with no rate is that the query was
+    not priced, which is a different thing from a query that costs nothing. Pinned by
+    tests/query/test_classify.py. Fix alongside ISS-132'
+- id: ISS-134
+  severity: MEDIUM
+  status: FIXED
+  summary: check_hardcoded.py never scanned finops_query, so TASK-P2-002's criterion that the
+    gate passes was satisfied over code the gate had not read
+  detail: 'check_forbidden_imports.py already listed the package and this one did not, which is
+    what two lists of one thing produces. Now 76 files scanned where 73 were, and probed by
+    planting a region literal in cost_model.py and confirming it is caught'
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS

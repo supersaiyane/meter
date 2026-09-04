@@ -223,6 +223,10 @@ meter/
 │   └── versions/              0001_initial, raw SQL, faithful to 07-DATA-MODEL
 ├── finops-web/                PLANNED  React and TypeScript
 ├── finops_query/              IN BUILD  P2, query cost governance
+│   ├── classify.py            what engine a target runs on. Separate from the
+│   │                          arithmetic, so a new engine is a branch not a rate
+│   ├── cost_model.py          runs per day, cost per run, quota pressure. No IO,
+│   │                          no clock, no client. Every figure is modelled
 │   └── _legacy/               the prototype, byte identical and pinned by hash.
 │                              Excluded from ruff, mypy, coverage, the writing
 │                              rule and the docstring gate, all for one reason
