@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-262 public symbols across 5 packages.
+271 public symbols across 5 packages.
 
 ## finops_core
 
@@ -65,8 +65,8 @@ a duplicate.
 | `Throttled` | class | `finops_core/errors.py:71` | The provider rejected the call rate. | `finops_providers/aws/client.py` |
 | `NotOptedIn` | class | `finops_core/errors.py:80` | The service exists but this organization has never enabled it. | `finops_providers/aws/client.py` |
 | `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | `finops_ingest/collectors/org_tree.py`, `finops_providers/fake/provider.py` |
-| `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | `finops_providers/aws/client.py` |
-| `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py`, `finops_ingest/collectors/account_health.py`, `finops_ingest/worker.py`, `finops_providers/aws/client.py` |
+| `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | `finops_providers/aws/client.py`, `finops_providers/grafana/client.py` |
+| `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py`, `finops_ingest/collectors/account_health.py`, `finops_ingest/worker.py`, `finops_providers/aws/client.py`, and 1 more |
 | `AccountDiscovery` | class | `finops_core/ports/accounts.py:19` | Reads which accounts exist and how they are arranged. | nothing in this tree |
 | `AccountDiscovery.list_accounts` | method | `finops_core/ports/accounts.py:22` | Every account this organization contains. | `finops_ingest/collectors/org_tree.py` |
 | `AccountDiscovery.describe_organization` | method | `finops_core/ports/accounts.py:35` | Every node of the organization tree, roots and units included. | `finops_ingest/collectors/org_tree.py` |
@@ -101,7 +101,7 @@ a duplicate.
 | `partition_for` | function | `finops_providers/aws/client.py:96` | The partition a region belongs to. | nothing in this tree |
 | `role_arn` | function | `finops_providers/aws/client.py:114` | The collector role in a member account. Built, never stored. | `finops_providers/aws/credentials.py` |
 | `error_code` | function | `finops_providers/aws/client.py:119` |  | nothing in this tree |
-| `translate` | function | `finops_providers/aws/client.py:123` | Turn a provider exception into exactly one of the six causes. | `finops_providers/aws/accounts.py`, `finops_providers/aws/credentials.py`, `finops_providers/aws/platform_cost.py` |
+| `translate` | function | `finops_providers/aws/client.py:123` | Turn a provider exception into exactly one of the six causes. | `finops_providers/aws/accounts.py`, `finops_providers/aws/credentials.py`, `finops_providers/aws/platform_cost.py`, `finops_providers/grafana/client.py` |
 | `AwsSession` | class | `finops_providers/aws/credentials.py:44` | An assumed role session. Satisfies `ProviderSession`, opaque to the domain. | nothing in this tree |
 | `AwsCredentialBroker` | class | `finops_providers/aws/credentials.py:53` | Produces a scoped session for a target account, and caches it sensibly. | nothing in this tree |
 | `AwsCredentialBroker.external_id` | method | `finops_providers/aws/credentials.py:72` | Read the ExternalId once. Never logged, never put in an error detail. | nothing in this tree |
@@ -124,6 +124,15 @@ a duplicate.
 | `FakeProvider.list_quotas` | method | `finops_providers/fake/provider.py:167` |  | nothing in this tree |
 | `FakeProvider.authenticate` | method | `finops_providers/fake/provider.py:173` |  | nothing in this tree |
 | `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:186` |  | `finops_api/deps.py`, `finops_ingest/collectors/org_tree.py` |
+| `Workspace` | class | `finops_providers/grafana/client.py:68` | One Grafana workspace, however it was discovered. | nothing in this tree |
+| `Workspace.scope_key` | method | `finops_providers/grafana/client.py:77` | How a failure against this workspace is recorded and reported. | nothing in this tree |
+| `endpoint_from_url` | function | `finops_providers/grafana/client.py:82` | The host part of a configured workspace URL, or None. | nothing in this tree |
+| `translate` | function | `finops_providers/grafana/client.py:97` | Turn an HTTP failure into exactly one of the six causes. | `finops_providers/aws/accounts.py`, `finops_providers/aws/credentials.py`, `finops_providers/aws/platform_cost.py` |
+| `GrafanaClient` | class | `finops_providers/grafana/client.py:121` | A read only caller of one Grafana workspace's HTTP API. | nothing in this tree |
+| `GrafanaClient.search_dashboards` | method | `finops_providers/grafana/client.py:167` | Every dashboard in the workspace. | nothing in this tree |
+| `GrafanaClient.dashboard` | method | `finops_providers/grafana/client.py:193` | One dashboard, with its meta wrapper, as the analyser expects it. | nothing in this tree |
+| `GrafanaClient.alert_rules` | method | `finops_providers/grafana/client.py:204` | Grafana managed alert rules. | nothing in this tree |
+| `GrafanaClient.close` | method | `finops_providers/grafana/client.py:220` |  | nothing in this tree |
 
 ## finops_ingest
 
@@ -190,7 +199,7 @@ a duplicate.
 | `install_default_schedule` | function | `finops_ingest/registry.py:264` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
 | `CollectorRegistry` | class | `finops_ingest/registry.py:292` | The collectors this process knows how to run. | nothing in this tree |
 | `CollectorRegistry.register` | method | `finops_ingest/registry.py:298` |  | `finops_ingest/collectors/retention.py` |
-| `CollectorRegistry.get` | method | `finops_ingest/registry.py:306` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 20 more |
+| `CollectorRegistry.get` | method | `finops_ingest/registry.py:306` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 21 more |
 | `CollectorRegistry.names` | method | `finops_ingest/registry.py:315` |  | nothing in this tree |
 | `Outcome` | class | `finops_ingest/worker.py:46` | What happened to one unit. Every one of these is a normal result. | nothing in this tree |
 | `BatchResult` | class | `finops_ingest/worker.py:59` |  | nothing in this tree |
@@ -301,9 +310,9 @@ a duplicate.
 | `ApiError` | class | `finops_mcp/api.py:32` | The API refused or could not answer. Carries the status for the caller. | nothing in this tree |
 | `EnvelopeMissingError` | class | `finops_mcp/api.py:41` | A 200 with no `meta`. Not the contract, so not treated as data. | nothing in this tree |
 | `Transport` | class | `finops_mcp/api.py:45` | What the client needs from an HTTP library, and nothing more. | nothing in this tree |
-| `Transport.get` | method | `finops_mcp/api.py:53` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 19 more |
+| `Transport.get` | method | `finops_mcp/api.py:53` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 20 more |
 | `MeterApi` | class | `finops_mcp/api.py:56` | A caller of the Meter HTTP API. Holds no scope and no credential. | `finops_mcp/server.py` |
-| `MeterApi.get` | method | `finops_mcp/api.py:68` | One GET, returning the envelope exactly as the API sent it. | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 19 more |
+| `MeterApi.get` | method | `finops_mcp/api.py:68` | One GET, returning the envelope exactly as the API sent it. | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 20 more |
 | `MissingTokenError` | class | `finops_mcp/server.py:37` | No caller token. The tool refuses rather than answering as somebody else. | nothing in this tree |
 | `token_from` | function | `finops_mcp/server.py:41` | The caller's bearer token, or an error. | nothing in this tree |
 | `make_handler` | function | `finops_mcp/server.py:59` | Bind one row of the tool table to one handler. | nothing in this tree |
@@ -367,13 +376,13 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `FakeProvider.list_dependencies` in `finops_providers/fake/provider.py:161`
 - `FakeProvider.list_quotas` in `finops_providers/fake/provider.py:167`
 - `FakeProvider.authenticate` in `finops_providers/fake/provider.py:173`
+- `Workspace` in `finops_providers/grafana/client.py:68`
+- `Workspace.scope_key` in `finops_providers/grafana/client.py:77`
+- `endpoint_from_url` in `finops_providers/grafana/client.py:82`
+- `GrafanaClient` in `finops_providers/grafana/client.py:121`
+- `GrafanaClient.search_dashboards` in `finops_providers/grafana/client.py:167`
+- `GrafanaClient.dashboard` in `finops_providers/grafana/client.py:193`
+- `GrafanaClient.alert_rules` in `finops_providers/grafana/client.py:204`
+- `GrafanaClient.close` in `finops_providers/grafana/client.py:220`
 - `AccountHealthCollector` in `finops_ingest/collectors/account_health.py:34`
 - `compute_paths` in `finops_ingest/collectors/org_tree.py:45`
-- `OrgTreeCollector` in `finops_ingest/collectors/org_tree.py:79`
-- `next_month` in `finops_ingest/collectors/partitions.py:59`
-- `months_from` in `finops_ingest/collectors/partitions.py:65`
-- `partition_name` in `finops_ingest/collectors/partitions.py:73`
-- `month_of` in `finops_ingest/collectors/partitions.py:77`
-- `existing_partitions` in `finops_ingest/collectors/partitions.py:85`
-- `ensure_partition` in `finops_ingest/collectors/partitions.py:99`
-- `partition_maintenance` in `finops_ingest/collectors/partitions.py:135`

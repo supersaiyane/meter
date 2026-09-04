@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 50 total, 8 specified, 7 in build, 5 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 69 recorded |
-| Issues | 90 fixed, 39 open, 0 parked |
+| Changes | 70 recorded |
+| Issues | 92 fixed, 38 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -72,7 +72,7 @@ ISS-003.
 | Sub project | Done | Partly | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 35 | 0 | 0 | 0 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P2 | 2 | 0 | 2 | 18 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
+| P2 | 3 | 0 | 2 | 17 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -120,6 +120,7 @@ ISS-003.
 | --- | --- | --- |
 | `TASK-P2-001` | Done, 2026-09-02 | import the prototype and pin its behaviour |
 | `TASK-P2-002` | Done, 2026-09-03 | extract the cost model under the golden files |
+| `TASK-P2-003` | Done, 2026-09-04 | decompose the remainder and delete the legacy copy |
 | `TASK-P2-007` | Descoped, 2026-09-02 | the self hosted connection strategy |
 | `TASK-P2-008` | Descoped, 2026-09-02 | the Grafana Cloud connection strategy |
 

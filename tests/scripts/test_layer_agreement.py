@@ -40,6 +40,26 @@ def test_the_two_layer_orderings_are_the_same() -> None:
     assert graph_layers() == contract_layers()
 
 
+def declared_packages() -> list[str]:
+    """The distribution's own package list, which is the closest thing to truth."""
+    config = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    return list(config["tool"]["setuptools"]["packages"])
+
+
+def test_every_package_is_placed_in_the_layer_ordering() -> None:
+    """A package in neither list is a package with no layer constraint at all.
+
+    `finops_query` was in neither for two days after it was created, so it could
+    have imported `finops_api` and both checks would have passed. Holding the
+    two orderings equal did not catch it, because they agreed about a package
+    neither of them mentioned.
+    """
+    missing = set(declared_packages()) - set(contract_layers())
+
+    assert declared_packages(), "expected packages, not an empty list"
+    assert missing == set(), f"these have no layer, so nothing constrains them: {sorted(missing)}"
+
+
 def test_the_facade_sits_above_the_api() -> None:
     """Constraint 8. The MCP server calls the API, so it is in front of it."""
     layers = contract_layers()

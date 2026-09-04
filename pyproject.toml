@@ -58,22 +58,13 @@ packages = [
     "finops_ingest",
     "finops_api",
     "finops_mcp",
+    "finops_query",
 ]
 
 [tool.ruff]
 line-length = 100
 target-version = "py313"
 
-# The one exclusion, and it is temporary.
-#
-# `finops_query/_legacy/sample_lambda.py` is a byte identical copy of the
-# prototype, pinned by golden files in `tests/query/`. Formatting it or fixing
-# its 44 findings would change the thing the golden files were taken from, and a
-# baseline that already contains your fixes is not a baseline.
-#
-# TASK-P2-003 deletes the directory. This exclusion goes with it, and a test in
-# `tests/query/test_legacy_baseline.py` fails if the file is ever edited.
-extend-exclude = ["finops_query/_legacy"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "ARG", "PTH", "RUF"]
@@ -128,14 +119,6 @@ strict = true
 # dependency surface for a package that contributes nothing at runtime. Values
 # read from yaml are narrowed explicitly at the point of use instead, which is
 # where the checking has to happen anyway.
-# The same exclusion, and for the same reason. 290 errors in an unmodified
-# prototype are a description of the prototype, not a to do list: the file is
-# pinned by golden files and is deleted by TASK-P2-003. Annotating it would
-# change the thing the baseline was taken from.
-[[tool.mypy.overrides]]
-module = "finops_query._legacy.*"
-ignore_errors = true
-
 [[tool.mypy.overrides]]
 module = "yaml"
 ignore_missing_imports = true
@@ -166,6 +149,7 @@ root_packages = [
     "finops_ingest",
     "finops_api",
     "finops_mcp",
+    "finops_query",
 ]
 
 [[tool.importlinter.contracts]]
@@ -208,6 +192,11 @@ layers = [
     "finops_mcp",
     "finops_api",
     "finops_ingest",
+    # P2 analysis. Above the providers because it reads what an adapter
+    # fetched, below the ingest because a collector drives it. It was in
+    # neither layer list until 2026-09-04, which meant it could have imported
+    # finops_api and nothing would have said so.
+    "finops_query",
     "finops_providers",
     "finops_core",
 ]
@@ -229,34 +218,10 @@ layers = [
 # Protocol within a release.
 [tool.interrogate]
 fail-under = 70
-# finops_query/_legacy joins the list on the same argument as the fake provider:
-# it is not published API. It is a frozen prototype copy, pinned by hash and
-# deleted by TASK-P2-003, and writing docstrings into it would change the thing
-# the golden files were taken from. The five exclusions it now shares are ruff,
-# mypy, coverage, check-writing and this one, all for the same reason and all
-# removed together.
-exclude = [
-    "finops_providers/fake",
-    "finops_query/_legacy",
-    "tests",
-    "migrations",
-    "scripts",
-    "finops-web",
-]
+exclude = ["finops_providers/fake", "tests", "migrations", "scripts", "finops-web"]
 ignore-init-module = true
 ignore-init-method = true
 ignore-private = true
 ignore-magic = true
 ignore-nested-functions = true
 ignore-property-decorators = true
-
-[tool.coverage.run]
-# `_legacy` is 2,740 lines of unmodified prototype, pinned by golden files and
-# deleted by TASK-P2-003. Measuring it would put the whole project under the 80
-# percent floor and the honest response would be to lower the floor, which is
-# how a coverage gate becomes decoration.
-#
-# It is omitted rather than the floor being moved, and `finops_query` is
-# measured from today so that TASK-P2-002 inherits the gate instead of
-# discovering it was never on.
-omit = ["finops_query/_legacy/*"]

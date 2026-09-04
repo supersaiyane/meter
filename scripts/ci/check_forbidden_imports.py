@@ -67,21 +67,6 @@ def main() -> int:
         for path in sorted(base.rglob("*.py")):
             if "tests" in path.parts:
                 continue
-            # The frozen prototype copy. It imports urllib.request, which
-            # CVE-2026-15806's acceptance depends on nobody importing, and it
-            # cannot be edited because it is a baseline pinned by hash.
-            #
-            # The exclusion is only defensible because of two facts, and both
-            # are checked rather than asserted. The advisory is about
-            # HTTPPasswordMgr and urllib basic auth, which the prototype never
-            # touches: it builds a Request with a bearer header. And
-            # finops_query is copied into no image, which
-            # tests/query/test_legacy_does_not_ship.py enforces against the
-            # Dockerfiles.
-            #
-            # TASK-P2-003 deletes the directory and this exclusion goes with it.
-            if "_legacy" in path.parts:
-                continue
             scanned += 1
             try:
                 tree = ast.parse(path.read_text(encoding="utf-8"))

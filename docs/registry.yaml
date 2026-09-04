@@ -933,6 +933,15 @@ changes:
     diverges, the em dash the writing rules forbid, and it is enumerated rather than absorbed
   commit: '70da3ae'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+- id: CHG-0070
+  date: '2026-09-04'
+  type: Refactor
+  what: TASK-P2-003, the prototype decomposed into three modules and deleted. Six exclusions
+    removed with it, including the one suppressing the urllib.request rule that CVE-2026-15806's
+    acceptance depends on. The Grafana adapter raises typed causes rather than returning an
+    empty list on failure
+  commit: pending
+  detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1722,13 +1731,13 @@ issues:
     absorbed. Probed by setting a status of Parked and confirming the generator refuses it
 - id: ISS-131
   severity: LOW
-  status: OPEN
-  summary: The prototype emits em dashes into generated UI copy, which the project's writing
-    rules forbid, and its copy is excluded from make check-writing while it is a frozen baseline
-  detail: 'Six occurrences in finops_query/_legacy/sample_lambda.py, four of them in HTML the
-    renderer produces. Not fixable now: the file is byte identical by design and pinned by hash.
-    Fixed when the renderer is rewritten, and the exclusion in the Makefile goes with the
-    directory at TASK-P2-003'
+  status: FIXED
+  summary: The prototype emitted em dashes into generated UI copy, which the project's writing
+    rules forbid, and its copy was excluded from make check-writing while it was a frozen baseline
+  detail: 'Fixed by deletion at TASK-P2-003 rather than by editing, which was never permitted
+    while the file was a baseline. The exclusion went with the directory. One of the six survives
+    as a recorded divergence in tests/query/test_cost_model.py, because the golden files still
+    hold the string the prototype produced'
 - id: ISS-132
   severity: HIGH
   status: OPEN
@@ -1754,6 +1763,15 @@ issues:
   detail: 'check_forbidden_imports.py already listed the package and this one did not, which is
     what two lists of one thing produces. Now 76 files scanned where 73 were, and probed by
     planting a region literal in cost_model.py and confirming it is caught'
+- id: ISS-135
+  severity: HIGH
+  status: FIXED
+  summary: finops_query was in no layer list, so nothing constrained what it could import. Not
+    the import-linter contract, not the graph builder, and not the distribution's own packages
+  detail: 'It could have imported finops_api and all three checks would have passed. Holding the
+    two orderings equal did not catch it, because they agreed about a package neither mentioned.
+    tests/scripts/test_layer_agreement.py now asserts every declared package has a layer, and the
+    constraint was probed by importing finops_api and confirming it breaks'
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS

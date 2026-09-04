@@ -58,14 +58,10 @@ accepted:
       Outbound HTTP uses httpx with bearer tokens. Enforced by
       check_forbidden_imports.py, which forbids importing urllib.request.
 
-      One exclusion, added 2026-09-02. finops_query/_legacy/sample_lambda.py is
-      a frozen copy of the P2 prototype and it does import urllib.request, so
-      the checker skips it. The argument still holds and both halves are
-      checked rather than asserted: the prototype builds a Request with a
-      bearer header and constructs no HTTPPasswordMgr, which
-      tests/query/test_legacy_does_not_ship.py asserts, and finops_query is
-      copied into no image, which the same file asserts against every
-      Dockerfile. TASK-P2-003 deletes the directory and the exclusion with it.
+      The exclusion added on 2026-09-02 for the P2 prototype copy was removed on
+      2026-09-04 when TASK-P2-003 deleted that copy. The Grafana adapter that
+      replaced it uses httpx, so the claim is unconditional again and the
+      checker has no skip in it.
     owner: PLACEHOLDER-security
     added: 2026-08-23
     review: 2026-11-21

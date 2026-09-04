@@ -211,21 +211,63 @@ modules.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-04 |
 | Implements | P2 spec section 4 |
 | Depends on | TASK-P2-002 |
 | Estimate | M |
 
 **Goal.** No file over 800 lines, and `_legacy/` gone.
 
-**Files.** Creates `finops_query/ownership.py`, `finops_query/policy.py`,
-`finops_providers/grafana/client.py`. Removes `finops_query/_legacy/`.
+**Files.**
+
+| Path | Action |
+| --- | --- |
+| `finops_query/policy.py` | created, 135 lines |
+| `finops_query/ownership.py` | created, 244 lines |
+| `finops_providers/grafana/client.py` | created, 224 lines |
+| `finops_query/_legacy/` | removed, 2,740 lines |
+| `tests/query/test_policy.py` | created, 14 tests |
+| `tests/query/test_ownership.py` | created, 22 tests |
+| `tests/providers/test_grafana_client.py` | created, 22 tests |
 
 **Acceptance criteria.**
 
-- [ ] Every golden file still reproduces
-- [ ] `_legacy/sample_lambda.py` is removed, not left "for reference"
-- [ ] `make graph` shows no layering violation
+- [x] Every golden file still reproduces, now from `Settings` rather than from
+      the prototype's config dict. That was the condition for deleting it
+- [x] `_legacy/sample_lambda.py` is removed, not left for reference
+- [x] `make graph` shows no layering violation, and `finops_query` is now
+      subject to one. See deviation 3
+
+**Deviations.**
+
+1. **The Grafana client does not reproduce the prototype's error handling.**
+   It wrapped every call in `except Exception: return []`, so a workspace the
+   token could not read reported zero dashboards, which renders as "this
+   workspace costs nothing" rather than as "we could not look". That is
+   constraint 5, and a new module in `finops_providers` cannot reproduce it.
+   Every failure is now one of the six typed causes. No golden covers the HTTP
+   layer, so nothing was hidden by the change.
+2. **A search result at Grafana's 5,000 cap is refused.** Grafana does not
+   report that it truncated, so an estate larger than the cap was silently
+   audited in part and reported as whole. Refusing is better than auditing an
+   unknown fraction of an estate and calling it the estate.
+3. **`finops_query` was in no layer list at all.** Not the import-linter
+   contract, not the graph builder, and not the distribution's own package list.
+   It could have imported `finops_api` and all three checks would have passed.
+   Holding the two orderings equal did not catch it, because they agreed about a
+   package neither mentioned. `tests/scripts/test_layer_agreement.py` now
+   asserts every declared package has a layer, and the constraint was probed by
+   importing `finops_api` from `finops_query` and confirming it breaks.
+4. **Six exclusions removed, which was the point.** ruff, mypy, coverage,
+   `check-writing`, `check_hardcoded` and `check_forbidden_imports` each had a
+   `_legacy` carve out. The last one mattered most: it was suppressing the
+   `urllib.request` rule that CVE-2026-15806's acceptance depends on. The
+   Grafana adapter uses httpx, so that claim is unconditional again.
+5. **The HTML renderer, the delivery code and the orchestration were not
+   extracted, they were deleted with the copy.** The renderer is superseded by
+   the four screens in TASK-P2-022, delivery by the platform's own API, and
+   orchestration by the collector in TASK-P2-010. Porting them would have meant
+   carrying 1,300 lines that nothing will call. They are in git history.
 
 **Do not.**
 
@@ -235,8 +277,10 @@ modules.
 **Evidence.**
 
 ```bash
-pytest tests/query -v && make graph
+pytest tests/query tests/providers -v && make graph
 ```
+
+555 tests pass. No file in `finops_query` exceeds 370 lines.
 
 ---
 

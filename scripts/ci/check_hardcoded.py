@@ -55,10 +55,7 @@ EXEMPT_FILES = {
     "finops_core/config.py",  # the one place values are declared
     "finops_core/constants.py",  # genuine domain constants, closed sets
 }
-#: `_legacy` is the frozen prototype copy: 2,740 lines of literals that cannot be
-#: changed, because it is a baseline pinned by hash. TASK-P2-003 deletes the
-#: directory and this exemption goes with it.
-EXEMPT_DIRS = ("tests", "migrations", "__pycache__", "_legacy")
+EXEMPT_DIRS = ("tests", "migrations", "__pycache__")
 
 CHECKS = [
     (

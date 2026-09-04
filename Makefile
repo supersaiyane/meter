@@ -104,18 +104,11 @@ lint: ## Lint everything, no changes written
 	$(TF) -chdir=infra/terraform/hub fmt -check -recursive
 
 .PHONY: check-writing
-# _legacy is excluded for the same reason ruff, mypy and coverage exclude it:
-# it is a byte identical copy of the prototype, pinned by golden files and by a
-# hash, and it does contain em dashes. Editing it to satisfy this rule would
-# change the thing the baseline was taken from. TASK-P2-003 deletes the
-# directory and this exclusion goes with it. The em dashes that reach generated
-# UI copy are ISS-131, fixed when the renderer is rewritten rather than now.
 check-writing: ## Fail if an em dash or en dash appears anywhere. See CLAUDE.md
 	@if grep -rn $$'—\|–' \
 	    --include='*.md' --include='*.py' --include='*.ts' --include='*.tsx' \
 	    --include='*.tf' --include='*.yml' --include='*.yaml' \
-	    --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.venv \
-	    --exclude-dir=_legacy . ; then \
+	    --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.venv . ; then \
 	  echo "FAIL: em dash or en dash found. See CLAUDE.md writing rules."; exit 1; \
 	else \
 	  echo "OK: no em dash or en dash"; \

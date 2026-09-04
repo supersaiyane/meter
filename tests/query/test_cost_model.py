@@ -46,47 +46,6 @@ KNOWN_DIVERGENCES: dict[str, str] = {
 }
 
 
-@pytest.fixture
-def rates(cfg: Any) -> Rates:
-    """Built from the prototype's own config, so both sides price identically.
-
-    The extracted model takes a `Rates` built from `Settings` in production.
-    Here it is built from the same dict the prototype reads, which is what makes
-    the comparison a comparison of arithmetic rather than of configuration.
-    """
-    return Rates(
-        logs_scan_price_per_gb=cfg["logs_scan_price_per_gb"],
-        metrics_price_per_1000=cfg["metrics_price_per_1000"],
-        manual_loads_per_day=cfg["manual_loads_per_day"],
-        viewing_hours_per_day=cfg["viewing_hours_per_day"],
-        metrics_per_call=cfg["metrics_per_call"],
-        default_ingest_gb_per_day=cfg["default_ingest_gb_per_day"],
-        assumed_query_seconds=cfg["assumed_query_seconds"],
-        refresh_warn_seconds=cfg["refresh_warn_seconds"],
-        refresh_crit_seconds=cfg["refresh_crit_seconds"],
-        timerange_warn_hours=cfg["timerange_warn_hours"],
-        timerange_crit_hours=cfg["timerange_crit_hours"],
-        quota_logs_concurrent=cfg["quota_logs_concurrent"],
-        quota_getmetricdata_tps=cfg["quota_getmetricdata_tps"],
-    )
-
-
-@pytest.fixture
-def fallback_ingest(rates: Rates) -> cost_model.IngestRate:
-    """The offline ingestion rate, which is what the prototype falls back to.
-
-    `measure_ingestion` is false in the harness, so the prototype returns
-    `default_ingest_gb_per_day / 24` for every log group. The extracted model
-    takes that as a function instead of reaching for a CloudWatch client, which
-    is the whole reason it can be tested without one.
-    """
-
-    def rate(region: str, log_group: str) -> float:  # noqa: ARG001
-        return rates.default_ingest_gb_per_day / 24.0
-
-    return rate
-
-
 def expected(name: str) -> Any:
     return json.loads((GOLDEN / f"{name}.json").read_text(encoding="utf-8"))
 
@@ -171,16 +130,22 @@ def test_the_extracted_model_reproduces_the_golden(
 def test_the_only_divergence_is_the_one_that_is_recorded() -> None:
     """The exemption cannot quietly grow.
 
-    Each recorded divergence has to be a string the prototype really produces,
-    and the replacement has to be a string the extraction really produces.
+    Each recorded divergence has to be a string that really appears in a golden
+    file, and its replacement has to be one the extraction really produces.
     Without this, an entry could be added to make any failure disappear.
+
+    Checked against the goldens rather than against the prototype, which
+    TASK-P2-003 deleted. The goldens are now the only surviving record of what
+    that code emitted, which is the reason they are not regenerated: doing so
+    would erase the evidence that this string was ever different.
     """
-    prototype = Path("finops_query/_legacy/sample_lambda.py").read_text(encoding="utf-8")
+    recorded = "\n".join(path.read_text(encoding="utf-8") for path in sorted(GOLDEN.glob("*.json")))
     extracted = Path("finops_query/cost_model.py").read_text(encoding="utf-8")
 
     assert len(KNOWN_DIVERGENCES) == 1
     for original, replacement in KNOWN_DIVERGENCES.items():
-        assert original in prototype, f"the prototype does not contain {original!r}"
+        # json.dumps escapes the character, which is how it sits in the goldens.
+        assert original.replace(EM_DASH, "\\u2014") in recorded, f"no golden contains {original!r}"
         assert replacement in extracted, f"the extraction does not contain {replacement!r}"
         assert EM_DASH in original, "an em dash is the only accepted reason to diverge"
         assert EM_DASH not in replacement

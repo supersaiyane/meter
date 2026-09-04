@@ -1,85 +1,51 @@
-"""Running the prototype without AWS, and without a clock.
+"""What the P2 tests are given, now that the prototype is gone.
 
-Two things make the prototype's analysis path deterministic, and both are its
-own switches rather than anything added to it.
+Until TASK-P2-003 this file built the prototype's own config dict and imported
+its module. Both are deleted, and the replacement is the thing that had to be
+true for the deletion to be safe: the golden files reproduce from `Settings`,
+which is where every rate now lives, rather than from a dict of literals.
 
-`measure_ingestion` false stops `get_log_group_ingest_gb_per_hour` from calling
-CloudWatch and makes it return the configured fallback. That is the only AWS
-call reachable from `analyze_dashboard` or `analyze_alert_rules`, which is why
-these two functions can be pinned at all and the rest of the file cannot.
-
-`load_config` reads about forty environment variables, so the environment is set
-explicitly here rather than inherited. A golden file that depends on the shell
-it was generated in is not a baseline, it is a description of one machine.
+`Rates` is built from the same `settings` fixture the rest of the suite uses,
+which is itself built from `.env.example`. So a value changed in `.env.example`
+and not in the code fails here, and a golden file that only reproduces under
+one developer's environment cannot exist.
 """
 
 from __future__ import annotations
 
-import importlib
-import os
 from collections.abc import Iterator
-from types import ModuleType
-from typing import Any
 
 import pytest
 
-#: Every variable the analysis path reads, pinned. Prices and assumptions are
-#: the prototype's own defaults, written out so a change to a default is visible
-#: in the diff of this file rather than only in the goldens.
-FIXED_ENVIRONMENT: dict[str, str] = {
-    "AWS_REGION": "eu-west-1",
-    "REGIONS": "eu-west-1",
-    "GRAFANA_ACCOUNTS": "",
-    # The two switches that keep this offline.
-    "MEASURE_INGESTION": "false",
-    "MEASURE_EXECUTIONS": "false",
-    "MEASURE_LOGS_HISTORY": "false",
-    # Cost model inputs.
-    "VIEWING_HOURS_PER_DAY": "2.0",
-    "MANUAL_LOADS_PER_DAY": "4.0",
-    "METRICS_PER_CALL": "1.0",
-    "DEFAULT_INGEST_GB_PER_DAY": "50.0",
-    "ASSUMED_QUERY_SECONDS": "5.0",
-    "LOGS_SCAN_PRICE_PER_GB": "0.005",
-    "METRICS_PRICE_PER_1000": "0.01",
-    # Severity thresholds.
-    "REFRESH_WARN_SECONDS": "60",
-    "REFRESH_CRIT_SECONDS": "30",
-    "TIMERANGE_WARN_HOURS": "24",
-    "TIMERANGE_CRIT_HOURS": "168",
-    # Delivery, all off. Nothing here should reach S3 or SNS.
-    "S3_BUCKET": "",
-    "SNS_TOPIC_ARN": "",
-    "BILLING_ENABLED": "false",
-    "CAPACITY_ENABLED": "false",
-    "HISTORY_ENABLED": "false",
-}
+from finops_core.config import Settings
+from finops_query.cost_model import IngestRate, Rates
 
 REGION = "eu-west-1"
 
 
-@pytest.fixture(scope="session")
-def legacy() -> ModuleType:
-    """The prototype, imported once.
-
-    Imported rather than exec'd so that a syntax error in the copy is a loud
-    import failure, and so the module is the same object every test sees.
-    """
-    return importlib.import_module("finops_query._legacy.sample_lambda")
+@pytest.fixture
+def rates(settings: Settings) -> Rates:
+    """Every price and threshold, from the documented environment."""
+    return Rates.from_settings(settings)
 
 
 @pytest.fixture
-def cfg(legacy: ModuleType, monkeypatch: pytest.MonkeyPatch) -> Any:
-    """The prototype's own config, built from a pinned environment."""
-    for key in list(os.environ):
-        if key.startswith(("GRAFANA_", "MEASURE_", "QUOTA_", "TREND_")):
-            monkeypatch.delenv(key, raising=False)
-    for key, value in FIXED_ENVIRONMENT.items():
-        monkeypatch.setenv(key, value)
-    return legacy.load_config()
+def fallback_ingest(rates: Rates) -> IngestRate:
+    """Ingestion when it cannot be measured, which is what the goldens record.
+
+    The prototype fell back to `default_ingest_gb_per_day / 24` whenever
+    `measure_ingestion` was off, and every golden file was generated that way.
+    Passing it as a function is what lets the whole model run with no CloudWatch
+    client anywhere near it.
+    """
+
+    def rate(region: str, log_group: str) -> float:  # noqa: ARG001
+        return rates.default_ingest_gb_per_day / 24.0
+
+    return rate
 
 
 @pytest.fixture
 def ingest_cache() -> Iterator[dict[tuple[str, str], float]]:
-    """Empty per test. A cache shared across tests would make the order matter."""
+    """Empty per test. A shared cache would make the order matter."""
     yield {}

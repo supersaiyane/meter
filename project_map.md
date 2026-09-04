@@ -159,13 +159,16 @@ meter/
 │       ├── inventory.py       ResourceInventory
 │       ├── quotas.py          QuotaSource
 │       └── identity.py        IdentityProvider and EntitlementResolver
-├── finops_providers/          IN BUILD  aws/, fake/, gcp/, azure/
+├── finops_providers/          IN BUILD  aws/, grafana/, fake/, gcp/, azure/
 │   ├── aws/                   the only package that imports boto3
 │   │   ├── client.py          bounded config, and provider code to typed cause
 │   │   ├── credentials.py     assume role, cached until before expiry
 │   │   ├── accounts.py        the exact org tree. Every call paginated
 │   │   ├── health.py          is the role usable, and if not, whose fix is it
 │   │   └── platform_cost.py   the one Cost Explorer request, grouped
+│   ├── grafana/               AMG only, per OPEN-04 re answered 2026-09-02
+│   │   └── client.py          raises a typed cause. A workspace it cannot read
+│   │                          must not report zero dashboards
 │   └── fake/                  in memory, all eight ports, no network and no clock
 │       ├── fixtures.py        one root, two units, five accounts, one denied
 │       └── provider.py        the failure plan. Any of the six, for any scope
@@ -227,10 +230,9 @@ meter/
 │   │                          arithmetic, so a new engine is a branch not a rate
 │   ├── cost_model.py          runs per day, cost per run, quota pressure. No IO,
 │   │                          no clock, no client. Every figure is modelled
-│   └── _legacy/               the prototype, byte identical and pinned by hash.
-│                              Excluded from ruff, mypy, coverage, the writing
-│                              rule and the docstring gate, all for one reason
-│                              and all removed together at TASK-P2-003
+│   ├── policy.py              fingerprinting. Template aware, so a dashboard with
+│   │                          a $region variable is one query and not four
+│   └── ownership.py           who ran it, and measured against modelled
 │
 ├── finops_mcp/                IN BUILD  MCP server, a facade over the HTTP API
 │   ├── api.py                the only way out of this package, and it is HTTP

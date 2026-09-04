@@ -51,7 +51,14 @@ Edge = tuple[str, str, str]
 ROOT = Path(__file__).resolve().parent.parent.parent
 OUT_DIR = ROOT / "docs" / "architecture"
 
-PY_PACKAGES = ("finops_core", "finops_providers", "finops_ingest", "finops_api", "finops_mcp")
+PY_PACKAGES = (
+    "finops_core",
+    "finops_providers",
+    "finops_ingest",
+    "finops_api",
+    "finops_mcp",
+    "finops_query",
+)
 
 # Allowed direction. A layer may import anything below it, never above.
 # Index 0 is the top of the stack.
@@ -61,7 +68,14 @@ PY_PACKAGES = ("finops_core", "finops_providers", "finops_ingest", "finops_api",
 #: API, constraint 8, so it sits above it. A test holds the two equal, because
 #: two definitions of one ordering that disagree means one of the two checks is
 #: enforcing the opposite of the rule.
-LAYERS = ["finops_mcp", "finops_api", "finops_ingest", "finops_providers", "finops_core"]
+LAYERS = [
+    "finops_mcp",
+    "finops_api",
+    "finops_ingest",
+    "finops_query",
+    "finops_providers",
+    "finops_core",
+]
 LAYER_RANK = {name: index for index, name in enumerate(LAYERS)}
 
 SKIP_DIRS = {
