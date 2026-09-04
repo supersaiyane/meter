@@ -457,6 +457,13 @@ changes:
     its limits stated
   commit: f3b5aef
   detail: '[README.md](README.md)'
+- id: CHG-0020
+  date: '2026-08-23'
+  type: Process
+  what: AUDIT-001 published. Audits folder created with a naming convention, finding identifiers and a
+    promotion rule. 18 findings promoted to the issue register
+  commit: pending
+  detail: '[AUDIT-001](audits/AUDIT-001-2026-08-23-full-project.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -726,6 +733,112 @@ issues:
     and signed
   status: OPEN
   detail: Set IMMUTABLE tags in TASK-P0-016
+- id: ISS-055
+  severity: CRITICAL
+  summary: No threat model exists for a platform holding organization wide financial data and cross account
+    credentials in a financial services environment
+  status: OPEN
+  detail: '[A001-F11](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-056
+  severity: HIGH
+  summary: No data classification or retention policy, while cloud_account.email already stores AWS account
+    root email addresses, which are personal data
+  status: OPEN
+  detail: '[A001-F12](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-057
+  severity: HIGH
+  summary: finops_mcp is absent from the pyproject packages and the import linter root packages, so the
+    contract keeping it out of the service layer is unenforced
+  status: OPEN
+  detail: '[A001-F02](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-058
+  severity: HIGH
+  summary: 'The issue register drifted: 22 issues existed only in docs/registry.yaml and not in tasks/ISSUES.md'
+  status: FIXED
+  detail: '[A001-F01](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-059
+  severity: HIGH
+  summary: The CI dependency-scan job runs scan.sh which requires gitleaks, but the security tools anchor
+    does not install it, so the job exits 2
+  status: OPEN
+  detail: '[A001-F03](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-060
+  severity: HIGH
+  summary: make verify runs security-scan but nothing installs the scanners first, so a clean machine
+    fails on tooling and it reads like a security failure
+  status: OPEN
+  detail: '[A001-F05](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-061
+  severity: MEDIUM
+  summary: make up mounts local-auth.yaml which is gitignored and has no example, so the first command
+    a new engineer runs fails
+  status: OPEN
+  detail: '[A001-F04](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-062
+  severity: MEDIUM
+  summary: ADR-0014 lists context_index.md as generated and no generator exists, so a file the reuse ladder
+    depends on will stay empty
+  status: OPEN
+  detail: '[A001-F06](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-063
+  severity: MEDIUM
+  summary: The interactive file graph renders nothing because cytoscape is never vendored and a CDN is
+    ruled out
+  status: OPEN
+  detail: '[A001-F07](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-064
+  severity: MEDIUM
+  summary: The MCP server has no build job, no ECR repository and no scan path, placing a fourth deployable
+    outside the security gates
+  status: OPEN
+  detail: '[A001-F08](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-065
+  severity: MEDIUM
+  summary: 'No disaster recovery position: no RPO, no RTO, no restore test, and Aurora defaults are not
+    a decision'
+  status: OPEN
+  detail: '[A001-F13](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-066
+  severity: MEDIUM
+  summary: No observability plan for Meter itself, so a collector that silently stops pages nobody while
+    the product serves confident stale numbers
+  status: OPEN
+  detail: '[A001-F14](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-067
+  severity: MEDIUM
+  summary: No cost estimate for running Meter, which is the specific credibility failure a FinOps product
+    exists to prevent in others
+  status: OPEN
+  detail: '[A001-F15](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-068
+  severity: MEDIUM
+  summary: Missing governance files. CODEOWNERS matters most because ADR-0013 requires a security sign
+    off and nothing defines who can give it
+  status: OPEN
+  detail: '[A001-F16](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-069
+  severity: LOW
+  summary: The PARTIAL ingest run status is permitted by a check constraint and defined nowhere, so it
+    will be applied inconsistently
+  status: OPEN
+  detail: '[A001-F09](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-070
+  severity: LOW
+  summary: The roadmap carries a generated status table and a hand written one describing the same sub
+    projects
+  status: OPEN
+  detail: '[A001-F10](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-071
+  severity: LOW
+  summary: No definition of done for any sub project beyond P0
+  status: OPEN
+  detail: '[A001-F17](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-072
+  severity: LOW
+  summary: No performance budget for ingestion throughput, full organization sweep time, or API latency
+    under load
+  status: OPEN
+  detail: '[A001-F18](audits/AUDIT-001-2026-08-23-full-project.md)'
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS

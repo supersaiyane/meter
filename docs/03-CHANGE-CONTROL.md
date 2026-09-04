@@ -39,7 +39,8 @@ Read the change, answer the first question that applies, and stop.
 | A change to what a sub project delivers | That sub project's spec in `docs/specs/` | Update the feature row in `INDEX.md`, add a CHG row |
 | A change to how a sub project is built | That sub project's plan in `docs/plans/` | Add a CHG row in `INDEX.md` |
 | A new capability | A feature row in `INDEX.md`, and the owning spec | Update `docs/01-ROADMAP.md` if it changes scope |
-| A defect, risk, or gap | A row in `tasks/ISSUES.md` | Add the issue to `INDEX.md` |
+| A defect, risk, or gap | `docs/registry.yaml`, then `make doc-sync` | Nothing else. `tasks/ISSUES.md` and `INDEX.md` are generated |
+| An audit finding | A report in `audits/`, then promote it to `docs/registry.yaml` | Never track a finding only in a report. Reports are snapshots and are never edited after publication |
 | A question awaiting a person | An OPEN row in `tasks/ISSUES.md` | Add it to `INDEX.md` open questions |
 | Cross cutting architecture | `docs/02-ARCHITECTURE.md` | Raise an ADR if it is expensive to reverse |
 | Deployment or pipeline | `docs/04-DEPLOYMENT.md` | Add a CHG row in `INDEX.md` |
@@ -83,6 +84,7 @@ probably a defect in this table, so fix the table.
 | `ISS-nnn` | A defect, risk or gap | `tasks/ISSUES.md` |
 | `OPEN-nn` | A question awaiting a person | `tasks/ISSUES.md` |
 | `TASK-Pn-nnn` | A unit of implementation work | `docs/plans/` |
+| `A<nnn>-F<nn>` | An audit finding | `audits/`, promoted to an `ISS-nnn` |
 
 Identifiers are never reused and never renumbered. A withdrawn item is marked
 `WITHDRAWN` and kept.

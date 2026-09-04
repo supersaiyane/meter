@@ -72,6 +72,7 @@ and open question with a pointer to the detail.
 | The module layout | [project_map.md](project_map.md) |
 | How files depend on each other | [docs/architecture/file-graph.md](docs/architecture/file-graph.md) |
 | Corrections already received | [tasks/lessons.md](tasks/lessons.md) |
+| **What an audit found** | [audits/](audits/README.md), latest is [AUDIT-001](audits/AUDIT-001-2026-08-23-full-project.md) |
 | What each script does | [scripts/README.md](scripts/README.md) |
 | **Is the security posture currently clean** | `security/POSTURE.md` |
 

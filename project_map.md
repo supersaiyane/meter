@@ -52,6 +52,10 @@ meter/
 │   └── plans/                 implementation plans and task docs
 │       └── P0-implementation-plan.md   28 tasks in 8 waves
 │
+├── audits/                    point in time reviews, one file per audit
+│   ├── README.md              naming convention, finding ids, cadence
+│   └── AUDIT-001-...          full project, before coding
+│
 ├── tasks/
 │   ├── STATUS.md              done, in progress, remaining
 │   ├── ISSUES.md              issue and open question register with fixed status
@@ -118,6 +122,7 @@ continuous integration, not by good intentions.
 | What stops an unscanned image deploying | `docs/05-SECURITY.md`, layer 5, and `.gitlab-ci.yml` `verify-provenance` |
 | Why LocalStack is in the stack, and its limits | `docker-compose.yml` inline, and `docs/04-DEPLOYMENT.md` |
 | What breaks and how to fix it | `README.md` section 5, ten worked examples |
+| What an audit found, and when | `audits/`, newest last by filename |
 | Is the posture currently clean | `security/POSTURE.md` |
 | How often does this data refresh | `docs/06-DATA-FRESHNESS.md` |
 | What does this script do | `scripts/README.md` |
