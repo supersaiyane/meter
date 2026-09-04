@@ -1060,6 +1060,29 @@ changes:
   commit: 'd5c8cdc'
   detail: '[ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md)'
 issues:
+- id: ISS-146
+  severity: HIGH
+  summary: make security-scan could not complete and make security-scan-images had never run,
+    because the images had never built. Three tooling faults hid the result. gitleaks ran with no
+    config and reported two false positives on `collector=COLLECTOR`, matching a collector name as
+    a secret. pip-audit was installed into the venv by make security-tools but the scan script
+    looked only on PATH, so it reported the tool missing and stopped. pip-audit then audited the
+    environment, which contains the project installed editable, failed to find `meter` on PyPI, and
+    under --strict aborted before writing pip-audit.json, so Python dependencies were absent from
+    every summary that reported zero findings. All three fixed 2026-08-29 and both scans pass
+  status: FIXED
+  detail: '`.gitleaks.toml`, `scripts/security/scan.sh`'
+- id: ISS-147
+  severity: HIGH
+  summary: The runtime images carried pip, setuptools and wheel, installed to build the venv and
+    then copied into the runtime with it. setuptools 70.3.0 alone accounted for one High and one
+    Medium in every image, four of the eight unresolved findings in the first image scan that had
+    ever run. Build tools are not runtime code and are now removed from the venv before it is
+    copied, which fixes the findings at the source rather than chasing a version and makes the
+    image smaller. The remaining finding, CVE-2026-19672 in the base image, has no published fix
+    and is accepted with an enforced reachability argument
+  status: FIXED
+  detail: '`docker/Dockerfile.api`, `docker/Dockerfile.worker`, `security/policy/accepted.yaml`'
 - id: ISS-143
   severity: HIGH
   summary: make up could not build or start, for six independent reasons found by running it. The

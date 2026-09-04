@@ -43,6 +43,7 @@ FORBIDDEN = {
     "stringprep": "CVE-2026-17084",
     "poplib": "CVE-2025-15367",
     "urllib.request": "CVE-2026-15806",
+    "tarfile": "CVE-2026-19672",
 }
 
 

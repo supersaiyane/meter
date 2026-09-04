@@ -89,6 +89,13 @@ COPY migrations/       ./migrations/
 
 RUN /opt/venv/bin/pip install --no-compile --no-deps .
 
+# Build tools are not runtime code. pip, setuptools and wheel are installed to
+# build the venv and are then copied into the runtime image with it, where they
+# are never used and carry their own CVEs: setuptools 70.3.0 alone accounted for
+# one High and one Medium in every image. Removing them fixes those findings at
+# the source rather than chasing a version, and makes the image smaller.
+RUN /opt/venv/bin/pip uninstall --yes pip setuptools wheel
+
 # ---------- runtime: no shell, no package manager, near zero CVE ----------
 # reg.mini.dev/python:3.13, pinned per ADR-0010
 FROM --platform=${TARGETPLATFORM} reg.mini.dev/python@sha256:06b604b79e52ed1e7c2bd73b007c6e4e2ceb5504030aa6c34b00aa9c7a92f41d

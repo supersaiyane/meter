@@ -66,6 +66,21 @@ accepted:
     added: 2026-08-23
     review: 2026-11-21
 
+  - id: CVE-2026-19672
+    package: python-3.13
+    target: base-image
+    unfixable: true
+    reachability: >
+      Affects the tarfile module's extraction filters, which created empty
+      directories outside the destination for a member whose name leaves the
+      destination and returns to it. Meter never imports tarfile and extracts no
+      archives at all: every input it reads is JSON over HTTP or a row from its
+      own database, and nothing it writes is an archive. Enforced by
+      check_forbidden_imports.py.
+    owner: PLACEHOLDER-security
+    added: 2026-08-29
+    review: 2026-11-27
+
   - id: CVE-2025-15367
     package: python-3.13
     target: base-image
