@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-307 public symbols across 5 packages.
+314 public symbols across 5 packages.
 
 ## finops_core
 
@@ -74,7 +74,7 @@ a duplicate.
 | `NotOptedIn` | class | `finops_core/errors.py:80` | The service exists but this organization has never enabled it. | `finops_providers/aws/client.py` |
 | `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | `finops_ingest/collectors/org_tree.py`, `finops_providers/fake/provider.py` |
 | `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | `finops_providers/aws/client.py`, `finops_providers/grafana/client.py` |
-| `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py`, `finops_ingest/collectors/account_health.py`, `finops_ingest/worker.py`, `finops_providers/aws/client.py`, and 2 more |
+| `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py`, `finops_ingest/collectors/account_health.py`, `finops_ingest/worker.py`, `finops_providers/aws/client.py`, and 3 more |
 | `AccountDiscovery` | class | `finops_core/ports/accounts.py:19` | Reads which accounts exist and how they are arranged. | nothing in this tree |
 | `AccountDiscovery.list_accounts` | method | `finops_core/ports/accounts.py:22` | Every account this organization contains. | `finops_ingest/collectors/org_tree.py` |
 | `AccountDiscovery.describe_organization` | method | `finops_core/ports/accounts.py:35` | Every node of the organization tree, roots and units included. | `finops_ingest/collectors/org_tree.py` |
@@ -106,9 +106,12 @@ a duplicate.
 | `QueryParser` | class | `finops_core/ports/query.py:135` | Reading meaning out of a vendor's saved query. | nothing in this tree |
 | `QueryParser.classify` | method | `finops_core/ports/query.py:148` | What engine this target runs on, and what it runs against. | `finops_providers/grafana/amg.py` |
 | `QueryParser.iter_panels` | method | `finops_core/ports/query.py:152` | Every panel, including the ones nested inside a row. | `finops_providers/grafana/amg.py` |
-| `QueryParser.refresh_seconds` | method | `finops_core/ports/query.py:156` | A dashboard refresh interval in seconds. Zero means no auto refresh. | `finops_providers/grafana/amg.py` |
-| `QueryParser.relative_range_seconds` | method | `finops_core/ports/query.py:160` | How far back a range looks. None for an absolute range. | `finops_providers/grafana/amg.py` |
-| `QueryParser.fingerprint` | method | `finops_core/ports/query.py:164` | A stable identifier for one query, across days and variable values. | `finops_providers/grafana/amg.py` |
+| `QueryParser.normalise` | method | `finops_core/ports/query.py:156` | Query text reduced to a comparison key. | `finops_providers/aws/query_evidence.py`, `finops_providers/fake/evidence.py` |
+| `QueryParser.refresh_seconds` | method | `finops_core/ports/query.py:166` | A dashboard refresh interval in seconds. Zero means no auto refresh. | `finops_providers/grafana/amg.py` |
+| `QueryParser.relative_range_seconds` | method | `finops_core/ports/query.py:170` | How far back a range looks. None for an absolute range. | `finops_providers/grafana/amg.py` |
+| `QueryParser.fingerprint` | method | `finops_core/ports/query.py:174` | A stable identifier for one query, across days and variable values. | `finops_providers/grafana/amg.py` |
+| `QueryEvidence` | class | `finops_core/ports/query.py:189` | What an account actually executed, as opposed to what it has defined. | nothing in this tree |
+| `QueryEvidence.observations` | method | `finops_core/ports/query.py:204` | Executions seen in the window, in the shape `finops_query.ownership` reads. | `finops_ingest/collectors/query_audit.py` |
 | `QuotaSource` | class | `finops_core/ports/quotas.py:17` | Reads the quotas that apply to an account and region. | nothing in this tree |
 | `QuotaSource.list_quotas` | method | `finops_core/ports/quotas.py:20` | Every quota for the account and region, with usage where published. | nothing in this tree |
 
@@ -124,7 +127,7 @@ a duplicate.
 | `partition_for` | function | `finops_providers/aws/client.py:96` | The partition a region belongs to. | nothing in this tree |
 | `role_arn` | function | `finops_providers/aws/client.py:114` | The collector role in a member account. Built, never stored. | `finops_providers/aws/credentials.py` |
 | `error_code` | function | `finops_providers/aws/client.py:119` |  | nothing in this tree |
-| `translate` | function | `finops_providers/aws/client.py:123` | Turn a provider exception into exactly one of the six causes. | `finops_providers/aws/accounts.py`, `finops_providers/aws/credentials.py`, `finops_providers/aws/platform_cost.py`, `finops_providers/grafana/client.py` |
+| `translate` | function | `finops_providers/aws/client.py:123` | Turn a provider exception into exactly one of the six causes. | `finops_providers/aws/accounts.py`, `finops_providers/aws/credentials.py`, `finops_providers/aws/platform_cost.py`, `finops_providers/aws/query_evidence.py`, and 1 more |
 | `AwsSession` | class | `finops_providers/aws/credentials.py:44` | An assumed role session. Satisfies `ProviderSession`, opaque to the domain. | nothing in this tree |
 | `AwsCredentialBroker` | class | `finops_providers/aws/credentials.py:53` | Produces a scoped session for a target account, and caches it sensibly. | nothing in this tree |
 | `AwsCredentialBroker.external_id` | method | `finops_providers/aws/credentials.py:72` | Read the ExternalId once. Never logged, never put in an error detail. | nothing in this tree |
@@ -134,6 +137,10 @@ a duplicate.
 | `ModuleCharge` | class | `finops_providers/aws/platform_cost.py:38` | One day, one module tag value, one service, as the provider reported it. | nothing in this tree |
 | `AwsPlatformCostSource` | class | `finops_providers/aws/platform_cost.py:48` | Reads the platform's own spend, grouped, in a single request. | nothing in this tree |
 | `AwsPlatformCostSource.daily_by_module` | method | `finops_providers/aws/platform_cost.py:65` | Every module and service charge between start and end. | `finops_ingest/collectors/platform_cost.py` |
+| `CloudTrailQueryEvidence` | class | `finops_providers/aws/query_evidence.py:99` | `QueryEvidence` over CloudTrail and CloudWatch Logs query history. | nothing in this tree |
+| `CloudTrailQueryEvidence.observations` | method | `finops_providers/aws/query_evidence.py:119` |  | `finops_ingest/collectors/query_audit.py` |
+| `FakeQueryEvidence` | class | `finops_providers/fake/evidence.py:45` | `QueryEvidence` in memory, with a configurable failure. | nothing in this tree |
+| `FakeQueryEvidence.observations` | method | `finops_providers/fake/evidence.py:62` |  | `finops_ingest/collectors/query_audit.py` |
 | `FakeSession` | class | `finops_providers/fake/provider.py:33` | What `session_for` hands back. Opaque, like the real thing. | nothing in this tree |
 | `FakeProvider` | class | `finops_providers/fake/provider.py:41` | One object satisfying all eight provider ports, with a configurable failure plan. | nothing in this tree |
 | `FakeProvider.session_for` | method | `finops_providers/fake/provider.py:93` |  | `finops_ingest/worker.py`, `finops_providers/aws/health.py` |
@@ -147,10 +154,10 @@ a duplicate.
 | `FakeProvider.list_quotas` | method | `finops_providers/fake/provider.py:167` |  | nothing in this tree |
 | `FakeProvider.authenticate` | method | `finops_providers/fake/provider.py:173` |  | nothing in this tree |
 | `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:186` |  | `finops_api/deps.py`, `finops_ingest/collectors/org_tree.py` |
-| `FakeQuerySurface` | class | `finops_providers/fake/surface.py:131` | `QuerySurface` in memory. Every failure is asked for, never incidental. | nothing in this tree |
-| `FakeQuerySurface.discover` | method | `finops_providers/fake/surface.py:169` |  | `finops_ingest/collectors/query_audit.py` |
-| `FakeQuerySurface.list_queries` | method | `finops_providers/fake/surface.py:178` |  | `finops_ingest/collectors/query_audit.py` |
-| `FakeQuerySurface.apply_control` | method | `finops_providers/fake/surface.py:192` |  | nothing in this tree |
+| `FakeQuerySurface` | class | `finops_providers/fake/surface.py:144` | `QuerySurface` in memory. Every failure is asked for, never incidental. | nothing in this tree |
+| `FakeQuerySurface.discover` | method | `finops_providers/fake/surface.py:182` |  | `finops_ingest/collectors/query_audit.py` |
+| `FakeQuerySurface.list_queries` | method | `finops_providers/fake/surface.py:191` |  | `finops_ingest/collectors/query_audit.py` |
+| `FakeQuerySurface.apply_control` | method | `finops_providers/fake/surface.py:205` |  | nothing in this tree |
 | `Scope` | class | `finops_providers/grafana/amg.py:54` | One account and region pair to look for workspaces in. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/fake/provider.py` |
 | `Scope.key` | method | `finops_providers/grafana/amg.py:61` |  | nothing in this tree |
 | `AmgQuerySurface` | class | `finops_providers/grafana/amg.py:84` | `QuerySurface` over Amazon Managed Grafana, read only. | nothing in this tree |
@@ -160,7 +167,7 @@ a duplicate.
 | `Workspace` | class | `finops_providers/grafana/client.py:68` | One Grafana workspace, however it was discovered. | `finops_providers/grafana/amg.py` |
 | `Workspace.scope_key` | method | `finops_providers/grafana/client.py:77` | How a failure against this workspace is recorded and reported. | nothing in this tree |
 | `endpoint_from_url` | function | `finops_providers/grafana/client.py:82` | The host part of a configured workspace URL, or None. | nothing in this tree |
-| `translate` | function | `finops_providers/grafana/client.py:97` | Turn an HTTP failure into exactly one of the six causes. | `finops_providers/aws/accounts.py`, `finops_providers/aws/credentials.py`, `finops_providers/aws/platform_cost.py` |
+| `translate` | function | `finops_providers/grafana/client.py:97` | Turn an HTTP failure into exactly one of the six causes. | `finops_providers/aws/accounts.py`, `finops_providers/aws/credentials.py`, `finops_providers/aws/platform_cost.py`, `finops_providers/aws/query_evidence.py` |
 | `GrafanaClient` | class | `finops_providers/grafana/client.py:121` | A read only caller of one Grafana workspace's HTTP API. | `finops_providers/grafana/amg.py` |
 | `GrafanaClient.search_dashboards` | method | `finops_providers/grafana/client.py:167` | Every dashboard in the workspace. | `finops_providers/grafana/amg.py` |
 | `GrafanaClient.dashboard` | method | `finops_providers/grafana/client.py:193` | One dashboard, with its meta wrapper, as the analyser expects it. | `finops_providers/grafana/amg.py` |
@@ -186,9 +193,9 @@ a duplicate.
 | `attribute` | function | `finops_ingest/collectors/platform_cost.py:51` | Name the module a charge belongs to. Never returns an empty string. | nothing in this tree |
 | `PlatformCostCollector` | class | `finops_ingest/collectors/platform_cost.py:58` | One grouped request a day, written by module and service. | nothing in this tree |
 | `total` | function | `finops_ingest/collectors/platform_cost.py:106` | What the platform cost over the set, for a caller that wants one figure. | nothing in this tree |
-| `rates_from` | function | `finops_ingest/collectors/query_audit.py:69` | Build the model's rates from configuration. | nothing in this tree |
-| `default_ingest_rate` | function | `finops_ingest/collectors/query_audit.py:104` | The fallback used when ingestion cannot be measured for a log group. | nothing in this tree |
-| `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:127` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
+| `rates_from` | function | `finops_ingest/collectors/query_audit.py:70` | Build the model's rates from configuration. | nothing in this tree |
+| `default_ingest_rate` | function | `finops_ingest/collectors/query_audit.py:105` | The fallback used when ingestion cannot be measured for a log group. | nothing in this tree |
+| `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:128` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
 | `hashed_subject` | function | `finops_ingest/collectors/retention.py:65` | A stable, non reversible stand in, so a duplicate sign in is still one row. | nothing in this tree |
 | `retention_principal` | function | `finops_ingest/collectors/retention.py:74` | Anonymise principals unseen past the window. Never removes a row. | nothing in this tree |
 | `retention_operational` | function | `finops_ingest/collectors/retention.py:96` | Remove run history, resolved errors and dead watermarks past the window. | nothing in this tree |
@@ -235,7 +242,7 @@ a duplicate.
 | `install_default_schedule` | function | `finops_ingest/registry.py:279` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
 | `CollectorRegistry` | class | `finops_ingest/registry.py:307` | The collectors this process knows how to run. | nothing in this tree |
 | `CollectorRegistry.register` | method | `finops_ingest/registry.py:313` |  | `finops_ingest/collectors/retention.py` |
-| `CollectorRegistry.get` | method | `finops_ingest/registry.py:321` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 24 more |
+| `CollectorRegistry.get` | method | `finops_ingest/registry.py:321` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 25 more |
 | `CollectorRegistry.names` | method | `finops_ingest/registry.py:330` |  | nothing in this tree |
 | `Outcome` | class | `finops_ingest/worker.py:46` | What happened to one unit. Every one of these is a normal result. | nothing in this tree |
 | `BatchResult` | class | `finops_ingest/worker.py:59` |  | nothing in this tree |
@@ -346,9 +353,9 @@ a duplicate.
 | `ApiError` | class | `finops_mcp/api.py:32` | The API refused or could not answer. Carries the status for the caller. | nothing in this tree |
 | `EnvelopeMissingError` | class | `finops_mcp/api.py:41` | A 200 with no `meta`. Not the contract, so not treated as data. | nothing in this tree |
 | `Transport` | class | `finops_mcp/api.py:45` | What the client needs from an HTTP library, and nothing more. | nothing in this tree |
-| `Transport.get` | method | `finops_mcp/api.py:53` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 23 more |
+| `Transport.get` | method | `finops_mcp/api.py:53` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 24 more |
 | `MeterApi` | class | `finops_mcp/api.py:56` | A caller of the Meter HTTP API. Holds no scope and no credential. | `finops_mcp/server.py` |
-| `MeterApi.get` | method | `finops_mcp/api.py:68` | One GET, returning the envelope exactly as the API sent it. | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 23 more |
+| `MeterApi.get` | method | `finops_mcp/api.py:68` | One GET, returning the envelope exactly as the API sent it. | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 24 more |
 | `MissingTokenError` | class | `finops_mcp/server.py:37` | No caller token. The tool refuses rather than answering as somebody else. | nothing in this tree |
 | `token_from` | function | `finops_mcp/server.py:41` | The caller's bearer token, or an error. | nothing in this tree |
 | `make_handler` | function | `finops_mcp/server.py:59` | Bind one row of the tool table to one handler. | nothing in this tree |
@@ -405,6 +412,7 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `Classified.region` in `finops_core/ports/query.py:128`
 - `Classified.log_groups` in `finops_core/ports/query.py:131`
 - `QueryParser` in `finops_core/ports/query.py:135`
+- `QueryEvidence` in `finops_core/ports/query.py:189`
 - `QuotaSource` in `finops_core/ports/quotas.py:17`
 - `QuotaSource.list_quotas` in `finops_core/ports/quotas.py:20`
 - `AwsAccountDiscovery` in `finops_providers/aws/accounts.py:55`
@@ -416,9 +424,8 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `AccountHealthCheck` in `finops_providers/aws/health.py:54`
 - `ModuleCharge` in `finops_providers/aws/platform_cost.py:38`
 - `AwsPlatformCostSource` in `finops_providers/aws/platform_cost.py:48`
+- `CloudTrailQueryEvidence` in `finops_providers/aws/query_evidence.py:99`
+- `FakeQueryEvidence` in `finops_providers/fake/evidence.py:45`
 - `FakeSession` in `finops_providers/fake/provider.py:33`
 - `FakeProvider` in `finops_providers/fake/provider.py:41`
 - `FakeProvider.latest_available_period` in `finops_providers/fake/provider.py:112`
-- `FakeProvider.read_period` in `finops_providers/fake/provider.py:116`
-- `FakeProvider.read_series` in `finops_providers/fake/provider.py:133`
-- `FakeProvider.list_resources` in `finops_providers/fake/provider.py:151`

@@ -41,7 +41,9 @@ from finops_ingest.collectors.query_audit import (
     rates_from,
 )
 from finops_ingest.registry import CollectorContext
+from finops_providers.fake.evidence import FakeQueryEvidence
 from finops_providers.fake.surface import FakeQuerySurface
+from finops_query.parser import GrafanaQueryParser
 
 #: Fixed, and readable as "seeded" in the first block, so a row found in a
 #: database months from now identifies itself without a lookup.
@@ -92,11 +94,16 @@ class Unit:
 
 def seed(engine: Any, settings: Any, now: datetime) -> tuple[int, int]:
     """Create the tenant and run the collector into it. Returns rows, instances."""
+    parser = GrafanaQueryParser()
     collector = QueryAuditCollector(
         FakeQuerySurface(),
         rates_from(settings),
         default_ingest_rate(settings),
         clock=lambda: now,
+        # With evidence, so the demo estate shows a measured finding beside a
+        # modelled one. Telling those apart is what the screens are for, and an
+        # estate where every figure is modelled cannot demonstrate it.
+        evidence=FakeQueryEvidence(parser),
     )
     with engine.begin() as connection:
         connection.execute(

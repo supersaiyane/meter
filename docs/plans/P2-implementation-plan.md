@@ -625,17 +625,28 @@ introduce.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-05 |
 | Delivers | FEAT-013 |
 | Depends on | TASK-P2-011 |
 | Estimate | L |
 
 **Acceptance criteria.**
 
-- [ ] CloudTrail `StartQuery`, `logs:DescribeQueries` and `GetMetricData` call
-      counts collected and matched by fingerprint
-- [ ] A matched finding is promoted to `measured` with `measured_runs` set
-- [ ] An unmatched finding stays `modelled`, which is a normal state
+- [x] CloudTrail `StartQuery`, `logs:DescribeQueries` and `GetMetricData` call
+      counts collected and matched by fingerprint. **Matched by normalised query
+      text rather than by fingerprint, because that is what CloudTrail records:
+      a fingerprint includes the dashboard and the panel, and an execution event
+      knows neither. `match_observed` normalises and falls back to a template
+      regex, which is how evidence reaches a panel storing `$region` from runs
+      recorded against `eu-west-1`.**
+- [x] A matched finding is promoted to `measured` with `measured_runs` set
+- [x] An unmatched finding stays `modelled`, which is a normal state
+
+**Evidence is fetched once per run, not once per instance.** CloudTrail records
+an execution against the account it ran in, never against the tool that issued
+it, so a self hosted Grafana querying CloudWatch appears in the same trail as a
+managed one. Asking per instance would refetch the same window and would answer
+nothing at all for an instance that carries no account of its own.
 
 **Do not.** Do not treat absent evidence as zero runs. Absent means unobserved.
 

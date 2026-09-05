@@ -153,6 +153,16 @@ class QueryParser(Protocol):
         """Every panel, including the ones nested inside a row."""
         ...
 
+    def normalise(self, text: str | None) -> str:
+        """Query text reduced to a comparison key.
+
+        Comments, whitespace and case only. It is here because an adapter has to
+        key what it observed the same way the analysis looks it up, and an
+        adapter may not import the analysis: `finops_query` sits above
+        `finops_providers` precisely because it reads what an adapter fetched.
+        """
+        ...
+
     def refresh_seconds(self, raw: Any) -> int:
         """A dashboard refresh interval in seconds. Zero means no auto refresh."""
         ...
@@ -172,4 +182,52 @@ class QueryParser(Protocol):
         query: str,
     ) -> str:
         """A stable identifier for one query, across days and variable values."""
+        ...
+
+
+@runtime_checkable
+class QueryEvidence(Protocol):
+    """What an account actually executed, as opposed to what it has defined.
+
+    A definition says a panel refreshes every ten seconds. This says how many
+    times it really ran. The difference between those two is the whole of
+    FEAT-013: a modelled Logs Insights cost rests on an assumed ingestion rate
+    that can be an order of magnitude out, and a measured one is what the
+    account did.
+
+    **Absent evidence is not zero.** A query with no observations comes back
+    absent from the bundle, and the caller leaves the finding modelled. Writing
+    a zero would say the query never ran, which is a claim, and the honest
+    answer is that nobody watched.
+    """
+
+    def observations(
+        self, *, account_id: str, region: str, lookback_days: int
+    ) -> Mapping[str, Any]:
+        """Executions seen in the window, in the shape `finops_query.ownership` reads.
+
+        Three keys, and the shape is fixed by `match_observed` and the two
+        `measure_*` functions rather than chosen here:
+
+        `logs` maps a normalised query string to a record of what it did:
+        `runs`, `bytes`, `runs_bytes` and `log_groups`. From CloudTrail
+        `StartQuery` for the run count, and from `logs:DescribeQueries` for the
+        bytes where history still holds them.
+
+        `gmd_by_metric` maps `namespace|metric` to a `GetMetricData` call count.
+        CloudTrail identifies those calls by account and region and never by
+        panel, which is why this is the weakest attribution here and part of why
+        ISS-093 exists.
+
+        `lookback_days` is the window the counts cover, so a caller can turn a
+        total into a rate without assuming the window it asked for is the window
+        it got.
+
+        Raises:
+            AccessDenied: The credential may not read CloudTrail or query history.
+            NotOptedIn: CloudTrail is not enabled in this account or region.
+            Throttled: The provider rejected the call rate.
+            Unreachable: The endpoint did not answer.
+            SchemaDrift: An event arrived in a shape this adapter cannot read.
+        """
         ...

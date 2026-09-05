@@ -87,6 +87,7 @@ def _query(
     *,
     origin: QueryOrigin = QueryOrigin.PANEL,
     element: str = "Error rate by service",
+    query: str = "fields @timestamp, @message | filter @message like /ERROR/",
     refresh_seconds: int = 10,
     window_seconds: int = 2592000,
 ) -> QueryDefinition:
@@ -98,7 +99,7 @@ def _query(
         fingerprint=fingerprint,
         origin=origin,
         engine="logs_insights",
-        query="fields @timestamp, @message | filter @message like /ERROR/",
+        query=query,
         container="Platform overview",
         container_id="abc123",
         element=element,
@@ -115,6 +116,18 @@ def _query(
 QUERIES: Mapping[str, tuple[QueryDefinition, ...]] = {
     "ws-4e5f6a7b": (
         _query("ws-4e5f6a7b", "fp-panel-0001"),
+        # A third query, worded differently on purpose. The two above share their
+        # text, so evidence matching one matches both; without this the estate
+        # cannot show a measured finding beside a modelled one, which is the
+        # distinction the whole product rests on.
+        _query(
+            "ws-4e5f6a7b",
+            "fp-panel-0003",
+            element="Checkout latency",
+            query="fields @timestamp, duration | filter service = 'checkout' | stats avg(duration)",
+            refresh_seconds=300,
+            window_seconds=86400,
+        ),
         _query(
             "ws-4e5f6a7b",
             "fp-alert-0002",

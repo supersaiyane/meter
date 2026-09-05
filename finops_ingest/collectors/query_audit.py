@@ -22,7 +22,7 @@ claims otherwise.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
@@ -40,6 +40,7 @@ from finops_query.classify import (
     Classification,
 )
 from finops_query.cost_model import ALERT, PANEL, IngestRate, Rates, price, runs_per_day
+from finops_query.ownership import Measurement, measure_logs_query, measure_metric_query
 from finops_query.policy import query_key
 
 COLLECTOR = "query_audit"
@@ -133,8 +134,15 @@ class QueryAuditCollector:
         rates: Rates,
         ingest_rate: IngestRate,
         clock: Clock = _system_clock,
+        evidence: Any = None,
+        lookback_days: int = 30,
     ) -> None:
         self._surface = surface
+        # Optional. Without it every figure stays modelled, which is a normal
+        # state and not a degraded one: FEAT-013 upgrades findings, it does not
+        # gate them.
+        self._evidence = evidence
+        self._lookback_days = lookback_days
         self._rates = rates
         self._ingest_rate = ingest_rate
         self._clock = clock
@@ -143,8 +151,16 @@ class QueryAuditCollector:
         tenant_id = context.unit.tenant_id
         now = self._clock()
         written = 0
+        instances = tuple(self._surface.discover())
+        # Once per run, not once per instance. CloudTrail records an execution
+        # against the account it ran in, not against the tool that issued it, so
+        # a self hosted Grafana querying CloudWatch appears in the same trail as
+        # a managed one. Asking per instance would fetch the same window
+        # repeatedly and would answer nothing for an instance that carries no
+        # account of its own.
+        observed = self._observations(instances)
 
-        for instance in self._surface.discover():
+        for instance in instances:
             instance_pk = self._write_instance(context, tenant_id, instance, now)
             written += 1
             if not instance.reachable:
@@ -160,7 +176,9 @@ class QueryAuditCollector:
                 self._mark_unreadable(context, instance_pk, failure, now)
                 continue
             for definition in definitions:
-                written += self._write_definition(context, tenant_id, instance_pk, definition, now)
+                written += self._write_definition(
+                    context, tenant_id, instance_pk, definition, now, observed
+                )
 
         return CollectorOutcome(items_written=written)
 
@@ -229,6 +247,63 @@ class QueryAuditCollector:
             {"reason": type(failure).__name__, "now": now, "id": instance_pk},
         )
 
+    # -- evidence ----------------------------------------------------------
+
+    def _observations(self, instances: tuple[SurfaceInstance, ...]) -> Mapping[str, Any] | None:
+        """What this estate's account was seen executing, or None.
+
+        None means unobserved, and every finding then stays modelled. It never
+        means zero runs: a query nobody watched is not a query nobody ran, and
+        writing zero would turn an absence of evidence into a claim about the
+        world.
+        """
+        if self._evidence is None:
+            return None
+        # The account and region of the first instance that names one. A run
+        # covers one account, and an instance that carries no account of its own
+        # still queries CloudWatch inside it.
+        account_id = next((a for a in (self._account_of(i) for i in instances) if a), "")
+        region = next((r for r in (self._region_of(i) for i in instances) if r), "")
+        try:
+            bundle: Mapping[str, Any] = self._evidence.observations(
+                account_id=account_id,
+                region=region,
+                lookback_days=self._lookback_days,
+            )
+            return bundle
+        except CollectionError:
+            # Evidence that could not be read leaves the figures modelled. It
+            # does not fail the run, because a modelled estate is still worth
+            # reporting and an aborted one is not.
+            return None
+
+    def _measure(
+        self, definition: QueryDefinition, observed: Mapping[str, Any] | None, modelled_bytes: float
+    ) -> Measurement | None:
+        """The observed figure for one definition, or None if nothing saw it."""
+        if observed is None:
+            return None
+        if definition.engine == LOGS_INSIGHTS:
+            return measure_logs_query(
+                definition.query,
+                modelled_bytes,
+                dict(observed),
+                self._rates.logs_scan_price_per_gb,
+            )
+        if definition.engine in (METRIC_SEARCH, METRICS_INSIGHTS):
+            # A metric panel names its namespace in targets, and CloudTrail
+            # identifies GetMetricData by account and region rather than by
+            # panel, which is why this attribution is the weakest here.
+            namespace = definition.targets[0] if definition.targets else ""
+            return measure_metric_query(
+                namespace,
+                definition.element,
+                dict(observed),
+                self._rates.metrics_per_call,
+                self._rates.metrics_price_per_1000,
+            )
+        return None
+
     # -- definitions and findings -----------------------------------------
 
     def _write_definition(
@@ -238,6 +313,7 @@ class QueryAuditCollector:
         instance_pk: Any,
         definition: QueryDefinition,
         now: datetime,
+        observed: Mapping[str, Any] | None = None,
     ) -> int:
         origin = "ALERT_RULE" if definition.origin is QueryOrigin.ALERT else "PANEL"
         query_pk = context.connection.execute(
@@ -283,7 +359,7 @@ class QueryAuditCollector:
             },
         ).one()[0]
 
-        self._write_finding(context, tenant_id, query_pk, definition, now)
+        self._write_finding(context, tenant_id, query_pk, definition, now, observed)
         return 2
 
     def _write_finding(
@@ -293,6 +369,7 @@ class QueryAuditCollector:
         query_pk: Any,
         definition: QueryDefinition,
         now: datetime,
+        observed: Mapping[str, Any] | None = None,
     ) -> None:
         origin = ALERT if definition.origin is QueryOrigin.ALERT else PANEL
         classification = Classification(
@@ -317,16 +394,38 @@ class QueryAuditCollector:
             self._ingest_rate,
             definition.region or "",
         )
+
+        # The overlay. A measurement replaces the modelled run count, the cost,
+        # and where query history carried them the scanned bytes as well. Absent
+        # evidence leaves every one of them alone.
+        measured = self._measure(definition, observed, cost.bytes_per_run)
+        provenance = "measured" if measured else "modelled"
+        runs = measured.runs_per_day if measured else per_day
+        cost_month = measured.cost_month if measured else cost.cost_month
+        scan_bytes = measured.bytes_per_run if measured else cost.bytes_per_run
+        # NULL for a modelled row and a count for a measured one. The schema
+        # refuses either half on its own, which is what stops a figure claiming
+        # a provenance it does not have.
+        measured_runs = measured.runs_total if measured else None
+        why = " ".join(cost.why) or "No cost driver identified."
+        if measured:
+            # The reason says which grade of measurement this is: runs and bytes
+            # observed, or runs observed with bytes still modelled. A reader who
+            # cannot tell those apart treats both as an estimate.
+            why = f"{measured.reason} {why}".strip()
         context.connection.execute(
             text(
                 "INSERT INTO query_finding (finding_id, tenant_id, query_id, run_date, "
                 "runs_per_day, scan_bytes_per_run, cost_month_usd, provenance, measured_runs, "
                 "severity, why, as_of, collected_at) VALUES (:id, :tenant, :query, :day, "
-                ":per_day, :scan, :cost, 'modelled', NULL, :severity, :why, :as_of, :now) "
+                ":per_day, :scan, :cost, :provenance, :measured_runs, :severity, :why, "
+                ":as_of, :now) "
                 "ON CONFLICT (tenant_id, query_id, run_date) DO UPDATE SET "
                 "runs_per_day = EXCLUDED.runs_per_day, "
                 "scan_bytes_per_run = EXCLUDED.scan_bytes_per_run, "
-                "cost_month_usd = EXCLUDED.cost_month_usd, severity = EXCLUDED.severity, "
+                "cost_month_usd = EXCLUDED.cost_month_usd, "
+                "provenance = EXCLUDED.provenance, measured_runs = EXCLUDED.measured_runs, "
+                "severity = EXCLUDED.severity, "
                 "why = EXCLUDED.why, as_of = EXCLUDED.as_of, "
                 "collected_at = EXCLUDED.collected_at"
             ),
@@ -335,12 +434,14 @@ class QueryAuditCollector:
                 "tenant": tenant_id,
                 "query": query_pk,
                 "day": now.date(),
-                "per_day": round(per_day, 2),
-                "scan": int(cost.bytes_per_run),
-                "cost": cost.cost_month,
+                "per_day": round(runs, 2),
+                "scan": int(scan_bytes),
+                "cost": cost_month,
+                "provenance": provenance,
+                "measured_runs": measured_runs,
                 "severity": cost.risk_level,
                 # The prose that makes a finding actionable rather than a number.
-                "why": " ".join(cost.why) or "No cost driver identified.",
+                "why": why,
                 "as_of": definition.as_of,
                 "now": now,
             },

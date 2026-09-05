@@ -22,8 +22,10 @@ from finops_ingest.collectors.query_audit import (
     default_ingest_rate,
 )
 from finops_ingest.registry import DEFAULT_SCHEDULE, CollectorContext
+from finops_providers.fake.evidence import FakeQueryEvidence
 from finops_providers.fake.surface import FakeQuerySurface
 from finops_query.cost_model import Rates
+from finops_query.parser import GrafanaQueryParser
 
 pytestmark = pytest.mark.integration
 
@@ -84,8 +86,8 @@ def test_it_writes_the_estate_and_prices_what_it_read(engine: Engine, tenant_id:
     run(engine, tenant_id, FakeQuerySurface())
     assert count(engine, "grafana_instance", tenant_id) == 3
     # The fake holds two queries on one reachable instance, and none on the other.
-    assert count(engine, "query_definition", tenant_id) == 2
-    assert count(engine, "query_finding", tenant_id) == 2
+    assert count(engine, "query_definition", tenant_id) == 3
+    assert count(engine, "query_finding", tenant_id) == 3
 
 
 def test_every_figure_it_writes_is_modelled_and_says_so(engine: Engine, tenant_id: UUID) -> None:
@@ -144,8 +146,8 @@ def test_three_runs_in_one_day_leave_one_finding_per_query(engine: Engine, tenan
     # dinner time.
     for _ in range(3):
         run(engine, tenant_id, FakeQuerySurface())
-    assert count(engine, "query_definition", tenant_id) == 2
-    assert count(engine, "query_finding", tenant_id) == 2
+    assert count(engine, "query_definition", tenant_id) == 3
+    assert count(engine, "query_finding", tenant_id) == 3
     assert count(engine, "grafana_instance", tenant_id) == 3
 
 
@@ -167,7 +169,8 @@ def test_an_alert_is_counted_over_the_whole_day_and_a_panel_is_not(
         rows: dict[str, Any] = dict(
             connection.execute(
                 text(
-                    "SELECT d.origin, f.runs_per_day FROM query_finding f "
+                    "SELECT CASE WHEN d.origin = 'ALERT_RULE' THEN 'ALERT_RULE' "
+                    "ELSE d.panel_id END, f.runs_per_day FROM query_finding f "
                     "JOIN query_definition d ON d.query_id = f.query_id "
                     "WHERE f.tenant_id = :t"
                 ),
@@ -176,8 +179,12 @@ def test_an_alert_is_counted_over_the_whole_day_and_a_panel_is_not(
         )
     # 86400 / 60, the whole day.
     assert float(rows["ALERT_RULE"]) == pytest.approx(1440.0)
-    # 8 viewing hours / 10 seconds, not the whole day.
-    assert float(rows["PANEL"]) == pytest.approx(RATES.viewing_hours_per_day * 3600 / 10)
+    # 8 viewing hours / 10 seconds, not the whole day. Selected by panel rather
+    # than by origin, because the estate holds more than one panel and keying a
+    # dict on origin would silently keep whichever row came back last.
+    assert float(rows["Error rate by service"]) == pytest.approx(
+        RATES.viewing_hours_per_day * 3600 / 10
+    )
 
 
 def test_every_finding_carries_prose_saying_what_drives_the_cost(
@@ -212,11 +219,11 @@ def test_every_definition_is_written_with_its_query_key(engine: Engine, tenant_i
     assert keys
     assert all(key for key in keys)
     # The fixture's panel and alert run the same text against the same log
-    # group, so they share a key, which is the designed behaviour rather than a
-    # collision: a measured execution cannot tell which one produced it, and
+    # group, so those two share a key, which is the designed behaviour rather
+    # than a collision. The third query is worded differently and keeps its own.
     # attaching the evidence to both is the honest answer. They keep separate
     # fingerprints, so neither definition is lost.
-    assert len(set(keys)) == 1
+    assert len(set(keys)) == 2
     with engine.connect() as connection:
         prints = (
             connection.execute(
@@ -226,7 +233,7 @@ def test_every_definition_is_written_with_its_query_key(engine: Engine, tenant_i
             .scalars()
             .all()
         )
-    assert len(set(prints)) == 2
+    assert len(set(prints)) == 3
 
 
 def test_the_default_ingest_rate_is_per_hour_not_per_day() -> None:
@@ -244,3 +251,125 @@ def test_the_default_ingest_rate_is_per_hour_not_per_day() -> None:
 
     rate = default_ingest_rate(Settings())
     assert rate("111122223333", "eu-west-2") == 2.0
+
+
+# --- the measured overlay, FEAT-013 -------------------------------------------
+
+
+def run_with_evidence(engine: Engine, tenant: UUID, evidence: Any) -> int:
+    collector = QueryAuditCollector(
+        FakeQuerySurface(), RATES, ingest_rate, clock=lambda: NOW, evidence=evidence
+    )
+    with engine.begin() as connection:
+        outcome = collector(CollectorContext(unit=Unit(tenant_id=tenant), connection=connection))
+    return outcome.items_written
+
+
+def findings(engine: Engine, tenant: UUID) -> list[Any]:
+    with engine.connect() as connection:
+        return list(
+            connection.execute(
+                text(
+                    "SELECT d.panel_id, f.provenance, f.measured_runs, f.runs_per_day, f.why "
+                    "FROM query_finding f JOIN query_definition d ON d.query_id = f.query_id "
+                    "WHERE f.tenant_id = :t ORDER BY d.panel_id"
+                ),
+                {"t": tenant},
+            ).all()
+        )
+
+
+@pytest.mark.integration
+def test_a_matched_finding_is_promoted_to_measured(engine: Engine, tenant_id: UUID) -> None:
+    run_with_evidence(engine, tenant_id, FakeQueryEvidence(GrafanaQueryParser()))
+    promoted = [row for row in findings(engine, tenant_id) if row[1] == "measured"]
+    assert promoted, "the observed panel query should have been promoted"
+    for _element, _provenance, measured_runs, _runs, why in promoted:
+        # The schema refuses a measured row without a count, so this is also
+        # proof the write was accepted rather than silently skipped.
+        assert measured_runs and measured_runs > 0
+        assert "MEASURED" in why
+
+
+@pytest.mark.integration
+def test_an_unmatched_finding_stays_modelled(engine: Engine, tenant_id: UUID) -> None:
+    """A normal state, not a degraded one.
+
+    The evidence here is for a query the estate does not contain. Note that the
+    fake estate's panel and alert deliberately share their query text, so
+    evidence matching one matches both: proving this needs observations that
+    match neither, rather than a fixture where one happens to be unobserved.
+    """
+    unrelated = FakeQueryEvidence(
+        GrafanaQueryParser(),
+        logs={
+            "fields @timestamp | filter service = 'billing'": {
+                "runs": 99,
+                "bytes": 0.0,
+                "runs_bytes": [],
+                "log_groups": {"/aws/lambda/billing"},
+            }
+        },
+    )
+    run_with_evidence(engine, tenant_id, unrelated)
+    rows = findings(engine, tenant_id)
+    assert rows
+    for _panel, provenance, measured_runs, _runs, _why in rows:
+        assert provenance == "modelled"
+        assert measured_runs is None
+
+
+@pytest.mark.integration
+def test_absent_evidence_is_not_zero_runs(engine: Engine, tenant_id: UUID) -> None:
+    """The rule the task states as a Do not.
+
+    With no evidence source at all, every finding keeps its modelled run count.
+    A collector that wrote zero would be claiming the query never ran, when the
+    truth is that nobody watched.
+    """
+    run_with_evidence(engine, tenant_id, None)
+    rows = findings(engine, tenant_id)
+    assert rows
+    for _element, provenance, measured_runs, runs, _why in rows:
+        assert provenance == "modelled"
+        assert measured_runs is None
+        assert float(runs) > 0
+
+
+@pytest.mark.integration
+def test_evidence_that_cannot_be_read_leaves_the_run_standing(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    # A modelled estate is still worth reporting. An aborted one is not.
+    run_with_evidence(
+        engine, tenant_id, FakeQueryEvidence(GrafanaQueryParser(), failure=AccessDenied)
+    )
+    rows = findings(engine, tenant_id)
+    assert rows
+    assert all(provenance == "modelled" for _e, provenance, *_r in rows)
+
+
+@pytest.mark.integration
+def test_a_measured_figure_says_which_grade_of_measurement_it_is(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    """Runs and bytes observed reads differently from runs observed alone.
+
+    A reader who cannot tell those apart treats both as an estimate, and then
+    ignores both.
+    """
+    run_with_evidence(engine, tenant_id, FakeQueryEvidence(GrafanaQueryParser()))
+    whys = [row[4] for row in findings(engine, tenant_id) if row[1] == "measured"]
+    assert whys
+    assert any("Bytes scanned + runs MEASURED" in why for why in whys)
+
+
+@pytest.mark.integration
+def test_running_twice_with_evidence_still_leaves_one_finding(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    # The upsert has to carry provenance and measured_runs too, or a second run
+    # would leave a measured row with a modelled count beside it.
+    for _ in range(2):
+        run_with_evidence(engine, tenant_id, FakeQueryEvidence(GrafanaQueryParser()))
+    assert len(findings(engine, tenant_id)) == 3

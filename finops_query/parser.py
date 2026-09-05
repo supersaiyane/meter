@@ -18,7 +18,7 @@ from finops_query.classify import (
     refresh_seconds,
     relative_range_seconds,
 )
-from finops_query.policy import fingerprint
+from finops_query.policy import fingerprint, normalise
 
 
 class GrafanaQueryParser:
@@ -30,6 +30,9 @@ class GrafanaQueryParser:
     def iter_panels(self, panels: Any) -> Iterable[Mapping[str, Any]]:
         found: Iterable[Mapping[str, Any]] = iter_panels(panels)
         return found
+
+    def normalise(self, text: str | None) -> str:
+        return normalise(text)
 
     def refresh_seconds(self, raw: Any) -> int:
         return refresh_seconds(raw)

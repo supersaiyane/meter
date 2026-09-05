@@ -275,7 +275,9 @@
     "finops_providers/aws/credentials.py",
     "finops_providers/aws/health.py",
     "finops_providers/aws/platform_cost.py",
+    "finops_providers/aws/query_evidence.py",
     "finops_providers/fake/__init__.py",
+    "finops_providers/fake/evidence.py",
     "finops_providers/fake/fixtures.py",
     "finops_providers/fake/provider.py",
     "finops_providers/fake/surface.py",
@@ -373,6 +375,7 @@
     "tests/providers/aws/test_accounts.py",
     "tests/providers/aws/test_credentials.py",
     "tests/providers/aws/test_health.py",
+    "tests/providers/aws/test_query_evidence.py",
     "tests/providers/test_amg_surface.py",
     "tests/providers/test_fake.py",
     "tests/providers/test_fake_surface.py",
@@ -2696,6 +2699,11 @@
     },
     {
       "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_query/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/query_audit.py",
       "t": "finops_query/policy.py",
       "k": "python"
     },
@@ -2880,8 +2888,33 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/query_evidence.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/query_evidence.py",
+      "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/query_evidence.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/fake/__init__.py",
       "t": "finops_providers/fake/provider.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/evidence.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/evidence.py",
+      "t": "finops_core/ports/query.py",
       "k": "python"
     },
     {
@@ -3061,7 +3094,17 @@
     },
     {
       "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/evidence.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
       "t": "finops_providers/fake/surface.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_query/parser.py",
       "k": "python"
     },
     {
@@ -3541,12 +3584,22 @@
     },
     {
       "s": "tests/ingest/test_query_audit.py",
+      "t": "finops_providers/fake/evidence.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_query_audit.py",
       "t": "finops_providers/fake/surface.py",
       "k": "python"
     },
     {
       "s": "tests/ingest/test_query_audit.py",
       "t": "finops_query/cost_model.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_query_audit.py",
+      "t": "finops_query/parser.py",
       "k": "python"
     },
     {
@@ -3762,6 +3815,26 @@
     {
       "s": "tests/providers/aws/test_health.py",
       "t": "finops_providers/aws/health.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_query_evidence.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_query_evidence.py",
+      "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_query_evidence.py",
+      "t": "finops_providers/aws/query_evidence.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_query_evidence.py",
+      "t": "finops_query/parser.py",
       "k": "python"
     },
     {
