@@ -173,7 +173,10 @@ meter/
 │       ├── metrics.py         MetricPoint. `at` is the instant, `as_of` the freshness
 │       ├── resource.py        ResourceRef. Opaque identifier, never parsed
 │       └── quota.py           QuotaUsage. Unpublished usage is None, never zero
-│   └── ports/                 nine protocols. No implementation, no cloud import
+│   └── ports/                 protocols only. No implementation, no cloud import.
+│                              query.py also declares QueryParser and
+│                              QueryEvidence, which exist so an adapter can name
+│                              what it needs without importing the layer above it
 │       └── query.py           QuerySurface, the first port not about a cloud,
 │                              plus QueryParser. An adapter may not import
 │                              finops_query, so it names the parsing it needs
@@ -191,7 +194,10 @@ meter/
 │   │   ├── credentials.py     assume role, cached until before expiry
 │   │   ├── accounts.py        the exact org tree. Every call paginated
 │   │   ├── health.py          is the role usable, and if not, whose fix is it
-│   │   └── platform_cost.py   the one Cost Explorer request, grouped
+│   │   ├── platform_cost.py   the one Cost Explorer request, grouped
+│   │   └── query_evidence.py  runs from CloudTrail, bytes from query history.
+│   │                          A window that saw nothing returns an absent key,
+│   │                          never a zero: absent means unobserved
 │   ├── grafana/               AMG only, per OPEN-04 re answered 2026-09-02
 │   │   ├── client.py          raises a typed cause. A workspace it cannot read
 │   │   │                      must not report zero dashboards
@@ -202,9 +208,12 @@ meter/
 │   └── fake/                  in memory, the ports, no network, no clock
 │       ├── fixtures.py        one root, two units, five accounts, one denied
 │       ├── provider.py        the failure plan. Any of the six, for any scope
-│       └── surface.py         QuerySurface in memory. discover raises only when
-│                              nothing could be enumerated, and an empty listing
-│                              means empty rather than a failed read
+│       ├── surface.py         QuerySurface in memory. discover raises only when
+│       │                      nothing could be enumerated, and an empty listing
+│       │                      means empty rather than a failed read
+│       └── evidence.py        QueryEvidence in memory, keyed on the query as
+│                              executed rather than as stored, because that is
+│                              the gap match_observed exists to cross
 ├── finops-web/                IN BUILD  Vite, React and TypeScript
 │   ├── README.md              why the versions are pinned where they are
 │   ├── eslint.config.js       flat config. eslintrc is not read by ESLint 9
