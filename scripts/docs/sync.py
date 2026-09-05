@@ -129,6 +129,32 @@ def render_issues(reg: dict) -> str:
     return "\n".join(lines)
 
 
+def render_issue_register(reg: dict) -> str:
+    """The full issue register. Generated so identifiers cannot diverge.
+
+    tasks/ISSUES.md used to hold this by hand, and inside one session it had
+    drifted from the registry by 22 records. See AUDIT-001, finding A001-F01.
+    """
+    rank = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+    counts = Counter(i["status"] for i in reg["issues"])
+    lines = [
+        f"{len(reg['issues'])} issues. "
+        f"{counts.get('FIXED', 0)} fixed, {counts.get('OPEN', 0)} open, "
+        f"{counts.get('PARKED', 0)} parked.",
+        "",
+        "FIXED means the design decision is recorded, not that code exists. "
+        "Implementation status lives only in `tasks/STATUS.md`.",
+        "",
+        "| ID | Severity | Issue | Status | Detail |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    for i in sorted(reg["issues"], key=lambda x: (rank.get(x["severity"], 9), x["id"])):
+        lines.append(
+            f"| {i['id']} | {i['severity']} | {i['summary']} | {i['status']} | {i['detail']} |"
+        )
+    return "\n".join(lines)
+
+
 def render_open(reg: dict) -> str:
     lines = [
         "| ID | Question | Status | Blocks | Detail |",
@@ -217,6 +243,7 @@ TARGETS = [
     ("INDEX.md", "open-questions", render_open),
     ("docs/01-ROADMAP.md", "roadmap-status", render_roadmap_status),
     ("tasks/STATUS.md", "status-summary", render_status_summary),
+    ("tasks/ISSUES.md", "issue-register", render_issue_register),
 ]
 
 
