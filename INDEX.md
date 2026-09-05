@@ -63,6 +63,7 @@ block is caught by `make check-docs`. See
 | What is done and what is left | [tasks/STATUS.md](tasks/STATUS.md) |
 | What is broken or undecided | [tasks/ISSUES.md](tasks/ISSUES.md) |
 | Where the last session stopped | [docs/checkpoint.md](docs/checkpoint.md) |
+| Older sessions, rotated out of the live window at 50 entries | [docs/checkpoint_archive.md](docs/checkpoint_archive.md) |
 | The module layout | [project_map.md](project_map.md) |
 | Where a function lives | [context_index.md](context_index.md) |
 | Corrections already received | [tasks/lessons.md](tasks/lessons.md) |

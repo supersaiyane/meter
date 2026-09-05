@@ -9,7 +9,7 @@
      own content rather than scaffolding, and is not tagged.
 -->
 
-Last updated: 2026-09-02
+Last updated: 2026-09-05
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -41,8 +41,19 @@ the writing rules, the eight documentation checks, the docstring gate, the
 memory gate, 443 tests at 98 percent, and a security scan with zero findings.
 
 Lint and type checking now cover every directory that holds Python, which is
-143 files under mypy where it was 25. `scripts/`, `migrations/` and the test
+160 files under mypy where it was 25. `scripts/`, `migrations/` and the test
 suite had all been outside one or both.
+
+**P2 has started. 4 of 22 done, 2 descoped, 16 to build.**
+
+Wave A is complete. The 2,740 line prototype was imported byte identical,
+pinned by 15 golden files, taken apart into `finops_query` and deleted. Those
+goldens now reproduce from `Settings` rather than from the prototype's own
+config, which was the condition for deleting it. `QuerySurface` is defined and
+named for the pattern rather than for Grafana.
+
+Next is TASK-P2-005, the fake query surface. The resume vector is the newest
+row in `docs/checkpoint.md`.
 
 What that sentence does not cover is the part that matters for a sign off.
 
