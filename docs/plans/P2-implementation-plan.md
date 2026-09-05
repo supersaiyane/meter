@@ -290,19 +290,56 @@ pytest tests/query tests/providers -v && make graph
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-05 |
 | Implements | P2 spec section 4.1 |
 | Delivers | FEAT-011 |
 | Depends on | TASK-P2-003 |
 | Estimate | M |
 
+**Files.**
+
+| Path | Action |
+| --- | --- |
+| `finops_core/domain/query.py` | created, not planned. See deviation 1 |
+| `finops_core/ports/query.py` | created |
+| `finops_core/ports/__init__.py` | exports it, and two grouping tuples |
+| `tests/query/test_ports.py` | created, 20 tests |
+
 **Acceptance criteria.**
 
-- [ ] `QuerySurface` in `finops_core/ports/`, with `discover`, `list_queries`
-      and `apply_control`
-- [ ] No Grafana type appears in any signature
-- [ ] The import linter contract is extended to cover `finops_query`
-- [ ] Each method documents which of the six error types it may raise
+- [x] `QuerySurface` in `finops_core/ports/`, with `discover`, `list_queries`
+      and `apply_control`, and a test asserting those three and no others
+- [x] No Grafana type appears in any signature. A test checks every signature
+      and every field of every type they return against a list of vendor words,
+      and it was probed by putting `GrafanaWorkspace` in a return type
+- [x] The import linter contract covers `finops_query`, which TASK-P2-003 did
+      when it found the package was in no layer list at all. ISS-135
+- [x] Each method documents which of the six error types it may raise, and the
+      test takes the six from the taxonomy rather than listing them, so a
+      seventh cause cannot be added without this noticing
+
+**Deviations.**
+
+1. **A domain module came with it.** The plan named only the port, but "do not
+   return a Grafana dashboard object, return a domain `QueryDefinition`" needs
+   `QueryDefinition` to exist. `finops_core/domain/query.py` holds it along with
+   `SurfaceInstance`, `ControlRequest` and `ControlOutcome`.
+2. **`SurfaceInstance` refuses to be unreachable without naming a cause.** A
+   `ValueError` in `__post_init__`, because an instance that could not be read
+   has to appear in the list saying why. Omitted, it makes the estate look
+   smaller and cheaper than it is, and a reader cannot tell an absent workspace
+   from one that does not exist.
+3. **`apply_control` returns a refusal rather than raising one.** A surface that
+   cannot throttle answers with `applied` false and a reason, so the caller
+   tries a different control instead of abandoning the run. Only a genuine
+   failure raises, and `AccessDenied` on a write is documented as distinct from
+   a refusal.
+4. **The ports package is no longer homogeneous, so it says so in code.**
+   `PROVIDER_PORTS` and `SURFACE_PORTS` are exported tuples. Without them
+   `tests/providers/test_fake.py` derived "every port" from `__all__` and failed
+   the moment `QuerySurface` appeared, because a cloud fake has no business
+   implementing a query surface. The grouping puts that distinction in one place
+   rather than in a filter inside a test.
 
 **Do not.**
 
@@ -311,7 +348,13 @@ pytest tests/query tests/providers -v && make graph
   precisely because the failure mode is not Grafana specific.
 - Do not return a Grafana dashboard object. Return a domain `QueryDefinition`.
 
-**Evidence.** `pytest tests/query/test_ports.py -v && .venv/bin/lint-imports`
+**Evidence.**
+
+```bash
+pytest tests/query/test_ports.py -v && .venv/bin/lint-imports
+```
+
+20 tests pass and all three contracts hold.
 
 ---
 

@@ -27,7 +27,10 @@ from finops_providers.fake.provider import FakeProvider
 ROOT = Path(__file__).resolve().parent.parent.parent
 FAKE_PACKAGE = ROOT / "finops_providers" / "fake"
 
-PORT_TYPES = [getattr(ports, name) for name in ports.__all__]
+# The eight provider ports, from the group rather than from `__all__`. The
+# package also exports `QuerySurface`, which describes a tool holding saved
+# queries rather than a cloud, and a cloud fake has no business implementing it.
+PORT_TYPES = list(ports.PROVIDER_PORTS)
 
 
 def provider(**kwargs: object) -> FakeProvider:

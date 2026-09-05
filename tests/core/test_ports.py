@@ -34,6 +34,7 @@ EXPECTED_PORTS = {
     "QuotaSource",
     "IdentityProvider",
     "EntitlementResolver",
+    "QuerySurface",
 }
 
 FORBIDDEN_IMPORTS = {"boto3", "botocore", "fastapi", "sqlalchemy", "httpx", "requests"}
@@ -56,8 +57,28 @@ def port_methods(port: type) -> list[tuple[str, object]]:
 # --- shape -------------------------------------------------------------------
 
 
-def test_there_are_exactly_eight_ports() -> None:
-    assert set(ports.__all__) == EXPECTED_PORTS
+def test_there_are_exactly_nine_ports() -> None:
+    """Eight provider ports plus `QuerySurface`, which P2 added.
+
+    `__all__` also carries the two grouping tuples, so the comparison is against
+    the protocols rather than against every name the package exports. Adding a
+    port means adding it to `EXPECTED_PORTS` here, which is the point: a port
+    that appears without anybody deciding to add it is a port nobody reviewed.
+    """
+    exported = {name for name in ports.__all__ if not name.isupper() and "_" not in name}
+
+    assert exported == EXPECTED_PORTS
+
+
+def test_the_two_groups_together_are_every_port() -> None:
+    """The groups exist so a test can ask for provider ports without filtering
+    by hand, and a port left out of both would be invisible to every caller
+    that uses them."""
+    grouped = {port.__name__ for port in (*ports.PROVIDER_PORTS, *ports.SURFACE_PORTS)}
+
+    assert grouped == EXPECTED_PORTS
+    assert len(ports.PROVIDER_PORTS) == 8
+    assert len(ports.SURFACE_PORTS) == 1
 
 
 def test_all_ports_are_protocols() -> None:

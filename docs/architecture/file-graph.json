@@ -189,6 +189,7 @@
     "finops_core/domain/metrics.py",
     "finops_core/domain/org.py",
     "finops_core/domain/platform.py",
+    "finops_core/domain/query.py",
     "finops_core/domain/quota.py",
     "finops_core/domain/resource.py",
     "finops_core/domain/tenant.py",
@@ -200,6 +201,7 @@
     "finops_core/ports/identity.py",
     "finops_core/ports/inventory.py",
     "finops_core/ports/metrics.py",
+    "finops_core/ports/query.py",
     "finops_core/ports/quotas.py",
     "finops_ingest/__init__.py",
     "finops_ingest/collectors/__init__.py",
@@ -321,6 +323,7 @@
     "tests/query/test_cost_model.py",
     "tests/query/test_ownership.py",
     "tests/query/test_policy.py",
+    "tests/query/test_ports.py",
     "tests/scripts/__init__.py",
     "tests/scripts/test_check_index.py",
     "tests/scripts/test_layer_agreement.py",
@@ -1931,6 +1934,11 @@
       "k": "python"
     },
     {
+      "s": "finops_core/domain/query.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/domain/quota.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -1987,6 +1995,11 @@
     },
     {
       "s": "finops_core/ports/__init__.py",
+      "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/__init__.py",
       "t": "finops_core/ports/quotas.py",
       "k": "python"
     },
@@ -2033,6 +2046,11 @@
     {
       "s": "finops_core/ports/metrics.py",
       "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/query.py",
+      "t": "finops_core/domain/query.py",
       "k": "python"
     },
     {
@@ -3128,6 +3146,21 @@
     {
       "s": "tests/query/test_policy.py",
       "t": "finops_query/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_ports.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_ports.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_ports.py",
+      "t": "finops_core/ports/query.py",
       "k": "python"
     }
   ]

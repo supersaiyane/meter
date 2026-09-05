@@ -1,4 +1,4 @@
-"""An in memory provider that satisfies all eight ports, failures included.
+"""An in memory provider that satisfies all eight provider ports, failures included.
 
 The point of this class is not that it succeeds. It is that any of the six
 causes can be planned for any scope, so a failure path is as cheap to test as a
@@ -39,7 +39,7 @@ class FakeSession:
 
 
 class FakeProvider:
-    """One object satisfying all eight ports, with a configurable failure plan."""
+    """One object satisfying all eight provider ports, with a configurable failure plan."""
 
     def __init__(
         self,

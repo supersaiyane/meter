@@ -88,7 +88,7 @@ block is caught by `make check-docs`. See
 | --- | --- | --- | --- |
 | [FEAT-001](docs/features/FEAT-001-account-onboarding-and-org-topology.md) | Account onboarding and organization topology, parent to child map | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.2, 7 |
 | [FEAT-002](docs/features/FEAT-002-cross-account-credential-brokering.md) | Cross account credential brokering by StackSet deployed role | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 10, [ADR-0004](docs/adr/ADR-0004-cross-account-access.md) |
-| [FEAT-003](docs/features/FEAT-003-provider-port-abstraction.md) | Provider port abstraction, eight ports | Delivered | [architecture](docs/02-ARCHITECTURE.md) section "Ports" |
+| [FEAT-003](docs/features/FEAT-003-provider-port-abstraction.md) | Provider port abstraction, eight provider ports | Delivered | [architecture](docs/02-ARCHITECTURE.md) section "Ports" |
 | [FEAT-004](docs/features/FEAT-004-focus-canonical-cost-schema.md) | FOCUS 1.1 canonical cost schema | In build | [ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md) |
 | [FEAT-005](docs/features/FEAT-005-ingestion-framework.md) | Ingestion framework, idempotent and partial failure tolerant | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 7 |
 | [FEAT-006](docs/features/FEAT-006-typed-errors-and-freshness.md) | Typed error taxonomy and data freshness contract | Delivered | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6 |
@@ -286,6 +286,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0068 | 2026-09-02 | Feature | TASK-P2-001, the prototype imported byte identical and its behaviour pinned by 15 golden files across 14 dashboards and 4 alert rules. Runs entirely offline through the prototype's own switches rather than through mocks | `a2304cf` | [P2 plan](docs/plans/P2-implementation-plan.md) |
 | CHG-0069 | 2026-09-03 | Refactor | TASK-P2-002, the cost model and the engine classifier extracted from the prototype under the golden files. Thirteen rates and thresholds moved from literals into settings. One string diverges, the em dash the writing rules forbid, and it is enumerated rather than absorbed | `70da3ae` | [P2 plan](docs/plans/P2-implementation-plan.md) |
 | CHG-0070 | 2026-09-04 | Refactor | TASK-P2-003, the prototype decomposed into three modules and deleted. Six exclusions removed with it, including the one suppressing the urllib.request rule that CVE-2026-15806's acceptance depends on. The Grafana adapter raises typed causes rather than returning an empty list on failure | `f3f0758` | [P2 plan](docs/plans/P2-implementation-plan.md) |
+| CHG-0071 | 2026-09-05 | Feature | TASK-P2-004, the QuerySurface port and the query domain. Named for the pattern rather than for Grafana, and a test holds every signature and every returned type against a list of vendor words. The ports package gained two grouping tuples, because it is no longer eight ports of one kind | `pending` | [P2 plan](docs/plans/P2-implementation-plan.md) |
 
 <!-- generated:changes end -->
 

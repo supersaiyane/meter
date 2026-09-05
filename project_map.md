@@ -151,7 +151,8 @@ meter/
 │       ├── metrics.py         MetricPoint. `at` is the instant, `as_of` the freshness
 │       ├── resource.py        ResourceRef. Opaque identifier, never parsed
 │       └── quota.py           QuotaUsage. Unpublished usage is None, never zero
-│   └── ports/                 eight protocols. No implementation, no cloud import
+│   └── ports/                 nine protocols. No implementation, no cloud import
+│       └── query.py           QuerySurface. The first port not about a cloud
 │       ├── accounts.py        AccountDiscovery
 │       ├── credentials.py     CredentialBroker plus the opaque ProviderSession
 │       ├── cost.py            CostExport
@@ -169,7 +170,7 @@ meter/
 │   ├── grafana/               AMG only, per OPEN-04 re answered 2026-09-02
 │   │   └── client.py          raises a typed cause. A workspace it cannot read
 │   │                          must not report zero dashboards
-│   └── fake/                  in memory, all eight ports, no network and no clock
+│   └── fake/                  in memory, the eight provider ports, no network, no clock
 │       ├── fixtures.py        one root, two units, five accounts, one denied
 │       └── provider.py        the failure plan. Any of the six, for any scope
 ├── finops-web/                IN BUILD  Vite, React and TypeScript
@@ -250,7 +251,7 @@ meter/
 
 | Module | Responsibility | Depends on | Must not depend on |
 | --- | --- | --- | --- |
-| `finops_core` | Domain entities, the eight ports, the typed error taxonomy | nothing | boto3, botocore, fastapi, sqlalchemy, requests |
+| `finops_core` | Domain entities, the nine ports, the typed error taxonomy | nothing | boto3, botocore, fastapi, sqlalchemy, requests |
 | `finops_providers/aws` | The six cloud ports implemented against boto3 | `finops_core`, boto3 | `finops_api`, `finops-web` |
 | `finops_providers/fake` | Every port implemented in memory, used by all core and API tests | `finops_core` | boto3 |
 | `finops_ingest` | Dispatcher, worker, run ledger, watermarks, collectors | `finops_core`, a provider | `finops-web` |

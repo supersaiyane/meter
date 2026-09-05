@@ -12,7 +12,7 @@
 
 ## What it does
 
-Eight interfaces that a cloud provider implements. AWS implements them now. GCP, Azure and PCF implement the same eight later without touching the domain, the API or the frontend.
+Eight interfaces that a cloud provider implements. `QuerySurface`, added by P2, is a ninth port in the same package and is deliberately not one of these: it describes a tool that holds saved queries rather than a cloud, and FEAT-011 owns it. AWS implements them now. GCP, Azure and PCF implement the same eight later without touching the domain, the API or the frontend.
 
 ## Why it exists
 
