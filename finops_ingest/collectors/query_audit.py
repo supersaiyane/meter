@@ -32,6 +32,7 @@ from sqlalchemy import text
 from finops_core.domain.query import QueryDefinition, QueryOrigin, SurfaceInstance
 from finops_core.errors import CollectionError
 from finops_core.ports.query import RefreshFloor
+from finops_ingest.ledger import RunLedger
 from finops_ingest.registry import CollectorContext, CollectorOutcome
 from finops_query.classify import (
     LOGS_INSIGHTS,
@@ -171,7 +172,7 @@ class QueryAuditCollector:
         # a managed one. Asking per instance would fetch the same window
         # repeatedly and would answer nothing for an instance that carries no
         # account of its own.
-        observed = self._observations(instances)
+        observed = self._observations(context, instances)
 
         for instance in instances:
             instance_pk = self._write_instance(context, tenant_id, instance, now)
@@ -315,7 +316,9 @@ class QueryAuditCollector:
 
     # -- evidence ----------------------------------------------------------
 
-    def _observations(self, instances: tuple[SurfaceInstance, ...]) -> Mapping[str, Any] | None:
+    def _observations(
+        self, context: CollectorContext, instances: tuple[SurfaceInstance, ...]
+    ) -> Mapping[str, Any] | None:
         """What this estate's account was seen executing, or None.
 
         None means unobserved, and every finding then stays modelled. It never
@@ -336,12 +339,53 @@ class QueryAuditCollector:
                 region=region,
                 lookback_days=self._lookback_days,
             )
+            self._clear_evidence_failure(context, account_id, region)
             return bundle
-        except CollectionError:
+        except CollectionError as failure:
             # Evidence that could not be read leaves the figures modelled. It
             # does not fail the run, because a modelled estate is still worth
             # reporting and an aborted one is not.
+            #
+            # It is recorded, though, which it was not until ISS-174. Swallowing
+            # it silently made two different facts look identical: an estate
+            # with no hand run queries, and an estate whose evidence Meter could
+            # not read. It also hid the reason every figure had quietly stayed
+            # modelled. The row lands on every envelope, because that is where
+            # the degradation shows.
+            self._record_evidence_failure(context, account_id, region, failure)
             return None
+
+    #: The collector name these failures are filed under. Distinct from
+    #: `query_audit`, because the audit itself succeeded: what failed is the
+    #: evidence that would have made its figures measured.
+    EVIDENCE_COLLECTOR = "query_evidence"
+
+    def _evidence_ledger(self, context: CollectorContext) -> RunLedger:
+        """A ledger for recording only.
+
+        The claim timeout it takes is used when claiming work and is irrelevant
+        to either call below, so it comes from settings when there are any
+        rather than being invented. Reaching for the ledger rather than writing
+        the insert again is deliberate: two implementations of how a failure is
+        recorded is how the two drift apart, and the runbooks read this table.
+        """
+        timeout = int(getattr(context.settings, "run_claim_timeout_minutes", 0) or 1)
+        return RunLedger(context.connection, context.unit.tenant_id, timeout)
+
+    def _record_evidence_failure(
+        self, context: CollectorContext, account_id: str, region: str, failure: CollectionError
+    ) -> None:
+        self._evidence_ledger(context).record_sync_error(
+            self.EVIDENCE_COLLECTOR, f"aws:{account_id}:{region}", failure
+        )
+
+    def _clear_evidence_failure(
+        self, context: CollectorContext, account_id: str, region: str
+    ) -> None:
+        """A scope that has succeeded no longer has an open error against it."""
+        self._evidence_ledger(context).clear_sync_error(
+            self.EVIDENCE_COLLECTOR, f"aws:{account_id}:{region}"
+        )
 
     def _measure(
         self, definition: QueryDefinition, observed: Mapping[str, Any] | None, modelled_bytes: float

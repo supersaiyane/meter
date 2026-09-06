@@ -386,6 +386,70 @@ def test_evidence_that_cannot_be_read_leaves_the_run_standing(
 
 
 @pytest.mark.integration
+def test_evidence_that_cannot_be_read_is_reported_rather_than_swallowed(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    """ISS-174. Continuing quietly made two different facts look identical.
+
+    An estate with no hand run queries and an estate whose evidence Meter could
+    not read both rendered as an empty table, and the reason every figure had
+    stayed modelled was nowhere on the page. The run still stands, which is the
+    part that was always right.
+    """
+    run_with_evidence(
+        engine, tenant_id, FakeQueryEvidence(GrafanaQueryParser(), failure=AccessDenied)
+    )
+    with engine.begin() as connection:
+        rows = connection.execute(
+            text(
+                "SELECT collector, error_type FROM sync_error "
+                "WHERE tenant_id = :t AND collector = 'query_evidence'"
+            ),
+            {"t": tenant_id},
+        ).all()
+    assert [(str(c), str(e)) for c, e in rows] == [("query_evidence", "AccessDenied")]
+
+
+@pytest.mark.integration
+def test_evidence_that_recovers_stops_being_reported(engine: Engine, tenant_id: UUID) -> None:
+    """A scope that has succeeded no longer has an open error against it.
+
+    Without this the banner would name a failure that stopped happening, and a
+    reader who chases one of those once stops chasing them.
+    """
+
+    def open_errors() -> int:
+        with engine.begin() as connection:
+            return int(
+                connection.execute(
+                    text(
+                        "SELECT count(*) FROM sync_error "
+                        "WHERE tenant_id = :t AND collector = 'query_evidence'"
+                    ),
+                    {"t": tenant_id},
+                ).scalar_one()
+            )
+
+    run_with_evidence(
+        engine, tenant_id, FakeQueryEvidence(GrafanaQueryParser(), failure=AccessDenied)
+    )
+    # Asserted before the recovery, so this cannot pass by never having recorded
+    # anything in the first place.
+    assert open_errors() == 1
+
+    run_with_evidence(engine, tenant_id, FakeQueryEvidence(GrafanaQueryParser()))
+    with engine.begin() as connection:
+        remaining = connection.execute(
+            text(
+                "SELECT count(*) FROM sync_error "
+                "WHERE tenant_id = :t AND collector = 'query_evidence'"
+            ),
+            {"t": tenant_id},
+        ).scalar_one()
+    assert remaining == 0
+
+
+@pytest.mark.integration
 def test_a_measured_figure_says_which_grade_of_measurement_it_is(
     engine: Engine, tenant_id: UUID
 ) -> None:

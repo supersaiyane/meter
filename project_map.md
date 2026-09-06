@@ -407,6 +407,10 @@ meter/
 │       ├── account_health.py  role_health written every run, including failed ones
 │       ├── platform_cost.py   one grouped request a day. Untagged cost is named
 │       ├── query_audit.py     six hourly. An instance it cannot read is written
+│       │                     as unreachable, and evidence it cannot read is filed
+│       │                     under query_evidence in sync_error so the silence is
+│       │                     visible. It also writes the ad hoc rows, which are
+│       │                     the executions no definition claims
 │       │                      unreachable and the run continues, and the upsert
 │       │                      is keyed on the day so three runs leave one finding
 │       ├── retention.py       six jobs. Anonymises, never removes a principal row
