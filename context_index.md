@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-373 public symbols across 5 packages.
+374 public symbols across 5 packages.
 
 ## finops_core
 
@@ -148,8 +148,8 @@ a duplicate.
 | `AwsPlatformCostSource.daily_by_module` | method | `finops_providers/aws/platform_cost.py:65` | Every module and service charge between start and end. | `finops_ingest/collectors/platform_cost.py` |
 | `CloudTrailQueryEvidence` | class | `finops_providers/aws/query_evidence.py:99` | `QueryEvidence` over CloudTrail and CloudWatch Logs query history. | nothing in this tree |
 | `CloudTrailQueryEvidence.observations` | method | `finops_providers/aws/query_evidence.py:120` |  | `finops_ingest/collectors/query_audit.py` |
-| `FakeQueryEvidence` | class | `finops_providers/fake/evidence.py:72` | `QueryEvidence` in memory, with a configurable failure. | nothing in this tree |
-| `FakeQueryEvidence.observations` | method | `finops_providers/fake/evidence.py:91` |  | `finops_ingest/collectors/query_audit.py` |
+| `FakeQueryEvidence` | class | `finops_providers/fake/evidence.py:110` | `QueryEvidence` in memory, with a configurable failure and a past. | nothing in this tree |
+| `FakeQueryEvidence.observations` | method | `finops_providers/fake/evidence.py:134` |  | `finops_ingest/collectors/query_audit.py` |
 | `FakeRoleHealth` | class | `finops_providers/fake/health.py:38` | `RoleHealthCheck` in memory, with a stated plan. | nothing in this tree |
 | `FakeRoleHealth.check` | method | `finops_providers/fake/health.py:57` |  | `finops_api/routes/accounts.py`, `finops_ingest/collectors/account_health.py` |
 | `FakePlatformCost` | class | `finops_providers/fake/platform_cost.py:35` | `PlatformCostSource` in memory. | nothing in this tree |
@@ -167,14 +167,15 @@ a duplicate.
 | `FakeProvider.list_quotas` | method | `finops_providers/fake/provider.py:180` |  | nothing in this tree |
 | `FakeProvider.authenticate` | method | `finops_providers/fake/provider.py:186` |  | nothing in this tree |
 | `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:199` |  | `finops_api/deps.py`, `finops_ingest/collectors/org_tree.py` |
-| `FakeQuerySurface` | class | `finops_providers/fake/surface.py:201` | `QuerySurface` in memory. Every failure is asked for, never incidental. | nothing in this tree |
-| `FakeQuerySurface.discover` | method | `finops_providers/fake/surface.py:256` |  | `finops_ingest/collectors/query_audit.py` |
-| `FakeQuerySurface.list_queries` | method | `finops_providers/fake/surface.py:265` |  | `finops_ingest/collectors/query_audit.py` |
-| `FakeQuerySurface.read_refresh_floor` | method | `finops_providers/fake/surface.py:279` |  | `finops_ingest/collectors/query_audit.py` |
-| `FakeQuerySurface.set_refresh_floor` | method | `finops_providers/fake/surface.py:283` | Raise the floor, returning what it was. None means it had none. | `finops_ingest/remediation.py` |
-| `FakeQuerySurface.read_element` | method | `finops_providers/fake/surface.py:295` |  | `finops_ingest/remediation.py` |
-| `FakeQuerySurface.write_element` | method | `finops_providers/fake/surface.py:306` | Store it, unless this instance is planned to drop writes. | `finops_ingest/remediation.py` |
-| `FakeQuerySurface.apply_control` | method | `finops_providers/fake/surface.py:320` |  | nothing in this tree |
+| `queries_as_of` | function | `finops_providers/fake/surface.py:227` | The estate's dashboards as they stood that many days ago. | nothing in this tree |
+| `FakeQuerySurface` | class | `finops_providers/fake/surface.py:250` | `QuerySurface` in memory. Every failure is asked for, never incidental. | nothing in this tree |
+| `FakeQuerySurface.discover` | method | `finops_providers/fake/surface.py:305` |  | `finops_ingest/collectors/query_audit.py` |
+| `FakeQuerySurface.list_queries` | method | `finops_providers/fake/surface.py:314` |  | `finops_ingest/collectors/query_audit.py` |
+| `FakeQuerySurface.read_refresh_floor` | method | `finops_providers/fake/surface.py:328` |  | `finops_ingest/collectors/query_audit.py` |
+| `FakeQuerySurface.set_refresh_floor` | method | `finops_providers/fake/surface.py:332` | Raise the floor, returning what it was. None means it had none. | `finops_ingest/remediation.py` |
+| `FakeQuerySurface.read_element` | method | `finops_providers/fake/surface.py:344` |  | `finops_ingest/remediation.py` |
+| `FakeQuerySurface.write_element` | method | `finops_providers/fake/surface.py:355` | Store it, unless this instance is planned to drop writes. | `finops_ingest/remediation.py` |
+| `FakeQuerySurface.apply_control` | method | `finops_providers/fake/surface.py:369` |  | nothing in this tree |
 | `Scope` | class | `finops_providers/grafana/amg.py:54` | One account and region pair to look for workspaces in. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/fake/provider.py` |
 | `Scope.key` | method | `finops_providers/grafana/amg.py:61` |  | nothing in this tree |
 | `AmgQuerySurface` | class | `finops_providers/grafana/amg.py:84` | `QuerySurface` over Amazon Managed Grafana, read only. | nothing in this tree |
@@ -485,6 +486,6 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `AccountHealthCheck` in `finops_providers/aws/health.py:54`
 - `AwsPlatformCostSource` in `finops_providers/aws/platform_cost.py:48`
 - `CloudTrailQueryEvidence` in `finops_providers/aws/query_evidence.py:99`
-- `FakeQueryEvidence` in `finops_providers/fake/evidence.py:72`
+- `FakeQueryEvidence` in `finops_providers/fake/evidence.py:110`
 - `FakeRoleHealth` in `finops_providers/fake/health.py:38`
 - `FakePlatformCost` in `finops_providers/fake/platform_cost.py:35`

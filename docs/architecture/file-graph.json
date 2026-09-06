@@ -415,6 +415,9 @@
     "tests/providers/aws/test_credentials.py",
     "tests/providers/aws/test_health.py",
     "tests/providers/aws/test_query_evidence.py",
+    "tests/providers/fake/__init__.py",
+    "tests/providers/fake/test_evidence.py",
+    "tests/providers/fake/test_surface.py",
     "tests/providers/test_amg_surface.py",
     "tests/providers/test_fake.py",
     "tests/providers/test_fake_surface.py",
@@ -4483,6 +4486,21 @@
     {
       "s": "tests/providers/aws/test_query_evidence.py",
       "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_evidence.py",
+      "t": "finops_providers/fake/evidence.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_evidence.py",
+      "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_surface.py",
+      "t": "finops_providers/fake/surface.py",
       "k": "python"
     },
     {
