@@ -10,13 +10,13 @@ makes an estate look smaller than it is.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID, uuid4, uuid5
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine
+from sqlalchemy import Engine, text
 
 from finops_api.db import models
 from finops_api.identity import SessionSigner
@@ -182,6 +182,51 @@ def auth(token: str) -> dict[str, str]:
 
 
 # --- findings ----------------------------------------------------------------
+
+
+def test_a_finding_audited_twice_is_listed_once(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """ISS-175. The audit keeps one row per query per day, and the list never
+    filtered on it.
+
+    Every finding therefore appeared once per day audited, and the grouped view
+    added those days together, so the estate's reported cost grew by one estate
+    per day. With a single day of data none of that is visible, which is why it
+    survived every test until a second day existed.
+    """
+    seed(engine, tenant_id)
+    with engine.begin() as connection:
+        rows = connection.execute(
+            text("SELECT query_id, cost_month_usd FROM query_finding WHERE tenant_id = :t"),
+            {"t": tenant_id},
+        ).all()
+        for query_id, cost in rows:
+            # Yesterday, at half the cost, so a read returning both shows as two
+            # rows rather than as one repeated one.
+            connection.execute(
+                text(
+                    "INSERT INTO query_finding (finding_id, tenant_id, query_id, run_date, "
+                    "runs_per_day, scan_bytes_per_run, cost_month_usd, provenance, severity, "
+                    "why, as_of, collected_at) VALUES (:id, :t, :q, :d, 1, 1, :c, 'modelled', "
+                    "'low', 'yesterday', :now, :now)"
+                ),
+                {
+                    "id": uuid4(),
+                    "t": tenant_id,
+                    "q": query_id,
+                    "d": NOW.date() - timedelta(days=1),
+                    "c": Decimal(cost) / 2,
+                    "now": NOW,
+                },
+            )
+
+    client, token = client_for(engine, everything(tenant_id), settings)
+    listed = client.get("/api/v1/query/findings", headers=auth(token)).json()["data"]
+    assert len(listed) == len(rows)
+
+    grouped = client.get("/api/v1/query/groups", headers=auth(token)).json()["data"]
+    assert sum(int(group["findings"]) for group in grouped) == len(rows)
 
 
 def test_findings_come_back_most_expensive_first(

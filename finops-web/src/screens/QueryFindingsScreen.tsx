@@ -6,6 +6,7 @@ import type { ApiQueryFinding } from '../api/types';
 import { DataTable } from '../components/DataTable';
 import { Figure } from '../components/Figure';
 import { FixtureBand } from '../components/FixtureBand';
+import { Sparkline } from '../components/Sparkline';
 import { SeverityBadge } from '../components/SeverityBadge';
 import { QueryGroups } from './QueryGroups';
 import { severityOf } from './querySeverity';
@@ -109,6 +110,36 @@ function columnsFor(freshness: Freshness): readonly Column<ApiQueryFinding>[] {
     // The API sends null for an unowned finding and this is where that becomes
     // a word. An empty cell would read as "no owner needed" rather than "nobody
     // claimed it", and those are different states.
+    {
+      key: 'trend',
+      header: 'Trend',
+      // ISS-172, on the list as well as the detail. Narrow on purpose: this
+      // table already ran past the right edge once, and a shape answering
+      // "is this going up" needs no more width than that question does.
+      render: (row) => {
+        // Absent, not empty, from an API that predates ISS-172 or from a stub
+        // that has not learned to send it. A screen that throws on a field the
+        // other half has not learned to send turns a version skew into a blank
+        // table, and constraint 12 says those two halves will coexist.
+        const series = row.history ?? [];
+        return series.length > 1 ? (
+          <Sparkline
+            points={series.map((point) => Number(point.cost_month_usd))}
+            provenance={
+              series.every((point) => point.provenance === 'measured')
+                ? 'measured'
+                : 'modelled'
+            }
+            label={`Monthly cost across ${String(series.length)} days`}
+            width={64}
+            height={18}
+          />
+        ) : (
+          // One observation is not a flat trend. Said, not drawn.
+          <span data-state="never-collected">once</span>
+        );
+      },
+    },
     { key: 'owner', header: 'Owner', render: (row) => row.owner ?? 'unattributed' },
     // The product. A ranked list says what to look at; this says what to do.
     { key: 'why', header: 'Why', prose: true, render: (row) => row.why },

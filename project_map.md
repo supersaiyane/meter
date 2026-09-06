@@ -368,7 +368,8 @@ meter/
 │           ├── QueryAdhocScreen.tsx    the queries that belong to nobody. Every
 │           │                           figure measured, because there is no
 │           │                           definition to model one from
-│           ├── QueryFindingsScreen.tsx ranked by cost as decimals. The reason is
+│           ├── QueryFindingsScreen.tsx ranked by cost as decimals, with a trend
+│           │                           column since ISS-172. The reason is
 │           │                           a column, because a tooltip is invisible
 │           │                           in a screenshot
 │           ├── QueryFindingDetailScreen.tsx  publishes the working. A test
