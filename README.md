@@ -147,8 +147,12 @@ make dep-check pkg=some-package npm=1    # frontend
 ### Before a merge request
 
 ```bash
-make verify     # lint, writing rules, doc checks, tests, security scan
+make verify     # lint, writing rules, doc checks, every test, security scan
 ```
+
+`verify` needs Docker, because the backend tests it runs include the ones that
+want a database and the fixture starts one. Without Docker, `make test-unit`
+is the offline subset.
 
 ### Starting a coding session
 

@@ -180,20 +180,32 @@ review: ## Automated code review of the working tree. See ADR-0011
 
 # ---------------------------------------------------------------- tests
 
+# One invocation over everything, which is the only run whose coverage number
+# means what it says. It is also the cheaper of the two shapes: the database
+# fixture is session scoped, so a split run starts a container twice.
 .PHONY: test
-test: ## Unit and contract tests, no external services needed
-	$(BIN)/pytest -m "not integration"
+test: ## Every backend test. Needs Docker, which the database fixture starts
+	$(BIN)/pytest
+
+# The two slices below are for a person narrowing down a failure, never for a
+# gate. Neither reports coverage, because a fraction of the suite measured
+# against the whole suite's threshold is a number that cannot be read: it fails
+# when nothing is wrong, and it would pass a slice that covered nothing it
+# touched. ISS-154.
+.PHONY: test-unit
+test-unit: ## The subset needing no external services, for an offline loop
+	$(BIN)/pytest -m "not integration" --no-cov
 
 .PHONY: test-integration
-test-integration: ## Integration tests. Needs Docker for testcontainers
-	$(BIN)/pytest -m integration
+test-integration: ## Integration tests only. Needs Docker for testcontainers
+	$(BIN)/pytest -m integration --no-cov
 
 .PHONY: test-web
 test-web: ## Frontend unit tests
 	cd finops-web && npm run test -- --run
 
 .PHONY: test-all
-test-all: test test-integration test-web ## Every backend test, plus frontend unit tests
+test-all: test test-web ## Every backend test, plus frontend unit tests
 
 .PHONY: build-web
 build-web: ## Build the web bundle. Type checks it, and is what the journeys run against
@@ -533,6 +545,8 @@ tf-member: ## Apply the member account StackSet. Needs management account creden
 verify: lint check-writing check-docs check-docstrings check-memory test test-web test-e2e security-scan ## Everything CI runs on a merge request
 	@echo "verify passed"
 
+# Kept as a name rather than removed, because the pipeline and two scripts say
+# `make ci`. It has nothing left to add: `verify` runs the integration tests now.
 .PHONY: ci
-ci: verify test-integration ## Everything CI runs on the default branch
+ci: verify ## Everything CI runs on the default branch
 	@echo "ci passed"
