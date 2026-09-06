@@ -4629,6 +4629,11 @@
       "s": "tests/query/test_severity.py",
       "t": "finops_query/severity.py",
       "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_seed_demo.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
     }
   ]
 }

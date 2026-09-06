@@ -156,3 +156,39 @@ def test_seed_then_remove_leaves_nothing_behind(engine: object) -> None:
                 {"t": DEMO_TENANT},
             ).scalar_one()
             assert left == 0, f"{table_name} still holds demo rows"
+
+
+def test_every_tenant_scoped_table_is_in_the_teardown() -> None:
+    """A table that references the tenant and is not in DEMO_TABLES makes
+    `make unseed` fail on the foreign key rather than remove the estate.
+
+    That is exactly what happened when query_adhoc was added in TASK-P2-026 and
+    missed here, and it was found by running unseed rather than by any test.
+    Derived from the model metadata rather than restated, so a table added
+    tomorrow is caught the day it is added.
+    """
+    from finops_api.db import models
+
+    tenant_scoped = {
+        table.name
+        for table in models.metadata.tables.values()
+        if "tenant_id" in table.c and table.name != "tenant"
+    }
+    # Tables the seed deliberately never writes. Listed rather than filtered
+    # out, so adding a table forces a decision about it: either the seed writes
+    # it and the teardown removes it, or it appears here with a reason.
+    never_seeded = {
+        # P1 owns these and P1 has not been built.
+        "cost_focus_daily",
+        "cost_focus_monthly",
+        "cost_provider_extra",
+        # Identity, which the local stack resolves from local-auth.yaml rather
+        # than from rows.
+        "principal",
+        "principal_scope",
+    }
+    missing = tenant_scoped - set(seed_demo.DEMO_TABLES) - never_seeded
+    assert not missing, (
+        f"these tables reference the tenant, are not torn down, and are not "
+        f"declared unseeded: {sorted(missing)}. Unseed will fail on the foreign key."
+    )

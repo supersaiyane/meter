@@ -1116,6 +1116,18 @@ issues:
     looking for wherever else a stored engine meets a classifier constant
   status: FIXED
   detail: '`finops_api/routes/query.py`, _violates'
+- id: ISS-176
+  severity: LOW
+  summary: make unseed failed on a foreign key and could not remove the demo estate.
+    query_adhoc was added in TASK-P2-026 and not added to DEMO_TABLES, so the teardown
+    deleted everything else and then could not delete the tenant. The command reported an
+    error and left a half removed estate behind. Found 2026-09-06 by running unseed, not by
+    any test, because nothing derived the teardown list from the schema. Fixed the same day,
+    and a test now derives every tenant scoped table from the model metadata and requires
+    each to be either torn down or declared as never seeded, so the next table added is
+    caught the day it is added rather than the day somebody unseeds
+  status: FIXED
+  detail: '`scripts/ops/seed_demo.py`, DEMO_TABLES, and `tests/scripts/test_seed_demo.py`'
 - id: ISS-175
   severity: HIGH
   summary: The findings list and the grouped view returned every audited day rather than
