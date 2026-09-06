@@ -195,12 +195,17 @@ meter/
 │   │                          same non local refusal, for the same reason
 │   └── deploy/                migration task runner
 │
-├── tests/                     the suite, 776 tests. conftest.py refuses to run
+├── tests/                     the suite, 777 tests. conftest.py refuses to run
 │                              against a real AWS account when no endpoint
 │                              override is set, and its session scoped `engine`
 │                              starts a PostgreSQL container and migrates it,
 │                              which is why the gate needs Docker and why one
 │                              invocation is cheaper than two.
+│                              METER_TEST_DATABASE_URL runs against a database
+│                              that already exists instead, for a runner with a
+│                              service and no socket. Not METER_DATABASE_URL,
+│                              which every `.env` sets, and the host is checked
+│                              because the fixture migrates and writes. ISS-178.
 │                              test_checkpoint_rotation.py covers the only script
 │                              that deletes rows from the memory log.
 │   ├── api/                   test_fixture_surfaces.py reads the frontend's
