@@ -26,6 +26,35 @@ from finops_core.domain.tenant import Scope
 from finops_query.severity import ENGINE_SCAN
 
 
+def latest_audit_only(table: Any, scope: Scope, *identity: str) -> Any:
+    """Confine a read to the most recent audit of each thing. ISS-175, ISS-177.
+
+    Every audit table keeps one row per thing per day, which is what makes a
+    history possible at all. A list that does not filter on the day therefore
+    reports each thing once per day audited and sums its cost that many times
+    over. One day of data hides it completely: the bug appears on the second
+    day and grows by one estate per day after that.
+
+    Per thing rather than one global maximum, because something that stopped
+    being audited still has a last known state, and dropping it would make the
+    estate look smaller and tidier than it is.
+
+    `identity` names the columns that say which thing a row is about, which is
+    the table's own uniqueness key without `run_date`. Getting it wrong here
+    does not fail, it silently drops rows, so it is stated per table rather
+    than guessed from the schema.
+    """
+    latest = table.alias("latest")
+    return table.c.run_date == (
+        select(func.max(latest.c.run_date))
+        .where(
+            latest.c.tenant_id == require_scope(scope).tenant_id,
+            *[latest.c[column] == table.c[column] for column in identity],
+        )
+        .scalar_subquery()
+    )
+
+
 class QueryFindingRepository(ScopedRepository):
     """Findings, ranked by what they cost."""
 
@@ -100,28 +129,8 @@ class QueryFindingRepository(ScopedRepository):
         return self._connection.execute(statement).all()
 
     def _latest_only(self, scope: Scope) -> Any:
-        """Confine a read to each query's most recent audit. ISS-175.
-
-        The audit keeps one row per query per day, which is what makes the
-        history in `history_for_all` possible. Neither the list nor the grouped
-        view filtered on it, so every finding appeared once per day audited and
-        the group sums added those days together. With one day of data that is
-        invisible. With two the front page reported twice the estate's cost,
-        and it would have grown by one estate per day.
-
-        Per query rather than one global maximum, because a query that stops
-        being audited still has a last known state, and dropping it would make
-        the estate look smaller than it is.
-        """
-        latest = self.table.alias("latest")
-        return self.table.c.run_date == (
-            select(func.max(latest.c.run_date))
-            .where(
-                latest.c.tenant_id == require_scope(scope).tenant_id,
-                latest.c.query_id == self.table.c.query_id,
-            )
-            .scalar_subquery()
-        )
+        """Confine a read to each query's most recent audit. ISS-175."""
+        return latest_audit_only(self.table, scope, "query_id")
 
     def ranked(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
         """Every finding, most expensive first.
@@ -256,8 +265,13 @@ class AdhocQueryRepository(ScopedRepository):
         queries that cost the same are ranked by how often they ran, because
         the repeated one is the habit worth a conversation.
         """
-        statement = self.scoped_select(scope).order_by(
-            self.table.c.cost_usd.desc(), self.table.c.runs.desc()
+        statement = (
+            self.scoped_select(scope)
+            # ISS-177. The table is keyed on the day, the same as
+            # `query_finding`, and a list that ignores that reports a week of
+            # audits as a week of separate queries.
+            .where(latest_audit_only(self.table, scope, "account_id", "region_id", "fingerprint"))
+            .order_by(self.table.c.cost_usd.desc(), self.table.c.runs.desc())
         )
         return self.fetch(scope, statement)
 

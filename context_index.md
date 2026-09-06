@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-374 public symbols across 5 packages.
+375 public symbols across 5 packages.
 
 ## finops_core
 
@@ -308,19 +308,20 @@ a duplicate.
 | `SyncErrorRepository.open_errors` | method | `finops_api/db/repositories/ingest.py:80` |  | `finops_api/routes/__init__.py` |
 | `OrgRepository` | class | `finops_api/db/repositories/org.py:23` |  | `finops_api/routes/org.py` |
 | `OrgRepository.list_tree` | method | `finops_api/db/repositories/org.py:27` |  | `finops_api/routes/org.py` |
-| `QueryFindingRepository` | class | `finops_api/db/repositories/query.py:29` | Findings, ranked by what they cost. | `finops_api/routes/query.py` |
-| `QueryFindingRepository.history_for_all` | method | `finops_api/db/repositories/query.py:70` | Every query's cost per day, for the list. ISS-172. | `finops_api/routes/query.py` |
-| `QueryFindingRepository.ranked` | method | `finops_api/db/repositories/query.py:126` | Every finding, most expensive first. | `finops_api/routes/query.py` |
-| `QueryFindingRepository.grouped` | method | `finops_api/db/repositories/query.py:140` | Findings summed by cause, worst group first. | `finops_api/routes/query.py` |
-| `QueryFindingRepository.latest_change` | method | `finops_api/db/repositories/query.py:173` | The most recent change on this finding that has not been reverted. | `finops_api/routes/query.py` |
-| `QueryFindingRepository.history` | method | `finops_api/db/repositories/query.py:195` | What this query has cost on each day it was audited. ISS-172. | `finops_api/routes/query.py` |
-| `QueryFindingRepository.one` | method | `finops_api/db/repositories/query.py:235` |  | `finops_api/routes/query.py`, `finops_ingest/collectors/query_audit.py` |
-| `AdhocQueryRepository` | class | `finops_api/db/repositories/query.py:241` | The Logs Insights executions no panel and no alert rule claims. | `finops_api/routes/query.py` |
-| `AdhocQueryRepository.most_expensive` | method | `finops_api/db/repositories/query.py:252` | Worst first, which is the only order this list is useful in. | `finops_api/routes/query.py` |
-| `SurfaceInstanceRepository` | class | `finops_api/db/repositories/query.py:265` | Every place queries live, including the ones that could not be read. | `finops_api/routes/query.py` |
-| `SurfaceInstanceRepository.unreachable` | method | `finops_api/db/repositories/query.py:271` | The workspaces that could not be read, with their typed cause. | `finops_api/routes/query.py` |
-| `SurfaceInstanceRepository.coverage` | method | `finops_api/db/repositories/query.py:284` | Workspaces read, over workspaces the tenant has. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py` |
-| `SurfaceInstanceRepository.all_with_counts` | method | `finops_api/db/repositories/query.py:314` |  | `finops_api/routes/query.py` |
+| `latest_audit_only` | function | `finops_api/db/repositories/query.py:29` | Confine a read to the most recent audit of each thing. ISS-175, ISS-177. | nothing in this tree |
+| `QueryFindingRepository` | class | `finops_api/db/repositories/query.py:58` | Findings, ranked by what they cost. | `finops_api/routes/query.py` |
+| `QueryFindingRepository.history_for_all` | method | `finops_api/db/repositories/query.py:99` | Every query's cost per day, for the list. ISS-172. | `finops_api/routes/query.py` |
+| `QueryFindingRepository.ranked` | method | `finops_api/db/repositories/query.py:135` | Every finding, most expensive first. | `finops_api/routes/query.py` |
+| `QueryFindingRepository.grouped` | method | `finops_api/db/repositories/query.py:149` | Findings summed by cause, worst group first. | `finops_api/routes/query.py` |
+| `QueryFindingRepository.latest_change` | method | `finops_api/db/repositories/query.py:182` | The most recent change on this finding that has not been reverted. | `finops_api/routes/query.py` |
+| `QueryFindingRepository.history` | method | `finops_api/db/repositories/query.py:204` | What this query has cost on each day it was audited. ISS-172. | `finops_api/routes/query.py` |
+| `QueryFindingRepository.one` | method | `finops_api/db/repositories/query.py:244` |  | `finops_api/routes/query.py`, `finops_ingest/collectors/query_audit.py` |
+| `AdhocQueryRepository` | class | `finops_api/db/repositories/query.py:250` | The Logs Insights executions no panel and no alert rule claims. | `finops_api/routes/query.py` |
+| `AdhocQueryRepository.most_expensive` | method | `finops_api/db/repositories/query.py:261` | Worst first, which is the only order this list is useful in. | `finops_api/routes/query.py` |
+| `SurfaceInstanceRepository` | class | `finops_api/db/repositories/query.py:279` | Every place queries live, including the ones that could not be read. | `finops_api/routes/query.py` |
+| `SurfaceInstanceRepository.unreachable` | method | `finops_api/db/repositories/query.py:285` | The workspaces that could not be read, with their typed cause. | `finops_api/routes/query.py` |
+| `SurfaceInstanceRepository.coverage` | method | `finops_api/db/repositories/query.py:298` | Workspaces read, over workspaces the tenant has. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py` |
+| `SurfaceInstanceRepository.all_with_counts` | method | `finops_api/db/repositories/query.py:328` |  | `finops_api/routes/query.py` |
 | `get_settings` | function | `finops_api/deps.py:37` | The configuration this application was built with. | nothing in this tree |
 | `get_request_id` | function | `finops_api/deps.py:50` | The id every log line and every audit row for this request carries. | nothing in this tree |
 | `get_connection` | function | `finops_api/deps.py:56` | One transaction per request, so a read and its audit row commit together. | nothing in this tree |

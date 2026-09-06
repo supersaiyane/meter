@@ -1116,6 +1116,19 @@ issues:
     looking for wherever else a stored engine meets a classifier constant
   status: FIXED
   detail: '`finops_api/routes/query.py`, _violates'
+- id: ISS-177
+  severity: HIGH
+  summary: The ad hoc query list reported one query once per day audited, and its cost that
+    many times over. query_adhoc keeps one row per query per account, region and day, the
+    same shape query_finding has, and most_expensive never filtered on the day. This is
+    ISS-175 on the table that fix did not reach. Found 2026-09-06 by seeding seven days and
+    reading the screen, which showed 14 rows for 2 queries and 356 runs where the newest day
+    had 57. One seeded day hides it completely. The route had no test at all, which is what
+    let a known bug reappear on a second table. Fixed the same day, the predicate is now one
+    function both repositories call, named per table because getting the identity columns
+    wrong drops rows silently rather than failing
+  status: FIXED
+  detail: '`finops_api/db/repositories/query.py`, latest_audit_only, and `tests/api/test_query_routes.py`'
 - id: ISS-176
   severity: LOW
   summary: make unseed failed on a foreign key and could not remove the demo estate.

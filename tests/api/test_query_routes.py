@@ -229,6 +229,79 @@ def test_a_finding_audited_twice_is_listed_once(
     assert sum(int(group["findings"]) for group in grouped) == len(rows)
 
 
+def _adhoc(
+    connection: object, tenant: UUID, day: object, runs: int, cost: str, fingerprint: str
+) -> None:
+    """One ad hoc row, on one day. The table is keyed on the day by design."""
+    connection.execute(  # type: ignore[attr-defined]
+        models.query_adhoc.insert().values(
+            adhoc_id=uuid4(),
+            tenant_id=tenant,
+            account_id=IN_SCOPE,
+            region_id="eu-west-2",
+            fingerprint=fingerprint,
+            query_text="fields @timestamp | filter @message like /timeout/",
+            run_date=day,
+            runs=runs,
+            scan_bytes=1_000_000,
+            cost_usd=Decimal(cost),
+            principal="bob@example.com",
+            as_of=NOW,
+            collected_at=NOW,
+        )
+    )
+
+
+def test_an_adhoc_query_seen_on_two_days_is_listed_once(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """ISS-177, which is ISS-175 on the table the fix did not reach.
+
+    `query_adhoc` keeps one row per query per account, region and day, the same
+    shape `query_finding` has and for the same reason. The list never filtered
+    on the day, so a week of audits reported the same query seven times and its
+    cost seven times over. One seeded day hides it completely, which is why it
+    survived until an estate with a history existed to look at.
+
+    The newest day wins rather than the largest. A query that ran less today
+    than it did on Monday has got cheaper, and a list that quietly kept
+    Monday's figure would be reporting a problem that has already gone away.
+    """
+    seed(engine, tenant_id)
+    with engine.begin() as connection:
+        _adhoc(connection, tenant_id, NOW.date() - timedelta(days=1), 90, "80.00", "fp-hand-01")
+        _adhoc(connection, tenant_id, NOW.date(), 12, "9.00", "fp-hand-01")
+
+    client, token = client_for(engine, everything(tenant_id), settings)
+    rows = client.get("/api/v1/query/adhoc", headers=auth(token)).json()["data"]
+
+    assert len(rows) == 1, f"one query audited twice came back {len(rows)} times"
+    assert Decimal(rows[0]["cost_usd"]) == Decimal("9.00")
+    assert rows[0]["runs"] == 12
+
+
+def test_an_adhoc_query_nobody_ran_today_keeps_its_last_known_state(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """Per query rather than one global maximum, matching `query_finding`.
+
+    Somebody ran an expensive query on Monday and has not run it since. It is
+    still the evidence that it happens, and dropping it because a different
+    query ran more recently would make the estate look tidier than it is.
+    """
+    seed(engine, tenant_id)
+    with engine.begin() as connection:
+        _adhoc(connection, tenant_id, NOW.date() - timedelta(days=3), 200, "300.00", "fp-monday")
+        _adhoc(connection, tenant_id, NOW.date(), 12, "9.00", "fp-today")
+
+    client, token = client_for(engine, everything(tenant_id), settings)
+    rows = client.get("/api/v1/query/adhoc", headers=auth(token)).json()["data"]
+
+    assert len(rows) == 2
+    # Worst first, and Monday's is still the worst.
+    assert Decimal(rows[0]["cost_usd"]) == Decimal("300.00")
+
+
 def test_findings_come_back_most_expensive_first(
     engine: Engine, tenant_id: UUID, settings: Settings
 ) -> None:
