@@ -99,3 +99,31 @@ called during application assembly**: on 2026-09-05 turning `get_settings` into
 a request dependency left 750 tests green and the container unable to boot,
 because every test passes settings explicitly and only the image calls the
 factory.
+
+## 2026-09-06 - an exit code from the wrong end of a pipe
+
+**Mistake:** told the user "image build done" and "the rebuilt image carries the
+change". Neither was true. `docker compose build api 2>&1 | tail -3` reports
+`tail`'s exit code, not the build's, and the build wrote nothing to the log, so
+a run that produced no image looked identical to a successful one. Then
+`docker compose restart api` was used to pick the new image up, which restarts
+the container that already exists and never touches the image at all. The
+demo the user was shown came from the host venv while the containers ran three
+hour old code, and the difference only surfaced because the ad hoc screen
+returned 14 rows where the database held 2.
+
+**Correction:** self caught, by seeding through the documented path and reading
+a number that disagreed with the one from the host.
+
+**Rule:** never read success from a pipeline's exit code. Run the build
+unpiped, or capture with `nohup cmd > log 2>&1` and read the log. Then prove
+the artifact rather than the command: `docker images` for the timestamp, and a
+`docker compose run --rm --no-deps <svc> python -c "import ...; print(...)"`
+that asks the image for the symbol that was just added. To make a running
+container use a new image, `docker compose up -d --force-recreate <svc>`.
+`restart` is not a deployment.
+
+**Triggers:** any `docker compose build`, any `| tail`, `| head` or `| grep` on
+a command whose success matters, "the build finished", "the image is rebuilt",
+restarting a service after a code change, and any claim about what a container
+is running that was not read out of that container.
