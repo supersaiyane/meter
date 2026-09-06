@@ -1405,9 +1405,14 @@ issues:
     while the coverage gate is set for the whole suite, so it reports 77 percent against a
     threshold of 80 and exits non zero even when every test passes. The pipeline runs both suites
     in one pytest invocation and reaches 98 percent, so this is a local target that lies rather
-    than a gate that is failing
-  status: OPEN
-  detail: '`Makefile`, target test-integration'
+    than a gate that is failing. Fixed 2026-09-06, in the pass that put the integration
+    tests into make verify. The coverage gate now runs on the one invocation that covers
+    everything, and both slice targets pass --no-cov, because a fraction of the suite
+    graded against the whole suite's threshold is a number that cannot be read in either
+    direction. It fails when nothing is wrong, and it would pass a slice covering nothing
+    it touched
+  status: FIXED
+  detail: '`Makefile`, targets test, test-unit and test-integration'
 - id: ISS-146
   severity: HIGH
   summary: make security-scan could not complete and make security-scan-images had never run,
