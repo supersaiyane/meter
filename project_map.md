@@ -354,7 +354,10 @@ meter/
 │   │                          query_key identifies the query itself, so measured
 │   │                          evidence attaches to every panel running it. Both
 │   │                          ignore template values, whitespace and comments
-│   ├── ownership.py           who ran it, and measured against modelled
+│   ├── ownership.py           who ran it, and measured against modelled.
+│   │                          resolve_owner takes the folder map, then the last
+│   │                          editor, then the CloudTrail principal, and returns
+│   │                          unowned rather than inventing one
 │   └── parser.py              the QueryParser port, bound to this package. It
 │                              exists so the adapter below can parse without
 │                              importing the layer above it
