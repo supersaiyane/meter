@@ -171,7 +171,9 @@ meter/
 │   │                          derives it from the schema so a new tenant scoped
 │   │                          table cannot be forgotten there. ISS-176
 │   │                          --days runs the collectors once per day at that
-│   │                          day's clock, which is how a trend gets a history
+│   │                          day's clock, which is how a trend gets a history,
+│   │                          and passes each run its distance from the newest
+│   │                          day so the fake estate reports the past as quieter
 │   │                          four real collectors against the fake adapters and
 │   │                          through the real run ledger, so seeded rows cannot
 │   │                          drift from collected ones and the ingest and

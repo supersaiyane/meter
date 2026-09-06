@@ -199,6 +199,12 @@ make seed DAYS=7    # the same, run once per day for seven days, so trends draw
 make token          # prints the one line to paste into the browser console
 ```
 
+`DAYS` seeds a past as well as a present. The fake estate ran its queries about
+four percent less often on each earlier day, so the trend screens draw a line
+that rises toward today. That growth is a property of the estate, not of the
+chart: the collectors do the same arithmetic on each day's evidence, so a line
+that rises is the run counts reaching the screen intact.
+
 `make token` mints for `auditor@example.local`, the global user in
 `local-auth.yaml`. The other user there, `dev@example.local`, is scoped to two
 account ids the seed never creates, so it authenticates and then shows an empty

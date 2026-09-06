@@ -16,6 +16,7 @@ matches tomorrow.
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
+from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Any
 
@@ -187,6 +188,54 @@ QUERIES: Mapping[str, tuple[QueryDefinition, ...]] = {
         for index in range(1, 13)
     ),
 }
+
+
+#: Two edits somebody made to this estate, and roughly when. A modelled cost is
+#: computed from the definition, so it does not drift with the weather: it holds
+#: still and then steps, on the day a person changed the dashboard, and that
+#: step is the whole finding. An estate whose modelled figures crept up a few
+#: percent a day would be a nicer looking chart and a lie about where the money
+#: goes.
+#:
+#: The key is the fingerprint, the number is how many days back the definition
+#: still held its previous value, and the last is what that value was. Both are
+#: somebody making a query run more often, which is the change that costs money
+#: and the one nobody notices making.
+REFRESH_HISTORY: Mapping[str, tuple[int, int]] = {
+    # The security audit alert used to run hourly. Halving its interval doubles
+    # what it costs, and nothing about the alert looks different afterwards.
+    "fp-alert-0004": (3, 3600),
+    # The team template was rolled out at a minute and then tightened, across
+    # all twelve panels at once, because that is what editing a template does.
+    # Individually the step is a few dollars, together it is the largest single
+    # move in the estate, which is ADR-0016's point made over time.
+    **{f"fp-team-{index:04d}": (5, 60) for index in range(1, 13)},
+}
+
+
+def _as_it_was(definition: QueryDefinition, days_ago: int) -> QueryDefinition:
+    """One definition as it stood that many days ago."""
+    change = REFRESH_HISTORY.get(definition.fingerprint)
+    if change is None:
+        return definition
+    older_than, previous_refresh = change
+    if days_ago < older_than:
+        return definition
+    return replace(definition, refresh_seconds=previous_refresh)
+
+
+def queries_as_of(days_ago: int) -> Mapping[str, tuple[QueryDefinition, ...]]:
+    """The estate's dashboards as they stood that many days ago.
+
+    Zero is today and returns `QUERIES` itself, so a caller that never asks for
+    a history sees exactly the estate it saw before this existed.
+    """
+    if days_ago <= 0:
+        return QUERIES
+    return {
+        surface_id: tuple(_as_it_was(definition, days_ago) for definition in definitions)
+        for surface_id, definitions in QUERIES.items()
+    }
 
 
 #: What each workspace's refresh floor is before anything changes it. The

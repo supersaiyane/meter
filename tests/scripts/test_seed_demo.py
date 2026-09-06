@@ -36,6 +36,29 @@ require_local = seed_demo.require_local
 REMOTE = "postgresql+psycopg://meter:secret@meter-prod.eu-west-2.rds.amazonaws.com:5432/meter"
 
 
+class Settings:
+    """Only the fields `rates_from` reads.
+
+    Loading real settings would make these tests depend on a full environment
+    to prove something about SQL.
+    """
+
+    query_logs_scan_price_per_gb = 0.005
+    query_metrics_price_per_1000 = 0.01
+    query_manual_loads_per_day = 4.0
+    query_viewing_hours_per_day = 8.0
+    query_metrics_per_call = 10.0
+    query_default_ingest_gb_per_day = 10.0
+    query_assumed_query_seconds = 3.0
+    query_refresh_warn_seconds = 60
+    query_refresh_crit_seconds = 15
+    query_timerange_warn_hours = 168.0
+    query_timerange_crit_hours = 720.0
+    query_quota_logs_concurrent = 30
+    query_quota_getmetricdata_tps = 50
+    run_claim_timeout_minutes = 15
+
+
 class TestItRefusesAnythingNotLocalError:
     def test_a_remote_host_is_refused(self) -> None:
         with pytest.raises(NotLocalError):
@@ -97,24 +120,6 @@ def test_seed_then_remove_leaves_nothing_behind(engine: object) -> None:
     """
     from sqlalchemy import text as sql
 
-    # Only the fields `rates_from` reads. Loading real settings would make this
-    # test depend on a full environment to prove something about SQL.
-    class Settings:
-        query_logs_scan_price_per_gb = 0.005
-        query_metrics_price_per_1000 = 0.01
-        query_manual_loads_per_day = 4.0
-        query_viewing_hours_per_day = 8.0
-        query_metrics_per_call = 10.0
-        query_default_ingest_gb_per_day = 10.0
-        query_assumed_query_seconds = 3.0
-        query_refresh_warn_seconds = 60
-        query_refresh_crit_seconds = 15
-        query_timerange_warn_hours = 168.0
-        query_timerange_crit_hours = 720.0
-        query_quota_logs_concurrent = 30
-        query_quota_getmetricdata_tps = 50
-        run_claim_timeout_minutes = 15
-
     seeded = seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
     assert seeded.instances == 3
     assert seeded.accounts > 0
@@ -156,6 +161,64 @@ def test_seed_then_remove_leaves_nothing_behind(engine: object) -> None:
                 {"t": DEMO_TENANT},
             ).scalar_one()
             assert left == 0, f"{table_name} still holds demo rows"
+
+
+@pytest.mark.integration
+def test_a_seeded_history_rises_rather_than_repeating(engine: object) -> None:
+    """Six days seeded, and the estate costs more at the end than at the start.
+
+    The trend screens were built against a history that was flat, because the
+    seed wrote the same day three times. Flat is not wrong on its own, a real
+    estate can be steady, but it meant nothing on those screens could be told
+    apart: a chart drawing the right numbers and a chart drawing one number
+    three times look identical.
+
+    Strictly rising is the assertion because the fake estate now grows, so a
+    repeated day shows up here as an equality rather than as a plausible line
+    nobody checks.
+    """
+    from sqlalchemy import text as sql
+
+    latest = seed_demo.datetime.now(seed_demo.UTC)
+    for offset in (5, 4, 3, 2, 1, 0):
+        seed_demo.seed(engine, Settings(), latest - seed_demo.timedelta(days=offset), latest=latest)
+
+    try:
+        with engine.connect() as connection:  # type: ignore[attr-defined]
+            findings = connection.execute(
+                sql(
+                    "SELECT run_date, sum(cost_month_usd) FROM query_finding "
+                    "WHERE tenant_id = :t GROUP BY run_date ORDER BY run_date"
+                ),
+                {"t": DEMO_TENANT},
+            ).all()
+            adhoc = connection.execute(
+                sql(
+                    "SELECT run_date, sum(cost_usd) FROM query_adhoc "
+                    "WHERE tenant_id = :t GROUP BY run_date ORDER BY run_date"
+                ),
+                {"t": DEMO_TENANT},
+            ).all()
+    finally:
+        seed_demo.remove(engine)
+
+    assert len(findings) == 6, f"six days seeded, {len(findings)} days written"
+    costs = [float(row[1]) for row in findings]
+    assert costs == sorted(costs), f"the estate does not rise: {costs}"
+    assert costs[0] < costs[-1], f"the estate ends where it started: {costs}"
+    # Six days reaches back past both dashboard edits, so this also proves the
+    # definition history arrives in the database rather than only in the fake.
+    # Two thirds of the estate's cost is the one alert whose interval was
+    # halved, so a run that lost the history would land well inside this.
+    assert costs[-1] > costs[0] * 1.5, f"the steps did not land: {costs}"
+
+    # The ad hoc rows are written from the same observations. A history that
+    # moved only the owned queries would leave FEAT-051's screen flat while the
+    # findings list rose, and the two would be describing different estates.
+    assert len(adhoc) == 6
+    unowned = [float(row[1]) for row in adhoc]
+    assert unowned == sorted(unowned), f"the ad hoc queries do not rise: {unowned}"
+    assert unowned[0] < unowned[-1], f"the ad hoc queries end where they started: {unowned}"
 
 
 def test_every_tenant_scoped_table_is_in_the_teardown() -> None:

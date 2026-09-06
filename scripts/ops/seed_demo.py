@@ -58,7 +58,7 @@ from finops_providers.fake.evidence import FakeQueryEvidence
 from finops_providers.fake.health import FakeRoleHealth
 from finops_providers.fake.platform_cost import FakePlatformCost
 from finops_providers.fake.provider import FakeProvider
-from finops_providers.fake.surface import FakeQuerySurface
+from finops_providers.fake.surface import FakeQuerySurface, queries_as_of
 from finops_query.parser import GrafanaQueryParser
 
 #: Fixed, and readable as "seeded" in the first block, so a row found in a
@@ -180,8 +180,17 @@ def _through_the_ledger(
     return int(outcome.items_written)
 
 
-def seed(engine: Any, settings: Any, now: datetime) -> Seeded:
-    """Create the tenant and run all four collectors into it."""
+def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = None) -> Seeded:
+    """Create the tenant and run all four collectors into it.
+
+    `latest` is the newest day of the history being laid down, and it is what
+    tells this run how far in the past it is. Left out, `now` is the newest day
+    and the estate is reported at full size, which is what a single day seed and
+    every test that calls this already expect.
+    """
+    # Derived rather than passed, so the day being seeded and the distance back
+    # to the present cannot disagree with each other.
+    days_ago = (latest.date() - now.date()).days if latest else 0
     parser = GrafanaQueryParser()
     provider = FakeProvider(at=now)
     window_start = now - timedelta(days=DEMO_WINDOW_DAYS)
@@ -245,7 +254,10 @@ def seed(engine: Any, settings: Any, now: datetime) -> Seeded:
         written += _through_the_ledger(
             ledger,
             QueryAuditCollector(
-                FakeQuerySurface(),
+                # The dashboards as they stood on the day being seeded. A
+                # modelled cost is computed from the definition, so this is the
+                # only thing that can move one.
+                FakeQuerySurface(queries=queries_as_of(days_ago)),
                 rates_from(settings),
                 default_ingest_rate(settings),
                 clock=lambda: now,
@@ -253,7 +265,7 @@ def seed(engine: Any, settings: Any, now: datetime) -> Seeded:
                 # beside a modelled one. Telling those apart is what the screens
                 # are for, and an estate where every figure is modelled cannot
                 # demonstrate it.
-                evidence=FakeQueryEvidence(parser),
+                evidence=FakeQueryEvidence(parser, days_ago=days_ago),
             ),
             connection,
             unit(),
@@ -336,7 +348,7 @@ def main(argv: list[str] | None = None) -> int:
         # keyed on the day, so re running any of them changes nothing.
         today = datetime.now(UTC)
         for offset in range(args.days - 1, -1, -1):
-            seeded = seed(engine, settings, today - timedelta(days=offset))
+            seeded = seed(engine, settings, today - timedelta(days=offset), latest=today)
         print(f"Seeded tenant {DEMO_TENANT}, {DEMO_NAME}.")
         print(f"  {seeded.accounts} accounts, {seeded.instances} workspaces")
         if args.days > 1:
