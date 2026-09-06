@@ -14,6 +14,7 @@ beside the findings route rather than behind it.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Any
 from uuid import UUID
 
@@ -81,8 +82,9 @@ def _unreadable(rows: Any) -> tuple[FailureOut, ...]:
     )
 
 
-def _finding(row: Any) -> QueryFindingOut:
+def _finding(row: Any, history: Sequence[CostPointOut] = ()) -> QueryFindingOut:
     return QueryFindingOut(
+        history=list(history),
         finding_id=row.finding_id,
         dashboard_uid=row.dashboard_uid,
         dashboard_title=row.dashboard_title,
@@ -117,8 +119,21 @@ def query_findings(
     connection: Connection = Depends(get_connection),
     context: AccessContext = Depends(get_access_context),
 ) -> Envelope[list[QueryFindingOut]]:
-    rows = QueryFindingRepository(connection, context).ranked(scope)
-    findings = [_finding(row) for row in rows]
+    repository = QueryFindingRepository(connection, context)
+    rows = repository.ranked(scope)
+    # One statement for every series, grouped here. A read per row would be the
+    # N plus one this repository exists to avoid, on the screen most likely to
+    # hold a hundred findings.
+    series: dict[Any, list[CostPointOut]] = {}
+    for point in repository.history_for_all(scope):
+        series.setdefault(point.query_id, []).append(
+            CostPointOut(
+                run_date=point.run_date,
+                cost_month_usd=point.cost_month_usd,
+                provenance=str(point.provenance),
+            )
+        )
+    findings = [_finding(row, series.get(row.query_id, ())) for row in rows]
     surfaces = SurfaceInstanceRepository(connection, context)
     return Envelope(
         data=findings,
@@ -210,7 +225,7 @@ def query_finding(
         )
         for point in findings.history(scope, finding_id)
     ]
-    base = _finding(row)
+    base = _finding(row, history)
     target = row.target or {}
     detail = QueryFindingDetailOut(
         **base.model_dump(),
@@ -219,7 +234,6 @@ def query_finding(
         region=target.get("region"),
         last_editor=row.last_editor,
         rate_usd_per_gib=settings.query_logs_scan_price_per_gb,
-        history=history,
         # So the screen can decide whether an undo control exists at all. A
         # control that looks available and does nothing is worse than an absent
         # one, which is the rule TASK-P2-025 states for revoke and holds here.

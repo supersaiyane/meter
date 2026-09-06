@@ -63,6 +63,66 @@ class QueryFindingRepository(ScopedRepository):
             .join(definition, definition.c.query_id == self.table.c.query_id)
         )
 
+    #: What the sparkline is documented to draw. Thirty days is the shape, and
+    #: sending more would be paying for pixels nobody renders.
+    TREND_DAYS = 30
+
+    def history_for_all(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+        """Every query's cost per day, for the list. ISS-172.
+
+        One statement rather than one per row. The list holds tens of findings,
+        and a read per row would be the N plus one this repository exists to
+        avoid, on the screen whose whole job is to be scanned quickly.
+
+        Bounded to the last `TREND_DAYS`, which is the window the sparkline is
+        documented to draw. An unbounded read would grow forever and be
+        truncated in the browser instead, which is a slower way of doing the
+        same thing and hides where the limit is.
+        """
+        confirmed = require_scope(scope)
+        # date minus integer, which the database evaluates as days. Written this
+        # way rather than as an INTERVAL literal so it needs no raw SQL and no
+        # import this module did not already have.
+        cutoff = func.current_date() - self.TREND_DAYS
+        statement: Any = (
+            select(
+                self.table.c.query_id,
+                self.table.c.run_date,
+                self.table.c.cost_month_usd,
+                self.table.c.provenance,
+            )
+            .where(
+                scope_predicate(self.table, confirmed),
+                self.table.c.run_date >= cutoff,
+            )
+            .order_by(self.table.c.query_id, self.table.c.run_date)
+        )
+        return self._connection.execute(statement).all()
+
+    def _latest_only(self, scope: Scope) -> Any:
+        """Confine a read to each query's most recent audit. ISS-175.
+
+        The audit keeps one row per query per day, which is what makes the
+        history in `history_for_all` possible. Neither the list nor the grouped
+        view filtered on it, so every finding appeared once per day audited and
+        the group sums added those days together. With one day of data that is
+        invisible. With two the front page reported twice the estate's cost,
+        and it would have grown by one estate per day.
+
+        Per query rather than one global maximum, because a query that stops
+        being audited still has a last known state, and dropping it would make
+        the estate look smaller than it is.
+        """
+        latest = self.table.alias("latest")
+        return self.table.c.run_date == (
+            select(func.max(latest.c.run_date))
+            .where(
+                latest.c.tenant_id == require_scope(scope).tenant_id,
+                latest.c.query_id == self.table.c.query_id,
+            )
+            .scalar_subquery()
+        )
+
     def ranked(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
         """Every finding, most expensive first.
 
@@ -70,7 +130,11 @@ class QueryFindingRepository(ScopedRepository):
         `ix_query_finding__cost` exists for exactly this and sorting rows in
         Python would order the page rather than the estate.
         """
-        statement = self._joined(scope).order_by(self.table.c.cost_month_usd.desc())
+        statement = (
+            self._joined(scope)
+            .where(self._latest_only(scope))
+            .order_by(self.table.c.cost_month_usd.desc())
+        )
         return self.fetch(scope, statement)
 
     def grouped(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
@@ -84,10 +148,16 @@ class QueryFindingRepository(ScopedRepository):
 
         Summed in the database for the same reason the list is ordered there: a
         sum over the rows a route happened to fetch is a sum over the page.
+
+        Confined to each query's latest audit, ISS-175. Without that the sum
+        added every day the collector had run, so a group of twelve panels read
+        as twenty four and its cost doubled with the estate's age rather than
+        with the estate.
         """
         cause = func.coalesce(self.table.c.cause, ENGINE_SCAN).label("cause")
         statement: Any = (
             self.scoped_select(scope)
+            .where(self._latest_only(scope))
             .with_only_columns(
                 cause,
                 func.count().label("findings"),

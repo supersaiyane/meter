@@ -1707,6 +1707,11 @@
     },
     {
       "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/components/Sparkline.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
       "t": "finops-web/src/components/StateBoundary.tsx",
       "k": "typescript"
     },

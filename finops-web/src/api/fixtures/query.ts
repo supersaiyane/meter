@@ -16,6 +16,22 @@ import type {
  * itself rather than as a blank, so a vocabulary change is visible rather than
  * silent.
  */
+/**
+ * Four days of one query getting worse, and one query seen once. ISS-172.
+ *
+ * The pair is the point. A screen that only ever renders a series never shows
+ * what it does with a single observation, and a single observation is what
+ * every finding starts as. The rising one crosses from modelled to measured
+ * partway through, because a series that changes grade partway is the case a
+ * reader has to be able to see the seam in.
+ */
+const RISING: readonly ApiCostPoint[] = [
+  { run_date: '2026-09-03', cost_month_usd: '48.0000', provenance: 'modelled' },
+  { run_date: '2026-09-04', cost_month_usd: '96.0000', provenance: 'modelled' },
+  { run_date: '2026-09-05', cost_month_usd: '132.0000', provenance: 'measured' },
+  { run_date: '2026-09-06', cost_month_usd: '180.0000', provenance: 'measured' },
+];
+
 const CAUSE_LABEL: Readonly<Record<string, string>> = {
   ALERT_ALWAYS_ON: 'Alert rules running 24x7',
   VERY_FAST_REFRESH: 'Sub minute auto refresh',
@@ -76,6 +92,7 @@ export const QUERY_FINDINGS: readonly ApiQueryFinding[] = [
     why: 'Refreshes every 10 seconds against a 30 day window, so it rescans 4 GiB 8,640 times a day.',
     as_of: '2026-09-11T04:00:00Z',
     collected_at: '2026-09-11T09:54:00Z',
+    history: [...RISING],
   },
   {
     finding_id: '22222222-2222-2222-2222-222222222222',
@@ -99,6 +116,9 @@ export const QUERY_FINDINGS: readonly ApiQueryFinding[] = [
     why: 'Hourly refresh over a one day window. Listed for completeness.',
     as_of: '2026-09-11T04:00:00Z',
     collected_at: '2026-09-11T09:54:00Z',
+    // Seen once. The list must not draw a flat line through one point
+    // any more than the detail page does.
+    history: [{ run_date: '2026-09-11', cost_month_usd: '24.0000', provenance: 'measured' }],
   },
 ];
 
@@ -160,22 +180,6 @@ export const QUERY_GROUPS: ApiQueryGroup[] = ((): ApiQueryGroup[] => {
 export function queryGroupsFixture(): ApiEnvelope<ApiQueryGroup[]> {
   return { data: QUERY_GROUPS, meta: FIXTURE_META };
 }
-
-/**
- * Four days of one query getting worse, and one query seen once. ISS-172.
- *
- * The pair is the point. A screen that only ever renders a series never shows
- * what it does with a single observation, and a single observation is what
- * every finding starts as. The rising one crosses from modelled to measured
- * partway through, because a series that changes grade partway is the case a
- * reader has to be able to see the seam in.
- */
-const RISING: readonly ApiCostPoint[] = [
-  { run_date: '2026-09-03', cost_month_usd: '48.0000', provenance: 'modelled' },
-  { run_date: '2026-09-04', cost_month_usd: '96.0000', provenance: 'modelled' },
-  { run_date: '2026-09-05', cost_month_usd: '132.0000', provenance: 'measured' },
-  { run_date: '2026-09-06', cost_month_usd: '180.0000', provenance: 'measured' },
-];
 
 export const QUERY_FINDING_DETAILS: Readonly<Record<string, ApiQueryFindingDetail>> = {
   '11111111-1111-1111-1111-111111111111': {

@@ -1116,6 +1116,20 @@ issues:
     looking for wherever else a stored engine meets a classifier constant
   status: FIXED
   detail: '`finops_api/routes/query.py`, _violates'
+- id: ISS-175
+  severity: HIGH
+  summary: The findings list and the grouped view returned every audited day rather than
+    each query's latest, so a finding appeared once per day the collector had run and the
+    group sums added those days together. The estate's reported cost therefore grew by one
+    estate per day. It was invisible for as long as the seeded estate held a single day of
+    history, and became visible the moment a second existed, which is also what made the
+    trend in ISS-172 possible. The front page read $5,088 for a group whose true cost was
+    $2,544. Found 2026-09-06 while adding the sparkline column, by reading the rendered
+    table rather than by any test. Fixed the same day by confining both reads to each
+    query's most recent run date, per query rather than one global maximum so a query that
+    stops being audited keeps its last known state
+  status: FIXED
+  detail: '`finops_api/db/repositories/query.py`, ranked and grouped, via _latest_only'
 - id: ISS-174
   severity: LOW
   summary: The ad hoc screen cannot tell an estate with no hand run queries from one whose

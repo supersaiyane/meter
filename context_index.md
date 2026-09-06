@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-372 public symbols across 5 packages.
+373 public symbols across 5 packages.
 
 ## finops_core
 
@@ -308,17 +308,18 @@ a duplicate.
 | `OrgRepository` | class | `finops_api/db/repositories/org.py:23` |  | `finops_api/routes/org.py` |
 | `OrgRepository.list_tree` | method | `finops_api/db/repositories/org.py:27` |  | `finops_api/routes/org.py` |
 | `QueryFindingRepository` | class | `finops_api/db/repositories/query.py:29` | Findings, ranked by what they cost. | `finops_api/routes/query.py` |
-| `QueryFindingRepository.ranked` | method | `finops_api/db/repositories/query.py:66` | Every finding, most expensive first. | `finops_api/routes/query.py` |
-| `QueryFindingRepository.grouped` | method | `finops_api/db/repositories/query.py:76` | Findings summed by cause, worst group first. | `finops_api/routes/query.py` |
-| `QueryFindingRepository.latest_change` | method | `finops_api/db/repositories/query.py:103` | The most recent change on this finding that has not been reverted. | `finops_api/routes/query.py` |
-| `QueryFindingRepository.history` | method | `finops_api/db/repositories/query.py:125` | What this query has cost on each day it was audited. ISS-172. | `finops_api/routes/query.py` |
-| `QueryFindingRepository.one` | method | `finops_api/db/repositories/query.py:165` |  | `finops_api/routes/query.py`, `finops_ingest/collectors/query_audit.py` |
-| `AdhocQueryRepository` | class | `finops_api/db/repositories/query.py:171` | The Logs Insights executions no panel and no alert rule claims. | `finops_api/routes/query.py` |
-| `AdhocQueryRepository.most_expensive` | method | `finops_api/db/repositories/query.py:182` | Worst first, which is the only order this list is useful in. | `finops_api/routes/query.py` |
-| `SurfaceInstanceRepository` | class | `finops_api/db/repositories/query.py:195` | Every place queries live, including the ones that could not be read. | `finops_api/routes/query.py` |
-| `SurfaceInstanceRepository.unreachable` | method | `finops_api/db/repositories/query.py:201` | The workspaces that could not be read, with their typed cause. | `finops_api/routes/query.py` |
-| `SurfaceInstanceRepository.coverage` | method | `finops_api/db/repositories/query.py:214` | Workspaces read, over workspaces the tenant has. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py` |
-| `SurfaceInstanceRepository.all_with_counts` | method | `finops_api/db/repositories/query.py:244` |  | `finops_api/routes/query.py` |
+| `QueryFindingRepository.history_for_all` | method | `finops_api/db/repositories/query.py:70` | Every query's cost per day, for the list. ISS-172. | `finops_api/routes/query.py` |
+| `QueryFindingRepository.ranked` | method | `finops_api/db/repositories/query.py:126` | Every finding, most expensive first. | `finops_api/routes/query.py` |
+| `QueryFindingRepository.grouped` | method | `finops_api/db/repositories/query.py:140` | Findings summed by cause, worst group first. | `finops_api/routes/query.py` |
+| `QueryFindingRepository.latest_change` | method | `finops_api/db/repositories/query.py:173` | The most recent change on this finding that has not been reverted. | `finops_api/routes/query.py` |
+| `QueryFindingRepository.history` | method | `finops_api/db/repositories/query.py:195` | What this query has cost on each day it was audited. ISS-172. | `finops_api/routes/query.py` |
+| `QueryFindingRepository.one` | method | `finops_api/db/repositories/query.py:235` |  | `finops_api/routes/query.py`, `finops_ingest/collectors/query_audit.py` |
+| `AdhocQueryRepository` | class | `finops_api/db/repositories/query.py:241` | The Logs Insights executions no panel and no alert rule claims. | `finops_api/routes/query.py` |
+| `AdhocQueryRepository.most_expensive` | method | `finops_api/db/repositories/query.py:252` | Worst first, which is the only order this list is useful in. | `finops_api/routes/query.py` |
+| `SurfaceInstanceRepository` | class | `finops_api/db/repositories/query.py:265` | Every place queries live, including the ones that could not be read. | `finops_api/routes/query.py` |
+| `SurfaceInstanceRepository.unreachable` | method | `finops_api/db/repositories/query.py:271` | The workspaces that could not be read, with their typed cause. | `finops_api/routes/query.py` |
+| `SurfaceInstanceRepository.coverage` | method | `finops_api/db/repositories/query.py:284` | Workspaces read, over workspaces the tenant has. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py` |
+| `SurfaceInstanceRepository.all_with_counts` | method | `finops_api/db/repositories/query.py:314` |  | `finops_api/routes/query.py` |
 | `get_settings` | function | `finops_api/deps.py:37` | The configuration this application was built with. | nothing in this tree |
 | `get_request_id` | function | `finops_api/deps.py:50` | The id every log line and every audit row for this request carries. | nothing in this tree |
 | `get_connection` | function | `finops_api/deps.py:56` | One transaction per request, so a read and its audit row commit together. | nothing in this tree |
@@ -373,13 +374,13 @@ a duplicate.
 | `reachable_for` | function | `finops_api/routes/org.py:32` | Structure is always visible. Whether an account can be read is the scope's answer. | nothing in this tree |
 | `org_tree` | function | `finops_api/routes/org.py:40` |  | nothing in this tree |
 | `platform_cost` | function | `finops_api/routes/platform.py:27` |  | nothing in this tree |
-| `query_findings` | function | `finops_api/routes/query.py:115` |  | nothing in this tree |
-| `query_groups` | function | `finops_api/routes/query.py:142` | Findings summed by cause, worst group first. ADR-0016. | nothing in this tree |
-| `query_finding` | function | `finops_api/routes/query.py:185` |  | nothing in this tree |
-| `remediate` | function | `finops_api/routes/query.py:308` | Bring one panel back inside the policy, subject to the write level. | nothing in this tree |
-| `undo_remediation` | function | `finops_api/routes/query.py:393` | Put back what the last remediation replaced. | nothing in this tree |
-| `query_adhoc` | function | `finops_api/routes/query.py:466` | Queries that ran and belong to no panel and no alert rule. FEAT-051. | nothing in this tree |
-| `query_instances` | function | `finops_api/routes/query.py:514` |  | nothing in this tree |
+| `query_findings` | function | `finops_api/routes/query.py:117` |  | nothing in this tree |
+| `query_groups` | function | `finops_api/routes/query.py:157` | Findings summed by cause, worst group first. ADR-0016. | nothing in this tree |
+| `query_finding` | function | `finops_api/routes/query.py:200` |  | nothing in this tree |
+| `remediate` | function | `finops_api/routes/query.py:322` | Bring one panel back inside the policy, subject to the write level. | nothing in this tree |
+| `undo_remediation` | function | `finops_api/routes/query.py:407` | Put back what the last remediation replaced. | nothing in this tree |
+| `query_adhoc` | function | `finops_api/routes/query.py:480` | Queries that ran and belong to no panel and no alert rule. FEAT-051. | nothing in this tree |
+| `query_instances` | function | `finops_api/routes/query.py:528` |  | nothing in this tree |
 | `CoverageOut` | class | `finops_api/schemas.py:26` | What was seen against everything there was to see. ISS-016. | nothing in this tree |
 | `CoverageOut.is_partial` | method | `finops_api/schemas.py:41` |  | nothing in this tree |
 | `FailureOut` | class | `finops_api/schemas.py:45` | One thing that is broken, and what the reader should do about it. | `finops_api/routes/__init__.py`, `finops_api/routes/query.py` |
@@ -396,11 +397,11 @@ a duplicate.
 | `PlatformCostOut` | class | `finops_api/schemas.py:204` |  | `finops_api/routes/platform.py` |
 | `CollectorHealth` | class | `finops_api/schemas.py:217` | How long since a collector last succeeded, against its own cadence. | `finops_api/main.py` |
 | `HealthOut` | class | `finops_api/schemas.py:229` | `/healthz`. Deliberately not a bare liveness probe. | `finops_api/main.py` |
-| `QueryFindingOut` | class | `finops_api/schemas.py:245` | One expensive query, as the findings list shows it. | `finops_api/routes/query.py` |
-| `RemediationOut` | class | `finops_api/schemas.py:287` | What a remediation did, or why it did not. | `finops_api/routes/query.py` |
-| `QueryGroupOut` | class | `finops_api/schemas.py:310` | One cause, with the money behind it summed across every finding. | `finops_api/routes/query.py` |
-| `CostPointOut` | class | `finops_api/schemas.py:334` | What one query cost on one day. ISS-172. | `finops_api/routes/query.py` |
-| `QueryFindingDetailOut` | class | `finops_api/schemas.py:350` | One finding with its full working, for the detail screen. | `finops_api/routes/query.py` |
+| `CostPointOut` | class | `finops_api/schemas.py:245` | What one query cost on one day. ISS-172. | `finops_api/routes/query.py` |
+| `QueryFindingOut` | class | `finops_api/schemas.py:261` | One expensive query, as the findings list shows it. | `finops_api/routes/query.py` |
+| `RemediationOut` | class | `finops_api/schemas.py:307` | What a remediation did, or why it did not. | `finops_api/routes/query.py` |
+| `QueryGroupOut` | class | `finops_api/schemas.py:330` | One cause, with the money behind it summed across every finding. | `finops_api/routes/query.py` |
+| `QueryFindingDetailOut` | class | `finops_api/schemas.py:354` | One finding with its full working, for the detail screen. | `finops_api/routes/query.py` |
 | `AdhocQueryOut` | class | `finops_api/schemas.py:377` | One Logs Insights query that ran and belongs to no panel or alert rule. | `finops_api/routes/query.py` |
 | `SurfaceInstanceOut` | class | `finops_api/schemas.py:403` | One place queries live, reachable or not. | `finops_api/routes/query.py` |
 
