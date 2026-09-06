@@ -221,6 +221,18 @@ def test_a_seeded_history_rises_rather_than_repeating(engine: object) -> None:
     assert unowned[0] < unowned[-1], f"the ad hoc queries end where they started: {unowned}"
 
 
+def test_the_test_fixture_accepts_the_same_hosts_the_seed_does() -> None:
+    """`tests/conftest.py` copies this list rather than importing it, because
+    `scripts/` is deliberately not a package. Copied is fine, drifting is not:
+    the two guards protect the same thing, a person's own database, and one of
+    them silently accepting a host the other refuses is how that protection
+    stops being real.
+    """
+    from tests.conftest import LOCAL_HOSTS as FIXTURE_HOSTS
+
+    assert FIXTURE_HOSTS == LOCAL_HOSTS
+
+
 def test_every_tenant_scoped_table_is_in_the_teardown() -> None:
     """A table that references the tenant and is not in DEMO_TABLES makes
     `make unseed` fail on the foreign key rather than remove the estate.

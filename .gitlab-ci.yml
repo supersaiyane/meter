@@ -100,7 +100,14 @@ test:
     POSTGRES_USER: meter
     POSTGRES_PASSWORD: ci_only
     POSTGRES_DB: meter_test
-    METER_DATABASE_URL: "postgresql+psycopg://meter:ci_only@postgres:5432/meter_test"
+    # The service above is the database the integration tests run against, and
+    # this is how they are told to use it. It was METER_DATABASE_URL until
+    # 2026-09-06, which nothing in the test path reads: the settings fixture
+    # builds from .env.example, and the database fixture started a
+    # testcontainer regardless, which this image has no Docker socket to do.
+    # The service and the variable were both decoration, and the job could not
+    # have run an integration test. ISS-178.
+    METER_TEST_DATABASE_URL: "postgresql+psycopg://meter:ci_only@postgres:5432/meter_test"
   script:
     - pip install -e ".[dev]"
     - pytest --cov-report=term-missing --cov-report=xml --junitxml=report.xml

@@ -1116,6 +1116,31 @@ issues:
     looking for wherever else a stored engine meets a classifier constant
   status: FIXED
   detail: '`finops_api/routes/query.py`, _violates'
+- id: ISS-179
+  severity: MEDIUM
+  summary: No pipeline run has ever been observed. The repository has no git remote, so
+    .gitlab-ci.yml has never executed, and every statement in this repository about what CI
+    does is a reading of the file rather than a result. Found 2026-09-06 while chasing a
+    variable in the test job, which turned out to be decoration, see ISS-178. Nothing here is
+    known to be wrong. The point is that nothing here is known to be right either, and the
+    first push will be the first run, so it should be treated as a first run and watched
+    rather than trusted
+  status: OPEN
+  detail: '`.gitlab-ci.yml`, and any document that describes what the pipeline does'
+- id: ISS-178
+  severity: MEDIUM
+  summary: The CI test job could not have run an integration test. It declared a PostgreSQL
+    service and a METER_DATABASE_URL beside it, and nothing in the test path read either. The
+    settings fixture builds from .env.example, and the database fixture started a
+    testcontainer regardless, which python 3.13 slim has no Docker socket to do. Both were
+    decoration, and the integration tests would have errored on every run. Found 2026-09-06
+    by asking what the variable was for. Fixed the same day. The fixture now runs against a
+    database it is given through METER_TEST_DATABASE_URL, falling back to a testcontainer,
+    and the job sets that. The name is deliberately not METER_DATABASE_URL, which is in every
+    .env and in the shell of anybody who has run make seed, and the fixture refuses a host
+    that is not local because it migrates the database and writes to it
+  status: FIXED
+  detail: '`tests/conftest.py`, the engine fixture, and the test job in `.gitlab-ci.yml`'
 - id: ISS-177
   severity: HIGH
   summary: The ad hoc query list reported one query once per day audited, and its cost that
@@ -1403,9 +1428,11 @@ issues:
   severity: LOW
   summary: make test-integration can never pass on its own. It runs only the integration marker
     while the coverage gate is set for the whole suite, so it reports 77 percent against a
-    threshold of 80 and exits non zero even when every test passes. The pipeline runs both suites
-    in one pytest invocation and reaches 98 percent, so this is a local target that lies rather
-    than a gate that is failing. Fixed 2026-09-06, in the pass that put the integration
+    threshold of 80 and exits non zero even when every test passes. The pipeline was believed to run both
+    suites in one pytest invocation and reach 98 percent. That was never observed and was
+    not true, and ISS-178 says why. The repository has no remote, and the job could not run an
+    integration test anyway. So this was a local target that lies, next to a pipeline
+    nobody had watched. Fixed 2026-09-06, in the pass that put the integration
     tests into make verify. The coverage gate now runs on the one invocation that covers
     everything, and both slice targets pass --no-cov, because a fraction of the suite
     graded against the whole suite's threshold is a number that cannot be read in either
