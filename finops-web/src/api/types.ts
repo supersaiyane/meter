@@ -177,6 +177,28 @@ export interface ApiQueryFindingDetail extends ApiQueryFinding {
   readonly applied_change_id: string | null;
 }
 
+/**
+ * One Logs Insights query that ran and belongs to no panel and no alert rule.
+ *
+ * There is no provenance field, and its absence is the claim. An ad hoc query
+ * exists only in the evidence, so there is nothing to model it from and every
+ * figure here is measured.
+ */
+export interface ApiAdhocQuery {
+  readonly adhoc_id: string;
+  readonly account_id: string;
+  readonly region_id: string;
+  /** As it ran, whole. A person has to recognise their own query in it. */
+  readonly query_text: string;
+  readonly runs: number;
+  readonly scan_bytes: number;
+  readonly cost_usd: string;
+  /** Null when CloudTrail did not name the caller. Reported, never dropped. */
+  readonly principal: string | null;
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
 export interface ApiSurfaceInstance {
   readonly instance_id: string;
   readonly name: string;

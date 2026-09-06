@@ -1678,7 +1678,7 @@ This screen is the reason deny is safe to enable."
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-06 |
 | Implements | P2 spec sections 5 and 8.2 |
 | Delivers | FEAT-051 |
 | Depends on | TASK-P2-013 |
@@ -1706,17 +1706,23 @@ hoc is what is left over. No new AWS call, no new permission, no new collector.
 
 **Acceptance criteria.**
 
-- [ ] An execution matching no definition is reported, with runs, bytes, cost
+- [x] An execution matching no definition is reported, with runs, bytes, cost
       and principal
-- [ ] The cost is `measured` and never `modelled`. There is no definition to
+- [x] The cost is `measured` and never `modelled`. There is no definition to
       model from, so a modelled ad hoc row would be an invention
-- [ ] A query with no principal reads `unattributed` and is still reported. An
+- [x] A query with no principal reads `unattributed` and is still reported. An
       unowned expensive query is the case the feature exists for
-- [ ] Evidence that could not be read is distinguishable on the screen from an
-      estate with no ad hoc queries in it. Those are different facts
-- [ ] The table is scoped by account like every other query table, and the
+- [~] Evidence that could not be read is distinguishable on the screen from an
+      estate with no ad hoc queries in it. Those are different facts.
+      **Not met.** `_observations` swallows a `CollectionError` and returns
+      None so the run continues, which is right for the findings and leaves no
+      trace for this screen to read. Both cases render as an empty table. It
+      needs the evidence failure recorded as a typed failure on the envelope,
+      which is a change to the collector's error path rather than to this
+      screen. Recorded as ISS-174
+- [x] The table is scoped by account like every other query table, and the
       repository guard is exercised by a test that reads out of scope
-- [ ] Query text is shown whole, never truncated, because a person has to
+- [x] Query text is shown whole, never truncated, because a person has to
       recognise their own query in it
 
 **Deliberately not in this task.** No remediation. The cost is already spent

@@ -163,6 +163,7 @@ class QueryAuditCollector:
         tenant_id = context.unit.tenant_id
         now = self._clock()
         written = 0
+        matched: set[str] = set()
         instances = tuple(self._surface.discover())
         # Once per run, not once per instance. CloudTrail records an execution
         # against the account it ran in, not against the tool that issued it, so
@@ -189,9 +190,17 @@ class QueryAuditCollector:
                 continue
             folder_map = self._folder_map(context, tenant_id, instance_pk)
             for definition in definitions:
+                # What the evidence matched. Everything it saw that is not in
+                # this set ran from no panel and no alert rule.
+                matched.add(normalise(definition.query))
                 written += self._write_definition(
                     context, tenant_id, instance_pk, definition, now, observed, folder_map
                 )
+
+        # After every instance, because a query is ad hoc only if no workspace
+        # in the account claims it. Doing this per instance would report a
+        # panel on the second workspace as nobody's query.
+        written += self._write_adhoc(context, tenant_id, instances, observed, matched, now)
 
         return CollectorOutcome(items_written=written)
 
@@ -528,6 +537,94 @@ class QueryAuditCollector:
                 "now": now,
             },
         )
+
+    # -- the queries that belong to nobody ---------------------------------
+
+    #: A gibibyte, because the scan price is quoted per GB and the evidence
+    #: counts bytes.
+    _GIB = 1024**3
+
+    def _write_adhoc(
+        self,
+        context: CollectorContext,
+        tenant_id: Any,
+        instances: tuple[SurfaceInstance, ...],
+        observed: Mapping[str, Any] | None,
+        matched: set[str],
+        now: datetime,
+    ) -> int:
+        """Executions the evidence saw that no definition claims.
+
+        FEAT-051. There is no definition to model from, so every row here is
+        measured by construction and the table has no provenance column. A
+        query with no principal is written as null rather than dropped, because
+        an expensive query nobody owns is the case this exists for.
+        """
+        if observed is None:
+            # Evidence that could not be read is not an estate without ad hoc
+            # queries in it. Writing nothing leaves the last window's rows
+            # standing, which is the honest state and is what the surface reads
+            # freshness from.
+            return 0
+
+        logs: Mapping[str, Mapping[str, Any]] = observed.get("logs") or {}
+        principals: Mapping[str, str] = observed.get("principal_by_query") or {}
+        account_id = next((a for a in (self._account_of(i) for i in instances) if a), "")
+        region = next((r for r in (self._region_of(i) for i in instances) if r), "")
+        if not account_id or not region:
+            # Nothing in this run names an account, so nothing can be attributed
+            # to one. The findings above are unaffected: they hang off a
+            # workspace, and this does not.
+            return 0
+
+        written = 0
+        for key, aggregate in logs.items():
+            if key in matched:
+                continue
+            runs = int(aggregate.get("runs") or 0)
+            if runs <= 0:
+                # The database refuses this too. A row that observed nothing is
+                # not evidence of a query, it is the absence of one.
+                continue
+            scan_bytes = int(aggregate.get("bytes") or 0)
+            groups = aggregate.get("log_groups") or ()
+            cost = (scan_bytes / self._GIB) * self._rates.logs_scan_price_per_gb
+            context.connection.execute(
+                text(
+                    "INSERT INTO query_adhoc (adhoc_id, tenant_id, account_id, region_id, "
+                    "fingerprint, query_text, run_date, runs, scan_bytes, cost_usd, "
+                    "principal, as_of, collected_at) "
+                    "VALUES (:id, :tenant, :account, :region, :fingerprint, :query, :day, "
+                    ":runs, :scan, :cost, :principal, :as_of, :now) "
+                    "ON CONFLICT (tenant_id, account_id, region_id, fingerprint, run_date) "
+                    "DO UPDATE SET runs = EXCLUDED.runs, scan_bytes = EXCLUDED.scan_bytes, "
+                    "cost_usd = EXCLUDED.cost_usd, principal = EXCLUDED.principal, "
+                    "as_of = EXCLUDED.as_of, collected_at = EXCLUDED.collected_at"
+                ),
+                {
+                    "id": uuid4(),
+                    "tenant": tenant_id,
+                    "account": account_id,
+                    "region": region,
+                    # The identity of the query itself, which is what lets
+                    # the same hand run query in two windows be one row.
+                    # Logs Insights by construction: an ad hoc row only
+                    # exists because CloudTrail saw a StartQuery.
+                    "fingerprint": query_key(LOGS_INSIGHTS, key, tuple(sorted(groups))),
+                    # Whole, never truncated. A person has to recognise their
+                    # own query in it to act on it.
+                    "query": key,
+                    "day": now.date(),
+                    "runs": runs,
+                    "scan": scan_bytes,
+                    "cost": round(cost, 4),
+                    "principal": principals.get(key),
+                    "as_of": now,
+                    "now": now,
+                },
+            )
+            written += 1
+        return written
 
 
 def _targets_json(definition: QueryDefinition) -> str:

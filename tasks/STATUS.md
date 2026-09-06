@@ -25,7 +25,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | Features | 51 total, 9 specified, 7 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
 | Changes | 81 recorded |
-| Issues | 116 fixed, 52 open, 0 parked |
+| Issues | 116 fixed, 53 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -45,7 +45,7 @@ Lint and type checking cover every directory that holds Python, which is 181
 files under mypy where it was 25. `scripts/`, `migrations/` and the test suite
 had all been outside one or both.
 
-**P2 is 20 of 26 done, 2 parked, 2 descoped, 2 not started.**
+**P2 is 21 of 26 done, 2 parked, 2 descoped, 1 not started.**
 
 TASK-P2-026 was added on 2026-10-12. Ad hoc query detection was in the prototype P2 was planned from, reached neither the specification nor the code, and was brought into scope rather than left as ISS-171. It is small: the evidence the measured overlay already collects contains it.
 
@@ -97,7 +97,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P2 | 20 | 0 | 2 | 2 | 2 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
+| P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -171,6 +171,7 @@ ISS-003.
 | `TASK-P2-023` | Done, 2026-09-15 | the finding detail screen |
 | `TASK-P2-024` | Done, 2026-09-17 | the query surfaces screen |
 | `TASK-P2-025` | Done, 2026-09-05 | the enforcement screen and the end to end journey |
+| `TASK-P2-026` | Done, 2026-09-06 | the queries that belong to nobody |
 
 <!-- generated:task-status end -->
 

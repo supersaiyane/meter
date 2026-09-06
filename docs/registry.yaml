@@ -1116,6 +1116,19 @@ issues:
     looking for wherever else a stored engine meets a classifier constant
   status: FIXED
   detail: '`finops_api/routes/query.py`, _violates'
+- id: ISS-174
+  severity: LOW
+  summary: The ad hoc screen cannot tell an estate with no hand run queries from one whose
+    evidence could not be read. Both render as an empty table. `_observations` in the query
+    audit collector catches a CollectionError and returns None so the run continues, which
+    is correct for the findings, because a modelled estate is still worth reporting and an
+    aborted one is not. It leaves nothing for this screen to read. The fix is to record the
+    evidence failure as a typed failure on the envelope, which is a change to the
+    collector's error path rather than to the screen. Found 2026-09-06 while writing
+    TASK-P2-026, and left as the one acceptance criterion that task does not meet
+  status: OPEN
+  detail: '`finops_ingest/collectors/query_audit.py`, _observations, and
+    `finops-web/src/screens/QueryAdhocScreen.tsx`'
 - id: ISS-171
   severity: MEDIUM
   summary: Ad hoc query detection was in the prototype and is in neither the P2 spec nor the

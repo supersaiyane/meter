@@ -452,6 +452,34 @@ query_definition = Table(
     Index("ix_query_definition__query_key", "tenant_id", "query_key"),
 )
 
+#: FEAT-051. The executions that belong to no panel and no alert rule.
+#:
+#: It carries its own account and region rather than reaching them through a
+#: workspace, because a query somebody typed into the console belongs to none.
+#: There is no provenance column: an ad hoc row exists only in the evidence, so
+#: there is nothing to model it from and every row is measured by construction.
+query_adhoc = Table(
+    "query_adhoc",
+    metadata,
+    Column("adhoc_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("account_id", Text, nullable=False),
+    Column("region_id", Text, nullable=False),
+    Column("fingerprint", Text, nullable=False),
+    #: Whole, never truncated. A person has to recognise their own query.
+    Column("query_text", Text, nullable=False),
+    Column("run_date", Date, nullable=False),
+    Column("runs", Integer, nullable=False),
+    Column("scan_bytes", BigInteger, nullable=False),
+    Column("cost_usd", Numeric(12, 4), nullable=False),
+    #: Null means CloudTrail did not name who ran it, which is reported as
+    #: unattributed rather than hidden.
+    Column("principal", Text),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
 query_finding = Table(
     "query_finding",
     metadata,

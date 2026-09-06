@@ -5,11 +5,13 @@ import { resolveSurface, type Resolved } from './fixtureSeam';
 import {
   queryFindingDetailFixture,
   queryFindingsFixture,
+  adhocQueriesFixture,
   queryGroupsFixture,
   surfaceInstancesFixture,
   enforcementActionsFixture,
 } from './fixtures/query';
 import type {
+  ApiAdhocQuery,
   Account,
   ApiEnvelope,
   ApiQueryFinding,
@@ -153,6 +155,15 @@ export function useQueryGroups() {
     '/api/v1/query/groups',
     '/api/v1/query/groups',
     queryGroupsFixture,
+  );
+}
+
+export function useQueryAdhoc() {
+  return useQuerySurface<ApiAdhocQuery[]>(
+    ['query-adhoc'],
+    '/api/v1/query/adhoc',
+    '/api/v1/query/adhoc',
+    adhocQueriesFixture,
   );
 }
 

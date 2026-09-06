@@ -22,12 +22,14 @@ from sqlalchemy.engine import Connection
 
 from finops_api.db.repositories import AccessContext
 from finops_api.db.repositories.query import (
+    AdhocQueryRepository,
     QueryFindingRepository,
     SurfaceInstanceRepository,
 )
 from finops_api.deps import get_access_context, get_connection, get_scope, get_settings
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
+    AdhocQueryOut,
     Envelope,
     FailureOut,
     QueryFindingDetailOut,
@@ -443,6 +445,54 @@ def undo_remediation(
             change_id=change.change_id,
         ),
         meta=meta,
+    )
+
+
+@router.get("/query/adhoc", response_model=Envelope[list[AdhocQueryOut]])
+def query_adhoc(
+    scope: Scope = Depends(get_scope),
+    connection: Connection = Depends(get_connection),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[list[AdhocQueryOut]]:
+    """Queries that ran and belong to no panel and no alert rule. FEAT-051.
+
+    Coverage is workspaces, the same denominator the other query routes use,
+    even though these rows hang off no workspace. It is the right one anyway:
+    an account whose workspaces could not be read is an account whose panels
+    are unknown, and a query is ad hoc only if no panel claims it. Reporting a
+    full coverage here while a workspace was unreadable would assert that
+    nothing claims these queries when Meter could not check.
+    """
+    rows = AdhocQueryRepository(connection, context).most_expensive(scope)
+    queries = [
+        AdhocQueryOut(
+            adhoc_id=row.adhoc_id,
+            account_id=row.account_id,
+            region_id=row.region_id,
+            query_text=row.query_text,
+            runs=row.runs,
+            scan_bytes=row.scan_bytes,
+            cost_usd=row.cost_usd,
+            principal=row.principal,
+            as_of=row.as_of,
+            collected_at=row.collected_at,
+        )
+        for row in rows
+    ]
+    instances = SurfaceInstanceRepository(connection, context)
+    unreadable = instances.unreachable(scope)
+    return Envelope(
+        data=queries,
+        meta=build_meta(
+            connection,
+            scope,
+            context,
+            visible=len(queries),
+            rows=rows,
+            extra_failures=_unreadable(unreadable),
+            coverage=instances.coverage(scope),
+            coverage_unit="workspaces",
+        ),
     )
 
 

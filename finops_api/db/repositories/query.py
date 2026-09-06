@@ -128,6 +128,30 @@ class QueryFindingRepository(ScopedRepository):
         return rows[0] if rows else None
 
 
+class AdhocQueryRepository(ScopedRepository):
+    """The Logs Insights executions no panel and no alert rule claims.
+
+    FEAT-051. Scoped by the account the query ran in, directly rather than
+    through a workspace, because a query somebody typed into the console
+    belongs to no workspace.
+    """
+
+    table = models.query_adhoc
+    resource = "query_adhoc"
+
+    def most_expensive(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+        """Worst first, which is the only order this list is useful in.
+
+        Cost then runs, matching the prototype this was recovered from. Two
+        queries that cost the same are ranked by how often they ran, because
+        the repeated one is the habit worth a conversation.
+        """
+        statement = self.scoped_select(scope).order_by(
+            self.table.c.cost_usd.desc(), self.table.c.runs.desc()
+        )
+        return self.fetch(scope, statement)
+
+
 class SurfaceInstanceRepository(ScopedRepository):
     """Every place queries live, including the ones that could not be read."""
 

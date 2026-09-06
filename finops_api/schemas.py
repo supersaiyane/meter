@@ -354,6 +354,32 @@ class QueryFindingDetailOut(QueryFindingOut):
     accuracy_percent: Decimal | None = None
 
 
+class AdhocQueryOut(BaseModel):
+    """One Logs Insights query that ran and belongs to no panel or alert rule.
+
+    FEAT-051. There is no provenance field, and its absence is the claim: an ad
+    hoc query exists only in the evidence, so there is nothing to model it from
+    and every figure here is measured.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    adhoc_id: UUID
+    account_id: str
+    region_id: str
+    #: The query as it ran, whole. A person has to recognise their own query in
+    #: it, so it is never truncated on the way out.
+    query_text: str
+    runs: int
+    scan_bytes: int
+    cost_usd: Decimal
+    #: Null when CloudTrail did not name the caller. The row is still reported:
+    #: an expensive query nobody owns is the case this feature exists for.
+    principal: str | None
+    as_of: datetime
+    collected_at: datetime
+
+
 class SurfaceInstanceOut(BaseModel):
     """One place queries live, reachable or not."""
 

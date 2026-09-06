@@ -203,16 +203,18 @@ def test_an_alert_is_counted_over_the_whole_day_and_a_panel_is_not(
         rows: dict[str, Any] = dict(
             connection.execute(
                 text(
-                    "SELECT CASE WHEN d.origin = 'ALERT_RULE' THEN 'ALERT_RULE' "
-                    "ELSE d.panel_id END, f.runs_per_day FROM query_finding f "
+                    "SELECT d.panel_id, f.runs_per_day FROM query_finding f "
                     "JOIN query_definition d ON d.query_id = f.query_id "
                     "WHERE f.tenant_id = :t"
                 ),
                 {"t": tenant_id},
             ).all()  # type: ignore[arg-type]
         )
-    # 86400 / 60, the whole day.
-    assert float(rows["ALERT_RULE"]) == pytest.approx(1440.0)
+    # 86400 / 60, the whole day. Keyed by element rather than by origin: the
+    # estate holds more than one alert rule since FEAT-051's critical fixture,
+    # and keying on origin kept whichever row came back last, which made this
+    # pass or fail on row order rather than on the arithmetic it is about.
+    assert float(rows["Error budget burn"]) == pytest.approx(1440.0)
     # 8 viewing hours / 10 seconds, not the whole day. Selected by panel rather
     # than by origin, because the estate holds more than one panel and keying a
     # dict on origin would silently keep whichever row came back last.

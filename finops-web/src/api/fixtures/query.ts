@@ -1,4 +1,5 @@
 import type {
+  ApiAdhocQuery,
   ApiEnvelope,
   ApiMeta,
   ApiQueryFinding,
@@ -248,6 +249,46 @@ export const SURFACE_INSTANCES: readonly ApiSurfaceInstance[] = [
     collected_at: '2026-09-11T09:54:00Z',
   },
 ];
+
+/**
+ * Two ad hoc queries, and the pair is the point.
+ *
+ * One names the person CloudTrail saw. The other names nobody, which is the
+ * state that matters: an expensive query with no owner is what this screen
+ * exists to surface, and a fixture holding only the tidy case would let the
+ * unattributed rendering ship unseen.
+ */
+export const ADHOC_QUERIES: readonly ApiAdhocQuery[] = [
+  {
+    adhoc_id: '55555555-5555-5555-5555-555555555555',
+    account_id: '111122223333',
+    region_id: 'eu-west-1',
+    query_text:
+      'fields @timestamp, @message | filter @message like /timeout/ | sort @timestamp desc',
+    runs: 12,
+    scan_bytes: 11_596_411_699_200,
+    cost_usd: '54.0000',
+    principal: 'bob@example.com',
+    as_of: '2026-09-06T04:00:00Z',
+    collected_at: '2026-09-06T09:54:00Z',
+  },
+  {
+    adhoc_id: '66666666-6666-6666-6666-666666666666',
+    account_id: '111122223333',
+    region_id: 'eu-west-1',
+    query_text: 'stats count() by bin(5m) | filter status >= 500',
+    runs: 45,
+    scan_bytes: 966_367_641_600,
+    cost_usd: '4.5000',
+    principal: null,
+    as_of: '2026-09-06T04:00:00Z',
+    collected_at: '2026-09-06T09:54:00Z',
+  },
+];
+
+export function adhocQueriesFixture(): ApiEnvelope<ApiAdhocQuery[]> {
+  return { data: [...ADHOC_QUERIES], meta: FIXTURE_META };
+}
 
 export function surfaceInstancesFixture(): ApiEnvelope<ApiSurfaceInstance[]> {
   return { data: [...SURFACE_INSTANCES], meta: FIXTURE_META };
