@@ -192,7 +192,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0017 | 2026-08-23 | Process | Layered security gates documented and completed: pre commit and pre push hooks, a compose security profile for local scanning, and provenance verification before every deploy | `061c351` | [docs/05-SECURITY.md](docs/05-SECURITY.md) |
 | CHG-0018 | 2026-08-23 | Process | README gotchas expanded into ten worked examples, each showing the actual output and the exact commands | `403c57b` | [README.md](README.md) |
 | CHG-0019 | 2026-08-23 | Process | README security section rewritten around the six layer gate model, with LocalStack explained and its limits stated | `f3b5aef` | [README.md](README.md) |
-| CHG-0020 | 2026-08-23 | Process | AUDIT-001 published. Audits folder created with a naming convention, finding identifiers and a promotion rule. 18 findings promoted to the issue register | `pending` | [AUDIT-001](audits/AUDIT-001-2026-08-23-full-project.md) |
+| CHG-0020 | 2026-08-23 | Process | AUDIT-001 published. Audits folder created with a naming convention, finding identifiers and a promotion rule. 18 findings promoted to the issue register | `eca070d` | [AUDIT-001](audits/AUDIT-001-2026-08-23-full-project.md) |
 
 <!-- generated:changes end -->
 

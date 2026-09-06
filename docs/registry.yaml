@@ -462,7 +462,7 @@ changes:
   type: Process
   what: AUDIT-001 published. Audits folder created with a naming convention, finding identifiers and a
     promotion rule. 18 findings promoted to the issue register
-  commit: pending
+  commit: eca070d
   detail: '[AUDIT-001](audits/AUDIT-001-2026-08-23-full-project.md)'
 issues:
 - id: ISS-001
