@@ -1162,7 +1162,12 @@ issues:
   status: OPEN
   detail: '`docs/reference/sample_lambda.py.txt`, build_snapshot, save_snapshot, load_history,
     compute_trends and compute_rogue_cost. Needs a table and a retention decision, and
-    overlaps P1 which owns trend for spend'
+    overlaps P1 which owns trend for spend. Fixed 2026-09-06, and smaller than it read:
+    query_finding upserts on tenant, query and run_date, so the audit had been writing one
+    row per query per day since it was built and nothing ever read them. The history is a
+    side effect of idempotency rather than something anybody had to build. Scoped to a
+    finding rather than to spend, which keeps it clear of P1: whether one query costs more
+    this week is a governance question, and what an account spends is not'
 - id: ISS-173
   severity: LOW
   summary: The P2 specification was written from the prototype and never recorded what it

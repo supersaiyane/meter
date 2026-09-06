@@ -122,6 +122,46 @@ class QueryFindingRepository(ScopedRepository):
         rows = self._connection.execute(statement).all()
         return rows[0] if rows else None
 
+    def history(self, scope: Scope, finding_id: UUID) -> Sequence[Row[tuple[object, ...]]]:
+        """What this query has cost on each day it was audited. ISS-172.
+
+        The table already held this and nothing read it. The audit upserts on
+        `(tenant_id, query_id, run_date)`, so every day it runs leaves one row
+        per query, and the history is a side effect of idempotency rather than
+        something anybody had to build.
+
+        Keyed on the query rather than the finding, because a finding is one
+        query on one day. Asking what a finding cost last week is asking about
+        the query behind it, and joining on `finding_id` would return a single
+        row and call it a trend.
+
+        Oldest first, which is the order a line is drawn in. Provenance travels
+        with each point, because a series that mixes measured and modelled days
+        is not one series and a reader has to be able to see the seam.
+        """
+        confirmed = require_scope(scope)
+        query_id = (
+            select(self.table.c.query_id)
+            .where(
+                scope_predicate(self.table, confirmed),
+                self.table.c.finding_id == finding_id,
+            )
+            .scalar_subquery()
+        )
+        statement: Any = (
+            select(
+                self.table.c.run_date,
+                self.table.c.cost_month_usd,
+                self.table.c.provenance,
+            )
+            .where(
+                scope_predicate(self.table, confirmed),
+                self.table.c.query_id == query_id,
+            )
+            .order_by(self.table.c.run_date)
+        )
+        return self._connection.execute(statement).all()
+
     def one(self, scope: Scope, finding_id: UUID) -> Row[tuple[object, ...]] | None:
         statement = self._joined(scope).where(self.table.c.finding_id == finding_id)
         rows = self.fetch(scope, statement)

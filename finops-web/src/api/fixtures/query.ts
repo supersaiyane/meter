@@ -1,5 +1,6 @@
 import type {
   ApiAdhocQuery,
+  ApiCostPoint,
   ApiEnvelope,
   ApiMeta,
   ApiQueryFinding,
@@ -160,6 +161,22 @@ export function queryGroupsFixture(): ApiEnvelope<ApiQueryGroup[]> {
   return { data: QUERY_GROUPS, meta: FIXTURE_META };
 }
 
+/**
+ * Four days of one query getting worse, and one query seen once. ISS-172.
+ *
+ * The pair is the point. A screen that only ever renders a series never shows
+ * what it does with a single observation, and a single observation is what
+ * every finding starts as. The rising one crosses from modelled to measured
+ * partway through, because a series that changes grade partway is the case a
+ * reader has to be able to see the seam in.
+ */
+const RISING: readonly ApiCostPoint[] = [
+  { run_date: '2026-09-03', cost_month_usd: '48.0000', provenance: 'modelled' },
+  { run_date: '2026-09-04', cost_month_usd: '96.0000', provenance: 'modelled' },
+  { run_date: '2026-09-05', cost_month_usd: '132.0000', provenance: 'measured' },
+  { run_date: '2026-09-06', cost_month_usd: '180.0000', provenance: 'measured' },
+];
+
 export const QUERY_FINDING_DETAILS: Readonly<Record<string, ApiQueryFindingDetail>> = {
   '11111111-1111-1111-1111-111111111111': {
     ...listRow('11111111-1111-1111-1111-111111111111'),
@@ -170,6 +187,7 @@ export const QUERY_FINDING_DETAILS: Readonly<Record<string, ApiQueryFindingDetai
     last_editor: null,
     rate_usd_per_gib: '0.005',
     accuracy_percent: null,
+    history: [...RISING],
     applied_change_id: null,
   },
   '22222222-2222-2222-2222-222222222222': {
@@ -180,6 +198,8 @@ export const QUERY_FINDING_DETAILS: Readonly<Record<string, ApiQueryFindingDetai
     last_editor: null,
     rate_usd_per_gib: '0.005',
     accuracy_percent: null,
+    // Seen once. Not a flat trend, and the screen must not draw it as one.
+    history: [{ run_date: '2026-09-06', cost_month_usd: '24.0000', provenance: 'measured' }],
     applied_change_id: null,
   },
 };

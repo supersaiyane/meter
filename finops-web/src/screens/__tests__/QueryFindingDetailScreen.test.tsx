@@ -34,6 +34,31 @@ function renderDetail(id: string) {
 }
 
 describe('QueryFindingDetailScreen', () => {
+  it('draws the trend when it has been audited more than once', async () => {
+    // ISS-172. A cost with no history behind it can say a query is expensive
+    // and not that somebody made it so.
+    renderDetail('11111111-1111-1111-1111-111111111111');
+    const trend = await screen.findByTestId('finding-trend');
+    expect(trend).toHaveTextContent('$48.00');
+    expect(trend).toHaveTextContent('$180.00');
+  });
+
+  it('refuses to draw a trend from one observation', async () => {
+    // One point drawn as a flat line asserts a stability nobody has watched.
+    renderDetail('22222222-2222-2222-2222-222222222222');
+    const trend = await screen.findByTestId('finding-trend');
+    expect(trend).toHaveTextContent(/Seen once/);
+    expect(trend.querySelector('svg')).toBeNull();
+  });
+
+  it('calls a series modelled when any day in it was', async () => {
+    // A shape drawn through a mixture is only as good as its weakest point.
+    renderDetail('11111111-1111-1111-1111-111111111111');
+    const trend = await screen.findByTestId('finding-trend');
+    const spark = trend.querySelector('[data-provenance]');
+    expect(spark?.getAttribute('data-provenance')).toBe('modelled');
+  });
+
   it('publishes the formula with its inputs substituted', async () => {
     renderDetail(MODELLED);
     const working = await screen.findByTestId('finding-working');
