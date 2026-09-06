@@ -167,6 +167,9 @@ meter/
 │   ├── ops/                   erase_principal.py, run by a person against a live
 │   │                          database. Deliberately not an API route.
 │   │                          seed_demo.py fills a local database by running all
+│   │                          collectors. DEMO_TABLES is its teardown, and a test
+│   │                          derives it from the schema so a new tenant scoped
+│   │                          table cannot be forgotten there. ISS-176
 │   │                          four real collectors against the fake adapters and
 │   │                          through the real run ledger, so seeded rows cannot
 │   │                          drift from collected ones and the ingest and

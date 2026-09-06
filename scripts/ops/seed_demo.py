@@ -92,6 +92,10 @@ DEMO_TABLES = (
     "platform_cost",
     "org_node",
     "cloud_account",
+    # FEAT-051. Added with the table in TASK-P2-026 and missed here, so unseed
+    # failed on the foreign key rather than removing the estate. A table that
+    # references the tenant and is not in this list makes the teardown a lie.
+    "query_adhoc",
     "remediation_change",
     "enforcement_action",
     "folder_team_map",
