@@ -170,6 +170,8 @@ meter/
 │   │                          collectors. DEMO_TABLES is its teardown, and a test
 │   │                          derives it from the schema so a new tenant scoped
 │   │                          table cannot be forgotten there. ISS-176
+│   │                          --days runs the collectors once per day at that
+│   │                          day's clock, which is how a trend gets a history
 │   │                          four real collectors against the fake adapters and
 │   │                          through the real run ledger, so seeded rows cannot
 │   │                          drift from collected ones and the ingest and

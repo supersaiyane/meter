@@ -294,8 +294,8 @@ migrate: ## Apply migrations to the local database
 	$(COMPOSE) run --rm api alembic upgrade head
 
 .PHONY: seed
-seed: ## Fill the local database with a demo estate. Refuses a non local database
-	$(COMPOSE) run --rm api python scripts/ops/seed_demo.py
+seed: ## Fill the local database with a demo estate. DAYS=n for history. Refuses a non local database
+	$(COMPOSE) run --rm api python scripts/ops/seed_demo.py --days $(or $(DAYS),1)
 
 .PHONY: restore-drill
 restore-drill: ## Restore into a scratch database and prove it works. TASK-P0-028

@@ -195,6 +195,7 @@ Production identity is OPEN-01 and parked. Locally:
 
 ```bash
 make seed           # a demo estate written through the real collectors
+make seed DAYS=7    # the same, run once per day for seven days, so trends draw
 make token          # prints the one line to paste into the browser console
 ```
 

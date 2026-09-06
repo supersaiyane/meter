@@ -299,7 +299,21 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="clear the demo estate instead of creating it",
     )
+    parser.add_argument(
+        "--days",
+        type=int,
+        default=1,
+        help=(
+            "how many consecutive days to seed, ending today. One is the estate as it "
+            "is now. More gives the audit a history, which is what a trend is drawn "
+            "from: the collectors are run once per day at that day's clock, so the rows "
+            "are the ones those runs would have written rather than invented ones"
+        ),
+    )
     args = parser.parse_args(argv)
+    if args.days < 1:
+        print("FAIL: --days must be at least 1", file=sys.stderr)
+        return 2
 
     settings = load_settings()
     try:
@@ -316,9 +330,17 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Demo tenant {DEMO_TENANT} is gone.")
             return 0
 
-        seeded = seed(engine, settings, datetime.now(UTC))
+        # Oldest first, so the newest run is the one that lands last and the
+        # watermarks end where a reader expects them. Each pass writes that
+        # day's rows through the same collectors, and the audit's upsert is
+        # keyed on the day, so re running any of them changes nothing.
+        today = datetime.now(UTC)
+        for offset in range(args.days - 1, -1, -1):
+            seeded = seed(engine, settings, today - timedelta(days=offset))
         print(f"Seeded tenant {DEMO_TENANT}, {DEMO_NAME}.")
         print(f"  {seeded.accounts} accounts, {seeded.instances} workspaces")
+        if args.days > 1:
+            print(f"  {args.days} days of history, so a trend has something to draw")
         print(f"  {seeded.rows} rows across {seeded.runs} runs, written by the real collectors")
         print("  four role health states, one failed run, one unreadable workspace")
         print("")
