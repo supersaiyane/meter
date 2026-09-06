@@ -362,6 +362,9 @@ meter/
 │           │                           a promise does not outweigh a number.
 │           │                           Every figure is read through the owning
 │           │                           screen's own hook
+│           ├── QueryFindingDetailScreen.tsx  the working, and since ISS-172 the
+│           │                           cost on every day it was audited. One
+│           │                           observation is said in words, never drawn
 │           ├── QueryAdhocScreen.tsx    the queries that belong to nobody. Every
 │           │                           figure measured, because there is no
 │           │                           definition to model one from

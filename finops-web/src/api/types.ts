@@ -162,6 +162,19 @@ export interface ApiQueryGroup {
   readonly collected_at: string;
 }
 
+/**
+ * What one query cost on one day. ISS-172.
+ *
+ * Provenance is on the point, not the series: a run that saw evidence and one
+ * that did not produce different grades of number, and a line drawn through
+ * both without saying so claims a confidence only part of it has.
+ */
+export interface ApiCostPoint {
+  readonly run_date: string;
+  readonly cost_month_usd: string;
+  readonly provenance: string;
+}
+
 export interface ApiQueryFindingDetail extends ApiQueryFinding {
   /** The query as written. Shown whole, never summarised. */
   readonly query_text: string;
@@ -173,6 +186,9 @@ export interface ApiQueryFindingDetail extends ApiQueryFinding {
   readonly rate_usd_per_gib: string;
   /** FEAT-018. Null until a calibration is published, and then never invented. */
   readonly accuracy_percent: number | null;
+  /** What it cost on each day it was audited, oldest first. One point is not
+   *  a trend and is not drawn as one. */
+  readonly history: readonly ApiCostPoint[];
   /** The change still applied, if any. Null means there is nothing to undo. */
   readonly applied_change_id: string | null;
 }

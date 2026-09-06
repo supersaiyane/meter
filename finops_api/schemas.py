@@ -331,6 +331,22 @@ class QueryGroupOut(BaseModel):
     collected_at: datetime
 
 
+class CostPointOut(BaseModel):
+    """What one query cost on one day. ISS-172.
+
+    Provenance is on the point rather than on the series, because a run that
+    saw evidence and one that did not produce different grades of number, and a
+    line drawn through both without saying so asserts a confidence that only
+    part of it has.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    run_date: date
+    cost_month_usd: Decimal
+    provenance: str
+
+
 class QueryFindingDetailOut(QueryFindingOut):
     """One finding with its full working, for the detail screen."""
 
@@ -345,6 +361,10 @@ class QueryFindingDetailOut(QueryFindingOut):
     #: hardcoded in the screen, so the arithmetic it publishes has no constant
     #: the reader cannot see.
     rate_usd_per_gib: Decimal
+    #: What this query cost on each day it was audited, oldest first. One
+    #: point means it has been seen once, which is not a flat trend and must
+    #: not be drawn as one.
+    history: list[CostPointOut]
     #: The change still applied to this finding, if any. Null means there is
     #: nothing to undo, and a screen uses it to decide whether the control
     #: exists at all rather than rendering one that does nothing.

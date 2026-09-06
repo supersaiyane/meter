@@ -54,9 +54,12 @@ it is a control.
 written from a working prototype, and until 2026-10-12 it did not say which of
 that prototype's capabilities it declined to carry. Two were dropped silently
 as a result. Ad hoc query detection is now in scope as FEAT-051. Trend over
-time, which the prototype held by saving a snapshot per run and loading its own
-history, is not in scope here and is ISS-172, because trend for spend belongs
-to P1 and the two should share one answer rather than have two. The prototype's
+time was declined here on the same reasoning and then brought in on 2026-09-06
+as ISS-172, once it was clear the two are different questions. Whether one
+query costs more this week than last is governance, and what an account spends
+over time is P1. It also needed no snapshot table: `query_finding` upserts on
+tenant, query and run date, so the audit had been writing one row per query per
+day since it was built and nothing read them. The prototype's
 billing and capacity tab is not in scope either: quota headroom is P5 and cost
 by usage type is P1.
 

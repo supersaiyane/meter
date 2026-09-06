@@ -30,6 +30,7 @@ from finops_api.deps import get_access_context, get_connection, get_scope, get_s
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
     AdhocQueryOut,
+    CostPointOut,
     Envelope,
     FailureOut,
     QueryFindingDetailOut,
@@ -196,7 +197,19 @@ def query_finding(
         raise HTTPException(status_code=404, detail="no such finding")
 
     surfaces = SurfaceInstanceRepository(connection, context)
-    applied = QueryFindingRepository(connection, context).latest_change(scope, finding_id)
+    findings = QueryFindingRepository(connection, context)
+    applied = findings.latest_change(scope, finding_id)
+    # ISS-172. The audit has been writing one row per query per day since it
+    # was built, and nothing read them. A cost with no history behind it can
+    # say a query is expensive and not that somebody made it so.
+    history = [
+        CostPointOut(
+            run_date=point.run_date,
+            cost_month_usd=point.cost_month_usd,
+            provenance=str(point.provenance),
+        )
+        for point in findings.history(scope, finding_id)
+    ]
     base = _finding(row)
     target = row.target or {}
     detail = QueryFindingDetailOut(
@@ -206,6 +219,7 @@ def query_finding(
         region=target.get("region"),
         last_editor=row.last_editor,
         rate_usd_per_gib=settings.query_logs_scan_price_per_gb,
+        history=history,
         # So the screen can decide whether an undo control exists at all. A
         # control that looks available and does nothing is worse than an absent
         # one, which is the rule TASK-P2-025 states for revoke and holds here.
