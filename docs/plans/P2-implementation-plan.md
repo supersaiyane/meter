@@ -1673,6 +1673,57 @@ This screen is the reason deny is safe to enable."
 
 ---
 
+
+### TASK-P2-026: the queries that belong to nobody
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | P2 spec sections 5 and 8.2 |
+| Delivers | FEAT-051 |
+| Depends on | TASK-P2-013 |
+| Estimate | S |
+
+**Goal.** The Logs Insights executions that match no panel and no alert rule,
+reported with what they scanned, what that cost, and who ran them.
+
+**Why it is small.** `QueryEvidence.observations` already returns every observed
+execution keyed by normalised query, with its runs, its bytes and the principal
+that ran it, and `finops_ingest/collectors/query_audit.py` already walks the
+known definitions against that same dict to promote a finding to measured. Ad
+hoc is what is left over. No new AWS call, no new permission, no new collector.
+
+**Files.**
+
+| Path | Action |
+| --- | --- |
+| `migrations/versions/0007_query_adhoc.py` | created |
+| `finops_ingest/collectors/query_audit.py` | the unmatched set, written per window |
+| `finops_api/db/repositories/query.py` | a scoped read |
+| `finops_api/routes/query.py` | `GET /query/adhoc` |
+| `finops-web/src/screens/QueryAdhocScreen.tsx` | created |
+| `finops_providers/fake/evidence.py` | one unmatched execution, so the estate shows the state |
+
+**Acceptance criteria.**
+
+- [ ] An execution matching no definition is reported, with runs, bytes, cost
+      and principal
+- [ ] The cost is `measured` and never `modelled`. There is no definition to
+      model from, so a modelled ad hoc row would be an invention
+- [ ] A query with no principal reads `unattributed` and is still reported. An
+      unowned expensive query is the case the feature exists for
+- [ ] Evidence that could not be read is distinguishable on the screen from an
+      estate with no ad hoc queries in it. Those are different facts
+- [ ] The table is scoped by account like every other query table, and the
+      repository guard is exercised by a test that reads out of scope
+- [ ] Query text is shown whole, never truncated, because a person has to
+      recognise their own query in it
+
+**Deliberately not in this task.** No remediation. The cost is already spent
+and there is nothing to change, so the action is a conversation with a named
+person. No team or cost centre attribution: the folder map FEAT-016 uses has
+nothing to say about a query in no folder.
+
 ## Traceability
 
 | Feature | Tasks |

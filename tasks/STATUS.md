@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 50 total, 8 specified, 7 in build, 5 delivered |
+| Features | 51 total, 9 specified, 7 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
 | Changes | 81 recorded |
-| Issues | 116 fixed, 49 open, 0 parked |
+| Issues | 116 fixed, 52 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -38,20 +38,23 @@ Generated from `docs/registry.yaml`. Change a status there, then run `make doc-s
 
 All 39 tasks are written, tested and committed. `make verify` passes: lint, the
 writing rules, the eight documentation checks, the docstring gate, the memory
-gate, 704 backend tests at 98 percent, 194 frontend tests, and a security scan
+gate, 750 backend tests of which the gate runs the 545 that need no services, 224 frontend tests, and a security scan
 with zero unresolved findings and five accepted as unfixable.
 
 Lint and type checking cover every directory that holds Python, which is 181
 files under mypy where it was 25. `scripts/`, `migrations/` and the test suite
 had all been outside one or both.
 
-**P2 is 20 of 25 done, 2 parked, 2 descoped, 1 not started.**
+**P2 is 20 of 26 done, 2 parked, 2 descoped, 2 not started.**
+
+TASK-P2-026 was added on 2026-10-12. Ad hoc query detection was in the prototype P2 was planned from, reached neither the specification nor the code, and was brought into scope rather than left as ISS-171. It is small: the evidence the measured overlay already collects contains it.
 
 The backend is complete through wave J. The collector runs, prices what it
-reads, measures what it can observe, and attributes an owner. Three of the eight
-routes in spec section 8.2 exist and are live; the other five read data that
+reads, measures what it can observe, and attributes an owner. Six of the eight
+routes in spec section 8.2 exist and are live; the other two read data that
 does not exist yet and are held under ISS-148, which names what each one waits
-on. One task has not started: TASK-P2-020, which needs real CUR data.
+on. Two tasks have not started: TASK-P2-020, which needs real CUR data, and
+TASK-P2-026, which needs nothing and is the next thing that can be built.
 
 **The interface is built and every screen has been through a pass.** Ten screens
 read live data against a seeded local estate, and each has been opened at 1440
@@ -94,7 +97,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P2 | 20 | 0 | 2 | 2 | 1 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
+| P2 | 20 | 0 | 2 | 2 | 2 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
 

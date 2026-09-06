@@ -361,6 +361,12 @@ features:
   status: Delivered
   detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md)'
   doc: docs/features/FEAT-050-visual-honesty-system.md
+- id: FEAT-051
+  name: Ad hoc query detection
+  subproject: P2
+  status: Specified
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md)'
+  doc: docs/features/FEAT-051-adhoc-query-detection.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -1110,6 +1116,47 @@ issues:
     looking for wherever else a stored engine meets a classifier constant
   status: FIXED
   detail: '`finops_api/routes/query.py`, _violates'
+- id: ISS-171
+  severity: MEDIUM
+  summary: Ad hoc query detection was in the prototype and is in neither the P2 spec nor the
+    code. The prototype's extract_adhoc_queries and its own report tab found Logs Insights
+    queries run directly by a person, from no dashboard and no alert rule, and named the
+    caller from CloudTrail. Those are the queries nobody owns, and a one off thirty day scan
+    costs real money, appears on no dashboard, and Meter as built cannot see it at all.
+    The word adhoc appears zero times in the spec and in zero source files, and section 3
+    of the spec does not list it as out of scope either, so this was never deferred to a
+    later sub project. It fell through the gap between the prototype and the specification
+    written from it. Found 2026-10-11 by mapping the restored prototype against what P2
+    delivered
+  status: OPEN
+  detail: '`docs/reference/sample_lambda.py.txt`, extract_adhoc_queries and build_adhoc_tab.
+    Needs a CloudTrail read the AWS adapter does not make yet'
+- id: ISS-172
+  severity: MEDIUM
+  summary: Meter has no memory of what a finding cost last week. The prototype saved a
+    snapshot per run, loaded its own history and computed trends and a rogue cost from it,
+    so a reader could see whether a workspace was getting worse. P2 has no snapshot table,
+    no history and no trend, the word trend appears zero times in the spec, and section 3
+    does not place it out of scope. Every figure the product shows is the present moment.
+    A cost governance tool that cannot say a query got more expensive can report a problem
+    and not that somebody caused it. Found 2026-10-11 by mapping the restored prototype
+    against what P2 delivered
+  status: OPEN
+  detail: '`docs/reference/sample_lambda.py.txt`, build_snapshot, save_snapshot, load_history,
+    compute_trends and compute_rogue_cost. Needs a table and a retention decision, and
+    overlaps P1 which owns trend for spend'
+- id: ISS-173
+  severity: LOW
+  summary: The P2 specification was written from the prototype and never recorded what it
+    chose to leave behind. Section 3 lists four things as out of scope, all of them whole
+    sub projects or engines, and none of the prototype's own capabilities. Two features
+    were dropped silently as a result, ISS-171 and ISS-172, and neither was visible as
+    missing until the prototype was restored and read side by side with the delivered
+    work. The gap is process rather than code, because a specification derived from a working
+    thing should enumerate what it declines to carry over. Found 2026-10-11
+  status: OPEN
+  detail: '`docs/specs/2026-08-23-p2-query-cost-governance-design.md` section 3, and
+    `docs/reference/README.md` which now holds the prototype it was derived from'
 - id: ISS-170
   severity: MEDIUM
   summary: get_settings loaded configuration from the environment unconditionally, so create_app's

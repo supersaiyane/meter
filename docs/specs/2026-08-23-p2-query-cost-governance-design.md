@@ -50,6 +50,16 @@ it is a control.
   See section 12.
 - Any narration or natural language explanation. P7.
 
+**Carried over from the prototype, and what was not.** This specification was
+written from a working prototype, and until 2026-10-12 it did not say which of
+that prototype's capabilities it declined to carry. Two were dropped silently
+as a result. Ad hoc query detection is now in scope as FEAT-051. Trend over
+time, which the prototype held by saving a snapshot per run and loading its own
+history, is not in scope here and is ISS-172, because trend for spend belongs
+to P1 and the two should share one answer rather than have two. The prototype's
+billing and capacity tab is not in scope either: quota headroom is P5 and cost
+by usage type is P1.
+
 ## 4. Module structure
 
 ```
@@ -445,6 +455,7 @@ Neither blocks starting. OPEN-04 is answered: all three surfaces are in scope.
 | FEAT-016 | Owner attribution |
 | FEAT-017 | Auto remediation |
 | FEAT-018 | Cost model calibration |
+| FEAT-051 | Ad hoc query detection |
 
 FEAT-019, multi platform, is explicitly **not** delivered here. It becomes
 reachable because the port is named `QuerySurface` rather than after Grafana.

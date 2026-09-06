@@ -40,7 +40,7 @@ P0 Foundation
 | --- | --- | --- | --- | --- |
 | P0 | Foundation | 12 | 0 | 0 |
 | P1 | Cost Intelligence | 6 | 0 | 6 |
-| P2 | Query Cost Governance | 9 | 8 | 1 |
+| P2 | Query Cost Governance | 10 | 9 | 1 |
 | P3 | Utilization and Rightsizing | 7 | 0 | 7 |
 | P4 | Inventory and Topology | 3 | 0 | 3 |
 | P5 | Quotas and Limits | 2 | 0 | 2 |
@@ -102,7 +102,7 @@ rather than that one saving happened.
 | --- | --- | --- | --- | --- | --- | --- |
 | P0 | Foundation | Spec approved, in build | 12 (0 specified) | [spec](specs/2026-08-23-p0-foundation-design.md) | [plan](plans/P0-implementation-plan.md) | none |
 | P1 | Cost Intelligence | Not started | 6 (0 specified) | not written | not written | P0 |
-| P2 | Query Cost Governance | Spec approved, plan in review | 9 (8 specified) | [spec](specs/2026-08-23-p2-query-cost-governance-design.md) | [plan](plans/P2-implementation-plan.md) | P0 |
+| P2 | Query Cost Governance | Spec approved, plan in review | 10 (9 specified) | [spec](specs/2026-08-23-p2-query-cost-governance-design.md) | [plan](plans/P2-implementation-plan.md) | P0 |
 | P3 | Utilization and Rightsizing | Not started | 7 (0 specified) | not written | not written | P0, P1 |
 | P4 | Inventory and Topology | Not started | 3 (0 specified) | not written | not written | P0 |
 | P5 | Quotas and Limits | Not started | 2 (0 specified) | not written | not written | P0, P4 |

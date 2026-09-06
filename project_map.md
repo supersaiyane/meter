@@ -74,9 +74,12 @@ meter/
 │   ├── 11-COMPETITIVE-REVIEW.md  what we took, rejected, and why
 │   ├── 12-UI-DESIGN.md        provenance language, state matrix, components
 │   ├── runbooks/              one per paging alert, written with the alert
-│   ├── registry.yaml          SOURCE OF TRUTH for the generated documents
+│   ├── registry.yaml          SOURCE OF TRUTH for the generated documents.
+│   │                          Edit here then run make doc-sync, never edit
+│   │                          ISSUES.md or INDEX.md by hand. A colon followed
+│   │                          by a space in a plain scalar breaks the parse
 │   ├── feature-flags.yaml     every flag, its owner, reason, expiry, removal
-│   ├── features/              one document per feature, 50 of them
+│   ├── features/              one document per feature, 51 of them
 │   ├── architecture/          generated file dependency graph, plus
 │   │                          overview.html, the one hand written file there:
 │   │                          the whole system drawn, and the only place that
@@ -84,6 +87,12 @@ meter/
 │   ├── design/                hand written interface mocks. home-redesign.html
 │   │                          carries the three tier front page, its four open
 │   │                          decisions, and the severity to accent collision
+│   ├── reference/             source Meter was built from, read never imported.
+│   │                          sample_lambda.py.txt is the 2,740 line prototype
+│   │                          P2 was planned against, byte identical to the
+│   │                          import. The .txt is deliberate: check-writing
+│   │                          greps every .py and the prototype has em dashes,
+│   │                          and correcting it would stop it being evidence
 │   ├── templates/             spec, task, ADR, change and issue templates
 │   ├── checkpoint.md          session continuity log with resume vectors
 │   ├── adr/                   architecture decision records, 0001 to 0008

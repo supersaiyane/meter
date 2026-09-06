@@ -54,6 +54,7 @@ block is caught by `make check-docs`. See
 | How a number is shown, and how failure is shown | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) |
 | Where a screen lives, and what a user sees first | [docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md) |
 | What Home should look like, and the open decisions | [docs/design/home-redesign.html](docs/design/home-redesign.html) |
+| The prototype P2 was planned against | [docs/reference/](docs/reference/README.md) |
 | Runbooks for the paging alerts | [docs/runbooks/](docs/runbooks/README.md) |
 | Runbook, collection stalled and widespread | [docs/runbooks/collection-stalled.md](docs/runbooks/collection-stalled.md) |
 | Runbook, API server errors | [docs/runbooks/api-5xx.md](docs/runbooks/api-5xx.md) |
@@ -84,7 +85,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-50 features across 8 sub projects. 8 specified, 30 planned, 7 in build, 5 delivered.
+51 features across 8 sub projects. 9 specified, 30 planned, 7 in build, 5 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -118,6 +119,7 @@ block is caught by `make check-docs`. See
 | [FEAT-017](docs/features/FEAT-017-query-auto-remediation.md) | Auto remediation with change record and undo | Specified | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
 | [FEAT-018](docs/features/FEAT-018-cost-model-calibration.md) | Cost model calibration against actual CUR usage types | Specified | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
 | [FEAT-019](docs/features/FEAT-019-multi-platform-query-governance.md) | Multi platform query governance: QuickSight, Athena, Redshift, OpenSearch | Planned | [roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-025 |
+| [FEAT-051](docs/features/FEAT-051-adhoc-query-detection.md) | Ad hoc query detection | Specified | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
 
 ### P1 Cost Intelligence
 
@@ -315,7 +317,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**116 FIXED, 49 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**116 FIXED, 52 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -467,6 +469,8 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-167 | MEDIUM | FEAT-017 requires the owner of a rewritten panel to be told what changed and how to undo it, and Meter has no notification transport at all. No mail sender, no webhook, no queue consumer for one, and no decision recorded about which it should be. Building one for this task would ship a new subsystem without that decision, so the rewrite records applied_by and the change is discoverable, and the notification waits for somebody to choose a channel | OPEN | `finops_ingest/remediation.py`, FEAT-017 |
 | ISS-169 | MEDIUM | The engine had two spellings for one fact and nothing compared them. The classifier produces logs_insights and the database constraint ck_query_definition__engine_valid stores LOGS_INSIGHTS, so the CI gate's rule, applied to a stored row, matched neither and found no violation anywhere. Caught 2026-09-05 by a remediation route refusing a finding that plainly breaks the rule. Normalised at the point the API reads the row, and the same mismatch is worth looking for wherever else a stored engine meets a classifier constant | FIXED | `finops_api/routes/query.py`, _violates |
 | ISS-170 | MEDIUM | get_settings loaded configuration from the environment unconditionally, so create_app's settings argument was a lie for every route that took the dependency. The application was assembled with one configuration and its routes answered from another, which is two sources for one fact and was invisible until a test needed a non default write level. Fixed 2026-09-05 by preferring what the application was built with | FIXED | `finops_api/deps.py`, get_settings |
+| ISS-171 | MEDIUM | Ad hoc query detection was in the prototype and is in neither the P2 spec nor the code. The prototype's extract_adhoc_queries and its own report tab found Logs Insights queries run directly by a person, from no dashboard and no alert rule, and named the caller from CloudTrail. Those are the queries nobody owns, and a one off thirty day scan costs real money, appears on no dashboard, and Meter as built cannot see it at all. The word adhoc appears zero times in the spec and in zero source files, and section 3 of the spec does not list it as out of scope either, so this was never deferred to a later sub project. It fell through the gap between the prototype and the specification written from it. Found 2026-10-11 by mapping the restored prototype against what P2 delivered | OPEN | `docs/reference/sample_lambda.py.txt`, extract_adhoc_queries and build_adhoc_tab. Needs a CloudTrail read the AWS adapter does not make yet |
+| ISS-172 | MEDIUM | Meter has no memory of what a finding cost last week. The prototype saved a snapshot per run, loaded its own history and computed trends and a rogue cost from it, so a reader could see whether a workspace was getting worse. P2 has no snapshot table, no history and no trend, the word trend appears zero times in the spec, and section 3 does not place it out of scope. Every figure the product shows is the present moment. A cost governance tool that cannot say a query got more expensive can report a problem and not that somebody caused it. Found 2026-10-11 by mapping the restored prototype against what P2 delivered | OPEN | `docs/reference/sample_lambda.py.txt`, build_snapshot, save_snapshot, load_history, compute_trends and compute_rogue_cost. Needs a table and a retention decision, and overlaps P1 which owns trend for spend |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
@@ -488,6 +492,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-154 | LOW | make test-integration can never pass on its own. It runs only the integration marker while the coverage gate is set for the whole suite, so it reports 77 percent against a threshold of 80 and exits non zero even when every test passes. The pipeline runs both suites in one pytest invocation and reaches 98 percent, so this is a local target that lies rather than a gate that is failing | OPEN | `Makefile`, target test-integration |
 | ISS-161 | LOW | The fake account and organization fixtures carry a fixed observation date, which is right for a test asserting a value and wrong for a demo estate. Two screens read as five days stale beside four reading as current, in one estate seeded in one act. The fake provider and the fake role health now accept the time they are observed at, restamping the fixtures rather than replacing them. Fixed 2026-09-12 | FIXED | `finops_providers/fake/provider.py`, `finops_providers/fake/health.py` |
 | ISS-165 | LOW | Timestamped scan report directories accumulate in the working tree and 21 of them are committed, one per change that ran a scan. A local session that runs the scan a dozen times leaves a dozen more untracked, so git status is permanently noisy and the audit trail the tracked ones were meant to be is diluted by iteration output. The durable record is security/POSTURE.md, which is generated and tracked. Whether the timestamped directories belong in the repository at all is a decision for whoever owns the security posture, and is left open rather than changed unilaterally | OPEN | `security/reports/`, `.gitignore` |
+| ISS-173 | LOW | The P2 specification was written from the prototype and never recorded what it chose to leave behind. Section 3 lists four things as out of scope, all of them whole sub projects or engines, and none of the prototype's own capabilities. Two features were dropped silently as a result, ISS-171 and ISS-172, and neither was visible as missing until the prototype was restored and read side by side with the delivered work. The gap is process rather than code, because a specification derived from a working thing should enumerate what it declines to carry over. Found 2026-10-11 | OPEN | `docs/specs/2026-08-23-p2-query-cost-governance-design.md` section 3, and `docs/reference/README.md` which now holds the prototype it was derived from |
 
 <!-- generated:issues end -->
 
