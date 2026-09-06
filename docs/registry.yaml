@@ -438,6 +438,10 @@ adrs:
   decision: Headless component behaviour, our own visual layer
   status: Accepted
   doc: docs/adr/ADR-0019-headless-components-own-visual-layer.md
+- id: ADR-0020
+  decision: Seven fixed navigation groups, and the routes they fix
+  status: Accepted
+  doc: docs/adr/ADR-0020-seven-fixed-navigation-groups.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'
@@ -951,7 +955,36 @@ changes:
     ports of one kind
   commit: 'd86bfe1'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+- id: CHG-0072
+  date: '2026-09-06'
+  type: Process
+  what: User interface architecture written, closing the gap where the product had a visual system
+    and no information architecture. Seven fixed navigation groups replace the flat five section
+    list, every route is fixed and recorded as ADR-0020, the home screen is a trust strip above the
+    money, and screens are built against a typed fixture before their route exists so a sub project
+    is visible while it is being built rather than after
+  commit: pending
+  detail: '[docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md)'
+- id: CHG-0073
+  date: '2026-09-06'
+  type: Process
+  what: The interface architecture planned. Three tasks added to the P0 plan for routing, the
+    fixture seam and the home screen, and TASK-P2-022 split into four screen tasks in a new wave K
+    that does not wait for wave J. Screens are now built against typed fixtures and marked on
+    screen as such, so P2 is reviewable while it is being built rather than at task 21 of 22
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md), [P2 plan](docs/plans/P2-implementation-plan.md)'
 issues:
+- id: ISS-136
+  severity: HIGH
+  summary: A failed request renders default coverage as though it were a complete answer. With no
+    envelope the shell falls back to 0 of 0 and prints "Showing all 0 accounts" beside the typed
+    failure, which reads as confident complete coverage of an empty estate. Section 6 of
+    docs/12-UI-DESIGN.md requires complete coverage to say so, and section 4 requires an unknown
+    state to suppress the figure rather than default it. Observed on 2026-09-06 running the P0
+    frontend with no API reachable
+  status: OPEN
+  detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) sections 4 and 6, `finops-web/src/shell/AppShell.tsx`'
 - id: ISS-001
   severity: CRITICAL
   summary: Nine requirement areas as one project would produce a shallow scaffold of everything

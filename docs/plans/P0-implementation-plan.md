@@ -2168,6 +2168,875 @@ pytest tests/ingest/collectors/test_retention.py -v
 
 ---
 
+### TASK-P0-036: routing, the seven groups, and the route migration
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | `docs/13-UI-ARCHITECTURE.md` sections 4 and 5, ADR-0020 |
+| Delivers | The frame every later screen is added to |
+| Depends on | TASK-P0-028 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [ ] `react-router` admitted through `make dep-check pkg=react-router npm=1`
+- [ ] `sections.ts` exports a group definition, not a name list
+- [ ] The five built screens answer on their new routes from section 5
+- [ ] A screen that has not been built is **listed with its arrival**, not hidden
+      and not silently disabled
+- [ ] A test asserts every route begins with its own group path, so ADR-0020's
+      rule is enforced by the suite rather than by review
+- [ ] `npm run lint`, `npm run test -- --run` and `npm run build` all pass
+- [ ] The Playwright journey passes against the new routes
+
+**Do not.**
+
+- Do not climb the ladder. Choosing a routing library is ADR-0013 rung two, the
+  lowest applicable rung, so it needs the admission gate and no disqualification
+  record. Hand writing History API navigation would be rung seven with rung two
+  undisqualified.
+- Do not hide a group whose sub project has not landed. A product that hides its
+  unbuilt screens looks smaller than it is and makes the roadmap invisible.
+
+**Steps.**
+
+- [ ] **Step 1: admit the dependency**
+
+```bash
+make dep-check pkg=react-router npm=1
+```
+
+Expected: the gate reports the package, its licence and its advisory state, and
+exits zero. If it exits non zero, stop and raise an `ISS-nnn` row rather than
+installing anyway.
+
+- [ ] **Step 2: write the failing invariant test**
+
+`finops-web/src/shell/__tests__/sections.test.ts`
+
+```ts
+import { describe, expect, it } from 'vitest';
+
+import { GROUPS, allScreens } from '../sections';
+
+describe('navigation groups', () => {
+  it('has exactly the seven groups ADR-0020 fixes', () => {
+    expect(GROUPS.map((g) => g.label)).toEqual([
+      'Home',
+      'Cost',
+      'Waste',
+      'Governance',
+      'Inventory',
+      'Platform',
+      'Assistant',
+    ]);
+  });
+
+  it('gives every screen a route inside its own group', () => {
+    for (const group of GROUPS) {
+      for (const screen of group.screens) {
+        expect(screen.path.startsWith(group.path)).toBe(true);
+      }
+    }
+  });
+
+  it('never issues the same route twice', () => {
+    const paths = allScreens().map((s) => s.path);
+    expect(new Set(paths).size).toBe(paths.length);
+  });
+
+  it('marks an unbuilt screen with the sub project that brings it', () => {
+    const spend = allScreens().find((s) => s.path === '/cost');
+    expect(spend?.arrives).toBe('P1 Cost Intelligence');
+  });
+});
+```
+
+- [ ] **Step 3: run it and watch it fail**
+
+Run: `cd finops-web && npm run test -- --run src/shell/__tests__/sections.test.ts`
+Expected: FAIL, `GROUPS` is not exported from `../sections`.
+
+- [ ] **Step 4: replace the name list with a group definition**
+
+`finops-web/src/shell/sections.ts`, replacing the whole file.
+
+```ts
+/**
+ * The navigation, per ADR-0020. Seven groups, fixed for the life of the
+ * product. A sub project adds screens inside a group and never adds a top level
+ * entry, which is why this array does not grow as the roadmap lands.
+ *
+ * `arrives` is null when the screen is built. When it is a sub project name the
+ * screen is listed and reachable, and says what will fill it. Hiding an unbuilt
+ * screen would make the product look smaller than it is and hide the roadmap.
+ */
+
+export interface ScreenDef {
+  readonly path: string;
+  readonly label: string;
+  /** Null when built. The sub project name when it is not. */
+  readonly arrives: string | null;
+}
+
+export interface GroupDef {
+  readonly label: string;
+  readonly path: string;
+  readonly screens: readonly ScreenDef[];
+}
+
+export const GROUPS: readonly GroupDef[] = [
+  {
+    label: 'Home',
+    path: '/',
+    screens: [{ path: '/', label: 'Home', arrives: null }],
+  },
+  {
+    label: 'Cost',
+    path: '/cost',
+    screens: [
+      { path: '/cost', label: 'Spend and trend', arrives: 'P1 Cost Intelligence' },
+      { path: '/cost/allocation', label: 'Allocation', arrives: 'P1 Cost Intelligence' },
+      { path: '/cost/anomalies', label: 'Anomalies', arrives: 'P1 Cost Intelligence' },
+      { path: '/cost/commitments', label: 'Commitments', arrives: 'P1 Cost Intelligence' },
+      { path: '/cost/export', label: 'Export', arrives: 'P1 Cost Intelligence' },
+    ],
+  },
+  {
+    label: 'Waste',
+    path: '/waste',
+    screens: [
+      { path: '/waste', label: 'Recommendations', arrives: 'P3 Utilization and Rightsizing' },
+      { path: '/waste/savings', label: 'Realized savings', arrives: 'P3 Utilization and Rightsizing' },
+      { path: '/waste/score', label: 'FinOps Score', arrives: 'P3 Utilization and Rightsizing' },
+    ],
+  },
+  {
+    label: 'Governance',
+    path: '/governance',
+    screens: [
+      { path: '/governance/queries', label: 'Query findings', arrives: 'P2 Query Cost Governance' },
+      { path: '/governance/instances', label: 'Query surfaces', arrives: 'P2 Query Cost Governance' },
+      { path: '/governance/enforcement', label: 'Enforcement', arrives: 'P2 Query Cost Governance' },
+      { path: '/governance/quotas', label: 'Quotas', arrives: 'P5 Quotas and Limits' },
+    ],
+  },
+  {
+    label: 'Inventory',
+    path: '/inventory',
+    screens: [
+      { path: '/inventory/accounts', label: 'Accounts', arrives: null },
+      { path: '/inventory/organization', label: 'Organization', arrives: null },
+      { path: '/inventory/resources', label: 'Resources', arrives: 'P4 Inventory and Topology' },
+      { path: '/inventory/topology', label: 'Topology', arrives: 'P4 Inventory and Topology' },
+    ],
+  },
+  {
+    label: 'Platform',
+    path: '/platform',
+    screens: [
+      { path: '/platform/ingest', label: 'Ingest', arrives: null },
+      { path: '/platform/freshness', label: 'Freshness', arrives: null },
+      { path: '/platform/cost', label: 'Meter cost', arrives: null },
+      { path: '/platform/flags', label: 'Flags', arrives: 'P0, not yet surfaced' },
+    ],
+  },
+  {
+    label: 'Assistant',
+    path: '/assistant',
+    screens: [
+      { path: '/assistant', label: 'Ask', arrives: 'P7 Insight and LLM layer' },
+      { path: '/assistant/digests', label: 'Digests', arrives: 'P7 Insight and LLM layer' },
+    ],
+  },
+];
+
+export function allScreens(): readonly ScreenDef[] {
+  return GROUPS.flatMap((group) => group.screens);
+}
+```
+
+Note the Home group's screen path equals its group path, which the second test
+allows because `'/'.startsWith('/')` is true. Every other group has a distinct
+prefix.
+
+- [ ] **Step 5: run the test and watch it pass**
+
+Run: `cd finops-web && npm run test -- --run src/shell/__tests__/sections.test.ts`
+Expected: PASS, four tests.
+
+- [ ] **Step 6: write the failing shell navigation test**
+
+Append to `finops-web/src/shell/__tests__/AppShell.test.tsx`.
+
+```tsx
+it('lists an unbuilt screen with what will fill it, rather than hiding it', () => {
+  renderShell();
+  const link = screen.getByRole('link', { name: /Spend and trend/ });
+  expect(link).toBeInTheDocument();
+  expect(link).toHaveAttribute('data-arrives', 'P1 Cost Intelligence');
+});
+```
+
+The shell test helper must now wrap in a `MemoryRouter`, because `NavLink`
+requires a router context. Update the existing helper rather than adding a
+second one.
+
+`finops-web/src/screens/__tests__/Harness.tsx` needs the same treatment, because
+every screen that renders a `Link` will otherwise throw. Add the router inside
+`Harness` so all existing screen tests keep working unchanged:
+
+```tsx
+import { MemoryRouter } from 'react-router';
+
+export function Harness({
+  client,
+  children,
+  initialPath = '/',
+}: {
+  readonly client: ApiClient;
+  readonly children: ReactNode;
+  readonly initialPath?: string;
+}) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+  return (
+    <MemoryRouter initialEntries={[initialPath]}>
+      <QueryClientProvider client={queryClient}>
+        <ApiProvider client={client}>
+          <MetaProvider>{children}</MetaProvider>
+        </ApiProvider>
+      </QueryClientProvider>
+    </MemoryRouter>
+  );
+}
+```
+
+`initialPath` is optional and defaults to `/`, so the six existing screen test
+files do not change.
+
+- [ ] **Step 7: run it and watch it fail**
+
+Run: `cd finops-web && npm run test -- --run src/shell/__tests__/AppShell.test.tsx`
+Expected: FAIL, no link with that name.
+
+- [ ] **Step 8: render the groups in the shell**
+
+In `finops-web/src/shell/AppShell.tsx`, replace the `SECTIONS.map` navigation
+with the grouped form. Keep the header, coverage banner, freshness and failures
+exactly as they are.
+
+```tsx
+<nav aria-label="Sections">
+  {GROUPS.map((group) => (
+    <div key={group.label}>
+      <h2>{group.label}</h2>
+      <ul>
+        {group.screens.map((s) => (
+          <li key={s.path}>
+            <NavLink to={s.path} end data-arrives={s.arrives ?? undefined}>
+              {s.label}
+              {s.arrives ? <span> arrives with {s.arrives}</span> : null}
+            </NavLink>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ))}
+</nav>
+```
+
+`AppShellProps` loses `section` and `onSelect`, because the router now owns
+which screen is current. Delete them rather than leaving them unused.
+
+- [ ] **Step 9: replace the state machine in the application root**
+
+`finops-web/src/App.tsx`. The `useState<Section>` and the five conditionals go.
+
+```tsx
+<BrowserRouter>
+  <AppShell>
+    <Routes>
+      <Route path="/inventory/accounts" element={<AccountsScreen />} />
+      <Route path="/inventory/organization" element={<OrganizationScreen />} />
+      <Route path="/platform/ingest" element={<IngestScreen />} />
+      <Route path="/platform/freshness" element={<FreshnessScreen />} />
+      <Route path="/platform/cost" element={<PlatformScreen />} />
+      <Route path="*" element={<NotBuiltYet />} />
+    </Routes>
+  </AppShell>
+</BrowserRouter>
+```
+
+`NotBuiltYet` reads the current path, finds it in `allScreens()`, and renders the
+`Empty, never collected` treatment naming `arrives`. A path not in `allScreens()`
+is a genuine 404 and says so. Those are different conditions and must not share
+a rendering.
+
+- [ ] **Step 10: run the whole suite**
+
+Run: `cd finops-web && npm run lint && npm run test -- --run && npm run build`
+Expected: all pass. `App.test.tsx` needs its section clicking replaced with
+router navigation.
+
+- [ ] **Step 11: update the end to end journey**
+
+`finops-web/e2e/journey.spec.ts` navigates by section name today. Point it at the
+new URLs. The journey is the only test that proves the routes work in a browser
+rather than in jsdom.
+
+Run: `cd finops-web && npx playwright test`
+Expected: PASS.
+
+- [ ] **Step 12: commit**
+
+```bash
+git add finops-web/package.json finops-web/package-lock.json finops-web/src finops-web/e2e
+git commit -m "feat: TASK-P0-036, seven navigation groups and the route migration
+
+Five screens moved to routes that carry their group, per ADR-0020. An unbuilt
+screen is listed with the sub project that brings it rather than hidden, so the
+roadmap is legible inside the product."
+```
+
+---
+
+### TASK-P0-037: the fixture seam and the fixture marker
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | `docs/13-UI-ARCHITECTURE.md` section 11 |
+| Delivers | A screen can be built and reviewed before its route exists |
+| Depends on | TASK-P0-036 |
+| Estimate | S |
+
+**Acceptance criteria.**
+
+- [ ] One declared set of paths that are still fixture backed
+- [ ] A screen reading a fixture backed path renders a visible `FIXTURE DATA` band
+- [ ] A route failure raises and is rendered as a typed cause. It **never** falls
+      back to the fixture
+- [ ] **A Python test fails the build if a path in the fixture set is registered
+      in the FastAPI application**, so a live route cannot keep serving invented
+      numbers because somebody forgot a list
+- [ ] Axe reports zero violations on the band
+
+**Do not.**
+
+- Do not gate the marker on a build flag or an environment variable. A marker
+  that only appears in development is absent exactly when it matters.
+- Do not fall back to the fixture when a route fails. That would render invented
+  numbers during an outage, which is the precise failure rule 5 of
+  `docs/12-UI-DESIGN.md` exists to prevent.
+- Do not trust review to keep the set current. The Python test is the mechanism.
+  Review is not.
+
+**Steps.**
+
+- [ ] **Step 1: write the failing resolver test**
+
+`finops-web/src/api/__tests__/fixtureSeam.test.ts`
+
+```ts
+import { describe, expect, it } from 'vitest';
+
+import { FIXTURE_SURFACES, resolveSurface } from '../fixtureSeam';
+
+describe('resolveSurface', () => {
+  it('uses the fixture, and says so, for a declared fixture template', async () => {
+    const read = resolveSurface(
+      '/api/v1/query/findings',
+      async () => ['real'],
+      () => ['fixture'],
+    );
+    await expect(read()).resolves.toEqual({ data: ['fixture'], source: 'fixture' });
+  });
+
+  it('matches a parameterised template rather than a concrete url', async () => {
+    const read = resolveSurface(
+      '/api/v1/query/findings/{id}',
+      async () => ['real'],
+      () => ['fixture'],
+    );
+    await expect(read()).resolves.toEqual({ data: ['fixture'], source: 'fixture' });
+  });
+
+  it('uses the route, and says so, for any other template', async () => {
+    const read = resolveSurface('/api/v1/accounts', async () => ['real'], () => ['fixture']);
+    await expect(read()).resolves.toEqual({ data: ['real'], source: 'route' });
+  });
+
+  it('lets a route failure surface rather than falling back to the fixture', async () => {
+    const boom = async (): Promise<string[]> => {
+      throw new Error('AccessDenied');
+    };
+    const read = resolveSurface('/api/v1/accounts', boom, () => ['fixture']);
+    await expect(read()).rejects.toThrow('AccessDenied');
+  });
+
+  it('declares every fixture template under the api prefix', () => {
+    for (const template of FIXTURE_SURFACES) {
+      expect(template.startsWith('/api/v1/')).toBe(true);
+    }
+  });
+});
+```
+
+The third test is the important one. A resolver that fell back on error would
+render invented numbers during an outage.
+
+- [ ] **Step 2: run it and watch it fail**
+
+Run: `cd finops-web && npm run test -- --run src/api/__tests__/fixtureSeam.test.ts`
+Expected: FAIL, cannot find module `../fixtureSeam`.
+
+- [ ] **Step 3: write the seam**
+
+`finops-web/src/api/fixtureSeam.ts`
+
+```ts
+/**
+ * Contract first delivery, per `docs/13-UI-ARCHITECTURE.md` section 11.
+ *
+ * A screen is built against a typed fixture before its route exists. The set
+ * below is the single declaration of which paths are still invented, and
+ * `tests/api/test_fixture_surfaces.py` fails the build the moment one of them is
+ * registered in the application. That test is what makes the set impossible to
+ * forget, which matters because a forgotten entry means a fixture rendering as
+ * real data.
+ *
+ * A route that fails does not fall back to the fixture. It raises, the screen
+ * renders the typed cause, and no numeral appears.
+ */
+
+export type SurfaceSource = 'route' | 'fixture';
+
+export interface Resolved<T> {
+  readonly data: T;
+  readonly source: SurfaceSource;
+}
+
+/**
+ * Route templates whose screens exist and whose routes do not. Emptied as
+ * routes land.
+ *
+ * These are templates, not concrete URLs, written the way FastAPI writes
+ * `route.path`. A detail screen fetches `/api/v1/query/findings/abc-123` and
+ * declares `/api/v1/query/findings/{id}`, so the guard in
+ * `tests/api/test_fixture_surfaces.py` can compare like with like.
+ */
+export const FIXTURE_SURFACES: ReadonlySet<string> = new Set([
+  '/api/v1/query/findings',
+  '/api/v1/query/findings/{id}',
+  '/api/v1/query/instances',
+  '/api/v1/query/enforcement',
+]);
+
+export function resolveSurface<T>(
+  template: string,
+  live: () => Promise<T>,
+  fixture: () => T,
+): () => Promise<Resolved<T>> {
+  return async () => {
+    if (FIXTURE_SURFACES.has(template)) {
+      return { data: fixture(), source: 'fixture' };
+    }
+    return { data: await live(), source: 'route' };
+  };
+}
+```
+
+- [ ] **Step 4: run it and watch it pass**
+
+Run: `cd finops-web && npm run test -- --run src/api/__tests__/fixtureSeam.test.ts`
+Expected: PASS, five tests.
+
+- [ ] **Step 5: write the failing cross language guard**
+
+`tests/api/test_fixture_surfaces.py`
+
+```python
+"""A fixture backed path must not be a real route.
+
+The frontend renders invented numbers for every path in FIXTURE_SURFACES, and
+says so on screen. The moment a route is registered the invention has to stop,
+and review is not a mechanism for noticing that. This test is.
+"""
+
+import re
+from pathlib import Path
+
+from finops_api.main import create_app
+
+SEAM = Path(__file__).resolve().parents[2] / "finops-web" / "src" / "api" / "fixtureSeam.ts"
+
+
+def declared_fixture_templates() -> set[str]:
+    block = SEAM.read_text(encoding="utf-8").split("FIXTURE_SURFACES", 1)[1]
+    block = block.split("]", 1)[0]
+    return set(re.findall(r"'(/api/v1/[^']+)'", block))
+
+
+
+def test_no_fixture_path_is_a_registered_route() -> None:
+    registered = {route.path for route in create_app().routes if hasattr(route, "path")}
+    still_invented = declared_fixture_templates() & registered
+    assert not still_invented, (
+        f"These paths are live routes but the frontend still serves fixtures for them: "
+        f"{sorted(still_invented)}. Remove them from FIXTURE_SURFACES in {SEAM}."
+    )
+```
+
+Confirm the application factory is named `create_app` in `finops_api/main.py`
+before running this, and use whatever that module actually exports.
+
+- [ ] **Step 6: run it and watch it pass, then prove it can fail**
+
+Run: `pytest tests/api/test_fixture_surfaces.py -v`
+Expected: PASS, because none of the four routes exist yet.
+
+Now prove the guard works. Temporarily add `'/api/v1/accounts'` to
+`FIXTURE_SURFACES`, rerun, and confirm it FAILS naming that path. Remove it
+again. **A guard nobody has seen fail is a guard nobody knows works.**
+
+- [ ] **Step 7: write the failing band test**
+
+`finops-web/src/components/__tests__/FixtureBand.test.tsx`
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
+import { FixtureBand } from '../FixtureBand';
+import { violationsIn } from './axe';
+
+describe('FixtureBand', () => {
+  it('says nothing when the data came from a route', () => {
+    render(<FixtureBand source="route" />);
+    expect(screen.queryByTestId('fixture-band')).toBeNull();
+  });
+
+  it('says so, visibly, when the data is invented', () => {
+    render(<FixtureBand source="fixture" />);
+    expect(screen.getByTestId('fixture-band')).toHaveTextContent(/FIXTURE DATA/);
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<FixtureBand source="fixture" />);
+    expect(await violationsIn(container)).toEqual([]);
+  });
+});
+```
+
+- [ ] **Step 8: run it and watch it fail**
+
+Run: `cd finops-web && npm run test -- --run src/components/__tests__/FixtureBand.test.tsx`
+Expected: FAIL, cannot find module `../FixtureBand`.
+
+- [ ] **Step 9: write the band**
+
+`finops-web/src/components/FixtureBand.tsx`
+
+```tsx
+import type { SurfaceSource } from '../api/fixtureSeam';
+
+/**
+ * The one honest way to show a screen before its data is real.
+ *
+ * It renders in the trust strip, in the same place the coverage warning goes,
+ * because it is the same kind of claim: something about this view is not what a
+ * reader would otherwise assume.
+ */
+export function FixtureBand({ source }: { readonly source: SurfaceSource }) {
+  if (source === 'route') {
+    return null;
+  }
+  return (
+    <p data-testid="fixture-band" data-state="fixture" role="status">
+      FIXTURE DATA. This screen is not connected to a collector yet.
+    </p>
+  );
+}
+```
+
+Export it from `finops-web/src/components/index.ts` alongside the others.
+
+- [ ] **Step 10: run everything**
+
+Run: `cd finops-web && npm run lint && npm run test -- --run && npm run build`
+Then: `pytest tests/api/test_fixture_surfaces.py -v`
+Expected: all pass.
+
+- [ ] **Step 11: commit**
+
+```bash
+git add finops-web/src tests/api/test_fixture_surfaces.py
+git commit -m "feat: TASK-P0-037, the fixture seam and its marker
+
+A screen can be built and reviewed before its route exists, and says on screen
+that it is not connected. A Python test fails the build if a fixture path
+becomes a real route, so the set cannot rot. A failing route raises rather than
+falling back to invented numbers."
+```
+
+---
+
+### TASK-P0-038: the home screen
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | `docs/13-UI-ARCHITECTURE.md` section 6 |
+| Delivers | FEAT-008 on the front page, per architectural constraint 7 |
+| Depends on | TASK-P0-037 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [ ] Five slots in the order given in section 6
+- [ ] A slot with no data **names the sub project that will fill it** and renders
+      no numeral
+- [ ] Meter's own cost appears on the trust strip, on Home only
+- [ ] Every figure links to the screen that owns it
+- [ ] The screen issues no query that is not already issued by a screen it
+      summarises
+- [ ] Axe reports zero violations
+
+**Do not.**
+
+- Do not render an unfilled slot as zero, as a dash, or as a blank cell. That is
+  rule 5 of `docs/12-UI-DESIGN.md` and it is the whole product.
+- Do not give Home its own aggregate query. A home screen that computes its own
+  total will one day disagree with the screen it summarises, and a user who
+  catches that disagreement stops trusting both.
+
+**Steps.**
+
+- [ ] **Step 1: write the failing slot test**
+
+`finops-web/src/screens/__tests__/HomeScreen.test.tsx`
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
+import { HomeScreen } from '../HomeScreen';
+import { Harness } from './Harness';
+import { clientReturning, metaOf } from './fixtures';
+import { violationsIn } from '../../components/__tests__/axe';
+
+const COST = {
+  data: [
+    {
+      day: '2026-09-05',
+      module: 'api',
+      service: 'AmazonECS',
+      amortized_cost: '412.80',
+      as_of: '2026-09-05T04:00:00Z',
+      collected_at: '2026-09-06T09:54:00Z',
+    },
+  ],
+  meta: metaOf(),
+};
+
+function renderHome() {
+  const client = clientReturning({ '/api/v1/platform/cost': COST });
+  return render(
+    <Harness client={client}>
+      <HomeScreen />
+    </Harness>,
+  );
+}
+
+describe('HomeScreen', () => {
+  it('names the sub project that will fill an empty slot', () => {
+    renderHome();
+    const slot = screen.getByTestId('home-slot-spend');
+    expect(slot).toHaveTextContent(/not yet collected/i);
+    expect(slot).toHaveTextContent(/P1 Cost Intelligence/);
+  });
+
+  it('renders no numeral in an empty slot', () => {
+    renderHome();
+    expect(screen.getByTestId('home-slot-spend').textContent ?? '').not.toMatch(/[0-9]/);
+  });
+
+  it('links every figure to the screen that owns it', () => {
+    renderHome();
+    expect(screen.getByRole('link', { name: /Meter cost/ })).toHaveAttribute(
+      'href',
+      '/platform/cost',
+    );
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = renderHome();
+    await screen.findByTestId('figure');
+    expect(await violationsIn(container)).toEqual([]);
+  });
+});
+```
+
+The second test is the load bearing one. `P1` contains no digit and
+`Cost Intelligence` contains none, so a slot that accidentally renders a zero
+fails it.
+
+- [ ] **Step 2: run it and watch it fail**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/HomeScreen.test.tsx`
+Expected: FAIL, cannot find module `../HomeScreen`.
+
+- [ ] **Step 3: write the screen**
+
+`finops-web/src/screens/HomeScreen.tsx`
+
+```tsx
+import { Link } from 'react-router';
+
+import { usePlatformCost } from '../api/queries';
+import { Figure, StateBoundary } from '../components';
+
+interface SlotDef {
+  readonly id: string;
+  readonly label: string;
+  readonly owns: string;
+  readonly arrives: string | null;
+}
+
+/**
+ * The five slots from `docs/13-UI-ARCHITECTURE.md` section 6, in priority
+ * order. The order does not change per role. Scope changes per role, the
+ * questions do not.
+ *
+ * An unfilled slot names the sub project that will fill it, which is what makes
+ * this screen double as the progress view: each sub project that lands turns one
+ * named absence into a number.
+ */
+const SLOTS: readonly SlotDef[] = [
+  { id: 'spend', label: 'Total spend, month to date', owns: '/cost', arrives: 'P1 Cost Intelligence' },
+  { id: 'trend', label: 'Trend, 30 days', owns: '/cost', arrives: 'P1 Cost Intelligence' },
+  { id: 'movers', label: 'Top movers', owns: '/cost', arrives: 'P1 Cost Intelligence' },
+  {
+    id: 'findings',
+    label: 'Top findings by dollar',
+    owns: '/governance/queries',
+    arrives: 'P2 Query Cost Governance',
+  },
+  {
+    id: 'savings',
+    label: 'Realized savings, trailing 60 days',
+    owns: '/waste/savings',
+    arrives: 'P3 Utilization and Rightsizing',
+  },
+];
+
+function EmptySlot({ slot }: { readonly slot: SlotDef }) {
+  return (
+    <section data-testid={`home-slot-${slot.id}`} aria-label={slot.label}>
+      <h3>{slot.label}</h3>
+      <p data-state="never-collected">
+        not yet collected, arrives with <Link to={slot.owns}>{slot.arrives}</Link>
+      </p>
+    </section>
+  );
+}
+
+export function HomeScreen() {
+  const cost = usePlatformCost();
+  return (
+    <>
+      <section aria-label="Meter cost">
+        <Link to="/platform/cost">Meter cost</Link>
+        <StateBoundary query={cost}>
+          {(envelope) => (
+            <Figure
+              value={{ kind: 'measured', amount: totalOf(envelope.data) }}
+              freshness={freshnessOf(envelope.meta)}
+            />
+          )}
+        </StateBoundary>
+      </section>
+      {SLOTS.map((slot) => (slot.arrives === null ? null : <EmptySlot key={slot.id} slot={slot} />))}
+    </>
+  );
+}
+```
+
+`StateBoundary`, `Figure` and their prop shapes already exist. Read
+`finops-web/src/components/StateBoundary.tsx` and
+`finops-web/src/components/Figure.tsx` and match their actual props rather than
+the illustrative call above. `totalOf` and `freshnessOf` are two small local
+helpers in this file: one sums `amortized_cost` with a decimal safe addition,
+the other maps `as_of` and `collected_at` into the shape `Figure` expects.
+
+**Do not add a new query hook.** `usePlatformCost` is the hook `PlatformScreen`
+already uses, with query key `['platform-cost']`, so react-query serves both from
+one cache entry. Two hooks over one endpoint is how two screens start
+disagreeing.
+
+- [ ] **Step 4: run the tests and watch them pass**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/HomeScreen.test.tsx`
+Expected: PASS, four tests.
+
+- [ ] **Step 5: write the failing test that Home issues no query of its own**
+
+Append to the same file. `clientReturning` rejects any path it was not given, so
+a recording wrapper turns an extra request into a listed path rather than a
+generic failure.
+
+```tsx
+it('requests nothing that the screens it summarises do not already request', async () => {
+  const asked: string[] = [];
+  const inner = clientReturning({ '/api/v1/platform/cost': COST });
+  const recording = {
+    get: <T,>(path: string) => {
+      asked.push(path);
+      return inner.get<T>(path);
+    },
+  };
+  render(
+    <Harness client={recording}>
+      <HomeScreen />
+    </Harness>,
+  );
+  await screen.findByTestId('figure');
+  expect(asked).toEqual(['/api/v1/platform/cost']);
+});
+```
+
+- [ ] **Step 6: run it and watch it pass**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/HomeScreen.test.tsx`
+Expected: PASS, five tests. If it fails listing a second path, Home has grown an
+aggregate query of its own and rule 1 of section 6 has been broken.
+
+- [ ] **Step 7: route Home and make it the landing screen**
+
+In `finops-web/src/App.tsx`, add `<Route path="/" element={<HomeScreen />} />`
+as the first route. The application now lands on Home rather than on Accounts.
+
+- [ ] **Step 8: run the whole suite and the journey**
+
+Run: `cd finops-web && npm run lint && npm run test -- --run && npm run build && npx playwright test`
+Expected: all pass.
+
+- [ ] **Step 9: commit**
+
+```bash
+git add finops-web/src
+git commit -m "feat: TASK-P0-038, the home screen
+
+Trust strip above the money, per architectural constraint 7. An unfilled slot
+names the sub project that will fill it and renders no numeral, which is what
+makes the front page double as the progress view. Home owns no data of its own."
+```
+
+---
+
 ## Wave I: security and MCP
 
 ### TASK-P0-029: establish the security tool chain and the first posture

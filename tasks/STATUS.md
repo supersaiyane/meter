@@ -23,9 +23,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | Register | Counts |
 | --- | --- |
 | Features | 50 total, 8 specified, 7 in build, 5 delivered |
-| Decisions | 19 architecture decision records |
-| Changes | 71 recorded |
-| Issues | 92 fixed, 38 open, 0 parked |
+| Decisions | 20 architecture decision records |
+| Changes | 73 recorded |
+| Issues | 92 fixed, 39 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -82,8 +82,8 @@ ISS-003.
 
 | Sub project | Done | Partly | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- |
-| P0 | 35 | 0 | 0 | 0 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P2 | 4 | 0 | 2 | 16 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
+| P0 | 35 | 0 | 0 | 3 | 38 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P2 | 4 | 0 | 2 | 19 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -208,6 +208,8 @@ tasks and TASK-P0-029 as not started after it was finished. See ADR-0014.
 | `[x]` | TASK-P0-027, accounts screen and organization map | Broken onboarding one click. Tree default. Unreachable branches drawn |
 | `[x]` | TASK-P0-003 and 004, index checker tests and the pipeline gate | Failure paths tested. Dash rejection demonstrated. Wave A complete |
 | `[~]` | TASK-P0-028, the last screens, journey and budgets | Screens and budgets done. Restore drill not performed, ISS-111 |
+| `[x]` | Architect the interface | `docs/13-UI-ARCHITECTURE.md`, ADR-0020. Seven fixed navigation groups, every route, the home screen, and 25 screens mapped across P0 to P7. The visual system had no frame to hang screens on |
+| `[x]` | Plan the interface | Seven tasks. Three in the P0 plan for routing, the fixture seam and the home screen, four in the P2 plan replacing the single screens task. Wave K does not wait for wave J |
 
 ## Remaining sub projects
 

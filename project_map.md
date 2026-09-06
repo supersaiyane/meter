@@ -178,15 +178,36 @@ meter/
 │   ├── eslint.config.js       flat config. eslintrc is not read by ESLint 9
 │   └── src/
 │       ├── tokens.css         light and dark in one declaration, via light-dark()
-│       └── components/        built once, used by every sub project
-│           ├── Figure.tsx     the load bearing one. Nothing else renders a number
-│           ├── provenance.ts  the union that makes a point forecast unsayable
-│           ├── StateBoundary.tsx  all seven states from design section 8
-│           ├── DataTable.tsx  virtualised past 200 rows, headless
-│           └── index.ts       exports no formatter, deliberately
+│       ├── components/        built once, used by every sub project. All ten of
+│       │                      12-UI-DESIGN section 11 now exist
+│       │   ├── Figure.tsx     the load bearing one. Nothing else renders a number
+│       │   ├── provenance.ts  the union that makes a point forecast unsayable
+│       │   ├── StateBoundary.tsx  all seven states from design section 8
+│       │   ├── surfaceState.ts    which of the seven a query is in, one decision
+│       │   ├── DataTable.tsx  virtualised past 200 rows, headless
+│       │   ├── tableConfig.ts column widths and alignment. Numerals right, always
+│       │   ├── TypedError.tsx cause and remediation. Never a numeral
+│       │   ├── CoverageBanner.tsx  not dismissible. The condition does not go away
+│       │   ├── FreshnessIndicator.tsx  age against cadence, not a fixed threshold
+│       │   ├── SeverityBadge.tsx   sequential ramp, because severity is ordered
+│       │   ├── OrgTree.tsx    keyboard navigable. The accessible path, not the fallback
+│       │   ├── orgNodes.ts    tree to flat nodes. Unreachable branches survive it
+│       │   ├── GraphCanvas.tsx     Cytoscape, server filtered, tree is its equivalent
+│       │   ├── Sparkline.tsx  30 day, no axes, provenance aware
+│       │   └── index.ts       exports no formatter, deliberately
 │       ├── api/               typed client. Refuses a response with no envelope
 │       ├── shell/             coverage and freshness, page level and worst case
-│       └── screens/           accounts and the organization map
+│       │   └── sections.ts    five flat names today. Becomes the seven groups of
+│       │                      ADR-0020 at TASK-P0-036
+│       └── screens/           the five P0 screens. Home, and the four P2 screens,
+│                              are planned in 13-UI-ARCHITECTURE and not built
+│           ├── AccountsScreen.tsx      broken onboarding is one filter, not four
+│           ├── OrganizationScreen.tsx  tree default, graph secondary
+│           ├── IngestScreen.tsx        runs with typed causes per account
+│           ├── FreshnessScreen.tsx     per collector, against its own cadence
+│           ├── PlatformScreen.tsx      Meter's own cost, untagged named
+│           ├── platformRollUp.ts       one grouped total, no second definition
+│           └── surfaceStateFor.ts      the screen side of surfaceState
 │
 ├── finops_ingest/             IN BUILD  dispatcher, worker, ledger, collectors
 │   ├── ledger.py              idempotent claims, watermarks that only advance
@@ -225,7 +246,6 @@ meter/
 ├── migrations/                the only way the schema changes
 │   ├── env.py                 URL from settings, overridable by a test
 │   └── versions/              0001_initial, raw SQL, faithful to 07-DATA-MODEL
-├── finops-web/                PLANNED  React and TypeScript
 ├── finops_query/              IN BUILD  P2, query cost governance
 │   ├── classify.py            what engine a target runs on. Separate from the
 │   │                          arithmetic, so a new engine is a branch not a rate

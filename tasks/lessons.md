@@ -54,3 +54,14 @@ separate cleanup pass later.
 
 **Triggers:** new project, first commit, end of any work session, any change
 that adds or moves a module.
+
+## 2026-09-06: scope of a user interface request
+**Mistake:** Asked which progress the user wanted to see, framing every option
+inside P2, when the request was for the whole product's interface.
+**Correction:** "UI, i needed is for complete product, we have not planned it
+yet, what to show where to show, what would be the design for the dashboard."
+**Rule:** When a request names a surface rather than a task, establish the
+scope boundary before offering options: is this the current sub project, or the
+product. Ask which, do not infer it from the sub project in flight.
+**Triggers:** "plan the UI", "design the dashboard", "what should we show",
+any request naming a surface with no task identifier attached.

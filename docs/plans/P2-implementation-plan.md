@@ -34,11 +34,21 @@ else touches it.
 | G. Prevention | 017 to 018 | Workspace floor and the CI gate | B |
 | H. Remediation | 019 | Panel rewrite with undo | G |
 | I. Calibration | 020 | The published accuracy figure | D, and P1 cost data |
-| J. Surface | 021 to 022 | Routes, MCP tools and four screens | D to H |
+| J. Surface | 021 | Routes and MCP tools | D to H |
+| K. Screens | 022 to 025 | Four screens, fixture backed and reviewable | TASK-P0-037. **Not D to H** |
 
 Waves F and G do not depend on D. With two people, one takes the audit path and
 the other takes control and prevention, which is also the fastest route to the
 thing that actually stops the bleed.
+
+**Wave K does not wait for wave J.** The four screens are built against typed
+fixtures using the seam from TASK-P0-037, so each one is reviewable for layout,
+language and honesty from the moment its shape is known rather than the moment
+its data is real. When TASK-P2-021 lands the routes, the client gains the
+methods and the screens start reading real data with no further change, because
+resolution is derived from the client rather than from a list. Under the
+previous ordering the first pixel of P2 appeared at task 21 of 22, which put
+every interface mistake at the most expensive point to find one.
 
 ---
 
@@ -801,32 +811,676 @@ the measurement, and let a person decide what to change. ISS-093.
 
 ---
 
-### TASK-P2-022: four screens
+## Wave K: screens
+
+Each of these four is built against a typed fixture and carries the
+`FIXTURE DATA` band from TASK-P0-037 until its route exists. None of them
+depends on wave J.
+
+### TASK-P2-022: the query findings screen
 
 | Field | Value |
 | --- | --- |
 | Status | Not started |
-| Implements | P2 spec section 9 |
-| Depends on | TASK-P2-021 |
-| Estimate | L |
+| Implements | P2 spec section 9.1, `docs/13-UI-ARCHITECTURE.md` section 9.1 |
+| Delivers | FEAT-011, FEAT-012, FEAT-016 at the surface |
+| Depends on | TASK-P0-037, TASK-P2-004 |
+| Estimate | M |
 
 **Acceptance criteria.**
 
-- [ ] Findings, ranked by cost, with the `why` column in prose
-- [ ] Finding detail showing the full working: query, target, formula, window,
-      and measured evidence where it exists
-- [ ] Instances, **including unreachable ones**
-- [ ] Enforcement, showing active actions, their expiry, and a revoke button
-- [ ] Every modelled figure carries its caveat until FEAT-018 publishes accuracy
-- [ ] An end to end journey: detect a violating dashboard, see it ranked, see
-      its owner, apply the workspace floor, confirm the undo
+- [ ] Dense table, 32 px rows, sorted by monthly cost descending
+- [ ] The `why` column is **a column of prose**, not a tooltip
+- [ ] Every modelled figure is hatched and prefixed, and reads differently from a
+      measured one
+- [ ] An unreachable instance produces a partial state with the count of what is
+      missing **above** the table, not a row inside it
+- [ ] `unattributed` is a rendered owner value, never a blank cell
+- [ ] The `FIXTURE DATA` band renders until the client implements the route
+- [ ] Axe reports zero violations
 
 **Do not.**
 
+- Do not put the `why` text in a tooltip or a hover card. This list is read in
+  tickets and in screenshots, and a tooltip is invisible in both. The prose is
+  what makes a finding actionable rather than a number.
 - Do not render a modelled figure identically to a measured one. The label is
   the product.
-- Do not hide unreachable instances to make the list tidier. That screen exists
-  to stop silent under counting.
+
+**Steps.**
+
+- [ ] **Step 1: add the wire type**
+
+`finops-web/src/api/types.ts`, following the existing convention of snake case
+fields mirroring `finops_api/schemas.py`.
+
+```ts
+export interface ApiQueryFinding {
+  readonly finding_id: string;
+  readonly dashboard_uid: string;
+  readonly dashboard_title: string;
+  readonly panel_title: string;
+  readonly refresh_seconds: number | null;
+  readonly window_seconds: number | null;
+  readonly runs_per_day: number;
+  readonly bytes_scanned_per_run: number;
+  readonly monthly_cost: string;
+  /** measured, modelled or forecast. Never absent. */
+  readonly provenance: string;
+  readonly severity: number;
+  /** The literal string `unattributed` when no owner was resolved. */
+  readonly owner: string;
+  /** Prose explaining what drives the cost. Ported from the prototype. */
+  readonly why: string;
+}
+```
+
+- [ ] **Step 2: write the fixture, including the unhappy cases**
+
+`finops-web/src/screens/__tests__/queryFixtures.ts`
+
+```ts
+import type { ApiQueryFinding } from '../../api/types';
+
+/**
+ * Three rows on purpose: one measured, one modelled, one unattributed. A
+ * fixture with only the happy path pins the wrong screen.
+ */
+export const QUERY_FINDINGS: readonly ApiQueryFinding[] = [
+  {
+    finding_id: '11111111-1111-1111-1111-111111111111',
+    dashboard_uid: 'abc123',
+    dashboard_title: 'Platform overview',
+    panel_title: 'Error rate by service',
+    refresh_seconds: 10,
+    window_seconds: 2592000,
+    runs_per_day: 8640,
+    bytes_scanned_per_run: 4294967296,
+    monthly_cost: '12400.00',
+    provenance: 'modelled',
+    severity: 1,
+    owner: 'platform-team',
+    why: 'Refreshes every 10 seconds against a 30 day window, so it rescans 4 GiB 8,640 times a day.',
+  },
+  {
+    finding_id: '22222222-2222-2222-2222-222222222222',
+    dashboard_uid: 'def456',
+    dashboard_title: 'Billing',
+    panel_title: 'Invoice totals',
+    refresh_seconds: 3600,
+    window_seconds: 86400,
+    runs_per_day: 24,
+    bytes_scanned_per_run: 1048576,
+    monthly_cost: '3.20',
+    provenance: 'measured',
+    severity: 4,
+    owner: 'unattributed',
+    why: 'Hourly refresh over a one day window. Listed for completeness.',
+  },
+];
+```
+
+- [ ] **Step 3: write the failing screen test**
+
+`finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx`
+
+```tsx
+import { render, screen, within } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
+import { QueryFindingsScreen } from '../QueryFindingsScreen';
+import { Harness } from './Harness';
+import { clientReturning } from './fixtures';
+import { violationsIn } from '../../components/__tests__/axe';
+
+/** The path is in FIXTURE_SURFACES, so the client is never called. */
+function renderFindings() {
+  return render(
+    <Harness client={clientReturning({})}>
+      <QueryFindingsScreen />
+    </Harness>,
+  );
+}
+
+describe('QueryFindingsScreen', () => {
+  it('puts the reason in a column, so it survives a screenshot', async () => {
+    renderFindings();
+    const table = await screen.findByRole('table');
+    expect(within(table).getByRole('columnheader', { name: /why/i })).toBeInTheDocument();
+    expect(within(table).getByText(/rescans 4 GiB 8,640 times a day/)).toBeInTheDocument();
+  });
+
+  it('ranks by monthly cost, most expensive first', async () => {
+    renderFindings();
+    const rows = await screen.findAllByRole('row');
+    expect(rows[1]).toHaveTextContent('Error rate by service');
+  });
+
+  it('renders a modelled figure differently from a measured one', async () => {
+    renderFindings();
+    const rows = await screen.findAllByRole('row');
+    expect(within(rows[1]).getByTestId('figure')).toHaveAttribute('data-provenance', 'modelled');
+    expect(within(rows[2]).getByTestId('figure')).toHaveAttribute('data-provenance', 'measured');
+  });
+
+  it('shows an unresolved owner as a value, not an empty cell', async () => {
+    renderFindings();
+    expect(await screen.findByText('unattributed')).toBeInTheDocument();
+  });
+
+  it('says so while it is running on a fixture', async () => {
+    renderFindings();
+    expect(await screen.findByTestId('fixture-band')).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = renderFindings();
+    await screen.findByRole('table');
+    expect(await violationsIn(container)).toEqual([]);
+  });
+});
+```
+
+`Figure` emits `data-testid="figure"` and `data-provenance={kind}` at
+`finops-web/src/components/Figure.tsx:95`, which is what the third test asserts
+on. Do not add attributes to a component that already has them.
+
+- [ ] **Step 4: run it and watch it fail**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/QueryFindingsScreen.test.tsx`
+Expected: FAIL, cannot find module `../QueryFindingsScreen`.
+
+- [ ] **Step 5: write the screen**
+
+First add one hook the four screens share, to
+`finops-web/src/api/queries.ts`, following the one hook per route convention
+already in that file:
+
+```ts
+import { resolveSurface, type Resolved } from './fixtureSeam';
+import type { ApiEnvelope, ApiQueryFinding } from './types';
+
+/**
+ * A surface that may still be fixture backed. The envelope is kept whole for
+ * the same reason every other hook here keeps it: a hook returning only the
+ * rows lets a screen render them without seeing the coverage or the failures
+ * that came with them.
+ */
+export function useQuerySurface<T>(
+  key: readonly unknown[],
+  template: string,
+  path: string,
+  fixture: () => ApiEnvelope<T>,
+) {
+  const client = useApi();
+  return useQuery<Resolved<ApiEnvelope<T>>>({
+    queryKey: key,
+    queryFn: resolveSurface(template, () => client.get<T>(path), fixture),
+  });
+}
+
+export function useQueryFindings() {
+  return useQuerySurface<ApiQueryFinding[]>(
+    ['query-findings'],
+    '/api/v1/query/findings',
+    '/api/v1/query/findings',
+    () => ({ data: [...QUERY_FINDINGS], meta: FIXTURE_META }),
+  );
+}
+```
+
+`FIXTURE_META` is an `ApiMeta` in `queryFixtures.ts` with a real `as_of` and
+`collected_at`, so a fixture backed screen still exercises the freshness path
+rather than skipping it.
+
+Then write `finops-web/src/screens/QueryFindingsScreen.tsx`, composing
+`DataTable`, `Figure`, `SeverityBadge`, `StateBoundary` and `FixtureBand`. Sort
+by `monthly_cost` descending as a decimal comparison and not a string
+comparison, and pass the resolved `source` to `FixtureBand`.
+
+`monthly_cost` arrives as a string to avoid float error. Compare with
+`Number.parseFloat` for the sort only, and never for display. Display goes
+through `Figure`, which is the only path a number takes to a screen.
+
+- [ ] **Step 6: run the tests and watch them pass**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/QueryFindingsScreen.test.tsx`
+Expected: PASS, six tests.
+
+- [ ] **Step 7: route it**
+
+Add `<Route path="/governance/queries" element={<QueryFindingsScreen />} />` to
+`finops-web/src/App.tsx`, and set `arrives` to null for that path in
+`finops-web/src/shell/sections.ts`, because the screen now exists.
+
+- [ ] **Step 8: run the whole suite**
+
+Run: `cd finops-web && npm run lint && npm run test -- --run && npm run build`
+Expected: all pass.
+
+- [ ] **Step 9: commit**
+
+```bash
+git add finops-web/src
+git commit -m "feat: TASK-P2-022, the query findings screen
+
+Ranked by monthly cost, with the reason as a column rather than a tooltip so it
+survives a screenshot. Fixture backed and marked as such until the route lands."
+```
+
+---
+
+### TASK-P2-023: the finding detail screen
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | P2 spec section 9.2, `docs/13-UI-ARCHITECTURE.md` section 9.2 |
+| Delivers | FEAT-012, FEAT-013 and FEAT-018 at the surface |
+| Depends on | TASK-P2-022 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [ ] Generous density, because the reader is making a judgement
+- [ ] Publishes the query, the target, the engine classification, **the formula
+      with its inputs substituted**, the data window, and measured evidence where
+      FEAT-013 produced any
+- [ ] Where no calibration exists the label reads `accuracy not yet published`
+- [ ] Where FEAT-018 published one, the label reads `~ $12,400 modelled, +/- 9%`
+- [ ] Axe reports zero violations
+
+**Do not.**
+
+- Do not summarise the formula. Publishing the arithmetic is what makes a
+  modelled number arguable rather than magic, and an engineer who cannot point at
+  the line they disagree with dismisses the finding instead of fixing it.
+- Do not invent an accuracy percentage to fill the space. No figure is the
+  correct rendering until FEAT-018 publishes one.
+
+**Steps.**
+
+- [ ] **Step 1: write the failing test**
+
+`finops-web/src/screens/__tests__/QueryFindingDetailScreen.test.tsx`
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
+import { QueryFindingDetailScreen } from '../QueryFindingDetailScreen';
+import { Harness } from './Harness';
+import { clientReturning } from './fixtures';
+
+const ID = '11111111-1111-1111-1111-111111111111';
+
+function renderDetail() {
+  return render(
+    <Harness client={clientReturning({})} initialPath={`/governance/queries/${ID}`}>
+      <QueryFindingDetailScreen />
+    </Harness>,
+  );
+}
+
+describe('QueryFindingDetailScreen', () => {
+  it('publishes the formula with its inputs substituted', async () => {
+    renderDetail();
+    const working = await screen.findByTestId('finding-working');
+    expect(working).toHaveTextContent('8,640 runs per day');
+    expect(working).toHaveTextContent('4 GiB scanned per run');
+    expect(working).toHaveTextContent('30 day window');
+  });
+
+  it('says the accuracy is unpublished rather than showing a number', async () => {
+    renderDetail();
+    expect(await screen.findByText(/accuracy not yet published/i)).toBeInTheDocument();
+  });
+});
+```
+
+The screen reads its identifier from the route with `useParams`, not from a
+prop, because the URL is the thing that gets shared into a ticket. `initialPath`
+is the parameter TASK-P0-036 added to `Harness`.
+
+- [ ] **Step 2: run it and watch it fail**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/QueryFindingDetailScreen.test.tsx`
+Expected: FAIL, cannot find module.
+
+- [ ] **Step 3: extend the fixture and write the screen**
+
+Add `useQueryFinding(id)` to `finops-web/src/api/queries.ts`, built on
+`useQuerySurface` with key `['query-finding', id]`, template
+`/api/v1/query/findings/{id}` and path `/api/v1/query/findings/${id}`. The
+template and the path differ here, which is the case the template matching in
+TASK-P0-037 exists for.
+
+Add `QUERY_FINDING_DETAIL` to `finops-web/src/screens/__tests__/queryFixtures.ts`
+carrying the query text, the target, the engine, the substituted formula terms
+and a null `accuracy_percent`. Write
+`finops-web/src/screens/QueryFindingDetailScreen.tsx` rendering them in the order
+given in the acceptance criteria, with `FixtureBand` and `StateBoundary`.
+
+A null `accuracy_percent` renders `accuracy not yet published`. A number renders
+`+/- n%` beside the modelled label. Those are two branches of one expression, so
+neither can be forgotten.
+
+- [ ] **Step 4: run the tests and watch them pass**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/QueryFindingDetailScreen.test.tsx`
+Expected: PASS, two tests.
+
+- [ ] **Step 5: route it, run the suite, commit**
+
+Add `<Route path="/governance/queries/:id" element={<QueryFindingDetailScreen />} />`.
+Run `npm run lint && npm run test -- --run && npm run build`.
+
+```bash
+git add finops-web/src
+git commit -m "feat: TASK-P2-023, the finding detail screen
+
+Publishes the full working, so a modelled number is arguable rather than magic.
+No accuracy figure until FEAT-018 publishes one."
+```
+
+---
+
+### TASK-P2-024: the query surfaces screen
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | P2 spec section 9.3, `docs/13-UI-ARCHITECTURE.md` section 9.3 |
+| Delivers | FEAT-011 at the surface |
+| Depends on | TASK-P0-037, TASK-P2-004 |
+| Estimate | S |
+
+**Acceptance criteria.**
+
+- [ ] Every instance, its kind, its reachability and its query count
+- [ ] **An unreachable instance is listed**, with its typed cause and a recheck
+- [ ] The query count for an unreachable instance is `UNREACHABLE`, **not zero**
+- [ ] Axe reports zero violations
+
+**Do not.**
+
+- Do not omit an unreachable instance to make the list tidier. This screen exists
+  to stop silent under counting, and an instance list that quietly drops the
+  three it could not reach makes the findings list look complete when it is not.
+- Do not render its query count as zero. A failure is never a number.
+
+**Steps.**
+
+- [ ] **Step 1: write the failing test**
+
+`finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx`
+
+```tsx
+import { render, screen, within } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
+import { QuerySurfacesScreen } from '../QuerySurfacesScreen';
+import { Harness } from './Harness';
+import { clientReturning } from './fixtures';
+
+function renderSurfaces() {
+  return render(
+    <Harness client={clientReturning({})}>
+      <QuerySurfacesScreen />
+    </Harness>,
+  );
+}
+
+describe('QuerySurfacesScreen', () => {
+  it('lists an instance it could not reach', async () => {
+    renderSurfaces();
+    expect(await screen.findByText('meter-prod-eu-west-1')).toBeInTheDocument();
+  });
+
+  it('shows its query count as the cause, never as zero', async () => {
+    renderSurfaces();
+    const row = (await screen.findByText('meter-prod-eu-west-1')).closest('tr');
+    expect(row).not.toBeNull();
+    expect(within(row as HTMLElement).getByText('UNREACHABLE')).toBeInTheDocument();
+    expect(within(row as HTMLElement).queryByText('0')).toBeNull();
+  });
+});
+```
+
+- [ ] **Step 2: run it and watch it fail**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/QuerySurfacesScreen.test.tsx`
+Expected: FAIL, cannot find module.
+
+- [ ] **Step 3: add the wire type, the fixture and the screen**
+
+`ApiSurfaceInstance` in `finops-web/src/api/types.ts` with `instance_id`,
+`name`, `kind`, `reachable`, `unreachable_cause` and `query_count`, where
+`query_count` is `number | null` and null means not countable. Add
+`SURFACE_INSTANCES` to `queryFixtures.ts` with three instances, one per
+`SurfaceKind` at `finops_core/domain/query.py:28` and one of them unreachable
+named `meter-prod-eu-west-1`, which is the name the test looks for. Screen
+composes `DataTable`, `TypedError` and `FixtureBand`.
+
+Add `useQuerySurfaces()` to `finops-web/src/api/queries.ts`, built on
+`useQuerySurface` from TASK-P2-022 with key `['query-instances']`, template and
+path `/api/v1/query/instances`, and fixture `SURFACE_INSTANCES`.
+
+`query_count === null` renders `TypedError` with the cause. It never renders a
+numeral, per rule 5 of `docs/12-UI-DESIGN.md`.
+
+- [ ] **Step 4: run the tests, route it, run the suite, commit**
+
+Run: `cd finops-web && npm run test -- --run && npm run lint && npm run build`
+
+```bash
+git add finops-web/src
+git commit -m "feat: TASK-P2-024, the query surfaces screen
+
+Unreachable instances are listed with their cause and no numeral. This is the
+screen that stops silent under counting."
+```
+
+---
+
+### TASK-P2-025: the enforcement screen and the end to end journey
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | P2 spec section 9.4, `docs/13-UI-ARCHITECTURE.md` section 9.4 |
+| Delivers | FEAT-014, FEAT-015 and FEAT-017 at the surface |
+| Depends on | TASK-P2-022, TASK-P2-023, TASK-P2-024 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [ ] Action, principal, applied at, expires at, reason and revoke
+- [ ] Expiry shows **both** an absolute time and a countdown
+- [ ] Revoke is present on every active action and is subject to the write level
+      flag
+- [ ] A revoke control is absent, not merely disabled, when the write level
+      forbids it
+- [ ] An end to end Playwright journey: a violating dashboard is detected, seen
+      ranked, its owner seen, the workspace floor applied, and the undo confirmed
+- [ ] Axe reports zero violations
+
+**Do not.**
+
+- Do not show only the countdown. An incident bridge needs "how long do I have"
+  and "when exactly", and a countdown alone cannot be written into an incident
+  log.
+- Do not render a revoke button that does nothing when the write level forbids
+  it. A control that looks available and is not is worse than an absent one.
+
+**Steps.**
+
+- [ ] **Step 1: write the failing test**
+
+`finops-web/src/screens/__tests__/EnforcementScreen.test.tsx`
+
+```tsx
+import { render, screen, within } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
+import { EnforcementScreen } from '../EnforcementScreen';
+import { Harness } from './Harness';
+import { clientReturning } from './fixtures';
+
+function renderEnforcement() {
+  return render(
+    <Harness client={clientReturning({})}>
+      <EnforcementScreen now={new Date('2026-09-06T10:00:00Z')} />
+    </Harness>,
+  );
+}
+
+describe('EnforcementScreen', () => {
+  it('shows expiry as an absolute time and a countdown together', async () => {
+    renderEnforcement();
+    const cell = await screen.findByTestId('expires-33333333-3333-3333-3333-333333333333');
+    expect(cell).toHaveTextContent('10:45');
+    expect(cell).toHaveTextContent(/45 min/);
+  });
+
+  it('omits revoke entirely for an action the API says is not revocable', async () => {
+    renderEnforcement();
+    const row = (await screen.findByText('44444444-4444-4444-4444-444444444444')).closest('tr');
+    expect(row).not.toBeNull();
+    expect(within(row as HTMLElement).queryByRole('button', { name: /revoke/i })).toBeNull();
+  });
+});
+```
+
+`now` is an optional prop, matching the pattern `AppShell` already uses at
+`finops-web/src/shell/AppShell.tsx:33`, so the countdown is testable without
+faking a clock.
+
+**The write level is not a frontend decision.** Architectural constraint 8 makes
+the HTTP API the single enforcement point, so the API sets `revocable` per action
+and the screen renders what it is told. A frontend that decided revocability
+itself would be a second implementation of an authorization rule, which is how an
+authorization bug is created.
+
+- [ ] **Step 2: run it and watch it fail**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/EnforcementScreen.test.tsx`
+Expected: FAIL, cannot find module.
+
+- [ ] **Step 3: add the wire type, the fixture and the screen**
+
+Add to `finops-web/src/api/types.ts`:
+
+```ts
+export interface ApiEnforcementAction {
+  readonly action_id: string;
+  /** ALERT, THROTTLE or DENY. */
+  readonly action: string;
+  readonly principal: string;
+  readonly applied_at: string;
+  /** Required for THROTTLE and DENY, null for ALERT. */
+  readonly expires_at: string | null;
+  readonly reason_finding_id: string;
+  /** Set by the API, per architectural constraint 8. Never inferred here. */
+  readonly revocable: boolean;
+}
+```
+
+Add to `finops-web/src/screens/__tests__/queryFixtures.ts`:
+
+```ts
+import type { ApiEnforcementAction } from '../../api/types';
+
+export const ENFORCEMENT_ACTIONS: readonly ApiEnforcementAction[] = [
+  {
+    action_id: '33333333-3333-3333-3333-333333333333',
+    action: 'THROTTLE',
+    principal: 'arn:aws:iam::role/grafana-datasource',
+    applied_at: '2026-09-06T09:45:00Z',
+    expires_at: '2026-09-06T10:45:00Z',
+    reason_finding_id: '11111111-1111-1111-1111-111111111111',
+    revocable: true,
+  },
+  {
+    action_id: '44444444-4444-4444-4444-444444444444',
+    action: 'ALERT',
+    principal: 'arn:aws:iam::role/reporting',
+    applied_at: '2026-09-05T11:00:00Z',
+    expires_at: null,
+    reason_finding_id: '22222222-2222-2222-2222-222222222222',
+    revocable: false,
+  },
+];
+```
+
+The second row is why the second test passes: an `ALERT` never expires and
+nothing can be revoked, so its row carries no button. The first expires 45
+minutes after the `now` the test injects.
+
+Write `finops-web/src/screens/EnforcementScreen.tsx` composing `DataTable` and
+`FixtureBand`, with an `expires` cell rendering both forms:
+
+```tsx
+<td data-testid={`expires-${action.action_id}`}>
+  {action.expires_at === null ? (
+    'does not expire'
+  ) : (
+    <>
+      <time dateTime={action.expires_at}>{hourMinuteUtc(action.expires_at)}</time>
+      <span> in {minutesUntil(action.expires_at, now)} min</span>
+    </>
+  )}
+</td>
+```
+
+`hourMinuteUtc` and `minutesUntil` are two small local helpers in this file.
+Render both forms always. An incident bridge needs "how long do I have" and
+"when exactly", and a countdown alone cannot be written into an incident log.
+
+Revoke renders only when `revocable` is true. It is a conditional render, not a
+`disabled` attribute, because a control that looks available and is not is worse
+than an absent one.
+
+Add `useEnforcementActions()` to `finops-web/src/api/queries.ts`, built on
+`useQuerySurface` with key `['query-enforcement']`, template and path
+`/api/v1/query/enforcement`, and fixture `ENFORCEMENT_ACTIONS`.
+
+- [ ] **Step 4: run the tests and watch them pass**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/EnforcementScreen.test.tsx`
+Expected: PASS, two tests.
+
+- [ ] **Step 5: write the end to end journey**
+
+Append to `finops-web/e2e/journey.spec.ts`.
+
+```ts
+test('a violating dashboard is found, attributed, controlled and undone', async ({ page }) => {
+  await page.goto('/governance/queries');
+  await expect(page.getByText('Error rate by service')).toBeVisible();
+  await expect(page.getByText(/rescans 4 GiB/)).toBeVisible();
+  await page.getByRole('link', { name: 'Error rate by service' }).click();
+  await expect(page.getByTestId('finding-working')).toBeVisible();
+  await page.goto('/governance/enforcement');
+  await expect(page.getByRole('button', { name: /revoke/i })).toBeVisible();
+});
+```
+
+- [ ] **Step 6: run everything**
+
+Run: `cd finops-web && npm run lint && npm run test -- --run && npm run build && npx playwright test`
+Expected: all pass.
+
+- [ ] **Step 7: commit**
+
+```bash
+git add finops-web/src finops-web/e2e
+git commit -m "feat: TASK-P2-025, the enforcement screen and the journey
+
+Expiry as an absolute time and a countdown, because an incident bridge needs
+both. Revoke is absent rather than disabled when the write level forbids it.
+This screen is the reason deny is safe to enable."
+```
 
 ---
 
@@ -842,7 +1496,8 @@ the measurement, and let a person decide what to change. ISS-093.
 | FEAT-016 owner attribution | 014 |
 | FEAT-017 auto remediation | 019 |
 | FEAT-018 calibration | 020 |
-| Surface | 021, 022 |
+| Surface | 021 |
+| Screens | 022, 023, 024, 025 |
 
 ## Exit criteria
 

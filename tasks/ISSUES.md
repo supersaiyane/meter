@@ -44,7 +44,7 @@ Status: `OPEN`, `IN PROGRESS`, `FIXED`, `WONT FIX`, `PARKED`, `CLOSED`.
 <!-- generated:issue-register start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-132 issues. 92 fixed, 38 open, 0 parked.
+133 issues. 92 fixed, 39 open, 0 parked.
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in `tasks/STATUS.md`.
 
@@ -95,6 +95,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-122 | HIGH | No Terraform stack has been planned or applied. terraform validate and fmt pass on all three, which checks syntax, provider schema and references, and checks nothing about whether the stack builds | OPEN | A plan needs real credentials for the S3 state backend and for the caller identity data sources. Also outstanding from TASK-P0-033: the screenshot of a stalled collector in ALARM. P0 is not signed off until a plan runs |
 | ISS-132 | HIGH | A CloudWatch metric maths expression using the FILTER function is classified as Logs Insights, because the engine test is a substring match on "filter " in the expression | OPEN | Pinned by tests/query/test_classify.py rather than fixed, because TASK-P2-002 is an extraction and changing it moves real numbers. The consequence is a metric query priced as a log scan, which overstates it by orders of magnitude. Fix in its own commit where the golden diff shows which figures moved |
 | ISS-135 | HIGH | finops_query was in no layer list, so nothing constrained what it could import. Not the import-linter contract, not the graph builder, and not the distribution's own packages | FIXED | It could have imported finops_api and all three checks would have passed. Holding the two orderings equal did not catch it, because they agreed about a package neither mentioned. tests/scripts/test_layer_agreement.py now asserts every declared package has a layer, and the constraint was probed by importing finops_api and confirming it breaks |
+| ISS-136 | HIGH | A failed request renders default coverage as though it were a complete answer. With no envelope the shell falls back to 0 of 0 and prints "Showing all 0 accounts" beside the typed failure, which reads as confident complete coverage of an empty estate. Section 6 of docs/12-UI-DESIGN.md requires complete coverage to say so, and section 4 requires an unknown state to suppress the figure rather than default it. Observed on 2026-09-06 running the P0 frontend with no API reachable | OPEN | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) sections 4 and 6, `finops-web/src/shell/AppShell.tsx` |
 | ISS-011 | MEDIUM | A model producing sizing numbers destroys trust on the first hallucination | FIXED | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
 | ISS-012 | MEDIUM | Organization wide AWS Config recording is a five figure monthly cost | OPEN | [tasks/ISSUES.md](tasks/ISSUES.md), resolved in P4 |
 | ISS-013 | MEDIUM | Hundreds of describe loops for inventory is a year of work | FIXED | [roadmap](docs/01-ROADMAP.md) P4 |
