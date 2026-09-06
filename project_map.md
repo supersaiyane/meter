@@ -260,6 +260,14 @@ meter/
 │       │                      misconfigured from one Meter could not ask about
 │       │                      at all, which are different fixes and owners
 │       ├── platform_cost.py   Meter's own bill, untagged bucket included
+│       ├── evidence.py        CloudTrail and query history in memory. days_ago
+│       │                      reports the same queries run fewer times, at the
+│       │                      same bytes per run, so a measured cost is carried
+│       │                      by the run count while the scan size holds still
+│       ├── surface.py         the dashboards, and queries_as_of, which returns
+│       │                      them as they stood. A modelled cost is computed
+│       │                      from the definition, so it steps on the day
+│       │                      somebody edited one rather than drifting daily
 │       ├── surface.py         QuerySurface in memory. discover raises only when
 │       │                      nothing could be enumerated, and an empty listing
 │       │                      means empty rather than a failed read
@@ -463,7 +471,12 @@ meter/
 │       ├── models.py          twenty tables as SQLAlchemy Core. A second
 │       │                      description of the schema, and the drift test is
 │       │                      what stops the two disagreeing
-│       └── repositories/      the only path to a scoped table, audited on read
+│       └── repositories/      the only path to a scoped table, audited on read.
+│                              latest_audit_only confines a read to the newest
+│                              audit of each thing, per table, because every
+│                              audit table is keyed on the day and a list that
+│                              ignores that sums a week of them. ISS-175,
+│                              ISS-177
 │
 ├── alembic.ini                no database URL in it, env.py reads the settings
 ├── migrations/                the only way the schema changes
