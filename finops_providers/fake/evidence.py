@@ -32,6 +32,33 @@ DEFAULT_LOGS: Mapping[str, dict[str, Any]] = {
         "runs_bytes": [2_147_483_648.0] * 2400,
         "log_groups": {"/aws/ecs/meter-api"},
     },
+    # Two executions no panel and no alert rule claims, which is what makes
+    # them ad hoc. FEAT-051. An estate without a pair like this cannot show the
+    # feature at all, and cannot show the difference between a query somebody
+    # owns and one nobody does.
+    #
+    # Somebody investigating an incident, reading a month of logs by hand. It
+    # is not a mistake, it is expensive and recurring and on no dashboard.
+    "fields @timestamp, @message | filter @message like /timeout/ | sort @timestamp desc": {
+        "runs": 12,
+        "bytes": 11_596_411_699_200.0,
+        "runs_bytes": [966_367_641_600.0] * 12,
+        "log_groups": {"/aws/ecs/meter-api", "/aws/rds/meter"},
+        "principal": "bob@example.com",
+    },
+    # The same shape with nobody's name on it. CloudTrail did not say who ran
+    # this, and the row is still reported: an expensive query nobody owns is
+    # the case the feature exists for, so dropping it would remove the only
+    # evidence that it happens.
+    # The 500 below is inside a query somebody typed, not a threshold this
+    # code compares against.
+    "stats count() by bin(5m) | filter status >= 500": {  # allow-hardcoded: query text
+        "runs": 45,
+        "bytes": 966_367_641_600.0,
+        "runs_bytes": [21_474_836_480.0] * 45,
+        "log_groups": {"/aws/ecs/meter-api"},
+        "principal": None,
+    },
 }
 
 #: GetMetricData calls, by namespace and metric. Empty by default: the fake
@@ -74,9 +101,19 @@ class FakeQueryEvidence:
         # looks up. Doing it here rather than in every fixture keeps the fixtures
         # readable as the queries they represent.
         logs = {self._parser.normalise(query): record for query, record in self._logs.items()}
+        # A record may name its own caller, and may name it as absent. Falling
+        # back to the constructor's principal keeps every existing fixture
+        # behaving as it did, while letting one execution be unattributed on
+        # purpose rather than by omission.
+        principals: dict[str, str] = {}
+        for query, record in self._logs.items():
+            who = record.get("principal", self._principal)
+            if who:
+                principals[self._parser.normalise(query)] = who
+
         return {
             "logs": logs,
-            "principal_by_query": {key: self._principal for key in logs if self._principal},
+            "principal_by_query": principals,
             "gmd_by_metric": dict(self._metrics),
             # The window actually covered, which a caller must use rather than
             # the one it asked for.

@@ -362,6 +362,9 @@ meter/
 │           │                           a promise does not outweigh a number.
 │           │                           Every figure is read through the owning
 │           │                           screen's own hook
+│           ├── QueryAdhocScreen.tsx    the queries that belong to nobody. Every
+│           │                           figure measured, because there is no
+│           │                           definition to model one from
 │           ├── QueryFindingsScreen.tsx ranked by cost as decimals. The reason is
 │           │                           a column, because a tooltip is invisible
 │           │                           in a screenshot

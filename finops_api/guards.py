@@ -84,6 +84,10 @@ SCOPED_TABLES: dict[str, ByAccount | Through | None] = {
     "grafana_instance": ByAccount("account_id"),
     "query_definition": Through("grafana_instance", "instance_id", "instance_id"),
     "query_finding": Through("query_definition", "query_id", "query_id"),
+    # Ad hoc rows reach no workspace, because a query somebody typed into the
+    # console belongs to none. They carry the account they ran in, so they are
+    # scoped directly rather than through anything.
+    "query_adhoc": ByAccount("account_id"),
     # folder_team_map, enforcement_action and remediation_change are absent on
     # purpose. Nobody has decided how they scope, and the fail closed branch
     # below is a better answer than a guess: the first route to read one gets a
