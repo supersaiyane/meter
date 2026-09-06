@@ -39,7 +39,16 @@ meter/
 │                              `test-e2e` depends on `build-web` because vite
 │                              preview serves the build output without building
 │                              it, and the journeys once passed against a bundle
-│                              seven hours older than the source
+│                              seven hours older than the source.
+│                              `test` is every backend test in one invocation,
+│                              integration included, so `verify` needs Docker.
+│                              It was the not integration subset until
+│                              2026-09-06, which left 211 tests outside the gate
+│                              and is where ISS-175 and ISS-177 both lived.
+│                              `test-unit` and `test-integration` are slices for
+│                              narrowing down a failure and report no coverage,
+│                              because a fraction graded against the whole
+│                              suite's threshold cannot be read. ISS-154
 ├── pyproject.toml             dependencies, lint rules, import linter contract.
 │                              Packages are found, not listed: an explicit list
 │                              is top level only and left subpackages out of the
@@ -186,8 +195,12 @@ meter/
 │   │                          same non local refusal, for the same reason
 │   └── deploy/                migration task runner
 │
-├── tests/                     the suite. conftest.py refuses to run against a
-│                              real AWS account when no endpoint override is set.
+├── tests/                     the suite, 776 tests. conftest.py refuses to run
+│                              against a real AWS account when no endpoint
+│                              override is set, and its session scoped `engine`
+│                              starts a PostgreSQL container and migrates it,
+│                              which is why the gate needs Docker and why one
+│                              invocation is cheaper than two.
 │                              test_checkpoint_rotation.py covers the only script
 │                              that deletes rows from the memory log.
 │   ├── api/                   test_fixture_surfaces.py reads the frontend's
