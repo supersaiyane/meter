@@ -57,7 +57,11 @@ meter/
 │                              python service takes env_file, so a new setting
 │                              does not have to be added twice, and the postgres
 │                              host port is overridable with METER_POSTGRES_PORT
-├── .gitlab-ci.yml             verify, security, build, scan, plan, deploy
+├── .gitlab-ci.yml             verify, security, build, scan, plan, deploy. Its
+│                              test job runs both suites against the PostgreSQL
+│                              service beside it, through METER_TEST_DATABASE_URL.
+│                              **Never executed**: the repository has no remote,
+│                              so nothing here is a result. ISS-178, ISS-179
 ├── .env.example               every value, what it does, which file reads it
 ├── .pre-commit-config.yaml    local gates: secrets, writing rules, lint, doc drift,
 │                              dependency admission on manifest change. Pre push

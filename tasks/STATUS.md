@@ -9,7 +9,7 @@
      own content rather than scaffolding, and is not tagged.
 -->
 
-Last updated: 2026-09-13
+Last updated: 2026-09-06
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -38,8 +38,14 @@ Generated from `docs/registry.yaml`. Change a status there, then run `make doc-s
 
 All 39 tasks are written, tested and committed. `make verify` passes: lint, the
 writing rules, the eight documentation checks, the docstring gate, the memory
-gate, 750 backend tests of which the gate runs the 545 that need no services, 224 frontend tests, and a security scan
-with zero unresolved findings and five accepted as unfixable.
+gate, 777 backend tests, 233 frontend tests, a typed web build, 5 Playwright
+journeys, and a security scan with zero unresolved findings and five accepted
+as unfixable.
+
+The gate ran 545 of those backend tests until 2026-09-06, the subset that needs
+no services. The other 211 are where ISS-175 and ISS-177 both lived, the same
+bug on two tables. `make verify` now runs every one of them and therefore needs
+Docker, because the database fixture starts a PostgreSQL container. ISS-154.
 
 Lint and type checking cover every directory that holds Python, which is 181
 files under mypy where it was 25. `scripts/`, `migrations/` and the test suite
@@ -47,14 +53,14 @@ had all been outside one or both.
 
 **P2 is 21 of 26 done, 2 parked, 2 descoped, 1 not started.**
 
-TASK-P2-026 was added on 2026-10-12. Ad hoc query detection was in the prototype P2 was planned from, reached neither the specification nor the code, and was brought into scope rather than left as ISS-171. It is small: the evidence the measured overlay already collects contains it.
+TASK-P2-026 was added late, after the restored prototype was read against what P2 delivered. Ad hoc query detection was in that prototype, reached neither the specification nor the code, and was brought into scope rather than left as ISS-171. It was small, exactly as predicted: the evidence the measured overlay already collects contained it. It is done, and FEAT-051 is live at `/governance/adhoc`.
 
 The backend is complete through wave J. The collector runs, prices what it
 reads, measures what it can observe, and attributes an owner. Six of the eight
 routes in spec section 8.2 exist and are live; the other two read data that
 does not exist yet and are held under ISS-148, which names what each one waits
-on. Two tasks have not started: TASK-P2-020, which needs real CUR data, and
-TASK-P2-026, which needs nothing and is the next thing that can be built.
+on. One task has not started: TASK-P2-020, which needs real CUR data and so
+cannot be started from inside this repository.
 
 **The interface is built and every screen has been through a pass.** Ten screens
 read live data against a seeded local estate, and each has been opened at 1440
@@ -65,6 +71,14 @@ names the sub project that will fill it, which is what makes the front page the
 progress view.
 
 What the sentences above do not cover is the part that matters for a sign off.
+
+**Nothing has ever run in CI either.** The repository has no git remote, so
+`.gitlab-ci.yml` has never executed, and every statement anywhere in this
+repository about what the pipeline does is a reading of the file rather than a
+result. Found 2026-09-06, by asking what a variable in the test job was for:
+the answer was nothing, and the job as written could not have run an
+integration test at all. ISS-178 fixed the job, ISS-179 records that the first
+push will be the first run and should be watched rather than trusted.
 
 **Nothing has ever run against AWS.** The three Terraform stacks pass `validate`
 and `fmt`, which checks syntax, provider schema and references, and checks
