@@ -213,9 +213,9 @@ a duplicate.
 | `attribute` | function | `finops_ingest/collectors/platform_cost.py:51` | Name the module a charge belongs to. Never returns an empty string. | nothing in this tree |
 | `PlatformCostCollector` | class | `finops_ingest/collectors/platform_cost.py:58` | One grouped request a day, written by module and service. | nothing in this tree |
 | `total` | function | `finops_ingest/collectors/platform_cost.py:106` | What the platform cost over the set, for a caller that wants one figure. | nothing in this tree |
-| `rates_from` | function | `finops_ingest/collectors/query_audit.py:77` | Build the model's rates from configuration. | nothing in this tree |
-| `default_ingest_rate` | function | `finops_ingest/collectors/query_audit.py:112` | The fallback used when ingestion cannot be measured for a log group. | nothing in this tree |
-| `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:135` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
+| `rates_from` | function | `finops_ingest/collectors/query_audit.py:78` | Build the model's rates from configuration. | nothing in this tree |
+| `default_ingest_rate` | function | `finops_ingest/collectors/query_audit.py:113` | The fallback used when ingestion cannot be measured for a log group. | nothing in this tree |
+| `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:136` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
 | `hashed_subject` | function | `finops_ingest/collectors/retention.py:65` | A stable, non reversible stand in, so a duplicate sign in is still one row. | nothing in this tree |
 | `retention_principal` | function | `finops_ingest/collectors/retention.py:74` | Anonymise principals unseen past the window. Never removes a row. | nothing in this tree |
 | `retention_operational` | function | `finops_ingest/collectors/retention.py:96` | Remove run history, resolved errors and dead watermarks past the window. | nothing in this tree |
@@ -237,13 +237,13 @@ a duplicate.
 | `Dispatcher.dispatch` | method | `finops_ingest/dispatcher.py:135` |  | nothing in this tree |
 | `idempotency_key` | function | `finops_ingest/ledger.py:53` | A stable identity for one unit of work. | `finops_ingest/dispatcher.py` |
 | `RunClaim` | class | `finops_ingest/ledger.py:67` | A unit of work this worker now owns. | nothing in this tree |
-| `RunLedger` | class | `finops_ingest/ledger.py:78` | Claims, completes and fails runs, and moves watermarks. | `finops_ingest/worker.py` |
+| `RunLedger` | class | `finops_ingest/ledger.py:78` | Claims, completes and fails runs, and moves watermarks. | `finops_ingest/collectors/query_audit.py`, `finops_ingest/worker.py` |
 | `RunLedger.claim` | method | `finops_ingest/ledger.py:95` | Take ownership of one unit of work, or return None if there is none to take. | `finops_ingest/worker.py` |
 | `RunLedger.running` | method | `finops_ingest/ledger.py:170` |  | `finops_ingest/worker.py` |
 | `RunLedger.complete` | method | `finops_ingest/ledger.py:173` | Record the result, then move the watermark. Never the other way round. | `finops_ingest/worker.py` |
 | `RunLedger.fail` | method | `finops_ingest/ledger.py:193` | Record the typed cause. The watermark does not move. | `finops_ingest/worker.py` |
-| `RunLedger.record_sync_error` | method | `finops_ingest/ledger.py:244` | Keep one open row per scope and cause, counting repeats. | `finops_ingest/worker.py` |
-| `RunLedger.clear_sync_error` | method | `finops_ingest/ledger.py:274` | A scope that has succeeded no longer has an open error against it. | `finops_ingest/worker.py` |
+| `RunLedger.record_sync_error` | method | `finops_ingest/ledger.py:244` | Keep one open row per scope and cause, counting repeats. | `finops_ingest/collectors/query_audit.py`, `finops_ingest/worker.py` |
+| `RunLedger.clear_sync_error` | method | `finops_ingest/ledger.py:274` | A scope that has succeeded no longer has an open error against it. | `finops_ingest/collectors/query_audit.py`, `finops_ingest/worker.py` |
 | `RunLedger.watermark` | method | `finops_ingest/ledger.py:289` | How far this collector has read for this scope, or None if never. | nothing in this tree |
 | `Measurement` | class | `finops_ingest/metrics.py:54` | One datum, ready for PutMetricData. | nothing in this tree |
 | `Measurement.as_datum` | method | `finops_ingest/metrics.py:62` |  | nothing in this tree |

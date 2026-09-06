@@ -1712,14 +1712,13 @@ hoc is what is left over. No new AWS call, no new permission, no new collector.
       model from, so a modelled ad hoc row would be an invention
 - [x] A query with no principal reads `unattributed` and is still reported. An
       unowned expensive query is the case the feature exists for
-- [~] Evidence that could not be read is distinguishable on the screen from an
-      estate with no ad hoc queries in it. Those are different facts.
-      **Not met.** `_observations` swallows a `CollectionError` and returns
-      None so the run continues, which is right for the findings and leaves no
-      trace for this screen to read. Both cases render as an empty table. It
-      needs the evidence failure recorded as a typed failure on the envelope,
-      which is a change to the collector's error path rather than to this
-      screen. Recorded as ISS-174
+- [x] Evidence that could not be read is distinguishable on the screen from an
+      estate with no ad hoc queries in it. Those are different facts. Closed as
+      ISS-174 on 2026-09-06: the collector records the evidence failure through
+      the run ledger, so it reaches the trust strip on every envelope by the
+      same path an unreachable workspace does, and clears when the scope
+      recovers. An empty table with a `query_evidence` failure above it is not
+      the same page as an empty table without one
 - [x] The table is scoped by account like every other query table, and the
       repository guard is exercised by a test that reads out of scope
 - [x] Query text is shown whole, never truncated, because a person has to

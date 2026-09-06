@@ -1125,8 +1125,13 @@ issues:
     aborted one is not. It leaves nothing for this screen to read. The fix is to record the
     evidence failure as a typed failure on the envelope, which is a change to the
     collector's error path rather than to the screen. Found 2026-09-06 while writing
-    TASK-P2-026, and left as the one acceptance criterion that task does not meet
-  status: OPEN
+    TASK-P2-026, and left as the one acceptance criterion that task did not meet. Fixed
+    2026-09-06 by recording the failure through the run ledger, the same table and the
+    same path an unreachable workspace uses, so it reaches the trust strip on every
+    envelope rather than only this screen, and clears when the scope recovers. That also
+    surfaces the reason every figure had quietly stayed modelled, which was invisible for
+    the same reason
+  status: FIXED
   detail: '`finops_ingest/collectors/query_audit.py`, _observations, and
     `finops-web/src/screens/QueryAdhocScreen.tsx`'
 - id: ISS-171

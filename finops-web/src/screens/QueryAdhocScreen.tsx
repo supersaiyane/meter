@@ -49,7 +49,10 @@ export function QueryAdhocScreen() {
       render: (row) => (
         // Measured, always. An ad hoc query exists only in the evidence, so a
         // modelled figure here would be an invention rather than an estimate.
-        <Figure value={{ kind: 'measured', amount: Number(row.cost_usd) }} freshness={freshness} />
+        <Figure
+          value={{ kind: 'measured', amount: Number(row.cost_usd) }}
+          freshness={freshness}
+        />
       ),
     },
     { key: 'runs', header: 'Runs', numeric: true, render: (row) => row.runs },
@@ -67,7 +70,11 @@ export function QueryAdhocScreen() {
       // the rest rather than hidden.
       render: (row) => row.principal ?? 'unattributed',
     },
-    { key: 'account', header: 'Account', render: (row) => `${row.account_id} ${row.region_id}` },
+    {
+      key: 'account',
+      header: 'Account',
+      render: (row) => `${row.account_id} ${row.region_id}`,
+    },
     {
       key: 'query',
       header: 'The query',
