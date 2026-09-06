@@ -51,12 +51,14 @@ class FakeQueryEvidence:
         logs: Mapping[str, dict[str, Any]] | None = None,
         metrics: Mapping[str, int] | None = None,
         lookback_days: int = DEFAULT_LOOKBACK_DAYS,
+        principal: str | None = "alice@example.com",
         failure: type[CollectionError] | None = None,
     ) -> None:
         self._parser = parser
         self._logs = dict(DEFAULT_LOGS if logs is None else logs)
         self._metrics = dict(DEFAULT_METRICS if metrics is None else metrics)
         self._lookback_days = lookback_days
+        self._principal = principal
         self._failure = failure
 
     def observations(
@@ -74,6 +76,7 @@ class FakeQueryEvidence:
         logs = {self._parser.normalise(query): record for query, record in self._logs.items()}
         return {
             "logs": logs,
+            "principal_by_query": {key: self._principal for key in logs if self._principal},
             "gmd_by_metric": dict(self._metrics),
             # The window actually covered, which a caller must use rather than
             # the one it asked for.

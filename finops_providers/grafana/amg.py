@@ -306,6 +306,10 @@ class AmgQuerySurface:
             uid = str(summary.get("uid", ""))
             if not uid:
                 continue
+            # Grafana's search names the folder; the dashboard body does not
+            # reliably. Ownership is mapped per folder, so losing it here would
+            # make the folder map unreachable.
+            folder_uid = str(summary.get("folderUid", ""))
             body = client.dashboard(uid)
             dashboard = body.get("dashboard", body)
             title = str(dashboard.get("title", uid))
@@ -313,7 +317,16 @@ class AmgQuerySurface:
             window = self._parser.relative_range_seconds((dashboard.get("time") or {}).get("from"))
             for panel in self._parser.iter_panels(dashboard.get("panels")):
                 yield from self._from_panel(
-                    panel, instance, uid, title, refresh, window, region, account_id, collected_at
+                    panel,
+                    instance,
+                    uid,
+                    title,
+                    refresh,
+                    window,
+                    region,
+                    account_id,
+                    collected_at,
+                    folder_uid,
                 )
         for rule in client.alert_rules():
             yield from self._from_alert(rule, instance, region, account_id, collected_at)
@@ -329,6 +342,7 @@ class AmgQuerySurface:
         region: str | None,
         account_id: str,
         collected_at: datetime,
+        folder_uid: str = "",
     ) -> Iterator[QueryDefinition]:
         element = str(panel.get("title", ""))
         for target in panel.get("targets") or ():
@@ -353,6 +367,7 @@ class AmgQuerySurface:
                 query=found.query,
                 container=title,
                 container_id=uid,
+                folder_uid=folder_uid,
                 element=element,
                 ref_id=ref_id,
                 refresh_seconds=refresh,

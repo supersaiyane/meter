@@ -23,6 +23,7 @@ changed.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -245,3 +246,57 @@ def human_bytes(count: float) -> str:
         size /= BYTES_PER_UNIT
         index += 1
     return f"{size:,.1f} {units[index]}" if index else f"{int(size)} {units[index]}"
+
+
+#: The three sources, in the order the specification fixes at section 7.1: the
+#: folder map, then the last editor, then whoever CloudTrail saw run it.
+#:
+#: The order is an argument about who will act, not about who is most likely to
+#: be named. A folder mapping is a deliberate statement by a team that they own
+#: what is inside it. A last editor touched the thing and can usually explain
+#: it. A principal from CloudTrail merely ran it, which for a dashboard panel
+#: can be anyone who opened the page.
+FOLDER_MAP = "FOLDER_MAP"
+LAST_EDITOR = "LAST_EDITOR"
+CLOUDTRAIL = "CLOUDTRAIL"
+
+
+@dataclass(frozen=True)
+class Owner:
+    """Who owns a finding, and which source said so.
+
+    Both fields are None together. A finding with an owner and no source could
+    not be argued with, and a source with no owner says nothing at all.
+    """
+
+    email: str | None = None
+    source: str | None = None
+
+    @property
+    def is_owned(self) -> bool:
+        return self.email is not None
+
+
+def resolve_owner(
+    *,
+    folder_uid: str | None,
+    folder_map: Mapping[str, str],
+    last_editor: str | None,
+    principal: str | None,
+) -> Owner:
+    """The first source that names somebody, or unowned.
+
+    There is deliberately no default and no fallback to a team alias. A wrongly
+    assigned owner is worse than an absent one: it is ignored by the person it
+    reaches, and it never reaches the person who could act. ISS-021 records what
+    happens to a finding nobody owns, and the answer to that is to make
+    ownership resolvable, not to invent it.
+    """
+    mapped = folder_map.get(folder_uid or "")
+    if mapped:
+        return Owner(mapped, FOLDER_MAP)
+    if last_editor:
+        return Owner(last_editor, LAST_EDITOR)
+    if principal:
+        return Owner(principal, CLOUDTRAIL)
+    return Owner()

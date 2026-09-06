@@ -373,3 +373,100 @@ def test_running_twice_with_evidence_still_leaves_one_finding(
     for _ in range(2):
         run_with_evidence(engine, tenant_id, FakeQueryEvidence(GrafanaQueryParser()))
     assert len(findings(engine, tenant_id)) == 3
+
+
+# --- owner attribution, FEAT-016 ----------------------------------------------
+
+
+def owners(engine: Engine, tenant: UUID) -> dict[str, tuple[Any, Any]]:
+    with engine.connect() as connection:
+        return {
+            str(panel): (email, source)
+            for panel, email, source in connection.execute(
+                text(
+                    "SELECT d.panel_id, f.owner_email, f.owner_source FROM query_finding f "
+                    "JOIN query_definition d ON d.query_id = f.query_id "
+                    "WHERE f.tenant_id = :t"
+                ),
+                {"t": tenant},
+            ).all()
+        }
+
+
+def map_folder(engine: Engine, tenant: UUID, folder: str, email: str) -> None:
+    with engine.begin() as connection:
+        instance = connection.execute(
+            text(
+                "SELECT instance_id FROM grafana_instance WHERE tenant_id = :t "
+                "AND reachable ORDER BY name LIMIT 1"
+            ),
+            {"t": tenant},
+        ).scalar_one()
+        connection.execute(
+            text(
+                "INSERT INTO folder_team_map (tenant_id, instance_id, folder_uid, "
+                "owner_email, updated_by) VALUES (:t, :i, :f, :e, 'test')"
+            ),
+            {"t": tenant, "i": instance, "f": folder, "e": email},
+        )
+
+
+@pytest.mark.integration
+def test_cloudtrail_names_an_owner_when_nothing_better_does(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    run_with_evidence(engine, tenant_id, FakeQueryEvidence(GrafanaQueryParser()))
+    attributed = {panel: pair for panel, pair in owners(engine, tenant_id).items() if pair[0]}
+    assert attributed
+    for email, source in attributed.values():
+        assert source == "CLOUDTRAIL"
+        assert email == "alice@example.com"
+
+
+@pytest.mark.integration
+def test_a_query_nobody_can_be_traced_to_is_reported_unowned(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    """Unowned, not defaulted.
+
+    A wrongly assigned owner is ignored by the person it reaches and never
+    reaches the person who could act, so there is no fallback to a team alias.
+    """
+    run_with_evidence(engine, tenant_id, FakeQueryEvidence(GrafanaQueryParser(), principal=None))
+    for email, source in owners(engine, tenant_id).values():
+        assert email is None
+        # Both together or neither.
+        assert source is None
+
+
+@pytest.mark.integration
+def test_the_folder_map_outranks_cloudtrail(engine: Engine, tenant_id: UUID) -> None:
+    # A folder mapping is a team saying they own what is inside it. A principal
+    # from CloudTrail merely opened the page.
+    evidence = FakeQueryEvidence(GrafanaQueryParser())
+    run_with_evidence(engine, tenant_id, evidence)
+    with engine.connect() as connection:
+        folder = connection.execute(
+            text(
+                "SELECT folder_uid FROM query_definition WHERE tenant_id = :t "
+                "AND folder_uid IS NOT NULL LIMIT 1"
+            ),
+            {"t": tenant_id},
+        ).scalar_one_or_none()
+    if folder is None:
+        pytest.skip("the fake estate carries no folder, so precedence is unit tested instead")
+    map_folder(engine, tenant_id, str(folder), "platform@example.com")
+    run_with_evidence(engine, tenant_id, evidence)
+    mapped = [pair for pair in owners(engine, tenant_id).values() if pair[1] == "FOLDER_MAP"]
+    assert mapped
+    assert all(email == "platform@example.com" for email, _source in mapped)
+
+
+@pytest.mark.integration
+def test_owner_source_records_which_source_won(engine: Engine, tenant_id: UUID) -> None:
+    run_with_evidence(engine, tenant_id, FakeQueryEvidence(GrafanaQueryParser()))
+    for email, source in owners(engine, tenant_id).values():
+        # Never an owner without the source that produced it.
+        assert (email is None) == (source is None)
+        if source is not None:
+            assert source in {"FOLDER_MAP", "LAST_EDITOR", "CLOUDTRAIL"}

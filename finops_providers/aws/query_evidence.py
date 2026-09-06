@@ -115,6 +115,7 @@ class CloudTrailQueryEvidence:
         # because it is what removes the ingestion assumption from the figure,
         # but it is switchable for an account where that call volume matters.
         self._read_bytes = read_bytes
+        self._principals: dict[str, str] = {}
 
     def observations(
         self, *, account_id: str, region: str, lookback_days: int
@@ -131,6 +132,10 @@ class CloudTrailQueryEvidence:
             "logs": logs,
             "gmd_by_metric": self._metric_calls(account_id, region, start, end, scope),
             "lookback_days": lookback_days,
+            # Who was seen running each query. Kept beside the counts rather
+            # than inside them, because `Observed.merge` only carries the four
+            # fields the cost arithmetic needs and would drop this.
+            "principal_by_query": self._principals,
         }
 
     # -- runs, from CloudTrail ---------------------------------------------
@@ -140,6 +145,7 @@ class CloudTrailQueryEvidence:
     ) -> dict[str, dict[str, Any]]:
         client = self._client("cloudtrail", account_id, region)
         found: dict[str, dict[str, Any]] = {}
+        self._principals = {}
         for detail in _events(client, "StartQuery", start, end, scope):
             params = detail.get("requestParameters") or {}
             query = params.get("queryString")
@@ -152,6 +158,12 @@ class CloudTrailQueryEvidence:
             record["runs"] += 1
             for group in _log_groups(params):
                 record["log_groups"].add(group)
+            # First writer wins, so the earliest caller in the window is the one
+            # reported. Any of them is a guess at ownership, and a stable guess
+            # is at least arguable.
+            who = self._parser.principal_from(detail)
+            if who and key not in self._principals:
+                self._principals[key] = who
         return found
 
     # -- bytes, from query history -----------------------------------------

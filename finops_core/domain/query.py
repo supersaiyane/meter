@@ -131,6 +131,10 @@ class QueryDefinition(Fact):
     #: panel, or an alert rule and its title.
     container: str = ""
     container_id: str = ""
+    #: The folder the container sits in. Ownership is mapped per folder, because
+    #: a team owns a folder and edits many dashboards inside it, so a per
+    #: dashboard mapping would be a list nobody keeps current.
+    folder_uid: str = ""
     element: str = ""
     ref_id: str = ""
     #: How often it re runs, in seconds. Zero means no automatic refresh.

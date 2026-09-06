@@ -656,16 +656,23 @@ nothing at all for an instance that carries no account of its own.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-06 |
 | Delivers | FEAT-016 |
 | Depends on | TASK-P2-013 |
 | Estimate | M |
 
 **Acceptance criteria.**
 
-- [ ] Three sources in priority order, and `owner_source` records which won
-- [ ] A query with no resolvable owner is reported **unowned**
-- [ ] `folder_team_map` classified as class P and retained accordingly
+- [x] Three sources in priority order, and `owner_source` records which won
+- [x] A query with no resolvable owner is reported **unowned**
+- [x] `folder_team_map` classified as class P and retained accordingly
+
+**Two gaps found on the way.** `QueryDefinition` carried no folder, and the
+collector wrote `folder_uid` as `NULL`, so the highest priority source could
+never have matched anything. The domain now carries it, the AMG adapter reads
+`folderUid` from Grafana's search, and the collector persists it. The fake
+estate gained a folder too, because an estate without one cannot exercise
+`FOLDER_MAP` end to end and that test was skipping silently.
 
 **Do not.** Do not assign a default owner. A wrongly assigned owner is worse
 than an absent one: it is ignored by the person it reaches and never reaches

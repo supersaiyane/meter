@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-314 public symbols across 5 packages.
+315 public symbols across 5 packages.
 
 ## finops_core
 
@@ -60,8 +60,8 @@ a duplicate.
 | `SurfaceInstance` | class | `finops_core/domain/query.py:79` | One place queries live: a workspace, a cluster, a project. | `finops_providers/fake/surface.py`, `finops_providers/grafana/amg.py` |
 | `SurfaceInstance.scope_key` | method | `finops_core/domain/query.py:106` | How a failure against this instance is recorded and reported. | nothing in this tree |
 | `QueryDefinition` | class | `finops_core/domain/query.py:112` | One saved query, as it was defined when it was read. | `finops_providers/fake/surface.py`, `finops_providers/grafana/amg.py` |
-| `ControlOutcome` | class | `finops_core/domain/query.py:151` | What a control actually did, which is not always what was asked. | `finops_providers/fake/surface.py`, `finops_providers/grafana/amg.py` |
-| `ControlRequest` | class | `finops_core/domain/query.py:170` | An instruction to change one query's behaviour. | nothing in this tree |
+| `ControlOutcome` | class | `finops_core/domain/query.py:155` | What a control actually did, which is not always what was asked. | `finops_providers/fake/surface.py`, `finops_providers/grafana/amg.py` |
+| `ControlRequest` | class | `finops_core/domain/query.py:174` | An instruction to change one query's behaviour. | nothing in this tree |
 | `QuotaUsage` | class | `finops_core/domain/quota.py:18` | One quota for one account and region. | `finops_providers/fake/fixtures.py` |
 | `ResourceRef` | class | `finops_core/domain/resource.py:19` | One resource as the provider described it at `as_of`. | `finops_providers/fake/fixtures.py` |
 | `Tenant` | class | `finops_core/domain/tenant.py:23` |  | nothing in this tree |
@@ -106,12 +106,13 @@ a duplicate.
 | `QueryParser` | class | `finops_core/ports/query.py:135` | Reading meaning out of a vendor's saved query. | nothing in this tree |
 | `QueryParser.classify` | method | `finops_core/ports/query.py:148` | What engine this target runs on, and what it runs against. | `finops_providers/grafana/amg.py` |
 | `QueryParser.iter_panels` | method | `finops_core/ports/query.py:152` | Every panel, including the ones nested inside a row. | `finops_providers/grafana/amg.py` |
-| `QueryParser.normalise` | method | `finops_core/ports/query.py:156` | Query text reduced to a comparison key. | `finops_providers/aws/query_evidence.py`, `finops_providers/fake/evidence.py` |
-| `QueryParser.refresh_seconds` | method | `finops_core/ports/query.py:166` | A dashboard refresh interval in seconds. Zero means no auto refresh. | `finops_providers/grafana/amg.py` |
-| `QueryParser.relative_range_seconds` | method | `finops_core/ports/query.py:170` | How far back a range looks. None for an absolute range. | `finops_providers/grafana/amg.py` |
-| `QueryParser.fingerprint` | method | `finops_core/ports/query.py:174` | A stable identifier for one query, across days and variable values. | `finops_providers/grafana/amg.py` |
-| `QueryEvidence` | class | `finops_core/ports/query.py:189` | What an account actually executed, as opposed to what it has defined. | nothing in this tree |
-| `QueryEvidence.observations` | method | `finops_core/ports/query.py:204` | Executions seen in the window, in the shape `finops_query.ownership` reads. | `finops_ingest/collectors/query_audit.py` |
+| `QueryParser.principal_from` | method | `finops_core/ports/query.py:156` | A human readable principal from an execution event, or None. | `finops_providers/aws/query_evidence.py` |
+| `QueryParser.normalise` | method | `finops_core/ports/query.py:165` | Query text reduced to a comparison key. | `finops_ingest/collectors/query_audit.py`, `finops_providers/aws/query_evidence.py`, `finops_providers/fake/evidence.py` |
+| `QueryParser.refresh_seconds` | method | `finops_core/ports/query.py:175` | A dashboard refresh interval in seconds. Zero means no auto refresh. | `finops_providers/grafana/amg.py` |
+| `QueryParser.relative_range_seconds` | method | `finops_core/ports/query.py:179` | How far back a range looks. None for an absolute range. | `finops_providers/grafana/amg.py` |
+| `QueryParser.fingerprint` | method | `finops_core/ports/query.py:183` | A stable identifier for one query, across days and variable values. | `finops_providers/grafana/amg.py` |
+| `QueryEvidence` | class | `finops_core/ports/query.py:198` | What an account actually executed, as opposed to what it has defined. | nothing in this tree |
+| `QueryEvidence.observations` | method | `finops_core/ports/query.py:213` | Executions seen in the window, in the shape `finops_query.ownership` reads. | `finops_ingest/collectors/query_audit.py` |
 | `QuotaSource` | class | `finops_core/ports/quotas.py:17` | Reads the quotas that apply to an account and region. | nothing in this tree |
 | `QuotaSource.list_quotas` | method | `finops_core/ports/quotas.py:20` | Every quota for the account and region, with usage where published. | nothing in this tree |
 
@@ -138,9 +139,9 @@ a duplicate.
 | `AwsPlatformCostSource` | class | `finops_providers/aws/platform_cost.py:48` | Reads the platform's own spend, grouped, in a single request. | nothing in this tree |
 | `AwsPlatformCostSource.daily_by_module` | method | `finops_providers/aws/platform_cost.py:65` | Every module and service charge between start and end. | `finops_ingest/collectors/platform_cost.py` |
 | `CloudTrailQueryEvidence` | class | `finops_providers/aws/query_evidence.py:99` | `QueryEvidence` over CloudTrail and CloudWatch Logs query history. | nothing in this tree |
-| `CloudTrailQueryEvidence.observations` | method | `finops_providers/aws/query_evidence.py:119` |  | `finops_ingest/collectors/query_audit.py` |
+| `CloudTrailQueryEvidence.observations` | method | `finops_providers/aws/query_evidence.py:120` |  | `finops_ingest/collectors/query_audit.py` |
 | `FakeQueryEvidence` | class | `finops_providers/fake/evidence.py:45` | `QueryEvidence` in memory, with a configurable failure. | nothing in this tree |
-| `FakeQueryEvidence.observations` | method | `finops_providers/fake/evidence.py:62` |  | `finops_ingest/collectors/query_audit.py` |
+| `FakeQueryEvidence.observations` | method | `finops_providers/fake/evidence.py:64` |  | `finops_ingest/collectors/query_audit.py` |
 | `FakeSession` | class | `finops_providers/fake/provider.py:33` | What `session_for` hands back. Opaque, like the real thing. | nothing in this tree |
 | `FakeProvider` | class | `finops_providers/fake/provider.py:41` | One object satisfying all eight provider ports, with a configurable failure plan. | nothing in this tree |
 | `FakeProvider.session_for` | method | `finops_providers/fake/provider.py:93` |  | `finops_ingest/worker.py`, `finops_providers/aws/health.py` |
@@ -154,16 +155,16 @@ a duplicate.
 | `FakeProvider.list_quotas` | method | `finops_providers/fake/provider.py:167` |  | nothing in this tree |
 | `FakeProvider.authenticate` | method | `finops_providers/fake/provider.py:173` |  | nothing in this tree |
 | `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:186` |  | `finops_api/deps.py`, `finops_ingest/collectors/org_tree.py` |
-| `FakeQuerySurface` | class | `finops_providers/fake/surface.py:144` | `QuerySurface` in memory. Every failure is asked for, never incidental. | nothing in this tree |
-| `FakeQuerySurface.discover` | method | `finops_providers/fake/surface.py:182` |  | `finops_ingest/collectors/query_audit.py` |
-| `FakeQuerySurface.list_queries` | method | `finops_providers/fake/surface.py:191` |  | `finops_ingest/collectors/query_audit.py` |
-| `FakeQuerySurface.apply_control` | method | `finops_providers/fake/surface.py:205` |  | nothing in this tree |
+| `FakeQuerySurface` | class | `finops_providers/fake/surface.py:147` | `QuerySurface` in memory. Every failure is asked for, never incidental. | nothing in this tree |
+| `FakeQuerySurface.discover` | method | `finops_providers/fake/surface.py:185` |  | `finops_ingest/collectors/query_audit.py` |
+| `FakeQuerySurface.list_queries` | method | `finops_providers/fake/surface.py:194` |  | `finops_ingest/collectors/query_audit.py` |
+| `FakeQuerySurface.apply_control` | method | `finops_providers/fake/surface.py:208` |  | nothing in this tree |
 | `Scope` | class | `finops_providers/grafana/amg.py:54` | One account and region pair to look for workspaces in. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/fake/provider.py` |
 | `Scope.key` | method | `finops_providers/grafana/amg.py:61` |  | nothing in this tree |
 | `AmgQuerySurface` | class | `finops_providers/grafana/amg.py:84` | `QuerySurface` over Amazon Managed Grafana, read only. | nothing in this tree |
 | `AmgQuerySurface.discover` | method | `finops_providers/grafana/amg.py:117` |  | `finops_ingest/collectors/query_audit.py` |
 | `AmgQuerySurface.list_queries` | method | `finops_providers/grafana/amg.py:275` |  | `finops_ingest/collectors/query_audit.py` |
-| `AmgQuerySurface.apply_control` | method | `finops_providers/grafana/amg.py:409` | Always `applied` false. Architectural constraint 6 makes v1 read only. | nothing in this tree |
+| `AmgQuerySurface.apply_control` | method | `finops_providers/grafana/amg.py:424` | Always `applied` false. Architectural constraint 6 makes v1 read only. | nothing in this tree |
 | `Workspace` | class | `finops_providers/grafana/client.py:68` | One Grafana workspace, however it was discovered. | `finops_providers/grafana/amg.py` |
 | `Workspace.scope_key` | method | `finops_providers/grafana/client.py:77` | How a failure against this workspace is recorded and reported. | nothing in this tree |
 | `endpoint_from_url` | function | `finops_providers/grafana/client.py:82` | The host part of a configured workspace URL, or None. | nothing in this tree |
@@ -193,9 +194,9 @@ a duplicate.
 | `attribute` | function | `finops_ingest/collectors/platform_cost.py:51` | Name the module a charge belongs to. Never returns an empty string. | nothing in this tree |
 | `PlatformCostCollector` | class | `finops_ingest/collectors/platform_cost.py:58` | One grouped request a day, written by module and service. | nothing in this tree |
 | `total` | function | `finops_ingest/collectors/platform_cost.py:106` | What the platform cost over the set, for a caller that wants one figure. | nothing in this tree |
-| `rates_from` | function | `finops_ingest/collectors/query_audit.py:70` | Build the model's rates from configuration. | nothing in this tree |
-| `default_ingest_rate` | function | `finops_ingest/collectors/query_audit.py:105` | The fallback used when ingestion cannot be measured for a log group. | nothing in this tree |
-| `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:128` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
+| `rates_from` | function | `finops_ingest/collectors/query_audit.py:75` | Build the model's rates from configuration. | nothing in this tree |
+| `default_ingest_rate` | function | `finops_ingest/collectors/query_audit.py:110` | The fallback used when ingestion cannot be measured for a log group. | nothing in this tree |
+| `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:133` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
 | `hashed_subject` | function | `finops_ingest/collectors/retention.py:65` | A stable, non reversible stand in, so a duplicate sign in is still one row. | nothing in this tree |
 | `retention_principal` | function | `finops_ingest/collectors/retention.py:74` | Anonymise principals unseen past the window. Never removes a row. | nothing in this tree |
 | `retention_operational` | function | `finops_ingest/collectors/retention.py:96` | Remove run history, resolved errors and dead watermarks past the window. | nothing in this tree |
@@ -385,7 +386,7 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `QueryOrigin` in `finops_core/domain/query.py:45`
 - `ControlAction` in `finops_core/domain/query.py:62`
 - `SurfaceInstance.scope_key` in `finops_core/domain/query.py:106`
-- `ControlRequest` in `finops_core/domain/query.py:170`
+- `ControlRequest` in `finops_core/domain/query.py:174`
 - `Tenant` in `finops_core/domain/tenant.py:23`
 - `CollectionError` in `finops_core/errors.py:27`
 - `CollectionError.remediation` in `finops_core/errors.py:53`
@@ -412,7 +413,7 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `Classified.region` in `finops_core/ports/query.py:128`
 - `Classified.log_groups` in `finops_core/ports/query.py:131`
 - `QueryParser` in `finops_core/ports/query.py:135`
-- `QueryEvidence` in `finops_core/ports/query.py:189`
+- `QueryEvidence` in `finops_core/ports/query.py:198`
 - `QuotaSource` in `finops_core/ports/quotas.py:17`
 - `QuotaSource.list_quotas` in `finops_core/ports/quotas.py:20`
 - `AwsAccountDiscovery` in `finops_providers/aws/accounts.py:55`

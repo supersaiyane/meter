@@ -9,7 +9,7 @@ say so in words the reader sees.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, ClassVar
 
 import pytest
 
@@ -175,3 +175,73 @@ def test_a_lookback_of_zero_days_does_not_divide_by_zero() -> None:
 )
 def test_bytes_are_rendered_for_a_person(count: int, expected: str) -> None:
     assert ownership.human_bytes(count) == expected
+
+
+class TestResolveOwner:
+    """The precedence, and the refusal to invent one.
+
+    The order is an argument about who will act, not about who is most likely to
+    be named. A folder mapping is a team saying they own what is inside it; a
+    last editor touched the thing and can explain it; a CloudTrail principal
+    merely ran it, which for a dashboard panel can be anyone who opened the page.
+    """
+
+    MAP: ClassVar[dict[str, str]] = {"folder-platform": "platform@example.com"}
+
+    def test_the_folder_map_wins(self) -> None:
+        owner = ownership.resolve_owner(
+            folder_uid="folder-platform",
+            folder_map=self.MAP,
+            last_editor="bob@example.com",
+            principal="carol@example.com",
+        )
+        assert owner == ownership.Owner("platform@example.com", ownership.FOLDER_MAP)
+
+    def test_the_last_editor_is_next(self) -> None:
+        owner = ownership.resolve_owner(
+            folder_uid="folder-unmapped",
+            folder_map=self.MAP,
+            last_editor="bob@example.com",
+            principal="carol@example.com",
+        )
+        assert owner == ownership.Owner("bob@example.com", ownership.LAST_EDITOR)
+
+    def test_cloudtrail_is_the_last_resort(self) -> None:
+        owner = ownership.resolve_owner(
+            folder_uid=None,
+            folder_map={},
+            last_editor=None,
+            principal="carol@example.com",
+        )
+        assert owner == ownership.Owner("carol@example.com", ownership.CLOUDTRAIL)
+
+    def test_nothing_resolvable_is_unowned_rather_than_defaulted(self) -> None:
+        # A wrongly assigned owner is ignored by the person it reaches and never
+        # reaches the person who could act.
+        owner = ownership.resolve_owner(
+            folder_uid=None, folder_map={}, last_editor=None, principal=None
+        )
+        assert owner == ownership.Owner(None, None)
+        assert owner.is_owned is False
+
+    def test_an_empty_string_does_not_count_as_an_owner(self) -> None:
+        # A blank read out of a column is an absence, not a name.
+        owner = ownership.resolve_owner(
+            folder_uid="", folder_map={"": ""}, last_editor="", principal=""
+        )
+        assert owner.is_owned is False
+
+    def test_an_owner_never_arrives_without_the_source_that_produced_it(self) -> None:
+        for folder, editor, principal in (
+            ("folder-platform", None, None),
+            (None, "bob@example.com", None),
+            (None, None, "carol@example.com"),
+            (None, None, None),
+        ):
+            owner = ownership.resolve_owner(
+                folder_uid=folder,
+                folder_map=self.MAP,
+                last_editor=editor,
+                principal=principal,
+            )
+            assert (owner.email is None) == (owner.source is None)

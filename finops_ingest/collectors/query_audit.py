@@ -40,8 +40,13 @@ from finops_query.classify import (
     Classification,
 )
 from finops_query.cost_model import ALERT, PANEL, IngestRate, Rates, price, runs_per_day
-from finops_query.ownership import Measurement, measure_logs_query, measure_metric_query
-from finops_query.policy import query_key
+from finops_query.ownership import (
+    Measurement,
+    measure_logs_query,
+    measure_metric_query,
+    resolve_owner,
+)
+from finops_query.policy import normalise, query_key
 
 COLLECTOR = "query_audit"
 
@@ -175,9 +180,10 @@ class QueryAuditCollector:
                 # total drawn from part of an estate.
                 self._mark_unreadable(context, instance_pk, failure, now)
                 continue
+            folder_map = self._folder_map(context, tenant_id, instance_pk)
             for definition in definitions:
                 written += self._write_definition(
-                    context, tenant_id, instance_pk, definition, now, observed
+                    context, tenant_id, instance_pk, definition, now, observed, folder_map
                 )
 
         return CollectorOutcome(items_written=written)
@@ -247,6 +253,25 @@ class QueryAuditCollector:
             {"reason": type(failure).__name__, "now": now, "id": instance_pk},
         )
 
+    # -- ownership ---------------------------------------------------------
+
+    @staticmethod
+    def _folder_map(context: CollectorContext, tenant_id: Any, instance_pk: Any) -> dict[str, str]:
+        """Folder to owner, as a person entered it.
+
+        Read per instance rather than joined per finding, because it is small,
+        it is the highest priority source, and a join would make the ownership
+        of a finding depend on the order rows came back in.
+        """
+        rows = context.connection.execute(
+            text(
+                "SELECT folder_uid, owner_email FROM folder_team_map "
+                "WHERE tenant_id = :tenant AND instance_id = :instance"
+            ),
+            {"tenant": tenant_id, "instance": instance_pk},
+        ).all()
+        return {str(folder): str(email) for folder, email in rows}
+
     # -- evidence ----------------------------------------------------------
 
     def _observations(self, instances: tuple[SurfaceInstance, ...]) -> Mapping[str, Any] | None:
@@ -314,6 +339,7 @@ class QueryAuditCollector:
         definition: QueryDefinition,
         now: datetime,
         observed: Mapping[str, Any] | None = None,
+        folder_map: Mapping[str, str] | None = None,
     ) -> int:
         origin = "ALERT_RULE" if definition.origin is QueryOrigin.ALERT else "PANEL"
         query_pk = context.connection.execute(
@@ -322,11 +348,11 @@ class QueryAuditCollector:
                 "dashboard_uid, dashboard_title, folder_uid, panel_id, ref_id, engine, "
                 "query_text, fingerprint, query_key, target, refresh_seconds, range_seconds, "
                 "last_editor, as_of, collected_at) VALUES (:id, :tenant, :instance, :origin, "
-                ":uid, :title, NULL, :panel, :ref, :engine, :query_text, :fp, :qkey, "
+                ":uid, :title, :folder, :panel, :ref, :engine, :query_text, :fp, :qkey, "
                 "CAST(:target AS JSONB), :refresh, :range, :editor, :as_of, :now) "
                 "ON CONFLICT (tenant_id, instance_id, fingerprint) DO UPDATE SET "
                 "query_text = EXCLUDED.query_text, query_key = EXCLUDED.query_key, "
-                "dashboard_title = EXCLUDED.dashboard_title, "
+                "dashboard_title = EXCLUDED.dashboard_title, folder_uid = EXCLUDED.folder_uid, "
                 "panel_id = EXCLUDED.panel_id, refresh_seconds = EXCLUDED.refresh_seconds, "
                 "range_seconds = EXCLUDED.range_seconds, last_editor = EXCLUDED.last_editor, "
                 "as_of = EXCLUDED.as_of, collected_at = EXCLUDED.collected_at "
@@ -339,6 +365,7 @@ class QueryAuditCollector:
                 "origin": origin,
                 "uid": definition.container_id or None,
                 "title": definition.container or None,
+                "folder": definition.folder_uid or None,
                 "panel": definition.element or None,
                 "ref": definition.ref_id or None,
                 "engine": _ENGINE_COLUMN.get(definition.engine, "OTHER"),
@@ -359,7 +386,7 @@ class QueryAuditCollector:
             },
         ).one()[0]
 
-        self._write_finding(context, tenant_id, query_pk, definition, now, observed)
+        self._write_finding(context, tenant_id, query_pk, definition, now, observed, folder_map)
         return 2
 
     def _write_finding(
@@ -370,6 +397,7 @@ class QueryAuditCollector:
         definition: QueryDefinition,
         now: datetime,
         observed: Mapping[str, Any] | None = None,
+        folder_map: Mapping[str, str] | None = None,
     ) -> None:
         origin = ALERT if definition.origin is QueryOrigin.ALERT else PANEL
         classification = Classification(
@@ -407,6 +435,17 @@ class QueryAuditCollector:
         # refuses either half on its own, which is what stops a figure claiming
         # a provenance it does not have.
         measured_runs = measured.runs_total if measured else None
+
+        # Folder map, then last editor, then whoever CloudTrail saw run it. No
+        # default: a wrongly assigned owner is ignored by the person it reaches
+        # and never reaches the person who could act.
+        principals = (observed or {}).get("principal_by_query") or {}
+        owner = resolve_owner(
+            folder_uid=definition.folder_uid,
+            folder_map=folder_map or {},
+            last_editor=definition.last_run_by,
+            principal=principals.get(normalise(definition.query)),
+        )
         why = " ".join(cost.why) or "No cost driver identified."
         if measured:
             # The reason says which grade of measurement this is: runs and bytes
@@ -417,15 +456,17 @@ class QueryAuditCollector:
             text(
                 "INSERT INTO query_finding (finding_id, tenant_id, query_id, run_date, "
                 "runs_per_day, scan_bytes_per_run, cost_month_usd, provenance, measured_runs, "
-                "severity, why, as_of, collected_at) VALUES (:id, :tenant, :query, :day, "
-                ":per_day, :scan, :cost, :provenance, :measured_runs, :severity, :why, "
-                ":as_of, :now) "
+                "severity, owner_email, owner_source, why, as_of, collected_at) "
+                "VALUES (:id, :tenant, :query, :day, "
+                ":per_day, :scan, :cost, :provenance, :measured_runs, :severity, "
+                ":owner_email, :owner_source, :why, :as_of, :now) "
                 "ON CONFLICT (tenant_id, query_id, run_date) DO UPDATE SET "
                 "runs_per_day = EXCLUDED.runs_per_day, "
                 "scan_bytes_per_run = EXCLUDED.scan_bytes_per_run, "
                 "cost_month_usd = EXCLUDED.cost_month_usd, "
                 "provenance = EXCLUDED.provenance, measured_runs = EXCLUDED.measured_runs, "
-                "severity = EXCLUDED.severity, "
+                "severity = EXCLUDED.severity, owner_email = EXCLUDED.owner_email, "
+                "owner_source = EXCLUDED.owner_source, "
                 "why = EXCLUDED.why, as_of = EXCLUDED.as_of, "
                 "collected_at = EXCLUDED.collected_at"
             ),
@@ -440,6 +481,10 @@ class QueryAuditCollector:
                 "provenance": provenance,
                 "measured_runs": measured_runs,
                 "severity": cost.risk_level,
+                # Both together or neither. An owner with no source could not be
+                # argued with, and a source with no owner says nothing.
+                "owner_email": owner.email,
+                "owner_source": owner.source,
                 # The prose that makes a finding actionable rather than a number.
                 "why": why,
                 "as_of": definition.as_of,

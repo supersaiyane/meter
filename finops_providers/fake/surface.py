@@ -102,6 +102,9 @@ def _query(
         query=query,
         container="Platform overview",
         container_id="abc123",
+        # A folder, because ownership is mapped per folder and an estate without
+        # one cannot exercise the highest priority source at all.
+        folder_uid="folder-platform",
         element=element,
         refresh_seconds=refresh_seconds,
         window_seconds=window_seconds,

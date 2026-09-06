@@ -3064,6 +3064,11 @@
     },
     {
       "s": "finops_query/parser.py",
+      "t": "finops_query/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/parser.py",
       "t": "finops_query/policy.py",
       "k": "python"
     },

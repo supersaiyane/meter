@@ -153,6 +153,15 @@ class QueryParser(Protocol):
         """Every panel, including the ones nested inside a row."""
         ...
 
+    def principal_from(self, event_detail: Mapping[str, Any]) -> str | None:
+        """A human readable principal from an execution event, or None.
+
+        None rather than a placeholder. An unowned finding should read as
+        unowned, not as owned by somebody called "unknown", because a name
+        nobody recognises is not chased and an empty one is.
+        """
+        ...
+
     def normalise(self, text: str | None) -> str:
         """Query text reduced to a comparison key.
 

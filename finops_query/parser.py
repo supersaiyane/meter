@@ -18,6 +18,7 @@ from finops_query.classify import (
     refresh_seconds,
     relative_range_seconds,
 )
+from finops_query.ownership import principal_from
 from finops_query.policy import fingerprint, normalise
 
 
@@ -30,6 +31,9 @@ class GrafanaQueryParser:
     def iter_panels(self, panels: Any) -> Iterable[Mapping[str, Any]]:
         found: Iterable[Mapping[str, Any]] = iter_panels(panels)
         return found
+
+    def principal_from(self, event_detail: Mapping[str, Any]) -> str | None:
+        return principal_from(dict(event_detail))
 
     def normalise(self, text: str | None) -> str:
         return normalise(text)
