@@ -82,7 +82,7 @@ ISS-003.
 
 | Sub project | Done | Partly | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- |
-| P0 | 35 | 0 | 0 | 3 | 38 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P0 | 36 | 0 | 0 | 2 | 38 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P2 | 4 | 0 | 2 | 19 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -120,6 +120,7 @@ ISS-003.
 | `TASK-P0-027` | Done, 2026-08-27 | accounts screen and organization map |
 | `TASK-P0-028` | Done, 2026-08-27, with one criterion not performed | ingest, freshness and platform cost screens, plus the end to end journey |
 | `TASK-P0-032` | Done, 2026-08-27, with one criterion deferred to TASK-P0-015 | retention jobs and the erasure script |
+| `TASK-P0-036` | Done, 2026-09-07 | routing, the seven groups, and the route migration |
 | `TASK-P0-029` | **Done 2026-08-23**, commit `9754a59` | establish the security tool chain and the first posture |
 | `TASK-P0-030` | Done, 2026-08-27 | MCP server scaffold and the four P0 tools |
 | `TASK-P0-031` | Done, 2026-08-28 | wire the documentation and graph gates into the pipeline |

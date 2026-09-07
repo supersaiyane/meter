@@ -83,10 +83,10 @@
     "finops-web/dist-types/src/shell/MetaProvider.d.ts",
     "finops-web/dist-types/src/shell/__tests__/AppShell.test.d.ts",
     "finops-web/dist-types/src/shell/__tests__/metaStore.test.d.ts",
+    "finops-web/dist-types/src/shell/__tests__/sections.test.d.ts",
     "finops-web/dist-types/src/shell/metaRegistry.d.ts",
     "finops-web/dist-types/src/shell/metaStore",
     "finops-web/dist-types/src/shell/metaStore.d.ts",
-    "finops-web/dist-types/src/shell/sections",
     "finops-web/dist-types/src/shell/sections.d.ts",
     "finops-web/dist-types/src/test-setup.d.ts",
     "finops-web/dist-types/src/tokens.css",
@@ -144,6 +144,7 @@
     "finops-web/src/shell/MetaProvider.tsx",
     "finops-web/src/shell/__tests__/AppShell.test.tsx",
     "finops-web/src/shell/__tests__/metaStore.test.ts",
+    "finops-web/src/shell/__tests__/sections.test.ts",
     "finops-web/src/shell/metaRegistry.ts",
     "finops-web/src/shell/metaStore.ts",
     "finops-web/src/shell/sections.ts",
@@ -596,11 +597,6 @@
     {
       "s": "finops-web/dist-types/src/screens/surfaceStateFor.d.ts",
       "t": "finops-web/dist-types/src/components/surfaceState",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/dist-types/src/shell/AppShell.d.ts",
-      "t": "finops-web/dist-types/src/shell/sections",
       "k": "typescript"
     },
     {
@@ -1401,6 +1397,11 @@
     {
       "s": "finops-web/src/shell/__tests__/metaStore.test.ts",
       "t": "finops-web/src/shell/metaStore.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/sections.test.ts",
+      "t": "finops-web/src/shell/sections.ts",
       "k": "typescript"
     },
     {

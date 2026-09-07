@@ -89,7 +89,8 @@ async function withSession(page: Page): Promise<void> {
 
 test('a session carries a user through to the organization map', async ({ page }) => {
   await withSession(page);
-  await page.goto('/');
+  // Routes carry their group, per ADR-0020. There is no landing state machine.
+  await page.goto('/inventory/accounts');
 
   // The shell tells the reader what they are looking at before anything else.
   await expect(page.getByTestId('coverage')).toHaveText('Showing 2 of 5 accounts');
@@ -108,8 +109,9 @@ test('a session carries a user through to the organization map', async ({ page }
   await expect(healthy).toHaveCount(0);
   await expect(broken).toBeVisible();
 
-  // Through to the organization map.
-  await page.getByRole('button', { name: 'Organization' }).click();
+  // Through to the organization map, by link rather than by section button.
+  await page.getByRole('link', { name: 'Organization' }).click();
+  await expect(page).toHaveURL(/\/inventory\/organization$/);
   await expect(page.getByTestId('org-tree')).toBeVisible();
   await expect(page.getByText('production')).toBeVisible();
 
@@ -123,8 +125,8 @@ test('a session carries a user through to the organization map', async ({ page }
 test('a keyboard alone reaches the organization map', async ({ page }) => {
   // The tree is the accessible path and never the secondary one.
   await withSession(page);
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Organization' }).click();
+  await page.goto('/inventory/accounts');
+  await page.getByRole('link', { name: 'Organization' }).click();
   const tree = page.getByTestId('org-tree');
   await expect(tree).toBeVisible();
   await page.keyboard.press('Tab');
@@ -189,8 +191,7 @@ test('the organization map stays usable at three hundred accounts', async ({ pag
     window.localStorage.setItem('meter.token', 'a-session-token');
   });
 
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Organization' }).click();
+  await page.goto('/inventory/organization');
   await expect(page.getByTestId('org-tree')).toBeVisible();
   await expect(page.getByText('account-0', { exact: true })).toBeVisible();
   await page.screenshot({ path: 'e2e/tree-300-accounts.png', fullPage: false });
@@ -205,4 +206,20 @@ test('the organization map stays usable at three hundred accounts', async ({ pag
   // reader stops waiting and reaches for the tree, which is why the tree is the
   // default in the first place.
   expect(elapsed).toBeLessThan(10_000);
+});
+
+test('an unbuilt screen is listed, reachable, and names what will fill it', async ({ page }) => {
+  // Hiding an unbuilt screen would make the product look smaller than it is and
+  // would hide the roadmap. ADR-0020.
+  await withSession(page);
+  await page.goto('/inventory/accounts');
+
+  await page.getByRole('link', { name: /Spend and trend/ }).click();
+  await expect(page).toHaveURL(/\/cost$/);
+  await expect(page.getByTestId('not-built')).toContainText('arrives with P1 Cost Intelligence');
+
+  // A wrong address is a different condition and does not share the rendering.
+  await page.goto('/nonsense');
+  await expect(page.getByTestId('not-a-screen')).toBeVisible();
+  await expect(page.getByTestId('not-built')).toHaveCount(0);
 });

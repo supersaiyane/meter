@@ -2172,7 +2172,7 @@ pytest tests/ingest/collectors/test_retention.py -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-07 |
 | Implements | `docs/13-UI-ARCHITECTURE.md` sections 4 and 5, ADR-0020 |
 | Delivers | The frame every later screen is added to |
 | Depends on | TASK-P0-028 |
@@ -2180,15 +2180,15 @@ pytest tests/ingest/collectors/test_retention.py -v
 
 **Acceptance criteria.**
 
-- [ ] `react-router` admitted through `make dep-check pkg=react-router npm=1`
-- [ ] `sections.ts` exports a group definition, not a name list
-- [ ] The five built screens answer on their new routes from section 5
-- [ ] A screen that has not been built is **listed with its arrival**, not hidden
+- [x] `react-router` admitted through `make dep-check pkg=react-router npm=1`
+- [x] `sections.ts` exports a group definition, not a name list
+- [x] The five built screens answer on their new routes from section 5
+- [x] A screen that has not been built is **listed with its arrival**, not hidden
       and not silently disabled
-- [ ] A test asserts every route begins with its own group path, so ADR-0020's
+- [x] A test asserts every route begins with its own group path, so ADR-0020's
       rule is enforced by the suite rather than by review
-- [ ] `npm run lint`, `npm run test -- --run` and `npm run build` all pass
-- [ ] The Playwright journey passes against the new routes
+- [x] `npm run lint`, `npm run test -- --run` and `npm run build` all pass
+- [x] The Playwright journey passes against the new routes
 
 **Do not.**
 
@@ -2201,7 +2201,7 @@ pytest tests/ingest/collectors/test_retention.py -v
 
 **Steps.**
 
-- [ ] **Step 1: admit the dependency**
+- [x] **Step 1: admit the dependency**
 
 ```bash
 make dep-check pkg=react-router npm=1
@@ -2211,7 +2211,7 @@ Expected: the gate reports the package, its licence and its advisory state, and
 exits zero. If it exits non zero, stop and raise an `ISS-nnn` row rather than
 installing anyway.
 
-- [ ] **Step 2: write the failing invariant test**
+- [x] **Step 2: write the failing invariant test**
 
 `finops-web/src/shell/__tests__/sections.test.ts`
 
@@ -2253,12 +2253,12 @@ describe('navigation groups', () => {
 });
 ```
 
-- [ ] **Step 3: run it and watch it fail**
+- [x] **Step 3: run it and watch it fail**
 
 Run: `cd finops-web && npm run test -- --run src/shell/__tests__/sections.test.ts`
 Expected: FAIL, `GROUPS` is not exported from `../sections`.
 
-- [ ] **Step 4: replace the name list with a group definition**
+- [x] **Step 4: replace the name list with a group definition**
 
 `finops-web/src/shell/sections.ts`, replacing the whole file.
 
@@ -2361,12 +2361,12 @@ Note the Home group's screen path equals its group path, which the second test
 allows because `'/'.startsWith('/')` is true. Every other group has a distinct
 prefix.
 
-- [ ] **Step 5: run the test and watch it pass**
+- [x] **Step 5: run the test and watch it pass**
 
 Run: `cd finops-web && npm run test -- --run src/shell/__tests__/sections.test.ts`
 Expected: PASS, four tests.
 
-- [ ] **Step 6: write the failing shell navigation test**
+- [x] **Step 6: write the failing shell navigation test**
 
 Append to `finops-web/src/shell/__tests__/AppShell.test.tsx`.
 
@@ -2417,12 +2417,12 @@ export function Harness({
 `initialPath` is optional and defaults to `/`, so the six existing screen test
 files do not change.
 
-- [ ] **Step 7: run it and watch it fail**
+- [x] **Step 7: run it and watch it fail**
 
 Run: `cd finops-web && npm run test -- --run src/shell/__tests__/AppShell.test.tsx`
 Expected: FAIL, no link with that name.
 
-- [ ] **Step 8: render the groups in the shell**
+- [x] **Step 8: render the groups in the shell**
 
 In `finops-web/src/shell/AppShell.tsx`, replace the `SECTIONS.map` navigation
 with the grouped form. Keep the header, coverage banner, freshness and failures
@@ -2451,7 +2451,7 @@ exactly as they are.
 `AppShellProps` loses `section` and `onSelect`, because the router now owns
 which screen is current. Delete them rather than leaving them unused.
 
-- [ ] **Step 9: replace the state machine in the application root**
+- [x] **Step 9: replace the state machine in the application root**
 
 `finops-web/src/App.tsx`. The `useState<Section>` and the five conditionals go.
 
@@ -2475,13 +2475,13 @@ which screen is current. Delete them rather than leaving them unused.
 is a genuine 404 and says so. Those are different conditions and must not share
 a rendering.
 
-- [ ] **Step 10: run the whole suite**
+- [x] **Step 10: run the whole suite**
 
 Run: `cd finops-web && npm run lint && npm run test -- --run && npm run build`
 Expected: all pass. `App.test.tsx` needs its section clicking replaced with
 router navigation.
 
-- [ ] **Step 11: update the end to end journey**
+- [x] **Step 11: update the end to end journey**
 
 `finops-web/e2e/journey.spec.ts` navigates by section name today. Point it at the
 new URLs. The journey is the only test that proves the routes work in a browser
@@ -2490,7 +2490,7 @@ rather than in jsdom.
 Run: `cd finops-web && npx playwright test`
 Expected: PASS.
 
-- [ ] **Step 12: commit**
+- [x] **Step 12: commit**
 
 ```bash
 git add finops-web/package.json finops-web/package-lock.json finops-web/src finops-web/e2e

@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
 import { violationsIn } from '../../components/__tests__/axe';
@@ -26,13 +27,15 @@ function Surface({ meta }: { readonly meta: ApiMeta }) {
   return <p>rows</p>;
 }
 
-function renderShell(meta?: ApiMeta) {
+function renderShell(meta?: ApiMeta, initialPath = '/inventory/accounts') {
   return render(
-    <MetaProvider>
-      <AppShell section="Accounts" onSelect={() => undefined} now={NOW}>
-        {meta ? <Surface meta={meta} /> : <p>rows</p>}
-      </AppShell>
-    </MetaProvider>,
+    <MemoryRouter initialEntries={[initialPath]}>
+      <MetaProvider>
+        <AppShell now={NOW}>
+          {meta ? <Surface meta={meta} /> : <p>rows</p>}
+        </AppShell>
+      </MetaProvider>
+    </MemoryRouter>,
   );
 }
 
@@ -138,21 +141,30 @@ describe('AppShell', () => {
     );
     expect(screen.getByText('Showing 2 of 9 accounts')).toBeInTheDocument();
     view.rerender(
-      <MetaProvider>
-        <AppShell section="Accounts" onSelect={() => undefined} now={NOW}>
-          <p>rows</p>
-        </AppShell>
-      </MetaProvider>,
+      <MemoryRouter initialEntries={['/inventory/accounts']}>
+        <MetaProvider>
+          <AppShell now={NOW}>
+            <p>rows</p>
+          </AppShell>
+        </MetaProvider>
+      </MemoryRouter>,
     );
     expect(screen.queryByText('Showing 2 of 9 accounts')).toBeNull();
   });
 
-  it('marks the current section for assistive technology', () => {
+  it('marks the current screen for assistive technology', () => {
     renderShell(metaOf());
-    expect(screen.getByRole('button', { name: 'Accounts' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Accounts' })).toHaveAttribute(
       'aria-current',
       'page',
     );
+  });
+
+  it('lists an unbuilt screen with what will fill it, rather than hiding it', () => {
+    renderShell(metaOf());
+    const link = screen.getByRole('link', { name: /Spend and trend/ });
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('data-arrives', 'P1 Cost Intelligence');
   });
 
   it('reports no accessibility violations when degraded', async () => {

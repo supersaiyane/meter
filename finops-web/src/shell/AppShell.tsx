@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react';
+import { NavLink } from 'react-router';
 
 import { CoverageBanner } from '../components/CoverageBanner';
 import { FreshnessIndicator } from '../components/FreshnessIndicator';
 import { TypedError } from '../components/TypedError';
 import type { Cause } from '../components/provenance';
 import { useAggregateMeta } from './metaRegistry';
-import { SECTIONS, type Section } from './sections';
+import { GROUPS } from './sections';
 
 /**
  * The shell. Coverage and freshness live here rather than on each screen,
@@ -15,11 +16,13 @@ import { SECTIONS, type Section } from './sections';
  *
  * The coverage banner is not dismissible and has no close control. A banner
  * gets dismissed and the condition does not go away with it.
+ *
+ * The navigation is seven fixed groups, per ADR-0020. Which screen is current is
+ * the router's business, not this component's, which is why there is no section
+ * prop: two places deciding what is selected is two places to disagree.
  */
 
 export interface AppShellProps {
-  readonly section: Section;
-  readonly onSelect: (section: Section) => void;
   readonly children: ReactNode;
   readonly now?: Date;
 }
@@ -32,7 +35,7 @@ const KNOWN_CAUSES = new Set<string>([
   'SchemaDrift',
 ]);
 
-export function AppShell({ section, onSelect, children, now }: AppShellProps) {
+export function AppShell({ children, now }: AppShellProps) {
   const meta = useAggregateMeta();
 
   return (
@@ -40,21 +43,30 @@ export function AppShell({ section, onSelect, children, now }: AppShellProps) {
       <header>
         <h1>Meter</h1>
         <nav aria-label="Sections">
-          <ul>
-            {SECTIONS.map((name) => (
-              <li key={name}>
-                <button
-                  type="button"
-                  aria-current={name === section ? 'page' : undefined}
-                  onClick={() => {
-                    onSelect(name);
-                  }}
-                >
-                  {name}
-                </button>
-              </li>
-            ))}
-          </ul>
+          {GROUPS.map((group) => (
+            <div key={group.label} data-testid={`group-${group.label}`}>
+              <h2>{group.label}</h2>
+              <ul>
+                {group.screens.map((screen) => (
+                  <li key={screen.path}>
+                    {/* An unbuilt screen is listed and reachable, never hidden.
+                        Hiding it would make the product look smaller than it is
+                        and would hide the roadmap. */}
+                    <NavLink
+                      to={screen.path}
+                      end
+                      {...(screen.arrives ? { 'data-arrives': screen.arrives } : {})}
+                    >
+                      {screen.label}
+                      {screen.arrives ? (
+                        <span className="meter-arrives"> arrives with {screen.arrives}</span>
+                      ) : null}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </nav>
 
         <CoverageBanner visible={meta.visible} total={meta.total} />
