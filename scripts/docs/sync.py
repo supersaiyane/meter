@@ -185,6 +185,36 @@ def render_roadmap_status(reg: dict) -> str:
     return "\n".join(lines)
 
 
+def render_subprojects(reg: dict) -> str:
+    """The sub project table, previously hand written alongside a generated one.
+
+    Two tables describing the same thing is the drift ADR-0014 exists to
+    prevent. AUDIT-001, finding A001-F10.
+    """
+    counts: dict[str, Counter] = {s["id"]: Counter() for s in reg["subprojects"]}
+    for f in reg["features"]:
+        counts[f["subproject"]][f["status"]] += 1
+    lines = [
+        "| ID | Name | Status | Features | Spec | Plan | Depends on |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for sp in sorted(reg["subprojects"], key=lambda x: x["id"]):
+        c = counts[sp["id"]]
+        # This table lives in docs/01-ROADMAP.md, so a path recorded from the
+        # repository root needs its leading "docs/" removed to resolve.
+        def rel(path: str) -> str:
+            return path[5:] if path.startswith("docs/") else path
+
+        spec = f"[spec]({rel(sp['spec'])})" if sp.get("spec") else "not written"
+        plan = f"[plan]({rel(sp['plan'])})" if sp.get("plan") else "not written"
+        lines.append(
+            f"| {sp['id']} | {sp['name']} | {sp['status']} | "
+            f"{sum(c.values())} ({c.get('Specified', 0)} specified) | "
+            f"{spec} | {plan} | {sp.get('depends_on', '')} |"
+        )
+    return "\n".join(lines)
+
+
 def render_status_summary(reg: dict) -> str:
     fc = Counter(f["status"] for f in reg["features"])
     ic = Counter(i["status"] for i in reg["issues"])
@@ -242,6 +272,7 @@ TARGETS = [
     ("INDEX.md", "issues", render_issues),
     ("INDEX.md", "open-questions", render_open),
     ("docs/01-ROADMAP.md", "roadmap-status", render_roadmap_status),
+    ("docs/01-ROADMAP.md", "subprojects", render_subprojects),
     ("tasks/STATUS.md", "status-summary", render_status_summary),
     ("tasks/ISSUES.md", "issue-register", render_issue_register),
 ]

@@ -1,0 +1,35 @@
+# Editor settings that are not a matter of taste.
+#
+# The trim_trailing_whitespace and insert_final_newline rules match the
+# pre commit hooks, so an editor and the hook never disagree.
+#
+# This file cannot disable smart dash substitution, which is an operating
+# system setting, so the em dash rule is still enforced by make check-writing.
+# See README section 5.7.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{js,jsx,ts,tsx,json,yml,yaml,css,html}]
+indent_size = 2
+
+[*.md]
+# Markdown uses two trailing spaces for a hard line break. Trimming them
+# silently changes rendering, so it is off here and only here.
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab
+
+[*.tf]
+indent_size = 2
+
+[*.{sh,bash}]
+indent_size = 2

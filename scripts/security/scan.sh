@@ -34,7 +34,13 @@ echo "Report directory: ${OUT}"
 
 require() {
   command -v "$1" >/dev/null 2>&1 || {
-    echo "MISSING TOOL: $1. Install it, see security/README.md" >&2
+    echo >&2
+    echo "MISSING TOOL: $1" >&2
+    echo >&2
+    echo "  This is a tooling problem, not a security finding." >&2
+    echo "  Install every scanner with:  make security-tools" >&2
+    echo "  Details: security/README.md" >&2
+    echo >&2
     exit 2
   }
 }

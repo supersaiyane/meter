@@ -193,6 +193,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0018 | 2026-08-23 | Process | README gotchas expanded into ten worked examples, each showing the actual output and the exact commands | `403c57b` | [README.md](README.md) |
 | CHG-0019 | 2026-08-23 | Process | README security section rewritten around the six layer gate model, with LocalStack explained and its limits stated | `f3b5aef` | [README.md](README.md) |
 | CHG-0020 | 2026-08-23 | Process | AUDIT-001 published. Audits folder created with a naming convention, finding identifiers and a promotion rule. 18 findings promoted to the issue register | `eca070d` | [AUDIT-001](audits/AUDIT-001-2026-08-23-full-project.md) |
+| CHG-0021 | 2026-08-23 | Correction | AUDIT-001 remediation wave one: eleven findings closed, covering the import contract, CI tooling, setup ordering, the first run experience, governance files, MCP packaging, the PARTIAL status, the dead graph output, the context index generator and the duplicated roadmap table | `pending` | [REMEDIATION-LOG](audits/REMEDIATION-LOG.md) |
 
 <!-- generated:changes end -->
 
@@ -203,7 +204,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**37 FIXED, 32 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**48 FIXED, 21 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -235,10 +236,10 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-047 | HIGH | A build on Apple Silicon produces an arm64 image and a push does not convert it, so an amd64 host fails with exec format error | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-051 | HIGH | Images were signed at build time but the signature was never verified, so anyone able to push to ECR could place an unscanned image where the deploy would find it | FIXED | [docs/05-SECURITY.md](docs/05-SECURITY.md), verify-provenance runs before every deploy |
 | ISS-056 | HIGH | No data classification or retention policy, while cloud_account.email already stores AWS account root email addresses, which are personal data | OPEN | [A001-F12](audits/AUDIT-001-2026-08-23-full-project.md) |
-| ISS-057 | HIGH | finops_mcp is absent from the pyproject packages and the import linter root packages, so the contract keeping it out of the service layer is unenforced | OPEN | [A001-F02](audits/AUDIT-001-2026-08-23-full-project.md) |
+| ISS-057 | HIGH | finops_mcp is absent from the pyproject packages and the import linter root packages, so the contract keeping it out of the service layer is unenforced | FIXED | [A001-F02](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-058 | HIGH | The issue register drifted: 22 issues existed only in docs/registry.yaml and not in tasks/ISSUES.md | FIXED | [A001-F01](audits/AUDIT-001-2026-08-23-full-project.md) |
-| ISS-059 | HIGH | The CI dependency-scan job runs scan.sh which requires gitleaks, but the security tools anchor does not install it, so the job exits 2 | OPEN | [A001-F03](audits/AUDIT-001-2026-08-23-full-project.md) |
-| ISS-060 | HIGH | make verify runs security-scan but nothing installs the scanners first, so a clean machine fails on tooling and it reads like a security failure | OPEN | [A001-F05](audits/AUDIT-001-2026-08-23-full-project.md) |
+| ISS-059 | HIGH | The CI dependency-scan job runs scan.sh which requires gitleaks, but the security tools anchor does not install it, so the job exits 2 | FIXED | [A001-F03](audits/AUDIT-001-2026-08-23-full-project.md) |
+| ISS-060 | HIGH | make verify runs security-scan but nothing installs the scanners first, so a clean machine fails on tooling and it reads like a security failure | FIXED | [A001-F05](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-011 | MEDIUM | A model producing sizing numbers destroys trust on the first hallucination | FIXED | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
 | ISS-012 | MEDIUM | Organization wide AWS Config recording is a five figure monthly cost | OPEN | [tasks/ISSUES.md](tasks/ISSUES.md), resolved in P4 |
 | ISS-013 | MEDIUM | Hundreds of describe loops for inventory is a year of work | FIXED | [roadmap](docs/01-ROADMAP.md) P4 |
@@ -261,21 +262,21 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-050 | MEDIUM | The README described the project but did not tell a returning human where to look, what to run, or what happens to a security finding, so the knowledge lived only in conversation | FIXED | [README.md](README.md) |
 | ISS-052 | MEDIUM | No local gate existed, so the first feedback on a secret, a writing rule breach or a bad dependency was the pipeline, minutes later | FIXED | Pre commit and pre push hooks, make hooks-install |
 | ISS-053 | MEDIUM | LocalStack was undocumented, so its limits were invisible: it does not enforce IAM and its pagination and error codes differ from AWS | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) and inline in docker-compose.yml |
-| ISS-061 | MEDIUM | make up mounts local-auth.yaml which is gitignored and has no example, so the first command a new engineer runs fails | OPEN | [A001-F04](audits/AUDIT-001-2026-08-23-full-project.md) |
-| ISS-062 | MEDIUM | ADR-0014 lists context_index.md as generated and no generator exists, so a file the reuse ladder depends on will stay empty | OPEN | [A001-F06](audits/AUDIT-001-2026-08-23-full-project.md) |
-| ISS-063 | MEDIUM | The interactive file graph renders nothing because cytoscape is never vendored and a CDN is ruled out | OPEN | [A001-F07](audits/AUDIT-001-2026-08-23-full-project.md) |
-| ISS-064 | MEDIUM | The MCP server has no build job, no ECR repository and no scan path, placing a fourth deployable outside the security gates | OPEN | [A001-F08](audits/AUDIT-001-2026-08-23-full-project.md) |
+| ISS-061 | MEDIUM | make up mounts local-auth.yaml which is gitignored and has no example, so the first command a new engineer runs fails | FIXED | [A001-F04](audits/AUDIT-001-2026-08-23-full-project.md) |
+| ISS-062 | MEDIUM | ADR-0014 lists context_index.md as generated and no generator exists, so a file the reuse ladder depends on will stay empty | FIXED | [A001-F06](audits/AUDIT-001-2026-08-23-full-project.md) |
+| ISS-063 | MEDIUM | The interactive file graph renders nothing because cytoscape is never vendored and a CDN is ruled out | FIXED | [A001-F07](audits/AUDIT-001-2026-08-23-full-project.md) |
+| ISS-064 | MEDIUM | The MCP server has no build job, no ECR repository and no scan path, placing a fourth deployable outside the security gates | FIXED | [A001-F08](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-065 | MEDIUM | No disaster recovery position: no RPO, no RTO, no restore test, and Aurora defaults are not a decision | OPEN | [A001-F13](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-066 | MEDIUM | No observability plan for Meter itself, so a collector that silently stops pages nobody while the product serves confident stale numbers | OPEN | [A001-F14](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-067 | MEDIUM | No cost estimate for running Meter, which is the specific credibility failure a FinOps product exists to prevent in others | OPEN | [A001-F15](audits/AUDIT-001-2026-08-23-full-project.md) |
-| ISS-068 | MEDIUM | Missing governance files. CODEOWNERS matters most because ADR-0013 requires a security sign off and nothing defines who can give it | OPEN | [A001-F16](audits/AUDIT-001-2026-08-23-full-project.md) |
+| ISS-068 | MEDIUM | Missing governance files. CODEOWNERS matters most because ADR-0013 requires a security sign off and nothing defines who can give it | FIXED | [A001-F16](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-044 | LOW | Scripts were scattered between the root and one flat directory | FIXED | All under `scripts/`, grouped by purpose |
-| ISS-054 | LOW | ECR tags were mutable, so a tag could be repointed at a different image after it was scanned and signed | OPEN | Set IMMUTABLE tags in TASK-P0-016 |
-| ISS-069 | LOW | The PARTIAL ingest run status is permitted by a check constraint and defined nowhere, so it will be applied inconsistently | OPEN | [A001-F09](audits/AUDIT-001-2026-08-23-full-project.md) |
-| ISS-070 | LOW | The roadmap carries a generated status table and a hand written one describing the same sub projects | OPEN | [A001-F10](audits/AUDIT-001-2026-08-23-full-project.md) |
+| ISS-054 | LOW | ECR tags were mutable, so a tag could be repointed at a different image after it was scanned and signed | FIXED | Set IMMUTABLE tags in TASK-P0-016 |
+| ISS-069 | LOW | The PARTIAL ingest run status is permitted by a check constraint and defined nowhere, so it will be applied inconsistently | FIXED | [A001-F09](audits/AUDIT-001-2026-08-23-full-project.md) |
+| ISS-070 | LOW | The roadmap carries a generated status table and a hand written one describing the same sub projects | FIXED | [A001-F10](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-071 | LOW | No definition of done for any sub project beyond P0 | OPEN | [A001-F17](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-072 | LOW | No performance budget for ingestion throughput, full organization sweep time, or API latency under load | OPEN | [A001-F18](audits/AUDIT-001-2026-08-23-full-project.md) |
 
@@ -403,8 +404,9 @@ cost per run, not in code.
 every file depends on every other: Python imports, TypeScript imports,
 Terraform module references and Dockerfile COPY edges, read out of the source.
 
-`make graph` rebuilds it. It also fails on a layering violation, so the graph
-is a gate rather than only a picture.
+`make graph` rebuilds it, emitting Mermaid for people and JSON for tools. It
+also fails on a layering violation, so the graph is a gate rather than only a
+picture.
 
 ---
 

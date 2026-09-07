@@ -825,7 +825,14 @@ a variable so Terraform owns the deploy.
 
 **Acceptance criteria.**
 
-- [ ] Four ECR repositories: api, worker, web, cache, with lifecycle policies
+- [ ] Four ECR repositories: api, worker, web, cache, with lifecycle policies.
+      **No mcp repository**: the MCP server is a second process in the api
+      image, see ADR-0009
+- [ ] ECR tag mutability set to `IMMUTABLE`, so a tag cannot be repointed at a
+      different image after it was scanned and signed. ISS-054
+- [ ] ECR enhanced scanning enabled on every repository
+- [ ] A second ECS service running the api image with the command overridden to
+      `finops_mcp.server`
 - [ ] Task definitions take `image_tag` as a variable, per `docs/04-DEPLOYMENT.md`
 - [ ] `FinOpsHubTaskRole` can assume only `role/FinOpsCollectorRole` in any
       account, restricted by `aws:PrincipalOrgID`
@@ -1460,10 +1467,11 @@ pattern before there is much to expose.
 | `finops_mcp/server.py` | create |
 | `finops_mcp/tools.py` | create |
 | `tests/mcp/test_tools.py` | create |
-| `docker/Dockerfile.mcp` | create |
 
 **Acceptance criteria.**
 
+- [ ] Ships as a second process in the `meter-api` image, selected by the
+      container command. No fourth image, see ADR-0009
 - [ ] Four tools: `list_accounts`, `get_org_tree`, `get_ingest_status`,
       `get_platform_cost`
 - [ ] Every tool calls the HTTP API over the network with the caller's token
@@ -1490,6 +1498,9 @@ pattern before there is much to expose.
   cannot see `scope_coverage` will state a partial total as an organization
   total, confidently.
 - Do not add a tool that runs free form SQL. See ADR-0007.
+- Do not create a separate image. It would duplicate the whole dependency tree
+  for one module and would need its own build, scan, signature and repository,
+  which is how a deployable ends up outside the security gates. A001-F08.
 
 **Evidence.**
 

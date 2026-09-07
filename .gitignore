@@ -32,6 +32,7 @@ build/
 *.pem
 *.key
 local-auth.yaml
+!local-auth.example.yaml
 
 # Editors and OS
 .DS_Store

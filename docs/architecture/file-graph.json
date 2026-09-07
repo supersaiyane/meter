@@ -1,0 +1,110 @@
+{
+  "nodes": [
+    "docker/Dockerfile.api",
+    "docker/Dockerfile.web",
+    "docker/Dockerfile.worker",
+    "docker/alembic.ini",
+    "docker/docker/nginx.conf",
+    "docker/finops-web",
+    "docker/finops-web/package-lock.json",
+    "docker/finops-web/package.json",
+    "docker/finops_api",
+    "docker/finops_core",
+    "docker/finops_ingest",
+    "docker/finops_providers",
+    "docker/migrations",
+    "docker/pyproject.toml",
+    "scripts/ci/code_review.py",
+    "scripts/docs/build_file_graph.py",
+    "scripts/docs/check_feature_docs.py",
+    "scripts/docs/check_index.py",
+    "scripts/docs/sync.py"
+  ],
+  "edges": [
+    {
+      "s": "docker/Dockerfile.api",
+      "t": "docker/alembic.ini",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.api",
+      "t": "docker/finops_api",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.api",
+      "t": "docker/finops_core",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.api",
+      "t": "docker/finops_ingest",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.api",
+      "t": "docker/finops_providers",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.api",
+      "t": "docker/migrations",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.api",
+      "t": "docker/pyproject.toml",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.web",
+      "t": "docker/docker/nginx.conf",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.web",
+      "t": "docker/finops-web",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.web",
+      "t": "docker/finops-web/package-lock.json",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.web",
+      "t": "docker/finops-web/package.json",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.worker",
+      "t": "docker/alembic.ini",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.worker",
+      "t": "docker/finops_core",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.worker",
+      "t": "docker/finops_ingest",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.worker",
+      "t": "docker/finops_providers",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.worker",
+      "t": "docker/migrations",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.worker",
+      "t": "docker/pyproject.toml",
+      "k": "docker"
+    }
+  ]
+}

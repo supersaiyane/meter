@@ -30,12 +30,14 @@ help: ## Show this help
 # ---------------------------------------------------------------- setup
 
 .PHONY: setup
-setup: ## Create the virtualenv and install everything, backend and frontend
+setup: security-tools ## Create the virtualenv and install everything, including the scanners
 	$(PY) -m venv $(VENV)
 	$(BIN)/pip install --upgrade pip setuptools wheel
 	$(BIN)/pip install -e ".[dev]"
 	cd finops-web && npm ci
+	@echo
 	@echo "Setup complete. Activate with: source $(BIN)/activate"
+	@echo "Next: make hooks-install, then make up"
 
 .PHONY: clean
 clean: ## Remove build artefacts and caches. Does not touch the database volume
@@ -77,11 +79,13 @@ check-docs: ## Fail if any generated document is out of step with the registry
 	@$(PY) scripts/docs/check_index.py
 	@$(PY) scripts/docs/check_feature_docs.py
 	@$(PY) scripts/docs/build_file_graph.py --check
+	@$(PY) scripts/docs/build_context_index.py --check
 
 .PHONY: doc-sync
-doc-sync: ## Regenerate every derived document from docs/registry.yaml
+doc-sync: ## Regenerate every derived document from docs/registry.yaml and the source
 	@$(PY) scripts/docs/sync.py
 	@$(PY) scripts/docs/build_file_graph.py
+	@$(PY) scripts/docs/build_context_index.py
 	@echo "Derived documents regenerated. Review the diff before committing."
 
 .PHONY: session-end
@@ -99,7 +103,7 @@ session-end: doc-sync ## Run at the end of every work session
 .PHONY: graph
 graph: ## Rebuild the file dependency graph and check the layering
 	@$(PY) scripts/docs/build_file_graph.py
-	@echo "docs/architecture/file-graph.md and file-graph.html"
+	@echo "docs/architecture/file-graph.md and file-graph.json"
 
 .PHONY: review
 review: ## Automated code review of the working tree. See ADR-0011
@@ -131,11 +135,19 @@ coverage: ## Test with an HTML coverage report at htmlcov/index.html
 # ---------------------------------------------------------------- local stack
 
 .PHONY: up
-up: ## Start the full local stack, then run migrations
+up: local-auth.yaml ## Start the full local stack, then run migrations
 	$(COMPOSE) up -d --build
 	$(MAKE) migrate
 	@echo "API  http://localhost:8000/docs"
 	@echo "Web  http://localhost:5173"
+
+# Docker creates a directory when a bind mount source is missing, so without
+# this the API starts with a directory where its config should be and fails
+# confusingly. The first command a new engineer runs used to be the one that
+# broke. AUDIT-001, finding A001-F04.
+local-auth.yaml:
+	@cp local-auth.example.yaml local-auth.yaml
+	@echo "Created local-auth.yaml from the example. It is gitignored."
 
 .PHONY: down
 down: ## Stop the local stack, keep the database volume
@@ -244,11 +256,18 @@ sbom: ## Generate an SBOM for each image
 	done
 
 .PHONY: security-tools
-security-tools: ## Install the scanners. macOS via brew, Linux via the install scripts
-	@echo "grype, syft, trivy, gitleaks, cosign, pip-audit"
-	@command -v brew >/dev/null && brew install grype syft trivy gitleaks cosign || \
-	  echo "Install manually, see security/README.md"
-	@$(BIN)/pip install pip-audit
+security-tools: ## Install the scanners. Runs as part of make setup
+	@echo "Installing grype, syft, trivy, gitleaks, cosign"
+	@if command -v brew >/dev/null 2>&1; then \
+	  brew list grype   >/dev/null 2>&1 || brew install grype; \
+	  brew list syft    >/dev/null 2>&1 || brew install syft; \
+	  brew list trivy   >/dev/null 2>&1 || brew install trivy; \
+	  brew list gitleaks >/dev/null 2>&1 || brew install gitleaks; \
+	  brew list cosign  >/dev/null 2>&1 || brew install cosign; \
+	else \
+	  echo "Homebrew not found. Install manually, see security/README.md"; \
+	fi
+	@test -x $(BIN)/pip && $(BIN)/pip install --quiet pip-audit || true
 
 # ---------------------------------------------------------------- images
 

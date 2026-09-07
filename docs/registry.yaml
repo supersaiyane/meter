@@ -5,20 +5,52 @@ meta:
 subprojects:
 - id: P0
   name: Foundation
+  status: Design approved, spec in review
+  spec: docs/specs/2026-08-23-p0-foundation-design.md
+  plan: docs/plans/P0-implementation-plan.md
+  depends_on: none
 - id: P1
   name: Cost Intelligence
+  status: Not started
+  spec: ''
+  plan: ''
+  depends_on: P0
 - id: P2
   name: Query Cost Governance
+  status: Not started
+  spec: ''
+  plan: ''
+  depends_on: P0
 - id: P3
   name: Utilization and Rightsizing
+  status: Not started
+  spec: ''
+  plan: ''
+  depends_on: P0, P1
 - id: P4
   name: Inventory and Topology
+  status: Not started
+  spec: ''
+  plan: ''
+  depends_on: P0
 - id: P5
   name: Quotas and Limits
+  status: Not started
+  spec: ''
+  plan: ''
+  depends_on: P0, P4
 - id: P6
   name: Containers
+  status: Not started
+  spec: ''
+  plan: ''
+  depends_on: P0, P1
 - id: P7
   name: Insight and LLM layer
+  status: Not started
+  spec: ''
+  plan: ''
+  depends_on: P1, P2, P3
 features:
 - id: FEAT-001
   name: Account onboarding and organization topology, parent to child map
@@ -464,6 +496,14 @@ changes:
     promotion rule. 18 findings promoted to the issue register
   commit: eca070d
   detail: '[AUDIT-001](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: CHG-0021
+  date: '2026-08-23'
+  type: Correction
+  what: 'AUDIT-001 remediation wave one: eleven findings closed, covering the import contract, CI tooling,
+    setup ordering, the first run experience, governance files, MCP packaging, the PARTIAL status, the
+    dead graph output, the context index generator and the duplicated roadmap table'
+  commit: pending
+  detail: '[REMEDIATION-LOG](audits/REMEDIATION-LOG.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -731,7 +771,7 @@ issues:
   severity: LOW
   summary: ECR tags were mutable, so a tag could be repointed at a different image after it was scanned
     and signed
-  status: OPEN
+  status: FIXED
   detail: Set IMMUTABLE tags in TASK-P0-016
 - id: ISS-055
   severity: CRITICAL
@@ -749,7 +789,7 @@ issues:
   severity: HIGH
   summary: finops_mcp is absent from the pyproject packages and the import linter root packages, so the
     contract keeping it out of the service layer is unenforced
-  status: OPEN
+  status: FIXED
   detail: '[A001-F02](audits/AUDIT-001-2026-08-23-full-project.md)'
 - id: ISS-058
   severity: HIGH
@@ -760,37 +800,37 @@ issues:
   severity: HIGH
   summary: The CI dependency-scan job runs scan.sh which requires gitleaks, but the security tools anchor
     does not install it, so the job exits 2
-  status: OPEN
+  status: FIXED
   detail: '[A001-F03](audits/AUDIT-001-2026-08-23-full-project.md)'
 - id: ISS-060
   severity: HIGH
   summary: make verify runs security-scan but nothing installs the scanners first, so a clean machine
     fails on tooling and it reads like a security failure
-  status: OPEN
+  status: FIXED
   detail: '[A001-F05](audits/AUDIT-001-2026-08-23-full-project.md)'
 - id: ISS-061
   severity: MEDIUM
   summary: make up mounts local-auth.yaml which is gitignored and has no example, so the first command
     a new engineer runs fails
-  status: OPEN
+  status: FIXED
   detail: '[A001-F04](audits/AUDIT-001-2026-08-23-full-project.md)'
 - id: ISS-062
   severity: MEDIUM
   summary: ADR-0014 lists context_index.md as generated and no generator exists, so a file the reuse ladder
     depends on will stay empty
-  status: OPEN
+  status: FIXED
   detail: '[A001-F06](audits/AUDIT-001-2026-08-23-full-project.md)'
 - id: ISS-063
   severity: MEDIUM
   summary: The interactive file graph renders nothing because cytoscape is never vendored and a CDN is
     ruled out
-  status: OPEN
+  status: FIXED
   detail: '[A001-F07](audits/AUDIT-001-2026-08-23-full-project.md)'
 - id: ISS-064
   severity: MEDIUM
   summary: The MCP server has no build job, no ECR repository and no scan path, placing a fourth deployable
     outside the security gates
-  status: OPEN
+  status: FIXED
   detail: '[A001-F08](audits/AUDIT-001-2026-08-23-full-project.md)'
 - id: ISS-065
   severity: MEDIUM
@@ -814,19 +854,19 @@ issues:
   severity: MEDIUM
   summary: Missing governance files. CODEOWNERS matters most because ADR-0013 requires a security sign
     off and nothing defines who can give it
-  status: OPEN
+  status: FIXED
   detail: '[A001-F16](audits/AUDIT-001-2026-08-23-full-project.md)'
 - id: ISS-069
   severity: LOW
   summary: The PARTIAL ingest run status is permitted by a check constraint and defined nowhere, so it
     will be applied inconsistently
-  status: OPEN
+  status: FIXED
   detail: '[A001-F09](audits/AUDIT-001-2026-08-23-full-project.md)'
 - id: ISS-070
   severity: LOW
   summary: The roadmap carries a generated status table and a hand written one describing the same sub
     projects
-  status: OPEN
+  status: FIXED
   detail: '[A001-F10](audits/AUDIT-001-2026-08-23-full-project.md)'
 - id: ISS-071
   severity: LOW

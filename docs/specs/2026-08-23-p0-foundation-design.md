@@ -165,6 +165,32 @@ rendering any of them as the number zero, is a defect.
 | `Unreachable` | Network path failure, for example a private subnet with no endpoint | Shown as failed, with the network cause |
 | `SchemaDrift` | The upstream payload no longer matches expectations | Shown as failed, and raised as an issue automatically |
 
+### 6.1 Run status, and what `PARTIAL` means
+
+`ingest_run.status` is a closed set of five. The fifth needed defining, because
+an undefined state gets applied inconsistently by whoever writes the first
+collector. AUDIT-001, finding A001-F09.
+
+| Status | Meaning | Rendered as |
+| --- | --- | --- |
+| `CLAIMED` | The idempotency key was inserted, work has not started | in progress |
+| `RUNNING` | Work is in progress | in progress |
+| `SUCCEEDED` | Every scope inside the run completed with no error | healthy |
+| `PARTIAL` | The run completed and wrote rows, and **at least one scope inside it produced a typed error** | **degraded, never healthy** |
+| `FAILED` | The run could not produce a usable result at all | failed |
+
+The distinction that matters: `PARTIAL` is the normal outcome at 300 accounts,
+because something always fails. It is not an error state and it must not block
+the next run. But it is **not** success either, and the freshness screen renders
+it as degraded with the failing scopes listed.
+
+Rendering `PARTIAL` as success would recreate ISS-015 at the run level: a total
+computed from 297 of 300 accounts, presented as an organization total.
+
+The watermark advances only for the scopes that succeeded. A scope that errored
+inside a `PARTIAL` run is retried on the next run, from its own unadvanced
+watermark.
+
 ## 7. Ingestion flow
 
 ```

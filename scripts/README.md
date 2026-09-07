@@ -20,6 +20,9 @@ executable lives outside this directory.
 | `docs/check_index.py` | `make check-docs` | Fails when `INDEX.md` and the documents drift apart |
 | `docs/check_feature_docs.py` | `make check-docs` | Fails when a feature has no document, or a document has no feature |
 | `docs/build_file_graph.py` | `make graph` | Builds the file dependency graph and checks the layering |
+| `docs/build_context_index.py` | `make doc-sync` | Generates `context_index.md` from the source, which rung two of the ladder depends on |
+| `docs/sync.py` | `make doc-sync` | Regenerates every derived document from `docs/registry.yaml` |
+| `security/pre_commit_deps.sh` | pre commit hook | Runs the admission gate when a dependency manifest changes |
 | `ci/code_review.py` | `make review` | Deterministic checks first, then the review checklist |
 | `deploy/run_migration_task.sh` | GitLab pipeline | Runs migrations as a one off ECS task before rollout |
 

@@ -1,0 +1,33 @@
+# Local development authentication. NOT FOR PRODUCTION.
+#
+# `LocalConfigIdentityProvider` reads this file. The application refuses to
+# start when METER_ENV is prod and this provider is selected, and an
+# integration test asserts that refusal. See ADR-0008 and P0 spec section 11.
+#
+# `make up` copies this file to local-auth.yaml when that file is absent.
+# local-auth.yaml is gitignored, so your own accounts never reach the
+# repository.
+#
+# The entitlement model mirrors the intended production one: the account list a
+# user can see is the list they are entitled to, and everything else is
+# filtered against it. `scope_coverage` in every API response reports visible
+# against total, so a partial view is never presented as an organization total.
+
+users:
+  - subject: dev@example.local
+    display_name: Local Developer
+    email: dev@example.local
+    tier: analyst          # viewer | analyst | owner
+    is_global: false
+    accounts:
+      - "111122223333"
+      - "444455556666"
+
+  # Mirrors the production global viewer. Sees every account, and every read is
+  # written to audit_event tagged as a global read.
+  - subject: auditor@example.local
+    display_name: Local Global Viewer
+    email: auditor@example.local
+    tier: viewer
+    is_global: true
+    accounts: []

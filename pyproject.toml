@@ -40,6 +40,7 @@ packages = [
     "finops_providers",
     "finops_ingest",
     "finops_api",
+    "finops_mcp",
 ]
 
 [tool.ruff]
@@ -65,7 +66,13 @@ warn_unreachable = true
 # The rule that keeps multi cloud cheap. finops_core must stay free of every
 # cloud SDK and every framework. Enforced here, not by good intentions.
 [tool.importlinter]
-root_packages = ["finops_core", "finops_providers", "finops_ingest", "finops_api"]
+root_packages = [
+    "finops_core",
+    "finops_providers",
+    "finops_ingest",
+    "finops_api",
+    "finops_mcp",
+]
 
 [[tool.importlinter.contracts]]
 name = "finops_core is independent of cloud SDKs and frameworks"
@@ -73,7 +80,34 @@ type = "forbidden"
 source_modules = ["finops_core"]
 forbidden_modules = ["boto3", "botocore", "fastapi", "sqlalchemy", "requests", "httpx"]
 
+# ADR-0009 and CLAUDE.md constraint 8: the MCP server is a facade in front of
+# the HTTP API. It calls the API over the network with the caller's token and
+# never reaches into the service layer, because two implementations of one
+# authorization rule is how an authorization bug is created.
+#
+# Until this contract existed, that rule was enforced by nothing. AUDIT-001,
+# finding A001-F02.
+[[tool.importlinter.contracts]]
+name = "finops_mcp is a facade, never a second implementation"
+type = "forbidden"
+source_modules = ["finops_mcp"]
+forbidden_modules = [
+    "finops_api.db",
+    "finops_api.guards",
+    "finops_ingest",
+    "finops_providers",
+    "boto3",
+    "botocore",
+    "sqlalchemy",
+]
+
 [[tool.importlinter.contracts]]
 name = "layers are respected"
 type = "layers"
-layers = ["finops_api", "finops_ingest", "finops_providers", "finops_core"]
+layers = [
+    "finops_mcp",
+    "finops_api",
+    "finops_ingest",
+    "finops_providers",
+    "finops_core",
+]

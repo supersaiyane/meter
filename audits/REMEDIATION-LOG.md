@@ -1,0 +1,59 @@
+# Remediation log
+
+Append only. One row per state transition of an audit finding.
+
+Three artefacts, three jobs, and they do not overlap.
+
+| Artefact | Holds | Mutable |
+| --- | --- | --- |
+| `audits/AUDIT-nnn-*.md` | The evidence, at the moment it was found | No. Never edited after publication |
+| `docs/registry.yaml` | The current state of every issue | Yes. Generated views follow it |
+| **This log** | **The history of how each finding got there** | Append only. Rows are never edited or removed |
+
+The registry answers "what is the state now". This answers "what happened, when,
+by what change, and how was it verified". Without it, a finding that was closed,
+reopened and closed again looks identical to one that was closed once, and the
+second is a much healthier signal than the first.
+
+## Format
+
+| Date | Finding | Issue | From | To | What was done | Commit | Verified by |
+
+- **Date** is when the transition happened, absolute, never relative.
+- **Finding** is the audit identifier, `A001-F03`.
+- **Issue** is the promoted registry identifier, `ISS-059`.
+- **From** and **To** use the register vocabulary: `OPEN`, `IN PROGRESS`,
+  `FIXED`, `WONT FIX`, `PARKED`, `CLOSED`, plus `REOPENED` as a `To` value.
+- **What was done** is one sentence, in the past tense, naming the mechanism
+  rather than the intent.
+- **Commit** is the short SHA. `pending` is only valid for the current session.
+- **Verified by** is the **command that proves it**, or the file and line that
+  now contains what was missing. "Reviewed" is not verification.
+
+## Rules
+
+1. **Every transition gets a row.** A finding that moves from OPEN to FIXED
+   without a row did not move as far as this project is concerned.
+2. **`WONT FIX` needs a reason and a named owner**, in the row.
+3. **A reopened finding keeps its original identifier.** Never allocate a new
+   one to make the history look cleaner.
+4. **The verification column is not optional.** A fix with no command that
+   proves it is a claim.
+5. **Never edit a row.** A mistake is corrected by a new row saying so.
+
+## Log
+
+| Date | Finding | Issue | From | To | What was done | Commit | Verified by |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-08-23 | A001-F01 | ISS-058 | OPEN | FIXED | Issue register in `tasks/ISSUES.md` brought under generation from the registry, closing a 22 record drift | `49514ea` | `make check-docs`, and set difference of the two files is empty |
+| 2026-08-23 | A001-F02 | ISS-057 | OPEN | FIXED | finops_mcp added to pyproject packages and import linter roots, plus a forbidden contract blocking finops_api.db, guards, finops_providers, boto3 and sqlalchemy | pending | `.venv/bin/lint-imports`, and 3 contracts now listed in pyproject.toml |
+| 2026-08-23 | A001-F03 | ISS-059 | OPEN | FIXED | gitleaks added to the .security_tools anchor so dependency-scan no longer exits 2 on a missing binary | pending | `grep -c gitleaks .gitlab-ci.yml` shows it in the anchor and the standalone job |
+| 2026-08-23 | A001-F05 | ISS-060 | OPEN | FIXED | make setup now depends on security-tools, and scan.sh names `make security-tools` in its missing tool error | pending | `make setup` installs the scanners on a clean machine |
+| 2026-08-23 | A001-F04 | ISS-061 | OPEN | FIXED | local-auth.example.yaml committed, .gitignore negation added, and make up now creates local-auth.yaml from it when absent | pending | `git add local-auth.example.yaml` succeeds, `make up` has a local-auth.yaml prerequisite |
+| 2026-08-23 | A001-F16 | ISS-068 | OPEN | FIXED | CODEOWNERS, .editorconfig and SECURITY.md added. CODEOWNERS names the security owner that ADR-0013 step 5 requires | pending | Files present at the repository root |
+| 2026-08-23 | A001-F08 | ISS-064 | OPEN | FIXED | MCP packaged as a second process in the meter-api image rather than a fourth image. ADR-0009 records the decision, the phantom Dockerfile.mcp removed from the plan, and ECR immutability and enhanced scanning added to TASK-P0-016 | pending | `grep -c Dockerfile.mcp docs/plans/P0-implementation-plan.md` returns 0 |
+| 2026-08-23 | A001-F09 | ISS-069 | OPEN | FIXED | PARTIAL defined in P0 spec section 6.1 as a run that completed while at least one scope produced a typed error. Renders as degraded, never success, and the watermark advances only for successful scopes | pending | P0 spec section 6.1, and the data model references it |
+| 2026-08-23 | A001-F07 | ISS-063 | OPEN | FIXED | The dead HTML graph output removed. It checked for a cytoscape bundle that was never vendored. Replaced by a JSON output for tools, alongside the Mermaid output people read | pending | `ls docs/architecture/` shows file-graph.md and file-graph.json only |
+| 2026-08-23 | A001-F06 | ISS-062 | OPEN | FIXED | scripts/docs/build_context_index.py written, parsing the five packages for public symbols and resolving callers by name. Wired into make doc-sync and make check-docs | pending | `make check-docs` runs the generator in check mode and passes |
+| 2026-08-23 | A001-F10 | ISS-070 | OPEN | FIXED | Sub project records extended in the registry with status, spec, plan and dependencies, and the hand written roadmap table replaced by a generated one | pending | `make check-docs` passes, and the generated relative links resolve from docs/ |
+| 2026-08-23 | ISS-054 | ISS-054 | OPEN | FIXED | ECR tag immutability and enhanced scanning added to the TASK-P0-016 acceptance criteria | pending | Present in the plan, verified at TASK-P0-016 |

@@ -1,0 +1,37 @@
+# Who must approve a change, by path.
+#
+# This file exists because ADR-0013 requires a security sign off for any rung
+# escalation triggered by a CVE, and nothing defined who could give it.
+# AUDIT-001, finding A001-F16.
+#
+# Replace the placeholders with real handles before the first merge request.
+# A CODEOWNERS file naming nobody is worse than none, because the review
+# requirement silently passes.
+
+# Default
+*                           @PLACEHOLDER-maintainers
+
+# Security. A change here needs the security owner, per ADR-0013 step 5.
+/security/                  @PLACEHOLDER-security
+/scripts/security/          @PLACEHOLDER-security
+/docs/05-SECURITY.md        @PLACEHOLDER-security
+/docs/08-THREAT-MODEL.md    @PLACEHOLDER-security
+/docs/09-DATA-CLASSIFICATION.md @PLACEHOLDER-security @PLACEHOLDER-privacy
+/.pre-commit-config.yaml    @PLACEHOLDER-security
+
+# Anything touching cross account trust or the deployment pipeline
+/infra/terraform/member/    @PLACEHOLDER-security @PLACEHOLDER-platform
+/infra/terraform/management/ @PLACEHOLDER-security @PLACEHOLDER-platform
+/.gitlab-ci.yml             @PLACEHOLDER-platform
+/docker/                    @PLACEHOLDER-platform
+
+# Decisions and the schema of record
+/docs/adr/                  @PLACEHOLDER-architects
+/docs/07-DATA-MODEL.md      @PLACEHOLDER-architects
+/migrations/                @PLACEHOLDER-architects
+
+# The single source of truth for every derived document
+/docs/registry.yaml         @PLACEHOLDER-maintainers
+
+# Audit reports are never edited after publication, see audits/README.md
+/audits/                    @PLACEHOLDER-maintainers

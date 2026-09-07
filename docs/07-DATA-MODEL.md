@@ -252,6 +252,12 @@ CREATE INDEX ix_ingest_run__stale_claims
     ON ingest_run (status, started_at) WHERE status IN ('CLAIMED', 'RUNNING');
 ```
 
+`status` is a closed set of five, defined in P0 spec section 6.1. `PARTIAL`
+means the run completed and wrote rows while at least one scope inside it
+produced a typed error. It is the normal outcome at 300 accounts, it is not an
+error state, and it must never render as success. The watermark advances only
+for the scopes that succeeded.
+
 Two constraints here carry most of the design.
 
 `uq_ingest_run__idempotency_key` is what makes re running a collector safe. The

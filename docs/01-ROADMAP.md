@@ -51,19 +51,25 @@ P0 Foundation
 
 ## Sub projects
 
-| ID | Name | Status | Spec | Plan | Depends on |
-| --- | --- | --- | --- | --- | --- |
-| P0 | Foundation | Design approved, spec in review | `docs/specs/2026-08-23-p0-foundation-design.md` | not written | none |
-| P2 | Query Cost Governance, Grafana first | Not started | not written | not written | P0 |
-| P1 | Cost Intelligence, CUR and FOCUS | Not started | not written | not written | P0 |
-| P3 | Utilization and Rightsizing | Not started | not written | not written | P0, P1 |
-| P4 | Inventory and Topology | Not started | not written | not written | P0 |
-| P5 | Quotas and Limits | Not started | not written | not written | P0, P4 |
-| P6 | Containers, EKS and ECS | Not started | not written | not written | P0, P1 |
-| P7 | Insight and LLM layer | Not started | not written | not written | P1, P2, P3 |
+<!-- generated:subprojects start -->
+<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
+
+| ID | Name | Status | Features | Spec | Plan | Depends on |
+| --- | --- | --- | --- | --- | --- | --- |
+| P0 | Foundation | Design approved, spec in review | 10 (10 specified) | [spec](specs/2026-08-23-p0-foundation-design.md) | [plan](plans/P0-implementation-plan.md) | none |
+| P1 | Cost Intelligence | Not started | 5 (0 specified) | not written | not written | P0 |
+| P2 | Query Cost Governance | Not started | 9 (0 specified) | not written | not written | P0 |
+| P3 | Utilization and Rightsizing | Not started | 5 (0 specified) | not written | not written | P0, P1 |
+| P4 | Inventory and Topology | Not started | 3 (0 specified) | not written | not written | P0 |
+| P5 | Quotas and Limits | Not started | 2 (0 specified) | not written | not written | P0, P4 |
+| P6 | Containers | Not started | 3 (0 specified) | not written | not written | P0, P1 |
+| P7 | Insight and LLM layer | Not started | 5 (0 specified) | not written | not written | P1, P2, P3 |
+
+<!-- generated:subprojects end -->
 
 Status values: `Not started`, `Design in progress`, `Design approved, spec in
-review`, `Spec approved, plan in progress`, `In build`, `Delivered`.
+review`, `Spec approved, plan in progress`, `In build`, `Delivered`. Change one
+in `docs/registry.yaml`, then run `make doc-sync`.
 
 ---
 

@@ -12,7 +12,7 @@ of how this repository actually hangs together.
 Two outputs.
 
   docs/architecture/file-graph.md    Mermaid, readable in GitLab and in a diff
-  docs/architecture/file-graph.html  Cytoscape, pan and zoom, filterable
+  docs/architecture/file-graph.json  the same graph, for any tool that wants it
 
 It also enforces the layering contract. Any edge that violates the direction in
 `pyproject.toml` under `tool.importlinter` is reported and fails the run, so the
@@ -238,46 +238,15 @@ def render_mermaid(edges, nodes) -> str:
     return "\n".join(lines)
 
 
-HTML = """<!doctype html>
-<meta charset="utf-8">
-<title>Meter file graph</title>
-<style>
- :root{color-scheme:light dark;--bg:#fff;--fg:#111;--mut:#666;--line:#e3e3e3}
- @media(prefers-color-scheme:dark){:root{--bg:#111417;--fg:#e8e8e8;--mut:#9aa0a6;--line:#2a2f35}}
- body{margin:0;background:var(--bg);color:var(--fg);
-      font:14px/1.5 ui-sans-serif,system-ui,-apple-system,sans-serif}
- header{padding:.85rem 1.1rem;border-bottom:1px solid var(--line);
-        display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
- h1{font-size:1rem;margin:0}
- .mut{color:var(--mut);font-size:.85rem}
- label{font-size:.85rem;display:flex;gap:.3rem;align-items:center}
- #cy{width:100%;height:calc(100vh - 60px)}
- .note{padding:1rem;color:var(--mut)}
-</style>
-<header>
-  <h1>Meter file graph</h1>
-  <span class="mut" id="stats"></span>
-  <label><input type="checkbox" data-kind="python" checked> python</label>
-  <label><input type="checkbox" data-kind="typescript" checked> typescript</label>
-  <label><input type="checkbox" data-kind="terraform" checked> terraform</label>
-  <label><input type="checkbox" data-kind="docker" checked> docker</label>
-</header>
-<div id="cy"></div>
-<p class="note" id="note"></p>
-<script>
-const DATA = __DATA__;
-document.getElementById('stats').textContent =
-  DATA.nodes.length + ' files, ' + DATA.edges.length + ' edges';
-// Cytoscape is loaded from the repository's own vendored copy when the graph is
-// opened from the built docs. Rendered as a plain list when it is absent, so
-// this page is never blank and never reaches out to a CDN.
-if (!window.cytoscape) {
-  document.getElementById('note').textContent =
-    'Interactive rendering needs the vendored cytoscape bundle. ' +
-    'The Mermaid version in file-graph.md is always available.';
-}
-</script>
-"""
+# The interactive HTML output was removed. It checked for a cytoscape bundle
+# that was never vendored, and the content security posture rules out loading
+# one from a CDN, so it rendered a header and an apology. The Mermaid output in
+# file-graph.md works, renders in GitLab and in a diff, and is what people
+# actually read.
+#
+# Rung zero of the ADR-0013 ladder: does this need to exist at all. It did not.
+# AUDIT-001, finding A001-F07. If pan and zoom is ever genuinely needed, vendor
+# the bundle into docs/architecture/vendor/ and restore this from git history.
 
 
 def main() -> int:
@@ -300,10 +269,14 @@ def main() -> int:
     if not args.check:
         OUT_DIR.mkdir(parents=True, exist_ok=True)
         (OUT_DIR / "file-graph.md").write_text(render_mermaid(edges, nodes))
-        payload = json.dumps(
-            {"nodes": nodes, "edges": [{"s": s, "t": t, "k": k} for s, t, k in edges]}
+        # The graph is also emitted as JSON, so a future tool can consume it
+        # without re parsing the repository.
+        (OUT_DIR / "file-graph.json").write_text(
+            json.dumps(
+                {"nodes": nodes, "edges": [{"s": a, "t": b, "k": k} for a, b, k in edges]},
+                indent=2,
+            )
         )
-        (OUT_DIR / "file-graph.html").write_text(HTML.replace("__DATA__", payload))
 
     print(f"OK: {len(nodes)} files, {len(edges)} edges, 0 layering violations")
     return 0

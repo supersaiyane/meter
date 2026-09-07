@@ -66,6 +66,38 @@ network hop and costs the single enforcement point, because the scope
 dependency lives at the HTTP boundary. Reimplementing it inside the MCP server
 is exactly the defect ISS-009 describes.
 
+## Packaging: a second process in the API image
+
+Added 2026-08-23, closing AUDIT-001 finding A001-F08.
+
+The MCP server ships as a **second process in the `meter-api` image**, selected
+by the container command, not as a fourth image.
+
+The audit found that MCP had been described as a separate deployable in the
+plan while having no build job, no ECR repository and no scan path, which would
+have placed it outside the pipeline scan and the provenance verification
+entirely.
+
+Two ways to close that. Add a fourth image with its own build, scan, signature
+and repository. Or ship it in the image it already shares a dependency set with.
+
+The second is chosen. The MCP server imports nothing the API does not already
+import, so a separate image would duplicate the entire dependency tree for one
+module. It also inherits the scan, the SBOM, the signature and the attestation
+for free, and every artefact added to a supply chain is one more thing to keep
+at zero findings.
+
+```
+meter-api image
+  ENTRYPOINT ["/opt/venv/bin/python", "-m"]
+  CMD        ["finops_api.main"]              # the API service
+  command    ["finops_mcp.server"]            # the MCP service, ECS override
+```
+
+Two ECS services, one image, one scan, one signature. The import linter
+contract added in the same change prevents the shared image from becoming a
+shared implementation.
+
 ## Scope by sub project
 
 The MCP server grows with the product rather than arriving all at once.
