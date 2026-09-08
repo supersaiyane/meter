@@ -502,7 +502,7 @@ changes:
   what: 'AUDIT-001 remediation wave one: eleven findings closed, covering the import contract, CI tooling,
     setup ordering, the first run experience, governance files, MCP packaging, the PARTIAL status, the
     dead graph output, the context index generator and the duplicated roadmap table'
-  commit: pending
+  commit: ef23f8a
   detail: '[REMEDIATION-LOG](audits/REMEDIATION-LOG.md)'
 issues:
 - id: ISS-001
