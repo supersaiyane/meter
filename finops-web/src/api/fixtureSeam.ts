@@ -29,9 +29,13 @@ export interface Resolved<T> {
  * like.
  */
 export const FIXTURE_SURFACES: ReadonlySet<string> = new Set([
-  '/api/v1/query/findings',
-  '/api/v1/query/findings/{id}',
-  '/api/v1/query/instances',
+  // Findings, the finding detail and the instances went live with
+  // TASK-P2-021 and came out of this set the moment they did, because
+  // tests/api/test_fixture_surfaces.py fails the build otherwise.
+  //
+  // Enforcement stays. TASK-P2-016 is parked on infrastructure ISS-122 records
+  // as never provisioned, so there is nothing behind that route and the screen
+  // keeps saying its data is invented.
   '/api/v1/query/enforcement',
 ]);
 

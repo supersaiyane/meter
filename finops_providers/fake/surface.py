@@ -65,6 +65,8 @@ INSTANCES: tuple[SurfaceInstance, ...] = (
         location="g-0a1b2c3d.grafana-workspace.eu-west-1.amazonaws.com",
         reachable=False,
         unreachable_cause="AccessDenied",
+        account_id="111122223333",  # allow-hardcoded: a fake estate
+        region_id="eu-west-1",  # allow-hardcoded: a fake estate
     ),
     SurfaceInstance(
         surface_id="ws-4e5f6a7b",

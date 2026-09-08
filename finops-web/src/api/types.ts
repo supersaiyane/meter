@@ -96,65 +96,73 @@ export interface PlatformCost {
 
 export interface ApiQueryFinding {
   readonly finding_id: string;
-  readonly dashboard_uid: string;
-  readonly dashboard_title: string;
-  readonly panel_title: string;
-  readonly refresh_seconds: number | null;
-  readonly window_seconds: number | null;
-  readonly runs_per_day: number;
-  readonly bytes_scanned_per_run: number;
-  /** A decimal string, never a float. Compared as a number only to sort. */
-  readonly monthly_cost: string;
-  /** measured, modelled or forecast. Never absent. */
-  readonly provenance: string;
-  /** 1 informational to 5 critical, derived from dollars per ADR-0016. */
-  readonly severity: number;
-  /** The literal string `unattributed` when no owner was resolved. */
-  readonly owner: string;
-  /** Prose explaining what drives the cost. Ported from the prototype. */
-  readonly why: string;
-}
-
-export interface ApiQueryFindingDetail {
-  readonly finding_id: string;
-  readonly dashboard_title: string;
-  readonly panel_title: string;
-  /** The query as written. Shown whole, never summarised. */
-  readonly query_text: string;
-  /** What it runs against: a log group, a namespace. */
-  readonly target: string;
+  readonly dashboard_uid: string | null;
+  readonly dashboard_title: string | null;
+  readonly panel_title: string | null;
+  readonly folder_uid: string | null;
   readonly engine: string;
+  readonly origin: string;
   readonly refresh_seconds: number | null;
   readonly window_seconds: number;
-  readonly runs_per_day: number;
-  readonly bytes_scanned_per_run: number;
+  /** A decimal string, never a float. Compared as a number only to sort. */
+  readonly runs_per_day: string;
+  readonly scan_bytes_per_run: number | null;
+  readonly monthly_cost: string;
+  /** measured or modelled. Never absent. */
+  readonly provenance: string;
+  /** Null on a modelled row, a count on a measured one. Never both ways. */
+  readonly measured_runs: number | null;
+  /** CRITICAL, HIGH, MEDIUM or LOW. A word, not a number. */
+  readonly severity: string;
+  /**
+   * Null when nothing could attribute the query. The API does not send the
+   * word "unattributed": an absence is an absence, and what it reads as is
+   * this application's decision.
+   */
+  readonly owner: string | null;
+  readonly owner_source: string | null;
+  /** Prose explaining what drives the cost. Ported from the prototype. */
+  readonly why: string;
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
+export interface ApiQueryFindingDetail extends ApiQueryFinding {
+  /** The query as written. Shown whole, never summarised. */
+  readonly query_text: string;
+  /** What it runs against: log groups, a namespace. */
+  readonly targets: readonly string[];
+  readonly region: string | null;
+  readonly last_editor: string | null;
   /** The published price, so the arithmetic has no constant hidden in the UI. */
   readonly rate_usd_per_gib: string;
-  readonly monthly_cost: string;
-  readonly provenance: string;
   /** FEAT-018. Null until a calibration is published, and then never invented. */
   readonly accuracy_percent: number | null;
-  /** FEAT-013 evidence. Null until the measured overlay exists. */
-  readonly measured_runs_per_day: number | null;
-  readonly measured_bytes_scanned_per_run: number | null;
 }
 
 export interface ApiSurfaceInstance {
-  readonly surface_id: string;
+  readonly instance_id: string;
   readonly name: string;
-  /** managed_grafana, self_hosted_grafana or grafana_cloud. A closed set. */
+  /** AMG, SELF_HOSTED or CLOUD. A closed set, checked in the database. */
   readonly kind: string;
-  readonly location: string;
+  readonly endpoint: string;
+  /** Both null for an instance that belongs to no cloud account. */
+  readonly account_id: string | null;
+  readonly region_id: string | null;
   readonly reachable: boolean;
-  /** One of the six causes, by name. Required when reachable is false. */
-  readonly unreachable_cause: string | null;
+  /** One of the typed causes, by name. Required when reachable is false. */
+  readonly unreachable_reason: string | null;
   /**
    * Null when the instance could not be read. Null is not zero: an instance
    * Meter cannot reach has an unknown number of queries, and rendering that as
-   * zero is what makes an estate look smaller than it is.
+   * zero is what makes an estate look smaller than it is. A workspace that was
+   * read and holds nothing is a zero, and the two must not look alike.
    */
   readonly query_count: number | null;
+  readonly as_of: string;
+  readonly collected_at: string;
 }
+
 
 export interface ApiEnforcementAction {
   readonly action_id: string;

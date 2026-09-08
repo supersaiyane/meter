@@ -177,6 +177,17 @@ def p0_routers() -> tuple[APIRouter, ...]:
     return (me.router, accounts.router, org.router, ingest.router, platform.router)
 
 
+def p2_routers() -> tuple[APIRouter, ...]:
+    """The query governance routes, from the P2 spec's section 8.2 table.
+
+    Three of the eight it names. The rest read data no collector produces yet,
+    and a route over an empty table answers a question with a confident nothing.
+    """
+    from finops_api.routes import query
+
+    return (query.router,)
+
+
 def create_app(
     engine: Engine,
     entitlements: Any,
@@ -195,7 +206,12 @@ def create_app(
     app.state.settings = resolved
     app.state.health_check = health_check
     app.add_middleware(RequestIdMiddleware)
-    routers = (build_router(), *(p0_routers() if include_p0_routes else ()), *extra_routers)
+    routers = (
+        build_router(),
+        *(p0_routers() if include_p0_routes else ()),
+        *(p2_routers() if include_p0_routes else ()),
+        *extra_routers,
+    )
     # Checked before anything is registered, so a broken contract fails at
     # construction rather than at the first request.
     assert_envelope_contract(routers)

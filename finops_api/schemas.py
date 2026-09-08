@@ -18,6 +18,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from datetime import date, datetime
 from decimal import Decimal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, computed_field
 
@@ -216,3 +217,82 @@ class HealthOut(BaseModel):
     status: str
     database_reachable: bool
     collectors: tuple[CollectorHealth, ...]
+
+
+class QueryFindingOut(BaseModel):
+    """One expensive query, as the findings list shows it."""
+
+    model_config = ConfigDict(frozen=True)
+
+    finding_id: UUID
+    dashboard_uid: str | None
+    dashboard_title: str | None
+    panel_title: str | None
+    folder_uid: str | None
+    engine: str
+    origin: str
+    refresh_seconds: int | None
+    window_seconds: int
+    runs_per_day: Decimal
+    scan_bytes_per_run: int | None
+    #: Decimal, never float. A float total over a month of findings is wrong in
+    #: the last places, and a figure that will not reconcile is not used twice.
+    monthly_cost: Decimal
+    #: measured or modelled. Never absent, and never inferred by the reader.
+    provenance: str
+    #: Null on a modelled row, a count on a measured one. The database refuses
+    #: either half alone, so this pair is always consistent.
+    measured_runs: int | None
+    severity: str
+    #: Null when nothing could attribute it. The API does not invent a
+    #: placeholder: "unattributed" is a word a screen chooses, and an API that
+    #: returned it would make an absence indistinguishable from a real owner
+    #: whose name happens to be that.
+    owner: str | None
+    owner_source: str | None
+    #: What drives the cost, in words. It is what makes a finding actionable
+    #: rather than a number, so it is a field and not a tooltip.
+    why: str
+    as_of: datetime
+    collected_at: datetime
+
+
+class QueryFindingDetailOut(QueryFindingOut):
+    """One finding with its full working, for the detail screen."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: The query as written. Shown whole: a summary of a query is not evidence.
+    query_text: str
+    targets: list[str]
+    region: str | None
+    last_editor: str | None
+    #: The published price the working is derived from. Sent rather than
+    #: hardcoded in the screen, so the arithmetic it publishes has no constant
+    #: the reader cannot see.
+    rate_usd_per_gib: Decimal
+    #: Null until FEAT-018 publishes a calibration. Never invented, because the
+    #: honest rendering of an unpublished accuracy is to say it is unpublished.
+    accuracy_percent: Decimal | None = None
+
+
+class SurfaceInstanceOut(BaseModel):
+    """One place queries live, reachable or not."""
+
+    model_config = ConfigDict(frozen=True)
+
+    instance_id: UUID
+    name: str
+    kind: str
+    endpoint: str
+    account_id: str | None
+    region_id: str | None
+    reachable: bool
+    #: One of the six causes when reachable is false, and never free text.
+    unreachable_reason: str | None
+    #: Null when the instance could not be read. Null is not zero: an instance
+    #: Meter cannot reach has an unknown number of queries, and a zero would
+    #: make the estate look smaller than it is.
+    query_count: int | None
+    as_of: datetime
+    collected_at: datetime

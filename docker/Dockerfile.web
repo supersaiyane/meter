@@ -54,6 +54,9 @@ FROM --platform=${TARGETPLATFORM} reg.mini.dev/nginx@sha256:5ccdbdfe81fce440c262
 ARG TARGETPLATFORM
 
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+# Silences the base image's own server block, which would otherwise win
+# every request whose Host is `localhost`. See the file for why.
+COPY docker/nginx.disabled.conf /etc/nginx/conf.d/nginx.default.conf
 COPY --from=builder /build/dist /usr/share/nginx/html
 
 USER 65532:65532

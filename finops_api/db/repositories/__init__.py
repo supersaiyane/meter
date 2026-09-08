@@ -26,3 +26,9 @@ __all__ = [
     "SyncErrorRepository",
     "WatermarkRepository",
 ]
+from finops_api.db.repositories.query import (
+    QueryFindingRepository,
+    SurfaceInstanceRepository,
+)
+
+__all__ = [*globals().get("__all__", []), "QueryFindingRepository", "SurfaceInstanceRepository"]

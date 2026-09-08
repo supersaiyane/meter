@@ -82,6 +82,31 @@ def test_it_is_registered_at_six_hours_with_a_reason() -> None:
     assert len(entry.reason) > 80
 
 
+def test_the_account_column_holds_an_account(engine: Engine, tenant_id: UUID) -> None:
+    """It held a workspace identifier, because the account was parsed out of one
+    and the parse fell back to the identifier itself. Scope enforcement reads
+    this column, so the guess made a scoped viewer lose the workspace and told
+    them nothing. ISS-153.
+
+    The two instances that belong to no cloud account write null, which the
+    database requires of anything that is not an AMG workspace.
+    """
+    run(engine, tenant_id, FakeQuerySurface())
+    with engine.begin() as connection:
+        rows = connection.execute(
+            text(
+                "SELECT kind, account_id, region_id FROM grafana_instance "
+                "WHERE tenant_id = :t ORDER BY name"
+            ),
+            {"t": tenant_id},
+        ).all()
+    assert [(k, a, r) for k, a, r in rows] == [
+        ("AMG", "111122223333", "eu-west-1"),
+        ("SELF_HOSTED", None, None),
+        ("CLOUD", None, None),
+    ]
+
+
 def test_it_writes_the_estate_and_prices_what_it_read(engine: Engine, tenant_id: UUID) -> None:
     run(engine, tenant_id, FakeQuerySurface())
     assert count(engine, "grafana_instance", tenant_id) == 3

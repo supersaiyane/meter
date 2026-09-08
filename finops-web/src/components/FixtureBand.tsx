@@ -1,7 +1,11 @@
 import type { SurfaceSource } from '../api/fixtureSeam';
 
 export interface FixtureBandProps {
-  readonly source: SurfaceSource;
+  /**
+   * Undefined while the request is in flight or after it failed. Neither is
+   * fixture data, and neither is a route's answer, so neither gets a claim.
+   */
+  readonly source: SurfaceSource | undefined;
 }
 
 /**
@@ -17,7 +21,11 @@ export interface FixtureBandProps {
  * ship invented numbers that look real.
  */
 export function FixtureBand({ source }: FixtureBandProps) {
-  if (source === 'route') {
+  if (source !== 'fixture') {
+    // Including the unknown case. A failed request used to default to
+    // `fixture`, so a screen that could not reach its route announced that its
+    // data was invented, which is a false claim about provenance in a product
+    // whose whole argument is that its provenance labels can be trusted.
     return null;
   }
   return (

@@ -7,6 +7,7 @@ import { amountFigure } from '../findingFigure';
 import { QUERY_FINDING_DETAILS } from '../../api/fixtures/query';
 import { Harness } from './Harness';
 import { clientReturning } from './fixtures';
+import { queryFindingDetailFixture } from '../../api/fixtures/query';
 import { violationsIn } from '../../components/__tests__/axe';
 
 const MODELLED = '11111111-1111-1111-1111-111111111111';
@@ -17,8 +18,14 @@ const MEASURED = '22222222-2222-2222-2222-222222222222';
  * what gets pasted into a ticket.
  */
 function renderDetail(id: string) {
+  // Live since TASK-P2-021, so the route is stubbed for whichever id the test
+  // asks for. An id the estate does not hold answers with a null body, which is
+  // what the fixture did and what this screen's not found branch reads.
+  const client = clientReturning({
+    [`/api/v1/query/findings/${id}`]: queryFindingDetailFixture(id),
+  });
   return render(
-    <Harness client={clientReturning({})} initialPath={`/governance/queries/${id}`}>
+    <Harness client={client} initialPath={`/governance/queries/${id}`}>
       <Routes>
         <Route path="/governance/queries/:id" element={<QueryFindingDetailScreen />} />
       </Routes>

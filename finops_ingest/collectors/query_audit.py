@@ -206,7 +206,11 @@ class QueryAuditCollector:
                 "ON CONFLICT (tenant_id, endpoint) DO UPDATE SET "
                 "name = EXCLUDED.name, kind = EXCLUDED.kind, reachable = EXCLUDED.reachable, "
                 "unreachable_reason = EXCLUDED.unreachable_reason, as_of = EXCLUDED.as_of, "
-                "collected_at = EXCLUDED.collected_at "
+                "collected_at = EXCLUDED.collected_at, "
+                # Refreshed like everything else. Leaving them out meant a row
+                # written once kept its account forever, so a correction to how
+                # the account is determined never reached an existing estate.
+                "account_id = EXCLUDED.account_id, region_id = EXCLUDED.region_id "
                 "RETURNING instance_id"
             ),
             {
@@ -228,19 +232,20 @@ class QueryAuditCollector:
 
     @staticmethod
     def _account_of(instance: SurfaceInstance) -> str | None:
-        if _KIND_COLUMN.get(str(instance.kind)) != "AMG":
-            return None
-        # A synthetic instance for a region that could not be listed carries
-        # `aws:account:region` as its identifier, which is where the pair lives.
-        parts = instance.surface_id.split(":")
-        return parts[1] if len(parts) == 3 else instance.surface_id
+        """The account the instance lives in, as the adapter reported it.
+
+        This used to parse `aws:account:region` out of the identifier and fall
+        back to the identifier itself. The fallback fired for every real
+        workspace, because the AMG adapter names those by workspace id, so the
+        account column held a workspace id. That column is what scope
+        enforcement reads, so the guess made a scoped viewer lose the workspace
+        and told them nothing. ISS-153.
+        """
+        return instance.account_id
 
     @staticmethod
     def _region_of(instance: SurfaceInstance) -> str | None:
-        if _KIND_COLUMN.get(str(instance.kind)) != "AMG":
-            return None
-        parts = instance.surface_id.split(":")
-        return parts[2] if len(parts) == 3 else instance.location
+        return instance.region_id
 
     def _mark_unreadable(
         self, context: CollectorContext, instance_pk: Any, failure: CollectionError, now: datetime

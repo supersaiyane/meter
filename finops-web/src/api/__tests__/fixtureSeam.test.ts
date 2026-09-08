@@ -4,21 +4,27 @@ import { FIXTURE_SURFACES, resolveSurface } from '../fixtureSeam';
 
 describe('resolveSurface', () => {
   it('uses the fixture, and says so, for a declared fixture template', async () => {
+    // Enforcement, because findings went live with TASK-P2-021 and left the
+    // set. A template here has to be one that is actually still invented.
     const read = resolveSurface(
-      '/api/v1/query/findings',
+      '/api/v1/query/enforcement',
       () => Promise.resolve(['real']),
       () => ['fixture'],
     );
     await expect(read()).resolves.toEqual({ data: ['fixture'], source: 'fixture' });
   });
 
-  it('matches a parameterised template rather than a concrete url', async () => {
+  it('compares the whole template, so a live route is never served a fixture', async () => {
+    // The parameterised case is now covered by
+    // tests/api/test_fixture_surfaces.py, which compares route shapes with
+    // parameter names normalised. That guard caught this exact mismatch:
+    // `{id}` here against `{finding_id}` on the route.
     const read = resolveSurface(
-      '/api/v1/query/findings/{id}',
+      '/api/v1/query/findings',
       () => Promise.resolve(['real']),
       () => ['fixture'],
     );
-    await expect(read()).resolves.toEqual({ data: ['fixture'], source: 'fixture' });
+    await expect(read()).resolves.toEqual({ data: ['real'], source: 'route' });
   });
 
   it('uses the route, and says so, for any other template', async () => {

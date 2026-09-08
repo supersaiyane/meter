@@ -4,12 +4,13 @@ import { describe, expect, it } from 'vitest';
 import { QueryFindingsScreen } from '../QueryFindingsScreen';
 import { Harness } from './Harness';
 import { clientReturning } from './fixtures';
+import { queryFindingsFixture } from '../../api/fixtures/query';
 import { violationsIn } from '../../components/__tests__/axe';
 
-/** The path is in FIXTURE_SURFACES, so the client is never called. */
+/** Live since TASK-P2-021, so the route is stubbed rather than the seam. */
 function renderFindings() {
   return render(
-    <Harness client={clientReturning({})}>
+    <Harness client={clientReturning({ '/api/v1/query/findings': queryFindingsFixture() })}>
       <QueryFindingsScreen />
     </Harness>,
   );
@@ -57,9 +58,12 @@ describe('QueryFindingsScreen', () => {
     expect(await screen.findByText('unattributed')).toBeInTheDocument();
   });
 
-  it('says so while it is running on a fixture', async () => {
+  it('no longer claims to be a fixture, now that the route is live', async () => {
+    // The band is driven by the same resolution that chose the source, so it
+    // disappearing is the proof that this screen reads real data.
     renderFindings();
-    expect(await screen.findByTestId('fixture-band')).toBeInTheDocument();
+    await screen.findByRole('table');
+    expect(screen.queryByTestId('fixture-band')).toBeNull();
   });
 
   it('has no accessibility violations', async () => {

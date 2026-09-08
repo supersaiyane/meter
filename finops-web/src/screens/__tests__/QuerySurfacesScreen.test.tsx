@@ -4,11 +4,12 @@ import { describe, expect, it } from 'vitest';
 import { QuerySurfacesScreen } from '../QuerySurfacesScreen';
 import { Harness } from './Harness';
 import { clientReturning } from './fixtures';
+import { surfaceInstancesFixture } from '../../api/fixtures/query';
 import { violationsIn } from '../../components/__tests__/axe';
 
 function renderSurfaces() {
   return render(
-    <Harness client={clientReturning({})}>
+    <Harness client={clientReturning({ '/api/v1/query/instances': surfaceInstancesFixture() })}>
       <QuerySurfacesScreen />
     </Harness>,
   );
@@ -46,9 +47,14 @@ describe('QuerySurfacesScreen', () => {
     expect(within(row).getByText('0')).toBeInTheDocument();
   });
 
-  it('says so while it is running on a fixture', async () => {
+  it('makes no fixture claim, because this surface has a route', async () => {
+    // It did claim one, because the band defaulted to `fixture` whenever the
+    // source was unknown. A screen reading a real route that announces its data
+    // is invented is the same failure as the reverse, and this surface has been
+    // route backed since TASK-P2-021.
     renderSurfaces();
-    expect(await screen.findByTestId('fixture-band')).toBeInTheDocument();
+    await screen.findByRole('table');
+    expect(screen.queryByTestId('fixture-band')).toBeNull();
   });
 
   it('has no accessibility violations', async () => {

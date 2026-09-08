@@ -94,6 +94,17 @@ class SurfaceInstance:
     reachable: bool = True
     #: Why not, when `reachable` is false. One of the six causes, by name.
     unreachable_cause: str | None = None
+    #: The cloud account and region this instance lives in, when it lives in
+    #: one. Both null for a self hosted or vendor hosted instance, which belongs
+    #: to no cloud account at all.
+    #:
+    #: Carried here rather than derived from `surface_id` downstream. It used to
+    #: be derived, and the derivation guessed: a workspace identifier was
+    #: written into the account column, which is the column scope enforcement
+    #: reads. A wrong account is worse than no account, because a scoped viewer
+    #: then loses a workspace and is told nothing.
+    account_id: str | None = None
+    region_id: str | None = None
 
     def __post_init__(self) -> None:
         if not self.reachable and not self.unreachable_cause:

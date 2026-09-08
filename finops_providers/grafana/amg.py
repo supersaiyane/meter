@@ -133,6 +133,8 @@ class AmgQuerySurface:
                         location=scope.region,
                         reachable=False,
                         unreachable_cause=type(failure).__name__,
+                        account_id=scope.account_id,
+                        region_id=scope.region,
                     )
                 )
 
@@ -181,6 +183,11 @@ class AmgQuerySurface:
             location=str(endpoint),
             reachable=status == "ACTIVE",
             unreachable_cause=None if status == "ACTIVE" else "NotOptedIn",
+            # The account and region this listing was made in. Known here, and
+            # nowhere downstream, which is why it is carried rather than parsed
+            # back out of an identifier later.
+            account_id=scope.account_id,
+            region_id=scope.region,
         )
 
     # -- the token loan ----------------------------------------------------

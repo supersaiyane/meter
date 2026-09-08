@@ -18,7 +18,7 @@ describe('query fixtures', () => {
   it('publishes a cost each detail row can actually derive', () => {
     for (const detail of Object.values(QUERY_FINDING_DETAILS)) {
       const gibPerMonth =
-        (detail.runs_per_day * detail.bytes_scanned_per_run * DAYS_PER_MONTH) / GIB;
+        (Number(detail.runs_per_day) * Number(detail.scan_bytes_per_run) * DAYS_PER_MONTH) / GIB;
       const derived = gibPerMonth * Number(detail.rate_usd_per_gib);
       expect(derived).toBeCloseTo(Number(detail.monthly_cost), 2);
     }
@@ -32,7 +32,7 @@ describe('query fixtures', () => {
       expect(detail).toBeDefined();
       expect(detail?.monthly_cost).toBe(finding.monthly_cost);
       expect(detail?.runs_per_day).toBe(finding.runs_per_day);
-      expect(detail?.bytes_scanned_per_run).toBe(finding.bytes_scanned_per_run);
+      expect(detail?.scan_bytes_per_run).toBe(finding.scan_bytes_per_run);
       expect(detail?.provenance).toBe(finding.provenance);
     }
   });

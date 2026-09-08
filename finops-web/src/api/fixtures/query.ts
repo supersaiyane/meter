@@ -23,8 +23,11 @@ import type {
 export const FIXTURE_META: ApiMeta = {
   as_of: '2026-09-11T04:00:00Z',
   collected_at: '2026-09-11T09:54:00Z',
-  scope_coverage: { visible: 2, total: 2, is_partial: false },
-  degraded: false,
+  // Two of the three workspaces answered. The third is the unreachable row
+  // on the surfaces screen, and a fixture that reported full coverage over a
+  // partial estate would be the exact failure these screens exist to prevent.
+  scope_coverage: { visible: 2, total: 3, is_partial: true },
+  degraded: true,
   failures: [],
 };
 
@@ -34,32 +37,46 @@ export const QUERY_FINDINGS: readonly ApiQueryFinding[] = [
     dashboard_uid: 'abc123',
     dashboard_title: 'Platform overview',
     panel_title: 'Error rate by service',
+    folder_uid: 'folder-platform',
+    engine: 'LOGS_INSIGHTS',
+    origin: 'PANEL',
     refresh_seconds: 10,
     window_seconds: 2592000,
-    runs_per_day: 8640,
-    bytes_scanned_per_run: 4294967296,
+    runs_per_day: '8640.00',
+    scan_bytes_per_run: 4294967296,
     monthly_cost: '5184.00',
     provenance: 'modelled',
+    measured_runs: null,
     // Critical. Severity is a dollar amount expressed on a five point scale,
     // per ADR-0016, so the most expensive finding is the most severe.
-    severity: 5,
-    owner: 'platform-team',
+    severity: 'CRITICAL',
+    owner: 'platform-team@example.com',
+    owner_source: 'FOLDER_MAP',
     why: 'Refreshes every 10 seconds against a 30 day window, so it rescans 4 GiB 8,640 times a day.',
+    as_of: '2026-09-11T04:00:00Z',
+    collected_at: '2026-09-11T09:54:00Z',
   },
   {
     finding_id: '22222222-2222-2222-2222-222222222222',
     dashboard_uid: 'def456',
     dashboard_title: 'Billing',
     panel_title: 'Invoice totals',
+    folder_uid: 'folder-billing',
+    engine: 'LOGS_INSIGHTS',
+    origin: 'PANEL',
     refresh_seconds: 3600,
     window_seconds: 86400,
-    runs_per_day: 24,
-    bytes_scanned_per_run: 536870912,
+    runs_per_day: '24.00',
+    scan_bytes_per_run: 536870912,
     monthly_cost: '1.80',
     provenance: 'measured',
-    severity: 1,
-    owner: 'unattributed',
+    measured_runs: 24,
+    severity: 'LOW',
+    owner: null,
+    owner_source: null,
     why: 'Hourly refresh over a one day window. Listed for completeness.',
+    as_of: '2026-09-11T04:00:00Z',
+    collected_at: '2026-09-11T09:54:00Z',
   },
 ];
 
@@ -78,43 +95,38 @@ export function queryFindingsFixture(): ApiEnvelope<ApiQueryFinding[]> {
  * The measured fields are null for the same reason. FEAT-013 is the overlay
  * that fills them.
  */
+/**
+ * The list row this detail expands, by id. Throws rather than asserting the
+ * index is there: a detail built on a row that has been renumbered would
+ * otherwise carry undefined into every field the two share.
+ */
+function listRow(findingId: string): ApiQueryFinding {
+  const found = QUERY_FINDINGS.find((row) => row.finding_id === findingId);
+  if (!found) {
+    throw new Error(`no fixture finding with id ${findingId}`);
+  }
+  return found;
+}
+
 export const QUERY_FINDING_DETAILS: Readonly<Record<string, ApiQueryFindingDetail>> = {
   '11111111-1111-1111-1111-111111111111': {
-    finding_id: '11111111-1111-1111-1111-111111111111',
-    dashboard_title: 'Platform overview',
-    panel_title: 'Error rate by service',
+    ...listRow('11111111-1111-1111-1111-111111111111'),
     query_text:
       'fields @timestamp, @message\n| filter @message like /ERROR/\n| stats count() by bin(5m)',
-    target: '/aws/ecs/meter-api',
-    engine: 'CloudWatch Logs Insights',
-    refresh_seconds: 10,
-    window_seconds: 2592000,
-    runs_per_day: 8640,
-    bytes_scanned_per_run: 4294967296,
+    targets: ['/aws/ecs/meter-api'],
+    region: 'eu-west-2',
+    last_editor: null,
     rate_usd_per_gib: '0.005',
-    monthly_cost: '5184.00',
-    provenance: 'modelled',
     accuracy_percent: null,
-    measured_runs_per_day: null,
-    measured_bytes_scanned_per_run: null,
   },
   '22222222-2222-2222-2222-222222222222': {
-    finding_id: '22222222-2222-2222-2222-222222222222',
-    dashboard_title: 'Billing',
-    panel_title: 'Invoice totals',
+    ...listRow('22222222-2222-2222-2222-222222222222'),
     query_text: 'fields @timestamp, invoice_total\n| sort @timestamp desc\n| limit 20',
-    target: '/aws/lambda/billing-export',
-    engine: 'CloudWatch Logs Insights',
-    refresh_seconds: 3600,
-    window_seconds: 86400,
-    runs_per_day: 24,
-    bytes_scanned_per_run: 536870912,
+    targets: ['/aws/lambda/billing-export'],
+    region: 'eu-west-2',
+    last_editor: null,
     rate_usd_per_gib: '0.005',
-    monthly_cost: '1.80',
-    provenance: 'measured',
     accuracy_percent: null,
-    measured_runs_per_day: 24,
-    measured_bytes_scanned_per_run: 536870912,
   },
 };
 
@@ -128,8 +140,8 @@ export function queryFindingDetailFixture(
 /**
  * The surfaces queries live in.
  *
- * All three are `managed_grafana`, because that is the only kind with an
- * adapter: `SurfaceKind` also names `self_hosted_grafana` and `grafana_cloud`,
+ * All three are `AMG`, because that is the only kind with an adapter:
+ * `SurfaceKind` also names `SELF_HOSTED` and `CLOUD`,
  * and both were descoped as TASK-P2-007 and TASK-P2-008. A fixture claiming
  * them would show an estate that cannot currently exist, which is the same
  * mistake as inventing a calibration.
@@ -139,35 +151,48 @@ export function queryFindingDetailFixture(
  */
 export const SURFACE_INSTANCES: readonly ApiSurfaceInstance[] = [
   {
-    surface_id: 'ws-0a1b2c3d',
+    instance_id: '0a1b2c3d-0000-4000-8000-000000000001',
     name: 'meter-prod-eu-west-1',
-    kind: 'managed_grafana',
-    location: 'g-0a1b2c3d.grafana-workspace.eu-west-1.amazonaws.com',
+    kind: 'AMG',
+    endpoint: 'https://g-0a1b2c3d.grafana-workspace.eu-west-1.amazonaws.com',
+    account_id: '111122223333',
+    region_id: 'eu-west-1',
     reachable: false,
-    unreachable_cause: 'AccessDenied',
+    unreachable_reason: 'AccessDenied',
     query_count: null,
+    as_of: '2026-09-11T04:00:00Z',
+    collected_at: '2026-09-11T09:54:00Z',
   },
   {
-    surface_id: 'ws-4e5f6a7b',
+    instance_id: '4e5f6a7b-0000-4000-8000-000000000002',
     name: 'meter-prod-eu-west-2',
-    kind: 'managed_grafana',
-    location: 'g-4e5f6a7b.grafana-workspace.eu-west-2.amazonaws.com',
+    kind: 'AMG',
+    endpoint: 'https://g-4e5f6a7b.grafana-workspace.eu-west-2.amazonaws.com',
+    account_id: '111122223333',
+    region_id: 'eu-west-2',
     reachable: true,
-    unreachable_cause: null,
+    unreachable_reason: null,
     query_count: 2,
+    as_of: '2026-09-11T04:00:00Z',
+    collected_at: '2026-09-11T09:54:00Z',
   },
   {
-    surface_id: 'ws-8c9d0e1f',
+    instance_id: '8c9d0e1f-0000-4000-8000-000000000003',
     name: 'meter-staging-eu-west-2',
-    kind: 'managed_grafana',
-    location: 'g-8c9d0e1f.grafana-workspace.eu-west-2.amazonaws.com',
+    kind: 'AMG',
+    endpoint: 'https://g-8c9d0e1f.grafana-workspace.eu-west-2.amazonaws.com',
+    account_id: '444455556666',
+    region_id: 'eu-west-2',
     reachable: true,
-    unreachable_cause: null,
+    unreachable_reason: null,
     // A genuine zero: reachable, read, and holding nothing. It renders as 0 and
     // must not be confusable with the null above it.
     query_count: 0,
+    as_of: '2026-09-11T04:00:00Z',
+    collected_at: '2026-09-11T09:54:00Z',
   },
 ];
+
 
 export function surfaceInstancesFixture(): ApiEnvelope<ApiSurfaceInstance[]> {
   return { data: [...SURFACE_INSTANCES], meta: FIXTURE_META };

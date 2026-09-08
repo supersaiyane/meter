@@ -165,6 +165,16 @@ def test_discovery_reads_every_page() -> None:
     assert grafana.calls.count("list_workspaces") == 2
 
 
+def test_a_workspace_carries_the_account_and_region_it_was_listed_in() -> None:
+    """Otherwise the account has to be guessed downstream, and it was: the
+    collector parsed an identifier and fell back to the workspace id, so the
+    column scope enforcement reads held a workspace id. ISS-153."""
+    found = list(
+        surface_with(RecordingGrafana(pages=[{"workspaces": [workspace("g-1")]}])).discover()
+    )
+    assert [(i.account_id, i.region_id) for i in found] == [("111122223333", "eu-west-2")]
+
+
 def test_a_region_that_cannot_be_listed_becomes_a_visible_instance() -> None:
     # A silently shorter estate is the failure this product exists to prevent,
     # and nothing downstream could tell the region was meant to be there.

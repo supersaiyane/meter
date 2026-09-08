@@ -114,10 +114,30 @@ def repo_paths(cell: str) -> list[tuple[str, int | None]]:
             token, line = path, int(suffix)
         token = token.rstrip(":")
 
-        if "/" not in token:
+        if "/" not in token or not claims_a_path(token):
             continue
         found.append((token, line))
     return found
+
+
+def claims_a_path(token: str) -> bool:
+    """Whether a slashed token is claiming to be a file in this repo.
+
+    A resume vector legitimately backticks things that are not paths, and a
+    branch name is the common one: `feat/ui-navigation-groups` has a slash in
+    it and is not a file. Reporting it as a missing file trained the reader to
+    ignore the whole check, which is how a real dead reference gets through.
+
+    Two ways to qualify. Either the last segment has an extension, which is what
+    a file reference looks like, or the first segment is something that exists
+    at the top of the repo, which is what a directory reference looks like. A
+    path under a directory that was deleted wholesale is the case this misses,
+    and it is the price of not crying wolf on every branch name.
+    """
+    head, _, _ = token.partition("/")
+    if (ROOT / head).exists():
+        return True
+    return "." in token.rsplit("/", 1)[-1]
 
 
 def sha_resolves(sha: str) -> bool:

@@ -58,7 +58,7 @@ export function QueryFindingDetailScreen() {
 
   return (
     <section aria-label="Finding">
-      <FixtureBand source={query.data?.source ?? 'fixture'} />
+      <FixtureBand source={query.data?.source} />
       <StateBoundary state={state}>
         {detail ? (
           <article>
@@ -75,23 +75,23 @@ export function QueryFindingDetailScreen() {
 
             <h3>Target</h3>
             <p>
-              {detail.target}, on {detail.engine}
+              {detail.targets.join(', ') || 'not stated'}, on {detail.engine}
             </p>
 
             <h3>The working</h3>
             <ul data-testid="finding-working">
-              <li>{integer(detail.runs_per_day)} runs per day</li>
-              <li>{integer(detail.bytes_scanned_per_run / MIB)} MiB scanned per run</li>
+              <li>{integer(Number(detail.runs_per_day))} runs per day</li>
+              <li>{integer((detail.scan_bytes_per_run ?? 0) / MIB)} MiB scanned per run</li>
               <li>{integer(detail.window_seconds / 86400)} day window</li>
               <li>${detail.rate_usd_per_gib} per GiB scanned</li>
               <li>
-                {integer((detail.runs_per_day * detail.bytes_scanned_per_run * 30) / GIB)} GiB
+                {integer((Number(detail.runs_per_day) * (detail.scan_bytes_per_run ?? 0) * 30) / GIB)} GiB
                 scanned per month
               </li>
             </ul>
 
             <h3>Measured evidence</h3>
-            {detail.measured_runs_per_day === null ? (
+            {detail.measured_runs === null ? (
               // FEAT-013 is the overlay that fills this. Saying so beats an
               // empty section that reads as "nothing was found".
               <p data-state="never-collected">
@@ -101,10 +101,10 @@ export function QueryFindingDetailScreen() {
               <ul>
                 <li>
                   <Figure
-                    value={{ kind: 'measured', amount: detail.measured_runs_per_day }}
+                    value={{ kind: 'measured', amount: detail.measured_runs }}
                     freshness={freshness}
                     unit="count"
-                    label="Runs per day observed"
+                    label="Runs observed"
                   />
                 </li>
               </ul>

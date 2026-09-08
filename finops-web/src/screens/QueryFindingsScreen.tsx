@@ -38,9 +38,22 @@ function figureOf(finding: ApiQueryFinding, amount: number): FigureValue {
     : { kind: 'modelled', amount };
 }
 
+/**
+ * The API sends a word, not a number. The mapping is here rather than in the
+ * API because the ramp is a rendering decision: the same four levels would be
+ * five steps on a different scale, and the badge is what has to be ordered.
+ */
+const SEVERITY_LEVEL: Readonly<Record<string, Severity>> = {
+  CRITICAL: 5,
+  HIGH: 4,
+  MEDIUM: 3,
+  LOW: 2,
+};
+
 function severityOf(finding: ApiQueryFinding): Severity {
-  const level = Math.min(5, Math.max(1, Math.round(finding.severity)));
-  return level as Severity;
+  // An unrecognised severity reads as informational rather than critical. A
+  // vocabulary change should under state a finding, never invent an alarm.
+  return SEVERITY_LEVEL[finding.severity.toUpperCase()] ?? 1;
 }
 
 function secondsLabel(seconds: number | null): string {
@@ -78,7 +91,7 @@ function columnsFor(freshness: Freshness): readonly Column<ApiQueryFinding>[] {
       header: 'Runs per day',
       numeric: true,
       render: (row) => (
-        <Figure value={figureOf(row, row.runs_per_day)} freshness={freshness} unit="count" />
+        <Figure value={figureOf(row, Number(row.runs_per_day))} freshness={freshness} unit="count" />
       ),
     },
     {
@@ -87,7 +100,7 @@ function columnsFor(freshness: Freshness): readonly Column<ApiQueryFinding>[] {
       numeric: true,
       render: (row) => (
         <Figure
-          value={figureOf(row, row.bytes_scanned_per_run / MIB)}
+          value={figureOf(row, (row.scan_bytes_per_run ?? 0) / MIB)}
           freshness={freshness}
           unit="count"
         />
@@ -101,9 +114,10 @@ function columnsFor(freshness: Freshness): readonly Column<ApiQueryFinding>[] {
         <Figure value={figureOf(row, Number(row.monthly_cost))} freshness={freshness} unit="usd" />
       ),
     },
-    // `unattributed` arrives as a value from FEAT-016 and renders as one. An
-    // empty cell would read as "no owner needed" rather than "nobody claimed it".
-    { key: 'owner', header: 'Owner', render: (row) => row.owner },
+    // The API sends null for an unowned finding and this is where that becomes
+    // a word. An empty cell would read as "no owner needed" rather than "nobody
+    // claimed it", and those are different states.
+    { key: 'owner', header: 'Owner', render: (row) => row.owner ?? 'unattributed' },
     { key: 'why', header: 'Why', render: (row) => row.why },
   ];
 }
@@ -129,7 +143,7 @@ export function QueryFindingsScreen() {
 
   return (
     <section aria-label="Query findings">
-      <FixtureBand source={query.data?.source ?? 'fixture'} />
+      <FixtureBand source={query.data?.source} />
       <StateBoundary state={state}>
         <DataTable
           rows={rows}
