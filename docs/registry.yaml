@@ -963,7 +963,7 @@ changes:
     list, every route is fixed and recorded as ADR-0020, the home screen is a trust strip above the
     money, and screens are built against a typed fixture before their route exists so a sub project
     is visible while it is being built rather than after
-  commit: pending
+  commit: '9687fd7'
   detail: '[docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md)'
 - id: CHG-0073
   date: '2026-09-06'
@@ -972,8 +972,17 @@ changes:
     fixture seam and the home screen, and TASK-P2-022 split into four screen tasks in a new wave K
     that does not wait for wave J. Screens are now built against typed fixtures and marked on
     screen as such, so P2 is reviewable while it is being built rather than at task 21 of 22
-  commit: pending
+  commit: '9687fd7'
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md), [P2 plan](docs/plans/P2-implementation-plan.md)'
+- id: CHG-0074
+  date: '2026-09-07'
+  type: Feature
+  what: TASK-P0-036, the seven navigation groups and the route migration. Five screens moved from a
+    five entry state machine to routes carrying their group. An unbuilt screen is listed with the
+    sub project that brings it, and a wrong address renders differently from one merely unbuilt.
+    react-router admitted at rung two of ADR-0013. AppShell lost its section and onSelect props
+  commit: '295f032'
+  detail: '[ADR-0020](docs/adr/ADR-0020-seven-fixed-navigation-groups.md)'
 issues:
 - id: ISS-136
   severity: HIGH
