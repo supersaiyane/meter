@@ -27,7 +27,11 @@ one closes a specific failure this project has already reasoned about.
    organization must not silently delete its cost records.
 5. **Money is `NUMERIC(20, 10)`.** Never a float. FOCUS specifies decimal, and
    a float error compounds across a hundred million line items.
-6. **Timestamps are `TIMESTAMPTZ`, always UTC.** A billing period boundary in
+6. **Personal data is minimised, classified and retained by policy.** Every
+   table is classified in `docs/09-DATA-CLASSIFICATION.md`, with a retention
+   period and a scheduled job that enforces it. A column holding data about a
+   person that no feature reads is not added.
+7. **Timestamps are `TIMESTAMPTZ`, always UTC.** A billing period boundary in
    local time is a whole class of off by one day defects.
 
 ## Naming conventions
@@ -96,8 +100,8 @@ CREATE TABLE principal (
     principal_id    UUID PRIMARY KEY,
     tenant_id       UUID        NOT NULL REFERENCES tenant(tenant_id),
     subject         TEXT        NOT NULL,   -- stable identifier from the identity provider
-    display_name    TEXT        NOT NULL,
-    email           TEXT,
+    display_name    TEXT        NOT NULL,   -- class P, anonymised after 90 days idle
+    email           TEXT,                   -- class P, anonymised after 90 days idle
     tier            TEXT        NOT NULL,   -- viewer | analyst | owner
     is_global       BOOLEAN     NOT NULL DEFAULT false,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -136,7 +140,10 @@ CREATE TABLE cloud_account (
     provider                TEXT        NOT NULL,   -- aws | gcp | azure | pcf
     account_id              TEXT        NOT NULL,   -- provider native identifier
     name                    TEXT        NOT NULL,
-    email                   TEXT,
+    -- No email column. organizations:ListAccounts returns the account root
+    -- email address, which is personal data that no feature reads. Storing
+    -- personal data nothing consumes is the easiest kind of exposure to avoid.
+    -- See docs/09-DATA-CLASSIFICATION.md.
     status                  TEXT        NOT NULL,   -- ACTIVE | SUSPENDED | PENDING | DEPARTED
     payer_account_id        TEXT,
     joined_at               TIMESTAMPTZ,
@@ -502,6 +509,15 @@ than an oversight.
 | `query_finding`, `query_snapshot` | P2 | FEAT-011 to FEAT-013 |
 | `quota_usage` | P5 | FEAT-033 |
 | `k8s_workload_cost` | P6 | FEAT-035, FEAT-036 |
+
+## Classification and retention
+
+Every table above is classified, given a retention period and an erasure
+position in `docs/09-DATA-CLASSIFICATION.md`. Retention is enforced by five
+scheduled jobs, each writing an `ingest_run`, so a retention job that silently
+stops appears on the freshness screen exactly like a collector that stopped.
+
+A new table is not complete until it has a row in that document.
 
 Each is designed when its sub project is specified. Designing them now would
 mean guessing at columns before the queries that read them exist, which is how

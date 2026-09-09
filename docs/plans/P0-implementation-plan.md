@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Status: Provisional, pending approval of `docs/specs/2026-08-23-p0-foundation-design.md`
 Spec: `docs/specs/2026-08-23-p0-foundation-design.md`
-Tasks: 31
+Tasks: 32
 
 ## How to work this plan
 
@@ -512,6 +512,8 @@ impossible to violate rather than merely discouraged.
 - [ ] `org_node.parent_node_id` is a self referencing foreign key
 - [ ] `cost_focus_daily` is partitioned by `billing_period`
 - [ ] `make migrate` applies cleanly to an empty database, and downgrade works
+- [ ] **No `email` column on `cloud_account`.** The account root email is
+      personal data no feature reads. See `docs/09-DATA-CLASSIFICATION.md`
 
 **Tests.**
 
@@ -529,7 +531,10 @@ impossible to violate rather than merely discouraged.
 - Do not enforce idempotency only in application code. The unique constraint is
   the thing that actually holds when two workers race.
 - Do not use `ON DELETE CASCADE` on `cloud_account`. An account leaving the
-  organization must not silently delete its cost history.
+  organization must not silently drop its cost history.
+- Do not add an `email` column because the API returns one. Storing personal
+  data that nothing consumes is the easiest exposure to avoid, and the cheapest
+  moment to avoid it is before the column has data.
 
 **Evidence.**
 
@@ -1392,6 +1397,56 @@ state.
 
 ```bash
 make test-all && make test-e2e
+```
+
+---
+
+### TASK-P0-032: retention jobs and the erasure script
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | `docs/09-DATA-CLASSIFICATION.md` |
+| Depends on | TASK-P0-021 |
+| Estimate | M |
+
+**Goal.** Retention is enforced by a job, not stated as a policy nobody runs.
+
+**Files.**
+
+| Path | Action |
+| --- | --- |
+| `finops_ingest/collectors/retention.py` | create |
+| `scripts/ops/erase_principal.py` | create |
+| `tests/ingest/collectors/test_retention.py` | create |
+
+**Acceptance criteria.**
+
+- [ ] Five jobs: `retention_principal`, `retention_operational`,
+      `retention_audit`, `retention_cost`, `retention_scope_cache`
+- [ ] Each writes an `ingest_run`, so a stopped retention job appears on the
+      freshness screen exactly like a stopped collector
+- [ ] `retention_principal` anonymises rather than removing rows, so audit
+      joins do not dangle
+- [ ] `erase_principal.py` performs all five erasure steps in one transaction
+      and prints what it changed
+- [ ] Backup retention set in Terraform to match the table policy
+
+**Do not.**
+
+- Do not touch `audit_event` on an erasure request. The join to a name is
+  already broken by anonymising `principal`, and removing the record of who
+  read an organization's financial data, on that person's request, is not
+  defensible in a financial services environment.
+- Do not expose erasure as an API route. It is a destructive primitive, and it
+  is deliberately a script a person runs.
+- Do not leave backup retention longer than table retention. A 35 day backup
+  holding data that policy dropped 30 days ago undoes the policy.
+
+**Evidence.**
+
+```bash
+pytest tests/ingest/collectors/test_retention.py -v
 ```
 
 ---

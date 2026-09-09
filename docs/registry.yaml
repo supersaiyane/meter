@@ -504,6 +504,13 @@ changes:
     dead graph output, the context index generator and the duplicated roadmap table'
   commit: ef23f8a
   detail: '[REMEDIATION-LOG](audits/REMEDIATION-LOG.md)'
+- id: CHG-0022
+  date: '2026-08-23'
+  type: Design
+  what: Threat model and data classification written, closing the two blocking audit findings. The account
+    root email column removed from the schema as a result
+  commit: pending
+  detail: '[docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -777,14 +784,14 @@ issues:
   severity: CRITICAL
   summary: No threat model exists for a platform holding organization wide financial data and cross account
     credentials in a financial services environment
-  status: OPEN
-  detail: '[A001-F11](audits/AUDIT-001-2026-08-23-full-project.md)'
+  status: FIXED
+  detail: '[A001-F11](audits/AUDIT-001-2026-08-23-full-project.md) -> [docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md)'
 - id: ISS-056
   severity: HIGH
   summary: No data classification or retention policy, while cloud_account.email already stores AWS account
     root email addresses, which are personal data
-  status: OPEN
-  detail: '[A001-F12](audits/AUDIT-001-2026-08-23-full-project.md)'
+  status: FIXED
+  detail: '[A001-F12](audits/AUDIT-001-2026-08-23-full-project.md) -> [docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md)'
 - id: ISS-057
   severity: HIGH
   summary: finops_mcp is absent from the pyproject packages and the import linter root packages, so the
@@ -879,6 +886,49 @@ issues:
     under load
   status: OPEN
   detail: '[A001-F18](audits/AUDIT-001-2026-08-23-full-project.md)'
+- id: ISS-073
+  severity: MEDIUM
+  status: OPEN
+  summary: ExternalId rotation is not designed, so a leaked ExternalId has no defined replacement path
+  detail: '[Threat model](docs/08-THREAT-MODEL.md) residual risk. Design before TASK-P0-014'
+- id: ISS-074
+  severity: MEDIUM
+  status: OPEN
+  summary: No per account API rate limit, so Meter could exhaust a member account quota and degrade their
+    workloads
+  detail: '[Threat model](docs/08-THREAT-MODEL.md) residual risk. Token bucket in the credential broker'
+- id: ISS-075
+  severity: MEDIUM
+  status: OPEN
+  summary: Error messages may leak an account identifier across a scope boundary, and no test asserts
+    otherwise
+  detail: '[Threat model](docs/08-THREAT-MODEL.md) residual risk. Adversarial test in TASK-P0-024'
+- id: ISS-076
+  severity: MEDIUM
+  status: OPEN
+  summary: A model can narrate carelessly around a correct scope_coverage envelope, presenting a partial
+    total as complete
+  detail: '[Threat model](docs/08-THREAT-MODEL.md) residual risk. P7 eval suite must include a partial
+    scope case'
+- id: ISS-077
+  severity: MEDIUM
+  status: OPEN
+  summary: A deliberate backdoor in a package that scans clean is out of reach of any CVE scanner
+  detail: '[Threat model](docs/08-THREAT-MODEL.md) residual risk. Mitigate by pinning digests and fewer
+    dependencies'
+- id: ISS-078
+  severity: MEDIUM
+  status: OPEN
+  summary: Unknown whether a regulatory retention floor exceeds the 37 month cost retention, which financial
+    services often sets at 7 years
+  detail: '[Data classification](docs/09-DATA-CLASSIFICATION.md) open question. Raised before data is
+    aggregated away'
+- id: ISS-079
+  severity: MEDIUM
+  status: OPEN
+  summary: The audit_event non erasure position needs sign off from whoever owns data protection
+  detail: '[Data classification](docs/09-DATA-CLASSIFICATION.md) open question. Before the first production
+    deployment'
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS

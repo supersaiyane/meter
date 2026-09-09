@@ -60,6 +60,8 @@ and open question with a pointer to the detail.
 | **Where does this change get recorded** | [docs/03-CHANGE-CONTROL.md](docs/03-CHANGE-CONTROL.md) |
 | How code reaches production | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | Security policy, scanners, gates | [docs/05-SECURITY.md](docs/05-SECURITY.md) |
+| **Who attacks this, and what stops them** | [docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md) |
+| **What data we hold, for how long, and erasure** | [docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md) |
 | How often data refreshes, and its limits | [docs/06-DATA-FRESHNESS.md](docs/06-DATA-FRESHNESS.md) |
 | **The database schema and migration rules** | [docs/07-DATA-MODEL.md](docs/07-DATA-MODEL.md) |
 | Why a decision was made | [docs/adr/](docs/adr/README.md), 14 records |

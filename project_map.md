@@ -41,6 +41,8 @@ meter/
 │   ├── 05-SECURITY.md         zero vulnerability policy, scanners, gates
 │   ├── 06-DATA-FRESHNESS.md   refresh cadence per collector, and its limits
 │   ├── 07-DATA-MODEL.md       every table, constraint, index, Alembic rules
+│   ├── 08-THREAT-MODEL.md     STRIDE across six trust boundaries
+│   ├── 09-DATA-CLASSIFICATION.md  classes, retention, erasure
 │   ├── registry.yaml          SOURCE OF TRUTH for the generated documents
 │   ├── features/              one document per feature, 42 of them
 │   ├── architecture/          generated file dependency graph

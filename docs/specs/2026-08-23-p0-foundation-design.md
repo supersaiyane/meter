@@ -71,6 +71,10 @@ The import linter rule that fails continuous integration:
 PostgreSQL. All tables carry `tenant_id` even though P0 is single tenant, so
 that a future multi tenant move is a policy change rather than a migration.
 
+Every table below is classified, given a retention period and an erasure
+position in `docs/09-DATA-CLASSIFICATION.md`. `cloud_account` deliberately has
+no email column: the AWS account root email is personal data no feature reads.
+
 ### 5.1 Identity and tenancy
 
 ```sql
