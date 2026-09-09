@@ -860,7 +860,7 @@ the measurement, and let a person decide what to change. ISS-093.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-08, short on two criteria. ISS-148 |
 | Implements | P2 spec section 8.2 |
 | Depends on | TASK-P2-014. TASK-P2-016 is parked |
 | Estimate | M |
@@ -874,12 +874,37 @@ for.
 
 **Acceptance criteria.**
 
-- [ ] The eight routes from spec section 8.2
-- [ ] Three MCP tools, schemas generated from the same models
-- [ ] Every response carries the standard `meta` envelope
-- [ ] `scope_coverage` accounts for unreachable instances
+- [ ] **Short.** The eight routes from spec section 8.2. Three built: findings,
+      one finding, instances. Five read data that does not exist yet, and are
+      recorded as ISS-148 rather than shipped against empty tables
+- [ ] **Short.** Three MCP tools, schemas generated from the same models. One
+      built, `list_expensive_queries`. The other two take a finding identifier
+      or a workspace, and each would be a facade over a route that is not there
+- [x] Every response carries the standard `meta` envelope
+- [x] `scope_coverage` accounts for unreachable instances
 
 **Do not.** Do not expose a remediation route that ignores the write level flag.
+
+**What running it found, none of which a test had.** The routes were written,
+imported cleanly, and returned 500 on every call: the six P2 tables were never
+registered in `SCOPED_TABLES`, and `UUID` was never imported into
+`finops_api/schemas.py`, so two Pydantic models could not be built. Neither is
+visible without calling the route. Beyond that, the scope guard could not
+express these tables at all. A workspace names an account with no provider
+column beside it, and a finding names no account: its account is the account of
+the workspace it came from. The registry now has `ByAccount` and `Through`, and
+`Through` recurses, so a finding is scoped through its definition through its
+instance without either link knowing how long the chain is.
+
+`scope_coverage` counted findings against accounts, which is not a ratio of
+anything. It now counts workspaces read over workspaces the tenant has, so an
+unreachable workspace makes the list partial, which is the fourth criterion and
+was not met by the first implementation of it.
+
+Three more, found by opening the screen rather than by running the suite:
+ISS-149, ISS-150 and ISS-151 each independently stopped the local stack from
+showing its own data, and ISS-153 meant the account column scope enforcement now
+reads held a workspace identifier.
 
 ---
 

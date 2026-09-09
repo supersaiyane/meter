@@ -36,6 +36,10 @@ No credential handling. Reads only metadata already collected.
 
 Writes `query_finding` with `provenance` set to `modelled`. A database constraint prevents a modelled row from carrying a measured run count. See [P2 spec](../specs/2026-08-23-p2-query-cost-governance-design.md) section 5.
 
+Read over HTTP since TASK-P2-021. `GET /api/v1/query/findings` returns every finding ranked by monthly cost, ordered in the database because `ix_query_finding__cost` exists for it and sorting in the route would order the page rather than the estate. `GET /api/v1/query/findings/{finding_id}` adds the query as written, what it runs against, and `rate_usd_per_gib`, the published price, so the working on the screen has no constant a reader cannot check. `accuracy_percent` is null until FEAT-018 publishes one, and is never invented to make the screen look finished.
+
+`scope_coverage` on these routes counts workspaces read over workspaces the tenant has, not findings over accounts. A findings list drawn from two of three workspaces is missing an unknown number of rows, and the envelope says so.
+
 ## Not doing
 
 Does not claim accuracy. Every figure is labelled `modelled` and carries a visible caveat until FEAT-018 publishes a back tested accuracy percentage.

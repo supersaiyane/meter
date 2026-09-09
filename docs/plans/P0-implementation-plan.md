@@ -2680,7 +2680,6 @@ def declared_fixture_templates() -> set[str]:
     return set(re.findall(r"'(/api/v1/[^']+)'", block))
 
 
-
 def test_no_fixture_path_is_a_registered_route() -> None:
     registered = {route.path for route in create_app().routes if hasattr(route, "path")}
     still_invented = declared_fixture_templates() & registered

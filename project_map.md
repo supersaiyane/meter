@@ -92,7 +92,14 @@ meter/
 │   ├── ISSUES.md              issue and open question register with fixed status
 │   └── lessons.md             corrections converted into rules
 │
-├── docker/                    three Dockerfiles on Minimus, plus nginx.conf.
+├── docker/                    three Dockerfiles on Minimus, plus three nginx
+│                              configs: nginx.conf is the deployed one,
+│                              nginx.local.conf adds the /api proxy the load
+│                              balancer does in a real environment, and
+│                              nginx.disabled.conf is empty and copied over the
+│                              base image's own server block, which would
+│                              otherwise win every request whose Host is
+│                              localhost. ISS-150 and ISS-151.
 │                              Builder stages run as root and are discarded; the
 │                              runtime stages keep USER 65532:65532, which is the
 │                              posture ADR-0010 protects. The api image also
@@ -318,8 +325,16 @@ meter/
 │   │   ├── accounts.py        accounts in scope, plus the role health recheck
 │   │   ├── org.py             the tree. Out of scope branches marked, not hidden
 │   │   ├── ingest.py          runs with typed errors, and freshness per cadence
-│   │   └── platform.py        Meter's own cost, unallocated included
-│   ├── guards.py              the scope guard. No default, empty means nothing
+│   │   ├── platform.py        Meter's own cost, unallocated included
+│   │   └── query.py           three of the eight P2 routes. The other five read
+│   │                          data that does not exist yet, ISS-148. Coverage
+│   │                          here counts workspaces, not findings
+│   ├── guards.py              the scope guard. No default, empty means nothing.
+│   │                          Three shapes: tenant only, ByAccount for a row
+│   │                          that names its account, and Through for one that
+│   │                          does not and inherits from the row it hangs off.
+│   │                          Through recurses, so a finding is scoped through
+│   │                          its definition through its instance
 │   ├── identity/              behind the two ports ADR-0008 parked
 │   │   ├── local_config.py    users from a file. Refused in prod by config.py
 │   │   ├── session.py         signed, carries the scope, always expires

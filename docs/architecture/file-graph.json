@@ -5,6 +5,7 @@
     "docker/Dockerfile.worker",
     "docker/alembic.ini",
     "docker/docker/nginx.conf",
+    "docker/docker/nginx.disabled.conf",
     "docker/finops-web",
     "docker/finops-web/package-lock.json",
     "docker/finops-web/package.json",
@@ -209,6 +210,7 @@
     "finops_api/db/repositories/freshness.py",
     "finops_api/db/repositories/ingest.py",
     "finops_api/db/repositories/org.py",
+    "finops_api/db/repositories/query.py",
     "finops_api/deps.py",
     "finops_api/flags.py",
     "finops_api/guards.py",
@@ -224,6 +226,7 @@
     "finops_api/routes/me.py",
     "finops_api/routes/org.py",
     "finops_api/routes/platform.py",
+    "finops_api/routes/query.py",
     "finops_api/schemas.py",
     "finops_core/__init__.py",
     "finops_core/config.py",
@@ -336,6 +339,7 @@
     "tests/api/__init__.py",
     "tests/api/test_fixture_surfaces.py",
     "tests/api/test_identity_local.py",
+    "tests/api/test_query_routes.py",
     "tests/api/test_routes.py",
     "tests/api/test_scope_enforcement.py",
     "tests/conftest.py",
@@ -450,6 +454,11 @@
     {
       "s": "docker/Dockerfile.web",
       "t": "docker/docker/nginx.conf",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.web",
+      "t": "docker/docker/nginx.disabled.conf",
       "k": "docker"
     },
     {
@@ -1789,6 +1798,11 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/query.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx",
       "t": "finops-web/src/components/__tests__/axe.ts",
       "k": "typescript"
     },
@@ -1805,6 +1819,11 @@
     {
       "s": "finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/query.ts",
       "k": "typescript"
     },
     {
@@ -2003,6 +2022,11 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/__init__.py",
+      "t": "finops_api/db/repositories/query.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/accounts.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -2088,6 +2112,26 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/query.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/query.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/query.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/query.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/deps.py",
       "t": "finops_api/db/repositories/base.py",
       "k": "python"
@@ -2120,6 +2164,11 @@
     {
       "s": "finops_api/flags.py",
       "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/guards.py",
+      "t": "finops_api/db/__init__.py",
       "k": "python"
     },
     {
@@ -2389,6 +2438,41 @@
     },
     {
       "s": "finops_api/routes/platform.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_api/db/repositories/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
       "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
@@ -3145,6 +3229,41 @@
     {
       "s": "tests/api/test_identity_local.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_query_routes.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_query_routes.py",
+      "t": "finops_api/identity/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_query_routes.py",
+      "t": "finops_api/main.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_query_routes.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_query_routes.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_query_routes.py",
+      "t": "finops_core/domain/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_query_routes.py",
+      "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
     {

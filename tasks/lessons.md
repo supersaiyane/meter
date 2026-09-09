@@ -65,3 +65,33 @@ scope boundary before offering options: is this the current sub project, or the
 product. Ask which, do not infer it from the sub project in flight.
 **Triggers:** "plan the UI", "design the dashboard", "what should we show",
 any request naming a surface with no task identifier attached.
+
+## 2026-08-29: a route that has never been called is not evidence
+
+**Mistake:** Shipped three API routes with a full unit suite, a clean lint, a
+clean type check and a clean build, and every one of them returned 500 on the
+first real call. The six tables they read were never registered in
+`SCOPED_TABLES`, and `UUID` was never imported into the module that declares
+their response models. Then three more defects, each of which alone stopped the
+local stack from showing any data at all, none of which any test could see.
+
+**Correction:** None was needed from the user. The defects were found by
+calling the routes with curl and by opening the screen, after the suite was
+already green. This is the fifth time in this project that a green signal was
+hollow: axe reported contrast "incomplete" while never reading a colour,
+pip-audit aborted before writing the report that summaries read as zero
+findings, a skipped test read as a pass, and a wheel shipped without its
+subpackages while every local test passed.
+
+**Rule:** Before marking a task done that adds or changes an HTTP route, a
+container, or anything a person reaches through a browser, run it and reach it
+the way a person would. For a route that means an actual request against the
+running stack and reading the body. For a screen it means opening the screen.
+Paste what came back. A passing suite is evidence that the code does what the
+test says, and says nothing about whether the thing is reachable, wired, or
+configured.
+
+**Triggers:** a new route or endpoint, a change to `SCOPED_TABLES` or any
+registry a route depends on, a new response model, anything touching
+`docker-compose.yml`, a Dockerfile, or nginx, "the tests pass so it works",
+"imports cleanly", marking a task done.

@@ -1060,6 +1060,78 @@ changes:
   commit: 'd5c8cdc'
   detail: '[ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md)'
 issues:
+- id: ISS-148
+  severity: MEDIUM
+  summary: TASK-P2-021 names eight routes and three MCP tools. Three routes and one tool were
+    built. The other five routes read data that does not exist yet, enforcement and its revoke
+    behind TASK-P2-016 which is parked on the AWS infrastructure ISS-122 records as never
+    provisioned, accuracy behind FEAT-018, and the two remediation routes behind TASK-P2-019.
+    The two missing tools are the ones that take a finding identifier or a workspace, and both
+    would be a facade over a route that does not exist. Building any of them against an empty
+    table would answer a question with a confident nothing
+  status: OPEN
+  detail: '`finops_api/routes/query.py`, `finops_mcp/tools.py`'
+- id: ISS-149
+  severity: HIGH
+  summary: The local stack could never show the data it ships with. docker-compose pinned
+    METER_LOCAL_TENANT_ID to a tenant that has no row, while make seed writes a different one, so
+    every read resolved a scope for a tenant that does not exist and the first query failed on the
+    audit insert with a foreign key error rather than an empty page. Found by calling the routes
+    against the running stack, not by any test. Fixed 2026-08-29 by pointing the local stack at
+    the tenant its only data source writes
+  status: FIXED
+  detail: '`docker-compose.yml`, `.env.example`'
+- id: ISS-150
+  severity: HIGH
+  summary: The web container had no proxy for `/api`, because a deployed environment terminates
+    that path at the load balancer and the image config is written for that. Locally there is no
+    load balancer, so every screen rendered an nginx 404 where its data should be. Fixed
+    2026-08-29 with a local only overlay mounted over the image config, leaving the deployed
+    configuration untouched
+  status: FIXED
+  detail: '`docker/nginx.local.conf`, `docker-compose.yml`'
+- id: ISS-151
+  severity: HIGH
+  summary: The nginx image ships its own server block with `server_name localhost`, and nginx
+    matches a server name exactly before falling back to the catch all. Every request whose Host
+    is localhost was therefore served by the image default rather than by docker/nginx.conf, so
+    the single page fallback was absent and a hard refresh on any route returned 404, and none of
+    the three security headers were sent. A deployed environment is served under its own hostname
+    and matches the catch all, so the effect there is limited to the day someone reaches the
+    container as localhost. Fixed 2026-08-29 by copying an empty file over the image default,
+    because the image has no shell to delete it with
+  status: FIXED
+  detail: '`docker/nginx.disabled.conf`, `docker/Dockerfile.web`'
+- id: ISS-152
+  severity: MEDIUM
+  summary: The partial coverage banner reads "1 missing. outside your scope" whatever the cause.
+    On the query screens the missing workspace is usually one Meter could not read, not one the
+    viewer is not entitled to, and naming the wrong cause sends the reader to an access request
+    for a permission they already hold. The count is right and the explanation is not
+  status: OPEN
+  detail: '`finops-web/src/shell`, seen on `/governance/instances`'
+- id: ISS-153
+  severity: HIGH
+  summary: grafana_instance.account_id held a workspace identifier for every real workspace. The
+    collector parsed `aws:account:region` out of the surface identifier and fell back to the
+    identifier itself, and the AMG adapter names a listed workspace by its workspace id, so the
+    fallback fired every time. Harmless until TASK-P2-021 made that column the one scope
+    enforcement reads, at which point a scoped viewer silently lost every workspace. The upsert
+    also never refreshed the column, so a corrected value would not have reached an existing
+    estate. Fixed 2026-08-29 by carrying the account and region on SurfaceInstance from the
+    adapter that knows them, and refreshing both on conflict
+  status: FIXED
+  detail: '`finops_core/domain/query.py`, `finops_providers/grafana/amg.py`,
+    `finops_ingest/collectors/query_audit.py`'
+- id: ISS-154
+  severity: LOW
+  summary: make test-integration can never pass on its own. It runs only the integration marker
+    while the coverage gate is set for the whole suite, so it reports 77 percent against a
+    threshold of 80 and exits non zero even when every test passes. The pipeline runs both suites
+    in one pytest invocation and reaches 98 percent, so this is a local target that lies rather
+    than a gate that is failing
+  status: OPEN
+  detail: '`Makefile`, target test-integration'
 - id: ISS-146
   severity: HIGH
   summary: make security-scan could not complete and make security-scan-images had never run,
