@@ -2507,7 +2507,7 @@ roadmap is legible inside the product."
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-09 |
 | Implements | `docs/13-UI-ARCHITECTURE.md` section 11 |
 | Delivers | A screen can be built and reviewed before its route exists |
 | Depends on | TASK-P0-036 |
@@ -2515,14 +2515,14 @@ roadmap is legible inside the product."
 
 **Acceptance criteria.**
 
-- [ ] One declared set of paths that are still fixture backed
-- [ ] A screen reading a fixture backed path renders a visible `FIXTURE DATA` band
-- [ ] A route failure raises and is rendered as a typed cause. It **never** falls
+- [x] One declared set of paths that are still fixture backed
+- [x] A screen reading a fixture backed path renders a visible `FIXTURE DATA` band
+- [x] A route failure raises and is rendered as a typed cause. It **never** falls
       back to the fixture
-- [ ] **A Python test fails the build if a path in the fixture set is registered
+- [x] **A Python test fails the build if a path in the fixture set is registered
       in the FastAPI application**, so a live route cannot keep serving invented
       numbers because somebody forgot a list
-- [ ] Axe reports zero violations on the band
+- [x] Axe reports zero violations on the band
 
 **Do not.**
 
@@ -2536,7 +2536,7 @@ roadmap is legible inside the product."
 
 **Steps.**
 
-- [ ] **Step 1: write the failing resolver test**
+- [x] **Step 1: write the failing resolver test**
 
 `finops-web/src/api/__tests__/fixtureSeam.test.ts`
 
@@ -2588,12 +2588,12 @@ describe('resolveSurface', () => {
 The third test is the important one. A resolver that fell back on error would
 render invented numbers during an outage.
 
-- [ ] **Step 2: run it and watch it fail**
+- [x] **Step 2: run it and watch it fail**
 
 Run: `cd finops-web && npm run test -- --run src/api/__tests__/fixtureSeam.test.ts`
 Expected: FAIL, cannot find module `../fixtureSeam`.
 
-- [ ] **Step 3: write the seam**
+- [x] **Step 3: write the seam**
 
 `finops-web/src/api/fixtureSeam.ts`
 
@@ -2649,12 +2649,12 @@ export function resolveSurface<T>(
 }
 ```
 
-- [ ] **Step 4: run it and watch it pass**
+- [x] **Step 4: run it and watch it pass**
 
 Run: `cd finops-web && npm run test -- --run src/api/__tests__/fixtureSeam.test.ts`
 Expected: PASS, five tests.
 
-- [ ] **Step 5: write the failing cross language guard**
+- [x] **Step 5: write the failing cross language guard**
 
 `tests/api/test_fixture_surfaces.py`
 
@@ -2693,7 +2693,7 @@ def test_no_fixture_path_is_a_registered_route() -> None:
 Confirm the application factory is named `create_app` in `finops_api/main.py`
 before running this, and use whatever that module actually exports.
 
-- [ ] **Step 6: run it and watch it pass, then prove it can fail**
+- [x] **Step 6: run it and watch it pass, then prove it can fail**
 
 Run: `pytest tests/api/test_fixture_surfaces.py -v`
 Expected: PASS, because none of the four routes exist yet.
@@ -2702,7 +2702,7 @@ Now prove the guard works. Temporarily add `'/api/v1/accounts'` to
 `FIXTURE_SURFACES`, rerun, and confirm it FAILS naming that path. Remove it
 again. **A guard nobody has seen fail is a guard nobody knows works.**
 
-- [ ] **Step 7: write the failing band test**
+- [x] **Step 7: write the failing band test**
 
 `finops-web/src/components/__tests__/FixtureBand.test.tsx`
 
@@ -2731,12 +2731,12 @@ describe('FixtureBand', () => {
 });
 ```
 
-- [ ] **Step 8: run it and watch it fail**
+- [x] **Step 8: run it and watch it fail**
 
 Run: `cd finops-web && npm run test -- --run src/components/__tests__/FixtureBand.test.tsx`
 Expected: FAIL, cannot find module `../FixtureBand`.
 
-- [ ] **Step 9: write the band**
+- [x] **Step 9: write the band**
 
 `finops-web/src/components/FixtureBand.tsx`
 
@@ -2764,13 +2764,13 @@ export function FixtureBand({ source }: { readonly source: SurfaceSource }) {
 
 Export it from `finops-web/src/components/index.ts` alongside the others.
 
-- [ ] **Step 10: run everything**
+- [x] **Step 10: run everything**
 
 Run: `cd finops-web && npm run lint && npm run test -- --run && npm run build`
 Then: `pytest tests/api/test_fixture_surfaces.py -v`
 Expected: all pass.
 
-- [ ] **Step 11: commit**
+- [x] **Step 11: commit**
 
 ```bash
 git add finops-web/src tests/api/test_fixture_surfaces.py

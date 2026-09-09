@@ -20,9 +20,12 @@
     "finops-web/dist-types/src/App.test.d.ts",
     "finops-web/dist-types/src/api/ApiProvider.d.ts",
     "finops-web/dist-types/src/api/__tests__/client.test.d.ts",
+    "finops-web/dist-types/src/api/__tests__/fixtureSeam.test.d.ts",
     "finops-web/dist-types/src/api/apiContext.d.ts",
     "finops-web/dist-types/src/api/client",
     "finops-web/dist-types/src/api/client.d.ts",
+    "finops-web/dist-types/src/api/fixtureSeam",
+    "finops-web/dist-types/src/api/fixtureSeam.d.ts",
     "finops-web/dist-types/src/api/queries.d.ts",
     "finops-web/dist-types/src/api/types",
     "finops-web/dist-types/src/api/types.d.ts",
@@ -32,6 +35,8 @@
     "finops-web/dist-types/src/components/DataTable.d.ts",
     "finops-web/dist-types/src/components/Figure",
     "finops-web/dist-types/src/components/Figure.d.ts",
+    "finops-web/dist-types/src/components/FixtureBand",
+    "finops-web/dist-types/src/components/FixtureBand.d.ts",
     "finops-web/dist-types/src/components/FreshnessIndicator",
     "finops-web/dist-types/src/components/FreshnessIndicator.d.ts",
     "finops-web/dist-types/src/components/GraphCanvas.d.ts",
@@ -46,6 +51,7 @@
     "finops-web/dist-types/src/components/TypedError.d.ts",
     "finops-web/dist-types/src/components/__tests__/DataTable.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/Figure.test.d.ts",
+    "finops-web/dist-types/src/components/__tests__/FixtureBand.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/GraphCanvas.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/OrgTree.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/StateBoundary.test.d.ts",
@@ -96,13 +102,16 @@
     "finops-web/src/App.tsx",
     "finops-web/src/api/ApiProvider.tsx",
     "finops-web/src/api/__tests__/client.test.ts",
+    "finops-web/src/api/__tests__/fixtureSeam.test.ts",
     "finops-web/src/api/apiContext.ts",
     "finops-web/src/api/client.ts",
+    "finops-web/src/api/fixtureSeam.ts",
     "finops-web/src/api/queries.ts",
     "finops-web/src/api/types.ts",
     "finops-web/src/components/CoverageBanner.tsx",
     "finops-web/src/components/DataTable.tsx",
     "finops-web/src/components/Figure.tsx",
+    "finops-web/src/components/FixtureBand.tsx",
     "finops-web/src/components/FreshnessIndicator.tsx",
     "finops-web/src/components/GraphCanvas.tsx",
     "finops-web/src/components/OrgTree.tsx",
@@ -112,6 +121,7 @@
     "finops-web/src/components/TypedError.tsx",
     "finops-web/src/components/__tests__/DataTable.test.tsx",
     "finops-web/src/components/__tests__/Figure.test.tsx",
+    "finops-web/src/components/__tests__/FixtureBand.test.tsx",
     "finops-web/src/components/__tests__/GraphCanvas.test.tsx",
     "finops-web/src/components/__tests__/OrgTree.test.tsx",
     "finops-web/src/components/__tests__/StateBoundary.test.tsx",
@@ -278,6 +288,7 @@
     "scripts/ops/erase_principal.py",
     "tests/__init__.py",
     "tests/api/__init__.py",
+    "tests/api/test_fixture_surfaces.py",
     "tests/api/test_identity_local.py",
     "tests/api/test_routes.py",
     "tests/api/test_scope_enforcement.py",
@@ -470,6 +481,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/dist-types/src/components/FixtureBand.d.ts",
+      "t": "finops-web/dist-types/src/api/fixtureSeam",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/dist-types/src/components/FreshnessIndicator.d.ts",
       "t": "finops-web/dist-types/src/components/provenance",
       "k": "typescript"
@@ -512,6 +528,11 @@
     {
       "s": "finops-web/dist-types/src/components/index.d.ts",
       "t": "finops-web/dist-types/src/components/Figure",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/index.d.ts",
+      "t": "finops-web/dist-types/src/components/FixtureBand",
       "k": "typescript"
     },
     {
@@ -705,6 +726,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/api/__tests__/fixtureSeam.test.ts",
+      "t": "finops-web/src/api/fixtureSeam.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/api/apiContext.ts",
       "t": "finops-web/src/api/client.ts",
       "k": "typescript"
@@ -747,6 +773,11 @@
     {
       "s": "finops-web/src/components/Figure.tsx",
       "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/FixtureBand.tsx",
+      "t": "finops-web/src/api/fixtureSeam.ts",
       "k": "typescript"
     },
     {
@@ -812,6 +843,16 @@
     {
       "s": "finops-web/src/components/__tests__/Figure.test.tsx",
       "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/FixtureBand.test.tsx",
+      "t": "finops-web/src/components/FixtureBand.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/FixtureBand.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
       "k": "typescript"
     },
     {
@@ -912,6 +953,11 @@
     {
       "s": "finops-web/src/components/index.ts",
       "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/index.ts",
+      "t": "finops-web/src/components/FixtureBand.tsx",
       "k": "typescript"
     },
     {
@@ -2412,6 +2458,16 @@
     {
       "s": "migrations/env.py",
       "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_fixture_surfaces.py",
+      "t": "finops_api/main.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_fixture_surfaces.py",
+      "t": "finops_api/routes/__init__.py",
       "k": "python"
     },
     {
