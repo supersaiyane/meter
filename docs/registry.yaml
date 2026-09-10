@@ -983,6 +983,16 @@ changes:
     react-router admitted at rung two of ADR-0013. AppShell lost its section and onSelect props
   commit: '295f032'
   detail: '[ADR-0020](docs/adr/ADR-0020-seven-fixed-navigation-groups.md)'
+- id: CHG-0075
+  date: '2026-09-09'
+  type: Feature
+  what: TASK-P0-037, the fixture seam and its marker. A screen is built against a typed fixture
+    before its route exists and renders a visible FIXTURE DATA band, not gated on a build flag. A
+    failing route raises rather than falling back to invented numbers. The declared set holds route
+    templates so a parameterised detail path matches, and tests/api/test_fixture_surfaces.py fails
+    the build when one becomes a live route, discovering route modules rather than listing them
+  commit: 'bf90690'
+  detail: '[docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md) section 11'
 issues:
 - id: ISS-136
   severity: HIGH
