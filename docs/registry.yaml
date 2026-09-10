@@ -509,7 +509,7 @@ changes:
   type: Design
   what: Threat model and data classification written, closing the two blocking audit findings. The account
     root email column removed from the schema as a result
-  commit: pending
+  commit: 3a16bd0
   detail: '[docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md)'
 issues:
 - id: ISS-001
