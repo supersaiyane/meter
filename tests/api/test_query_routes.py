@@ -397,7 +397,7 @@ def test_an_unreachable_workspace_makes_the_findings_list_partial(
     coverage = client.get("/api/v1/query/findings", headers=auth(token)).json()["meta"][
         "scope_coverage"
     ]
-    assert coverage == {"visible": 3, "total": 4, "is_partial": True}
+    assert coverage == {"visible": 3, "total": 4, "is_partial": True, "unit": "workspaces"}
 
 
 def test_coverage_counts_workspaces_rather_than_the_rows_on_the_page(
@@ -424,7 +424,40 @@ def test_a_narrowed_scope_is_partial_against_the_whole_tenant(
     coverage = client.get("/api/v1/query/findings", headers=auth(token)).json()["meta"][
         "scope_coverage"
     ]
-    assert coverage == {"visible": 1, "total": 4, "is_partial": True}
+    assert coverage == {"visible": 1, "total": 4, "is_partial": True, "unit": "workspaces"}
+
+
+def test_an_unreadable_workspace_is_a_named_failure_on_the_envelope(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """A gap with no cause beside it is a gap the interface has to guess at, and
+    it guessed wrong: it told the reader the missing part was outside their
+    scope when Meter itself had been refused. ISS-152."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    meta = client.get("/api/v1/query/findings", headers=auth(token)).json()["meta"]
+    (failure,) = [f for f in meta["failures"] if f["collector"] == "query_audit"]
+    assert failure["cause"] == "the workspace returned 403"
+    assert failure["scope_key"] == "workspace-unreachable"
+    assert meta["degraded"] is True
+
+
+def test_a_complete_estate_reports_no_failure_of_its_own(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    # The pair. Without it the assertion above would also pass on a route that
+    # reported every workspace as broken.
+    seed(engine, tenant_id)
+    with engine.begin() as connection:
+        connection.execute(
+            models.grafana_instance.update()
+            .where(models.grafana_instance.c.instance_id == key(tenant_id, "unreachable"))
+            .values(reachable=True, unreachable_reason=None)
+        )
+    client, token = client_for(engine, everything(tenant_id), settings)
+    meta = client.get("/api/v1/query/findings", headers=auth(token)).json()["meta"]
+    assert [f for f in meta["failures"] if f["collector"] == "query_audit"] == []
+    assert meta["scope_coverage"]["is_partial"] is False
 
 
 def test_every_query_route_carries_meta(

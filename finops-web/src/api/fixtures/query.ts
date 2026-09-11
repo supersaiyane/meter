@@ -26,7 +26,7 @@ export const FIXTURE_META: ApiMeta = {
   // Two of the three workspaces answered. The third is the unreachable row
   // on the surfaces screen, and a fixture that reported full coverage over a
   // partial estate would be the exact failure these screens exist to prevent.
-  scope_coverage: { visible: 2, total: 3, is_partial: true },
+  scope_coverage: { visible: 2, total: 3, is_partial: true, unit: 'workspaces' },
   degraded: true,
   failures: [],
 };
@@ -192,7 +192,6 @@ export const SURFACE_INSTANCES: readonly ApiSurfaceInstance[] = [
     collected_at: '2026-09-11T09:54:00Z',
   },
 ];
-
 
 export function surfaceInstancesFixture(): ApiEnvelope<ApiSurfaceInstance[]> {
   return { data: [...SURFACE_INSTANCES], meta: FIXTURE_META };

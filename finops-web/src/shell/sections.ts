@@ -46,8 +46,16 @@ export const GROUPS: readonly GroupDef[] = [
     path: '/waste',
     screens: [
       { path: '/waste', label: 'Recommendations', arrives: 'P3 Utilization and Rightsizing' },
-      { path: '/waste/savings', label: 'Realized savings', arrives: 'P3 Utilization and Rightsizing' },
-      { path: '/waste/score', label: 'FinOps Score', arrives: 'P3 Utilization and Rightsizing' },
+      {
+        path: '/waste/savings',
+        label: 'Realized savings',
+        arrives: 'P3 Utilization and Rightsizing',
+      },
+      {
+        path: '/waste/score',
+        label: 'FinOps Score',
+        arrives: 'P3 Utilization and Rightsizing',
+      },
     ],
   },
   {
@@ -66,7 +74,11 @@ export const GROUPS: readonly GroupDef[] = [
     screens: [
       { path: '/inventory/accounts', label: 'Accounts', arrives: null },
       { path: '/inventory/organization', label: 'Organization', arrives: null },
-      { path: '/inventory/resources', label: 'Resources', arrives: 'P4 Inventory and Topology' },
+      {
+        path: '/inventory/resources',
+        label: 'Resources',
+        arrives: 'P4 Inventory and Topology',
+      },
       { path: '/inventory/topology', label: 'Topology', arrives: 'P4 Inventory and Topology' },
     ],
   },

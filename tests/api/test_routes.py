@@ -231,7 +231,12 @@ def test_me_reports_the_principal_and_the_scope(
     payload = client.get("/api/v1/me", headers=auth(token)).json()
     assert payload["data"]["is_global"] is False
     assert payload["data"]["accounts_in_scope"] == 1
-    assert payload["meta"]["scope_coverage"] == {"visible": 1, "total": 2, "is_partial": True}
+    assert payload["meta"]["scope_coverage"] == {
+        "visible": 1,
+        "total": 2,
+        "is_partial": True,
+        "unit": "accounts",
+    }
 
 
 def test_a_global_viewer_is_not_reported_as_seeing_nothing(
@@ -313,7 +318,12 @@ def test_the_tree_reports_how_many_accounts_are_reachable(
     seed(engine, tenant_id)
     client, token = client_for(engine, narrow(tenant_id), settings)
     payload = client.get("/api/v1/org/tree", headers=auth(token)).json()
-    assert payload["meta"]["scope_coverage"] == {"visible": 1, "total": 2, "is_partial": True}
+    assert payload["meta"]["scope_coverage"] == {
+        "visible": 1,
+        "total": 2,
+        "is_partial": True,
+        "unit": "accounts",
+    }
 
 
 # --- runs and freshness ------------------------------------------------------

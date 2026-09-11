@@ -269,10 +269,17 @@ meter/
 │       ├── shell/             coverage and freshness, page level and worst case
 │       │   └── sections.ts    GROUPS, the seven of ADR-0020. It never grows: a
 │       │                      sub project adds screens inside an existing group
-│       └── screens/           ten built. All four P2 screens exist and are
-│                              fixture backed until TASK-P2-021 lands the routes
+│       └── screens/           ten built. Three of the four P2 screens read live
+│                              routes since TASK-P2-021; enforcement stays
+│                              fixture backed and says so, because TASK-P2-016 is
+│                              parked
+│           ├── querySeverity.ts       the word to the ramp. Its own module
+│           │                          because two screens rank the same findings
+│           │                          and a second copy is a second answer
 │           ├── HomeScreen.tsx          owns no data of its own. An unfilled slot
-│           │                           names the sub project that will fill it
+│           │                           names the sub project that will fill it,
+│           │                           and the findings slot is filled, read
+│           │                           through the findings screen's own hook
 │           ├── QueryFindingsScreen.tsx ranked by cost as decimals. The reason is
 │           │                           a column, because a tooltip is invisible
 │           │                           in a screenshot

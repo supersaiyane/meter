@@ -74,10 +74,7 @@ export function App({
                 <Route path="/inventory/accounts" element={<AccountsScreen />} />
                 <Route path="/inventory/organization" element={<OrganizationScreen />} />
                 <Route path="/governance/queries" element={<QueryFindingsScreen />} />
-                <Route
-                  path="/governance/queries/:id"
-                  element={<QueryFindingDetailScreen />}
-                />
+                <Route path="/governance/queries/:id" element={<QueryFindingDetailScreen />} />
                 <Route path="/governance/instances" element={<QuerySurfacesScreen />} />
                 <Route path="/governance/enforcement" element={<EnforcementScreen />} />
                 <Route path="/platform/ingest" element={<IngestScreen />} />

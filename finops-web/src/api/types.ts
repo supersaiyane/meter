@@ -15,6 +15,11 @@ export interface ApiCoverage {
   readonly visible: number;
   readonly total: number;
   readonly is_partial: boolean;
+  /**
+   * What is being counted, plural. The route knows and the shell was guessing:
+   * every screen said `accounts` and the query screens count workspaces.
+   */
+  readonly unit: string;
 }
 
 export interface ApiFailure {
@@ -162,7 +167,6 @@ export interface ApiSurfaceInstance {
   readonly as_of: string;
   readonly collected_at: string;
 }
-
 
 export interface ApiEnforcementAction {
   readonly action_id: string;

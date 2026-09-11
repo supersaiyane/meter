@@ -1,11 +1,15 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router';
 
-import { usePlatformCost } from '../api/queries';
+import { usePlatformCost, useQueryFindings } from '../api/queries';
 import { grandTotal, rollUp } from './platformRollUp';
 import { Figure } from '../components/Figure';
+import { DataTable } from '../components/DataTable';
+import { SeverityBadge } from '../components/SeverityBadge';
 import { StateBoundary } from '../components/StateBoundary';
+import type { Column } from '../components/tableConfig';
 import { useReportMeta } from '../shell/metaRegistry';
+import { severityOf } from './querySeverity';
 import { surfaceStateFor } from './surfaceStateFor';
 
 /**
@@ -47,7 +51,10 @@ const SLOTS: readonly SlotDef[] = [
     id: 'findings',
     label: 'Top findings by dollar',
     owns: '/governance/queries',
-    arrives: 'P2 Query Cost Governance',
+    // Built. TASK-P2-021 gave this slot a route, so the front page shows the
+    // finding rather than the name of the sub project that would one day
+    // provide it. That is what makes this page the progress view.
+    arrives: null,
   },
   {
     id: 'savings',
@@ -67,6 +74,71 @@ function EmptySlot({ slot }: { readonly slot: SlotDef }) {
     </section>
   );
 }
+
+/**
+ * The three most expensive findings, read through the findings screen's own
+ * hook and its own query key, so the two can never disagree. Home owns no data.
+ */
+function FindingsSlot({ slot }: { readonly slot: SlotDef }) {
+  const query = useQueryFindings();
+  const envelope = query.data?.data;
+  const rows = envelope?.data ?? [];
+  const top = rows.slice(0, TOP_FINDINGS);
+  useReportMeta('home-query-findings', envelope?.meta);
+  const state = surfaceStateFor(query, envelope?.meta, rows.length, 'none', 'query_audit');
+
+  const freshness = {
+    asOf: new Date(envelope?.meta.as_of ?? 0),
+    collectedAt: new Date(envelope?.meta.collected_at ?? 0),
+  };
+  const columns: readonly Column<(typeof top)[number]>[] = [
+    { key: 'severity', header: 'Severity', render: (row) => <SeverityBadge level={severityOf(row)} /> },
+    {
+      key: 'finding',
+      header: 'Finding',
+      render: (row) => (
+        <Link to={`/governance/queries/${row.finding_id}`}>
+          {row.dashboard_title}, {row.panel_title}
+        </Link>
+      ),
+    },
+    {
+      key: 'monthly',
+      header: 'Monthly',
+      numeric: true,
+      render: (row) => (
+        <Figure
+          value={
+            row.provenance === 'measured'
+              ? { kind: 'measured', amount: Number(row.monthly_cost) }
+              : { kind: 'modelled', amount: Number(row.monthly_cost) }
+          }
+          freshness={freshness}
+        />
+      ),
+    },
+    { key: 'owner', header: 'Owner', render: (row) => row.owner ?? 'unattributed' },
+  ];
+
+  return (
+    <section data-testid={`home-slot-${slot.id}`} aria-label={slot.label}>
+      <h3>
+        <Link to={slot.owns}>{slot.label}</Link>
+      </h3>
+      <StateBoundary state={state}>
+        <DataTable
+          rows={top}
+          columns={columns}
+          rowKey={(row) => row.finding_id}
+          caption={`The ${String(top.length)} most expensive, of ${String(rows.length)}`}
+        />
+      </StateBoundary>
+    </section>
+  );
+}
+
+/** Three. A front page summary that needs scrolling is a second screen. */
+const TOP_FINDINGS = 3;
 
 export function HomeScreen() {
   const query = usePlatformCost();
@@ -88,14 +160,23 @@ export function HomeScreen() {
           {grand ? (
             <Figure
               value={{ kind: 'measured', amount: grand.total }}
-              freshness={{ asOf: new Date(grand.asOf), collectedAt: new Date(grand.collectedAt) }}
+              freshness={{
+                asOf: new Date(grand.asOf),
+                collectedAt: new Date(grand.collectedAt),
+              }}
               label="Meter cost"
             />
           ) : null}
         </StateBoundary>
       </section>
 
-      {SLOTS.map((slot) => (slot.arrives === null ? null : <EmptySlot key={slot.id} slot={slot} />))}
+      {SLOTS.map((slot) =>
+        slot.arrives === null ? (
+          <FindingsSlot key={slot.id} slot={slot} />
+        ) : (
+          <EmptySlot key={slot.id} slot={slot} />
+        ),
+      )}
     </>
   );
 }

@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-330 public symbols across 5 packages.
+331 public symbols across 5 packages.
 
 ## finops_core
 
@@ -285,8 +285,9 @@ a duplicate.
 | `QueryFindingRepository.ranked` | method | `finops_api/db/repositories/query.py:59` | Every finding, most expensive first. | `finops_api/routes/query.py` |
 | `QueryFindingRepository.one` | method | `finops_api/db/repositories/query.py:69` |  | `finops_api/routes/query.py`, `finops_ingest/collectors/query_audit.py` |
 | `SurfaceInstanceRepository` | class | `finops_api/db/repositories/query.py:75` | Every place queries live, including the ones that could not be read. | `finops_api/routes/query.py` |
-| `SurfaceInstanceRepository.coverage` | method | `finops_api/db/repositories/query.py:81` | Workspaces read, over workspaces the tenant has. | `finops_api/routes/query.py` |
-| `SurfaceInstanceRepository.all_with_counts` | method | `finops_api/db/repositories/query.py:111` |  | `finops_api/routes/query.py` |
+| `SurfaceInstanceRepository.unreachable` | method | `finops_api/db/repositories/query.py:81` | The workspaces that could not be read, with their typed cause. | `finops_api/routes/query.py` |
+| `SurfaceInstanceRepository.coverage` | method | `finops_api/db/repositories/query.py:94` | Workspaces read, over workspaces the tenant has. | `finops_api/routes/query.py` |
+| `SurfaceInstanceRepository.all_with_counts` | method | `finops_api/db/repositories/query.py:124` |  | `finops_api/routes/query.py` |
 | `get_settings` | function | `finops_api/deps.py:37` |  | `finops_api/main.py` |
 | `get_request_id` | function | `finops_api/deps.py:41` | The id every log line and every audit row for this request carries. | nothing in this tree |
 | `get_connection` | function | `finops_api/deps.py:47` | One transaction per request, so a read and its audit row commit together. | nothing in this tree |
@@ -340,27 +341,27 @@ a duplicate.
 | `reachable_for` | function | `finops_api/routes/org.py:32` | Structure is always visible. Whether an account can be read is the scope's answer. | nothing in this tree |
 | `org_tree` | function | `finops_api/routes/org.py:40` |  | nothing in this tree |
 | `platform_cost` | function | `finops_api/routes/platform.py:27` |  | nothing in this tree |
-| `query_findings` | function | `finops_api/routes/query.py:70` |  | nothing in this tree |
-| `query_finding` | function | `finops_api/routes/query.py:94` |  | nothing in this tree |
-| `query_instances` | function | `finops_api/routes/query.py:136` |  | nothing in this tree |
-| `CoverageOut` | class | `finops_api/schemas.py:26` | Visible accounts against every account the organization holds. ISS-016. | nothing in this tree |
-| `CoverageOut.is_partial` | method | `finops_api/schemas.py:36` |  | nothing in this tree |
-| `FailureOut` | class | `finops_api/schemas.py:40` | One thing that is broken, and what the reader should do about it. | `finops_api/routes/__init__.py` |
-| `Meta` | class | `finops_api/schemas.py:54` | What the numbers beside this are worth. | nothing in this tree |
-| `Meta.degraded` | method | `finops_api/schemas.py:68` | True when the reader must not take these figures at face value. | nothing in this tree |
-| `Meta.build` | method | `finops_api/schemas.py:78` |  | `finops_api/routes/__init__.py` |
-| `Envelope` | class | `finops_api/schemas.py:94` | Every route returns this. There is no bare data variant. | `finops_api/routes/accounts.py`, `finops_api/routes/ingest.py`, `finops_api/routes/me.py`, `finops_api/routes/org.py`, and 2 more |
-| `MeOut` | class | `finops_api/schemas.py:113` |  | `finops_api/routes/me.py` |
-| `AccountOut` | class | `finops_api/schemas.py:124` |  | `finops_api/routes/accounts.py` |
-| `OrgNodeOut` | class | `finops_api/schemas.py:139` |  | `finops_api/routes/org.py` |
-| `RunOut` | class | `finops_api/schemas.py:155` |  | `finops_api/routes/ingest.py` |
-| `FreshnessOut` | class | `finops_api/schemas.py:170` |  | `finops_api/routes/ingest.py` |
-| `PlatformCostOut` | class | `finops_api/schemas.py:181` |  | `finops_api/routes/platform.py` |
-| `CollectorHealth` | class | `finops_api/schemas.py:194` | How long since a collector last succeeded, against its own cadence. | `finops_api/main.py` |
-| `HealthOut` | class | `finops_api/schemas.py:206` | `/healthz`. Deliberately not a bare liveness probe. | `finops_api/main.py` |
-| `QueryFindingOut` | class | `finops_api/schemas.py:222` | One expensive query, as the findings list shows it. | `finops_api/routes/query.py` |
-| `QueryFindingDetailOut` | class | `finops_api/schemas.py:260` | One finding with its full working, for the detail screen. | `finops_api/routes/query.py` |
-| `SurfaceInstanceOut` | class | `finops_api/schemas.py:279` | One place queries live, reachable or not. | `finops_api/routes/query.py` |
+| `query_findings` | function | `finops_api/routes/query.py:98` |  | nothing in this tree |
+| `query_finding` | function | `finops_api/routes/query.py:125` |  | nothing in this tree |
+| `query_instances` | function | `finops_api/routes/query.py:170` |  | nothing in this tree |
+| `CoverageOut` | class | `finops_api/schemas.py:26` | What was seen against everything there was to see. ISS-016. | nothing in this tree |
+| `CoverageOut.is_partial` | method | `finops_api/schemas.py:41` |  | nothing in this tree |
+| `FailureOut` | class | `finops_api/schemas.py:45` | One thing that is broken, and what the reader should do about it. | `finops_api/routes/__init__.py`, `finops_api/routes/query.py` |
+| `Meta` | class | `finops_api/schemas.py:59` | What the numbers beside this are worth. | nothing in this tree |
+| `Meta.degraded` | method | `finops_api/schemas.py:73` | True when the reader must not take these figures at face value. | nothing in this tree |
+| `Meta.build` | method | `finops_api/schemas.py:83` |  | `finops_api/routes/__init__.py` |
+| `Envelope` | class | `finops_api/schemas.py:100` | Every route returns this. There is no bare data variant. | `finops_api/routes/accounts.py`, `finops_api/routes/ingest.py`, `finops_api/routes/me.py`, `finops_api/routes/org.py`, and 2 more |
+| `MeOut` | class | `finops_api/schemas.py:119` |  | `finops_api/routes/me.py` |
+| `AccountOut` | class | `finops_api/schemas.py:130` |  | `finops_api/routes/accounts.py` |
+| `OrgNodeOut` | class | `finops_api/schemas.py:145` |  | `finops_api/routes/org.py` |
+| `RunOut` | class | `finops_api/schemas.py:161` |  | `finops_api/routes/ingest.py` |
+| `FreshnessOut` | class | `finops_api/schemas.py:176` |  | `finops_api/routes/ingest.py` |
+| `PlatformCostOut` | class | `finops_api/schemas.py:187` |  | `finops_api/routes/platform.py` |
+| `CollectorHealth` | class | `finops_api/schemas.py:200` | How long since a collector last succeeded, against its own cadence. | `finops_api/main.py` |
+| `HealthOut` | class | `finops_api/schemas.py:212` | `/healthz`. Deliberately not a bare liveness probe. | `finops_api/main.py` |
+| `QueryFindingOut` | class | `finops_api/schemas.py:228` | One expensive query, as the findings list shows it. | `finops_api/routes/query.py` |
+| `QueryFindingDetailOut` | class | `finops_api/schemas.py:266` | One finding with its full working, for the detail screen. | `finops_api/routes/query.py` |
+| `SurfaceInstanceOut` | class | `finops_api/schemas.py:285` | One place queries live, reachable or not. | `finops_api/routes/query.py` |
 
 ## finops_mcp
 

@@ -88,7 +88,6 @@ function baseDetail() {
 }
 
 describe('amountFigure', () => {
-
   it('omits accuracy entirely when none is published', () => {
     // Absent, not empty. Figure renders "accuracy not yet published" from the
     // absence, and a blank string would render as a published accuracy of
@@ -103,7 +102,11 @@ describe('amountFigure', () => {
   });
 
   it('never attaches an accuracy to a measured figure', () => {
-    const value = amountFigure({ ...baseDetail(), provenance: 'measured', accuracy_percent: 9 });
+    const value = amountFigure({
+      ...baseDetail(),
+      provenance: 'measured',
+      accuracy_percent: 9,
+    });
     expect(value).toEqual({ kind: 'measured', amount: 5184 });
   });
 });

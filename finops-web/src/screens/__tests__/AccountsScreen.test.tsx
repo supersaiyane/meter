@@ -89,7 +89,9 @@ describe('AccountsScreen', () => {
   it('reports a partial view rather than showing the rows alone', async () => {
     renderScreen({
       data: ACCOUNTS,
-      meta: metaOf({ scope_coverage: { visible: 3, total: 9, is_partial: true } }),
+      meta: metaOf({
+        scope_coverage: { visible: 3, total: 9, is_partial: true, unit: 'accounts' },
+      }),
     });
     await waitFor(() => {
       expect(screen.getByTestId('state').dataset['state']).toBe('partial');

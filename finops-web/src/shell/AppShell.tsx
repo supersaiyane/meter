@@ -68,8 +68,15 @@ export function AppShell({ children, now }: AppShellProps) {
             </div>
           ))}
         </nav>
+      </header>
 
-        <CoverageBanner visible={meta.visible} total={meta.total} />
+      {/* One band, full width, above everything. Section 8 of
+          docs/13-UI-ARCHITECTURE.md asks for exactly this shape, and it sat in
+          the sidebar instead, where a 1440 px screen pushed the freshness line
+          below the fold and the page lost the one thing that says how much its
+          numbers are worth. */}
+      <div data-testid="trust-strip">
+        <CoverageBanner coverage={meta.coverage} />
 
         {meta.asOf === null || meta.collectedAt === null ? (
           // Never collected is not an empty success and must not read as one.
@@ -112,7 +119,7 @@ export function AppShell({ children, now }: AppShellProps) {
             </ul>
           </section>
         ) : null}
-      </header>
+      </div>
 
       <main>{children}</main>
     </div>

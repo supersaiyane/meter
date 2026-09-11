@@ -63,7 +63,11 @@ function countFigure(row: ApiSurfaceInstance, freshness: Freshness) {
     );
   }
   return (
-    <Figure value={{ kind: 'measured', amount: row.query_count }} freshness={freshness} unit="count" />
+    <Figure
+      value={{ kind: 'measured', amount: row.query_count }}
+      freshness={freshness}
+      unit="count"
+    />
   );
 }
 

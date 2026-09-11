@@ -29,6 +29,7 @@ from finops_api.deps import get_access_context, get_connection, get_scope, get_s
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
     Envelope,
+    FailureOut,
     QueryFindingDetailOut,
     QueryFindingOut,
     SurfaceInstanceOut,
@@ -37,6 +38,33 @@ from finops_core.config import Settings
 from finops_core.domain.tenant import Scope
 
 router = APIRouter(prefix=API_PREFIX, tags=["query"])
+
+
+def _unreadable(rows: Any) -> tuple[FailureOut, ...]:
+    """Unreachable workspaces, as failures on the envelope.
+
+    A gap with no cause beside it is a gap the interface has to guess at, and it
+    guessed wrong: it told the reader the missing part was outside their scope
+    when Meter itself had been refused. ISS-152.
+    """
+    return tuple(
+        FailureOut(
+            scope_key=row.name,
+            collector="query_audit",
+            cause=row.unreachable_reason,
+            remediation=(
+                f"Meter could not read {row.name}. Check the workspace permits the "
+                f"Meter reader role, then rerun the query audit collector."
+            ),
+            occurrences=1,
+            # When the workspace was last read, which is the collected_at on the
+            # row. Not now: the failure is as old as the reading that found it,
+            # and stamping it with the request time would make a stale problem
+            # look like it had just happened.
+            last_seen_at=row.collected_at,
+        )
+        for row in rows
+    )
 
 
 def _finding(row: Any) -> QueryFindingOut:
@@ -74,6 +102,7 @@ def query_findings(
 ) -> Envelope[list[QueryFindingOut]]:
     rows = QueryFindingRepository(connection, context).ranked(scope)
     findings = [_finding(row) for row in rows]
+    surfaces = SurfaceInstanceRepository(connection, context)
     return Envelope(
         data=findings,
         meta=build_meta(
@@ -82,10 +111,12 @@ def query_findings(
             context,
             visible=len(findings),
             rows=rows,
+            extra_failures=_unreadable(surfaces.unreachable(scope)),
             # Workspaces, not findings. How many findings came back says nothing
             # about how much of the estate they were drawn from, and an
             # unreachable workspace hides an unknown number of them.
-            coverage=SurfaceInstanceRepository(connection, context).coverage(scope),
+            coverage=surfaces.coverage(scope),
+            coverage_unit="workspaces",
         ),
     )
 
@@ -105,6 +136,7 @@ def query_finding(
         # would tell an unauthorised caller that the row is there.
         raise HTTPException(status_code=404, detail="no such finding")
 
+    surfaces = SurfaceInstanceRepository(connection, context)
     base = _finding(row)
     target = row.target or {}
     detail = QueryFindingDetailOut(
@@ -127,7 +159,9 @@ def query_finding(
             context,
             visible=1,
             rows=[row],
-            coverage=SurfaceInstanceRepository(connection, context).coverage(scope),
+            extra_failures=_unreadable(surfaces.unreachable(scope)),
+            coverage=surfaces.coverage(scope),
+            coverage_unit="workspaces",
         ),
     )
 
@@ -172,8 +206,10 @@ def query_instances(
             context,
             visible=len(instances),
             rows=rows,
+            extra_failures=_unreadable(row for row in rows if not row.reachable),
             # An unreachable workspace is listed and is still not covered, so
             # the count here is smaller than the number of rows on the page.
             coverage=repository.coverage(scope),
+            coverage_unit="workspaces",
         ),
     )

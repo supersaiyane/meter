@@ -59,8 +59,22 @@ def test_the_seam_declares_at_least_one_template() -> None:
     assert declared_fixture_templates()
 
 
+def _without_parameter_names(paths: set[str]) -> dict[str, str]:
+    """Paths with every parameter name replaced, mapped back to the original.
+
+    `/query/findings/{id}` and `/query/findings/{finding_id}` are the same route
+    and differ only in what the parameter is called. Comparing them literally
+    let a mistyped template sit in FIXTURE_SURFACES forever, invisible, while
+    the route it named was live: the guard reported the two paths that matched
+    exactly and said nothing about the third.
+    """
+    return {re.sub(r"\{[^}]*\}", "{}", path): path for path in paths}
+
+
 def test_no_fixture_path_is_a_registered_route() -> None:
-    still_invented = declared_fixture_templates() & registered_route_templates()
+    fixtures = _without_parameter_names(declared_fixture_templates())
+    routes = _without_parameter_names(registered_route_templates())
+    still_invented = {fixtures[shape] for shape in fixtures.keys() & routes.keys()}
     assert not still_invented, (
         "These paths are live routes but the frontend still serves fixtures for "
         f"them: {sorted(still_invented)}. Remove them from FIXTURE_SURFACES in {SEAM}."

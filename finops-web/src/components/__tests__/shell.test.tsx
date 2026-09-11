@@ -12,7 +12,7 @@ const NOW = new Date('2026-08-27T10:00:00Z');
 
 describe('CoverageBanner', () => {
   it('says how much of the organization is visible', () => {
-    render(<CoverageBanner visible={42} total={310} />);
+    render(<CoverageBanner coverage={[{ unit: 'accounts', visible: 42, total: 310 }]} />);
     expect(screen.getByText('Showing 42 of 310 accounts')).toBeInTheDocument();
     expect(screen.getByTestId('coverage').dataset['partial']).toBe('true');
   });
@@ -20,13 +20,32 @@ describe('CoverageBanner', () => {
   it('confirms complete coverage rather than staying silent', () => {
     // The absence of a warning is not confirmation, and a reader needs
     // confirmation before treating a total as a total.
-    render(<CoverageBanner visible={310} total={310} />);
+    render(<CoverageBanner coverage={[{ unit: 'accounts', visible: 310, total: 310 }]} />);
     expect(screen.getByText('Showing all 310 accounts')).toBeInTheDocument();
+  });
+
+  it('states each thing it counted rather than one ratio over both', () => {
+    // Home holds a panel counted in accounts beside one counted in workspaces.
+    // A single ratio across the two was true of neither: it read `0 of 3`.
+    render(
+      <CoverageBanner
+        coverage={[
+          { unit: 'workspaces', visible: 2, total: 3 },
+          { unit: 'accounts', visible: 4, total: 4 },
+        ]}
+      />,
+    );
+    expect(screen.getByText('Showing 2 of 3 workspaces, all 4 accounts')).toBeInTheDocument();
+  });
+
+  it('says nothing has reported rather than implying full coverage', () => {
+    render(<CoverageBanner coverage={[]} />);
+    expect(screen.getByText('Coverage not yet reported')).toBeInTheDocument();
   });
 
   it('offers no way to dismiss it', () => {
     // A banner gets dismissed. The condition does not go away with it.
-    const { container } = render(<CoverageBanner visible={1} total={2} />);
+    const { container } = render(<CoverageBanner coverage={[{ unit: 'accounts', visible: 1, total: 2 }]} />);
     expect(container.querySelector('button')).toBeNull();
   });
 });

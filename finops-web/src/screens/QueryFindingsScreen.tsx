@@ -6,7 +6,8 @@ import type { ApiQueryFinding } from '../api/types';
 import { DataTable } from '../components/DataTable';
 import { Figure } from '../components/Figure';
 import { FixtureBand } from '../components/FixtureBand';
-import { SeverityBadge, type Severity } from '../components/SeverityBadge';
+import { SeverityBadge } from '../components/SeverityBadge';
+import { severityOf } from './querySeverity';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
 import type { FigureValue, Freshness } from '../components/provenance';
@@ -36,24 +37,6 @@ function figureOf(finding: ApiQueryFinding, amount: number): FigureValue {
   return finding.provenance === 'measured'
     ? { kind: 'measured', amount }
     : { kind: 'modelled', amount };
-}
-
-/**
- * The API sends a word, not a number. The mapping is here rather than in the
- * API because the ramp is a rendering decision: the same four levels would be
- * five steps on a different scale, and the badge is what has to be ordered.
- */
-const SEVERITY_LEVEL: Readonly<Record<string, Severity>> = {
-  CRITICAL: 5,
-  HIGH: 4,
-  MEDIUM: 3,
-  LOW: 2,
-};
-
-function severityOf(finding: ApiQueryFinding): Severity {
-  // An unrecognised severity reads as informational rather than critical. A
-  // vocabulary change should under state a finding, never invent an alarm.
-  return SEVERITY_LEVEL[finding.severity.toUpperCase()] ?? 1;
 }
 
 function secondsLabel(seconds: number | null): string {
@@ -91,7 +74,11 @@ function columnsFor(freshness: Freshness): readonly Column<ApiQueryFinding>[] {
       header: 'Runs per day',
       numeric: true,
       render: (row) => (
-        <Figure value={figureOf(row, Number(row.runs_per_day))} freshness={freshness} unit="count" />
+        <Figure
+          value={figureOf(row, Number(row.runs_per_day))}
+          freshness={freshness}
+          unit="count"
+        />
       ),
     },
     {
@@ -111,14 +98,19 @@ function columnsFor(freshness: Freshness): readonly Column<ApiQueryFinding>[] {
       header: 'Monthly cost',
       numeric: true,
       render: (row) => (
-        <Figure value={figureOf(row, Number(row.monthly_cost))} freshness={freshness} unit="usd" />
+        <Figure
+          value={figureOf(row, Number(row.monthly_cost))}
+          freshness={freshness}
+          unit="usd"
+        />
       ),
     },
     // The API sends null for an unowned finding and this is where that becomes
     // a word. An empty cell would read as "no owner needed" rather than "nobody
     // claimed it", and those are different states.
     { key: 'owner', header: 'Owner', render: (row) => row.owner ?? 'unattributed' },
-    { key: 'why', header: 'Why', render: (row) => row.why },
+    // The product. A ranked list says what to look at; this says what to do.
+    { key: 'why', header: 'Why', prose: true, render: (row) => row.why },
   ];
 }
 

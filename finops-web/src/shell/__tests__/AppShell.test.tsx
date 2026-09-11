@@ -14,7 +14,7 @@ function metaOf(partial: Partial<ApiMeta> = {}): ApiMeta {
   return {
     as_of: '2026-08-27T09:00:00Z',
     collected_at: '2026-08-27T09:54:00Z',
-    scope_coverage: { visible: 5, total: 5, is_partial: false },
+    scope_coverage: { visible: 5, total: 5, is_partial: false, unit: 'accounts' },
     degraded: false,
     failures: [],
     ...partial,
@@ -31,9 +31,7 @@ function renderShell(meta?: ApiMeta, initialPath = '/inventory/accounts') {
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
       <MetaProvider>
-        <AppShell now={NOW}>
-          {meta ? <Surface meta={meta} /> : <p>rows</p>}
-        </AppShell>
+        <AppShell now={NOW}>{meta ? <Surface meta={meta} /> : <p>rows</p>}</AppShell>
       </MetaProvider>
     </MemoryRouter>,
   );
@@ -41,20 +39,30 @@ function renderShell(meta?: ApiMeta, initialPath = '/inventory/accounts') {
 
 describe('AppShell', () => {
   it('reads showing N of M accounts whenever coverage is partial', () => {
-    renderShell(metaOf({ scope_coverage: { visible: 42, total: 310, is_partial: true } }));
+    renderShell(
+      metaOf({
+        scope_coverage: { visible: 42, total: 310, is_partial: true, unit: 'accounts' },
+      }),
+    );
     expect(screen.getByText('Showing 42 of 310 accounts')).toBeInTheDocument();
   });
 
   it('confirms complete coverage rather than going quiet', () => {
     // The absence of a warning is not confirmation, and a reader needs
     // confirmation before treating a total as a total.
-    renderShell(metaOf({ scope_coverage: { visible: 310, total: 310, is_partial: false } }));
+    renderShell(
+      metaOf({
+        scope_coverage: { visible: 310, total: 310, is_partial: false, unit: 'accounts' },
+      }),
+    );
     expect(screen.getByText('Showing all 310 accounts')).toBeInTheDocument();
   });
 
   it('gives no way to dismiss the coverage banner', () => {
     // A banner gets dismissed. The condition does not go away with it.
-    renderShell(metaOf({ scope_coverage: { visible: 1, total: 2, is_partial: true } }));
+    renderShell(
+      metaOf({ scope_coverage: { visible: 1, total: 2, is_partial: true, unit: 'accounts' } }),
+    );
     const banner = screen.getByTestId('coverage');
     expect(banner.querySelector('button')).toBeNull();
   });
@@ -137,7 +145,7 @@ describe('AppShell', () => {
 
   it('withdraws a surface meta when the surface leaves', () => {
     const view = renderShell(
-      metaOf({ scope_coverage: { visible: 2, total: 9, is_partial: true } }),
+      metaOf({ scope_coverage: { visible: 2, total: 9, is_partial: true, unit: 'accounts' } }),
     );
     expect(screen.getByText('Showing 2 of 9 accounts')).toBeInTheDocument();
     view.rerender(
@@ -171,7 +179,7 @@ describe('AppShell', () => {
     const { container } = renderShell(
       metaOf({
         degraded: true,
-        scope_coverage: { visible: 1, total: 4, is_partial: true },
+        scope_coverage: { visible: 1, total: 4, is_partial: true, unit: 'accounts' },
         failures: [
           {
             scope_key: 'aws:1:eu-west-1',

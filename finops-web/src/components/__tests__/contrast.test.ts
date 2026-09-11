@@ -44,7 +44,8 @@ function luminance(hex: string): number {
   const weights = [0.2126, 0.7152, 0.0722];
   return [0, 2, 4].reduce(
     (total, offset, index) =>
-      total + (weights[index] ?? 0) * channel(Number.parseInt(full.slice(offset, offset + 2), 16)),
+      total +
+      (weights[index] ?? 0) * channel(Number.parseInt(full.slice(offset, offset + 2), 16)),
     0,
   );
 }

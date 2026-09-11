@@ -22,7 +22,7 @@ const ENVELOPE = {
   meta: {
     as_of: null,
     collected_at: null,
-    scope_coverage: { visible: 0, total: 0, is_partial: false },
+    scope_coverage: { visible: 0, total: 0, is_partial: false, unit: 'accounts' },
     degraded: true,
     failures: [],
   },

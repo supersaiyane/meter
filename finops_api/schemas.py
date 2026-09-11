@@ -24,12 +24,17 @@ from pydantic import BaseModel, ConfigDict, computed_field
 
 
 class CoverageOut(BaseModel):
-    """Visible accounts against every account the organization holds. ISS-016."""
+    """What was seen against everything there was to see. ISS-016."""
 
     model_config = ConfigDict(frozen=True)
 
     visible: int
     total: int
+    #: What is being counted, plural. Accounts on most routes and workspaces on
+    #: the query routes, which is why it travels on the wire: the route knows
+    #: what it counted and the interface was guessing, so every screen said
+    #: "accounts" and the query screens were counting something else.
+    unit: str = "accounts"
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -79,6 +84,7 @@ class Meta(BaseModel):
         cls,
         visible: int,
         total: int,
+        unit: str = "accounts",
         as_of: datetime | None = None,
         collected_at: datetime | None = None,
         failures: Sequence[FailureOut] = (),
@@ -86,7 +92,7 @@ class Meta(BaseModel):
         return cls(
             as_of=as_of,
             collected_at=collected_at,
-            scope_coverage=CoverageOut(visible=visible, total=total),
+            scope_coverage=CoverageOut(visible=visible, total=total, unit=unit),
             failures=tuple(failures),
         )
 

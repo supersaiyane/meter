@@ -187,6 +187,17 @@ Persistent, compact, full width, above everything. It is one band, not three
 cards, because three cards of equal weight is the card grid that
 `docs/12-UI-DESIGN.md` section 2 rules out.
 
+Built 2026-09-11. It spent its first release inside the sidebar column, where a
+1440 px screen pushed the freshness line below the fold, so the page lost the
+one statement that says what its numbers are worth. ISS-156.
+
+Coverage states one line per thing counted, not one ratio. Home holds a panel
+counted in accounts beside one counted in workspaces, and the conservative rule
+across both produced "Showing 0 of 3", which was true of nothing on the page.
+The noun travels on `scope_coverage.unit`, set by the route that did the
+counting, because the interface was guessing it and guessed "accounts"
+everywhere. ISS-157.
+
 | Element | Source | Rule |
 | --- | --- | --- |
 | Coverage | `scope_coverage` on every response | Complete coverage says so. Absence of a warning is not confirmation |
@@ -358,6 +369,19 @@ Dense. The user is scanning hundreds of rows for outliers, so 32 px rows per
 look at. The prose telling them a panel refreshes every ten seconds against a
 thirty day window is what tells them what to do. It is a column, not a tooltip,
 because a tooltip is invisible in a screenshot and this list is read in tickets.
+
+It is also the widest column, and was the narrowest. Every column shared the
+width evenly until 2026-09-11, which wrapped the explanation into a ribbon about
+eight characters across. A column declared `prose` takes the width the others do
+not need.
+
+**Density is a property of the table, not of the caller.** `DataTable` marks
+everything inside it as dense and `Figure` reads that, so a table written next
+year is dense without its author knowing the mechanism exists. Dense removes the
+freshness line and the accuracy clause and nothing else: the fill, the tilde
+prefix and the word all stay, and freshness moves to the trust strip, where this
+document already puts it. Repeating it per cell made a three figure row 90 px
+tall and pushed monthly cost off a 1440 px screen. ISS-155.
 
 States: all seven. The one that matters is `Partial`, because an unreachable
 instance means the list is incomplete and the count of what is missing sits

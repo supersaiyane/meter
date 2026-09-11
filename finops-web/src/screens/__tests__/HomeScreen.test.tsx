@@ -61,10 +61,15 @@ describe('HomeScreen', () => {
       'href',
       '/platform/cost',
     );
-    expect(screen.getByRole('link', { name: /P2 Query Cost Governance/ })).toHaveAttribute(
+    // The findings slot is filled since TASK-P2-021, so its link is the slot
+    // heading rather than the name of a sub project that has not arrived.
+    expect(screen.getByRole('link', { name: /Top findings by dollar/ })).toHaveAttribute(
       'href',
       '/governance/queries',
     );
+    // P1 has not arrived, and its three slots still name it rather than
+    // rendering an empty panel.
+    expect(screen.getAllByRole('link', { name: /P1 Cost Intelligence/ })).toHaveLength(3);
   });
 
   it('shows Meter own cost as a measured figure, summed across modules', async () => {
@@ -86,7 +91,11 @@ describe('HomeScreen', () => {
     };
     renderHome(recording);
     await screen.findByText('$431.00');
-    expect(asked).toEqual(['/api/v1/platform/cost']);
+    // Both paths belong to a screen that already requests them, through that
+    // screen's own hook and its own query key: `usePlatformCost` for the first
+    // and `useQueryFindings` for the second. The rule is that Home has no query
+    // of its own, not that it makes one request.
+    expect([...asked].sort()).toEqual(['/api/v1/platform/cost', '/api/v1/query/findings']);
   });
 
   it('has no accessibility violations', async () => {

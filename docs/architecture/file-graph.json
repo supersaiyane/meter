@@ -38,6 +38,7 @@
     "finops-web/dist-types/src/components/CoverageBanner.d.ts",
     "finops-web/dist-types/src/components/DataTable",
     "finops-web/dist-types/src/components/DataTable.d.ts",
+    "finops-web/dist-types/src/components/DenseRegion.d.ts",
     "finops-web/dist-types/src/components/Figure",
     "finops-web/dist-types/src/components/Figure.d.ts",
     "finops-web/dist-types/src/components/FixtureBand",
@@ -65,6 +66,7 @@
     "finops-web/dist-types/src/components/__tests__/orgNodes.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/shell.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/surface.test.d.ts",
+    "finops-web/dist-types/src/components/density.d.ts",
     "finops-web/dist-types/src/components/index.d.ts",
     "finops-web/dist-types/src/components/orgNodes",
     "finops-web/dist-types/src/components/orgNodes.d.ts",
@@ -103,6 +105,7 @@
     "finops-web/dist-types/src/screens/enforcementTime.d.ts",
     "finops-web/dist-types/src/screens/findingFigure.d.ts",
     "finops-web/dist-types/src/screens/platformRollUp.d.ts",
+    "finops-web/dist-types/src/screens/querySeverity.d.ts",
     "finops-web/dist-types/src/screens/surfaceStateFor.d.ts",
     "finops-web/dist-types/src/shell/AppShell.d.ts",
     "finops-web/dist-types/src/shell/MetaContext.d.ts",
@@ -132,6 +135,7 @@
     "finops-web/src/api/types.ts",
     "finops-web/src/components/CoverageBanner.tsx",
     "finops-web/src/components/DataTable.tsx",
+    "finops-web/src/components/DenseRegion.tsx",
     "finops-web/src/components/Figure.tsx",
     "finops-web/src/components/FixtureBand.tsx",
     "finops-web/src/components/FreshnessIndicator.tsx",
@@ -152,6 +156,7 @@
     "finops-web/src/components/__tests__/orgNodes.test.ts",
     "finops-web/src/components/__tests__/shell.test.tsx",
     "finops-web/src/components/__tests__/surface.test.ts",
+    "finops-web/src/components/density.ts",
     "finops-web/src/components/index.ts",
     "finops-web/src/components/orgNodes.ts",
     "finops-web/src/components/provenance.ts",
@@ -187,6 +192,7 @@
     "finops-web/src/screens/enforcementTime.ts",
     "finops-web/src/screens/findingFigure.ts",
     "finops-web/src/screens/platformRollUp.ts",
+    "finops-web/src/screens/querySeverity.ts",
     "finops-web/src/screens/surfaceStateFor.ts",
     "finops-web/src/shell/AppShell.tsx",
     "finops-web/src/shell/MetaProvider.tsx",
@@ -567,6 +573,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/dist-types/src/components/CoverageBanner.d.ts",
+      "t": "finops-web/dist-types/src/shell/metaStore",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/dist-types/src/components/DataTable.d.ts",
       "t": "finops-web/dist-types/src/components/tableConfig",
       "k": "typescript"
@@ -719,6 +730,16 @@
     {
       "s": "finops-web/dist-types/src/screens/platformRollUp.d.ts",
       "t": "finops-web/dist-types/src/api/types",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/screens/querySeverity.d.ts",
+      "t": "finops-web/dist-types/src/api/types",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/screens/querySeverity.d.ts",
+      "t": "finops-web/dist-types/src/components/SeverityBadge",
       "k": "typescript"
     },
     {
@@ -912,8 +933,23 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/CoverageBanner.tsx",
+      "t": "finops-web/src/shell/metaStore.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/DataTable.tsx",
+      "t": "finops-web/src/components/DenseRegion.tsx",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/components/DataTable.tsx",
       "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/DenseRegion.tsx",
+      "t": "finops-web/src/components/density.ts",
       "k": "typescript"
     },
     {
@@ -924,6 +960,11 @@
     {
       "s": "finops-web/src/components/Figure.tsx",
       "t": "finops-web/src/components/TypedError.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/Figure.tsx",
+      "t": "finops-web/src/components/density.ts",
       "k": "typescript"
     },
     {
@@ -1318,7 +1359,17 @@
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
       "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/components/SeverityBadge.tsx",
       "k": "typescript"
     },
     {
@@ -1328,7 +1379,17 @@
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
       "t": "finops-web/src/screens/platformRollUp.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/screens/querySeverity.ts",
       "k": "typescript"
     },
     {
@@ -1549,6 +1610,11 @@
     {
       "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
       "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/screens/querySeverity.ts",
       "k": "typescript"
     },
     {
@@ -1879,6 +1945,16 @@
     {
       "s": "finops-web/src/screens/platformRollUp.ts",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/querySeverity.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/querySeverity.ts",
+      "t": "finops-web/src/components/SeverityBadge.tsx",
       "k": "typescript"
     },
     {

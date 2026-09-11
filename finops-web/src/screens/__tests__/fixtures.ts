@@ -6,7 +6,7 @@ export function metaOf(partial: Partial<ApiMeta> = {}): ApiMeta {
   return {
     as_of: '2026-08-27T09:00:00Z',
     collected_at: '2026-08-27T09:30:00Z',
-    scope_coverage: { visible: 2, total: 2, is_partial: false },
+    scope_coverage: { visible: 2, total: 2, is_partial: false, unit: 'accounts' },
     degraded: false,
     failures: [],
     ...partial,

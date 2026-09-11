@@ -84,6 +84,8 @@ def build_meta(
     as_of: datetime | None = None,
     collected_at: datetime | None = None,
     coverage: tuple[int, int] | None = None,
+    coverage_unit: str = "accounts",
+    extra_failures: Sequence[FailureOut] = (),
 ) -> Meta:
     """The envelope every route returns, assembled the same way each time.
 
@@ -103,7 +105,8 @@ def build_meta(
     return Meta.build(
         visible=visible,
         total=max(total, visible),
+        unit=coverage_unit,
         as_of=as_of,
         collected_at=collected_at,
-        failures=open_failures(connection, scope, context),
+        failures=(*open_failures(connection, scope, context), *extra_failures),
     )

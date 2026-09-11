@@ -80,7 +80,18 @@ describe('the visual layer', () => {
     // component would have to grow a className to receive it, and the visual
     // layer would become a caller's concern. Every class it targets must
     // already be one the component layer emits.
-    const emitted = new Set(['meter-numeral', 'meter-arrives', 'meter-failure', 'meter-stale']);
+    const emitted = new Set([
+      'meter-numeral',
+      'meter-arrives',
+      'meter-failure',
+      'meter-stale',
+      // DataTable emits this for a column declared `prose`, so the explanation
+      // takes the width the numeric columns do not need.
+      'meter-prose',
+      // Figure emits this inside a dense table, so the provenance word sits
+      // under its numeral rather than beside it.
+      'meter-provenance',
+    ]);
     const withoutComments = layout.replace(/\/\*[\s\S]*?\*\//g, '');
     const targeted = new Set(
       [...withoutComments.matchAll(/\.([a-zA-Z][\w-]*)/g)].map((m) => m[1] as string),

@@ -85,8 +85,10 @@ export function QueryFindingDetailScreen() {
               <li>{integer(detail.window_seconds / 86400)} day window</li>
               <li>${detail.rate_usd_per_gib} per GiB scanned</li>
               <li>
-                {integer((Number(detail.runs_per_day) * (detail.scan_bytes_per_run ?? 0) * 30) / GIB)} GiB
-                scanned per month
+                {integer(
+                  (Number(detail.runs_per_day) * (detail.scan_bytes_per_run ?? 0) * 30) / GIB,
+                )}{' '}
+                GiB scanned per month
               </li>
             </ul>
 

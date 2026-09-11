@@ -78,6 +78,19 @@ class SurfaceInstanceRepository(ScopedRepository):
     table = models.grafana_instance
     resource = "grafana_instance"
 
+    def unreachable(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+        """The workspaces that could not be read, with their typed cause.
+
+        The envelope reports these as failures. Without them a page could say a
+        third of the estate is missing and offer no reason, and the only reason
+        the interface had a word for was the wrong one: it said the missing part
+        was outside the reader's scope when the workspace had returned
+        AccessDenied to Meter itself. Sending a reader to request a permission
+        they already hold is worse than saying nothing. ISS-152.
+        """
+        statement = self.scoped_select(scope).where(self.table.c.reachable.is_(False))
+        return self.fetch(scope, statement)
+
     def coverage(self, scope: Scope) -> tuple[int, int]:
         """Workspaces read, over workspaces the tenant has.
 

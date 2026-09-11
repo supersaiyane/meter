@@ -37,11 +37,39 @@ body {
 [data-testid='shell'] {
   display: grid;
   grid-template-columns: 232px minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    'brand trust'
+    'nav   main';
   min-height: 100vh;
 }
 
+/* Full width, above everything, and not dismissible. A banner that can be
+   dismissed gets dismissed and the condition does not go away with it. */
+[data-testid='trust-strip'] {
+  grid-area: trust;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--font-size-1);
+}
+
+[data-testid='trust-strip'] > * {
+  margin: 0;
+}
+
+/* The failures list is the one element that needs the whole row to itself. */
+[data-testid='shell-failures'] {
+  flex-basis: 100%;
+}
+
 [data-testid='shell'] > header {
-  grid-column: 1;
+  grid-area: nav;
+  grid-row: 1 / 3;
   background: var(--surface);
   border-right: 1px solid var(--border);
   padding: var(--space-3);
@@ -61,7 +89,7 @@ body {
 }
 
 [data-testid='shell'] > main {
-  grid-column: 2;
+  grid-area: main;
   padding: var(--space-4);
   min-width: 0;
 }
@@ -184,6 +212,12 @@ caption {
 thead th {
   position: sticky;
   top: 0;
+  /* Shrink to the content, so the prose column takes what is left. The header
+     wraps rather than holding a column open: `Scan per run, MiB` on one line is
+     156 px of column for a number that needs ninety, and eight headers doing
+     that pushed monthly cost off the screen. */
+  width: 1%;
+  white-space: normal;
   background: var(--surface);
   text-align: left;
   font-size: var(--font-size-1);
@@ -191,9 +225,8 @@ thead th {
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2);
   border-bottom: 1px solid var(--border-strong);
-  white-space: nowrap;
 }
 
 tbody tr {
@@ -213,13 +246,46 @@ tbody tr:last-child {
 }
 
 td {
-  padding: var(--space-1) var(--space-3);
+  padding: var(--space-1) var(--space-2);
   vertical-align: top;
+  /* Shrink to content, so the prose column below takes everything left over.
+     Sharing the width evenly made the explanation the narrowest column on the
+     screen and every row a hundred pixels tall. */
+  white-space: nowrap;
+  width: 1%;
 }
 
 td.meter-numeral {
   text-align: right;
   white-space: nowrap;
+}
+
+/* A failure carries a sentence, and a sentence in a nowrap cell ran off the
+   right edge of the table and took every column after it with it. Bounded and
+   wrapping inside a cell, so the row grows by two lines instead. Only inside a
+   cell: the same bound in the trust strip turned one line into five. */
+td .meter-failure {
+  display: inline-block;
+  white-space: normal;
+  max-width: 34ch;
+}
+
+/* The provenance word under its numeral, so a column is as wide as the wider of
+   the two rather than as wide as both. */
+.meter-provenance {
+  display: block;
+  font-size: var(--font-size-1);
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+
+/* After both, so it wins. The explanation is the column a reader acts on, and
+   it gets the width every other column did not need. */
+td.meter-prose,
+th.meter-prose {
+  white-space: normal;
+  width: auto;
+  min-width: 26ch;
 }
 
 /* ----------------------------------------------------------------- figure */
@@ -453,6 +519,10 @@ button,
      provenance and its age. It does not need the whole instrument. */
   [data-testid='shell'] {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'trust'
+      'nav'
+      'main';
   }
 
   [data-testid='shell'] > header {

@@ -1060,6 +1060,35 @@ changes:
   commit: 'd5c8cdc'
   detail: '[ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md)'
 issues:
+- id: ISS-155
+  severity: HIGH
+  summary: Every figure inside a table rendered its own provenance sentence and its own two
+    timestamps, so a three figure row carried three copies of the same `as of` line and the phrase
+    `accuracy not yet published`. Rows were about 90 px against the 32 px the design asks for, and
+    the findings table ran 1297 px wide inside a 1147 px container on a 1440 px screen, which put
+    monthly cost, the sort column and the point of the screen, off the right edge. Fixed
+    2026-09-11 with a density context that DataTable sets and Figure reads, so a table added later
+    is dense without its author knowing the mechanism exists
+  status: FIXED
+  detail: '`finops-web/src/components/density.ts`, `finops-web/src/components/Figure.tsx`'
+- id: ISS-156
+  severity: MEDIUM
+  summary: The trust strip sat inside the sidebar column rather than as a band above the content,
+    so on a 1440 px screen the freshness line fell below the fold and the page lost the one
+    statement that says what its numbers are worth. Section 8 of docs/13-UI-ARCHITECTURE.md asks
+    for one band, full width, above everything. Fixed 2026-09-11
+  status: FIXED
+  detail: '`finops-web/src/shell/AppShell.tsx`, `finops-web/src/layout.css`'
+- id: ISS-157
+  severity: MEDIUM
+  summary: The coverage banner said `accounts` on every screen because the noun was hardcoded in
+    the component, and the query screens count workspaces. The aggregate then took the smallest
+    visible and the largest total across panels counting different things, which on Home produced
+    "Showing 0 of 3", true of nothing on the page. Fixed 2026-09-11 by carrying the counted noun
+    on scope_coverage, where the route that did the counting knows it, and by stating one line per
+    unit rather than one ratio across all of them
+  status: FIXED
+  detail: '`finops_api/schemas.py`, `finops-web/src/components/CoverageBanner.tsx`'
 - id: ISS-148
   severity: MEDIUM
   summary: TASK-P2-021 names eight routes and three MCP tools. Three routes and one tool were
@@ -1104,12 +1133,16 @@ issues:
   detail: '`docker/nginx.disabled.conf`, `docker/Dockerfile.web`'
 - id: ISS-152
   severity: MEDIUM
-  summary: The partial coverage banner reads "1 missing. outside your scope" whatever the cause.
-    On the query screens the missing workspace is usually one Meter could not read, not one the
+  summary: The partial coverage banner read "1 missing. outside your scope" whatever the cause. On
+    the query screens the missing workspace is usually one Meter could not read, not one the
     viewer is not entitled to, and naming the wrong cause sends the reader to an access request
-    for a permission they already hold. The count is right and the explanation is not
-  status: OPEN
-  detail: '`finops-web/src/shell`, seen on `/governance/instances`'
+    for a permission they already hold. The interface had nothing better to say because the
+    envelope carried no failure for an unreachable workspace, because the route knew and did
+    not report it. Fixed 2026-09-11 at the source. The query routes now report every unreachable workspace as
+    a typed failure, and the banner names the cause it was given, falling back to entitlement only
+    when nothing else explains the gap
+  status: FIXED
+  detail: '`finops_api/routes/query.py`, `finops-web/src/screens/surfaceStateFor.ts`'
 - id: ISS-153
   severity: HIGH
   summary: grafana_instance.account_id held a workspace identifier for every real workspace. The
