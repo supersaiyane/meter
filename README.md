@@ -62,6 +62,9 @@ and open question with a pointer to the detail.
 | Security policy, scanners, gates | [docs/05-SECURITY.md](docs/05-SECURITY.md) |
 | **Who attacks this, and what stops them** | [docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md) |
 | **What data we hold, for how long, and erasure** | [docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md) |
+| **SLOs, alerts and what pages someone** | [docs/10-OBSERVABILITY.md](docs/10-OBSERVABILITY.md) |
+| **What Meter costs to run** | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md), "What it costs to run" |
+| **When a sub project is done** | [docs/01-ROADMAP.md](docs/01-ROADMAP.md), "Exit criteria" |
 | How often data refreshes, and its limits | [docs/06-DATA-FRESHNESS.md](docs/06-DATA-FRESHNESS.md) |
 | **The database schema and migration rules** | [docs/07-DATA-MODEL.md](docs/07-DATA-MODEL.md) |
 | Why a decision was made | [docs/adr/](docs/adr/README.md), 14 records |

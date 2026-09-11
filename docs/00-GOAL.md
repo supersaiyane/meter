@@ -46,6 +46,16 @@ marked done, verified against CUR.
 Identified savings is a vanity number. Every FinOps tool inflates it. Meter
 tracks realized savings as the single measure of whether it is worth running.
 
+## When it is done
+
+Per sub project exit criteria, and the definition of steady state for the whole
+project, are in `docs/01-ROADMAP.md` under "Exit criteria". Seven universal
+criteria apply to every sub project, plus one specific to each.
+
+Steady state is all seven success criteria above being met, **and** realized
+savings being positive for three consecutive months. Three, because one month
+could be a single large rightsizing and two could be luck.
+
 ## Non goals
 
 Stated explicitly so that scope creep is a visible decision rather than a drift.

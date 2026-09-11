@@ -49,6 +49,50 @@ P0 Foundation
 
 <!-- generated:roadmap-status end -->
 
+## Exit criteria
+
+Closes AUDIT-001 finding A001-F17, ISS-071. Without these, a sub project ends
+when someone decides it feels finished.
+
+**Every sub project exits on all seven of these**, plus its own specific
+criterion. The specification template already carries a "Definition of done"
+section, and a specification without one is not ready to be approved.
+
+| # | Universal exit criterion |
+| --- | --- |
+| 1 | Every feature in the sub project is `Delivered` in `docs/registry.yaml`, and its feature document describes what was built rather than what was planned |
+| 2 | `make ci` passes: lint, writing rules, document checks, tests, integration tests, security scan |
+| 3 | Coverage at or above 80 percent for the code added |
+| 4 | `security/POSTURE.md` reports zero findings against the deployed digest |
+| 5 | An audit for that scope is published in `audits/`, with a `PROCEED` or `PROCEED WITH CONDITIONS` verdict, and every `CRITICAL` and `HIGH` finding closed |
+| 6 | A restore drill performed and recorded, per the disaster recovery section of `docs/02-ARCHITECTURE.md` |
+| 7 | The performance budgets for that sub project are asserted by a test, not measured once by hand |
+
+Sub project specific criteria:
+
+| Sub project | Exits when |
+| --- | --- |
+| P0 | A newly vended account appears within one hour with no human step, and a failed collection is visibly distinct from a zero |
+| P2 | A policy violating dashboard is blocked at save, and a runaway query is detected and stopped within 15 minutes |
+| P1 | Amortized cost reconciles to Cost Explorer within 1 percent for a full billing period, and allocation exceeds 95 percent |
+| P3 | At least one recommendation has reached `verified` with realized savings confirmed against CUR |
+| P4 | Every resource in a test account appears with its correct region and zone, and a three hop topology query returns in under 1 second |
+| P5 | Quota utilization is reported for Ireland and London, with the coverage gaps stated on the screen rather than implied |
+| P6 | Pod level cost is attributed for one cluster, and requested against used is reported per namespace |
+| P7 | Every assistant answer carries provenance per figure, and the eval suite includes a partial scope case |
+
+## When the project is done
+
+Meter is not "done" in the sense of feature complete, because a FinOps platform
+tracks a cloud that keeps changing. It reaches **steady state** when all seven
+success criteria in `docs/00-GOAL.md` are met **and** the north star metric,
+realized savings confirmed against CUR 60 days after a recommendation is marked
+done, has been positive for three consecutive months.
+
+Three months, because one month could be a single large rightsizing and two
+could be luck. Three is the shortest window that shows the workflow is working
+rather than that one saving happened.
+
 ## Sub projects
 
 <!-- generated:subprojects start -->

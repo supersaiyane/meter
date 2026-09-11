@@ -127,6 +127,14 @@ An agent that quietly works around a wrong specification produces code nobody
 can review, because the document that was supposed to describe it no longer
 does.
 
+## A specification is not approvable without exit criteria
+
+Every specification carries a "Definition of done" section, and it must satisfy
+the seven universal exit criteria in `docs/01-ROADMAP.md` plus the criterion
+specific to that sub project. A specification without them cannot be approved,
+because a sub project with no exit criteria ends when someone decides it feels
+finished. AUDIT-001, finding A001-F17.
+
 ## Update cadence: four tiers
 
 The question "how often do all these documents get updated" has four answers,

@@ -186,6 +186,69 @@ paid API calls, and `GetMetricData` and Athena scanning are both metered.
   viewer role is audited separately and requires multi factor authentication
   with a shortened session.
 
+## Disaster recovery
+
+Closes AUDIT-001 finding A001-F13, ISS-065. Aurora has default backups, and a
+default is not a decision.
+
+### The fact that makes this cheap
+
+**Meter is a derived data system.** Every fact in it exists somewhere in AWS
+and can be re ingested. Nothing in Meter is the only copy of anything, with
+three exceptions.
+
+| Not re ingestible | Why | Consequence |
+| --- | --- | --- |
+| `audit_event` | Who read what. AWS does not hold this | Losing it loses the audit trail. This is the one that matters |
+| Recommendation lifecycle state, P3 | Accepted, in progress, done, and who owns it | Losing it loses the workflow, not the recommendations |
+| `collector_schedule` overrides | Cadence changes and their reasons | Falls back to documented defaults |
+
+Everything else, the organization tree, account health, cost, inventory,
+quotas, is a copy of something AWS still has.
+
+### Objectives
+
+| | Target | Basis |
+| --- | --- | --- |
+| **RPO, audit and workflow data** | 5 minutes | Aurora continuous backup with point in time recovery |
+| **RPO, derived data** | 24 hours, and materially less in practice | Re ingestion, bounded by the source cadences in ADR-0012 |
+| **RTO, service restored** | 4 hours | Terraform apply into a clean account, plus an Aurora restore |
+| **RTO, all data current** | 24 hours | The slowest collector is `cur_focus_final`, monthly. Everything else is hourly to daily |
+
+The asymmetry is deliberate. Tight objectives are bought only for the data that
+cannot be rebuilt, which is a small fraction of the database.
+
+### Strategy
+
+| Layer | Position |
+| --- | --- |
+| Infrastructure | Terraform is the recovery mechanism. A region loss is `terraform apply` with a different provider region |
+| Database | Aurora automated backups, point in time recovery, retention **matching the table retention policy** in `docs/09-DATA-CLASSIFICATION.md`, so a backup does not resurrect data that policy dropped |
+| Raw exports | CUR lands in S3 with cross region replication. It is the source of record for cost, and AWS keeps its own copy regardless |
+| Derived data | Re ingested. Watermarks are reset and collectors replay. Idempotency makes replay safe by construction |
+| Secrets | Secrets Manager replication. The ExternalId must survive, or every member role has to be redeployed |
+| Images | ECR with the base images mirrored, so a registry outage does not block a recovery deploy |
+
+### The part most projects skip
+
+**A restore that has never been tested is a hypothesis.** So:
+
+- A restore drill is an acceptance criterion of TASK-P0-028, not a later
+  intention. Restore into a scratch database, run the migrations, confirm the
+  application starts and the freshness screen reports correctly.
+- The drill repeats at each sub project boundary, and its result is recorded in
+  the audit for that boundary.
+- Re ingestion is exercised by the idempotency test that already exists:
+  running a collector three times writes one result set. Replay after a restore
+  is the same code path.
+
+### What is deliberately not covered
+
+Multi region active active. Meter is an internal reporting platform. An outage
+delays a report, it does not stop a payment. Paying for active active would be
+the exact behaviour this product exists to discourage in others, and it would
+be visible on our own front page in `platform_cost`.
+
 ## Testing strategy
 
 | Layer | Approach |

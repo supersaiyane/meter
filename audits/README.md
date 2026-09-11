@@ -80,6 +80,19 @@ Every report ends with one of three, and the reason.
    supersedes it, named in both.
 4. **Findings are promoted, not duplicated.** The registry holds the state.
 
+## Closure
+
+A report is never edited, so closure is tracked in
+[REMEDIATION-LOG.md](REMEDIATION-LOG.md) and in the issue state in
+`docs/registry.yaml`. The index column above records the count at closure, not
+the state of individual findings.
+
+An audit is closed when every finding it raised has reached a terminal state:
+`FIXED`, `WONT FIX` with a reason and an owner, or `CLOSED`. A finding that
+spawned new work, as several in AUDIT-001 did, is closed when the work is
+tracked, not when the work is finished. Otherwise an audit stays open forever
+and stops being a point in time record.
+
 ## Cadence
 
 | Scope | When |
@@ -94,4 +107,4 @@ Every report ends with one of three, and the reason.
 
 | Report | Date | Scope | Verdict | Findings |
 | --- | --- | --- | --- | --- |
-| [AUDIT-001](AUDIT-001-2026-08-23-full-project.md) | 2026-08-23 | full-project | PROCEED WITH CONDITIONS | 18 |
+| [AUDIT-001](AUDIT-001-2026-08-23-full-project.md) | 2026-08-23 | full-project | PROCEED WITH CONDITIONS | 18, all closed |

@@ -161,13 +161,104 @@ applying another.
 
 ## Network
 
-Workers run in private subnets with VPC interface endpoints for STS, S3, SQS,
-Secrets Manager, Cost Explorer and CloudWatch Logs, rather than a NAT Gateway.
+Workers run in private subnets with VPC interface endpoints for STS, SQS,
+Secrets Manager, Cost Explorer and CloudWatch Logs, plus a gateway endpoint for
+S3. No NAT Gateway.
 
-A NAT Gateway is billed per hour and per gigabyte processed. This workload is
-chatty across hundreds of accounts, so interface endpoints are cheaper here and
-keep the traffic off the public internet. Recorded because it looks like an
-over engineered choice until the data processing charge appears on the bill.
+**Correction, 2026-08-23.** This was previously justified on cost, and that
+justification was wrong. Working the numbers for the cost estimate below
+produced this:
+
+| Option | Fixed per month | Per GB | At 300 GB | At 2,000 GB |
+| --- | --- | --- | --- | --- |
+| NAT Gateway | 33 USD | 0.045 | **46 USD** | 123 USD |
+| 6 interface endpoints across 2 AZs | 88 USD | 0.010 | 91 USD | **108 USD** |
+
+**NAT is cheaper below roughly 1,560 GB per month**, and Meter's egress is
+nowhere near that. The traffic is AWS API calls returning small JSON, so a few
+hundred gigabytes a month is the realistic figure even at 300 accounts.
+
+The decision stands, on a different and honest basis:
+
+1. **Traffic never traverses the public internet.** In a financial services
+   environment that is worth more than 45 USD a month, and it is a statement
+   that can be made to a reviewer without qualification.
+2. **No single point of failure.** A NAT Gateway is one, per availability zone,
+   and a second one for redundancy erases most of the cost advantage anyway.
+3. **No egress path at all** means a compromised worker container cannot reach
+   an arbitrary host. That bounds the damage in the threat model, boundary 5.
+
+Recorded as ISS-080. The lesson generalises: a decision justified on cost
+should have the arithmetic next to it, or it is a preference wearing a
+justification.
+
+## What it costs to run
+
+Estimates, not quotes. Region `eu-west-1`, on demand, list price, at
+2026-08-23. **Modelled, not measured**, which is exactly the label this product
+applies to everyone else's numbers.
+
+The assumptions are stated so a reader can disagree with a number rather than
+with the total.
+
+### P0, no cost data yet
+
+| Item | Assumption | USD per month |
+| --- | --- | --- |
+| Fargate, API | 2 tasks, 0.5 vCPU, 1 GB | 36 |
+| Fargate, worker | 1 task average, scales 0 to 4 on queue depth | 36 |
+| Fargate, web | 2 tasks, 0.25 vCPU, 0.5 GB | 18 |
+| Aurora Serverless v2 | 2 ACU average, 100 GB storage | 185 |
+| Application Load Balancer | Low LCU | 26 |
+| VPC interface endpoints | 6 services, 2 AZs, plus 300 GB | 91 |
+| S3 | Raw exports and reports | 5 |
+| SQS | Around 2 million requests | 1 |
+| Secrets Manager | A handful of secrets | 2 |
+| ECR | 5 GB with lifecycle policies | 1 |
+| Cost Explorer | 1 grouped request daily | 3 |
+| CloudWatch, Meter's own logs and metrics | | 15 |
+| **P0 total** | | **around 420** |
+
+Roughly flat between 50 and 300 accounts. P0 collects metadata, and the tree
+plus health check for 300 accounts is minutes of Fargate time.
+
+### Adding P1 to P3
+
+| Item | At 50 accounts | At 300 accounts |
+| --- | --- | --- |
+| Athena, CUR extract and load | 10 | 60 |
+| Aurora, larger rollups | +40 | +150 |
+| CloudWatch `GetMetricData`, rightsizing | 15 | 90 |
+| Fargate, longer sweeps | +20 | +80 |
+| **Subtotal** | **around 85** | **around 380** |
+| **Running total** | **around 505** | **around 800** |
+
+### The number that dominates everything else
+
+| Item | At 300 accounts |
+| --- | --- |
+| **AWS Config, all resource types, continuous** | **1,000 to 4,000** |
+| AWS Config, periodic for stable types, continuous for critical only | 200 to 600 |
+
+Config is charged per configuration item recorded. Recording everything, in
+every account, in every region, costs several times the rest of the platform
+combined. This is ISS-012, and the mitigation is already decided: periodic
+recording for stable resource types, continuous only for critical ones.
+
+**Anyone enabling Config organization wide without that mitigation will
+multiply the platform's cost by five.** It is called out here rather than only
+in the P4 roadmap entry, because whoever turns it on will be reading this
+document and not that one.
+
+### Honest reading
+
+At 300 accounts with P1 to P3 and Config mitigated, roughly **1,000 to 1,400
+USD per month**. Against the 100,000 USD in one week that triggered this
+project, that is under a day of the failure it prevents.
+
+These figures are re measured, not re estimated, once `platform_cost` has data.
+FEAT-008 exists so the estimate can be checked against the bill, and the
+difference is worth publishing.
 
 ## Local development
 

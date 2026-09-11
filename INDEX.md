@@ -32,6 +32,14 @@ block is caught by `make check-docs`. See
 | The database schema and migration rules | [docs/07-DATA-MODEL.md](docs/07-DATA-MODEL.md) |
 | The registry every derived document comes from | [docs/registry.yaml](docs/registry.yaml) |
 | How code reaches production | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
+| Security policy, scanners, gates | [docs/05-SECURITY.md](docs/05-SECURITY.md) |
+| Who attacks this, and what stops them | [docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md) |
+| What data we hold, retention, erasure | [docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md) |
+| SLOs, alerts, and what pages someone | [docs/10-OBSERVABILITY.md](docs/10-OBSERVABILITY.md) |
+| Runbooks for the paging alerts | [docs/runbooks/](docs/runbooks/README.md) |
+| How often data refreshes, and its limits | [docs/06-DATA-FRESHNESS.md](docs/06-DATA-FRESHNESS.md) |
+| What Meter costs to run | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
+| When a sub project is done | [docs/01-ROADMAP.md](docs/01-ROADMAP.md) |
 | The rules a change must follow | [CLAUDE.md](CLAUDE.md) |
 | What is done and what is left | [tasks/STATUS.md](tasks/STATUS.md) |
 | What is broken or undecided | [tasks/ISSUES.md](tasks/ISSUES.md) |
@@ -195,6 +203,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0020 | 2026-08-23 | Process | AUDIT-001 published. Audits folder created with a naming convention, finding identifiers and a promotion rule. 18 findings promoted to the issue register | `eca070d` | [AUDIT-001](audits/AUDIT-001-2026-08-23-full-project.md) |
 | CHG-0021 | 2026-08-23 | Correction | AUDIT-001 remediation wave one: eleven findings closed, covering the import contract, CI tooling, setup ordering, the first run experience, governance files, MCP packaging, the PARTIAL status, the dead graph output, the context index generator and the duplicated roadmap table | `ef23f8a` | [REMEDIATION-LOG](audits/REMEDIATION-LOG.md) |
 | CHG-0022 | 2026-08-23 | Design | Threat model and data classification written, closing the two blocking audit findings. The account root email column removed from the schema as a result | `3a16bd0` | [docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md) |
+| CHG-0023 | 2026-08-23 | Design | AUDIT-001 remediation wave three: disaster recovery, observability, the running cost estimate, exit criteria and the performance budget. All 18 findings now closed | `pending` | [REMEDIATION-LOG](audits/REMEDIATION-LOG.md) |
 
 <!-- generated:changes end -->
 
@@ -205,7 +214,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**50 FIXED, 26 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**56 FIXED, 21 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -267,9 +276,9 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-062 | MEDIUM | ADR-0014 lists context_index.md as generated and no generator exists, so a file the reuse ladder depends on will stay empty | FIXED | [A001-F06](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-063 | MEDIUM | The interactive file graph renders nothing because cytoscape is never vendored and a CDN is ruled out | FIXED | [A001-F07](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-064 | MEDIUM | The MCP server has no build job, no ECR repository and no scan path, placing a fourth deployable outside the security gates | FIXED | [A001-F08](audits/AUDIT-001-2026-08-23-full-project.md) |
-| ISS-065 | MEDIUM | No disaster recovery position: no RPO, no RTO, no restore test, and Aurora defaults are not a decision | OPEN | [A001-F13](audits/AUDIT-001-2026-08-23-full-project.md) |
-| ISS-066 | MEDIUM | No observability plan for Meter itself, so a collector that silently stops pages nobody while the product serves confident stale numbers | OPEN | [A001-F14](audits/AUDIT-001-2026-08-23-full-project.md) |
-| ISS-067 | MEDIUM | No cost estimate for running Meter, which is the specific credibility failure a FinOps product exists to prevent in others | OPEN | [A001-F15](audits/AUDIT-001-2026-08-23-full-project.md) |
+| ISS-065 | MEDIUM | No disaster recovery position: no RPO, no RTO, no restore test, and Aurora defaults are not a decision | FIXED | [A001-F13](audits/AUDIT-001-2026-08-23-full-project.md) -> [Architecture, disaster recovery](docs/02-ARCHITECTURE.md) |
+| ISS-066 | MEDIUM | No observability plan for Meter itself, so a collector that silently stops pages nobody while the product serves confident stale numbers | FIXED | [A001-F14](audits/AUDIT-001-2026-08-23-full-project.md) -> [docs/10-OBSERVABILITY.md](docs/10-OBSERVABILITY.md) |
+| ISS-067 | MEDIUM | No cost estimate for running Meter, which is the specific credibility failure a FinOps product exists to prevent in others | FIXED | [A001-F15](audits/AUDIT-001-2026-08-23-full-project.md) -> [Deployment, what it costs to run](docs/04-DEPLOYMENT.md) |
 | ISS-068 | MEDIUM | Missing governance files. CODEOWNERS matters most because ADR-0013 requires a security sign off and nothing defines who can give it | FIXED | [A001-F16](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-073 | MEDIUM | ExternalId rotation is not designed, so a leaked ExternalId has no defined replacement path | OPEN | [Threat model](docs/08-THREAT-MODEL.md) residual risk. Design before TASK-P0-014 |
 | ISS-074 | MEDIUM | No per account API rate limit, so Meter could exhaust a member account quota and degrade their workloads | OPEN | [Threat model](docs/08-THREAT-MODEL.md) residual risk. Token bucket in the credential broker |
@@ -278,6 +287,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-077 | MEDIUM | A deliberate backdoor in a package that scans clean is out of reach of any CVE scanner | OPEN | [Threat model](docs/08-THREAT-MODEL.md) residual risk. Mitigate by pinning digests and fewer dependencies |
 | ISS-078 | MEDIUM | Unknown whether a regulatory retention floor exceeds the 37 month cost retention, which financial services often sets at 7 years | OPEN | [Data classification](docs/09-DATA-CLASSIFICATION.md) open question. Raised before data is aggregated away |
 | ISS-079 | MEDIUM | The audit_event non erasure position needs sign off from whoever owns data protection | OPEN | [Data classification](docs/09-DATA-CLASSIFICATION.md) open question. Before the first production deployment |
+| ISS-080 | MEDIUM | VPC interface endpoints were justified on cost, and the arithmetic shows NAT is cheaper below roughly 1,560 GB per month, which is far above Meter actual egress | FIXED | Found while writing the cost estimate. [Deployment, network](docs/04-DEPLOYMENT.md). Decision stands on security grounds, stated honestly |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
@@ -285,8 +295,8 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-054 | LOW | ECR tags were mutable, so a tag could be repointed at a different image after it was scanned and signed | FIXED | Set IMMUTABLE tags in TASK-P0-016 |
 | ISS-069 | LOW | The PARTIAL ingest run status is permitted by a check constraint and defined nowhere, so it will be applied inconsistently | FIXED | [A001-F09](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-070 | LOW | The roadmap carries a generated status table and a hand written one describing the same sub projects | FIXED | [A001-F10](audits/AUDIT-001-2026-08-23-full-project.md) |
-| ISS-071 | LOW | No definition of done for any sub project beyond P0 | OPEN | [A001-F17](audits/AUDIT-001-2026-08-23-full-project.md) |
-| ISS-072 | LOW | No performance budget for ingestion throughput, full organization sweep time, or API latency under load | OPEN | [A001-F18](audits/AUDIT-001-2026-08-23-full-project.md) |
+| ISS-071 | LOW | No definition of done for any sub project beyond P0 | FIXED | [A001-F17](audits/AUDIT-001-2026-08-23-full-project.md) -> [Roadmap, exit criteria](docs/01-ROADMAP.md) |
+| ISS-072 | LOW | No performance budget for ingestion throughput, full organization sweep time, or API latency under load | FIXED | [A001-F18](audits/AUDIT-001-2026-08-23-full-project.md) -> [P0 spec section 11b](docs/specs/2026-08-23-p0-foundation-design.md) |
 
 <!-- generated:issues end -->
 

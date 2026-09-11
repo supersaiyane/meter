@@ -511,6 +511,13 @@ changes:
     root email column removed from the schema as a result
   commit: 3a16bd0
   detail: '[docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md)'
+- id: CHG-0023
+  date: '2026-08-23'
+  type: Design
+  what: 'AUDIT-001 remediation wave three: disaster recovery, observability, the running cost estimate,
+    exit criteria and the performance budget. All 18 findings now closed'
+  commit: pending
+  detail: '[REMEDIATION-LOG](audits/REMEDIATION-LOG.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -843,20 +850,20 @@ issues:
   severity: MEDIUM
   summary: 'No disaster recovery position: no RPO, no RTO, no restore test, and Aurora defaults are not
     a decision'
-  status: OPEN
-  detail: '[A001-F13](audits/AUDIT-001-2026-08-23-full-project.md)'
+  status: FIXED
+  detail: '[A001-F13](audits/AUDIT-001-2026-08-23-full-project.md) -> [Architecture, disaster recovery](docs/02-ARCHITECTURE.md)'
 - id: ISS-066
   severity: MEDIUM
   summary: No observability plan for Meter itself, so a collector that silently stops pages nobody while
     the product serves confident stale numbers
-  status: OPEN
-  detail: '[A001-F14](audits/AUDIT-001-2026-08-23-full-project.md)'
+  status: FIXED
+  detail: '[A001-F14](audits/AUDIT-001-2026-08-23-full-project.md) -> [docs/10-OBSERVABILITY.md](docs/10-OBSERVABILITY.md)'
 - id: ISS-067
   severity: MEDIUM
   summary: No cost estimate for running Meter, which is the specific credibility failure a FinOps product
     exists to prevent in others
-  status: OPEN
-  detail: '[A001-F15](audits/AUDIT-001-2026-08-23-full-project.md)'
+  status: FIXED
+  detail: '[A001-F15](audits/AUDIT-001-2026-08-23-full-project.md) -> [Deployment, what it costs to run](docs/04-DEPLOYMENT.md)'
 - id: ISS-068
   severity: MEDIUM
   summary: Missing governance files. CODEOWNERS matters most because ADR-0013 requires a security sign
@@ -878,14 +885,14 @@ issues:
 - id: ISS-071
   severity: LOW
   summary: No definition of done for any sub project beyond P0
-  status: OPEN
-  detail: '[A001-F17](audits/AUDIT-001-2026-08-23-full-project.md)'
+  status: FIXED
+  detail: '[A001-F17](audits/AUDIT-001-2026-08-23-full-project.md) -> [Roadmap, exit criteria](docs/01-ROADMAP.md)'
 - id: ISS-072
   severity: LOW
   summary: No performance budget for ingestion throughput, full organization sweep time, or API latency
     under load
-  status: OPEN
-  detail: '[A001-F18](audits/AUDIT-001-2026-08-23-full-project.md)'
+  status: FIXED
+  detail: '[A001-F18](audits/AUDIT-001-2026-08-23-full-project.md) -> [P0 spec section 11b](docs/specs/2026-08-23-p0-foundation-design.md)'
 - id: ISS-073
   severity: MEDIUM
   status: OPEN
@@ -929,6 +936,13 @@ issues:
   summary: The audit_event non erasure position needs sign off from whoever owns data protection
   detail: '[Data classification](docs/09-DATA-CLASSIFICATION.md) open question. Before the first production
     deployment'
+- id: ISS-080
+  severity: MEDIUM
+  status: FIXED
+  summary: VPC interface endpoints were justified on cost, and the arithmetic shows NAT is cheaper below
+    roughly 1,560 GB per month, which is far above Meter actual egress
+  detail: Found while writing the cost estimate. [Deployment, network](docs/04-DEPLOYMENT.md). Decision
+    stands on security grounds, stated honestly
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS

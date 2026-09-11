@@ -43,6 +43,8 @@ meter/
 │   ├── 07-DATA-MODEL.md       every table, constraint, index, Alembic rules
 │   ├── 08-THREAT-MODEL.md     STRIDE across six trust boundaries
 │   ├── 09-DATA-CLASSIFICATION.md  classes, retention, erasure
+│   ├── 10-OBSERVABILITY.md    four SLOs, ten alerts, two of which page
+│   ├── runbooks/              one per paging alert, written with the alert
 │   ├── registry.yaml          SOURCE OF TRUTH for the generated documents
 │   ├── features/              one document per feature, 42 of them
 │   ├── architecture/          generated file dependency graph

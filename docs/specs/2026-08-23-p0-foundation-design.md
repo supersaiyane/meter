@@ -346,6 +346,28 @@ Governed by `docs/05-SECURITY.md` and ADR-0010. The parts that bind P0.
 - A nightly job scans the digest actually running in each environment, because
   a build time scan reports zero forever while the deployed image degrades.
 
+## 11b. Performance budget
+
+Closes AUDIT-001 finding A001-F18, ISS-072. ADR-0003 named one number, p95
+dashboard latency above 1.5 seconds, as the trigger to reconsider the serving
+layer. That is a tripwire, not a budget, and it says nothing about the two
+things that actually decide whether P0 works.
+
+| # | Budget | Target | Why this number | Measured in |
+| --- | --- | --- | --- | --- |
+| 1 | Full `org_tree` plus `account_health` sweep, 300 accounts | **under 15 minutes** | The cadence in ADR-0012 is hourly and the P0 definition of done is a new account visible within one hour. A sweep taking longer than a quarter of its own cadence has no headroom for a retry | TASK-P0-028 |
+| 2 | API p95 on a scoped read over rollups | **under 500 ms** | Three times better than the ADR-0003 tripwire, so there is room to degrade before the architecture is reconsidered | TASK-P0-028 |
+| 3 | Worker throughput | **at least 20 scope units per minute per task** | 300 accounts times 2 regions times 2 collectors is 1,200 units. One task clears that in an hour, four clear it in 15 minutes | TASK-P0-021 |
+| 4 | Cold start to serving | **under 90 seconds** | The ALB health check plus a rolling deploy must complete inside the pipeline timeout | TASK-P0-016 |
+
+Budget 1 is the one that constrains the design. If a 300 account sweep cannot
+finish in 15 minutes, the hourly cadence is not achievable and either the
+cadence changes or the fan out does. Finding that out at TASK-P0-028 is
+recoverable. Finding it out in production is not.
+
+These are **budgets, not aspirations**. Each is asserted by a test, and a test
+that fails is a failure, not a note to look into it later.
+
 ## 12. Risks
 
 | Risk | Impact | Mitigation |

@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Status: Provisional, pending approval of `docs/specs/2026-08-23-p0-foundation-design.md`
 Spec: `docs/specs/2026-08-23-p0-foundation-design.md`
-Tasks: 32
+Tasks: 33
 
 ## How to work this plan
 
@@ -1386,6 +1386,12 @@ state.
 - [ ] Platform cost screen shows spend by module with a 30 day sparkline
 - [ ] A Playwright journey covers login through to the organization map
 - [ ] P0 definition of done is demonstrable end to end
+- [ ] **Performance budgets 1 and 2 asserted**, see spec section 11b: a 300
+      account sweep under 15 minutes against a seeded fake provider, and API
+      p95 under 500 ms on scoped reads
+- [ ] **Restore drill performed**: restore Aurora into a scratch database, run
+      the migrations, confirm the application starts and the freshness screen
+      reports correctly. A restore that has never been tested is a hypothesis
 
 **Do not.**
 
@@ -1598,6 +1604,63 @@ make check-docs && make graph && make review
 
 ---
 
+### TASK-P0-033: SLOs, alerts and runbooks
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | `docs/10-OBSERVABILITY.md` |
+| Depends on | TASK-P0-022, TASK-P0-025 |
+| Estimate | M |
+
+**Goal.** A collector that silently stops pages somebody, instead of the
+product quietly serving stale numbers that look right.
+
+**Files.**
+
+| Path | Action |
+| --- | --- |
+| `infra/terraform/hub/observability.tf` | create |
+| `infra/terraform/hub/dashboards/*.json` | create |
+| `docs/runbooks/collection-stalled.md` | create |
+| `docs/runbooks/platform-cost-anomaly.md` | create |
+| `finops_ingest/metrics.py` | create |
+
+**Acceptance criteria.**
+
+- [ ] Four SLOs instrumented, per `docs/10-OBSERVABILITY.md`
+- [ ] Ten alarms created, of which exactly two page: collection stalled, and
+      platform cost anomaly
+- [ ] Every log line carries `run_id`, `collector`, `scope_key`, `tenant_id`
+- [ ] **Meter's own log groups have retention set at creation**, in Terraform
+- [ ] The three dashboards are provisioned as code, with
+      `min_refresh_interval` at 1 minute and no Logs Insights panel over a
+      window longer than 24 hours
+- [ ] A runbook exists for each of the two paging alerts
+
+**Do not.**
+
+- Do not count `PARTIAL` as a run failure. It is success at the run level, and
+  counting it would make the alert fire constantly at 300 accounts and it would
+  be muted within a week.
+- Do not log a credential, an ExternalId, or any payload from a member account.
+  Log the metadata and the typed error.
+- Do not ship a paging alert without its runbook. That is a page that wakes
+  someone who then has to work out what to do.
+- Do not exempt Meter's own dashboards from FEAT-014. A team that exempts
+  itself from the control it sells has lost the argument.
+
+**Evidence.**
+
+```bash
+make tf-plan
+```
+
+Plus a screenshot of the collection health dashboard with a deliberately
+stalled collector, showing the alarm in ALARM state.
+
+---
+
 ## Traceability
 
 Every task maps to a spec section and a feature. If a task cannot name its
@@ -1619,3 +1682,5 @@ worked.
 | FEAT-042 Assistant bot, groundwork | 030 |
 | Security posture, ADR-0010 | 029 |
 | Documentation and graph gates, ADR-0011 | 031 |
+| Retention and erasure, data classification | 032 |
+| SLOs, alerts and runbooks, observability | 033 |
