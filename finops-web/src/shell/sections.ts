@@ -28,7 +28,7 @@ export const GROUPS: readonly GroupDef[] = [
   {
     label: 'Home',
     path: '/',
-    screens: [{ path: '/', label: 'Home', arrives: 'P0, not yet built' }],
+    screens: [{ path: '/', label: 'Home', arrives: null }],
   },
   {
     label: 'Cost',

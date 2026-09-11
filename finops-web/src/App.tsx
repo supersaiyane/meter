@@ -8,6 +8,7 @@ import { AppShell } from './shell/AppShell';
 import { MetaProvider } from './shell/MetaProvider';
 import { screenFor } from './shell/sections';
 import { AccountsScreen } from './screens/AccountsScreen';
+import { HomeScreen } from './screens/HomeScreen';
 import { FreshnessScreen } from './screens/FreshnessScreen';
 import { IngestScreen } from './screens/IngestScreen';
 import { OrganizationScreen } from './screens/OrganizationScreen';
@@ -65,6 +66,7 @@ export function App({
           <MetaProvider>
             <AppShell>
               <Routes>
+                <Route path="/" element={<HomeScreen />} />
                 <Route path="/inventory/accounts" element={<AccountsScreen />} />
                 <Route path="/inventory/organization" element={<OrganizationScreen />} />
                 <Route path="/platform/ingest" element={<IngestScreen />} />

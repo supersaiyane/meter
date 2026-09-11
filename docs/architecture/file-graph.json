@@ -72,12 +72,14 @@
     "finops-web/dist-types/src/queryClient.d.ts",
     "finops-web/dist-types/src/screens/AccountsScreen.d.ts",
     "finops-web/dist-types/src/screens/FreshnessScreen.d.ts",
+    "finops-web/dist-types/src/screens/HomeScreen.d.ts",
     "finops-web/dist-types/src/screens/IngestScreen.d.ts",
     "finops-web/dist-types/src/screens/OrganizationScreen.d.ts",
     "finops-web/dist-types/src/screens/PlatformScreen.d.ts",
     "finops-web/dist-types/src/screens/__tests__/AccountsScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/FreshnessScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/Harness.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/HomeScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/IngestScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/OrganizationScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/PlatformScreen.test.d.ts",
@@ -138,12 +140,14 @@
     "finops-web/src/queryClient.ts",
     "finops-web/src/screens/AccountsScreen.tsx",
     "finops-web/src/screens/FreshnessScreen.tsx",
+    "finops-web/src/screens/HomeScreen.tsx",
     "finops-web/src/screens/IngestScreen.tsx",
     "finops-web/src/screens/OrganizationScreen.tsx",
     "finops-web/src/screens/PlatformScreen.tsx",
     "finops-web/src/screens/__tests__/AccountsScreen.test.tsx",
     "finops-web/src/screens/__tests__/FreshnessScreen.test.tsx",
     "finops-web/src/screens/__tests__/Harness.tsx",
+    "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
     "finops-web/src/screens/__tests__/IngestScreen.test.tsx",
     "finops-web/src/screens/__tests__/OrganizationScreen.test.tsx",
     "finops-web/src/screens/__tests__/PlatformScreen.test.tsx",
@@ -682,6 +686,11 @@
     },
     {
       "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/HomeScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/IngestScreen.tsx",
       "k": "typescript"
     },
@@ -1096,6 +1105,36 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/screens/platformRollUp.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/IngestScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
@@ -1268,6 +1307,31 @@
     {
       "s": "finops-web/src/screens/__tests__/Harness.tsx",
       "t": "finops-web/src/shell/MetaProvider.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
+      "t": "finops-web/src/screens/HomeScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
       "k": "typescript"
     },
     {

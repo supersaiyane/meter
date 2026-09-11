@@ -23,9 +23,10 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Meter' })).toBeInTheDocument();
   });
 
-  it('lands on Home, and says Home is not built rather than pretending', () => {
+  it('lands on Home, which names what each unfilled slot is waiting for', () => {
     open('/');
-    expect(screen.getByTestId('not-built')).toHaveTextContent(/arrives with P0, not yet built/);
+    expect(screen.queryByTestId('not-built')).toBeNull();
+    expect(screen.getByTestId('home-slot-spend')).toHaveTextContent(/P1 Cost Intelligence/);
   });
 
   it('tells a wrong address apart from a screen that is merely unbuilt', () => {

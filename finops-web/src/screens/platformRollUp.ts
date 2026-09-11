@@ -53,3 +53,31 @@ export function rollUp(rows: readonly PlatformCost[]): ModuleRow[] {
     }))
     .sort((left, right) => right.total - left.total);
 }
+
+export interface GrandTotal {
+  readonly total: number;
+  readonly asOf: string;
+  readonly collectedAt: string;
+}
+
+/**
+ * One figure across every module, for the front page.
+ *
+ * The oldest timestamp wins here for the same reason it wins per module: a
+ * total is only as fresh as its stalest part. Null when there is nothing to
+ * total, so the caller renders an absence rather than a confident zero.
+ */
+export function grandTotal(rows: readonly ModuleRow[]): GrandTotal | null {
+  const first = rows[0];
+  if (first === undefined) {
+    return null;
+  }
+  return {
+    total: rows.reduce((sum, row) => sum + row.total, 0),
+    asOf: rows.reduce((oldest, row) => (row.asOf < oldest ? row.asOf : oldest), first.asOf),
+    collectedAt: rows.reduce(
+      (oldest, row) => (row.collectedAt < oldest ? row.collectedAt : oldest),
+      first.collectedAt,
+    ),
+  };
+}

@@ -2788,7 +2788,7 @@ falling back to invented numbers."
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-11 |
 | Implements | `docs/13-UI-ARCHITECTURE.md` section 6 |
 | Delivers | FEAT-008 on the front page, per architectural constraint 7 |
 | Depends on | TASK-P0-037 |
@@ -2796,14 +2796,14 @@ falling back to invented numbers."
 
 **Acceptance criteria.**
 
-- [ ] Five slots in the order given in section 6
-- [ ] A slot with no data **names the sub project that will fill it** and renders
+- [x] Five slots in the order given in section 6
+- [x] A slot with no data **names the sub project that will fill it** and renders
       no numeral
-- [ ] Meter's own cost appears on the trust strip, on Home only
-- [ ] Every figure links to the screen that owns it
-- [ ] The screen issues no query that is not already issued by a screen it
+- [x] Meter's own cost appears on the trust strip, on Home only
+- [x] Every figure links to the screen that owns it
+- [x] The screen issues no query that is not already issued by a screen it
       summarises
-- [ ] Axe reports zero violations
+- [x] Axe reports zero violations
 
 **Do not.**
 
@@ -2815,7 +2815,7 @@ falling back to invented numbers."
 
 **Steps.**
 
-- [ ] **Step 1: write the failing slot test**
+- [x] **Step 1: write the failing slot test**
 
 `finops-web/src/screens/__tests__/HomeScreen.test.tsx`
 
@@ -2884,12 +2884,12 @@ The second test is the load bearing one. `P1` contains no digit and
 `Cost Intelligence` contains none, so a slot that accidentally renders a zero
 fails it.
 
-- [ ] **Step 2: run it and watch it fail**
+- [x] **Step 2: run it and watch it fail**
 
 Run: `cd finops-web && npm run test -- --run src/screens/__tests__/HomeScreen.test.tsx`
 Expected: FAIL, cannot find module `../HomeScreen`.
 
-- [ ] **Step 3: write the screen**
+- [x] **Step 3: write the screen**
 
 `finops-web/src/screens/HomeScreen.tsx`
 
@@ -2977,12 +2977,12 @@ already uses, with query key `['platform-cost']`, so react-query serves both fro
 one cache entry. Two hooks over one endpoint is how two screens start
 disagreeing.
 
-- [ ] **Step 4: run the tests and watch them pass**
+- [x] **Step 4: run the tests and watch them pass**
 
 Run: `cd finops-web && npm run test -- --run src/screens/__tests__/HomeScreen.test.tsx`
 Expected: PASS, four tests.
 
-- [ ] **Step 5: write the failing test that Home issues no query of its own**
+- [x] **Step 5: write the failing test that Home issues no query of its own**
 
 Append to the same file. `clientReturning` rejects any path it was not given, so
 a recording wrapper turns an extra request into a listed path rather than a
@@ -3008,23 +3008,23 @@ it('requests nothing that the screens it summarises do not already request', asy
 });
 ```
 
-- [ ] **Step 6: run it and watch it pass**
+- [x] **Step 6: run it and watch it pass**
 
 Run: `cd finops-web && npm run test -- --run src/screens/__tests__/HomeScreen.test.tsx`
 Expected: PASS, five tests. If it fails listing a second path, Home has grown an
 aggregate query of its own and rule 1 of section 6 has been broken.
 
-- [ ] **Step 7: route Home and make it the landing screen**
+- [x] **Step 7: route Home and make it the landing screen**
 
 In `finops-web/src/App.tsx`, add `<Route path="/" element={<HomeScreen />} />`
 as the first route. The application now lands on Home rather than on Accounts.
 
-- [ ] **Step 8: run the whole suite and the journey**
+- [x] **Step 8: run the whole suite and the journey**
 
 Run: `cd finops-web && npm run lint && npm run test -- --run && npm run build && npx playwright test`
 Expected: all pass.
 
-- [ ] **Step 9: commit**
+- [x] **Step 9: commit**
 
 ```bash
 git add finops-web/src
