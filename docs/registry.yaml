@@ -516,7 +516,7 @@ changes:
   type: Design
   what: 'AUDIT-001 remediation wave three: disaster recovery, observability, the running cost estimate,
     exit criteria and the performance budget. All 18 findings now closed'
-  commit: pending
+  commit: 6cceaa8
   detail: '[REMEDIATION-LOG](audits/REMEDIATION-LOG.md)'
 issues:
 - id: ISS-001

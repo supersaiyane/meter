@@ -203,7 +203,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0020 | 2026-08-23 | Process | AUDIT-001 published. Audits folder created with a naming convention, finding identifiers and a promotion rule. 18 findings promoted to the issue register | `eca070d` | [AUDIT-001](audits/AUDIT-001-2026-08-23-full-project.md) |
 | CHG-0021 | 2026-08-23 | Correction | AUDIT-001 remediation wave one: eleven findings closed, covering the import contract, CI tooling, setup ordering, the first run experience, governance files, MCP packaging, the PARTIAL status, the dead graph output, the context index generator and the duplicated roadmap table | `ef23f8a` | [REMEDIATION-LOG](audits/REMEDIATION-LOG.md) |
 | CHG-0022 | 2026-08-23 | Design | Threat model and data classification written, closing the two blocking audit findings. The account root email column removed from the schema as a result | `3a16bd0` | [docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md) |
-| CHG-0023 | 2026-08-23 | Design | AUDIT-001 remediation wave three: disaster recovery, observability, the running cost estimate, exit criteria and the performance budget. All 18 findings now closed | `pending` | [REMEDIATION-LOG](audits/REMEDIATION-LOG.md) |
+| CHG-0023 | 2026-08-23 | Design | AUDIT-001 remediation wave three: disaster recovery, observability, the running cost estimate, exit criteria and the performance budget. All 18 findings now closed | `6cceaa8` | [REMEDIATION-LOG](audits/REMEDIATION-LOG.md) |
 
 <!-- generated:changes end -->
 
