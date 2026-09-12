@@ -993,6 +993,16 @@ changes:
     the build when one becomes a live route, discovering route modules rather than listing them
   commit: 'bf90690'
   detail: '[docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md) section 11'
+- id: CHG-0076
+  date: '2026-09-11'
+  type: Feature
+  what: TASK-P0-038, the home screen. Meter's own cost on the front page and nowhere else, per
+    architectural constraint 7. The screen owns no data of its own and a test asserts it requests
+    only what PlatformScreen already requests. An unfilled slot names the sub project that will
+    fill it and renders no figure and no currency, which makes the front page the progress view.
+    P0 reaches 38 of 38 tasks, which is not the same as P0 being signed off
+  commit: '623b2a3'
+  detail: '[docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md) section 6'
 issues:
 - id: ISS-136
   severity: HIGH
