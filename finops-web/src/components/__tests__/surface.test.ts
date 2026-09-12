@@ -91,6 +91,8 @@ describe('the visual layer', () => {
       // Figure emits this inside a dense table, so the provenance word sits
       // under its numeral rather than beside it.
       'meter-provenance',
+      // OrgTree emits this for the node kind beside a node name.
+      'meter-kind',
     ]);
     const withoutComments = layout.replace(/\/\*[\s\S]*?\*\//g, '');
     const targeted = new Set(

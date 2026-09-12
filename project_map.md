@@ -141,10 +141,12 @@ meter/
 │   │                          forbidden imports, the memory gate, base image resolver
 │   ├── ops/                   erase_principal.py, run by a person against a live
 │   │                          database. Deliberately not an API route.
-│   │                          seed_demo.py fills a local database by running the
-│   │                          real collector against the fake surface, so seeded
-│   │                          rows cannot drift from collected ones. Refuses any
-│   │                          non local host before an engine exists, and
+│   │                          seed_demo.py fills a local database by running all
+│   │                          four real collectors against the fake adapters and
+│   │                          through the real run ledger, so seeded rows cannot
+│   │                          drift from collected ones and the ingest and
+│   │                          freshness screens fill from the same act. Refuses
+│   │                          any non local host before an engine exists, and
 │   │                          make unseed clears it by its fixed tenant
 │   └── deploy/                migration task runner
 │
@@ -214,7 +216,14 @@ meter/
 │   │                          finally. v1 writes nothing, constraint 6
 │   └── fake/                  in memory, the ports, no network, no clock
 │       ├── fixtures.py        one root, two units, five accounts, one denied
-│       ├── provider.py        the failure plan. Any of the six, for any scope
+│       ├── provider.py        the failure plan. Any of the six, for any scope.
+│       │                      Takes the time it is observed at, because the
+│       │                      constants are right for a test and wrong for a
+│       │                      demo estate
+│       ├── health.py          role health. Separates an account whose role is
+│       │                      misconfigured from one Meter could not ask about
+│       │                      at all, which are different fixes and owners
+│       ├── platform_cost.py   Meter's own bill, untagged bucket included
 │       ├── surface.py         QuerySurface in memory. discover raises only when
 │       │                      nothing could be enumerated, and an empty listing
 │       │                      means empty rather than a failed read

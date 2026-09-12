@@ -73,7 +73,7 @@ ORG_NODES: tuple[OrgNode, ...] = (
     OrgNode(
         node_id=ROOT_ID,
         node_type=OrgNodeType.ROOT,
-        name="fake root",
+        name="Fake organization",
         parent_id=None,
         provider=Provider.AWS,
         as_of=AS_OF,
@@ -82,7 +82,7 @@ ORG_NODES: tuple[OrgNode, ...] = (
     OrgNode(
         node_id=OU_PLATFORM_ID,
         node_type=OrgNodeType.OU,
-        name="platform",
+        name="Platform",
         parent_id=ROOT_ID,
         provider=Provider.AWS,
         as_of=AS_OF,
@@ -91,7 +91,7 @@ ORG_NODES: tuple[OrgNode, ...] = (
     OrgNode(
         node_id=OU_PRODUCT_ID,
         node_type=OrgNodeType.OU,
-        name="product",
+        name="Product",
         parent_id=ROOT_ID,
         provider=Provider.AWS,
         as_of=AS_OF,

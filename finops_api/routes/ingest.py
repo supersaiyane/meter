@@ -57,7 +57,28 @@ def recent_runs(
         )
         for row in rows
     ]
-    return Envelope(data=runs, meta=build_meta(connection, scope, context, visible=len(runs)))
+    # A run record is both the fact and the fetch, so the timestamps come from
+    # the newest run rather than from `freshness_of`, which found no `as_of`
+    # column here and reported the page as never collected however many runs it
+    # was showing. Newest rather than oldest: this is a log, and a log is as
+    # fresh as its last entry. ISS-159.
+    newest = rows[0] if rows else None
+    return Envelope(
+        data=runs,
+        meta=build_meta(
+            connection,
+            scope,
+            context,
+            visible=len(runs),
+            as_of=newest.as_of_window_end if newest is not None else None,
+            collected_at=(newest.finished_at or newest.started_at) if newest is not None else None,
+            # Runs, not accounts. This page shows the most recent few of however
+            # many the tenant has, and saying `8 of 8 accounts` over a five
+            # account estate was a claim about the wrong thing entirely.
+            coverage=IngestRunRepository(connection, context).coverage(scope, shown=len(runs)),
+            coverage_unit="runs",
+        ),
+    )
 
 
 def staleness(row: Any, cadences: dict[str, int], at: datetime) -> FreshnessOut:
@@ -100,5 +121,9 @@ def freshness(
             visible=len(entries),
             as_of=oldest_as_of,
             collected_at=oldest_update,
+            # Collectors, not accounts. Every collector with a watermark is
+            # shown, so this page is complete by construction and says so.
+            coverage=(len(entries), len(entries)),
+            coverage_unit="collectors",
         ),
     )

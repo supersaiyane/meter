@@ -187,6 +187,56 @@ nav[aria-label='Sections'] a[data-arrives] {
   letter-spacing: 0.02em;
 }
 
+/* ------------------------------------------------------------------- tree */
+
+/*
+ * React Aria stamps `--tree-item-level` on every row and leaves the indent to
+ * us. Without it every node sat at the same left edge, so the one thing this
+ * screen exists to show, the shape of the organization, was invisible.
+ *
+ * On the row rather than the cell. The cell is `display: contents`, so it
+ * generates no box and its padding is computed and then never drawn, which
+ * looked like the rule not applying at all.
+ */
+[role='treegrid'] [role='row'] {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--row-height);
+  padding: var(--space-1) var(--space-2);
+  padding-left: calc(var(--space-2) + (var(--tree-item-level, 1) - 1) * var(--space-4));
+  border-bottom: 1px solid var(--border);
+}
+
+/* A leaf has no expand control, and its name still starts where a branch name
+   does. Matched on the absence of the control rather than on an attribute,
+   because the control is the thing that takes the space. */
+[role='treegrid'] [role='row']:not(:has(button)) {
+  padding-left: calc(
+    var(--space-2) + (var(--tree-item-level, 1) - 1) * var(--space-4) + 1.5em + var(--space-2)
+  );
+}
+
+[role='treegrid'] button {
+  width: 1.5em;
+  height: 1.5em;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.meter-kind {
+  font-size: var(--font-size-1);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
 /* ------------------------------------------------------------------ table */
 
 [data-testid='table-scroll'] {

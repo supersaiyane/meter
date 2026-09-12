@@ -113,17 +113,38 @@ def test_seed_then_remove_leaves_nothing_behind(engine: object) -> None:
         query_timerange_crit_hours = 720.0
         query_quota_logs_concurrent = 30
         query_quota_getmetricdata_tps = 50
+        run_claim_timeout_minutes = 15
 
-    written, instances = seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
-    assert instances == 3
-    assert written > 0
+    seeded = seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
+    assert seeded.instances == 3
+    assert seeded.accounts > 0
+    assert seeded.rows > 0
+    # One run per collector call, and account health runs once per account.
+    assert seeded.runs > 4
 
     with engine.connect() as connection:  # type: ignore[attr-defined]
-        findings = connection.execute(
-            sql("SELECT count(*) FROM query_finding WHERE tenant_id = :t"),
-            {"t": DEMO_TENANT},
-        ).scalar_one()
-    assert findings > 0
+        for table_name in ("query_finding", "cloud_account", "org_node", "platform_cost"):
+            rows = connection.execute(
+                sql(f"SELECT count(*) FROM {table_name} WHERE tenant_id = :t"),
+                {"t": DEMO_TENANT},
+            ).scalar_one()
+            assert rows > 0, f"{table_name} was not seeded"
+
+        # The estate is worth developing against only if it contains the states
+        # the screens exist to tell apart. An all healthy estate would let the
+        # accounts screen look finished while rendering one of four cases.
+        health = (
+            connection.execute(
+                sql(
+                    "SELECT DISTINCT role_health FROM cloud_account "
+                    "WHERE tenant_id = :t AND role_health IS NOT NULL"
+                ),
+                {"t": DEMO_TENANT},
+            )
+            .scalars()
+            .all()
+        )
+    assert len(set(health)) > 1, f"every account reports the same health: {health}"
 
     cleared = seed_demo.remove(engine)
     assert cleared["tenant"] == 1

@@ -12,8 +12,9 @@ test states exactly what fails and never inherits a rule it cannot see.
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime
+from typing import Any
 
 from finops_core.domain.account import AccountKey, CloudAccount
 from finops_core.domain.cost import CostRecord
@@ -38,6 +39,13 @@ class FakeSession:
     expires_at: datetime
 
 
+def _restamp(facts: tuple[Any, ...], at: datetime | None) -> tuple[Any, ...]:
+    """The same facts, observed now. Unchanged when no time is given."""
+    if at is None:
+        return facts
+    return tuple(replace(fact, as_of=at, collected_at=at) for fact in facts)
+
+
 class FakeProvider:
     """One object satisfying all eight provider ports, with a configurable failure plan."""
 
@@ -46,9 +54,14 @@ class FakeProvider:
         accounts: tuple[CloudAccount, ...] | None = None,
         nodes: tuple[OrgNode, ...] | None = None,
         failures: Mapping[str, type[CollectionError]] | None = None,
+        at: datetime | None = None,
     ) -> None:
-        self._accounts = fixtures.ACCOUNTS if accounts is None else accounts
-        self._nodes = fixtures.ORG_NODES if nodes is None else nodes
+        # `at` restamps the fixtures rather than replacing them. The constants
+        # carry a date from 2026-08-24, which is right for a test asserting a
+        # value and wrong for a demo estate, where it made two screens read as
+        # five days stale beside four that read as current. ISS-161.
+        self._accounts = _restamp(fixtures.ACCOUNTS if accounts is None else accounts, at)
+        self._nodes = _restamp(fixtures.ORG_NODES if nodes is None else nodes, at)
         self._failures: Mapping[str, type[CollectionError]] = (
             dict(fixtures.DEFAULT_FAILURES) if failures is None else dict(failures)
         )

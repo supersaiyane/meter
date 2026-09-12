@@ -60,6 +60,7 @@
     "finops-web/dist-types/src/components/__tests__/FixtureBand.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/GraphCanvas.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/OrgTree.test.d.ts",
+    "finops-web/dist-types/src/components/__tests__/Sparkline.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/StateBoundary.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/axe.d.ts",
     "finops-web/dist-types/src/components/__tests__/contrast.test.d.ts",
@@ -150,6 +151,7 @@
     "finops-web/src/components/__tests__/FixtureBand.test.tsx",
     "finops-web/src/components/__tests__/GraphCanvas.test.tsx",
     "finops-web/src/components/__tests__/OrgTree.test.tsx",
+    "finops-web/src/components/__tests__/Sparkline.test.tsx",
     "finops-web/src/components/__tests__/StateBoundary.test.tsx",
     "finops-web/src/components/__tests__/axe.ts",
     "finops-web/src/components/__tests__/contrast.test.ts",
@@ -189,6 +191,7 @@
     "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
     "finops-web/src/screens/__tests__/enforcementTime.test.ts",
     "finops-web/src/screens/__tests__/fixtures.ts",
+    "finops-web/src/screens/__tests__/surfaceStateFor.test.ts",
     "finops-web/src/screens/enforcementTime.ts",
     "finops-web/src/screens/findingFigure.ts",
     "finops-web/src/screens/platformRollUp.ts",
@@ -288,6 +291,8 @@
     "finops_providers/fake/__init__.py",
     "finops_providers/fake/evidence.py",
     "finops_providers/fake/fixtures.py",
+    "finops_providers/fake/health.py",
+    "finops_providers/fake/platform_cost.py",
     "finops_providers/fake/provider.py",
     "finops_providers/fake/surface.py",
     "finops_providers/grafana/__init__.py",
@@ -1075,6 +1080,11 @@
     {
       "s": "finops-web/src/components/__tests__/OrgTree.test.tsx",
       "t": "finops-web/src/components/orgNodes.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/Sparkline.test.tsx",
+      "t": "finops-web/src/components/Sparkline.tsx",
       "k": "typescript"
     },
     {
@@ -1933,6 +1943,16 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/surfaceStateFor.test.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/surfaceStateFor.test.ts",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/findingFigure.ts",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -2165,6 +2185,11 @@
     {
       "s": "finops_api/db/repositories/ingest.py",
       "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/ingest.py",
+      "t": "finops_api/guards.py",
       "k": "python"
     },
     {
@@ -3118,6 +3143,26 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/fake/health.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/health.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/health.py",
+      "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/platform_cost.py",
+      "t": "finops_providers/aws/platform_cost.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/fake/provider.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -3249,7 +3294,37 @@
     },
     {
       "s": "scripts/ops/seed_demo.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/account_health.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/org_tree.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/platform_cost.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
       "t": "finops_ingest/collectors/query_audit.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/ledger.py",
       "k": "python"
     },
     {
@@ -3259,7 +3334,27 @@
     },
     {
       "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
       "t": "finops_providers/fake/evidence.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/health.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/platform_cost.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/provider.py",
       "k": "python"
     },
     {

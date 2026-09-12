@@ -32,12 +32,16 @@ export function Sparkline({
   }
   const low = Math.min(...points);
   const high = Math.max(...points);
-  const span = high - low || 1;
+  const span = high - low;
   const step = width / (points.length - 1);
   const path = points
     .map((value, index) => {
       const x = index * step;
-      const y = height - ((value - low) / span) * height;
+      // A series that never changes has no low and no high to scale between.
+      // Normalising it anyway put every point at the floor, so a module costing
+      // the same every day for thirty days drew the same line as one costing
+      // nothing. Flat belongs in the middle. ISS-160.
+      const y = span === 0 ? height / 2 : height - ((value - low) / span) * height;
       return `${index === 0 ? 'M' : 'L'}${x.toFixed(1)} ${y.toFixed(1)}`;
     })
     .join(' ');

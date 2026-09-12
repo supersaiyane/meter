@@ -1,11 +1,17 @@
 """Fill a local database with a demo estate, so the product can be developed
 against something before any of it can talk to AWS.
 
-The data is produced by running the **real collector** against the **existing
-fake surface**, not by writing rows. That matters: a second hand written estate
-would drift from what the collector actually writes, and the first time the real
-one ran the screens would change shape. Every row here is a row
-`QueryAuditCollector` would have written.
+The data is produced by running the **real collectors** against the **existing
+fake adapters**, not by writing rows, and through the **real run ledger**. That
+matters twice over. A second hand written estate would drift from what the
+collectors actually write, and the first time the real ones ran the screens
+would change shape. And going through the ledger means the ingest and freshness
+screens fill from the same act of seeding rather than needing a second fixture
+that agrees with the first by hand.
+
+Four collectors, in dependency order: the organization tree, then role health
+per account, then the platform's own cost, then the query audit. Every row here
+is a row the pipeline would have written.
 
 Three safeguards, because a seeding script is exactly the kind of tool that ends
 up pointed somewhere it should not be.
@@ -27,7 +33,7 @@ from __future__ import annotations
 import argparse
 import sys
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from urllib.parse import urlsplit
 from uuid import UUID
@@ -35,13 +41,23 @@ from uuid import UUID
 from sqlalchemy import create_engine, text
 
 from finops_core.config import load_settings
+from finops_core.domain.account import AccountKey
+from finops_core.errors import CollectionError
+from finops_ingest.collectors.account_health import AccountHealthCollector
+from finops_ingest.collectors.org_tree import OrgTreeCollector
+from finops_ingest.collectors.platform_cost import PlatformCostCollector
 from finops_ingest.collectors.query_audit import (
     QueryAuditCollector,
     default_ingest_rate,
     rates_from,
 )
-from finops_ingest.registry import CollectorContext
+from finops_ingest.ledger import RunLedger
+from finops_ingest.registry import CollectorContext, install_default_schedule
+from finops_providers.fake import fixtures
 from finops_providers.fake.evidence import FakeQueryEvidence
+from finops_providers.fake.health import FakeRoleHealth
+from finops_providers.fake.platform_cost import FakePlatformCost
+from finops_providers.fake.provider import FakeProvider
 from finops_providers.fake.surface import FakeQuerySurface
 from finops_query.parser import GrafanaQueryParser
 
@@ -50,6 +66,17 @@ from finops_query.parser import GrafanaQueryParser
 DEMO_TENANT = UUID("5eeded00-0000-4000-8000-000000000001")
 DEMO_NAME = "demo estate, seeded, safe to remove"
 
+#: How far back the seeded window reaches. Thirty, because the platform cost
+#: screen draws a thirty day sparkline and a seven day window left it empty.
+DEMO_WINDOW_DAYS = 30
+
+#: The account whose health check fails outright, as opposed to the one that
+#: answers `access denied`. The two are different facts and the screens render
+#: them differently: one is an account whose role is misconfigured, the other is
+#: an account Meter could not ask about at all. An estate with neither leaves
+#: the failure rendering on three screens permanently unexercised.
+UNREADABLE_ACCOUNT = str(fixtures.ACCOUNT_KEYS[1])
+
 #: Hosts a seed may write to. The compose service name counts as local because
 #: it only resolves inside the local stack.
 LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1", "::1", "postgres", ""})
@@ -57,6 +84,14 @@ LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1", "::1", "postgres", ""})
 #: Reverse dependency order. A removal that orphaned a foreign key would leave
 #: the database refusing it and the operator guessing why.
 DEMO_TABLES = (
+    "collector_schedule",
+    "audit_event",
+    "sync_error",
+    "ingest_watermark",
+    "ingest_run",
+    "platform_cost",
+    "org_node",
+    "cloud_account",
     "remediation_change",
     "enforcement_action",
     "folder_team_map",
@@ -86,25 +121,68 @@ def require_local(database_url: str) -> None:
 
 @dataclass(frozen=True)
 class Unit:
-    """What the collector reads off a work unit, and nothing else."""
+    """What a collector reads off a work unit, and nothing else.
+
+    The dispatcher's own `WorkUnit` is not used here because it carries
+    scheduling state this script has no business setting. `CollectorContext`
+    types its unit loosely for exactly this reason.
+    """
 
     tenant_id: UUID
     scope_key: str = "organization"
+    account: AccountKey | None = None
+    region: str | None = None
+    window_start: datetime | None = None
+    window_end: datetime | None = None
 
 
-def seed(engine: Any, settings: Any, now: datetime) -> tuple[int, int]:
-    """Create the tenant and run the collector into it. Returns rows, instances."""
+@dataclass(frozen=True)
+class Seeded:
+    """What one seeding run produced, for the operator to read back."""
+
+    rows: int
+    instances: int
+    accounts: int
+    runs: int
+
+
+def _through_the_ledger(
+    ledger: RunLedger, collector: Any, connection: Any, unit: Unit, name: str
+) -> int:
+    """Run one collector as the worker would, recording the run either way.
+
+    The failure branch is not defensive tidiness. The fake estate contains an
+    account that refuses, because the screens exist to report exactly that, and
+    a seeding script that let one refusal abort the whole run would produce a
+    demo estate with no failures in it, which is the estate least worth
+    developing against.
+    """
+    if unit.window_start is None or unit.window_end is None:
+        # Every unit this script builds carries a window. A missing one is a bug
+        # here rather than a case to paper over with a default that would put a
+        # run in the ledger claiming a window nobody chose.
+        raise ValueError(f"the {name} unit was built without a window")
+    claim = ledger.claim(name, unit.scope_key, unit.window_start, unit.window_end)
+    if claim is None:
+        return 0
+    ledger.running(claim)
+    try:
+        outcome = collector(CollectorContext(unit=unit, connection=connection))
+    except CollectionError as failure:
+        ledger.fail(claim, failure)
+        ledger.record_sync_error(name, unit.scope_key, failure)
+        return 0
+    ledger.complete(claim, items_written=outcome.items_written, bytes_read=0)
+    return int(outcome.items_written)
+
+
+def seed(engine: Any, settings: Any, now: datetime) -> Seeded:
+    """Create the tenant and run all four collectors into it."""
     parser = GrafanaQueryParser()
-    collector = QueryAuditCollector(
-        FakeQuerySurface(),
-        rates_from(settings),
-        default_ingest_rate(settings),
-        clock=lambda: now,
-        # With evidence, so the demo estate shows a measured finding beside a
-        # modelled one. Telling those apart is what the screens are for, and an
-        # estate where every figure is modelled cannot demonstrate it.
-        evidence=FakeQueryEvidence(parser),
-    )
+    provider = FakeProvider(at=now)
+    window_start = now - timedelta(days=DEMO_WINDOW_DAYS)
+    written = 0
+
     with engine.begin() as connection:
         connection.execute(
             text(
@@ -113,14 +191,84 @@ def seed(engine: Any, settings: Any, now: datetime) -> tuple[int, int]:
             ),
             {"id": DEMO_TENANT, "name": DEMO_NAME},
         )
-        outcome = collector(
-            CollectorContext(unit=Unit(tenant_id=DEMO_TENANT), connection=connection)
+        # Cadence is data, per ADR-0012, and an estate without it cannot judge
+        # its own freshness: every collector read `not scheduled` and therefore
+        # `stale`, one minute after it ran.
+        install_default_schedule(connection, DEMO_TENANT, updated_by="seed_demo")
+
+        ledger = RunLedger(
+            connection,
+            DEMO_TENANT,
+            settings.run_claim_timeout_minutes,
+            clock=lambda: now,
         )
-        instances = connection.execute(
-            text("SELECT count(*) FROM grafana_instance WHERE tenant_id = :t"),
-            {"t": DEMO_TENANT},
-        ).scalar_one()
-    return outcome.items_written, int(instances)
+
+        def unit(**extra: Any) -> Unit:
+            return Unit(
+                tenant_id=DEMO_TENANT,
+                window_start=window_start,
+                window_end=now,
+                **extra,
+            )
+
+        # The tree first. Role health writes onto accounts the tree creates, and
+        # doing it the other way round leaves health rows for accounts that do
+        # not exist yet.
+        written += _through_the_ledger(
+            ledger, OrgTreeCollector(provider, clock=lambda: now), connection, unit(), "org_tree"
+        )
+        for account in fixtures.ACCOUNT_KEYS:
+            written += _through_the_ledger(
+                ledger,
+                AccountHealthCollector(
+                    FakeRoleHealth(refuse=UNREADABLE_ACCOUNT, at=now), clock=lambda: now
+                ),
+                connection,
+                unit(
+                    scope_key=f"{account}:{fixtures.REGION}",
+                    account=account,
+                    region=fixtures.REGION,
+                ),
+                "account_health",
+            )
+        written += _through_the_ledger(
+            ledger,
+            PlatformCostCollector(FakePlatformCost(), clock=lambda: now),
+            connection,
+            unit(),
+            "platform_cost",
+        )
+        written += _through_the_ledger(
+            ledger,
+            QueryAuditCollector(
+                FakeQuerySurface(),
+                rates_from(settings),
+                default_ingest_rate(settings),
+                clock=lambda: now,
+                # With evidence, so the demo estate shows a measured finding
+                # beside a modelled one. Telling those apart is what the screens
+                # are for, and an estate where every figure is modelled cannot
+                # demonstrate it.
+                evidence=FakeQueryEvidence(parser),
+            ),
+            connection,
+            unit(),
+            "query_audit",
+        )
+
+        counts = {
+            name: connection.execute(
+                text(f"SELECT count(*) FROM {name} WHERE tenant_id = :t"), {"t": DEMO_TENANT}
+            ).scalar_one()
+            for name in ("grafana_instance", "cloud_account", "ingest_run")
+        }
+
+    return Seeded(
+        rows=written,
+        instances=int(counts["grafana_instance"]),
+        accounts=int(counts["cloud_account"]),
+        runs=int(counts["ingest_run"]),
+    )
 
 
 def remove(engine: Any) -> dict[str, int]:
@@ -164,10 +312,14 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Demo tenant {DEMO_TENANT} is gone.")
             return 0
 
-        written, instances = seed(engine, settings, datetime.now(UTC))
+        seeded = seed(engine, settings, datetime.now(UTC))
         print(f"Seeded tenant {DEMO_TENANT}, {DEMO_NAME}.")
-        print(f"  {instances} instances, {written} rows written by the real collector")
-        print("  every figure is modelled, and the screens say so")
+        print(f"  {seeded.accounts} accounts, {seeded.instances} workspaces")
+        print(f"  {seeded.rows} rows across {seeded.runs} runs, written by the real collectors")
+        print("  four role health states, one failed run, one unreadable workspace")
+        print("")
+        print("To see it, point the local identity at this tenant:")
+        print(f"  METER_LOCAL_TENANT_ID={DEMO_TENANT}")
         print("Clear it with: make unseed")
         return 0
     finally:

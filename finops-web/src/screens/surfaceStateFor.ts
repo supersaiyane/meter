@@ -72,7 +72,7 @@ export function surfaceStateFor(
     return {
       kind: 'partial',
       missing: meta.scope_coverage.total - meta.scope_coverage.visible,
-      reason: reasonFor(meta),
+      reason: reasonFor(meta, collector),
     };
   }
   if (meta.degraded && meta.failures.length > 0) {
@@ -95,8 +95,17 @@ export function surfaceStateFor(
  * When nothing on the envelope explains the gap, entitlement is the remaining
  * explanation and saying so is correct.
  */
-function reasonFor(meta: ApiMeta): string {
-  const causes = [...new Set(meta.failures.map((failure) => failure.cause))];
+function reasonFor(meta: ApiMeta, collector: string): string {
+  // Only this surface's collector. The envelope carries every open failure in
+  // the tenant, and listing all of them made the findings gap read as caused by
+  // a throttled account health check, which had nothing to do with it.
+  const causes = [
+    ...new Set(
+      meta.failures
+        .filter((failure) => failure.collector === collector)
+        .map((failure) => failure.cause),
+    ),
+  ];
   if (causes.length === 0) {
     return 'outside your scope';
   }

@@ -43,5 +43,16 @@ def platform_cost(
     ]
     return Envelope(
         data=costs,
-        meta=build_meta(connection, scope, context, visible=len(costs), rows=rows),
+        meta=build_meta(
+            connection,
+            scope,
+            context,
+            visible=len(costs),
+            rows=rows,
+            # Modules, not accounts, and distinct modules rather than daily
+            # rows. Counting the rows reported `42 modules` over the four the
+            # screen draws, because the roll up happens above this.
+            coverage=(len({row.module for row in rows}), len({row.module for row in rows})),
+            coverage_unit="modules",
+        ),
     )

@@ -1060,6 +1060,66 @@ changes:
   commit: 'd5c8cdc'
   detail: '[ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md)'
 issues:
+- id: ISS-158
+  severity: HIGH
+  summary: The demo estate covered only the query tables, so five of the six built P0 screens had
+    nothing to render and could not be assessed or verified at all. The seed now runs all four
+    collectors, org tree then role health then platform cost then query audit, through the real
+    run ledger, so the ingest and freshness screens fill from the same act of seeding rather than
+    needing a second fixture that agrees with the first by hand. It also installs the default
+    schedule, without which every collector read "not scheduled" and therefore "stale" one minute
+    after it ran. Fixed 2026-09-12
+  status: FIXED
+  detail: '`scripts/ops/seed_demo.py`, `finops_providers/fake/health.py`,
+    `finops_providers/fake/platform_cost.py`'
+- id: ISS-159
+  severity: HIGH
+  summary: The ingest screen could never show a run. `build_meta` derives freshness from an
+    `as_of` column, `ingest_run` has none, so the envelope carried two nulls and the screen
+    reported the collector as never having run while listing its runs. The same route also
+    compared its run count to the account count and reported "8 of 8 accounts" over a five account
+    estate. Fixed 2026-09-12 by taking the timestamps from the newest run, which is a log and is
+    as fresh as its last entry, and by counting runs. Freshness counts collectors and platform
+    cost counts modules, both of which had the same wrong noun
+  status: FIXED
+  detail: '`finops_api/routes/ingest.py`, `finops_api/routes/platform.py`'
+- id: ISS-160
+  severity: MEDIUM
+  summary: A sparkline whose series never changes drew every point on the floor, because
+    normalising a series with no range divides by a span of zero and the fallback put everything
+    at the minimum. A module costing the same amount every day for thirty days therefore drew the
+    same line as one costing nothing. Fixed 2026-09-12 by drawing a flat series down the middle,
+    and the component now has tests, which it did not before
+  status: FIXED
+  detail: '`finops-web/src/components/Sparkline.tsx`'
+- id: ISS-161
+  severity: LOW
+  summary: The fake account and organization fixtures carry a fixed observation date, which is
+    right for a test asserting a value and wrong for a demo estate. Two screens read as five days
+    stale beside four reading as current, in one estate seeded in one act. The fake provider and
+    the fake role health now accept the time they are observed at, restamping the fixtures rather
+    than replacing them. Fixed 2026-09-12
+  status: FIXED
+  detail: '`finops_providers/fake/provider.py`, `finops_providers/fake/health.py`'
+- id: ISS-162
+  severity: MEDIUM
+  summary: The organization tree drew every node at the same left edge, so the one thing the
+    screen exists to show, the shape of the organization, was invisible. React Aria stamps
+    `--tree-item-level` on each row and leaves the indent to the stylesheet, and the first attempt
+    put it on the cell, which draws no box at all because it is display contents, so its padding never rendered.
+    Fixed 2026-09-12 on the row. The node kind is now a muted label beside the name rather than a
+    word appended to it, which read as `platform ou`
+  status: FIXED
+  detail: '`finops-web/src/layout.css`, `finops-web/src/components/OrgTree.tsx`'
+- id: ISS-163
+  severity: MEDIUM
+  summary: The freshness screen lists watermarks, and a watermark only exists after a collector
+    has succeeded once. A scope that has never succeeded is therefore absent from the page rather
+    than shown as never collected, so the one collector in trouble is the one the freshness screen
+    does not mention. The failure band above the table names it, so the fact is on the page, but
+    the table that exists to answer "what is behind" silently omits it
+  status: OPEN
+  detail: '`finops_api/routes/ingest.py`, the freshness route'
 - id: ISS-155
   severity: HIGH
   summary: Every figure inside a table rendered its own provenance sentence and its own two

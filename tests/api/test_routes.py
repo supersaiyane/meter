@@ -329,6 +329,39 @@ def test_the_tree_reports_how_many_accounts_are_reachable(
 # --- runs and freshness ------------------------------------------------------
 
 
+def test_a_page_of_runs_is_not_reported_as_never_collected(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """It was. `freshness_of` looks for an `as_of` column and `ingest_run` has
+    none, so the envelope carried two nulls and the screen said the collector
+    had never run while listing its runs. ISS-159."""
+    seed(engine, tenant_id)
+    scope = Scope(tenant_id=tenant_id, is_global=True, accounts=frozenset())
+    client, token = client_for(engine, scope, settings)
+    meta = client.get("/api/v1/ingest/runs", headers=auth(token)).json()["meta"]
+    assert meta["as_of"] is not None
+    assert meta["collected_at"] is not None
+
+
+def test_each_route_names_what_it_counted(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """Coverage compared a row count to an account count on three routes, so a
+    five account estate reported `8 of 8 accounts` for eight runs. The noun now
+    travels with the number, from the route that did the counting."""
+    seed(engine, tenant_id)
+    scope = Scope(tenant_id=tenant_id, is_global=True, accounts=frozenset())
+    client, token = client_for(engine, scope, settings)
+    for path, unit in (
+        ("/api/v1/accounts", "accounts"),
+        ("/api/v1/ingest/runs", "runs"),
+        ("/api/v1/health/freshness", "collectors"),
+        ("/api/v1/platform/cost", "modules"),
+    ):
+        meta = client.get(path, headers=auth(token)).json()["meta"]
+        assert meta["scope_coverage"]["unit"] == unit, path
+
+
 def test_ingest_runs_returns_typed_errors_with_their_remediation(
     engine: Engine, tenant_id: UUID, settings: Settings
 ) -> None:
