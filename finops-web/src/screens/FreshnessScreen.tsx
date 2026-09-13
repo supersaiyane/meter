@@ -13,11 +13,27 @@ import { surfaceStateFor } from './surfaceStateFor';
  * A daily collector six hours old is fine and an hourly one six hours old is
  * not, so the cadence is shown beside the age. A single staleness threshold
  * across collectors would call one of those wrong every time.
+ *
+ * Three states, not two. A collector that has never once succeeded is not a
+ * stale one, and until ISS-163 it was not on this page at all: the page listed
+ * watermarks, and a watermark only exists after a success, so the row a reader
+ * comes here to find was the row it left out.
  */
 const COLUMNS: readonly Column<Freshness>[] = [
   { key: 'collector', header: 'Collector', render: (row) => row.collector },
   { key: 'scope', header: 'Scope', render: (row) => row.scope_key },
-  { key: 'age', header: 'Age', render: (row) => formatAge(row.age_seconds), numeric: true },
+  {
+    key: 'age',
+    header: 'Age',
+    numeric: true,
+    render: (row) =>
+      row.age_seconds === null ? (
+        // Not a zero and not a dash. There has been no collection to age.
+        <span className="meter-stale">never</span>
+      ) : (
+        formatAge(row.age_seconds)
+      ),
+  },
   {
     key: 'cadence',
     header: 'Cadence',
@@ -31,8 +47,21 @@ const COLUMNS: readonly Column<Freshness>[] = [
   {
     key: 'stale',
     header: 'State',
-    render: (row) =>
-      row.is_stale ? <span className="meter-stale">stale</span> : <span>current</span>,
+    render: (row) => {
+      if (row.state === 'current') {
+        return <span>current</span>;
+      }
+      if (row.state === 'stale') {
+        return <span className="meter-stale">stale</span>;
+      }
+      // Named with its cause, because the reader's next question is why, and
+      // this page is where they came to ask it.
+      return (
+        <span className="meter-failure">
+          never collected{row.cause === null ? '' : `, ${row.cause}`}
+        </span>
+      );
+    },
   },
 ];
 

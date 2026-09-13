@@ -1113,13 +1113,17 @@ issues:
   detail: '`finops-web/src/layout.css`, `finops-web/src/components/OrgTree.tsx`'
 - id: ISS-163
   severity: MEDIUM
-  summary: The freshness screen lists watermarks, and a watermark only exists after a collector
-    has succeeded once. A scope that has never succeeded is therefore absent from the page rather
-    than shown as never collected, so the one collector in trouble is the one the freshness screen
-    does not mention. The failure band above the table names it, so the fact is on the page, but
-    the table that exists to answer "what is behind" silently omits it
-  status: OPEN
-  detail: '`finops_api/routes/ingest.py`, the freshness route'
+  summary: The freshness screen listed watermarks, and a watermark only exists after a collector
+    has succeeded once. A scope that had never succeeded was therefore absent from the page rather
+    than shown as never collected, so the one collector in trouble was the one the freshness
+    screen did not mention. Fixed 2026-09-13. The page now lists every pair that has been
+    attempted, the union of watermarks and runs, and carries three states rather than two, because
+    a collector that has never worked is not a stale one. Its age is null rather than zero, since
+    a zero reads as collected this instant, and the row names the typed cause of its last attempt.
+    is_stale is now derived from the state rather than set beside it
+  status: FIXED
+  detail: '`finops_api/routes/ingest.py`, `finops_api/db/repositories/ingest.py`,
+    `finops-web/src/screens/FreshnessScreen.tsx`'
 - id: ISS-155
   severity: HIGH
   summary: Every figure inside a table rendered its own provenance sentence and its own two

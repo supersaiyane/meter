@@ -174,14 +174,31 @@ class RunOut(BaseModel):
 
 
 class FreshnessOut(BaseModel):
+    """How far behind one collector is on one scope, against its own cadence."""
+
     model_config = ConfigDict(frozen=True)
 
     collector: str
     scope_key: str
-    as_of: datetime
+    #: Null when the pair has never once succeeded. There is no age to report
+    #: and no last known good moment, and a zero would read as this instant.
+    as_of: datetime | None
     cadence_seconds: int | None
-    age_seconds: float
-    is_stale: bool
+    age_seconds: float | None
+    #: `current`, `stale`, or `never_collected`. Three states, because a
+    #: collector that has never worked is not a stale one: stale says the answer
+    #: is old, and this says there has never been an answer.
+    state: str
+    #: The typed cause of the last attempt, when it failed. Null otherwise.
+    cause: str | None = None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def is_stale(self) -> bool:
+        """Anything that is not current. Derived, so it cannot disagree with
+        `state`, which is what two independently set fields would eventually
+        do."""
+        return self.state != "current"
 
 
 class PlatformCostOut(BaseModel):

@@ -93,7 +93,32 @@ def staleness(row: Any, cadences: dict[str, int], at: datetime) -> FreshnessOut:
         age_seconds=age,
         # A collector with no schedule row cannot be judged, so it is reported
         # as stale rather than as fine. An unknown cadence is not a healthy one.
-        is_stale=cadence is None or age > cadence * STALE_AFTER_CADENCE_MULTIPLE,
+        state=(
+            "stale"
+            if cadence is None or age > cadence * STALE_AFTER_CADENCE_MULTIPLE
+            else "current"
+        ),
+    )
+
+
+def never_collected(row: Any, cadences: dict[str, int]) -> FreshnessOut:
+    """A pair that has been attempted and has never once succeeded.
+
+    Absent from this page until ISS-163, because the page listed watermarks and
+    a watermark only exists after a success. The collector a reader most wants
+    to find on a freshness page is the one that has never worked, and it was the
+    one the page left out.
+    """
+    return FreshnessOut(
+        collector=str(row.collector),
+        scope_key=str(row.scope_key),
+        # Null, not the epoch and not now. There has never been a moment when
+        # this was true at the source, and any number here would name one.
+        as_of=None,
+        cadence_seconds=cadences.get(str(row.collector)),
+        age_seconds=None,
+        state="never_collected",
+        cause=row.error_type,
     )
 
 
@@ -106,7 +131,12 @@ def freshness(
     cadences = ScheduleRepository(connection, context).cadences(scope)
     rows = WatermarkRepository(connection, context).list_all(scope)
     at = datetime.now(UTC)
-    entries = [staleness(row, cadences, at) for row in rows]
+    unstarted = IngestRunRepository(connection, context).never_succeeded(scope)
+    entries = sorted(
+        [staleness(row, cadences, at) for row in rows]
+        + [never_collected(row, cadences) for row in unstarted],
+        key=lambda entry: (entry.collector, entry.scope_key),
+    )
     # A watermark records as_of and updated_at rather than collected_at, so the
     # timestamps are passed rather than inferred. The oldest is the honest one:
     # a set of collectors is only as fresh as the one furthest behind.

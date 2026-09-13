@@ -84,9 +84,15 @@ export interface Run {
 export interface Freshness {
   readonly collector: string;
   readonly scope_key: string;
-  readonly as_of: string;
+  /** Null when the pair has never once succeeded. There is no last good moment. */
+  readonly as_of: string | null;
   readonly cadence_seconds: number | null;
-  readonly age_seconds: number;
+  /** Null for the same reason. A zero would read as collected this instant. */
+  readonly age_seconds: number | null;
+  /** `current`, `stale` or `never_collected`. Never having worked is not stale. */
+  readonly state: string;
+  /** The typed cause of the last attempt, when it failed. */
+  readonly cause: string | null;
   readonly is_stale: boolean;
 }
 

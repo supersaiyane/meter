@@ -103,6 +103,7 @@
     "finops-web/dist-types/src/screens/__tests__/QuerySurfacesScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/enforcementTime.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/fixtures.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/surfaceStateFor.test.d.ts",
     "finops-web/dist-types/src/screens/enforcementTime.d.ts",
     "finops-web/dist-types/src/screens/findingFigure.d.ts",
     "finops-web/dist-types/src/screens/platformRollUp.d.ts",

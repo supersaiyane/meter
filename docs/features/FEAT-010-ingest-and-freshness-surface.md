@@ -41,6 +41,14 @@ audit event recording the scope evaluated.
 API routes are listed in the specification section 8. MCP tools exposing this
 feature are listed in [ADR-0009](../adr/ADR-0009-mcp-alongside-http-api.md).
 
+## Three states, not two
+
+A collector that has never once succeeded is not a stale one. Stale says the answer is old; this says there has never been an answer, and the two need different words because they need different actions.
+
+The page lists every collector and scope pair that has been **attempted**, which is the union of the watermarks and the runs. Listing watermarks alone omitted the pair a reader comes here to find, because a watermark only appears after a success. ISS-163.
+
+An absent age is null and renders as `never`. A zero would read as collected this instant, which is the opposite of what is true.
+
 ## Not doing
 
 Does not fix anything. Remediation is text, and any action is a separate decision.
