@@ -54,7 +54,7 @@ export const GROUPS: readonly GroupDef[] = [
     label: 'Governance',
     path: '/governance',
     screens: [
-      { path: '/governance/queries', label: 'Query findings', arrives: 'P2 Query Cost Governance' },
+      { path: '/governance/queries', label: 'Query findings', arrives: null },
       { path: '/governance/instances', label: 'Query surfaces', arrives: 'P2 Query Cost Governance' },
       { path: '/governance/enforcement', label: 'Enforcement', arrives: 'P2 Query Cost Governance' },
       { path: '/governance/quotas', label: 'Quotas', arrives: 'P5 Quotas and Limits' },

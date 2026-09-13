@@ -429,7 +429,7 @@ implement it differently.
 | **Search** | One field, spanning accounts, resources, dashboards and findings. Results grouped by the seven groups, so the result list teaches the navigation. **Not yet planned**, because it wants at least three entity types to search over and P0 plus P2 supply two |
 | **Drill down** | Always into the owning group, never a modal. A finding opens its own URL, so it can be linked |
 | **Export** | Every table. **The export carries its coverage and both timestamps**, per FEAT-045 and `docs/12-UI-DESIGN.md` section 6. A spreadsheet that leaves without them becomes a number in a board pack with no way back to what it meant |
-| **Fixture marker** | Any screen resolving to fixture data renders the `FIXTURE DATA` band in the trust strip, driven by the same resolution that chose the fixture, so it cannot be forgotten. See section 11 |
+| **Fixture marker** | Any screen resolving to fixture data renders the `FIXTURE DATA` band above its own content, driven by the same resolution that chose the fixture. It is per screen rather than shell level, because the shell aggregates `meta` and a fixture is a property of one surface rather than of the view. Each such screen carries a test asserting the band renders. See section 11 |
 | **Empty groups** | A group whose sub projects have not landed shows its screens with their arrival, never a hidden or disabled entry. Hiding it makes the product look smaller than it is and makes the roadmap invisible |
 
 ## 11. Contract first delivery

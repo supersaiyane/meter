@@ -821,7 +821,7 @@ depends on wave J.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-13 |
 | Implements | P2 spec section 9.1, `docs/13-UI-ARCHITECTURE.md` section 9.1 |
 | Delivers | FEAT-011, FEAT-012, FEAT-016 at the surface |
 | Depends on | TASK-P0-037, TASK-P2-004 |
@@ -829,15 +829,15 @@ depends on wave J.
 
 **Acceptance criteria.**
 
-- [ ] Dense table, 32 px rows, sorted by monthly cost descending
-- [ ] The `why` column is **a column of prose**, not a tooltip
-- [ ] Every modelled figure is hatched and prefixed, and reads differently from a
+- [x] Dense table, 32 px rows, sorted by monthly cost descending
+- [x] The `why` column is **a column of prose**, not a tooltip
+- [x] Every modelled figure is hatched and prefixed, and reads differently from a
       measured one
-- [ ] An unreachable instance produces a partial state with the count of what is
+- [x] An unreachable instance produces a partial state with the count of what is
       missing **above** the table, not a row inside it
-- [ ] `unattributed` is a rendered owner value, never a blank cell
-- [ ] The `FIXTURE DATA` band renders until the client implements the route
-- [ ] Axe reports zero violations
+- [x] `unattributed` is a rendered owner value, never a blank cell
+- [x] The `FIXTURE DATA` band renders until the client implements the route
+- [x] Axe reports zero violations
 
 **Do not.**
 
@@ -849,7 +849,7 @@ depends on wave J.
 
 **Steps.**
 
-- [ ] **Step 1: add the wire type**
+- [x] **Step 1: add the wire type**
 
 `finops-web/src/api/types.ts`, following the existing convention of snake case
 fields mirroring `finops_api/schemas.py`.
@@ -875,7 +875,7 @@ export interface ApiQueryFinding {
 }
 ```
 
-- [ ] **Step 2: write the fixture, including the unhappy cases**
+- [x] **Step 2: write the fixture, including the unhappy cases**
 
 `finops-web/src/screens/__tests__/queryFixtures.ts`
 
@@ -920,7 +920,7 @@ export const QUERY_FINDINGS: readonly ApiQueryFinding[] = [
 ];
 ```
 
-- [ ] **Step 3: write the failing screen test**
+- [x] **Step 3: write the failing screen test**
 
 `finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx`
 
@@ -985,12 +985,12 @@ describe('QueryFindingsScreen', () => {
 `finops-web/src/components/Figure.tsx:95`, which is what the third test asserts
 on. Do not add attributes to a component that already has them.
 
-- [ ] **Step 4: run it and watch it fail**
+- [x] **Step 4: run it and watch it fail**
 
 Run: `cd finops-web && npm run test -- --run src/screens/__tests__/QueryFindingsScreen.test.tsx`
 Expected: FAIL, cannot find module `../QueryFindingsScreen`.
 
-- [ ] **Step 5: write the screen**
+- [x] **Step 5: write the screen**
 
 First add one hook the four screens share, to
 `finops-web/src/api/queries.ts`, following the one hook per route convention
@@ -1042,23 +1042,23 @@ comparison, and pass the resolved `source` to `FixtureBand`.
 `Number.parseFloat` for the sort only, and never for display. Display goes
 through `Figure`, which is the only path a number takes to a screen.
 
-- [ ] **Step 6: run the tests and watch them pass**
+- [x] **Step 6: run the tests and watch them pass**
 
 Run: `cd finops-web && npm run test -- --run src/screens/__tests__/QueryFindingsScreen.test.tsx`
 Expected: PASS, six tests.
 
-- [ ] **Step 7: route it**
+- [x] **Step 7: route it**
 
 Add `<Route path="/governance/queries" element={<QueryFindingsScreen />} />` to
 `finops-web/src/App.tsx`, and set `arrives` to null for that path in
 `finops-web/src/shell/sections.ts`, because the screen now exists.
 
-- [ ] **Step 8: run the whole suite**
+- [x] **Step 8: run the whole suite**
 
 Run: `cd finops-web && npm run lint && npm run test -- --run && npm run build`
 Expected: all pass.
 
-- [ ] **Step 9: commit**
+- [x] **Step 9: commit**
 
 ```bash
 git add finops-web/src

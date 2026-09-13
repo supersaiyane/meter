@@ -25,7 +25,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | Features | 50 total, 8 specified, 7 in build, 5 delivered |
 | Decisions | 20 architecture decision records |
 | Changes | 76 recorded |
-| Issues | 92 fixed, 39 open, 0 parked |
+| Issues | 92 fixed, 40 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -83,7 +83,7 @@ ISS-003.
 | Sub project | Done | Partly | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 38 | 0 | 0 | 0 | 38 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P2 | 4 | 0 | 2 | 19 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
+| P2 | 5 | 0 | 2 | 18 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -138,6 +138,7 @@ ISS-003.
 | `TASK-P2-004` | Done, 2026-09-05 | define the QuerySurface port |
 | `TASK-P2-007` | Descoped, 2026-09-02 | the self hosted connection strategy |
 | `TASK-P2-008` | Descoped, 2026-09-02 | the Grafana Cloud connection strategy |
+| `TASK-P2-022` | Done, 2026-09-13 | the query findings screen |
 
 <!-- generated:task-status end -->
 

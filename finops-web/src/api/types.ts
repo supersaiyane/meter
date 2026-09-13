@@ -93,3 +93,24 @@ export interface PlatformCost {
   readonly as_of: string;
   readonly collected_at: string;
 }
+
+export interface ApiQueryFinding {
+  readonly finding_id: string;
+  readonly dashboard_uid: string;
+  readonly dashboard_title: string;
+  readonly panel_title: string;
+  readonly refresh_seconds: number | null;
+  readonly window_seconds: number | null;
+  readonly runs_per_day: number;
+  readonly bytes_scanned_per_run: number;
+  /** A decimal string, never a float. Compared as a number only to sort. */
+  readonly monthly_cost: string;
+  /** measured, modelled or forecast. Never absent. */
+  readonly provenance: string;
+  /** 1 informational to 5 critical, derived from dollars per ADR-0016. */
+  readonly severity: number;
+  /** The literal string `unattributed` when no owner was resolved. */
+  readonly owner: string;
+  /** Prose explaining what drives the cost. Ported from the prototype. */
+  readonly why: string;
+}

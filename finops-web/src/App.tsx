@@ -12,6 +12,7 @@ import { HomeScreen } from './screens/HomeScreen';
 import { FreshnessScreen } from './screens/FreshnessScreen';
 import { IngestScreen } from './screens/IngestScreen';
 import { OrganizationScreen } from './screens/OrganizationScreen';
+import { QueryFindingsScreen } from './screens/QueryFindingsScreen';
 import { PlatformScreen } from './screens/PlatformScreen';
 
 /**
@@ -69,6 +70,7 @@ export function App({
                 <Route path="/" element={<HomeScreen />} />
                 <Route path="/inventory/accounts" element={<AccountsScreen />} />
                 <Route path="/inventory/organization" element={<OrganizationScreen />} />
+                <Route path="/governance/queries" element={<QueryFindingsScreen />} />
                 <Route path="/platform/ingest" element={<IngestScreen />} />
                 <Route path="/platform/freshness" element={<FreshnessScreen />} />
                 <Route path="/platform/cost" element={<PlatformScreen />} />

@@ -1004,6 +1004,16 @@ changes:
   commit: '623b2a3'
   detail: '[docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md) section 6'
 issues:
+- id: ISS-137
+  severity: MEDIUM
+  summary: A scanned volume under one MiB renders as the numeral zero on the query findings screen.
+    Figure formats a count with no decimal places, so any sub unit quantity rounds to zero and a
+    query that scans something reads as a query that scans nothing. Found on 2026-09-12 when a one
+    MiB fixture row rendered as 0 in a GiB column, which was corrected to MiB. The general fix is a
+    byte aware unit on Figure that picks its scale from the magnitude, rather than a caller chosen
+    divisor
+  status: OPEN
+  detail: '`finops-web/src/components/Figure.tsx`, `finops-web/src/screens/QueryFindingsScreen.tsx`'
 - id: ISS-136
   severity: HIGH
   summary: A failed request renders default coverage as though it were a complete answer. With no

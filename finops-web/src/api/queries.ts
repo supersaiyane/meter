@@ -1,7 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { useApi } from './apiContext';
-import type { Account, ApiEnvelope, Freshness, PlatformCost, Run } from './types';
+import { resolveSurface, type Resolved } from './fixtureSeam';
+import { queryFindingsFixture } from './fixtures/query';
+import type {
+  Account,
+  ApiEnvelope,
+  ApiQueryFinding,
+  Freshness,
+  PlatformCost,
+  Run,
+} from './types';
 import type { FlatNode } from '../components/orgNodes';
 
 /**
@@ -51,4 +60,36 @@ export function usePlatformCost() {
     queryKey: ['platform-cost'],
     queryFn: () => client.get<PlatformCost[]>('/api/v1/platform/cost'),
   });
+}
+
+/**
+ * A surface whose route may not exist yet, per
+ * `docs/13-UI-ARCHITECTURE.md` section 11.
+ *
+ * The envelope is kept whole for the same reason every other hook here keeps
+ * it: a hook returning only the rows lets a screen render them without seeing
+ * the coverage or the failures that came with them. The resolved value also
+ * carries `source`, which the screen hands to `FixtureBand` so a fixture cannot
+ * be rendered without saying so.
+ */
+export function useQuerySurface<T>(
+  key: readonly unknown[],
+  template: string,
+  path: string,
+  fixture: () => ApiEnvelope<T>,
+) {
+  const client = useApi();
+  return useQuery<Resolved<ApiEnvelope<T>>>({
+    queryKey: key,
+    queryFn: resolveSurface(template, () => client.get<T>(path), fixture),
+  });
+}
+
+export function useQueryFindings() {
+  return useQuerySurface<ApiQueryFinding[]>(
+    ['query-findings'],
+    '/api/v1/query/findings',
+    '/api/v1/query/findings',
+    queryFindingsFixture,
+  );
 }
