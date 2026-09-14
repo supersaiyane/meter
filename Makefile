@@ -132,6 +132,43 @@ coverage: ## Test with an HTML coverage report at htmlcov/index.html
 	$(BIN)/pytest --cov-report=html
 	@echo "Report: htmlcov/index.html"
 
+# ---------------------------------------------------------------- agent session
+
+# pxpipe is a local proxy that logs and compresses Claude Code traffic. It has
+# to wrap the launch, so a session started with plain `claude` is not logged and
+# cannot be attached to afterwards.
+#
+# Meter exists to meter things. Not measuring the cost of building it would be
+# a poor look.
+
+PXPIPE_LOG ?= $(HOME)/.pxpipe/events.jsonl
+
+.PHONY: dev
+dev: ## Start a Claude Code session behind pxpipe, so token usage is recorded
+	@command -v pxpipe >/dev/null 2>&1 || { \
+	  echo "pxpipe not found. brew install pxpipe, or see https://github.com/"; \
+	  exit 2; \
+	}
+	@echo "Launching Claude Code behind pxpipe. Usage lands in $(PXPIPE_LOG)."
+	@echo "Run 'make stats' afterwards, or during, from another shell."
+	pxpipe warp -- claude
+
+.PHONY: stats
+stats: ## Report token usage and measured savings from the pxpipe log
+	@command -v pxpipe >/dev/null 2>&1 || { echo "pxpipe not found"; exit 2; }
+	@test -s "$(PXPIPE_LOG)" || { \
+	  echo "No pxpipe log at $(PXPIPE_LOG)."; \
+	  echo "A session started with plain 'claude' is not recorded. Use 'make dev'."; \
+	  exit 1; \
+	}
+	@echo "Log: $(PXPIPE_LOG)  (last written: $$(date -r "$(PXPIPE_LOG)" '+%Y-%m-%d %H:%M'))"
+	@echo
+	@pxpipe stats
+
+.PHONY: stats-json
+stats-json: ## The same numbers as JSON, for anything that wants to consume them
+	@pxpipe stats --json
+
 # ---------------------------------------------------------------- local stack
 
 .PHONY: up

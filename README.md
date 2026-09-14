@@ -130,6 +130,32 @@ make dep-check pkg=some-package npm=1    # frontend
 make verify     # lint, writing rules, doc checks, tests, security scan
 ```
 
+### Starting a coding session
+
+```bash
+make dev      # launches Claude Code behind pxpipe, so token usage is recorded
+make stats    # what that session cost
+```
+
+**`pxpipe warp` has to wrap the launch.** A session started with plain `claude`
+is not recorded, and it cannot be attached to afterwards. If `make stats` shows
+a log timestamp older than the work you just did, the session was not behind
+the proxy.
+
+Two honest caveats.
+
+1. **Today this gives you accounting, not savings.** In the last recorded run
+   every request was skipped with `unsupported_model`, so the proxy compressed
+   nothing and the 3.2 percent measured saving came from cache behaviour rather
+   than from pxpipe. Re check with `make stats` after a session on the current
+   model before assuming compression is happening.
+2. The log is a single file at `~/.pxpipe/events.jsonl`, shared across every
+   project on this machine, so the figures are not scoped to Meter. Override
+   with `PXPIPE_LOG` if you want a per project log.
+
+Meter exists to meter things. Not measuring the cost of building it would be a
+poor look.
+
 ### Local development
 
 ```bash

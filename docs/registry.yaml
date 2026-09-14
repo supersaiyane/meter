@@ -518,6 +518,13 @@ changes:
     exit criteria and the performance budget. All 18 findings now closed'
   commit: 6cceaa8
   detail: '[REMEDIATION-LOG](audits/REMEDIATION-LOG.md)'
+- id: CHG-0024
+  date: '2026-08-23'
+  type: Process
+  what: Coding sessions run behind the pxpipe proxy so token usage is recorded. make dev launches, make
+    stats reports
+  commit: pending
+  detail: '[README.md](README.md), "Starting a coding session"'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -943,6 +950,14 @@ issues:
     roughly 1,560 GB per month, which is far above Meter actual egress
   detail: Found while writing the cost estimate. [Deployment, network](docs/04-DEPLOYMENT.md). Decision
     stands on security grounds, stated honestly
+- id: ISS-081
+  severity: LOW
+  status: OPEN
+  summary: The pxpipe proxy currently compresses nothing, every request skipped as unsupported_model,
+    so it provides accounting rather than savings. Its log is also machine global rather than scoped to
+    this project
+  detail: Documented in [README.md](README.md). Re check with make stats after a session on the current
+    model
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS
