@@ -129,6 +129,12 @@ meter/
 │                              real AWS account when no endpoint override is set.
 │                              test_checkpoint_rotation.py covers the only script
 │                              that deletes rows from the memory log.
+│   ├── api/                   test_fixture_surfaces.py reads the frontend's
+│   │                          FIXTURE_SURFACES and fails the build if one of
+│   │                          those templates is a live route, so a screen
+│   │                          cannot keep serving invented numbers. It also
+│   │                          asserts it examined something: a check that finds
+│   │                          nothing must not report success
 │   ├── contract/              one suite, parameterised over providers. Run with
 │   │                          make test or pytest -m contract
 │   └── scripts/               the gates tested as code: the index checker, the
@@ -179,7 +185,8 @@ meter/
 │   └── src/
 │       ├── tokens.css         light and dark in one declaration, via light-dark()
 │       ├── components/        built once, used by every sub project. All ten of
-│       │                      12-UI-DESIGN section 11 now exist
+│       │                      12-UI-DESIGN section 11 exist, plus FixtureBand,
+│       │                      which that inventory predates
 │       │   ├── Figure.tsx     the load bearing one. Nothing else renders a number
 │       │   ├── provenance.ts  the union that makes a point forecast unsayable
 │       │   ├── StateBoundary.tsx  all seven states from design section 8
@@ -194,13 +201,31 @@ meter/
 │       │   ├── orgNodes.ts    tree to flat nodes. Unreachable branches survive it
 │       │   ├── GraphCanvas.tsx     Cytoscape, server filtered, tree is its equivalent
 │       │   ├── Sparkline.tsx  30 day, no axes, provenance aware
+│       │   ├── FixtureBand.tsx  says a screen is not connected yet. Not gated
+│       │   │                on a build flag: a marker shown only in development
+│       │   │                is absent exactly when it matters
 │       │   └── index.ts       exports no formatter, deliberately
+│       ├── App.tsx            BrowserRouter and the routes. An unbuilt screen
+│       │                      renders differently from a wrong address
 │       ├── api/               typed client. Refuses a response with no envelope
+│       │   ├── queries.ts     one hook per route, plus useQuerySurface for a
+│       │   │                  surface whose route does not exist yet
+│       │   ├── fixtureSeam.ts FIXTURE_SURFACES and resolveSurface. Route
+│       │   │                  templates, not urls, so a detail path matches.
+│       │   │                  A failing route raises, it never falls back
+│       │   └── fixtures/      ships in the bundle. Production code, not test
+│       │       └── query.ts   one modelled row, one measured, one unattributed.
+│       │                      A happy path only fixture pins the wrong screen
 │       ├── shell/             coverage and freshness, page level and worst case
-│       │   └── sections.ts    five flat names today. Becomes the seven groups of
-│       │                      ADR-0020 at TASK-P0-036
-│       └── screens/           the five P0 screens. Home, and the four P2 screens,
-│                              are planned in 13-UI-ARCHITECTURE and not built
+│       │   └── sections.ts    GROUPS, the seven of ADR-0020. It never grows: a
+│       │                      sub project adds screens inside an existing group
+│       └── screens/           seven built. TASK-P2-023 to 025 add the remaining
+│                              P2 screens and are planned, not built
+│           ├── HomeScreen.tsx          owns no data of its own. An unfilled slot
+│           │                           names the sub project that will fill it
+│           ├── QueryFindingsScreen.tsx ranked by cost as decimals. The reason is
+│           │                           a column, because a tooltip is invisible
+│           │                           in a screenshot
 │           ├── AccountsScreen.tsx      broken onboarding is one filter, not four
 │           ├── OrganizationScreen.tsx  tree default, graph secondary
 │           ├── IngestScreen.tsx        runs with typed causes per account
