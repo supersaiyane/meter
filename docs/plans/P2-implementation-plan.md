@@ -601,7 +601,7 @@ every render unique, and measured evidence would then match nothing.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-14 |
 | Implements | ADR-0016 |
 | Depends on | TASK-P2-010 |
 | Estimate | M |
@@ -616,6 +616,21 @@ every render unique, and measured evidence would then match nothing.
 **Do not.** Do not rank ungrouped. A systemic problem hiding as hundreds of
 trivial ones is the specific failure the dollar thresholds would otherwise
 introduce.
+
+**Prose cannot be grouped on.** The model already produced a sentence per
+reason, and grouping on it would split one systemic problem across every
+phrasing it has ever emitted. `finops_query/severity.py` holds a closed cause
+vocabulary and the model now emits a code beside each sentence, from the same
+branch, so the two cannot drift.
+
+**Summed in the database, not over the page.** `GET /api/v1/query/groups` groups
+and sums in SQL. A fold over the rows a route happened to fetch is a sum over
+the page, which is the same class of error as ordering a list in Python.
+
+**Seen to work.** The fake estate carries twelve panels built from one template,
+each 16.67 USD and `LOW`, which group into one 200 USD `HIGH` row that outranks
+the single 180 USD finding above it. Without a cluster like that the criterion
+cannot be demonstrated at all.
 
 ---
 

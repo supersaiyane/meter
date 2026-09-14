@@ -142,7 +142,26 @@ QUERIES: Mapping[str, tuple[QueryDefinition, ...]] = {
             window_seconds=86400,
         ),
     ),
-    "ws-8c9d0e1f": (),
+    # Eight panels on one dashboard, one per team, all built from the same
+    # template and all cheap on their own. This is the estate ADR-0016 is about:
+    # each of these is LOW, and together they are the largest single thing in
+    # the organization. Without a cluster like it, a grouped view has nothing to
+    # show and the acceptance criterion cannot be seen to work.
+    "ws-8c9d0e1f": tuple(
+        _query(
+            "ws-8c9d0e1f",
+            f"fp-team-{index:04d}",
+            element=f"Requests, team {index}",
+            query=f"fields @timestamp | filter team = 'team-{index}' | stats count()",
+            # Cheap on their own by design. A fast refresh over a narrow window
+            # is a few dollars a month each, which is exactly the shape ADR-0016
+            # is about: every one of these is LOW and together they are the
+            # largest single item in the organization.
+            refresh_seconds=45,
+            window_seconds=1200,
+        )
+        for index in range(1, 13)
+    ),
 }
 
 

@@ -464,6 +464,7 @@ query_finding = Table(
     Column("provenance", Text, nullable=False),
     Column("measured_runs", Integer),
     Column("severity", Text, nullable=False),
+    Column("cause", Text),
     Column("owner_email", Text),
     Column("owner_source", Text),
     #: What drives the cost, in words. A ranked number says what to look at; this

@@ -5,6 +5,7 @@ import { resolveSurface, type Resolved } from './fixtureSeam';
 import {
   queryFindingDetailFixture,
   queryFindingsFixture,
+  queryGroupsFixture,
   surfaceInstancesFixture,
   enforcementActionsFixture,
 } from './fixtures/query';
@@ -12,6 +13,7 @@ import type {
   Account,
   ApiEnvelope,
   ApiQueryFinding,
+  ApiQueryGroup,
   ApiQueryFindingDetail,
   ApiEnforcementAction,
   ApiSurfaceInstance,
@@ -115,6 +117,15 @@ export function useQueryFinding(id: string) {
     '/api/v1/query/findings/{id}',
     `/api/v1/query/findings/${id}`,
     () => queryFindingDetailFixture(id),
+  );
+}
+
+export function useQueryGroups() {
+  return useQuerySurface<ApiQueryGroup[]>(
+    ['query-groups'],
+    '/api/v1/query/groups',
+    '/api/v1/query/groups',
+    queryGroupsFixture,
   );
 }
 

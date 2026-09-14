@@ -45,13 +45,13 @@ Lint and type checking cover every directory that holds Python, which is 181
 files under mypy where it was 25. `scripts/`, `migrations/` and the test suite
 had all been outside one or both.
 
-**P2 is 15 of 25 done, 1 partly, 2 parked, 2 descoped, 5 not started.**
+**P2 is 16 of 25 done, 1 partly, 2 parked, 2 descoped, 4 not started.**
 
 The backend is complete through wave J. The collector runs, prices what it
 reads, measures what it can observe, and attributes an owner. Three of the eight
 routes in spec section 8.2 exist and are live; the other five read data that
 does not exist yet and are held under ISS-148, which names what each one waits
-on. Five tasks have not started: TASK-P2-012, 017, 018, 019 and 020.
+on. Four tasks have not started: TASK-P2-017, 018, 019 and 020.
 
 **The interface is built and every screen has been through a pass.** Ten screens
 read live data against a seeded local estate, and each has been opened at 1440
@@ -90,7 +90,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P2 | 15 | 1 | 2 | 2 | 5 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
+| P2 | 16 | 1 | 2 | 2 | 4 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -151,6 +151,7 @@ ISS-003.
 | `TASK-P2-009` | Done, 2026-08-30 | the six P2 tables |
 | `TASK-P2-010` | Done, 2026-08-31 | the query audit collector |
 | `TASK-P2-011` | Done, 2026-09-01 | fingerprinting and template variables |
+| `TASK-P2-012` | Done, 2026-09-14 | severity, ranking and grouping |
 | `TASK-P2-013` | Done, 2026-09-05 | the measured overlay |
 | `TASK-P2-014` | Done, 2026-09-06 | owner attribution |
 | `TASK-P2-015` | Parked, 2026-08-29 | detection and alerting |

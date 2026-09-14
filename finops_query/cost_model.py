@@ -32,6 +32,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from finops_query import severity
 from finops_query.classify import (
     LOGS_INSIGHTS,
     METRIC_SEARCH,
@@ -227,25 +228,43 @@ def _metric_cost(engine: str, per_day: float, rates: Rates) -> tuple[float, list
 
 def _window_reason(
     window_seconds: int | None, window_hours: float | None, rates: Rates
-) -> str | None:
+) -> tuple[str, str] | None:
+    """The sentence and the code for it.
+
+    Both, from one place. The prose is what a reader acts on and the code is
+    what findings are grouped by, and deriving one from the other later means
+    every rewording silently regroups the estate.
+    """
     if not window_hours or window_seconds is None:
         return None
     if window_hours >= rates.timerange_crit_hours:
-        return f"Very wide window ({human_window(window_seconds)}) scans a large volume each run."
+        return (
+            severity.VERY_WIDE_WINDOW,
+            f"Very wide window ({human_window(window_seconds)}) scans a large volume each run.",
+        )
     if window_hours >= rates.timerange_warn_hours:
-        return f"Wide window ({human_window(window_seconds)}) increases scan per run."
+        return (
+            severity.WIDE_WINDOW,
+            f"Wide window ({human_window(window_seconds)}) increases scan per run.",
+        )
     return None
 
 
-def _refresh_reason(refresh: int, origin: str, rates: Rates) -> str | None:
+def _refresh_reason(refresh: int, origin: str, rates: Rates) -> tuple[str, str] | None:
     if origin == ALERT:
-        return "Alert rule: runs 24x7 regardless of viewers."
+        return (severity.ALERT_ALWAYS_ON, "Alert rule: runs 24x7 regardless of viewers.")
     if refresh and refresh <= rates.refresh_crit_seconds:
-        return f"Very fast auto-refresh ({human_refresh(refresh)}) re-runs the query continuously."
+        return (
+            severity.VERY_FAST_REFRESH,
+            f"Very fast auto-refresh ({human_refresh(refresh)}) re-runs the query continuously.",
+        )
     if refresh and refresh <= rates.refresh_warn_seconds:
-        return f"Fast auto-refresh ({human_refresh(refresh)}) multiplies run count."
+        return (
+            severity.FAST_REFRESH,
+            f"Fast auto-refresh ({human_refresh(refresh)}) multiplies run count.",
+        )
     if not refresh and origin == PANEL:
-        return "No auto-refresh; assumed manual loads/day."
+        return (severity.NO_REFRESH, "No auto-refresh; assumed manual loads/day.")
     return None
 
 
@@ -326,7 +345,13 @@ class Cost:
     cost_day: float
     why: tuple[str, ...]
     quota: QuotaImpact
+    #: Shape based, and not the severity. It ranks within a dollar band, where
+    #: its argument holds: a fast refresh over a wide window is a risk whatever
+    #: today's modelled figure says. ADR-0016 makes the money the severity.
     risk_level: str
+    #: The one code this finding is filed under when it is grouped. Prose cannot
+    #: be grouped on, so the model emits a code beside every sentence.
+    cause: str
 
 
 def price(
@@ -346,6 +371,7 @@ def price(
     bytes_per_run = 0.0
     cost_month = 0.0
     reasons: list[str] = []
+    causes: list[str] = []
 
     if engine == LOGS_INSIGHTS:
         bytes_per_run, cost_month, reasons = _logs_insights_cost(
@@ -353,15 +379,19 @@ def price(
         )
         window_reason = _window_reason(window_seconds, window_hours, rates)
         if window_reason:
-            reasons.append(window_reason)
+            causes.append(window_reason[0])
+            reasons.append(window_reason[1])
     elif engine in (METRIC_SEARCH, METRICS_INSIGHTS):
         cost_month, reasons = _metric_cost(engine, per_day, rates)
+        if engine == METRICS_INSIGHTS:
+            causes.append(severity.METRIC_FANOUT)
     elif engine == PROMETHEUS:
         reasons = ["Prometheus/AMP query, no CloudWatch scan cost."]
 
     refresh_reason = _refresh_reason(refresh, origin, rates)
     if refresh_reason:
-        reasons.append(refresh_reason)
+        causes.append(refresh_reason[0])
+        reasons.append(refresh_reason[1])
 
     return Cost(
         bytes_per_run=bytes_per_run,
@@ -370,4 +400,5 @@ def price(
         why=tuple(reasons),
         quota=quota_impact(engine, per_day, rates),
         risk_level=risk_level(engine, refresh, window_seconds, origin, rates),
+        cause=severity.primary_cause(tuple(causes)),
     )

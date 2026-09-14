@@ -123,8 +123,10 @@ export interface ApiQueryFinding {
   readonly provenance: string;
   /** Null on a modelled row, a count on a measured one. Never both ways. */
   readonly measured_runs: number | null;
-  /** CRITICAL, HIGH, MEDIUM or LOW. A word, not a number. */
+  /** CRITICAL, HIGH, MEDIUM or LOW. A word, not a number, and from the money. */
   readonly severity: string;
+  /** Which group this row is filed under, so one finding names its systemic cause. */
+  readonly cause: string;
   /**
    * Null when nothing could attribute the query. The API does not send the
    * word "unattributed": an absence is an absence, and what it reads as is
@@ -134,6 +136,18 @@ export interface ApiQueryFinding {
   readonly owner_source: string | null;
   /** Prose explaining what drives the cost. Ported from the prototype. */
   readonly why: string;
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
+export interface ApiQueryGroup {
+  readonly cause: string;
+  /** A sentence a reader acts on. The code is what groups; this is what is read. */
+  readonly label: string;
+  readonly findings: number;
+  readonly monthly_cost: string;
+  /** From the summed money, so a group of LOW rows totalling a CRITICAL figure says so. */
+  readonly severity: string;
   readonly as_of: string;
   readonly collected_at: string;
 }

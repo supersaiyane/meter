@@ -2,10 +2,28 @@ import type {
   ApiEnvelope,
   ApiMeta,
   ApiQueryFinding,
+  ApiQueryGroup,
   ApiQueryFindingDetail,
   ApiEnforcementAction,
   ApiSurfaceInstance,
 } from '../types';
+
+/**
+ * The words for the cause codes, mirroring `finops_query/severity.py`. A second
+ * copy, and the guard against drift is that an unknown code renders as the code
+ * itself rather than as a blank, so a vocabulary change is visible rather than
+ * silent.
+ */
+const CAUSE_LABEL: Readonly<Record<string, string>> = {
+  ALERT_ALWAYS_ON: 'Alert rules running 24x7',
+  VERY_FAST_REFRESH: 'Sub minute auto refresh',
+  FAST_REFRESH: 'Fast auto refresh',
+  VERY_WIDE_WINDOW: 'Very wide time window',
+  WIDE_WINDOW: 'Wide time window',
+  METRIC_FANOUT: 'Metric queries scanning many metrics',
+  NO_REFRESH: 'Manual loads only',
+  ENGINE_SCAN: 'Billed per volume scanned',
+};
 
 /**
  * Fixture data for the P2 query surfaces, per
@@ -50,6 +68,7 @@ export const QUERY_FINDINGS: readonly ApiQueryFinding[] = [
     // Critical. Severity is a dollar amount expressed on a five point scale,
     // per ADR-0016, so the most expensive finding is the most severe.
     severity: 'CRITICAL',
+    cause: 'VERY_FAST_REFRESH',
     owner: 'platform-team@example.com',
     owner_source: 'FOLDER_MAP',
     why: 'Refreshes every 10 seconds against a 30 day window, so it rescans 4 GiB 8,640 times a day.',
@@ -72,6 +91,7 @@ export const QUERY_FINDINGS: readonly ApiQueryFinding[] = [
     provenance: 'measured',
     measured_runs: 24,
     severity: 'LOW',
+    cause: 'NO_REFRESH',
     owner: null,
     owner_source: null,
     why: 'Hourly refresh over a one day window. Listed for completeness.',
@@ -106,6 +126,37 @@ function listRow(findingId: string): ApiQueryFinding {
     throw new Error(`no fixture finding with id ${findingId}`);
   }
   return found;
+}
+
+/**
+ * Groups, summed from the findings above rather than written out again. A hand
+ * written total is a second answer to the same question, and the whole point of
+ * a group is that its figure is the sum of its rows.
+ */
+export const QUERY_GROUPS: ApiQueryGroup[] = ((): ApiQueryGroup[] => {
+  const byCause = new Map<string, { findings: number; total: number }>();
+  for (const finding of QUERY_FINDINGS) {
+    const entry = byCause.get(finding.cause) ?? { findings: 0, total: 0 };
+    byCause.set(finding.cause, {
+      findings: entry.findings + 1,
+      total: entry.total + Number(finding.monthly_cost),
+    });
+  }
+  return [...byCause.entries()]
+    .map(([cause, entry]) => ({
+      cause,
+      label: CAUSE_LABEL[cause] ?? cause,
+      findings: entry.findings,
+      monthly_cost: entry.total.toFixed(2),
+      severity: entry.total >= 1000 ? 'CRITICAL' : entry.total >= 100 ? 'HIGH' : 'MEDIUM',
+      as_of: '2026-09-11T04:00:00Z',
+      collected_at: '2026-09-11T09:54:00Z',
+    }))
+    .sort((left, right) => Number(right.monthly_cost) - Number(left.monthly_cost));
+})();
+
+export function queryGroupsFixture(): ApiEnvelope<ApiQueryGroup[]> {
+  return { data: QUERY_GROUPS, meta: FIXTURE_META };
 }
 
 export const QUERY_FINDING_DETAILS: Readonly<Record<string, ApiQueryFindingDetail>> = {

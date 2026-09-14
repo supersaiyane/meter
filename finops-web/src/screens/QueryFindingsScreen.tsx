@@ -7,6 +7,7 @@ import { DataTable } from '../components/DataTable';
 import { Figure } from '../components/Figure';
 import { FixtureBand } from '../components/FixtureBand';
 import { SeverityBadge } from '../components/SeverityBadge';
+import { QueryGroups } from './QueryGroups';
 import { severityOf } from './querySeverity';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
@@ -135,6 +136,8 @@ export function QueryFindingsScreen() {
 
   return (
     <section aria-label="Query findings">
+      {/* Groups first. The list below is what each group is made of. */}
+      <QueryGroups />
       <FixtureBand source={query.data?.source} />
       <StateBoundary state={state}>
         <DataTable

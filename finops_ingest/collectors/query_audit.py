@@ -47,6 +47,7 @@ from finops_query.ownership import (
     resolve_owner,
 )
 from finops_query.policy import normalise, query_key
+from finops_query.severity import DEFAULT_THRESHOLDS, Thresholds, severity_for
 
 COLLECTOR = "query_audit"
 
@@ -141,8 +142,13 @@ class QueryAuditCollector:
         clock: Clock = _system_clock,
         evidence: Any = None,
         lookback_days: int = 30,
+        thresholds: Thresholds | None = None,
     ) -> None:
         self._surface = surface
+        # ADR-0016's defaults when none are given, so a caller that has not
+        # thought about bands still gets the documented ones rather than a
+        # severity computed against zero.
+        self._thresholds = thresholds or DEFAULT_THRESHOLDS
         # Optional. Without it every figure stays modelled, which is a normal
         # state and not a degraded one: FEAT-013 upgrades findings, it does not
         # gate them.
@@ -461,16 +467,17 @@ class QueryAuditCollector:
             text(
                 "INSERT INTO query_finding (finding_id, tenant_id, query_id, run_date, "
                 "runs_per_day, scan_bytes_per_run, cost_month_usd, provenance, measured_runs, "
-                "severity, owner_email, owner_source, why, as_of, collected_at) "
+                "severity, cause, owner_email, owner_source, why, as_of, collected_at) "
                 "VALUES (:id, :tenant, :query, :day, "
-                ":per_day, :scan, :cost, :provenance, :measured_runs, :severity, "
+                ":per_day, :scan, :cost, :provenance, :measured_runs, :severity, :cause, "
                 ":owner_email, :owner_source, :why, :as_of, :now) "
                 "ON CONFLICT (tenant_id, query_id, run_date) DO UPDATE SET "
                 "runs_per_day = EXCLUDED.runs_per_day, "
                 "scan_bytes_per_run = EXCLUDED.scan_bytes_per_run, "
                 "cost_month_usd = EXCLUDED.cost_month_usd, "
                 "provenance = EXCLUDED.provenance, measured_runs = EXCLUDED.measured_runs, "
-                "severity = EXCLUDED.severity, owner_email = EXCLUDED.owner_email, "
+                "severity = EXCLUDED.severity, cause = EXCLUDED.cause, "
+                "owner_email = EXCLUDED.owner_email, "
                 "owner_source = EXCLUDED.owner_source, "
                 "why = EXCLUDED.why, as_of = EXCLUDED.as_of, "
                 "collected_at = EXCLUDED.collected_at"
@@ -485,7 +492,11 @@ class QueryAuditCollector:
                 "cost": cost_month,
                 "provenance": provenance,
                 "measured_runs": measured_runs,
-                "severity": cost.risk_level,
+                # From the money, per ADR-0016, never from the shape. A person
+                # cannot raise a finding's severity by believing in it more
+                # strongly, and `cost.risk_level` still ranks within the band.
+                "severity": severity_for(cost_month, self._thresholds),
+                "cause": cost.cause,
                 # Both together or neither. An owner with no source could not be
                 # argued with, and a source with no owner says nothing.
                 "owner_email": owner.email,

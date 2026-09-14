@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-339 public symbols across 5 packages.
+342 public symbols across 5 packages.
 
 ## finops_core
 
@@ -159,10 +159,10 @@ a duplicate.
 | `FakeProvider.list_quotas` | method | `finops_providers/fake/provider.py:180` |  | nothing in this tree |
 | `FakeProvider.authenticate` | method | `finops_providers/fake/provider.py:186` |  | nothing in this tree |
 | `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:199` |  | `finops_api/deps.py`, `finops_ingest/collectors/org_tree.py` |
-| `FakeQuerySurface` | class | `finops_providers/fake/surface.py:149` | `QuerySurface` in memory. Every failure is asked for, never incidental. | nothing in this tree |
-| `FakeQuerySurface.discover` | method | `finops_providers/fake/surface.py:187` |  | `finops_ingest/collectors/query_audit.py` |
-| `FakeQuerySurface.list_queries` | method | `finops_providers/fake/surface.py:196` |  | `finops_ingest/collectors/query_audit.py` |
-| `FakeQuerySurface.apply_control` | method | `finops_providers/fake/surface.py:210` |  | nothing in this tree |
+| `FakeQuerySurface` | class | `finops_providers/fake/surface.py:168` | `QuerySurface` in memory. Every failure is asked for, never incidental. | nothing in this tree |
+| `FakeQuerySurface.discover` | method | `finops_providers/fake/surface.py:206` |  | `finops_ingest/collectors/query_audit.py` |
+| `FakeQuerySurface.list_queries` | method | `finops_providers/fake/surface.py:215` |  | `finops_ingest/collectors/query_audit.py` |
+| `FakeQuerySurface.apply_control` | method | `finops_providers/fake/surface.py:229` |  | nothing in this tree |
 | `Scope` | class | `finops_providers/grafana/amg.py:54` | One account and region pair to look for workspaces in. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/fake/provider.py` |
 | `Scope.key` | method | `finops_providers/grafana/amg.py:61` |  | nothing in this tree |
 | `AmgQuerySurface` | class | `finops_providers/grafana/amg.py:84` | `QuerySurface` over Amazon Managed Grafana, read only. | nothing in this tree |
@@ -198,9 +198,9 @@ a duplicate.
 | `attribute` | function | `finops_ingest/collectors/platform_cost.py:51` | Name the module a charge belongs to. Never returns an empty string. | nothing in this tree |
 | `PlatformCostCollector` | class | `finops_ingest/collectors/platform_cost.py:58` | One grouped request a day, written by module and service. | nothing in this tree |
 | `total` | function | `finops_ingest/collectors/platform_cost.py:106` | What the platform cost over the set, for a caller that wants one figure. | nothing in this tree |
-| `rates_from` | function | `finops_ingest/collectors/query_audit.py:75` | Build the model's rates from configuration. | nothing in this tree |
-| `default_ingest_rate` | function | `finops_ingest/collectors/query_audit.py:110` | The fallback used when ingestion cannot be measured for a log group. | nothing in this tree |
-| `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:133` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
+| `rates_from` | function | `finops_ingest/collectors/query_audit.py:76` | Build the model's rates from configuration. | nothing in this tree |
+| `default_ingest_rate` | function | `finops_ingest/collectors/query_audit.py:111` | The fallback used when ingestion cannot be measured for a log group. | nothing in this tree |
+| `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:134` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
 | `hashed_subject` | function | `finops_ingest/collectors/retention.py:65` | A stable, non reversible stand in, so a duplicate sign in is still one row. | nothing in this tree |
 | `retention_principal` | function | `finops_ingest/collectors/retention.py:74` | Anonymise principals unseen past the window. Never removes a row. | nothing in this tree |
 | `retention_operational` | function | `finops_ingest/collectors/retention.py:96` | Remove run history, resolved errors and dead watermarks past the window. | nothing in this tree |
@@ -287,13 +287,14 @@ a duplicate.
 | `SyncErrorRepository.open_errors` | method | `finops_api/db/repositories/ingest.py:80` |  | `finops_api/routes/__init__.py` |
 | `OrgRepository` | class | `finops_api/db/repositories/org.py:23` |  | `finops_api/routes/org.py` |
 | `OrgRepository.list_tree` | method | `finops_api/db/repositories/org.py:27` |  | `finops_api/routes/org.py` |
-| `QueryFindingRepository` | class | `finops_api/db/repositories/query.py:28` | Findings, ranked by what they cost. | `finops_api/routes/query.py` |
-| `QueryFindingRepository.ranked` | method | `finops_api/db/repositories/query.py:59` | Every finding, most expensive first. | `finops_api/routes/query.py` |
-| `QueryFindingRepository.one` | method | `finops_api/db/repositories/query.py:69` |  | `finops_api/routes/query.py`, `finops_ingest/collectors/query_audit.py` |
-| `SurfaceInstanceRepository` | class | `finops_api/db/repositories/query.py:75` | Every place queries live, including the ones that could not be read. | `finops_api/routes/query.py` |
-| `SurfaceInstanceRepository.unreachable` | method | `finops_api/db/repositories/query.py:81` | The workspaces that could not be read, with their typed cause. | `finops_api/routes/query.py` |
-| `SurfaceInstanceRepository.coverage` | method | `finops_api/db/repositories/query.py:94` | Workspaces read, over workspaces the tenant has. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py` |
-| `SurfaceInstanceRepository.all_with_counts` | method | `finops_api/db/repositories/query.py:124` |  | `finops_api/routes/query.py` |
+| `QueryFindingRepository` | class | `finops_api/db/repositories/query.py:29` | Findings, ranked by what they cost. | `finops_api/routes/query.py` |
+| `QueryFindingRepository.ranked` | method | `finops_api/db/repositories/query.py:60` | Every finding, most expensive first. | `finops_api/routes/query.py` |
+| `QueryFindingRepository.grouped` | method | `finops_api/db/repositories/query.py:70` | Findings summed by cause, worst group first. | `finops_api/routes/query.py` |
+| `QueryFindingRepository.one` | method | `finops_api/db/repositories/query.py:97` |  | `finops_api/routes/query.py`, `finops_ingest/collectors/query_audit.py` |
+| `SurfaceInstanceRepository` | class | `finops_api/db/repositories/query.py:103` | Every place queries live, including the ones that could not be read. | `finops_api/routes/query.py` |
+| `SurfaceInstanceRepository.unreachable` | method | `finops_api/db/repositories/query.py:109` | The workspaces that could not be read, with their typed cause. | `finops_api/routes/query.py` |
+| `SurfaceInstanceRepository.coverage` | method | `finops_api/db/repositories/query.py:122` | Workspaces read, over workspaces the tenant has. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py` |
+| `SurfaceInstanceRepository.all_with_counts` | method | `finops_api/db/repositories/query.py:152` |  | `finops_api/routes/query.py` |
 | `get_settings` | function | `finops_api/deps.py:37` |  | `finops_api/main.py` |
 | `get_request_id` | function | `finops_api/deps.py:41` | The id every log line and every audit row for this request carries. | nothing in this tree |
 | `get_connection` | function | `finops_api/deps.py:47` | One transaction per request, so a read and its audit row commit together. | nothing in this tree |
@@ -348,9 +349,10 @@ a duplicate.
 | `reachable_for` | function | `finops_api/routes/org.py:32` | Structure is always visible. Whether an account can be read is the scope's answer. | nothing in this tree |
 | `org_tree` | function | `finops_api/routes/org.py:40` |  | nothing in this tree |
 | `platform_cost` | function | `finops_api/routes/platform.py:27` |  | nothing in this tree |
-| `query_findings` | function | `finops_api/routes/query.py:98` |  | nothing in this tree |
-| `query_finding` | function | `finops_api/routes/query.py:125` |  | nothing in this tree |
-| `query_instances` | function | `finops_api/routes/query.py:170` |  | nothing in this tree |
+| `query_findings` | function | `finops_api/routes/query.py:108` |  | nothing in this tree |
+| `query_groups` | function | `finops_api/routes/query.py:135` | Findings summed by cause, worst group first. ADR-0016. | nothing in this tree |
+| `query_finding` | function | `finops_api/routes/query.py:178` |  | nothing in this tree |
+| `query_instances` | function | `finops_api/routes/query.py:223` |  | nothing in this tree |
 | `CoverageOut` | class | `finops_api/schemas.py:26` | What was seen against everything there was to see. ISS-016. | nothing in this tree |
 | `CoverageOut.is_partial` | method | `finops_api/schemas.py:41` |  | nothing in this tree |
 | `FailureOut` | class | `finops_api/schemas.py:45` | One thing that is broken, and what the reader should do about it. | `finops_api/routes/__init__.py`, `finops_api/routes/query.py` |
@@ -368,8 +370,9 @@ a duplicate.
 | `CollectorHealth` | class | `finops_api/schemas.py:217` | How long since a collector last succeeded, against its own cadence. | `finops_api/main.py` |
 | `HealthOut` | class | `finops_api/schemas.py:229` | `/healthz`. Deliberately not a bare liveness probe. | `finops_api/main.py` |
 | `QueryFindingOut` | class | `finops_api/schemas.py:245` | One expensive query, as the findings list shows it. | `finops_api/routes/query.py` |
-| `QueryFindingDetailOut` | class | `finops_api/schemas.py:283` | One finding with its full working, for the detail screen. | `finops_api/routes/query.py` |
-| `SurfaceInstanceOut` | class | `finops_api/schemas.py:302` | One place queries live, reachable or not. | `finops_api/routes/query.py` |
+| `QueryGroupOut` | class | `finops_api/schemas.py:287` | One cause, with the money behind it summed across every finding. | `finops_api/routes/query.py` |
+| `QueryFindingDetailOut` | class | `finops_api/schemas.py:311` | One finding with its full working, for the detail screen. | `finops_api/routes/query.py` |
+| `SurfaceInstanceOut` | class | `finops_api/schemas.py:330` | One place queries live, reachable or not. | `finops_api/routes/query.py` |
 
 ## finops_mcp
 

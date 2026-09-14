@@ -89,6 +89,7 @@
     "finops-web/dist-types/src/screens/PlatformScreen.d.ts",
     "finops-web/dist-types/src/screens/QueryFindingDetailScreen.d.ts",
     "finops-web/dist-types/src/screens/QueryFindingsScreen.d.ts",
+    "finops-web/dist-types/src/screens/QueryGroups.d.ts",
     "finops-web/dist-types/src/screens/QuerySurfacesScreen.d.ts",
     "finops-web/dist-types/src/screens/__tests__/AccountsScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/EnforcementScreen.test.d.ts",
@@ -178,6 +179,7 @@
     "finops-web/src/screens/PlatformScreen.tsx",
     "finops-web/src/screens/QueryFindingDetailScreen.tsx",
     "finops-web/src/screens/QueryFindingsScreen.tsx",
+    "finops-web/src/screens/QueryGroups.tsx",
     "finops-web/src/screens/QuerySurfacesScreen.tsx",
     "finops-web/src/screens/__tests__/AccountsScreen.test.tsx",
     "finops-web/src/screens/__tests__/EnforcementScreen.test.tsx",
@@ -305,6 +307,7 @@
     "finops_query/ownership.py",
     "finops_query/parser.py",
     "finops_query/policy.py",
+    "finops_query/severity.py",
     "infra/terraform/hub/alb.tf",
     "infra/terraform/hub/database.tf",
     "infra/terraform/hub/ecr.tf",
@@ -332,6 +335,7 @@
     "migrations/versions/0002_cost_monthly.py",
     "migrations/versions/0003_p2_tables.py",
     "migrations/versions/0004_query_key.py",
+    "migrations/versions/0005_finding_cause.py",
     "scripts/ci/check_flags.py",
     "scripts/ci/check_forbidden_imports.py",
     "scripts/ci/check_hardcoded.py",
@@ -403,6 +407,7 @@
     "tests/query/test_ownership.py",
     "tests/query/test_policy.py",
     "tests/query/test_ports.py",
+    "tests/query/test_severity.py",
     "tests/scripts/__init__.py",
     "tests/scripts/test_check_index.py",
     "tests/scripts/test_layer_agreement.py",
@@ -1625,6 +1630,11 @@
     },
     {
       "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/screens/QueryGroups.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
       "t": "finops-web/src/screens/querySeverity.ts",
       "k": "typescript"
     },
@@ -1636,6 +1646,56 @@
     {
       "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/components/SeverityBadge.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/screens/querySeverity.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
       "k": "typescript"
     },
     {
@@ -2234,6 +2294,11 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/query.py",
+      "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/deps.py",
       "t": "finops_api/db/repositories/base.py",
       "k": "python"
@@ -2579,6 +2644,11 @@
       "k": "python"
     },
     {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/config.py",
       "t": "finops_core/constants.py",
       "k": "python"
@@ -2891,6 +2961,11 @@
     {
       "s": "finops_ingest/collectors/query_audit.py",
       "t": "finops_query/policy.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_query/severity.py",
       "k": "python"
     },
     {
@@ -3251,6 +3326,11 @@
     {
       "s": "finops_providers/grafana/client.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/cost_model.py",
+      "t": "finops_query/__init__.py",
       "k": "python"
     },
     {
@@ -4261,6 +4341,11 @@
     {
       "s": "tests/query/test_ports.py",
       "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_severity.py",
+      "t": "finops_query/severity.py",
       "k": "python"
     }
   ]

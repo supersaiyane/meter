@@ -16,8 +16,12 @@ const SEVERITY_LEVEL: Readonly<Record<string, Severity>> = {
   LOW: 2,
 };
 
-export function severityOf(finding: ApiQueryFinding): Severity {
+export function severityLevel(word: string): Severity {
   // An unrecognised severity reads as informational rather than critical. A
   // vocabulary change should under state a finding, never invent an alarm.
-  return SEVERITY_LEVEL[finding.severity.toUpperCase()] ?? 1;
+  return SEVERITY_LEVEL[word.toUpperCase()] ?? 1;
+}
+
+export function severityOf(finding: ApiQueryFinding): Severity {
+  return severityLevel(finding.severity);
 }

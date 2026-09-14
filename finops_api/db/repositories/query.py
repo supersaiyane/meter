@@ -23,6 +23,7 @@ from finops_api.db import models
 from finops_api.db.repositories.base import ScopedRepository
 from finops_api.guards import require_scope, scope_predicate
 from finops_core.domain.tenant import Scope
+from finops_query.severity import ENGINE_SCAN
 
 
 class QueryFindingRepository(ScopedRepository):
@@ -64,6 +65,33 @@ class QueryFindingRepository(ScopedRepository):
         Python would order the page rather than the estate.
         """
         statement = self._joined(scope).order_by(self.table.c.cost_month_usd.desc())
+        return self.fetch(scope, statement)
+
+    def grouped(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+        """Findings summed by cause, worst group first.
+
+        ADR-0016: four hundred findings at 15 USD each are LOW individually and
+        6,000 USD together, and a dollar threshold that cannot see that lets a
+        systemic problem hide as four hundred trivial rows. Grouping happens
+        before ranking, which is why it is a query rather than a fold over a
+        page that has already been ordered and truncated.
+
+        Summed in the database for the same reason the list is ordered there: a
+        sum over the rows a route happened to fetch is a sum over the page.
+        """
+        cause = func.coalesce(self.table.c.cause, ENGINE_SCAN).label("cause")
+        statement: Any = (
+            self.scoped_select(scope)
+            .with_only_columns(
+                cause,
+                func.count().label("findings"),
+                func.sum(self.table.c.cost_month_usd).label("monthly_cost"),
+                func.max(self.table.c.as_of).label("as_of"),
+                func.max(self.table.c.collected_at).label("collected_at"),
+            )
+            .group_by(cause)
+            .order_by(func.sum(self.table.c.cost_month_usd).desc())
+        )
         return self.fetch(scope, statement)
 
     def one(self, scope: Scope, finding_id: UUID) -> Row[tuple[object, ...]] | None:

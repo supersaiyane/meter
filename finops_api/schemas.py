@@ -267,6 +267,10 @@ class QueryFindingOut(BaseModel):
     #: either half alone, so this pair is always consistent.
     measured_runs: int | None
     severity: str
+    #: Which group this row is filed under. Sent on the row as well as on
+    #: the group, so a reader looking at one finding can see the systemic
+    #: problem it belongs to without fetching the groups separately.
+    cause: str
     #: Null when nothing could attribute it. The API does not invent a
     #: placeholder: "unattributed" is a word a screen chooses, and an API that
     #: returned it would make an absence indistinguishable from a real owner
@@ -276,6 +280,30 @@ class QueryFindingOut(BaseModel):
     #: What drives the cost, in words. It is what makes a finding actionable
     #: rather than a number, so it is a field and not a tooltip.
     why: str
+    as_of: datetime
+    collected_at: datetime
+
+
+class QueryGroupOut(BaseModel):
+    """One cause, with the money behind it summed across every finding.
+
+    The group exists because ADR-0016 requires aggregation before ranking. Four
+    hundred findings at 15 USD each are LOW individually and 6,000 USD together,
+    and a list ranked by individual severity puts the systemic problem below a
+    single noisy panel.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    cause: str
+    #: A sentence a reader can act on. The code is what groups; this is what is
+    #: read, and neither is derived from the other at render time.
+    label: str
+    findings: int
+    monthly_cost: Decimal
+    #: Derived from the summed money like any other finding, so a group of LOW
+    #: rows that adds up to a CRITICAL figure says CRITICAL.
+    severity: str
     as_of: datetime
     collected_at: datetime
 

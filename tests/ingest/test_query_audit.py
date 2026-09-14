@@ -23,9 +23,18 @@ from finops_ingest.collectors.query_audit import (
 )
 from finops_ingest.registry import DEFAULT_SCHEDULE, CollectorContext
 from finops_providers.fake.evidence import FakeQueryEvidence
-from finops_providers.fake.surface import FakeQuerySurface
+
+#: Derived from the fake estate rather than written out, so a fixture that grows
+#: does not fail four assertions that were never about its size.
+from finops_providers.fake.surface import QUERIES, FakeQuerySurface
 from finops_query.cost_model import Rates
 from finops_query.parser import GrafanaQueryParser
+
+#: Derived from the fake estate rather than written out, so a fixture that grows
+#: to demonstrate grouping does not fail four assertions that were never about
+#: its size.
+DEFINITIONS = sum(len(queries) for queries in QUERIES.values())
+DISTINCT_QUERIES = len({definition.query for queries in QUERIES.values() for definition in queries})
 
 pytestmark = pytest.mark.integration
 
@@ -111,8 +120,8 @@ def test_it_writes_the_estate_and_prices_what_it_read(engine: Engine, tenant_id:
     run(engine, tenant_id, FakeQuerySurface())
     assert count(engine, "grafana_instance", tenant_id) == 3
     # The fake holds two queries on one reachable instance, and none on the other.
-    assert count(engine, "query_definition", tenant_id) == 3
-    assert count(engine, "query_finding", tenant_id) == 3
+    assert count(engine, "query_definition", tenant_id) == DEFINITIONS
+    assert count(engine, "query_finding", tenant_id) == DEFINITIONS
 
 
 def test_every_figure_it_writes_is_modelled_and_says_so(engine: Engine, tenant_id: UUID) -> None:
@@ -171,8 +180,8 @@ def test_three_runs_in_one_day_leave_one_finding_per_query(engine: Engine, tenan
     # dinner time.
     for _ in range(3):
         run(engine, tenant_id, FakeQuerySurface())
-    assert count(engine, "query_definition", tenant_id) == 3
-    assert count(engine, "query_finding", tenant_id) == 3
+    assert count(engine, "query_definition", tenant_id) == DEFINITIONS
+    assert count(engine, "query_finding", tenant_id) == DEFINITIONS
     assert count(engine, "grafana_instance", tenant_id) == 3
 
 
@@ -248,7 +257,7 @@ def test_every_definition_is_written_with_its_query_key(engine: Engine, tenant_i
     # than a collision. The third query is worded differently and keeps its own.
     # attaching the evidence to both is the honest answer. They keep separate
     # fingerprints, so neither definition is lost.
-    assert len(set(keys)) == 2
+    assert len(set(keys)) == DISTINCT_QUERIES
     with engine.connect() as connection:
         prints = (
             connection.execute(
@@ -258,7 +267,7 @@ def test_every_definition_is_written_with_its_query_key(engine: Engine, tenant_i
             .scalars()
             .all()
         )
-    assert len(set(prints)) == 3
+    assert len(set(prints)) == DEFINITIONS
 
 
 def test_the_default_ingest_rate_is_per_hour_not_per_day() -> None:
@@ -397,7 +406,7 @@ def test_running_twice_with_evidence_still_leaves_one_finding(
     # would leave a measured row with a modelled count beside it.
     for _ in range(2):
         run_with_evidence(engine, tenant_id, FakeQueryEvidence(GrafanaQueryParser()))
-    assert len(findings(engine, tenant_id)) == 3
+    assert len(findings(engine, tenant_id)) == DEFINITIONS
 
 
 # --- owner attribution, FEAT-016 ----------------------------------------------

@@ -460,6 +460,87 @@ def test_a_complete_estate_reports_no_failure_of_its_own(
     assert meta["scope_coverage"]["is_partial"] is False
 
 
+def test_four_hundred_trivial_findings_surface_as_one_large_group(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The failure ADR-0016 names, and the reason grouping happens before
+    ranking. Four hundred findings at 15 USD each are LOW individually and
+    6,000 USD together, and a list ranked by individual severity puts the
+    systemic problem below a single noisy panel."""
+    seed(engine, tenant_id)
+    instance = key(tenant_id, "reachable")
+    with engine.begin() as connection:
+        for index in range(400):
+            query_id = key(tenant_id, f"trivial-{index}")
+            connection.execute(
+                models.query_definition.insert().values(
+                    query_id=query_id,
+                    tenant_id=tenant_id,
+                    instance_id=instance,
+                    origin="PANEL",
+                    dashboard_uid="dash-many",
+                    dashboard_title="One per team",
+                    folder_uid="folder-1",
+                    panel_id=f"panel-{index}",
+                    ref_id="A",
+                    engine="LOGS_INSIGHTS",
+                    query_text="fields @timestamp",
+                    fingerprint=str(query_id),
+                    query_key=str(query_id),
+                    target={"targets": ["/aws/ecs/meter-api"], "region": "eu-west-2"},
+                    refresh_seconds=30,
+                    range_seconds=2_592_000,
+                    last_editor=None,
+                    as_of=NOW,
+                    collected_at=NOW,
+                )
+            )
+            connection.execute(
+                models.query_finding.insert().values(
+                    finding_id=query_id,
+                    tenant_id=tenant_id,
+                    query_id=query_id,
+                    run_date=NOW.date(),
+                    runs_per_day=Decimal("2880.00"),
+                    scan_bytes_per_run=1_000_000,
+                    cost_month_usd=Decimal("15.00"),
+                    provenance="modelled",
+                    measured_runs=None,
+                    severity="LOW",
+                    cause="FAST_REFRESH",
+                    why="Fast auto-refresh multiplies run count.",
+                    as_of=NOW,
+                    collected_at=NOW,
+                )
+            )
+
+    client, token = client_for(engine, everything(tenant_id), settings)
+    rows = client.get("/api/v1/query/findings", headers=auth(token)).json()["data"]
+    assert all(row["severity"] == "LOW" for row in rows if row["cause"] == "FAST_REFRESH")
+
+    groups = client.get("/api/v1/query/groups", headers=auth(token)).json()["data"]
+    worst = groups[0]
+    assert worst["cause"] == "FAST_REFRESH"
+    assert worst["findings"] == 400
+    assert Decimal(worst["monthly_cost"]) == Decimal("6000.00")
+    # The group is CRITICAL although every finding in it is LOW. That is the
+    # whole point: the threshold sees the systemic figure, not the row.
+    assert worst["severity"] == "CRITICAL"
+
+
+def test_a_group_is_ranked_on_its_total_not_on_its_worst_row(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    # The seeded estate holds one 180 USD finding and two at 24. Grouped by
+    # cause, the ranking is by summed money.
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    groups = client.get("/api/v1/query/groups", headers=auth(token)).json()["data"]
+    totals = [Decimal(group["monthly_cost"]) for group in groups]
+    assert totals == sorted(totals, reverse=True)
+    assert all(group["label"] != group["cause"] for group in groups)
+
+
 def test_every_query_route_carries_meta(
     engine: Engine, tenant_id: UUID, settings: Settings
 ) -> None:

@@ -32,10 +32,17 @@ from finops_api.schemas import (
     FailureOut,
     QueryFindingDetailOut,
     QueryFindingOut,
+    QueryGroupOut,
     SurfaceInstanceOut,
 )
 from finops_core.config import Settings
 from finops_core.domain.tenant import Scope
+from finops_query.severity import (
+    CAUSE_LABEL,
+    ENGINE_SCAN,
+    severity_for,
+    thresholds_from,
+)
 
 router = APIRouter(prefix=API_PREFIX, tags=["query"])
 
@@ -84,6 +91,9 @@ def _finding(row: Any) -> QueryFindingOut:
         provenance=row.provenance,
         measured_runs=row.measured_runs,
         severity=row.severity,
+        # Defaulted the same way the grouping query defaults it, so a row
+        # written before the column existed files under the same group here.
+        cause=row.cause or ENGINE_SCAN,
         # Null rather than a placeholder. The screen decides what an absence
         # reads as; the API does not put a word in its mouth.
         owner=row.owner_email,
@@ -115,6 +125,49 @@ def query_findings(
             # Workspaces, not findings. How many findings came back says nothing
             # about how much of the estate they were drawn from, and an
             # unreachable workspace hides an unknown number of them.
+            coverage=surfaces.coverage(scope),
+            coverage_unit="workspaces",
+        ),
+    )
+
+
+@router.get("/query/groups", response_model=Envelope[list[QueryGroupOut]])
+def query_groups(
+    scope: Scope = Depends(get_scope),
+    connection: Connection = Depends(get_connection),
+    context: AccessContext = Depends(get_access_context),
+    settings: Settings = Depends(get_settings),
+) -> Envelope[list[QueryGroupOut]]:
+    """Findings summed by cause, worst group first. ADR-0016.
+
+    A separate route rather than a shape on the findings route, because the two
+    answer different questions and a caller that wanted the list would otherwise
+    have to know which shape it was getting.
+    """
+    bands = thresholds_from(settings)
+    rows = QueryFindingRepository(connection, context).grouped(scope)
+    surfaces = SurfaceInstanceRepository(connection, context)
+    groups = [
+        QueryGroupOut(
+            cause=row.cause,
+            label=CAUSE_LABEL.get(row.cause, row.cause),
+            findings=row.findings,
+            monthly_cost=row.monthly_cost,
+            severity=severity_for(row.monthly_cost, bands),
+            as_of=row.as_of,
+            collected_at=row.collected_at,
+        )
+        for row in rows
+    ]
+    return Envelope(
+        data=groups,
+        meta=build_meta(
+            connection,
+            scope,
+            context,
+            visible=len(groups),
+            rows=rows,
+            extra_failures=_unreadable(surfaces.unreachable(scope)),
             coverage=surfaces.coverage(scope),
             coverage_unit="workspaces",
         ),
