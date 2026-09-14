@@ -1060,6 +1060,25 @@ changes:
   commit: 'd5c8cdc'
   detail: '[ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md)'
 issues:
+- id: ISS-164
+  severity: MEDIUM
+  summary: security/reports/latest is a committed symlink and the scan script wrote it as an
+    absolute path, so it stored the author's own home directory in the repository and resolved on
+    exactly one machine. Fixed 2026-09-13 by linking to the basename, which is correct because the
+    link sits in the directory it points into
+  status: FIXED
+  detail: '`scripts/security/scan.sh`'
+- id: ISS-165
+  severity: LOW
+  summary: Timestamped scan report directories accumulate in the working tree and 21 of them are
+    committed, one per change that ran a scan. A local session that runs the scan a dozen times
+    leaves a dozen more untracked, so git status is permanently noisy and the audit trail the
+    tracked ones were meant to be is diluted by iteration output. The durable record is
+    security/POSTURE.md, which is generated and tracked. Whether the timestamped directories belong
+    in the repository at all is a decision for whoever owns the security posture, and is left open
+    rather than changed unilaterally
+  status: OPEN
+  detail: '`security/reports/`, `.gitignore`'
 - id: ISS-158
   severity: HIGH
   summary: The demo estate covered only the query tables, so five of the six built P0 screens had

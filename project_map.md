@@ -115,7 +115,11 @@ meter/
 │   ├── policy/                grype.yaml, trivy.yaml, allowlist.yaml,
 │   │                          accepted.yaml for unfixable findings. ADR-0018,
 │   │                          accepted.yaml for unfixable findings, ADR-0018
-│   ├── reports/               one directory per scan, committed
+│   ├── reports/               one directory per scan. `latest` is a committed
+│   │                          symlink and is relative, because an absolute one
+│   │                          stored an author's home directory, ISS-164.
+│   │                          Whether every timestamped directory belongs in the
+│   │                          repository is open, ISS-165
 │   ├── sbom/                  one SBOM per image per build
 │   └── reviews/               automated code review reports
 │
@@ -275,7 +279,13 @@ meter/
 │       │                      zero, and an unreachable instance beside a
 │       │                      reachable one. A happy path only fixture pins the
 │       │                      wrong screen
-│       ├── shell/             coverage and freshness, page level and worst case
+│       ├── shell/             the trust strip. One band, full width, above
+│       │                      everything, per 13-UI-ARCHITECTURE section 8. It
+│       │                      was in the sidebar, where the freshness line fell
+│       │                      below the fold on a 1440 px screen, ISS-156.
+│       │                      Coverage states one line per thing counted, since
+│       │                      a page can hold panels counting different things
+│       │                      and no single ratio is true of both, ISS-157
 │       │   └── sections.ts    GROUPS, the seven of ADR-0020. It never grows: a
 │       │                      sub project adds screens inside an existing group
 │       └── screens/           ten built. Three of the four P2 screens read live
@@ -341,6 +351,10 @@ meter/
 │   │   ├── accounts.py        accounts in scope, plus the role health recheck
 │   │   ├── org.py             the tree. Out of scope branches marked, not hidden
 │   │   ├── ingest.py          runs with typed errors, and freshness per cadence
+│   │   │                      over every pair that has been attempted rather
+│   │   │                      than every pair that has succeeded. A watermark
+│   │   │                      only exists after a success, so listing those
+│   │   │                      omitted the row a reader comes for, ISS-163
 │   │   ├── platform.py        Meter's own cost, unallocated included
 │   │   └── query.py           three of the eight P2 routes. The other five read
 │   │                          data that does not exist yet, ISS-148. Coverage

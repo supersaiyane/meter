@@ -9,7 +9,7 @@
      own content rather than scaffolding, and is not tagged.
 -->
 
-Last updated: 2026-09-05
+Last updated: 2026-09-13
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -25,7 +25,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | Features | 50 total, 8 specified, 7 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
 | Changes | 81 recorded |
-| Issues | 112 fixed, 46 open, 0 parked |
+| Issues | 113 fixed, 47 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -36,31 +36,38 @@ Generated from `docs/registry.yaml`. Change a status there, then run `make doc-s
 
 **P0 is code complete and is NOT signed off.**
 
-All 35 tasks are written, tested and committed. `make verify` passes: lint,
-the writing rules, the eight documentation checks, the docstring gate, the
-memory gate, 443 tests at 98 percent, and a security scan with zero findings.
+All 39 tasks are written, tested and committed. `make verify` passes: lint, the
+writing rules, the eight documentation checks, the docstring gate, the memory
+gate, 704 backend tests at 98 percent, 194 frontend tests, and a security scan
+with zero unresolved findings and five accepted as unfixable.
 
-Lint and type checking now cover every directory that holds Python, which is
-160 files under mypy where it was 25. `scripts/`, `migrations/` and the test
-suite had all been outside one or both.
+Lint and type checking cover every directory that holds Python, which is 181
+files under mypy where it was 25. `scripts/`, `migrations/` and the test suite
+had all been outside one or both.
 
-**P2 has started. 4 of 22 done, 2 descoped, 16 to build.**
+**P2 is 15 of 25 done, 1 partly, 2 parked, 2 descoped, 5 not started.**
 
-Wave A is complete. The 2,740 line prototype was imported byte identical,
-pinned by 15 golden files, taken apart into `finops_query` and deleted. Those
-goldens now reproduce from `Settings` rather than from the prototype's own
-config, which was the condition for deleting it. `QuerySurface` is defined and
-named for the pattern rather than for Grafana.
+The backend is complete through wave J. The collector runs, prices what it
+reads, measures what it can observe, and attributes an owner. Three of the eight
+routes in spec section 8.2 exist and are live; the other five read data that
+does not exist yet and are held under ISS-148, which names what each one waits
+on. Five tasks have not started: TASK-P2-012, 017, 018, 019 and 020.
 
-Next is TASK-P2-005, the fake query surface. The resume vector is the newest
-row in `docs/checkpoint.md`.
+**The interface is built and every screen has been through a pass.** Ten screens
+read live data against a seeded local estate, and each has been opened at 1440
+px and corrected. That pass found fourteen defects, none of which any test could
+see, and the rule it produced is in `tasks/lessons.md`: a route that has never
+been called is not evidence. The remaining screens are unbuilt and each one
+names the sub project that will fill it, which is what makes the front page the
+progress view.
 
-What that sentence does not cover is the part that matters for a sign off.
+What the sentences above do not cover is the part that matters for a sign off.
 
-**Nothing has ever run against AWS.** The three Terraform stacks pass
-`validate` and `fmt`, which checks syntax, provider schema and references, and
-checks nothing about whether the stack builds. No plan has been produced and
-nothing has been applied. ISS-122.
+**Nothing has ever run against AWS.** The three Terraform stacks pass `validate`
+and `fmt`, which checks syntax, provider schema and references, and checks
+nothing about whether the stack builds. No plan has been produced and nothing
+has been applied. ISS-122. This is also what keeps TASK-P2-016 parked, and
+TASK-P2-016 is what two of the five missing routes wait on.
 
 **The restore drill has not been performed.** It needs an Aurora cluster to
 restore into a scratch database. ISS-111.

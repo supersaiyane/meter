@@ -141,7 +141,10 @@ python3 "${ROOT}/scripts/security/report.py" \
   --output "${OUT}/index.html" --summary "${OUT}/summary.json" \
   --posture "${ROOT}/security/POSTURE.md"
 
-ln -sfn "${OUT}" "${ROOT}/security/reports/latest"
+# Relative, because this link is committed. An absolute one stored the author's
+# own home directory in the repository, so it resolved on exactly one machine.
+# ISS-164.
+ln -sfn "$(basename "${OUT}")" "${ROOT}/security/reports/latest"
 
 # ---------------------------------------------------------------- gate
 UNRESOLVED=$(python3 -c "import json,sys; print(json.load(open('${OUT}/summary.json'))['unresolved_total'])")
