@@ -1003,6 +1003,16 @@ changes:
     P0 reaches 38 of 38 tasks, which is not the same as P0 being signed off
   commit: '623b2a3'
   detail: '[docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md) section 6'
+- id: CHG-0077
+  date: '2026-09-13'
+  type: Feature
+  what: TASK-P2-022, the query findings screen. The first fixture backed surface, ranked by monthly
+    cost sorted as decimals, with the reason as a column of prose rather than a tooltip so it
+    survives a screenshot. Fixture data moved to src/api/fixtures because the screen imports it and
+    it ships to a browser. An unrecognised provenance renders as modelled, the only direction that
+    does not overclaim. Scanned volume reported in MiB after GiB rounded a real scan to zero
+  commit: '29676ef'
+  detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-022'
 issues:
 - id: ISS-137
   severity: MEDIUM
