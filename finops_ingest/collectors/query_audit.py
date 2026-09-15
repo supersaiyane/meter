@@ -31,6 +31,7 @@ from sqlalchemy import text
 
 from finops_core.domain.query import QueryDefinition, QueryOrigin, SurfaceInstance
 from finops_core.errors import CollectionError
+from finops_core.ports.query import RefreshFloor
 from finops_ingest.registry import CollectorContext, CollectorOutcome
 from finops_query.classify import (
     LOGS_INSIGHTS,
@@ -206,9 +207,10 @@ class QueryAuditCollector:
         row = context.connection.execute(
             text(
                 "INSERT INTO grafana_instance (instance_id, tenant_id, kind, name, endpoint, "
-                "account_id, region_id, reachable, unreachable_reason, as_of, collected_at) "
+                "account_id, region_id, reachable, unreachable_reason, "
+                "refresh_floor_seconds, as_of, collected_at) "
                 "VALUES (:id, :tenant, :kind, :name, :endpoint, :account, :region, "
-                ":reachable, :reason, :now, :now) "
+                ":reachable, :reason, :floor, :now, :now) "
                 "ON CONFLICT (tenant_id, endpoint) DO UPDATE SET "
                 "name = EXCLUDED.name, kind = EXCLUDED.kind, reachable = EXCLUDED.reachable, "
                 "unreachable_reason = EXCLUDED.unreachable_reason, as_of = EXCLUDED.as_of, "
@@ -216,7 +218,8 @@ class QueryAuditCollector:
                 # Refreshed like everything else. Leaving them out meant a row
                 # written once kept its account forever, so a correction to how
                 # the account is determined never reached an existing estate.
-                "account_id = EXCLUDED.account_id, region_id = EXCLUDED.region_id "
+                "account_id = EXCLUDED.account_id, region_id = EXCLUDED.region_id, "
+                "refresh_floor_seconds = EXCLUDED.refresh_floor_seconds "
                 "RETURNING instance_id"
             ),
             {
@@ -231,10 +234,28 @@ class QueryAuditCollector:
                 "region": self._region_of(instance),
                 "reachable": instance.reachable,
                 "reason": instance.unreachable_cause,
+                # Null when the surface has no such setting, or when it has one
+                # and nobody has set it. Both are honest and neither is zero.
+                "floor": self._floor_of(instance),
                 "now": now,
             },
         ).one()
         return row[0]
+
+    def _floor_of(self, instance: SurfaceInstance) -> int | None:
+        """The instance's own refresh floor, or None.
+
+        A surface that does not implement the port is not a failure, and neither
+        is one that refuses the read: FEAT-014 reports the floor beside the
+        estate, and losing the whole estate because one workspace would not
+        answer a secondary question is the wrong trade.
+        """
+        if not isinstance(self._surface, RefreshFloor):
+            return None
+        try:
+            return self._surface.read_refresh_floor(instance)
+        except CollectionError:
+            return None
 
     @staticmethod
     def _account_of(instance: SurfaceInstance) -> str | None:

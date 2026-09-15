@@ -77,6 +77,20 @@ function columnsFor(freshness: Freshness): readonly Column<ApiSurfaceInstance>[]
     { key: 'kind', header: 'Kind', render: (row) => KIND_LABEL[row.kind] ?? row.kind },
     { key: 'location', header: 'Location', render: (row) => locationOf(row) },
     {
+      key: 'floor',
+      header: 'Refresh floor',
+      numeric: true,
+      render: (row) =>
+        row.refresh_floor_seconds === null ? (
+          // Not a dash and not a zero. A workspace with no floor accepts a one
+          // second refresh from anybody, which is the row worth acting on, and
+          // FEAT-014 is the single setting that fixes it.
+          <span className="meter-stale">none set</span>
+        ) : (
+          `${String(row.refresh_floor_seconds)} s`
+        ),
+    },
+    {
       key: 'reachable',
       header: 'Reachable',
       render: (row) => (row.reachable ? 'yes' : 'no'),

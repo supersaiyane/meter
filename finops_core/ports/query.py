@@ -110,6 +110,50 @@ class QuerySurface(Protocol):
 
 
 @runtime_checkable
+class RefreshFloor(Protocol):
+    """The smallest refresh interval an instance will accept from anybody.
+
+    Its own port rather than two more methods on `QuerySurface`. That protocol
+    is about the queries an instance holds, and its contract test fixes it at
+    three methods on purpose; this is one setting on the instance itself, and a
+    surface may support one without the other. An adapter implements both when
+    it can do both, and a caller checks for this one before it asks.
+
+    This is the whole of FEAT-014's write surface. One setting, no dashboard
+    touched, which the feature document calls the smallest possible write and is
+    the reason it is gated one level below a panel rewrite.
+    """
+
+    def read_refresh_floor(self, instance: SurfaceInstance) -> int | None:
+        """The smallest refresh interval this workspace will accept, in seconds.
+
+        None when the surface has no such setting, which is a normal answer and
+        not a failure: reporting zero would say the workspace permits any
+        refresh at all, which is the opposite claim.
+
+        Raises:
+            AccessDenied, NotOptedIn, Throttled, Unreachable, SchemaDrift: as
+                `list_queries`.
+        """
+        ...
+
+    def set_refresh_floor(self, instance: SurfaceInstance, seconds: int) -> int | None:
+        """Raise the floor, and return what it was.
+
+        The return is the whole point. FEAT-014 requires the previous value to
+        be recorded before the change, because even a one setting change has to
+        be undoable, and a control that cannot say what it replaced is a control
+        nobody will dare apply.
+
+        Raises:
+            AccessDenied: The token may read this workspace but not change it.
+            NotOptedIn: The surface exposes no such setting.
+            Throttled, Unreachable, SchemaDrift: as `list_queries`.
+        """
+        ...
+
+
+@runtime_checkable
 class Classified(Protocol):
     """What one target turned out to be, as an adapter needs to see it.
 

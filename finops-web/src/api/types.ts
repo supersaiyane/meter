@@ -177,6 +177,8 @@ export interface ApiSurfaceInstance {
   readonly reachable: boolean;
   /** One of the typed causes, by name. Required when reachable is false. */
   readonly unreachable_reason: string | null;
+  /** Null means the instance enforces no floor at all, which is not zero. */
+  readonly refresh_floor_seconds: number | null;
   /**
    * Null when the instance could not be read. Null is not zero: an instance
    * Meter cannot reach has an unknown number of queries, and rendering that as

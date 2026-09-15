@@ -236,6 +236,7 @@ def query_instances(
             region_id=row.region_id,
             reachable=row.reachable,
             unreachable_reason=row.unreachable_reason,
+            refresh_floor_seconds=row.refresh_floor_seconds,
             # Unknown, not zero, when the instance could not be read. An
             # unreachable workspace reporting a count of nought would make the
             # findings list look complete when it is not.

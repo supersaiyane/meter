@@ -210,6 +210,7 @@ export const SURFACE_INSTANCES: readonly ApiSurfaceInstance[] = [
     region_id: 'eu-west-1',
     reachable: false,
     unreachable_reason: 'AccessDenied',
+    refresh_floor_seconds: null,
     query_count: null,
     as_of: '2026-09-11T04:00:00Z',
     collected_at: '2026-09-11T09:54:00Z',
@@ -223,6 +224,7 @@ export const SURFACE_INSTANCES: readonly ApiSurfaceInstance[] = [
     region_id: 'eu-west-2',
     reachable: true,
     unreachable_reason: null,
+    refresh_floor_seconds: null,
     query_count: 2,
     as_of: '2026-09-11T04:00:00Z',
     collected_at: '2026-09-11T09:54:00Z',
@@ -236,6 +238,7 @@ export const SURFACE_INSTANCES: readonly ApiSurfaceInstance[] = [
     region_id: 'eu-west-2',
     reachable: true,
     unreachable_reason: null,
+    refresh_floor_seconds: 30,
     // A genuine zero: reachable, read, and holding nothing. It renders as 0 and
     // must not be confusable with the null above it.
     query_count: 0,

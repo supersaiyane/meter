@@ -776,7 +776,7 @@ already show what descoped looks like when the answer is really no.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-14, the AMG write refuses. ISS-166 |
 | Delivers | FEAT-014 |
 | Depends on | TASK-P2-006 |
 | Estimate | S |
@@ -786,12 +786,37 @@ Grafana then enforces itself on every save, forever, with no code from us.
 
 **Acceptance criteria.**
 
-- [ ] Reads and reports the current floor per workspace
-- [ ] Sets it when `query_write_level` is `workspace_floor` or above
-- [ ] Recorded in `remediation_change` with a `before` value
+- [x] Reads and reports the current floor per workspace. Stored on
+      `grafana_instance.refresh_floor_seconds`, null when the workspace enforces
+      none at all, which is not zero and is the row worth acting on
+- [x] Sets it when `query_write_level` is `workspace_floor` or above. The level
+      is a validated setting, the guard is inside `apply_refresh_floor` rather
+      than in its callers, and the fake surface implements the write end to end.
+      **The AMG adapter refuses with `NotOptedIn` rather than guessing**: no
+      workspace has ever been reachable to test a write against, per ISS-122,
+      and an untested write into somebody's Grafana is the one thing FEAT-014
+      must not ship. ISS-166 tracks it
+- [x] Recorded in `remediation_change` with a `before` value, captured from the
+      write itself rather than read back afterwards, and written only after the
+      write succeeded
 
 **Do not.** Do not set it without recording the previous value. Even a one
 setting change must be undoable.
+
+**A new port rather than two more methods.** `QuerySurface` is about the queries
+an instance holds and its contract test fixes it at three methods on purpose. A
+floor is one setting on the instance itself, and a surface may support one
+without the other, so `RefreshFloor` is its own protocol and a caller checks for
+it before asking.
+
+**The previous value comes from the write, not from a read after it.** A caller
+that reads it back has already lost the race with anyone else changing the same
+workspace, and would record a `before` that was never true.
+
+**`remediation_change.instance_id` is NOT NULL**, so a change that names no
+instance is refused by the database rather than by a convention. That surfaced
+during this task: the first version of `apply_refresh_floor` took an optional
+instance and the table would not have it.
 
 ---
 

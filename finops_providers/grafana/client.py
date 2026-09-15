@@ -217,6 +217,24 @@ class GrafanaClient:
             )
         return tuple(found)
 
+    def org_preferences(self) -> dict[str, Any]:
+        """Organization preferences, which is where the refresh floor lives.
+
+        An empty mapping when the workspace has none, which is a configuration
+        state rather than a failure: a workspace nobody has set a floor on is
+        the estate FEAT-014 exists to find.
+        """
+        found = self._get("/api/org/preferences")
+        if found is None:
+            return {}
+        if not isinstance(found, dict):
+            raise SchemaDrift(
+                scope_key=self._workspace.scope_key,
+                collector=COLLECTOR,
+                detail=f"org preferences returned {type(found).__name__}, expected an object",
+            )
+        return found
+
     def close(self) -> None:
         self._client.close()
 

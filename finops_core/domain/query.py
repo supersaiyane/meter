@@ -75,6 +75,29 @@ class ControlAction(StrEnum):
     DENY = "deny"
 
 
+class WriteLevel(StrEnum):
+    """How much Meter is permitted to change, per FEAT-014 and FEAT-017.
+
+    Ordered, and the order is the point. `NONE` is the default because enabling
+    a write is a decision somebody signs rather than one they inherit, and each
+    step up is a strictly larger blast radius: nothing, then one setting on a
+    workspace, then the contents of a dashboard.
+    """
+
+    NONE = "none"
+    WORKSPACE_FLOOR = "workspace_floor"
+    FULL = "full"
+
+    def permits(self, required: WriteLevel) -> bool:
+        """Whether this level allows a write needing `required`.
+
+        Comparison by position rather than by name, so a level added later sits
+        in the order rather than being silently unranked.
+        """
+        order = tuple(WriteLevel)
+        return order.index(self) >= order.index(required)
+
+
 @dataclass(frozen=True, kw_only=True)
 class SurfaceInstance:
     """One place queries live: a workspace, a cluster, a project.

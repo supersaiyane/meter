@@ -37,7 +37,7 @@ from finops_core.domain.query import (
     SurfaceInstance,
     SurfaceKind,
 )
-from finops_core.errors import AccessDenied, CollectionError, SchemaDrift
+from finops_core.errors import AccessDenied, CollectionError, NotOptedIn, SchemaDrift
 from finops_core.ports.query import QueryParser
 from finops_providers.aws.client import translate as translate_aws
 from finops_providers.grafana.client import GrafanaClient, Workspace
@@ -427,6 +427,64 @@ class AmgQuerySurface:
             )
 
     # -- writing, which v1 does not do -------------------------------------
+
+    def read_refresh_floor(self, instance: SurfaceInstance) -> int | None:
+        """The workspace's `min_refresh_interval`, in seconds.
+
+        Grafana stores it as a duration string, `30s` or `1m`, and None means
+        the workspace has no floor at all. None rather than zero, because zero
+        would say the workspace permits any refresh, which is the same claim
+        made by a workspace that has never been configured and is exactly the
+        distinction FEAT-014 exists to act on.
+        """
+        if not instance.reachable:
+            raise AccessDenied(
+                scope_key=instance.scope_key,
+                collector=COLLECTOR,
+                detail=f"discovered unreachable: {instance.unreachable_cause}",
+            )
+        workspace = Workspace(
+            id=instance.surface_id,
+            name=instance.name,
+            endpoint=self._endpoint_of.get(instance.surface_id, instance.location),
+        )
+        with self._token_for(instance) as token:
+            client = (
+                self._transport_factory(workspace, token)
+                if self._transport_factory is not None
+                else GrafanaClient(workspace, token, self._timeout)
+            )
+            try:
+                settings = client.org_preferences()
+            finally:
+                client.close()
+        raw = (settings or {}).get("minRefreshInterval")
+        # Grafana writes it as a duration string, `30s` or `1m`, and the parser
+        # already knows that grammar from reading panel refresh intervals.
+        return self._parser.refresh_seconds(raw) if raw else None
+
+    def set_refresh_floor(self, instance: SurfaceInstance, seconds: int) -> int | None:
+        """Not implemented, and it raises rather than reporting success.
+
+        TASK-P2-017 built the read, the recording and the guard. The write
+        itself needs a workspace this has never been able to reach: ISS-122
+        records that no AWS account has ever been provisioned, so an
+        implementation here could not be run once before a demo and an untested
+        write to somebody's Grafana is the one thing FEAT-014 must not ship.
+
+        `NotOptedIn` rather than a silent `applied` false, because a caller that
+        asked for a write and got a quiet no would record a change that never
+        happened.
+        """
+        raise NotOptedIn(
+            scope_key=instance.surface_id,
+            collector=COLLECTOR,
+            detail=(
+                f"the AMG write path is not implemented, so a floor of {seconds}s "
+                f"was not applied. ISS-122: no workspace has ever been reachable "
+                f"to test it against."
+            ),
+        )
 
     def apply_control(self, instance: SurfaceInstance, request: ControlRequest) -> ControlOutcome:
         """Always `applied` false. Architectural constraint 6 makes v1 read only.

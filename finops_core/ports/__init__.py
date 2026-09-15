@@ -21,7 +21,7 @@ from finops_core.ports.credentials import CredentialBroker
 from finops_core.ports.identity import EntitlementResolver, IdentityProvider
 from finops_core.ports.inventory import ResourceInventory
 from finops_core.ports.metrics import MetricSource
-from finops_core.ports.query import QuerySurface
+from finops_core.ports.query import QuerySurface, RefreshFloor
 from finops_core.ports.quotas import QuotaSource
 
 #: The eight a cloud provider implements. `FakeProvider` satisfies all of them,
@@ -42,7 +42,7 @@ PROVIDER_PORTS = (
 #: stops a test deriving "every port" from `__all__` and then failing because a
 #: cloud fake does not implement a query surface. That is exactly what happened
 #: when `QuerySurface` was added.
-SURFACE_PORTS = (QuerySurface,)
+SURFACE_PORTS = (QuerySurface, RefreshFloor)
 
 __all__ = [
     "PROVIDER_PORTS",
@@ -55,6 +55,7 @@ __all__ = [
     "MetricSource",
     "QuerySurface",
     "QuotaSource",
+    "RefreshFloor",
     "ResourceInventory",
 ]
 # `ProviderSession` is deliberately absent. It is a supporting type for

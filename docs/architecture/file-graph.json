@@ -278,6 +278,7 @@
     "finops_ingest/ledger.py",
     "finops_ingest/metrics.py",
     "finops_ingest/registry.py",
+    "finops_ingest/remediation.py",
     "finops_ingest/worker.py",
     "finops_mcp/__init__.py",
     "finops_mcp/api.py",
@@ -336,6 +337,7 @@
     "migrations/versions/0003_p2_tables.py",
     "migrations/versions/0004_query_key.py",
     "migrations/versions/0005_finding_cause.py",
+    "migrations/versions/0006_refresh_floor.py",
     "scripts/ci/check_flags.py",
     "scripts/ci/check_forbidden_imports.py",
     "scripts/ci/check_hardcoded.py",
@@ -384,6 +386,7 @@
     "tests/ingest/test_ledger.py",
     "tests/ingest/test_metrics.py",
     "tests/ingest/test_query_audit.py",
+    "tests/ingest/test_remediation.py",
     "tests/ingest/test_worker.py",
     "tests/mcp/__init__.py",
     "tests/mcp/test_contract.py",
@@ -2654,6 +2657,11 @@
       "k": "python"
     },
     {
+      "s": "finops_core/config.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/domain/__init__.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -2940,6 +2948,11 @@
     },
     {
       "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/query_audit.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
@@ -3001,6 +3014,16 @@
     {
       "s": "finops_ingest/metrics.py",
       "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/remediation.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/remediation.py",
+      "t": "finops_core/errors.py",
       "k": "python"
     },
     {
@@ -3976,6 +3999,26 @@
     {
       "s": "tests/ingest/test_query_audit.py",
       "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_remediation.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_remediation.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_remediation.py",
+      "t": "finops_ingest/remediation.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_remediation.py",
+      "t": "finops_providers/fake/surface.py",
       "k": "python"
     },
     {

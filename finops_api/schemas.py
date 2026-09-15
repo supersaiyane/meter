@@ -344,6 +344,10 @@ class SurfaceInstanceOut(BaseModel):
     #: Null when the instance could not be read. Null is not zero: an instance
     #: Meter cannot reach has an unknown number of queries, and a zero would
     #: make the estate look smaller than it is.
+    #: The smallest refresh this instance accepts from anybody. Null means it
+    #: enforces none at all, which is not zero and is the estate FEAT-014 exists
+    #: to find.
+    refresh_floor_seconds: int | None
     query_count: int | None
     as_of: datetime
     collected_at: datetime

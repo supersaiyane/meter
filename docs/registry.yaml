@@ -1079,6 +1079,16 @@ issues:
     rather than changed unilaterally
   status: OPEN
   detail: '`security/reports/`, `.gitignore`'
+- id: ISS-166
+  severity: MEDIUM
+  summary: The AMG adapter reads a workspace refresh floor and refuses to write one. The read is
+    implemented and exercised; the write raises NotOptedIn naming this issue, because no AWS
+    workspace has ever been reachable to test a write against, per ISS-122, and an untested write
+    into somebody's Grafana is the one thing FEAT-014 must not ship. The fake surface implements
+    the write end to end, so the guard, the recording and the undo path are all exercised. What is
+    missing is one adapter method and a workspace to run it against once
+  status: OPEN
+  detail: '`finops_providers/grafana/amg.py`, set_refresh_floor'
 - id: ISS-158
   severity: HIGH
   summary: The demo estate covered only the query tables, so five of the six built P0 screens had

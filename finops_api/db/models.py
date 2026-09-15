@@ -384,6 +384,8 @@ grafana_instance = Table(
     Column("credential_ref", Text),
     Column("reachable", Boolean, nullable=False, server_default=text("true")),
     Column("unreachable_reason", Text),
+    #: Null means the instance enforces no floor at all, which is not zero.
+    Column("refresh_floor_seconds", Integer),
     Column("as_of", DateTime(timezone=True), nullable=False),
     Column("collected_at", DateTime(timezone=True), nullable=False),
     UniqueConstraint("tenant_id", "endpoint", name="uq_grafana_instance__tenant_endpoint"),

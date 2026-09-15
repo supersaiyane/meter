@@ -165,6 +165,15 @@ QUERIES: Mapping[str, tuple[QueryDefinition, ...]] = {
 }
 
 
+#: What each workspace's refresh floor is before anything changes it. The
+#: reachable one has none at all, which is the estate worth demonstrating: a
+#: workspace with no floor accepts a one second refresh from anybody.
+DEFAULT_FLOORS: Mapping[str, int | None] = {
+    "ws-4e5f6a7b": None,
+    "ws-8c9d0e1f": 30,
+}
+
+
 class FakeQuerySurface:
     """`QuerySurface` in memory. Every failure is asked for, never incidental."""
 
@@ -181,6 +190,9 @@ class FakeQuerySurface:
         self._queries = dict(QUERIES if queries is None else queries)
         self._failures = dict(failures or {})
         self._control_failures = dict(control_failures or {})
+        # Mutable on purpose. Setting a floor has to be observable by the next
+        # read, or a test cannot tell a write that worked from one that did not.
+        self._floors: dict[str, int | None] = dict(DEFAULT_FLOORS)
         self._supports = (
             frozenset({ControlAction.OBSERVE, ControlAction.THROTTLE, ControlAction.DENY})
             if supports is None
@@ -225,6 +237,22 @@ class FakeQuerySurface:
         self._fail_if_planned(instance, self._failures)
         # Absent means genuinely empty. A read that failed raised above.
         return self._queries.get(instance.surface_id, ())
+
+    def read_refresh_floor(self, instance: SurfaceInstance) -> int | None:
+        self._fail_if_planned(instance, self._failures)
+        return self._floors.get(instance.surface_id)
+
+    def set_refresh_floor(self, instance: SurfaceInstance, seconds: int) -> int | None:
+        """Raise the floor, returning what it was. None means it had none.
+
+        The previous value is returned rather than looked up again afterwards,
+        because a caller that reads it back has already lost the race with
+        anyone else changing the same workspace.
+        """
+        self._fail_if_planned(instance, self._control_failures)
+        previous = self._floors.get(instance.surface_id)
+        self._floors[instance.surface_id] = seconds
+        return previous
 
     def apply_control(self, instance: SurfaceInstance, request: ControlRequest) -> ControlOutcome:
         self._fail_if_planned(instance, self._control_failures)
