@@ -523,7 +523,7 @@ changes:
   type: Process
   what: Coding sessions run behind the pxpipe proxy so token usage is recorded. make dev launches, make
     stats reports
-  commit: pending
+  commit: a92ae60
   detail: '[README.md](README.md), "Starting a coding session"'
 issues:
 - id: ISS-001
