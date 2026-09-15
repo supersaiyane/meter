@@ -43,6 +43,15 @@ describe('QueryFindingsScreen', () => {
     }
   });
 
+  it('links each finding to its own url, so it can be handed to its owner', async () => {
+    renderFindings();
+    const link = await screen.findByRole('link', { name: /Error rate by service/ });
+    expect(link).toHaveAttribute(
+      'href',
+      '/governance/queries/11111111-1111-1111-1111-111111111111',
+    );
+  });
+
   it('shows an unresolved owner as a value, not an empty cell', async () => {
     renderFindings();
     expect(await screen.findByText('unattributed')).toBeInTheDocument();

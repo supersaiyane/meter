@@ -1074,7 +1074,7 @@ survives a screenshot. Fixture backed and marked as such until the route lands."
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-15 |
 | Implements | P2 spec section 9.2, `docs/13-UI-ARCHITECTURE.md` section 9.2 |
 | Delivers | FEAT-012, FEAT-013 and FEAT-018 at the surface |
 | Depends on | TASK-P2-022 |
@@ -1082,13 +1082,13 @@ survives a screenshot. Fixture backed and marked as such until the route lands."
 
 **Acceptance criteria.**
 
-- [ ] Generous density, because the reader is making a judgement
-- [ ] Publishes the query, the target, the engine classification, **the formula
+- [x] Generous density, because the reader is making a judgement
+- [x] Publishes the query, the target, the engine classification, **the formula
       with its inputs substituted**, the data window, and measured evidence where
       FEAT-013 produced any
-- [ ] Where no calibration exists the label reads `accuracy not yet published`
-- [ ] Where FEAT-018 published one, the label reads `~ $12,400 modelled, +/- 9%`
-- [ ] Axe reports zero violations
+- [x] Where no calibration exists the label reads `accuracy not yet published`
+- [x] Where FEAT-018 published one, the label reads `~ $12,400 modelled, +/- 9%`
+- [x] Axe reports zero violations
 
 **Do not.**
 
@@ -1100,7 +1100,7 @@ survives a screenshot. Fixture backed and marked as such until the route lands."
 
 **Steps.**
 
-- [ ] **Step 1: write the failing test**
+- [x] **Step 1: write the failing test**
 
 `finops-web/src/screens/__tests__/QueryFindingDetailScreen.test.tsx`
 
@@ -1142,12 +1142,12 @@ The screen reads its identifier from the route with `useParams`, not from a
 prop, because the URL is the thing that gets shared into a ticket. `initialPath`
 is the parameter TASK-P0-036 added to `Harness`.
 
-- [ ] **Step 2: run it and watch it fail**
+- [x] **Step 2: run it and watch it fail**
 
 Run: `cd finops-web && npm run test -- --run src/screens/__tests__/QueryFindingDetailScreen.test.tsx`
 Expected: FAIL, cannot find module.
 
-- [ ] **Step 3: extend the fixture and write the screen**
+- [x] **Step 3: extend the fixture and write the screen**
 
 Add `useQueryFinding(id)` to `finops-web/src/api/queries.ts`, built on
 `useQuerySurface` with key `['query-finding', id]`, template
@@ -1165,12 +1165,12 @@ A null `accuracy_percent` renders `accuracy not yet published`. A number renders
 `+/- n%` beside the modelled label. Those are two branches of one expression, so
 neither can be forgotten.
 
-- [ ] **Step 4: run the tests and watch them pass**
+- [x] **Step 4: run the tests and watch them pass**
 
 Run: `cd finops-web && npm run test -- --run src/screens/__tests__/QueryFindingDetailScreen.test.tsx`
 Expected: PASS, two tests.
 
-- [ ] **Step 5: route it, run the suite, commit**
+- [x] **Step 5: route it, run the suite, commit**
 
 Add `<Route path="/governance/queries/:id" element={<QueryFindingDetailScreen />} />`.
 Run `npm run lint && npm run test -- --run && npm run build`.

@@ -2,11 +2,12 @@ import { useQuery } from '@tanstack/react-query';
 
 import { useApi } from './apiContext';
 import { resolveSurface, type Resolved } from './fixtureSeam';
-import { queryFindingsFixture } from './fixtures/query';
+import { queryFindingDetailFixture, queryFindingsFixture } from './fixtures/query';
 import type {
   Account,
   ApiEnvelope,
   ApiQueryFinding,
+  ApiQueryFindingDetail,
   Freshness,
   PlatformCost,
   Run,
@@ -91,5 +92,21 @@ export function useQueryFindings() {
     '/api/v1/query/findings',
     '/api/v1/query/findings',
     queryFindingsFixture,
+  );
+}
+
+/**
+ * One finding, by id.
+ *
+ * The declared template and the fetched path differ here, which is the case the
+ * template matching in `fixtureSeam` exists for: `{id}` is what FastAPI calls
+ * the route, and the concrete id is what the browser asks for.
+ */
+export function useQueryFinding(id: string) {
+  return useQuerySurface<ApiQueryFindingDetail | null>(
+    ['query-finding', id],
+    '/api/v1/query/findings/{id}',
+    `/api/v1/query/findings/${id}`,
+    () => queryFindingDetailFixture(id),
   );
 }

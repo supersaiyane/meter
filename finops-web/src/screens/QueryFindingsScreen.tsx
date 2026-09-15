@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router';
 
 import { useQueryFindings } from '../api/queries';
 import type { ApiQueryFinding } from '../api/types';
@@ -60,12 +61,14 @@ function columnsFor(freshness: Freshness): readonly Column<ApiQueryFinding>[] {
     {
       key: 'dashboard',
       header: 'Dashboard and panel',
+      // A link, because a finding that cannot be linked to is a finding nobody
+      // hands to its owner. The id is in the URL for the same reason.
       render: (row) => (
-        <>
+        <Link to={`/governance/queries/${row.finding_id}`}>
           {row.dashboard_title}
           <br />
           {row.panel_title}
-        </>
+        </Link>
       ),
     },
     { key: 'refresh', header: 'Refresh', render: (row) => secondsLabel(row.refresh_seconds) },

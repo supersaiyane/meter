@@ -1,4 +1,9 @@
-import type { ApiEnvelope, ApiMeta, ApiQueryFinding } from '../types';
+import type {
+  ApiEnvelope,
+  ApiMeta,
+  ApiQueryFinding,
+  ApiQueryFindingDetail,
+} from '../types';
 
 /**
  * Fixture data for the P2 query surfaces, per
@@ -31,7 +36,7 @@ export const QUERY_FINDINGS: readonly ApiQueryFinding[] = [
     window_seconds: 2592000,
     runs_per_day: 8640,
     bytes_scanned_per_run: 4294967296,
-    monthly_cost: '12400.00',
+    monthly_cost: '5184.00',
     provenance: 'modelled',
     // Critical. Severity is a dollar amount expressed on a five point scale,
     // per ADR-0016, so the most expensive finding is the most severe.
@@ -47,8 +52,8 @@ export const QUERY_FINDINGS: readonly ApiQueryFinding[] = [
     refresh_seconds: 3600,
     window_seconds: 86400,
     runs_per_day: 24,
-    bytes_scanned_per_run: 1048576,
-    monthly_cost: '3.20',
+    bytes_scanned_per_run: 536870912,
+    monthly_cost: '1.80',
     provenance: 'measured',
     severity: 1,
     owner: 'unattributed',
@@ -58,4 +63,62 @@ export const QUERY_FINDINGS: readonly ApiQueryFinding[] = [
 
 export function queryFindingsFixture(): ApiEnvelope<ApiQueryFinding[]> {
   return { data: [...QUERY_FINDINGS], meta: FIXTURE_META };
+}
+
+/**
+ * Detail rows, keyed by finding.
+ *
+ * `accuracy_percent` is null on both, because FEAT-018 has not published a
+ * calibration. Inventing one to make the screen look finished is the one thing
+ * this fixture must not do: the honest rendering of an unpublished accuracy is
+ * to say it is unpublished.
+ *
+ * The measured fields are null for the same reason. FEAT-013 is the overlay
+ * that fills them.
+ */
+export const QUERY_FINDING_DETAILS: Readonly<Record<string, ApiQueryFindingDetail>> = {
+  '11111111-1111-1111-1111-111111111111': {
+    finding_id: '11111111-1111-1111-1111-111111111111',
+    dashboard_title: 'Platform overview',
+    panel_title: 'Error rate by service',
+    query_text:
+      'fields @timestamp, @message\n| filter @message like /ERROR/\n| stats count() by bin(5m)',
+    target: '/aws/ecs/meter-api',
+    engine: 'CloudWatch Logs Insights',
+    refresh_seconds: 10,
+    window_seconds: 2592000,
+    runs_per_day: 8640,
+    bytes_scanned_per_run: 4294967296,
+    rate_usd_per_gib: '0.005',
+    monthly_cost: '5184.00',
+    provenance: 'modelled',
+    accuracy_percent: null,
+    measured_runs_per_day: null,
+    measured_bytes_scanned_per_run: null,
+  },
+  '22222222-2222-2222-2222-222222222222': {
+    finding_id: '22222222-2222-2222-2222-222222222222',
+    dashboard_title: 'Billing',
+    panel_title: 'Invoice totals',
+    query_text: 'fields @timestamp, invoice_total\n| sort @timestamp desc\n| limit 20',
+    target: '/aws/lambda/billing-export',
+    engine: 'CloudWatch Logs Insights',
+    refresh_seconds: 3600,
+    window_seconds: 86400,
+    runs_per_day: 24,
+    bytes_scanned_per_run: 536870912,
+    rate_usd_per_gib: '0.005',
+    monthly_cost: '1.80',
+    provenance: 'measured',
+    accuracy_percent: null,
+    measured_runs_per_day: 24,
+    measured_bytes_scanned_per_run: 536870912,
+  },
+};
+
+/** Null for an id nothing knows about, which the screen renders as a cause. */
+export function queryFindingDetailFixture(
+  id: string,
+): ApiEnvelope<ApiQueryFindingDetail | null> {
+  return { data: QUERY_FINDING_DETAILS[id] ?? null, meta: FIXTURE_META };
 }

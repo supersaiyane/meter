@@ -114,3 +114,27 @@ export interface ApiQueryFinding {
   /** Prose explaining what drives the cost. Ported from the prototype. */
   readonly why: string;
 }
+
+export interface ApiQueryFindingDetail {
+  readonly finding_id: string;
+  readonly dashboard_title: string;
+  readonly panel_title: string;
+  /** The query as written. Shown whole, never summarised. */
+  readonly query_text: string;
+  /** What it runs against: a log group, a namespace. */
+  readonly target: string;
+  readonly engine: string;
+  readonly refresh_seconds: number | null;
+  readonly window_seconds: number;
+  readonly runs_per_day: number;
+  readonly bytes_scanned_per_run: number;
+  /** The published price, so the arithmetic has no constant hidden in the UI. */
+  readonly rate_usd_per_gib: string;
+  readonly monthly_cost: string;
+  readonly provenance: string;
+  /** FEAT-018. Null until a calibration is published, and then never invented. */
+  readonly accuracy_percent: number | null;
+  /** FEAT-013 evidence. Null until the measured overlay exists. */
+  readonly measured_runs_per_day: number | null;
+  readonly measured_bytes_scanned_per_run: number | null;
+}
