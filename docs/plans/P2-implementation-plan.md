@@ -855,18 +855,32 @@ dashboards are managed as code, and a gate that warns is ignored regardless.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-16, short on the notification. ISS-167 |
 | Delivers | FEAT-017 |
 | Depends on | TASK-P2-017 |
 | Estimate | L |
 
 **Acceptance criteria.**
 
-- [ ] Only when `query_write_level` is `full`, default `none`
-- [ ] `before` captured and stored before the write
-- [ ] Read back after the write, and **automatic revert if it does not match**
-- [ ] Owner notified with what changed and how to undo it
-- [ ] `POST .../undo` restores the original exactly
+- [x] Only when `query_write_level` is `full`, default `none`. The levels are
+      ordered, and `workspace_floor` permits one setting rather than somebody's
+      dashboard
+- [x] `before` captured and stored before the write, as the surface's own stored
+      form rather than a reconstruction from the fields Meter understands. That
+      is what makes the undo exact
+- [x] Read back after the write, and **automatic revert if it does not match**.
+      A surface that accepted a write is not a surface that applied it. Nothing
+      is recorded when it reverts, because a change row is a claim that the
+      estate changed and stayed changed
+- [ ] **Short.** Owner notified with what changed and how to undo it. Meter has
+      no notification transport at all: no mail, no webhook, no queue consumer
+      for one. Inventing one for this task would be a new subsystem shipped
+      without a decision, so it is ISS-167 and the change is recorded with its
+      `applied_by` in the meantime
+- [x] `POST .../undo` restores the original exactly, as `undo_change`. Undoing
+      twice is refused, because the second would restore a state the first
+      already replaced. **The route itself is ISS-148**, which holds the five
+      query routes that have nothing behind them
 
 **Do not.**
 
@@ -874,6 +888,13 @@ dashboards are managed as code, and a gate that warns is ignored regardless.
   call is a recommendation, not a remediation.
 - Do not write without the read back. A partial write to a dashboard is worse
   than the original problem.
+
+**`changes` names only the fields to replace.** Sending a whole element would
+overwrite everything a person edited between the read and the write.
+
+**The undo addresses the surface's fingerprint, not the database identity.** The
+first version wrote to `query_id`, which addresses an element the surface has
+never heard of, and it reported success while changing nothing.
 
 ---
 

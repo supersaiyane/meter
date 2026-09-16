@@ -25,7 +25,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | Features | 50 total, 8 specified, 7 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
 | Changes | 81 recorded |
-| Issues | 113 fixed, 48 open, 0 parked |
+| Issues | 113 fixed, 49 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -45,13 +45,13 @@ Lint and type checking cover every directory that holds Python, which is 181
 files under mypy where it was 25. `scripts/`, `migrations/` and the test suite
 had all been outside one or both.
 
-**P2 is 18 of 25 done, 1 partly, 2 parked, 2 descoped, 2 not started.**
+**P2 is 19 of 25 done, 1 partly, 2 parked, 2 descoped, 1 not started.**
 
 The backend is complete through wave J. The collector runs, prices what it
 reads, measures what it can observe, and attributes an owner. Three of the eight
 routes in spec section 8.2 exist and are live; the other five read data that
 does not exist yet and are held under ISS-148, which names what each one waits
-on. Two tasks have not started: TASK-P2-019 and 020.
+on. One task has not started: TASK-P2-020, which needs real CUR data.
 
 **The interface is built and every screen has been through a pass.** Ten screens
 read live data against a seeded local estate, and each has been opened at 1440
@@ -90,7 +90,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P2 | 18 | 1 | 2 | 2 | 2 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
+| P2 | 19 | 1 | 2 | 2 | 1 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -158,6 +158,7 @@ ISS-003.
 | `TASK-P2-016` | Parked, 2026-08-29 | throttle and deny, with the guardrails |
 | `TASK-P2-017` | Done, 2026-09-14, the AMG write refuses. ISS-166 | the workspace refresh floor |
 | `TASK-P2-018` | Done, 2026-09-15 | the CI policy gate |
+| `TASK-P2-019` | Done, 2026-09-16, short on the notification. ISS-167 | panel rewrite with undo |
 | `TASK-P2-021` | Done, 2026-09-08, short on two criteria. ISS-148 | routes and MCP tools |
 | `TASK-P2-022` | Done, 2026-09-13 | the query findings screen |
 | `TASK-P2-023` | Done, 2026-09-15 | the finding detail screen |

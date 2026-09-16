@@ -44,7 +44,7 @@ Status: `OPEN`, `IN PROGRESS`, `FIXED`, `WONT FIX`, `PARKED`, `CLOSED`.
 <!-- generated:issue-register start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-163 issues. 113 fixed, 48 open, 0 parked.
+164 issues. 113 fixed, 49 open, 0 parked.
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in `tasks/STATUS.md`.
 
@@ -192,6 +192,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-163 | MEDIUM | The freshness screen listed watermarks, and a watermark only exists after a collector has succeeded once. A scope that had never succeeded was therefore absent from the page rather than shown as never collected, so the one collector in trouble was the one the freshness screen did not mention. Fixed 2026-09-13. The page now lists every pair that has been attempted, the union of watermarks and runs, and carries three states rather than two, because a collector that has never worked is not a stale one. Its age is null rather than zero, since a zero reads as collected this instant, and the row names the typed cause of its last attempt. is_stale is now derived from the state rather than set beside it | FIXED | `finops_api/routes/ingest.py`, `finops_api/db/repositories/ingest.py`, `finops-web/src/screens/FreshnessScreen.tsx` |
 | ISS-164 | MEDIUM | security/reports/latest is a committed symlink and the scan script wrote it as an absolute path, so it stored the author's own home directory in the repository and resolved on exactly one machine. Fixed 2026-09-13 by linking to the basename, which is correct because the link sits in the directory it points into | FIXED | `scripts/security/scan.sh` |
 | ISS-166 | MEDIUM | The AMG adapter reads a workspace refresh floor and refuses to write one. The read is implemented and exercised; the write raises NotOptedIn naming this issue, because no AWS workspace has ever been reachable to test a write against, per ISS-122, and an untested write into somebody's Grafana is the one thing FEAT-014 must not ship. The fake surface implements the write end to end, so the guard, the recording and the undo path are all exercised. What is missing is one adapter method and a workspace to run it against once | OPEN | `finops_providers/grafana/amg.py`, set_refresh_floor |
+| ISS-167 | MEDIUM | FEAT-017 requires the owner of a rewritten panel to be told what changed and how to undo it, and Meter has no notification transport at all. No mail sender, no webhook, no queue consumer for one, and no decision recorded about which it should be. Building one for this task would ship a new subsystem without that decision, so the rewrite records applied_by and the change is discoverable, and the notification waits for somebody to choose a channel | OPEN | `finops_ingest/remediation.py`, FEAT-017 |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |

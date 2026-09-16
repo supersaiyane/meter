@@ -1079,6 +1079,15 @@ issues:
     rather than changed unilaterally
   status: OPEN
   detail: '`security/reports/`, `.gitignore`'
+- id: ISS-167
+  severity: MEDIUM
+  summary: FEAT-017 requires the owner of a rewritten panel to be told what changed and how to
+    undo it, and Meter has no notification transport at all. No mail sender, no webhook, no queue
+    consumer for one, and no decision recorded about which it should be. Building one for this
+    task would ship a new subsystem without that decision, so the rewrite records applied_by and
+    the change is discoverable, and the notification waits for somebody to choose a channel
+  status: OPEN
+  detail: '`finops_ingest/remediation.py`, FEAT-017'
 - id: ISS-166
   severity: MEDIUM
   summary: The AMG adapter reads a workspace refresh floor and refuses to write one. The read is

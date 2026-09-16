@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
 from datetime import UTC, datetime
+from typing import Any
 
 from finops_core.domain.query import (
     ControlAction,
@@ -183,6 +184,7 @@ class FakeQuerySurface:
         queries: Mapping[str, tuple[QueryDefinition, ...]] | None = None,
         failures: Mapping[str, type[CollectionError]] | None = None,
         control_failures: Mapping[str, type[CollectionError]] | None = None,
+        drop_writes: Iterable[str] | None = None,
         supports: frozenset[ControlAction] | set[ControlAction] | None = None,
         discovery_failure: type[CollectionError] | None = None,
     ) -> None:
@@ -193,6 +195,19 @@ class FakeQuerySurface:
         # Mutable on purpose. Setting a floor has to be observable by the next
         # read, or a test cannot tell a write that worked from one that did not.
         self._floors: dict[str, int | None] = dict(DEFAULT_FLOORS)
+        # The stored form of each element, keyed by fingerprint. Built from the
+        # definitions so a rewrite acts on the same estate everything else sees.
+        self._elements: dict[str, dict[str, Any]] = {
+            definition.fingerprint: {
+                "title": definition.element,
+                "refresh_seconds": definition.refresh_seconds,
+                "window_seconds": definition.window_seconds,
+                "query": definition.query,
+            }
+            for queries in self._queries.values()
+            for definition in queries
+        }
+        self._drop_writes = frozenset(drop_writes or ())
         self._supports = (
             frozenset({ControlAction.OBSERVE, ControlAction.THROTTLE, ControlAction.DENY})
             if supports is None
@@ -253,6 +268,31 @@ class FakeQuerySurface:
         previous = self._floors.get(instance.surface_id)
         self._floors[instance.surface_id] = seconds
         return previous
+
+    def read_element(self, instance: SurfaceInstance, fingerprint: str) -> Mapping[str, Any]:
+        self._fail_if_planned(instance, self._failures)
+        stored = self._elements.get(fingerprint)
+        if stored is None:
+            raise SchemaDrift(
+                scope_key=instance.surface_id,
+                collector=COLLECTOR,
+                detail=f"no element {fingerprint} on this instance",
+            )
+        return dict(stored)
+
+    def write_element(
+        self, instance: SurfaceInstance, fingerprint: str, element: Mapping[str, Any]
+    ) -> None:
+        """Store it, unless this instance is planned to drop writes.
+
+        `drop_writes` is how a test reaches the case FEAT-017 exists for: a
+        surface that accepts a write and does not apply it. Without it the read
+        back and the automatic revert cannot be exercised at all.
+        """
+        self._fail_if_planned(instance, self._control_failures)
+        if instance.surface_id in self._drop_writes:
+            return
+        self._elements[fingerprint] = dict(element)
 
     def apply_control(self, instance: SurfaceInstance, request: ControlRequest) -> ControlOutcome:
         self._fail_if_planned(instance, self._control_failures)

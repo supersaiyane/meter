@@ -154,6 +154,53 @@ class RefreshFloor(Protocol):
 
 
 @runtime_checkable
+class PanelRewrite(Protocol):
+    """Reading and replacing one element's stored definition.
+
+    The largest write Meter makes and the last one it earns. FEAT-017 gates it
+    behind the highest write level for that reason: this is the first time
+    Meter changes something a person authored, and a partial write to a
+    dashboard is worse than the problem it was fixing.
+
+    Its own port, like `RefreshFloor`, because a surface may let Meter read
+    queries and never let it replace one.
+
+    `read_element` returns the stored form, whatever that is for the surface.
+    The caller does not interpret it beyond passing it back, which is what makes
+    an exact undo possible: the thing restored is the thing that was there,
+    rather than a reconstruction from the fields Meter happened to understand.
+    """
+
+    def read_element(self, instance: SurfaceInstance, fingerprint: str) -> Mapping[str, Any]:
+        """The element's stored definition, exactly as the surface holds it.
+
+        Raises:
+            AccessDenied, NotOptedIn, Throttled, Unreachable, SchemaDrift: as
+                `list_queries`. `NotOptedIn` when the surface has no such API.
+        """
+        ...
+
+    def write_element(
+        self, instance: SurfaceInstance, fingerprint: str, element: Mapping[str, Any]
+    ) -> None:
+        """Replace it. The caller reads back and reverts if this did not take.
+
+        Returning nothing is deliberate. A surface that reported success would
+        invite the caller to trust it, and FEAT-017 requires the caller to check
+        rather than to be told.
+
+        Raises:
+            AccessDenied: The token may read this element but not replace it.
+            NotOptedIn: The surface exposes no write API.
+            Throttled: The provider rejected the call rate.
+            Unreachable: The instance did not answer.
+            SchemaDrift: The surface accepted the write and returned something
+                this adapter cannot confirm from.
+        """
+        ...
+
+
+@runtime_checkable
 class Classified(Protocol):
     """What one target turned out to be, as an adapter needs to see it.
 

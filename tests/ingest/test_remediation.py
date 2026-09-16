@@ -9,6 +9,7 @@ defaults to `none` everywhere.
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID, uuid4
 
 import pytest
@@ -16,7 +17,14 @@ from sqlalchemy import Engine, text
 
 from finops_core.domain.query import SurfaceInstance, SurfaceKind, WriteLevel
 from finops_core.errors import AccessDenied, NotOptedIn
-from finops_ingest.remediation import KIND, FloorOutcome, apply_refresh_floor
+from finops_ingest.remediation import (
+    KIND,
+    FloorOutcome,
+    RewriteOutcome,
+    apply_panel_rewrite,
+    apply_refresh_floor,
+    undo_change,
+)
 from finops_providers.fake.surface import FakeQuerySurface
 
 pytestmark = pytest.mark.integration
@@ -147,3 +155,154 @@ def test_a_surface_with_no_such_setting_says_so_rather_than_succeeding(engine: E
     assert outcome.applied is False
     assert "NotOptedIn" in outcome.detail
     assert changes(engine, tenant) == []
+
+
+# --- panel rewrite, FEAT-017 --------------------------------------------------
+
+FINGERPRINT = "fp-panel-0001"
+SLOWER = {"refresh_seconds": 300}
+
+
+def rewrite(
+    engine: Engine,
+    tenant: UUID,
+    level: WriteLevel,
+    surface: FakeQuerySurface | None = None,
+) -> tuple[RewriteOutcome, UUID, FakeQuerySurface]:
+    control = surface or FakeQuerySurface()
+    query_pk = uuid4()
+    instance_pk = uuid4()
+    with engine.begin() as connection:
+        _seed_instance(connection, tenant, instance_pk, query_pk)
+        outcome = apply_panel_rewrite(
+            connection=connection,
+            tenant_id=tenant,
+            instance=INSTANCE,
+            control=control,
+            fingerprint=FINGERPRINT,
+            changes=SLOWER,
+            write_level=level,
+            applied_by="a-test",
+            query_pk=query_pk,
+            instance_pk=instance_pk,
+            now=NOW,
+        )
+    return outcome, query_pk, control
+
+
+def _seed_instance(connection: Any, tenant: UUID, instance_pk: UUID, query_pk: UUID) -> None:
+    connection.execute(
+        text("INSERT INTO tenant (tenant_id, name) VALUES (:t, :name)"),
+        {"t": tenant, "name": f"rewrite test {tenant}"},
+    )
+    connection.execute(
+        text(
+            "INSERT INTO grafana_instance (instance_id, tenant_id, kind, name, endpoint, "
+            "reachable, as_of, collected_at) VALUES "
+            "(:id, :t, 'SELF_HOSTED', :name, :endpoint, true, :at, :at)"
+        ),
+        {
+            "id": instance_pk,
+            "t": tenant,
+            "name": INSTANCE.name,
+            "endpoint": f"{INSTANCE.location}/{tenant}",
+            "at": NOW,
+        },
+    )
+    connection.execute(
+        text(
+            "INSERT INTO query_definition (query_id, tenant_id, instance_id, origin, engine, "
+            "query_text, fingerprint, target, refresh_seconds, range_seconds, "
+            "as_of, collected_at) VALUES "
+            "(:q, :t, :i, 'PANEL', 'LOGS_INSIGHTS', 'fields @timestamp', :fp, "
+            "'{}'::jsonb, 10, 3600, :at, :at)"
+        ),
+        # The surface's own fingerprint, not the database identity. Undoing to
+        # the wrong one addresses an element the surface has never heard of.
+        {"q": query_pk, "t": tenant, "i": instance_pk, "fp": FINGERPRINT, "at": NOW},
+    )
+
+
+def test_a_rewrite_needs_the_highest_write_level(engine: Engine) -> None:
+    """`workspace_floor` permits one setting, not somebody's dashboard.
+
+    The levels are ordered so that each step up is a strictly larger blast
+    radius, and this is the step that changes something a person authored.
+    """
+    outcome, _, control = rewrite(engine, uuid4(), WriteLevel.WORKSPACE_FLOOR)
+    assert outcome.applied is False
+    assert "needs full" in outcome.detail
+    # And it did not touch the element on the way to refusing.
+    assert control.read_element(INSTANCE, FINGERPRINT)["refresh_seconds"] == 10
+
+
+def test_a_permitted_rewrite_changes_only_the_named_fields(engine: Engine) -> None:
+    # Sending a whole element would overwrite everything a person edited between
+    # the read and the write.
+    tenant = uuid4()
+    outcome, _, control = rewrite(engine, tenant, WriteLevel.FULL)
+    assert outcome.applied is True
+    stored = control.read_element(INSTANCE, FINGERPRINT)
+    assert stored["refresh_seconds"] == 300
+    assert stored["query"] == "fields @timestamp, @message | filter @message like /ERROR/"
+
+
+def test_a_write_that_did_not_take_is_reverted(engine: Engine) -> None:
+    """The case FEAT-017 exists for.
+
+    A surface that accepted a write is not a surface that applied it, and a
+    partial write to somebody's dashboard is worse than the problem it was
+    fixing. Nothing is recorded, because a change row is a claim that the estate
+    changed and stayed changed.
+    """
+    tenant = uuid4()
+    surface = FakeQuerySurface(drop_writes=[INSTANCE.surface_id])
+    outcome, _, _ = rewrite(engine, tenant, WriteLevel.FULL, surface=surface)
+    assert outcome.applied is False
+    assert outcome.reverted is True
+    assert "did not match" in outcome.detail
+    assert changes(engine, tenant) == []
+
+
+def test_an_undo_restores_exactly_what_was_there(engine: Engine) -> None:
+    tenant = uuid4()
+    outcome, _, control = rewrite(engine, tenant, WriteLevel.FULL)
+    assert outcome.change_id is not None
+    original = "fields @timestamp, @message | filter @message like /ERROR/"
+
+    with engine.begin() as connection:
+        undone = undo_change(
+            connection=connection,
+            tenant_id=tenant,
+            instance=INSTANCE,
+            control=control,
+            change_id=outcome.change_id,
+            reverted_by="a-person",
+            now=NOW,
+        )
+    assert undone.applied is True
+    stored = control.read_element(INSTANCE, FINGERPRINT)
+    # Exactly, from the stored form rather than from a reconstruction of the
+    # fields Meter happens to understand.
+    assert stored["refresh_seconds"] == 10
+    assert stored["query"] == original
+
+
+def test_undoing_twice_is_refused(engine: Engine) -> None:
+    # The second undo would restore a state the first one already replaced.
+    tenant = uuid4()
+    outcome, _, control = rewrite(engine, tenant, WriteLevel.FULL)
+    assert outcome.change_id is not None
+    for expected in (True, False):
+        with engine.begin() as connection:
+            undone = undo_change(
+                connection=connection,
+                tenant_id=tenant,
+                instance=INSTANCE,
+                control=control,
+                change_id=outcome.change_id,
+                reverted_by="a-person",
+                now=NOW,
+            )
+        assert undone.applied is expected
+    assert "already reverted" in undone.detail
