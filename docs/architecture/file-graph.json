@@ -305,6 +305,7 @@
     "finops_query/__init__.py",
     "finops_query/classify.py",
     "finops_query/cost_model.py",
+    "finops_query/gate.py",
     "finops_query/ownership.py",
     "finops_query/parser.py",
     "finops_query/policy.py",
@@ -338,6 +339,7 @@
     "migrations/versions/0004_query_key.py",
     "migrations/versions/0005_finding_cause.py",
     "migrations/versions/0006_refresh_floor.py",
+    "scripts/ci/check_dashboards.py",
     "scripts/ci/check_flags.py",
     "scripts/ci/check_forbidden_imports.py",
     "scripts/ci/check_hardcoded.py",
@@ -407,6 +409,7 @@
     "tests/query/conftest.py",
     "tests/query/test_classify.py",
     "tests/query/test_cost_model.py",
+    "tests/query/test_gate.py",
     "tests/query/test_ownership.py",
     "tests/query/test_policy.py",
     "tests/query/test_ports.py",
@@ -3362,6 +3365,21 @@
       "k": "python"
     },
     {
+      "s": "finops_query/gate.py",
+      "t": "finops_query/classify.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/gate.py",
+      "t": "finops_query/cost_model.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/gate.py",
+      "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
       "s": "finops_query/ownership.py",
       "t": "finops_query/__init__.py",
       "k": "python"
@@ -3389,6 +3407,16 @@
     {
       "s": "migrations/env.py",
       "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ci/check_dashboards.py",
+      "t": "finops_query/cost_model.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ci/check_dashboards.py",
+      "t": "finops_query/gate.py",
       "k": "python"
     },
     {
@@ -4359,6 +4387,16 @@
     {
       "s": "tests/query/test_cost_model.py",
       "t": "finops_query/cost_model.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_gate.py",
+      "t": "finops_query/cost_model.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_gate.py",
+      "t": "finops_query/gate.py",
       "k": "python"
     },
     {

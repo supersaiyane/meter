@@ -103,6 +103,12 @@ lint: ## Lint everything, no changes written
 	$(TF) -chdir=infra/terraform/member fmt -check -recursive
 	$(TF) -chdir=infra/terraform/hub fmt -check -recursive
 
+.PHONY: check-dashboards
+check-dashboards: ## Refuse a dashboard whose panels would cost too much. TASK-P2-018
+	@echo "Usage: make check-dashboards DASHBOARDS='path/to/*.json'"
+	@test -n "$(DASHBOARDS)" || { echo "Set DASHBOARDS to the files to check."; exit 2; }
+	$(BIN)/python scripts/ci/check_dashboards.py $(DASHBOARDS)
+
 .PHONY: check-writing
 check-writing: ## Fail if an em dash or en dash appears anywhere. See CLAUDE.md
 	@if grep -rn $$'—\|–' \

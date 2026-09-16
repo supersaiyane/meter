@@ -824,18 +824,24 @@ instance and the table would not have it.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-15 |
 | Delivers | FEAT-014 |
 | Depends on | TASK-P2-002 |
 | Estimate | M |
 
 **Acceptance criteria.**
 
-- [ ] A standalone checker over dashboard JSON, usable in any pipeline
-- [ ] Rejects a Logs Insights panel combining sub minute refresh with a window
+- [x] A standalone checker over dashboard JSON, usable in any pipeline. No
+      database, no credentials, no network, and the rates default to the
+      model's published assumptions so it runs in a pipeline that has never
+      heard of Meter. `make check-dashboards DASHBOARDS='...'`
+- [x] Rejects a Logs Insights panel combining sub minute refresh with a window
       over 24 hours
-- [ ] Rules from settings, so a tenant can tighten them
-- [ ] Reports the modelled cost of the violating panel, so the failure message
+- [x] Rules from settings, so a tenant can tighten them, and the defaults are
+      the same thresholds the reports warn on. A gate that blocks at a different
+      number from the one the reports warn at teaches people the reports are
+      wrong
+- [x] Reports the modelled cost of the violating panel, so the failure message
       says what it would have cost
 
 **Do not.** Do not make it a warning. See ISS-096: its reach depends on how many
