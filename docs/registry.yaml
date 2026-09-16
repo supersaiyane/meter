@@ -1013,6 +1013,17 @@ changes:
     does not overclaim. Scanned volume reported in MiB after GiB rounded a real scan to zero
   commit: '29676ef'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-022'
+- id: CHG-0078
+  date: '2026-09-15'
+  type: Feature
+  what: TASK-P2-023, the finding detail screen. Publishes the query, the target, the engine and the
+    formula with its inputs substituted. The fixture arithmetic did not reconcile, 5,184 dollars of
+    working printed under a headline of 12,400, and a screen whose purpose is that the sum can be
+    checked must not fail when checked. Corrected, and a test now derives each cost from its own
+    inputs and asserts the list and the detail quote the same figure. The first surface where the
+    declared template and the fetched path differ
+  commit: '1f34786'
+  detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-023'
 issues:
 - id: ISS-137
   severity: MEDIUM
