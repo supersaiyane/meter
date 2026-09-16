@@ -343,7 +343,7 @@ Templates for new documents: [docs/templates/](docs/templates/README.md)
 
 | Artefact | Path | Purpose |
 | --- | --- | --- |
-| Task runner | `Makefile` | 28 targets. `make help` lists them |
+| Task runner | `Makefile` | Every routine task. `make help` lists them |
 | API image | `docker/Dockerfile.api` | FastAPI on Python 3.12, non root, health checked |
 | Worker image | `docker/Dockerfile.worker` | Dispatcher and worker, selected by `METER_ROLE` |
 | Web image | `docker/Dockerfile.web` | React build served by nginx |
@@ -354,6 +354,7 @@ Templates for new documents: [docs/templates/](docs/templates/README.md)
 | Feature doc checker | `scripts/docs/check_feature_docs.py` | Fails when a feature has no document |
 | File graph | `scripts/docs/build_file_graph.py` | Builds the graph, fails on a layering violation |
 | Migration runner | `scripts/deploy/run_migration_task.sh` | One off ECS task before rollout |
+| Session accounting | `make dev`, `make stats` | Runs a coding session behind the pxpipe proxy and reports its token usage |
 | Code review | `scripts/ci/code_review.py` | Deterministic checks, then the review checklist |
 | Script index | `scripts/README.md` | Every script, what it does, how it is run |
 

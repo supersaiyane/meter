@@ -37,6 +37,8 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-08-23 | Close eleven findings, remediation wave one | Done | `finops_mcp` brought under an import linter contract, gitleaks added to the CI tool anchor, `setup` now installs the scanners, `local-auth.example.yaml` committed, CODEOWNERS and SECURITY.md and .editorconfig added, MCP packaged as a second process in the api image, `PARTIAL` defined, the dead HTML graph removed, the context index generator written, the duplicated roadmap table generated | `audits/REMEDIATION-LOG.md`. CHG-0021, commit `ef23f8a` |
 | 2026-08-23 | Close the two blocking findings | Done | `docs/08-THREAT-MODEL.md`, STRIDE across six trust boundaries with five residual risks tracked as ISS-073 to ISS-077. `docs/09-DATA-CLASSIFICATION.md`, every table classified with retention, erasure and five enforcement jobs. It produced a schema change: `cloud_account.email` removed, because the account root email is personal data no feature reads | CHG-0022, commit `3a16bd0`. TASK-P0-032 added for retention |
 | 2026-08-23 | Close the final five findings | Done | Disaster recovery in the architecture, observability as `docs/10-OBSERVABILITY.md`, the running cost estimate in the deployment guide, exit criteria in the roadmap, and the performance budget as P0 spec section 11b. Writing the cost estimate found a real error in prior work, ISS-080: the VPC endpoints were justified on cost and NAT is cheaper below roughly 1,560 GB per month. Reasoning corrected, conclusion kept on security grounds | CHG-0023, commit `6cceaa8`. TASK-P0-033 added for SLOs |
+| 2026-08-23 | Record token usage for coding sessions | Done | `make dev` launches Claude Code behind the pxpipe proxy, `make stats` reports what a session cost. Verified against the real log, which reported a last write of 2026-08-10 and so proved this session was never behind the proxy. Two caveats written into the README rather than left to be discovered: the proxy currently compresses nothing, every request skipped as `unsupported_model`, and its log is machine global rather than scoped to Meter | `Makefile` targets `dev`, `stats`, `stats-json`. `README.md` section 3. CHG-0024, ISS-081, commit `a92ae60` |
+| 2026-08-23 | Correct stale counts found by the checkpoint gate | Done | `project_map.md` and `INDEX.md` both claimed the Makefile had 28 targets when it has 51. Both now describe it without naming a number, because a count in prose goes stale silently and nothing checks it | `project_map.md` line 22, `INDEX.md` build and deployment table |
 
 ## Next action
 
@@ -60,7 +62,22 @@ P0.
 | Where a change gets recorded | `docs/03-CHANGE-CONTROL.md` |
 | Rules binding every change | `CLAUDE.md` |
 
-### Resume vector, as of 2026-09-12
+### Resume vector, as of 2026-09-15
+
+| What | Where |
+| --- | --- |
+| Git position | branch `main`, 47 commits, working tree clean |
+| **The gate, still open** | User review of `docs/specs/2026-08-23-p0-foundation-design.md`. Status is `In review`. Nothing has approved it |
+| First task on approval | `docs/plans/P0-implementation-plan.md`, **TASK-P0-029**, not 001 |
+| Unblocked today, needing nobody | TASK-P0-029, then waves A, B and C, tasks 001 to 012. 16 of 33 tasks, none touching AWS |
+| Blocked on other people | Management account trusted access and the organization reader role, ISS-002, needed by wave D. Regions beyond Ireland and London, OPEN-06, needed by wave F |
+| Ask early | ISS-078, whether a regulatory floor exceeds the 37 month cost retention. If answered late it changes the schema |
+| Start a session | `make dev`, not plain `claude`, or the session is not recorded |
+| Check everything | `make check-docs && make check-writing` |
+| End a session | `make session-end` |
+| Next audit due | At the P0 boundary, scope `code` |
+
+### Earlier resume vector, as of 2026-09-12
 
 | What | Where |
 | --- | --- |

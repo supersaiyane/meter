@@ -19,7 +19,7 @@ exists.
 meter/
 ├── INDEX.md                   master index, the entry point for the project
 ├── README.md                  what Meter is, and the documentation map
-├── Makefile                   28 targets, run `make help`
+├── Makefile                   every routine task, run `make help`
 ├── pyproject.toml             dependencies, lint rules, import linter contract
 ├── docker-compose.yml         local stack only, never used to deploy
 ├── .gitlab-ci.yml             verify, security, build, scan, plan, deploy
@@ -130,6 +130,7 @@ continuous integration, not by good intentions.
 | Is the posture currently clean | `security/POSTURE.md` |
 | How often does this data refresh | `docs/06-DATA-FRESHNESS.md` |
 | What does this script do | `scripts/README.md` |
+| How do I record what a session cost | `make dev` to start, `make stats` to report. See `README.md` |
 | Why does this project exist, what counts as success | `docs/00-GOAL.md` |
 | What are we building and in what order | `docs/01-ROADMAP.md` |
 | Why was a technology chosen | `docs/adr/` |
