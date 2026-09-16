@@ -1025,6 +1025,17 @@ changes:
   commit: '1f34786'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-023'
 issues:
+- id: ISS-138
+  severity: HIGH
+  summary: ADR-0019 decided Tailwind driven by our tokens, and it was never installed or admitted
+    through make dep-check. tokens.css carries 27 tokens of which 6 are consumed, and defines no
+    layout selector at all, so every screen renders as browser default HTML. Sections 3 and 5 of
+    docs/12-UI-DESIGN.md, provenance and failure, are implemented. Sections 7 and 10, density,
+    spacing, surface, border and responsive, are not. The severity ramp is declared and never
+    applied, so severity reads as repeated squares with no colour. Found 2026-09-16 while running
+    the application
+  status: OPEN
+  detail: '[ADR-0019](docs/adr/ADR-0019-headless-components-own-visual-layer.md), `finops-web/src/tokens.css`'
 - id: ISS-137
   severity: MEDIUM
   summary: A scanned volume under one MiB renders as the numeral zero on the query findings screen.
