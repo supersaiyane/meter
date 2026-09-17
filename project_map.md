@@ -151,7 +151,11 @@ meter/
 │   │                          drift from collected ones and the ingest and
 │   │                          freshness screens fill from the same act. Refuses
 │   │                          any non local host before an engine exists, and
-│   │                          make unseed clears it by its fixed tenant
+│   │                          make unseed clears it by its fixed tenant.
+│   │                          restore_drill.py restores a copy into a scratch
+│   │                          database, migrates it, starts the application
+│   │                          against it and reads the freshness route. The
+│   │                          same non local refusal, for the same reason
 │   └── deploy/                migration task runner
 │
 ├── tests/                     the suite. conftest.py refuses to run against a

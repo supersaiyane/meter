@@ -2028,9 +2028,15 @@ the library. Whether it then draws them legibly is a question about a browser.
 - [x] **Performance budgets 1 and 2 asserted**, see spec section 11b: a 300
       account sweep under 15 minutes against a seeded fake provider, and API
       p95 under 500 ms on scoped reads
-- [ ] **Restore drill performed**: restore Aurora into a scratch database, run
-      the migrations, confirm the application starts and the freshness screen
-      reports correctly. A restore that has never been tested is a hypothesis
+- [~] **Restore drill performed**, three steps of four. `make restore-drill`
+      restores a copy into a scratch database, runs the migrations to head,
+      starts the application against it and reads `/healthz` and the freshness
+      route. Performed 2026-09-17 against a real restore of a real database: 21
+      tables, migrations to `0006_refresh_floor`, the application started, ten
+      collectors reported. **Restoring from an Aurora snapshot has not been
+      done**, because no account has ever been provisioned. ISS-111 is now that
+      one link rather than the whole chain, and `docs/runbooks/restore.md` is
+      the procedure
 
 **Do not.**
 
@@ -2061,7 +2067,8 @@ asserted against the built application rather than the test renderer.
 TASK-P0-026 and TASK-P0-027: the partial coverage state, the tree at 300
 accounts, and the graph at 300 accounts. The graph drew in under a second.
 
-**The restore drill was not performed.** It needs an Aurora cluster to restore
+**The restore drill is now performed except for its first step.** It needs an
+Aurora cluster to restore
 into a scratch database, and there is none here. This criterion is open, and it
 is the one thing in P0 that is written down as done nowhere. It has to be run
 against a real deployment before P0 is signed off.
@@ -2110,7 +2117,12 @@ make test-all && make test-e2e
       joins do not dangle
 - [x] `erase_principal.py` performs all five erasure steps in one transaction
       and prints what it changed
-- [ ] Backup retention set in Terraform to match the table policy. Deferred to
+- [x] Backup retention set in Terraform to match the table policy. It is 35, the
+      AWS ceiling, and every table window is 90 days or longer, so a backup can
+      never outlive the policy. `tests/scripts/test_backup_retention.py` holds
+      the two in step: they live in different files, neither is executed by
+      anything here, and nothing else would notice them drifting. Originally
+      deferred to
       TASK-P0-015, which is where the Aurora cluster is defined. There is
       nowhere to set it until that file exists
 

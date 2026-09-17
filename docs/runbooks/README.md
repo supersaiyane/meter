@@ -20,3 +20,13 @@ Two runbooks cover three alarms, because the widespread stalled alarm is the
 same failure as the single scope one and its first diagnostic step is telling
 them apart. Splitting them would mean two files whose first paragraph is the
 same question.
+
+## Not paged, still needed
+
+| Procedure | Runbook |
+| --- | --- |
+| Restore the database, and the drill that proves the procedure works | `restore.md` |
+
+Nothing pages for a restore, because by the time one is needed somebody already
+knows. It is here because a restore that has never been rehearsed is a
+hypothesis, and `make restore-drill` is how the rehearsal happens.

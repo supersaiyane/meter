@@ -286,6 +286,15 @@ migrate: ## Apply migrations to the local database
 seed: ## Fill the local database with a demo estate. Refuses a non local database
 	$(COMPOSE) run --rm api python scripts/ops/seed_demo.py
 
+.PHONY: restore-drill
+restore-drill: ## Restore into a scratch database and prove it works. TASK-P0-028
+	@set -a; . ./.env; set +a; \
+	  METER_DATABASE_URL="postgresql+psycopg://meter:meter_local_only@localhost:$${METER_POSTGRES_PORT:-5432}/meter" \
+	  METER_LOCAL_AUTH_FILE="$(PWD)/local-auth.yaml" \
+	  $(BIN)/python scripts/ops/restore_drill.py \
+	    --dump-command "$(COMPOSE) exec -T postgres pg_dump" \
+	    --dump-url "postgresql+psycopg://meter:meter_local_only@localhost:5432/meter"
+
 .PHONY: unseed
 unseed: ## Clear the demo estate. Every row it wrote, in one command
 	$(COMPOSE) run --rm api python scripts/ops/seed_demo.py --remove

@@ -2041,9 +2041,14 @@ issues:
 - id: ISS-111
   severity: HIGH
   status: OPEN
-  summary: The restore drill required by TASK-P0-028 has not been performed, because it needs
-    an Aurora cluster to restore into a scratch database. P0 is not signed off until it is
-  detail: '[P0 plan](docs/plans/P0-implementation-plan.md) TASK-P0-028'
+  summary: Narrowed 2026-09-17 from the whole drill to its first step. The procedure now exists
+    as make restore-drill and docs/runbooks/restore.md, and three of its four steps have been
+    performed against a real restore of a real database, 21 tables with the migrations reaching
+    head, the application starting against the restored data and the freshness route reporting
+    ten collectors. Those three are where restores actually fail. What has never run is restoring
+    from an Aurora snapshot, because no account has ever been provisioned, which is ISS-122. P0 is
+    not signed off until that one step has been done once
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md) TASK-P0-028, `docs/runbooks/restore.md`'
 - id: ISS-114
   severity: HIGH
   status: FIXED

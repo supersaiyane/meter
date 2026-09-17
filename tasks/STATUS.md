@@ -69,8 +69,12 @@ nothing about whether the stack builds. No plan has been produced and nothing
 has been applied. ISS-122. This is also what keeps TASK-P2-016 parked, and
 TASK-P2-016 is what two of the five missing routes wait on.
 
-**The restore drill has not been performed.** It needs an Aurora cluster to
-restore into a scratch database. ISS-111.
+**The restore drill is performed except for its first step.** `make
+restore-drill` restores a copy into a scratch database, runs the migrations to
+head, starts the application against it and reads the freshness route, and it
+has been run against a real restore. Restoring from an Aurora snapshot has not
+been done, because there is no account. ISS-111 is now that one link rather
+than the whole chain, and `docs/runbooks/restore.md` is the procedure.
 
 Both are open and both are acceptance criteria. P0 is not done until they are
 closed, and calling it done before then would be exactly the kind of claim this
