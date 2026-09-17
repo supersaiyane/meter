@@ -3,6 +3,7 @@ import type {
   ApiMeta,
   ApiQueryFinding,
   ApiQueryFindingDetail,
+  ApiSurfaceInstance,
 } from '../types';
 
 /**
@@ -121,4 +122,52 @@ export function queryFindingDetailFixture(
   id: string,
 ): ApiEnvelope<ApiQueryFindingDetail | null> {
   return { data: QUERY_FINDING_DETAILS[id] ?? null, meta: FIXTURE_META };
+}
+
+/**
+ * The surfaces queries live in.
+ *
+ * All three are `managed_grafana`, because that is the only kind with an
+ * adapter: `SurfaceKind` also names `self_hosted_grafana` and `grafana_cloud`,
+ * and both were descoped as TASK-P2-007 and TASK-P2-008. A fixture claiming
+ * them would show an estate that cannot currently exist, which is the same
+ * mistake as inventing a calibration.
+ *
+ * One instance is unreachable and carries its cause, because that is the row
+ * this screen exists for. Its query count is null rather than zero.
+ */
+export const SURFACE_INSTANCES: readonly ApiSurfaceInstance[] = [
+  {
+    surface_id: 'ws-0a1b2c3d',
+    name: 'meter-prod-eu-west-1',
+    kind: 'managed_grafana',
+    location: 'g-0a1b2c3d.grafana-workspace.eu-west-1.amazonaws.com',
+    reachable: false,
+    unreachable_cause: 'AccessDenied',
+    query_count: null,
+  },
+  {
+    surface_id: 'ws-4e5f6a7b',
+    name: 'meter-prod-eu-west-2',
+    kind: 'managed_grafana',
+    location: 'g-4e5f6a7b.grafana-workspace.eu-west-2.amazonaws.com',
+    reachable: true,
+    unreachable_cause: null,
+    query_count: 2,
+  },
+  {
+    surface_id: 'ws-8c9d0e1f',
+    name: 'meter-staging-eu-west-2',
+    kind: 'managed_grafana',
+    location: 'g-8c9d0e1f.grafana-workspace.eu-west-2.amazonaws.com',
+    reachable: true,
+    unreachable_cause: null,
+    // A genuine zero: reachable, read, and holding nothing. It renders as 0 and
+    // must not be confusable with the null above it.
+    query_count: 0,
+  },
+];
+
+export function surfaceInstancesFixture(): ApiEnvelope<ApiSurfaceInstance[]> {
+  return { data: [...SURFACE_INSTANCES], meta: FIXTURE_META };
 }

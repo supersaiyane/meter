@@ -83,7 +83,7 @@ ISS-003.
 | Sub project | Done | Partly | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 38 | 0 | 0 | 0 | 38 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P2 | 6 | 0 | 2 | 17 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
+| P2 | 7 | 0 | 2 | 16 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -140,6 +140,7 @@ ISS-003.
 | `TASK-P2-008` | Descoped, 2026-09-02 | the Grafana Cloud connection strategy |
 | `TASK-P2-022` | Done, 2026-09-13 | the query findings screen |
 | `TASK-P2-023` | Done, 2026-09-15 | the finding detail screen |
+| `TASK-P2-024` | Done, 2026-09-17 | the query surfaces screen |
 
 <!-- generated:task-status end -->
 

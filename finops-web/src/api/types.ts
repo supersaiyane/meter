@@ -138,3 +138,20 @@ export interface ApiQueryFindingDetail {
   readonly measured_runs_per_day: number | null;
   readonly measured_bytes_scanned_per_run: number | null;
 }
+
+export interface ApiSurfaceInstance {
+  readonly surface_id: string;
+  readonly name: string;
+  /** managed_grafana, self_hosted_grafana or grafana_cloud. A closed set. */
+  readonly kind: string;
+  readonly location: string;
+  readonly reachable: boolean;
+  /** One of the six causes, by name. Required when reachable is false. */
+  readonly unreachable_cause: string | null;
+  /**
+   * Null when the instance could not be read. Null is not zero: an instance
+   * Meter cannot reach has an unknown number of queries, and rendering that as
+   * zero is what makes an estate look smaller than it is.
+   */
+  readonly query_count: number | null;
+}

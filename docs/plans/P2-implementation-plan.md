@@ -1189,7 +1189,7 @@ No accuracy figure until FEAT-018 publishes one."
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-17 |
 | Implements | P2 spec section 9.3, `docs/13-UI-ARCHITECTURE.md` section 9.3 |
 | Delivers | FEAT-011 at the surface |
 | Depends on | TASK-P0-037, TASK-P2-004 |
@@ -1197,10 +1197,10 @@ No accuracy figure until FEAT-018 publishes one."
 
 **Acceptance criteria.**
 
-- [ ] Every instance, its kind, its reachability and its query count
-- [ ] **An unreachable instance is listed**, with its typed cause and a recheck
-- [ ] The query count for an unreachable instance is `UNREACHABLE`, **not zero**
-- [ ] Axe reports zero violations
+- [x] Every instance, its kind, its reachability and its query count
+- [x] **An unreachable instance is listed**, with its typed cause and a recheck
+- [x] The query count for an unreachable instance is `UNREACHABLE`, **not zero**
+- [x] Axe reports zero violations
 
 **Do not.**
 
@@ -1209,9 +1209,17 @@ No accuracy figure until FEAT-018 publishes one."
   three it could not reach makes the findings list look complete when it is not.
 - Do not render its query count as zero. A failure is never a number.
 
+**Deviation.** The plan asked for one instance per `SurfaceKind`. All three
+fixture instances are `managed_grafana`, because that is the only kind with an
+adapter: `self_hosted_grafana` and `grafana_cloud` were descoped as TASK-P2-007
+and TASK-P2-008, and a fixture claiming them would show an estate that cannot
+currently exist. A third assertion was added beyond the two planned, that a
+genuine zero still renders as zero, because the unreachable row only means
+something if it does not compete with a real one.
+
 **Steps.**
 
-- [ ] **Step 1: write the failing test**
+- [x] **Step 1: write the failing test**
 
 `finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx`
 
@@ -1247,12 +1255,12 @@ describe('QuerySurfacesScreen', () => {
 });
 ```
 
-- [ ] **Step 2: run it and watch it fail**
+- [x] **Step 2: run it and watch it fail**
 
 Run: `cd finops-web && npm run test -- --run src/screens/__tests__/QuerySurfacesScreen.test.tsx`
 Expected: FAIL, cannot find module.
 
-- [ ] **Step 3: add the wire type, the fixture and the screen**
+- [x] **Step 3: add the wire type, the fixture and the screen**
 
 `ApiSurfaceInstance` in `finops-web/src/api/types.ts` with `instance_id`,
 `name`, `kind`, `reachable`, `unreachable_cause` and `query_count`, where
@@ -1269,7 +1277,7 @@ path `/api/v1/query/instances`, and fixture `SURFACE_INSTANCES`.
 `query_count === null` renders `TypedError` with the cause. It never renders a
 numeral, per rule 5 of `docs/12-UI-DESIGN.md`.
 
-- [ ] **Step 4: run the tests, route it, run the suite, commit**
+- [x] **Step 4: run the tests, route it, run the suite, commit**
 
 Run: `cd finops-web && npm run test -- --run && npm run lint && npm run build`
 

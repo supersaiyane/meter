@@ -2,12 +2,17 @@ import { useQuery } from '@tanstack/react-query';
 
 import { useApi } from './apiContext';
 import { resolveSurface, type Resolved } from './fixtureSeam';
-import { queryFindingDetailFixture, queryFindingsFixture } from './fixtures/query';
+import {
+  queryFindingDetailFixture,
+  queryFindingsFixture,
+  surfaceInstancesFixture,
+} from './fixtures/query';
 import type {
   Account,
   ApiEnvelope,
   ApiQueryFinding,
   ApiQueryFindingDetail,
+  ApiSurfaceInstance,
   Freshness,
   PlatformCost,
   Run,
@@ -108,5 +113,14 @@ export function useQueryFinding(id: string) {
     '/api/v1/query/findings/{id}',
     `/api/v1/query/findings/${id}`,
     () => queryFindingDetailFixture(id),
+  );
+}
+
+export function useQuerySurfaces() {
+  return useQuerySurface<ApiSurfaceInstance[]>(
+    ['query-instances'],
+    '/api/v1/query/instances',
+    '/api/v1/query/instances',
+    surfaceInstancesFixture,
   );
 }
