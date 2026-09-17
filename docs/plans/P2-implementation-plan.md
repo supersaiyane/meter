@@ -1476,16 +1476,22 @@ screen that stops silent under counting."
 - [~] An end to end Playwright journey: a violating dashboard is detected, seen
       ranked, its owner seen, the workspace floor applied, and the undo confirmed.
       **Detect, rank and attribute are done, and the journey also covers the
-      unreachable instance, the genuine zero, both expiry forms and revoke. The
-      floor and the undo are not, because they are TASK-P2-017 and TASK-P2-019
-      and neither is built.**
+      unreachable instance, the genuine zero, both expiry forms, revoke, and
+      since 2026-09-16 the workspace refresh floor from TASK-P2-017. The undo is
+      still not covered: TASK-P2-019 built it, and no route exposes it, which is
+      ISS-148. The journey drives the interface, so it cannot reach a mechanism
+      the interface has no way to call.**
 - [x] Axe reports zero violations
 
 **Plan defect found here.** This task's dependency list names TASK-P2-022 to
 024, but its journey criterion needs the workspace floor from TASK-P2-017 and
 the undo from TASK-P2-019. The criterion was written against the finished sub
-project rather than against this task's own dependencies. Complete the journey
-when TASK-P2-019 lands, and only then move this task to Done.
+project rather than against this task's own dependencies.
+
+Both landed on 2026-09-16 and the journey covers the floor. The undo has a
+mechanism and no route, so this task stays Partly until ISS-148 closes. That is
+a second instance of the same defect: a journey criterion depends on the routes
+task, and nothing in the dependency list said so.
 
 **Do not.**
 

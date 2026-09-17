@@ -329,6 +329,12 @@ meter/
 │   ├── ledger.py              idempotent claims, watermarks that only advance
 │   ├── registry.py            what a collector is. Cadence lives in the database
 │   ├── dispatcher.py          one message per unit, keyed like the ledger claim
+│   ├── remediation.py         the only two writes Meter makes, both gated on
+│   │                          query_write_level and both recording what they
+│   │                          replaced. A rewrite reads back and reverts itself
+│   │                          if it did not take, and records nothing when it
+│   │                          does, because a change row claims the estate
+│   │                          changed and stayed changed
 │   ├── worker.py              one transaction per unit. Only the six are caught
 │   └── collectors/
 │       ├── org_tree.py        whole tree replaced in one transaction, never emptied
@@ -393,6 +399,12 @@ meter/
 │   │                          arithmetic, so a new engine is a branch not a rate
 │   ├── cost_model.py          runs per day, cost per run, quota pressure. No IO,
 │   │                          no clock, no client. Every figure is modelled
+│   ├── severity.py           the dollar bands, ADR-0016, and the closed cause
+│   │                          vocabulary findings are grouped by. Prose cannot
+│   │                          be grouped on
+│   ├── gate.py               the CI policy gate. No database, no credentials,
+│   │                          no network, so it runs in any pipeline. It fails
+│   │                          rather than warning, and names the money
 │   ├── policy.py              two keys, and the difference is the point.
 │   │                          fingerprint identifies one definition, because the
 │   │                          unique constraint makes it a row's identity.

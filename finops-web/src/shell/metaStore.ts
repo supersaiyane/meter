@@ -40,6 +40,9 @@ export interface AggregateMeta {
   readonly failures: readonly ApiFailure[];
 }
 
+/** What a coverage line says when the response did not name what it counted. */
+const FALLBACK_UNIT = 'in view';
+
 export const EMPTY_AGGREGATE: AggregateMeta = {
   asOf: null,
   collectedAt: null,
@@ -92,10 +95,14 @@ export function aggregate(metas: readonly ApiMeta[]): AggregateMeta {
   const resolvedVisible = Number.isFinite(visible) ? visible : 0;
   // Two surfaces counting different things cannot be described by either noun,
   // and picking one of them would be a claim nothing supports.
-  const units = new Set(metas.map((meta) => meta.scope_coverage.unit));
+  // Defaulted, because a response that predates the field, or one from a
+  // version that never had it, would otherwise render the literal word
+  // `undefined` in a coverage statement. A missing noun is not a noun.
+  const units = new Set(metas.map((meta) => meta.scope_coverage.unit || FALLBACK_UNIT));
   const byUnit = new Map<string, CoverageLine>();
   for (const meta of metas) {
-    const { unit, visible: seen, total: all } = meta.scope_coverage;
+    const { visible: seen, total: all } = meta.scope_coverage;
+    const unit = meta.scope_coverage.unit || FALLBACK_UNIT;
     const line = byUnit.get(unit);
     byUnit.set(unit, {
       unit,

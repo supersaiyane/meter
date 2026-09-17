@@ -11,7 +11,7 @@ import { expect, test, type Page } from '@playwright/test';
 const META_PARTIAL = {
   as_of: '2026-08-27T04:00:00Z',
   collected_at: '2026-08-27T09:54:00Z',
-  scope_coverage: { visible: 2, total: 5, is_partial: true },
+  scope_coverage: { visible: 2, total: 5, is_partial: true, unit: 'accounts' },
   degraded: true,
   failures: [
     {
@@ -166,7 +166,7 @@ test('the organization map stays usable at three hundred accounts', async ({ pag
         meta: {
           as_of: '2026-08-27T04:00:00Z',
           collected_at: '2026-08-27T09:54:00Z',
-          scope_coverage: { visible: 270, total: 300, is_partial: true },
+          scope_coverage: { visible: 270, total: 300, is_partial: true, unit: 'accounts' },
           degraded: false,
           failures: [],
         },
@@ -180,7 +180,7 @@ test('the organization map stays usable at three hundred accounts', async ({ pag
         meta: {
           as_of: null,
           collected_at: null,
-          scope_coverage: { visible: 0, total: 300, is_partial: true },
+          scope_coverage: { visible: 0, total: 300, is_partial: true, unit: 'accounts' },
           degraded: true,
           failures: [],
         },
@@ -225,14 +225,99 @@ test('an unbuilt screen is listed, reachable, and names what will fill it', asyn
 });
 
 test('a violating dashboard is found, attributed, and its control is legible', async ({ page }) => {
-  // The P2 arc that exists today. Every one of these screens is fixture backed,
-  // so no route is stubbed: what this proves is that the real bundle renders
-  // the honesty rules, and that the fixture says it is a fixture.
-  await page.goto('/governance/queries');
-  await expect(page.getByTestId('fixture-band')).toBeVisible();
+  // The P2 arc that exists today. The findings screen went live with
+  // TASK-P2-021, so it no longer carries the fixture band: enforcement is the
+  // screen that still does, and this journey checks both ends of that.
+  // The findings and groups screens went live with TASK-P2-021 and P2-012, so
+  // they are stubbed rather than left to the fixture seam. Enforcement is not
+  // stubbed on purpose: it is still fixture backed and this journey checks that
+  // it says so.
+  const meta = {
+    as_of: '2026-09-11T04:00:00Z',
+    collected_at: '2026-09-11T09:54:00Z',
+    scope_coverage: { visible: 2, total: 3, is_partial: true, unit: 'workspaces' },
+    degraded: false,
+    failures: [],
+  };
+  await page.route('**/api/v1/query/groups', async (route) => {
+    await route.fulfill({
+      json: {
+        data: [
+          {
+            cause: 'VERY_FAST_REFRESH',
+            label: 'Sub minute auto refresh',
+            findings: 12,
+            monthly_cost: '200.00',
+            severity: 'HIGH',
+            as_of: meta.as_of,
+            collected_at: meta.collected_at,
+          },
+        ],
+        meta,
+      },
+    });
+  });
+  await page.route('**/api/v1/query/findings', async (route) => {
+    await route.fulfill({
+      json: {
+        data: [finding],
+        meta,
+      },
+    });
+  });
 
-  // Ranked by cost, with the reason as a column rather than a tooltip.
-  const first = page.getByRole('row').nth(1);
+  const finding = {
+    finding_id: '11111111-1111-1111-1111-111111111111',
+    dashboard_uid: 'abc123',
+    dashboard_title: 'Platform overview',
+    panel_title: 'Error rate by service',
+    folder_uid: 'folder-platform',
+    engine: 'LOGS_INSIGHTS',
+    origin: 'PANEL',
+    refresh_seconds: 10,
+    window_seconds: 2592000,
+    runs_per_day: '8640.00',
+    scan_bytes_per_run: 4294967296,
+    monthly_cost: '5184.00',
+    provenance: 'modelled',
+    measured_runs: null,
+    severity: 'CRITICAL',
+    cause: 'VERY_FAST_REFRESH',
+    owner: 'platform-team@example.com',
+    owner_source: 'FOLDER_MAP',
+    why: 'Refreshes every 10 seconds against a 30 day window, so it rescans 4 GiB 8,640 times a day.',
+    as_of: meta.as_of,
+    collected_at: meta.collected_at,
+  };
+  await page.route('**/api/v1/query/findings/*', async (route) => {
+    await route.fulfill({
+      json: {
+        data: {
+          ...finding,
+          query_text: 'fields @timestamp, @message | filter @message like /ERROR/',
+          targets: ['/aws/ecs/meter-api'],
+          region: 'eu-west-2',
+          last_editor: null,
+          rate_usd_per_gib: '0.005',
+          accuracy_percent: null,
+        },
+        meta,
+      },
+    });
+  });
+
+  await page.goto('/governance/queries');
+  await expect(page.getByTestId('fixture-band')).toHaveCount(0);
+
+  // The systemic problem is stated above the list it is drawn from. ADR-0016.
+  const groups = page.locator('table', { hasText: 'What is driving the cost' });
+  await expect(groups.getByRole('row').nth(1)).toContainText('Sub minute auto refresh');
+
+  // The groups panel sits above the list since TASK-P2-012, so the findings
+  // table is the second one on the page. Located by its caption rather than by
+  // position, so adding a third panel does not silently retarget this.
+  const findings = page.locator('table', { hasText: 'Queries ranked by what they cost' });
+  const first = findings.getByRole('row').nth(1);
   await expect(first).toContainText('Error rate by service');
   await expect(first).toContainText('rescans 4 GiB');
   await expect(first).toContainText('platform-team');
@@ -249,14 +334,58 @@ test('a violating dashboard is found, attributed, and its control is legible', a
   await expect(page.getByTestId('finding-working')).toContainText('1,036,800 GiB scanned per month');
   await expect(page.getByText('~ $5,184.00', { exact: false })).toBeVisible();
 
-  // The instance list is where under counting is stopped.
+  // The instance list is where under counting is stopped. Route backed since
+  // TASK-P2-021, so it is stubbed like the rest of the arc.
+  await page.route('**/api/v1/query/instances', async (route) => {
+    await route.fulfill({
+      json: {
+        data: [
+          {
+            instance_id: '0a1b2c3d-0000-4000-8000-000000000001',
+            name: 'meter-prod-eu-west-1',
+            kind: 'AMG',
+            endpoint: 'https://g-0a1b2c3d.grafana-workspace.eu-west-1.amazonaws.com',
+            account_id: '111122223333',
+            region_id: 'eu-west-1',
+            reachable: false,
+            unreachable_reason: 'AccessDenied',
+            refresh_floor_seconds: null,
+            query_count: null,
+            as_of: meta.as_of,
+            collected_at: meta.collected_at,
+          },
+          {
+            instance_id: '8c9d0e1f-0000-4000-8000-000000000003',
+            name: 'meter-staging-eu-west-2',
+            kind: 'AMG',
+            endpoint: 'https://g-8c9d0e1f.grafana-workspace.eu-west-2.amazonaws.com',
+            account_id: '444455556666',
+            region_id: 'eu-west-2',
+            reachable: true,
+            unreachable_reason: null,
+            refresh_floor_seconds: 30,
+            // A genuine zero: read, and holding nothing. It must not be
+            // confusable with the null above it.
+            query_count: 0,
+            as_of: meta.as_of,
+            collected_at: meta.collected_at,
+          },
+        ],
+        meta,
+      },
+    });
+  });
   await page.goto('/governance/instances');
   const unreachable = page.getByRole('row').filter({ hasText: 'meter-prod-eu-west-1' });
   await expect(unreachable).toContainText('ACCESS DENIED');
   // A genuine zero, two rows down, still reads as zero.
-  await expect(
-    page.getByRole('row').filter({ hasText: 'meter-staging-eu-west-2' }),
-  ).toContainText('0');
+  const staging = page.getByRole('row').filter({ hasText: 'meter-staging-eu-west-2' });
+  await expect(staging).toContainText('0');
+
+  // TASK-P2-017. A workspace enforcing no floor accepts a one second refresh
+  // from anybody, and `none set` is not the same claim as a floor of zero.
+  await expect(unreachable).toContainText('none set');
+  await expect(staging).toContainText('30 s');
 
   // The control, its expiry in both forms, and a revoke that says what it did.
   await page.goto('/governance/enforcement');

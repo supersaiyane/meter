@@ -15,6 +15,17 @@ function meta(partial: Partial<ApiMeta> = {}): ApiMeta {
 }
 
 describe('the counted noun', () => {
+  it('never renders a missing noun as the word undefined', () => {
+    // A response that predates the field, or one from a version that never had
+    // it, put `Showing 2 of 5 undefined` on the screen. A missing noun is not a
+    // noun, and a coverage statement is the last place to print a placeholder.
+    const older = meta({
+      scope_coverage: { visible: 2, total: 5, is_partial: true } as never,
+    });
+    expect(aggregate([older]).unit).toBe('in view');
+    expect(aggregate([older]).coverage[0]?.unit).toBe('in view');
+  });
+
   it('takes the noun the route reported', () => {
     // The shell used to say `accounts` on every screen, and the query screens
     // count workspaces. A wrong noun in a coverage statement is a wrong claim.
