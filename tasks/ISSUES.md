@@ -34,7 +34,7 @@ Status: `OPEN`, `IN PROGRESS`, `FIXED`, `WONT FIX`, `PARKED`, `CLOSED`.
 <!-- generated:issue-register start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-78 issues. 56 fixed, 22 open, 0 parked.
+83 issues. 58 fixed, 25 open, 0 parked.
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in `tasks/STATUS.md`.
 
@@ -70,6 +70,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-058 | HIGH | The issue register drifted: 22 issues existed only in docs/registry.yaml and not in tasks/ISSUES.md | FIXED | [A001-F01](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-059 | HIGH | The CI dependency-scan job runs scan.sh which requires gitleaks, but the security tools anchor does not install it, so the job exits 2 | FIXED | [A001-F03](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-060 | HIGH | make verify runs security-scan but nothing installs the scanners first, so a clean machine fails on tooling and it reads like a security failure | FIXED | [A001-F05](audits/AUDIT-001-2026-08-23-full-project.md) |
+| ISS-085 | HIGH | Nothing scans what leaves for the language model provider, so a secret could be sent outbound in a prompt | OPEN | FEAT-046. Seven scanners cover what comes in and none cover what goes out |
 | ISS-011 | MEDIUM | A model producing sizing numbers destroys trust on the first hallucination | FIXED | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
 | ISS-012 | MEDIUM | Organization wide AWS Config recording is a five figure monthly cost | OPEN | [tasks/ISSUES.md](tasks/ISSUES.md), resolved in P4 |
 | ISS-013 | MEDIUM | Hundreds of describe loops for inventory is a year of work | FIXED | [roadmap](docs/01-ROADMAP.md) P4 |
@@ -108,6 +109,10 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-078 | MEDIUM | Unknown whether a regulatory retention floor exceeds the 37 month cost retention, which financial services often sets at 7 years | OPEN | [Data classification](docs/09-DATA-CLASSIFICATION.md) open question. Raised before data is aggregated away |
 | ISS-079 | MEDIUM | The audit_event non erasure position needs sign off from whoever owns data protection | OPEN | [Data classification](docs/09-DATA-CLASSIFICATION.md) open question. Before the first production deployment |
 | ISS-080 | MEDIUM | VPC interface endpoints were justified on cost, and the arithmetic shows NAT is cheaper below roughly 1,560 GB per month, which is far above Meter actual egress | FIXED | Found while writing the cost estimate. [Deployment, network](docs/04-DEPLOYMENT.md). Decision stands on security grounds, stated honestly |
+| ISS-082 | MEDIUM | Cost finding severity was a chosen label rather than derived from impact, so the ranking reflected the author rather than the money | FIXED | [ADR-0016](docs/adr/ADR-0016-dollar-based-severity.md) |
+| ISS-083 | MEDIUM | Anomaly detection had no thresholds defined at all, which is how anomaly detection becomes noise and gets muted | FIXED | [Competitive review](docs/11-COMPETITIVE-REVIEW.md). FEAT-023 amended with three concurrent thresholds |
+| ISS-084 | MEDIUM | The topology graph was built and used only for drawing, when it can score the blast radius of a change and gate auto apply | OPEN | FEAT-044 |
+| ISS-086 | MEDIUM | Allocation had no export path, and finance does not work inside the product interface | OPEN | FEAT-045 |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |

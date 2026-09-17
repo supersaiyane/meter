@@ -39,13 +39,13 @@ P0 Foundation
 | ID | Name | Features | Specified | Planned |
 | --- | --- | --- | --- | --- |
 | P0 | Foundation | 10 | 10 | 0 |
-| P1 | Cost Intelligence | 5 | 0 | 5 |
+| P1 | Cost Intelligence | 6 | 0 | 6 |
 | P2 | Query Cost Governance | 9 | 0 | 9 |
-| P3 | Utilization and Rightsizing | 5 | 0 | 5 |
+| P3 | Utilization and Rightsizing | 7 | 0 | 7 |
 | P4 | Inventory and Topology | 3 | 0 | 3 |
 | P5 | Quotas and Limits | 2 | 0 | 2 |
-| P6 | Containers | 3 | 0 | 3 |
-| P7 | Insight and LLM layer | 5 | 0 | 5 |
+| P6 | Containers | 5 | 0 | 5 |
+| P7 | Insight and LLM layer | 6 | 0 | 6 |
 
 <!-- generated:roadmap-status end -->
 
@@ -101,13 +101,13 @@ rather than that one saving happened.
 | ID | Name | Status | Features | Spec | Plan | Depends on |
 | --- | --- | --- | --- | --- | --- | --- |
 | P0 | Foundation | Design approved, spec in review | 10 (10 specified) | [spec](specs/2026-08-23-p0-foundation-design.md) | [plan](plans/P0-implementation-plan.md) | none |
-| P1 | Cost Intelligence | Not started | 5 (0 specified) | not written | not written | P0 |
+| P1 | Cost Intelligence | Not started | 6 (0 specified) | not written | not written | P0 |
 | P2 | Query Cost Governance | Not started | 9 (0 specified) | not written | not written | P0 |
-| P3 | Utilization and Rightsizing | Not started | 5 (0 specified) | not written | not written | P0, P1 |
+| P3 | Utilization and Rightsizing | Not started | 7 (0 specified) | not written | not written | P0, P1 |
 | P4 | Inventory and Topology | Not started | 3 (0 specified) | not written | not written | P0 |
 | P5 | Quotas and Limits | Not started | 2 (0 specified) | not written | not written | P0, P4 |
-| P6 | Containers | Not started | 3 (0 specified) | not written | not written | P0, P1 |
-| P7 | Insight and LLM layer | Not started | 5 (0 specified) | not written | not written | P1, P2, P3 |
+| P6 | Containers | Not started | 5 (0 specified) | not written | not written | P0, P1 |
+| P7 | Insight and LLM layer | Not started | 6 (0 specified) | not written | not written | P1, P2, P3 |
 
 <!-- generated:subprojects end -->
 
@@ -196,6 +196,10 @@ because CUR is restated throughout the month.
 **Also ingests.** Cost Categories, Savings Plan and Reserved Instance
 utilization and coverage, Cost Anomaly Detection findings.
 
+**Also delivers** chargeback and showback export, FEAT-045, because finance
+does not work inside our interface and a FinOps tool that cannot hand finance a
+file is missing its actual consumer.
+
 ---
 
 ## P3 Utilization and Rightsizing
@@ -215,6 +219,13 @@ high ingest groups with no queries in 90 days, duplicate delivery to both
 CloudWatch Logs and S3, custom metrics never queried, alarms stuck in
 insufficient data for 90 days. These findings are cheap to detect and
 typically pay for the platform in the first month.
+
+**Also delivers** the FinOps Score, FEAT-043, which ships only if it
+decomposes to the findings that moved it, and blast radius scoring from the
+dependency graph, FEAT-044, which turns the topology graph from a picture into
+a control.
+
+**Severity is derived from the money**, ADR-0016, not chosen.
 
 **Rules that make recommendations defensible.** Never recommend on fewer than
 14 days of data. Use p95 and p99, never max. Batch `GetMetricData` at 500
@@ -282,6 +293,11 @@ Spot ratio, orphaned persistent volumes, unused LoadBalancer services.
 sizing is discrete, so recommendations must snap to valid vCPU and memory
 combinations or engineers will correctly ignore them.
 
+**Also delivers** node fleet optimisation as an integer linear program,
+FEAT-047, which solves for the cheapest instance mix rather than reporting that
+the cluster is 61 percent efficient. And predictive replica forecasting,
+FEAT-048, under the four conditions in ADR-0015.
+
 **Why this is late.** In cluster agents are a different deployment and
 security story from read only IAM roles. Coupling it to P0 would slow P0 down.
 
@@ -313,6 +329,10 @@ bypassed by adding a tool.
 **Where it must never be.** Sizing arithmetic and cost figures stay
 deterministic. The model explains a recommendation, it never computes one. A
 single hallucinated savings number permanently destroys engineering trust.
+
+**Also delivers** outbound AI request scanning, FEAT-046. Seven scanners look
+at what comes in and none looked at what goes out, and in a financial services
+environment a secret in a prompt is an exfiltration path with no control on it.
 
 **AWS native capabilities used first.** Cost Optimization Hub, Compute
 Optimizer, Trusted Advisor, Cost Anomaly Detection, Savings Plans

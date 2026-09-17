@@ -48,6 +48,7 @@ block is caught by `make check-docs`. See
 | Where a function lives | [context_index.md](context_index.md) |
 | Corrections already received | [tasks/lessons.md](tasks/lessons.md) |
 | What an audit found, and when | [audits/](audits/README.md) |
+| How we compare to a competing product | [docs/11-COMPETITIVE-REVIEW.md](docs/11-COMPETITIVE-REVIEW.md) |
 
 ---
 
@@ -56,7 +57,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-42 features across 8 sub projects. 10 specified, 32 planned, 0 in build, 0 delivered.
+48 features across 8 sub projects. 10 specified, 38 planned, 0 in build, 0 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -98,6 +99,7 @@ block is caught by `make check-docs`. See
 | [FEAT-022](docs/features/FEAT-022-allocation-and-showback.md) | Allocation, showback and the unallocated bucket | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
 | [FEAT-023](docs/features/FEAT-023-cost-anomaly-detection.md) | Anomaly detection and ingest of AWS Cost Anomaly Detection | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
 | [FEAT-024](docs/features/FEAT-024-commitment-coverage.md) | Savings Plan and Reserved Instance utilization and coverage | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
+| [FEAT-045](docs/features/FEAT-045-chargeback-export.md) | Chargeback and showback export, CSV and Excel | Planned | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
 
 ### P3 Utilization and Rightsizing
 
@@ -108,6 +110,8 @@ block is caught by `make check-docs`. See
 | [FEAT-027](docs/features/FEAT-027-cloudwatch-cost-module.md) | CloudWatch cost module: retention, unqueried logs, stale alarms | Planned | [roadmap](docs/01-ROADMAP.md) P3 |
 | [FEAT-028](docs/features/FEAT-028-recommendation-lifecycle.md) | Recommendation lifecycle with owner and ticketing | Planned | [roadmap](docs/01-ROADMAP.md) P3. Addresses ISS-028 |
 | [FEAT-029](docs/features/FEAT-029-realized-savings-verification.md) | Realized savings verification, the north star metric | Planned | [docs/00-GOAL.md](docs/00-GOAL.md). Addresses ISS-029 |
+| [FEAT-043](docs/features/FEAT-043-finops-score.md) | FinOps Score, decomposable to the findings that moved it | Planned | [Competitive review](docs/11-COMPETITIVE-REVIEW.md), ADR-0016 |
+| [FEAT-044](docs/features/FEAT-044-blast-radius-scoring.md) | Blast radius scoring from the dependency graph, gating auto apply | Planned | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
 
 ### P4 Inventory and Topology
 
@@ -131,6 +135,8 @@ block is caught by `make check-docs`. See
 | [FEAT-035](docs/features/FEAT-035-eks-split-cost-allocation.md) | EKS pod level cost from split cost allocation data | Planned | [roadmap](docs/01-ROADMAP.md) P6 |
 | [FEAT-036](docs/features/FEAT-036-k8s-in-cluster-telemetry.md) | In cluster telemetry, requested versus used | Planned | [roadmap](docs/01-ROADMAP.md) P6 |
 | [FEAT-037](docs/features/FEAT-037-ecs-task-utilization.md) | ECS task and Fargate utilization, snapped to valid sizes | Planned | [roadmap](docs/01-ROADMAP.md) P6 |
+| [FEAT-047](docs/features/FEAT-047-node-fleet-optimisation.md) | Cluster node fleet optimisation as an integer linear program | Planned | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
+| [FEAT-048](docs/features/FEAT-048-predictive-replica-forecasting.md) | Predictive replica forecasting, under the four ADR-0015 conditions | Planned | [ADR-0015](docs/adr/ADR-0015-deterministic-forecasting-is-permitted.md) |
 
 ### P7 Insight and LLM layer
 
@@ -141,6 +147,7 @@ block is caught by `make check-docs`. See
 | [FEAT-040](docs/features/FEAT-040-remediation-authoring.md) | Remediation authoring as an infrastructure as code pull request | Planned | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
 | [FEAT-041](docs/features/FEAT-041-digests-and-summaries.md) | Per team digests and executive summaries | Planned | [roadmap](docs/01-ROADMAP.md) P7 |
 | [FEAT-042](docs/features/FEAT-042-assistant-bot.md) | Assistant bot, chat and find anything in the tool | Planned | [ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md) |
+| [FEAT-046](docs/features/FEAT-046-outbound-ai-scanning.md) | Outbound AI request scanning, redact or block secrets | Planned | [Competitive review](docs/11-COMPETITIVE-REVIEW.md), [docs/05-SECURITY.md](docs/05-SECURITY.md) |
 
 <!-- generated:features end -->
 
@@ -167,6 +174,8 @@ block is caught by `make check-docs`. See
 | ADR-0012 | Collection cadence is data, not code, and is bounded by the source | Accepted | [ADR-0012](docs/adr/ADR-0012-collector-cadence-registry.md) |
 | ADR-0013 | Seven rung ladder with a Rung Disqualification Record and a security sign off gate | Accepted | [ADR-0013](docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md) |
 | ADR-0014 | Derived documentation is generated from a registry, not hand maintained | Accepted | [ADR-0014](docs/adr/ADR-0014-generated-documentation.md) |
+| ADR-0015 | Deterministic forecasting is permitted where a language model number is not | Accepted | [ADR-0015](docs/adr/ADR-0015-deterministic-forecasting-is-permitted.md) |
+| ADR-0016 | Severity on a cost finding is derived from the money, never chosen | Accepted | [ADR-0016](docs/adr/ADR-0016-dollar-based-severity.md) |
 
 Index of records: [docs/adr/README.md](docs/adr/README.md)
 
@@ -205,6 +214,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0022 | 2026-08-23 | Design | Threat model and data classification written, closing the two blocking audit findings. The account root email column removed from the schema as a result | `3a16bd0` | [docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md) |
 | CHG-0023 | 2026-08-23 | Design | AUDIT-001 remediation wave three: disaster recovery, observability, the running cost estimate, exit criteria and the performance budget. All 18 findings now closed | `6cceaa8` | [REMEDIATION-LOG](audits/REMEDIATION-LOG.md) |
 | CHG-0024 | 2026-08-23 | Process | Coding sessions run behind the pxpipe proxy so token usage is recorded. make dev launches, make stats reports | `a92ae60` | [README.md](README.md), "Starting a coding session" |
+| CHG-0025 | 2026-08-23 | Scope | Competitive review of NudgeBee AI FinOps. Six features added, three amended, two decisions recorded, four capabilities explicitly rejected | `pending` | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
 
 <!-- generated:changes end -->
 
@@ -215,7 +225,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**56 FIXED, 22 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**58 FIXED, 25 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -251,6 +261,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-058 | HIGH | The issue register drifted: 22 issues existed only in docs/registry.yaml and not in tasks/ISSUES.md | FIXED | [A001-F01](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-059 | HIGH | The CI dependency-scan job runs scan.sh which requires gitleaks, but the security tools anchor does not install it, so the job exits 2 | FIXED | [A001-F03](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-060 | HIGH | make verify runs security-scan but nothing installs the scanners first, so a clean machine fails on tooling and it reads like a security failure | FIXED | [A001-F05](audits/AUDIT-001-2026-08-23-full-project.md) |
+| ISS-085 | HIGH | Nothing scans what leaves for the language model provider, so a secret could be sent outbound in a prompt | OPEN | FEAT-046. Seven scanners cover what comes in and none cover what goes out |
 | ISS-011 | MEDIUM | A model producing sizing numbers destroys trust on the first hallucination | FIXED | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
 | ISS-012 | MEDIUM | Organization wide AWS Config recording is a five figure monthly cost | OPEN | [tasks/ISSUES.md](tasks/ISSUES.md), resolved in P4 |
 | ISS-013 | MEDIUM | Hundreds of describe loops for inventory is a year of work | FIXED | [roadmap](docs/01-ROADMAP.md) P4 |
@@ -289,6 +300,10 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-078 | MEDIUM | Unknown whether a regulatory retention floor exceeds the 37 month cost retention, which financial services often sets at 7 years | OPEN | [Data classification](docs/09-DATA-CLASSIFICATION.md) open question. Raised before data is aggregated away |
 | ISS-079 | MEDIUM | The audit_event non erasure position needs sign off from whoever owns data protection | OPEN | [Data classification](docs/09-DATA-CLASSIFICATION.md) open question. Before the first production deployment |
 | ISS-080 | MEDIUM | VPC interface endpoints were justified on cost, and the arithmetic shows NAT is cheaper below roughly 1,560 GB per month, which is far above Meter actual egress | FIXED | Found while writing the cost estimate. [Deployment, network](docs/04-DEPLOYMENT.md). Decision stands on security grounds, stated honestly |
+| ISS-082 | MEDIUM | Cost finding severity was a chosen label rather than derived from impact, so the ranking reflected the author rather than the money | FIXED | [ADR-0016](docs/adr/ADR-0016-dollar-based-severity.md) |
+| ISS-083 | MEDIUM | Anomaly detection had no thresholds defined at all, which is how anomaly detection becomes noise and gets muted | FIXED | [Competitive review](docs/11-COMPETITIVE-REVIEW.md). FEAT-023 amended with three concurrent thresholds |
+| ISS-084 | MEDIUM | The topology graph was built and used only for drawing, when it can score the blast radius of a change and gate auto apply | OPEN | FEAT-044 |
+| ISS-086 | MEDIUM | Allocation had no export path, and finance does not work inside the product interface | OPEN | FEAT-045 |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |

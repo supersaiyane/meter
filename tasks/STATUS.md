@@ -13,10 +13,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 42 total, 10 specified, 0 in build, 0 delivered |
-| Decisions | 14 architecture decision records |
-| Changes | 24 recorded |
-| Issues | 56 fixed, 22 open, 0 parked |
+| Features | 48 total, 10 specified, 0 in build, 0 delivered |
+| Decisions | 16 architecture decision records |
+| Changes | 25 recorded |
+| Issues | 58 fixed, 25 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.

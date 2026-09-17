@@ -304,6 +304,42 @@ features:
   status: Planned
   detail: '[ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md)'
   doc: docs/features/FEAT-042-assistant-bot.md
+- id: FEAT-043
+  name: FinOps Score, decomposable to the findings that moved it
+  subproject: P3
+  status: Planned
+  detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md), ADR-0016'
+  doc: docs/features/FEAT-043-finops-score.md
+- id: FEAT-044
+  name: Blast radius scoring from the dependency graph, gating auto apply
+  subproject: P3
+  status: Planned
+  detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md)'
+  doc: docs/features/FEAT-044-blast-radius-scoring.md
+- id: FEAT-045
+  name: Chargeback and showback export, CSV and Excel
+  subproject: P1
+  status: Planned
+  detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md)'
+  doc: docs/features/FEAT-045-chargeback-export.md
+- id: FEAT-046
+  name: Outbound AI request scanning, redact or block secrets
+  subproject: P7
+  status: Planned
+  detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md), [docs/05-SECURITY.md](docs/05-SECURITY.md)'
+  doc: docs/features/FEAT-046-outbound-ai-scanning.md
+- id: FEAT-047
+  name: Cluster node fleet optimisation as an integer linear program
+  subproject: P6
+  status: Planned
+  detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md)'
+  doc: docs/features/FEAT-047-node-fleet-optimisation.md
+- id: FEAT-048
+  name: Predictive replica forecasting, under the four ADR-0015 conditions
+  subproject: P6
+  status: Planned
+  detail: '[ADR-0015](docs/adr/ADR-0015-deterministic-forecasting-is-permitted.md)'
+  doc: docs/features/FEAT-048-predictive-replica-forecasting.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -361,6 +397,14 @@ adrs:
   decision: Derived documentation is generated from a registry, not hand maintained
   status: Accepted
   doc: docs/adr/ADR-0014-generated-documentation.md
+- id: ADR-0015
+  decision: Deterministic forecasting is permitted where a language model number is not
+  status: Accepted
+  doc: docs/adr/ADR-0015-deterministic-forecasting-is-permitted.md
+- id: ADR-0016
+  decision: Severity on a cost finding is derived from the money, never chosen
+  status: Accepted
+  doc: docs/adr/ADR-0016-dollar-based-severity.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'
@@ -525,6 +569,13 @@ changes:
     stats reports
   commit: a92ae60
   detail: '[README.md](README.md), "Starting a coding session"'
+- id: CHG-0025
+  date: '2026-08-23'
+  type: Scope
+  what: Competitive review of NudgeBee AI FinOps. Six features added, three amended, two decisions recorded,
+    four capabilities explicitly rejected
+  commit: pending
+  detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -958,6 +1009,36 @@ issues:
     this project
   detail: Documented in [README.md](README.md). Re check with make stats after a session on the current
     model
+- id: ISS-082
+  severity: MEDIUM
+  status: FIXED
+  summary: Cost finding severity was a chosen label rather than derived from impact, so the ranking reflected
+    the author rather than the money
+  detail: '[ADR-0016](docs/adr/ADR-0016-dollar-based-severity.md)'
+- id: ISS-083
+  severity: MEDIUM
+  status: FIXED
+  summary: Anomaly detection had no thresholds defined at all, which is how anomaly detection becomes
+    noise and gets muted
+  detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md). FEAT-023 amended with three concurrent
+    thresholds'
+- id: ISS-084
+  severity: MEDIUM
+  status: OPEN
+  summary: The topology graph was built and used only for drawing, when it can score the blast radius
+    of a change and gate auto apply
+  detail: FEAT-044
+- id: ISS-085
+  severity: HIGH
+  status: OPEN
+  summary: Nothing scans what leaves for the language model provider, so a secret could be sent outbound
+    in a prompt
+  detail: FEAT-046. Seven scanners cover what comes in and none cover what goes out
+- id: ISS-086
+  severity: MEDIUM
+  status: OPEN
+  summary: Allocation had no export path, and finance does not work inside the product interface
+  detail: FEAT-045
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS
