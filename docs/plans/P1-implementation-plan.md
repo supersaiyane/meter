@@ -108,7 +108,7 @@ implementations and no caller is the right amount of nothing to have built.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-18 |
 | Implements | P1 spec sections 4 and 11 |
 | Delivers | FEAT-020 |
 | Depends on | TASK-P1-001 |
@@ -134,22 +134,50 @@ demand so TASK-P1-005 has something to restate.
 
 | Path | Action |
 | --- | --- |
-| `finops_providers/fake/cur.py` | created |
-| `tests/providers/fake/test_cur.py` | created |
+| `finops_providers/fake/cur.py` | created, `FakeCostExport` and the estate that fills it |
+| `finops_providers/fake/provider.py` | delegates to it, so there is one implementation of the port |
+| `finops_core/domain/cost.py` | `source_fingerprint`, shared so the fake and the collector cannot disagree |
+| `tests/providers/fake/test_cur.py` | created, 16 tests |
+| `tests/core/test_cost_domain.py` | extended, 4 more for the fingerprint |
 
 **Acceptance criteria.**
 
-- [ ] Every row is valid FOCUS 1.1 and passes the same normalization the AWS
-      adapter's output does
-- [ ] The estate contains an untagged row, so the unallocated bucket has
-      something in it before anybody writes the screen
-- [ ] A restatement can be asked for: one row changed, one row retracted
-- [ ] A failure can be asked for, by typed cause, and is raised rather than
-      returned
+- [x] Every row is a valid `CostRecord` in FOCUS 1.1 shape, with `Decimal`
+      money and both timestamps. **The criterion originally said the rows pass
+      the same normalization the AWS adapter's output does, and there is no AWS
+      adapter yet.** That comparison is the contract test in TASK-P1-003 and is
+      not something this task could have done
+- [x] The estate contains untagged rows, so the unallocated bucket has
+      something in it before anybody writes the screen. It is $1,366.52 of
+      $6,197.65 in the closed period, which is 22 percent and is the kind of
+      number the screen exists to surface
+- [x] A restatement can be asked for: 2,100 rows become 2,099, exactly one of
+      the survivors changed
+- [x] A failure can be asked for, by typed cause, and is raised rather than
+      returned. `NoData` for an empty period is raised too, because it is the
+      one cause a caller may draw as a zero
+- [x] More than one service and they cost different amounts, so a ranking
+      ranks. EC2 $3,279.18 down to Lambda $204.95 in the closed period
+- [x] The open period is a part month, 23 days against 31, so the open period
+      label has something to label. Its total is lower than the closed month's,
+      which is exactly the trap a reader falls into unwarned
+- [x] The account Meter cannot assume a role into is on the bill, because the
+      bill comes from the payer. Unreadable and unbilled are different facts
+- [x] The fingerprints are the real ones, 2,100 distinct, and computing them
+      needed `source_fingerprint` to exist. It is in `finops_core` so both
+      adapters produce the same digest, and a test runs it in two processes to
+      prove it is not `hash()`, watched failing against a `hash()`
+      implementation before being trusted
 
 **Deliberately not in this task.** No random data. A fake whose numbers move
 between runs cannot be asserted against, and this project has already been
 caught by a green test that measured nothing.
+
+**Scope taken on.** `source_fingerprint` was listed under TASK-P1-004. The port
+hands over `CostRecord`, which requires a fingerprint, so the adapter has to set
+one, and a fake inventing its own would have proved the collector's upsert
+against a shape that cannot occur. One function in `finops_core`, two callers,
+no disagreement possible.
 
 ---
 
@@ -214,7 +242,7 @@ row, which is the exact failure the primary key exists to prevent.
 
 | Path | Action |
 | --- | --- |
-| `finops_ingest/collectors/cost_focus.py` | created |
+| `finops_ingest/collectors/cost_focus.py` | created. `source_fingerprint` already exists in `finops_core`, done under TASK-P1-002 |
 | `finops_ingest/registry.py` | the collector registered |
 | `tests/ingest/test_cost_focus.py` | created |
 
@@ -223,8 +251,9 @@ row, which is the exact failure the primary key exists to prevent.
 - [ ] Ingesting a period twice leaves exactly the same rows, proved by counting
       them and comparing, not by arguing that an upsert is idempotent
 - [ ] A row whose cost changed updates in place and does not duplicate
-- [ ] The fingerprint is stable across process restarts, which rules out
-      `hash()`
+- [x] The fingerprint is stable across process restarts, which rules out
+      `hash()`. Proved under TASK-P1-002, in two processes, and watched failing
+      against a `hash()` implementation
 - [ ] A missing partition fails the run rather than misfiling the cost, which
       `partitions.py` already does and this must not work around
 - [ ] One account failing does not fail the run, and the cause is typed

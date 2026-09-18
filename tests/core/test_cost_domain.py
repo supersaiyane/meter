@@ -128,3 +128,75 @@ class TestATotalCarriesItsMeasure:
             CostMeasure.LIST,
             CostMeasure.CONTRACTED,
         }
+
+
+class TestTheFingerprintIsAnIdentityAndNotASummary:
+    """`source_fingerprint` is the key a restated month upserts on."""
+
+    def _identity(self, **overrides: object) -> str:
+        from finops_core.domain.cost import source_fingerprint
+
+        fields: dict[str, object] = {
+            "billing_account_id": "111122223333",
+            "sub_account_id": "444455556666",
+            "charge_period_start": datetime(2026, 8, 1, tzinfo=UTC),
+            "charge_period_end": datetime(2026, 8, 2, tzinfo=UTC),
+            "service_name": "AmazonEC2",
+            "resource_id": "i-0001",
+            "sku_id": None,
+            "charge_category": "Usage",
+            "commitment_discount_id": None,
+        }
+        fields.update(overrides)
+        return source_fingerprint(**fields)  # type: ignore[arg-type]
+
+    def test_the_same_charge_hashes_the_same_way(self) -> None:
+        assert self._identity() == self._identity()
+
+    def test_a_different_charge_does_not(self) -> None:
+        assert self._identity() != self._identity(resource_id="i-0002")
+        assert self._identity() != self._identity(service_name="AmazonRDS")
+
+    def test_it_takes_no_cost_at_all(self) -> None:
+        """The whole design, expressed as a signature.
+
+        AWS restates the current month continuously. A fingerprint that
+        included the amount would make a restated row a new row, and the month
+        would grow by one copy of every corrected line item. The function
+        cannot be handed a cost, so nobody can add one in a hurry.
+        """
+        import inspect
+
+        from finops_core.domain.cost import source_fingerprint
+
+        taken = set(inspect.signature(source_fingerprint).parameters)
+        assert not {name for name in taken if "cost" in name or "quantity" in name}
+
+    def test_it_survives_a_process_restart(self) -> None:
+        """`hash()` is salted per process.
+
+        A fingerprint from it is stable within one run and different in the
+        next, and the symptom is a table that doubles every time the worker
+        restarts, which looks like a billing problem rather than a code one.
+        """
+        import subprocess
+        import sys
+
+        script = (
+            "from datetime import UTC, datetime;"
+            "from finops_core.domain.cost import source_fingerprint;"
+            "print(source_fingerprint("
+            "billing_account_id='111122223333', sub_account_id='444455556666',"
+            "charge_period_start=datetime(2026, 8, 1, tzinfo=UTC),"
+            "charge_period_end=datetime(2026, 8, 2, tzinfo=UTC),"
+            "service_name='AmazonEC2', resource_id='i-0001', sku_id=None,"
+            "charge_category='Usage', commitment_discount_id=None))"
+        )
+        runs = {
+            subprocess.run(
+                [sys.executable, "-c", script], capture_output=True, text=True, check=True
+            ).stdout.strip()
+            for _ in range(2)
+        }
+        assert len(runs) == 1, f"the digest changed between processes: {runs}"
+        assert runs == {self._identity()}

@@ -24,7 +24,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 51 total, 9 specified, 7 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
-| Changes | 84 recorded |
+| Changes | 85 recorded |
 | Issues | 123 fixed, 52 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
@@ -111,7 +111,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P1 | 1 | 0 | 0 | 0 | 12 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
+| P1 | 2 | 0 | 0 | 0 | 11 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -163,6 +163,7 @@ ISS-003.
 | Task | Status | Title |
 | --- | --- | --- |
 | `TASK-P1-001` | Done, 2026-09-18 | the cost port and the types that carry a measure |
+| `TASK-P1-002` | Done, 2026-09-18 | a fake estate with a bill |
 
 **P2, not in the default state**
 

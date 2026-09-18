@@ -1089,6 +1089,16 @@ changes:
     period end is exclusive, which the fixtures assumed and nothing had written down
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-001'
+- id: CHG-0085
+  date: '2026-09-18'
+  type: Design
+  what: TASK-P1-002. A fake cost estate of 2,100 rows across three billing periods, the newest
+    of them a part month. Untagged rows are 22 percent of the closed period, services differ in
+    size so a ranking ranks, and the account Meter cannot assume a role into is on the bill
+    because the bill comes from the payer. source_fingerprint moved into finops_core so the
+    fake and the collector cannot disagree about a line item's identity
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-002'
 issues:
 - id: ISS-164
   severity: MEDIUM

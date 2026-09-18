@@ -305,6 +305,7 @@
     "finops_providers/aws/platform_cost.py",
     "finops_providers/aws/query_evidence.py",
     "finops_providers/fake/__init__.py",
+    "finops_providers/fake/cur.py",
     "finops_providers/fake/evidence.py",
     "finops_providers/fake/fixtures.py",
     "finops_providers/fake/health.py",
@@ -417,6 +418,7 @@
     "tests/providers/aws/test_health.py",
     "tests/providers/aws/test_query_evidence.py",
     "tests/providers/fake/__init__.py",
+    "tests/providers/fake/test_cur.py",
     "tests/providers/fake/test_evidence.py",
     "tests/providers/fake/test_surface.py",
     "tests/providers/test_amg_surface.py",
@@ -3380,6 +3382,21 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/fake/cur.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/cur.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/cur.py",
+      "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/fake/evidence.py",
       "t": "finops_core/errors.py",
       "k": "python"
@@ -3497,6 +3514,11 @@
     {
       "s": "finops_providers/fake/provider.py",
       "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/provider.py",
+      "t": "finops_providers/fake/cur.py",
       "k": "python"
     },
     {
@@ -4492,6 +4514,26 @@
     {
       "s": "tests/providers/aws/test_query_evidence.py",
       "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_cur.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_cur.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_cur.py",
+      "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_cur.py",
+      "t": "finops_providers/fake/cur.py",
       "k": "python"
     },
     {
