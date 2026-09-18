@@ -574,7 +574,7 @@ changes:
   type: Scope
   what: Competitive review of NudgeBee AI FinOps. Six features added, three amended, two decisions recorded,
     four capabilities explicitly rejected
-  commit: pending
+  commit: c7f45f0
   detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md)'
 issues:
 - id: ISS-001
