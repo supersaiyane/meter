@@ -254,7 +254,7 @@ results wherever the caller fancied.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-18 |
 | Implements | P1 spec sections 5 and 7 |
 | Delivers | FEAT-020, FEAT-021 |
 | Depends on | TASK-P1-002 |
@@ -271,25 +271,48 @@ row, which is the exact failure the primary key exists to prevent.
 
 | Path | Action |
 | --- | --- |
-| `finops_ingest/collectors/cost_focus.py` | created. `source_fingerprint` already exists in `finops_core`, done under TASK-P1-002 |
-| `finops_ingest/registry.py` | the collector registered |
-| `tests/ingest/test_cost_focus.py` | created |
+| `finops_ingest/collectors/cost_focus.py` | created. `source_fingerprint` already existed, done under TASK-P1-002 |
+| `finops_ingest/registry.py` | `run_id` added to `CollectorContext`, defaulted |
+| `finops_ingest/worker.py` | passes the claim's run id into it |
+| `tests/ingest/collectors/test_cost_focus.py` | created, 10 tests |
 
 **Acceptance criteria.**
 
-- [ ] Ingesting a period twice leaves exactly the same rows, proved by counting
+- [x] Ingesting a period twice leaves exactly the same rows, proved by counting
       them and comparing, not by arguing that an upsert is idempotent
-- [ ] A row whose cost changed updates in place and does not duplicate
+- [x] A row whose cost changed updates in place and does not duplicate. The
+      first version of that test was vacuous: the collector writes the latest
+      period and the restatement lands in the closed one, so nothing moved and
+      the assertion passed against a collector that did nothing. It now hands
+      the collector the closed period and names the corrected fingerprint
+- [x] The row's `ingest_run_id` moves to the run that last saw it, which is the
+      only signal TASK-P1-005 has that AWS retracted a row rather than that the
+      read failed half way
 - [x] The fingerprint is stable across process restarts, which rules out
       `hash()`. Proved under TASK-P1-002, in two processes, and watched failing
       against a `hash()` implementation
-- [ ] A missing partition fails the run rather than misfiling the cost, which
-      `partitions.py` already does and this must not work around
-- [ ] One account failing does not fail the run, and the cause is typed
+- [x] A missing partition fails the run rather than misfiling the cost. The
+      database refuses it, which is constraint 11 working, and this collector
+      does not create partitions to get around it
+- [x] A typed failure reaches the caller as itself rather than as a successful
+      run of zero rows. **The criterion said one account failing does not fail
+      the run, and that does not map here**: CUR is written per payer, so there
+      are no per account calls to fail independently. The property that does
+      map is the typed cause, and it is tested
+- [x] An export that exists and has published nothing raises `NoData` rather
+      than succeeding with zero rows, because a run that succeeded and wrote
+      nothing reads on the freshness screen as an estate that spent nothing
 
 **Deliberately not in this task.** No delete. Retraction is TASK-P1-005 and is
 the only destructive operation in the ingest path, so it gets its own commit
-and its own review.
+and its own review. A test asserts the retracted row is still present, so a
+delete cannot arrive here by accident.
+
+**Not done, with a reason.** The collector is not registered anywhere. Nothing
+in production assembles a `CollectorRegistry`: the dispatcher and the worker
+both take one, `register_retention` fills one, and the only callers are tests.
+Adding a registration line nobody reads would be dead code pretending to be
+wiring. ISS-182 records the gap, which is pre existing and not P1's.
 
 ---
 

@@ -61,6 +61,12 @@ class CollectorContext:
     #: unit is a message that outlives the process that wrote it and settings
     #: are whatever the worker running it was started with.
     settings: Any = None
+    #: The run this work belongs to, from the ledger's claim. Cost rows carry it
+    #: in a NOT NULL column and P1's restatement delete keys on it, so a
+    #: collector generating its own would be writing a number that names no run
+    #: and deleting on a fiction. Defaulted so every existing collector and
+    #: every existing test constructs a context exactly as it did before.
+    run_id: Any = None
 
 
 #: A collector receives one context and reports what it did.
