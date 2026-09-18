@@ -67,9 +67,9 @@ Layers per the import contract, which import-linter enforces:
 
 | Path | Action | What it is |
 | --- | --- | --- |
-| `finops_core/domain/cost.py` | extended | `CostRecord` exists. Add `BillingPeriod`, which knows whether it is open, and `CostTotal`, which carries a measure and never a bare number |
-| `finops_core/ports/cost.py` | created | `CostExport`, the port. Two methods: `periods()` and `rows(period)`. No boto3, per constraint 1 |
-| `finops_providers/fake/cur.py` | created | `FakeCostExport`. A synthetic estate in FOCUS shape, with a configurable failure, the same pattern as `FakeQuerySurface` |
+| `finops_core/domain/cost.py` | extended | `CostRecord` exists. Add `BillingPeriod`, start inclusive and end exclusive, which answers `is_open` against a clock the caller passes, and `CostTotal`, which carries a `CostMeasure` and never a bare number. Openness is computed here rather than reported by the port, which keeps the adapter free of a clock |
+| `finops_core/ports/cost.py` | **exists from P0, unchanged** | `CostExport`, with `latest_available_period()` and `read_period(start, end)`. Better than what this document first proposed: it separates an export that has published nothing from one that is missing, and it names `SchemaDrift`. ISS-180 |
+| `finops_providers/fake/cur.py` | created | A synthetic estate in FOCUS shape with a configurable failure. `FakeProvider` already implements `CostExport` against a four row fixture, which is enough to prove the port and not enough to exercise a screen. ISS-180 |
 | `finops_providers/aws/cur.py` | created | `AthenaCostExport`. Reads the Data Exports manifest, queries Athena, pages results. Unproved, see section 3 |
 | `finops_ingest/collectors/cost_focus.py` | created | The collector. Normalizes to FOCUS 1.1, writes `cost_focus_daily`, derives `cost_focus_monthly` in the same transaction |
 | `finops_api/db/repositories/cost.py` | created | `CostRepository`. Totals, by service, by account, by day, and the allocation split |
@@ -162,10 +162,13 @@ incomplete and the delete in section 5 does not run.
 Data Exports writes CUR 2.0 Parquet to S3, partitioned by billing period
         |
         v
-AthenaCostExport.periods()      reads the manifest, returns each period
-        |                        with whether it is open
+AthenaCostExport                reads the manifest and says what the
+  .latest_available_period()     export actually holds
+        |
         v
-AthenaCostExport.rows(period)   one Athena query per period, paged
+AthenaCostExport                one Athena query per period, paged. Which
+  .read_period(start, end)      periods to re read is the collector's policy,
+        |                       because cadence is data, ADR-0012
         |
         v
 cost_focus collector            normalizes each row to FOCUS 1.1,

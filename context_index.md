@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-375 public symbols across 5 packages.
+380 public symbols across 5 packages.
 
 ## finops_core
 
@@ -42,7 +42,12 @@ a duplicate.
 | `CloudAccount.provider` | method | `finops_core/domain/account.py:90` |  | nothing in this tree |
 | `AccountHealth` | class | `finops_core/domain/account.py:95` | Whether we could actually use the collector role, and why not if not. | `finops_providers/aws/health.py`, `finops_providers/fake/health.py` |
 | `AccountHealth.is_usable` | method | `finops_core/domain/account.py:105` |  | nothing in this tree |
-| `CostRecord` | class | `finops_core/domain/cost.py:30` | A FOCUS 1.1 charge row. Field names are the specification's. | `finops_providers/fake/fixtures.py` |
+| `CostMeasure` | class | `finops_core/domain/cost.py:30` | Which number a total is. FOCUS names these and this does not improve on them. | nothing in this tree |
+| `BillingPeriod` | class | `finops_core/domain/cost.py:50` | A billing interval, start inclusive and end exclusive. | nothing in this tree |
+| `BillingPeriod.covers` | method | `finops_core/domain/cost.py:74` | Whether a day falls inside the period. | nothing in this tree |
+| `BillingPeriod.is_open` | method | `finops_core/domain/cost.py:78` | Whether charges can still land in this period at that moment. | nothing in this tree |
+| `CostTotal` | class | `finops_core/domain/cost.py:95` | An aggregate of cost, which always says which measure it is. | nothing in this tree |
+| `CostRecord` | class | `finops_core/domain/cost.py:120` | A FOCUS 1.1 charge row. Field names are the specification's. | `finops_providers/fake/fixtures.py` |
 | `Fact` | class | `finops_core/domain/fact.py:27` | A value that was true somewhere, at a time, and was read at another time. | nothing in this tree |
 | `Principal` | class | `finops_core/domain/identity.py:22` |  | `finops_api/deps.py`, `finops_api/identity/local_config.py`, `finops_providers/fake/fixtures.py` |
 | `Entitlement` | class | `finops_core/domain/identity.py:30` | The scope a principal held at `as_of`. | `finops_api/identity/local_config.py`, `finops_providers/fake/provider.py` |
@@ -436,6 +441,11 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `AccountStatus` in `finops_core/domain/account.py:26`
 - `CloudAccount.provider` in `finops_core/domain/account.py:90`
 - `AccountHealth.is_usable` in `finops_core/domain/account.py:105`
+- `CostMeasure` in `finops_core/domain/cost.py:30`
+- `BillingPeriod` in `finops_core/domain/cost.py:50`
+- `BillingPeriod.covers` in `finops_core/domain/cost.py:74`
+- `BillingPeriod.is_open` in `finops_core/domain/cost.py:78`
+- `CostTotal` in `finops_core/domain/cost.py:95`
 - `Fact` in `finops_core/domain/fact.py:27`
 - `RunStatus` in `finops_core/domain/ingest.py:24`
 - `IngestRun` in `finops_core/domain/ingest.py:34`
@@ -485,8 +495,3 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `AwsCredentialBroker` in `finops_providers/aws/credentials.py:53`
 - `AwsCredentialBroker.external_id` in `finops_providers/aws/credentials.py:72`
 - `AccountHealthCheck` in `finops_providers/aws/health.py:54`
-- `AwsPlatformCostSource` in `finops_providers/aws/platform_cost.py:48`
-- `CloudTrailQueryEvidence` in `finops_providers/aws/query_evidence.py:99`
-- `FakeQueryEvidence` in `finops_providers/fake/evidence.py:110`
-- `FakeRoleHealth` in `finops_providers/fake/health.py:38`
-- `FakePlatformCost` in `finops_providers/fake/platform_cost.py:35`
