@@ -307,10 +307,13 @@ def render_task_status(_reg: Registry) -> str:
     ]
     detail: list[str] = []
 
-    for sub in ("P0", "P2"):
-        path = ROOT / "docs" / "plans" / f"{sub}-implementation-plan.md"
-        if not path.exists():
-            continue
+    # Derived from the files present, not listed. The list used to be a literal
+    # ("P0", "P2"), so P1's plan was written on 2026-09-18 and the table simply
+    # did not mention it: thirteen tasks absent rather than shown as not
+    # started, which understates the work by a whole sub project and looks
+    # exactly like a sub project nobody planned.
+    for path in sorted(ROOT.glob("docs/plans/P*-implementation-plan.md")):
+        sub = path.name.split("-", 1)[0]
         text = path.read_text(encoding="utf-8")
         blocks = re.split(rf"\n### (TASK-{sub}-\d{{3}}): ", text)
         done = partly = parked = descoped = notstarted = 0

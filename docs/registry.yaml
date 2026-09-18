@@ -20,9 +20,9 @@ subprojects:
   depends_on: none
 - id: P1
   name: Cost Intelligence
-  status: Spec drafted for the cost surface. Anomalies, commitments and the export are a second cut
+  status: Spec and plan drafted for the cost surface, 13 tasks. Anomalies, commitments and the export are a second cut
   spec: docs/specs/2026-09-18-p1-cost-intelligence-design.md
-  plan: ''
+  plan: docs/plans/P1-implementation-plan.md
   depends_on: P0
 - id: P2
   name: Query Cost Governance
@@ -1065,6 +1065,22 @@ changes:
     a colour. ROW_HEIGHT moved from 28 to 32 to agree with the CSS. P0 reaches 39 of 39 tasks
   commit: 'd5c8cdc'
   detail: '[ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md)'
+- id: CHG-0082
+  date: '2026-09-18'
+  type: Design
+  what: P1 cost surface design specification written, fifteen sections. Covers FEAT-020,
+    FEAT-021 and FEAT-022 against a fake adapter and explicitly not anomalies, commitments or
+    the export. The schema it writes to was already migrated by P0, so it adds no migration
+  commit: '0000929'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md)'
+- id: CHG-0083
+  date: '2026-09-18'
+  type: Design
+  what: P1 implementation plan written, 13 tasks in five waves, each carrying the anti
+    hallucination fields. The sub project list in scripts/docs/sync.py was a literal and did
+    not mention P1, so it is derived from the plan files present now and a test holds it there
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md)'
 issues:
 - id: ISS-164
   severity: MEDIUM
