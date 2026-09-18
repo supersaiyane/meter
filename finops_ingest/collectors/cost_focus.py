@@ -110,8 +110,14 @@ UPSERT = text(
 )
 
 
+RETRACT = text(
+    "DELETE FROM cost_focus_daily WHERE tenant_id = :tenant "
+    "AND billing_period_start = :period AND ingest_run_id <> :run"
+)
+
+
 class CostFocusCollector:
-    """Reads one billing period and writes it, idempotently."""
+    """Reads one billing period, writes it, and removes what was withdrawn."""
 
     def __init__(self, export: Any, clock: Clock = _system_clock) -> None:
         self._export = export
@@ -141,7 +147,23 @@ class CostFocusCollector:
             )
 
         rows = self._export.read_period(period, next_month(period))
-        return CollectorOutcome(items_written=self._write(context, rows))
+
+        # Two independent things protect a half read period, and it is worth
+        # knowing which is which. The worker runs a unit in one transaction, so
+        # a read that fails part way rolls back everything including any
+        # removal. That is the one doing the work in the deployed shape, and
+        # reversing these two lines does not break the tests that exercise it.
+        #
+        # The ordering is the second. `_write` consumes the rows, so a read that
+        # fails raises there and `_retract` is never reached at all. It matters
+        # for any caller that does not wrap the unit in a transaction it will
+        # roll back, and it costs nothing to keep, so the removal stays
+        # downstream of finishing the read.
+        # `test_the_collector_alone_removes_nothing_on_a_half_read` is the one
+        # that fails if these are swapped.
+        written = self._write(context, rows)
+        removed = self._retract(context, period)
+        return CollectorOutcome(items_written=written, items_removed=removed)
 
     def _write(self, context: CollectorContext, rows: Iterable[CostRecord]) -> int:
         at = self._clock()
@@ -157,6 +179,35 @@ class CostFocusCollector:
             context.connection.execute(UPSERT, batch)
             written += len(batch)
         return written
+
+    def _retract(self, context: CollectorContext, period: Any) -> int:
+        """Remove what the provider withdrew, and nothing else.
+
+        AWS restates a billing period continuously and can restate a closed one.
+        A line item can change size, which the upsert handles, and a line item
+        can disappear. If nothing removes it, a charge AWS withdrew stays on
+        Meter's bill forever, and the total drifts above the invoice by exactly
+        the sum of every correction ever issued.
+
+        The signal is the run id. A row this run saw carries this run's id,
+        because the upsert set it. A row this run did not see kept an older one,
+        and in a complete read the only reason a row goes unseen is that the
+        provider stopped reporting it.
+
+        Not a timestamp. Two runs inside one second are indistinguishable by a
+        clock, so a `collected_at` predicate either removes nothing or removes
+        both runs' work, depending on which way the comparison leans.
+
+        All three predicates are load bearing. Without the tenant, one tenant's
+        ingest removes another's rows. Without the period, ingesting August
+        removes every earlier month in one statement, which is the worst
+        outcome available to this file and the easiest to write.
+        """
+        result = context.connection.execute(
+            RETRACT,
+            {"tenant": context.unit.tenant_id, "period": period, "run": context.run_id},
+        )
+        return int(result.rowcount or 0)
 
     def _parameters(
         self, row: CostRecord, context: CollectorContext, at: datetime

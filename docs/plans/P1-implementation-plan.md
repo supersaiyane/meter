@@ -320,7 +320,7 @@ wiring. ISS-182 records the gap, which is pre existing and not P1's.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-18 |
 | Implements | P1 spec section 5 |
 | Delivers | FEAT-020 |
 | Depends on | TASK-P1-004 |
@@ -337,22 +337,46 @@ and the deletion will look like a successful run.
 
 | Path | Action |
 | --- | --- |
-| `finops_ingest/collectors/cost_focus.py` | the complete period delete |
-| `tests/ingest/test_cost_focus_restatement.py` | created |
+| `finops_ingest/collectors/cost_focus.py` | the complete period removal |
+| `finops_ingest/registry.py` | `items_removed` on `CollectorOutcome`, defaulted |
+| `tests/ingest/collectors/test_cost_focus_restatement.py` | created, 9 tests. Beside the other collector suites rather than at the path this plan guessed |
+| `tests/ingest/collectors/conftest.py` | created, one partition teardown instead of a copy per module |
 
 **Acceptance criteria.**
 
-- [ ] A restated period drops the retracted row and keeps the rest
-- [ ] A run that failed part way deletes nothing, proved by failing the read
-      after the first page and asserting the row count is unchanged
-- [ ] The delete is keyed on `ingest_run_id` not on a timestamp, because two
-      runs in the same second are not distinguishable by a clock
-- [ ] The test that proves criterion 2 is watched failing with the guard
-      removed before it is trusted
+- [x] A restated period drops the retracted row and keeps the rest
+- [x] A run that failed part way removes nothing, proved by failing the read
+      after 5 rows and again at the 500 row batch boundary, where rows have
+      certainly reached the database already
+- [x] The removal is keyed on `ingest_run_id` and not on a timestamp. Every run
+      in the suite shares one frozen clock, so a timestamp predicate would
+      remove nothing or remove everything, and the test would notice either way
+- [x] It removes nothing it was not asked to. Another billing period and
+      another tenant are both asserted untouched, because without the period
+      predicate ingesting August removes every earlier month in one statement
+- [x] The estate's total follows the invoice down, not only up
+- [x] The run reports what it removed, through `items_removed`, because a
+      destructive operation nobody can count is one nobody notices going wrong
+- [x] The guard was removed and watched. **The first attempt found the claim
+      wrong.** Reversing the two lines did not fail the half read tests at all:
+      the worker's transaction rolls the removal back with everything else, so
+      those tests were exercising the transaction rather than this collector.
+      The comment in `__call__` said order was the whole of the safety property
+      and it was not. Corrected, and
+      `test_the_collector_alone_removes_nothing_on_a_half_read` now looks at the
+      rows inside the transaction before the rollback, which is the test that
+      goes red when the two lines are swapped
 
 **Deliberately not in this task.** No soft delete and no retraction history. A
 retracted charge is not a fact about the estate, it is a correction to a record
 of one, and keeping both invites a screen that adds them together.
+
+**Two protections, and it is worth knowing which is which.** The worker runs a
+unit in one transaction, so a failed read rolls back any removal along with
+everything else, and that is the one doing the work in the deployed shape. The
+ordering is the second, and it matters for any caller that does not wrap the
+unit in a transaction it will roll back. Both are kept. Only the second has a
+test that can see it.
 
 ---
 

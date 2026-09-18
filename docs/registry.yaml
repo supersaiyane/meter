@@ -1119,6 +1119,16 @@ changes:
     around
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-004'
+- id: CHG-0088
+  date: '2026-09-18'
+  type: Design
+  what: TASK-P1-005. The cost collector removes what the provider withdrew, keyed on the run id
+    rather than a clock and scoped to one tenant and one billing period. Removing the guard to
+    test it showed the comment was wrong, the worker's transaction protects the half read case
+    and the ordering is a second independent guard, so the claim was corrected and a test that
+    can actually see the ordering was added
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-005'
 issues:
 - id: ISS-164
   severity: MEDIUM
