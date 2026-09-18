@@ -1088,6 +1088,18 @@ issues:
     the change is discoverable, and the notification waits for somebody to choose a channel
   status: OPEN
   detail: '`finops_ingest/remediation.py`, FEAT-017'
+- id: ISS-168
+  severity: HIGH
+  summary: There was no deployment procedure. docs/04-DEPLOYMENT.md explained why Terraform
+    performs the deploy, why the images are amd64 and what the stack costs, and never said what to
+    run or in what order. Nothing described creating the IAM roles, activating trusted access
+    between Organizations and CloudFormation, creating the state bucket, generating the external
+    id, or which of the three stacks to apply first. Nothing described onboarding an account
+    either. Somebody trying to deploy this had the reasoning and none of the steps. Fixed
+    2026-09-17 with docs/runbooks/deploy.md and docs/runbooks/onboard-account.md, both of which
+    say plainly that they have never been executed
+  status: FIXED
+  detail: '`docs/runbooks/deploy.md`, `docs/runbooks/onboard-account.md`'
 - id: ISS-166
   severity: MEDIUM
   summary: The AMG adapter reads a workspace refresh floor and refuses to write one. The read is

@@ -25,6 +25,8 @@ same question.
 
 | Procedure | Runbook |
 | --- | --- |
+| Deploy Meter for the first time, in order | `deploy.md` |
+| Onboard an account, or stand up a second organization | `onboard-account.md` |
 | Restore the database, and the drill that proves the procedure works | `restore.md` |
 
 Nothing pages for a restore, because by the time one is needed somebody already

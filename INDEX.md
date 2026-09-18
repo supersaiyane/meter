@@ -57,6 +57,8 @@ block is caught by `make check-docs`. See
 | Runbook, collection stalled and widespread | [docs/runbooks/collection-stalled.md](docs/runbooks/collection-stalled.md) |
 | Runbook, API server errors | [docs/runbooks/api-5xx.md](docs/runbooks/api-5xx.md) |
 | Runbook, platform cost anomaly | [docs/runbooks/platform-cost-anomaly.md](docs/runbooks/platform-cost-anomaly.md) |
+| Runbook, deploy Meter for the first time | [docs/runbooks/deploy.md](docs/runbooks/deploy.md) |
+| Runbook, onboard an account or a second organization | [docs/runbooks/onboard-account.md](docs/runbooks/onboard-account.md) |
 | Runbook, restore the database, and the drill | [docs/runbooks/restore.md](docs/runbooks/restore.md) |
 | How often data refreshes, and its limits | [docs/06-DATA-FRESHNESS.md](docs/06-DATA-FRESHNESS.md) |
 | What Meter costs to run | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
@@ -312,7 +314,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**113 FIXED, 49 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**114 FIXED, 49 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -376,6 +378,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-155 | HIGH | Every figure inside a table rendered its own provenance sentence and its own two timestamps, so a three figure row carried three copies of the same `as of` line and the phrase `accuracy not yet published`. Rows were about 90 px against the 32 px the design asks for, and the findings table ran 1297 px wide inside a 1147 px container on a 1440 px screen, which put monthly cost, the sort column and the point of the screen, off the right edge. Fixed 2026-09-11 with a density context that DataTable sets and Figure reads, so a table added later is dense without its author knowing the mechanism exists | FIXED | `finops-web/src/components/density.ts`, `finops-web/src/components/Figure.tsx` |
 | ISS-158 | HIGH | The demo estate covered only the query tables, so five of the six built P0 screens had nothing to render and could not be assessed or verified at all. The seed now runs all four collectors, org tree then role health then platform cost then query audit, through the real run ledger, so the ingest and freshness screens fill from the same act of seeding rather than needing a second fixture that agrees with the first by hand. It also installs the default schedule, without which every collector read "not scheduled" and therefore "stale" one minute after it ran. Fixed 2026-09-12 | FIXED | `scripts/ops/seed_demo.py`, `finops_providers/fake/health.py`, `finops_providers/fake/platform_cost.py` |
 | ISS-159 | HIGH | The ingest screen could never show a run. `build_meta` derives freshness from an `as_of` column, `ingest_run` has none, so the envelope carried two nulls and the screen reported the collector as never having run while listing its runs. The same route also compared its run count to the account count and reported "8 of 8 accounts" over a five account estate. Fixed 2026-09-12 by taking the timestamps from the newest run, which is a log and is as fresh as its last entry, and by counting runs. Freshness counts collectors and platform cost counts modules, both of which had the same wrong noun | FIXED | `finops_api/routes/ingest.py`, `finops_api/routes/platform.py` |
+| ISS-168 | HIGH | There was no deployment procedure. docs/04-DEPLOYMENT.md explained why Terraform performs the deploy, why the images are amd64 and what the stack costs, and never said what to run or in what order. Nothing described creating the IAM roles, activating trusted access between Organizations and CloudFormation, creating the state bucket, generating the external id, or which of the three stacks to apply first. Nothing described onboarding an account either. Somebody trying to deploy this had the reasoning and none of the steps. Fixed 2026-09-17 with docs/runbooks/deploy.md and docs/runbooks/onboard-account.md, both of which say plainly that they have never been executed | FIXED | `docs/runbooks/deploy.md`, `docs/runbooks/onboard-account.md` |
 | ISS-011 | MEDIUM | A model producing sizing numbers destroys trust on the first hallucination | FIXED | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
 | ISS-012 | MEDIUM | Organization wide AWS Config recording is a five figure monthly cost | OPEN | [tasks/ISSUES.md](tasks/ISSUES.md), resolved in P4 |
 | ISS-013 | MEDIUM | Hundreds of describe loops for inventory is a year of work | FIXED | [roadmap](docs/01-ROADMAP.md) P4 |
