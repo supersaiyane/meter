@@ -109,12 +109,17 @@ meter/
 │   ├── templates/             spec, task, ADR, change and issue templates
 │   ├── checkpoint.md          session continuity log with resume vectors
 │   ├── adr/                   architecture decision records, 0001 to 0008
-│   ├── specs/                 design specs, one per sub project
+│   ├── specs/                 design specs, one per sub project. The P1 one
+│   │                          covers the cost surface only, and its section 3
+│   │                          names what the rest of P1 is waiting for
 │   │   ├── 2026-08-23-p0-foundation-design.md
-│   │   └── 2026-08-23-p2-query-cost-governance-design.md
-│   │   └── 2026-08-23-p0-foundation-design.md
-│   └── plans/                 implementation plans, written per sub project
+│   │   ├── 2026-08-23-p2-query-cost-governance-design.md
+│   │   └── 2026-09-18-p1-cost-intelligence-design.md
+│   └── plans/                 implementation plans, written per sub project.
+│                              `sync.py` reads task status out of these, so the
+│                              Status row in each task is data, not prose
 │       ├── P0-implementation-plan.md
+│       ├── P1-implementation-plan.md
 │       └── P2-implementation-plan.md
 │
 ├── audits/                    point in time reviews, one file per audit
@@ -172,7 +177,11 @@ meter/
 │   │                          auto fix, allowlist validation
 │   ├── docs/                  sync.py, check_index.py, check_feature_docs.py,
 │   │                          build_file_graph.py, build_context_index.py,
-│   │                          rotate_checkpoint.py, add_lesson.py
+│   │                          rotate_checkpoint.py, add_lesson.py.
+│   │                          sync.py derives the sub projects in the task
+│   │                          table from the plan files present. It used to
+│   │                          iterate a literal, and P1 was absent from the
+│   │                          table rather than shown as 13 not started
 │   ├── ci/                    code_review.py, check_flags.py, check_hardcoded.py,
 │   │                          check_forbidden_imports.py, check_memory.py,
 │   │                          refresh_base_images.py, flag and hardcoding checks,
@@ -574,7 +583,7 @@ continuous integration, not by good intentions.
 | Anything at all, as a starting point | `INDEX.md` |
 | Where do I record this change | `docs/03-CHANGE-CONTROL.md` |
 | How does code reach production | `docs/04-DEPLOYMENT.md` |
-| What exactly do I build next, and how | `docs/plans/P0-implementation-plan.md`, then `P2-implementation-plan.md` |
+| What exactly do I build next, and how | `docs/plans/P1-implementation-plan.md`, TASK-P1-001. P0 and P2 are done except for what needs an AWS account |
 | Task counts, which change | `grep -c '^### TASK' docs/plans/*.md`. Not written into prose, because a count in prose goes stale silently |
 | What does this feature do | `docs/features/FEAT-nnn-*.md` |
 | How do these files depend on each other | `docs/architecture/file-graph.md`, `make graph` |
@@ -600,6 +609,7 @@ continuous integration, not by good intentions.
 | How do the pieces fit together | `docs/02-ARCHITECTURE.md` |
 | What exactly is P0 delivering | `docs/specs/2026-08-23-p0-foundation-design.md` |
 | What exactly is P2 delivering | `docs/specs/2026-08-23-p2-query-cost-governance-design.md` |
+| What exactly is P1 delivering | `docs/specs/2026-09-18-p1-cost-intelligence-design.md`. The cost surface. Anomalies, commitments and the export are a second cut |
 | What is done and what is left | `tasks/STATUS.md` |
 | What is broken, what is risky, what is undecided | `tasks/ISSUES.md` |
 | Where did the last session stop | `docs/checkpoint.md` |
