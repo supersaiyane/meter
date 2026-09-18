@@ -383,6 +383,7 @@
     "tests/contract/test_credential_broker.py",
     "tests/core/__init__.py",
     "tests/core/test_config.py",
+    "tests/core/test_cost_domain.py",
     "tests/core/test_domain.py",
     "tests/core/test_errors.py",
     "tests/core/test_ports.py",
@@ -3916,6 +3917,11 @@
     {
       "s": "tests/core/test_config.py",
       "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_cost_domain.py",
+      "t": "finops_core/domain/cost.py",
       "k": "python"
     },
     {

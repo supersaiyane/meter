@@ -55,35 +55,49 @@ because it cannot be proved.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-18 |
 | Implements | P1 spec sections 4 and 5 |
 | Delivers | FEAT-020 |
 | Depends on | none |
 | Estimate | S |
 
-**Goal.** The port every cost adapter implements, and the domain types that
-stop a number travelling without saying what it measures.
+**Goal.** The domain types that stop a number travelling without saying what it
+measures, and a period that cannot be read off by one.
 
-`CostRecord` already exists. This adds `BillingPeriod`, which knows whether it
-is open, and `CostTotal`, which carries its measure. A screen rendering
-amortized cost under a label saying billed is a defect nobody can see by
-reading it, and a type is the only thing that catches it.
+**The port was already there.** P0 wrote `finops_core/ports/cost.py` with
+`latest_available_period()` and `read_period(start, end)`, and it is better
+than what this plan proposed, so it is unchanged. ISS-180 records that this
+plan was written from the specification and the roadmap without auditing what
+P0 had delivered.
+
+`CostRecord` already existed too. This adds `BillingPeriod`, `CostMeasure` and
+`CostTotal`. A screen rendering amortized cost under a label saying billed is a
+defect nobody can see by reading it, and the four measures are equal often
+enough that it survives review.
 
 **Files.**
 
 | Path | Action |
 | --- | --- |
-| `finops_core/ports/cost.py` | created, `CostExport` with `periods()` and `rows(period)` |
-| `finops_core/domain/cost.py` | extended, `BillingPeriod` and `CostTotal` |
-| `tests/core/test_cost_domain.py` | created |
+| `finops_core/ports/cost.py` | unchanged. Read before assuming, which is the only reason this task shrank |
+| `finops_core/domain/cost.py` | extended, `BillingPeriod`, `CostMeasure` and `CostTotal` |
+| `finops_core/domain/__init__.py` | the three exported |
+| `tests/core/test_cost_domain.py` | created, 15 tests |
 
 **Acceptance criteria.**
 
-- [ ] `finops_core` still imports no boto3, no framework and no HTTP client,
+- [x] `finops_core` still imports no boto3, no framework and no HTTP client,
       which import-linter already enforces
-- [ ] A `CostTotal` cannot be constructed without a measure
-- [ ] `BillingPeriod.is_open` is derived from the period's end against a clock
-      passed in, never from `datetime.now()` inside the type
+- [x] A `CostTotal` cannot be constructed without a measure, and two totals of
+      the same amount with different measures are not equal
+- [x] `BillingPeriod.is_open` is derived from the period's end against a clock
+      passed in, never from `datetime.now()` inside the type. A naive datetime
+      is refused with a message that says what is wrong
+- [x] The end is exclusive, which the fixtures already assumed and nothing had
+      written down. August is `2026-08-01` to `2026-09-01`, and reading that
+      end as inclusive counts a day of September into August
+- [x] Money is `Decimal` and a float is refused at construction. The module
+      docstring already said so and a docstring has never refused anything
 
 **Deliberately not in this task.** No adapter, no collector. A port with two
 implementations and no caller is the right amount of nothing to have built.
@@ -100,8 +114,14 @@ implementations and no caller is the right amount of nothing to have built.
 | Depends on | TASK-P1-001 |
 | Estimate | M |
 
-**Goal.** `FakeCostExport`, producing FOCUS 1.1 rows for a synthetic estate,
-with a configurable failure, the same pattern `FakeQuerySurface` established.
+**Goal.** A synthetic estate in FOCUS 1.1 shape, with a configurable failure.
+
+**Part of this exists.** `FakeProvider` already implements `CostExport` against
+`fixtures.COST_ROWS`, which is four rows: one per account, one service, one
+period, every row tagged, no `resource_id`, and every cost exactly $1.00. That
+is enough to prove the port and not enough to exercise a screen. ISS-180. This
+task decides whether the richer estate lives in its own module, as
+`FakeQuerySurface` does, or stays on `FakeProvider`.
 
 The estate has to contain the states the screens exist to tell apart, or the
 screens can look finished while rendering one case. It needs more than one

@@ -238,7 +238,12 @@ meter/
 │   ├── errors.py              the six typed failure causes, closed set, no catch all
 │   ├── config.py              every METER_ variable, typed. No defaults except flags
 │   ├── constants.py           the values that are decisions rather than deployments
-│   └── domain/                frozen entities, no persistence and no cloud concern
+│   └── domain/                frozen entities, no persistence and no cloud concern.
+│                              cost.py holds CostRecord in FOCUS 1.1, plus
+│                              BillingPeriod, whose end is exclusive and whose
+│                              is_open takes the clock from the caller, and
+│                              CostTotal, which cannot exist without a
+│                              CostMeasure saying which of the four it is
 │       ├── fact.py            the as_of and collected_at pair, inherited not repeated
 │       ├── account.py         Provider, AccountKey, CloudAccount. Never a bare id
 │       ├── tenant.py          Tenant and Scope. No wildcard, empty means nothing

@@ -1081,6 +1081,14 @@ changes:
     not mention P1, so it is derived from the plan files present now and a test holds it there
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md)'
+- id: CHG-0084
+  date: '2026-09-18'
+  type: Correction
+  what: TASK-P1-001. BillingPeriod, CostMeasure and CostTotal added to the domain. The port the
+    task said to create already existed from P0 and is unchanged, which is ISS-180. The billing
+    period end is exclusive, which the fixtures assumed and nothing had written down
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-001'
 issues:
 - id: ISS-164
   severity: MEDIUM
@@ -1132,6 +1140,22 @@ issues:
     looking for wherever else a stored engine meets a classifier constant
   status: FIXED
   detail: '`finops_api/routes/query.py`, _violates'
+- id: ISS-180
+  severity: LOW
+  summary: The P1 specification and implementation plan were written from the roadmap and the
+    specification without auditing what P0 had already delivered, so wave A overstates what is
+    missing. finops_core/ports/cost.py already existed with latest_available_period and
+    read_period, and it is better than what the plan proposed because it separates an export
+    that has published nothing from one that is missing and it names SchemaDrift. FakeProvider
+    already implements that port against a four row fixture. Found 2026-09-18 on the first
+    line of TASK-P1-001, by reading the file the plan said to create. Corrected the same day in
+    both documents rather than building a second port beside the first. The cost was small
+    because the plan's own contract says to stop at a disagreement with reality, and the lesson
+    is that a plan written from documents should be checked against the tree before its first
+    task, not during it
+  status: FIXED
+  detail: '`docs/specs/2026-09-18-p1-cost-intelligence-design.md` section 4,
+    `docs/plans/P1-implementation-plan.md` TASK-P1-001 and TASK-P1-002'
 - id: ISS-179
   severity: MEDIUM
   summary: No pipeline run has ever been observed. The repository has no git remote, so
