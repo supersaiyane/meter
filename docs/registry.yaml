@@ -20,8 +20,8 @@ subprojects:
   depends_on: none
 - id: P1
   name: Cost Intelligence
-  status: Not started
-  spec: ''
+  status: Spec drafted for the cost surface. Anomalies, commitments and the export are a second cut
+  spec: docs/specs/2026-09-18-p1-cost-intelligence-design.md
   plan: ''
   depends_on: P0
 - id: P2
@@ -179,19 +179,19 @@ features:
   name: CUR 2.0 ingest with resource identifiers and split cost allocation
   subproject: P1
   status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P1'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 5 and 7'
   doc: docs/features/FEAT-020-cur-focus-ingest.md
 - id: FEAT-021
   name: Cost rollups, trends and per resource attribution
   subproject: P1
   status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P1'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 8 and 9'
   doc: docs/features/FEAT-021-cost-rollups-and-trends.md
 - id: FEAT-022
   name: Allocation, showback and the unallocated bucket
   subproject: P1
   status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P1'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 9'
   doc: docs/features/FEAT-022-allocation-and-showback.md
 - id: FEAT-023
   name: Anomaly detection and ingest of AWS Cost Anomaly Detection
@@ -2405,6 +2405,28 @@ issues:
     tests/scripts/test_layer_agreement.py now asserts every declared package has a layer, and the
     constraint was probed by importing finops_api and confirming it breaks'
 open_questions:
+- id: OPEN-07
+  question: What does the cost screen show for a tenant whose first ingest has not run, an
+    empty state or the same not built yet panel the unbuilt screens use
+  status: OPEN
+  blocks: 'Nothing. It is a decision to make before the screen is written rather than after'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 13. They are
+    different situations, no bill collected yet and no screen built yet, and looking the same
+    would send a person to the wrong place'
+- id: OPEN-08
+  question: Is there a point at which a closed billing period is declared final and Meter stops
+    re reading it
+  status: OPEN
+  blocks: 'The collector cadence for closed periods. Not the first cut'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 13. A
+    restatement can arrive months later, and the cost of confirming a month is one Athena query'
+- id: OPEN-09
+  question: Does the unallocated bucket belong on the main cost screen as well as on allocation
+  status: OPEN
+  blocks: 'Nothing'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 13. It is the
+    number most likely to embarrass an estate, which argues both for showing it first and for
+    not leading with it'
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS
     relying party'

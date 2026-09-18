@@ -125,9 +125,9 @@ block is caught by `make check-docs`. See
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-020](docs/features/FEAT-020-cur-focus-ingest.md) | CUR 2.0 ingest with resource identifiers and split cost allocation | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
-| [FEAT-021](docs/features/FEAT-021-cost-rollups-and-trends.md) | Cost rollups, trends and per resource attribution | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
-| [FEAT-022](docs/features/FEAT-022-allocation-and-showback.md) | Allocation, showback and the unallocated bucket | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
+| [FEAT-020](docs/features/FEAT-020-cur-focus-ingest.md) | CUR 2.0 ingest with resource identifiers and split cost allocation | Planned | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 5 and 7 |
+| [FEAT-021](docs/features/FEAT-021-cost-rollups-and-trends.md) | Cost rollups, trends and per resource attribution | Planned | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 8 and 9 |
+| [FEAT-022](docs/features/FEAT-022-allocation-and-showback.md) | Allocation, showback and the unallocated bucket | Planned | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 9 |
 | [FEAT-023](docs/features/FEAT-023-cost-anomaly-detection.md) | Anomaly detection and ingest of AWS Cost Anomaly Detection | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
 | [FEAT-024](docs/features/FEAT-024-commitment-coverage.md) | Savings Plan and Reserved Instance utilization and coverage | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
 | [FEAT-045](docs/features/FEAT-045-chargeback-export.md) | Chargeback and showback export, CSV and Excel | Planned | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
@@ -511,6 +511,9 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 
 | ID | Question | Status | Blocks | Detail |
 | --- | --- | --- | --- | --- |
+| OPEN-07 | What does the cost screen show for a tenant whose first ingest has not run, an empty state or the same not built yet panel the unbuilt screens use | OPEN | Nothing. It is a decision to make before the screen is written rather than after | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 13. They are different situations, no bill collected yet and no screen built yet, and looking the same would send a person to the wrong place |
+| OPEN-08 | Is there a point at which a closed billing period is declared final and Meter stops re reading it | OPEN | The collector cadence for closed periods. Not the first cut | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 13. A restatement can arrive months later, and the cost of confirming a month is one Athena query |
+| OPEN-09 | Does the unallocated bucket belong on the main cost screen as well as on allocation | OPEN | Nothing | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 13. It is the number most likely to embarrass an estate, which argues both for showing it first and for not leading with it |
 | OPEN-01 | Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS relying party | PARKED at user request | Production login. Not the P0 build | [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md) |
 | OPEN-02 | Single payer or multiple payer accounts | OPEN | P1 design | [tasks/ISSUES.md](tasks/ISSUES.md) |
 | OPEN-03 | Is Business or Enterprise support available | OPEN | P3 and P5 coverage | [tasks/ISSUES.md](tasks/ISSUES.md) |
