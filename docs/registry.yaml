@@ -1024,6 +1024,16 @@ changes:
     declared template and the fetched path differ
   commit: '1f34786'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-023'
+- id: CHG-0079
+  date: '2026-09-17'
+  type: Feature
+  what: TASK-P2-024, the query surfaces screen. An instance Meter could not read is listed with its
+    typed cause and no numeral, beside a reachable instance holding a genuine zero, so the two
+    cannot be mistaken for each other. All three fixture instances are managed_grafana rather than
+    one per SurfaceKind as planned, because the other two kinds were descoped as TASK-P2-007 and
+    008 and a fixture claiming them would show an estate that cannot exist
+  commit: '92e2eea'
+  detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-024'
 issues:
 - id: ISS-138
   severity: HIGH
