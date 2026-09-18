@@ -15,6 +15,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
+from datetime import date
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -31,6 +32,7 @@ VARIABLE = re.compile(r"^(METER_[A-Z0-9_]+)=(.*)$", re.MULTILINE)
 
 ACCOUNT_DISCOVERY = "AccountDiscovery"
 CREDENTIAL_BROKER = "CredentialBroker"
+COST_EXPORT = "CostExport"
 
 
 class ProviderPorts(Protocol):
@@ -70,7 +72,7 @@ def build_fake(_monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
         known_account=fixtures.ACCOUNT_KEYS[0],
         denied_account=fixtures.DENIED_ACCOUNT_KEY,
         unknown_account=AccountKey(provider=Provider.AWS, account_id="fake-not-enrolled"),
-        supports=frozenset({ACCOUNT_DISCOVERY, CREDENTIAL_BROKER}),
+        supports=frozenset({ACCOUNT_DISCOVERY, CREDENTIAL_BROKER, COST_EXPORT}),
     )
 
 
@@ -120,12 +122,83 @@ class _ContractPaginator:
         return iter([{"Accounts": accounts}])
 
 
-class AwsUnderContract:
-    """The two AWS adapters presented as the one object the contract talks to."""
+#: One recorded Athena page, enough for the contract's questions and no more.
+#: The adapter's own suite exercises the shapes; this asks whether both
+#: implementations answer the same sentences.
+CONTRACT_PERIOD = date(2026, 8, 1)
+CONTRACT_ROW = {
+    "billingaccountid": AWS_KNOWN.account_id,
+    "subaccountid": AWS_DENIED.account_id,
+    "billingperiodstart": "2026-08-01",
+    "billingperiodend": "2026-09-01",
+    "chargeperiodstart": "2026-08-01T00:00:00",
+    "chargeperiodend": "2026-08-02T00:00:00",
+    "providername": "AWS",
+    "servicename": "AmazonEC2",
+    "chargecategory": "Usage",
+    "billedcost": "12.3400",
+    "effectivecost": "11.0000",
+}
 
-    def __init__(self, broker: Any, discovery: Any) -> None:
+
+class _ContractPages:
+    def __init__(self, pages: list[Any]) -> None:
+        self._pages = pages
+
+    def paginate(self, **_: Any) -> Any:
+        return iter(self._pages)
+
+
+class ContractAthena:
+    """Answers with one row for the contract period and nothing for any other."""
+
+    def __init__(self) -> None:
+        self._wanted = ""
+
+    def start_query_execution(self, **kwargs: Any) -> Any:
+        self._wanted = kwargs["QueryString"]
+        return {"QueryExecutionId": "q-contract"}
+
+    def get_query_execution(self, **_: Any) -> Any:
+        return {"QueryExecution": {"Status": {"State": "SUCCEEDED", "StateChangeReason": ""}}}
+
+    def get_paginator(self, _: str) -> _ContractPages:
+        columns = sorted(CONTRACT_ROW)
+        rows: list[Any] = [{"Data": [{"VarCharValue": name} for name in columns]}]
+        if "2026-08" in self._wanted:
+            rows.append({"Data": [{"VarCharValue": CONTRACT_ROW[name]} for name in columns]})
+        return _ContractPages(
+            [
+                {
+                    "ResultSet": {
+                        "ResultSetMetadata": {"ColumnInfo": [{"Name": n} for n in columns]},
+                        "Rows": rows,
+                    }
+                }
+            ]
+        )
+
+
+class ContractS3:
+    def get_paginator(self, _: str) -> _ContractPages:
+        return _ContractPages(
+            [{"CommonPrefixes": [{"Prefix": "exports/focus/BILLING_PERIOD=2026-08/"}]}]
+        )
+
+
+class AwsUnderContract:
+    """The AWS adapters presented as the one object the contract talks to."""
+
+    def __init__(self, broker: Any, discovery: Any, cost: Any) -> None:
         self._broker = broker
         self._discovery = discovery
+        self._cost = cost
+
+    def latest_available_period(self) -> Any:
+        return self._cost.latest_available_period()
+
+    def read_period(self, period_start: Any, period_end: Any) -> Any:
+        return self._cost.read_period(period_start, period_end)
 
     def session_for(self, account: AccountKey, region: str) -> Any:
         return self._broker.session_for(account, region)
@@ -151,6 +224,7 @@ def build_aws(monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
 
     from finops_providers.aws.accounts import AwsAccountDiscovery
     from finops_providers.aws.credentials import AwsCredentialBroker
+    from finops_providers.aws.cur import AthenaCostExport
 
     settings = settings_from_example(monkeypatch)
     refused = {AWS_DENIED.account_id, AWS_UNKNOWN.account_id}
@@ -186,12 +260,21 @@ def build_aws(monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
                 discovery=AwsAccountDiscovery(
                     settings, client_factory=lambda: ContractOrganizations()
                 ),
+                cost=AthenaCostExport(
+                    settings,
+                    tenant_id=fixtures.TENANT_ID,
+                    ingest_run_id=fixtures.INGEST_RUN_ID,
+                    client_factory=lambda service: (
+                        ContractAthena() if service == "athena" else ContractS3()
+                    ),
+                    sleeper=lambda _: None,
+                ),
             ),
             region=AWS_REGION,
             known_account=AWS_KNOWN,
             denied_account=AWS_DENIED,
             unknown_account=AWS_UNKNOWN,
-            supports=frozenset({ACCOUNT_DISCOVERY, CREDENTIAL_BROKER}),
+            supports=frozenset({ACCOUNT_DISCOVERY, CREDENTIAL_BROKER, COST_EXPORT}),
         )
     finally:
         mock.stop()

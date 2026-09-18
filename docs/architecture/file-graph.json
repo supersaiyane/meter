@@ -301,6 +301,7 @@
     "finops_providers/aws/accounts.py",
     "finops_providers/aws/client.py",
     "finops_providers/aws/credentials.py",
+    "finops_providers/aws/cur.py",
     "finops_providers/aws/health.py",
     "finops_providers/aws/platform_cost.py",
     "finops_providers/aws/query_evidence.py",
@@ -381,6 +382,7 @@
     "tests/contract/__init__.py",
     "tests/contract/conftest.py",
     "tests/contract/test_account_discovery.py",
+    "tests/contract/test_cost_export.py",
     "tests/contract/test_credential_broker.py",
     "tests/core/__init__.py",
     "tests/core/test_config.py",
@@ -415,6 +417,7 @@
     "tests/providers/aws/__init__.py",
     "tests/providers/aws/test_accounts.py",
     "tests/providers/aws/test_credentials.py",
+    "tests/providers/aws/test_cur.py",
     "tests/providers/aws/test_health.py",
     "tests/providers/aws/test_query_evidence.py",
     "tests/providers/fake/__init__.py",
@@ -3337,6 +3340,26 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/cur.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/cur.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/cur.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/cur.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/health.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -3908,6 +3931,11 @@
     },
     {
       "s": "tests/contract/conftest.py",
+      "t": "finops_providers/aws/cur.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/conftest.py",
       "t": "finops_providers/fake/__init__.py",
       "k": "python"
     },
@@ -3924,6 +3952,16 @@
     {
       "s": "tests/contract/test_account_discovery.py",
       "t": "finops_core/domain/org.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_cost_export.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_cost_export.py",
+      "t": "finops_core/domain/cost.py",
       "k": "python"
     },
     {
@@ -4479,6 +4517,26 @@
     {
       "s": "tests/providers/aws/test_credentials.py",
       "t": "finops_providers/aws/credentials.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_cur.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_cur.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_cur.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_cur.py",
+      "t": "finops_providers/aws/cur.py",
       "k": "python"
     },
     {

@@ -279,9 +279,15 @@ meter/
 │   │   ├── accounts.py        the exact org tree. Every call paginated
 │   │   ├── health.py          is the role usable, and if not, whose fix is it
 │   │   ├── platform_cost.py   the one Cost Explorer request, grouped
-│   │   └── query_evidence.py  runs from CloudTrail, bytes from query history.
-│   │                          A window that saw nothing returns an absent key,
-│   │                          never a zero: absent means unobserved
+│   │   ├── query_evidence.py  runs from CloudTrail, bytes from query history.
+│   │   │                      A window that saw nothing returns an absent key,
+│   │   │                      never a zero: absent means unobserved
+│   │   └── cur.py             the billing export through Athena. **Never yet
+│   │                          run**, ISS-122, and COLUMNS is the part only a
+│   │                          real export can settle. A period comes back
+│   │                          whole or raises, never short, because short and
+│   │                          retracted look identical to the collector's
+│   │                          delete. That buys a memory ceiling, ISS-181
 │   ├── grafana/               AMG only, per OPEN-04 re answered 2026-09-02
 │   │   ├── client.py          raises a typed cause. A workspace it cannot read
 │   │   │                      must not report zero dashboards

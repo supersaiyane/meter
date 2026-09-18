@@ -60,6 +60,13 @@ class Settings(BaseSettings):
     aws_max_retries: int = Field(ge=0)
     getmetricdata_batch_size: int = Field(ge=1)
 
+    # The billing export. P1, FEAT-020.
+    cur_export_bucket: str = Field(min_length=1)
+    cur_export_prefix: str = Field(min_length=1)
+    cur_athena_database: str = Field(min_length=1)
+    cur_athena_table: str = Field(min_length=1)
+    cur_athena_workgroup: str = Field(min_length=1)
+
     # Ingestion
     queue_url: str = Field(min_length=1)
     run_claim_timeout_minutes: int = Field(ge=1)
