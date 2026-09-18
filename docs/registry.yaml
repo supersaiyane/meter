@@ -20,9 +20,9 @@ subprojects:
   depends_on: none
 - id: P1
   name: Cost Intelligence
-  status: Not started
-  spec: ''
-  plan: ''
+  status: Spec and plan drafted for the cost surface, 13 tasks. Anomalies, commitments and the export are a second cut
+  spec: docs/specs/2026-09-18-p1-cost-intelligence-design.md
+  plan: docs/plans/P1-implementation-plan.md
   depends_on: P0
 - id: P2
   name: Query Cost Governance
@@ -179,19 +179,19 @@ features:
   name: CUR 2.0 ingest with resource identifiers and split cost allocation
   subproject: P1
   status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P1'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 5 and 7'
   doc: docs/features/FEAT-020-cur-focus-ingest.md
 - id: FEAT-021
   name: Cost rollups, trends and per resource attribution
   subproject: P1
   status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P1'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 8 and 9'
   doc: docs/features/FEAT-021-cost-rollups-and-trends.md
 - id: FEAT-022
   name: Allocation, showback and the unallocated bucket
   subproject: P1
   status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P1'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 9'
   doc: docs/features/FEAT-022-allocation-and-showback.md
 - id: FEAT-023
   name: Anomaly detection and ingest of AWS Cost Anomaly Detection
@@ -1065,6 +1065,22 @@ changes:
     a colour. ROW_HEIGHT moved from 28 to 32 to agree with the CSS. P0 reaches 39 of 39 tasks
   commit: 'd5c8cdc'
   detail: '[ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md)'
+- id: CHG-0082
+  date: '2026-09-18'
+  type: Design
+  what: P1 cost surface design specification written, fifteen sections. Covers FEAT-020,
+    FEAT-021 and FEAT-022 against a fake adapter and explicitly not anomalies, commitments or
+    the export. The schema it writes to was already migrated by P0, so it adds no migration
+  commit: '0000929'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md)'
+- id: CHG-0083
+  date: '2026-09-18'
+  type: Design
+  what: P1 implementation plan written, 13 tasks in five waves, each carrying the anti
+    hallucination fields. The sub project list in scripts/docs/sync.py was a literal and did
+    not mention P1, so it is derived from the plan files present now and a test holds it there
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md)'
 issues:
 - id: ISS-164
   severity: MEDIUM
@@ -2405,6 +2421,28 @@ issues:
     tests/scripts/test_layer_agreement.py now asserts every declared package has a layer, and the
     constraint was probed by importing finops_api and confirming it breaks'
 open_questions:
+- id: OPEN-07
+  question: What does the cost screen show for a tenant whose first ingest has not run, an
+    empty state or the same not built yet panel the unbuilt screens use
+  status: OPEN
+  blocks: 'Nothing. It is a decision to make before the screen is written rather than after'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 13. They are
+    different situations, no bill collected yet and no screen built yet, and looking the same
+    would send a person to the wrong place'
+- id: OPEN-08
+  question: Is there a point at which a closed billing period is declared final and Meter stops
+    re reading it
+  status: OPEN
+  blocks: 'The collector cadence for closed periods. Not the first cut'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 13. A
+    restatement can arrive months later, and the cost of confirming a month is one Athena query'
+- id: OPEN-09
+  question: Does the unallocated bucket belong on the main cost screen as well as on allocation
+  status: OPEN
+  blocks: 'Nothing'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 13. It is the
+    number most likely to embarrass an estate, which argues both for showing it first and for
+    not leading with it'
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS
     relying party'

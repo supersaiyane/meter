@@ -125,9 +125,9 @@ block is caught by `make check-docs`. See
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-020](docs/features/FEAT-020-cur-focus-ingest.md) | CUR 2.0 ingest with resource identifiers and split cost allocation | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
-| [FEAT-021](docs/features/FEAT-021-cost-rollups-and-trends.md) | Cost rollups, trends and per resource attribution | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
-| [FEAT-022](docs/features/FEAT-022-allocation-and-showback.md) | Allocation, showback and the unallocated bucket | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
+| [FEAT-020](docs/features/FEAT-020-cur-focus-ingest.md) | CUR 2.0 ingest with resource identifiers and split cost allocation | Planned | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 5 and 7 |
+| [FEAT-021](docs/features/FEAT-021-cost-rollups-and-trends.md) | Cost rollups, trends and per resource attribution | Planned | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 8 and 9 |
+| [FEAT-022](docs/features/FEAT-022-allocation-and-showback.md) | Allocation, showback and the unallocated bucket | Planned | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 9 |
 | [FEAT-023](docs/features/FEAT-023-cost-anomaly-detection.md) | Anomaly detection and ingest of AWS Cost Anomaly Detection | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
 | [FEAT-024](docs/features/FEAT-024-commitment-coverage.md) | Savings Plan and Reserved Instance utilization and coverage | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
 | [FEAT-045](docs/features/FEAT-045-chargeback-export.md) | Chargeback and showback export, CSV and Excel | Planned | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
@@ -307,6 +307,8 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0079 | 2026-09-17 | Feature | TASK-P2-024, the query surfaces screen. An instance Meter could not read is listed with its typed cause and no numeral, beside a reachable instance holding a genuine zero, so the two cannot be mistaken for each other. All three fixture instances are managed_grafana rather than one per SurfaceKind as planned, because the other two kinds were descoped as TASK-P2-007 and 008 and a fixture claiming them would show an estate that cannot exist | `92e2eea` | [P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-024 |
 | CHG-0080 | 2026-09-19 | Feature | TASK-P2-025, the enforcement screen and the P2 journey, left Partly rather than Done. Revoke is absent rather than disabled when the API says an action is not revocable, and on a fixture backed screen it says it did nothing rather than failing silently. Expiry carries an absolute stamp with its date and a countdown together, after a bare time made a control applied three days ago read as one applied this morning. The journey criterion needs the workspace floor and the undo from TASK-P2-017 and 019, which this task never depended on | `a9ac9d7` | [P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-025 |
 | CHG-0081 | 2026-09-21 | Feature | TASK-P0-039, the visual layer, closing ISS-138. One stylesheet against the tokens that already existed, with zero component or screen files touched, which is the property ADR-0021 was decided on. Contrast is computed from the declared tokens rather than trusted, because axe cannot measure it in jsdom and every existing axe assertion had been passing without looking at a colour. ROW_HEIGHT moved from 28 to 32 to agree with the CSS. P0 reaches 39 of 39 tasks | `d5c8cdc` | [ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md) |
+| CHG-0082 | 2026-09-18 | Design | P1 cost surface design specification written, fifteen sections. Covers FEAT-020, FEAT-021 and FEAT-022 against a fake adapter and explicitly not anomalies, commitments or the export. The schema it writes to was already migrated by P0, so it adds no migration | `0000929` | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) |
+| CHG-0083 | 2026-09-18 | Design | P1 implementation plan written, 13 tasks in five waves, each carrying the anti hallucination fields. The sub project list in scripts/docs/sync.py was a literal and did not mention P1, so it is derived from the plan files present now and a test holds it there | `pending` | [P1 plan](docs/plans/P1-implementation-plan.md) |
 
 <!-- generated:changes end -->
 
@@ -511,6 +513,9 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 
 | ID | Question | Status | Blocks | Detail |
 | --- | --- | --- | --- | --- |
+| OPEN-07 | What does the cost screen show for a tenant whose first ingest has not run, an empty state or the same not built yet panel the unbuilt screens use | OPEN | Nothing. It is a decision to make before the screen is written rather than after | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 13. They are different situations, no bill collected yet and no screen built yet, and looking the same would send a person to the wrong place |
+| OPEN-08 | Is there a point at which a closed billing period is declared final and Meter stops re reading it | OPEN | The collector cadence for closed periods. Not the first cut | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 13. A restatement can arrive months later, and the cost of confirming a month is one Athena query |
+| OPEN-09 | Does the unallocated bucket belong on the main cost screen as well as on allocation | OPEN | Nothing | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 13. It is the number most likely to embarrass an estate, which argues both for showing it first and for not leading with it |
 | OPEN-01 | Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS relying party | PARKED at user request | Production login. Not the P0 build | [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md) |
 | OPEN-02 | Single payer or multiple payer accounts | OPEN | P1 design | [tasks/ISSUES.md](tasks/ISSUES.md) |
 | OPEN-03 | Is Business or Enterprise support available | OPEN | P3 and P5 coverage | [tasks/ISSUES.md](tasks/ISSUES.md) |

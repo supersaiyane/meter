@@ -101,7 +101,7 @@ rather than that one saving happened.
 | ID | Name | Status | Features | Spec | Plan | Depends on |
 | --- | --- | --- | --- | --- | --- | --- |
 | P0 | Foundation | Spec approved, in build | 12 (0 specified) | [spec](specs/2026-08-23-p0-foundation-design.md) | [plan](plans/P0-implementation-plan.md) | none |
-| P1 | Cost Intelligence | Not started | 6 (0 specified) | not written | not written | P0 |
+| P1 | Cost Intelligence | Spec and plan drafted for the cost surface, 13 tasks. Anomalies, commitments and the export are a second cut | 6 (0 specified) | [spec](specs/2026-09-18-p1-cost-intelligence-design.md) | [plan](plans/P1-implementation-plan.md) | P0 |
 | P2 | Query Cost Governance | Spec approved, plan in review | 10 (9 specified) | [spec](specs/2026-08-23-p2-query-cost-governance-design.md) | [plan](plans/P2-implementation-plan.md) | P0 |
 | P3 | Utilization and Rightsizing | Not started | 7 (0 specified) | not written | not written | P0, P1 |
 | P4 | Inventory and Topology | Not started | 3 (0 specified) | not written | not written | P0 |
