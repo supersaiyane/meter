@@ -398,8 +398,10 @@
     "tests/db/test_scope_guard.py",
     "tests/ingest/__init__.py",
     "tests/ingest/collectors/__init__.py",
+    "tests/ingest/collectors/conftest.py",
     "tests/ingest/collectors/test_account_health.py",
     "tests/ingest/collectors/test_cost_focus.py",
+    "tests/ingest/collectors/test_cost_focus_restatement.py",
     "tests/ingest/collectors/test_org_tree.py",
     "tests/ingest/collectors/test_partitions.py",
     "tests/ingest/collectors/test_platform_cost.py",
@@ -4122,6 +4124,11 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/conftest.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_account_health.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -4168,6 +4175,36 @@
     },
     {
       "s": "tests/ingest/collectors/test_cost_focus.py",
+      "t": "finops_providers/fake/cur.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
       "t": "finops_providers/fake/cur.py",
       "k": "python"
     },

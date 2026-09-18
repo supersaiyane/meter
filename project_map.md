@@ -486,8 +486,11 @@ meter/
 │       ├── cost_focus.py      the bill, one billing period at a time. Keyed on
 │       │                      source_fingerprint, so a restated row lands on the
 │       │                      row it corrects. Every row carries the run that
-│       │                      last wrote it, which is the only signal that AWS
-│       │                      retracted one. Creates no partitions on purpose
+│       │                      last wrote it, and a row this run did not see is
+│       │                      removed, scoped to one tenant and one period.
+│       │                      A half read removes nothing: the transaction rolls
+│       │                      it back, and the removal sits downstream of
+│       │                      finishing the read. Creates no partitions on purpose
 │       ├── retention.py       six jobs. Anonymises, never removes a principal row.
 │       │                      Its cost job also writes cost_focus_monthly, but only
 │       │                      for months past the cutoff as it drops them

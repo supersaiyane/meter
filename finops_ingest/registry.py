@@ -37,6 +37,11 @@ class CollectorOutcome:
 
     items_written: int = 0
     bytes_read: int = 0
+    #: Rows the collector removed because the provider withdrew them. Separate
+    #: from `items_written`, because a retraction is not a write, and counted at
+    #: all because a destructive operation nobody can see is one nobody notices
+    #: going wrong. P1, FEAT-020.
+    items_removed: int = 0
 
 
 @dataclass(frozen=True)

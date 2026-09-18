@@ -11,7 +11,6 @@ and it is why these tests ingest twice rather than once.
 
 from __future__ import annotations
 
-from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from decimal import Decimal
@@ -45,29 +44,8 @@ class Unit:
 
 
 @pytest.fixture(autouse=True, scope="module")
-def _leave_the_partitions_as_we_found_them(engine: Engine) -> Iterator[None]:
-    """Partitions are not tenant scoped, so they are shared by every test.
-
-    These tests create the months the fake estate bills in, and
-    `test_maintenance_creates_the_months_and_is_then_a_no_op` in the retention
-    suite asserts an exact count of the partitions it creates. Leaving ours
-    behind makes that assertion depend on which file pytest ran first, which is
-    a test that measures the ordering rather than the code.
-
-    Only partitions this module added are removed, by difference against a
-    snapshot taken before it ran, and only ever inside the throwaway container
-    the `engine` fixture starts.
-    """
-    from finops_ingest.collectors.partitions import existing_partitions
-
-    parents = ("cost_focus_daily", "cost_provider_extra")
-    with engine.connect() as connection:
-        before = {parent: set(existing_partitions(connection, parent)) for parent in parents}
-    yield
-    with engine.begin() as connection:
-        for parent, names in before.items():
-            for name in set(existing_partitions(connection, parent)) - names:
-                connection.execute(text(f"DROP TABLE IF EXISTS {name}"))
+def _partitions(partition_sandbox: None) -> None:
+    """This module creates partitions, so it gives them back. See conftest."""
 
 
 def partitions_for(connection: object) -> None:
@@ -163,24 +141,14 @@ class TestARestatedRowLandsOnTheRowItCorrects:
         ingest(engine, tenant_id, export=FakeCostExport(rows=restate(closed)))
         after = dict(rows_for(engine, tenant_id))
 
-        assert len(after) == len(before), "a corrected row landed beside the original"
+        # No new fingerprint appeared, which is the claim this test makes. The
+        # one row missing afterwards is the retraction, and that has its own
+        # file, because removing a row is a different operation from correcting
+        # one and deserves its own review.
+        assert set(after) == set(before) - {RETRACTED_FINGERPRINT}
         assert after[CORRECTED_FINGERPRINT] != before[CORRECTED_FINGERPRINT]
-        changed = [key for key in before if before[key] != after.get(key)]
+        changed = [key for key in after if before[key] != after[key]]
         assert changed == [CORRECTED_FINGERPRINT], f"more than the correction moved: {changed}"
-
-    def test_a_retracted_row_is_still_there_because_this_task_does_not_delete(
-        self, engine: Engine, tenant_id: UUID
-    ) -> None:
-        """Deliberately not in this task, and asserted so it stays that way.
-
-        Retraction is the only destructive operation in the ingest path and it
-        gets its own commit and its own review, TASK-P1-005. A delete arriving
-        here by accident would be the most expensive kind of drive by.
-        """
-        closed = tuple(row for row in ESTATE if row.billing_period_start == CLOSED_PERIOD)
-        ingest(engine, tenant_id, export=FakeCostExport(rows=closed))
-        ingest(engine, tenant_id, export=FakeCostExport(rows=restate(closed)))
-        assert RETRACTED_FINGERPRINT in dict(rows_for(engine, tenant_id))
 
     def test_the_run_id_moves_to_the_run_that_last_saw_the_row(
         self, engine: Engine, tenant_id: UUID
