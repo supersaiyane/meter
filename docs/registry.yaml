@@ -1109,6 +1109,16 @@ changes:
     collector could never produce
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-003'
+- id: CHG-0087
+  date: '2026-09-18'
+  type: Design
+  what: TASK-P1-004. The cost collector writes cost_focus_daily, idempotently, one billing
+    period at a time. CollectorContext gained run_id from the ledger's claim, because rows
+    carry it in a NOT NULL column and the restatement pass deletes on it. Partitions are not
+    created here on purpose, so a missing one is refused by the database rather than worked
+    around
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-004'
 issues:
 - id: ISS-164
   severity: MEDIUM
@@ -1160,6 +1170,19 @@ issues:
     looking for wherever else a stored engine meets a classifier constant
   status: FIXED
   detail: '`finops_api/routes/query.py`, _violates'
+- id: ISS-182
+  severity: MEDIUM
+  summary: Nothing in production assembles a collector registry. CollectorRegistry exists, the
+    dispatcher and the worker both take one, register_retention adds six to it, and the only
+    callers of register are tests. The seed constructs collectors directly and never uses the
+    registry at all, so the path the dispatcher and worker were written for has no entry point
+    and has never run end to end outside a test. Found 2026-09-18 while looking for where to
+    register the cost collector, which is why TASK-P1-004 deliberately registers nothing rather
+    than adding a line nobody reads. Pre existing and not caused by P1
+  status: OPEN
+  blocks: 'Running ingestion in a deployed task. Not the local stack, which seeds directly'
+  detail: '`finops_ingest/registry.py`, `finops_ingest/dispatcher.py`, `finops_ingest/worker.py`
+    and `scripts/ops/seed_demo.py`'
 - id: ISS-181
   severity: MEDIUM
   summary: AthenaCostExport materializes a whole billing period before returning it, so a large

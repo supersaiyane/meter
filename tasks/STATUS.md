@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 51 total, 9 specified, 7 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
-| Changes | 86 recorded |
-| Issues | 123 fixed, 53 open, 0 parked |
+| Changes | 87 recorded |
+| Issues | 123 fixed, 54 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -111,7 +111,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P1 | 3 | 0 | 0 | 0 | 10 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
+| P1 | 4 | 0 | 0 | 0 | 9 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -165,6 +165,7 @@ ISS-003.
 | `TASK-P1-001` | Done, 2026-09-18 | the cost port and the types that carry a measure |
 | `TASK-P1-002` | Done, 2026-09-18 | a fake estate with a bill |
 | `TASK-P1-003` | Done, 2026-09-18, and unproved by construction | the Athena adapter, written and unproved |
+| `TASK-P1-004` | Done, 2026-09-18 | the collector, and what makes a line item itself |
 
 **P2, not in the default state**
 

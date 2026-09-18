@@ -483,7 +483,14 @@ meter/
 │       │                     the executions no definition claims
 │       │                      unreachable and the run continues, and the upsert
 │       │                      is keyed on the day so three runs leave one finding
-│       ├── retention.py       six jobs. Anonymises, never removes a principal row
+│       ├── cost_focus.py      the bill, one billing period at a time. Keyed on
+│       │                      source_fingerprint, so a restated row lands on the
+│       │                      row it corrects. Every row carries the run that
+│       │                      last wrote it, which is the only signal that AWS
+│       │                      retracted one. Creates no partitions on purpose
+│       ├── retention.py       six jobs. Anonymises, never removes a principal row.
+│       │                      Its cost job also writes cost_focus_monthly, but only
+│       │                      for months past the cutoff as it drops them
 │       └── partitions.py      months created ahead. Without one, cost rows are refused
 │   └── metrics.py             only SLO 1 needs a custom metric. The other three are AWS's
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes

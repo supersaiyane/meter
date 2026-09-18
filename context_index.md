@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-389 public symbols across 5 packages.
+390 public symbols across 5 packages.
 
 ## finops_core
 
@@ -80,15 +80,15 @@ a duplicate.
 | `AccessDenied` | class | `finops_core/errors.py:62` | The credential was refused, so the answer is unknown rather than zero. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/aws/client.py`, `finops_providers/fake/provider.py`, and 1 more |
 | `Throttled` | class | `finops_core/errors.py:71` | The provider rejected the call rate. | `finops_providers/aws/client.py`, `finops_providers/fake/health.py` |
 | `NotOptedIn` | class | `finops_core/errors.py:80` | The service exists but this organization has never enabled it. | `finops_providers/aws/client.py`, `finops_providers/grafana/amg.py` |
-| `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | `finops_ingest/collectors/org_tree.py`, `finops_providers/aws/cur.py`, `finops_providers/fake/cur.py` |
+| `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | `finops_ingest/collectors/cost_focus.py`, `finops_ingest/collectors/org_tree.py`, `finops_providers/aws/cur.py`, `finops_providers/fake/cur.py` |
 | `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | `finops_providers/aws/client.py`, `finops_providers/aws/cur.py`, `finops_providers/grafana/client.py` |
 | `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py`, `finops_ingest/collectors/account_health.py`, `finops_ingest/worker.py`, `finops_providers/aws/client.py`, and 5 more |
 | `AccountDiscovery` | class | `finops_core/ports/accounts.py:19` | Reads which accounts exist and how they are arranged. | nothing in this tree |
 | `AccountDiscovery.list_accounts` | method | `finops_core/ports/accounts.py:22` | Every account this organization contains. | `finops_ingest/collectors/org_tree.py` |
 | `AccountDiscovery.describe_organization` | method | `finops_core/ports/accounts.py:35` | Every node of the organization tree, roots and units included. | `finops_ingest/collectors/org_tree.py` |
 | `CostExport` | class | `finops_core/ports/cost.py:18` | Finds the billing export and reads charge rows out of it. | nothing in this tree |
-| `CostExport.latest_available_period` | method | `finops_core/ports/cost.py:21` | The most recent billing period the export actually holds. | `finops_providers/fake/provider.py` |
-| `CostExport.read_period` | method | `finops_core/ports/cost.py:34` | Every charge row covering the period, normalized to FOCUS 1.1. | `finops_providers/fake/provider.py` |
+| `CostExport.latest_available_period` | method | `finops_core/ports/cost.py:21` | The most recent billing period the export actually holds. | `finops_ingest/collectors/cost_focus.py`, `finops_providers/fake/provider.py` |
+| `CostExport.read_period` | method | `finops_core/ports/cost.py:34` | Every charge row covering the period, normalized to FOCUS 1.1. | `finops_ingest/collectors/cost_focus.py`, `finops_providers/fake/provider.py` |
 | `ProviderSession` | class | `finops_core/ports/credentials.py:23` | An authenticated handle for one account and one region. Opaque by design. | nothing in this tree |
 | `ProviderSession.expires_at` | method | `finops_core/ports/credentials.py:27` | When this handle stops working, so a long run can renew before it does. | nothing in this tree |
 | `CredentialBroker` | class | `finops_core/ports/credentials.py:33` | Produces a scoped session for a target account. | nothing in this tree |
@@ -148,8 +148,8 @@ a duplicate.
 | `AwsCredentialBroker.external_id` | method | `finops_providers/aws/credentials.py:72` | Read the ExternalId once. Never logged, never put in an error detail. | nothing in this tree |
 | `AwsCredentialBroker.session_for` | method | `finops_providers/aws/credentials.py:89` |  | `finops_ingest/worker.py`, `finops_providers/aws/health.py` |
 | `AthenaCostExport` | class | `finops_providers/aws/cur.py:117` | `CostExport` over a Data Exports table. Never yet run against AWS. | nothing in this tree |
-| `AthenaCostExport.latest_available_period` | method | `finops_providers/aws/cur.py:142` | The newest partition the export actually holds. | `finops_providers/fake/provider.py` |
-| `AthenaCostExport.read_period` | method | `finops_providers/aws/cur.py:156` | Every charge row in the period, or an exception. Never a short list. | `finops_providers/fake/provider.py` |
+| `AthenaCostExport.latest_available_period` | method | `finops_providers/aws/cur.py:142` | The newest partition the export actually holds. | `finops_ingest/collectors/cost_focus.py`, `finops_providers/fake/provider.py` |
+| `AthenaCostExport.read_period` | method | `finops_providers/aws/cur.py:156` | Every charge row in the period, or an exception. Never a short list. | `finops_ingest/collectors/cost_focus.py`, `finops_providers/fake/provider.py` |
 | `AccountHealthCheck` | class | `finops_providers/aws/health.py:54` | Assumes the role and makes one cheap call, then names what went wrong. | nothing in this tree |
 | `AccountHealthCheck.check` | method | `finops_providers/aws/health.py:67` |  | `finops_api/routes/accounts.py`, `finops_ingest/collectors/account_health.py` |
 | `ModuleCharge` | class | `finops_providers/aws/platform_cost.py:38` | One day, one module tag value, one service, as the provider reported it. | `finops_providers/fake/platform_cost.py` |
@@ -160,8 +160,8 @@ a duplicate.
 | `estate` | function | `finops_providers/fake/cur.py:159` | Three months of bill, the newest of them still running. | nothing in this tree |
 | `restate` | function | `finops_providers/fake/cur.py:185` | The same bill after AWS restated it: one row corrected, one retracted. | nothing in this tree |
 | `FakeCostExport` | class | `finops_providers/fake/cur.py:212` | `CostExport` in memory. Every failure is asked for, never incidental. | `finops_providers/fake/provider.py` |
-| `FakeCostExport.latest_available_period` | method | `finops_providers/fake/cur.py:233` |  | `finops_providers/fake/provider.py` |
-| `FakeCostExport.read_period` | method | `finops_providers/fake/cur.py:242` |  | `finops_providers/fake/provider.py` |
+| `FakeCostExport.latest_available_period` | method | `finops_providers/fake/cur.py:233` |  | `finops_ingest/collectors/cost_focus.py`, `finops_providers/fake/provider.py` |
+| `FakeCostExport.read_period` | method | `finops_providers/fake/cur.py:242` |  | `finops_ingest/collectors/cost_focus.py`, `finops_providers/fake/provider.py` |
 | `FakeQueryEvidence` | class | `finops_providers/fake/evidence.py:110` | `QueryEvidence` in memory, with a configurable failure and a past. | nothing in this tree |
 | `FakeQueryEvidence.observations` | method | `finops_providers/fake/evidence.py:134` |  | `finops_ingest/collectors/query_audit.py` |
 | `FakeRoleHealth` | class | `finops_providers/fake/health.py:38` | `RoleHealthCheck` in memory, with a stated plan. | nothing in this tree |
@@ -173,8 +173,8 @@ a duplicate.
 | `FakeProvider.session_for` | method | `finops_providers/fake/provider.py:113` |  | `finops_ingest/worker.py`, `finops_providers/aws/health.py` |
 | `FakeProvider.list_accounts` | method | `finops_providers/fake/provider.py:119` |  | `finops_ingest/collectors/org_tree.py` |
 | `FakeProvider.describe_organization` | method | `finops_providers/fake/provider.py:126` |  | `finops_ingest/collectors/org_tree.py` |
-| `FakeProvider.latest_available_period` | method | `finops_providers/fake/provider.py:139` |  | nothing in this tree |
-| `FakeProvider.read_period` | method | `finops_providers/fake/provider.py:143` |  | nothing in this tree |
+| `FakeProvider.latest_available_period` | method | `finops_providers/fake/provider.py:139` |  | `finops_ingest/collectors/cost_focus.py` |
+| `FakeProvider.read_period` | method | `finops_providers/fake/provider.py:143` |  | `finops_ingest/collectors/cost_focus.py` |
 | `FakeProvider.read_series` | method | `finops_providers/fake/provider.py:149` |  | nothing in this tree |
 | `FakeProvider.list_resources` | method | `finops_providers/fake/provider.py:167` |  | nothing in this tree |
 | `FakeProvider.list_dependencies` | method | `finops_providers/fake/provider.py:177` |  | nothing in this tree |
@@ -214,10 +214,11 @@ a duplicate.
 | Symbol | Kind | Location | Purpose | Called by |
 | --- | --- | --- | --- | --- |
 | `AccountHealthCollector` | class | `finops_ingest/collectors/account_health.py:34` | Checks one account's collector role and records the answer. | nothing in this tree |
+| `CostFocusCollector` | class | `finops_ingest/collectors/cost_focus.py:113` | Reads one billing period and writes it, idempotently. | nothing in this tree |
 | `compute_paths` | function | `finops_ingest/collectors/org_tree.py:45` | The materialised path and depth of every node. | nothing in this tree |
 | `OrgTreeCollector` | class | `finops_ingest/collectors/org_tree.py:79` | Reads the organization and writes it, whole, in one transaction. | nothing in this tree |
 | `month_floor` | function | `finops_ingest/collectors/partitions.py:55` |  | `finops_ingest/collectors/retention.py` |
-| `next_month` | function | `finops_ingest/collectors/partitions.py:59` |  | nothing in this tree |
+| `next_month` | function | `finops_ingest/collectors/partitions.py:59` |  | `finops_ingest/collectors/cost_focus.py` |
 | `months_from` | function | `finops_ingest/collectors/partitions.py:65` | `count` consecutive month starts, beginning at the month containing `start`. | nothing in this tree |
 | `partition_name` | function | `finops_ingest/collectors/partitions.py:73` |  | nothing in this tree |
 | `month_of` | function | `finops_ingest/collectors/partitions.py:77` | The month a partition name encodes, or None if it is not one of ours. | nothing in this tree |
@@ -268,17 +269,17 @@ a duplicate.
 | `publish` | function | `finops_ingest/metrics.py:146` | Send the measurements. Returns how many were sent. | `finops_ingest/dispatcher.py` |
 | `screen_and_alert_thresholds` | function | `finops_ingest/metrics.py:175` | The two multiples, returned together so a test can hold them apart. | nothing in this tree |
 | `CollectorScope` | class | `finops_ingest/registry.py:25` | What one unit of this collector's work covers. | nothing in this tree |
-| `CollectorOutcome` | class | `finops_ingest/registry.py:35` | What a collector did, for the run ledger to record. | `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/org_tree.py`, `finops_ingest/collectors/partitions.py`, `finops_ingest/collectors/platform_cost.py`, and 2 more |
+| `CollectorOutcome` | class | `finops_ingest/registry.py:35` | What a collector did, for the run ledger to record. | `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/cost_focus.py`, `finops_ingest/collectors/org_tree.py`, `finops_ingest/collectors/partitions.py`, and 3 more |
 | `CollectorContext` | class | `finops_ingest/registry.py:43` | Everything a collector is given, and nothing it is not. | `finops_ingest/worker.py` |
-| `Collector` | class | `finops_ingest/registry.py:71` |  | `finops_ingest/collectors/retention.py` |
-| `ScheduleEntry` | class | `finops_ingest/registry.py:78` | One collector's cadence, with the reason it is that number. | nothing in this tree |
-| `governed_by_retention_flag` | function | `finops_ingest/registry.py:228` |  | nothing in this tree |
-| `due_collectors` | function | `finops_ingest/registry.py:232` | Which of a tenant's collectors are due, honouring the kill switch. | nothing in this tree |
-| `install_default_schedule` | function | `finops_ingest/registry.py:279` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
-| `CollectorRegistry` | class | `finops_ingest/registry.py:307` | The collectors this process knows how to run. | nothing in this tree |
-| `CollectorRegistry.register` | method | `finops_ingest/registry.py:313` |  | `finops_ingest/collectors/retention.py` |
-| `CollectorRegistry.get` | method | `finops_ingest/registry.py:321` |  | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 30 more |
-| `CollectorRegistry.names` | method | `finops_ingest/registry.py:330` |  | nothing in this tree |
+| `Collector` | class | `finops_ingest/registry.py:77` |  | `finops_ingest/collectors/retention.py` |
+| `ScheduleEntry` | class | `finops_ingest/registry.py:84` | One collector's cadence, with the reason it is that number. | nothing in this tree |
+| `governed_by_retention_flag` | function | `finops_ingest/registry.py:234` |  | nothing in this tree |
+| `due_collectors` | function | `finops_ingest/registry.py:238` | Which of a tenant's collectors are due, honouring the kill switch. | nothing in this tree |
+| `install_default_schedule` | function | `finops_ingest/registry.py:285` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
+| `CollectorRegistry` | class | `finops_ingest/registry.py:313` | The collectors this process knows how to run. | nothing in this tree |
+| `CollectorRegistry.register` | method | `finops_ingest/registry.py:319` |  | `finops_ingest/collectors/retention.py` |
+| `CollectorRegistry.get` | method | `finops_ingest/registry.py:327` |  | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 30 more |
+| `CollectorRegistry.names` | method | `finops_ingest/registry.py:336` |  | nothing in this tree |
 | `FloorOutcome` | class | `finops_ingest/remediation.py:43` | What happened, in enough detail to explain a refusal. | nothing in this tree |
 | `apply_refresh_floor` | function | `finops_ingest/remediation.py:59` | Raise one workspace's floor, if this deployment is permitted to. | nothing in this tree |
 | `RewriteOutcome` | class | `finops_ingest/remediation.py:143` | What a panel rewrite did, including the case where it undid itself. | nothing in this tree |
