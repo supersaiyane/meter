@@ -18,7 +18,7 @@ from types import MappingProxyType
 from uuid import UUID
 
 from finops_core.domain.account import AccountKey, AccountStatus, CloudAccount, Provider
-from finops_core.domain.cost import CostRecord
+from finops_core.domain.cost import CostRecord, source_fingerprint
 from finops_core.domain.identity import Principal
 from finops_core.domain.metrics import MetricPoint
 from finops_core.domain.org import OrgNode, OrgNodeType
@@ -131,7 +131,21 @@ COST_ROWS: tuple[CostRecord, ...] = tuple(
     CostRecord(
         tenant_id=TENANT_ID,
         ingest_run_id=INGEST_RUN_ID,
-        source_fingerprint=f"fake:{key.account_id}",
+        # The real digest, not "fake:account". The contract asks every adapter
+        # to compute a line item's identity the same way, and it caught this:
+        # a fake with an identity the collector would never produce proves the
+        # upsert against a shape that cannot occur.
+        source_fingerprint=source_fingerprint(
+            billing_account_id=ACCOUNT_IDS[0],
+            sub_account_id=key.account_id,
+            charge_period_start=WINDOW_START,
+            charge_period_end=WINDOW_END,
+            service_name="FakeLogs",
+            resource_id=None,
+            sku_id=None,
+            charge_category="Usage",
+            commitment_discount_id=None,
+        ),
         as_of=AS_OF,
         collected_at=COLLECTED_AT,
         billing_account_id=ACCOUNT_IDS[0],

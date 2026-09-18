@@ -1099,6 +1099,16 @@ changes:
     fake and the collector cannot disagree about a line item's identity
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-002'
+- id: CHG-0086
+  date: '2026-09-18'
+  type: Design
+  what: TASK-P1-003. AthenaCostExport written and unproved, with five settings for the export
+    location. A period is returned whole or not at all, because a short list is
+    indistinguishable to the collector from a month where charges were retracted. The contract
+    suite gained a cost export and immediately caught the fake using a fingerprint the
+    collector could never produce
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-003'
 issues:
 - id: ISS-164
   severity: MEDIUM
@@ -1150,6 +1160,20 @@ issues:
     looking for wherever else a stored engine meets a classifier constant
   status: FIXED
   detail: '`finops_api/routes/query.py`, _violates'
+- id: ISS-181
+  severity: MEDIUM
+  summary: AthenaCostExport materializes a whole billing period before returning it, so a large
+    organization's month is held in memory at once. The alternative is streaming, and streaming
+    cannot be made safe without the port being able to say whether a period was read completely.
+    A generator that yields half a month and then raises is indistinguishable to the collector
+    from a month where those charges were retracted, and the collector deletes on exactly that
+    difference. Correctness was chosen over memory deliberately on 2026-09-18 and this records
+    the ceiling rather than pretending it is not there. Nothing has measured it, because nothing
+    has run against a real export. Revisit when ISS-122 closes and the size of a real month is
+    known rather than guessed
+  status: OPEN
+  blocks: 'Nothing today. It is a ceiling on the size of estate this adapter can read'
+  detail: '`finops_providers/aws/cur.py`, read_period, and the module docstring'
 - id: ISS-180
   severity: LOW
   summary: The P1 specification and implementation plan were written from the roadmap and the

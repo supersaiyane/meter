@@ -185,7 +185,7 @@ no disagreement possible.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-18, and unproved by construction |
 | Implements | P1 spec sections 4, 7 and 10 |
 | Delivers | FEAT-020 |
 | Depends on | TASK-P1-001 |
@@ -199,25 +199,54 @@ FOCUS.
 
 | Path | Action |
 | --- | --- |
-| `finops_providers/aws/cur.py` | created |
-| `tests/providers/aws/test_cur.py` | created, against recorded shapes |
-| `tests/contract/test_cost_export.py` | created, runs against both adapters |
+| `finops_providers/aws/cur.py` | created, `AthenaCostExport` |
+| `finops_core/config.py` | five settings for the export location and the workgroup |
+| `.env.example` | the same five, which a test holds to the settings |
+| `tests/providers/aws/test_cur.py` | created, 15 tests against recorded shapes |
+| `tests/contract/conftest.py` | a cost export provider for both sides |
+| `tests/contract/test_cost_export.py` | created, 6 sentences over both adapters |
+| `finops_providers/fake/fixtures.py` | the smoke fixture's fingerprint made real, which the contract caught |
 
 **Acceptance criteria.**
 
-- [ ] The contract test passes against the fake and the AWS adapter, so the
-      fake cannot drift into agreeing with a shape that does not exist
-- [ ] `Throttled` is retried with backoff, and a period that is still throttled
-      after the retries is returned as incomplete rather than as short
-- [ ] The query prunes on the billing period partition. A full scan of a CUR
-      table is the tool that reports on cost becoming a line on the bill
-- [ ] **This adapter has never made a call.** The task is done when the code is
-      written and unit tested, and the acceptance criterion is that the
-      document says so, not that a test passed. ISS-122
+- [x] The contract test passes against the fake and the AWS adapter. **It
+      earned its place immediately**: it failed on the fake, whose smoke fixture
+      still used `fake:<account>` as a line item's identity where the collector
+      would compute a digest. A fake with an identity the collector cannot
+      produce proves the upsert against a shape that cannot occur
+- [x] `Throttled` is retried with backoff, and a period still throttled after
+      the retries raises. Raising is what "incomplete rather than short" means
+      here: the port returns an iterable, so the only way to say incomplete is
+      to refuse to return at all
+- [x] Athena reporting a throttle as a failed execution rather than as a
+      throttled call is still read as a throttle. It is the only place that
+      cause appears, and reading it as schema drift sends somebody to look at
+      the table
+- [x] The query prunes on the billing period partition, and a test asserts no
+      function wraps the partition key, because a function applied to it stops
+      Athena pruning and the query silently scans the whole table at full price
+- [x] A period is returned whole or not at all. A failure part way through
+      paging raises rather than returning the pages that arrived, because a
+      short list is indistinguishable to the collector from a month where those
+      charges were retracted and the delete in TASK-P1-005 turns on exactly
+      that difference. The memory ceiling this buys is ISS-181
+- [x] A missing required column is `SchemaDrift` and never a zero, per
+      constraint 5
+- [x] **This adapter has never made a call.** Written, unit tested against
+      recorded shapes, held to the contract. None of that is having run. The
+      column mapping in `COLUMNS` is the part most likely to be wrong, because
+      it is the part only a real export can settle, and it is marked as such in
+      the file. ISS-122
 
 **Deliberately not in this task.** No credentials work. The hub role already
 reaches the payer, and inventing a second path to it now would be a second
 thing to unpick when an account arrives.
+
+**Scope taken on.** Five settings, because an adapter that cannot be told where
+the export is has to hardcode it, and the hardcoding gate would refuse that and
+be right to. There is deliberately no setting for the Athena result location:
+the workgroup carries it, and enforcing it there is what stops a query writing
+results wherever the caller fancied.
 
 ---
 
