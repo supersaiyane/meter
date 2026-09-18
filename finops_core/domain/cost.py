@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from decimal import Decimal
 from enum import StrEnum
+from hashlib import sha256
 from types import MappingProxyType
 from uuid import UUID
 
@@ -44,6 +45,55 @@ class CostMeasure(StrEnum):
     BILLED = "billed"
     LIST = "list"
     CONTRACTED = "contracted"
+
+
+def source_fingerprint(
+    *,
+    billing_account_id: str,
+    sub_account_id: str | None,
+    charge_period_start: datetime,
+    charge_period_end: datetime,
+    service_name: str,
+    resource_id: str | None,
+    sku_id: str | None,
+    charge_category: str,
+    commitment_discount_id: str | None,
+) -> str:
+    """The identity of a line item, as a sha256 hex digest.
+
+    The primary key of `cost_focus_daily` is
+    `(tenant_id, billing_period_start, source_fingerprint)`, so this is what
+    makes an ingest idempotent across a restated month.
+
+    **It hashes the columns that identify the charge and never the columns that
+    state its size.** AWS restates the current month continuously, and a
+    fingerprint that included the cost would make a restated row a new row,
+    which is the exact failure the key exists to prevent: the month would grow
+    by one copy of every corrected line item.
+
+    `sha256` and not `hash()`. The builtin is salted per process, so a
+    fingerprint from it is stable within one run and different in the next, and
+    the symptom is a table that doubles every time the worker restarts.
+
+    It lives here rather than in either adapter because both adapters must
+    produce the same digest for the same charge. Two implementations of an
+    identity is how a duplicate is created.
+    """
+    parts = (
+        billing_account_id,
+        sub_account_id or "",
+        charge_period_start.isoformat(),
+        charge_period_end.isoformat(),
+        service_name,
+        resource_id or "",
+        sku_id or "",
+        charge_category,
+        commitment_discount_id or "",
+    )
+    # A unit separator, because it cannot occur in any of these values and a
+    # comma can. Joining on a character that appears in the data lets two
+    # different charges hash to one fingerprint.
+    return sha256("\x1f".join(parts).encode("utf-8")).hexdigest()
 
 
 @dataclass(frozen=True, kw_only=True)

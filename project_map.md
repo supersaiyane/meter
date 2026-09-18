@@ -244,6 +244,9 @@ meter/
 │                              is_open takes the clock from the caller, and
 │                              CostTotal, which cannot exist without a
 │                              CostMeasure saying which of the four it is
+│                              source_fingerprint is here too, so both cost
+│                              adapters hash a line item's identity the
+│                              same way. It takes no cost, on purpose
 │       ├── fact.py            the as_of and collected_at pair, inherited not repeated
 │       ├── account.py         Provider, AccountKey, CloudAccount. Never a bare id
 │       ├── tenant.py          Tenant and Scope. No wildcard, empty means nothing
@@ -286,7 +289,13 @@ meter/
 │   │                          becomes a visible unreachable instance, never a
 │   │                          shorter list. The token is a loan, revoked in a
 │   │                          finally. v1 writes nothing, constraint 6
-│   └── fake/                  in memory, the ports, no network, no clock
+│   └── fake/                  in memory, the ports, no network, no clock.
+│                              cur.py is the estate's bill, 2,100 FOCUS rows
+│                              across three periods, the newest a part month.
+│                              22 percent of it is untagged on purpose, and
+│                              the account Meter cannot read is on it, because
+│                              the bill comes from the payer. provider.py
+│                              delegates to it with the four row smoke fixture
 │       ├── fixtures.py        one root, two units, five accounts, one denied
 │       ├── provider.py        the failure plan. Any of the six, for any scope.
 │       │                      Takes the time it is observed at, because the
