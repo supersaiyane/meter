@@ -17,7 +17,7 @@ from __future__ import annotations
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.engine import Connection
 
 from finops_api.db.repositories import AccessContext
@@ -33,10 +33,14 @@ from finops_api.schemas import (
     QueryFindingDetailOut,
     QueryFindingOut,
     QueryGroupOut,
+    RemediationOut,
     SurfaceInstanceOut,
 )
 from finops_core.config import Settings
+from finops_core.domain.query import SurfaceInstance, SurfaceKind, WriteLevel
 from finops_core.domain.tenant import Scope
+from finops_ingest.remediation import apply_panel_rewrite, undo_change
+from finops_query.gate import rule_from
 from finops_query.severity import (
     CAUSE_LABEL,
     ENGINE_SCAN,
@@ -216,6 +220,224 @@ def query_finding(
             coverage=surfaces.coverage(scope),
             coverage_unit="workspaces",
         ),
+    )
+
+
+def _instance_for(
+    connection: Connection, context: AccessContext, scope: Scope, row: Any
+) -> SurfaceInstance:
+    """The domain instance a remediation writes to.
+
+    Built from the stored row rather than taken from a collector, because the
+    API has no collector and the surface adapter only needs enough to address
+    the workspace. It is still scoped: an instance outside the caller's scope
+    is not found, and the write never starts.
+    """
+    found = next(
+        (
+            instance
+            for instance in SurfaceInstanceRepository(connection, context).all_with_counts(scope)
+            if instance.instance_id == row.instance_id
+        ),
+        None,
+    )
+    if found is None:
+        raise HTTPException(status_code=404, detail="no such instance")
+    return SurfaceInstance(
+        surface_id=str(found.name),
+        name=str(found.name),
+        kind=SurfaceKind.MANAGED_GRAFANA,
+        location=str(found.endpoint),
+        reachable=bool(found.reachable),
+        unreachable_cause=found.unreachable_reason,
+    )
+
+
+def _control_of(request: Request) -> Any:
+    """The surface adapter a remediation writes through, or None.
+
+    Injected at `create_app` like the health check, and absent by default. A
+    deployment that has not configured one gets a refusal naming that, rather
+    than a route that reports success over a write nothing performed.
+    """
+    return getattr(request.app.state, "remediation_control", None)
+
+
+def _violates(row: Any, settings: Settings) -> bool:
+    """Whether this finding is an explicit policy violation.
+
+    The plan's own rule for this task: do not rewrite anything that is not one.
+    A judgement call is a recommendation, and rewriting somebody's dashboard on
+    a judgement call is how a remediation feature gets switched off for good.
+
+    The same rule the CI gate blocks on, from the same settings, so a panel
+    refused at merge and a panel remediated in place are the same shape.
+    """
+    # Lowercased, because the engine has two spellings for one fact: the
+    # classifier produces `logs_insights` and `ck_query_definition__engine_valid`
+    # stores `LOGS_INSIGHTS`. Comparing them raw matches neither, and the rule
+    # then quietly finds no violation anywhere, which is the worst way for a
+    # policy check to fail.
+    return rule_from(settings).broken_by(
+        str(row.engine).lower(), row.refresh_seconds or 0, row.range_seconds
+    )
+
+
+@router.post("/query/remediate/{finding_id}", response_model=Envelope[RemediationOut])
+def remediate(
+    finding_id: UUID,
+    request: Request,
+    scope: Scope = Depends(get_scope),
+    connection: Connection = Depends(get_connection),
+    context: AccessContext = Depends(get_access_context),
+    settings: Settings = Depends(get_settings),
+) -> Envelope[RemediationOut]:
+    """Bring one panel back inside the policy, subject to the write level.
+
+    Architectural constraint 6 makes v1 read only, and this does not change
+    that: `query_write_level` defaults to `none` everywhere, so this route
+    refuses on an untouched deployment. Enabling it is a decision somebody
+    signs rather than one they inherit, which is what FEAT-017 asks for.
+
+    The change is a single field. The refresh is raised to the same threshold
+    the reports warn at and the gate blocks on, because a remediation that
+    lands on a different number from the one the product has been quoting
+    teaches a reader that neither is real.
+    """
+    repository = QueryFindingRepository(connection, context)
+    row = repository.one(scope, finding_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="no such finding")
+
+    surfaces = SurfaceInstanceRepository(connection, context)
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        visible=1,
+        rows=[row],
+        coverage=surfaces.coverage(scope),
+        coverage_unit="workspaces",
+    )
+
+    if not _violates(row, settings):
+        return Envelope(
+            data=RemediationOut(
+                finding_id=finding_id,
+                applied=False,
+                detail=(
+                    "this finding is not an explicit policy violation, and a "
+                    "judgement call is a recommendation rather than a remediation"
+                ),
+            ),
+            meta=meta,
+        )
+
+    control = _control_of(request)
+    if control is None:
+        return Envelope(
+            data=RemediationOut(
+                finding_id=finding_id,
+                applied=False,
+                detail="no remediation control is configured for this deployment",
+            ),
+            meta=meta,
+        )
+
+    outcome = apply_panel_rewrite(
+        connection=connection,
+        tenant_id=scope.tenant_id,
+        instance=_instance_for(connection, context, scope, row),
+        control=control,
+        fingerprint=str(row.fingerprint),
+        changes={"refresh_seconds": settings.query_refresh_warn_seconds},
+        write_level=WriteLevel(settings.query_write_level),
+        applied_by=str(context.principal_id),
+        query_pk=row.query_id,
+        instance_pk=row.instance_id,
+    )
+    return Envelope(
+        data=RemediationOut(
+            finding_id=finding_id,
+            applied=outcome.applied,
+            reverted=outcome.reverted,
+            detail=outcome.detail,
+            change_id=outcome.change_id,
+        ),
+        meta=meta,
+    )
+
+
+@router.post("/query/remediate/{finding_id}/undo", response_model=Envelope[RemediationOut])
+def undo_remediation(
+    finding_id: UUID,
+    request: Request,
+    scope: Scope = Depends(get_scope),
+    connection: Connection = Depends(get_connection),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[RemediationOut]:
+    """Put back what the last remediation replaced.
+
+    The last one, not an arbitrary earlier one: undoing out of order restores a
+    state a later change already replaced. It takes no write level, because
+    undoing is how somebody stops a change they did not want, and gating the
+    exit behind the same flag as the entrance would trap them.
+    """
+    repository = QueryFindingRepository(connection, context)
+    row = repository.one(scope, finding_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="no such finding")
+
+    surfaces = SurfaceInstanceRepository(connection, context)
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        visible=1,
+        rows=[row],
+        coverage=surfaces.coverage(scope),
+        coverage_unit="workspaces",
+    )
+    change = repository.latest_change(scope, finding_id)
+    if change is None:
+        return Envelope(
+            data=RemediationOut(
+                finding_id=finding_id,
+                applied=False,
+                detail="nothing to undo: this finding has no change that is still applied",
+            ),
+            meta=meta,
+        )
+
+    control = _control_of(request)
+    if control is None:
+        return Envelope(
+            data=RemediationOut(
+                finding_id=finding_id,
+                applied=False,
+                change_id=change.change_id,
+                detail="no remediation control is configured for this deployment",
+            ),
+            meta=meta,
+        )
+
+    outcome = undo_change(
+        connection=connection,
+        tenant_id=scope.tenant_id,
+        instance=_instance_for(connection, context, scope, row),
+        control=control,
+        change_id=change.change_id,
+        reverted_by=str(context.principal_id),
+    )
+    return Envelope(
+        data=RemediationOut(
+            finding_id=finding_id,
+            applied=outcome.applied,
+            reverted=outcome.reverted,
+            detail=outcome.detail,
+            change_id=change.change_id,
+        ),
+        meta=meta,
     )
 
 

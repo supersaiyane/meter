@@ -366,7 +366,10 @@ meter/
 │   │   │                      only exists after a success, so listing those
 │   │   │                      omitted the row a reader comes for, ISS-163
 │   │   ├── platform.py        Meter's own cost, unallocated included
-│   │   └── query.py           three of the eight P2 routes. The other five read
+│   │   └── query.py           five of the eight P2 routes, including the two
+│   │                          that write. Every write refuses first: the level,
+│   │                          then whether the finding is an actual violation,
+│   │                          then whether a control exists at all. The other five read
 │   │                          data that does not exist yet, ISS-148. Coverage
 │   │                          here counts workspaces, not findings
 │   ├── guards.py              the scope guard. No default, empty means nothing.

@@ -284,6 +284,29 @@ class QueryFindingOut(BaseModel):
     collected_at: datetime
 
 
+class RemediationOut(BaseModel):
+    """What a remediation did, or why it did not.
+
+    `applied` false is a normal answer and carries a reason. The common case is
+    a deployment whose write level is `none`, which is the default and is a
+    decision rather than a fault, and the second most common is a finding that
+    is not an explicit policy violation. A judgement call is a recommendation,
+    not a remediation.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    finding_id: UUID
+    applied: bool
+    #: Set when the write did not take and was put back. The estate is
+    #: unchanged, and this says so rather than leaving a reader to infer it.
+    reverted: bool = False
+    detail: str = ""
+    #: Null unless something was recorded. An undo needs it, and a refusal has
+    #: nothing to undo.
+    change_id: UUID | None = None
+
+
 class QueryGroupOut(BaseModel):
     """One cause, with the money behind it summed across every finding.
 

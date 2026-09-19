@@ -36,6 +36,29 @@ A rewrite that cannot be applied is reported with the Grafana error. A rewrite t
 
 `POST /api/v1/query/remediate/{id}` and `POST /api/v1/query/remediate/{id}/undo`. Every change appears on the enforcement screen. See [P2 spec](../specs/2026-08-23-p2-query-cost-governance-design.md) section 5.
 
+## Read surface
+
+`POST /api/v1/query/remediate/{finding_id}` applies, `POST .../undo` reverts.
+Both landed 2026-09-05.
+
+The apply route refuses three ways before it writes anything, and the refusals
+are the feature. A deployment whose `query_write_level` is `none`, which is
+every untouched deployment and what architectural constraint 6 requires of v1.
+A finding that is not an explicit policy violation, because a judgement call is
+a recommendation and rewriting somebody's dashboard on one is how a remediation
+feature gets switched off for good. And a deployment with no surface adapter
+configured, which says so rather than reporting success over a write nothing
+performed.
+
+The undo takes no write level. Undoing is how somebody stops a change they did
+not want, and gating the exit behind the same flag as the entrance would trap
+them. It reverts the most recent change that is still applied, because undoing
+out of order restores a state a later change already replaced.
+
+The refresh is raised to the same threshold the reports warn at and the CI gate
+blocks on. A remediation landing on a different number teaches a reader that
+neither is real.
+
 ## Not doing
 
 Applies only to explicit policy violations, never to a judgement call. Does not touch anything outside the offending panel.

@@ -941,9 +941,11 @@ for.
 
 **Acceptance criteria.**
 
-- [ ] **Short.** The eight routes from spec section 8.2. Three built: findings,
-      one finding, instances. Five read data that does not exist yet, and are
-      recorded as ISS-148 rather than shipped against empty tables
+- [ ] **Short.** The eight routes from spec section 8.2. Five built: findings,
+      one finding, instances, and since 2026-09-05 the two remediation routes,
+      which TASK-P2-019 unblocked. Three remain and none can be built here:
+      enforcement and its revoke need the parked TASK-P2-016, and accuracy needs
+      FEAT-018. ISS-148
 - [ ] **Short.** Three MCP tools, schemas generated from the same models. One
       built, `list_expensive_queries`. The other two take a finding identifier
       or a workspace, and each would be a facade over a route that is not there

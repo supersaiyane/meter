@@ -541,6 +541,205 @@ def test_a_group_is_ranked_on_its_total_not_on_its_worst_row(
     assert all(group["label"] != group["cause"] for group in groups)
 
 
+# --- remediation, FEAT-017 and the spec's two write routes -------------------
+
+
+class Recording:
+    """A `PanelRewrite` in memory that records what it was asked to change."""
+
+    def __init__(self, drop_writes: bool = False) -> None:
+        self.element: dict[str, object] = {"refresh_seconds": 10, "query": "fields @timestamp"}
+        self.drop_writes = drop_writes
+        self.writes: list[dict[str, object]] = []
+
+    def read_element(self, _instance: object, _fingerprint: str) -> dict[str, object]:
+        return dict(self.element)
+
+    def write_element(
+        self, _instance: object, _fingerprint: str, element: dict[str, object]
+    ) -> None:
+        self.writes.append(dict(element))
+        if not self.drop_writes:
+            self.element = dict(element)
+
+
+def remediating_client(
+    engine: Engine, scope: Scope, settings: Settings, control: object, level: str = "full"
+) -> tuple[TestClient, str]:
+    """A client whose deployment permits writes and has a control configured."""
+    signer = SessionSigner(SIGNING_KEY, ttl_hours=8, clock=lambda: NOW)
+    app = create_app(
+        engine=engine,
+        entitlements=StubEntitlements(scope),
+        signer=signer,
+        settings=settings.model_copy(update={"query_write_level": level}),
+        remediation_control=control,
+    )
+    return TestClient(app, raise_server_exceptions=False), signer.issue(
+        "p2", "someone@example.local", scope
+    )
+
+
+def violating(engine: Engine, tenant: UUID) -> UUID:
+    """Make the expensive finding an explicit policy violation.
+
+    The seeded one refreshes every ten seconds over thirty days, which already
+    breaks the rule, and this states it rather than depending on the seed.
+    """
+    finding_id = key(tenant, "expensive")
+    with engine.begin() as connection:
+        connection.execute(
+            models.query_definition.update()
+            .where(models.query_definition.c.query_id == finding_id)
+            .values(refresh_seconds=10, range_seconds=2_592_000)
+        )
+    return finding_id
+
+
+def test_the_default_write_level_remediates_nothing(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """`none` is the default everywhere, and constraint 6 makes v1 read only.
+
+    A refusal is reported rather than raised, so a caller can say why, and the
+    control is never asked to do anything.
+    """
+    seed(engine, tenant_id)
+    finding_id = violating(engine, tenant_id)
+    control = Recording()
+    client, token = remediating_client(
+        engine, everything(tenant_id), settings, control, level="none"
+    )
+    body = client.post(f"/api/v1/query/remediate/{finding_id}", headers=auth(token)).json()
+    assert body["data"]["applied"] is False
+    assert "write level is none" in body["data"]["detail"]
+    assert control.writes == []
+
+
+def test_a_finding_that_is_not_a_violation_is_refused(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The plan's own rule. A judgement call is a recommendation.
+
+    Rewriting somebody's dashboard on a judgement call is how a remediation
+    feature gets switched off for good.
+    """
+    seed(engine, tenant_id)
+    finding_id = key(tenant_id, "expensive")
+    with engine.begin() as connection:
+        connection.execute(
+            models.query_definition.update()
+            .where(models.query_definition.c.query_id == finding_id)
+            .values(refresh_seconds=3600, range_seconds=3600)
+        )
+    control = Recording()
+    client, token = remediating_client(engine, everything(tenant_id), settings, control)
+    body = client.post(f"/api/v1/query/remediate/{finding_id}", headers=auth(token)).json()
+    assert body["data"]["applied"] is False
+    assert "not an explicit policy violation" in body["data"]["detail"]
+    assert control.writes == []
+
+
+def test_a_permitted_remediation_raises_the_refresh_to_the_published_threshold(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    # The same number the reports warn at and the gate blocks on. A remediation
+    # landing on a different one teaches a reader that neither is real.
+    seed(engine, tenant_id)
+    finding_id = violating(engine, tenant_id)
+    control = Recording()
+    client, token = remediating_client(engine, everything(tenant_id), settings, control)
+    body = client.post(f"/api/v1/query/remediate/{finding_id}", headers=auth(token)).json()
+    assert body["data"]["applied"] is True, body["data"]["detail"]
+    assert body["data"]["change_id"] is not None
+    assert control.element["refresh_seconds"] == settings.query_refresh_warn_seconds
+    # Only the named field. Sending a whole element would overwrite anything a
+    # person edited between the read and the write.
+    assert control.element["query"] == "fields @timestamp"
+
+
+def test_a_write_that_did_not_take_is_reverted_and_reported(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    finding_id = violating(engine, tenant_id)
+    control = Recording(drop_writes=True)
+    client, token = remediating_client(engine, everything(tenant_id), settings, control)
+    body = client.post(f"/api/v1/query/remediate/{finding_id}", headers=auth(token)).json()
+    assert body["data"]["applied"] is False
+    assert body["data"]["reverted"] is True
+    assert body["data"]["change_id"] is None
+
+
+def test_a_deployment_with_no_control_says_so(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    # Rather than reporting success over a write nothing performed.
+    seed(engine, tenant_id)
+    finding_id = violating(engine, tenant_id)
+    client, token = remediating_client(engine, everything(tenant_id), settings, None)
+    body = client.post(f"/api/v1/query/remediate/{finding_id}", headers=auth(token)).json()
+    assert body["data"]["applied"] is False
+    assert "no remediation control" in body["data"]["detail"]
+
+
+def test_undo_restores_what_the_remediation_replaced(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    finding_id = violating(engine, tenant_id)
+    control = Recording()
+    client, token = remediating_client(engine, everything(tenant_id), settings, control)
+    client.post(f"/api/v1/query/remediate/{finding_id}", headers=auth(token))
+    assert control.element["refresh_seconds"] == settings.query_refresh_warn_seconds
+
+    body = client.post(f"/api/v1/query/remediate/{finding_id}/undo", headers=auth(token)).json()
+    assert body["data"]["applied"] is True
+    assert control.element["refresh_seconds"] == 10
+
+
+def test_undo_with_nothing_applied_says_so_rather_than_failing(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    finding_id = violating(engine, tenant_id)
+    client, token = remediating_client(engine, everything(tenant_id), settings, Recording())
+    body = client.post(f"/api/v1/query/remediate/{finding_id}/undo", headers=auth(token)).json()
+    assert body["data"]["applied"] is False
+    assert "nothing to undo" in body["data"]["detail"]
+
+
+def test_undoing_twice_is_refused(engine: Engine, tenant_id: UUID, settings: Settings) -> None:
+    # The second would restore a state the first already replaced.
+    seed(engine, tenant_id)
+    finding_id = violating(engine, tenant_id)
+    control = Recording()
+    client, token = remediating_client(engine, everything(tenant_id), settings, control)
+    client.post(f"/api/v1/query/remediate/{finding_id}", headers=auth(token))
+    first = client.post(f"/api/v1/query/remediate/{finding_id}/undo", headers=auth(token)).json()
+    second = client.post(f"/api/v1/query/remediate/{finding_id}/undo", headers=auth(token)).json()
+    assert first["data"]["applied"] is True
+    assert second["data"]["applied"] is False
+    assert "nothing to undo" in second["data"]["detail"]
+
+
+def test_another_tenant_cannot_remediate_this_finding(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """Scope is enforced before any write is attempted.
+
+    A 404 rather than a 403, the same as the read route, so an unauthorised
+    caller cannot use the status code to learn the row is there.
+    """
+    seed(engine, tenant_id)
+    finding_id = violating(engine, tenant_id)
+    control = Recording()
+    client, token = remediating_client(engine, narrow(another_tenant(engine)), settings, control)
+    response = client.post(f"/api/v1/query/remediate/{finding_id}", headers=auth(token))
+    assert response.status_code == 404
+    assert control.writes == []
+
+
 def test_every_query_route_carries_meta(
     engine: Engine, tenant_id: UUID, settings: Settings
 ) -> None:

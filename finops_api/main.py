@@ -194,6 +194,7 @@ def create_app(
     signer: Any,
     settings: Settings | None = None,
     health_check: Any = None,
+    remediation_control: Any = None,
     extra_routers: tuple[APIRouter, ...] = (),
     include_p0_routes: bool = True,
 ) -> FastAPI:
@@ -205,6 +206,10 @@ def create_app(
     app.state.signer = signer
     app.state.settings = resolved
     app.state.health_check = health_check
+    # Absent by default, and a route that needs it refuses rather than pretends.
+    # No surface adapter can write today anyway, ISS-166, so a default that
+    # silently reported success would be the worst of both.
+    app.state.remediation_control = remediation_control
     app.add_middleware(RequestIdMiddleware)
     routers = (
         build_router(),

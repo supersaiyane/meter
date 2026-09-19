@@ -53,6 +53,12 @@ class QueryFindingRepository(ScopedRepository):
                 definition.c.query_text,
                 definition.c.target,
                 definition.c.last_editor,
+                # A remediation addresses an element on a surface, so it needs
+                # the surface's own identifier for it and the instance it lives
+                # on. Neither is the database identity, and writing to that
+                # addresses an element the surface has never heard of.
+                definition.c.fingerprint,
+                definition.c.instance_id,
             )
             .join(definition, definition.c.query_id == self.table.c.query_id)
         )
@@ -93,6 +99,28 @@ class QueryFindingRepository(ScopedRepository):
             .order_by(func.sum(self.table.c.cost_month_usd).desc())
         )
         return self.fetch(scope, statement)
+
+    def latest_change(self, scope: Scope, finding_id: UUID) -> Row[tuple[object, ...]] | None:
+        """The most recent change on this finding that has not been reverted.
+
+        Most recent, because a finding can be remediated more than once and an
+        undo restores the last state, not an arbitrary earlier one. Undoing out
+        of order would restore a state that a later change already replaced.
+        """
+        change = models.remediation_change
+        statement: Any = (
+            select(change.c.change_id, change.c.kind, change.c.applied_at)
+            .select_from(change.join(self.table, self.table.c.query_id == change.c.query_id))
+            .where(
+                scope_predicate(self.table, require_scope(scope)),
+                self.table.c.finding_id == finding_id,
+                change.c.reverted_at.is_(None),
+            )
+            .order_by(change.c.applied_at.desc())
+            .limit(1)
+        )
+        rows = self._connection.execute(statement).all()
+        return rows[0] if rows else None
 
     def one(self, scope: Scope, finding_id: UUID) -> Row[tuple[object, ...]] | None:
         statement = self._joined(scope).where(self.table.c.finding_id == finding_id)

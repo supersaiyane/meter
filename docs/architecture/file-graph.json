@@ -2649,7 +2649,22 @@
     },
     {
       "s": "finops_api/routes/query.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
       "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_ingest/remediation.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_query/gate.py",
       "k": "python"
     },
     {

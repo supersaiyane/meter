@@ -1100,6 +1100,25 @@ issues:
     say plainly that they have never been executed
   status: FIXED
   detail: '`docs/runbooks/deploy.md`, `docs/runbooks/onboard-account.md`'
+- id: ISS-169
+  severity: MEDIUM
+  summary: The engine had two spellings for one fact and nothing compared them. The classifier
+    produces logs_insights and the database constraint ck_query_definition__engine_valid stores
+    LOGS_INSIGHTS, so the CI gate's rule, applied to a stored row, matched neither and found no
+    violation anywhere. Caught 2026-09-05 by a remediation route refusing a finding that plainly
+    breaks the rule. Normalised at the point the API reads the row, and the same mismatch is worth
+    looking for wherever else a stored engine meets a classifier constant
+  status: FIXED
+  detail: '`finops_api/routes/query.py`, _violates'
+- id: ISS-170
+  severity: MEDIUM
+  summary: get_settings loaded configuration from the environment unconditionally, so create_app's
+    settings argument was a lie for every route that took the dependency. The application was
+    assembled with one configuration and its routes answered from another, which is two sources
+    for one fact and was invisible until a test needed a non default write level. Fixed 2026-09-05
+    by preferring what the application was built with
+  status: FIXED
+  detail: '`finops_api/deps.py`, get_settings'
 - id: ISS-166
   severity: MEDIUM
   summary: The AMG adapter reads a workspace refresh floor and refuses to write one. The read is
@@ -1205,13 +1224,14 @@ issues:
   detail: '`finops_api/schemas.py`, `finops-web/src/components/CoverageBanner.tsx`'
 - id: ISS-148
   severity: MEDIUM
-  summary: TASK-P2-021 names eight routes and three MCP tools. Three routes and one tool were
-    built. The other five routes read data that does not exist yet, enforcement and its revoke
-    behind TASK-P2-016 which is parked on the AWS infrastructure ISS-122 records as never
-    provisioned, accuracy behind FEAT-018, and the two remediation routes behind TASK-P2-019.
-    The two missing tools are the ones that take a finding identifier or a workspace, and both
-    would be a facade over a route that does not exist. Building any of them against an empty
-    table would answer a question with a confident nothing
+  summary: TASK-P2-021 names eight routes and three MCP tools. Five routes now exist. The two
+    remediation routes landed 2026-09-05 once TASK-P2-019 gave them a mechanism, and they carry
+    the guard the plan asked for, refusing a finding that is not an explicit policy violation
+    because a judgement call is a recommendation rather than a remediation. Three routes remain
+    and none can be built here. Enforcement and its revoke need TASK-P2-016, parked on the AWS
+    infrastructure ISS-122 records as never provisioned, and accuracy needs FEAT-018 which needs
+    real CUR data. Two of the three MCP tools are still missing for the same reason, because each
+    would be a facade over a route that does not exist
   status: OPEN
   detail: '`finops_api/routes/query.py`, `finops_mcp/tools.py`'
 - id: ISS-149
