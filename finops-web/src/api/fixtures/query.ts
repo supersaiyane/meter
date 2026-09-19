@@ -3,6 +3,7 @@ import type {
   ApiMeta,
   ApiQueryFinding,
   ApiQueryFindingDetail,
+  ApiEnforcementAction,
   ApiSurfaceInstance,
 } from '../types';
 
@@ -170,4 +171,38 @@ export const SURFACE_INSTANCES: readonly ApiSurfaceInstance[] = [
 
 export function surfaceInstancesFixture(): ApiEnvelope<ApiSurfaceInstance[]> {
   return { data: [...SURFACE_INSTANCES], meta: FIXTURE_META };
+}
+
+/**
+ * What the controls did.
+ *
+ * Two rows on purpose. A THROTTLE that expires, so the countdown and the
+ * absolute time both have something to show, and an ALERT that never expires
+ * and cannot be revoked, so the absent revoke control has a row to be absent
+ * from. `reason_finding_id` points at a real finding, because an action nobody
+ * can trace to its cause is an action nobody will dare revoke.
+ */
+export const ENFORCEMENT_ACTIONS: readonly ApiEnforcementAction[] = [
+  {
+    action_id: '33333333-3333-3333-3333-333333333333',
+    action: 'THROTTLE',
+    principal: 'arn:aws:iam::role/grafana-datasource',
+    applied_at: '2026-09-06T09:45:00Z',
+    expires_at: '2026-09-06T10:45:00Z',
+    reason_finding_id: '11111111-1111-1111-1111-111111111111',
+    revocable: true,
+  },
+  {
+    action_id: '44444444-4444-4444-4444-444444444444',
+    action: 'ALERT',
+    principal: 'arn:aws:iam::role/reporting',
+    applied_at: '2026-09-05T11:00:00Z',
+    expires_at: null,
+    reason_finding_id: '22222222-2222-2222-2222-222222222222',
+    revocable: false,
+  },
+];
+
+export function enforcementActionsFixture(): ApiEnvelope<ApiEnforcementAction[]> {
+  return { data: [...ENFORCEMENT_ACTIONS], meta: FIXTURE_META };
 }

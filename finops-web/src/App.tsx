@@ -14,6 +14,7 @@ import { IngestScreen } from './screens/IngestScreen';
 import { OrganizationScreen } from './screens/OrganizationScreen';
 import { QueryFindingDetailScreen } from './screens/QueryFindingDetailScreen';
 import { QueryFindingsScreen } from './screens/QueryFindingsScreen';
+import { EnforcementScreen } from './screens/EnforcementScreen';
 import { QuerySurfacesScreen } from './screens/QuerySurfacesScreen';
 import { PlatformScreen } from './screens/PlatformScreen';
 
@@ -78,6 +79,7 @@ export function App({
                   element={<QueryFindingDetailScreen />}
                 />
                 <Route path="/governance/instances" element={<QuerySurfacesScreen />} />
+                <Route path="/governance/enforcement" element={<EnforcementScreen />} />
                 <Route path="/platform/ingest" element={<IngestScreen />} />
                 <Route path="/platform/freshness" element={<FreshnessScreen />} />
                 <Route path="/platform/cost" element={<PlatformScreen />} />

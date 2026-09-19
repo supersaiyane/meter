@@ -6,12 +6,14 @@ import {
   queryFindingDetailFixture,
   queryFindingsFixture,
   surfaceInstancesFixture,
+  enforcementActionsFixture,
 } from './fixtures/query';
 import type {
   Account,
   ApiEnvelope,
   ApiQueryFinding,
   ApiQueryFindingDetail,
+  ApiEnforcementAction,
   ApiSurfaceInstance,
   Freshness,
   PlatformCost,
@@ -122,5 +124,14 @@ export function useQuerySurfaces() {
     '/api/v1/query/instances',
     '/api/v1/query/instances',
     surfaceInstancesFixture,
+  );
+}
+
+export function useEnforcementActions() {
+  return useQuerySurface<ApiEnforcementAction[]>(
+    ['query-enforcement'],
+    '/api/v1/query/enforcement',
+    '/api/v1/query/enforcement',
+    enforcementActionsFixture,
   );
 }

@@ -155,3 +155,20 @@ export interface ApiSurfaceInstance {
    */
   readonly query_count: number | null;
 }
+
+export interface ApiEnforcementAction {
+  readonly action_id: string;
+  /** ALERT, THROTTLE or DENY. */
+  readonly action: string;
+  readonly principal: string;
+  readonly applied_at: string;
+  /** Required for THROTTLE and DENY, null for ALERT. */
+  readonly expires_at: string | null;
+  readonly reason_finding_id: string;
+  /**
+   * Decided by the API, per architectural constraint 8. The frontend renders
+   * what it is told: a second implementation of an authorization rule is how an
+   * authorization bug is created.
+   */
+  readonly revocable: boolean;
+}

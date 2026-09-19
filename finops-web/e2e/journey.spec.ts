@@ -223,3 +223,48 @@ test('an unbuilt screen is listed, reachable, and names what will fill it', asyn
   await expect(page.getByTestId('not-a-screen')).toBeVisible();
   await expect(page.getByTestId('not-built')).toHaveCount(0);
 });
+
+test('a violating dashboard is found, attributed, and its control is legible', async ({ page }) => {
+  // The P2 arc that exists today. Every one of these screens is fixture backed,
+  // so no route is stubbed: what this proves is that the real bundle renders
+  // the honesty rules, and that the fixture says it is a fixture.
+  await page.goto('/governance/queries');
+  await expect(page.getByTestId('fixture-band')).toBeVisible();
+
+  // Ranked by cost, with the reason as a column rather than a tooltip.
+  const first = page.getByRole('row').nth(1);
+  await expect(first).toContainText('Error rate by service');
+  await expect(first).toContainText('rescans 4 GiB');
+  await expect(first).toContainText('platform-team');
+
+  // A modelled figure never reads like a measured one.
+  await expect(first.getByTestId('figure').first()).toHaveAttribute(
+    'data-provenance',
+    'modelled',
+  );
+
+  // Through to the working, which must reconcile to the figure above it.
+  await page.getByRole('link', { name: /Error rate by service/ }).click();
+  await expect(page).toHaveURL(/\/governance\/queries\/11111111/);
+  await expect(page.getByTestId('finding-working')).toContainText('1,036,800 GiB scanned per month');
+  await expect(page.getByText('~ $5,184.00', { exact: false })).toBeVisible();
+
+  // The instance list is where under counting is stopped.
+  await page.goto('/governance/instances');
+  const unreachable = page.getByRole('row').filter({ hasText: 'meter-prod-eu-west-1' });
+  await expect(unreachable).toContainText('ACCESS DENIED');
+  // A genuine zero, two rows down, still reads as zero.
+  await expect(
+    page.getByRole('row').filter({ hasText: 'meter-staging-eu-west-2' }),
+  ).toContainText('0');
+
+  // The control, its expiry in both forms, and a revoke that says what it did.
+  await page.goto('/governance/enforcement');
+  const throttle = page.getByRole('row').filter({ hasText: 'grafana-datasource' });
+  await expect(throttle).toContainText('UTC');
+  await expect(
+    page.getByRole('row').filter({ hasText: 'reporting' }),
+  ).toContainText('does not expire');
+  await throttle.getByRole('button', { name: /revoke/i }).click();
+  await expect(page.getByTestId('revoke-note')).toContainText('not connected yet');
+});

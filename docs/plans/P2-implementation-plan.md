@@ -1295,7 +1295,7 @@ screen that stops silent under counting."
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Partly, 2026-09-19 |
 | Implements | P2 spec section 9.4, `docs/13-UI-ARCHITECTURE.md` section 9.4 |
 | Delivers | FEAT-014, FEAT-015 and FEAT-017 at the surface |
 | Depends on | TASK-P2-022, TASK-P2-023, TASK-P2-024 |
@@ -1303,15 +1303,25 @@ screen that stops silent under counting."
 
 **Acceptance criteria.**
 
-- [ ] Action, principal, applied at, expires at, reason and revoke
-- [ ] Expiry shows **both** an absolute time and a countdown
-- [ ] Revoke is present on every active action and is subject to the write level
+- [x] Action, principal, applied at, expires at, reason and revoke
+- [x] Expiry shows **both** an absolute time and a countdown
+- [x] Revoke is present on every active action and is subject to the write level
       flag
-- [ ] A revoke control is absent, not merely disabled, when the write level
+- [x] A revoke control is absent, not merely disabled, when the write level
       forbids it
-- [ ] An end to end Playwright journey: a violating dashboard is detected, seen
-      ranked, its owner seen, the workspace floor applied, and the undo confirmed
-- [ ] Axe reports zero violations
+- [~] An end to end Playwright journey: a violating dashboard is detected, seen
+      ranked, its owner seen, the workspace floor applied, and the undo confirmed.
+      **Detect, rank and attribute are done, and the journey also covers the
+      unreachable instance, the genuine zero, both expiry forms and revoke. The
+      floor and the undo are not, because they are TASK-P2-017 and TASK-P2-019
+      and neither is built.**
+- [x] Axe reports zero violations
+
+**Plan defect found here.** This task's dependency list names TASK-P2-022 to
+024, but its journey criterion needs the workspace floor from TASK-P2-017 and
+the undo from TASK-P2-019. The criterion was written against the finished sub
+project rather than against this task's own dependencies. Complete the journey
+when TASK-P2-019 lands, and only then move this task to Done.
 
 **Do not.**
 
@@ -1323,7 +1333,7 @@ screen that stops silent under counting."
 
 **Steps.**
 
-- [ ] **Step 1: write the failing test**
+- [x] **Step 1: write the failing test**
 
 `finops-web/src/screens/__tests__/EnforcementScreen.test.tsx`
 
@@ -1370,12 +1380,12 @@ and the screen renders what it is told. A frontend that decided revocability
 itself would be a second implementation of an authorization rule, which is how an
 authorization bug is created.
 
-- [ ] **Step 2: run it and watch it fail**
+- [x] **Step 2: run it and watch it fail**
 
 Run: `cd finops-web && npm run test -- --run src/screens/__tests__/EnforcementScreen.test.tsx`
 Expected: FAIL, cannot find module.
 
-- [ ] **Step 3: add the wire type, the fixture and the screen**
+- [x] **Step 3: add the wire type, the fixture and the screen**
 
 Add to `finops-web/src/api/types.ts`:
 
@@ -1453,12 +1463,12 @@ Add `useEnforcementActions()` to `finops-web/src/api/queries.ts`, built on
 `useQuerySurface` with key `['query-enforcement']`, template and path
 `/api/v1/query/enforcement`, and fixture `ENFORCEMENT_ACTIONS`.
 
-- [ ] **Step 4: run the tests and watch them pass**
+- [x] **Step 4: run the tests and watch them pass**
 
 Run: `cd finops-web && npm run test -- --run src/screens/__tests__/EnforcementScreen.test.tsx`
 Expected: PASS, two tests.
 
-- [ ] **Step 5: write the end to end journey**
+- [x] **Step 5: write the end to end journey**
 
 Append to `finops-web/e2e/journey.spec.ts`.
 
@@ -1474,12 +1484,12 @@ test('a violating dashboard is found, attributed, controlled and undone', async 
 });
 ```
 
-- [ ] **Step 6: run everything**
+- [x] **Step 6: run everything**
 
 Run: `cd finops-web && npm run lint && npm run test -- --run && npm run build && npx playwright test`
 Expected: all pass.
 
-- [ ] **Step 7: commit**
+- [x] **Step 7: commit**
 
 ```bash
 git add finops-web/src finops-web/e2e
