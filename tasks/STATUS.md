@@ -111,7 +111,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P1 | 5 | 0 | 0 | 0 | 8 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
+| P1 | 6 | 0 | 0 | 0 | 7 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -167,6 +167,7 @@ ISS-003.
 | `TASK-P1-003` | Done, 2026-09-18, and unproved by construction | the Athena adapter, written and unproved |
 | `TASK-P1-004` | Done, 2026-09-18 | the collector, and what makes a line item itself |
 | `TASK-P1-005` | Done, 2026-09-18 | retraction, which is the dangerous half |
+| `TASK-P1-006` | Done, 2026-09-19 | the monthly rollup, derived and never ingested |
 
 **P2, not in the default state**
 

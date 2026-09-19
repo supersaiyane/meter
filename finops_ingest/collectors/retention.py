@@ -31,6 +31,7 @@ from typing import Any
 
 from sqlalchemy import column, table, text
 
+from finops_ingest.collectors.cost_rollup import roll_up_before
 from finops_ingest.collectors.partitions import (
     PARTITIONED_TABLES,
     detach_partitions_before,
@@ -158,24 +159,10 @@ def retention_cost(context: CollectorContext, clock: Clock = _system_clock) -> C
     boundary = month_floor(_cutoff(clock, context.settings.retention_cost_days).date())
     at = clock()
 
-    aggregated = context.connection.execute(
-        text(
-            "INSERT INTO cost_focus_monthly (tenant_id, billing_month, sub_account_id, "
-            "service_name, region_id, billed_cost, effective_cost, line_items, as_of, "
-            "collected_at) "
-            "SELECT tenant_id, date_trunc('month', billing_period_start)::date, "
-            "COALESCE(sub_account_id, ''), service_name, COALESCE(region_id, ''), "
-            "SUM(billed_cost), SUM(effective_cost), COUNT(*), MIN(as_of), :at "
-            "FROM cost_focus_daily WHERE tenant_id = :tenant AND billing_period_start < :boundary "
-            "GROUP BY tenant_id, date_trunc('month', billing_period_start), "
-            "COALESCE(sub_account_id, ''), service_name, COALESCE(region_id, '') "
-            "ON CONFLICT (tenant_id, billing_month, sub_account_id, service_name, region_id) "
-            "DO UPDATE SET billed_cost = EXCLUDED.billed_cost, "
-            "effective_cost = EXCLUDED.effective_cost, line_items = EXCLUDED.line_items, "
-            "collected_at = EXCLUDED.collected_at"
-        ),
-        {"tenant": tenant, "boundary": boundary, "at": at},
-    ).rowcount
+    # The aggregate's definition lives in `cost_rollup`, shared with the cost
+    # collector. It used to be written out here as well, and two copies of an
+    # arithmetic is two numbers that can disagree on a screen.
+    aggregated = roll_up_before(context.connection, tenant=tenant, before=boundary, at=at)
 
     # A partition is shared by every tenant, so it is only removed once the whole
     # month is past every tenant's window. Since the window is one setting for

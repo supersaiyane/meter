@@ -36,6 +36,7 @@ from sqlalchemy import text
 
 from finops_core.domain.cost import CostRecord
 from finops_core.errors import NoData
+from finops_ingest.collectors.cost_rollup import roll_up_period
 from finops_ingest.collectors.partitions import next_month
 from finops_ingest.registry import CollectorContext, CollectorOutcome
 
@@ -163,6 +164,14 @@ class CostFocusCollector:
         # that fails if these are swapped.
         written = self._write(context, rows)
         removed = self._retract(context, period)
+        # In the same transaction as the rows it aggregates, so there is no
+        # instant at which the daily table and the monthly one disagree.
+        roll_up_period(
+            context.connection,
+            tenant=context.unit.tenant_id,
+            period=period,
+            at=self._clock(),
+        )
         return CollectorOutcome(items_written=written, items_removed=removed)
 
     def _write(self, context: CollectorContext, rows: Iterable[CostRecord]) -> int:

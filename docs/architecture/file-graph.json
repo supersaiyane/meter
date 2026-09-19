@@ -282,6 +282,7 @@
     "finops_ingest/collectors/__init__.py",
     "finops_ingest/collectors/account_health.py",
     "finops_ingest/collectors/cost_focus.py",
+    "finops_ingest/collectors/cost_rollup.py",
     "finops_ingest/collectors/org_tree.py",
     "finops_ingest/collectors/partitions.py",
     "finops_ingest/collectors/platform_cost.py",
@@ -402,6 +403,7 @@
     "tests/ingest/collectors/test_account_health.py",
     "tests/ingest/collectors/test_cost_focus.py",
     "tests/ingest/collectors/test_cost_focus_restatement.py",
+    "tests/ingest/collectors/test_cost_rollup.py",
     "tests/ingest/collectors/test_org_tree.py",
     "tests/ingest/collectors/test_partitions.py",
     "tests/ingest/collectors/test_platform_cost.py",
@@ -3105,6 +3107,11 @@
     },
     {
       "s": "finops_ingest/collectors/cost_focus.py",
+      "t": "finops_ingest/collectors/cost_rollup.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/cost_focus.py",
       "t": "finops_ingest/collectors/partitions.py",
       "k": "python"
     },
@@ -3196,6 +3203,11 @@
     {
       "s": "finops_ingest/collectors/query_audit.py",
       "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/retention.py",
+      "t": "finops_ingest/collectors/cost_rollup.py",
       "k": "python"
     },
     {
@@ -4205,6 +4217,31 @@
     },
     {
       "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
+      "t": "finops_providers/fake/cur.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_rollup.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_rollup.py",
+      "t": "finops_ingest/collectors/cost_rollup.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_rollup.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_rollup.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_rollup.py",
       "t": "finops_providers/fake/cur.py",
       "k": "python"
     },

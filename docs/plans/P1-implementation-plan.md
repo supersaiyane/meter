@@ -384,7 +384,7 @@ test that can see it.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-19 |
 | Implements | P1 spec section 5 |
 | Delivers | FEAT-021 |
 | Depends on | TASK-P1-004 |
@@ -400,19 +400,34 @@ disagreement is always found by a person reading a screen rather than by a test.
 
 | Path | Action |
 | --- | --- |
-| `finops_ingest/collectors/cost_focus.py` | the rollup |
-| `tests/ingest/test_cost_focus_rollup.py` | created |
+| `finops_ingest/collectors/cost_rollup.py` | created. One body, two predicates, shared |
+| `finops_ingest/collectors/cost_focus.py` | calls it for the period it just wrote |
+| `finops_ingest/collectors/retention.py` | calls it instead of its own copy of the same SQL |
+| `tests/ingest/collectors/test_cost_rollup.py` | created, 6 tests |
 
 **Acceptance criteria.**
 
-- [ ] The monthly total equals the sum of the daily rows for that month, proved
-      by a test that sums both and compares
-- [ ] A retraction in TASK-P1-005 moves the monthly figure in the same
-      transaction, so the two are never briefly inconsistent
-- [ ] Rolling up twice changes nothing
+- [x] The monthly total equals the sum of the daily rows for that month, proved
+      by a test that sums both and compares, and the line item counts agree too
+- [x] A retraction moves the monthly figure in the same transaction, so the two
+      are never briefly inconsistent
+- [x] Rolling up twice changes nothing
+- [x] A group whose every line item was withdrawn is removed. The upsert alone
+      cannot do this: it only replaces groups it can still see, so a group with
+      nothing behind it would keep its last known total forever. Small,
+      permanent, and it only ever points one way
+- [x] The retention caller does **not** prune, and a test proves it, because
+      that pass exists to make monthly rows outlive the daily partitions it is
+      about to drop. Pruning there would delete the archive it just created
 
 **Deliberately not in this task.** No further rollups. A weekly or quarterly
 table is a third source for the same number, and nothing has asked for one.
+
+**Found on arrival.** `retention_cost` already wrote `cost_focus_monthly`, for
+months past the cutoff, with its own copy of this SQL. So the task was not to
+write an aggregate but to stop there being two. The arithmetic is now one
+function with two callers, differing only in the predicate and in whether they
+may prune.
 
 ---
 

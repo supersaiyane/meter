@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-390 public symbols across 5 packages.
+392 public symbols across 5 packages.
 
 ## finops_core
 
@@ -214,7 +214,9 @@ a duplicate.
 | Symbol | Kind | Location | Purpose | Called by |
 | --- | --- | --- | --- | --- |
 | `AccountHealthCollector` | class | `finops_ingest/collectors/account_health.py:34` | Checks one account's collector role and records the answer. | nothing in this tree |
-| `CostFocusCollector` | class | `finops_ingest/collectors/cost_focus.py:119` | Reads one billing period, writes it, and removes what was withdrawn. | nothing in this tree |
+| `CostFocusCollector` | class | `finops_ingest/collectors/cost_focus.py:120` | Reads one billing period, writes it, and removes what was withdrawn. | nothing in this tree |
+| `roll_up_period` | function | `finops_ingest/collectors/cost_rollup.py:66` | Recompute one month from its line items, and drop what is no longer there. | `finops_ingest/collectors/cost_focus.py` |
+| `roll_up_before` | function | `finops_ingest/collectors/cost_rollup.py:85` | Aggregate every month older than the boundary, ahead of dropping them. | `finops_ingest/collectors/retention.py` |
 | `compute_paths` | function | `finops_ingest/collectors/org_tree.py:45` | The materialised path and depth of every node. | nothing in this tree |
 | `OrgTreeCollector` | class | `finops_ingest/collectors/org_tree.py:79` | Reads the organization and writes it, whole, in one transaction. | nothing in this tree |
 | `month_floor` | function | `finops_ingest/collectors/partitions.py:55` |  | `finops_ingest/collectors/retention.py` |
@@ -232,13 +234,13 @@ a duplicate.
 | `rates_from` | function | `finops_ingest/collectors/query_audit.py:78` | Build the model's rates from configuration. | nothing in this tree |
 | `default_ingest_rate` | function | `finops_ingest/collectors/query_audit.py:113` | The fallback used when ingestion cannot be measured for a log group. | nothing in this tree |
 | `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:136` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
-| `hashed_subject` | function | `finops_ingest/collectors/retention.py:65` | A stable, non reversible stand in, so a duplicate sign in is still one row. | nothing in this tree |
-| `retention_principal` | function | `finops_ingest/collectors/retention.py:74` | Anonymise principals unseen past the window. Never removes a row. | nothing in this tree |
-| `retention_operational` | function | `finops_ingest/collectors/retention.py:96` | Remove run history, resolved errors and dead watermarks past the window. | nothing in this tree |
-| `retention_audit` | function | `finops_ingest/collectors/retention.py:125` | Remove audit records past their own window, and only past their own window. | nothing in this tree |
-| `retention_cost` | function | `finops_ingest/collectors/retention.py:141` | Aggregate line items past the window to month, account, service and region, | nothing in this tree |
-| `retention_scope_cache` | function | `finops_ingest/collectors/retention.py:190` | Remove expired entitlement cache rows. It is a cache, so this costs nothing. | nothing in this tree |
-| `register_retention` | function | `finops_ingest/collectors/retention.py:224` | Add the five to a registry. Returns how many, so a caller can assert on it. | nothing in this tree |
+| `hashed_subject` | function | `finops_ingest/collectors/retention.py:66` | A stable, non reversible stand in, so a duplicate sign in is still one row. | nothing in this tree |
+| `retention_principal` | function | `finops_ingest/collectors/retention.py:75` | Anonymise principals unseen past the window. Never removes a row. | nothing in this tree |
+| `retention_operational` | function | `finops_ingest/collectors/retention.py:97` | Remove run history, resolved errors and dead watermarks past the window. | nothing in this tree |
+| `retention_audit` | function | `finops_ingest/collectors/retention.py:126` | Remove audit records past their own window, and only past their own window. | nothing in this tree |
+| `retention_cost` | function | `finops_ingest/collectors/retention.py:142` | Aggregate line items past the window to month, account, service and region, | nothing in this tree |
+| `retention_scope_cache` | function | `finops_ingest/collectors/retention.py:177` | Remove expired entitlement cache rows. It is a cache, so this costs nothing. | nothing in this tree |
+| `register_retention` | function | `finops_ingest/collectors/retention.py:211` | Add the five to a registry. Returns how many, so a caller can assert on it. | nothing in this tree |
 | `WorkUnit` | class | `finops_ingest/dispatcher.py:29` | One thing one worker will do, once. | nothing in this tree |
 | `WorkUnit.scope_key` | method | `finops_ingest/dispatcher.py:40` | The identifier this unit is recorded and reported under. | nothing in this tree |
 | `WorkUnit.dedup_key` | method | `finops_ingest/dispatcher.py:52` | Identical to the key the ledger claims on, deliberately. | nothing in this tree |
