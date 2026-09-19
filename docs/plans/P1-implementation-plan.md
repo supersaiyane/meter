@@ -484,7 +484,7 @@ what happens to them. ISS-183.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-19 |
 | Implements | P1 spec section 8, constraint 3 |
 | Delivers | FEAT-021 |
 | Depends on | TASK-P1-006 |
@@ -501,23 +501,38 @@ plan.
 
 | Path | Action |
 | --- | --- |
-| `finops_api/guards.py` | two entries |
-| `finops_api/db/repositories/cost.py` | created |
-| `tests/db/test_scope_guard.py` | extended |
-| `tests/api/test_cost_repository.py` | created |
+| `finops_api/guards.py` | two rules **corrected**, not added. Both tables were already there, scoped by tenant only. ISS-184 |
+| `finops_api/db/repositories/cost.py` | created, `CostRepository` and `MonthlyCostRepository` |
+| `tests/api/test_cost_repository.py` | created, 16 tests |
 
 **Acceptance criteria.**
 
-- [ ] A narrow scope reads fewer rows than a global one, proved by a test that
-      does both
-- [ ] An empty scope returns nothing and never everything
-- [ ] Every read writes an `audit_event` in the same transaction, as every other
-      repository does
-- [ ] The latest period filter is per period and not one global maximum, which
-      is ISS-175 and ISS-177 arriving on a third table if nobody looks
+- [x] A narrow scope reads fewer rows than a global one, proved by a test that
+      does both. **The rule was wrong before this task, not missing.** Both
+      tables were in `SCOPED_TABLES` already, with `None`, so the account was
+      never consulted and the first route would have served the whole
+      organization's bill to a two account viewer. ISS-184, and three tests were
+      watched failing against the old rule
+- [x] An empty scope returns nothing and never everything
+- [x] Every read writes an `audit_event`, through the base class, in the same
+      transaction as the read
+- [x] Every grouping sums back to the period total, for all three dimensions.
+      A grouping that does not is dropping rows, and on screen that reads as an
+      estate smaller than it is
+- [x] The period is always named by the caller or asked for by
+      `latest_period`. Nothing defaults to this month, which would answer a
+      different question in the first minute of a new month than in the last
+      minute of the old one
+- [x] A tenant with no cost gets `None` rather than a zero, which is a
+      different fact from a period that totalled nothing
+- [x] The monthly table agrees with the daily one, asserted by summing both
 
 **Deliberately not in this task.** No routes. The repository is provable on its
 own and the route is where the scope dependency is added.
+
+**The grouping column is looked up, never interpolated.** A column name that
+arrives from a request and is dropped into SQL is an injection. `GROUPABLE` is
+three entries long, so refusing everything off it costs nothing.
 
 ---
 

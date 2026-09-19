@@ -1180,6 +1180,21 @@ issues:
     looking for wherever else a stored engine meets a classifier constant
   status: FIXED
   detail: '`finops_api/routes/query.py`, _violates'
+- id: ISS-184
+  severity: HIGH
+  summary: cost_focus_daily and cost_focus_monthly sat in SCOPED_TABLES with the rule None,
+    which means the tenant filter was the whole of their scoping and the account a charge
+    belongs to was never consulted. Both tables carry sub_account_id. A viewer entitled to two
+    accounts would have been served the whole organization's bill by the first route over
+    them. It never leaked, because nothing read the tables until 2026-09-19, and that is luck
+    rather than design. Found while writing the repository for TASK-P1-008, by reading the
+    guard table before adding to it rather than after. Fixed the same day as ByAccount on
+    sub_account_id, and three tests were watched failing against the old rule before it was
+    changed back. A charge with no sub account, which is a payer level line item, matches
+    nothing under a narrow scope and stays visible to a global one, which is ByAccount's
+    documented behaviour and is right here
+  status: FIXED
+  detail: '`finops_api/guards.py` SCOPED_TABLES, and `tests/api/test_cost_repository.py`'
 - id: ISS-183
   severity: MEDIUM
   summary: The cost collector reads only the latest available billing period, so a restatement

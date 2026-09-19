@@ -25,7 +25,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | Features | 51 total, 9 specified, 7 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
 | Changes | 88 recorded |
-| Issues | 123 fixed, 55 open, 0 parked |
+| Issues | 124 fixed, 55 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -111,7 +111,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P1 | 7 | 0 | 0 | 0 | 6 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
+| P1 | 8 | 0 | 0 | 0 | 5 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -169,6 +169,7 @@ ISS-003.
 | `TASK-P1-005` | Done, 2026-09-18 | retraction, which is the dangerous half |
 | `TASK-P1-006` | Done, 2026-09-19 | the monthly rollup, derived and never ingested |
 | `TASK-P1-007` | Done, 2026-09-19 | cadence, as data |
+| `TASK-P1-008` | Done, 2026-09-19 | the guard, then the repository |
 
 **P2, not in the default state**
 

@@ -231,6 +231,7 @@
     "finops_api/db/repositories/__init__.py",
     "finops_api/db/repositories/accounts.py",
     "finops_api/db/repositories/base.py",
+    "finops_api/db/repositories/cost.py",
     "finops_api/db/repositories/freshness.py",
     "finops_api/db/repositories/ingest.py",
     "finops_api/db/repositories/org.py",
@@ -375,6 +376,7 @@
     "scripts/ops/seed_demo.py",
     "tests/__init__.py",
     "tests/api/__init__.py",
+    "tests/api/test_cost_repository.py",
     "tests/api/test_fixture_surfaces.py",
     "tests/api/test_identity_local.py",
     "tests/api/test_query_routes.py",
@@ -2406,6 +2408,26 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/cost.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/cost.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/cost.py",
+      "t": "finops_core/domain/platform.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/cost.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/freshness.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -3783,6 +3805,51 @@
     {
       "s": "scripts/ops/seed_demo.py",
       "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_api/db/repositories/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_core/domain/platform.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_providers/fake/cur.py",
       "k": "python"
     },
     {
