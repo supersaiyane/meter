@@ -435,7 +435,7 @@ may prune.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-19 |
 | Implements | P1 spec section 7, ADR-0012 |
 | Delivers | FEAT-020 |
 | Depends on | TASK-P1-004 |
@@ -450,20 +450,33 @@ weekly.
 
 | Path | Action |
 | --- | --- |
-| `finops_ingest/schedule.py` | the default rows |
-| `tests/ingest/test_cost_schedule.py` | created |
+| `finops_ingest/registry.py` | one `ScheduleEntry` for `cost_focus`, six hourly |
+| `tests/ingest/collectors/test_cost_focus.py` | two tests, beside the collector's own |
+| `tests/ingest/collectors/test_retention.py` | its exhaustive collector set, which is what caught the addition |
 
 **Acceptance criteria.**
 
-- [ ] The intervals are rows, not constants in code
-- [ ] `install_default_schedule` never overwrites an operator's change, which it
-      already does not and this must not break
-- [ ] Freshness on `/cost` is judged against this cadence and not a fixed
-      number, which is how every other collector is judged
+- [x] The interval is a row, with a reason and a cost estimate, because a
+      cadence nobody can explain is one nobody can safely change and the first
+      thing anyone does with an unexplained interval under cost pressure is
+      double it
+- [x] `install_default_schedule` never overwrites an operator's change, proved
+      by slowing the cadence down and reinstalling
+- [ ] Freshness on `/cost` is judged against this cadence. The row exists and
+      nothing reads it yet, because the screen arrives at TASK-P1-010. Carried
+      there rather than ticked here
 
 **Deliberately not in this task.** OPEN-08 is not answered here. Whether a
 month is ever declared final is a decision, and this task ships the cadence the
 decision would change.
+
+**A gap this task found and did not close.** `ScheduleEntry` carries one
+interval per collector and cannot express the specification's two, which are a
+fast re read of the open period and a slow one of closed periods. The collector
+only ever reads the latest period, so a restatement of a closed month is never
+picked up at all. The retraction machinery would handle it correctly the moment
+a closed period is read, so the gap is which periods are asked for rather than
+what happens to them. ISS-183.
 
 ---
 

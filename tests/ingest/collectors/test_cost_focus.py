@@ -256,3 +256,60 @@ class TestWhichTimestampIsWhose:
         assert collected_at == NOW
         assert as_of == charge_end
         assert collected_at >= as_of
+
+
+class TestTheCadenceIsData:
+    """ADR-0012 and constraint 9. A cadence in code is a cadence nobody can
+    change without a deploy, and the first thing anyone does with an
+    unexplained interval under cost pressure is double it."""
+
+    def test_the_collector_has_a_row_and_not_a_constant(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        from finops_ingest.registry import install_default_schedule
+
+        with engine.begin() as connection:
+            install_default_schedule(connection, tenant_id, updated_by="test")
+            row = connection.execute(
+                text(
+                    "SELECT cadence_seconds, reason, est_cost_per_run FROM collector_schedule "
+                    "WHERE tenant_id = :t AND collector = 'cost_focus'"
+                ),
+                {"t": tenant_id},
+            ).one()
+
+        cadence, reason, cost = row
+        assert cadence == 21600, "six hourly, which is four reads of the open period a day"
+        assert len(reason) > 80, "a cadence nobody can explain is one nobody can safely change"
+        assert Decimal(cost) > 0, "each run is an Athena query and the estimate should say so"
+
+    def test_an_operators_change_survives_a_reinstall(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        """The table is the source, so onboarding must not overwrite it.
+
+        An operator who slowed this down to save money, and found it back at
+        six hourly after the next tenant was onboarded, would stop trusting the
+        table and put the number back in code.
+        """
+        from finops_ingest.registry import install_default_schedule
+
+        with engine.begin() as connection:
+            install_default_schedule(connection, tenant_id, updated_by="test")
+            connection.execute(
+                text(
+                    "UPDATE collector_schedule SET cadence_seconds = 86400 "
+                    "WHERE tenant_id = :t AND collector = 'cost_focus'"
+                ),
+                {"t": tenant_id},
+            )
+            install_default_schedule(connection, tenant_id, updated_by="test-again")
+            after = connection.execute(
+                text(
+                    "SELECT cadence_seconds FROM collector_schedule "
+                    "WHERE tenant_id = :t AND collector = 'cost_focus'"
+                ),
+                {"t": tenant_id},
+            ).scalar_one()
+
+        assert after == 86400

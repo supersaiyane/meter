@@ -510,7 +510,15 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         "retention_scope_cache",
         "partition_maintenance",
     }
-    assert set(without) == {"org_tree", "account_health", "platform_cost", "query_audit"}
+    # Exhaustive on purpose, which is why adding cost_focus to the default
+    # schedule failed here rather than anywhere else.
+    assert set(without) == {
+        "org_tree",
+        "account_health",
+        "platform_cost",
+        "query_audit",
+        "cost_focus",
+    }
 
 
 def test_a_collector_inside_its_cadence_is_not_due(engine: Engine, tenant_id: UUID) -> None:

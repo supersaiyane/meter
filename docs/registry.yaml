@@ -1180,6 +1180,22 @@ issues:
     looking for wherever else a stored engine meets a classifier constant
   status: FIXED
   detail: '`finops_api/routes/query.py`, _violates'
+- id: ISS-183
+  severity: MEDIUM
+  summary: The cost collector reads only the latest available billing period, so a restatement
+    of a closed month is never picked up. AWS can restate a closed period and the specification
+    says so in section 7, which describes a closed period being re read daily for a week and
+    then weekly. That policy is not implemented. The retraction and upsert machinery is all
+    there and would handle it correctly the moment a closed period is read, so the gap is which
+    periods the collector asks for rather than what it does with them. Found 2026-09-19 while
+    writing the cadence row for TASK-P1-007, because ScheduleEntry carries one interval per
+    collector and cannot express two. The consequence is a month that closes slightly wrong and
+    stays that way
+  status: OPEN
+  blocks: 'Nothing today. It is a correctness gap against a real export, and there is no real
+    export yet, ISS-122'
+  detail: '`finops_ingest/collectors/cost_focus.py`, the latest_available_period call, and
+    section 7 of `docs/specs/2026-09-18-p1-cost-intelligence-design.md`'
 - id: ISS-182
   severity: MEDIUM
   summary: Nothing in production assembles a collector registry. CollectorRegistry exists, the

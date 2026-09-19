@@ -201,6 +201,20 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0",
     ),
     ScheduleEntry(
+        collector="cost_focus",
+        cadence_seconds=SIX_HOURLY,
+        reason=(
+            "The open billing period changes continuously, so a figure on the cost "
+            "screen is out of date the moment it is written and the only question is "
+            "by how much. Four times a day bounds that at six hours, which is inside "
+            "the window anybody reconciling against an invoice cares about. Faster "
+            "costs real money: each run is one Athena query per period, charged on "
+            "bytes scanned, and the tool that reports on cost paying to watch itself "
+            "more closely is the wrong trade."
+        ),
+        est_cost_per_run="0.02",
+    ),
+    ScheduleEntry(
         collector="partition_maintenance",
         cadence_seconds=DAILY,
         reason=(
