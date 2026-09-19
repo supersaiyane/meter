@@ -249,3 +249,37 @@ variable "platform_cost_anomaly_multiple" {
   type        = number
   default     = 2
 }
+
+variable "cost_export_version_retention_days" {
+  description = <<-EOT
+    How long a superseded billing export object is kept. Data Exports restates a
+    period in place all month, so every restatement leaves an older version
+    behind. Ninety days outlasts the restatement window with room to spare and
+    stops the bucket growing without bound, which would make the cost report a
+    cost.
+  EOT
+  type        = number
+  default     = 90
+
+  validation {
+    condition     = var.cost_export_version_retention_days >= 35
+    error_message = "A period can be restated for weeks after it closes, so anything under 35 days can delete a version that is still the live one."
+  }
+}
+
+variable "athena_bytes_scanned_cutoff" {
+  description = <<-EOT
+    The most one query may scan, in bytes. Athena bills on bytes scanned, so a
+    query that forgets to prune on the billing period partition scans the whole
+    table at full price and reads as nothing worse than a slow query until the
+    bill arrives. Ten gibibytes is generous for one pruned month and small
+    enough that a full scan is refused rather than invoiced.
+  EOT
+  type        = number
+  default     = 10737418240
+
+  validation {
+    condition     = var.athena_bytes_scanned_cutoff >= 10485760
+    error_message = "Athena refuses a cutoff below ten mebibytes."
+  }
+}

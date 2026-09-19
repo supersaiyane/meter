@@ -1,0 +1,39 @@
+{
+  "message": "503 Service Unavailable - POST https://registry.npmjs.org/-/npm/v1/security/advisories/bulk - We are currently performing maintenance. For more info go to https://status.npmjs.org",
+  "method": "POST",
+  "uri": "https://registry.npmjs.org/-/npm/v1/security/advisories/bulk",
+  "headers": {
+    "date": [
+      "Sat, 19 Sep 2026 17:06:09 GMT"
+    ],
+    "content-type": [
+      "application/json"
+    ],
+    "content-length": [
+      "97"
+    ],
+    "connection": [
+      "keep-alive"
+    ],
+    "set-cookie": [
+      "__cf_bm=4DoED41tHKXeFefJDyJzbAsueCorhxpSpLDcDsZJgdA-1789837569.1416478-1.0.1.1-ZikHdvaa7ljx5HM9iw2n_6Z3hhYLTD2bl9VqyxAkl4Gw16O9OTvXzFLJ8NvRSAAqtiTOg7MIAgnTroaZXvq53l_NGhhuUBKf_IHgOY1gk8Ld1ve4NZYKYskAXVBLgJ5F; HttpOnly; SameSite=None; Secure; Path=/; Domain=npmjs.org; Expires=Sat, 19 Sep 2026 17:36:09 GMT"
+    ],
+    "server": [
+      "cloudflare"
+    ],
+    "cf-ray": [
+      "a3da2de72e6d91b8-DEL"
+    ],
+    "x-fetch-attempts": [
+      "1"
+    ]
+  },
+  "statusCode": 503,
+  "body": {
+    "error": "We are currently performing maintenance. For more info go to https://status.npmjs.org"
+  },
+  "error": {
+    "summary": "",
+    "detail": ""
+  }
+}

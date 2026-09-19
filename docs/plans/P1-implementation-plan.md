@@ -739,7 +739,7 @@ has them and is what a new environment copies.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-19, and unapplied by construction |
 | Implements | P1 spec section 10 |
 | Delivers | FEAT-020 |
 | Depends on | TASK-P1-001 |
@@ -753,17 +753,28 @@ in the hub stack.
 | Path | Action |
 | --- | --- |
 | `infra/terraform/hub/cost_exports.tf` | created |
-| `infra/terraform/hub/variables.tf` | extended |
+| `infra/terraform/hub/variables.tf` | two variables, both with a validation and a reason |
 
 **Acceptance criteria.**
 
-- [ ] `terraform validate` and `terraform fmt -check` pass, which is syntax,
+- [x] `terraform validate` and `terraform fmt -check` pass, which is syntax,
       provider schema and references
-- [ ] Every resource is tagged `finops:module`, per constraint 7
-- [ ] The Athena workgroup has a bytes scanned cutoff, because the tool that
-      reports on cost is a thing that can run away
-- [ ] **Nothing has been planned and nothing has been applied.** ISS-122. The
-      task is done when the stack validates, and the document says that is what
+- [x] Every resource carries `finops:module`, per constraint 7, through the
+      provider's `default_tags` rather than by being repeated on each resource
+- [x] The Athena workgroup has a bytes scanned cutoff, because a query that
+      forgets to prune the partition scans the whole table at full price and
+      reads as nothing worse than a slow query until the bill arrives
+- [x] The export bucket is separate from the data bucket, because that one has
+      a lifecycle rule that expires derived artefacts and a billing export is
+      the record of what was charged
+- [x] The bucket policy is conditioned on this account, so a leaked policy
+      could not let another account write into it
+- [x] `make security-scan` passes with zero unresolved. The one finding it
+      raised, no access logging on the new bucket, was **fixed rather than
+      allowlisted**: a bucket holding the record of what an organization was
+      charged should record who read it
+- [x] **Nothing has been planned and nothing has been applied.** ISS-122. The
+      task is done when the stack validates, and this document says that is what
       done means here
 
 **Deliberately not in this task.** No member account IAM. CUR is read from the
