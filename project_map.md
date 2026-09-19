@@ -494,6 +494,10 @@ meter/
 │       ├── retention.py       six jobs. Anonymises, never removes a principal row.
 │       │                      Its cost job also writes cost_focus_monthly, but only
 │       │                      for months past the cutoff as it drops them
+│       ├── cost_rollup.py    cost_focus_monthly, one body and two predicates,
+│       │                    shared by the collector and retention. Only the
+│       │                    collector may prune, because retention's rows have
+│       │                    to outlive the partitions it drops
 │       └── partitions.py      months created ahead. Without one, cost rows are refused
 │   └── metrics.py             only SLO 1 needs a custom metric. The other three are AWS's
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
@@ -502,7 +506,12 @@ meter/
 │   ├── deps.py                the first scope point. Scope comes from the resolver
 │   ├── middleware.py          request id on every line and back on the response
 │   ├── schemas.py             the meta envelope. degraded is computed, never set
-│   ├── routes/                the seven P0 routes, all returning the envelope
+│   ├── routes/                the seven P0 routes, all returning the envelope.
+│   │                          cost.py is P1's four: summary, by service, by
+│   │                          account and trend, plus allocation by tag key.
+│   │                          An open period says so in the payload, because
+│   │                          two copies of a calendar rule is one that is
+│   │                          eventually wrong in one of them
 │   │   ├── me.py              principal, tier, scope summary
 │   │   ├── accounts.py        accounts in scope, plus the role health recheck
 │   │   ├── org.py             the tree. Out of scope branches marked, not hidden

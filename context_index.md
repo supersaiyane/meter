@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-412 public symbols across 5 packages.
+413 public symbols across 5 packages.
 
 ## finops_core
 
@@ -314,13 +314,14 @@ a duplicate.
 | `scope_as_json` | function | `finops_api/db/repositories/base.py:86` | The scope as it was evaluated, so an audit row is readable a year later. | nothing in this tree |
 | `CostRepository` | class | `finops_api/db/repositories/cost.py:64` | The cost surface's reads. FEAT-021 and FEAT-022. | `finops_api/routes/cost.py` |
 | `CostRepository.latest_period` | method | `finops_api/db/repositories/cost.py:70` | The newest billing period this scope can see. | `finops_api/routes/cost.py` |
-| `CostRepository.period_total` | method | `finops_api/db/repositories/cost.py:82` | One row: effective, billed, line items and both timestamps. | `finops_api/routes/cost.py` |
-| `CostRepository.grouped` | method | `finops_api/db/repositories/cost.py:98` | Worst first, by service, account or region. | `finops_api/routes/cost.py`, `finops_api/routes/query.py` |
-| `CostRepository.by_tag` | method | `finops_api/db/repositories/cost.py:121` | Allocation: charges grouped by one tag key, with an explicit bucket | `finops_api/routes/cost.py` |
-| `CostRepository.daily` | method | `finops_api/db/repositories/cost.py:145` | Effective cost per day inside one billing period, oldest first. | `finops_api/routes/cost.py` |
-| `MonthlyCostRepository` | class | `finops_api/db/repositories/cost.py:162` | The derived monthly shape, for setting one period beside another. | nothing in this tree |
-| `MonthlyCostRepository.months` | method | `finops_api/db/repositories/cost.py:173` | Each billing month and what it cost, newest first. | nothing in this tree |
-| `previous_month` | function | `finops_api/db/repositories/cost.py:190` | The billing period before this one. | `finops_api/routes/cost.py` |
+| `CostRepository.accounts_in` | method | `finops_api/db/repositories/cost.py:82` | How many accounts this scope can see spending in the period. | `finops_api/routes/cost.py` |
+| `CostRepository.period_total` | method | `finops_api/db/repositories/cost.py:98` | One row: effective, billed, line items and both timestamps. | `finops_api/routes/cost.py` |
+| `CostRepository.grouped` | method | `finops_api/db/repositories/cost.py:114` | Worst first, by service, account or region. | `finops_api/routes/cost.py`, `finops_api/routes/query.py` |
+| `CostRepository.by_tag` | method | `finops_api/db/repositories/cost.py:137` | Allocation: charges grouped by one tag key, with an explicit bucket | `finops_api/routes/cost.py` |
+| `CostRepository.daily` | method | `finops_api/db/repositories/cost.py:161` | Effective cost per day inside one billing period, oldest first. | `finops_api/routes/cost.py` |
+| `MonthlyCostRepository` | class | `finops_api/db/repositories/cost.py:178` | The derived monthly shape, for setting one period beside another. | nothing in this tree |
+| `MonthlyCostRepository.months` | method | `finops_api/db/repositories/cost.py:189` | Each billing month and what it cost, newest first. | nothing in this tree |
+| `previous_month` | function | `finops_api/db/repositories/cost.py:206` | The billing period before this one. | `finops_api/routes/cost.py` |
 | `WatermarkRepository` | class | `finops_api/db/repositories/freshness.py:20` |  | `finops_api/routes/ingest.py` |
 | `WatermarkRepository.list_all` | method | `finops_api/db/repositories/freshness.py:24` |  | `finops_api/routes/ingest.py` |
 | `PlatformCostRepository` | class | `finops_api/db/repositories/freshness.py:31` |  | `finops_api/routes/platform.py` |
@@ -397,10 +398,10 @@ a duplicate.
 | `list_accounts` | function | `finops_api/routes/accounts.py:41` |  | `finops_ingest/collectors/org_tree.py` |
 | `recheck` | function | `finops_api/routes/accounts.py:54` | Force a role health recheck. A read only call, per constraint 6. | nothing in this tree |
 | `cost_summary` | function | `finops_api/routes/cost.py:117` | This period set against the one before it. | nothing in this tree |
-| `cost_by_service` | function | `finops_api/routes/cost.py:154` | Services, worst first. | nothing in this tree |
-| `cost_by_account` | function | `finops_api/routes/cost.py:165` | Accounts, worst first, and only the ones this scope reaches. | nothing in this tree |
-| `cost_allocation` | function | `finops_api/routes/cost.py:176` | The same rows grouped by one tag key, unallocated bucket included. | nothing in this tree |
-| `cost_trend` | function | `finops_api/routes/cost.py:205` | Effective cost per day inside the period, oldest first. | nothing in this tree |
+| `cost_by_service` | function | `finops_api/routes/cost.py:157` | Services, worst first. | nothing in this tree |
+| `cost_by_account` | function | `finops_api/routes/cost.py:168` | Accounts, worst first, and only the ones this scope reaches. | nothing in this tree |
+| `cost_allocation` | function | `finops_api/routes/cost.py:179` | The same rows grouped by one tag key, unallocated bucket included. | nothing in this tree |
+| `cost_trend` | function | `finops_api/routes/cost.py:208` | Effective cost per day inside the period, oldest first. | nothing in this tree |
 | `recent_runs` | function | `finops_api/routes/ingest.py:40` |  | nothing in this tree |
 | `staleness` | function | `finops_api/routes/ingest.py:84` |  | nothing in this tree |
 | `never_collected` | function | `finops_api/routes/ingest.py:104` | A pair that has been attempted and has never once succeeded. | nothing in this tree |

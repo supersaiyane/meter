@@ -220,14 +220,18 @@ test('an unbuilt screen is listed, reachable, and names what will fill it', asyn
   // and this is one expansion away. Located by href rather than by role,
   // because a closed details element is out of the accessibility tree and
   // getByRole would report it missing when it is merely folded.
-  const spend = page.locator('nav[aria-label="Sections"] a[href="/cost"]');
-  await expect(spend).toBeAttached();
-  await expect(spend).not.toBeVisible();
+  // Anomalies, not Spend and trend. That one carried this journey until
+  // 2026-09-19 and then shipped, which is precisely what this test is for: a
+  // journey pinned to one path stops testing the mechanism the day that path
+  // is built, and the failure it produces looks like a regression.
+  const anomalies = page.locator('nav[aria-label="Sections"] a[href="/cost/anomalies"]');
+  await expect(anomalies).toBeAttached();
+  await expect(anomalies).not.toBeVisible();
 
   await page.locator('nav[aria-label="Sections"] summary', { hasText: 'Cost' }).click();
-  await expect(spend).toBeVisible();
-  await spend.click();
-  await expect(page).toHaveURL(/\/cost$/);
+  await expect(anomalies).toBeVisible();
+  await anomalies.click();
+  await expect(page).toHaveURL(/\/cost\/anomalies$/);
   await expect(page.getByTestId('not-built')).toContainText('arrives with P1 Cost Intelligence');
 
   // A wrong address is a different condition and does not share the rendering.

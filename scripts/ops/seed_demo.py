@@ -44,7 +44,9 @@ from finops_core.config import load_settings
 from finops_core.domain.account import AccountKey
 from finops_core.errors import CollectionError
 from finops_ingest.collectors.account_health import AccountHealthCollector
+from finops_ingest.collectors.cost_focus import CostFocusCollector
 from finops_ingest.collectors.org_tree import OrgTreeCollector
+from finops_ingest.collectors.partitions import ensure_partition, partition_maintenance
 from finops_ingest.collectors.platform_cost import PlatformCostCollector
 from finops_ingest.collectors.query_audit import (
     QueryAuditCollector,
@@ -54,6 +56,7 @@ from finops_ingest.collectors.query_audit import (
 from finops_ingest.ledger import RunLedger
 from finops_ingest.registry import CollectorContext, install_default_schedule
 from finops_providers.fake import fixtures
+from finops_providers.fake.cur import FakeCostExport, estate
 from finops_providers.fake.evidence import FakeQueryEvidence
 from finops_providers.fake.health import FakeRoleHealth
 from finops_providers.fake.platform_cost import FakePlatformCost
@@ -102,6 +105,12 @@ DEMO_TABLES = (
     "query_finding",
     "query_definition",
     "grafana_instance",
+    # P1. The monthly aggregate goes before the daily rows it is derived from,
+    # for the same reason as everything else in this list: reverse dependency
+    # order, so a removal never orphans a foreign key.
+    "cost_focus_monthly",
+    "cost_focus_daily",
+    "cost_provider_extra",
 )
 
 
@@ -171,7 +180,13 @@ def _through_the_ledger(
         return 0
     ledger.running(claim)
     try:
-        outcome = collector(CollectorContext(unit=unit, connection=connection))
+        outcome = collector(
+            # The claim's run id, as the worker passes it. The cost collector
+            # writes it into a NOT NULL column and removes on it, so a context
+            # without one is a run it refuses rather than a run that invents a
+            # number naming nothing.
+            CollectorContext(unit=unit, connection=connection, run_id=claim.run_id)
+        )
     except CollectionError as failure:
         ledger.fail(claim, failure)
         ledger.record_sync_error(name, unit.scope_key, failure)
@@ -251,6 +266,50 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
             unit(),
             "platform_cost",
         )
+        # Partitions before the cost rows, because `cost_focus_daily` is
+        # partitioned by billing period and the database refuses a row with
+        # nowhere to go. `partition_maintenance` does this in a running system
+        # and the seed has to do it too, or the first cost run fails for a
+        # reason that looks nothing like a seeding problem.
+        written += _through_the_ledger(
+            ledger,
+            lambda context: partition_maintenance(context, clock=lambda: now),
+            connection,
+            unit(),
+            "partition_maintenance",
+        )
+        # One run per billing period, because the collector reads whichever
+        # period its export says is latest and that is all it reads. ISS-183.
+        # Which periods to ingest is policy and policy lives above the port, so
+        # the seed makes the choice by handing the collector one period at a
+        # time. Without this the demo has a single month, and the comparison on
+        # the summary is permanently absent, which is the one figure a person
+        # looks at first.
+        #
+        # The estate is built at this day's clock, so its newest period is the
+        # one still running. A fixture pinned to a fixed month stops being open
+        # the day that month ends, and then the open period label has nothing
+        # to label.
+        bill = estate(at=now)
+        # `partition_maintenance` creates the current month and the ones ahead,
+        # which is right for a running system and wrong for a seed: this estate
+        # reaches two months back, and those partitions will never be created by
+        # looking forward. The collector refuses a row with nowhere to go rather
+        # than misfiling it, per constraint 11, so the seed says explicitly
+        # which months it is about to write.
+        for period in sorted({row.billing_period_start for row in bill}):
+            ensure_partition(connection, "cost_focus_daily", period)
+            ensure_partition(connection, "cost_provider_extra", period)
+
+        for period in sorted({row.billing_period_start for row in bill}):
+            month = tuple(row for row in bill if row.billing_period_start == period)
+            written += _through_the_ledger(
+                ledger,
+                CostFocusCollector(FakeCostExport(rows=month), clock=lambda: now),
+                connection,
+                unit(scope_key=f"billing:{period:%Y-%m}"),
+                "cost_focus",
+            )
         written += _through_the_ledger(
             ledger,
             QueryAuditCollector(

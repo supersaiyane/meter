@@ -169,10 +169,19 @@ describe('AppShell', () => {
   });
 
   it('lists an unbuilt screen with what will fill it, rather than hiding it', () => {
+    // Anomalies, because Spend and trend was built on 2026-09-19. A test
+    // pinned to one path stops testing the mechanism the moment that path
+    // ships.
     renderShell(metaOf());
-    const link = screen.getByRole('link', { name: /Spend and trend/ });
+    const link = screen.getByRole('link', { name: /Anomalies/ });
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute('data-arrives', 'P1 Cost Intelligence');
+  });
+
+  it('gives a built screen no arrival note', () => {
+    renderShell(metaOf());
+    const link = screen.getByRole('link', { name: /Spend and trend/ });
+    expect(link).not.toHaveAttribute('data-arrives');
   });
 
   it('reports no accessibility violations when degraded', async () => {

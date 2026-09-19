@@ -260,3 +260,49 @@ export interface ApiEnforcementAction {
    */
   readonly revocable: boolean;
 }
+
+/**
+ * What a billing period cost, and whether that period is finished.
+ *
+ * `is_open` arrives from the API rather than being worked out here from a
+ * date. The side that read the export knows where today sits relative to the
+ * period's exclusive end, and a second copy of that calendar rule is one that
+ * is eventually wrong in one of the two places.
+ */
+export interface ApiCostTotal {
+  readonly period: string;
+  readonly is_open: boolean;
+  /** Amortized cost. The primary measure everywhere, per the roadmap. */
+  readonly effective_cost: string;
+  /** What the invoice says. Shown only where that is the question. */
+  readonly billed_cost: string;
+  readonly line_items: number;
+}
+
+export interface ApiCostSummary {
+  readonly current: ApiCostTotal;
+  /**
+   * Null when no earlier period was collected. Not a period that cost nothing:
+   * one is an absence and the other is a claim, and they must not render alike.
+   */
+  readonly previous: ApiCostTotal | null;
+  /** Null for the same reason. Never render this as zero. */
+  readonly change: string | null;
+}
+
+export interface ApiCostSlice {
+  /**
+   * `unallocated` where the row carries no value for the grouping. It is never
+   * dropped and never folded into a total, because a view that quietly loses
+   * what it cannot attribute reports a smaller estate than exists.
+   */
+  readonly name: string;
+  readonly effective_cost: string;
+  readonly billed_cost: string;
+  readonly line_items: number;
+}
+
+export interface ApiCostDay {
+  readonly day: string;
+  readonly effective_cost: string;
+}

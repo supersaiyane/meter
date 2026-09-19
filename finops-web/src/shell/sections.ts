@@ -34,8 +34,8 @@ export const GROUPS: readonly GroupDef[] = [
     label: 'Cost',
     path: '/cost',
     screens: [
-      { path: '/cost', label: 'Spend and trend', arrives: 'P1 Cost Intelligence' },
-      { path: '/cost/allocation', label: 'Allocation', arrives: 'P1 Cost Intelligence' },
+      { path: '/cost', label: 'Spend and trend', arrives: null },
+      { path: '/cost/allocation', label: 'Allocation', arrives: null },
       { path: '/cost/anomalies', label: 'Anomalies', arrives: 'P1 Cost Intelligence' },
       { path: '/cost/commitments', label: 'Commitments', arrives: 'P1 Cost Intelligence' },
       { path: '/cost/export', label: 'Export', arrives: 'P1 Cost Intelligence' },

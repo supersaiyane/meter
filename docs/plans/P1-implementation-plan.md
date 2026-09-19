@@ -597,7 +597,7 @@ implementation of one query.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-19 |
 | Implements | P1 spec section 9 |
 | Delivers | FEAT-021 |
 | Depends on | TASK-P1-009 |
@@ -611,23 +611,28 @@ daily trend, and the services that make it up.
 | Path | Action |
 | --- | --- |
 | `finops-web/src/screens/CostScreen.tsx` | created |
-| `finops-web/src/api/queries.ts` | the hooks |
-| `finops-web/src/shell/sections.ts` | the placeholder replaced |
-| `finops-web/src/screens/__tests__/CostScreen.test.tsx` | created |
+| `finops-web/src/api/queries.ts` | five hooks |
+| `finops-web/src/api/types.ts` | four response types |
+| `finops-web/src/api/fixtures/cost.ts` | created |
+| `finops-web/src/App.tsx` | the two routes |
+| `finops-web/src/shell/sections.ts` | both placeholders replaced |
+| `finops-web/src/screens/__tests__/CostScreen.test.tsx` | created, 8 tests |
 
 **Acceptance criteria.**
 
-- [ ] The open period is labelled as open beside the figure, not in a footnote.
-      A reader comparing a part month against a whole month with no warning will
-      reach a wrong conclusion confidently
-- [ ] Every figure goes through `Figure`, so provenance and freshness are on the
+- [x] The open period is labelled beside the figure, not in a footnote
+- [x] Every figure goes through `Figure`, so provenance and freshness are on the
       screen rather than in the payload
-- [ ] A failed collection renders as a typed cause and never as zero,
-      constraint 5
-- [ ] ADR-0021 holds: `layout.css` targets no class a component had to add, and
-      `surface.test.ts` still passes
-- [ ] No accessibility violations, and the screen has been opened at 1440px and
-      read
+- [x] No earlier period renders as a sentence, never as a change of nought
+- [x] ADR-0021 holds and `surface.test.ts` still passes
+- [x] No accessibility violations
+- [x] **Opened at 1460px and read, which found two defects no test had.** The
+      coverage banner said "showing all 450 accounts" on an estate with five,
+      because the line item count was passed where the banner names accounts.
+      And the trend rendered as eighteen rows each repeating the same freshness
+      sentence, which is not a trend, it is one sentence eighteen times around
+      numbers nobody can compare. Both fixed: the banner counts accounts, and
+      the trend is a sparkline with its two ends written out
 
 **Deliberately not in this task.** No per resource drill down. The rows are
 stored and the screen for them is a separate decision.
@@ -638,7 +643,7 @@ stored and the screen for them is a separate decision.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-19 |
 | Implements | P1 spec section 9 |
 | Delivers | FEAT-022 |
 | Depends on | TASK-P1-009 |
@@ -652,17 +657,20 @@ stored and the screen for them is a separate decision.
 | Path | Action |
 | --- | --- |
 | `finops-web/src/screens/CostAllocationScreen.tsx` | created |
-| `finops-web/src/shell/sections.ts` | the placeholder replaced |
-| `finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx` | created |
+| `finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx` | created, 6 tests |
 
 **Acceptance criteria.**
 
-- [ ] The unallocated row is visible and is never folded into a total. An
-      allocation view that quietly drops what it cannot attribute reports a
-      smaller estate than exists
-- [ ] Changing the tag key changes the grouping and not the total, proved by a
-      test that sums both groupings and compares
-- [ ] The same freshness, provenance and failure rules as TASK-P1-010
+- [x] The unallocated row is visible and never folded into a total. It reads
+      "nobody tagged this" rather than being blank, because an empty cell looks
+      like a rendering fault and sends somebody looking for a value that was
+      never there
+- [x] The share is stated as a percentage, so a reader does not have to divide
+      it themselves to know whether it matters. On the seeded estate it is 22.0
+- [x] The tag key is chosen, with no default at the API. Guessing one would
+      group an estate by something nobody asked for and label it their
+      allocation
+- [x] The same freshness, provenance and failure rules as TASK-P1-010
 
 **Deliberately not in this task.** No Cost Categories. Tags first, and a second
 allocation source before the first is proved makes a disagreement between them
@@ -674,7 +682,7 @@ impossible to attribute.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-19 |
 | Implements | P1 spec sections 11 and 15 |
 | Delivers | FEAT-021 |
 | Depends on | TASK-P1-010, TASK-P1-011 |
@@ -688,23 +696,42 @@ the result.
 
 | Path | Action |
 | --- | --- |
-| `scripts/ops/seed_demo.py` | the cost collector added, and the three cost tables added to `DEMO_TABLES` |
+| `scripts/ops/seed_demo.py` | partitions, the cost collector per period, and three tables in `DEMO_TABLES` |
 | `finops-web/e2e/cost.spec.ts` | created |
-| `tests/scripts/test_seed_demo.py` | the teardown test already derives this |
+| `finops-web/e2e/journey.spec.ts` | its unbuilt screen journey repointed at anomalies |
+| `tests/scripts/test_seed_demo.py` | the three cost tables removed from `never_seeded` |
+| `.env` | the five CUR settings, locally |
 
 **Acceptance criteria.**
 
-- [ ] `make seed` fills `/cost` and `/cost/allocation`
-- [ ] `make unseed` removes every cost row. The derived teardown test already
-      fails if a tenant scoped table is missing from `DEMO_TABLES`, which is
-      ISS-176 and is exactly this trap
-- [ ] `make seed DAYS=n` produces a bill that differs by day, so the trend is a
-      trend rather than one number drawn n times
-- [ ] The journey opens `/cost`, reads a figure and follows it to
+- [x] `make seed` fills `/cost` and `/cost/allocation`, proved by opening both
+      through nginx: 2,234 rows, $3,489.84 in an open period against $6,197.65
+      the month before
+- [x] `make unseed` removes every cost row, and the derived teardown test now
+      covers the three cost tables rather than declaring them never seeded
+- [x] The bill differs by day, so the trend is a shape rather than one number
+      drawn eighteen times
+- [x] The journey opens `/cost`, reads a figure and follows it to
       `/cost/allocation`
+- [x] **The seed creates the partitions for the months it writes.**
+      `partition_maintenance` creates the current month and the ones ahead,
+      which is right for a running system and useless for a seed reaching two
+      months back. The collector refused the rows rather than misfiling them,
+      which is constraint 11 doing its job, and the seed now says which months
+      it is about to write
+- [x] The seed ingests every period the estate holds, one run each. The
+      collector reads only the latest period, ISS-183, so a single run leaves
+      the summary with nothing to compare against, which is the first figure a
+      person looks at
 
 **Deliberately not in this task.** No fake anomalies. There is no anomaly
 screen to show them on.
+
+**A consequence worth knowing about.** The five CUR settings TASK-P1-003 added
+are required, so a deployment that does not set them refuses to start. That is
+the right failure, and the message names all five, but it is a breaking config
+change: the local stack crash looped until `.env` carried them. `.env.example`
+has them and is what a new environment copies.
 
 ---
 

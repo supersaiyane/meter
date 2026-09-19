@@ -253,10 +253,6 @@ def test_every_tenant_scoped_table_is_in_the_teardown() -> None:
     # out, so adding a table forces a decision about it: either the seed writes
     # it and the teardown removes it, or it appears here with a reason.
     never_seeded = {
-        # P1 owns these and P1 has not been built.
-        "cost_focus_daily",
-        "cost_focus_monthly",
-        "cost_provider_extra",
         # Identity, which the local stack resolves from local-auth.yaml rather
         # than from rows.
         "principal",

@@ -106,7 +106,7 @@ def _grouped(
         connection,
         scope,
         context,
-        visible=len(rows),
+        visible=repository.accounts_in(scope, resolved),
         as_of=totals[0][3],
         collected_at=totals[0][4],
     )
@@ -143,7 +143,10 @@ def cost_summary(
         connection,
         scope,
         context,
-        visible=current.line_items,
+        # Accounts, because that is the unit the coverage banner names. The
+        # line item count went here first and rendered as "showing all 450
+        # accounts" on an estate with five.
+        visible=repository.accounts_in(scope, current_period),
         as_of=rows[0][3],
         collected_at=rows[0][4],
     )
@@ -194,7 +197,7 @@ def cost_allocation(
         connection,
         scope,
         context,
-        visible=len(rows),
+        visible=repository.accounts_in(scope, resolved),
         as_of=totals[0][3],
         collected_at=totals[0][4],
     )
@@ -218,7 +221,7 @@ def cost_trend(
         connection,
         scope,
         context,
-        visible=len(series),
+        visible=repository.accounts_in(scope, resolved),
         as_of=totals[0][3],
         collected_at=totals[0][4],
     )

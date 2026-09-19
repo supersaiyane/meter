@@ -13,6 +13,8 @@ import { FreshnessScreen } from './screens/FreshnessScreen';
 import { IngestScreen } from './screens/IngestScreen';
 import { OrganizationScreen } from './screens/OrganizationScreen';
 import { QueryFindingDetailScreen } from './screens/QueryFindingDetailScreen';
+import { CostScreen } from './screens/CostScreen';
+import { CostAllocationScreen } from './screens/CostAllocationScreen';
 import { QueryAdhocScreen } from './screens/QueryAdhocScreen';
 import { QueryFindingsScreen } from './screens/QueryFindingsScreen';
 import { EnforcementScreen } from './screens/EnforcementScreen';
@@ -72,6 +74,8 @@ export function App({
             <AppShell>
               <Routes>
                 <Route path="/" element={<HomeScreen />} />
+                <Route path="/cost" element={<CostScreen />} />
+                <Route path="/cost/allocation" element={<CostAllocationScreen />} />
                 <Route path="/inventory/accounts" element={<AccountsScreen />} />
                 <Route path="/inventory/organization" element={<OrganizationScreen />} />
                 <Route path="/governance/queries" element={<QueryFindingsScreen />} />

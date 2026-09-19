@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 51 total, 9 specified, 7 in build, 5 delivered |
+| Features | 51 total, 9 specified, 10 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
-| Changes | 88 recorded |
+| Changes | 89 recorded |
 | Issues | 124 fixed, 55 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
@@ -111,7 +111,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P1 | 9 | 0 | 0 | 0 | 4 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
+| P1 | 12 | 0 | 0 | 0 | 1 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -171,6 +171,9 @@ ISS-003.
 | `TASK-P1-007` | Done, 2026-09-19 | cadence, as data |
 | `TASK-P1-008` | Done, 2026-09-19 | the guard, then the repository |
 | `TASK-P1-009` | Done, 2026-09-19 | four routes |
+| `TASK-P1-010` | Done, 2026-09-19 | the spend and trend screen |
+| `TASK-P1-011` | Done, 2026-09-19 | the allocation screen and the bucket nobody wants |
+| `TASK-P1-012` | Done, 2026-09-19 | the demo estate gets a bill |
 
 **P2, not in the default state**
 

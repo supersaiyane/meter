@@ -79,6 +79,22 @@ class CostRepository(ScopedRepository):
         rows = _fetch(self, scope, statement)
         return rows[0][0] if rows else None
 
+    def accounts_in(self, scope: Scope, period: date) -> int:
+        """How many accounts this scope can see spending in the period.
+
+        The coverage banner's whole job is to say when a total was drawn from
+        part of an estate, so the number beside the word accounts has to be
+        accounts. The line item count went there first and rendered as
+        "showing all 450 accounts" on an estate with five.
+        """
+        statement = (
+            self.scoped_select(scope)
+            .with_only_columns(func.count(func.distinct(self.table.c.sub_account_id)))
+            .where(self.table.c.billing_period_start == period)
+        )
+        rows = _fetch(self, scope, statement)
+        return int(rows[0][0] or 0) if rows else 0
+
     def period_total(self, scope: Scope, period: date) -> Sequence[Row[tuple[Any, ...]]]:
         """One row: effective, billed, line items and both timestamps.
 

@@ -85,7 +85,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-51 features across 8 sub projects. 9 specified, 30 planned, 7 in build, 5 delivered.
+51 features across 8 sub projects. 9 specified, 27 planned, 10 in build, 5 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -125,9 +125,9 @@ block is caught by `make check-docs`. See
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-020](docs/features/FEAT-020-cur-focus-ingest.md) | CUR 2.0 ingest with resource identifiers and split cost allocation | Planned | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 5 and 7 |
-| [FEAT-021](docs/features/FEAT-021-cost-rollups-and-trends.md) | Cost rollups, trends and per resource attribution | Planned | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 8 and 9 |
-| [FEAT-022](docs/features/FEAT-022-allocation-and-showback.md) | Allocation, showback and the unallocated bucket | Planned | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 9 |
+| [FEAT-020](docs/features/FEAT-020-cur-focus-ingest.md) | CUR 2.0 ingest with resource identifiers and split cost allocation | In build | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 5 and 7 |
+| [FEAT-021](docs/features/FEAT-021-cost-rollups-and-trends.md) | Cost rollups, trends and per resource attribution | In build | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 8 and 9 |
+| [FEAT-022](docs/features/FEAT-022-allocation-and-showback.md) | Allocation, showback and the unallocated bucket | In build | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 9 |
 | [FEAT-023](docs/features/FEAT-023-cost-anomaly-detection.md) | Anomaly detection and ingest of AWS Cost Anomaly Detection | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
 | [FEAT-024](docs/features/FEAT-024-commitment-coverage.md) | Savings Plan and Reserved Instance utilization and coverage | Planned | [roadmap](docs/01-ROADMAP.md) P1 |
 | [FEAT-045](docs/features/FEAT-045-chargeback-export.md) | Chargeback and showback export, CSV and Excel | Planned | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
@@ -314,6 +314,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0086 | 2026-09-18 | Design | TASK-P1-003. AthenaCostExport written and unproved, with five settings for the export location. A period is returned whole or not at all, because a short list is indistinguishable to the collector from a month where charges were retracted. The contract suite gained a cost export and immediately caught the fake using a fingerprint the collector could never produce | `pending` | [P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-003 |
 | CHG-0087 | 2026-09-18 | Design | TASK-P1-004. The cost collector writes cost_focus_daily, idempotently, one billing period at a time. CollectorContext gained run_id from the ledger's claim, because rows carry it in a NOT NULL column and the restatement pass deletes on it. Partitions are not created here on purpose, so a missing one is refused by the database rather than worked around | `pending` | [P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-004 |
 | CHG-0088 | 2026-09-18 | Design | TASK-P1-005. The cost collector removes what the provider withdrew, keyed on the run id rather than a clock and scoped to one tenant and one billing period. Removing the guard to test it showed the comment was wrong, the worker's transaction protects the half read case and the ordering is a second independent guard, so the claim was corrected and a test that can actually see the ordering was added | `pending` | [P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-005 |
+| CHG-0089 | 2026-09-19 | Design | TASK-P1-006 to TASK-P1-012. One shared monthly aggregate, the collector's cadence as a row, the guard rule corrected on two cost tables, a repository, four routes, two screens and a seeded estate. The cost surface is live end to end against a fake export | `pending` | [P1 plan](docs/plans/P1-implementation-plan.md) waves B to D |
 
 <!-- generated:changes end -->
 
