@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Status: Provisional, pending approval of `docs/specs/2026-08-23-p0-foundation-design.md`
 Spec: `docs/specs/2026-08-23-p0-foundation-design.md`
-Tasks: 33
+Tasks: 34
 
 ## How to work this plan
 
@@ -27,7 +27,7 @@ before starting. In short:
 | B. Domain | 005 to 009 | Entities, ports, errors, and a fake provider that satisfies them | A complete |
 | C. Persistence | 010 to 012 | Schema, repositories, and the scope guard | B complete |
 | D. Infrastructure | 013 to 016 | Terraform for management, member and hub | A complete, parallel with B and C |
-| E. AWS adapters | 017 to 019 | Credential broker and account discovery against real AWS | B and D complete |
+| E. AWS adapters | 017 to 019 | Credential broker and account discovery, against moto and LocalStack | B complete. **D is not required to start** |
 | F. Ingestion | 020 to 023 | Dispatcher, worker, ledger, and the three P0 collectors | C and E complete |
 | G. API | 024 to 025 | Routes with scope enforcement and freshness metadata | C complete, F for real data |
 | H. Frontend | 026 to 028 | Five screens and the end to end journey | G complete |
@@ -214,6 +214,71 @@ are enforced before a commit is created rather than after.
 ---
 
 ## Wave B: domain
+
+### TASK-P0-034: settings object, feature flags and the no hardcoding gate
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | ADR-0017 |
+| Delivers | FEAT-049 |
+| Depends on | TASK-P0-001 |
+| Estimate | M |
+
+**Goal.** Every value comes from one typed place before there is any code to
+put values in. Doing this after the fact means finding every literal already
+written.
+
+**Files.**
+
+| Path | Action |
+| --- | --- |
+| `finops_core/config.py` | create |
+| `finops_core/constants.py` | create |
+| `finops_api/flags.py` | create |
+| `tests/core/test_config.py` | create |
+| `.env.example` | modify, already exists |
+| `docs/feature-flags.yaml` | modify, already exists |
+
+**Acceptance criteria.**
+
+- [ ] One `pydantic-settings` class covering every variable in `.env.example`
+- [ ] **The process refuses to start** when a required value is missing or
+      malformed, naming the variable
+- [ ] A test asserts every `METER_` variable in `.env.example` has a field on
+      the settings class, and the reverse, so the two cannot drift
+- [ ] Flag resolution order: `feature_flag` table for the tenant, then the
+      environment default, then the declared default. Cached 60 seconds
+- [ ] An unknown flag key reads as its declared default rather than raising
+- [ ] `METER_FEATURE_SCOPE_AUDIT` false is **rejected at startup** when
+      `METER_ENV` is prod
+- [ ] `make check-docs` runs `check_flags.py` and `check_hardcoded.py`
+
+**Tests.**
+
+| Test | Asserts |
+| --- | --- |
+| `tests/core/test_config.py::test_missing_required_refuses_startup` | Absent variable stops the process, naming it |
+| `tests/core/test_config.py::test_env_example_matches_settings` | Neither file can drift from the other |
+| `tests/core/test_config.py::test_scope_audit_cannot_be_off_in_prod` | The one flag that has no legitimate off state in production |
+| `tests/core/test_config.py::test_unknown_flag_returns_default` | A typo does not take a service down |
+
+**Do not.**
+
+- Do not read `os.environ` anywhere outside `config.py`. That is the entire
+  point, and `check_hardcoded.py` will find it.
+- Do not add a flag for something you are unsure about. Uncertainty is resolved
+  by deciding, or by not building the thing. A flag is for what must be
+  switchable in production without a deploy.
+- Do not put a secret default in `.env.example`. It is committed.
+
+**Evidence.**
+
+```bash
+pytest tests/core/test_config.py -v && make check-docs
+```
+
+---
 
 ### TASK-P0-005: define the typed error taxonomy
 
@@ -872,8 +937,20 @@ make tf-plan
 | Status | Not started |
 | Implements | P0 spec section 4 |
 | Delivers | FEAT-002 |
-| Depends on | TASK-P0-007, TASK-P0-014 |
+| Depends on | TASK-P0-007. **Not TASK-P0-014** |
 | Estimate | M |
+
+**Dependency relaxed 2026-08-23.** This previously depended on the member
+StackSet being deployed, which put the management account on the critical path
+and blocked everything downstream of it. It does not need to. The broker is
+built and fully tested against `moto`, and the organization tree against
+LocalStack, which emulates `sts` and `organizations`. The real StackSet is
+needed only for end to end verification against live accounts, which is a
+separate step at the end of wave E rather than a precondition for starting it.
+
+LocalStack does **not** enforce IAM, so it proves the plumbing and not the
+permission boundary. The live verification step is where that is proven. See
+`docs/04-DEPLOYMENT.md` and gotcha 5.10.
 
 **Goal.** Produce a scoped boto3 session for any member account, with caching
 and correct error typing.

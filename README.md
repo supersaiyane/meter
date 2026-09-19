@@ -79,6 +79,8 @@ and open question with a pointer to the detail.
 | Corrections already received | [tasks/lessons.md](tasks/lessons.md) |
 | **What an audit found** | [audits/](audits/README.md), latest is [AUDIT-001](audits/AUDIT-001-2026-08-23-full-project.md) |
 | How we compare to a competing product | [docs/11-COMPETITIVE-REVIEW.md](docs/11-COMPETITIVE-REVIEW.md) |
+| Every configuration value and what reads it | `.env.example` |
+| Every feature flag, owner and expiry | [docs/feature-flags.yaml](docs/feature-flags.yaml) |
 | What each script does | [scripts/README.md](scripts/README.md) |
 | **Is the security posture currently clean** | `security/POSTURE.md` |
 
@@ -107,6 +109,23 @@ make session-end           # regenerates derived docs, runs the checks,
 It will remind you to add a checkpoint row with a resume vector, update
 `tasks/STATUS.md` if a task changed state, and add a lesson if you were
 corrected.
+
+### Changing a configuration value or a feature flag
+
+```bash
+$EDITOR .env                      # local. Every value is documented in .env.example
+$EDITOR docs/feature-flags.yaml   # adding a flag: owner, reason, expiry, removal
+make check-docs                   # validates both
+```
+
+Nothing is hardcoded. `scripts/ci/check_hardcoded.py` fails the build on a
+region, account identifier, ARN, endpoint URL, role name or bare numeric
+threshold written into application code. If a literal is genuinely correct,
+mark the line `# allow-hardcoded: <reason>`.
+
+**An expired feature flag fails the build**, the same mechanism as an expired
+security allowlist entry, because both solve the same problem: a temporary
+decision quietly becoming permanent.
 
 ### Changing a status
 

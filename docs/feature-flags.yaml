@@ -1,0 +1,98 @@
+# Feature flag register. See ADR-0017.
+#
+# Every flag carries five fields, or it is not merged:
+#   key       matches METER_FEATURE_<KEY> in .env.example, uppercased
+#   default   the deploy time default
+#   owner     a person, not a team. A team owns nothing
+#   reason    why this needs to be switchable, not why the feature exists
+#   expires   ISO date. AN EXPIRED FLAG FAILS THE BUILD
+#   removal   what deletes this flag and its false branch
+#
+# A flag is for something that must be switchable in production without a
+# deploy. It is not for something the author is unsure about. Uncertainty is
+# resolved by deciding, or by not building the thing.
+#
+# Target is fewer than fifteen live flags. Past that, the review is which ones
+# have outlived their reason, not how to organise them better.
+#
+# Validated by scripts/ci/check_flags.py, wired into make check-docs.
+
+flags:
+  - key: mcp_server
+    default: false
+    owner: PLACEHOLDER-maintainer
+    reason: >
+      The MCP server is a second process on the API image. It stays off until
+      its tool schemas are generated from the API models, because a hand
+      written schema that drifts from the API is how a facade becomes a second
+      implementation.
+    expires: 2026-11-21
+    removal: Delete the flag and the false branch once P1 tools ship and the
+      schema generation test passes.
+
+  - key: ingestion
+    default: true
+    owner: PLACEHOLDER-maintainer
+    reason: >
+      Master switch for all collection. This is the switch you want at three in
+      the morning when a collector is hammering a member account and you do not
+      yet know which one.
+    expires: 2027-08-23
+    removal: Permanent operational control. Reviewed annually rather than
+      removed. This is the one flag that is allowed to be long lived, and it is
+      reviewed rather than assumed.
+
+  - key: collector_org_tree
+    default: true
+    owner: PLACEHOLDER-maintainer
+    reason: >
+      Per collector switch, so one misbehaving collector is disabled without
+      stopping the other two.
+    expires: 2027-08-23
+    removal: Reviewed with the ingestion flag.
+
+  - key: collector_account_health
+    default: true
+    owner: PLACEHOLDER-maintainer
+    reason: Per collector switch, as above.
+    expires: 2027-08-23
+    removal: Reviewed with the ingestion flag.
+
+  - key: collector_platform_cost
+    default: true
+    owner: PLACEHOLDER-maintainer
+    reason: Per collector switch, as above.
+    expires: 2027-08-23
+    removal: Reviewed with the ingestion flag.
+
+  - key: retention_jobs
+    default: true
+    owner: PLACEHOLDER-maintainer
+    reason: >
+      Retention deletes data. A switch exists so a suspected bug in a retention
+      job can be stopped immediately rather than after a deploy. Turning it off
+      means holding data past policy, so it is a deliberate, temporary and
+      auditable act.
+    expires: 2027-08-23
+    removal: Permanent operational control, reviewed annually.
+
+  - key: scope_audit
+    default: true
+    owner: PLACEHOLDER-maintainer
+    reason: >
+      Writes an audit_event on every scope evaluation. There is no legitimate
+      reason to disable this in a deployed environment. It exists so a load
+      test does not generate ten million audit rows.
+    expires: 2027-08-23
+    removal: Permanent, and the check must reject it being false when
+      METER_ENV is prod.
+
+  - key: local_auth
+    default: true
+    owner: PLACEHOLDER-maintainer
+    reason: >
+      Allows the local identity provider. Ignored, and rejected at startup,
+      when METER_ENV is prod.
+    expires: 2026-11-21
+    removal: Delete the flag, the local provider and this entry when the SAML
+      adapter ships. OPEN-01.

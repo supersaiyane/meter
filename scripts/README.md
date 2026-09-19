@@ -24,6 +24,8 @@ executable lives outside this directory.
 | `docs/sync.py` | `make doc-sync` | Regenerates every derived document from `docs/registry.yaml` |
 | `security/pre_commit_deps.sh` | pre commit hook | Runs the admission gate when a dependency manifest changes |
 | `ci/code_review.py` | `make review` | Deterministic checks first, then the review checklist |
+| `ci/check_flags.py` | `make check-docs` | Fails on an expired feature flag, or one missing an owner, reason or removal plan |
+| `ci/check_hardcoded.py` | `make check-docs` | Fails on a region, account id, ARN, URL, role name or bare threshold written into application code |
 | `deploy/run_migration_task.sh` | GitLab pipeline | Runs migrations as a one off ECS task before rollout |
 
 ## Conventions

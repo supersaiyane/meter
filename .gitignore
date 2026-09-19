@@ -29,6 +29,7 @@ build/
 .env
 .env.*
 !.env.example
+!.env.*.example
 *.pem
 *.key
 local-auth.yaml

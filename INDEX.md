@@ -31,6 +31,8 @@ block is caught by `make check-docs`. See
 | Where a change is recorded | [docs/03-CHANGE-CONTROL.md](docs/03-CHANGE-CONTROL.md) |
 | The database schema and migration rules | [docs/07-DATA-MODEL.md](docs/07-DATA-MODEL.md) |
 | The registry every derived document comes from | [docs/registry.yaml](docs/registry.yaml) |
+| Every configuration value, what it does, which file reads it | `.env.example` |
+| Every feature flag, its owner and its expiry | [docs/feature-flags.yaml](docs/feature-flags.yaml) |
 | How code reaches production | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | Security policy, scanners, gates | [docs/05-SECURITY.md](docs/05-SECURITY.md) |
 | Who attacks this, and what stops them | [docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md) |
@@ -49,6 +51,8 @@ block is caught by `make check-docs`. See
 | Corrections already received | [tasks/lessons.md](tasks/lessons.md) |
 | What an audit found, and when | [audits/](audits/README.md) |
 | How we compare to a competing product | [docs/11-COMPETITIVE-REVIEW.md](docs/11-COMPETITIVE-REVIEW.md) |
+| Every configuration value and what reads it | `.env.example` |
+| Every feature flag, owner and expiry | [docs/feature-flags.yaml](docs/feature-flags.yaml) |
 
 ---
 
@@ -57,7 +61,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-48 features across 8 sub projects. 10 specified, 38 planned, 0 in build, 0 delivered.
+49 features across 8 sub projects. 11 specified, 38 planned, 0 in build, 0 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -75,6 +79,7 @@ block is caught by `make check-docs`. See
 | [FEAT-008](docs/features/FEAT-008-platform-self-metering.md) | Platform self metering | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.5 |
 | [FEAT-009](docs/features/FEAT-009-organization-map.md) | Organization map, tree and graph views | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
 | [FEAT-010](docs/features/FEAT-010-ingest-and-freshness-surface.md) | Ingest and freshness surface | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
+| [FEAT-049](docs/features/FEAT-049-configuration-and-feature-flags.md) | Configuration and feature flags, everything switchable, nothing hardcoded | Specified | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
 
 ### P2 Query Cost Governance
 
@@ -176,6 +181,7 @@ block is caught by `make check-docs`. See
 | ADR-0014 | Derived documentation is generated from a registry, not hand maintained | Accepted | [ADR-0014](docs/adr/ADR-0014-generated-documentation.md) |
 | ADR-0015 | Deterministic forecasting is permitted where a language model number is not | Accepted | [ADR-0015](docs/adr/ADR-0015-deterministic-forecasting-is-permitted.md) |
 | ADR-0016 | Severity on a cost finding is derived from the money, never chosen | Accepted | [ADR-0016](docs/adr/ADR-0016-dollar-based-severity.md) |
+| ADR-0017 | Nothing is hardcoded, and every feature flag has an owner and an expiry | Accepted | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
 
 Index of records: [docs/adr/README.md](docs/adr/README.md)
 
@@ -215,6 +221,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0023 | 2026-08-23 | Design | AUDIT-001 remediation wave three: disaster recovery, observability, the running cost estimate, exit criteria and the performance budget. All 18 findings now closed | `6cceaa8` | [REMEDIATION-LOG](audits/REMEDIATION-LOG.md) |
 | CHG-0024 | 2026-08-23 | Process | Coding sessions run behind the pxpipe proxy so token usage is recorded. make dev launches, make stats reports | `a92ae60` | [README.md](README.md), "Starting a coding session" |
 | CHG-0025 | 2026-08-23 | Scope | Competitive review of NudgeBee AI FinOps. Six features added, three amended, two decisions recorded, four capabilities explicitly rejected | `c7f45f0` | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
+| CHG-0026 | 2026-08-23 | Design | Configuration and feature flags: one typed settings object, a documented .env.example, a flag register with owners and expiries, and two checks that fail the build. Regions confirmed as Ireland and London. Management account taken off the critical path via LocalStack | `pending` | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
 
 <!-- generated:changes end -->
 
@@ -225,7 +232,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**58 FIXED, 25 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**60 FIXED, 26 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -304,6 +311,9 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-083 | MEDIUM | Anomaly detection had no thresholds defined at all, which is how anomaly detection becomes noise and gets muted | FIXED | [Competitive review](docs/11-COMPETITIVE-REVIEW.md). FEAT-023 amended with three concurrent thresholds |
 | ISS-084 | MEDIUM | The topology graph was built and used only for drawing, when it can score the blast radius of a change and gate auto apply | OPEN | FEAT-044 |
 | ISS-086 | MEDIUM | Allocation had no export path, and finance does not work inside the product interface | OPEN | FEAT-045 |
+| ISS-087 | MEDIUM | Feature flag owners and CODEOWNERS entries are placeholders, and a flag with no named owner is a branch nobody will ever remove | OPEN | `make check-docs` warns on each. Becomes an error before the first merge request |
+| ISS-088 | MEDIUM | Values were being written into code, compose and the Makefile with no single place to change them and no note of what each one does | FIXED | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md), `.env.example`, enforced by `scripts/ci/check_hardcoded.py` |
+| ISS-089 | MEDIUM | The management account dependency sat on the critical path, blocking the credential broker and everything downstream of it | FIXED | Organizations is emulated by LocalStack, so the whole organization path is built and tested locally. The real management account is needed only for final verification. ISS-002 downgraded |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
@@ -331,7 +341,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | OPEN-03 | Is Business or Enterprise support available | OPEN | P3 and P5 coverage | [tasks/ISSUES.md](tasks/ISSUES.md) |
 | OPEN-04 | Amazon Managed Grafana only, or self hosted and Grafana Cloud too | OPEN | P2 scope | [tasks/ISSUES.md](tasks/ISSUES.md) |
 | OPEN-05 | Jira or ServiceNow for the recommendation lifecycle | OPEN | P3 design | [tasks/ISSUES.md](tasks/ISSUES.md) |
-| OPEN-06 | Which regions beyond Ireland and London | OPEN | P0 dispatcher configuration | [tasks/ISSUES.md](tasks/ISSUES.md) |
+| OPEN-06 | Which regions beyond Ireland and London. ANSWERED 2026-08-23: those two only, eu-west-1 and eu-west-2 | ANSWERED | nothing | Set in METER_REGIONS, see .env.example section 3 |
 
 <!-- generated:open-questions end -->
 

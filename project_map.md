@@ -23,6 +23,7 @@ meter/
 ├── pyproject.toml             dependencies, lint rules, import linter contract
 ├── docker-compose.yml         local stack only, never used to deploy
 ├── .gitlab-ci.yml             verify, security, build, scan, plan, deploy
+├── .env.example               every value, what it does, which file reads it
 ├── .pre-commit-config.yaml    local gates: secrets, writing rules, lint, doc drift,
 │                              dependency admission on manifest change. Pre push
 │                              runs the full scan and the tests
@@ -47,6 +48,7 @@ meter/
 │   ├── 11-COMPETITIVE-REVIEW.md  what we took, rejected, and why
 │   ├── runbooks/              one per paging alert, written with the alert
 │   ├── registry.yaml          SOURCE OF TRUTH for the generated documents
+│   ├── feature-flags.yaml     every flag, its owner, reason, expiry, removal
 │   ├── features/              one document per feature, 42 of them
 │   ├── architecture/          generated file dependency graph
 │   ├── templates/             spec, task, ADR, change and issue templates

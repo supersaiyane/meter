@@ -10,6 +10,9 @@
 # database download would make the development loop slow and flaky for no
 # security gain. See docs/05-SECURITY.md, "Why compose is not a gate".
 
+# Values come from .env, created by `make up` from .env.example. Nothing is
+# hardcoded here that an operator might need to change. See ADR-0017.
+
 name: meter
 
 services:

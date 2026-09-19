@@ -340,6 +340,12 @@ features:
   status: Planned
   detail: '[ADR-0015](docs/adr/ADR-0015-deterministic-forecasting-is-permitted.md)'
   doc: docs/features/FEAT-048-predictive-replica-forecasting.md
+- id: FEAT-049
+  name: Configuration and feature flags, everything switchable, nothing hardcoded
+  subproject: P0
+  status: Specified
+  detail: '[ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md)'
+  doc: docs/features/FEAT-049-configuration-and-feature-flags.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -405,6 +411,10 @@ adrs:
   decision: Severity on a cost finding is derived from the money, never chosen
   status: Accepted
   doc: docs/adr/ADR-0016-dollar-based-severity.md
+- id: ADR-0017
+  decision: Nothing is hardcoded, and every feature flag has an owner and an expiry
+  status: Accepted
+  doc: docs/adr/ADR-0017-configuration-and-feature-flags.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'
@@ -576,6 +586,14 @@ changes:
     four capabilities explicitly rejected
   commit: c7f45f0
   detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md)'
+- id: CHG-0026
+  date: '2026-08-23'
+  type: Design
+  what: 'Configuration and feature flags: one typed settings object, a documented .env.example, a flag
+    register with owners and expiries, and two checks that fail the build. Regions confirmed as Ireland
+    and London. Management account taken off the critical path via LocalStack'
+  commit: pending
+  detail: '[ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1039,6 +1057,26 @@ issues:
   status: OPEN
   summary: Allocation had no export path, and finance does not work inside the product interface
   detail: FEAT-045
+- id: ISS-087
+  severity: MEDIUM
+  status: OPEN
+  summary: Feature flag owners and CODEOWNERS entries are placeholders, and a flag with no named owner
+    is a branch nobody will ever remove
+  detail: '`make check-docs` warns on each. Becomes an error before the first merge request'
+- id: ISS-088
+  severity: MEDIUM
+  status: FIXED
+  summary: Values were being written into code, compose and the Makefile with no single place to change
+    them and no note of what each one does
+  detail: '[ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md), `.env.example`, enforced
+    by `scripts/ci/check_hardcoded.py`'
+- id: ISS-089
+  severity: MEDIUM
+  status: FIXED
+  summary: The management account dependency sat on the critical path, blocking the credential broker
+    and everything downstream of it
+  detail: Organizations is emulated by LocalStack, so the whole organization path is built and tested
+    locally. The real management account is needed only for final verification. ISS-002 downgraded
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS
@@ -1067,7 +1105,8 @@ open_questions:
   blocks: P3 design
   detail: '[tasks/ISSUES.md](tasks/ISSUES.md)'
 - id: OPEN-06
-  question: Which regions beyond Ireland and London
-  status: OPEN
-  blocks: P0 dispatcher configuration
-  detail: '[tasks/ISSUES.md](tasks/ISSUES.md)'
+  question: 'Which regions beyond Ireland and London. ANSWERED 2026-08-23: those two only, eu-west-1 and
+    eu-west-2'
+  status: ANSWERED
+  blocks: nothing
+  detail: Set in METER_REGIONS, see .env.example section 3

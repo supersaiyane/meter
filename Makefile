@@ -80,6 +80,8 @@ check-docs: ## Fail if any generated document is out of step with the registry
 	@$(PY) scripts/docs/check_feature_docs.py
 	@$(PY) scripts/docs/build_file_graph.py --check
 	@$(PY) scripts/docs/build_context_index.py --check
+	@$(PY) scripts/ci/check_flags.py
+	@$(PY) scripts/ci/check_hardcoded.py
 
 .PHONY: doc-sync
 doc-sync: ## Regenerate every derived document from docs/registry.yaml and the source
@@ -172,7 +174,7 @@ stats-json: ## The same numbers as JSON, for anything that wants to consume them
 # ---------------------------------------------------------------- local stack
 
 .PHONY: up
-up: local-auth.yaml ## Start the full local stack, then run migrations
+up: local-auth.yaml .env ## Start the full local stack, then run migrations
 	$(COMPOSE) up -d --build
 	$(MAKE) migrate
 	@echo "API  http://localhost:8000/docs"
@@ -182,6 +184,11 @@ up: local-auth.yaml ## Start the full local stack, then run migrations
 # this the API starts with a directory where its config should be and fails
 # confusingly. The first command a new engineer runs used to be the one that
 # broke. AUDIT-001, finding A001-F04.
+.env:
+	@cp .env.example .env
+	@echo "Created .env from the example. It is gitignored."
+	@echo "Every value is documented there with what it does and which file reads it."
+
 local-auth.yaml:
 	@cp local-auth.example.yaml local-auth.yaml
 	@echo "Created local-auth.yaml from the example. It is gitignored."
