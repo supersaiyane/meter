@@ -111,7 +111,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P1 | 8 | 0 | 0 | 0 | 5 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
+| P1 | 9 | 0 | 0 | 0 | 4 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -170,6 +170,7 @@ ISS-003.
 | `TASK-P1-006` | Done, 2026-09-19 | the monthly rollup, derived and never ingested |
 | `TASK-P1-007` | Done, 2026-09-19 | cadence, as data |
 | `TASK-P1-008` | Done, 2026-09-19 | the guard, then the repository |
+| `TASK-P1-009` | Done, 2026-09-19 | four routes |
 
 **P2, not in the default state**
 

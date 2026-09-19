@@ -54,6 +54,11 @@ class Unit:
     tenant_id: UUID
 
 
+@pytest.fixture(autouse=True, scope="module")
+def _partitions(partition_sandbox: None) -> None:
+    """This module creates partitions, so it gives them back. See conftest."""
+
+
 @pytest.fixture
 def seeded(engine: Engine, tenant_id: UUID) -> UUID:
     with engine.begin() as connection:
@@ -249,7 +254,7 @@ class TestPeriods:
         the screens reading them is lying and nobody can tell which."""
         with engine.connect() as connection:
             daily_total = repo(connection).period_total(everything(seeded), CLOSED_PERIOD)[0][0]
-            monthly = MonthlyCostRepository(connection, AccessContext(request_id="test"))  # type: ignore[arg-type]
+            monthly = MonthlyCostRepository(connection, AccessContext(request_id="test"))
             months = monthly.months(everything(seeded))
         matching = [row for row in months if row[0] == CLOSED_PERIOD]
         assert matching, "the month was never rolled up"

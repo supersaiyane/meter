@@ -247,6 +247,7 @@
     "finops_api/middleware.py",
     "finops_api/routes/__init__.py",
     "finops_api/routes/accounts.py",
+    "finops_api/routes/cost.py",
     "finops_api/routes/ingest.py",
     "finops_api/routes/me.py",
     "finops_api/routes/org.py",
@@ -377,6 +378,7 @@
     "tests/__init__.py",
     "tests/api/__init__.py",
     "tests/api/test_cost_repository.py",
+    "tests/api/test_cost_routes.py",
     "tests/api/test_fixture_surfaces.py",
     "tests/api/test_identity_local.py",
     "tests/api/test_query_routes.py",
@@ -401,7 +403,6 @@
     "tests/db/test_scope_guard.py",
     "tests/ingest/__init__.py",
     "tests/ingest/collectors/__init__.py",
-    "tests/ingest/collectors/conftest.py",
     "tests/ingest/collectors/test_account_health.py",
     "tests/ingest/collectors/test_cost_focus.py",
     "tests/ingest/collectors/test_cost_focus_restatement.py",
@@ -2693,6 +2694,41 @@
       "k": "python"
     },
     {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_api/db/repositories/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/routes/ingest.py",
       "t": "finops_api/db/repositories/__init__.py",
       "k": "python"
@@ -3853,6 +3889,46 @@
       "k": "python"
     },
     {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_core/domain/platform.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_providers/fake/cur.py",
+      "k": "python"
+    },
+    {
       "s": "tests/api/test_fixture_surfaces.py",
       "t": "finops_api/main.py",
       "k": "python"
@@ -4010,6 +4086,11 @@
     {
       "s": "tests/conftest.py",
       "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/conftest.py",
+      "t": "finops_ingest/collectors/partitions.py",
       "k": "python"
     },
     {
@@ -4203,11 +4284,6 @@
       "k": "python"
     },
     {
-      "s": "tests/ingest/collectors/conftest.py",
-      "t": "finops_ingest/collectors/partitions.py",
-      "k": "python"
-    },
-    {
       "s": "tests/ingest/collectors/test_account_health.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -4285,6 +4361,11 @@
     {
       "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
       "t": "finops_providers/fake/cur.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_rollup.py",
+      "t": "finops_core/domain/cost.py",
       "k": "python"
     },
     {

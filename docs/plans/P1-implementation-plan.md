@@ -540,7 +540,7 @@ three entries long, so refusing everything off it costs nothing.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-19 |
 | Implements | P1 spec section 8 |
 | Delivers | FEAT-021, FEAT-022 |
 | Depends on | TASK-P1-008 |
@@ -553,21 +553,39 @@ three entries long, so refusing everything off it costs nothing.
 
 | Path | Action |
 | --- | --- |
-| `finops_api/routes/cost.py` | created |
-| `finops_api/schemas.py` | the response models |
-| `tests/api/test_cost_routes.py` | created |
+| `finops_api/routes/cost.py` | created, four routes |
+| `finops_api/main.py` | `p1_routers`, beside `p0_routers` and `p2_routers` |
+| `finops_api/schemas.py` | four response models |
+| `finops_providers/fake/cur.py` | the estate's periods derived from a clock rather than listed |
+| `tests/api/test_cost_routes.py` | created, 15 tests, every one through the client |
 
 **Acceptance criteria.**
 
-- [ ] **Every route has been called**, not imported. A test that imports a
-      route proves nothing, which is the standing lesson in `tasks/lessons.md`
-- [ ] The envelope carries `as_of` and `collected_at` on every figure
-- [ ] An open period is flagged as open in the payload, not inferred by the
-      frontend from a date
-- [ ] A typed collection failure reaches the envelope's trust strip by the same
-      path an unreachable workspace does
-- [ ] Scope is enforced twice, and a route with its dependency removed still
-      cannot read out of scope
+- [x] **Every route has been called**, not imported, and the reachability test
+      is parameterised over all five paths so a new one cannot be added without
+      an answer
+- [x] The envelope carries `as_of` and `collected_at` on every figure
+- [x] An open period is flagged in the payload, not inferred by the frontend
+      from a date. **The first version of that test was asserting the calendar
+      rather than the route**: the fake estate's periods were listed constants
+      pinned to 2026-08, so its open month had stopped being open. The periods
+      are derived from a clock now, which is the fix the demo estate needed
+      anyway
+- [x] Scope is enforced twice. A narrow scope is served strictly less than a
+      global one, through the client, and `by-account` shows it only its own
+- [x] A tenant with no cost gets a 404 and never a zero. Zero spend is a claim,
+      an estate nobody has collected is an absence, and constraint 5 is about
+      exactly that difference
+- [x] No previous period gives a null change rather than no movement, because a
+      change computed against a month nobody collected is a number invented out
+      of an absence
+- [x] Every grouping and the daily series sum back to the summary, asserted
+      through the client rather than in the repository only
+- [ ] A typed collection failure reaches the trust strip by the same path an
+      unreachable workspace does. **Not done**: no cost collection failure is
+      recorded against a scope yet, because the collector runs organization
+      wide and `sync_error` is keyed per scope. Carried as a known gap rather
+      than ticked
 
 **Deliberately not in this task.** No allocation route. Allocation is a
 grouping of these rows by a tag key, and a fifth route would be a second

@@ -156,10 +156,32 @@ def _row(*, account: str, service: str, day: date, period: date, drift: Decimal)
     )
 
 
+def periods_ending_at(at: datetime, count: int = 3) -> tuple[date, ...]:
+    """The month containing `at` and the ones before it, oldest first.
+
+    Derived rather than listed, so an estate built at a different clock is
+    current at that clock. The constants above describe the estate at
+    `fixtures.AS_OF` and are what every test asserting a fixed value uses, but a
+    demo seeded next March wants next March's months, not these. A fixture
+    pinned to a date stops being an open period the day that month ends, and
+    then the screen that labels open periods has nothing to label.
+    """
+    cursor = date(at.year, at.month, 1)
+    months: list[date] = []
+    for _ in range(count):
+        months.append(cursor)
+        cursor = (
+            date(cursor.year - 1, 12, 1)
+            if cursor.month == 1
+            else date(cursor.year, cursor.month - 1, 1)
+        )
+    return tuple(reversed(months))
+
+
 def estate(*, at: datetime = fixtures.AS_OF) -> tuple[CostRecord, ...]:
-    """Three months of bill, the newest of them still running."""
+    """Three months of bill, the newest of them still running at `at`."""
     rows: list[CostRecord] = []
-    for period in (OLDEST_PERIOD, CLOSED_PERIOD, OPEN_PERIOD):
+    for period in periods_ending_at(at):
         for index, day in enumerate(_days_in(period, at=at)):
             # A slow rise, so a trend is a trend rather than one number drawn
             # thirty times. Deterministic, so it is the same rise every run.

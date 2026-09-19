@@ -242,6 +242,68 @@ class HealthOut(BaseModel):
     collectors: tuple[CollectorHealth, ...]
 
 
+class CostTotalOut(BaseModel):
+    """What a billing period cost, and whether that period is finished.
+
+    `is_open` is on the payload rather than inferred by the frontend from a
+    date, because a part month set beside a whole month with no warning reads
+    as a collapse in spend, and the thing that knows whether a period is still
+    accruing is the side that read the export.
+
+    Both measures travel together. They are routinely equal, since a month with
+    no commitments has the same amortized and billed cost, so a screen that
+    rendered one under the other's label would be right until the month it was
+    not.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    period: date
+    is_open: bool
+    effective_cost: Decimal
+    billed_cost: Decimal
+    line_items: int
+
+
+class CostSummaryOut(BaseModel):
+    """This period, the one before it, and the difference between them.
+
+    The comparison is computed here rather than on the screen. Two screens
+    subtracting the same two numbers is two chances to subtract them in the
+    wrong order.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    current: CostTotalOut
+    previous: CostTotalOut | None
+    #: None when there is no previous period to compare against, which is not
+    #: the same as no change and must not render as zero.
+    change: Decimal | None
+
+
+class CostSliceOut(BaseModel):
+    """One row of a grouping: a service, an account, a region or a tag value."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: `unallocated` where the row carries no value for the dimension. It is
+    #: never dropped and never folded into a total.
+    name: str
+    effective_cost: Decimal
+    billed_cost: Decimal
+    line_items: int
+
+
+class CostDayOut(BaseModel):
+    """Effective cost on one day, for the chart on the cost screen."""
+
+    model_config = ConfigDict(frozen=True)
+
+    day: date
+    effective_cost: Decimal
+
+
 class CostPointOut(BaseModel):
     """What one query cost on one day. ISS-172.
 

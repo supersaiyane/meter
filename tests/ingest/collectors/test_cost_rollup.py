@@ -19,6 +19,7 @@ from uuid import UUID, uuid4
 import pytest
 from sqlalchemy import Engine, text
 
+from finops_core.domain.cost import CostRecord
 from finops_ingest.collectors.cost_focus import CostFocusCollector
 from finops_ingest.collectors.cost_rollup import roll_up_before
 from finops_ingest.collectors.partitions import ensure_partition
@@ -49,7 +50,7 @@ def _partitions(partition_sandbox: None) -> None:
     """This module creates partitions, so it gives them back. See conftest."""
 
 
-def ingest(engine: Engine, tenant: UUID, rows: tuple[object, ...] = CLOSED) -> None:
+def ingest(engine: Engine, tenant: UUID, rows: tuple[CostRecord, ...] = CLOSED) -> None:
     with engine.begin() as connection:
         for month in (OLDEST_PERIOD, CLOSED_PERIOD, OPEN_PERIOD):
             ensure_partition(connection, "cost_focus_daily", month)
