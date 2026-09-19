@@ -340,6 +340,7 @@
     "finops_query/policy.py",
     "finops_query/severity.py",
     "infra/terraform/hub/alb.tf",
+    "infra/terraform/hub/cost_exports.tf",
     "infra/terraform/hub/database.tf",
     "infra/terraform/hub/ecr.tf",
     "infra/terraform/hub/ecs.tf",

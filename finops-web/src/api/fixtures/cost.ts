@@ -55,16 +55,36 @@ export function costSummaryFixture(): ApiEnvelope<ApiCostSummary> {
 export function costByServiceFixture(): ApiEnvelope<ApiCostSlice[]> {
   return {
     data: [
-      { name: 'AmazonEC2', effective_cost: '2388.4032', billed_cost: '2579.4755', line_items: 115 },
-      { name: 'AmazonRDS', effective_cost: '1074.7814', billed_cost: '1160.7639', line_items: 115 },
+      {
+        name: 'AmazonEC2',
+        effective_cost: '2388.4032',
+        billed_cost: '2579.4755',
+        line_items: 115,
+      },
+      {
+        name: 'AmazonRDS',
+        effective_cost: '1074.7814',
+        billed_cost: '1160.7639',
+        line_items: 115,
+      },
       {
         name: 'AmazonCloudWatch',
         effective_cost: '543.3062',
         billed_cost: '586.7707',
         line_items: 115,
       },
-      { name: 'AmazonS3', effective_cost: '358.2605', billed_cost: '386.9213', line_items: 115 },
-      { name: 'AWSLambda', effective_cost: '149.2752', billed_cost: '161.2172', line_items: 115 },
+      {
+        name: 'AmazonS3',
+        effective_cost: '358.2605',
+        billed_cost: '386.9213',
+        line_items: 115,
+      },
+      {
+        name: 'AWSLambda',
+        effective_cost: '149.2752',
+        billed_cost: '161.2172',
+        line_items: 115,
+      },
     ],
     meta: meta(5),
   };
@@ -113,7 +133,12 @@ export function costByAccountFixture(): ApiEnvelope<ApiCostSlice[]> {
 export function costAllocationFixture(): ApiEnvelope<ApiCostSlice[]> {
   return {
     data: [
-      { name: 'platform', effective_cost: '2382.9683', billed_cost: '2573.6058', line_items: 184 },
+      {
+        name: 'platform',
+        effective_cost: '2382.9683',
+        billed_cost: '2573.6058',
+        line_items: 184,
+      },
       // Second largest on purpose. An allocation fixture where everything is
       // attributed lets the screen look finished while never rendering the row
       // that matters.

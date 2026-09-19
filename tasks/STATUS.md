@@ -9,7 +9,7 @@
      own content rather than scaffolding, and is not tagged.
 -->
 
-Last updated: 2026-09-06
+Last updated: 2026-09-19
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -24,7 +24,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 51 total, 9 specified, 10 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
-| Changes | 89 recorded |
+| Changes | 90 recorded |
 | Issues | 124 fixed, 55 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
@@ -38,7 +38,7 @@ Generated from `docs/registry.yaml`. Change a status there, then run `make doc-s
 
 All 39 tasks are written, tested and committed. `make verify` passes: lint, the
 writing rules, the eight documentation checks, the docstring gate, the memory
-gate, 777 backend tests, 233 frontend tests, a typed web build, 5 Playwright
+gate, 898 backend tests, 249 frontend tests, a typed web build, 6 Playwright
 journeys, and a security scan with zero unresolved findings and five accepted
 as unfixable.
 
@@ -50,6 +50,18 @@ Docker, because the database fixture starts a PostgreSQL container. ISS-154.
 Lint and type checking cover every directory that holds Python, which is 181
 files under mypy where it was 25. `scripts/`, `migrations/` and the test suite
 had all been outside one or both.
+
+**P1's cost surface is 13 of 13 done.** Ingest to two screens, against a fake
+export. `/cost` and `/cost/allocation` read live data on a seeded estate, and
+the navigation group's other three screens still say which sub project brings
+them. Anomalies, commitments and the chargeback export are a deliberate second
+cut, named in section 3 of the specification with a reason for each.
+
+Two gaps inside it are recorded rather than hidden. The collector reads only the
+latest billing period, so a restated closed month is never picked up, ISS-183,
+and the seed works around it by ingesting each period itself. The Athena adapter
+buffers a whole period, and that ceiling is unmeasured because nothing has run
+against a real export, ISS-181.
 
 **P2 is 21 of 26 done, 2 parked, 2 descoped, 1 not started.**
 
@@ -111,7 +123,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P1 | 12 | 0 | 0 | 0 | 1 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
+| P1 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -174,6 +186,7 @@ ISS-003.
 | `TASK-P1-010` | Done, 2026-09-19 | the spend and trend screen |
 | `TASK-P1-011` | Done, 2026-09-19 | the allocation screen and the bucket nobody wants |
 | `TASK-P1-012` | Done, 2026-09-19 | the demo estate gets a bill |
+| `TASK-P1-013` | Done, 2026-09-19, and unapplied by construction | the infrastructure that will not be applied |
 
 **P2, not in the default state**
 

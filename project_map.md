@@ -595,7 +595,12 @@ meter/
 └── infra/terraform/           IN BUILD  three root modules, none applied yet
     ├── management/            one read only role in the management account
     ├── member/                a service managed StackSet, so new accounts self onboard
-    └── hub/                   the VPC with no NAT, Aurora, SQS, ECR, ECS, ALB, alarms
+    └── hub/                   the VPC with no NAT, Aurora, SQS, ECR, ECS, ALB, alarms.
+                               cost_exports.tf is P1's export bucket, Glue database
+                               and Athena workgroup. The workgroup carries the result
+                               location and a bytes scanned cutoff, which is what
+                               stops an unpruned query scanning the whole table at
+                               full price. Validated, never applied. ISS-122
 ```
 
 ## Planned module responsibilities

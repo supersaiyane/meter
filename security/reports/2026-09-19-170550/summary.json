@@ -1,0 +1,28 @@
+{
+  "generated": "2026-09-19 17:06:10Z",
+  "label": "working tree",
+  "unresolved_total": 1,
+  "allowlisted_total": 0,
+  "unfixable_accepted_total": 5,
+  "by_severity": {
+    "Low": 1
+  },
+  "findings": [
+    {
+      "id": "AWS-0089",
+      "severity": "Low",
+      "package": "hub/cost_exports.tf",
+      "installed": "",
+      "fixed_in": "",
+      "ecosystem": "iac",
+      "target": "terraform",
+      "description": "S3 Bucket Logging. Ensures S3 bucket logging is enabled for S3 buckets Resolution: Add a logging block to the resource to enable access logging",
+      "url": "https://avd.aquasec.com/misconfig/aws-0089",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "No published fix and no acceptance record. Add one to security/policy/accepted.yaml with a reachability argument, or change the version. See ADR-0018."
+    }
+  ]
+}

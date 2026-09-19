@@ -20,7 +20,7 @@ subprojects:
   depends_on: none
 - id: P1
   name: Cost Intelligence
-  status: Spec and plan drafted for the cost surface, 13 tasks. Anomalies, commitments and the export are a second cut
+  status: Cost surface delivered, 13 of 13 tasks. Anomalies, commitments and the export are a second cut and are not started
   spec: docs/specs/2026-09-18-p1-cost-intelligence-design.md
   plan: docs/plans/P1-implementation-plan.md
   depends_on: P0
@@ -1137,6 +1137,16 @@ changes:
     and a seeded estate. The cost surface is live end to end against a fake export
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) waves B to D'
+- id: CHG-0090
+  date: '2026-09-19'
+  type: Design
+  what: TASK-P1-013. The export bucket, Glue database and Athena workgroup in the hub stack.
+    The workgroup enforces the result location and a bytes scanned cutoff, which is what stops
+    an unpruned query scanning the whole table at full price. Validated and never applied,
+    ISS-122. The scan's one finding, no access logging on the new bucket, was fixed rather
+    than allowlisted. P1's cost surface is 13 of 13
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-013'
 issues:
 - id: ISS-164
   severity: MEDIUM
