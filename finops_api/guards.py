@@ -71,8 +71,23 @@ SCOPED_TABLES: dict[str, ByAccount | Through | None] = {
     "ingest_run": None,
     "ingest_watermark": None,
     "sync_error": None,
-    "cost_focus_daily": None,
-    "cost_focus_monthly": None,
+    # P1. Every charge names the account it was incurred in, so a caller
+    # narrowed to two accounts reads two accounts' spend. These were `None`
+    # until 2026-09-19, meaning the tenant filter was the whole of their
+    # scoping, which was harmless only because nothing read them. The first
+    # route over them would have served the whole organization's bill to a
+    # narrowly scoped viewer. ISS-184.
+    #
+    # A charge with no sub account, which is a payer level line item, matches
+    # nothing under a narrow scope and is visible to a global one. That is the
+    # documented behaviour of `ByAccount` and it is right here: a charge nobody
+    # can attribute to an account is not one a caller restricted to two
+    # accounts has been given.
+    "cost_focus_daily": ByAccount("sub_account_id"),
+    "cost_focus_monthly": ByAccount("sub_account_id"),
+    # No account column and none reachable. It holds the provider's own fields
+    # for a line item, keyed by fingerprint, so the tenant filter is the whole
+    # of its scoping.
     "cost_provider_extra": None,
     "platform_cost": None,
     "principal": None,

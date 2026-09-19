@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 51 total, 9 specified, 7 in build, 5 delivered |
+| Features | 51 total, 9 specified, 10 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
-| Changes | 88 recorded |
-| Issues | 123 fixed, 54 open, 0 parked |
+| Changes | 89 recorded |
+| Issues | 124 fixed, 55 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -111,7 +111,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P1 | 5 | 0 | 0 | 0 | 8 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
+| P1 | 12 | 0 | 0 | 0 | 1 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -167,6 +167,13 @@ ISS-003.
 | `TASK-P1-003` | Done, 2026-09-18, and unproved by construction | the Athena adapter, written and unproved |
 | `TASK-P1-004` | Done, 2026-09-18 | the collector, and what makes a line item itself |
 | `TASK-P1-005` | Done, 2026-09-18 | retraction, which is the dangerous half |
+| `TASK-P1-006` | Done, 2026-09-19 | the monthly rollup, derived and never ingested |
+| `TASK-P1-007` | Done, 2026-09-19 | cadence, as data |
+| `TASK-P1-008` | Done, 2026-09-19 | the guard, then the repository |
+| `TASK-P1-009` | Done, 2026-09-19 | four routes |
+| `TASK-P1-010` | Done, 2026-09-19 | the spend and trend screen |
+| `TASK-P1-011` | Done, 2026-09-19 | the allocation screen and the bucket nobody wants |
+| `TASK-P1-012` | Done, 2026-09-19 | the demo estate gets a bill |
 
 **P2, not in the default state**
 

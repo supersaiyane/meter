@@ -177,6 +177,18 @@ def p0_routers() -> tuple[APIRouter, ...]:
     return (me.router, accounts.router, org.router, ingest.router, platform.router)
 
 
+def p1_routers() -> tuple[APIRouter, ...]:
+    """The cost surface, from the P1 spec's section 8 table.
+
+    Four of the five screens the navigation group promises. Anomalies,
+    commitments and the export read data no collector produces yet, and a route
+    over an empty table answers a question with a confident nothing.
+    """
+    from finops_api.routes import cost
+
+    return (cost.router,)
+
+
 def p2_routers() -> tuple[APIRouter, ...]:
     """The query governance routes, from the P2 spec's section 8.2 table.
 
@@ -218,6 +230,7 @@ def create_app(
     routers = (
         build_router(),
         *(p0_routers() if include_p0_routes else ()),
+        *(p1_routers() if include_p0_routes else ()),
         *(p2_routers() if include_p0_routes else ()),
         *extra_routers,
     )

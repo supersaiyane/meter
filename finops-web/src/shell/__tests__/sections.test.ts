@@ -29,7 +29,17 @@ describe('navigation groups', () => {
   });
 
   it('marks an unbuilt screen with the sub project that brings it', () => {
+    // Anomalies rather than spend. `/cost` carried this until 2026-09-19 and
+    // then got built, which is what this assertion is supposed to notice: the
+    // claim is about the mechanism, so it has to be made against a screen that
+    // has not arrived yet.
+    const anomalies = allScreens().find((s) => s.path === '/cost/anomalies');
+    expect(anomalies?.arrives).toBe('P1 Cost Intelligence');
+  });
+
+  it('carries no arrival note on a screen that is built', () => {
     const spend = allScreens().find((s) => s.path === '/cost');
-    expect(spend?.arrives).toBe('P1 Cost Intelligence');
+    expect(spend).toBeDefined();
+    expect(spend?.arrives).toBeNull();
   });
 });

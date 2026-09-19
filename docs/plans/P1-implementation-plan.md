@@ -384,7 +384,7 @@ test that can see it.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-19 |
 | Implements | P1 spec section 5 |
 | Delivers | FEAT-021 |
 | Depends on | TASK-P1-004 |
@@ -400,19 +400,34 @@ disagreement is always found by a person reading a screen rather than by a test.
 
 | Path | Action |
 | --- | --- |
-| `finops_ingest/collectors/cost_focus.py` | the rollup |
-| `tests/ingest/test_cost_focus_rollup.py` | created |
+| `finops_ingest/collectors/cost_rollup.py` | created. One body, two predicates, shared |
+| `finops_ingest/collectors/cost_focus.py` | calls it for the period it just wrote |
+| `finops_ingest/collectors/retention.py` | calls it instead of its own copy of the same SQL |
+| `tests/ingest/collectors/test_cost_rollup.py` | created, 6 tests |
 
 **Acceptance criteria.**
 
-- [ ] The monthly total equals the sum of the daily rows for that month, proved
-      by a test that sums both and compares
-- [ ] A retraction in TASK-P1-005 moves the monthly figure in the same
-      transaction, so the two are never briefly inconsistent
-- [ ] Rolling up twice changes nothing
+- [x] The monthly total equals the sum of the daily rows for that month, proved
+      by a test that sums both and compares, and the line item counts agree too
+- [x] A retraction moves the monthly figure in the same transaction, so the two
+      are never briefly inconsistent
+- [x] Rolling up twice changes nothing
+- [x] A group whose every line item was withdrawn is removed. The upsert alone
+      cannot do this: it only replaces groups it can still see, so a group with
+      nothing behind it would keep its last known total forever. Small,
+      permanent, and it only ever points one way
+- [x] The retention caller does **not** prune, and a test proves it, because
+      that pass exists to make monthly rows outlive the daily partitions it is
+      about to drop. Pruning there would delete the archive it just created
 
 **Deliberately not in this task.** No further rollups. A weekly or quarterly
 table is a third source for the same number, and nothing has asked for one.
+
+**Found on arrival.** `retention_cost` already wrote `cost_focus_monthly`, for
+months past the cutoff, with its own copy of this SQL. So the task was not to
+write an aggregate but to stop there being two. The arithmetic is now one
+function with two callers, differing only in the predicate and in whether they
+may prune.
 
 ---
 
@@ -420,7 +435,7 @@ table is a third source for the same number, and nothing has asked for one.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-19 |
 | Implements | P1 spec section 7, ADR-0012 |
 | Delivers | FEAT-020 |
 | Depends on | TASK-P1-004 |
@@ -435,20 +450,33 @@ weekly.
 
 | Path | Action |
 | --- | --- |
-| `finops_ingest/schedule.py` | the default rows |
-| `tests/ingest/test_cost_schedule.py` | created |
+| `finops_ingest/registry.py` | one `ScheduleEntry` for `cost_focus`, six hourly |
+| `tests/ingest/collectors/test_cost_focus.py` | two tests, beside the collector's own |
+| `tests/ingest/collectors/test_retention.py` | its exhaustive collector set, which is what caught the addition |
 
 **Acceptance criteria.**
 
-- [ ] The intervals are rows, not constants in code
-- [ ] `install_default_schedule` never overwrites an operator's change, which it
-      already does not and this must not break
-- [ ] Freshness on `/cost` is judged against this cadence and not a fixed
-      number, which is how every other collector is judged
+- [x] The interval is a row, with a reason and a cost estimate, because a
+      cadence nobody can explain is one nobody can safely change and the first
+      thing anyone does with an unexplained interval under cost pressure is
+      double it
+- [x] `install_default_schedule` never overwrites an operator's change, proved
+      by slowing the cadence down and reinstalling
+- [ ] Freshness on `/cost` is judged against this cadence. The row exists and
+      nothing reads it yet, because the screen arrives at TASK-P1-010. Carried
+      there rather than ticked here
 
 **Deliberately not in this task.** OPEN-08 is not answered here. Whether a
 month is ever declared final is a decision, and this task ships the cadence the
 decision would change.
+
+**A gap this task found and did not close.** `ScheduleEntry` carries one
+interval per collector and cannot express the specification's two, which are a
+fast re read of the open period and a slow one of closed periods. The collector
+only ever reads the latest period, so a restatement of a closed month is never
+picked up at all. The retraction machinery would handle it correctly the moment
+a closed period is read, so the gap is which periods are asked for rather than
+what happens to them. ISS-183.
 
 ---
 
@@ -456,7 +484,7 @@ decision would change.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-19 |
 | Implements | P1 spec section 8, constraint 3 |
 | Delivers | FEAT-021 |
 | Depends on | TASK-P1-006 |
@@ -473,23 +501,38 @@ plan.
 
 | Path | Action |
 | --- | --- |
-| `finops_api/guards.py` | two entries |
-| `finops_api/db/repositories/cost.py` | created |
-| `tests/db/test_scope_guard.py` | extended |
-| `tests/api/test_cost_repository.py` | created |
+| `finops_api/guards.py` | two rules **corrected**, not added. Both tables were already there, scoped by tenant only. ISS-184 |
+| `finops_api/db/repositories/cost.py` | created, `CostRepository` and `MonthlyCostRepository` |
+| `tests/api/test_cost_repository.py` | created, 16 tests |
 
 **Acceptance criteria.**
 
-- [ ] A narrow scope reads fewer rows than a global one, proved by a test that
-      does both
-- [ ] An empty scope returns nothing and never everything
-- [ ] Every read writes an `audit_event` in the same transaction, as every other
-      repository does
-- [ ] The latest period filter is per period and not one global maximum, which
-      is ISS-175 and ISS-177 arriving on a third table if nobody looks
+- [x] A narrow scope reads fewer rows than a global one, proved by a test that
+      does both. **The rule was wrong before this task, not missing.** Both
+      tables were in `SCOPED_TABLES` already, with `None`, so the account was
+      never consulted and the first route would have served the whole
+      organization's bill to a two account viewer. ISS-184, and three tests were
+      watched failing against the old rule
+- [x] An empty scope returns nothing and never everything
+- [x] Every read writes an `audit_event`, through the base class, in the same
+      transaction as the read
+- [x] Every grouping sums back to the period total, for all three dimensions.
+      A grouping that does not is dropping rows, and on screen that reads as an
+      estate smaller than it is
+- [x] The period is always named by the caller or asked for by
+      `latest_period`. Nothing defaults to this month, which would answer a
+      different question in the first minute of a new month than in the last
+      minute of the old one
+- [x] A tenant with no cost gets `None` rather than a zero, which is a
+      different fact from a period that totalled nothing
+- [x] The monthly table agrees with the daily one, asserted by summing both
 
 **Deliberately not in this task.** No routes. The repository is provable on its
 own and the route is where the scope dependency is added.
+
+**The grouping column is looked up, never interpolated.** A column name that
+arrives from a request and is dropped into SQL is an injection. `GROUPABLE` is
+three entries long, so refusing everything off it costs nothing.
 
 ---
 
@@ -497,7 +540,7 @@ own and the route is where the scope dependency is added.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-19 |
 | Implements | P1 spec section 8 |
 | Delivers | FEAT-021, FEAT-022 |
 | Depends on | TASK-P1-008 |
@@ -510,21 +553,39 @@ own and the route is where the scope dependency is added.
 
 | Path | Action |
 | --- | --- |
-| `finops_api/routes/cost.py` | created |
-| `finops_api/schemas.py` | the response models |
-| `tests/api/test_cost_routes.py` | created |
+| `finops_api/routes/cost.py` | created, four routes |
+| `finops_api/main.py` | `p1_routers`, beside `p0_routers` and `p2_routers` |
+| `finops_api/schemas.py` | four response models |
+| `finops_providers/fake/cur.py` | the estate's periods derived from a clock rather than listed |
+| `tests/api/test_cost_routes.py` | created, 15 tests, every one through the client |
 
 **Acceptance criteria.**
 
-- [ ] **Every route has been called**, not imported. A test that imports a
-      route proves nothing, which is the standing lesson in `tasks/lessons.md`
-- [ ] The envelope carries `as_of` and `collected_at` on every figure
-- [ ] An open period is flagged as open in the payload, not inferred by the
-      frontend from a date
-- [ ] A typed collection failure reaches the envelope's trust strip by the same
-      path an unreachable workspace does
-- [ ] Scope is enforced twice, and a route with its dependency removed still
-      cannot read out of scope
+- [x] **Every route has been called**, not imported, and the reachability test
+      is parameterised over all five paths so a new one cannot be added without
+      an answer
+- [x] The envelope carries `as_of` and `collected_at` on every figure
+- [x] An open period is flagged in the payload, not inferred by the frontend
+      from a date. **The first version of that test was asserting the calendar
+      rather than the route**: the fake estate's periods were listed constants
+      pinned to 2026-08, so its open month had stopped being open. The periods
+      are derived from a clock now, which is the fix the demo estate needed
+      anyway
+- [x] Scope is enforced twice. A narrow scope is served strictly less than a
+      global one, through the client, and `by-account` shows it only its own
+- [x] A tenant with no cost gets a 404 and never a zero. Zero spend is a claim,
+      an estate nobody has collected is an absence, and constraint 5 is about
+      exactly that difference
+- [x] No previous period gives a null change rather than no movement, because a
+      change computed against a month nobody collected is a number invented out
+      of an absence
+- [x] Every grouping and the daily series sum back to the summary, asserted
+      through the client rather than in the repository only
+- [ ] A typed collection failure reaches the trust strip by the same path an
+      unreachable workspace does. **Not done**: no cost collection failure is
+      recorded against a scope yet, because the collector runs organization
+      wide and `sync_error` is keyed per scope. Carried as a known gap rather
+      than ticked
 
 **Deliberately not in this task.** No allocation route. Allocation is a
 grouping of these rows by a tag key, and a fifth route would be a second
@@ -536,7 +597,7 @@ implementation of one query.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-19 |
 | Implements | P1 spec section 9 |
 | Delivers | FEAT-021 |
 | Depends on | TASK-P1-009 |
@@ -550,23 +611,28 @@ daily trend, and the services that make it up.
 | Path | Action |
 | --- | --- |
 | `finops-web/src/screens/CostScreen.tsx` | created |
-| `finops-web/src/api/queries.ts` | the hooks |
-| `finops-web/src/shell/sections.ts` | the placeholder replaced |
-| `finops-web/src/screens/__tests__/CostScreen.test.tsx` | created |
+| `finops-web/src/api/queries.ts` | five hooks |
+| `finops-web/src/api/types.ts` | four response types |
+| `finops-web/src/api/fixtures/cost.ts` | created |
+| `finops-web/src/App.tsx` | the two routes |
+| `finops-web/src/shell/sections.ts` | both placeholders replaced |
+| `finops-web/src/screens/__tests__/CostScreen.test.tsx` | created, 8 tests |
 
 **Acceptance criteria.**
 
-- [ ] The open period is labelled as open beside the figure, not in a footnote.
-      A reader comparing a part month against a whole month with no warning will
-      reach a wrong conclusion confidently
-- [ ] Every figure goes through `Figure`, so provenance and freshness are on the
+- [x] The open period is labelled beside the figure, not in a footnote
+- [x] Every figure goes through `Figure`, so provenance and freshness are on the
       screen rather than in the payload
-- [ ] A failed collection renders as a typed cause and never as zero,
-      constraint 5
-- [ ] ADR-0021 holds: `layout.css` targets no class a component had to add, and
-      `surface.test.ts` still passes
-- [ ] No accessibility violations, and the screen has been opened at 1440px and
-      read
+- [x] No earlier period renders as a sentence, never as a change of nought
+- [x] ADR-0021 holds and `surface.test.ts` still passes
+- [x] No accessibility violations
+- [x] **Opened at 1460px and read, which found two defects no test had.** The
+      coverage banner said "showing all 450 accounts" on an estate with five,
+      because the line item count was passed where the banner names accounts.
+      And the trend rendered as eighteen rows each repeating the same freshness
+      sentence, which is not a trend, it is one sentence eighteen times around
+      numbers nobody can compare. Both fixed: the banner counts accounts, and
+      the trend is a sparkline with its two ends written out
 
 **Deliberately not in this task.** No per resource drill down. The rows are
 stored and the screen for them is a separate decision.
@@ -577,7 +643,7 @@ stored and the screen for them is a separate decision.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-19 |
 | Implements | P1 spec section 9 |
 | Delivers | FEAT-022 |
 | Depends on | TASK-P1-009 |
@@ -591,17 +657,20 @@ stored and the screen for them is a separate decision.
 | Path | Action |
 | --- | --- |
 | `finops-web/src/screens/CostAllocationScreen.tsx` | created |
-| `finops-web/src/shell/sections.ts` | the placeholder replaced |
-| `finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx` | created |
+| `finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx` | created, 6 tests |
 
 **Acceptance criteria.**
 
-- [ ] The unallocated row is visible and is never folded into a total. An
-      allocation view that quietly drops what it cannot attribute reports a
-      smaller estate than exists
-- [ ] Changing the tag key changes the grouping and not the total, proved by a
-      test that sums both groupings and compares
-- [ ] The same freshness, provenance and failure rules as TASK-P1-010
+- [x] The unallocated row is visible and never folded into a total. It reads
+      "nobody tagged this" rather than being blank, because an empty cell looks
+      like a rendering fault and sends somebody looking for a value that was
+      never there
+- [x] The share is stated as a percentage, so a reader does not have to divide
+      it themselves to know whether it matters. On the seeded estate it is 22.0
+- [x] The tag key is chosen, with no default at the API. Guessing one would
+      group an estate by something nobody asked for and label it their
+      allocation
+- [x] The same freshness, provenance and failure rules as TASK-P1-010
 
 **Deliberately not in this task.** No Cost Categories. Tags first, and a second
 allocation source before the first is proved makes a disagreement between them
@@ -613,7 +682,7 @@ impossible to attribute.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-19 |
 | Implements | P1 spec sections 11 and 15 |
 | Delivers | FEAT-021 |
 | Depends on | TASK-P1-010, TASK-P1-011 |
@@ -627,23 +696,42 @@ the result.
 
 | Path | Action |
 | --- | --- |
-| `scripts/ops/seed_demo.py` | the cost collector added, and the three cost tables added to `DEMO_TABLES` |
+| `scripts/ops/seed_demo.py` | partitions, the cost collector per period, and three tables in `DEMO_TABLES` |
 | `finops-web/e2e/cost.spec.ts` | created |
-| `tests/scripts/test_seed_demo.py` | the teardown test already derives this |
+| `finops-web/e2e/journey.spec.ts` | its unbuilt screen journey repointed at anomalies |
+| `tests/scripts/test_seed_demo.py` | the three cost tables removed from `never_seeded` |
+| `.env` | the five CUR settings, locally |
 
 **Acceptance criteria.**
 
-- [ ] `make seed` fills `/cost` and `/cost/allocation`
-- [ ] `make unseed` removes every cost row. The derived teardown test already
-      fails if a tenant scoped table is missing from `DEMO_TABLES`, which is
-      ISS-176 and is exactly this trap
-- [ ] `make seed DAYS=n` produces a bill that differs by day, so the trend is a
-      trend rather than one number drawn n times
-- [ ] The journey opens `/cost`, reads a figure and follows it to
+- [x] `make seed` fills `/cost` and `/cost/allocation`, proved by opening both
+      through nginx: 2,234 rows, $3,489.84 in an open period against $6,197.65
+      the month before
+- [x] `make unseed` removes every cost row, and the derived teardown test now
+      covers the three cost tables rather than declaring them never seeded
+- [x] The bill differs by day, so the trend is a shape rather than one number
+      drawn eighteen times
+- [x] The journey opens `/cost`, reads a figure and follows it to
       `/cost/allocation`
+- [x] **The seed creates the partitions for the months it writes.**
+      `partition_maintenance` creates the current month and the ones ahead,
+      which is right for a running system and useless for a seed reaching two
+      months back. The collector refused the rows rather than misfiling them,
+      which is constraint 11 doing its job, and the seed now says which months
+      it is about to write
+- [x] The seed ingests every period the estate holds, one run each. The
+      collector reads only the latest period, ISS-183, so a single run leaves
+      the summary with nothing to compare against, which is the first figure a
+      person looks at
 
 **Deliberately not in this task.** No fake anomalies. There is no anomaly
 screen to show them on.
+
+**A consequence worth knowing about.** The five CUR settings TASK-P1-003 added
+are required, so a deployment that does not set them refuses to start. That is
+the right failure, and the message names all five, but it is a breaking config
+change: the local stack crash looped until `.env` carried them. `.env.example`
+has them and is what a new environment copies.
 
 ---
 

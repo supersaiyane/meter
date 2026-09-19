@@ -39,7 +39,7 @@ P0 Foundation
 | ID | Name | Features | Specified | Planned |
 | --- | --- | --- | --- | --- |
 | P0 | Foundation | 12 | 0 | 0 |
-| P1 | Cost Intelligence | 6 | 0 | 6 |
+| P1 | Cost Intelligence | 6 | 0 | 3 |
 | P2 | Query Cost Governance | 10 | 9 | 1 |
 | P3 | Utilization and Rightsizing | 7 | 0 | 7 |
 | P4 | Inventory and Topology | 3 | 0 | 3 |

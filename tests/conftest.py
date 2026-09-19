@@ -140,6 +140,43 @@ def engine() -> Iterator[Engine]:
         yield built
 
 
+#: The tables `partitions.py` manages. Partitions on them are not tenant
+#: scoped, so every test in the run shares them.
+PARTITIONED = ("cost_focus_daily", "cost_provider_extra")
+
+
+@pytest.fixture(scope="module")
+def partition_sandbox(engine: Engine) -> Iterator[None]:
+    """Leave the partitions as the module found them.
+
+    Partitions are not tenant scoped, so a module that creates the months a
+    fake estate bills in, and leaves them behind, changes what other suites
+    see. `test_maintenance_creates_the_months_and_is_then_a_no_op` asserts an
+    exact count of the partitions it creates, and `test_schema.py` compares the
+    tables in the database against the models. Both fail on somebody else's
+    leftovers, and both fail depending on which file pytest reached first, which
+    is a test measuring the ordering rather than the code.
+
+    It lives here rather than beside the collector suites because the API suites
+    need it too, and that was found the hard way: the first version sat in
+    `tests/ingest/collectors/conftest.py`, the cost route tests could not see
+    it, and two schema tests went red.
+
+    Only partitions the module added are removed, by difference against a
+    snapshot taken before it ran, and only ever inside the throwaway container
+    the `engine` fixture starts.
+    """
+    from finops_ingest.collectors.partitions import existing_partitions
+
+    with engine.connect() as connection:
+        before = {parent: set(existing_partitions(connection, parent)) for parent in PARTITIONED}
+    yield
+    with engine.begin() as connection:
+        for parent, names in before.items():
+            for name in set(existing_partitions(connection, parent)) - names:
+                connection.execute(text(f"DROP TABLE IF EXISTS {name}"))
+
+
 @pytest.fixture
 def tenant_id(engine: Engine) -> UUID:
     """A tenant of its own per test, so no test can see another's rows."""

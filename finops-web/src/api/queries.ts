@@ -10,9 +10,19 @@ import {
   surfaceInstancesFixture,
   enforcementActionsFixture,
 } from './fixtures/query';
+import {
+  costSummaryFixture,
+  costByServiceFixture,
+  costByAccountFixture,
+  costAllocationFixture,
+  costTrendFixture,
+} from './fixtures/cost';
 import type {
   ApiAdhocQuery,
   Account,
+  ApiCostDay,
+  ApiCostSlice,
+  ApiCostSummary,
   ApiEnvelope,
   ApiQueryFinding,
   ApiQueryGroup,
@@ -164,6 +174,58 @@ export function useQueryAdhoc() {
     '/api/v1/query/adhoc',
     '/api/v1/query/adhoc',
     adhocQueriesFixture,
+  );
+}
+
+export function useCostSummary() {
+  return useQuerySurface<ApiCostSummary>(
+    ['cost-summary'],
+    '/api/v1/cost/summary',
+    '/api/v1/cost/summary',
+    costSummaryFixture,
+  );
+}
+
+export function useCostByService() {
+  return useQuerySurface<ApiCostSlice[]>(
+    ['cost-by-service'],
+    '/api/v1/cost/by-service',
+    '/api/v1/cost/by-service',
+    costByServiceFixture,
+  );
+}
+
+export function useCostByAccount() {
+  return useQuerySurface<ApiCostSlice[]>(
+    ['cost-by-account'],
+    '/api/v1/cost/by-account',
+    '/api/v1/cost/by-account',
+    costByAccountFixture,
+  );
+}
+
+export function useCostTrend() {
+  return useQuerySurface<ApiCostDay[]>(
+    ['cost-trend'],
+    '/api/v1/cost/trend',
+    '/api/v1/cost/trend',
+    costTrendFixture,
+  );
+}
+
+/**
+ * Allocation by one tag key.
+ *
+ * The key is part of the query string, so it is part of the cache key too. Two
+ * groupings of the same period by different keys are different answers and
+ * must not share an entry.
+ */
+export function useCostAllocation(tag: string) {
+  return useQuerySurface<ApiCostSlice[]>(
+    ['cost-allocation', tag],
+    '/api/v1/cost/allocation',
+    `/api/v1/cost/allocation?tag=${encodeURIComponent(tag)}`,
+    costAllocationFixture,
   );
 }
 

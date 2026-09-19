@@ -178,19 +178,19 @@ features:
 - id: FEAT-020
   name: CUR 2.0 ingest with resource identifiers and split cost allocation
   subproject: P1
-  status: Planned
+  status: In build
   detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 5 and 7'
   doc: docs/features/FEAT-020-cur-focus-ingest.md
 - id: FEAT-021
   name: Cost rollups, trends and per resource attribution
   subproject: P1
-  status: Planned
+  status: In build
   detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 8 and 9'
   doc: docs/features/FEAT-021-cost-rollups-and-trends.md
 - id: FEAT-022
   name: Allocation, showback and the unallocated bucket
   subproject: P1
-  status: Planned
+  status: In build
   detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 9'
   doc: docs/features/FEAT-022-allocation-and-showback.md
 - id: FEAT-023
@@ -1129,6 +1129,14 @@ changes:
     can actually see the ordering was added
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-005'
+- id: CHG-0089
+  date: '2026-09-19'
+  type: Design
+  what: TASK-P1-006 to TASK-P1-012. One shared monthly aggregate, the collector's cadence as a
+    row, the guard rule corrected on two cost tables, a repository, four routes, two screens
+    and a seeded estate. The cost surface is live end to end against a fake export
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) waves B to D'
 issues:
 - id: ISS-164
   severity: MEDIUM
@@ -1180,6 +1188,37 @@ issues:
     looking for wherever else a stored engine meets a classifier constant
   status: FIXED
   detail: '`finops_api/routes/query.py`, _violates'
+- id: ISS-184
+  severity: HIGH
+  summary: cost_focus_daily and cost_focus_monthly sat in SCOPED_TABLES with the rule None,
+    which means the tenant filter was the whole of their scoping and the account a charge
+    belongs to was never consulted. Both tables carry sub_account_id. A viewer entitled to two
+    accounts would have been served the whole organization's bill by the first route over
+    them. It never leaked, because nothing read the tables until 2026-09-19, and that is luck
+    rather than design. Found while writing the repository for TASK-P1-008, by reading the
+    guard table before adding to it rather than after. Fixed the same day as ByAccount on
+    sub_account_id, and three tests were watched failing against the old rule before it was
+    changed back. A charge with no sub account, which is a payer level line item, matches
+    nothing under a narrow scope and stays visible to a global one, which is ByAccount's
+    documented behaviour and is right here
+  status: FIXED
+  detail: '`finops_api/guards.py` SCOPED_TABLES, and `tests/api/test_cost_repository.py`'
+- id: ISS-183
+  severity: MEDIUM
+  summary: The cost collector reads only the latest available billing period, so a restatement
+    of a closed month is never picked up. AWS can restate a closed period and the specification
+    says so in section 7, which describes a closed period being re read daily for a week and
+    then weekly. That policy is not implemented. The retraction and upsert machinery is all
+    there and would handle it correctly the moment a closed period is read, so the gap is which
+    periods the collector asks for rather than what it does with them. Found 2026-09-19 while
+    writing the cadence row for TASK-P1-007, because ScheduleEntry carries one interval per
+    collector and cannot express two. The consequence is a month that closes slightly wrong and
+    stays that way
+  status: OPEN
+  blocks: 'Nothing today. It is a correctness gap against a real export, and there is no real
+    export yet, ISS-122'
+  detail: '`finops_ingest/collectors/cost_focus.py`, the latest_available_period call, and
+    section 7 of `docs/specs/2026-09-18-p1-cost-intelligence-design.md`'
 - id: ISS-182
   severity: MEDIUM
   summary: Nothing in production assembles a collector registry. CollectorRegistry exists, the
