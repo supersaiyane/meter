@@ -407,6 +407,93 @@ Partitions are created one month ahead by a scheduled job. A missing partition
 must raise, never silently route to a default partition, because a default
 partition turns a scheduling bug into silently misfiled cost.
 
+### Cost intelligence, the P1 second cut
+
+Three tables added 2026-09-20 by migrations 0008 and 0009. Each carries one
+decision that the schema enforces rather than the application.
+
+```sql
+CREATE TABLE cost_anomaly (
+    anomaly_id      UUID PRIMARY KEY,
+    tenant_id       UUID            NOT NULL REFERENCES tenant (tenant_id),
+    sub_account_id  TEXT            NOT NULL,
+    service_name    TEXT            NOT NULL,
+    day             DATE            NOT NULL,
+    observed        NUMERIC(20, 10) NOT NULL,
+    baseline        NUMERIC(20, 10) NOT NULL,
+    delta           NUMERIC(20, 10) NOT NULL,
+    deviations      NUMERIC(12, 4),          -- null when the baseline was flat
+    severity        TEXT            NOT NULL,
+    why             TEXT            NOT NULL,
+    as_of           TIMESTAMPTZ     NOT NULL,
+    collected_at    TIMESTAMPTZ     NOT NULL
+);
+```
+
+`deviations` is nullable and the null is meaningful. A perfectly flat baseline
+makes every departure infinitely many deviations, which is arithmetically true
+and useless, so the column says nothing rather than something false.
+
+`ck_cost_anomaly__delta_is_the_difference` requires `delta = observed - baseline`.
+A row whose three numbers disagree is one somebody will try to reconcile, and
+application code is not what should be preventing it.
+
+There is no `provenance` column. An anomaly is derived from measured line items by
+arithmetic that is entirely ours, so it is neither measured nor modelled in the
+sense the rest of the schema uses, and the column would force a wrong answer.
+`why` carries the working instead.
+
+```sql
+CREATE TABLE commitment_use (
+    use_id          UUID PRIMARY KEY,
+    tenant_id       UUID            NOT NULL REFERENCES tenant (tenant_id),
+    ingest_run_id   UUID            NOT NULL,
+    commitment_id   TEXT            NOT NULL,
+    commitment_type TEXT            NOT NULL,
+    status          TEXT            NOT NULL,   -- QUEUED, ACTIVE, EXPIRED
+    term_start      DATE            NOT NULL,
+    term_end        DATE            NOT NULL,
+    window_start    DATE            NOT NULL,
+    window_end      DATE            NOT NULL,
+    committed       NUMERIC(20, 10) NOT NULL,
+    used            NUMERIC(20, 10) NOT NULL,
+    wasted          NUMERIC(20, 10) NOT NULL,
+    as_of           TIMESTAMPTZ     NOT NULL,
+    collected_at    TIMESTAMPTZ     NOT NULL
+);
+
+CREATE TABLE commitment_coverage (
+    coverage_id     UUID PRIMARY KEY,
+    tenant_id       UUID            NOT NULL REFERENCES tenant (tenant_id),
+    ingest_run_id   UUID            NOT NULL,
+    commitment_type TEXT            NOT NULL,
+    dimension       TEXT            NOT NULL,   -- SERVICE or REGION
+    dimension_value TEXT            NOT NULL,
+    window_start    DATE            NOT NULL,
+    window_end      DATE            NOT NULL,
+    eligible_spend  NUMERIC(20, 10) NOT NULL,
+    covered_spend   NUMERIC(20, 10) NOT NULL,
+    as_of           TIMESTAMPTZ     NOT NULL,
+    collected_at    TIMESTAMPTZ     NOT NULL
+);
+```
+
+**Two tables and not one, and `commitment_coverage` deliberately has no
+`commitment_id`.** A provider reports utilization per commitment and coverage per
+service or region, because a dollar of covered spend cannot be attributed to one
+of several overlapping plans. A `covered_spend` column on `commitment_use` would
+carry a number nobody measured, and summing such a column across commitments would
+count the same eligible dollar once per plan.
+
+`wasted` is stored and constrained to `committed - used` rather than computed on
+read, so a screen, a file and a report cannot disagree about it.
+
+Both tables are `PayerWide` in `finops_api/guards.py`, a guard shape added for
+them. A commitment is bought by the payer and consumed by whichever accounts ran
+the usage, and no API reports which, so there is no honest way to narrow the row.
+A scope that is not global reads nothing rather than reading everything, which is
+the opposite of what the `None` rule would have done.
+
 ### Self metering and audit
 
 ```sql
