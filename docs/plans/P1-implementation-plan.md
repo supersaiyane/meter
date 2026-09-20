@@ -1025,7 +1025,7 @@ repository the screens read, so it cannot drift from what they show.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-20 |
 | Implements | P1 spec section 16 |
 | Delivers | FEAT-023, FEAT-024 |
 | Depends on | TASK-P1-015, TASK-P1-017 |

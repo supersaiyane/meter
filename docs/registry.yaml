@@ -1198,6 +1198,19 @@ issues:
     looking for wherever else a stored engine meets a classifier constant
   status: FIXED
   detail: '`finops_api/routes/query.py`, _violates'
+- id: ISS-186
+  severity: LOW
+  summary: A demo database seeded once holds anomaly verdicts for one day only, because
+    CostAnomalyCollector judges the most recent day with data and nothing backfills the rest.
+    In production it has run every day and has a verdict for each, so the screen fills up over
+    time. A freshly seeded demo shows one finding, which is enough to demonstrate the feature
+    and is not what a real installation looks like after a fortnight. Found 2026-09-20 while
+    placing the fake estate's spike for TASK-P1-019, which had to go on the last billed day for
+    exactly this reason. The fix is for the seed to run the detector once per day of history,
+    passing a clock per day, which is what production does over time anyway. Low because the
+    demo works and the limitation is written into the fixture beside the constant that causes it
+  status: OPEN
+  detail: '`finops_providers/fake/cur.py` SPIKE_DAYS_BACK, and `scripts/ops/seed_demo.py`'
 - id: ISS-184
   severity: HIGH
   summary: cost_focus_daily and cost_focus_monthly sat in SCOPED_TABLES with the rule None,

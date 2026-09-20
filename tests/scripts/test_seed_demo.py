@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -37,11 +38,22 @@ REMOTE = "postgresql+psycopg://meter:secret@meter-prod.eu-west-2.rds.amazonaws.c
 
 
 class Settings:
-    """Only the fields `rates_from` reads.
+    """Only the fields the seeded collectors read.
 
-    Loading real settings would make these tests depend on a full environment
-    to prove something about SQL.
+    Loading real settings would make these tests depend on a full environment to
+    prove something about SQL.
     """
+
+    # The anomaly detector's two, which it refuses to run without, because its
+    # severity boundaries and its sensitivity are configuration and a default would
+    # put an invented severity on a screen. Same values as `.env.example`.
+    anomaly_sensitivity = 3.0
+    anomaly_floor_usd = 5.0
+    # And the money boundaries severity comes from, per ADR-0016, so the seeded
+    # finding carries the severity a real one would.
+    severity_critical_usd = Decimal("1000")
+    severity_high_usd = Decimal("100")
+    severity_medium_usd = Decimal("20")
 
     query_logs_scan_price_per_gb = 0.005
     query_metrics_price_per_1000 = 0.01
@@ -128,7 +140,24 @@ def test_seed_then_remove_leaves_nothing_behind(engine: object) -> None:
     assert seeded.runs > 4
 
     with engine.connect() as connection:  # type: ignore[attr-defined]
-        for table_name in ("query_finding", "cloud_account", "org_node", "platform_cost"):
+        for table_name in (
+            "query_finding",
+            "cloud_account",
+            "org_node",
+            "platform_cost",
+            # TASK-P1-019. The demo has nothing to show on the anomalies or
+            # commitments screens unless these are filled, and an empty screen in a
+            # demo reads as a product that does not work rather than as an estate
+            # with nothing wrong.
+            #
+            # `cost_anomaly` here is the sharpest assertion in this file: the row
+            # exists only because the detector read the seeded estate and judged a
+            # day. Nothing writes it directly, so if the estate's spike ever stops
+            # clearing the detector's bar, this fails.
+            "cost_anomaly",
+            "commitment_use",
+            "commitment_coverage",
+        ):
             rows = connection.execute(
                 sql(f"SELECT count(*) FROM {table_name} WHERE tenant_id = :t"),
                 {"t": DEMO_TENANT},

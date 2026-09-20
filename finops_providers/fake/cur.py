@@ -73,6 +73,40 @@ OWNERS: Mapping[str, str] = {
 }
 
 
+#: The one day in the estate that does not look like the days before it, and the
+#: pair it happens to. TASK-P1-019.
+#:
+#: **It is a multiplier on a real day, not a row inserted into a table.** That is
+#: the whole point of putting it here. A demo that writes a row straight into
+#: `cost_anomaly` proves nothing: the screen would show a finding the detector never
+#: made, and the first question anybody asks in a demo is whether the product found
+#: it or somebody typed it. This way `make seed` writes an estate, the detector reads
+#: it, and the row on the screen is a verdict.
+#:
+#: Sized to clear the detector's own bar rather than guessed at. The baseline is a
+#: slow drift around one, so six times it is far outside three median absolute
+#: deviations and far above the dollar floor, and it stays that way if either
+#: setting is tuned.
+SPIKE_ACCOUNT = "fake-product-a"
+SPIKE_SERVICE = "AmazonEC2"
+SPIKE_MULTIPLIER = Decimal("6")
+
+#: The spike sits on the last day the estate bills, and it has to.
+#:
+#: `CostAnomalyCollector` judges one day, the most recent with data, because re
+#: judging history every run would rewrite verdicts somebody may already have acted
+#: on. A spike anywhere earlier would be part of the baseline by the time the detector
+#: looked, and a median baseline does not move for one outlier, so the estate would
+#: read as well behaved and the screen would be empty.
+#:
+#: That is a real property of the detector rather than a fixture convenience, and it
+#: is worth stating here because it is the thing somebody will trip over: a database
+#: seeded once holds verdicts for one day only. In production the collector has run
+#: every day and has a verdict for each. A demo that wants a history of findings needs
+#: the seed to run the detector once per day of history, which is ISS-186.
+SPIKE_DAYS_BACK = 0
+
+
 def _period_end(start: date) -> date:
     """The exclusive end of a monthly period, per `BillingPeriod`."""
     return date(start.year + (start.month // 12), (start.month % 12) + 1, 1)
@@ -178,8 +212,23 @@ def periods_ending_at(at: datetime, count: int = 3) -> tuple[date, ...]:
     return tuple(reversed(months))
 
 
-def estate(*, at: datetime = fixtures.AS_OF) -> tuple[CostRecord, ...]:
-    """Three months of bill, the newest of them still running at `at`."""
+def spike_day(at: datetime = fixtures.AS_OF) -> date:
+    """The day the estate goes wrong, derived from the clock rather than written down.
+
+    Named so a test and the demo runbook can both point at it without either one
+    hardcoding a date that stops being inside the estate next month.
+    """
+    return at.date() - timedelta(days=SPIKE_DAYS_BACK + 1)
+
+
+def estate(*, at: datetime = fixtures.AS_OF, spike: bool = True) -> tuple[CostRecord, ...]:
+    """Three months of bill, the newest of them still running at `at`.
+
+    `spike` is on by default, and a caller turning it off gets an estate where every
+    pair is well behaved. That is only useful for asserting the detector finds nothing
+    in a quiet estate, which is the other half of proving it works.
+    """
+    wrong_day = spike_day(at)
     rows: list[CostRecord] = []
     for period in periods_ending_at(at):
         for index, day in enumerate(_days_in(period, at=at)):
@@ -188,8 +237,25 @@ def estate(*, at: datetime = fixtures.AS_OF) -> tuple[CostRecord, ...]:
             drift = Decimal(1) + (Decimal(index) / Decimal(200))
             for account in fixtures.ACCOUNT_IDS:
                 for service in SERVICES:
+                    # One pair, one day, several times the usual. Applied to the
+                    # drift so the row is built the same way as every other row and
+                    # carries the same fingerprint shape: a spike that arrived
+                    # through a different code path would be a spike the ingest
+                    # never has to handle.
+                    wrong = (
+                        spike
+                        and day == wrong_day
+                        and account == SPIKE_ACCOUNT
+                        and service == SPIKE_SERVICE
+                    )
                     rows.append(
-                        _row(account=account, service=service, day=day, period=period, drift=drift)
+                        _row(
+                            account=account,
+                            service=service,
+                            day=day,
+                            period=period,
+                            drift=drift * SPIKE_MULTIPLIER if wrong else drift,
+                        )
                     )
     return tuple(rows)
 

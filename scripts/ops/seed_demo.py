@@ -44,6 +44,8 @@ from finops_core.config import load_settings
 from finops_core.domain.account import AccountKey
 from finops_core.errors import CollectionError
 from finops_ingest.collectors.account_health import AccountHealthCollector
+from finops_ingest.collectors.commitment import CommitmentCollector
+from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
 from finops_ingest.collectors.org_tree import OrgTreeCollector
 from finops_ingest.collectors.partitions import ensure_partition, partition_maintenance
@@ -56,6 +58,7 @@ from finops_ingest.collectors.query_audit import (
 from finops_ingest.ledger import RunLedger
 from finops_ingest.registry import CollectorContext, install_default_schedule
 from finops_providers.fake import fixtures
+from finops_providers.fake.commitment import FakeCommitmentReport
 from finops_providers.fake.cur import FakeCostExport, estate
 from finops_providers.fake.evidence import FakeQueryEvidence
 from finops_providers.fake.health import FakeRoleHealth
@@ -166,7 +169,12 @@ class Seeded:
 
 
 def _through_the_ledger(
-    ledger: RunLedger, collector: Any, connection: Any, unit: Unit, name: str
+    ledger: RunLedger,
+    collector: Any,
+    connection: Any,
+    unit: Unit,
+    name: str,
+    settings: Any = None,
 ) -> int:
     """Run one collector as the worker would, recording the run either way.
 
@@ -191,7 +199,16 @@ def _through_the_ledger(
             # writes it into a NOT NULL column and removes on it, so a context
             # without one is a run it refuses rather than a run that invents a
             # number naming nothing.
-            CollectorContext(unit=unit, connection=connection, run_id=claim.run_id)
+            CollectorContext(
+                unit=unit,
+                connection=connection,
+                run_id=claim.run_id,
+                # Only the collectors that need it get it. `cost_anomaly` refuses to
+                # run without settings, because its severity boundaries and its
+                # sensitivity are configuration and a default would put an invented
+                # severity on a screen.
+                settings=settings,
+            )
         )
     except CollectionError as failure:
         ledger.fail(claim, failure)
@@ -316,6 +333,30 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
                 unit(scope_key=f"billing:{period:%Y-%m}"),
                 "cost_focus",
             )
+        # After the cost rows and not before, because the detector reads
+        # `cost_focus_daily` and has nothing to judge until they are there. It judges
+        # the most recent day with data, which is the day the estate put wrong, so a
+        # single run is enough to give the anomalies screen its finding. TASK-P1-019.
+        written += _through_the_ledger(
+            ledger,
+            CostAnomalyCollector(clock=lambda: now),
+            connection,
+            unit(),
+            "cost_anomaly",
+            settings=settings,
+        )
+        # Commitments come from a different API on a different cadence, so they are
+        # their own collector and their own ledger entry. The fake sizes them against
+        # the estate above, which is why they are seeded after it rather than beside
+        # it: a coverage percentage here and a service total on the spend screen are
+        # two views of one number.
+        written += _through_the_ledger(
+            ledger,
+            CommitmentCollector(FakeCommitmentReport(at=now), clock=lambda: now),
+            connection,
+            unit(scope_key="billing:commitments"),
+            "commitment",
+        )
         written += _through_the_ledger(
             ledger,
             QueryAuditCollector(

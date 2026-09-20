@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-451 public symbols across 5 packages.
+452 public symbols across 5 packages.
 
 ## finops_core
 
@@ -173,12 +173,13 @@ a duplicate.
 | `FakeCommitmentReport` | class | `finops_providers/fake/commitment.py:237` | `CommitmentReport` in memory. Every failure is asked for, never incidental. | `finops_providers/fake/provider.py` |
 | `FakeCommitmentReport.utilization` | method | `finops_providers/fake/commitment.py:259` |  | `finops_ingest/collectors/commitment.py`, `finops_providers/fake/provider.py` |
 | `FakeCommitmentReport.coverage` | method | `finops_providers/fake/commitment.py:271` |  | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_ingest/collectors/commitment.py`, `finops_providers/fake/provider.py` |
-| `periods_ending_at` | function | `finops_providers/fake/cur.py:159` | The month containing `at` and the ones before it, oldest first. | nothing in this tree |
-| `estate` | function | `finops_providers/fake/cur.py:181` | Three months of bill, the newest of them still running at `at`. | nothing in this tree |
-| `restate` | function | `finops_providers/fake/cur.py:207` | The same bill after AWS restated it: one row corrected, one retracted. | nothing in this tree |
-| `FakeCostExport` | class | `finops_providers/fake/cur.py:234` | `CostExport` in memory. Every failure is asked for, never incidental. | `finops_providers/fake/provider.py` |
-| `FakeCostExport.latest_available_period` | method | `finops_providers/fake/cur.py:255` |  | `finops_ingest/collectors/cost_focus.py`, `finops_providers/fake/provider.py` |
-| `FakeCostExport.read_period` | method | `finops_providers/fake/cur.py:264` |  | `finops_ingest/collectors/cost_focus.py`, `finops_providers/fake/provider.py` |
+| `periods_ending_at` | function | `finops_providers/fake/cur.py:193` | The month containing `at` and the ones before it, oldest first. | nothing in this tree |
+| `spike_day` | function | `finops_providers/fake/cur.py:215` | The day the estate goes wrong, derived from the clock rather than written down. | nothing in this tree |
+| `estate` | function | `finops_providers/fake/cur.py:224` | Three months of bill, the newest of them still running at `at`. | nothing in this tree |
+| `restate` | function | `finops_providers/fake/cur.py:273` | The same bill after AWS restated it: one row corrected, one retracted. | nothing in this tree |
+| `FakeCostExport` | class | `finops_providers/fake/cur.py:300` | `CostExport` in memory. Every failure is asked for, never incidental. | `finops_providers/fake/provider.py` |
+| `FakeCostExport.latest_available_period` | method | `finops_providers/fake/cur.py:321` |  | `finops_ingest/collectors/cost_focus.py`, `finops_providers/fake/provider.py` |
+| `FakeCostExport.read_period` | method | `finops_providers/fake/cur.py:330` |  | `finops_ingest/collectors/cost_focus.py`, `finops_providers/fake/provider.py` |
 | `FakeQueryEvidence` | class | `finops_providers/fake/evidence.py:110` | `QueryEvidence` in memory, with a configurable failure and a past. | nothing in this tree |
 | `FakeQueryEvidence.observations` | method | `finops_providers/fake/evidence.py:134` |  | `finops_ingest/collectors/query_audit.py` |
 | `FakeRoleHealth` | class | `finops_providers/fake/health.py:38` | `RoleHealthCheck` in memory, with a stated plan. | nothing in this tree |

@@ -4286,6 +4286,16 @@
     },
     {
       "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/cost_anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
       "t": "finops_ingest/collectors/cost_focus.py",
       "k": "python"
     },
@@ -4322,6 +4332,11 @@
     {
       "s": "scripts/ops/seed_demo.py",
       "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/commitment.py",
       "k": "python"
     },
     {
@@ -4911,12 +4926,27 @@
     },
     {
       "s": "tests/ingest/collectors/test_cost_anomaly.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_anomaly.py",
       "t": "finops_ingest/collectors/partitions.py",
       "k": "python"
     },
     {
       "s": "tests/ingest/collectors/test_cost_anomaly.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_anomaly.py",
+      "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_anomaly.py",
+      "t": "finops_providers/fake/cur.py",
       "k": "python"
     },
     {

@@ -152,6 +152,105 @@ class TestItFindsARealSpike:
         assert anomalies(engine, tenant_id) == []
 
 
+class TestTheDemoEstateIsFoundByTheDetector:
+    """TASK-P1-019, and the only test in this file that uses the real fixture.
+
+    Every other test here lays down a flat series and one expensive day, which is the
+    right shape for asking whether the arithmetic reaches the right rows. This one
+    asks a different question: does the estate `make seed` actually writes contain
+    something this detector finds, without being told where to look.
+
+    It matters because the demo's credibility rests on it. A row written straight into
+    `cost_anomaly` would show a finding the detector never made, and the first question
+    anybody asks in a demo is whether the product found it or somebody typed it.
+    """
+
+    def test_the_seeded_estate_produces_a_finding(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        from finops_ingest.collectors.cost_focus import CostFocusCollector
+        from finops_providers.fake import cur
+        from finops_providers.fake.cur import FakeCostExport
+
+        at = datetime(2026, 8, 24, 6, 0, tzinfo=UTC)
+        rows = cur.estate(at=at)
+        period = max(row.billing_period_start for row in rows)
+        with engine.begin() as connection:
+            ensure_partition(connection, "cost_focus_daily", period)
+            CostFocusCollector(
+                FakeCostExport(rows=tuple(r for r in rows if r.billing_period_start == period)),
+                clock=lambda: at,
+            )(
+                CollectorContext(
+                    unit=Unit(tenant_id=tenant_id), connection=connection, run_id=uuid4()
+                )
+            )
+
+        with engine.begin() as connection:
+            outcome = CostAnomalyCollector(clock=lambda: at)(
+                CollectorContext(
+                    unit=Unit(tenant_id=tenant_id),
+                    connection=connection,
+                    run_id=uuid4(),
+                    settings=settings,
+                )
+            )
+
+        assert int(outcome.items_written) >= 1
+        with engine.connect() as connection:
+            found = connection.execute(
+                text(
+                    "SELECT sub_account_id, service_name, day FROM cost_anomaly "
+                    "WHERE tenant_id = :t ORDER BY delta DESC"
+                ),
+                {"t": tenant_id},
+            ).all()
+        # The pair and the day the estate put wrong, not any pair on any day.
+        assert (cur.SPIKE_ACCOUNT, cur.SPIKE_SERVICE, cur.spike_day(at)) == (
+            found[0][0],
+            found[0][1],
+            found[0][2],
+        )
+
+    def test_the_same_estate_without_its_spike_produces_nothing(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """The half that stops the test above passing for the wrong reason.
+
+        An estate whose every pair drifts upward slowly could produce a finding from
+        the drift alone, and then the test above would pass with the spike removed. It
+        must not.
+        """
+        from finops_ingest.collectors.cost_focus import CostFocusCollector
+        from finops_providers.fake import cur
+        from finops_providers.fake.cur import FakeCostExport
+
+        at = datetime(2026, 8, 24, 6, 0, tzinfo=UTC)
+        rows = cur.estate(at=at, spike=False)
+        period = max(row.billing_period_start for row in rows)
+        with engine.begin() as connection:
+            ensure_partition(connection, "cost_focus_daily", period)
+            CostFocusCollector(
+                FakeCostExport(rows=tuple(r for r in rows if r.billing_period_start == period)),
+                clock=lambda: at,
+            )(
+                CollectorContext(
+                    unit=Unit(tenant_id=tenant_id), connection=connection, run_id=uuid4()
+                )
+            )
+
+        with engine.begin() as connection:
+            outcome = CostAnomalyCollector(clock=lambda: at)(
+                CollectorContext(
+                    unit=Unit(tenant_id=tenant_id),
+                    connection=connection,
+                    run_id=uuid4(),
+                    settings=settings,
+                )
+            )
+        assert int(outcome.items_written) == 0
+
+
 class TestItRefusesWithoutHistory:
     def test_a_pair_with_too_few_days_is_left_alone(
         self, engine: Engine, tenant_id: UUID, settings: Settings

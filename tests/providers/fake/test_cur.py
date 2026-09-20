@@ -18,7 +18,7 @@ import pytest
 
 from finops_core import errors
 from finops_core.domain.cost import CostRecord
-from finops_providers.fake import fixtures
+from finops_providers.fake import cur, fixtures
 from finops_providers.fake.cur import (
     CLOSED_PERIOD,
     OPEN_PERIOD,
@@ -160,6 +160,50 @@ class TestTheRowsAreNotEasierThanReality:
         prints = [row.source_fingerprint for row in rows]
         assert len(set(prints)) == len(prints)
         assert all(len(p) == 64 for p in prints), "expected a sha256 hex digest"
+
+    def test_the_estate_holds_one_day_that_does_not_look_like_the_others(self) -> None:
+        """TASK-P1-019. The spike is in the bill, not in the findings table.
+
+        A demo that writes a row straight into `cost_anomaly` shows a finding the
+        detector never made, and the first question anybody asks in a demo is whether
+        the product found it or somebody typed it.
+        """
+        wrong_day = cur.spike_day()
+        pair = [
+            row
+            for row in cur.ESTATE
+            if row.sub_account_id == cur.SPIKE_ACCOUNT
+            and row.service_name == cur.SPIKE_SERVICE
+            and row.billing_period_start == cur.OPEN_PERIOD
+        ]
+        spiked = [row for row in pair if row.charge_period_start.date() == wrong_day]
+        normal = [row for row in pair if row.charge_period_start.date() != wrong_day]
+        assert len(spiked) == 1
+        assert normal
+        worst_normal = max(row.effective_cost for row in normal)
+        assert spiked[0].effective_cost > worst_normal * 4
+
+    def test_the_spike_is_on_the_last_day_the_estate_bills(self) -> None:
+        # Not a fixture convenience. The collector judges the most recent day with
+        # data, so a spike anywhere earlier is part of the baseline by the time the
+        # detector looks, and a median baseline does not move for one outlier.
+        assert cur.spike_day() == max(row.charge_period_start.date() for row in cur.ESTATE)
+
+    def test_an_estate_asked_for_without_a_spike_has_none(self) -> None:
+        # The other half of proving the detector works: it has to find nothing in a
+        # quiet estate, and that needs a quiet estate to exist.
+        quiet = cur.estate(spike=False)
+        wrong_day = cur.spike_day()
+        pair = [
+            row
+            for row in quiet
+            if row.sub_account_id == cur.SPIKE_ACCOUNT
+            and row.service_name == cur.SPIKE_SERVICE
+            and row.billing_period_start == cur.OPEN_PERIOD
+        ]
+        spiked = [row for row in pair if row.charge_period_start.date() == wrong_day]
+        others = [row.effective_cost for row in pair if row.charge_period_start.date() != wrong_day]
+        assert spiked[0].effective_cost < max(others) * 2
 
     def test_the_estate_is_the_same_every_time(self) -> None:
         # A fake whose numbers move between runs cannot be asserted against.
