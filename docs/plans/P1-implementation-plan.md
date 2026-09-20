@@ -1049,7 +1049,7 @@ commitment worth acting on, so the screens have something to show.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-20 |
 | Implements | ADR-0021, `docs/12-UI-DESIGN.md` |
 | Delivers | Nothing new. It makes what exists legible |
 | Depends on | TASK-P1-019 |
@@ -1061,6 +1061,28 @@ commitment worth acting on, so the screens have something to show.
 and IBM Plex are already decided and already used by Home. This is the pass that
 applies them consistently, gives each screen a shape, and removes the places
 where a functional screen reads as an unfinished one.
+
+**What the pass found.** Five things, all on screens whose tests were green.
+
+1. **Home promised a sub project that had shipped.** Three of its four absences said
+   total spend, trend and top movers "arrive with P1 Cost Intelligence" on a build
+   where `/cost` showed the first two. A front page that does not know what the
+   product has is worse than one that never mentioned the feature. Spend became a
+   real tile fed by the spend screen's own hook; top movers left entirely, because no
+   feature owns it, ISS-188.
+2. **The anomalies coverage banner counted anomalies against accounts**, rendering
+   "4 missing, outside your scope" to a reader entitled to everything. Third instance
+   of a row count in that slot, now a lesson.
+3. **The commitments banner did the same**, reading "4 of 5 accounts" above four
+   commitments. Its unit is a payer, and the coverage is complete by construction.
+4. **"1 days that stood out."** Pluralisation.
+5. **Five tiles wrapped four and one**, leaving a tile alone on the front page's first
+   row. The grid minimum went from 260px to 210px.
+
+A sixth thing was found and deliberately not fixed: `scope_coverage` reports a
+narrowed reader as complete, because its total is itself scoped. Every route is
+affected equally, so changing it changes every banner at once, which the middle of a
+demo push is the wrong moment for. ISS-187.
 
 **Acceptance criteria.**
 
@@ -1080,7 +1102,7 @@ where a functional screen reads as an unfinished one.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-20 |
 | Implements | P1 spec section 16 |
 | Delivers | Nothing new |
 | Depends on | TASK-P1-020 |
@@ -1088,6 +1110,15 @@ where a functional screen reads as an unfinished one.
 
 **Goal.** One journey that walks the whole product in the order a person would
 demonstrate it, and a written script for the person driving.
+
+**One thing this task needed that the plan did not list.** There is no login
+screen and no login route, and nothing in the product minted a session, so opening a
+screen locally required an undocumented Python one liner inside the API container. A
+`make token` target existed and was inline in the Makefile with the tenant id
+hardcoded; it now calls `scripts/ops/local_token.py`, which refuses to run outside a
+local or dev configuration, takes the tenant from settings, and says which subject to
+use and why. The refusal is the only part with a test, because it is the only part
+somebody would quietly remove.
 
 **Acceptance criteria.**
 

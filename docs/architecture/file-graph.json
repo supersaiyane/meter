@@ -141,6 +141,7 @@
     "finops-web/dist-types/src/test-setup.d.ts",
     "finops-web/dist-types/src/tokens.css",
     "finops-web/e2e/cost.spec.ts",
+    "finops-web/e2e/demo.spec.ts",
     "finops-web/e2e/journey.spec.ts",
     "finops-web/playwright.config.ts",
     "finops-web/src/App.test.tsx",
@@ -407,6 +408,7 @@
     "scripts/docs/rotate_checkpoint.py",
     "scripts/docs/sync.py",
     "scripts/ops/erase_principal.py",
+    "scripts/ops/local_token.py",
     "scripts/ops/restore_drill.py",
     "scripts/ops/seed_demo.py",
     "tests/__init__.py",
@@ -470,6 +472,7 @@
     "tests/providers/aws/test_health.py",
     "tests/providers/aws/test_query_evidence.py",
     "tests/providers/fake/__init__.py",
+    "tests/providers/fake/test_commitment.py",
     "tests/providers/fake/test_cur.py",
     "tests/providers/fake/test_evidence.py",
     "tests/providers/fake/test_surface.py",
@@ -492,6 +495,7 @@
     "tests/scripts/test_check_index.py",
     "tests/scripts/test_layer_agreement.py",
     "tests/scripts/test_lint_scope.py",
+    "tests/scripts/test_local_token.py",
     "tests/scripts/test_observability.py",
     "tests/scripts/test_pipeline.py",
     "tests/scripts/test_restore_drill.py",
@@ -4245,6 +4249,31 @@
       "k": "python"
     },
     {
+      "s": "scripts/ops/local_token.py",
+      "t": "finops_api/identity/local_config.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/local_token.py",
+      "t": "finops_api/identity/session.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/local_token.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/local_token.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/local_token.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "scripts/ops/restore_drill.py",
       "t": "finops_api/identity/local_config.py",
       "k": "python"
@@ -5512,6 +5541,21 @@
     {
       "s": "tests/providers/aws/test_query_evidence.py",
       "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_commitment.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_commitment.py",
+      "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_commitment.py",
+      "t": "finops_providers/fake/commitment.py",
       "k": "python"
     },
     {

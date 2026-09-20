@@ -39,20 +39,38 @@ function renderHome(client: ApiClient = clientReturning({ '/api/v1/platform/cost
 
 describe('HomeScreen', () => {
   it('names the sub project that will fill an empty slot', () => {
+    // Derived, not named. This asserted on `home-slot-spend` until 2026-09-20, when
+    // P1 filled that slot and the test failed for the one reason that is not a
+    // regression. The claim is about the mechanism, so it is made against whichever
+    // slot is empty today.
     renderHome();
-    const slot = screen.getByTestId('home-slot-spend');
-    expect(slot).toHaveTextContent(/not yet collected/i);
-    expect(slot).toHaveTextContent(/P1 Cost Intelligence/);
+    const slots = screen.getAllByTestId(/^home-slot-/);
+    expect(slots.length).toBeGreaterThan(0);
+    for (const slot of slots) {
+      expect(slot).toHaveTextContent(/not yet collected/i);
+      expect(slot).toHaveTextContent(/^.*P\d /);
+    }
   });
 
   it('renders no figure and no currency in an empty slot', () => {
-    // Rule 5 of 12-UI-DESIGN: an absence is never a number. Asserted as "no
-    // Figure and no currency" rather than "no digit", because the slot names
-    // the sub project and P1 legitimately contains one.
+    // Rule 5 of 12-UI-DESIGN: an absence is never a number. Asserted as "no Figure
+    // and no currency" rather than "no digit", because the slot names the sub project
+    // and P3 legitimately contains one.
     renderHome();
-    const slot = screen.getByTestId('home-slot-spend');
-    expect(slot.querySelector('[data-testid="figure"]')).toBeNull();
-    expect(slot).not.toHaveTextContent('$');
+    for (const slot of screen.getAllByTestId(/^home-slot-/)) {
+      expect(slot.querySelector('[data-testid="figure"]')).toBeNull();
+      expect(slot).not.toHaveTextContent('$');
+    }
+  });
+
+  it('shows the spend P1 filled rather than still promising it', () => {
+    // The defect this replaces was on the front page of a demo: three slots saying
+    // total spend and trend arrive with P1, on a build where /cost shows both. A
+    // product that does not know what it has is worse than one that never mentioned
+    // the feature.
+    renderHome();
+    expect(screen.queryByText(/P1 Cost Intelligence/)).toBeNull();
+    expect(screen.getByRole('link', { name: /Total spend/ })).toHaveAttribute('href', '/cost');
   });
 
   it('gives every slot a link to the screen that owns it', () => {
@@ -67,9 +85,12 @@ describe('HomeScreen', () => {
       'href',
       '/governance/queries',
     );
-    // P1 has not arrived, and its three slots still name it rather than
-    // rendering an empty panel.
-    expect(screen.getAllByRole('link', { name: /P1 Cost Intelligence/ })).toHaveLength(3);
+    // Every remaining slot links to the screen that will own it, rather than
+    // rendering an empty panel. Counted rather than named, for the reason above.
+    const slots = screen.getAllByTestId(/^home-slot-/);
+    for (const slot of slots) {
+      expect(slot.querySelector('a')).not.toBeNull();
+    }
   });
 
   it('shows Meter own cost as a measured figure, summed across modules', async () => {
@@ -99,6 +120,9 @@ describe('HomeScreen', () => {
     // that Home has no query of its own, not that it makes one request. A path
     // appearing here that no other screen owns is the failure this guards.
     expect([...asked].sort()).toEqual([
+      // `useCostSummary`, which is the spend screen's own hook. Home shows the total
+      // and the change; it computes neither.
+      '/api/v1/cost/summary',
       '/api/v1/platform/cost',
       '/api/v1/query/findings',
       '/api/v1/query/groups',

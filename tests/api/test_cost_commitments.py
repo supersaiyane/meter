@@ -111,6 +111,30 @@ class TestItAnswers:
         )
 
 
+class TestTheCoverageBannerCountsTheRightThing:
+    def test_it_reports_a_payer_rather_than_a_count_of_commitments(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """Seen on the screen, not in a test, and the second time in this project.
+
+        The default coverage compares `visible` to the number of accounts in the
+        organization. Passing the row count there rendered "4 of 5 accounts" above a
+        table of four commitments, exactly as a line item count once rendered
+        "showing all 450 accounts" on an estate with five.
+
+        A commitment belongs to the payer and to no account, so the unit is a payer
+        and the coverage is complete by construction: this route is only reachable by
+        a scope that sees every account.
+        """
+        seed(engine, tenant_id)
+        client, token = client_for(engine, everything(tenant_id), settings)
+        coverage = get(client, token)["meta"]["scope_coverage"]
+        assert coverage["unit"] == "payer"
+        assert coverage["visible"] == 1
+        assert coverage["total"] == 1
+        assert coverage["is_partial"] is False
+
+
 class TestTheTwoFiguresStaySeparate:
     def test_no_commitment_row_carries_a_coverage_figure(
         self, engine: Engine, tenant_id: UUID, settings: Settings

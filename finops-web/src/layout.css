@@ -562,9 +562,14 @@ main article {
    then the absences. Before this the absences were panels the same size as the
    money, so nothing on the page outranked anything else. */
 
+/* 210px rather than 260px. P1 added a fifth tile and the old minimum fitted four
+   across a 1440px window, so the front page opened with four tiles and a fifth alone
+   on its own row. A lone tile reads as an afterthought, and the front page is the
+   one screen where that matters. Five fit now, and the auto-fit still wraps them
+   sensibly on a narrower window. */
 [data-testid='home-summary'] {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: var(--space-3);
   margin-bottom: var(--space-4);
 }

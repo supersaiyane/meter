@@ -37,6 +37,7 @@ from finops_core.domain.cost import (
     QUEUED,
     CommitmentCoverage,
     CommitmentUse,
+    CostRecord,
 )
 from finops_core.errors import CollectionError, NoData
 from finops_providers.fake import cur, fixtures
@@ -69,23 +70,45 @@ class _Common(TypedDict):
 
 CENTS = Decimal("0.01")
 
+#: Estates already built, keyed by the clock they were built at.
+_BILLS: dict[datetime, tuple[CostRecord, ...]] = {}
+
 
 def _money(amount: Decimal) -> Decimal:
     return amount.quantize(CENTS, rounding=ROUND_HALF_UP)
 
 
-def _spend_on(services: Iterable[str], period: date) -> Decimal:
+def _bill(at: datetime) -> tuple[CostRecord, ...]:
+    """The estate as it stands at `at`, built once per clock.
+
+    **Not `cur.ESTATE`, and this is the bug that reached a seeded database.** The
+    module level constant is built at `fixtures.AS_OF`, so its periods are June to
+    August 2026. A demo seeded in September asks for September, finds nothing, and
+    every commitment reports a committed, used and wasted of zero. The screen then
+    says the estate has four commitments obliging nothing, which is a sentence about
+    a fixture rather than about anything real, and every test missed it because they
+    all asked for an August window where the constant happened to be right.
+
+    Cached because `coverages` calls `uses`, and rebuilding two thousand rows five
+    times per request is a cost a fake has no business imposing.
+    """
+    if at not in _BILLS:
+        _BILLS[at] = cur.estate(at=at)
+    return _BILLS[at]
+
+
+def _spend_on(services: Iterable[str], period: date, at: datetime) -> Decimal:
     """What the fake estate actually billed for these services in the period.
 
-    Summed from the same rows the cost screens read, so a coverage percentage on
-    the commitments screen and a service total on the spend screen are two views
-    of one number rather than two numbers that happen to be close.
+    Summed from the same rows the cost screens read, so a coverage percentage on the
+    commitments screen and a service total on the spend screen are two views of one
+    number rather than two numbers that happen to be close.
     """
     wanted = frozenset(services)
     return sum(
         (
             row.effective_cost
-            for row in cur.ESTATE
+            for row in _bill(at)
             if row.billing_period_start == period and row.service_name in wanted
         ),
         Decimal("0"),
@@ -101,8 +124,8 @@ def uses(
 ) -> tuple[CommitmentUse, ...]:
     """The four commitments, sized against the estate in this window."""
     period = _period_containing(window_start)
-    compute = _spend_on(COMPUTE_SERVICES, period)
-    database = _spend_on(DATABASE_SERVICES, period)
+    compute = _spend_on(COMPUTE_SERVICES, period, at)
+    database = _spend_on(DATABASE_SERVICES, period, at)
 
     # Fully utilized and under committed. Thirty percent of eligible compute, all
     # of it consumed, so utilization is one and coverage is under a third.
@@ -204,7 +227,7 @@ def coverages(
             dimension_value="AmazonEC2",
             window_start=window_start,
             window_end=window_end,
-            eligible_spend=_spend_on(("AmazonEC2",), period),
+            eligible_spend=_spend_on(("AmazonEC2",), period, at),
             covered_spend=compute_covered,
         ),
         CommitmentCoverage(
@@ -214,7 +237,7 @@ def coverages(
             dimension_value="AWSLambda",
             window_start=window_start,
             window_end=window_end,
-            eligible_spend=_spend_on(("AWSLambda",), period),
+            eligible_spend=_spend_on(("AWSLambda",), period, at),
             # The compute plan's consumption all landed on EC2, so Lambda is
             # eligible and entirely uncovered. Zero is the right answer here and
             # says buy, which is different from the None a service with no
@@ -228,7 +251,7 @@ def coverages(
             dimension_value="AmazonRDS",
             window_start=window_start,
             window_end=window_end,
-            eligible_spend=_spend_on(DATABASE_SERVICES, period),
+            eligible_spend=_spend_on(DATABASE_SERVICES, period, at),
             covered_spend=database_covered,
         ),
     )

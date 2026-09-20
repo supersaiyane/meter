@@ -181,3 +181,27 @@ because `build-web` runs `tsc --build`; only my ad hoc command was.
 **Triggers:** `tsc --noEmit`, any checker invoked with a config I did not read,
 "types are clean", a lint or type run that finishes suspiciously fast, and any
 tsconfig containing `"files": []`.
+
+## 2026-09-20: a row count in the accounts slot, three times
+
+**Mistake:** `build_meta(visible=...)` feeds a coverage banner that counts
+accounts, and I have now passed something else into it three times. A line item
+count rendered "showing all 450 accounts" on an estate with five. A count of
+anomalies rendered "4 missing, outside your scope" to a reader entitled to
+everything. A count of commitments rendered "4 of 5 accounts" above four
+commitments. Every one of them passed every test, because no test asserted on the
+banner, and every one was found by opening the screen.
+
+**Correction:** self caught each time, by looking at the rendered page rather than
+at the payload.
+
+**Rule:** `visible` is a count of the thing `coverage_unit` names, and nothing
+else. When a route's rows are not accounts, either pass the account count the
+repository can produce, or pass `coverage=(n, m)` with a `coverage_unit` that
+names what was actually counted. Then assert it: a test that reads
+`meta.scope_coverage` and checks the unit and the figure, comparing against
+another route rather than against a number written down. A banner with no test is
+a sentence the product says to every reader that nobody has ever read.
+
+**Triggers:** any `build_meta` call, `visible=len(`, adding a route whose rows are
+not accounts, and any screen that renders a count next to a noun.

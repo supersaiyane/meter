@@ -29,7 +29,7 @@ from sqlalchemy import Row, Select, Table, func, select
 
 from finops_api.db import models
 from finops_api.db.repositories.base import ScopedRepository
-from finops_api.guards import require_scope
+from finops_api.guards import require_scope, scoped_select
 from finops_core.domain.platform import UNALLOCATED
 from finops_core.domain.tenant import Scope
 
@@ -226,6 +226,29 @@ class AnomalyRepository(ScopedRepository):
             .limit(limit)
         )
         return _fetch(self, scope, statement)
+
+    def accounts_judged(self, scope: Scope) -> int:
+        """How many accounts this scope has cost for, and therefore could be judged.
+
+        The coverage banner counts accounts, so the number beside the word accounts
+        has to be accounts. Passing `len(rows)` there rendered "4 missing, outside
+        your scope" above a single anomaly for a reader who could see everything,
+        which is the third time a row count has reached that slot in this project.
+
+        Read from the cost table rather than from this one, for the same reason
+        `judged_days` is: an estate with no anomalies has no rows here to count, and a
+        banner that vanished when the estate behaved would be useless exactly when a
+        reader most wants to know the view is complete.
+        """
+        daily = models.cost_focus_daily
+        # Through the guard's own constructor rather than a hand rolled select. It is
+        # the only thing that stamps the applied mark, and a query built any other way
+        # is the case `assert_scoped` exists to catch.
+        statement = scoped_select(daily, scope).with_only_columns(
+            func.count(func.distinct(daily.c.sub_account_id))
+        )
+        rows = self._connection.execute(statement).all()
+        return int(rows[0][0] or 0) if rows else 0
 
     def judged_days(self, scope: Scope) -> int:
         """How many distinct days this scope has cost for.

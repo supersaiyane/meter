@@ -294,3 +294,66 @@ class TestAnomalies:
         client, token = client_for(engine, only(tenant_id, ONE_ACCOUNT), settings)
         found = get(client, token, "/api/v1/cost/anomalies")["data"]
         assert {row["account_id"] for row in found["anomalies"]} <= {ONE_ACCOUNT}
+
+
+class TestTheAnomalyBannerCountsAccounts:
+    """Seen on a screen, not in a test, and the third time in this project.
+
+    The coverage banner counts accounts. `len(rows)` reached that slot and rendered
+    "4 missing, outside your scope" above a single anomaly, for a reader entitled to
+    the whole estate. The same slot once held a line item count and read "showing all
+    450 accounts" on an estate with five.
+
+    An estate with no anomalies has no rows to count, which is why the figure comes
+    from the cost table: a banner that vanished when the estate behaved would be
+    useless exactly when a reader most wants to know the view is complete.
+    """
+
+    def test_a_global_reader_is_not_told_accounts_are_missing(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        seed(engine, tenant_id)
+        client, token = client_for(engine, everything(tenant_id), settings)
+        coverage = get(client, token, "/api/v1/cost/anomalies")["meta"]["scope_coverage"]
+        assert coverage["unit"] == "accounts"
+        assert coverage["is_partial"] is False
+
+    def test_the_figure_is_accounts_rather_than_a_count_of_findings(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        # The sharp form. A fixture where the two happen to be equal would let the
+        # test above pass with the bug in place, so this compares against the accounts
+        # the summary route reports rather than against a number written down.
+        seed(engine, tenant_id)
+        client, token = client_for(engine, everything(tenant_id), settings)
+        anomalies = get(client, token, "/api/v1/cost/anomalies")
+        by_account = get(client, token, "/api/v1/cost/by-account")
+        assert anomalies["meta"]["scope_coverage"]["visible"] == len(by_account["data"])
+
+    def test_a_narrow_reader_sees_a_smaller_figure(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        seed(engine, tenant_id)
+        whole, whole_token = client_for(engine, everything(tenant_id), settings)
+        narrow, narrow_token = client_for(engine, only(tenant_id, ONE_ACCOUNT), settings)
+        wide = get(whole, whole_token, "/api/v1/cost/anomalies")["meta"]["scope_coverage"]
+        part = get(narrow, narrow_token, "/api/v1/cost/anomalies")["meta"]["scope_coverage"]
+        assert part["visible"] < wide["visible"]
+        assert part["unit"] == "accounts"
+
+    def test_it_agrees_with_the_other_cost_routes(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """The anomalies banner must not be the odd one out in either direction.
+
+        Written after the fix above, because the first version of this test asserted
+        that a narrow reader is told their view is partial, and that is false for every
+        cost route: `count_in_organization` is itself scoped, so a reader entitled to
+        one account is told one of one. Whether that is right is ISS-187, and it is not
+        a question this route should answer differently from its neighbours.
+        """
+        seed(engine, tenant_id)
+        client, token = client_for(engine, only(tenant_id, ONE_ACCOUNT), settings)
+        anomalies = get(client, token, "/api/v1/cost/anomalies")["meta"]["scope_coverage"]
+        summary = get(client, token, "/api/v1/cost/summary")["meta"]["scope_coverage"]
+        assert anomalies == summary

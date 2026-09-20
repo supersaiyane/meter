@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Link } from 'react-router';
 
 import {
+  useCostSummary,
   usePlatformCost,
   useQueryFindings,
   useQueryGroups,
@@ -55,14 +56,15 @@ interface SlotDef {
  * project lands, and becomes a tile above.
  */
 const ABSENT: readonly SlotDef[] = [
-  {
-    id: 'spend',
-    label: 'Total spend, month to date',
-    owns: '/cost',
-    arrives: 'P1 Cost Intelligence',
-  },
-  { id: 'trend', label: 'Trend, 30 days', owns: '/cost', arrives: 'P1 Cost Intelligence' },
-  { id: 'movers', label: 'Top movers', owns: '/cost', arrives: 'P1 Cost Intelligence' },
+  // Spend, trend and top movers stood here until 2026-09-20, all three claiming to
+  // arrive with P1. P1 landed, and a front page still promising the thing the reader
+  // can already open is worse than one that never mentioned it: it says the product
+  // does not know what it has. Spend and trend became the tile below, which is what
+  // this list's own comment said should happen.
+  //
+  // Top movers left without becoming a tile, because nothing was built for it and no
+  // feature in the registry owns it. A slot naming a sub project that has shipped is a
+  // promise nobody is keeping, so it is better absent than misattributed. ISS-188.
   {
     id: 'savings',
     label: 'Realized savings, trailing 60 days',
@@ -156,6 +158,21 @@ export function HomeScreen() {
     'platform_cost',
   );
 
+  // The spend screen's own hook, for the same reason the findings hook is reused
+  // below: a total this screen computed could disagree with the screen it links to,
+  // and a front page disagreeing with the page behind it is the one inconsistency a
+  // reader always notices.
+  const spend = useCostSummary();
+  const spendEnvelope = spend.data?.data;
+  const summary = spendEnvelope?.data;
+  const spendState = surfaceStateFor(
+    spend,
+    spendEnvelope?.meta,
+    summary ? 1 : 0,
+    'none',
+    'cost_focus_daily',
+  );
+
   // The findings screen's own hook and its own query key, so the two can never
   // disagree. Read once here and shared, rather than called in two places.
   const findings = useQueryFindings();
@@ -241,6 +258,45 @@ export function HomeScreen() {
     <>
       {/* Tier one. What the estate costs and what is open, at a glance. */}
       <section data-testid="home-summary" aria-label="Summary">
+        <div data-testid="home-tile" aria-label="Total spend">
+          <h3>
+            <Link to="/cost">Total spend, this period</Link>
+          </h3>
+          <StateBoundary state={spendState} coverageShownElsewhere>
+            <p data-testid="home-spend">
+              <Figure
+                value={{
+                  kind: 'measured',
+                  amount: Number(summary?.current.effective_cost ?? 0),
+                }}
+                freshness={{
+                  asOf: new Date(spendEnvelope?.meta.as_of ?? 0),
+                  collectedAt: new Date(spendEnvelope?.meta.collected_at ?? 0),
+                }}
+              />
+            </p>
+            {/* Null is not zero. A period with nothing to compare against has no
+                change, and rendering that as a flat zero would claim the estate held
+                steady when nobody has looked. */}
+            {summary?.change === null || summary?.change === undefined ? (
+              <p data-testid="home-spend-note">
+                no earlier period collected to compare against
+              </p>
+            ) : (
+              <p data-testid="home-spend-change">
+                <Figure
+                  value={{ kind: 'measured', amount: Number(summary.change) }}
+                  freshness={{
+                    asOf: new Date(spendEnvelope?.meta.as_of ?? 0),
+                    collectedAt: new Date(spendEnvelope?.meta.collected_at ?? 0),
+                  }}
+                />{' '}
+                against {summary.previous?.period ?? 'the period before'}
+              </p>
+            )}
+          </StateBoundary>
+        </div>
+
         <div data-testid="home-tile" aria-label="Open findings">
           <h3>
             <Link to="/governance/queries">Open findings</Link>
@@ -279,9 +335,7 @@ export function HomeScreen() {
                   }}
                   label="Largest cause"
                 />
-                <p data-testid="home-tile-note">
-                  {worst.findings} findings, one fault
-                </p>
+                <p data-testid="home-tile-note">{worst.findings} findings, one fault</p>
               </>
             ) : null}
           </StateBoundary>

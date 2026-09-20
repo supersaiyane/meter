@@ -172,9 +172,17 @@ describe('App', () => {
   });
 
   it('lands on Home, which names what each unfilled slot is waiting for', () => {
+    // Derived rather than named. This asserted on `home-slot-spend` until P1 filled
+    // that slot, which made it fail for the one reason that is not a regression. The
+    // claim is that an unfilled slot names its sub project, so it is made against
+    // whichever slots are unfilled today.
     open('/');
     expect(screen.queryByTestId('not-built')).toBeNull();
-    expect(screen.getByTestId('home-slot-spend')).toHaveTextContent(/P1 Cost Intelligence/);
+    const slots = screen.getAllByTestId(/^home-slot-/);
+    expect(slots.length).toBeGreaterThan(0);
+    for (const slot of slots) {
+      expect(slot).toHaveTextContent(/P\d /);
+    }
   });
 
   it('tells a wrong address apart from a screen that is merely unbuilt', () => {

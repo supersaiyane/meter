@@ -139,7 +139,9 @@ export function CostAnomaliesScreen() {
           rows={rows}
           columns={columns}
           rowKey={(row) => `${row.account_id}:${row.service_name}:${row.day}`}
-          caption={`${String(rows.length)} days that stood out, biggest first`}
+          caption={`${String(rows.length)} ${
+            rows.length === 1 ? 'day' : 'days'
+          } that stood out, biggest first`}
         />
       </StateBoundary>
     </section>

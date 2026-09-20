@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-452 public symbols across 5 packages.
+453 public symbols across 5 packages.
 
 ## finops_core
 
@@ -168,14 +168,14 @@ a duplicate.
 | `AwsPlatformCostSource.daily_by_module` | method | `finops_providers/aws/platform_cost.py:65` | Every module and service charge between start and end. | `finops_ingest/collectors/platform_cost.py` |
 | `CloudTrailQueryEvidence` | class | `finops_providers/aws/query_evidence.py:99` | `QueryEvidence` over CloudTrail and CloudWatch Logs query history. | nothing in this tree |
 | `CloudTrailQueryEvidence.observations` | method | `finops_providers/aws/query_evidence.py:120` |  | `finops_ingest/collectors/query_audit.py` |
-| `uses` | function | `finops_providers/fake/commitment.py:99` | The four commitments, sized against the estate in this window. | nothing in this tree |
-| `coverages` | function | `finops_providers/fake/commitment.py:182` | Coverage per service, derived from what the commitments actually consumed. | nothing in this tree |
-| `FakeCommitmentReport` | class | `finops_providers/fake/commitment.py:237` | `CommitmentReport` in memory. Every failure is asked for, never incidental. | `finops_providers/fake/provider.py` |
-| `FakeCommitmentReport.utilization` | method | `finops_providers/fake/commitment.py:259` |  | `finops_ingest/collectors/commitment.py`, `finops_providers/fake/provider.py` |
-| `FakeCommitmentReport.coverage` | method | `finops_providers/fake/commitment.py:271` |  | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_ingest/collectors/commitment.py`, `finops_providers/fake/provider.py` |
+| `uses` | function | `finops_providers/fake/commitment.py:122` | The four commitments, sized against the estate in this window. | nothing in this tree |
+| `coverages` | function | `finops_providers/fake/commitment.py:205` | Coverage per service, derived from what the commitments actually consumed. | nothing in this tree |
+| `FakeCommitmentReport` | class | `finops_providers/fake/commitment.py:260` | `CommitmentReport` in memory. Every failure is asked for, never incidental. | `finops_providers/fake/provider.py` |
+| `FakeCommitmentReport.utilization` | method | `finops_providers/fake/commitment.py:282` |  | `finops_ingest/collectors/commitment.py`, `finops_providers/fake/provider.py` |
+| `FakeCommitmentReport.coverage` | method | `finops_providers/fake/commitment.py:294` |  | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_ingest/collectors/commitment.py`, `finops_providers/fake/provider.py` |
 | `periods_ending_at` | function | `finops_providers/fake/cur.py:193` | The month containing `at` and the ones before it, oldest first. | nothing in this tree |
 | `spike_day` | function | `finops_providers/fake/cur.py:215` | The day the estate goes wrong, derived from the clock rather than written down. | nothing in this tree |
-| `estate` | function | `finops_providers/fake/cur.py:224` | Three months of bill, the newest of them still running at `at`. | nothing in this tree |
+| `estate` | function | `finops_providers/fake/cur.py:224` | Three months of bill, the newest of them still running at `at`. | `finops_providers/fake/commitment.py` |
 | `restate` | function | `finops_providers/fake/cur.py:273` | The same bill after AWS restated it: one row corrected, one retracted. | nothing in this tree |
 | `FakeCostExport` | class | `finops_providers/fake/cur.py:300` | `CostExport` in memory. Every failure is asked for, never incidental. | `finops_providers/fake/provider.py` |
 | `FakeCostExport.latest_available_period` | method | `finops_providers/fake/cur.py:321` |  | `finops_ingest/collectors/cost_focus.py`, `finops_providers/fake/provider.py` |
@@ -343,15 +343,16 @@ a duplicate.
 | `CostRepository.daily` | method | `finops_api/db/repositories/cost.py:193` | Effective cost per day inside one billing period, oldest first. | `finops_api/routes/cost.py` |
 | `AnomalyRepository` | class | `finops_api/db/repositories/cost.py:210` | Days that did not look like the days before them. FEAT-023. | `finops_api/routes/cost.py` |
 | `AnomalyRepository.worst_first` | method | `finops_api/db/repositories/cost.py:216` | Biggest move first, newest day breaking the tie. | `finops_api/routes/cost.py` |
-| `AnomalyRepository.judged_days` | method | `finops_api/db/repositories/cost.py:230` | How many distinct days this scope has cost for. | `finops_api/routes/cost.py` |
-| `CommitmentRepository` | class | `finops_api/db/repositories/cost.py:246` | What was committed and how much of it was consumed. FEAT-024. | `finops_api/routes/cost.py` |
-| `CommitmentRepository.latest_window` | method | `finops_api/db/repositories/cost.py:258` | The most recent window anything was reported for, or None. | `finops_api/routes/cost.py` |
-| `CommitmentRepository.worst_first` | method | `finops_api/db/repositories/cost.py:268` | Every commitment in the window, most wasted money first. | `finops_api/routes/cost.py` |
-| `CommitmentCoverageRepository` | class | `finops_api/db/repositories/cost.py:284` | How much of the eligible estate was on a commitment, per dimension. | `finops_api/routes/cost.py` |
-| `CommitmentCoverageRepository.slices` | method | `finops_api/db/repositories/cost.py:290` | Coverage rows in the window, most uncovered money first. | `finops_api/routes/cost.py` |
-| `MonthlyCostRepository` | class | `finops_api/db/repositories/cost.py:309` | The derived monthly shape, for setting one period beside another. | nothing in this tree |
-| `MonthlyCostRepository.months` | method | `finops_api/db/repositories/cost.py:320` | Each billing month and what it cost, newest first. | nothing in this tree |
-| `previous_month` | function | `finops_api/db/repositories/cost.py:337` | The billing period before this one. | `finops_api/routes/cost.py` |
+| `AnomalyRepository.accounts_judged` | method | `finops_api/db/repositories/cost.py:230` | How many accounts this scope has cost for, and therefore could be judged. | `finops_api/routes/cost.py` |
+| `AnomalyRepository.judged_days` | method | `finops_api/db/repositories/cost.py:253` | How many distinct days this scope has cost for. | `finops_api/routes/cost.py` |
+| `CommitmentRepository` | class | `finops_api/db/repositories/cost.py:269` | What was committed and how much of it was consumed. FEAT-024. | `finops_api/routes/cost.py` |
+| `CommitmentRepository.latest_window` | method | `finops_api/db/repositories/cost.py:281` | The most recent window anything was reported for, or None. | `finops_api/routes/cost.py` |
+| `CommitmentRepository.worst_first` | method | `finops_api/db/repositories/cost.py:291` | Every commitment in the window, most wasted money first. | `finops_api/routes/cost.py` |
+| `CommitmentCoverageRepository` | class | `finops_api/db/repositories/cost.py:307` | How much of the eligible estate was on a commitment, per dimension. | `finops_api/routes/cost.py` |
+| `CommitmentCoverageRepository.slices` | method | `finops_api/db/repositories/cost.py:313` | Coverage rows in the window, most uncovered money first. | `finops_api/routes/cost.py` |
+| `MonthlyCostRepository` | class | `finops_api/db/repositories/cost.py:332` | The derived monthly shape, for setting one period beside another. | nothing in this tree |
+| `MonthlyCostRepository.months` | method | `finops_api/db/repositories/cost.py:343` | Each billing month and what it cost, newest first. | nothing in this tree |
+| `previous_month` | function | `finops_api/db/repositories/cost.py:360` | The billing period before this one. | `finops_api/routes/cost.py` |
 | `WatermarkRepository` | class | `finops_api/db/repositories/freshness.py:20` |  | `finops_api/routes/ingest.py` |
 | `WatermarkRepository.list_all` | method | `finops_api/db/repositories/freshness.py:24` |  | `finops_api/routes/ingest.py` |
 | `PlatformCostRepository` | class | `finops_api/db/repositories/freshness.py:31` |  | `finops_api/routes/platform.py` |
@@ -434,8 +435,8 @@ a duplicate.
 | `cost_allocation` | function | `finops_api/routes/cost.py:214` | The same rows grouped by one tag key, unallocated bucket included. | nothing in this tree |
 | `cost_trend` | function | `finops_api/routes/cost.py:243` | Effective cost per day inside the period, oldest first. | nothing in this tree |
 | `cost_anomalies` | function | `finops_api/routes/cost.py:267` | Days that did not look like the days before them. | nothing in this tree |
-| `cost_commitments` | function | `finops_api/routes/cost.py:305` | What was committed, what it consumed, and what it covered. | nothing in this tree |
-| `cost_export` | function | `finops_api/routes/cost.py:416` | One period as CSV, at the grain finance asks for. FEAT-045. | nothing in this tree |
+| `cost_commitments` | function | `finops_api/routes/cost.py:311` | What was committed, what it consumed, and what it covered. | nothing in this tree |
+| `cost_export` | function | `finops_api/routes/cost.py:439` | One period as CSV, at the grain finance asks for. FEAT-045. | nothing in this tree |
 | `recent_runs` | function | `finops_api/routes/ingest.py:40` |  | nothing in this tree |
 | `staleness` | function | `finops_api/routes/ingest.py:84` |  | nothing in this tree |
 | `never_collected` | function | `finops_api/routes/ingest.py:104` | A pair that has been attempted and has never once succeeded. | nothing in this tree |

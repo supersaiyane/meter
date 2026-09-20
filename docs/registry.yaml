@@ -1198,6 +1198,37 @@ issues:
     looking for wherever else a stored engine meets a classifier constant
   status: FIXED
   detail: '`finops_api/routes/query.py`, _violates'
+- id: ISS-188
+  severity: LOW
+  summary: Top movers has no feature and no owner. It stood on the home screen as a slot
+    claiming to arrive with P1 Cost Intelligence, and P1 has now landed without it, so the
+    claim was false rather than merely unfulfilled. The slot was removed rather than
+    reattributed, because naming a sub project that has shipped is a promise nobody is
+    keeping and an empty panel is more honest than a wrong one. Found 2026-09-20 during the
+    design pass for TASK-P1-020, by reading the home screen at 1440px and noticing that
+    three of its four absences pointed at a sub project the reader could already open.
+    The question this leaves open is whether top movers is wanted at all. The by service
+    screen ranks by money and a movers view ranks by change, which is a different question
+    with its own baseline problem, and nobody has decided it is worth answering
+  status: OPEN
+  detail: '`finops-web/src/screens/HomeScreen.tsx` ABSENT'
+- id: ISS-187
+  severity: MEDIUM
+  summary: scope_coverage reports a narrowed reader as complete. build_meta takes its total
+    from AccountRepository.count_in_organization, which is itself scoped, so a reader entitled
+    to two accounts of three hundred is told two of two and is_partial is false. The field
+    exists so that a partial view is never presented as an organization total, which is what
+    local-auth.yaml says it is for, and as built it cannot do that. Every route is affected
+    equally, so no screen is inconsistent with another, which is why this was never noticed.
+    Found 2026-09-20 while fixing the anomalies banner for TASK-P1-020, by writing an
+    assertion that a narrow reader sees is_partial true and watching it fail on the summary
+    route as well. Deliberately not fixed in P1's second cut, because changing what total
+    means changes every screen's banner at once and the demo is the wrong moment for that.
+    The fix is for count_in_organization to count the organization rather than the scope,
+    which needs a read that deliberately ignores the scope and therefore needs its own
+    justification in guards.py
+  status: OPEN
+  detail: '`finops_api/routes/__init__.py` build_meta, and `finops_api/db/repositories/accounts.py`'
 - id: ISS-186
   severity: LOW
   summary: A demo database seeded once holds anomaly verdicts for one day only, because

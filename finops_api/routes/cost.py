@@ -297,7 +297,13 @@ def cost_anomalies(
         days_collected=repository.judged_days(scope),
         days_needed=MINIMUM_HISTORY,
     )
-    meta = build_meta(connection, scope, context, visible=len(rows), rows=rows)
+    # Accounts, not anomalies. The banner counts accounts, and `len(rows)` there
+    # rendered "4 missing, outside your scope" above a single finding for a reader who
+    # could see the whole estate. That is the third time a row count has reached this
+    # slot, after the line item count that read "showing all 450 accounts".
+    meta = build_meta(
+        connection, scope, context, visible=repository.accounts_judged(scope), rows=rows
+    )
     return Envelope(data=found, meta=meta)
 
 
@@ -362,7 +368,24 @@ def cost_commitments(
         # the list underneath it.
         wasted_total=sum((one.wasted for one in commitments), Decimal("0")),
     )
-    meta = build_meta(connection, scope, context, visible=len(rows), rows=[*rows, *slices])
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        # One payer, wholly visible, rather than a count of commitments against a
+        # count of accounts. The default coverage compares `visible` to the number of
+        # accounts in the organization, and passing a row count there produced
+        # "4 of 5 accounts" on a screen showing four commitments, which is the same
+        # defect the cost screen had when a line item count reached the accounts slot.
+        #
+        # A commitment belongs to the payer and to no account, and this route is only
+        # reachable by a scope that sees all of them, so the coverage is complete by
+        # construction and says so in its own unit.
+        visible=1,
+        coverage=(1, 1),
+        coverage_unit="payer",
+        rows=[*rows, *slices],
+    )
     return Envelope(data=found, meta=meta)
 
 

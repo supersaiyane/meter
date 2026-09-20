@@ -158,6 +158,27 @@ class TestTheArithmetic:
             assert isinstance(slice_.covered_spend, Decimal)
 
 
+class TestACommitmentObligesRealMoney:
+    """The shape of the bug a seeded database found.
+
+    Four commitments all obliging zero is what a fixture pinned to the wrong month
+    looks like, and it renders as an estate that has committed nothing rather than as
+    an error. Every figure being zero is the one state that reads as data.
+
+    The clock varying half of this lives in `tests/providers/fake/test_commitment.py`,
+    because this harness builds its providers at one fixed clock and cannot ask them
+    about another.
+    """
+
+    def test_an_active_commitment_obliges_something(self, subject: ProviderUnderTest) -> None:
+        active = [use for use in _uses(subject) if use.status == ACTIVE]
+        assert active
+        assert all(use.committed > Decimal("0") for use in active)
+
+    def test_something_in_the_window_was_eligible(self, subject: ProviderUnderTest) -> None:
+        assert any(slice_.eligible_spend > Decimal("0") for slice_ in _coverages(subject))
+
+
 class TestFreshness:
     def test_every_row_carries_both_timestamps(self, subject: ProviderUnderTest) -> None:
         # Constraint 10. `as_of` is when the figure was true at the source and
