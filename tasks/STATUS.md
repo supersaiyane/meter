@@ -24,7 +24,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 51 total, 12 specified, 10 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
-| Changes | 90 recorded |
+| Changes | 96 recorded |
 | Issues | 124 fixed, 58 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
@@ -125,6 +125,8 @@ ISS-003.
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P1 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
+| P3 | 0 | 0 | 0 | 0 | 20 | 20 | [plan](../docs/plans/P3-implementation-plan.md) |
+| P4 | 0 | 0 | 0 | 0 | 11 | 11 | [plan](../docs/plans/P4-implementation-plan.md) |
 
 **P0, not in the default state**
 

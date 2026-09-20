@@ -8,9 +8,17 @@ Naming: `P<n>-implementation-plan.md`.
 
 | Plan | Status |
 | --- | --- |
-| P0 foundation | Written. 34 tasks in eleven groups |
-| P2 query cost governance | Written. 22 tasks in ten waves |
+| P0 foundation | Written. 39 tasks, all delivered |
+| P1 cost intelligence | Written. 21 tasks, all delivered |
+| P2 query cost governance | Written. 25 tasks, 21 delivered, 2 descoped, 2 parked |
+| P3 utilization and rightsizing | Written 2026-09-20. 20 tasks in nine waves. Not started |
+| P4 inventory and topology | Written 2026-09-20. 11 tasks in seven waves. Not started |
 
 Later sub projects get their plan when their specification is approved, per
 ADR-0001. Writing a plan for work whose foundations do not exist yet produces
 guesses that look like decisions.
+
+P3's last task depends on P4 being delivered, because FEAT-044 scores blast
+radius by walking the edge tables FEAT-031 creates. The build order decided on
+2026-09-20 is P3 first without that task, then P4, then that task, which keeps the
+money features first without pretending the dependency is not there.

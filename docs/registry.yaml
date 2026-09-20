@@ -209,49 +209,49 @@ features:
   name: Cost Optimization Hub, Compute Optimizer and Trusted Advisor ingest
   subproject: P3
   status: Planned
-  detail: '[ADR-0006](docs/adr/ADR-0006-aws-native-recommendations-first.md)'
+  detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 4, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-025-aws-native-recommendation-ingest.md
 - id: FEAT-026
   name: Bespoke waste collectors where AWS is blind
   subproject: P3
   status: Planned
-  detail: '[ADR-0006](docs/adr/ADR-0006-aws-native-recommendations-first.md)'
+  detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.2, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-026-bespoke-waste-collectors.md
 - id: FEAT-027
   name: 'CloudWatch cost module: retention, unqueried logs, stale alarms'
   subproject: P3
   status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P3'
+  detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.2, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-027-cloudwatch-cost-module.md
 - id: FEAT-028
   name: Recommendation lifecycle with owner and ticketing
   subproject: P3
   status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P3. Addresses ISS-028'
+  detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.1, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-028-recommendation-lifecycle.md
 - id: FEAT-029
   name: Realized savings verification, the north star metric
   subproject: P3
   status: Planned
-  detail: '[docs/00-GOAL.md](docs/00-GOAL.md). Addresses ISS-029'
+  detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.5, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-029-realized-savings-verification.md
 - id: FEAT-030
   name: AWS Config aggregator inventory by region and zone
   subproject: P4
   status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P4'
+  detail: '[P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.1, [P4 plan](docs/plans/P4-implementation-plan.md)'
   doc: docs/features/FEAT-030-config-aggregator-inventory.md
 - id: FEAT-031
   name: Topology graph, node and edge model
   subproject: P4
   status: Planned
-  detail: '[ADR-0005](docs/adr/ADR-0005-postgres-adjacency-for-topology.md)'
+  detail: '[P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.2, [P4 plan](docs/plans/P4-implementation-plan.md)'
   doc: docs/features/FEAT-031-topology-graph.md
 - id: FEAT-032
   name: Topology map interface
   subproject: P4
   status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P4'
+  detail: '[P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 9, [P4 plan](docs/plans/P4-implementation-plan.md)'
   doc: docs/features/FEAT-032-topology-map-interface.md
 - id: FEAT-033
   name: Quota utilization per service per region, with stated coverage gaps
@@ -317,13 +317,13 @@ features:
   name: FinOps Score, decomposable to the findings that moved it
   subproject: P3
   status: Planned
-  detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md), ADR-0016'
+  detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 9, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-043-finops-score.md
 - id: FEAT-044
   name: Blast radius scoring from the dependency graph, gating auto apply
   subproject: P3
   status: Planned
-  detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md)'
+  detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 12, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-044-blast-radius-scoring.md
 - id: FEAT-045
   name: Chargeback and showback export, CSV
@@ -1147,6 +1147,63 @@ changes:
     than allowlisted. P1's cost surface is 13 of 13
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-013'
+- id: CHG-0091
+  date: 2026-09-20
+  type: Feature
+  what: TASK-P1-014 and 015. The anomaly detector and its screen. A median rather than a mean,
+    a dollar floor as well as a ratio, and a refusal under fourteen days rather than a cautious
+    guess. Migration 0008 adds cost_anomaly, whose deviations column is nullable because a flat
+    baseline makes every departure infinitely many deviations
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-014, TASK-P1-015'
+- id: CHG-0092
+  date: 2026-09-20
+  type: Design
+  what: TASK-P1-016 and 017, with two deviations from the plan. Utilization and coverage are two
+    tables rather than one, because a provider reports coverage per service and never per
+    commitment, so a covered_spend column on a commitment would be a number nobody measured.
+    And PayerWide is a new guard shape, because ByAccount has no column to match and None would
+    have served a narrowed viewer the payer whole commitment position. Migration 0009
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-016, TASK-P1-017'
+- id: CHG-0093
+  date: 2026-09-20
+  type: Feature
+  what: TASK-P1-018. GET /cost/export, CSV, generated from the repository the screens read so
+    the file cannot drift from what a reader was shown. The only route in ENVELOPE_EXEMPT that
+    returns tenant data, and the exemption is paid for by as_of, collected_at and the scope
+    coverage appearing as columns on every row
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-018'
+- id: CHG-0094
+  date: 2026-09-20
+  type: Correction
+  what: TASK-P1-019, 020 and 021. The design pass found five defects on screens whose tests were
+    green, including a front page still promising a sub project that had shipped, and a seeded
+    database found a sixth that no test had, where the commitment fake reported four commitments
+    obliging zero dollars at any clock but its own. Adds the demo runbook and its journey
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-019 to TASK-P1-021'
+- id: CHG-0095
+  date: 2026-09-20
+  type: Design
+  what: P3 specification and implementation plan written, 20 tasks in nine waves. The sub project
+    is FEAT-029, verifying that the bill actually moved, and everything else is upstream of it.
+    Estimated and realized savings are different kinds of number and one task exists only to
+    prove they cannot be added. Blast radius refuses to score against an incomplete graph rather
+    than returning a low one
+  commit: pending
+  detail: '[P3 plan](docs/plans/P3-implementation-plan.md)'
+- id: CHG-0096
+  date: 2026-09-20
+  type: Design
+  what: P4 specification and implementation plan written, 11 tasks in seven waves. One rule shapes
+    it. An edge Meter cannot see is not an absent edge, so graph_coverage is written on every run
+    including failed ones, traversal returns its own coverage as part of its return type, and the
+    fake estate is incomplete by default. ISS-012 decided as selective Config recording, with the
+    estimated monthly cost written into the task before it is applied
+  commit: pending
+  detail: '[P4 plan](docs/plans/P4-implementation-plan.md)'
 issues:
 - id: ISS-164
   severity: MEDIUM
