@@ -3,9 +3,9 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P3 |
-| Status | Planned |
-| Specification | Not written. This document expands when P3 is specified |
-| Tasks | Not planned |
+| Status | Specified |
+| Specification | [P3 spec](../specs/2026-09-20-p3-utilization-and-rightsizing-design.md), section 5.2 |
+| Tasks | TASK-P3-009 |
 | Refresh cadence | 24 hours |
 
 ## What it does
@@ -20,13 +20,39 @@ These findings are trivially detectable and typically pay for the whole platform
 
 Remediation levers are retention policies, the CloudWatch Logs Infrequent Access class, and export of cold logs to S3.
 
-## Status of this document
+## How it works
 
-Planned. The sections a specified feature carries, how it works in detail, its
-data sources, its measured versus modelled figures, its failure behaviour, its
-security considerations and its interface, are written when P3 is specified.
-Recording only what is actually decided is deliberate: a document that invents
-detail ahead of the decision is worse than a short one, because it will be
-believed.
+The cheap wins in the service that bills for watching: log groups with no retention
+policy, high ingest groups unqueried in 90 days, duplicate delivery to both
+CloudWatch Logs and S3, custom metrics never queried, alarms stuck in insufficient
+data.
 
-See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P3.
+"Unqueried in 90 days" is read from P2's existing evidence tables rather than
+re collected. P2 asks what the queries cost; this asks what the storage and the
+metrics cost. Different questions, different APIs, one shared piece of evidence.
+
+Remediation names the lever: a retention policy, the CloudWatch Logs Infrequent
+Access class, or export of cold logs to S3.
+
+## Failure behaviour
+
+An alarm in insufficient data for an hour is not a finding; one in that state for
+30 days is. The threshold exists because the transient case is normal and flagging
+it would teach a reader to skim the screen.
+
+A log group Meter cannot read is reported as unreadable, not as having no
+retention policy.
+
+## Security considerations
+
+Read only. `logs:Describe*` and `cloudwatch:Describe*` on the org reader role.
+
+## Interface
+
+`GET /waste/recommendations`, with the CloudWatch waste classes.
+
+## Not doing
+
+**Setting a retention policy.** Constraint 6, and this is the feature where it is
+most tempting, because the fix is one API call and obviously correct. That is what
+makes the first exception easy to argue.

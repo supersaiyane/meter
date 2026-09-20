@@ -3,9 +3,9 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P3 |
-| Status | Planned |
-| Specification | Not written. This document expands when P3 is specified |
-| Tasks | Not planned |
+| Status | Specified |
+| Specification | [P3 spec](../specs/2026-09-20-p3-utilization-and-rightsizing-design.md), section 5.1 |
+| Tasks | TASK-P3-010 to TASK-P3-012, TASK-P3-017 |
 | Refresh cadence | Live |
 
 ## What it does
@@ -31,13 +31,49 @@ and a systemic problem must not hide as four hundred trivial ones.
 
 Ticketing target is OPEN-05. Target is above 80 percent reaching a terminal state within 30 days.
 
-## Status of this document
+## How it works
 
-Planned. The sections a specified feature carries, how it works in detail, its
-data sources, its measured versus modelled figures, its failure behaviour, its
-security considerations and its interface, are written when P3 is specified.
-Recording only what is actually decided is deliberate: a document that invents
-detail ahead of the decision is worse than a short one, because it will be
-believed.
+Every recommendation moves through `OPEN`, `ACCEPTED`, `IN_PROGRESS`, `DONE`, and
+then `VERIFIED` or `REGRESSED`, with `DISMISSED` available throughout. Every
+transition writes an append only `recommendation_event` naming who and when.
 
-See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P3.
+**Severity is derived from the money**, per ADR-0016, through the same function the
+query findings and the anomalies use. `CRITICAL` at 1,000 USD a month, `HIGH` at
+100, `MEDIUM` at 20. Never entered by hand, so nobody can raise a finding's
+priority by believing in it more strongly.
+
+**Confidence is a separate figure and is never combined with severity.** Severity
+answers how much money is at stake; confidence answers how sure the estimate is. A
+ten thousand dollar recommendation resting on three days of data is `CRITICAL` and
+`LOW`, and a reader needs both to decide whether to act this week.
+
+## Failure behaviour
+
+An illegal transition is refused: `VERIFIED` does not return to `OPEN`. Dismissal
+requires a reason, enforced by the route rather than by the screen.
+
+**A recommendation with no owner is reported as unowned**, because ISS-021's lesson
+is that an unowned finding is never fixed. It is not hidden and not assigned to
+somebody by inference.
+
+The lifecycle column is not the lifecycle. It says where a recommendation is; only
+the event log can show that somebody accepted it in March, nothing happened, and it
+was quietly dismissed in June.
+
+## Security considerations
+
+Scoped by account. `recommendation_event` inherits the scope of the recommendation
+it hangs off, through the guard's `Through` rule rather than a second copy of the
+account.
+
+## Interface
+
+`GET /waste/recommendations`, `GET /waste/recommendations/{id}`, and two `POST`
+transitions that carry no body: what to write is decided by the server from the row
+it already holds.
+
+## Not doing
+
+**Choosing a ticketing system.** OPEN-05 is unanswered, so `TicketSink` is a port
+with a fake and the Jira or ServiceNow adapter is one task waiting on the answer.
+The lifecycle is complete without it.
