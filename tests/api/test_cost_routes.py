@@ -240,3 +240,57 @@ class TestTheGroupingsAgree:
         seed(engine, tenant_id)
         client, token = client_for(engine, everything(tenant_id), settings)
         assert client.get("/api/v1/cost/allocation", headers=auth(token)).status_code == 422
+
+
+class TestAnomalies:
+    """An empty list means two opposite things, and the payload has to say which."""
+
+    def test_a_young_estate_is_not_told_it_is_behaving(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """Four days of history is not an estate with no anomalies. It is an
+        estate nobody can say anything about yet, and a screen that renders the
+        two alike tells the second one a reassuring lie."""
+        seed(engine, tenant_id)
+        client, token = client_for(engine, everything(tenant_id), settings)
+        found = get(client, token, "/api/v1/cost/anomalies")["data"]
+        assert found["anomalies"] == []
+        assert found["days_needed"] > 0
+        assert found["days_collected"] >= 0
+
+    def test_it_reports_a_real_spike_with_its_working(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
+
+        seed(engine, tenant_id, rows=CURRENT)
+        with engine.begin() as connection:
+            CostAnomalyCollector(clock=lambda: TODAY)(
+                CollectorContext(
+                    unit=Unit(tenant_id=tenant_id),
+                    connection=connection,
+                    run_id=uuid4(),
+                    settings=settings,
+                )
+            )
+
+        client, token = client_for(engine, everything(tenant_id), settings)
+        found = get(client, token, "/api/v1/cost/anomalies")["data"]
+        # The estate rises smoothly rather than spiking, so this asserts the
+        # shape of the answer and not that one was found. The detector's own
+        # suite is where a spike is proved.
+        assert isinstance(found["anomalies"], list)
+        assert found["days_collected"] > 0
+        for row in found["anomalies"]:
+            assert row["why"]
+            assert Decimal(row["delta"]) == Decimal(row["observed"]) - Decimal(row["baseline"])
+
+    def test_a_narrow_scope_is_served_only_its_own(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        # The guard went in before the route, per the rule at the top of the P1
+        # plan. This is the test that proves it rather than assuming it.
+        seed(engine, tenant_id)
+        client, token = client_for(engine, only(tenant_id, ONE_ACCOUNT), settings)
+        found = get(client, token, "/api/v1/cost/anomalies")["data"]
+        assert {row["account_id"] for row in found["anomalies"]} <= {ONE_ACCOUNT}

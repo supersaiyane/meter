@@ -1,4 +1,10 @@
-import type { ApiCostDay, ApiCostSlice, ApiCostSummary, ApiEnvelope } from '../types';
+import type {
+  ApiCostAnomalies,
+  ApiCostDay,
+  ApiCostSlice,
+  ApiCostSummary,
+  ApiEnvelope,
+} from '../types';
 
 /**
  * A bill for a screen whose API is unreachable, and for tests that need one.
@@ -166,4 +172,41 @@ export function costTrendFixture(): ApiEnvelope<ApiCostDay[]> {
     });
   }
   return { data: days, meta: meta(5) };
+}
+
+export function costAnomaliesFixture(): ApiEnvelope<ApiCostAnomalies> {
+  return {
+    data: {
+      anomalies: [
+        {
+          account_id: 'fake-product-a',
+          service_name: 'AmazonEC2',
+          day: '2026-09-18',
+          observed: '742.1900',
+          baseline: '191.4400',
+          delta: '550.7500',
+          deviations: '9.2000',
+          severity: 'HIGH',
+          why: '+550.75 against a usual 191.44, which is 9.2 deviations out',
+        },
+        {
+          account_id: 'fake-platform-b',
+          service_name: 'AmazonCloudWatch',
+          day: '2026-09-18',
+          observed: '96.3100',
+          baseline: '52.8800',
+          delta: '43.4300',
+          // Null on purpose: a perfectly steady baseline, which the fake estate
+          // produces and a real one sometimes does. The screen has to render
+          // the absence rather than a zero.
+          deviations: null,
+          severity: 'MEDIUM',
+          why: '+43.43 against a steady 52.88, a baseline that had not moved in 14 days',
+        },
+      ],
+      days_collected: 81,
+      days_needed: 14,
+    },
+    meta: meta(5),
+  };
 }

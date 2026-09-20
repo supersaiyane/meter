@@ -127,3 +127,31 @@ container use a new image, `docker compose up -d --force-recreate <svc>`.
 a command whose success matters, "the build finished", "the image is rebuilt",
 restarting a service after a code change, and any claim about what a container
 is running that was not read out of that container.
+
+## 2026-09-20 — a test that names its subject instead of deriving it
+
+**Mistake:** three tests asserted that an unbuilt screen names the sub project
+that will bring it, and each did so by naming one path. `/cost` shipped, so I
+repointed all three at `/cost/anomalies`. That shipped too, and the same three
+went red again. Twice I read the failure, saw a path that was now built, and
+repointed it at the next path on the roadmap, which set the same trap one task
+further out. The assertions were about a mechanism and were written as facts
+about a particular screen, so every one of their failures looked like a
+regression in work that was actually correct.
+
+**Correction:** self caught on the second repeat, when the fix I was about to
+apply was identical to the fix I had applied the day before.
+
+**Rule:** when a test's subject is a mechanism that applies to a category
+("an unbuilt screen", "a fixture backed surface", "a partial scope"), derive the
+member from the source of truth at run time and assert the property over it.
+`allScreens().filter((s) => s.arrives !== null)` and
+`page.locator('a[data-arrives]').first()` cannot go stale, because the thing
+that changes when a screen ships is the same thing the test reads. Naming a
+member is only correct when the test is about that member. And the second time a
+fix is byte for byte the fix from last time, the test is wrong, not the code.
+
+**Triggers:** a test failing because the thing it pointed at now works, any
+assertion containing a literal route, id or fixture name where the test title
+says "a" or "an" rather than that name, and writing the same repair to a test
+twice.

@@ -306,3 +306,34 @@ export interface ApiCostDay {
   readonly day: string;
   readonly effective_cost: string;
 }
+
+/** One day that did not look like the days before it. FEAT-023. */
+export interface ApiCostAnomaly {
+  readonly account_id: string;
+  readonly service_name: string;
+  readonly day: string;
+  readonly observed: string;
+  readonly baseline: string;
+  readonly delta: string;
+  /**
+   * Null when the baseline had not moved. Every departure from an unmoving
+   * baseline is infinitely many deviations, so this says nothing rather than
+   * something false.
+   */
+  readonly deviations: string | null;
+  readonly severity: string;
+  /** The working, so a reader can disagree with the verdict. */
+  readonly why: string;
+}
+
+export interface ApiCostAnomalies {
+  readonly anomalies: readonly ApiCostAnomaly[];
+  /**
+   * An empty list means two opposite things. An estate with enough history and
+   * nothing wrong is behaving. An estate with four days of history has not been
+   * judged at all, and rendering both as "no anomalies" tells the second one a
+   * reassuring lie.
+   */
+  readonly days_collected: number;
+  readonly days_needed: number;
+}

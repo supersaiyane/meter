@@ -25,10 +25,11 @@ from collections.abc import Sequence
 from datetime import date
 from typing import Any, ClassVar, cast
 
-from sqlalchemy import Row, Select, Table, func
+from sqlalchemy import Row, Select, Table, func, select
 
 from finops_api.db import models
 from finops_api.db.repositories.base import ScopedRepository
+from finops_api.guards import require_scope
 from finops_core.domain.platform import UNALLOCATED
 from finops_core.domain.tenant import Scope
 
@@ -173,6 +174,42 @@ class CostRepository(ScopedRepository):
             .order_by(day)
         )
         return _fetch(self, scope, statement)
+
+
+class AnomalyRepository(ScopedRepository):
+    """Days that did not look like the days before them. FEAT-023."""
+
+    table: ClassVar[Table] = models.cost_anomaly
+    resource: ClassVar[str] = "cost_anomaly"
+
+    def worst_first(self, scope: Scope, limit: int = 50) -> Sequence[Row[tuple[Any, ...]]]:
+        """Biggest move first, newest day breaking the tie.
+
+        Ranked by the money rather than by the ratio, per ADR-0016. A screen
+        ordered by ratio puts a two cent service that tripled above a service
+        that cost eight hundred dollars more than it should have.
+        """
+        statement = (
+            self.scoped_select(scope)
+            .order_by(self.table.c.delta.desc(), self.table.c.day.desc())
+            .limit(limit)
+        )
+        return _fetch(self, scope, statement)
+
+    def judged_days(self, scope: Scope) -> int:
+        """How many distinct days this scope has cost for.
+
+        The screen needs it to tell two empty tables apart: an estate that is
+        behaving, and an estate nobody can say anything about yet. Read from
+        the cost table rather than from this one, because an estate with no
+        anomalies has no rows here to count.
+        """
+        daily = models.cost_focus_daily
+        statement = select(func.count(func.distinct(func.date(daily.c.charge_period_start)))).where(
+            daily.c.tenant_id == require_scope(scope).tenant_id
+        )
+        rows = self._connection.execute(statement).all()
+        return int(rows[0][0] or 0) if rows else 0
 
 
 class MonthlyCostRepository(ScopedRepository):

@@ -25,10 +25,17 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.engine import Connection
 
 from finops_api.db.repositories import AccessContext
-from finops_api.db.repositories.cost import GROUPABLE, CostRepository, previous_month
+from finops_api.db.repositories.cost import (
+    GROUPABLE,
+    AnomalyRepository,
+    CostRepository,
+    previous_month,
+)
 from finops_api.deps import get_access_context, get_connection, get_scope
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
+    CostAnomaliesOut,
+    CostAnomalyOut,
     CostDayOut,
     CostSliceOut,
     CostSummaryOut,
@@ -37,6 +44,7 @@ from finops_api.schemas import (
 )
 from finops_core.domain.cost import BillingPeriod
 from finops_core.domain.tenant import Scope
+from finops_query.anomaly import MINIMUM_HISTORY
 
 router = APIRouter(prefix=API_PREFIX, tags=["cost"])
 
@@ -226,3 +234,41 @@ def cost_trend(
         collected_at=totals[0][4],
     )
     return Envelope(data=series, meta=meta)
+
+
+@router.get("/cost/anomalies", response_model=Envelope[CostAnomaliesOut])
+def cost_anomalies(
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[CostAnomaliesOut]:
+    """Days that did not look like the days before them.
+
+    The payload carries how many days of cost the scope has, because an empty
+    list means two opposite things. An estate with a fortnight of history and no
+    anomalies is behaving. An estate with four days of history has not been
+    judged at all, and a screen that renders both as "no anomalies" tells the
+    second one a reassuring lie.
+    """
+    repository = AnomalyRepository(connection, context)
+    rows = repository.worst_first(scope)
+    found = CostAnomaliesOut(
+        anomalies=[
+            CostAnomalyOut(
+                account_id=str(row.sub_account_id),
+                service_name=str(row.service_name),
+                day=row.day,
+                observed=Decimal(row.observed),
+                baseline=Decimal(row.baseline),
+                delta=Decimal(row.delta),
+                deviations=None if row.deviations is None else Decimal(row.deviations),
+                severity=str(row.severity),
+                why=str(row.why),
+            )
+            for row in rows
+        ],
+        days_collected=repository.judged_days(scope),
+        days_needed=MINIMUM_HISTORY,
+    )
+    meta = build_meta(connection, scope, context, visible=len(rows), rows=rows)
+    return Envelope(data=found, meta=meta)

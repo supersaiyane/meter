@@ -211,28 +211,43 @@ test('the organization map stays usable at three hundred accounts', async ({ pag
 test('an unbuilt screen is listed, reachable, and names what will fill it', async ({ page }) => {
   // Hiding an unbuilt screen would make the product look smaller than it is and
   // would hide the roadmap. ADR-0020.
+  //
+  // The screen under test is derived, never named. This journey was pinned to
+  // `/cost` and then to `/cost/anomalies`, and both shipped, so it failed twice
+  // for a reason that had nothing to do with the mechanism it exists to check,
+  // and each failure read like a regression. It now takes whichever screen is
+  // unbuilt today.
   await withSession(page);
-  await page.goto('/inventory/accounts');
+
+  // Home, because Home's group holds nothing else. Every other group is folded
+  // here, so the first unbuilt link is necessarily inside a closed section,
+  // which is the state the next two assertions are about.
+  await page.goto('/');
+
+  const unbuilt = page.locator('nav[aria-label="Sections"] a[data-arrives]').first();
+  await expect(unbuilt).toBeAttached();
+
+  const href = await unbuilt.getAttribute('href');
+  const arrives = await unbuilt.getAttribute('data-arrives');
+  expect(href).toBeTruthy();
+  expect(arrives).toBeTruthy();
 
   // Listed even while its section is closed. The navigation is an accordion, so
   // a screen in another section is in the document and not on screen. That
   // distinction is the whole point: absent would mean the roadmap is hidden,
-  // and this is one expansion away. Located by href rather than by role,
+  // and this is one expansion away. Located by attribute rather than by role,
   // because a closed details element is out of the accessibility tree and
   // getByRole would report it missing when it is merely folded.
-  // Anomalies, not Spend and trend. That one carried this journey until
-  // 2026-09-19 and then shipped, which is precisely what this test is for: a
-  // journey pinned to one path stops testing the mechanism the day that path
-  // is built, and the failure it produces looks like a regression.
-  const anomalies = page.locator('nav[aria-label="Sections"] a[href="/cost/anomalies"]');
-  await expect(anomalies).toBeAttached();
-  await expect(anomalies).not.toBeVisible();
+  await expect(unbuilt).not.toBeVisible();
 
-  await page.locator('nav[aria-label="Sections"] summary', { hasText: 'Cost' }).click();
-  await expect(anomalies).toBeVisible();
-  await anomalies.click();
-  await expect(page).toHaveURL(/\/cost\/anomalies$/);
-  await expect(page.getByTestId('not-built')).toContainText('arrives with P1 Cost Intelligence');
+  const section = page.locator('nav[aria-label="Sections"] details', {
+    has: page.locator(`a[href="${href ?? ''}"]`),
+  });
+  await section.locator('summary').click();
+  await expect(unbuilt).toBeVisible();
+  await unbuilt.click();
+  await expect(page).toHaveURL(new RegExp(`${href ?? ''}$`));
+  await expect(page.getByTestId('not-built')).toContainText(`arrives with ${arrives ?? ''}`);
 
   // A wrong address is a different condition and does not share the rendering.
   await page.goto('/nonsense');

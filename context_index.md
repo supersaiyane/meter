@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-414 public symbols across 5 packages.
+420 public symbols across 5 packages.
 
 ## finops_core
 
@@ -313,16 +313,19 @@ a duplicate.
 | `ScopedRepository.scoped_select` | method | `finops_api/db/repositories/base.py:49` | A select already confined to the scope. There is no unconfined variant. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/cost.py`, `finops_api/db/repositories/freshness.py`, `finops_api/db/repositories/ingest.py`, and 2 more |
 | `ScopedRepository.fetch` | method | `finops_api/db/repositories/base.py:53` | Run a scoped read and record it. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/cost.py`, `finops_api/db/repositories/freshness.py`, `finops_api/db/repositories/ingest.py`, and 2 more |
 | `scope_as_json` | function | `finops_api/db/repositories/base.py:86` | The scope as it was evaluated, so an audit row is readable a year later. | nothing in this tree |
-| `CostRepository` | class | `finops_api/db/repositories/cost.py:64` | The cost surface's reads. FEAT-021 and FEAT-022. | `finops_api/routes/cost.py` |
-| `CostRepository.latest_period` | method | `finops_api/db/repositories/cost.py:70` | The newest billing period this scope can see. | `finops_api/routes/cost.py` |
-| `CostRepository.accounts_in` | method | `finops_api/db/repositories/cost.py:82` | How many accounts this scope can see spending in the period. | `finops_api/routes/cost.py` |
-| `CostRepository.period_total` | method | `finops_api/db/repositories/cost.py:98` | One row: effective, billed, line items and both timestamps. | `finops_api/routes/cost.py` |
-| `CostRepository.grouped` | method | `finops_api/db/repositories/cost.py:114` | Worst first, by service, account or region. | `finops_api/routes/cost.py`, `finops_api/routes/query.py` |
-| `CostRepository.by_tag` | method | `finops_api/db/repositories/cost.py:137` | Allocation: charges grouped by one tag key, with an explicit bucket | `finops_api/routes/cost.py` |
-| `CostRepository.daily` | method | `finops_api/db/repositories/cost.py:161` | Effective cost per day inside one billing period, oldest first. | `finops_api/routes/cost.py` |
-| `MonthlyCostRepository` | class | `finops_api/db/repositories/cost.py:178` | The derived monthly shape, for setting one period beside another. | nothing in this tree |
-| `MonthlyCostRepository.months` | method | `finops_api/db/repositories/cost.py:189` | Each billing month and what it cost, newest first. | nothing in this tree |
-| `previous_month` | function | `finops_api/db/repositories/cost.py:206` | The billing period before this one. | `finops_api/routes/cost.py` |
+| `CostRepository` | class | `finops_api/db/repositories/cost.py:65` | The cost surface's reads. FEAT-021 and FEAT-022. | `finops_api/routes/cost.py` |
+| `CostRepository.latest_period` | method | `finops_api/db/repositories/cost.py:71` | The newest billing period this scope can see. | `finops_api/routes/cost.py` |
+| `CostRepository.accounts_in` | method | `finops_api/db/repositories/cost.py:83` | How many accounts this scope can see spending in the period. | `finops_api/routes/cost.py` |
+| `CostRepository.period_total` | method | `finops_api/db/repositories/cost.py:99` | One row: effective, billed, line items and both timestamps. | `finops_api/routes/cost.py` |
+| `CostRepository.grouped` | method | `finops_api/db/repositories/cost.py:115` | Worst first, by service, account or region. | `finops_api/routes/cost.py`, `finops_api/routes/query.py` |
+| `CostRepository.by_tag` | method | `finops_api/db/repositories/cost.py:138` | Allocation: charges grouped by one tag key, with an explicit bucket | `finops_api/routes/cost.py` |
+| `CostRepository.daily` | method | `finops_api/db/repositories/cost.py:162` | Effective cost per day inside one billing period, oldest first. | `finops_api/routes/cost.py` |
+| `AnomalyRepository` | class | `finops_api/db/repositories/cost.py:179` | Days that did not look like the days before them. FEAT-023. | `finops_api/routes/cost.py` |
+| `AnomalyRepository.worst_first` | method | `finops_api/db/repositories/cost.py:185` | Biggest move first, newest day breaking the tie. | `finops_api/routes/cost.py` |
+| `AnomalyRepository.judged_days` | method | `finops_api/db/repositories/cost.py:199` | How many distinct days this scope has cost for. | `finops_api/routes/cost.py` |
+| `MonthlyCostRepository` | class | `finops_api/db/repositories/cost.py:215` | The derived monthly shape, for setting one period beside another. | nothing in this tree |
+| `MonthlyCostRepository.months` | method | `finops_api/db/repositories/cost.py:226` | Each billing month and what it cost, newest first. | nothing in this tree |
+| `previous_month` | function | `finops_api/db/repositories/cost.py:243` | The billing period before this one. | `finops_api/routes/cost.py` |
 | `WatermarkRepository` | class | `finops_api/db/repositories/freshness.py:20` |  | `finops_api/routes/ingest.py` |
 | `WatermarkRepository.list_all` | method | `finops_api/db/repositories/freshness.py:24` |  | `finops_api/routes/ingest.py` |
 | `PlatformCostRepository` | class | `finops_api/db/repositories/freshness.py:31` |  | `finops_api/routes/platform.py` |
@@ -362,7 +365,7 @@ a duplicate.
 | `ScopeViolationError` | class | `finops_api/guards.py:28` | A query was about to run against a scoped table without a scope. | nothing in this tree |
 | `ByAccount` | class | `finops_api/guards.py:33` | The row names the account it belongs to. | nothing in this tree |
 | `Through` | class | `finops_api/guards.py:47` | The row names no account, and inherits the scope of the row it hangs off. | nothing in this tree |
-| `require_scope` | function | `finops_api/guards.py:117` | Refuse anything that is not a scope, including None. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/ingest.py`, `finops_api/db/repositories/query.py` |
+| `require_scope` | function | `finops_api/guards.py:117` | Refuse anything that is not a scope, including None. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/cost.py`, `finops_api/db/repositories/ingest.py`, and 1 more |
 | `scope_predicate` | function | `finops_api/guards.py:133` | The WHERE clause that confines a read to what the scope permits. | `finops_api/db/repositories/ingest.py`, `finops_api/db/repositories/query.py` |
 | `scoped_select` | function | `finops_api/guards.py:191` | The only constructor of a select against a scoped table. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/cost.py`, `finops_api/db/repositories/freshness.py`, and 3 more |
 | `assert_scoped` | function | `finops_api/guards.py:201` | Backstop. Refuse to run a select that did not come from `scoped_select`. | `finops_api/db/repositories/base.py` |
@@ -398,11 +401,12 @@ a duplicate.
 | `to_out` | function | `finops_api/routes/accounts.py:26` |  | nothing in this tree |
 | `list_accounts` | function | `finops_api/routes/accounts.py:41` |  | `finops_ingest/collectors/org_tree.py` |
 | `recheck` | function | `finops_api/routes/accounts.py:54` | Force a role health recheck. A read only call, per constraint 6. | nothing in this tree |
-| `cost_summary` | function | `finops_api/routes/cost.py:117` | This period set against the one before it. | nothing in this tree |
-| `cost_by_service` | function | `finops_api/routes/cost.py:157` | Services, worst first. | nothing in this tree |
-| `cost_by_account` | function | `finops_api/routes/cost.py:168` | Accounts, worst first, and only the ones this scope reaches. | nothing in this tree |
-| `cost_allocation` | function | `finops_api/routes/cost.py:179` | The same rows grouped by one tag key, unallocated bucket included. | nothing in this tree |
-| `cost_trend` | function | `finops_api/routes/cost.py:208` | Effective cost per day inside the period, oldest first. | nothing in this tree |
+| `cost_summary` | function | `finops_api/routes/cost.py:125` | This period set against the one before it. | nothing in this tree |
+| `cost_by_service` | function | `finops_api/routes/cost.py:165` | Services, worst first. | nothing in this tree |
+| `cost_by_account` | function | `finops_api/routes/cost.py:176` | Accounts, worst first, and only the ones this scope reaches. | nothing in this tree |
+| `cost_allocation` | function | `finops_api/routes/cost.py:187` | The same rows grouped by one tag key, unallocated bucket included. | nothing in this tree |
+| `cost_trend` | function | `finops_api/routes/cost.py:216` | Effective cost per day inside the period, oldest first. | nothing in this tree |
+| `cost_anomalies` | function | `finops_api/routes/cost.py:240` | Days that did not look like the days before them. | nothing in this tree |
 | `recent_runs` | function | `finops_api/routes/ingest.py:40` |  | nothing in this tree |
 | `staleness` | function | `finops_api/routes/ingest.py:84` |  | nothing in this tree |
 | `never_collected` | function | `finops_api/routes/ingest.py:104` | A pair that has been attempted and has never once succeeded. | nothing in this tree |
@@ -436,15 +440,17 @@ a duplicate.
 | `HealthOut` | class | `finops_api/schemas.py:229` | `/healthz`. Deliberately not a bare liveness probe. | `finops_api/main.py` |
 | `CostTotalOut` | class | `finops_api/schemas.py:245` | What a billing period cost, and whether that period is finished. | `finops_api/routes/cost.py` |
 | `CostSummaryOut` | class | `finops_api/schemas.py:268` | This period, the one before it, and the difference between them. | `finops_api/routes/cost.py` |
-| `CostSliceOut` | class | `finops_api/schemas.py:285` | One row of a grouping: a service, an account, a region or a tag value. | `finops_api/routes/cost.py` |
-| `CostDayOut` | class | `finops_api/schemas.py:298` | Effective cost on one day, for the chart on the cost screen. | `finops_api/routes/cost.py` |
-| `CostPointOut` | class | `finops_api/schemas.py:307` | What one query cost on one day. ISS-172. | `finops_api/routes/query.py` |
-| `QueryFindingOut` | class | `finops_api/schemas.py:323` | One expensive query, as the findings list shows it. | `finops_api/routes/query.py` |
-| `RemediationOut` | class | `finops_api/schemas.py:369` | What a remediation did, or why it did not. | `finops_api/routes/query.py` |
-| `QueryGroupOut` | class | `finops_api/schemas.py:392` | One cause, with the money behind it summed across every finding. | `finops_api/routes/query.py` |
-| `QueryFindingDetailOut` | class | `finops_api/schemas.py:416` | One finding with its full working, for the detail screen. | `finops_api/routes/query.py` |
-| `AdhocQueryOut` | class | `finops_api/schemas.py:439` | One Logs Insights query that ran and belongs to no panel or alert rule. | `finops_api/routes/query.py` |
-| `SurfaceInstanceOut` | class | `finops_api/schemas.py:465` | One place queries live, reachable or not. | `finops_api/routes/query.py` |
+| `CostAnomalyOut` | class | `finops_api/schemas.py:285` | One day that did not look like the days before it. | `finops_api/routes/cost.py` |
+| `CostAnomaliesOut` | class | `finops_api/schemas.py:311` | The anomalies, and enough context to read an empty list correctly. | `finops_api/routes/cost.py` |
+| `CostSliceOut` | class | `finops_api/schemas.py:324` | One row of a grouping: a service, an account, a region or a tag value. | `finops_api/routes/cost.py` |
+| `CostDayOut` | class | `finops_api/schemas.py:337` | Effective cost on one day, for the chart on the cost screen. | `finops_api/routes/cost.py` |
+| `CostPointOut` | class | `finops_api/schemas.py:346` | What one query cost on one day. ISS-172. | `finops_api/routes/query.py` |
+| `QueryFindingOut` | class | `finops_api/schemas.py:362` | One expensive query, as the findings list shows it. | `finops_api/routes/query.py` |
+| `RemediationOut` | class | `finops_api/schemas.py:408` | What a remediation did, or why it did not. | `finops_api/routes/query.py` |
+| `QueryGroupOut` | class | `finops_api/schemas.py:431` | One cause, with the money behind it summed across every finding. | `finops_api/routes/query.py` |
+| `QueryFindingDetailOut` | class | `finops_api/schemas.py:455` | One finding with its full working, for the detail screen. | `finops_api/routes/query.py` |
+| `AdhocQueryOut` | class | `finops_api/schemas.py:478` | One Logs Insights query that ran and belongs to no panel or alert rule. | `finops_api/routes/query.py` |
+| `SurfaceInstanceOut` | class | `finops_api/schemas.py:504` | One place queries live, reachable or not. | `finops_api/routes/query.py` |
 
 ## finops_mcp
 

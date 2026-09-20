@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { violationsIn } from '../../components/__tests__/axe';
 import type { ApiMeta } from '../../api/types';
 import { AppShell } from '../AppShell';
+import { allScreens } from '../sections';
 import { MetaProvider } from '../MetaProvider';
 import { useReportMeta } from '../metaRegistry';
 
@@ -169,13 +170,14 @@ describe('AppShell', () => {
   });
 
   it('lists an unbuilt screen with what will fill it, rather than hiding it', () => {
-    // Anomalies, because Spend and trend was built on 2026-09-19. A test
-    // pinned to one path stops testing the mechanism the moment that path
-    // ships.
+    // Derived rather than named, for the same reason as the sections test: a
+    // journey pinned to one path stops testing the mechanism the day that path
+    // ships, and this one failed twice that way before it was fixed properly.
     renderShell(metaOf());
-    const link = screen.getByRole('link', { name: /Anomalies/ });
-    expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute('data-arrives', 'P1 Cost Intelligence');
+    const unbuilt = allScreens().find((s) => s.arrives !== null);
+    expect(unbuilt).toBeDefined();
+    const link = document.querySelector(`a[href="${unbuilt?.path ?? ''}"]`);
+    expect(link).toHaveAttribute('data-arrives', unbuilt?.arrives ?? '');
   });
 
   it('gives a built screen no arrival note', () => {

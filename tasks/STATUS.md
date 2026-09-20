@@ -188,6 +188,7 @@ ISS-003.
 | `TASK-P1-012` | Done, 2026-09-19 | the demo estate gets a bill |
 | `TASK-P1-013` | Done, 2026-09-19, and unapplied by construction | the infrastructure that will not be applied |
 | `TASK-P1-014` | Done, 2026-09-20 | a day that does not look like the days before it |
+| `TASK-P1-015` | Done, 2026-09-20 | the anomalies screen, and the empty state that means two things |
 
 **P2, not in the default state**
 

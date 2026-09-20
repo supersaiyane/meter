@@ -871,7 +871,7 @@ not. It is named in the feature document as the part that waits on ISS-122.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-20 |
 | Implements | P1 spec section 16 |
 | Delivers | FEAT-023 |
 | Depends on | TASK-P1-014 |

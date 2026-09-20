@@ -282,6 +282,45 @@ class CostSummaryOut(BaseModel):
     change: Decimal | None
 
 
+class CostAnomalyOut(BaseModel):
+    """One day that did not look like the days before it.
+
+    Three numbers rather than a percentage, because a percentage alone is not
+    actionable: somebody has to know the money before they can decide whether to
+    care, and they have to know the baseline before they can disagree.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    account_id: str
+    service_name: str
+    day: date
+    observed: Decimal
+    baseline: Decimal
+    delta: Decimal
+    #: Null when the baseline had not moved. Every departure from an unmoving
+    #: baseline is infinitely many deviations, so this says nothing rather than
+    #: something false.
+    deviations: Decimal | None
+    severity: str
+    #: The working. A verdict a reader cannot argue with is one they have to
+    #: take on trust, and nobody takes a cost alert on trust twice.
+    why: str
+
+
+class CostAnomaliesOut(BaseModel):
+    """The anomalies, and enough context to read an empty list correctly."""
+
+    model_config = ConfigDict(frozen=True)
+
+    anomalies: list[CostAnomalyOut]
+    #: How many days of cost this scope has. An estate with fewer than
+    #: `days_needed` cannot be judged at all, which is a different fact from an
+    #: estate that is behaving, and the screen must not render them alike.
+    days_collected: int
+    days_needed: int
+
+
 class CostSliceOut(BaseModel):
     """One row of a grouping: a service, an account, a region or a tag value."""
 
