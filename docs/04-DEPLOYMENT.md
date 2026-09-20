@@ -3,6 +3,17 @@
 Last updated: 2026-08-23
 Update trigger: any change to the pipeline, the images, or the Terraform layout
 
+## Where the procedure is
+
+This document is the reasoning: why Terraform performs the deploy, why the
+images are amd64, what it costs. **It is not the procedure.** For an ordered
+first deployment, including the parts no pipeline can do for you, see
+`docs/runbooks/deploy.md`. For adding an account or standing up a second
+organization, see `docs/runbooks/onboard-account.md`.
+
+Both were written on 2026-09-17 after somebody asked how to deploy this and
+found the answer was not written down anywhere. Neither has been executed.
+
 ## The path from commit to running service
 
 ```

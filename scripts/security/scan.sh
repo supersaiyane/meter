@@ -38,6 +38,14 @@ done
 mkdir -p "${OUT}"
 echo "Report directory: ${OUT}"
 
+# `make security-tools` installs pip-audit into the project venv, not onto PATH,
+# so a scan run outside an activated venv reported it missing and stopped. The
+# venv comes first, and PATH still works for the brew installed scanners.
+if [[ -d "${ROOT}/.venv/bin" ]]; then
+  PATH="${ROOT}/.venv/bin:${PATH}"
+  export PATH
+fi
+
 require() {
   command -v "$1" >/dev/null 2>&1 || {
     echo >&2
@@ -61,7 +69,12 @@ python3 "${ROOT}/scripts/security/validate_allowlist.py" "${POLICY}/allowlist.ya
 # ---------------------------------------------------------------- secrets
 echo "==> Scanning for secrets"
 require gitleaks
-gitleaks detect --source "${ROOT}" --report-format json \
+# --config, so the false positives in .gitleaks.toml are declared in a file that
+# explains each one, rather than being rediscovered on every scan. That file is
+# scanner configuration; a real finding we choose to ship goes in
+# security/policy/allowlist.yaml with an owner and an expiry instead.
+gitleaks detect --source "${ROOT}" --config "${ROOT}/.gitleaks.toml" \
+  --report-format json \
   --report-path "${OUT}/gitleaks.json" --redact --no-banner \
   || echo "gitleaks reported findings"
 
@@ -69,7 +82,13 @@ gitleaks detect --source "${ROOT}" --report-format json \
 if [[ -f "${ROOT}/pyproject.toml" ]]; then
   echo "==> Scanning Python dependencies"
   require pip-audit
-  pip-audit --format json --output "${OUT}/pip-audit.json" --strict \
+  # The project directory, not the environment. Auditing the environment made
+  # pip-audit try to look `meter` itself up on PyPI, and under --strict that is
+  # an error rather than a finding, so the run aborted and no pip-audit.json was
+  # written at all. Python dependencies were therefore absent from every summary
+  # that claimed zero findings. Auditing `.` reads the declared dependencies,
+  # keeps --strict, and produces a report.
+  pip-audit --format json --output "${OUT}/pip-audit.json" --strict . \
     || echo "pip-audit reported findings"
 fi
 
@@ -122,7 +141,10 @@ python3 "${ROOT}/scripts/security/report.py" \
   --output "${OUT}/index.html" --summary "${OUT}/summary.json" \
   --posture "${ROOT}/security/POSTURE.md"
 
-ln -sfn "${OUT}" "${ROOT}/security/reports/latest"
+# Relative, because this link is committed. An absolute one stored the author's
+# own home directory in the repository, so it resolved on exactly one machine.
+# ISS-164.
+ln -sfn "$(basename "${OUT}")" "${ROOT}/security/reports/latest"
 
 # ---------------------------------------------------------------- gate
 UNRESOLVED=$(python3 -c "import json,sys; print(json.load(open('${OUT}/summary.json'))['unresolved_total'])")

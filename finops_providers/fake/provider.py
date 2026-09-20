@@ -12,19 +12,22 @@ test states exactly what fails and never inherits a rule it cannot see.
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime
+from typing import Any
 
 from finops_core.domain.account import AccountKey, CloudAccount
-from finops_core.domain.cost import CostRecord
+from finops_core.domain.cost import CommitmentCoverage, CommitmentUse, CostRecord
 from finops_core.domain.identity import Entitlement, Principal
 from finops_core.domain.metrics import MetricPoint
 from finops_core.domain.org import OrgNode
 from finops_core.domain.quota import QuotaUsage
 from finops_core.domain.resource import ResourceRef
 from finops_core.domain.tenant import Scope
-from finops_core.errors import AccessDenied, CollectionError, NoData
+from finops_core.errors import AccessDenied, CollectionError
 from finops_providers.fake import fixtures
+from finops_providers.fake.commitment import FakeCommitmentReport
+from finops_providers.fake.cur import FakeCostExport
 
 COLLECTOR = "fake"
 
@@ -38,6 +41,13 @@ class FakeSession:
     expires_at: datetime
 
 
+def _restamp(facts: tuple[Any, ...], at: datetime | None) -> tuple[Any, ...]:
+    """The same facts, observed now. Unchanged when no time is given."""
+    if at is None:
+        return facts
+    return tuple(replace(fact, as_of=at, collected_at=at) for fact in facts)
+
+
 class FakeProvider:
     """One object satisfying all eight provider ports, with a configurable failure plan."""
 
@@ -46,12 +56,24 @@ class FakeProvider:
         accounts: tuple[CloudAccount, ...] | None = None,
         nodes: tuple[OrgNode, ...] | None = None,
         failures: Mapping[str, type[CollectionError]] | None = None,
+        at: datetime | None = None,
     ) -> None:
-        self._accounts = fixtures.ACCOUNTS if accounts is None else accounts
-        self._nodes = fixtures.ORG_NODES if nodes is None else nodes
+        # `at` restamps the fixtures rather than replacing them. The constants
+        # carry a date from 2026-08-24, which is right for a test asserting a
+        # value and wrong for a demo estate, where it made two screens read as
+        # five days stale beside four that read as current. ISS-161.
+        self._accounts = _restamp(fixtures.ACCOUNTS if accounts is None else accounts, at)
+        self._nodes = _restamp(fixtures.ORG_NODES if nodes is None else nodes, at)
         self._failures: Mapping[str, type[CollectionError]] = (
             dict(fixtures.DEFAULT_FAILURES) if failures is None else dict(failures)
         )
+        # The smoke fixture, not the richer estate. This provider's cost rows
+        # are asserted against by tests that predate P1, and a provider that
+        # silently grew from four rows to two thousand would change what every
+        # one of them means. The failure plan above still governs, because it is
+        # this provider's plan and not the export's.
+        self._cost = FakeCostExport(rows=fixtures.COST_ROWS)
+        self._commitment = FakeCommitmentReport()
 
     # -- the failure plan --------------------------------------------------
 
@@ -109,24 +131,35 @@ class FakeProvider:
 
     # -- CostExport --------------------------------------------------------
 
+    # Delegated to `FakeCostExport` rather than implemented again here. Two
+    # fakes for one port is two places a behaviour can drift, and the port's
+    # `NoData` rule is exactly the kind of thing that drifts. This keeps the
+    # four row smoke fixture as the estate, so every test that already asserts
+    # against it still sees what it saw; the richer estate is the default when
+    # `FakeCostExport` is constructed on its own.
+
     def latest_available_period(self) -> date | None:
         self._fail_if_planned(fixtures.ORGANIZATION_SCOPE)
-        return fixtures.PERIOD_START
+        return self._cost.latest_available_period()
 
     def read_period(self, period_start: date, period_end: date) -> Iterable[CostRecord]:
         self._fail_if_planned(fixtures.ORGANIZATION_SCOPE)
-        rows = tuple(
-            row
-            for row in fixtures.COST_ROWS
-            if row.billing_period_start >= period_start and row.billing_period_end <= period_end
-        )
-        if not rows:
-            raise NoData(
-                scope_key=fixtures.ORGANIZATION_SCOPE,
-                collector=COLLECTOR,
-                detail=f"the fixture holds no rows between {period_start} and {period_end}",
-            )
-        return rows
+        return self._cost.read_period(period_start, period_end)
+
+    # -- CommitmentReport --------------------------------------------------
+
+    # Delegated for the same reason as `CostExport`: two implementations of one
+    # answer is two answers. The failure plan is checked here as well, because a
+    # provider planned to fail should fail on every port and not only the ones
+    # that remembered to ask.
+
+    def utilization(self, window_start: date, window_end: date) -> Iterable[CommitmentUse]:
+        self._fail_if_planned(fixtures.ORGANIZATION_SCOPE)
+        return self._commitment.utilization(window_start, window_end)
+
+    def coverage(self, window_start: date, window_end: date) -> Iterable[CommitmentCoverage]:
+        self._fail_if_planned(fixtures.ORGANIZATION_SCOPE)
+        return self._commitment.coverage(window_start, window_end)
 
     # -- MetricSource ------------------------------------------------------
 

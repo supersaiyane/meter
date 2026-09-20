@@ -27,11 +27,11 @@ from fastapi.routing import APIRoute
 from sqlalchemy import Engine, text
 from sqlalchemy.engine import Connection
 
-from finops_api.deps import get_connection, get_settings
+from finops_api.deps import get_connection
 from finops_api.guards import ScopeViolationError
 from finops_api.middleware import RequestIdMiddleware
 from finops_api.schemas import CollectorHealth, Envelope, HealthOut
-from finops_core.config import Settings
+from finops_core.config import Settings, load_settings
 from finops_core.constants import STALE_AFTER_CADENCE_MULTIPLE
 
 LOGGER = logging.getLogger("meter.api")
@@ -40,8 +40,26 @@ LOGGER = logging.getLogger("meter.api")
 #: describe the service rather than reporting a figure, and listing them here
 #: means the exemption is a decision somebody made rather than a route that
 #: quietly slipped through.
+#: Routes that return something other than a data payload, so the envelope does not
+#: apply to them.
+#:
+#: `/api/v1/cost/export` is the only one that returns tenant data, and it is exempt
+#: because it returns a file rather than a payload: a JSON wrapper round a CSV is a
+#: wrapper somebody has to strip by hand before a spreadsheet will open it. The
+#: envelope exists so a reader can tell stale from fresh, and that requirement is met
+#: instead by `as_of` and `collected_at` columns on every row of the file, which is
+#: stronger than a header, because a spreadsheet gets mailed on and pasted into a deck
+#: and the cells are what survive that. `tests/api/test_cost_export_route.py` asserts
+#: the columns are there.
 ENVELOPE_EXEMPT = frozenset(
-    {"/healthz", "/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc"}
+    {
+        "/healthz",
+        "/openapi.json",
+        "/docs",
+        "/docs/oauth2-redirect",
+        "/redoc",
+        "/api/v1/cost/export",
+    }
 )
 
 HEALTHY = "ok"
@@ -177,25 +195,63 @@ def p0_routers() -> tuple[APIRouter, ...]:
     return (me.router, accounts.router, org.router, ingest.router, platform.router)
 
 
+def p1_routers() -> tuple[APIRouter, ...]:
+    """The cost surface, from the P1 spec's section 8 table.
+
+    Four of the five screens the navigation group promises. Anomalies,
+    commitments and the export read data no collector produces yet, and a route
+    over an empty table answers a question with a confident nothing.
+    """
+    from finops_api.routes import cost
+
+    return (cost.router,)
+
+
+def p2_routers() -> tuple[APIRouter, ...]:
+    """The query governance routes, from the P2 spec's section 8.2 table.
+
+    Three of the eight it names. The rest read data no collector produces yet,
+    and a route over an empty table answers a question with a confident nothing.
+    """
+    from finops_api.routes import query
+
+    return (query.router,)
+
+
 def create_app(
     engine: Engine,
     entitlements: Any,
     signer: Any,
     settings: Settings | None = None,
     health_check: Any = None,
+    remediation_control: Any = None,
     extra_routers: tuple[APIRouter, ...] = (),
     include_p0_routes: bool = True,
 ) -> FastAPI:
     """Build the application, refusing to start on a broken envelope contract."""
-    resolved = settings or get_settings()
+    # `load_settings`, not the request dependency of the same idea. Assembly
+    # happens once and has no request, and calling the dependency here is what
+    # stopped the container booting: every test passes settings explicitly, so
+    # nothing caught it until the image ran.
+    resolved = settings or load_settings()
     app = FastAPI(title="Meter", version="0", docs_url="/docs")
     app.state.engine = engine
     app.state.entitlements = entitlements
     app.state.signer = signer
     app.state.settings = resolved
     app.state.health_check = health_check
+    # Absent by default, and a route that needs it refuses rather than pretends.
+    # No surface adapter can write today anyway, ISS-166, so a default that
+    # silently reported success would be the worst of both.
+    app.state.remediation_control = remediation_control
     app.add_middleware(RequestIdMiddleware)
-    routers = (build_router(), *(p0_routers() if include_p0_routes else ()), *extra_routers)
+    routers = (
+        build_router(),
+        *(p0_routers() if include_p0_routes else ()),
+        *(p1_routers() if include_p0_routes else ()),
+        *(p2_routers() if include_p0_routes else ()),
+        *extra_routers,
+    )
     # Checked before anything is registered, so a broken contract fails at
     # construction rather than at the first request.
     assert_envelope_contract(routers)
@@ -233,7 +289,7 @@ def bootstrap() -> FastAPI:
     from finops_api.identity.session import SessionSigner
     from finops_core.constants import LOCAL_IDENTITY_PROVIDER
 
-    settings = get_settings()
+    settings = load_settings()
     if settings.identity_provider != LOCAL_IDENTITY_PROVIDER:
         raise RuntimeError(
             f"identity provider {settings.identity_provider!r} is configured but not "

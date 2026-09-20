@@ -1,0 +1,792 @@
+/*
+ * The visual layer, per ADR-0021 and docs/12-UI-DESIGN.md sections 7 and 10.
+ *
+ * tokens.css holds what a number means: provenance fill, numeral, failure,
+ * staleness. This file holds where things sit. The split follows the document
+ * it implements, and it is why neither file needs to know much about the other.
+ *
+ * Element selectors are used deliberately. DataTable is the only table in the
+ * product and Figure is the only component that renders a numeral, so `th`
+ * addresses the one table header that exists rather than reaching across
+ * unrelated components by accident. ADR-0021 records why that holds here and
+ * would not hold in most codebases.
+ *
+ * No rule in this file requires a component to accept a className. That is the
+ * property ADR-0021 was decided on.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--surface-sunken);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-2);
+  line-height: 1.45;
+  /* An instrument, not a dashboard. Nothing here is centred in a hero. */
+  text-rendering: optimizeLegibility;
+}
+
+/* ------------------------------------------------------------------ shell */
+
+[data-testid='shell'] {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    'brand trust'
+    'nav   main';
+  min-height: 100vh;
+}
+
+/* Full width, above everything, and not dismissible. A banner that can be
+   dismissed gets dismissed and the condition does not go away with it. */
+[data-testid='trust-strip'] {
+  grid-area: trust;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--font-size-1);
+}
+
+[data-testid='trust-strip'] > * {
+  margin: 0;
+}
+
+/* The failures list is the one element that needs the whole row to itself. */
+[data-testid='shell-failures'] {
+  flex-basis: 100%;
+}
+
+[data-testid='shell'] > header {
+  grid-area: nav;
+  grid-row: 1 / 3;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: var(--space-3);
+  /* Compact. It is chrome, not content. */
+  font-size: var(--font-size-1);
+  overflow-y: auto;
+  max-height: 100vh;
+  position: sticky;
+  top: 0;
+}
+
+/* Collapsed. The column narrows rather than the navigation being covered, so
+   the content actually gains the width. No transition: the motion rule permits
+   a 120 ms opacity change and nothing else, and a sliding panel is exactly the
+   decoration it rules out. */
+[data-testid='shell'][data-nav='collapsed'] {
+  grid-template-columns: 56px minmax(0, 1fr);
+}
+
+[data-testid='shell'][data-nav='collapsed'] > header {
+  padding: var(--space-2);
+}
+
+[data-testid='nav-toggle'] {
+  display: block;
+  width: 100%;
+  margin: 0 0 var(--space-3);
+  padding: var(--space-1) var(--space-2);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-1);
+  cursor: pointer;
+}
+
+[data-testid='nav-toggle']:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+[data-testid='shell'] > header [data-testid='brand'] {
+  font-size: var(--font-size-4);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin: 0 0 var(--space-4);
+}
+
+[data-testid='screen-title'] {
+  font-size: var(--font-size-4);
+  font-weight: 600;
+  margin: 0 0 var(--space-3);
+  letter-spacing: -0.01em;
+}
+
+[data-testid='shell'] > main {
+  grid-area: main;
+  padding: var(--space-4);
+  min-width: 0;
+}
+
+/* ------------------------------------------------------------- navigation */
+
+/* Each group is a details element, so the disclosure state, the keyboard
+   handling and the expanded semantics come from the browser rather than from a
+   div pretending to be a button. Only the group holding the current screen
+   starts open, which is what keeps the menu short. */
+nav[aria-label='Sections'] summary {
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: var(--space-3) 0 var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+nav[aria-label='Sections'] summary:hover {
+  color: var(--text);
+  background: var(--surface-sunken);
+}
+
+/* The one group that is only itself. It sits at the top as a plain link and is
+   spaced to match a summary, so the list does not start with a jolt. */
+nav[aria-label='Sections'] > [data-testid='nav-self-link'] {
+  margin-bottom: var(--space-2);
+  font-weight: 600;
+}
+
+nav[aria-label='Sections'] ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav[aria-label='Sections'] a {
+  display: block;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  color: var(--text);
+  text-decoration: none;
+}
+
+nav[aria-label='Sections'] a:hover {
+  background: var(--accent-quiet);
+}
+
+nav[aria-label='Sections'] a[aria-current='page'] {
+  background: var(--accent-quiet);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* An unbuilt screen is listed and reachable. It is quieter, never hidden:
+   hiding it would make the product look smaller than it is. */
+.meter-arrives {
+  display: block;
+  color: var(--text-muted);
+  font-size: var(--font-size-1);
+}
+
+nav[aria-label='Sections'] a[data-arrives] {
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------ trust strip */
+
+[data-testid='coverage'] {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  margin-bottom: var(--space-2);
+}
+
+[data-testid='coverage'][data-partial='true'] {
+  background: var(--stale-quiet);
+  border-color: var(--stale);
+}
+
+[data-testid='global-freshness'] {
+  color: var(--text-muted);
+  margin: 0 0 var(--space-2);
+}
+
+[data-testid='global-freshness'][data-state='never-collected'] {
+  color: var(--stale);
+}
+
+[data-testid='shell-failures'] {
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-2);
+}
+
+[data-testid='shell-failures'] ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Invented numbers say so, in the same place a coverage warning goes. */
+[data-testid='fixture-band'] {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--stale-quiet);
+  border-left: 3px solid var(--stale);
+  color: var(--stale);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ------------------------------------------------------------------- tree */
+
+/*
+ * React Aria stamps `--tree-item-level` on every row and leaves the indent to
+ * us. Without it every node sat at the same left edge, so the one thing this
+ * screen exists to show, the shape of the organization, was invisible.
+ *
+ * On the row rather than the cell. The cell is `display: contents`, so it
+ * generates no box and its padding is computed and then never drawn, which
+ * looked like the rule not applying at all.
+ */
+[role='treegrid'] [role='row'] {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--row-height);
+  padding: var(--space-1) var(--space-2);
+  padding-left: calc(var(--space-2) + (var(--tree-item-level, 1) - 1) * var(--space-4));
+  border-bottom: 1px solid var(--border);
+}
+
+/* A leaf has no expand control, and its name still starts where a branch name
+   does. Matched on the absence of the control rather than on an attribute,
+   because the control is the thing that takes the space. */
+[role='treegrid'] [role='row']:not(:has(button)) {
+  padding-left: calc(
+    var(--space-2) + (var(--tree-item-level, 1) - 1) * var(--space-4) + 1.5em + var(--space-2)
+  );
+}
+
+[role='treegrid'] button {
+  width: 1.5em;
+  height: 1.5em;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.meter-kind {
+  font-size: var(--font-size-1);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ------------------------------------------------------------------ table */
+
+[data-testid='table-scroll'] {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--font-size-2);
+}
+
+caption {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--font-size-1);
+  border-bottom: 1px solid var(--border);
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  /* Shrink to the content, so the prose column takes what is left. The header
+     wraps rather than holding a column open: `Scan per run, MiB` on one line is
+     156 px of column for a number that needs ninety, and eight headers doing
+     that pushed monthly cost off the screen. */
+  width: 1%;
+  white-space: normal;
+  background: var(--surface);
+  text-align: left;
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border-strong);
+}
+
+tbody tr {
+  /*
+   * Dense where the content allows. A minimum rather than a fixed height,
+   * because every Figure renders its own freshness inline and a cell carrying
+   * a figure, its provenance, its accuracy and two timestamps cannot be one
+   * line. ISS-140 records that per cell freshness is redundant with the
+   * shell's worst case line and is what stops this being 32 px.
+   */
+  min-height: var(--row-height);
+  border-bottom: 1px solid var(--border);
+}
+
+tbody tr:last-child {
+  border-bottom: none;
+}
+
+td {
+  padding: var(--space-1) var(--space-2);
+  vertical-align: top;
+  /* Shrink to content, so the prose column below takes everything left over.
+     Sharing the width evenly made the explanation the narrowest column on the
+     screen and every row a hundred pixels tall. */
+  white-space: nowrap;
+  width: 1%;
+}
+
+td.meter-numeral {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* A failure carries a sentence, and a sentence in a nowrap cell ran off the
+   right edge of the table and took every column after it with it. Bounded and
+   wrapping inside a cell, so the row grows by two lines instead. Only inside a
+   cell: the same bound in the trust strip turned one line into five. */
+td .meter-failure {
+  display: inline-block;
+  white-space: normal;
+  max-width: 34ch;
+}
+
+/* The provenance word under its numeral, so a column is as wide as the wider of
+   the two rather than as wide as both. */
+.meter-provenance {
+  display: block;
+  font-size: var(--font-size-1);
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+
+/* After both, so it wins. The explanation is the column a reader acts on, and
+   it gets the width every other column did not need. */
+td.meter-prose,
+th.meter-prose {
+  white-space: normal;
+  width: auto;
+  min-width: 26ch;
+}
+
+/* ----------------------------------------------------------------- figure */
+
+[data-testid='figure'] {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-1);
+}
+
+[data-testid='figure'] .meter-numeral {
+  font-size: var(--font-size-2);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius);
+}
+
+/* The label that says which kind, and the accuracy that travels with it. */
+[data-testid='figure'] > span:not(.meter-numeral),
+[data-testid='freshness'] {
+  color: var(--text-muted);
+  font-size: var(--font-size-1);
+}
+
+/* -------------------------------------------------------------- severity */
+
+/* Sequential, not a traffic light, because severity is ordered. The squares
+   and the word carry it too, so colour is the third channel and never the
+   only one. */
+[data-testid='severity'] {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius);
+  font-size: var(--font-size-1);
+  white-space: nowrap;
+}
+
+[data-testid='severity'][data-level='1'] {
+  background: var(--severity-1);
+}
+[data-testid='severity'][data-level='2'] {
+  background: var(--severity-2);
+}
+[data-testid='severity'][data-level='3'] {
+  background: var(--severity-3);
+}
+[data-testid='severity'][data-level='4'] {
+  background: var(--severity-4);
+  color: var(--surface);
+}
+[data-testid='severity'][data-level='5'] {
+  background: var(--severity-5);
+  color: var(--surface);
+}
+
+/* ------------------------------------------------------------- the states */
+
+[data-testid='state'] {
+  padding: var(--space-3);
+}
+
+[data-testid='state'][data-state='ready'] {
+  padding: 0;
+}
+
+[data-testid='skeleton-row'] {
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--border);
+}
+
+[data-testid='state'][data-state='never-collected'],
+[data-state='never-collected'] {
+  color: var(--text-muted);
+}
+
+[data-testid='state'][data-state='failed'] {
+  background: var(--failure-quiet);
+  border-left: 3px solid var(--failure);
+}
+
+/* A mark on a surface, never the surface itself. These states wrap everything
+   they qualify, so a fill behind them covers a whole tile on Home and a whole
+   page on any screen with one panel, at which point the reader is not being
+   told that one thing is stale, they are being shown an amber product. The rule
+   down the left edge says the same thing and stays a mark at any size. Nothing
+   is lost: partial still carries its sentence where the shell is not already
+   making the claim, and every figure inside still carries its two timestamps.
+
+   Failed keeps its fill deliberately. It renders instead of the data rather
+   than beside it, so the block is small and the colour is the point. */
+[data-testid='state'][data-state='partial'],
+[data-testid='state'][data-state='degraded'] {
+  border-left: 3px solid var(--stale);
+}
+
+/* ----------------------------------------------------------------- screens */
+
+main section {
+  margin-bottom: var(--space-4);
+}
+
+main h2 {
+  font-size: var(--font-size-5);
+  font-weight: 600;
+  margin: 0 0 var(--space-3);
+}
+
+main h3 {
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin: var(--space-4) 0 var(--space-1);
+}
+
+main a {
+  color: var(--accent);
+}
+
+/* A judgement, not a scan. Generous, per section 7. */
+main article {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  max-width: 78ch;
+  /* Generous. The reader is making a judgement and needs room to read the
+     evidence, so prose steps up a size from the scanning surfaces. */
+  font-size: var(--font-size-3);
+}
+
+[data-testid='finding-query'] {
+  font-family: var(--font-numeral);
+  font-size: var(--font-size-2);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  overflow-x: auto;
+  margin: 0;
+}
+
+/* The arithmetic, published so it can be checked line by line. */
+[data-testid='finding-working'] {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-numeral);
+  font-size: var(--font-size-2);
+}
+
+[data-testid='finding-working'] li {
+  padding: var(--space-1) 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+[data-testid='finding-working'] li:last-child {
+  border-bottom: none;
+  font-weight: 600;
+}
+
+/* Home, in three tiers. The summary, then the one thing that needs attention,
+   then the absences. Before this the absences were panels the same size as the
+   money, so nothing on the page outranked anything else. */
+
+/* 210px rather than 260px. P1 added a fifth tile and the old minimum fitted four
+   across a 1440px window, so the front page opened with four tiles and a fifth alone
+   on its own row. A lone tile reads as an afterthought, and the front page is the
+   one screen where that matters. Five fit now, and the auto-fit still wraps them
+   sensibly on a narrower window. */
+[data-testid='home-summary'] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+[data-testid='home-tile'] {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+[data-testid='home-tile'] h3 {
+  margin: 0;
+  font-size: var(--font-size-2);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+[data-testid='home-count'] {
+  margin: 0;
+  font-family: var(--font-numeral);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-5);
+  color: var(--text-numeral);
+}
+
+[data-testid='home-severity-key'] {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+[data-testid='home-severity-key'] li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+[data-testid='home-tile-note'] {
+  margin: 0;
+  font-size: var(--font-size-1);
+  color: var(--text-muted);
+}
+
+/* Why each unreadable surface refused. One row per typed cause, so a reader
+   sees the reason and not merely a smaller number. */
+[data-testid='home-refusals'] {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+[data-testid='home-refusals'] li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-1);
+}
+
+/* The count only. A bare descendant selector here also caught the badge's own
+   text, which dropped it to the muted colour on the two palest levels. */
+[data-testid='home-severity-count'] {
+  font-family: var(--font-numeral);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-1);
+  color: var(--text-muted);
+}
+
+[data-testid='home-attention'] {
+  margin-bottom: var(--space-4);
+}
+
+[data-testid='home-attention'] h3 {
+  margin-top: 0;
+  font-size: var(--font-size-3);
+}
+
+/* The rail. An unfilled slot still names what will fill it and still shows no
+   figure. It is one strip rather than one panel each, because a promise about
+   a sub project should not outweigh a number that already exists. */
+[data-testid='home-rail'] h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-1);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+[data-testid='home-rail'] ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+[data-testid='home-rail'] li {
+  flex: 1 1 180px;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+[data-testid='home-rail'] li:last-child {
+  border-right: 0;
+}
+
+[data-testid='home-rail-label'] {
+  font-size: var(--font-size-1);
+  color: var(--text);
+}
+
+[data-testid='home-rail-arrives'] {
+  font-size: var(--font-size-1);
+  color: var(--text-muted);
+}
+
+[data-testid='not-built'],
+[data-testid='not-a-screen'],
+[data-testid='revoke-note'] {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+}
+
+button {
+  font: inherit;
+  font-size: var(--font-size-1);
+  padding: var(--space-1) var(--space-2);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--accent-quiet);
+  border-color: var(--accent);
+}
+
+/* Focus is always visible. */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ----------------------------------------------------------------- motion */
+
+/*
+ * The whole list. A 120 ms opacity transition on state change, and nothing
+ * else. Borders, never shadows: a shadow implies elevation, which suits a
+ * consumer application and not an instrument.
+ */
+a,
+button,
+[data-testid='coverage'],
+[data-testid='fixture-band'] {
+  transition: opacity 120ms ease, background-color 120ms ease;
+}
+
+/* --------------------------------------------------------------- responsive */
+
+/* Section 10. Desktop first, honestly: this is an analyst's tool used on a
+   large screen. */
+@media (max-width: 1280px) {
+  /* Secondary columns collapse behind a disclosure. Until one exists, the
+     table scrolls rather than truncating a figure. */
+  [data-testid='table-scroll'] {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 1024px) {
+  /* A phone checking a number during an incident. It needs the figure, its
+     provenance and its age. It does not need the whole instrument. */
+  [data-testid='shell'] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'trust'
+      'nav'
+      'main';
+  }
+
+  [data-testid='shell'] > header {
+    grid-column: 1;
+    position: static;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  [data-testid='shell'] > main {
+    grid-column: 1;
+  }
+
+  [data-testid='graph'] {
+    display: none;
+  }
+}

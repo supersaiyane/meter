@@ -1,9 +1,11 @@
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
 import { violationsIn } from '../../components/__tests__/axe';
 import type { ApiMeta } from '../../api/types';
 import { AppShell } from '../AppShell';
+import { allScreens } from '../sections';
 import { MetaProvider } from '../MetaProvider';
 import { useReportMeta } from '../metaRegistry';
 
@@ -13,7 +15,7 @@ function metaOf(partial: Partial<ApiMeta> = {}): ApiMeta {
   return {
     as_of: '2026-08-27T09:00:00Z',
     collected_at: '2026-08-27T09:54:00Z',
-    scope_coverage: { visible: 5, total: 5, is_partial: false },
+    scope_coverage: { visible: 5, total: 5, is_partial: false, unit: 'accounts' },
     degraded: false,
     failures: [],
     ...partial,
@@ -26,32 +28,42 @@ function Surface({ meta }: { readonly meta: ApiMeta }) {
   return <p>rows</p>;
 }
 
-function renderShell(meta?: ApiMeta) {
+function renderShell(meta?: ApiMeta, initialPath = '/inventory/accounts') {
   return render(
-    <MetaProvider>
-      <AppShell section="Accounts" onSelect={() => undefined} now={NOW}>
-        {meta ? <Surface meta={meta} /> : <p>rows</p>}
-      </AppShell>
-    </MetaProvider>,
+    <MemoryRouter initialEntries={[initialPath]}>
+      <MetaProvider>
+        <AppShell now={NOW}>{meta ? <Surface meta={meta} /> : <p>rows</p>}</AppShell>
+      </MetaProvider>
+    </MemoryRouter>,
   );
 }
 
 describe('AppShell', () => {
   it('reads showing N of M accounts whenever coverage is partial', () => {
-    renderShell(metaOf({ scope_coverage: { visible: 42, total: 310, is_partial: true } }));
+    renderShell(
+      metaOf({
+        scope_coverage: { visible: 42, total: 310, is_partial: true, unit: 'accounts' },
+      }),
+    );
     expect(screen.getByText('Showing 42 of 310 accounts')).toBeInTheDocument();
   });
 
   it('confirms complete coverage rather than going quiet', () => {
     // The absence of a warning is not confirmation, and a reader needs
     // confirmation before treating a total as a total.
-    renderShell(metaOf({ scope_coverage: { visible: 310, total: 310, is_partial: false } }));
+    renderShell(
+      metaOf({
+        scope_coverage: { visible: 310, total: 310, is_partial: false, unit: 'accounts' },
+      }),
+    );
     expect(screen.getByText('Showing all 310 accounts')).toBeInTheDocument();
   });
 
   it('gives no way to dismiss the coverage banner', () => {
     // A banner gets dismissed. The condition does not go away with it.
-    renderShell(metaOf({ scope_coverage: { visible: 1, total: 2, is_partial: true } }));
+    renderShell(
+      metaOf({ scope_coverage: { visible: 1, total: 2, is_partial: true, unit: 'accounts' } }),
+    );
     const banner = screen.getByTestId('coverage');
     expect(banner.querySelector('button')).toBeNull();
   });
@@ -134,32 +146,51 @@ describe('AppShell', () => {
 
   it('withdraws a surface meta when the surface leaves', () => {
     const view = renderShell(
-      metaOf({ scope_coverage: { visible: 2, total: 9, is_partial: true } }),
+      metaOf({ scope_coverage: { visible: 2, total: 9, is_partial: true, unit: 'accounts' } }),
     );
     expect(screen.getByText('Showing 2 of 9 accounts')).toBeInTheDocument();
     view.rerender(
-      <MetaProvider>
-        <AppShell section="Accounts" onSelect={() => undefined} now={NOW}>
-          <p>rows</p>
-        </AppShell>
-      </MetaProvider>,
+      <MemoryRouter initialEntries={['/inventory/accounts']}>
+        <MetaProvider>
+          <AppShell now={NOW}>
+            <p>rows</p>
+          </AppShell>
+        </MetaProvider>
+      </MemoryRouter>,
     );
     expect(screen.queryByText('Showing 2 of 9 accounts')).toBeNull();
   });
 
-  it('marks the current section for assistive technology', () => {
+  it('marks the current screen for assistive technology', () => {
     renderShell(metaOf());
-    expect(screen.getByRole('button', { name: 'Accounts' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Accounts' })).toHaveAttribute(
       'aria-current',
       'page',
     );
+  });
+
+  it('lists an unbuilt screen with what will fill it, rather than hiding it', () => {
+    // Derived rather than named, for the same reason as the sections test: a
+    // journey pinned to one path stops testing the mechanism the day that path
+    // ships, and this one failed twice that way before it was fixed properly.
+    renderShell(metaOf());
+    const unbuilt = allScreens().find((s) => s.arrives !== null);
+    expect(unbuilt).toBeDefined();
+    const link = document.querySelector(`a[href="${unbuilt?.path ?? ''}"]`);
+    expect(link).toHaveAttribute('data-arrives', unbuilt?.arrives ?? '');
+  });
+
+  it('gives a built screen no arrival note', () => {
+    renderShell(metaOf());
+    const link = screen.getByRole('link', { name: /Spend and trend/ });
+    expect(link).not.toHaveAttribute('data-arrives');
   });
 
   it('reports no accessibility violations when degraded', async () => {
     const { container } = renderShell(
       metaOf({
         degraded: true,
-        scope_coverage: { visible: 1, total: 4, is_partial: true },
+        scope_coverage: { visible: 1, total: 4, is_partial: true, unit: 'accounts' },
         failures: [
           {
             scope_key: 'aws:1:eu-west-1',

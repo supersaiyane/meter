@@ -18,17 +18,23 @@ from __future__ import annotations
 from collections.abc import Sequence
 from datetime import date, datetime
 from decimal import Decimal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, computed_field
 
 
 class CoverageOut(BaseModel):
-    """Visible accounts against every account the organization holds. ISS-016."""
+    """What was seen against everything there was to see. ISS-016."""
 
     model_config = ConfigDict(frozen=True)
 
     visible: int
     total: int
+    #: What is being counted, plural. Accounts on most routes and workspaces on
+    #: the query routes, which is why it travels on the wire: the route knows
+    #: what it counted and the interface was guessing, so every screen said
+    #: "accounts" and the query screens were counting something else.
+    unit: str = "accounts"
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -78,6 +84,7 @@ class Meta(BaseModel):
         cls,
         visible: int,
         total: int,
+        unit: str = "accounts",
         as_of: datetime | None = None,
         collected_at: datetime | None = None,
         failures: Sequence[FailureOut] = (),
@@ -85,7 +92,7 @@ class Meta(BaseModel):
         return cls(
             as_of=as_of,
             collected_at=collected_at,
-            scope_coverage=CoverageOut(visible=visible, total=total),
+            scope_coverage=CoverageOut(visible=visible, total=total, unit=unit),
             failures=tuple(failures),
         )
 
@@ -167,14 +174,31 @@ class RunOut(BaseModel):
 
 
 class FreshnessOut(BaseModel):
+    """How far behind one collector is on one scope, against its own cadence."""
+
     model_config = ConfigDict(frozen=True)
 
     collector: str
     scope_key: str
-    as_of: datetime
+    #: Null when the pair has never once succeeded. There is no age to report
+    #: and no last known good moment, and a zero would read as this instant.
+    as_of: datetime | None
     cadence_seconds: int | None
-    age_seconds: float
-    is_stale: bool
+    age_seconds: float | None
+    #: `current`, `stale`, or `never_collected`. Three states, because a
+    #: collector that has never worked is not a stale one: stale says the answer
+    #: is old, and this says there has never been an answer.
+    state: str
+    #: The typed cause of the last attempt, when it failed. Null otherwise.
+    cause: str | None = None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def is_stale(self) -> bool:
+        """Anything that is not current. Derived, so it cannot disagree with
+        `state`, which is what two independently set fields would eventually
+        do."""
+        return self.state != "current"
 
 
 class PlatformCostOut(BaseModel):
@@ -216,3 +240,345 @@ class HealthOut(BaseModel):
     status: str
     database_reachable: bool
     collectors: tuple[CollectorHealth, ...]
+
+
+class CostTotalOut(BaseModel):
+    """What a billing period cost, and whether that period is finished.
+
+    `is_open` is on the payload rather than inferred by the frontend from a
+    date, because a part month set beside a whole month with no warning reads
+    as a collapse in spend, and the thing that knows whether a period is still
+    accruing is the side that read the export.
+
+    Both measures travel together. They are routinely equal, since a month with
+    no commitments has the same amortized and billed cost, so a screen that
+    rendered one under the other's label would be right until the month it was
+    not.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    period: date
+    is_open: bool
+    effective_cost: Decimal
+    billed_cost: Decimal
+    line_items: int
+
+
+class CostSummaryOut(BaseModel):
+    """This period, the one before it, and the difference between them.
+
+    The comparison is computed here rather than on the screen. Two screens
+    subtracting the same two numbers is two chances to subtract them in the
+    wrong order.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    current: CostTotalOut
+    previous: CostTotalOut | None
+    #: None when there is no previous period to compare against, which is not
+    #: the same as no change and must not render as zero.
+    change: Decimal | None
+
+
+class CostAnomalyOut(BaseModel):
+    """One day that did not look like the days before it.
+
+    Three numbers rather than a percentage, because a percentage alone is not
+    actionable: somebody has to know the money before they can decide whether to
+    care, and they have to know the baseline before they can disagree.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    account_id: str
+    service_name: str
+    day: date
+    observed: Decimal
+    baseline: Decimal
+    delta: Decimal
+    #: Null when the baseline had not moved. Every departure from an unmoving
+    #: baseline is infinitely many deviations, so this says nothing rather than
+    #: something false.
+    deviations: Decimal | None
+    severity: str
+    #: The working. A verdict a reader cannot argue with is one they have to
+    #: take on trust, and nobody takes a cost alert on trust twice.
+    why: str
+
+
+class CostAnomaliesOut(BaseModel):
+    """The anomalies, and enough context to read an empty list correctly."""
+
+    model_config = ConfigDict(frozen=True)
+
+    anomalies: list[CostAnomalyOut]
+    #: How many days of cost this scope has. An estate with fewer than
+    #: `days_needed` cannot be judged at all, which is a different fact from an
+    #: estate that is behaving, and the screen must not render them alike.
+    days_collected: int
+    days_needed: int
+
+
+class CommitmentUseOut(BaseModel):
+    """One commitment, and how much of what we paid for was consumed.
+
+    No coverage figure, and its absence is deliberate. A dollar of covered spend
+    cannot be attributed to one of several overlapping plans, so a coverage field
+    here would be a number nobody measured. Coverage is `CommitmentCoverageOut`.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    commitment_id: str
+    commitment_type: str
+    #: QUEUED, ACTIVE or EXPIRED. An expired commitment is reported rather than
+    #: dropped, because the coverage gap its expiry leaves is the finding.
+    status: str
+    term_start: date
+    term_end: date
+    committed: Decimal
+    used: Decimal
+    #: Money already spent that bought nothing. The one figure on this row a
+    #: reader can act on without further arithmetic.
+    wasted: Decimal
+    #: Null where nothing was committed in the window, which is what a queued
+    #: commitment looks like. Zero would say the whole commitment was wasted, and
+    #: it has not started.
+    utilization: Decimal | None
+
+
+class CommitmentCoverageOut(BaseModel):
+    """How much of one slice of the estate was on a commitment."""
+
+    model_config = ConfigDict(frozen=True)
+
+    commitment_type: str
+    dimension: str
+    dimension_value: str
+    eligible_spend: Decimal
+    covered_spend: Decimal
+    #: Null where nothing was eligible. Zero says the estate is uncovered and
+    #: somebody should buy; null says there was nothing there to buy for.
+    coverage: Decimal | None
+
+
+class CommitmentsOut(BaseModel):
+    """Both figures for one window, and never one derived from the other."""
+
+    model_config = ConfigDict(frozen=True)
+
+    window_start: date
+    window_end: date
+    commitments: list[CommitmentUseOut]
+    coverage: list[CommitmentCoverageOut]
+    #: Every commitment's unused money, added up. Carried rather than left to the
+    #: screen, so the file, the screen and the API agree on it.
+    wasted_total: Decimal
+
+
+class CostSliceOut(BaseModel):
+    """One row of a grouping: a service, an account, a region or a tag value."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: `unallocated` where the row carries no value for the dimension. It is
+    #: never dropped and never folded into a total.
+    name: str
+    effective_cost: Decimal
+    billed_cost: Decimal
+    line_items: int
+
+
+class CostDayOut(BaseModel):
+    """Effective cost on one day, for the chart on the cost screen."""
+
+    model_config = ConfigDict(frozen=True)
+
+    day: date
+    effective_cost: Decimal
+
+
+class CostPointOut(BaseModel):
+    """What one query cost on one day. ISS-172.
+
+    Provenance is on the point rather than on the series, because a run that
+    saw evidence and one that did not produce different grades of number, and a
+    line drawn through both without saying so asserts a confidence that only
+    part of it has.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    run_date: date
+    cost_month_usd: Decimal
+    provenance: str
+
+
+class QueryFindingOut(BaseModel):
+    """One expensive query, as the findings list shows it."""
+
+    model_config = ConfigDict(frozen=True)
+
+    finding_id: UUID
+    dashboard_uid: str | None
+    dashboard_title: str | None
+    panel_title: str | None
+    folder_uid: str | None
+    engine: str
+    origin: str
+    refresh_seconds: int | None
+    window_seconds: int
+    runs_per_day: Decimal
+    scan_bytes_per_run: int | None
+    #: Decimal, never float. A float total over a month of findings is wrong in
+    #: the last places, and a figure that will not reconcile is not used twice.
+    monthly_cost: Decimal
+    #: measured or modelled. Never absent, and never inferred by the reader.
+    provenance: str
+    #: Null on a modelled row, a count on a measured one. The database refuses
+    #: either half alone, so this pair is always consistent.
+    measured_runs: int | None
+    severity: str
+    #: Which group this row is filed under. Sent on the row as well as on
+    #: the group, so a reader looking at one finding can see the systemic
+    #: problem it belongs to without fetching the groups separately.
+    cause: str
+    #: Null when nothing could attribute it. The API does not invent a
+    #: placeholder: "unattributed" is a word a screen chooses, and an API that
+    #: returned it would make an absence indistinguishable from a real owner
+    #: whose name happens to be that.
+    owner: str | None
+    owner_source: str | None
+    #: What drives the cost, in words. It is what makes a finding actionable
+    #: rather than a number, so it is a field and not a tooltip.
+    why: str
+    #: Cost per audited day, oldest first, bounded to thirty days. Defaulted so
+    #: an API that predates ISS-172 answers with an empty series rather than a
+    #: missing field, and one point is not a trend.
+    history: list[CostPointOut] = []
+    as_of: datetime
+    collected_at: datetime
+
+
+class RemediationOut(BaseModel):
+    """What a remediation did, or why it did not.
+
+    `applied` false is a normal answer and carries a reason. The common case is
+    a deployment whose write level is `none`, which is the default and is a
+    decision rather than a fault, and the second most common is a finding that
+    is not an explicit policy violation. A judgement call is a recommendation,
+    not a remediation.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    finding_id: UUID
+    applied: bool
+    #: Set when the write did not take and was put back. The estate is
+    #: unchanged, and this says so rather than leaving a reader to infer it.
+    reverted: bool = False
+    detail: str = ""
+    #: Null unless something was recorded. An undo needs it, and a refusal has
+    #: nothing to undo.
+    change_id: UUID | None = None
+
+
+class QueryGroupOut(BaseModel):
+    """One cause, with the money behind it summed across every finding.
+
+    The group exists because ADR-0016 requires aggregation before ranking. Four
+    hundred findings at 15 USD each are LOW individually and 6,000 USD together,
+    and a list ranked by individual severity puts the systemic problem below a
+    single noisy panel.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    cause: str
+    #: A sentence a reader can act on. The code is what groups; this is what is
+    #: read, and neither is derived from the other at render time.
+    label: str
+    findings: int
+    monthly_cost: Decimal
+    #: Derived from the summed money like any other finding, so a group of LOW
+    #: rows that adds up to a CRITICAL figure says CRITICAL.
+    severity: str
+    as_of: datetime
+    collected_at: datetime
+
+
+class QueryFindingDetailOut(QueryFindingOut):
+    """One finding with its full working, for the detail screen."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: The query as written. Shown whole: a summary of a query is not evidence.
+    query_text: str
+    targets: list[str]
+    region: str | None
+    last_editor: str | None
+    #: The published price the working is derived from. Sent rather than
+    #: hardcoded in the screen, so the arithmetic it publishes has no constant
+    #: the reader cannot see.
+    rate_usd_per_gib: Decimal
+    #: The change still applied to this finding, if any. Null means there is
+    #: nothing to undo, and a screen uses it to decide whether the control
+    #: exists at all rather than rendering one that does nothing.
+    applied_change_id: UUID | None = None
+    #: Null until FEAT-018 publishes a calibration. Never invented, because the
+    #: honest rendering of an unpublished accuracy is to say it is unpublished.
+    accuracy_percent: Decimal | None = None
+
+
+class AdhocQueryOut(BaseModel):
+    """One Logs Insights query that ran and belongs to no panel or alert rule.
+
+    FEAT-051. There is no provenance field, and its absence is the claim: an ad
+    hoc query exists only in the evidence, so there is nothing to model it from
+    and every figure here is measured.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    adhoc_id: UUID
+    account_id: str
+    region_id: str
+    #: The query as it ran, whole. A person has to recognise their own query in
+    #: it, so it is never truncated on the way out.
+    query_text: str
+    runs: int
+    scan_bytes: int
+    cost_usd: Decimal
+    #: Null when CloudTrail did not name the caller. The row is still reported:
+    #: an expensive query nobody owns is the case this feature exists for.
+    principal: str | None
+    as_of: datetime
+    collected_at: datetime
+
+
+class SurfaceInstanceOut(BaseModel):
+    """One place queries live, reachable or not."""
+
+    model_config = ConfigDict(frozen=True)
+
+    instance_id: UUID
+    name: str
+    kind: str
+    endpoint: str
+    account_id: str | None
+    region_id: str | None
+    reachable: bool
+    #: One of the six causes when reachable is false, and never free text.
+    unreachable_reason: str | None
+    #: Null when the instance could not be read. Null is not zero: an instance
+    #: Meter cannot reach has an unknown number of queries, and a zero would
+    #: make the estate look smaller than it is.
+    #: The smallest refresh this instance accepts from anybody. Null means it
+    #: enforces none at all, which is not zero and is the estate FEAT-014 exists
+    #: to find.
+    refresh_floor_seconds: int | None
+    query_count: int | None
+    as_of: datetime
+    collected_at: datetime

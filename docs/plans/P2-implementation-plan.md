@@ -34,11 +34,21 @@ else touches it.
 | G. Prevention | 017 to 018 | Workspace floor and the CI gate | B |
 | H. Remediation | 019 | Panel rewrite with undo | G |
 | I. Calibration | 020 | The published accuracy figure | D, and P1 cost data |
-| J. Surface | 021 to 022 | Routes, MCP tools and four screens | D to H |
+| J. Surface | 021 | Routes and MCP tools | D to E. **F is parked**, so the enforcement route lands with TASK-P2-016 |
+| K. Screens | 022 to 025 | Four screens, fixture backed and reviewable | TASK-P0-037. **Not D to H** |
 
 Waves F and G do not depend on D. With two people, one takes the audit path and
 the other takes control and prevention, which is also the fastest route to the
 thing that actually stops the bleed.
+
+**Wave K does not wait for wave J.** The four screens are built against typed
+fixtures using the seam from TASK-P0-037, so each one is reviewable for layout,
+language and honesty from the moment its shape is known rather than the moment
+its data is real. When TASK-P2-021 lands the routes, the client gains the
+methods and the screens start reading real data with no further change, because
+resolution is derived from the client rather than from a list. Under the
+previous ordering the first pixel of P2 appeared at task 21 of 22, which put
+every interface mistake at the most expensive point to find one.
 
 ---
 
@@ -362,17 +372,17 @@ pytest tests/query/test_ports.py -v && .venv/bin/lint-imports
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-23 |
 | Depends on | TASK-P2-004 |
 | Estimate | M |
 
 **Acceptance criteria.**
 
-- [ ] Implements `QuerySurface` in memory
-- [ ] Can be configured to raise any of the six error types per instance
-- [ ] Ships a fixture estate: 3 instances, one of each kind, one of them
+- [x] Implements `QuerySurface` in memory
+- [x] Can be configured to raise any of the six error types per instance
+- [x] Ships a fixture estate: 3 instances, one of each kind, one of them
       unreachable
-- [ ] Deterministic
+- [x] Deterministic
 
 **Do not.** Do not make the fake only capable of success. The unreachable
 instance case has its own test in the spec and needs a fixture that produces it.
@@ -383,18 +393,30 @@ instance case has its own test in the spec and needs a fixture that produces it.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-24 |
 | Delivers | FEAT-011 |
 | Depends on | TASK-P2-005 |
 | Estimate | M |
 
 **Acceptance criteria.**
 
-- [ ] Discovery via `grafana:ListWorkspaces` per account per region
-- [ ] Temporary service account token minted per run and **revoked at the end
+- [x] Discovery via `grafana:ListWorkspaces` per account per region
+- [x] Temporary service account token minted per run and **revoked at the end
       of the run, including on failure**
-- [ ] Falls back to a Secrets Manager token when configured
-- [ ] Passes the contract suite under `moto`
+- [x] Falls back to a Secrets Manager token when configured
+- [~] Passes the contract suite under `moto`. **Not possible: moto implements
+      no Grafana operation at all, and botocore knows them from the service
+      model so the gap is invisible until a call is made. `botocore.stub`
+      validates a request and a response against the real model instead, which
+      is stronger for API correctness and immediately caught the fixture
+      omitting four fields `ListWorkspaces` requires. ISS-141.**
+
+**Layering found here.** The first implementation imported `finops_query` to
+classify and fingerprint, and the import contract refused it: `finops_query`
+sits above `finops_providers` precisely because it reads what an adapter
+fetched. The adapter now names a `QueryParser` port in `finops_core.ports.query`
+and a collector supplies `finops_query.parser.GrafanaQueryParser`. The adapter
+fetches, the layer above interprets, and the import direction points down.
 
 **Do not.**
 
@@ -468,21 +490,21 @@ changes again.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-30 |
 | Implements | P2 spec section 5 |
 | Depends on | P0 TASK-P0-010 |
 | Estimate | L |
 
 **Acceptance criteria.**
 
-- [ ] `grafana_instance`, `query_definition`, `query_finding`,
+- [x] `grafana_instance`, `query_definition`, `query_finding`,
       `folder_team_map`, `enforcement_action`, `remediation_change`
-- [ ] `ck_enforcement_action__restrictive_expires`: a `DENY` or `THROTTLE` row
+- [x] `ck_enforcement_action__restrictive_expires`: a `DENY` or `THROTTLE` row
       **cannot be inserted without an expiry**
-- [ ] `ck_query_finding__measured_has_runs`: a modelled row cannot carry a
+- [x] `ck_query_finding__measured_has_runs`: a modelled row cannot carry a
       measured run count, and a measured row cannot omit one
-- [ ] `remediation_change.before` is `NOT NULL`
-- [ ] Every table classified in `docs/09-DATA-CLASSIFICATION.md`, with a
+- [x] `remediation_change.before` is `NOT NULL`
+- [x] Every table classified in `docs/09-DATA-CLASSIFICATION.md`, with a
       retention period
 
 **Tests.**
@@ -492,6 +514,13 @@ changes again.
 | `test_deny_requires_expiry` | The database rejects a DENY with no expiry |
 | `test_modelled_cannot_claim_measured` | Both directions of the provenance constraint |
 | `test_remediation_requires_undo` | A change with no before value is rejected |
+
+**One constraint added beyond the specification.**
+`ck_grafana_instance__unreachable_has_reason` mirrors the invariant
+`SurfaceInstance.__post_init__` already enforces in the domain. An unexplained
+absence is what makes an estate look smaller than it is, and the domain being
+careful is not a reason for the table not to be. The specification was updated
+rather than left to diverge.
 
 **Do not.**
 
@@ -509,7 +538,7 @@ changes again.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-08-31 |
 | Implements | P2 spec section 7.1 |
 | Delivers | FEAT-011, FEAT-012 |
 | Depends on | TASK-P2-006, TASK-P2-009 |
@@ -517,12 +546,17 @@ changes again.
 
 **Acceptance criteria.**
 
-- [ ] Registered in `collector_schedule` at **6 hours**, with its reason and
+- [x] Registered in `collector_schedule` at **6 hours**, with its reason and
       its estimated cost per run, per ADR-0012
-- [ ] Walks every reachable instance, upserts `query_definition` and today's
+- [x] Walks every reachable instance, upserts `query_definition` and today's
       `query_finding`
-- [ ] One unreachable instance does not fail the run
-- [ ] Idempotent: three runs in one day write one `query_finding` per query
+- [x] One unreachable instance does not fail the run
+- [x] Idempotent: three runs in one day write one `query_finding` per query
+
+**Where the parser is wired.** `AmgQuerySurface` takes a `QueryParser`, and
+the collector takes an already built surface, so the wiring point is wherever
+the collector is constructed. The tests build it with `FakeQuerySurface`;
+production builds it with `AmgQuerySurface(parser=GrafanaQueryParser(), ...)`.
 
 **Do not.**
 
@@ -536,16 +570,27 @@ changes again.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-01 |
 | Depends on | TASK-P2-010 |
 | Estimate | M |
 
 **Acceptance criteria.**
 
-- [ ] Fingerprint is stable across template variable substitution
-- [ ] Two panels running the same query on different dashboards share a
-      fingerprint, so measured evidence matches both
-- [ ] Whitespace and comment changes do not change the fingerprint
+- [x] Fingerprint is stable across template variable substitution
+- [x] Two panels running the same query on different dashboards share a
+      fingerprint, so measured evidence matches both. **Delivered as a second
+      key rather than a wider first one. `fingerprint` cannot be widened:
+      `uq_query_definition__fingerprint` makes it the identity of a row, so two
+      panels sharing one would upsert over each other and a panel would vanish
+      from the estate. `policy.query_key` carries the query shape and is what
+      evidence attaches to, on a new nullable `query_definition.query_key`
+      column added additively in migration 0004.**
+- [x] Whitespace and comment changes do not change the fingerprint
+
+**A comment marker inside a quoted string is treated as a comment**, so the rest
+of that line is dropped from the key. It affects the key only, never the stored
+query, the targets or the cost. Accepted as ISS-142 rather than writing a parser
+per query language.
 
 **Do not.** Do not fingerprint the raw query text. A dashboard variable makes
 every render unique, and measured evidence would then match nothing.
@@ -556,7 +601,7 @@ every render unique, and measured evidence would then match nothing.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-14 |
 | Implements | ADR-0016 |
 | Depends on | TASK-P2-010 |
 | Estimate | M |
@@ -572,6 +617,21 @@ every render unique, and measured evidence would then match nothing.
 trivial ones is the specific failure the dollar thresholds would otherwise
 introduce.
 
+**Prose cannot be grouped on.** The model already produced a sentence per
+reason, and grouping on it would split one systemic problem across every
+phrasing it has ever emitted. `finops_query/severity.py` holds a closed cause
+vocabulary and the model now emits a code beside each sentence, from the same
+branch, so the two cannot drift.
+
+**Summed in the database, not over the page.** `GET /api/v1/query/groups` groups
+and sums in SQL. A fold over the rows a route happened to fetch is a sum over
+the page, which is the same class of error as ordering a list in Python.
+
+**Seen to work.** The fake estate carries twelve panels built from one template,
+each 16.67 USD and `LOW`, which group into one 200 USD `HIGH` row that outranks
+the single 180 USD finding above it. Without a cluster like that the criterion
+cannot be demonstrated at all.
+
 ---
 
 ## Wave E: evidence
@@ -580,17 +640,28 @@ introduce.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-05 |
 | Delivers | FEAT-013 |
 | Depends on | TASK-P2-011 |
 | Estimate | L |
 
 **Acceptance criteria.**
 
-- [ ] CloudTrail `StartQuery`, `logs:DescribeQueries` and `GetMetricData` call
-      counts collected and matched by fingerprint
-- [ ] A matched finding is promoted to `measured` with `measured_runs` set
-- [ ] An unmatched finding stays `modelled`, which is a normal state
+- [x] CloudTrail `StartQuery`, `logs:DescribeQueries` and `GetMetricData` call
+      counts collected and matched by fingerprint. **Matched by normalised query
+      text rather than by fingerprint, because that is what CloudTrail records:
+      a fingerprint includes the dashboard and the panel, and an execution event
+      knows neither. `match_observed` normalises and falls back to a template
+      regex, which is how evidence reaches a panel storing `$region` from runs
+      recorded against `eu-west-1`.**
+- [x] A matched finding is promoted to `measured` with `measured_runs` set
+- [x] An unmatched finding stays `modelled`, which is a normal state
+
+**Evidence is fetched once per run, not once per instance.** CloudTrail records
+an execution against the account it ran in, never against the tool that issued
+it, so a self hosted Grafana querying CloudWatch appears in the same trail as a
+managed one. Asking per instance would refetch the same window and would answer
+nothing at all for an instance that carries no account of its own.
 
 **Do not.** Do not treat absent evidence as zero runs. Absent means unobserved.
 
@@ -600,16 +671,23 @@ introduce.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-06 |
 | Delivers | FEAT-016 |
 | Depends on | TASK-P2-013 |
 | Estimate | M |
 
 **Acceptance criteria.**
 
-- [ ] Three sources in priority order, and `owner_source` records which won
-- [ ] A query with no resolvable owner is reported **unowned**
-- [ ] `folder_team_map` classified as class P and retained accordingly
+- [x] Three sources in priority order, and `owner_source` records which won
+- [x] A query with no resolvable owner is reported **unowned**
+- [x] `folder_team_map` classified as class P and retained accordingly
+
+**Two gaps found on the way.** `QueryDefinition` carried no folder, and the
+collector wrote `folder_uid` as `NULL`, so the highest priority source could
+never have matched anything. The domain now carries it, the AMG adapter reads
+`folderUid` from Grafana's search, and the collector persists it. The fake
+estate gained a folder too, because an estate without one cannot exercise
+`FOLDER_MAP` end to end and that test was skipping silently.
 
 **Do not.** Do not assign a default owner. A wrongly assigned owner is worse
 than an absent one: it is ignored by the person it reaches and never reaches
@@ -623,11 +701,17 @@ the person who could act.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Parked, 2026-08-29 |
 | Implements | P2 spec section 7.2 |
 | Delivers | FEAT-015 |
 | Depends on | TASK-P2-009 |
 | Estimate | L |
+
+**Parked 2026-08-29.** Needs EventBridge, a Lambda and Budgets Actions. ISS-122
+records that no Terraform stack has ever been planned or applied, so this can be
+built and unit tested but not verified against AWS. Parked rather than descoped:
+the kill switch is the feature that stops the bleed, and TASK-P2-007 and 008
+already show what descoped looks like when the answer is really no.
 
 **Acceptance criteria.**
 
@@ -647,10 +731,16 @@ started this project a six hour gap is roughly 25,000 USD.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Parked, 2026-08-29 |
 | Delivers | FEAT-015 |
 | Depends on | TASK-P2-015 |
 | Estimate | L |
+
+**Parked 2026-08-29.** Needs EventBridge, a Lambda and Budgets Actions. ISS-122
+records that no Terraform stack has ever been planned or applied, so this can be
+built and unit tested but not verified against AWS. Parked rather than descoped:
+the kill switch is the feature that stops the bleed, and TASK-P2-007 and 008
+already show what descoped looks like when the answer is really no.
 
 **Acceptance criteria.**
 
@@ -686,7 +776,7 @@ started this project a six hour gap is roughly 25,000 USD.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-14, the AMG write refuses. ISS-166 |
 | Delivers | FEAT-014 |
 | Depends on | TASK-P2-006 |
 | Estimate | S |
@@ -696,12 +786,37 @@ Grafana then enforces itself on every save, forever, with no code from us.
 
 **Acceptance criteria.**
 
-- [ ] Reads and reports the current floor per workspace
-- [ ] Sets it when `query_write_level` is `workspace_floor` or above
-- [ ] Recorded in `remediation_change` with a `before` value
+- [x] Reads and reports the current floor per workspace. Stored on
+      `grafana_instance.refresh_floor_seconds`, null when the workspace enforces
+      none at all, which is not zero and is the row worth acting on
+- [x] Sets it when `query_write_level` is `workspace_floor` or above. The level
+      is a validated setting, the guard is inside `apply_refresh_floor` rather
+      than in its callers, and the fake surface implements the write end to end.
+      **The AMG adapter refuses with `NotOptedIn` rather than guessing**: no
+      workspace has ever been reachable to test a write against, per ISS-122,
+      and an untested write into somebody's Grafana is the one thing FEAT-014
+      must not ship. ISS-166 tracks it
+- [x] Recorded in `remediation_change` with a `before` value, captured from the
+      write itself rather than read back afterwards, and written only after the
+      write succeeded
 
 **Do not.** Do not set it without recording the previous value. Even a one
 setting change must be undoable.
+
+**A new port rather than two more methods.** `QuerySurface` is about the queries
+an instance holds and its contract test fixes it at three methods on purpose. A
+floor is one setting on the instance itself, and a surface may support one
+without the other, so `RefreshFloor` is its own protocol and a caller checks for
+it before asking.
+
+**The previous value comes from the write, not from a read after it.** A caller
+that reads it back has already lost the race with anyone else changing the same
+workspace, and would record a `before` that was never true.
+
+**`remediation_change.instance_id` is NOT NULL**, so a change that names no
+instance is refused by the database rather than by a convention. That surfaced
+during this task: the first version of `apply_refresh_floor` took an optional
+instance and the table would not have it.
 
 ---
 
@@ -709,18 +824,24 @@ setting change must be undoable.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-15 |
 | Delivers | FEAT-014 |
 | Depends on | TASK-P2-002 |
 | Estimate | M |
 
 **Acceptance criteria.**
 
-- [ ] A standalone checker over dashboard JSON, usable in any pipeline
-- [ ] Rejects a Logs Insights panel combining sub minute refresh with a window
+- [x] A standalone checker over dashboard JSON, usable in any pipeline. No
+      database, no credentials, no network, and the rates default to the
+      model's published assumptions so it runs in a pipeline that has never
+      heard of Meter. `make check-dashboards DASHBOARDS='...'`
+- [x] Rejects a Logs Insights panel combining sub minute refresh with a window
       over 24 hours
-- [ ] Rules from settings, so a tenant can tighten them
-- [ ] Reports the modelled cost of the violating panel, so the failure message
+- [x] Rules from settings, so a tenant can tighten them, and the defaults are
+      the same thresholds the reports warn on. A gate that blocks at a different
+      number from the one the reports warn at teaches people the reports are
+      wrong
+- [x] Reports the modelled cost of the violating panel, so the failure message
       says what it would have cost
 
 **Do not.** Do not make it a warning. See ISS-096: its reach depends on how many
@@ -734,18 +855,32 @@ dashboards are managed as code, and a gate that warns is ignored regardless.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-16, short on the notification. ISS-167 |
 | Delivers | FEAT-017 |
 | Depends on | TASK-P2-017 |
 | Estimate | L |
 
 **Acceptance criteria.**
 
-- [ ] Only when `query_write_level` is `full`, default `none`
-- [ ] `before` captured and stored before the write
-- [ ] Read back after the write, and **automatic revert if it does not match**
-- [ ] Owner notified with what changed and how to undo it
-- [ ] `POST .../undo` restores the original exactly
+- [x] Only when `query_write_level` is `full`, default `none`. The levels are
+      ordered, and `workspace_floor` permits one setting rather than somebody's
+      dashboard
+- [x] `before` captured and stored before the write, as the surface's own stored
+      form rather than a reconstruction from the fields Meter understands. That
+      is what makes the undo exact
+- [x] Read back after the write, and **automatic revert if it does not match**.
+      A surface that accepted a write is not a surface that applied it. Nothing
+      is recorded when it reverts, because a change row is a claim that the
+      estate changed and stayed changed
+- [ ] **Short.** Owner notified with what changed and how to undo it. Meter has
+      no notification transport at all: no mail, no webhook, no queue consumer
+      for one. Inventing one for this task would be a new subsystem shipped
+      without a decision, so it is ISS-167 and the change is recorded with its
+      `applied_by` in the meantime
+- [x] `POST .../undo` restores the original exactly, as `undo_change`. Undoing
+      twice is refused, because the second would restore a state the first
+      already replaced. **The route itself is ISS-148**, which holds the five
+      query routes that have nothing behind them
 
 **Do not.**
 
@@ -753,6 +888,13 @@ dashboards are managed as code, and a gate that warns is ignored regardless.
   call is a recommendation, not a remediation.
 - Do not write without the read back. A partial write to a dashboard is worse
   than the original problem.
+
+**`changes` names only the fields to replace.** Sending a whole element would
+overwrite everything a person edited between the read and the write.
+
+**The undo addresses the surface's fingerprint, not the database identity.** The
+first version wrote to `query_id`, which addresses an element the surface has
+never heard of, and it reported success while changing nothing.
 
 ---
 
@@ -785,50 +927,807 @@ the measurement, and let a person decide what to change. ISS-093.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-08, short on two criteria. ISS-148 |
 | Implements | P2 spec section 8.2 |
-| Depends on | TASK-P2-014, TASK-P2-016 |
+| Depends on | TASK-P2-014. TASK-P2-016 is parked |
+| Estimate | M |
+
+**Scoped by the parking of wave F on 2026-08-29.** Seven of the eight routes
+read data that TASK-P2-014 produces. The eighth, enforcement, has nothing behind
+it until TASK-P2-016 lands, so it is not built and `/api/v1/query/enforcement`
+stays in `FIXTURE_SURFACES`. The enforcement screen therefore stays fixture
+backed and keeps saying so on screen, which is the behaviour that seam exists
+for.
+
+**Acceptance criteria.**
+
+- [ ] **Short.** The eight routes from spec section 8.2. Five built: findings,
+      one finding, instances, and since 2026-09-05 the two remediation routes,
+      which TASK-P2-019 unblocked. Three remain and none can be built here:
+      enforcement and its revoke need the parked TASK-P2-016, and accuracy needs
+      FEAT-018. ISS-148
+- [ ] **Short.** Three MCP tools, schemas generated from the same models. One
+      built, `list_expensive_queries`. The other two take a finding identifier
+      or a workspace, and each would be a facade over a route that is not there
+- [x] Every response carries the standard `meta` envelope
+- [x] `scope_coverage` accounts for unreachable instances
+
+**Do not.** Do not expose a remediation route that ignores the write level flag.
+
+**What running it found, none of which a test had.** The routes were written,
+imported cleanly, and returned 500 on every call: the six P2 tables were never
+registered in `SCOPED_TABLES`, and `UUID` was never imported into
+`finops_api/schemas.py`, so two Pydantic models could not be built. Neither is
+visible without calling the route. Beyond that, the scope guard could not
+express these tables at all. A workspace names an account with no provider
+column beside it, and a finding names no account: its account is the account of
+the workspace it came from. The registry now has `ByAccount` and `Through`, and
+`Through` recurses, so a finding is scoped through its definition through its
+instance without either link knowing how long the chain is.
+
+`scope_coverage` counted findings against accounts, which is not a ratio of
+anything. It now counts workspaces read over workspaces the tenant has, so an
+unreachable workspace makes the list partial, which is the fourth criterion and
+was not met by the first implementation of it.
+
+Three more, found by opening the screen rather than by running the suite:
+ISS-149, ISS-150 and ISS-151 each independently stopped the local stack from
+showing its own data, and ISS-153 meant the account column scope enforcement now
+reads held a workspace identifier.
+
+---
+
+## Wave K: screens
+
+Each of these four is built against a typed fixture and carries the
+`FIXTURE DATA` band from TASK-P0-037 until its route exists. None of them
+depends on wave J.
+
+### TASK-P2-022: the query findings screen
+
+| Field | Value |
+| --- | --- |
+| Status | Done, 2026-09-13 |
+| Implements | P2 spec section 9.1, `docs/13-UI-ARCHITECTURE.md` section 9.1 |
+| Delivers | FEAT-011, FEAT-012, FEAT-016 at the surface |
+| Depends on | TASK-P0-037, TASK-P2-004 |
 | Estimate | M |
 
 **Acceptance criteria.**
 
-- [ ] The eight routes from spec section 8.2
-- [ ] Three MCP tools, schemas generated from the same models
-- [ ] Every response carries the standard `meta` envelope
-- [ ] `scope_coverage` accounts for unreachable instances
-
-**Do not.** Do not expose a remediation route that ignores the write level flag.
-
----
-
-### TASK-P2-022: four screens
-
-| Field | Value |
-| --- | --- |
-| Status | Not started |
-| Implements | P2 spec section 9 |
-| Depends on | TASK-P2-021 |
-| Estimate | L |
-
-**Acceptance criteria.**
-
-- [ ] Findings, ranked by cost, with the `why` column in prose
-- [ ] Finding detail showing the full working: query, target, formula, window,
-      and measured evidence where it exists
-- [ ] Instances, **including unreachable ones**
-- [ ] Enforcement, showing active actions, their expiry, and a revoke button
-- [ ] Every modelled figure carries its caveat until FEAT-018 publishes accuracy
-- [ ] An end to end journey: detect a violating dashboard, see it ranked, see
-      its owner, apply the workspace floor, confirm the undo
+- [x] Dense table, 32 px rows, sorted by monthly cost descending
+- [x] The `why` column is **a column of prose**, not a tooltip
+- [x] Every modelled figure is hatched and prefixed, and reads differently from a
+      measured one
+- [x] An unreachable instance produces a partial state with the count of what is
+      missing **above** the table, not a row inside it
+- [x] `unattributed` is a rendered owner value, never a blank cell
+- [x] The `FIXTURE DATA` band renders until the client implements the route
+- [x] Axe reports zero violations
 
 **Do not.**
 
+- Do not put the `why` text in a tooltip or a hover card. This list is read in
+  tickets and in screenshots, and a tooltip is invisible in both. The prose is
+  what makes a finding actionable rather than a number.
 - Do not render a modelled figure identically to a measured one. The label is
   the product.
-- Do not hide unreachable instances to make the list tidier. That screen exists
-  to stop silent under counting.
+
+**Steps.**
+
+- [x] **Step 1: add the wire type**
+
+`finops-web/src/api/types.ts`, following the existing convention of snake case
+fields mirroring `finops_api/schemas.py`.
+
+```ts
+export interface ApiQueryFinding {
+  readonly finding_id: string;
+  readonly dashboard_uid: string;
+  readonly dashboard_title: string;
+  readonly panel_title: string;
+  readonly refresh_seconds: number | null;
+  readonly window_seconds: number | null;
+  readonly runs_per_day: number;
+  readonly bytes_scanned_per_run: number;
+  readonly monthly_cost: string;
+  /** measured, modelled or forecast. Never absent. */
+  readonly provenance: string;
+  readonly severity: number;
+  /** The literal string `unattributed` when no owner was resolved. */
+  readonly owner: string;
+  /** Prose explaining what drives the cost. Ported from the prototype. */
+  readonly why: string;
+}
+```
+
+- [x] **Step 2: write the fixture, including the unhappy cases**
+
+`finops-web/src/screens/__tests__/queryFixtures.ts`
+
+```ts
+import type { ApiQueryFinding } from '../../api/types';
+
+/**
+ * Three rows on purpose: one measured, one modelled, one unattributed. A
+ * fixture with only the happy path pins the wrong screen.
+ */
+export const QUERY_FINDINGS: readonly ApiQueryFinding[] = [
+  {
+    finding_id: '11111111-1111-1111-1111-111111111111',
+    dashboard_uid: 'abc123',
+    dashboard_title: 'Platform overview',
+    panel_title: 'Error rate by service',
+    refresh_seconds: 10,
+    window_seconds: 2592000,
+    runs_per_day: 8640,
+    bytes_scanned_per_run: 4294967296,
+    monthly_cost: '12400.00',
+    provenance: 'modelled',
+    severity: 1,
+    owner: 'platform-team',
+    why: 'Refreshes every 10 seconds against a 30 day window, so it rescans 4 GiB 8,640 times a day.',
+  },
+  {
+    finding_id: '22222222-2222-2222-2222-222222222222',
+    dashboard_uid: 'def456',
+    dashboard_title: 'Billing',
+    panel_title: 'Invoice totals',
+    refresh_seconds: 3600,
+    window_seconds: 86400,
+    runs_per_day: 24,
+    bytes_scanned_per_run: 1048576,
+    monthly_cost: '3.20',
+    provenance: 'measured',
+    severity: 4,
+    owner: 'unattributed',
+    why: 'Hourly refresh over a one day window. Listed for completeness.',
+  },
+];
+```
+
+- [x] **Step 3: write the failing screen test**
+
+`finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx`
+
+```tsx
+import { render, screen, within } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
+import { QueryFindingsScreen } from '../QueryFindingsScreen';
+import { Harness } from './Harness';
+import { clientReturning } from './fixtures';
+import { violationsIn } from '../../components/__tests__/axe';
+
+/** The path is in FIXTURE_SURFACES, so the client is never called. */
+function renderFindings() {
+  return render(
+    <Harness client={clientReturning({})}>
+      <QueryFindingsScreen />
+    </Harness>,
+  );
+}
+
+describe('QueryFindingsScreen', () => {
+  it('puts the reason in a column, so it survives a screenshot', async () => {
+    renderFindings();
+    const table = await screen.findByRole('table');
+    expect(within(table).getByRole('columnheader', { name: /why/i })).toBeInTheDocument();
+    expect(within(table).getByText(/rescans 4 GiB 8,640 times a day/)).toBeInTheDocument();
+  });
+
+  it('ranks by monthly cost, most expensive first', async () => {
+    renderFindings();
+    const rows = await screen.findAllByRole('row');
+    expect(rows[1]).toHaveTextContent('Error rate by service');
+  });
+
+  it('renders a modelled figure differently from a measured one', async () => {
+    renderFindings();
+    const rows = await screen.findAllByRole('row');
+    expect(within(rows[1]).getByTestId('figure')).toHaveAttribute('data-provenance', 'modelled');
+    expect(within(rows[2]).getByTestId('figure')).toHaveAttribute('data-provenance', 'measured');
+  });
+
+  it('shows an unresolved owner as a value, not an empty cell', async () => {
+    renderFindings();
+    expect(await screen.findByText('unattributed')).toBeInTheDocument();
+  });
+
+  it('says so while it is running on a fixture', async () => {
+    renderFindings();
+    expect(await screen.findByTestId('fixture-band')).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = renderFindings();
+    await screen.findByRole('table');
+    expect(await violationsIn(container)).toEqual([]);
+  });
+});
+```
+
+`Figure` emits `data-testid="figure"` and `data-provenance={kind}` at
+`finops-web/src/components/Figure.tsx:95`, which is what the third test asserts
+on. Do not add attributes to a component that already has them.
+
+- [x] **Step 4: run it and watch it fail**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/QueryFindingsScreen.test.tsx`
+Expected: FAIL, cannot find module `../QueryFindingsScreen`.
+
+- [x] **Step 5: write the screen**
+
+First add one hook the four screens share, to
+`finops-web/src/api/queries.ts`, following the one hook per route convention
+already in that file:
+
+```ts
+import { resolveSurface, type Resolved } from './fixtureSeam';
+import type { ApiEnvelope, ApiQueryFinding } from './types';
+
+/**
+ * A surface that may still be fixture backed. The envelope is kept whole for
+ * the same reason every other hook here keeps it: a hook returning only the
+ * rows lets a screen render them without seeing the coverage or the failures
+ * that came with them.
+ */
+export function useQuerySurface<T>(
+  key: readonly unknown[],
+  template: string,
+  path: string,
+  fixture: () => ApiEnvelope<T>,
+) {
+  const client = useApi();
+  return useQuery<Resolved<ApiEnvelope<T>>>({
+    queryKey: key,
+    queryFn: resolveSurface(template, () => client.get<T>(path), fixture),
+  });
+}
+
+export function useQueryFindings() {
+  return useQuerySurface<ApiQueryFinding[]>(
+    ['query-findings'],
+    '/api/v1/query/findings',
+    '/api/v1/query/findings',
+    () => ({ data: [...QUERY_FINDINGS], meta: FIXTURE_META }),
+  );
+}
+```
+
+`FIXTURE_META` is an `ApiMeta` in `queryFixtures.ts` with a real `as_of` and
+`collected_at`, so a fixture backed screen still exercises the freshness path
+rather than skipping it.
+
+Then write `finops-web/src/screens/QueryFindingsScreen.tsx`, composing
+`DataTable`, `Figure`, `SeverityBadge`, `StateBoundary` and `FixtureBand`. Sort
+by `monthly_cost` descending as a decimal comparison and not a string
+comparison, and pass the resolved `source` to `FixtureBand`.
+
+`monthly_cost` arrives as a string to avoid float error. Compare with
+`Number.parseFloat` for the sort only, and never for display. Display goes
+through `Figure`, which is the only path a number takes to a screen.
+
+- [x] **Step 6: run the tests and watch them pass**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/QueryFindingsScreen.test.tsx`
+Expected: PASS, six tests.
+
+- [x] **Step 7: route it**
+
+Add `<Route path="/governance/queries" element={<QueryFindingsScreen />} />` to
+`finops-web/src/App.tsx`, and set `arrives` to null for that path in
+`finops-web/src/shell/sections.ts`, because the screen now exists.
+
+- [x] **Step 8: run the whole suite**
+
+Run: `cd finops-web && npm run lint && npm run test -- --run && npm run build`
+Expected: all pass.
+
+- [x] **Step 9: commit**
+
+```bash
+git add finops-web/src
+git commit -m "feat: TASK-P2-022, the query findings screen
+
+Ranked by monthly cost, with the reason as a column rather than a tooltip so it
+survives a screenshot. Fixture backed and marked as such until the route lands."
+```
 
 ---
+
+### TASK-P2-023: the finding detail screen
+
+| Field | Value |
+| --- | --- |
+| Status | Done, 2026-09-15 |
+| Implements | P2 spec section 9.2, `docs/13-UI-ARCHITECTURE.md` section 9.2 |
+| Delivers | FEAT-012, FEAT-013 and FEAT-018 at the surface |
+| Depends on | TASK-P2-022 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [x] Generous density, because the reader is making a judgement
+- [x] Publishes the query, the target, the engine classification, **the formula
+      with its inputs substituted**, the data window, and measured evidence where
+      FEAT-013 produced any
+- [x] Where no calibration exists the label reads `accuracy not yet published`
+- [x] Where FEAT-018 published one, the label reads `~ $12,400 modelled, +/- 9%`
+- [x] Axe reports zero violations
+
+**Do not.**
+
+- Do not summarise the formula. Publishing the arithmetic is what makes a
+  modelled number arguable rather than magic, and an engineer who cannot point at
+  the line they disagree with dismisses the finding instead of fixing it.
+- Do not invent an accuracy percentage to fill the space. No figure is the
+  correct rendering until FEAT-018 publishes one.
+
+**Steps.**
+
+- [x] **Step 1: write the failing test**
+
+`finops-web/src/screens/__tests__/QueryFindingDetailScreen.test.tsx`
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
+import { QueryFindingDetailScreen } from '../QueryFindingDetailScreen';
+import { Harness } from './Harness';
+import { clientReturning } from './fixtures';
+
+const ID = '11111111-1111-1111-1111-111111111111';
+
+function renderDetail() {
+  return render(
+    <Harness client={clientReturning({})} initialPath={`/governance/queries/${ID}`}>
+      <QueryFindingDetailScreen />
+    </Harness>,
+  );
+}
+
+describe('QueryFindingDetailScreen', () => {
+  it('publishes the formula with its inputs substituted', async () => {
+    renderDetail();
+    const working = await screen.findByTestId('finding-working');
+    expect(working).toHaveTextContent('8,640 runs per day');
+    expect(working).toHaveTextContent('4 GiB scanned per run');
+    expect(working).toHaveTextContent('30 day window');
+  });
+
+  it('says the accuracy is unpublished rather than showing a number', async () => {
+    renderDetail();
+    expect(await screen.findByText(/accuracy not yet published/i)).toBeInTheDocument();
+  });
+});
+```
+
+The screen reads its identifier from the route with `useParams`, not from a
+prop, because the URL is the thing that gets shared into a ticket. `initialPath`
+is the parameter TASK-P0-036 added to `Harness`.
+
+- [x] **Step 2: run it and watch it fail**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/QueryFindingDetailScreen.test.tsx`
+Expected: FAIL, cannot find module.
+
+- [x] **Step 3: extend the fixture and write the screen**
+
+Add `useQueryFinding(id)` to `finops-web/src/api/queries.ts`, built on
+`useQuerySurface` with key `['query-finding', id]`, template
+`/api/v1/query/findings/{id}` and path `/api/v1/query/findings/${id}`. The
+template and the path differ here, which is the case the template matching in
+TASK-P0-037 exists for.
+
+Add `QUERY_FINDING_DETAIL` to `finops-web/src/screens/__tests__/queryFixtures.ts`
+carrying the query text, the target, the engine, the substituted formula terms
+and a null `accuracy_percent`. Write
+`finops-web/src/screens/QueryFindingDetailScreen.tsx` rendering them in the order
+given in the acceptance criteria, with `FixtureBand` and `StateBoundary`.
+
+A null `accuracy_percent` renders `accuracy not yet published`. A number renders
+`+/- n%` beside the modelled label. Those are two branches of one expression, so
+neither can be forgotten.
+
+- [x] **Step 4: run the tests and watch them pass**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/QueryFindingDetailScreen.test.tsx`
+Expected: PASS, two tests.
+
+- [x] **Step 5: route it, run the suite, commit**
+
+Add `<Route path="/governance/queries/:id" element={<QueryFindingDetailScreen />} />`.
+Run `npm run lint && npm run test -- --run && npm run build`.
+
+```bash
+git add finops-web/src
+git commit -m "feat: TASK-P2-023, the finding detail screen
+
+Publishes the full working, so a modelled number is arguable rather than magic.
+No accuracy figure until FEAT-018 publishes one."
+```
+
+---
+
+### TASK-P2-024: the query surfaces screen
+
+| Field | Value |
+| --- | --- |
+| Status | Done, 2026-09-17 |
+| Implements | P2 spec section 9.3, `docs/13-UI-ARCHITECTURE.md` section 9.3 |
+| Delivers | FEAT-011 at the surface |
+| Depends on | TASK-P0-037, TASK-P2-004 |
+| Estimate | S |
+
+**Acceptance criteria.**
+
+- [x] Every instance, its kind, its reachability and its query count
+- [x] **An unreachable instance is listed**, with its typed cause and a recheck
+- [x] The query count for an unreachable instance is `UNREACHABLE`, **not zero**
+- [x] Axe reports zero violations
+
+**Do not.**
+
+- Do not omit an unreachable instance to make the list tidier. This screen exists
+  to stop silent under counting, and an instance list that quietly drops the
+  three it could not reach makes the findings list look complete when it is not.
+- Do not render its query count as zero. A failure is never a number.
+
+**Deviation.** The plan asked for one instance per `SurfaceKind`. All three
+fixture instances are `managed_grafana`, because that is the only kind with an
+adapter: `self_hosted_grafana` and `grafana_cloud` were descoped as TASK-P2-007
+and TASK-P2-008, and a fixture claiming them would show an estate that cannot
+currently exist. A third assertion was added beyond the two planned, that a
+genuine zero still renders as zero, because the unreachable row only means
+something if it does not compete with a real one.
+
+**Steps.**
+
+- [x] **Step 1: write the failing test**
+
+`finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx`
+
+```tsx
+import { render, screen, within } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
+import { QuerySurfacesScreen } from '../QuerySurfacesScreen';
+import { Harness } from './Harness';
+import { clientReturning } from './fixtures';
+
+function renderSurfaces() {
+  return render(
+    <Harness client={clientReturning({})}>
+      <QuerySurfacesScreen />
+    </Harness>,
+  );
+}
+
+describe('QuerySurfacesScreen', () => {
+  it('lists an instance it could not reach', async () => {
+    renderSurfaces();
+    expect(await screen.findByText('meter-prod-eu-west-1')).toBeInTheDocument();
+  });
+
+  it('shows its query count as the cause, never as zero', async () => {
+    renderSurfaces();
+    const row = (await screen.findByText('meter-prod-eu-west-1')).closest('tr');
+    expect(row).not.toBeNull();
+    expect(within(row as HTMLElement).getByText('UNREACHABLE')).toBeInTheDocument();
+    expect(within(row as HTMLElement).queryByText('0')).toBeNull();
+  });
+});
+```
+
+- [x] **Step 2: run it and watch it fail**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/QuerySurfacesScreen.test.tsx`
+Expected: FAIL, cannot find module.
+
+- [x] **Step 3: add the wire type, the fixture and the screen**
+
+`ApiSurfaceInstance` in `finops-web/src/api/types.ts` with `instance_id`,
+`name`, `kind`, `reachable`, `unreachable_cause` and `query_count`, where
+`query_count` is `number | null` and null means not countable. Add
+`SURFACE_INSTANCES` to `queryFixtures.ts` with three instances, one per
+`SurfaceKind` at `finops_core/domain/query.py:28` and one of them unreachable
+named `meter-prod-eu-west-1`, which is the name the test looks for. Screen
+composes `DataTable`, `TypedError` and `FixtureBand`.
+
+Add `useQuerySurfaces()` to `finops-web/src/api/queries.ts`, built on
+`useQuerySurface` from TASK-P2-022 with key `['query-instances']`, template and
+path `/api/v1/query/instances`, and fixture `SURFACE_INSTANCES`.
+
+`query_count === null` renders `TypedError` with the cause. It never renders a
+numeral, per rule 5 of `docs/12-UI-DESIGN.md`.
+
+- [x] **Step 4: run the tests, route it, run the suite, commit**
+
+Run: `cd finops-web && npm run test -- --run && npm run lint && npm run build`
+
+```bash
+git add finops-web/src
+git commit -m "feat: TASK-P2-024, the query surfaces screen
+
+Unreachable instances are listed with their cause and no numeral. This is the
+screen that stops silent under counting."
+```
+
+---
+
+### TASK-P2-025: the enforcement screen and the end to end journey
+
+| Field | Value |
+| --- | --- |
+| Status | Done, 2026-09-05 |
+| Implements | P2 spec section 9.4, `docs/13-UI-ARCHITECTURE.md` section 9.4 |
+| Delivers | FEAT-014, FEAT-015 and FEAT-017 at the surface |
+| Depends on | TASK-P2-022, TASK-P2-023, TASK-P2-024 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [x] Action, principal, applied at, expires at, reason and revoke
+- [x] Expiry shows **both** an absolute time and a countdown
+- [x] Revoke is present on every active action and is subject to the write level
+      flag
+- [x] A revoke control is absent, not merely disabled, when the write level
+      forbids it
+- [~] An end to end Playwright journey: a violating dashboard is detected, seen
+      ranked, its owner seen, the workspace floor applied, and the undo confirmed.
+      **Detect, rank and attribute are done, and the journey also covers the
+      unreachable instance, the genuine zero, both expiry forms, revoke, the
+      workspace refresh floor from TASK-P2-017 since 2026-09-16, and the undo
+      since 2026-09-05, once the remediation routes and the control on the
+      detail screen gave the journey something to click.**
+- [x] Axe reports zero violations
+
+**Plan defect found here.** This task's dependency list names TASK-P2-022 to
+024, but its journey criterion needs the workspace floor from TASK-P2-017 and
+the undo from TASK-P2-019. The criterion was written against the finished sub
+project rather than against this task's own dependencies.
+
+Both landed on 2026-09-16, and the routes and the screen control followed on
+2026-09-05, which is what finally closed this. It was a second instance of the
+same defect: a journey criterion depended on the routes task, and nothing in the
+dependency list said so.
+
+**Do not.**
+
+- Do not show only the countdown. An incident bridge needs "how long do I have"
+  and "when exactly", and a countdown alone cannot be written into an incident
+  log.
+- Do not render a revoke button that does nothing when the write level forbids
+  it. A control that looks available and is not is worse than an absent one.
+
+**Steps.**
+
+- [x] **Step 1: write the failing test**
+
+`finops-web/src/screens/__tests__/EnforcementScreen.test.tsx`
+
+```tsx
+import { render, screen, within } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
+import { EnforcementScreen } from '../EnforcementScreen';
+import { Harness } from './Harness';
+import { clientReturning } from './fixtures';
+
+function renderEnforcement() {
+  return render(
+    <Harness client={clientReturning({})}>
+      <EnforcementScreen now={new Date('2026-09-06T10:00:00Z')} />
+    </Harness>,
+  );
+}
+
+describe('EnforcementScreen', () => {
+  it('shows expiry as an absolute time and a countdown together', async () => {
+    renderEnforcement();
+    const cell = await screen.findByTestId('expires-33333333-3333-3333-3333-333333333333');
+    expect(cell).toHaveTextContent('10:45');
+    expect(cell).toHaveTextContent(/45 min/);
+  });
+
+  it('omits revoke entirely for an action the API says is not revocable', async () => {
+    renderEnforcement();
+    const row = (await screen.findByText('44444444-4444-4444-4444-444444444444')).closest('tr');
+    expect(row).not.toBeNull();
+    expect(within(row as HTMLElement).queryByRole('button', { name: /revoke/i })).toBeNull();
+  });
+});
+```
+
+`now` is an optional prop, matching the pattern `AppShell` already uses at
+`finops-web/src/shell/AppShell.tsx:33`, so the countdown is testable without
+faking a clock.
+
+**The write level is not a frontend decision.** Architectural constraint 8 makes
+the HTTP API the single enforcement point, so the API sets `revocable` per action
+and the screen renders what it is told. A frontend that decided revocability
+itself would be a second implementation of an authorization rule, which is how an
+authorization bug is created.
+
+- [x] **Step 2: run it and watch it fail**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/EnforcementScreen.test.tsx`
+Expected: FAIL, cannot find module.
+
+- [x] **Step 3: add the wire type, the fixture and the screen**
+
+Add to `finops-web/src/api/types.ts`:
+
+```ts
+export interface ApiEnforcementAction {
+  readonly action_id: string;
+  /** ALERT, THROTTLE or DENY. */
+  readonly action: string;
+  readonly principal: string;
+  readonly applied_at: string;
+  /** Required for THROTTLE and DENY, null for ALERT. */
+  readonly expires_at: string | null;
+  readonly reason_finding_id: string;
+  /** Set by the API, per architectural constraint 8. Never inferred here. */
+  readonly revocable: boolean;
+}
+```
+
+Add to `finops-web/src/screens/__tests__/queryFixtures.ts`:
+
+```ts
+import type { ApiEnforcementAction } from '../../api/types';
+
+export const ENFORCEMENT_ACTIONS: readonly ApiEnforcementAction[] = [
+  {
+    action_id: '33333333-3333-3333-3333-333333333333',
+    action: 'THROTTLE',
+    principal: 'arn:aws:iam::role/grafana-datasource',
+    applied_at: '2026-09-06T09:45:00Z',
+    expires_at: '2026-09-06T10:45:00Z',
+    reason_finding_id: '11111111-1111-1111-1111-111111111111',
+    revocable: true,
+  },
+  {
+    action_id: '44444444-4444-4444-4444-444444444444',
+    action: 'ALERT',
+    principal: 'arn:aws:iam::role/reporting',
+    applied_at: '2026-09-05T11:00:00Z',
+    expires_at: null,
+    reason_finding_id: '22222222-2222-2222-2222-222222222222',
+    revocable: false,
+  },
+];
+```
+
+The second row is why the second test passes: an `ALERT` never expires and
+nothing can be revoked, so its row carries no button. The first expires 45
+minutes after the `now` the test injects.
+
+Write `finops-web/src/screens/EnforcementScreen.tsx` composing `DataTable` and
+`FixtureBand`, with an `expires` cell rendering both forms:
+
+```tsx
+<td data-testid={`expires-${action.action_id}`}>
+  {action.expires_at === null ? (
+    'does not expire'
+  ) : (
+    <>
+      <time dateTime={action.expires_at}>{hourMinuteUtc(action.expires_at)}</time>
+      <span> in {minutesUntil(action.expires_at, now)} min</span>
+    </>
+  )}
+</td>
+```
+
+`hourMinuteUtc` and `minutesUntil` are two small local helpers in this file.
+Render both forms always. An incident bridge needs "how long do I have" and
+"when exactly", and a countdown alone cannot be written into an incident log.
+
+Revoke renders only when `revocable` is true. It is a conditional render, not a
+`disabled` attribute, because a control that looks available and is not is worse
+than an absent one.
+
+Add `useEnforcementActions()` to `finops-web/src/api/queries.ts`, built on
+`useQuerySurface` with key `['query-enforcement']`, template and path
+`/api/v1/query/enforcement`, and fixture `ENFORCEMENT_ACTIONS`.
+
+- [x] **Step 4: run the tests and watch them pass**
+
+Run: `cd finops-web && npm run test -- --run src/screens/__tests__/EnforcementScreen.test.tsx`
+Expected: PASS, two tests.
+
+- [x] **Step 5: write the end to end journey**
+
+Append to `finops-web/e2e/journey.spec.ts`.
+
+```ts
+test('a violating dashboard is found, attributed, controlled and undone', async ({ page }) => {
+  await page.goto('/governance/queries');
+  await expect(page.getByText('Error rate by service')).toBeVisible();
+  await expect(page.getByText(/rescans 4 GiB/)).toBeVisible();
+  await page.getByRole('link', { name: 'Error rate by service' }).click();
+  await expect(page.getByTestId('finding-working')).toBeVisible();
+  await page.goto('/governance/enforcement');
+  await expect(page.getByRole('button', { name: /revoke/i })).toBeVisible();
+});
+```
+
+- [x] **Step 6: run everything**
+
+Run: `cd finops-web && npm run lint && npm run test -- --run && npm run build && npx playwright test`
+Expected: all pass.
+
+- [x] **Step 7: commit**
+
+```bash
+git add finops-web/src finops-web/e2e
+git commit -m "feat: TASK-P2-025, the enforcement screen and the journey
+
+Expiry as an absolute time and a countdown, because an incident bridge needs
+both. Revoke is absent rather than disabled when the write level forbids it.
+This screen is the reason deny is safe to enable."
+```
+
+---
+
+
+### TASK-P2-026: the queries that belong to nobody
+
+| Field | Value |
+| --- | --- |
+| Status | Done, 2026-09-06 |
+| Implements | P2 spec sections 5 and 8.2 |
+| Delivers | FEAT-051 |
+| Depends on | TASK-P2-013 |
+| Estimate | S |
+
+**Goal.** The Logs Insights executions that match no panel and no alert rule,
+reported with what they scanned, what that cost, and who ran them.
+
+**Why it is small.** `QueryEvidence.observations` already returns every observed
+execution keyed by normalised query, with its runs, its bytes and the principal
+that ran it, and `finops_ingest/collectors/query_audit.py` already walks the
+known definitions against that same dict to promote a finding to measured. Ad
+hoc is what is left over. No new AWS call, no new permission, no new collector.
+
+**Files.**
+
+| Path | Action |
+| --- | --- |
+| `migrations/versions/0007_query_adhoc.py` | created |
+| `finops_ingest/collectors/query_audit.py` | the unmatched set, written per window |
+| `finops_api/db/repositories/query.py` | a scoped read |
+| `finops_api/routes/query.py` | `GET /query/adhoc` |
+| `finops-web/src/screens/QueryAdhocScreen.tsx` | created |
+| `finops_providers/fake/evidence.py` | one unmatched execution, so the estate shows the state |
+
+**Acceptance criteria.**
+
+- [x] An execution matching no definition is reported, with runs, bytes, cost
+      and principal
+- [x] The cost is `measured` and never `modelled`. There is no definition to
+      model from, so a modelled ad hoc row would be an invention
+- [x] A query with no principal reads `unattributed` and is still reported. An
+      unowned expensive query is the case the feature exists for
+- [x] Evidence that could not be read is distinguishable on the screen from an
+      estate with no ad hoc queries in it. Those are different facts. Closed as
+      ISS-174 on 2026-09-06: the collector records the evidence failure through
+      the run ledger, so it reaches the trust strip on every envelope by the
+      same path an unreachable workspace does, and clears when the scope
+      recovers. An empty table with a `query_evidence` failure above it is not
+      the same page as an empty table without one
+- [x] The table is scoped by account like every other query table, and the
+      repository guard is exercised by a test that reads out of scope
+- [x] Query text is shown whole, never truncated, because a person has to
+      recognise their own query in it
+
+**Deliberately not in this task.** No remediation. The cost is already spent
+and there is nothing to change, so the action is a conversation with a named
+person. No team or cost centre attribution: the folder map FEAT-016 uses has
+nothing to say about a query in no folder.
 
 ## Traceability
 
@@ -842,7 +1741,8 @@ the measurement, and let a person decide what to change. ISS-093.
 | FEAT-016 owner attribution | 014 |
 | FEAT-017 auto remediation | 019 |
 | FEAT-018 calibration | 020 |
-| Surface | 021, 022 |
+| Surface | 021 |
+| Screens | 022, 023, 024, 025 |
 
 ## Exit criteria
 

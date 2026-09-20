@@ -33,6 +33,12 @@ that before there is data in it, which is the only cheap moment to do it.
 | `sync_error` | O | Typed failures and remediation text | 90 days | Not applicable |
 | `collector_schedule` | O | Cadence, reason, `updated_by` | Life of the tenant | `updated_by` on request |
 | `audit_event` | **P** | Who read what, when, and the scope evaluated | **13 months**, immutable within that window | **No.** See below |
+| `grafana_instance` | O | Workspace name, endpoint, account and region, and `credential_ref`, which is a Secrets Manager **name and never a value** | Life of the instance | Not applicable |
+| `query_definition` | O and **P** | Query text, dashboard and panel names, and `last_editor`, which is a named person | 13 months after the query was last seen | `last_editor` on request |
+| `query_finding` | O and **P** | Modelled and measured cost per query per day, and `owner_email` | **13 months**, then dropped. A cost trend older than a year has told us what it is going to | `owner_email` on request |
+| `folder_team_map` | **P** | `owner_email`, `team` and `updated_by`, all entered by a person | Life of the mapping | **Yes** |
+| `enforcement_action` | **P** | `principal_arn`, which identifies a role and often a person, and what was done to them | **13 months**, immutable within that window. It is the record of a control applied to somebody | **No.** Same argument as `audit_event` |
+| `remediation_change` | O and **P** | The before and after of a change, and `applied_by` | 13 months. `before` is the undo and outlives the change it reverses | `applied_by` on request |
 
 ### The account root email address
 
@@ -78,6 +84,8 @@ Retention is a scheduled job, not a policy nobody runs. Nothing here is left as
 | `retention_cost` | Monthly | Aggregate `cost_focus_daily` older than 37 months to month, account, service and region into `cost_focus_monthly`, then remove the line items by dropping their partitions. Both halves are one transaction, so there is no instant at which the line items are gone and the monthly shape is not there |
 | `partition_maintenance` | Daily | Create the current month plus three for `cost_focus_daily` and `cost_provider_extra`. Not an optimisation: a range partitioned table with no partition for a row rejects the row outright, so this is what makes those tables writable |
 | `retention_scope_cache` | Hourly | Delete expired `principal_scope` rows |
+| `retention_query` | Daily | Remove `query_finding` older than 13 months, then `query_definition` rows unseen for 13 months once no finding references them. Definitions go second, because a finding whose definition has gone is a cost with nothing to attribute it to |
+| `retention_enforcement` | Daily | Delete `enforcement_action` and `remediation_change` older than 13 months. Neither is anonymised in place: an enforcement record with its principal removed cannot answer the question it exists to answer, so it is removed whole |
 
 Each job writes an `ingest_run`, so a retention job that silently stops shows
 up on the freshness screen exactly like a collector that stopped.

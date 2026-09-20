@@ -302,18 +302,21 @@ def render_task_status(_reg: Registry) -> str:
     import re
 
     lines = [
-        "| Sub project | Done | Partly | Descoped | Not started | Total | Plan |",
-        "| --- | --- | --- | --- | --- | --- | --- |",
+        "| Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     detail: list[str] = []
 
-    for sub in ("P0", "P2"):
-        path = ROOT / "docs" / "plans" / f"{sub}-implementation-plan.md"
-        if not path.exists():
-            continue
+    # Derived from the files present, not listed. The list used to be a literal
+    # ("P0", "P2"), so P1's plan was written on 2026-09-18 and the table simply
+    # did not mention it: thirteen tasks absent rather than shown as not
+    # started, which understates the work by a whole sub project and looks
+    # exactly like a sub project nobody planned.
+    for path in sorted(ROOT.glob("docs/plans/P*-implementation-plan.md")):
+        sub = path.name.split("-", 1)[0]
         text = path.read_text(encoding="utf-8")
         blocks = re.split(rf"\n### (TASK-{sub}-\d{{3}}): ", text)
-        done = partly = descoped = notstarted = 0
+        done = partly = parked = descoped = notstarted = 0
         rows = []
         for i in range(1, len(blocks), 2):
             tid, body = blocks[i], blocks[i + 1]
@@ -325,6 +328,12 @@ def render_task_status(_reg: Registry) -> str:
                 rows.append((tid, title, status))
             elif "Partly" in status:
                 partly += 1
+                rows.append((tid, title, status))
+            elif "Parked" in status:
+                # Deferred on a dependency this repository cannot satisfy, and
+                # counted apart from descoped because the intent differs: parked
+                # is still wanted, descoped is not.
+                parked += 1
                 rows.append((tid, title, status))
             elif "Descoped" in status:
                 descoped += 1
@@ -338,12 +347,12 @@ def render_task_status(_reg: Registry) -> str:
                 # the task out of the table below as well.
                 raise ValueError(
                     f"{sub} {tid}: status {status!r} is not one of Done, Partly, "
-                    "Descoped or Not started. Add a bucket for it rather than "
-                    "letting it be counted as not started."
+                    "Parked, Descoped or Not started. Add a bucket for it rather "
+                    "than letting it be counted as not started."
                 )
-        total = done + partly + descoped + notstarted
+        total = done + partly + parked + descoped + notstarted
         lines.append(
-            f"| {sub} | {done} | {partly} | {descoped} | {notstarted} | {total} | "
+            f"| {sub} | {done} | {partly} | {parked} | {descoped} | {notstarted} | {total} | "
             f"[plan](../docs/plans/{sub}-implementation-plan.md) |"
         )
         if rows:

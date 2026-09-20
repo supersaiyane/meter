@@ -18,12 +18,152 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
+from enum import StrEnum
+from hashlib import sha256
 from types import MappingProxyType
 from uuid import UUID
 
 from finops_core.domain.fact import Fact
+
+
+class CostMeasure(StrEnum):
+    """Which number a total is. FOCUS names these and this does not improve on them.
+
+    `EFFECTIVE` is amortized cost and is the primary measure everywhere, which
+    the roadmap decided and this does not reopen. `BILLED` is what the invoice
+    says and is shown only where the question is what the invoice says.
+
+    The reason this exists at all is that the four are routinely equal. A month
+    with no commitments in it has the same effective and billed cost, so a
+    screen rendering one under the other's label is right until the month it is
+    not, and then it is wrong by exactly the amount somebody is asking about.
+    """
+
+    EFFECTIVE = "effective"
+    BILLED = "billed"
+    LIST = "list"
+    CONTRACTED = "contracted"
+
+
+def source_fingerprint(
+    *,
+    billing_account_id: str,
+    sub_account_id: str | None,
+    charge_period_start: datetime,
+    charge_period_end: datetime,
+    service_name: str,
+    resource_id: str | None,
+    sku_id: str | None,
+    charge_category: str,
+    commitment_discount_id: str | None,
+) -> str:
+    """The identity of a line item, as a sha256 hex digest.
+
+    The primary key of `cost_focus_daily` is
+    `(tenant_id, billing_period_start, source_fingerprint)`, so this is what
+    makes an ingest idempotent across a restated month.
+
+    **It hashes the columns that identify the charge and never the columns that
+    state its size.** AWS restates the current month continuously, and a
+    fingerprint that included the cost would make a restated row a new row,
+    which is the exact failure the key exists to prevent: the month would grow
+    by one copy of every corrected line item.
+
+    `sha256` and not `hash()`. The builtin is salted per process, so a
+    fingerprint from it is stable within one run and different in the next, and
+    the symptom is a table that doubles every time the worker restarts.
+
+    It lives here rather than in either adapter because both adapters must
+    produce the same digest for the same charge. Two implementations of an
+    identity is how a duplicate is created.
+    """
+    parts = (
+        billing_account_id,
+        sub_account_id or "",
+        charge_period_start.isoformat(),
+        charge_period_end.isoformat(),
+        service_name,
+        resource_id or "",
+        sku_id or "",
+        charge_category,
+        commitment_discount_id or "",
+    )
+    # A unit separator, because it cannot occur in any of these values and a
+    # comma can. Joining on a character that appears in the data lets two
+    # different charges hash to one fingerprint.
+    return sha256("\x1f".join(parts).encode("utf-8")).hexdigest()
+
+
+@dataclass(frozen=True, kw_only=True)
+class BillingPeriod:
+    """A billing interval, start inclusive and end exclusive.
+
+    August 2026 is `start=2026-08-01, end=2026-09-01`. That is the FOCUS
+    convention and the fixtures already followed it, but nothing in this
+    repository wrote it down, so the first person to read the end as inclusive
+    would have counted a day of September into August and found out at a
+    reconciliation.
+
+    Not a `Fact`, for the reason `IngestRun` is not one. A period is a calendar
+    interval rather than something that was true about a cloud at a moment, and
+    giving it an `as_of` would invite the question of what that value means.
+    """
+
+    start: date
+    end: date
+
+    def __post_init__(self) -> None:
+        if self.end <= self.start:
+            raise ValueError(
+                f"a billing period that ends before it starts is not a period: "
+                f"{self.start} to {self.end}"
+            )
+
+    def covers(self, day: date) -> bool:
+        """Whether a day falls inside the period."""
+        return self.start <= day < self.end
+
+    def is_open(self, *, at: datetime) -> bool:
+        """Whether charges can still land in this period at that moment.
+
+        The clock is the caller's. A type that reads the wall clock cannot be
+        tested at a boundary, and every test of it becomes a test of when it
+        ran.
+        """
+        if at.tzinfo is None:
+            raise ValueError(
+                "is_open needs a timezone aware datetime. A naive one compares against "
+                "an aware one by raising somewhere that says nothing about "
+                "billing periods, per constraint 10."
+            )
+        return at < datetime(self.end.year, self.end.month, self.end.day, tzinfo=UTC)
+
+
+@dataclass(frozen=True, kw_only=True)
+class CostTotal(Fact):
+    """An aggregate of cost, which always says which measure it is.
+
+    Every total on a screen goes through this. A bare `Decimal` reaching a
+    template is a number that will be labelled by whatever the template says,
+    and the four measures are equal often enough that the mistake survives
+    review.
+    """
+
+    amount: Decimal
+    measure: CostMeasure
+
+    def __post_init__(self) -> None:
+        # Stated in this module's own docstring and stated again here, because
+        # a docstring has never refused anything. A float total over a month of
+        # line items is wrong in the last places, and a cost report that does
+        # not reconcile with the invoice is one nobody uses twice.
+        if not isinstance(self.amount, Decimal):
+            raise TypeError(
+                f"cost is Decimal and never {type(self.amount).__name__}. "
+                "Money in binary floating point does not reconcile."
+            )
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -71,3 +211,147 @@ class CostRecord(Fact):
         # behind it being edited, and a shared tag dictionary quietly mutated by
         # one caller is the kind of defect that only shows up in aggregate.
         object.__setattr__(self, "tags", MappingProxyType(dict(self.tags)))
+
+
+#: A commitment whose term has not started. AWS queues a Savings Plan to begin on
+#: the hour after purchase, and a queued plan has committed nothing and consumed
+#: nothing, which is a third state rather than a zero of either.
+QUEUED = "QUEUED"
+ACTIVE = "ACTIVE"
+EXPIRED = "EXPIRED"
+
+#: What a coverage figure is broken down by. Coverage is never per commitment,
+#: see `CommitmentCoverage`.
+BY_SERVICE = "SERVICE"
+BY_REGION = "REGION"
+
+
+@dataclass(frozen=True, kw_only=True)
+class CommitmentUse(Fact):
+    """What one commitment obliged us to pay, and how much of it was consumed.
+
+    Utilization only. Coverage is a different entity at a different grain, and the
+    reason is not tidiness: see `CommitmentCoverage`.
+
+    **An expired commitment is a row, not an absence.** The money was spent, and
+    the coverage gap its expiry leaves is the finding. Dropping it would make the
+    estate look like it never had the commitment, which is exactly the situation
+    somebody needs to be told about.
+    """
+
+    tenant_id: UUID
+    commitment_id: str
+    #: SavingsPlan or ReservedInstance. Not an enum, because a provider that
+    #: invents a third kind should reach a screen rather than a parse failure.
+    commitment_type: str
+    status: str
+    term_start: date
+    #: Exclusive, like every other period in this schema.
+    term_end: date
+
+    #: The window this row reports on, which is shorter than the term.
+    window_start: date
+    window_end: date
+
+    #: What the commitment obliged us to pay across the window.
+    committed: Decimal
+    #: How much of that obligation real usage consumed.
+    used: Decimal
+    #: `committed` minus `used`. Money already spent that bought nothing, which is
+    #: the one figure here a reader can act on without further arithmetic.
+    wasted: Decimal
+
+    def __post_init__(self) -> None:
+        if self.term_end <= self.term_start:
+            raise ValueError(
+                f"a commitment term ends after it starts: {self.term_start} to {self.term_end}"
+            )
+        if self.window_end <= self.window_start:
+            raise ValueError(
+                f"a window ends after it starts: {self.window_start} to {self.window_end}"
+            )
+        if self.committed < 0 or self.used < 0:
+            raise ValueError("a commitment's money is never negative")
+        if self.wasted != self.committed - self.used:
+            # Carried rather than computed on read, so a screen and a file cannot
+            # disagree about it, and checked here as well as in the database
+            # because an adapter is where a wrong subtraction would enter.
+            raise ValueError(
+                f"wasted is committed minus used: {self.committed} - {self.used} "
+                f"is not {self.wasted}"
+            )
+
+    @property
+    def utilization(self) -> Decimal | None:
+        """How much of what we paid for was consumed, as a fraction.
+
+        None where nothing was committed in the window, which is what a queued
+        commitment looks like. Zero would say the whole commitment was wasted, and
+        it was not: it has not started.
+        """
+        if self.committed == 0:
+            return None
+        return self.used / self.committed
+
+    @property
+    def is_expired(self) -> bool:
+        return self.status == EXPIRED
+
+
+@dataclass(frozen=True, kw_only=True)
+class CommitmentCoverage(Fact):
+    """How much of the eligible estate was on a commitment, for one dimension.
+
+    **Separate from `CommitmentUse`, and not by choice.** Utilization is a fact
+    about one commitment: this plan obliged us to pay so much and consumed so
+    much of it. Coverage is a fact about a slice of the estate: of the EC2 spend
+    that could have been on a commitment, this much was. A provider reports the
+    first per commitment and the second per service or region, because a dollar of
+    covered spend cannot be attributed to one of three overlapping plans, and
+    neither can we. Putting a coverage figure on a commitment row would invent a
+    number nobody measured, and summing such a column would count the same
+    eligible dollar once per commitment.
+
+    The two answers also point at opposite actions, which is why neither may be
+    derived from the other. A plan at full utilization covering a tenth of the
+    estate says buy more. A plan at half utilization covering everything says the
+    last purchase was too large.
+    """
+
+    tenant_id: UUID
+    commitment_type: str
+    #: SERVICE or REGION.
+    dimension: str
+    dimension_value: str
+    window_start: date
+    window_end: date
+
+    #: Spend in the window a commitment of this kind could have covered, priced
+    #: at on demand.
+    eligible_spend: Decimal
+    #: How much of that eligible spend a commitment actually covered.
+    covered_spend: Decimal
+
+    def __post_init__(self) -> None:
+        if self.window_end <= self.window_start:
+            raise ValueError(
+                f"a window ends after it starts: {self.window_start} to {self.window_end}"
+            )
+        if self.eligible_spend < 0 or self.covered_spend < 0:
+            raise ValueError("coverage money is never negative")
+        if self.covered_spend > self.eligible_spend:
+            raise ValueError(
+                f"a commitment cannot cover more than was eligible: "
+                f"{self.covered_spend} of {self.eligible_spend}"
+            )
+
+    @property
+    def coverage(self) -> Decimal | None:
+        """The covered fraction, or None where nothing was eligible.
+
+        Zero would say the estate is uncovered and somebody should buy. None says
+        there was nothing there to buy for, which is a different sentence.
+        """
+        if self.eligible_spend == 0:
+            return None
+        return self.covered_spend / self.eligible_spend

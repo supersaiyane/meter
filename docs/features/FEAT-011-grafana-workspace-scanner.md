@@ -36,6 +36,14 @@ Read only against Grafana at this feature. Credentials are Secrets Manager refer
 
 Feeds `query_definition`. Surfaced through `GET /api/v1/query/instances`. See [P2 spec](../specs/2026-08-23-p2-query-cost-governance-design.md) sections 4.1 and 5.
 
+## Read surface
+
+`GET /api/v1/query/instances` since TASK-P2-021. Every instance, including the ones that could not be read, each with its typed cause.
+
+The count of queries found is null for an unreachable instance and zero for one that was read and holds nothing. The outer join produces null for both, and passing that through would render "we could not look" and "nothing to see" identically, which is the distinction this feature exists to preserve.
+
+A workspace names the account and region it was listed in, carried on `SurfaceInstance` from the adapter that knows them. It was previously parsed back out of the workspace identifier, which is ISS-153.
+
 ## Not doing
 
 Does not model cost, that is FEAT-012. Does not scan QuickSight, Athena, Redshift or OpenSearch, that is FEAT-019, which the port naming makes an addition rather than a redesign.

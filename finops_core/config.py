@@ -29,6 +29,7 @@ from pydantic import Field, ValidationError, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from finops_core.constants import ENV_PREFIX, LOCAL_IDENTITY_PROVIDER, PRODUCTION_ENV
+from finops_core.domain.query import WriteLevel
 
 
 class ConfigurationError(RuntimeError):
@@ -58,6 +59,18 @@ class Settings(BaseSettings):
     aws_read_timeout_seconds: int = Field(ge=1)
     aws_max_retries: int = Field(ge=0)
     getmetricdata_batch_size: int = Field(ge=1)
+
+    # The billing export. P1, FEAT-020.
+    cur_export_bucket: str = Field(min_length=1)
+    cur_export_prefix: str = Field(min_length=1)
+    cur_athena_database: str = Field(min_length=1)
+    cur_athena_table: str = Field(min_length=1)
+    cur_athena_workgroup: str = Field(min_length=1)
+
+    # Anomaly detection. P1, FEAT-023. Both are here rather than in code so
+    # meeting a real estate is a change of a number rather than a release.
+    anomaly_sensitivity: float = Field(gt=0)
+    anomaly_floor_usd: float = Field(ge=0)
 
     # Ingestion
     queue_url: str = Field(min_length=1)
@@ -128,6 +141,11 @@ class Settings(BaseSettings):
     query_timerange_warn_hours: float = Field(ge=0)
     query_timerange_crit_hours: float = Field(ge=0)
     #: Service quotas the model measures pressure against, not limits it sets.
+    #: How much Meter may change, per FEAT-014 and FEAT-017. Defaults to `none`
+    #: everywhere: enabling a write is a decision somebody signs rather than one
+    #: they inherit.
+    query_write_level: str = "none"
+
     query_quota_logs_concurrent: int = Field(ge=1)
     query_quota_getmetricdata_tps: int = Field(ge=1)
 
@@ -148,6 +166,17 @@ class Settings(BaseSettings):
     feature_retention_jobs: bool = True
     feature_scope_audit: bool = True
     feature_local_auth: bool = True
+
+    @field_validator("query_write_level")
+    @classmethod
+    def _known_write_level(cls, value: str) -> str:
+        allowed = tuple(level.value for level in WriteLevel)
+        if value not in allowed:
+            # A typo here would otherwise read as `none` and be indistinguishable
+            # from a deliberate refusal to write, which is the one thing this
+            # flag must never be ambiguous about.
+            raise ValueError(f"METER_QUERY_WRITE_LEVEL must be one of {allowed}, not {value!r}")
+        return value
 
     @field_validator("regions")
     @classmethod

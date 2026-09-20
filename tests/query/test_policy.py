@@ -122,3 +122,106 @@ def test_the_placeholder_cannot_occur_in_a_real_query() -> None:
     """A control character on purpose. A word would collide with real text."""
     assert policy.PLACEHOLDER == "\u0001"
     assert not policy.PLACEHOLDER.isprintable()
+
+
+class TestFingerprintAndQueryKey:
+    """The three properties TASK-P2-011 exists to guarantee.
+
+    `fingerprint` and `query_key` answer different questions, and the tests
+    below are mostly about keeping them apart. A fingerprint says which
+    definition this is; a query key says what the query is. Collapsing them
+    would either lose a panel to an upsert or stop measured evidence attaching
+    to more than one.
+    """
+
+    QUERY = "fields @timestamp, @message | filter region = $region"
+
+    def test_a_fingerprint_survives_template_substitution(self) -> None:
+        # A panel with a $region variable and four regions is one query, not
+        # four each holding a quarter of the cost and none of the history.
+        templated = policy.fingerprint(
+            account_id="1",
+            workspace_name="ws",
+            dashboard_uid="d1",
+            panel="p",
+            ref_id="A",
+            query=self.QUERY,
+        )
+        again = policy.fingerprint(
+            account_id="1",
+            workspace_name="ws",
+            dashboard_uid="d1",
+            panel="p",
+            ref_id="A",
+            query="fields @timestamp, @message | filter region = ${region}",
+        )
+        assert templated == again
+
+    def test_whitespace_and_comments_do_not_move_a_fingerprint(self) -> None:
+        # Annotating a query has not changed what it costs, and a key that moved
+        # would abandon every day of history behind it.
+        plain = policy.fingerprint(
+            account_id="1",
+            workspace_name="ws",
+            dashboard_uid="d1",
+            panel="p",
+            ref_id="A",
+            query="fields @timestamp | filter x",
+        )
+        decorated = policy.fingerprint(
+            account_id="1",
+            workspace_name="ws",
+            dashboard_uid="d1",
+            panel="p",
+            ref_id="A",
+            query="# owned by platform\nfields   @timestamp\n  | filter x  -- trailing",
+        )
+        assert plain == decorated
+
+    def test_two_panels_on_different_dashboards_share_a_query_key(self) -> None:
+        """The criterion, and why it is a second key rather than a wider first.
+
+        Measured evidence has to attach to both panels. It cannot be done by
+        widening `fingerprint`, because `uq_query_definition__fingerprint` makes
+        that the identity of a row: two panels sharing one would upsert over each
+        other and a panel would disappear from the estate.
+        """
+        first = policy.query_key("logs_insights", self.QUERY, ("/aws/a",))
+        second = policy.query_key("logs_insights", self.QUERY, ("/aws/a",))
+        assert first == second
+
+        # And their definitions stay distinct, so neither is lost.
+        left = policy.fingerprint(
+            account_id="1",
+            workspace_name="ws",
+            dashboard_uid="dashboard-one",
+            panel="p",
+            ref_id="A",
+            query=self.QUERY,
+        )
+        right = policy.fingerprint(
+            account_id="1",
+            workspace_name="ws",
+            dashboard_uid="dashboard-two",
+            panel="p",
+            ref_id="A",
+            query=self.QUERY,
+        )
+        assert left != right
+
+    def test_a_query_key_separates_different_targets(self) -> None:
+        # The same text over a different log group is a different cost, so it
+        # must not inherit the other's measured evidence.
+        one = policy.query_key("logs_insights", self.QUERY, ("/aws/a",))
+        other = policy.query_key("logs_insights", self.QUERY, ("/aws/b",))
+        assert one != other
+
+    def test_a_query_key_does_not_depend_on_target_order(self) -> None:
+        one = policy.query_key("logs_insights", self.QUERY, ("/aws/a", "/aws/b"))
+        other = policy.query_key("logs_insights", self.QUERY, ("/aws/b", "/aws/a"))
+        assert one == other
+
+    def test_a_query_key_separates_engines(self) -> None:
+        assert policy.query_key("logs_insights", "up", ()) != policy.query_key(
+            "prometheus", "up", ()
+        )

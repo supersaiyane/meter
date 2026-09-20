@@ -37,6 +37,11 @@ class CollectorOutcome:
 
     items_written: int = 0
     bytes_read: int = 0
+    #: Rows the collector removed because the provider withdrew them. Separate
+    #: from `items_written`, because a retraction is not a write, and counted at
+    #: all because a destructive operation nobody can see is one nobody notices
+    #: going wrong. P1, FEAT-020.
+    items_removed: int = 0
 
 
 @dataclass(frozen=True)
@@ -61,6 +66,12 @@ class CollectorContext:
     #: unit is a message that outlives the process that wrote it and settings
     #: are whatever the worker running it was started with.
     settings: Any = None
+    #: The run this work belongs to, from the ledger's claim. Cost rows carry it
+    #: in a NOT NULL column and P1's restatement delete keys on it, so a
+    #: collector generating its own would be writing a number that names no run
+    #: and deleting on a fiction. Defaulted so every existing collector and
+    #: every existing test constructs a context exactly as it did before.
+    run_id: Any = None
 
 
 #: A collector receives one context and reports what it did.
@@ -91,6 +102,9 @@ class ScheduleEntry:
 
 
 HOURLY = 3600
+#: Six hours. The interval the P2 specification asks for, named rather than
+#: written as a multiplication at the call site.
+SIX_HOURLY = 21600
 DAILY = 86400
 #: Thirty days. The cost roll up is not calendar aware and does not need to be:
 #: it aggregates everything past a cutoff, so running a day early or a day late
@@ -117,6 +131,18 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
             "A broken collector role is invisible until something tries to read the "
             "account, so the check runs as often as the tree it belongs to. The calls "
             "are free, and the alternative is finding out from a missing number."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="query_audit",
+        cadence_seconds=SIX_HOURLY,
+        reason=(
+            "A dashboard is edited by a person, so the population changes on a human "
+            "timescale rather than a machine one. Six hours catches a bad panel within "
+            "one working day, which is fast enough to matter and slow enough that the "
+            "survey itself is not the thing being audited: every run reads every "
+            "dashboard in every workspace, and the Grafana API is the cost."
         ),
         est_cost_per_run="0",
     ),
@@ -173,6 +199,20 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
             "table's growth."
         ),
         est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="cost_focus",
+        cadence_seconds=SIX_HOURLY,
+        reason=(
+            "The open billing period changes continuously, so a figure on the cost "
+            "screen is out of date the moment it is written and the only question is "
+            "by how much. Four times a day bounds that at six hours, which is inside "
+            "the window anybody reconciling against an invoice cares about. Faster "
+            "costs real money: each run is one Athena query per period, charged on "
+            "bytes scanned, and the tool that reports on cost paying to watch itself "
+            "more closely is the wrong trade."
+        ),
+        est_cost_per_run="0.02",
     ),
     ScheduleEntry(
         collector="partition_maintenance",

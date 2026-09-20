@@ -11,6 +11,7 @@
 export { CoverageBanner, type CoverageBannerProps } from './CoverageBanner';
 export { DataTable, type DataTableProps } from './DataTable';
 export { Figure, type FigureProps } from './Figure';
+export { FixtureBand, type FixtureBandProps } from './FixtureBand';
 export { FreshnessIndicator, type FreshnessIndicatorProps } from './FreshnessIndicator';
 export { SeverityBadge, type Severity, type SeverityBadgeProps } from './SeverityBadge';
 export { Sparkline, type SparklineProps } from './Sparkline';

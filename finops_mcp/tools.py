@@ -1,4 +1,4 @@
-"""The four P0 tools, described once.
+"""The tools, described once.
 
 A tool here is data: a name, the route it calls, and the envelope model that
 route declares. The schema a model sees is generated from that model rather than
@@ -22,6 +22,7 @@ from finops_api.schemas import (
     MeOut,
     OrgNodeOut,
     PlatformCostOut,
+    QueryFindingOut,
     RunOut,
 )
 
@@ -42,7 +43,10 @@ class ToolSpec:
         return dict(self.envelope.model_json_schema())
 
 
-#: The four the P0 spec names, plus `whoami`. `whoami` is here because the first
+#: The four the P0 spec names, `whoami`, and the P2 findings list. Two more
+#: that the P2 spec names are absent: `get_dashboard_cost` needs a parameter,
+#: and a tool here is a parameterless GET, and `get_query_accuracy` needs a
+#: calibration FEAT-018 has not published. ISS-148. `whoami` is here because the first
 #: question a model asks about a partial answer is "what am I allowed to see",
 #: and without it the only way to find out is to infer it from a coverage
 #: fraction, which is guessing.
@@ -97,6 +101,20 @@ TOOLS: tuple[ToolSpec, ...] = (
         description=(
             "How old each collector's data is, against the cadence it is "
             "supposed to run at. Use this before quoting any figure as current."
+        ),
+    ),
+    ToolSpec(
+        name="list_expensive_queries",
+        path=f"{API_PREFIX}/query/findings",
+        envelope=Envelope[list[QueryFindingOut]],
+        description=(
+            "Saved queries ranked by what they cost each month, most expensive "
+            "first. Read `provenance` before quoting any figure: `modelled` "
+            "rests on an assumed log ingestion rate that can be an order of "
+            "magnitude out, and `measured` is what the account actually did. "
+            "`owner` is null when nothing could attribute the query, which "
+            "means unowned rather than owned by nobody in particular, and "
+            "`why` is the sentence that says what drives the cost."
         ),
     ),
     ToolSpec(

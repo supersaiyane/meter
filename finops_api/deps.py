@@ -34,8 +34,17 @@ BEARER = "Bearer "
 
 
 @lru_cache(maxsize=1)
-def get_settings() -> Settings:
-    return load_settings()
+def get_settings(request: Request) -> Settings:
+    """The configuration this application was built with.
+
+    From `app.state` when `create_app` was given one, and from the environment
+    otherwise. Reading the environment unconditionally made `create_app`'s
+    `settings` argument a lie for every route that took this dependency: the
+    application was assembled with one configuration and its routes answered
+    from another, which is two sources for one fact.
+    """
+    configured = getattr(request.app.state, "settings", None)
+    return configured if configured is not None else load_settings()
 
 
 def get_request_id(request: Request) -> str:

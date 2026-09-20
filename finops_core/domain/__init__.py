@@ -14,7 +14,7 @@ from finops_core.domain.account import (
     Provider,
     RoleHealth,
 )
-from finops_core.domain.cost import CostRecord
+from finops_core.domain.cost import BillingPeriod, CostMeasure, CostRecord, CostTotal
 from finops_core.domain.fact import Fact
 from finops_core.domain.identity import Entitlement, Principal
 from finops_core.domain.ingest import CollectionFailure, IngestRun, RunStatus, Watermark
@@ -27,9 +27,12 @@ __all__ = [
     "AccountHealth",
     "AccountKey",
     "AccountStatus",
+    "BillingPeriod",
     "CloudAccount",
     "CollectionFailure",
+    "CostMeasure",
     "CostRecord",
+    "CostTotal",
     "Entitlement",
     "Fact",
     "IngestRun",

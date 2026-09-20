@@ -75,6 +75,29 @@ class ControlAction(StrEnum):
     DENY = "deny"
 
 
+class WriteLevel(StrEnum):
+    """How much Meter is permitted to change, per FEAT-014 and FEAT-017.
+
+    Ordered, and the order is the point. `NONE` is the default because enabling
+    a write is a decision somebody signs rather than one they inherit, and each
+    step up is a strictly larger blast radius: nothing, then one setting on a
+    workspace, then the contents of a dashboard.
+    """
+
+    NONE = "none"
+    WORKSPACE_FLOOR = "workspace_floor"
+    FULL = "full"
+
+    def permits(self, required: WriteLevel) -> bool:
+        """Whether this level allows a write needing `required`.
+
+        Comparison by position rather than by name, so a level added later sits
+        in the order rather than being silently unranked.
+        """
+        order = tuple(WriteLevel)
+        return order.index(self) >= order.index(required)
+
+
 @dataclass(frozen=True, kw_only=True)
 class SurfaceInstance:
     """One place queries live: a workspace, a cluster, a project.
@@ -94,6 +117,17 @@ class SurfaceInstance:
     reachable: bool = True
     #: Why not, when `reachable` is false. One of the six causes, by name.
     unreachable_cause: str | None = None
+    #: The cloud account and region this instance lives in, when it lives in
+    #: one. Both null for a self hosted or vendor hosted instance, which belongs
+    #: to no cloud account at all.
+    #:
+    #: Carried here rather than derived from `surface_id` downstream. It used to
+    #: be derived, and the derivation guessed: a workspace identifier was
+    #: written into the account column, which is the column scope enforcement
+    #: reads. A wrong account is worse than no account, because a scoped viewer
+    #: then loses a workspace and is told nothing.
+    account_id: str | None = None
+    region_id: str | None = None
 
     def __post_init__(self) -> None:
         if not self.reachable and not self.unreachable_cause:
@@ -131,6 +165,10 @@ class QueryDefinition(Fact):
     #: panel, or an alert rule and its title.
     container: str = ""
     container_id: str = ""
+    #: The folder the container sits in. Ownership is mapped per folder, because
+    #: a team owns a folder and edits many dashboards inside it, so a per
+    #: dashboard mapping would be a list nobody keeps current.
+    folder_uid: str = ""
     element: str = ""
     ref_id: str = ""
     #: How often it re runs, in seconds. Zero means no automatic refresh.

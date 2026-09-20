@@ -1,11 +1,13 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { NavLink, useLocation } from 'react-router';
 
 import { CoverageBanner } from '../components/CoverageBanner';
 import { FreshnessIndicator } from '../components/FreshnessIndicator';
 import { TypedError } from '../components/TypedError';
 import type { Cause } from '../components/provenance';
 import { useAggregateMeta } from './metaRegistry';
-import { SECTIONS, type Section } from './sections';
+import { readStored, writeStored } from '../storage';
+import { GROUPS, activeGroupFor, isSelfGroup, screenTitleFor } from './sections';
 
 /**
  * The shell. Coverage and freshness live here rather than on each screen,
@@ -15,13 +17,29 @@ import { SECTIONS, type Section } from './sections';
  *
  * The coverage banner is not dismissible and has no close control. A banner
  * gets dismissed and the condition does not go away with it.
+ *
+ * The navigation is seven fixed groups, per ADR-0020. Which screen is current is
+ * the router's business, not this component's, which is why there is no section
+ * prop: two places deciding what is selected is two places to disagree.
+ *
+ * The page heading and the document title are taken from the same navigation
+ * list, for the same reason. Before this the only h1 was the product name, so
+ * six of the ten screens had no heading at all, every browser tab said "Meter",
+ * and a reader navigating by heading landed on a page that named nothing.
  */
 
 export interface AppShellProps {
-  readonly section: Section;
-  readonly onSelect: (section: Section) => void;
   readonly children: ReactNode;
   readonly now?: Date;
+}
+
+/** Which state the navigation was left in, per browser. */
+const NAV_KEY = 'meter.nav';
+
+function navWasCollapsed(): boolean {
+  // Absent and unreadable are the same answer here: a shell that cannot read a
+  // preference still opens with its menu.
+  return readStored(NAV_KEY) === 'collapsed';
 }
 
 const KNOWN_CAUSES = new Set<string>([
@@ -32,32 +50,125 @@ const KNOWN_CAUSES = new Set<string>([
   'SchemaDrift',
 ]);
 
-export function AppShell({ section, onSelect, children, now }: AppShellProps) {
+export function AppShell({ children, now }: AppShellProps) {
   const meta = useAggregateMeta();
+  const { pathname } = useLocation();
+  const title = screenTitleFor(pathname);
+  const [navOpen, setNavOpen] = useState(() => !navWasCollapsed());
+
+  // Only the section holding the current screen is open, so the menu is short
+  // and points at where the reader already is.
+  //
+  // Derived rather than synchronised. Holding an open set and correcting it in
+  // an effect on every navigation sets state during render, which cascades, and
+  // it keeps two facts where one will do. What is stored is only what the
+  // reader explicitly chose; everything else follows the route, so navigating
+  // into a section opens it and leaves a section the reader opened on purpose
+  // alone.
+  const activeGroup = activeGroupFor(pathname);
+  const [choices, setChoices] = useState<ReadonlyMap<string, boolean>>(() => new Map());
+  const isGroupOpen = (label: string): boolean => choices.get(label) ?? label === activeGroup;
+
+  useEffect(() => {
+    writeStored(NAV_KEY, navOpen ? 'expanded' : 'collapsed');
+  }, [navOpen]);
+
+  useEffect(() => {
+    // Every tab, bookmark and history entry said "Meter", so a reader with four
+    // Meter tabs open could not tell them apart. A screen already named after
+    // the product does not get told twice: "Meter cost, Meter" reads as a bug.
+    document.title = title.startsWith('Meter') ? title : `${title}, Meter`;
+  }, [title]);
 
   return (
-    <div data-testid="shell" data-degraded={meta.degraded ? 'true' : 'false'}>
+    <div
+      data-testid="shell"
+      data-nav={navOpen ? 'expanded' : 'collapsed'}
+      data-degraded={meta.degraded ? 'true' : 'false'}
+    >
       <header>
-        <h1>Meter</h1>
-        <nav aria-label="Sections">
-          <ul>
-            {SECTIONS.map((name) => (
-              <li key={name}>
-                <button
-                  type="button"
-                  aria-current={name === section ? 'page' : undefined}
-                  onClick={() => {
-                    onSelect(name);
-                  }}
-                >
-                  {name}
-                </button>
-              </li>
-            ))}
-          </ul>
+        {/* Collapsing narrows the grid column rather than painting over the
+            navigation, and the navigation is hidden rather than merely made
+            invisible, so it leaves the accessibility tree and the tab order
+            with it. There is no width transition: the motion rule permits a
+            120 ms opacity change and nothing else. */}
+        <button
+          type="button"
+          data-testid="nav-toggle"
+          aria-expanded={navOpen}
+          aria-controls="sections"
+          aria-label={navOpen ? 'Hide navigation' : 'Show navigation'}
+          onClick={() => {
+            setNavOpen((open) => !open);
+          }}
+        >
+          {navOpen ? 'Hide' : 'Menu'}
+        </button>
+        {/* The product name, not the page heading. It was an h1, which meant the
+            only first level heading on every screen named the product and no
+            page named itself. */}
+        <p data-testid="brand" hidden={!navOpen}>
+          Meter
+        </p>
+        <nav id="sections" aria-label="Sections" hidden={!navOpen}>
+          {GROUPS.map((group) =>
+            isSelfGroup(group) ? (
+              // Home is its own only screen. An accordion here would be a
+              // section named Home containing one link named Home.
+              <NavLink key={group.path} to={group.path} end data-testid="nav-self-link">
+                {group.label}
+              </NavLink>
+            ) : (
+              <details
+                key={group.label}
+                data-testid={`group-${group.label}`}
+                open={isGroupOpen(group.label)}
+                onToggle={(event) => {
+                  const nowOpen = event.currentTarget.open;
+                  setChoices((made) =>
+                    made.get(group.label) === nowOpen
+                      ? made
+                      : new Map(made).set(group.label, nowOpen),
+                  );
+                }}
+              >
+                {/* summary carries its own expanded state and keyboard
+                    handling. Reimplementing that on a div is how a menu ends up
+                    unreachable by keyboard. */}
+                <summary>{group.label}</summary>
+                <ul>
+                  {group.screens.map((screen) => (
+                    <li key={screen.path}>
+                      {/* An unbuilt screen is listed and reachable, never
+                          hidden. Hiding it would make the product look smaller
+                          than it is and would hide the roadmap. */}
+                      <NavLink
+                        to={screen.path}
+                        end
+                        {...(screen.arrives ? { 'data-arrives': screen.arrives } : {})}
+                      >
+                        {screen.label}
+                        {screen.arrives ? (
+                          <span className="meter-arrives"> arrives with {screen.arrives}</span>
+                        ) : null}
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ),
+          )}
         </nav>
 
-        <CoverageBanner visible={meta.visible} total={meta.total} />
+      </header>
+
+      {/* One band, full width, above everything. Section 8 of
+          docs/13-UI-ARCHITECTURE.md asks for exactly this shape, and it sat in
+          the sidebar instead, where a 1440 px screen pushed the freshness line
+          below the fold and the page lost the one thing that says how much its
+          numbers are worth. */}
+      <div data-testid="trust-strip">
+        <CoverageBanner coverage={meta.coverage} />
 
         {meta.asOf === null || meta.collectedAt === null ? (
           // Never collected is not an empty success and must not read as one.
@@ -100,9 +211,12 @@ export function AppShell({ section, onSelect, children, now }: AppShellProps) {
             </ul>
           </section>
         ) : null}
-      </header>
+      </div>
 
-      <main>{children}</main>
+      <main>
+        <h1 data-testid="screen-title">{title}</h1>
+        {children}
+      </main>
     </div>
   );
 }

@@ -25,8 +25,8 @@ raising something undocumented is a branch nobody wrote.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-from typing import Protocol, runtime_checkable
+from collections.abc import Iterable, Mapping
+from typing import Any, Protocol, runtime_checkable
 
 from finops_core.domain.query import (
     ControlOutcome,
@@ -105,5 +105,229 @@ class QuerySurface(Protocol):
             Unreachable: The instance did not answer.
             SchemaDrift: The instance accepted the change and returned something
                 this adapter cannot confirm from.
+        """
+        ...
+
+
+@runtime_checkable
+class RefreshFloor(Protocol):
+    """The smallest refresh interval an instance will accept from anybody.
+
+    Its own port rather than two more methods on `QuerySurface`. That protocol
+    is about the queries an instance holds, and its contract test fixes it at
+    three methods on purpose; this is one setting on the instance itself, and a
+    surface may support one without the other. An adapter implements both when
+    it can do both, and a caller checks for this one before it asks.
+
+    This is the whole of FEAT-014's write surface. One setting, no dashboard
+    touched, which the feature document calls the smallest possible write and is
+    the reason it is gated one level below a panel rewrite.
+    """
+
+    def read_refresh_floor(self, instance: SurfaceInstance) -> int | None:
+        """The smallest refresh interval this workspace will accept, in seconds.
+
+        None when the surface has no such setting, which is a normal answer and
+        not a failure: reporting zero would say the workspace permits any
+        refresh at all, which is the opposite claim.
+
+        Raises:
+            AccessDenied, NotOptedIn, Throttled, Unreachable, SchemaDrift: as
+                `list_queries`.
+        """
+        ...
+
+    def set_refresh_floor(self, instance: SurfaceInstance, seconds: int) -> int | None:
+        """Raise the floor, and return what it was.
+
+        The return is the whole point. FEAT-014 requires the previous value to
+        be recorded before the change, because even a one setting change has to
+        be undoable, and a control that cannot say what it replaced is a control
+        nobody will dare apply.
+
+        Raises:
+            AccessDenied: The token may read this workspace but not change it.
+            NotOptedIn: The surface exposes no such setting.
+            Throttled, Unreachable, SchemaDrift: as `list_queries`.
+        """
+        ...
+
+
+@runtime_checkable
+class PanelRewrite(Protocol):
+    """Reading and replacing one element's stored definition.
+
+    The largest write Meter makes and the last one it earns. FEAT-017 gates it
+    behind the highest write level for that reason: this is the first time
+    Meter changes something a person authored, and a partial write to a
+    dashboard is worse than the problem it was fixing.
+
+    Its own port, like `RefreshFloor`, because a surface may let Meter read
+    queries and never let it replace one.
+
+    `read_element` returns the stored form, whatever that is for the surface.
+    The caller does not interpret it beyond passing it back, which is what makes
+    an exact undo possible: the thing restored is the thing that was there,
+    rather than a reconstruction from the fields Meter happened to understand.
+    """
+
+    def read_element(self, instance: SurfaceInstance, fingerprint: str) -> Mapping[str, Any]:
+        """The element's stored definition, exactly as the surface holds it.
+
+        Raises:
+            AccessDenied, NotOptedIn, Throttled, Unreachable, SchemaDrift: as
+                `list_queries`. `NotOptedIn` when the surface has no such API.
+        """
+        ...
+
+    def write_element(
+        self, instance: SurfaceInstance, fingerprint: str, element: Mapping[str, Any]
+    ) -> None:
+        """Replace it. The caller reads back and reverts if this did not take.
+
+        Returning nothing is deliberate. A surface that reported success would
+        invite the caller to trust it, and FEAT-017 requires the caller to check
+        rather than to be told.
+
+        Raises:
+            AccessDenied: The token may read this element but not replace it.
+            NotOptedIn: The surface exposes no write API.
+            Throttled: The provider rejected the call rate.
+            Unreachable: The instance did not answer.
+            SchemaDrift: The surface accepted the write and returned something
+                this adapter cannot confirm from.
+        """
+        ...
+
+
+@runtime_checkable
+class Classified(Protocol):
+    """What one target turned out to be, as an adapter needs to see it.
+
+    Read only members. Declared as variables they would be invariant, and a
+    frozen dataclass, which is what every value in this domain is, could not
+    satisfy the protocol.
+    """
+
+    @property
+    def engine(self) -> str: ...
+
+    @property
+    def query(self) -> str: ...
+
+    @property
+    def region(self) -> str | None: ...
+
+    @property
+    def log_groups(self) -> tuple[str, ...]: ...
+
+
+@runtime_checkable
+class QueryParser(Protocol):
+    """Reading meaning out of a vendor's saved query.
+
+    Declared here, and implemented above, because of the layer order in
+    `pyproject.toml`: `finops_query` sits above `finops_providers` precisely
+    because it reads what an adapter fetched. An adapter that imported it would
+    invert that, and the import contract says so out loud.
+
+    So the adapter names the interface it needs and a collector supplies the
+    implementation. The same inversion as every other port here: the thing that
+    talks to a vendor depends on an abstraction, never on the layer above it.
+    """
+
+    def classify(self, target: Mapping[str, Any], panel_datasource: Any = None) -> Classified:
+        """What engine this target runs on, and what it runs against."""
+        ...
+
+    def iter_panels(self, panels: Any) -> Iterable[Mapping[str, Any]]:
+        """Every panel, including the ones nested inside a row."""
+        ...
+
+    def principal_from(self, event_detail: Mapping[str, Any]) -> str | None:
+        """A human readable principal from an execution event, or None.
+
+        None rather than a placeholder. An unowned finding should read as
+        unowned, not as owned by somebody called "unknown", because a name
+        nobody recognises is not chased and an empty one is.
+        """
+        ...
+
+    def normalise(self, text: str | None) -> str:
+        """Query text reduced to a comparison key.
+
+        Comments, whitespace and case only. It is here because an adapter has to
+        key what it observed the same way the analysis looks it up, and an
+        adapter may not import the analysis: `finops_query` sits above
+        `finops_providers` precisely because it reads what an adapter fetched.
+        """
+        ...
+
+    def refresh_seconds(self, raw: Any) -> int:
+        """A dashboard refresh interval in seconds. Zero means no auto refresh."""
+        ...
+
+    def relative_range_seconds(self, raw: Any) -> int | None:
+        """How far back a range looks. None for an absolute range."""
+        ...
+
+    def fingerprint(
+        self,
+        *,
+        account_id: str,
+        workspace_name: str,
+        dashboard_uid: str,
+        panel: str,
+        ref_id: str,
+        query: str,
+    ) -> str:
+        """A stable identifier for one query, across days and variable values."""
+        ...
+
+
+@runtime_checkable
+class QueryEvidence(Protocol):
+    """What an account actually executed, as opposed to what it has defined.
+
+    A definition says a panel refreshes every ten seconds. This says how many
+    times it really ran. The difference between those two is the whole of
+    FEAT-013: a modelled Logs Insights cost rests on an assumed ingestion rate
+    that can be an order of magnitude out, and a measured one is what the
+    account did.
+
+    **Absent evidence is not zero.** A query with no observations comes back
+    absent from the bundle, and the caller leaves the finding modelled. Writing
+    a zero would say the query never ran, which is a claim, and the honest
+    answer is that nobody watched.
+    """
+
+    def observations(
+        self, *, account_id: str, region: str, lookback_days: int
+    ) -> Mapping[str, Any]:
+        """Executions seen in the window, in the shape `finops_query.ownership` reads.
+
+        Three keys, and the shape is fixed by `match_observed` and the two
+        `measure_*` functions rather than chosen here:
+
+        `logs` maps a normalised query string to a record of what it did:
+        `runs`, `bytes`, `runs_bytes` and `log_groups`. From CloudTrail
+        `StartQuery` for the run count, and from `logs:DescribeQueries` for the
+        bytes where history still holds them.
+
+        `gmd_by_metric` maps `namespace|metric` to a `GetMetricData` call count.
+        CloudTrail identifies those calls by account and region and never by
+        panel, which is why this is the weakest attribution here and part of why
+        ISS-093 exists.
+
+        `lookback_days` is the window the counts cover, so a caller can turn a
+        total into a rate without assuming the window it asked for is the window
+        it got.
+
+        Raises:
+            AccessDenied: The credential may not read CloudTrail or query history.
+            NotOptedIn: CloudTrail is not enabled in this account or region.
+            Throttled: The provider rejected the call rate.
+            Unreachable: The endpoint did not answer.
+            SchemaDrift: An event arrived in a shape this adapter cannot read.
         """
         ...

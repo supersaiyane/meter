@@ -1,0 +1,30 @@
+{
+  // The end to end tests and the Playwright configuration belonged to no
+  // project. tsconfig.app.json includes only src and tsconfig.node.json only
+  // vite.config.ts, so the typed lint rules could not parse either file and
+  // eslint reported a fatal parsing error for them. The lint script pointed at
+  // src alone, so nobody ever saw it: the step passed while never looking at
+  // the journeys that assert the product's honesty rules.
+  //
+  // DOM rather than node alone, because the journeys run code inside the page.
+  // Not referenced from tsconfig.json on purpose: this exists so the files can
+  // be linted, and adding it to the build would put Playwright specs into the
+  // application's emitted declarations.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["e2e", "playwright.config.ts"]
+}

@@ -20,6 +20,13 @@
 venv
 node_modules
 finops-web/dist
+# Generated type output and test artefacts. They are build products, they are
+# root owned when they reach a non root builder, and they broke the web image
+# with EACCES on dist-types. ISS-143.
+finops-web/dist-types
+finops-web/dist-types-node
+finops-web/test-results
+finops-web/playwright-report
 infra
 docs
 tasks

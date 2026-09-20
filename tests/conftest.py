@@ -21,7 +21,9 @@ from __future__ import annotations
 import os
 import re
 from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
+from urllib.parse import urlsplit
 from uuid import UUID, uuid4
 
 import pytest
@@ -73,6 +75,20 @@ def _refuse_real_aws() -> None:
 
 ROOT = Path(__file__).resolve().parent.parent
 
+#: A database to run against instead of starting one, for a runner that has a
+#: PostgreSQL service beside it and no Docker socket to start another.
+#:
+#: Deliberately not `METER_DATABASE_URL`. That one is in every `.env` and in the
+#: shell of anybody who has run `make seed`, and a suite that migrated and wrote
+#: rows into whatever they had loaded would be a data loss bug wearing a
+#: fixture's clothes. This has to be set on purpose, for this.
+TEST_DATABASE_URL = "METER_TEST_DATABASE_URL"
+
+#: Hosts accepted as a throwaway database. The same list as
+#: `scripts/ops/seed_demo.py`, copied rather than imported because `scripts/` is
+#: deliberately not a package, and kept honest by a test that compares the two.
+LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1", "::1", "postgres", ""})
+
 
 def alembic_config(url: str) -> Config:
     config = Config(str(ROOT / "alembic.ini"))
@@ -81,21 +97,84 @@ def alembic_config(url: str) -> Config:
     return config
 
 
+@contextmanager
+def migrated(url: str) -> Iterator[Engine]:
+    """A database at head, however it was obtained."""
+    command.upgrade(alembic_config(url), "head")
+    built = create_engine(url)
+    try:
+        yield built
+    finally:
+        built.dispose()
+
+
 @pytest.fixture(scope="session")
 def engine() -> Iterator[Engine]:
+    provided = os.environ.get(TEST_DATABASE_URL)
+    if provided:
+        host = (urlsplit(provided).hostname or "").lower()
+        if host not in LOCAL_HOSTS:
+            # Exit rather than skip. A suite that quietly ran fewer tests
+            # because a variable was wrong is the failure this whole session
+            # has been about, and a suite that ran them against a real
+            # database is worse than either.
+            pytest.exit(
+                f"{TEST_DATABASE_URL} points at {host!r}, which is not a local host.\n"
+                "This fixture migrates the database and writes to it.\n"
+                f"Accepted hosts: {', '.join(sorted(h for h in LOCAL_HOSTS if h))}.",
+                returncode=2,
+            )
+        with migrated(provided) as built:
+            yield built
+        return
+
     try:
         from testcontainers.community.postgres import PostgresContainer
     except ImportError:  # pragma: no cover - older testcontainers layout
         from testcontainers.postgres import PostgresContainer
 
-    with PostgresContainer("postgres:16-alpine", driver="psycopg") as container:
-        url = container.get_connection_url()
-        command.upgrade(alembic_config(url), "head")
-        built = create_engine(url)
-        try:
-            yield built
-        finally:
-            built.dispose()
+    with (
+        PostgresContainer("postgres:16-alpine", driver="psycopg") as container,
+        migrated(container.get_connection_url()) as built,
+    ):
+        yield built
+
+
+#: The tables `partitions.py` manages. Partitions on them are not tenant
+#: scoped, so every test in the run shares them.
+PARTITIONED = ("cost_focus_daily", "cost_provider_extra")
+
+
+@pytest.fixture(scope="module")
+def partition_sandbox(engine: Engine) -> Iterator[None]:
+    """Leave the partitions as the module found them.
+
+    Partitions are not tenant scoped, so a module that creates the months a
+    fake estate bills in, and leaves them behind, changes what other suites
+    see. `test_maintenance_creates_the_months_and_is_then_a_no_op` asserts an
+    exact count of the partitions it creates, and `test_schema.py` compares the
+    tables in the database against the models. Both fail on somebody else's
+    leftovers, and both fail depending on which file pytest reached first, which
+    is a test measuring the ordering rather than the code.
+
+    It lives here rather than beside the collector suites because the API suites
+    need it too, and that was found the hard way: the first version sat in
+    `tests/ingest/collectors/conftest.py`, the cost route tests could not see
+    it, and two schema tests went red.
+
+    Only partitions the module added are removed, by difference against a
+    snapshot taken before it ran, and only ever inside the throwaway container
+    the `engine` fixture starts.
+    """
+    from finops_ingest.collectors.partitions import existing_partitions
+
+    with engine.connect() as connection:
+        before = {parent: set(existing_partitions(connection, parent)) for parent in PARTITIONED}
+    yield
+    with engine.begin() as connection:
+        for parent, names in before.items():
+            for name in set(existing_partitions(connection, parent)) - names:
+                connection.execute(text(f"DROP TABLE IF EXISTS {name}"))
 
 
 @pytest.fixture

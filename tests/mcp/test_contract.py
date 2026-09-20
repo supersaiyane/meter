@@ -12,7 +12,7 @@ from typing import Any
 
 import pytest
 
-from finops_api.main import p0_routers
+from finops_api.main import p0_routers, p2_routers
 from finops_api.schemas import Envelope
 from finops_mcp.api import EnvelopeMissingError, MeterApi
 from finops_mcp.server import MissingTokenError, build_server, token_from
@@ -23,7 +23,7 @@ def test_every_tool_declares_the_route_s_own_model() -> None:
     """The drift gate. A field added to the API without touching the tool table
     fails here rather than reaching a model as an undocumented key."""
     declared = {}
-    for router in p0_routers():
+    for router in (*p0_routers(), *p2_routers()):
         for route in router.routes:
             path = getattr(route, "path", None)
             model = getattr(route, "response_model", None)
@@ -40,7 +40,7 @@ def test_every_tool_declares_the_route_s_own_model() -> None:
 def test_every_tool_reads_and_none_writes() -> None:
     """Constraint 6, read only in v1, and ADR-0007, no free form query tool."""
     methods = {}
-    for router in p0_routers():
+    for router in (*p0_routers(), *p2_routers()):
         for route in router.routes:
             path = getattr(route, "path", None)
             if path is not None:

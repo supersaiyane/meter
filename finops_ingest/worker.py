@@ -139,6 +139,7 @@ class Worker:
                         connection=connection,
                         session=session,
                         settings=self._settings,
+                        run_id=claim.run_id,
                     )
                 )
             except CollectionError as failure:

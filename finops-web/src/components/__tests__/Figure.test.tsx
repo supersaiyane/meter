@@ -86,6 +86,19 @@ describe('Figure', () => {
     expect(screen.getByText(/accuracy not yet published/)).toBeInTheDocument();
   });
 
+  it('never lets a wrapped line begin with the accuracy comma', () => {
+    // In a narrow surface the accuracy clause wraps. With the comma leading
+    // that clause it became the first character of the new line, which reads
+    // as a typo. It belongs to the word before it, so the break falls after
+    // "modelled," and not before the comma.
+    const { container } = render(
+      <Figure value={{ kind: 'modelled', amount: 200 }} freshness={FRESH} now={NOW} />,
+    );
+    const spans = [...container.querySelectorAll('span')];
+    expect(spans.some((s) => s.textContent.trim().endsWith('modelled,'))).toBe(true);
+    expect(spans.some((s) => s.textContent.trimStart().startsWith(','))).toBe(false);
+  });
+
   it('carries a published accuracy when there is one', () => {
     render(
       <Figure

@@ -1,6 +1,7 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useRef } from 'react';
 
+import { DenseRegion } from './DenseRegion';
 import { ROW_HEIGHT, VIRTUALISE_ABOVE, type Column } from './tableConfig';
 
 /**
@@ -47,39 +48,52 @@ export function DataTable<Row>({ rows, columns, rowKey, caption }: DataTableProp
     : rows.map((row, index) => ({ index, row }));
 
   return (
-    <div
-      ref={scrollRef}
-      data-testid="table-scroll"
-      style={{ overflow: 'auto', maxHeight: '70vh' }}
-    >
-      <table data-testid="table" data-virtualised={virtualise ? 'true' : 'false'}>
-        <caption>{caption}</caption>
-        <thead>
-          <tr>
-            {columns.map((column) => (
-              <th key={column.key} scope="col">
-                {column.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {visible.map(({ index, row }) =>
-            row === undefined ? null : (
-              <tr key={rowKey(row)} data-row-index={index}>
-                {columns.map((column) => (
-                  <td
-                    key={column.key}
-                    className={column.numeric === true ? 'meter-numeral' : undefined}
-                  >
-                    {column.render(row)}
-                  </td>
-                ))}
-              </tr>
-            ),
-          )}
-        </tbody>
-      </table>
-    </div>
+    <DenseRegion>
+      <div
+        ref={scrollRef}
+        data-testid="table-scroll"
+        style={{ overflow: 'auto', maxHeight: '70vh' }}
+      >
+        <table data-testid="table" data-virtualised={virtualise ? 'true' : 'false'}>
+          <caption>{caption}</caption>
+          <thead>
+            <tr>
+              {columns.map((column) => (
+                <th
+                  key={column.key}
+                  scope="col"
+                  className={column.prose === true ? 'meter-prose' : undefined}
+                >
+                  {column.header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {visible.map(({ index, row }) =>
+              row === undefined ? null : (
+                <tr key={rowKey(row)} data-row-index={index}>
+                  {columns.map((column) => (
+                    <td
+                      key={column.key}
+                      className={
+                        [
+                          column.numeric === true ? 'meter-numeral' : '',
+                          column.prose === true ? 'meter-prose' : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ') || undefined
+                      }
+                    >
+                      {column.render(row)}
+                    </td>
+                  ))}
+                </tr>
+              ),
+            )}
+          </tbody>
+        </table>
+      </div>
+    </DenseRegion>
   );
 }

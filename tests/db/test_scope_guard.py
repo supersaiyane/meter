@@ -85,6 +85,31 @@ def test_a_table_nobody_has_decided_how_to_scope_is_refused() -> None:
         scope_predicate(models.metadata.tables["tenant"], scope)
 
 
+def test_an_adhoc_row_is_confined_to_the_accounts_the_scope_names() -> None:
+    """FEAT-051. Ad hoc rows reach no workspace, so they are scoped directly.
+
+    Every other query table inherits its account through `grafana_instance`. A
+    query somebody typed into the console belongs to no workspace, so this one
+    carries its own account, and getting that wrong would expose one tenant's
+    hand run queries, complete with their text, to another account's reader.
+    """
+    scope = Scope(tenant_id=uuid4(), is_global=False, accounts=keys("111122223333"))
+    predicate = scope_predicate(models.query_adhoc, scope)
+    rendered = str(predicate.compile(compile_kwargs={"literal_binds": True}))
+    assert "tenant_id" in rendered
+    assert "111122223333" in rendered
+    assert "account_id" in rendered
+
+
+def test_an_adhoc_read_with_no_accounts_returns_nothing() -> None:
+    """Empty means nothing, not everything. The fail closed case."""
+    scope = Scope(tenant_id=uuid4(), is_global=False, accounts=frozenset())
+    rendered = str(
+        scope_predicate(models.query_adhoc, scope).compile(compile_kwargs={"literal_binds": True})
+    )
+    assert "false" in rendered.lower()
+
+
 def test_a_hand_rolled_statement_with_no_tenant_filter_is_refused() -> None:
     """The backstop, for a future subclass that builds its own select."""
     with pytest.raises(ScopeViolationError, match="not built by scoped_select"):

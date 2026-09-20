@@ -83,19 +83,30 @@ def build_meta(
     rows: Sequence[Any] = (),
     as_of: datetime | None = None,
     collected_at: datetime | None = None,
+    coverage: tuple[int, int] | None = None,
+    coverage_unit: str = "accounts",
+    extra_failures: Sequence[FailureOut] = (),
 ) -> Meta:
     """The envelope every route returns, assembled the same way each time.
 
     A route whose rows are not facts passes its timestamps explicitly rather
     than letting this guess at fields that are not there.
+
+    `coverage` is for a route whose estate is not measured in accounts. The
+    query routes read workspaces, and a findings list drawn from one of two
+    workspaces is partial in a way that counting accounts cannot express.
     """
     if as_of is None and collected_at is None:
         as_of, collected_at = freshness_of(rows)
-    total = AccountRepository(connection, context).count_in_organization(scope)
+    if coverage is not None:
+        visible, total = coverage
+    else:
+        total = AccountRepository(connection, context).count_in_organization(scope)
     return Meta.build(
         visible=visible,
         total=max(total, visible),
+        unit=coverage_unit,
         as_of=as_of,
         collected_at=collected_at,
-        failures=open_failures(connection, scope, context),
+        failures=(*open_failures(connection, scope, context), *extra_failures),
     )

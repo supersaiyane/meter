@@ -103,6 +103,12 @@ lint: ## Lint everything, no changes written
 	$(TF) -chdir=infra/terraform/member fmt -check -recursive
 	$(TF) -chdir=infra/terraform/hub fmt -check -recursive
 
+.PHONY: check-dashboards
+check-dashboards: ## Refuse a dashboard whose panels would cost too much. TASK-P2-018
+	@echo "Usage: make check-dashboards DASHBOARDS='path/to/*.json'"
+	@test -n "$(DASHBOARDS)" || { echo "Set DASHBOARDS to the files to check."; exit 2; }
+	$(BIN)/python scripts/ci/check_dashboards.py $(DASHBOARDS)
+
 .PHONY: check-writing
 check-writing: ## Fail if an em dash or en dash appears anywhere. See CLAUDE.md
 	@if grep -rn $$'—\|–' \
@@ -174,20 +180,43 @@ review: ## Automated code review of the working tree. See ADR-0011
 
 # ---------------------------------------------------------------- tests
 
+# One invocation over everything, which is the only run whose coverage number
+# means what it says. It is also the cheaper of the two shapes: the database
+# fixture is session scoped, so a split run starts a container twice.
 .PHONY: test
-test: ## Unit and contract tests, no external services needed
-	$(BIN)/pytest -m "not integration"
+test: ## Every backend test. Needs Docker, which the database fixture starts
+	$(BIN)/pytest
+
+# The two slices below are for a person narrowing down a failure, never for a
+# gate. Neither reports coverage, because a fraction of the suite measured
+# against the whole suite's threshold is a number that cannot be read: it fails
+# when nothing is wrong, and it would pass a slice that covered nothing it
+# touched. ISS-154.
+.PHONY: test-unit
+test-unit: ## The subset needing no external services, for an offline loop
+	$(BIN)/pytest -m "not integration" --no-cov
 
 .PHONY: test-integration
-test-integration: ## Integration tests. Needs Docker for testcontainers
-	$(BIN)/pytest -m integration
+test-integration: ## Integration tests only. Needs Docker for testcontainers
+	$(BIN)/pytest -m integration --no-cov
 
-.PHONY: test-all
-test-all: test test-integration ## Every backend test, plus frontend unit tests
+.PHONY: test-web
+test-web: ## Frontend unit tests
 	cd finops-web && npm run test -- --run
 
+.PHONY: test-all
+test-all: test test-web ## Every backend test, plus frontend unit tests
+
+.PHONY: build-web
+build-web: ## Build the web bundle. Type checks it, and is what the journeys run against
+	cd finops-web && npm run build
+
+# The journeys run against dist, and vite preview does not build. Without this
+# prerequisite they test whatever was last built: on 2026-10-04 that was a
+# bundle seven hours older than the source, containing none of the interface
+# work it was reporting as passing.
 .PHONY: test-e2e
-test-e2e: ## Playwright journeys against the local stack
+test-e2e: build-web ## Playwright journeys against the freshly built bundle
 	cd finops-web && npx playwright test
 
 .PHONY: coverage
@@ -275,6 +304,33 @@ psql: ## Open a psql shell against the local database
 .PHONY: migrate
 migrate: ## Apply migrations to the local database
 	$(COMPOSE) run --rm api alembic upgrade head
+
+.PHONY: seed
+seed: ## Fill the local database with a demo estate. DAYS=n for history. Refuses a non local database
+	$(COMPOSE) run --rm api python scripts/ops/seed_demo.py --days $(or $(DAYS),1)
+
+.PHONY: restore-drill
+restore-drill: ## Restore into a scratch database and prove it works. TASK-P0-028
+	@set -a; . ./.env; set +a; \
+	  METER_DATABASE_URL="postgresql+psycopg://meter:meter_local_only@localhost:$${METER_POSTGRES_PORT:-5432}/meter" \
+	  METER_LOCAL_AUTH_FILE="$(PWD)/local-auth.yaml" \
+	  $(BIN)/python scripts/ops/restore_drill.py \
+	    --dump-command "$(COMPOSE) exec -T postgres pg_dump" \
+	    --dump-url "postgresql+psycopg://meter:meter_local_only@localhost:5432/meter"
+
+# There is no login. The application reads meter.token from localStorage and
+# nothing puts it there, so a browser opened on the local stack shows an empty
+# dashboard and every request answers 401. This mints one and prints the line
+# to paste into the browser console. Three separate sessions have lost time to
+# this, which is what makes it a target rather than a note.
+.PHONY: token
+token: ## Mint a demo session token and print how to use it. SUBJECT=x for another user
+	@$(COMPOSE) run --rm -T api python scripts/ops/local_token.py --explain \
+		$(if $(SUBJECT),--subject $(SUBJECT),)
+
+.PHONY: unseed
+unseed: ## Clear the demo estate. Every row it wrote, in one command
+	$(COMPOSE) run --rm api python scripts/ops/seed_demo.py --remove
 
 .PHONY: migration
 migration: ## Autogenerate a migration. Usage: make migration m="add org_node"
@@ -472,9 +528,11 @@ tf-member: ## Apply the member account StackSet. Needs management account creden
 # ---------------------------------------------------------------- gates
 
 .PHONY: verify
-verify: lint check-writing check-docs check-docstrings check-memory test security-scan ## Everything CI runs on a merge request
+verify: lint check-writing check-docs check-docstrings check-memory test test-web test-e2e security-scan ## Everything CI runs on a merge request
 	@echo "verify passed"
 
+# Kept as a name rather than removed, because the pipeline and two scripts say
+# `make ci`. It has nothing left to add: `verify` runs the integration tests now.
 .PHONY: ci
-ci: verify test-integration ## Everything CI runs on the default branch
+ci: verify ## Everything CI runs on the default branch
 	@echo "ci passed"

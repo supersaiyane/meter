@@ -495,8 +495,10 @@ Revision ID: 0007_collector_schedule
 Revises: 0006_audit_event
 """
 
+
 def upgrade() -> None:
     op.create_table(...)
+
 
 def downgrade() -> None:
     # Reversible without data loss: the table is configuration, and the

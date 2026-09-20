@@ -231,7 +231,12 @@ def test_me_reports_the_principal_and_the_scope(
     payload = client.get("/api/v1/me", headers=auth(token)).json()
     assert payload["data"]["is_global"] is False
     assert payload["data"]["accounts_in_scope"] == 1
-    assert payload["meta"]["scope_coverage"] == {"visible": 1, "total": 2, "is_partial": True}
+    assert payload["meta"]["scope_coverage"] == {
+        "visible": 1,
+        "total": 2,
+        "is_partial": True,
+        "unit": "accounts",
+    }
 
 
 def test_a_global_viewer_is_not_reported_as_seeing_nothing(
@@ -313,10 +318,48 @@ def test_the_tree_reports_how_many_accounts_are_reachable(
     seed(engine, tenant_id)
     client, token = client_for(engine, narrow(tenant_id), settings)
     payload = client.get("/api/v1/org/tree", headers=auth(token)).json()
-    assert payload["meta"]["scope_coverage"] == {"visible": 1, "total": 2, "is_partial": True}
+    assert payload["meta"]["scope_coverage"] == {
+        "visible": 1,
+        "total": 2,
+        "is_partial": True,
+        "unit": "accounts",
+    }
 
 
 # --- runs and freshness ------------------------------------------------------
+
+
+def test_a_page_of_runs_is_not_reported_as_never_collected(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """It was. `freshness_of` looks for an `as_of` column and `ingest_run` has
+    none, so the envelope carried two nulls and the screen said the collector
+    had never run while listing its runs. ISS-159."""
+    seed(engine, tenant_id)
+    scope = Scope(tenant_id=tenant_id, is_global=True, accounts=frozenset())
+    client, token = client_for(engine, scope, settings)
+    meta = client.get("/api/v1/ingest/runs", headers=auth(token)).json()["meta"]
+    assert meta["as_of"] is not None
+    assert meta["collected_at"] is not None
+
+
+def test_each_route_names_what_it_counted(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """Coverage compared a row count to an account count on three routes, so a
+    five account estate reported `8 of 8 accounts` for eight runs. The noun now
+    travels with the number, from the route that did the counting."""
+    seed(engine, tenant_id)
+    scope = Scope(tenant_id=tenant_id, is_global=True, accounts=frozenset())
+    client, token = client_for(engine, scope, settings)
+    for path, unit in (
+        ("/api/v1/accounts", "accounts"),
+        ("/api/v1/ingest/runs", "runs"),
+        ("/api/v1/health/freshness", "collectors"),
+        ("/api/v1/platform/cost", "modules"),
+    ):
+        meta = client.get(path, headers=auth(token)).json()["meta"]
+        assert meta["scope_coverage"]["unit"] == unit, path
 
 
 def test_ingest_runs_returns_typed_errors_with_their_remediation(
@@ -376,6 +419,63 @@ def test_freshness_is_judged_against_each_collector_own_cadence(
     assert entries["org_tree"]["is_stale"] is False
     assert entries["account_health"]["is_stale"] is True
     assert entries["org_tree"]["cadence_seconds"] == 3600
+
+
+def test_a_collector_that_has_never_succeeded_appears_on_the_freshness_page(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """It did not, and it is the row a reader is looking for.
+
+    The page listed watermarks, and a watermark only exists after a success, so
+    the one pair that has never worked was the one pair the page omitted. The
+    seeded estate holds a failed account_health run with no watermark behind it.
+    ISS-163.
+    """
+    seed(engine, tenant_id)
+    scope = Scope(tenant_id=tenant_id, is_global=True, accounts=frozenset())
+    client, token = client_for(engine, scope, settings)
+    rows = client.get("/api/v1/health/freshness", headers=auth(token)).json()["data"]
+
+    entry = next(e for e in rows if e["scope_key"] == f"aws:{OUT_OF_SCOPE}:eu-west-1")
+    assert entry["state"] == "never_collected"
+    assert entry["cause"] == "AccessDenied"
+    # Null rather than zero. A zero age would read as collected this instant,
+    # which is the opposite of what is true.
+    assert entry["as_of"] is None
+    assert entry["age_seconds"] is None
+    # And it is not current, however that is asked.
+    assert entry["is_stale"] is True
+
+
+def test_a_pair_that_has_succeeded_is_listed_once_and_not_as_never_collected(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    # The pair. Without it the merge above would also pass if it listed every
+    # run alongside every watermark.
+    seed(engine, tenant_id)
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "INSERT INTO ingest_watermark (tenant_id, collector, scope_key, as_of) "
+                "VALUES (:t, 'account_health', :scope, :as_of)"
+            ),
+            {
+                "t": tenant_id,
+                "scope": f"aws:{OUT_OF_SCOPE}:eu-west-1",
+                "as_of": datetime.now(UTC),
+            },
+        )
+    scope = Scope(tenant_id=tenant_id, is_global=True, accounts=frozenset())
+    client, token = client_for(engine, scope, settings)
+    rows = client.get("/api/v1/health/freshness", headers=auth(token)).json()["data"]
+
+    matching = [e for e in rows if e["scope_key"] == f"aws:{OUT_OF_SCOPE}:eu-west-1"]
+    assert len(matching) == 1
+    # It has succeeded once, so it is judged on its age. Stale here, because
+    # this test installs no schedule and an unknown cadence is not a healthy
+    # one, but never `never_collected`.
+    assert matching[0]["state"] == "stale"
+    assert matching[0]["as_of"] is not None
 
 
 def test_a_collector_with_no_cadence_is_reported_stale_not_healthy(

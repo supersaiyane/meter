@@ -65,18 +65,52 @@ export function surfaceStateFor(
   if (visibleRows === 0) {
     return { kind: 'empty', filter: filterLabel };
   }
+  // Partial first. A page that is both is better described by the one with a
+  // number in it, and the failing collectors are listed in the trust strip on
+  // every screen regardless. Degraded and complete still reports degraded.
+  if (meta.scope_coverage.is_partial) {
+    return {
+      kind: 'partial',
+      missing: meta.scope_coverage.total - meta.scope_coverage.visible,
+      reason: reasonFor(meta, collector),
+    };
+  }
   if (meta.degraded && meta.failures.length > 0) {
     return {
       kind: 'degraded',
       failing: [...new Set(meta.failures.map((failure) => failure.collector))],
     };
   }
-  if (meta.scope_coverage.is_partial) {
-    return {
-      kind: 'partial',
-      missing: meta.scope_coverage.total - meta.scope_coverage.visible,
-      reason: 'outside your scope',
-    };
-  }
   return { kind: 'ready' };
+}
+
+/**
+ * Why part of the estate is missing, in the words of whatever reported it.
+ *
+ * This used to be the literal string `outside your scope` whatever the cause,
+ * and on the query screens the cause is usually a workspace that refused Meter.
+ * Naming the wrong cause sends a reader to request a permission they already
+ * hold, which is worse than saying nothing at all. ISS-152.
+ *
+ * When nothing on the envelope explains the gap, entitlement is the remaining
+ * explanation and saying so is correct.
+ */
+function reasonFor(meta: ApiMeta, collector: string): string {
+  // Only this surface's collector. The envelope carries every open failure in
+  // the tenant, and listing all of them made the findings gap read as caused by
+  // a throttled account health check, which had nothing to do with it.
+  const causes = [
+    ...new Set(
+      meta.failures
+        .filter((failure) => failure.collector === collector)
+        .map((failure) => failure.cause),
+    ),
+  ];
+  if (causes.length === 0) {
+    return 'outside your scope';
+  }
+  if (causes.length === 1) {
+    return `${causes[0] as string}, so Meter could not read it`;
+  }
+  return `${causes.join(', ')}, so Meter could not read them`;
 }

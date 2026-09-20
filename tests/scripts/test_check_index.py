@@ -73,3 +73,28 @@ def test_exit_code_is_one_on_failure(monkeypatch: pytest.MonkeyPatch, tmp_path: 
     monkeypatch.setattr(check_index, "ROOT", tmp_path)
     monkeypatch.setattr(check_index, "INDEX", tmp_path / "INDEX.md")
     assert check_index.main() == 1
+
+
+def test_every_plan_file_reaches_the_task_table() -> None:
+    """The sub project list used to be a literal, ("P0", "P2").
+
+    P1's plan was written on 2026-09-18 and the table did not mention it.
+    Thirteen tasks were absent rather than shown as not started, which
+    understates the work by a whole sub project and reads exactly like a sub
+    project nobody has planned. Derived now, and held to it here, so the next
+    plan is counted the day it is added rather than the day somebody notices.
+    """
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]
+    plans = {
+        path.name.split("-", 1)[0] for path in root.glob("docs/plans/P*-implementation-plan.md")
+    }
+    assert plans, "no plan files found, which means this test is checking nothing"
+
+    status = (root / "tasks" / "STATUS.md").read_text(encoding="utf-8")
+    missing = {sub for sub in plans if f"| {sub} |" not in status}
+    assert not missing, (
+        f"these sub projects have a plan and are absent from the task table in "
+        f"tasks/STATUS.md: {sorted(missing)}. Run make doc-sync."
+    )

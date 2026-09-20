@@ -35,6 +35,13 @@ EXPECTED_PORTS = {
     "IdentityProvider",
     "EntitlementResolver",
     "QuerySurface",
+    # P2, TASK-P2-017. One instance wide setting, kept off `QuerySurface`
+    # because that port is about the queries an instance holds and a surface
+    # may support one without the other.
+    "RefreshFloor",
+    # P2, TASK-P2-019. The largest write, and its own port for the same reason:
+    # a surface may let Meter read queries and never let it replace one.
+    "PanelRewrite",
 }
 
 FORBIDDEN_IMPORTS = {"boto3", "botocore", "fastapi", "sqlalchemy", "httpx", "requests"}
@@ -57,8 +64,8 @@ def port_methods(port: type) -> list[tuple[str, object]]:
 # --- shape -------------------------------------------------------------------
 
 
-def test_there_are_exactly_nine_ports() -> None:
-    """Eight provider ports plus `QuerySurface`, which P2 added.
+def test_there_are_exactly_eleven_ports() -> None:
+    """Eight provider ports, plus the three P2 surface ports.
 
     `__all__` also carries the two grouping tuples, so the comparison is against
     the protocols rather than against every name the package exports. Adding a
@@ -78,7 +85,7 @@ def test_the_two_groups_together_are_every_port() -> None:
 
     assert grouped == EXPECTED_PORTS
     assert len(ports.PROVIDER_PORTS) == 8
-    assert len(ports.SURFACE_PORTS) == 1
+    assert len(ports.SURFACE_PORTS) == 3
 
 
 def test_all_ports_are_protocols() -> None:

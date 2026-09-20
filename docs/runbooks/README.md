@@ -20,3 +20,18 @@ Two runbooks cover three alarms, because the widespread stalled alarm is the
 same failure as the single scope one and its first diagnostic step is telling
 them apart. Splitting them would mean two files whose first paragraph is the
 same question.
+
+## Not paged, still needed
+
+| Procedure | Runbook |
+| --- | --- |
+| Deploy Meter for the first time, in order | `deploy.md` |
+| Onboard an account, or stand up a second organization | `onboard-account.md` |
+| Restore the database, and the drill that proves the procedure works | `restore.md` |
+| Demonstrate the product, and say which parts are fake | `demo.md` |
+
+Nothing pages for a restore, because by the time one is needed somebody already
+knows. It is here because a restore that has never been rehearsed is a
+hypothesis, and `make restore-drill` is how the rehearsal happens.
+
+`demo.md` is here rather than in a sales folder because its first section is an operational fact: nothing in the demo talks to AWS, and a person who implies otherwise creates an integration promise somebody then has to keep. The walk is guarded by `finops-web/e2e/demo.spec.ts`, so a screen that breaks between releases fails the build rather than the demo.

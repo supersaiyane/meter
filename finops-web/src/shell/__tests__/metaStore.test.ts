@@ -7,12 +7,45 @@ function meta(partial: Partial<ApiMeta> = {}): ApiMeta {
   return {
     as_of: '2026-08-27T09:00:00Z',
     collected_at: '2026-08-27T09:30:00Z',
-    scope_coverage: { visible: 5, total: 5, is_partial: false },
+    scope_coverage: { visible: 5, total: 5, is_partial: false, unit: 'accounts' },
     degraded: false,
     failures: [],
     ...partial,
   };
 }
+
+describe('the counted noun', () => {
+  it('never renders a missing noun as the word undefined', () => {
+    // A response that predates the field, or one from a version that never had
+    // it, put `Showing 2 of 5 undefined` on the screen. A missing noun is not a
+    // noun, and a coverage statement is the last place to print a placeholder.
+    const older = meta({
+      scope_coverage: { visible: 2, total: 5, is_partial: true } as never,
+    });
+    expect(aggregate([older]).unit).toBe('in view');
+    expect(aggregate([older]).coverage[0]?.unit).toBe('in view');
+  });
+
+  it('takes the noun the route reported', () => {
+    // The shell used to say `accounts` on every screen, and the query screens
+    // count workspaces. A wrong noun in a coverage statement is a wrong claim.
+    const workspaces = meta({
+      scope_coverage: { visible: 2, total: 3, is_partial: true, unit: 'workspaces' },
+    });
+    expect(aggregate([workspaces]).unit).toBe('workspaces');
+  });
+
+  it('names neither when two surfaces count different things', () => {
+    // Picking one would be a claim nothing on the page supports.
+    const accounts = meta({
+      scope_coverage: { visible: 1, total: 2, is_partial: true, unit: 'accounts' },
+    });
+    const workspaces = meta({
+      scope_coverage: { visible: 2, total: 3, is_partial: true, unit: 'workspaces' },
+    });
+    expect(aggregate([accounts, workspaces]).unit).toBe('in view');
+  });
+});
 
 describe('aggregate', () => {
   it('reports the oldest as_of in view, not the newest', () => {
@@ -36,8 +69,8 @@ describe('aggregate', () => {
     // If one panel sees two accounts and another sees five, the page cannot
     // claim five.
     const combined = aggregate([
-      meta({ scope_coverage: { visible: 2, total: 5, is_partial: true } }),
-      meta({ scope_coverage: { visible: 5, total: 5, is_partial: false } }),
+      meta({ scope_coverage: { visible: 2, total: 5, is_partial: true, unit: 'accounts' } }),
+      meta({ scope_coverage: { visible: 5, total: 5, is_partial: false, unit: 'accounts' } }),
     ]);
     expect(combined.visible).toBe(2);
     expect(combined.total).toBe(5);

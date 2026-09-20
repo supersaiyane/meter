@@ -5,6 +5,7 @@
     "docker/Dockerfile.worker",
     "docker/alembic.ini",
     "docker/docker/nginx.conf",
+    "docker/docker/nginx.disabled.conf",
     "docker/finops-web",
     "docker/finops-web/package-lock.json",
     "docker/finops-web/package.json",
@@ -13,16 +14,24 @@
     "docker/finops_ingest",
     "docker/finops_mcp",
     "docker/finops_providers",
+    "docker/finops_query",
     "docker/migrations",
     "docker/pyproject.toml",
+    "docker/scripts/ops",
     "finops-web/dist-types-node/vite.config.d.ts",
     "finops-web/dist-types/src/App.d.ts",
     "finops-web/dist-types/src/App.test.d.ts",
     "finops-web/dist-types/src/api/ApiProvider.d.ts",
     "finops-web/dist-types/src/api/__tests__/client.test.d.ts",
+    "finops-web/dist-types/src/api/__tests__/fixtureSeam.test.d.ts",
+    "finops-web/dist-types/src/api/__tests__/queryFixtures.test.d.ts",
     "finops-web/dist-types/src/api/apiContext.d.ts",
     "finops-web/dist-types/src/api/client",
     "finops-web/dist-types/src/api/client.d.ts",
+    "finops-web/dist-types/src/api/fixtureSeam",
+    "finops-web/dist-types/src/api/fixtureSeam.d.ts",
+    "finops-web/dist-types/src/api/fixtures/cost.d.ts",
+    "finops-web/dist-types/src/api/fixtures/query.d.ts",
     "finops-web/dist-types/src/api/queries.d.ts",
     "finops-web/dist-types/src/api/types",
     "finops-web/dist-types/src/api/types.d.ts",
@@ -30,8 +39,11 @@
     "finops-web/dist-types/src/components/CoverageBanner.d.ts",
     "finops-web/dist-types/src/components/DataTable",
     "finops-web/dist-types/src/components/DataTable.d.ts",
+    "finops-web/dist-types/src/components/DenseRegion.d.ts",
     "finops-web/dist-types/src/components/Figure",
     "finops-web/dist-types/src/components/Figure.d.ts",
+    "finops-web/dist-types/src/components/FixtureBand",
+    "finops-web/dist-types/src/components/FixtureBand.d.ts",
     "finops-web/dist-types/src/components/FreshnessIndicator",
     "finops-web/dist-types/src/components/FreshnessIndicator.d.ts",
     "finops-web/dist-types/src/components/GraphCanvas.d.ts",
@@ -46,13 +58,17 @@
     "finops-web/dist-types/src/components/TypedError.d.ts",
     "finops-web/dist-types/src/components/__tests__/DataTable.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/Figure.test.d.ts",
+    "finops-web/dist-types/src/components/__tests__/FixtureBand.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/GraphCanvas.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/OrgTree.test.d.ts",
+    "finops-web/dist-types/src/components/__tests__/Sparkline.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/StateBoundary.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/axe.d.ts",
+    "finops-web/dist-types/src/components/__tests__/contrast.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/orgNodes.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/shell.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/surface.test.d.ts",
+    "finops-web/dist-types/src/components/density.d.ts",
     "finops-web/dist-types/src/components/index.d.ts",
     "finops-web/dist-types/src/components/orgNodes",
     "finops-web/dist-types/src/components/orgNodes.d.ts",
@@ -62,47 +78,90 @@
     "finops-web/dist-types/src/components/surfaceState.d.ts",
     "finops-web/dist-types/src/components/tableConfig",
     "finops-web/dist-types/src/components/tableConfig.d.ts",
+    "finops-web/dist-types/src/layout.css",
     "finops-web/dist-types/src/main.d.ts",
     "finops-web/dist-types/src/queryClient.d.ts",
     "finops-web/dist-types/src/screens/AccountsScreen.d.ts",
+    "finops-web/dist-types/src/screens/CostAllocationScreen.d.ts",
+    "finops-web/dist-types/src/screens/CostAnomaliesScreen.d.ts",
+    "finops-web/dist-types/src/screens/CostCommitmentsScreen.d.ts",
+    "finops-web/dist-types/src/screens/CostExportScreen.d.ts",
+    "finops-web/dist-types/src/screens/CostScreen.d.ts",
+    "finops-web/dist-types/src/screens/EnforcementScreen.d.ts",
     "finops-web/dist-types/src/screens/FreshnessScreen.d.ts",
+    "finops-web/dist-types/src/screens/HomeScreen.d.ts",
     "finops-web/dist-types/src/screens/IngestScreen.d.ts",
     "finops-web/dist-types/src/screens/OrganizationScreen.d.ts",
     "finops-web/dist-types/src/screens/PlatformScreen.d.ts",
+    "finops-web/dist-types/src/screens/QueryAdhocScreen.d.ts",
+    "finops-web/dist-types/src/screens/QueryFindingDetailScreen.d.ts",
+    "finops-web/dist-types/src/screens/QueryFindingsScreen.d.ts",
+    "finops-web/dist-types/src/screens/QueryGroups.d.ts",
+    "finops-web/dist-types/src/screens/QuerySurfacesScreen.d.ts",
+    "finops-web/dist-types/src/screens/RemediationControls.d.ts",
     "finops-web/dist-types/src/screens/__tests__/AccountsScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/CostAllocationScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/CostAnomaliesScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/CostCommitmentsScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/CostExportScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/CostScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/EnforcementScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/FreshnessScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/Harness.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/HomeScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/IngestScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/OrganizationScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/PlatformScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/QueryAdhocScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/QueryFindingDetailScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/QueryFindingsScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/QuerySurfacesScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/RemediationControls.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/enforcementTime.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/fixtures.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/surfaceStateFor.test.d.ts",
+    "finops-web/dist-types/src/screens/enforcementTime.d.ts",
+    "finops-web/dist-types/src/screens/findingFigure.d.ts",
     "finops-web/dist-types/src/screens/platformRollUp.d.ts",
+    "finops-web/dist-types/src/screens/querySeverity.d.ts",
+    "finops-web/dist-types/src/screens/saveFile.d.ts",
     "finops-web/dist-types/src/screens/surfaceStateFor.d.ts",
     "finops-web/dist-types/src/shell/AppShell.d.ts",
     "finops-web/dist-types/src/shell/MetaContext.d.ts",
     "finops-web/dist-types/src/shell/MetaProvider.d.ts",
     "finops-web/dist-types/src/shell/__tests__/AppShell.test.d.ts",
     "finops-web/dist-types/src/shell/__tests__/metaStore.test.d.ts",
+    "finops-web/dist-types/src/shell/__tests__/sections.test.d.ts",
     "finops-web/dist-types/src/shell/metaRegistry.d.ts",
     "finops-web/dist-types/src/shell/metaStore",
     "finops-web/dist-types/src/shell/metaStore.d.ts",
-    "finops-web/dist-types/src/shell/sections",
     "finops-web/dist-types/src/shell/sections.d.ts",
+    "finops-web/dist-types/src/storage.d.ts",
+    "finops-web/dist-types/src/storage.test.d.ts",
     "finops-web/dist-types/src/test-setup.d.ts",
     "finops-web/dist-types/src/tokens.css",
+    "finops-web/e2e/cost.spec.ts",
+    "finops-web/e2e/demo.spec.ts",
     "finops-web/e2e/journey.spec.ts",
     "finops-web/playwright.config.ts",
     "finops-web/src/App.test.tsx",
     "finops-web/src/App.tsx",
     "finops-web/src/api/ApiProvider.tsx",
     "finops-web/src/api/__tests__/client.test.ts",
+    "finops-web/src/api/__tests__/fixtureSeam.test.ts",
+    "finops-web/src/api/__tests__/queryFixtures.test.ts",
     "finops-web/src/api/apiContext.ts",
     "finops-web/src/api/client.ts",
+    "finops-web/src/api/fixtureSeam.ts",
+    "finops-web/src/api/fixtures/cost.ts",
+    "finops-web/src/api/fixtures/query.ts",
     "finops-web/src/api/queries.ts",
     "finops-web/src/api/types.ts",
     "finops-web/src/components/CoverageBanner.tsx",
     "finops-web/src/components/DataTable.tsx",
+    "finops-web/src/components/DenseRegion.tsx",
     "finops-web/src/components/Figure.tsx",
+    "finops-web/src/components/FixtureBand.tsx",
     "finops-web/src/components/FreshnessIndicator.tsx",
     "finops-web/src/components/GraphCanvas.tsx",
     "finops-web/src/components/OrgTree.tsx",
@@ -112,41 +171,81 @@
     "finops-web/src/components/TypedError.tsx",
     "finops-web/src/components/__tests__/DataTable.test.tsx",
     "finops-web/src/components/__tests__/Figure.test.tsx",
+    "finops-web/src/components/__tests__/FixtureBand.test.tsx",
     "finops-web/src/components/__tests__/GraphCanvas.test.tsx",
     "finops-web/src/components/__tests__/OrgTree.test.tsx",
+    "finops-web/src/components/__tests__/Sparkline.test.tsx",
     "finops-web/src/components/__tests__/StateBoundary.test.tsx",
     "finops-web/src/components/__tests__/axe.ts",
+    "finops-web/src/components/__tests__/contrast.test.ts",
     "finops-web/src/components/__tests__/orgNodes.test.ts",
     "finops-web/src/components/__tests__/shell.test.tsx",
     "finops-web/src/components/__tests__/surface.test.ts",
+    "finops-web/src/components/density.ts",
     "finops-web/src/components/index.ts",
     "finops-web/src/components/orgNodes.ts",
     "finops-web/src/components/provenance.ts",
     "finops-web/src/components/surfaceState.ts",
     "finops-web/src/components/tableConfig.ts",
+    "finops-web/src/layout.css",
+    "finops-web/src/layout.css?raw",
     "finops-web/src/main.tsx",
     "finops-web/src/queryClient.ts",
     "finops-web/src/screens/AccountsScreen.tsx",
+    "finops-web/src/screens/CostAllocationScreen.tsx",
+    "finops-web/src/screens/CostAnomaliesScreen.tsx",
+    "finops-web/src/screens/CostCommitmentsScreen.tsx",
+    "finops-web/src/screens/CostExportScreen.tsx",
+    "finops-web/src/screens/CostScreen.tsx",
+    "finops-web/src/screens/EnforcementScreen.tsx",
     "finops-web/src/screens/FreshnessScreen.tsx",
+    "finops-web/src/screens/HomeScreen.tsx",
     "finops-web/src/screens/IngestScreen.tsx",
     "finops-web/src/screens/OrganizationScreen.tsx",
     "finops-web/src/screens/PlatformScreen.tsx",
+    "finops-web/src/screens/QueryAdhocScreen.tsx",
+    "finops-web/src/screens/QueryFindingDetailScreen.tsx",
+    "finops-web/src/screens/QueryFindingsScreen.tsx",
+    "finops-web/src/screens/QueryGroups.tsx",
+    "finops-web/src/screens/QuerySurfacesScreen.tsx",
+    "finops-web/src/screens/RemediationControls.tsx",
     "finops-web/src/screens/__tests__/AccountsScreen.test.tsx",
+    "finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx",
+    "finops-web/src/screens/__tests__/CostAnomaliesScreen.test.tsx",
+    "finops-web/src/screens/__tests__/CostCommitmentsScreen.test.tsx",
+    "finops-web/src/screens/__tests__/CostExportScreen.test.tsx",
+    "finops-web/src/screens/__tests__/CostScreen.test.tsx",
+    "finops-web/src/screens/__tests__/EnforcementScreen.test.tsx",
     "finops-web/src/screens/__tests__/FreshnessScreen.test.tsx",
     "finops-web/src/screens/__tests__/Harness.tsx",
+    "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
     "finops-web/src/screens/__tests__/IngestScreen.test.tsx",
     "finops-web/src/screens/__tests__/OrganizationScreen.test.tsx",
     "finops-web/src/screens/__tests__/PlatformScreen.test.tsx",
+    "finops-web/src/screens/__tests__/QueryAdhocScreen.test.tsx",
+    "finops-web/src/screens/__tests__/QueryFindingDetailScreen.test.tsx",
+    "finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx",
+    "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
+    "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
+    "finops-web/src/screens/__tests__/enforcementTime.test.ts",
     "finops-web/src/screens/__tests__/fixtures.ts",
+    "finops-web/src/screens/__tests__/surfaceStateFor.test.ts",
+    "finops-web/src/screens/enforcementTime.ts",
+    "finops-web/src/screens/findingFigure.ts",
     "finops-web/src/screens/platformRollUp.ts",
+    "finops-web/src/screens/querySeverity.ts",
+    "finops-web/src/screens/saveFile.ts",
     "finops-web/src/screens/surfaceStateFor.ts",
     "finops-web/src/shell/AppShell.tsx",
     "finops-web/src/shell/MetaProvider.tsx",
     "finops-web/src/shell/__tests__/AppShell.test.tsx",
     "finops-web/src/shell/__tests__/metaStore.test.ts",
+    "finops-web/src/shell/__tests__/sections.test.ts",
     "finops-web/src/shell/metaRegistry.ts",
     "finops-web/src/shell/metaStore.ts",
     "finops-web/src/shell/sections.ts",
+    "finops-web/src/storage.test.ts",
+    "finops-web/src/storage.ts",
     "finops-web/src/test-setup.ts",
     "finops-web/src/tokens.css",
     "finops-web/src/tokens.css?raw",
@@ -158,9 +257,11 @@
     "finops_api/db/repositories/__init__.py",
     "finops_api/db/repositories/accounts.py",
     "finops_api/db/repositories/base.py",
+    "finops_api/db/repositories/cost.py",
     "finops_api/db/repositories/freshness.py",
     "finops_api/db/repositories/ingest.py",
     "finops_api/db/repositories/org.py",
+    "finops_api/db/repositories/query.py",
     "finops_api/deps.py",
     "finops_api/flags.py",
     "finops_api/guards.py",
@@ -172,10 +273,12 @@
     "finops_api/middleware.py",
     "finops_api/routes/__init__.py",
     "finops_api/routes/accounts.py",
+    "finops_api/routes/cost.py",
     "finops_api/routes/ingest.py",
     "finops_api/routes/me.py",
     "finops_api/routes/org.py",
     "finops_api/routes/platform.py",
+    "finops_api/routes/query.py",
     "finops_api/schemas.py",
     "finops_core/__init__.py",
     "finops_core/config.py",
@@ -196,6 +299,7 @@
     "finops_core/errors.py",
     "finops_core/ports/__init__.py",
     "finops_core/ports/accounts.py",
+    "finops_core/ports/commitment.py",
     "finops_core/ports/cost.py",
     "finops_core/ports/credentials.py",
     "finops_core/ports/identity.py",
@@ -206,14 +310,20 @@
     "finops_ingest/__init__.py",
     "finops_ingest/collectors/__init__.py",
     "finops_ingest/collectors/account_health.py",
+    "finops_ingest/collectors/commitment.py",
+    "finops_ingest/collectors/cost_anomaly.py",
+    "finops_ingest/collectors/cost_focus.py",
+    "finops_ingest/collectors/cost_rollup.py",
     "finops_ingest/collectors/org_tree.py",
     "finops_ingest/collectors/partitions.py",
     "finops_ingest/collectors/platform_cost.py",
+    "finops_ingest/collectors/query_audit.py",
     "finops_ingest/collectors/retention.py",
     "finops_ingest/dispatcher.py",
     "finops_ingest/ledger.py",
     "finops_ingest/metrics.py",
     "finops_ingest/registry.py",
+    "finops_ingest/remediation.py",
     "finops_ingest/worker.py",
     "finops_mcp/__init__.py",
     "finops_mcp/api.py",
@@ -223,20 +333,35 @@
     "finops_providers/aws/__init__.py",
     "finops_providers/aws/accounts.py",
     "finops_providers/aws/client.py",
+    "finops_providers/aws/commitment.py",
     "finops_providers/aws/credentials.py",
+    "finops_providers/aws/cur.py",
     "finops_providers/aws/health.py",
     "finops_providers/aws/platform_cost.py",
+    "finops_providers/aws/query_evidence.py",
     "finops_providers/fake/__init__.py",
+    "finops_providers/fake/commitment.py",
+    "finops_providers/fake/cur.py",
+    "finops_providers/fake/evidence.py",
     "finops_providers/fake/fixtures.py",
+    "finops_providers/fake/health.py",
+    "finops_providers/fake/platform_cost.py",
     "finops_providers/fake/provider.py",
+    "finops_providers/fake/surface.py",
     "finops_providers/grafana/__init__.py",
+    "finops_providers/grafana/amg.py",
     "finops_providers/grafana/client.py",
     "finops_query/__init__.py",
+    "finops_query/anomaly.py",
     "finops_query/classify.py",
     "finops_query/cost_model.py",
+    "finops_query/gate.py",
     "finops_query/ownership.py",
+    "finops_query/parser.py",
     "finops_query/policy.py",
+    "finops_query/severity.py",
     "infra/terraform/hub/alb.tf",
+    "infra/terraform/hub/cost_exports.tf",
     "infra/terraform/hub/database.tf",
     "infra/terraform/hub/ecr.tf",
     "infra/terraform/hub/ecs.tf",
@@ -261,6 +386,14 @@
     "migrations/env.py",
     "migrations/versions/0001_initial.py",
     "migrations/versions/0002_cost_monthly.py",
+    "migrations/versions/0003_p2_tables.py",
+    "migrations/versions/0004_query_key.py",
+    "migrations/versions/0005_finding_cause.py",
+    "migrations/versions/0006_refresh_floor.py",
+    "migrations/versions/0007_query_adhoc.py",
+    "migrations/versions/0008_cost_anomaly.py",
+    "migrations/versions/0009_commitment_coverage.py",
+    "scripts/ci/check_dashboards.py",
     "scripts/ci/check_flags.py",
     "scripts/ci/check_forbidden_imports.py",
     "scripts/ci/check_hardcoded.py",
@@ -275,28 +408,46 @@
     "scripts/docs/rotate_checkpoint.py",
     "scripts/docs/sync.py",
     "scripts/ops/erase_principal.py",
+    "scripts/ops/local_token.py",
+    "scripts/ops/restore_drill.py",
+    "scripts/ops/seed_demo.py",
     "tests/__init__.py",
     "tests/api/__init__.py",
+    "tests/api/test_cost_commitments.py",
+    "tests/api/test_cost_export_route.py",
+    "tests/api/test_cost_repository.py",
+    "tests/api/test_cost_routes.py",
+    "tests/api/test_fixture_surfaces.py",
     "tests/api/test_identity_local.py",
+    "tests/api/test_query_routes.py",
     "tests/api/test_routes.py",
     "tests/api/test_scope_enforcement.py",
     "tests/conftest.py",
     "tests/contract/__init__.py",
     "tests/contract/conftest.py",
     "tests/contract/test_account_discovery.py",
+    "tests/contract/test_commitment.py",
+    "tests/contract/test_cost_export.py",
     "tests/contract/test_credential_broker.py",
     "tests/core/__init__.py",
     "tests/core/test_config.py",
+    "tests/core/test_cost_domain.py",
     "tests/core/test_domain.py",
     "tests/core/test_errors.py",
     "tests/core/test_ports.py",
     "tests/db/__init__.py",
     "tests/db/test_models.py",
+    "tests/db/test_p2_constraints.py",
     "tests/db/test_schema.py",
     "tests/db/test_scope_guard.py",
     "tests/ingest/__init__.py",
     "tests/ingest/collectors/__init__.py",
     "tests/ingest/collectors/test_account_health.py",
+    "tests/ingest/collectors/test_commitment.py",
+    "tests/ingest/collectors/test_cost_anomaly.py",
+    "tests/ingest/collectors/test_cost_focus.py",
+    "tests/ingest/collectors/test_cost_focus_restatement.py",
+    "tests/ingest/collectors/test_cost_rollup.py",
     "tests/ingest/collectors/test_org_tree.py",
     "tests/ingest/collectors/test_partitions.py",
     "tests/ingest/collectors/test_platform_cost.py",
@@ -304,6 +455,8 @@
     "tests/ingest/test_dispatcher.py",
     "tests/ingest/test_ledger.py",
     "tests/ingest/test_metrics.py",
+    "tests/ingest/test_query_audit.py",
+    "tests/ingest/test_remediation.py",
     "tests/ingest/test_worker.py",
     "tests/mcp/__init__.py",
     "tests/mcp/test_contract.py",
@@ -313,23 +466,40 @@
     "tests/providers/__init__.py",
     "tests/providers/aws/__init__.py",
     "tests/providers/aws/test_accounts.py",
+    "tests/providers/aws/test_commitment.py",
     "tests/providers/aws/test_credentials.py",
+    "tests/providers/aws/test_cur.py",
     "tests/providers/aws/test_health.py",
+    "tests/providers/aws/test_query_evidence.py",
+    "tests/providers/fake/__init__.py",
+    "tests/providers/fake/test_commitment.py",
+    "tests/providers/fake/test_cur.py",
+    "tests/providers/fake/test_evidence.py",
+    "tests/providers/fake/test_surface.py",
+    "tests/providers/test_amg_surface.py",
     "tests/providers/test_fake.py",
+    "tests/providers/test_fake_surface.py",
     "tests/providers/test_grafana_client.py",
     "tests/query/__init__.py",
     "tests/query/conftest.py",
+    "tests/query/test_anomaly.py",
     "tests/query/test_classify.py",
     "tests/query/test_cost_model.py",
+    "tests/query/test_gate.py",
     "tests/query/test_ownership.py",
     "tests/query/test_policy.py",
     "tests/query/test_ports.py",
+    "tests/query/test_severity.py",
     "tests/scripts/__init__.py",
+    "tests/scripts/test_backup_retention.py",
     "tests/scripts/test_check_index.py",
     "tests/scripts/test_layer_agreement.py",
     "tests/scripts/test_lint_scope.py",
+    "tests/scripts/test_local_token.py",
     "tests/scripts/test_observability.py",
     "tests/scripts/test_pipeline.py",
+    "tests/scripts/test_restore_drill.py",
+    "tests/scripts/test_seed_demo.py",
     "tests/test_checkpoint_rotation.py"
   ],
   "edges": [
@@ -365,6 +535,11 @@
     },
     {
       "s": "docker/Dockerfile.api",
+      "t": "docker/finops_query",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.api",
       "t": "docker/migrations",
       "k": "docker"
     },
@@ -374,8 +549,18 @@
       "k": "docker"
     },
     {
+      "s": "docker/Dockerfile.api",
+      "t": "docker/scripts/ops",
+      "k": "docker"
+    },
+    {
       "s": "docker/Dockerfile.web",
       "t": "docker/docker/nginx.conf",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.web",
+      "t": "docker/docker/nginx.disabled.conf",
       "k": "docker"
     },
     {
@@ -400,6 +585,11 @@
     },
     {
       "s": "docker/Dockerfile.worker",
+      "t": "docker/finops_api",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.worker",
       "t": "docker/finops_core",
       "k": "docker"
     },
@@ -410,7 +600,17 @@
     },
     {
       "s": "docker/Dockerfile.worker",
+      "t": "docker/finops_mcp",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.worker",
       "t": "docker/finops_providers",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.worker",
+      "t": "docker/finops_query",
       "k": "docker"
     },
     {
@@ -449,6 +649,21 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/dist-types/src/api/fixtures/cost.d.ts",
+      "t": "finops-web/dist-types/src/api/types",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/api/fixtures/query.d.ts",
+      "t": "finops-web/dist-types/src/api/types",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/api/queries.d.ts",
+      "t": "finops-web/dist-types/src/api/fixtureSeam",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/dist-types/src/api/queries.d.ts",
       "t": "finops-web/dist-types/src/api/types",
       "k": "typescript"
@@ -459,6 +674,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/dist-types/src/components/CoverageBanner.d.ts",
+      "t": "finops-web/dist-types/src/shell/metaStore",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/dist-types/src/components/DataTable.d.ts",
       "t": "finops-web/dist-types/src/components/tableConfig",
       "k": "typescript"
@@ -466,6 +686,11 @@
     {
       "s": "finops-web/dist-types/src/components/Figure.d.ts",
       "t": "finops-web/dist-types/src/components/provenance",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/FixtureBand.d.ts",
+      "t": "finops-web/dist-types/src/api/fixtureSeam",
       "k": "typescript"
     },
     {
@@ -515,6 +740,11 @@
     },
     {
       "s": "finops-web/dist-types/src/components/index.d.ts",
+      "t": "finops-web/dist-types/src/components/FixtureBand",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/index.d.ts",
       "t": "finops-web/dist-types/src/components/FreshnessIndicator",
       "k": "typescript"
     },
@@ -560,7 +790,17 @@
     },
     {
       "s": "finops-web/dist-types/src/main.d.ts",
+      "t": "finops-web/dist-types/src/layout.css",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/main.d.ts",
       "t": "finops-web/dist-types/src/tokens.css",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/screens/RemediationControls.d.ts",
+      "t": "finops-web/dist-types/src/api/types",
       "k": "typescript"
     },
     {
@@ -584,8 +824,28 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/dist-types/src/screens/findingFigure.d.ts",
+      "t": "finops-web/dist-types/src/api/types",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/screens/findingFigure.d.ts",
+      "t": "finops-web/dist-types/src/components/provenance",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/dist-types/src/screens/platformRollUp.d.ts",
       "t": "finops-web/dist-types/src/api/types",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/screens/querySeverity.d.ts",
+      "t": "finops-web/dist-types/src/api/types",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/screens/querySeverity.d.ts",
+      "t": "finops-web/dist-types/src/components/SeverityBadge",
       "k": "typescript"
     },
     {
@@ -596,11 +856,6 @@
     {
       "s": "finops-web/dist-types/src/screens/surfaceStateFor.d.ts",
       "t": "finops-web/dist-types/src/components/surfaceState",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/dist-types/src/shell/AppShell.d.ts",
-      "t": "finops-web/dist-types/src/shell/sections",
       "k": "typescript"
     },
     {
@@ -660,7 +915,42 @@
     },
     {
       "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/CostExportScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/CostScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/EnforcementScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/FreshnessScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/HomeScreen.tsx",
       "k": "typescript"
     },
     {
@@ -676,6 +966,26 @@
     {
       "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/PlatformScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/QueryAdhocScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/QueryFindingDetailScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/QuerySurfacesScreen.tsx",
       "k": "typescript"
     },
     {
@@ -709,6 +1019,16 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/api/__tests__/fixtureSeam.test.ts",
+      "t": "finops-web/src/api/fixtureSeam.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/__tests__/queryFixtures.test.ts",
+      "t": "finops-web/src/api/fixtures/query.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/api/apiContext.ts",
       "t": "finops-web/src/api/client.ts",
       "k": "typescript"
@@ -719,8 +1039,33 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/api/fixtures/cost.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/fixtures/query.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/api/queries.ts",
       "t": "finops-web/src/api/apiContext.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/queries.ts",
+      "t": "finops-web/src/api/fixtureSeam.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/queries.ts",
+      "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/queries.ts",
+      "t": "finops-web/src/api/fixtures/query.ts",
       "k": "typescript"
     },
     {
@@ -734,8 +1079,23 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/CoverageBanner.tsx",
+      "t": "finops-web/src/shell/metaStore.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/DataTable.tsx",
+      "t": "finops-web/src/components/DenseRegion.tsx",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/components/DataTable.tsx",
       "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/DenseRegion.tsx",
+      "t": "finops-web/src/components/density.ts",
       "k": "typescript"
     },
     {
@@ -750,7 +1110,17 @@
     },
     {
       "s": "finops-web/src/components/Figure.tsx",
+      "t": "finops-web/src/components/density.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/Figure.tsx",
       "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/FixtureBand.tsx",
+      "t": "finops-web/src/api/fixtureSeam.ts",
       "k": "typescript"
     },
     {
@@ -819,6 +1189,16 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/__tests__/FixtureBand.test.tsx",
+      "t": "finops-web/src/components/FixtureBand.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/FixtureBand.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/components/__tests__/GraphCanvas.test.tsx",
       "t": "finops-web/src/components/GraphCanvas.tsx",
       "k": "typescript"
@@ -844,6 +1224,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/__tests__/Sparkline.test.tsx",
+      "t": "finops-web/src/components/Sparkline.tsx",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/components/__tests__/StateBoundary.test.tsx",
       "t": "finops-web/src/components/StateBoundary.tsx",
       "k": "typescript"
@@ -856,6 +1241,11 @@
     {
       "s": "finops-web/src/components/__tests__/StateBoundary.test.tsx",
       "t": "finops-web/src/components/surfaceState.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/contrast.test.ts",
+      "t": "finops-web/src/tokens.css?raw",
       "k": "typescript"
     },
     {
@@ -900,6 +1290,11 @@
     },
     {
       "s": "finops-web/src/components/__tests__/surface.test.ts",
+      "t": "finops-web/src/layout.css?raw",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/surface.test.ts",
       "t": "finops-web/src/tokens.css?raw",
       "k": "typescript"
     },
@@ -916,6 +1311,11 @@
     {
       "s": "finops-web/src/components/index.ts",
       "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/index.ts",
+      "t": "finops-web/src/components/FixtureBand.tsx",
       "k": "typescript"
     },
     {
@@ -975,6 +1375,16 @@
     },
     {
       "s": "finops-web/src/main.tsx",
+      "t": "finops-web/src/layout.css",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/main.tsx",
+      "t": "finops-web/src/storage.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/main.tsx",
       "t": "finops-web/src/tokens.css",
       "k": "typescript"
     },
@@ -1010,6 +1420,261 @@
     },
     {
       "s": "finops-web/src/screens/AccountsScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "t": "finops-web/src/components/SeverityBadge.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "t": "finops-web/src/screens/querySeverity.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/api/apiContext.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/screens/saveFile.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/components/Sparkline.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EnforcementScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EnforcementScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EnforcementScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EnforcementScreen.tsx",
+      "t": "finops-web/src/components/FixtureBand.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EnforcementScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EnforcementScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EnforcementScreen.tsx",
+      "t": "finops-web/src/screens/enforcementTime.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EnforcementScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EnforcementScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
       "k": "typescript"
     },
@@ -1050,6 +1715,61 @@
     },
     {
       "s": "finops-web/src/screens/FreshnessScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/components/SeverityBadge.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/screens/platformRollUp.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/screens/querySeverity.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
       "k": "typescript"
     },
@@ -1179,6 +1899,276 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/QueryAdhocScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryAdhocScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryAdhocScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryAdhocScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryAdhocScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryAdhocScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryAdhocScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryAdhocScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingDetailScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingDetailScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingDetailScreen.tsx",
+      "t": "finops-web/src/components/FixtureBand.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingDetailScreen.tsx",
+      "t": "finops-web/src/components/Sparkline.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingDetailScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingDetailScreen.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingDetailScreen.tsx",
+      "t": "finops-web/src/screens/RemediationControls.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingDetailScreen.tsx",
+      "t": "finops-web/src/screens/findingFigure.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingDetailScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingDetailScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/components/FixtureBand.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/components/SeverityBadge.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/components/Sparkline.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/screens/QueryGroups.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/screens/querySeverity.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/components/SeverityBadge.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/screens/querySeverity.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryGroups.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuerySurfacesScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuerySurfacesScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuerySurfacesScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuerySurfacesScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuerySurfacesScreen.tsx",
+      "t": "finops-web/src/components/FixtureBand.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuerySurfacesScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuerySurfacesScreen.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuerySurfacesScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuerySurfacesScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuerySurfacesScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/RemediationControls.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/RemediationControls.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/AccountsScreen.test.tsx",
       "t": "finops-web/src/screens/AccountsScreen.tsx",
       "k": "typescript"
@@ -1190,6 +2180,151 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/AccountsScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx",
+      "t": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostAnomaliesScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostAnomaliesScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostAnomaliesScreen.test.tsx",
+      "t": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostAnomaliesScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostAnomaliesScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostCommitmentsScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostCommitmentsScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostCommitmentsScreen.test.tsx",
+      "t": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostCommitmentsScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostCommitmentsScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostExportScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostExportScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostExportScreen.test.tsx",
+      "t": "finops-web/src/screens/CostExportScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostExportScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostExportScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostScreen.test.tsx",
+      "t": "finops-web/src/screens/CostScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/EnforcementScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/EnforcementScreen.test.tsx",
+      "t": "finops-web/src/screens/EnforcementScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/EnforcementScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/EnforcementScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
       "k": "typescript"
     },
@@ -1226,6 +2361,31 @@
     {
       "s": "finops-web/src/screens/__tests__/Harness.tsx",
       "t": "finops-web/src/shell/MetaProvider.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
+      "t": "finops-web/src/screens/HomeScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
       "k": "typescript"
     },
     {
@@ -1289,6 +2449,141 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/QueryAdhocScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/query.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QueryAdhocScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QueryAdhocScreen.test.tsx",
+      "t": "finops-web/src/screens/QueryAdhocScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QueryAdhocScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QueryAdhocScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QueryFindingDetailScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/query.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QueryFindingDetailScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QueryFindingDetailScreen.test.tsx",
+      "t": "finops-web/src/screens/QueryFindingDetailScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QueryFindingDetailScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QueryFindingDetailScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QueryFindingDetailScreen.test.tsx",
+      "t": "finops-web/src/screens/findingFigure.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/query.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx",
+      "t": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/query.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
+      "t": "finops-web/src/screens/QuerySurfacesScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
+      "t": "finops-web/src/api/fixtures/query.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
+      "t": "finops-web/src/screens/RemediationControls.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/enforcementTime.test.ts",
+      "t": "finops-web/src/screens/enforcementTime.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/fixtures.ts",
       "t": "finops-web/src/api/client.ts",
       "k": "typescript"
@@ -1304,8 +2599,38 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/surfaceStateFor.test.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/surfaceStateFor.test.ts",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/findingFigure.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/findingFigure.ts",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/platformRollUp.ts",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/querySeverity.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/querySeverity.ts",
+      "t": "finops-web/src/components/SeverityBadge.tsx",
       "k": "typescript"
     },
     {
@@ -1354,6 +2679,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/storage.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/shell/MetaProvider.tsx",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -1394,6 +2724,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/shell/__tests__/AppShell.test.tsx",
+      "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/shell/__tests__/metaStore.test.ts",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -1401,6 +2736,11 @@
     {
       "s": "finops-web/src/shell/__tests__/metaStore.test.ts",
       "t": "finops-web/src/shell/metaStore.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/sections.test.ts",
+      "t": "finops-web/src/shell/sections.ts",
       "k": "typescript"
     },
     {
@@ -1416,6 +2756,11 @@
     {
       "s": "finops-web/src/shell/metaStore.ts",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/storage.test.ts",
+      "t": "finops-web/src/storage.ts",
       "k": "typescript"
     },
     {
@@ -1441,6 +2786,11 @@
     {
       "s": "finops_api/db/repositories/__init__.py",
       "t": "finops_api/db/repositories/org.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/__init__.py",
+      "t": "finops_api/db/repositories/query.py",
       "k": "python"
     },
     {
@@ -1484,6 +2834,31 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/cost.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/cost.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/cost.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/cost.py",
+      "t": "finops_core/domain/platform.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/cost.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/freshness.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -1510,6 +2885,11 @@
     },
     {
       "s": "finops_api/db/repositories/ingest.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/ingest.py",
       "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
@@ -1526,6 +2906,31 @@
     {
       "s": "finops_api/db/repositories/org.py",
       "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/query.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/query.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/query.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/query.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/query.py",
+      "t": "finops_query/severity.py",
       "k": "python"
     },
     {
@@ -1561,6 +2966,11 @@
     {
       "s": "finops_api/flags.py",
       "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/guards.py",
+      "t": "finops_api/db/__init__.py",
       "k": "python"
     },
     {
@@ -1714,6 +3124,46 @@
       "k": "python"
     },
     {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_api/db/repositories/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_query/anomaly.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/routes/ingest.py",
       "t": "finops_api/db/repositories/__init__.py",
       "k": "python"
@@ -1834,8 +3284,68 @@
       "k": "python"
     },
     {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_api/db/repositories/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_ingest/remediation.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_query/gate.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/config.py",
       "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/config.py",
+      "t": "finops_core/domain/query.py",
       "k": "python"
     },
     {
@@ -2014,6 +3524,11 @@
       "k": "python"
     },
     {
+      "s": "finops_core/ports/commitment.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/ports/cost.py",
       "t": "finops_core/domain/cost.py",
       "k": "python"
@@ -2079,6 +3594,56 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/commitment.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/commitment.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/cost_anomaly.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/cost_anomaly.py",
+      "t": "finops_query/anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/cost_anomaly.py",
+      "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/cost_focus.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/cost_focus.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/cost_focus.py",
+      "t": "finops_ingest/collectors/cost_rollup.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/cost_focus.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/cost_focus.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/org_tree.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -2114,6 +3679,61 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_ingest/ledger.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_query/classify.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_query/cost_model.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_query/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_query/policy.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/query_audit.py",
+      "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/retention.py",
+      "t": "finops_ingest/collectors/cost_rollup.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/retention.py",
       "t": "finops_ingest/collectors/partitions.py",
       "k": "python"
@@ -2146,6 +3766,16 @@
     {
       "s": "finops_ingest/metrics.py",
       "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/remediation.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/remediation.py",
+      "t": "finops_core/errors.py",
       "k": "python"
     },
     {
@@ -2249,6 +3879,26 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/commitment.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/commitment.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/commitment.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/commitment.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/credentials.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -2265,6 +3915,26 @@
     },
     {
       "s": "finops_providers/aws/credentials.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/cur.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/cur.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/cur.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/cur.py",
       "t": "finops_providers/aws/client.py",
       "k": "python"
     },
@@ -2294,8 +3964,63 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/query_evidence.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/query_evidence.py",
+      "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/query_evidence.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/fake/__init__.py",
       "t": "finops_providers/fake/provider.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/commitment.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/commitment.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/commitment.py",
+      "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/cur.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/cur.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/cur.py",
+      "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/evidence.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/evidence.py",
+      "t": "finops_core/ports/query.py",
       "k": "python"
     },
     {
@@ -2336,6 +4061,26 @@
     {
       "s": "finops_providers/fake/fixtures.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/health.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/health.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/health.py",
+      "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/platform_cost.py",
+      "t": "finops_providers/aws/platform_cost.py",
       "k": "python"
     },
     {
@@ -2389,8 +4134,58 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/fake/provider.py",
+      "t": "finops_providers/fake/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/provider.py",
+      "t": "finops_providers/fake/cur.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/surface.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/surface.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/grafana/amg.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/grafana/amg.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/grafana/amg.py",
+      "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/grafana/amg.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/grafana/amg.py",
+      "t": "finops_providers/grafana/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/grafana/client.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/cost_model.py",
+      "t": "finops_query/__init__.py",
       "k": "python"
     },
     {
@@ -2399,8 +4194,38 @@
       "k": "python"
     },
     {
+      "s": "finops_query/gate.py",
+      "t": "finops_query/classify.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/gate.py",
+      "t": "finops_query/cost_model.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/gate.py",
+      "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
       "s": "finops_query/ownership.py",
       "t": "finops_query/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/parser.py",
+      "t": "finops_query/classify.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/parser.py",
+      "t": "finops_query/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/parser.py",
+      "t": "finops_query/policy.py",
       "k": "python"
     },
     {
@@ -2411,6 +4236,311 @@
     {
       "s": "migrations/env.py",
       "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ci/check_dashboards.py",
+      "t": "finops_query/cost_model.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ci/check_dashboards.py",
+      "t": "finops_query/gate.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/local_token.py",
+      "t": "finops_api/identity/local_config.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/local_token.py",
+      "t": "finops_api/identity/session.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/local_token.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/local_token.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/local_token.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/restore_drill.py",
+      "t": "finops_api/identity/local_config.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/restore_drill.py",
+      "t": "finops_api/identity/session.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/restore_drill.py",
+      "t": "finops_api/main.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/restore_drill.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/account_health.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/cost_anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/org_tree.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/platform_cost.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/query_audit.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/ledger.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/cur.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/evidence.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/health.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/platform_cost.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/provider.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/surface.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_commitments.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_commitments.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_commitments.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_commitments.py",
+      "t": "finops_ingest/collectors/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_commitments.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_commitments.py",
+      "t": "finops_providers/fake/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_export_route.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_export_route.py",
+      "t": "finops_core/domain/platform.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_api/db/repositories/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_core/domain/platform.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_repository.py",
+      "t": "finops_providers/fake/cur.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_core/domain/platform.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_ingest/collectors/cost_anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
+      "t": "finops_providers/fake/cur.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_fixture_surfaces.py",
+      "t": "finops_api/main.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_fixture_surfaces.py",
+      "t": "finops_api/routes/__init__.py",
       "k": "python"
     },
     {
@@ -2436,6 +4566,41 @@
     {
       "s": "tests/api/test_identity_local.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_query_routes.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_query_routes.py",
+      "t": "finops_api/identity/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_query_routes.py",
+      "t": "finops_api/main.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_query_routes.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_query_routes.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_query_routes.py",
+      "t": "finops_core/domain/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_query_routes.py",
+      "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
     {
@@ -2529,6 +4694,11 @@
       "k": "python"
     },
     {
+      "s": "tests/conftest.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
       "s": "tests/contract/conftest.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -2545,7 +4715,17 @@
     },
     {
       "s": "tests/contract/conftest.py",
+      "t": "finops_providers/aws/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/conftest.py",
       "t": "finops_providers/aws/credentials.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/conftest.py",
+      "t": "finops_providers/aws/cur.py",
       "k": "python"
     },
     {
@@ -2569,6 +4749,21 @@
       "k": "python"
     },
     {
+      "s": "tests/contract/test_commitment.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_cost_export.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_cost_export.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
       "s": "tests/contract/test_credential_broker.py",
       "t": "finops_core/__init__.py",
       "k": "python"
@@ -2581,6 +4776,11 @@
     {
       "s": "tests/core/test_config.py",
       "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_cost_domain.py",
+      "t": "finops_core/domain/cost.py",
       "k": "python"
     },
     {
@@ -2724,6 +4924,151 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_commitment.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_commitment.py",
+      "t": "finops_ingest/collectors/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_commitment.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_commitment.py",
+      "t": "finops_providers/fake/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_anomaly.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_anomaly.py",
+      "t": "finops_ingest/collectors/cost_anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_anomaly.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_anomaly.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_anomaly.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_anomaly.py",
+      "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_anomaly.py",
+      "t": "finops_providers/fake/cur.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_anomaly.py",
+      "t": "finops_query/anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus.py",
+      "t": "finops_providers/fake/cur.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
+      "t": "finops_providers/fake/cur.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_rollup.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_rollup.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_rollup.py",
+      "t": "finops_ingest/collectors/cost_rollup.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_rollup.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_rollup.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_rollup.py",
+      "t": "finops_providers/fake/cur.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_org_tree.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -2861,6 +5206,61 @@
     {
       "s": "tests/ingest/test_metrics.py",
       "t": "finops_ingest/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_query_audit.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_query_audit.py",
+      "t": "finops_ingest/collectors/query_audit.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_query_audit.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_query_audit.py",
+      "t": "finops_providers/fake/evidence.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_query_audit.py",
+      "t": "finops_providers/fake/surface.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_query_audit.py",
+      "t": "finops_query/cost_model.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_query_audit.py",
+      "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_remediation.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_remediation.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_remediation.py",
+      "t": "finops_ingest/remediation.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_remediation.py",
+      "t": "finops_providers/fake/surface.py",
       "k": "python"
     },
     {
@@ -3034,6 +5434,31 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/aws/test_commitment.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_commitment.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_commitment.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_commitment.py",
+      "t": "finops_providers/aws/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_commitment.py",
+      "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/aws/test_credentials.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -3064,6 +5489,26 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/aws/test_cur.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_cur.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_cur.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_cur.py",
+      "t": "finops_providers/aws/cur.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/aws/test_health.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -3076,6 +5521,101 @@
     {
       "s": "tests/providers/aws/test_health.py",
       "t": "finops_providers/aws/health.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_query_evidence.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_query_evidence.py",
+      "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_query_evidence.py",
+      "t": "finops_providers/aws/query_evidence.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_query_evidence.py",
+      "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_commitment.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_commitment.py",
+      "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_commitment.py",
+      "t": "finops_providers/fake/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_cur.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_cur.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_cur.py",
+      "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_cur.py",
+      "t": "finops_providers/fake/cur.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_evidence.py",
+      "t": "finops_providers/fake/evidence.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_evidence.py",
+      "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_surface.py",
+      "t": "finops_providers/fake/surface.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_amg_surface.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_amg_surface.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_amg_surface.py",
+      "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_amg_surface.py",
+      "t": "finops_providers/grafana/amg.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_amg_surface.py",
+      "t": "finops_query/parser.py",
       "k": "python"
     },
     {
@@ -3104,6 +5644,26 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/test_fake_surface.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_fake_surface.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_fake_surface.py",
+      "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_fake_surface.py",
+      "t": "finops_providers/fake/surface.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/test_grafana_client.py",
       "t": "finops_core/errors.py",
       "k": "python"
@@ -3124,6 +5684,11 @@
       "k": "python"
     },
     {
+      "s": "tests/query/test_anomaly.py",
+      "t": "finops_query/anomaly.py",
+      "k": "python"
+    },
+    {
       "s": "tests/query/test_classify.py",
       "t": "finops_query/__init__.py",
       "k": "python"
@@ -3136,6 +5701,16 @@
     {
       "s": "tests/query/test_cost_model.py",
       "t": "finops_query/cost_model.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_gate.py",
+      "t": "finops_query/cost_model.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_gate.py",
+      "t": "finops_query/gate.py",
       "k": "python"
     },
     {
@@ -3161,6 +5736,16 @@
     {
       "s": "tests/query/test_ports.py",
       "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_severity.py",
+      "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_seed_demo.py",
+      "t": "finops_api/db/__init__.py",
       "k": "python"
     }
   ]

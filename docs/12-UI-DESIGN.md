@@ -162,6 +162,31 @@ A user seeing 42 of 310 accounts must never be able to forget it.
 - Out of scope branches in the organization tree are **drawn and marked
   unreachable**, never pruned. A tree with unexplained gaps reads as broken
   data and destroys trust in the parts that are correct.
+- **Made once per page, not once per panel.** Four summary tiles reading one
+  partially collected estate each repeated the same sentence, and announced it
+  four times to a screen reader, which buries a claim rather than making it.
+  `StateBoundary` takes `coverageShownElsewhere` for exactly this: it drops the
+  sentence and never the rows, and it is only correct where the shell above
+  already carries the claim. A surface that sets it and shows coverage nowhere
+  is a defect, which is what the test beside it exists to catch.
+
+## 6a. Every screen names itself
+
+A screen with no heading is a screen a reader cannot orient on and a screen
+reader user cannot find. Until 2026-09-29 the only first level heading in the
+product was the word `Meter` in the shell header, so six of the ten built
+screens had no heading at all, and every browser tab, bookmark and history entry
+read `Meter` regardless of where it pointed.
+
+- **The page heading is an `h1` in `main`**, and the product name in the header
+  is not a heading at all.
+- **The name comes from `sections.ts`**, which is also what builds the
+  navigation. Two lists of screen names is how a page ends up called one thing
+  in the menu and another at the top of itself.
+- **A detail path takes the name of the screen it was reached from**, by longest
+  matching prefix, and names the specific record in an `h2` beneath.
+- **The document title is the screen name**, and only appends the product where
+  the name does not already carry it.
 
 ## 7. Visual system
 
@@ -177,6 +202,15 @@ Two faces, chosen for function.
 Numerals are **always** tabular, **always** right aligned, and a currency
 column always shows the same number of decimal places, including trailing
 zeros. `$0.00`, never `$0`.
+
+**Decided, 2026-09-24: IBM Plex Sans and IBM Plex Mono, self hosted.** The
+table above offered alternatives and `tokens.css` shipped neither, using
+`system-ui` instead. A system stack renders a different face per operating
+system, so column widths and density differ between two people reading the same
+figures, which is not acceptable for a screen whose whole job is comparing
+numbers down a column. The faces are served from `node_modules` through the
+bundle, latin subset only, so a page showing customer spend makes no request to
+a third party font host.
 
 Scale: 12, 14, 16, 20, 28, 40. Six sizes. A seventh means the hierarchy is
 unclear rather than insufficient.
@@ -199,8 +233,38 @@ Severity is sequential because severity is ordered. A categorical palette for
 an ordered quantity makes `HIGH` and `MEDIUM` look like different kinds of
 thing rather than different amounts.
 
+**The ramp is warm, decided 2026-09-24.** It used to be blue, and its darkest
+step was the same value as `--accent`, `#1f4f8f`, in light and in dark. The most
+severe finding was therefore painted the one colour that means "this is a link"
+everywhere else, which contradicts the rule two rows above that the accent is
+interactive only. A warm ramp is squeezed between the failure red and the
+staleness amber and sits about twenty degrees of hue from each, which is the
+most separation available; the redundant square glyph and the word in the chip
+are what actually carry the level, and the fill only ranks it. The ordering is
+enforced by `contrast.test.ts`, which asserts the ramp descends by luminance
+rather than merely differing, and the two darkest steps carry text so they are
+also held to 4.5 to 1.
+
 **Red is never used for "expensive".** A large number is not an error. Red is
 reserved for a failure, so that when it appears it means one thing.
+
+**In dark, a failure is saturated rather than merely light.** The first dark
+value was a pale pink, and it passed every contrast check while reading as
+quieter than the near white prose beside it, which is the opposite of its job.
+Contrast against the background is legibility; contrast against the body text is
+hierarchy, and only the first was being checked. Both are now gated, the second
+at 2.2 to 1, which the old value failed at 2.00.
+
+**A state is a mark on a surface, never the surface itself.** `partial` and
+`degraded` wrap everything they qualify, so a fill behind them covers a whole
+tile on the front page and a whole page on any screen with one panel. At that
+size the reader is no longer being told that one thing is stale, they are being
+shown an amber product, and the ranking between a stale panel and a current one
+is gone. Both states are marked with the rule down the left edge only. Nothing
+is lost: `partial` still carries its sentence where the shell is not already
+making the claim, and every figure inside still carries its two timestamps.
+`failed` keeps its fill, because it renders instead of the data rather than
+beside it, so the block is small and the colour is the point.
 
 Light and dark are both first class. The instrument reads in a bright office
 and in a dark incident bridge.
@@ -330,7 +394,7 @@ Deferred deliberately until the requirements existed, then decided here.
 
 - **Radix Primitives** or **React Aria** for behaviour and accessibility.
 - **TanStack Table** and **TanStack Virtual** for the data grid.
-- **Tailwind** with our tokens for styling.
+- **Plain CSS** against our tokens for styling, per ADR-0021. Tailwind was the original choice here and was superseded once the measurement existed: no component in this codebase accepts a `className`, so utilities would have meant annotating 27 files to avoid writing one stylesheet.
 - **Cytoscape.js** for the graph, as already decided.
 - Our own thin component layer implementing section 11.
 
@@ -341,7 +405,7 @@ library gives you are precisely the ones we must control. Rung seven, building
 accessible tree and focus management from scratch, is disqualified because it
 is a large amount of subtle work that is not this product's problem.
 
-Recorded as ADR-0019.
+Recorded as ADR-0019, with the styling row superseded by ADR-0021.
 
 ## 13. What this does not cover
 

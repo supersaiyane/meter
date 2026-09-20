@@ -57,7 +57,28 @@ def recent_runs(
         )
         for row in rows
     ]
-    return Envelope(data=runs, meta=build_meta(connection, scope, context, visible=len(runs)))
+    # A run record is both the fact and the fetch, so the timestamps come from
+    # the newest run rather than from `freshness_of`, which found no `as_of`
+    # column here and reported the page as never collected however many runs it
+    # was showing. Newest rather than oldest: this is a log, and a log is as
+    # fresh as its last entry. ISS-159.
+    newest = rows[0] if rows else None
+    return Envelope(
+        data=runs,
+        meta=build_meta(
+            connection,
+            scope,
+            context,
+            visible=len(runs),
+            as_of=newest.as_of_window_end if newest is not None else None,
+            collected_at=(newest.finished_at or newest.started_at) if newest is not None else None,
+            # Runs, not accounts. This page shows the most recent few of however
+            # many the tenant has, and saying `8 of 8 accounts` over a five
+            # account estate was a claim about the wrong thing entirely.
+            coverage=IngestRunRepository(connection, context).coverage(scope, shown=len(runs)),
+            coverage_unit="runs",
+        ),
+    )
 
 
 def staleness(row: Any, cadences: dict[str, int], at: datetime) -> FreshnessOut:
@@ -72,7 +93,32 @@ def staleness(row: Any, cadences: dict[str, int], at: datetime) -> FreshnessOut:
         age_seconds=age,
         # A collector with no schedule row cannot be judged, so it is reported
         # as stale rather than as fine. An unknown cadence is not a healthy one.
-        is_stale=cadence is None or age > cadence * STALE_AFTER_CADENCE_MULTIPLE,
+        state=(
+            "stale"
+            if cadence is None or age > cadence * STALE_AFTER_CADENCE_MULTIPLE
+            else "current"
+        ),
+    )
+
+
+def never_collected(row: Any, cadences: dict[str, int]) -> FreshnessOut:
+    """A pair that has been attempted and has never once succeeded.
+
+    Absent from this page until ISS-163, because the page listed watermarks and
+    a watermark only exists after a success. The collector a reader most wants
+    to find on a freshness page is the one that has never worked, and it was the
+    one the page left out.
+    """
+    return FreshnessOut(
+        collector=str(row.collector),
+        scope_key=str(row.scope_key),
+        # Null, not the epoch and not now. There has never been a moment when
+        # this was true at the source, and any number here would name one.
+        as_of=None,
+        cadence_seconds=cadences.get(str(row.collector)),
+        age_seconds=None,
+        state="never_collected",
+        cause=row.error_type,
     )
 
 
@@ -85,7 +131,12 @@ def freshness(
     cadences = ScheduleRepository(connection, context).cadences(scope)
     rows = WatermarkRepository(connection, context).list_all(scope)
     at = datetime.now(UTC)
-    entries = [staleness(row, cadences, at) for row in rows]
+    unstarted = IngestRunRepository(connection, context).never_succeeded(scope)
+    entries = sorted(
+        [staleness(row, cadences, at) for row in rows]
+        + [never_collected(row, cadences) for row in unstarted],
+        key=lambda entry: (entry.collector, entry.scope_key),
+    )
     # A watermark records as_of and updated_at rather than collected_at, so the
     # timestamps are passed rather than inferred. The oldest is the honest one:
     # a set of collectors is only as fresh as the one furthest behind.
@@ -100,5 +151,9 @@ def freshness(
             visible=len(entries),
             as_of=oldest_as_of,
             collected_at=oldest_update,
+            # Collectors, not accounts. Every collector with a watermark is
+            # shown, so this page is complete by construction and says so.
+            coverage=(len(entries), len(entries)),
+            coverage_unit="collectors",
         ),
     )

@@ -79,6 +79,21 @@ A change is done when all of the following are true.
 Reading your own code back is not evidence. Running the test and pasting the
 output is evidence.
 
+`make verify` runs the backend tests, the frontend unit tests, a web build and
+the Playwright journeys, in that order. The journeys depend on the build
+because `vite preview` serves `dist` and does not build it: without that
+prerequisite they pass against whatever was last built, which on 2026-10-04 was
+a bundle seven hours older than the source and containing none of the interface
+work it was reporting as sound.
+
+The backend tests are every backend test, integration included, so `make
+verify` needs Docker: the database fixture starts a PostgreSQL container and
+migrates it. It was the not integration subset until 2026-09-06, which left 211
+tests outside the gate, and both ISS-175 and ISS-177 lived in exactly that gap.
+`make test-unit` is the offline subset for a fast loop, and neither slice
+reports coverage, because a fraction of the suite measured against the whole
+suite's threshold is a number that cannot be read.
+
 ## Architectural constraints
 
 These are not style preferences. Breaking them costs a rewrite.

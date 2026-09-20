@@ -14,9 +14,22 @@ import type { SurfaceState } from './surfaceState';
 export interface StateBoundaryProps {
   readonly state: SurfaceState;
   readonly children: ReactNode;
+  /**
+   * Set only where the same coverage claim is already made, once, somewhere the
+   * reader cannot miss it. Four tiles summarising one partially read estate
+   * otherwise repeat an identical sentence four times, and announce it four
+   * times to a screen reader, which buries the claim rather than making it.
+   * It suppresses the sentence and never the rows: the data still renders, and
+   * a surface that sets this while showing coverage nowhere is a bug.
+   */
+  readonly coverageShownElsewhere?: boolean;
 }
 
-export function StateBoundary({ state, children }: StateBoundaryProps) {
+export function StateBoundary({
+  state,
+  children,
+  coverageShownElsewhere = false,
+}: StateBoundaryProps) {
   switch (state.kind) {
     case 'loading':
       return (
@@ -49,9 +62,11 @@ export function StateBoundary({ state, children }: StateBoundaryProps) {
     case 'partial':
       return (
         <div data-testid="state" data-state="partial">
-          <p role="status">
-            {state.missing} missing. {state.reason}
-          </p>
+          {coverageShownElsewhere ? null : (
+            <p role="status">
+              {state.missing} missing. {state.reason}
+            </p>
+          )}
           {children}
         </div>
       );

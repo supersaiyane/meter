@@ -36,6 +36,10 @@ A query with no resolvable owner is reported as unowned rather than assigned to 
 
 `query_finding.owner_email` and `owner_source`, so a reader can see which of the three sources produced it. See [P2 spec](../specs/2026-08-23-p2-query-cost-governance-design.md) section 7.1.
 
+## Read surface
+
+The API sends `owner` as null when nothing resolved it, never the word `unattributed`. The screen renders that word. Putting it on the wire would make it untranslatable, would sort among real addresses, and would be indistinguishable from a mailbox somebody had actually created.
+
 ## Not doing
 
 Does not create or manage teams. The folder mapping is entered, not derived.

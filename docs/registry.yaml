@@ -20,9 +20,9 @@ subprojects:
   depends_on: none
 - id: P1
   name: Cost Intelligence
-  status: Not started
-  spec: ''
-  plan: ''
+  status: Cost surface delivered, 13 of 13 tasks. Anomalies, commitments and the export are a second cut and are not started
+  spec: docs/specs/2026-09-18-p1-cost-intelligence-design.md
+  plan: docs/plans/P1-implementation-plan.md
   depends_on: P0
 - id: P2
   name: Query Cost Governance
@@ -178,31 +178,31 @@ features:
 - id: FEAT-020
   name: CUR 2.0 ingest with resource identifiers and split cost allocation
   subproject: P1
-  status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P1'
+  status: In build
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 5 and 7'
   doc: docs/features/FEAT-020-cur-focus-ingest.md
 - id: FEAT-021
   name: Cost rollups, trends and per resource attribution
   subproject: P1
-  status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P1'
+  status: In build
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 8 and 9'
   doc: docs/features/FEAT-021-cost-rollups-and-trends.md
 - id: FEAT-022
   name: Allocation, showback and the unallocated bucket
   subproject: P1
-  status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P1'
+  status: In build
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 9'
   doc: docs/features/FEAT-022-allocation-and-showback.md
 - id: FEAT-023
   name: Anomaly detection and ingest of AWS Cost Anomaly Detection
   subproject: P1
-  status: Planned
+  status: Specified
   detail: '[roadmap](docs/01-ROADMAP.md) P1'
   doc: docs/features/FEAT-023-cost-anomaly-detection.md
 - id: FEAT-024
   name: Savings Plan and Reserved Instance utilization and coverage
   subproject: P1
-  status: Planned
+  status: Specified
   detail: '[roadmap](docs/01-ROADMAP.md) P1'
   doc: docs/features/FEAT-024-commitment-coverage.md
 - id: FEAT-025
@@ -326,9 +326,9 @@ features:
   detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md)'
   doc: docs/features/FEAT-044-blast-radius-scoring.md
 - id: FEAT-045
-  name: Chargeback and showback export, CSV and Excel
+  name: Chargeback and showback export, CSV
   subproject: P1
-  status: Planned
+  status: Specified
   detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md)'
   doc: docs/features/FEAT-045-chargeback-export.md
 - id: FEAT-046
@@ -361,6 +361,12 @@ features:
   status: Delivered
   detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md)'
   doc: docs/features/FEAT-050-visual-honesty-system.md
+- id: FEAT-051
+  name: Ad hoc query detection
+  subproject: P2
+  status: Specified
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md)'
+  doc: docs/features/FEAT-051-adhoc-query-detection.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -436,8 +442,16 @@ adrs:
   doc: docs/adr/ADR-0018-zero-fixable-not-zero-findings.md
 - id: ADR-0019
   decision: Headless component behaviour, our own visual layer
-  status: Accepted
+  status: Accepted, styling row superseded by ADR-0021
   doc: docs/adr/ADR-0019-headless-components-own-visual-layer.md
+- id: ADR-0020
+  decision: Seven fixed navigation groups, and the routes they fix
+  status: Accepted
+  doc: docs/adr/ADR-0020-seven-fixed-navigation-groups.md
+- id: ADR-0021
+  decision: Plain CSS over a utility framework, against our own tokens
+  status: Accepted
+  doc: docs/adr/ADR-0021-plain-css-over-a-utility-framework.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'
@@ -951,7 +965,811 @@ changes:
     ports of one kind
   commit: 'd86bfe1'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+- id: CHG-0072
+  date: '2026-09-06'
+  type: Process
+  what: User interface architecture written, closing the gap where the product had a visual system
+    and no information architecture. Seven fixed navigation groups replace the flat five section
+    list, every route is fixed and recorded as ADR-0020, the home screen is a trust strip above the
+    money, and screens are built against a typed fixture before their route exists so a sub project
+    is visible while it is being built rather than after
+  commit: '9687fd7'
+  detail: '[docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md)'
+- id: CHG-0073
+  date: '2026-09-06'
+  type: Process
+  what: The interface architecture planned. Three tasks added to the P0 plan for routing, the
+    fixture seam and the home screen, and TASK-P2-022 split into four screen tasks in a new wave K
+    that does not wait for wave J. Screens are now built against typed fixtures and marked on
+    screen as such, so P2 is reviewable while it is being built rather than at task 21 of 22
+  commit: '9687fd7'
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md), [P2 plan](docs/plans/P2-implementation-plan.md)'
+- id: CHG-0074
+  date: '2026-09-07'
+  type: Feature
+  what: TASK-P0-036, the seven navigation groups and the route migration. Five screens moved from a
+    five entry state machine to routes carrying their group. An unbuilt screen is listed with the
+    sub project that brings it, and a wrong address renders differently from one merely unbuilt.
+    react-router admitted at rung two of ADR-0013. AppShell lost its section and onSelect props
+  commit: '295f032'
+  detail: '[ADR-0020](docs/adr/ADR-0020-seven-fixed-navigation-groups.md)'
+- id: CHG-0075
+  date: '2026-09-09'
+  type: Feature
+  what: TASK-P0-037, the fixture seam and its marker. A screen is built against a typed fixture
+    before its route exists and renders a visible FIXTURE DATA band, not gated on a build flag. A
+    failing route raises rather than falling back to invented numbers. The declared set holds route
+    templates so a parameterised detail path matches, and tests/api/test_fixture_surfaces.py fails
+    the build when one becomes a live route, discovering route modules rather than listing them
+  commit: 'bf90690'
+  detail: '[docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md) section 11'
+- id: CHG-0076
+  date: '2026-09-11'
+  type: Feature
+  what: TASK-P0-038, the home screen. Meter's own cost on the front page and nowhere else, per
+    architectural constraint 7. The screen owns no data of its own and a test asserts it requests
+    only what PlatformScreen already requests. An unfilled slot names the sub project that will
+    fill it and renders no figure and no currency, which makes the front page the progress view.
+    P0 reaches 38 of 38 tasks, which is not the same as P0 being signed off
+  commit: '623b2a3'
+  detail: '[docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md) section 6'
+- id: CHG-0077
+  date: '2026-09-13'
+  type: Feature
+  what: TASK-P2-022, the query findings screen. The first fixture backed surface, ranked by monthly
+    cost sorted as decimals, with the reason as a column of prose rather than a tooltip so it
+    survives a screenshot. Fixture data moved to src/api/fixtures because the screen imports it and
+    it ships to a browser. An unrecognised provenance renders as modelled, the only direction that
+    does not overclaim. Scanned volume reported in MiB after GiB rounded a real scan to zero
+  commit: '29676ef'
+  detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-022'
+- id: CHG-0078
+  date: '2026-09-15'
+  type: Feature
+  what: TASK-P2-023, the finding detail screen. Publishes the query, the target, the engine and the
+    formula with its inputs substituted. The fixture arithmetic did not reconcile, 5,184 dollars of
+    working printed under a headline of 12,400, and a screen whose purpose is that the sum can be
+    checked must not fail when checked. Corrected, and a test now derives each cost from its own
+    inputs and asserts the list and the detail quote the same figure. The first surface where the
+    declared template and the fetched path differ
+  commit: '1f34786'
+  detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-023'
+- id: CHG-0079
+  date: '2026-09-17'
+  type: Feature
+  what: TASK-P2-024, the query surfaces screen. An instance Meter could not read is listed with its
+    typed cause and no numeral, beside a reachable instance holding a genuine zero, so the two
+    cannot be mistaken for each other. All three fixture instances are managed_grafana rather than
+    one per SurfaceKind as planned, because the other two kinds were descoped as TASK-P2-007 and
+    008 and a fixture claiming them would show an estate that cannot exist
+  commit: '92e2eea'
+  detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-024'
+- id: CHG-0080
+  date: '2026-09-19'
+  type: Feature
+  what: TASK-P2-025, the enforcement screen and the P2 journey, left Partly rather than Done.
+    Revoke is absent rather than disabled when the API says an action is not revocable, and on a
+    fixture backed screen it says it did nothing rather than failing silently. Expiry carries an
+    absolute stamp with its date and a countdown together, after a bare time made a control applied
+    three days ago read as one applied this morning. The journey criterion needs the workspace
+    floor and the undo from TASK-P2-017 and 019, which this task never depended on
+  commit: 'a9ac9d7'
+  detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-025'
+- id: CHG-0081
+  date: '2026-09-21'
+  type: Feature
+  what: TASK-P0-039, the visual layer, closing ISS-138. One stylesheet against the tokens that
+    already existed, with zero component or screen files touched, which is the property ADR-0021
+    was decided on. Contrast is computed from the declared tokens rather than trusted, because axe
+    cannot measure it in jsdom and every existing axe assertion had been passing without looking at
+    a colour. ROW_HEIGHT moved from 28 to 32 to agree with the CSS. P0 reaches 39 of 39 tasks
+  commit: 'd5c8cdc'
+  detail: '[ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md)'
+- id: CHG-0082
+  date: '2026-09-18'
+  type: Design
+  what: P1 cost surface design specification written, fifteen sections. Covers FEAT-020,
+    FEAT-021 and FEAT-022 against a fake adapter and explicitly not anomalies, commitments or
+    the export. The schema it writes to was already migrated by P0, so it adds no migration
+  commit: '0000929'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md)'
+- id: CHG-0083
+  date: '2026-09-18'
+  type: Design
+  what: P1 implementation plan written, 13 tasks in five waves, each carrying the anti
+    hallucination fields. The sub project list in scripts/docs/sync.py was a literal and did
+    not mention P1, so it is derived from the plan files present now and a test holds it there
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md)'
+- id: CHG-0084
+  date: '2026-09-18'
+  type: Correction
+  what: TASK-P1-001. BillingPeriod, CostMeasure and CostTotal added to the domain. The port the
+    task said to create already existed from P0 and is unchanged, which is ISS-180. The billing
+    period end is exclusive, which the fixtures assumed and nothing had written down
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-001'
+- id: CHG-0085
+  date: '2026-09-18'
+  type: Design
+  what: TASK-P1-002. A fake cost estate of 2,100 rows across three billing periods, the newest
+    of them a part month. Untagged rows are 22 percent of the closed period, services differ in
+    size so a ranking ranks, and the account Meter cannot assume a role into is on the bill
+    because the bill comes from the payer. source_fingerprint moved into finops_core so the
+    fake and the collector cannot disagree about a line item's identity
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-002'
+- id: CHG-0086
+  date: '2026-09-18'
+  type: Design
+  what: TASK-P1-003. AthenaCostExport written and unproved, with five settings for the export
+    location. A period is returned whole or not at all, because a short list is
+    indistinguishable to the collector from a month where charges were retracted. The contract
+    suite gained a cost export and immediately caught the fake using a fingerprint the
+    collector could never produce
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-003'
+- id: CHG-0087
+  date: '2026-09-18'
+  type: Design
+  what: TASK-P1-004. The cost collector writes cost_focus_daily, idempotently, one billing
+    period at a time. CollectorContext gained run_id from the ledger's claim, because rows
+    carry it in a NOT NULL column and the restatement pass deletes on it. Partitions are not
+    created here on purpose, so a missing one is refused by the database rather than worked
+    around
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-004'
+- id: CHG-0088
+  date: '2026-09-18'
+  type: Design
+  what: TASK-P1-005. The cost collector removes what the provider withdrew, keyed on the run id
+    rather than a clock and scoped to one tenant and one billing period. Removing the guard to
+    test it showed the comment was wrong, the worker's transaction protects the half read case
+    and the ordering is a second independent guard, so the claim was corrected and a test that
+    can actually see the ordering was added
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-005'
+- id: CHG-0089
+  date: '2026-09-19'
+  type: Design
+  what: TASK-P1-006 to TASK-P1-012. One shared monthly aggregate, the collector's cadence as a
+    row, the guard rule corrected on two cost tables, a repository, four routes, two screens
+    and a seeded estate. The cost surface is live end to end against a fake export
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) waves B to D'
+- id: CHG-0090
+  date: '2026-09-19'
+  type: Design
+  what: TASK-P1-013. The export bucket, Glue database and Athena workgroup in the hub stack.
+    The workgroup enforces the result location and a bytes scanned cutoff, which is what stops
+    an unpruned query scanning the whole table at full price. Validated and never applied,
+    ISS-122. The scan's one finding, no access logging on the new bucket, was fixed rather
+    than allowlisted. P1's cost surface is 13 of 13
+  commit: pending
+  detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-013'
 issues:
+- id: ISS-164
+  severity: MEDIUM
+  summary: security/reports/latest is a committed symlink and the scan script wrote it as an
+    absolute path, so it stored the author's own home directory in the repository and resolved on
+    exactly one machine. Fixed 2026-09-13 by linking to the basename, which is correct because the
+    link sits in the directory it points into
+  status: FIXED
+  detail: '`scripts/security/scan.sh`'
+- id: ISS-165
+  severity: LOW
+  summary: Timestamped scan report directories accumulate in the working tree and 21 of them are
+    committed, one per change that ran a scan. A local session that runs the scan a dozen times
+    leaves a dozen more untracked, so git status is permanently noisy and the audit trail the
+    tracked ones were meant to be is diluted by iteration output. The durable record is
+    security/POSTURE.md, which is generated and tracked. Whether the timestamped directories belong
+    in the repository at all is a decision for whoever owns the security posture, and is left open
+    rather than changed unilaterally
+  status: OPEN
+  detail: '`security/reports/`, `.gitignore`'
+- id: ISS-167
+  severity: MEDIUM
+  summary: FEAT-017 requires the owner of a rewritten panel to be told what changed and how to
+    undo it, and Meter has no notification transport at all. No mail sender, no webhook, no queue
+    consumer for one, and no decision recorded about which it should be. Building one for this
+    task would ship a new subsystem without that decision, so the rewrite records applied_by and
+    the change is discoverable, and the notification waits for somebody to choose a channel
+  status: OPEN
+  detail: '`finops_ingest/remediation.py`, FEAT-017'
+- id: ISS-168
+  severity: HIGH
+  summary: There was no deployment procedure. docs/04-DEPLOYMENT.md explained why Terraform
+    performs the deploy, why the images are amd64 and what the stack costs, and never said what to
+    run or in what order. Nothing described creating the IAM roles, activating trusted access
+    between Organizations and CloudFormation, creating the state bucket, generating the external
+    id, or which of the three stacks to apply first. Nothing described onboarding an account
+    either. Somebody trying to deploy this had the reasoning and none of the steps. Fixed
+    2026-09-17 with docs/runbooks/deploy.md and docs/runbooks/onboard-account.md, both of which
+    say plainly that they have never been executed
+  status: FIXED
+  detail: '`docs/runbooks/deploy.md`, `docs/runbooks/onboard-account.md`'
+- id: ISS-169
+  severity: MEDIUM
+  summary: The engine had two spellings for one fact and nothing compared them. The classifier
+    produces logs_insights and the database constraint ck_query_definition__engine_valid stores
+    LOGS_INSIGHTS, so the CI gate's rule, applied to a stored row, matched neither and found no
+    violation anywhere. Caught 2026-09-05 by a remediation route refusing a finding that plainly
+    breaks the rule. Normalised at the point the API reads the row, and the same mismatch is worth
+    looking for wherever else a stored engine meets a classifier constant
+  status: FIXED
+  detail: '`finops_api/routes/query.py`, _violates'
+- id: ISS-188
+  severity: LOW
+  summary: Top movers has no feature and no owner. It stood on the home screen as a slot
+    claiming to arrive with P1 Cost Intelligence, and P1 has now landed without it, so the
+    claim was false rather than merely unfulfilled. The slot was removed rather than
+    reattributed, because naming a sub project that has shipped is a promise nobody is
+    keeping and an empty panel is more honest than a wrong one. Found 2026-09-20 during the
+    design pass for TASK-P1-020, by reading the home screen at 1440px and noticing that
+    three of its four absences pointed at a sub project the reader could already open.
+    The question this leaves open is whether top movers is wanted at all. The by service
+    screen ranks by money and a movers view ranks by change, which is a different question
+    with its own baseline problem, and nobody has decided it is worth answering
+  status: OPEN
+  detail: '`finops-web/src/screens/HomeScreen.tsx` ABSENT'
+- id: ISS-187
+  severity: MEDIUM
+  summary: scope_coverage reports a narrowed reader as complete. build_meta takes its total
+    from AccountRepository.count_in_organization, which is itself scoped, so a reader entitled
+    to two accounts of three hundred is told two of two and is_partial is false. The field
+    exists so that a partial view is never presented as an organization total, which is what
+    local-auth.yaml says it is for, and as built it cannot do that. Every route is affected
+    equally, so no screen is inconsistent with another, which is why this was never noticed.
+    Found 2026-09-20 while fixing the anomalies banner for TASK-P1-020, by writing an
+    assertion that a narrow reader sees is_partial true and watching it fail on the summary
+    route as well. Deliberately not fixed in P1's second cut, because changing what total
+    means changes every screen's banner at once and the demo is the wrong moment for that.
+    The fix is for count_in_organization to count the organization rather than the scope,
+    which needs a read that deliberately ignores the scope and therefore needs its own
+    justification in guards.py
+  status: OPEN
+  detail: '`finops_api/routes/__init__.py` build_meta, and `finops_api/db/repositories/accounts.py`'
+- id: ISS-186
+  severity: LOW
+  summary: A demo database seeded once holds anomaly verdicts for one day only, because
+    CostAnomalyCollector judges the most recent day with data and nothing backfills the rest.
+    In production it has run every day and has a verdict for each, so the screen fills up over
+    time. A freshly seeded demo shows one finding, which is enough to demonstrate the feature
+    and is not what a real installation looks like after a fortnight. Found 2026-09-20 while
+    placing the fake estate's spike for TASK-P1-019, which had to go on the last billed day for
+    exactly this reason. The fix is for the seed to run the detector once per day of history,
+    passing a clock per day, which is what production does over time anyway. Low because the
+    demo works and the limitation is written into the fixture beside the constant that causes it
+  status: OPEN
+  detail: '`finops_providers/fake/cur.py` SPIKE_DAYS_BACK, and `scripts/ops/seed_demo.py`'
+- id: ISS-184
+  severity: HIGH
+  summary: cost_focus_daily and cost_focus_monthly sat in SCOPED_TABLES with the rule None,
+    which means the tenant filter was the whole of their scoping and the account a charge
+    belongs to was never consulted. Both tables carry sub_account_id. A viewer entitled to two
+    accounts would have been served the whole organization's bill by the first route over
+    them. It never leaked, because nothing read the tables until 2026-09-19, and that is luck
+    rather than design. Found while writing the repository for TASK-P1-008, by reading the
+    guard table before adding to it rather than after. Fixed the same day as ByAccount on
+    sub_account_id, and three tests were watched failing against the old rule before it was
+    changed back. A charge with no sub account, which is a payer level line item, matches
+    nothing under a narrow scope and stays visible to a global one, which is ByAccount's
+    documented behaviour and is right here
+  status: FIXED
+  detail: '`finops_api/guards.py` SCOPED_TABLES, and `tests/api/test_cost_repository.py`'
+- id: ISS-183
+  severity: MEDIUM
+  summary: The cost collector reads only the latest available billing period, so a restatement
+    of a closed month is never picked up. AWS can restate a closed period and the specification
+    says so in section 7, which describes a closed period being re read daily for a week and
+    then weekly. That policy is not implemented. The retraction and upsert machinery is all
+    there and would handle it correctly the moment a closed period is read, so the gap is which
+    periods the collector asks for rather than what it does with them. Found 2026-09-19 while
+    writing the cadence row for TASK-P1-007, because ScheduleEntry carries one interval per
+    collector and cannot express two. The consequence is a month that closes slightly wrong and
+    stays that way
+  status: OPEN
+  blocks: 'Nothing today. It is a correctness gap against a real export, and there is no real
+    export yet, ISS-122'
+  detail: '`finops_ingest/collectors/cost_focus.py`, the latest_available_period call, and
+    section 7 of `docs/specs/2026-09-18-p1-cost-intelligence-design.md`'
+- id: ISS-182
+  severity: MEDIUM
+  summary: Nothing in production assembles a collector registry. CollectorRegistry exists, the
+    dispatcher and the worker both take one, register_retention adds six to it, and the only
+    callers of register are tests. The seed constructs collectors directly and never uses the
+    registry at all, so the path the dispatcher and worker were written for has no entry point
+    and has never run end to end outside a test. Found 2026-09-18 while looking for where to
+    register the cost collector, which is why TASK-P1-004 deliberately registers nothing rather
+    than adding a line nobody reads. Pre existing and not caused by P1
+  status: OPEN
+  blocks: 'Running ingestion in a deployed task. Not the local stack, which seeds directly'
+  detail: '`finops_ingest/registry.py`, `finops_ingest/dispatcher.py`, `finops_ingest/worker.py`
+    and `scripts/ops/seed_demo.py`'
+- id: ISS-181
+  severity: MEDIUM
+  summary: AthenaCostExport materializes a whole billing period before returning it, so a large
+    organization's month is held in memory at once. The alternative is streaming, and streaming
+    cannot be made safe without the port being able to say whether a period was read completely.
+    A generator that yields half a month and then raises is indistinguishable to the collector
+    from a month where those charges were retracted, and the collector deletes on exactly that
+    difference. Correctness was chosen over memory deliberately on 2026-09-18 and this records
+    the ceiling rather than pretending it is not there. Nothing has measured it, because nothing
+    has run against a real export. Revisit when ISS-122 closes and the size of a real month is
+    known rather than guessed
+  status: OPEN
+  blocks: 'Nothing today. It is a ceiling on the size of estate this adapter can read'
+  detail: '`finops_providers/aws/cur.py`, read_period, and the module docstring'
+- id: ISS-180
+  severity: LOW
+  summary: The P1 specification and implementation plan were written from the roadmap and the
+    specification without auditing what P0 had already delivered, so wave A overstates what is
+    missing. finops_core/ports/cost.py already existed with latest_available_period and
+    read_period, and it is better than what the plan proposed because it separates an export
+    that has published nothing from one that is missing and it names SchemaDrift. FakeProvider
+    already implements that port against a four row fixture. Found 2026-09-18 on the first
+    line of TASK-P1-001, by reading the file the plan said to create. Corrected the same day in
+    both documents rather than building a second port beside the first. The cost was small
+    because the plan's own contract says to stop at a disagreement with reality, and the lesson
+    is that a plan written from documents should be checked against the tree before its first
+    task, not during it
+  status: FIXED
+  detail: '`docs/specs/2026-09-18-p1-cost-intelligence-design.md` section 4,
+    `docs/plans/P1-implementation-plan.md` TASK-P1-001 and TASK-P1-002'
+- id: ISS-179
+  severity: MEDIUM
+  summary: No pipeline run has ever been observed. The repository has no git remote, so
+    .gitlab-ci.yml has never executed, and every statement in this repository about what CI
+    does is a reading of the file rather than a result. Found 2026-09-06 while chasing a
+    variable in the test job, which turned out to be decoration, see ISS-178. Nothing here is
+    known to be wrong. The point is that nothing here is known to be right either, and the
+    first push will be the first run, so it should be treated as a first run and watched
+    rather than trusted
+  status: OPEN
+  detail: '`.gitlab-ci.yml`, and any document that describes what the pipeline does'
+- id: ISS-178
+  severity: MEDIUM
+  summary: The CI test job could not have run an integration test. It declared a PostgreSQL
+    service and a METER_DATABASE_URL beside it, and nothing in the test path read either. The
+    settings fixture builds from .env.example, and the database fixture started a
+    testcontainer regardless, which python 3.13 slim has no Docker socket to do. Both were
+    decoration, and the integration tests would have errored on every run. Found 2026-09-06
+    by asking what the variable was for. Fixed the same day. The fixture now runs against a
+    database it is given through METER_TEST_DATABASE_URL, falling back to a testcontainer,
+    and the job sets that. The name is deliberately not METER_DATABASE_URL, which is in every
+    .env and in the shell of anybody who has run make seed, and the fixture refuses a host
+    that is not local because it migrates the database and writes to it
+  status: FIXED
+  detail: '`tests/conftest.py`, the engine fixture, and the test job in `.gitlab-ci.yml`'
+- id: ISS-177
+  severity: HIGH
+  summary: The ad hoc query list reported one query once per day audited, and its cost that
+    many times over. query_adhoc keeps one row per query per account, region and day, the
+    same shape query_finding has, and most_expensive never filtered on the day. This is
+    ISS-175 on the table that fix did not reach. Found 2026-09-06 by seeding seven days and
+    reading the screen, which showed 14 rows for 2 queries and 356 runs where the newest day
+    had 57. One seeded day hides it completely. The route had no test at all, which is what
+    let a known bug reappear on a second table. Fixed the same day, the predicate is now one
+    function both repositories call, named per table because getting the identity columns
+    wrong drops rows silently rather than failing
+  status: FIXED
+  detail: '`finops_api/db/repositories/query.py`, latest_audit_only, and `tests/api/test_query_routes.py`'
+- id: ISS-176
+  severity: LOW
+  summary: make unseed failed on a foreign key and could not remove the demo estate.
+    query_adhoc was added in TASK-P2-026 and not added to DEMO_TABLES, so the teardown
+    deleted everything else and then could not delete the tenant. The command reported an
+    error and left a half removed estate behind. Found 2026-09-06 by running unseed, not by
+    any test, because nothing derived the teardown list from the schema. Fixed the same day,
+    and a test now derives every tenant scoped table from the model metadata and requires
+    each to be either torn down or declared as never seeded, so the next table added is
+    caught the day it is added rather than the day somebody unseeds
+  status: FIXED
+  detail: '`scripts/ops/seed_demo.py`, DEMO_TABLES, and `tests/scripts/test_seed_demo.py`'
+- id: ISS-175
+  severity: HIGH
+  summary: The findings list and the grouped view returned every audited day rather than
+    each query's latest, so a finding appeared once per day the collector had run and the
+    group sums added those days together. The estate's reported cost therefore grew by one
+    estate per day. It was invisible for as long as the seeded estate held a single day of
+    history, and became visible the moment a second existed, which is also what made the
+    trend in ISS-172 possible. The front page read $5,088 for a group whose true cost was
+    $2,544. Found 2026-09-06 while adding the sparkline column, by reading the rendered
+    table rather than by any test. Fixed the same day by confining both reads to each
+    query's most recent run date, per query rather than one global maximum so a query that
+    stops being audited keeps its last known state
+  status: FIXED
+  detail: '`finops_api/db/repositories/query.py`, ranked and grouped, via _latest_only'
+- id: ISS-174
+  severity: LOW
+  summary: The ad hoc screen cannot tell an estate with no hand run queries from one whose
+    evidence could not be read. Both render as an empty table. `_observations` in the query
+    audit collector catches a CollectionError and returns None so the run continues, which
+    is correct for the findings, because a modelled estate is still worth reporting and an
+    aborted one is not. It leaves nothing for this screen to read. The fix is to record the
+    evidence failure as a typed failure on the envelope, which is a change to the
+    collector's error path rather than to the screen. Found 2026-09-06 while writing
+    TASK-P2-026, and left as the one acceptance criterion that task did not meet. Fixed
+    2026-09-06 by recording the failure through the run ledger, the same table and the
+    same path an unreachable workspace uses, so it reaches the trust strip on every
+    envelope rather than only this screen, and clears when the scope recovers. That also
+    surfaces the reason every figure had quietly stayed modelled, which was invisible for
+    the same reason
+  status: FIXED
+  detail: '`finops_ingest/collectors/query_audit.py`, _observations, and
+    `finops-web/src/screens/QueryAdhocScreen.tsx`'
+- id: ISS-171
+  severity: MEDIUM
+  summary: Ad hoc query detection was in the prototype and is in neither the P2 spec nor the
+    code. The prototype's extract_adhoc_queries and its own report tab found Logs Insights
+    queries run directly by a person, from no dashboard and no alert rule, and named the
+    caller from CloudTrail. Those are the queries nobody owns, and a one off thirty day scan
+    costs real money, appears on no dashboard, and Meter as built cannot see it at all.
+    The word adhoc appears zero times in the spec and in zero source files, and section 3
+    of the spec does not list it as out of scope either, so this was never deferred to a
+    later sub project. It fell through the gap between the prototype and the specification
+    written from it. Found 2026-10-11 by mapping the restored prototype against what P2
+    delivered
+  status: OPEN
+  detail: '`docs/reference/sample_lambda.py.txt`, extract_adhoc_queries and build_adhoc_tab.
+    Needs a CloudTrail read the AWS adapter does not make yet'
+- id: ISS-172
+  severity: MEDIUM
+  summary: Meter has no memory of what a finding cost last week. The prototype saved a
+    snapshot per run, loaded its own history and computed trends and a rogue cost from it,
+    so a reader could see whether a workspace was getting worse. P2 has no snapshot table,
+    no history and no trend, the word trend appears zero times in the spec, and section 3
+    does not place it out of scope. Every figure the product shows is the present moment.
+    A cost governance tool that cannot say a query got more expensive can report a problem
+    and not that somebody caused it. Found 2026-10-11 by mapping the restored prototype
+    against what P2 delivered
+  status: OPEN
+  detail: '`docs/reference/sample_lambda.py.txt`, build_snapshot, save_snapshot, load_history,
+    compute_trends and compute_rogue_cost. Needs a table and a retention decision, and
+    overlaps P1 which owns trend for spend. Fixed 2026-09-06, and smaller than it read:
+    query_finding upserts on tenant, query and run_date, so the audit had been writing one
+    row per query per day since it was built and nothing ever read them. The history is a
+    side effect of idempotency rather than something anybody had to build. Scoped to a
+    finding rather than to spend, which keeps it clear of P1: whether one query costs more
+    this week is a governance question, and what an account spends is not'
+- id: ISS-173
+  severity: LOW
+  summary: The P2 specification was written from the prototype and never recorded what it
+    chose to leave behind. Section 3 lists four things as out of scope, all of them whole
+    sub projects or engines, and none of the prototype's own capabilities. Two features
+    were dropped silently as a result, ISS-171 and ISS-172, and neither was visible as
+    missing until the prototype was restored and read side by side with the delivered
+    work. The gap is process rather than code, because a specification derived from a working
+    thing should enumerate what it declines to carry over. Found 2026-10-11
+  status: OPEN
+  detail: '`docs/specs/2026-08-23-p2-query-cost-governance-design.md` section 3, and
+    `docs/reference/README.md` which now holds the prototype it was derived from'
+- id: ISS-170
+  severity: MEDIUM
+  summary: get_settings loaded configuration from the environment unconditionally, so create_app's
+    settings argument was a lie for every route that took the dependency. The application was
+    assembled with one configuration and its routes answered from another, which is two sources
+    for one fact and was invisible until a test needed a non default write level. Fixed 2026-09-05
+    by preferring what the application was built with
+  status: FIXED
+  detail: '`finops_api/deps.py`, get_settings'
+- id: ISS-166
+  severity: MEDIUM
+  summary: The AMG adapter reads a workspace refresh floor and refuses to write one. The read is
+    implemented and exercised; the write raises NotOptedIn naming this issue, because no AWS
+    workspace has ever been reachable to test a write against, per ISS-122, and an untested write
+    into somebody's Grafana is the one thing FEAT-014 must not ship. The fake surface implements
+    the write end to end, so the guard, the recording and the undo path are all exercised. What is
+    missing is one adapter method and a workspace to run it against once
+  status: OPEN
+  detail: '`finops_providers/grafana/amg.py`, set_refresh_floor'
+- id: ISS-158
+  severity: HIGH
+  summary: The demo estate covered only the query tables, so five of the six built P0 screens had
+    nothing to render and could not be assessed or verified at all. The seed now runs all four
+    collectors, org tree then role health then platform cost then query audit, through the real
+    run ledger, so the ingest and freshness screens fill from the same act of seeding rather than
+    needing a second fixture that agrees with the first by hand. It also installs the default
+    schedule, without which every collector read "not scheduled" and therefore "stale" one minute
+    after it ran. Fixed 2026-09-12
+  status: FIXED
+  detail: '`scripts/ops/seed_demo.py`, `finops_providers/fake/health.py`,
+    `finops_providers/fake/platform_cost.py`'
+- id: ISS-159
+  severity: HIGH
+  summary: The ingest screen could never show a run. `build_meta` derives freshness from an
+    `as_of` column, `ingest_run` has none, so the envelope carried two nulls and the screen
+    reported the collector as never having run while listing its runs. The same route also
+    compared its run count to the account count and reported "8 of 8 accounts" over a five account
+    estate. Fixed 2026-09-12 by taking the timestamps from the newest run, which is a log and is
+    as fresh as its last entry, and by counting runs. Freshness counts collectors and platform
+    cost counts modules, both of which had the same wrong noun
+  status: FIXED
+  detail: '`finops_api/routes/ingest.py`, `finops_api/routes/platform.py`'
+- id: ISS-160
+  severity: MEDIUM
+  summary: A sparkline whose series never changes drew every point on the floor, because
+    normalising a series with no range divides by a span of zero and the fallback put everything
+    at the minimum. A module costing the same amount every day for thirty days therefore drew the
+    same line as one costing nothing. Fixed 2026-09-12 by drawing a flat series down the middle,
+    and the component now has tests, which it did not before
+  status: FIXED
+  detail: '`finops-web/src/components/Sparkline.tsx`'
+- id: ISS-161
+  severity: LOW
+  summary: The fake account and organization fixtures carry a fixed observation date, which is
+    right for a test asserting a value and wrong for a demo estate. Two screens read as five days
+    stale beside four reading as current, in one estate seeded in one act. The fake provider and
+    the fake role health now accept the time they are observed at, restamping the fixtures rather
+    than replacing them. Fixed 2026-09-12
+  status: FIXED
+  detail: '`finops_providers/fake/provider.py`, `finops_providers/fake/health.py`'
+- id: ISS-162
+  severity: MEDIUM
+  summary: The organization tree drew every node at the same left edge, so the one thing the
+    screen exists to show, the shape of the organization, was invisible. React Aria stamps
+    `--tree-item-level` on each row and leaves the indent to the stylesheet, and the first attempt
+    put it on the cell, which draws no box at all because it is display contents, so its padding never rendered.
+    Fixed 2026-09-12 on the row. The node kind is now a muted label beside the name rather than a
+    word appended to it, which read as `platform ou`
+  status: FIXED
+  detail: '`finops-web/src/layout.css`, `finops-web/src/components/OrgTree.tsx`'
+- id: ISS-163
+  severity: MEDIUM
+  summary: The freshness screen listed watermarks, and a watermark only exists after a collector
+    has succeeded once. A scope that had never succeeded was therefore absent from the page rather
+    than shown as never collected, so the one collector in trouble was the one the freshness
+    screen did not mention. Fixed 2026-09-13. The page now lists every pair that has been
+    attempted, the union of watermarks and runs, and carries three states rather than two, because
+    a collector that has never worked is not a stale one. Its age is null rather than zero, since
+    a zero reads as collected this instant, and the row names the typed cause of its last attempt.
+    is_stale is now derived from the state rather than set beside it
+  status: FIXED
+  detail: '`finops_api/routes/ingest.py`, `finops_api/db/repositories/ingest.py`,
+    `finops-web/src/screens/FreshnessScreen.tsx`'
+- id: ISS-155
+  severity: HIGH
+  summary: Every figure inside a table rendered its own provenance sentence and its own two
+    timestamps, so a three figure row carried three copies of the same `as of` line and the phrase
+    `accuracy not yet published`. Rows were about 90 px against the 32 px the design asks for, and
+    the findings table ran 1297 px wide inside a 1147 px container on a 1440 px screen, which put
+    monthly cost, the sort column and the point of the screen, off the right edge. Fixed
+    2026-09-11 with a density context that DataTable sets and Figure reads, so a table added later
+    is dense without its author knowing the mechanism exists
+  status: FIXED
+  detail: '`finops-web/src/components/density.ts`, `finops-web/src/components/Figure.tsx`'
+- id: ISS-156
+  severity: MEDIUM
+  summary: The trust strip sat inside the sidebar column rather than as a band above the content,
+    so on a 1440 px screen the freshness line fell below the fold and the page lost the one
+    statement that says what its numbers are worth. Section 8 of docs/13-UI-ARCHITECTURE.md asks
+    for one band, full width, above everything. Fixed 2026-09-11
+  status: FIXED
+  detail: '`finops-web/src/shell/AppShell.tsx`, `finops-web/src/layout.css`'
+- id: ISS-157
+  severity: MEDIUM
+  summary: The coverage banner said `accounts` on every screen because the noun was hardcoded in
+    the component, and the query screens count workspaces. The aggregate then took the smallest
+    visible and the largest total across panels counting different things, which on Home produced
+    "Showing 0 of 3", true of nothing on the page. Fixed 2026-09-11 by carrying the counted noun
+    on scope_coverage, where the route that did the counting knows it, and by stating one line per
+    unit rather than one ratio across all of them
+  status: FIXED
+  detail: '`finops_api/schemas.py`, `finops-web/src/components/CoverageBanner.tsx`'
+- id: ISS-148
+  severity: MEDIUM
+  summary: TASK-P2-021 names eight routes and three MCP tools. Five routes now exist. The two
+    remediation routes landed 2026-09-05 once TASK-P2-019 gave them a mechanism, and they carry
+    the guard the plan asked for, refusing a finding that is not an explicit policy violation
+    because a judgement call is a recommendation rather than a remediation. Three routes remain
+    and none can be built here. Enforcement and its revoke need TASK-P2-016, parked on the AWS
+    infrastructure ISS-122 records as never provisioned, and accuracy needs FEAT-018 which needs
+    real CUR data. Two of the three MCP tools are still missing for the same reason, because each
+    would be a facade over a route that does not exist
+  status: OPEN
+  detail: '`finops_api/routes/query.py`, `finops_mcp/tools.py`'
+- id: ISS-149
+  severity: HIGH
+  summary: The local stack could never show the data it ships with. docker-compose pinned
+    METER_LOCAL_TENANT_ID to a tenant that has no row, while make seed writes a different one, so
+    every read resolved a scope for a tenant that does not exist and the first query failed on the
+    audit insert with a foreign key error rather than an empty page. Found by calling the routes
+    against the running stack, not by any test. Fixed 2026-08-29 by pointing the local stack at
+    the tenant its only data source writes
+  status: FIXED
+  detail: '`docker-compose.yml`, `.env.example`'
+- id: ISS-150
+  severity: HIGH
+  summary: The web container had no proxy for `/api`, because a deployed environment terminates
+    that path at the load balancer and the image config is written for that. Locally there is no
+    load balancer, so every screen rendered an nginx 404 where its data should be. Fixed
+    2026-08-29 with a local only overlay mounted over the image config, leaving the deployed
+    configuration untouched
+  status: FIXED
+  detail: '`docker/nginx.local.conf`, `docker-compose.yml`'
+- id: ISS-151
+  severity: HIGH
+  summary: The nginx image ships its own server block with `server_name localhost`, and nginx
+    matches a server name exactly before falling back to the catch all. Every request whose Host
+    is localhost was therefore served by the image default rather than by docker/nginx.conf, so
+    the single page fallback was absent and a hard refresh on any route returned 404, and none of
+    the three security headers were sent. A deployed environment is served under its own hostname
+    and matches the catch all, so the effect there is limited to the day someone reaches the
+    container as localhost. Fixed 2026-08-29 by copying an empty file over the image default,
+    because the image has no shell to delete it with
+  status: FIXED
+  detail: '`docker/nginx.disabled.conf`, `docker/Dockerfile.web`'
+- id: ISS-152
+  severity: MEDIUM
+  summary: The partial coverage banner read "1 missing. outside your scope" whatever the cause. On
+    the query screens the missing workspace is usually one Meter could not read, not one the
+    viewer is not entitled to, and naming the wrong cause sends the reader to an access request
+    for a permission they already hold. The interface had nothing better to say because the
+    envelope carried no failure for an unreachable workspace, because the route knew and did
+    not report it. Fixed 2026-09-11 at the source. The query routes now report every unreachable workspace as
+    a typed failure, and the banner names the cause it was given, falling back to entitlement only
+    when nothing else explains the gap
+  status: FIXED
+  detail: '`finops_api/routes/query.py`, `finops-web/src/screens/surfaceStateFor.ts`'
+- id: ISS-153
+  severity: HIGH
+  summary: grafana_instance.account_id held a workspace identifier for every real workspace. The
+    collector parsed `aws:account:region` out of the surface identifier and fell back to the
+    identifier itself, and the AMG adapter names a listed workspace by its workspace id, so the
+    fallback fired every time. Harmless until TASK-P2-021 made that column the one scope
+    enforcement reads, at which point a scoped viewer silently lost every workspace. The upsert
+    also never refreshed the column, so a corrected value would not have reached an existing
+    estate. Fixed 2026-08-29 by carrying the account and region on SurfaceInstance from the
+    adapter that knows them, and refreshing both on conflict
+  status: FIXED
+  detail: '`finops_core/domain/query.py`, `finops_providers/grafana/amg.py`,
+    `finops_ingest/collectors/query_audit.py`'
+- id: ISS-154
+  severity: LOW
+  summary: make test-integration can never pass on its own. It runs only the integration marker
+    while the coverage gate is set for the whole suite, so it reports 77 percent against a
+    threshold of 80 and exits non zero even when every test passes. The pipeline was believed to run both
+    suites in one pytest invocation and reach 98 percent. That was never observed and was
+    not true, and ISS-178 says why. The repository has no remote, and the job could not run an
+    integration test anyway. So this was a local target that lies, next to a pipeline
+    nobody had watched. Fixed 2026-09-06, in the pass that put the integration
+    tests into make verify. The coverage gate now runs on the one invocation that covers
+    everything, and both slice targets pass --no-cov, because a fraction of the suite
+    graded against the whole suite's threshold is a number that cannot be read in either
+    direction. It fails when nothing is wrong, and it would pass a slice covering nothing
+    it touched
+  status: FIXED
+  detail: '`Makefile`, targets test, test-unit and test-integration'
+- id: ISS-146
+  severity: HIGH
+  summary: make security-scan could not complete and make security-scan-images had never run,
+    because the images had never built. Three tooling faults hid the result. gitleaks ran with no
+    config and reported two false positives on `collector=COLLECTOR`, matching a collector name as
+    a secret. pip-audit was installed into the venv by make security-tools but the scan script
+    looked only on PATH, so it reported the tool missing and stopped. pip-audit then audited the
+    environment, which contains the project installed editable, failed to find `meter` on PyPI, and
+    under --strict aborted before writing pip-audit.json, so Python dependencies were absent from
+    every summary that reported zero findings. All three fixed 2026-08-29 and both scans pass
+  status: FIXED
+  detail: '`.gitleaks.toml`, `scripts/security/scan.sh`'
+- id: ISS-147
+  severity: HIGH
+  summary: The runtime images carried pip, setuptools and wheel, installed to build the venv and
+    then copied into the runtime with it. setuptools 70.3.0 alone accounted for one High and one
+    Medium in every image, four of the eight unresolved findings in the first image scan that had
+    ever run. Build tools are not runtime code and are now removed from the venv before it is
+    copied, which fixes the findings at the source rather than chasing a version and makes the
+    image smaller. The remaining finding, CVE-2026-19672 in the base image, has no published fix
+    and is accepted with an enforced reachability argument
+  status: FIXED
+  detail: '`docker/Dockerfile.api`, `docker/Dockerfile.worker`, `security/policy/accepted.yaml`'
+- id: ISS-143
+  severity: HIGH
+  summary: make up could not build or start, for six independent reasons found by running it. The
+    builder stages ran as the base image's non root user and could not write /opt/venv. The
+    dependency layer ran pip install with only pyproject.toml present, which setuptools cannot
+    resolve without the package directories. pyproject listed top level packages explicitly, so
+    subpackages like finops_api.db were never in the wheel and a migration inside the image failed
+    on ModuleNotFoundError. finops_query was never added to either Dockerfile after TASK-P2-003
+    created it. docker-compose bound host port 5432 with no override. The services enumerated
+    environment variables by hand and had never been given the query or retention settings. Fixed
+    2026-09-02 and make up, make seed and make unseed all verified working
+  status: FIXED
+  detail: '`docker/Dockerfile.api`, `docker/Dockerfile.worker`, `docker/Dockerfile.web`,
+    `docker-compose.yml`, `pyproject.toml`, `.dockerignore`'
+- id: ISS-145
+  severity: MEDIUM
+  summary: scripts/ops was in no image, so erase_principal.py could not be run in a deployed
+    environment even though docs/09-DATA-CLASSIFICATION.md commits to that erasure procedure. The
+    api image now carries scripts/ops. Found 2026-09-02 while making make seed work, which failed
+    for the same reason
+  status: FIXED
+  detail: '`docker/Dockerfile.api`, [docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md)'
+- id: ISS-144
+  severity: HIGH
+  summary: default_ingest_rate passed the per day ingest setting into IngestRate, which
+    _logs_insights_cost multiplies by a window measured in hours, overstating every Logs Insights
+    figure by exactly 24. The seeded demo panel read 3,888,000 dollars a month against a correct
+    162,000. Introduced with the seed tooling on 2026-09-02 and fixed the same day, with the unit
+    documented on IngestRate and pinned by a test, because the type carried no unit and nothing
+    else in the codebase supplied one to compare against
+  status: FIXED
+  detail: '`finops_ingest/collectors/query_audit.py`, `finops_query/cost_model.py`'
+- id: ISS-142
+  severity: LOW
+  summary: strip_comments removes a comment marker that begins a line or follows whitespace, so a
+    hash or a double hyphen inside a quoted string in a query is treated as the start of a comment
+    and the rest of that line is dropped from the key. It affects the fingerprint and the query key
+    only, never the stored query text, the targets or the cost, so the consequence is that two
+    queries differing only after such a marker could share a key. Judged unlikely enough to accept
+    for now against the alternative, which is a parser per query language. Found 2026-09-01 while
+    implementing TASK-P2-011
+  status: OPEN
+  detail: '`finops_query/policy.py`, TASK-P2-011'
+- id: ISS-141
+  severity: MEDIUM
+  summary: TASK-P2-006 asked for the contract suite under moto, and moto implements no Grafana
+    operation at all. ListWorkspaces, DescribeWorkspace, CreateWorkspace and every service account
+    call answer Not yet implemented, while botocore knows them from the service model, so the gap
+    is invisible until a call is made. botocore.stub is used instead and is stronger for API
+    correctness, validating a request and a response against the real model. It caught the first
+    draft of the test fixture omitting created, modified, grafanaVersion and authentication, all
+    required by ListWorkspaces. Revisit if moto adds a grafana backend. Found 2026-09-24
+  status: OPEN
+  detail: '`tests/providers/test_amg_surface.py`, [P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-006'
+- id: ISS-140
+  severity: MEDIUM
+  summary: Every Figure renders its own freshness inline, so a table cell carries the figure, its
+    provenance, its accuracy and two timestamps, and a dense row cannot be the 32 px that
+    docs/12-UI-DESIGN.md section 7 asks for. The shell already shows worst case freshness for the
+    whole view, so the per cell repetition may be redundant rather than load bearing. Rows are a
+    minimum of 32 px and grow with their content. Deciding this is a product question rather than a
+    styling one, because removing per cell freshness would change what a reader is told, and hiding
+    it in CSS would take it from assistive technology as well. Found 2026-09-21 while styling the
+    tables
+  status: OPEN
+  detail: '`finops-web/src/components/Figure.tsx`, `finops-web/src/layout.css`, TASK-P0-039'
+- id: ISS-139
+  severity: MEDIUM
+  summary: TASK-P2-025 acceptance requires an end to end journey applying the workspace floor and
+    confirming the undo, but its dependency list names only TASK-P2-022 to 024. The floor is
+    TASK-P2-017 and the undo is TASK-P2-019, so the criterion was written against the finished sub
+    project rather than the task. The screen and the rest of the journey are built and the task is
+    Partly. Complete the journey when TASK-P2-019 lands, then move the task to Done
+  status: OPEN
+  detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-025'
+
+- id: ISS-138
+  severity: HIGH
+  summary: ADR-0019 decided Tailwind driven by our tokens, and it was never installed or admitted
+    through make dep-check. tokens.css carries 27 tokens of which 6 are consumed, and defines no
+    layout selector at all, so every screen renders as browser default HTML. Sections 3 and 5 of
+    docs/12-UI-DESIGN.md, provenance and failure, are implemented. Sections 7 and 10, density,
+    spacing, surface, border and responsive, are not. The severity ramp is declared and never
+    applied, so severity reads as repeated squares with no colour. Found 2026-09-16 while running
+    the application
+  status: FIXED
+  detail: '[ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md), TASK-P0-039, `finops-web/src/layout.css`'
+- id: ISS-137
+  severity: MEDIUM
+  summary: A scanned volume under one MiB renders as the numeral zero on the query findings screen.
+    Figure formats a count with no decimal places, so any sub unit quantity rounds to zero and a
+    query that scans something reads as a query that scans nothing. Found on 2026-09-12 when a one
+    MiB fixture row rendered as 0 in a GiB column, which was corrected to MiB. The general fix is a
+    byte aware unit on Figure that picks its scale from the magnitude, rather than a caller chosen
+    divisor
+  status: OPEN
+  detail: '`finops-web/src/components/Figure.tsx`, `finops-web/src/screens/QueryFindingsScreen.tsx`'
+- id: ISS-136
+  severity: HIGH
+  summary: A failed request renders default coverage as though it were a complete answer. With no
+    envelope the shell falls back to 0 of 0 and prints "Showing all 0 accounts" beside the typed
+    failure, which reads as confident complete coverage of an empty estate. Section 6 of
+    docs/12-UI-DESIGN.md requires complete coverage to say so, and section 4 requires an unknown
+    state to suppress the figure rather than default it. Observed on 2026-09-06 running the P0
+    frontend with no API reachable
+  status: OPEN
+  detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) sections 4 and 6, `finops-web/src/shell/AppShell.tsx`'
 - id: ISS-001
   severity: CRITICAL
   summary: Nine requirement areas as one project would produce a shallow scaffold of everything
@@ -1596,9 +2414,14 @@ issues:
 - id: ISS-111
   severity: HIGH
   status: OPEN
-  summary: The restore drill required by TASK-P0-028 has not been performed, because it needs
-    an Aurora cluster to restore into a scratch database. P0 is not signed off until it is
-  detail: '[P0 plan](docs/plans/P0-implementation-plan.md) TASK-P0-028'
+  summary: Narrowed 2026-09-17 from the whole drill to its first step. The procedure now exists
+    as make restore-drill and docs/runbooks/restore.md, and three of its four steps have been
+    performed against a real restore of a real database, 21 tables with the migrations reaching
+    head, the application starting against the restored data and the freshness route reporting
+    ten collectors. Those three are where restores actually fail. What has never run is restoring
+    from an Aurora snapshot, because no account has ever been provisioned, which is ISS-122. P0 is
+    not signed off until that one step has been done once
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md) TASK-P0-028, `docs/runbooks/restore.md`'
 - id: ISS-114
   severity: HIGH
   status: FIXED
@@ -1782,6 +2605,28 @@ issues:
     tests/scripts/test_layer_agreement.py now asserts every declared package has a layer, and the
     constraint was probed by importing finops_api and confirming it breaks'
 open_questions:
+- id: OPEN-07
+  question: What does the cost screen show for a tenant whose first ingest has not run, an
+    empty state or the same not built yet panel the unbuilt screens use
+  status: OPEN
+  blocks: 'Nothing. It is a decision to make before the screen is written rather than after'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 13. They are
+    different situations, no bill collected yet and no screen built yet, and looking the same
+    would send a person to the wrong place'
+- id: OPEN-08
+  question: Is there a point at which a closed billing period is declared final and Meter stops
+    re reading it
+  status: OPEN
+  blocks: 'The collector cadence for closed periods. Not the first cut'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 13. A
+    restatement can arrive months later, and the cost of confirming a month is one Athena query'
+- id: OPEN-09
+  question: Does the unallocated bucket belong on the main cost screen as well as on allocation
+  status: OPEN
+  blocks: 'Nothing'
+  detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 13. It is the
+    number most likely to embarrass an estate, which argues both for showing it first and for
+    not leading with it'
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS
     relying party'

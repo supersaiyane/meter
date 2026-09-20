@@ -30,6 +30,14 @@ from typing import Any
 
 _WHITESPACE = re.compile(r"\s+")
 
+#: Line comments in the query languages this reads: `#` for Logs Insights and
+#: PromQL, `--` for SQL shaped sources, and a block comment for both. Required
+#: to be at a start of line or preceded by whitespace, so a `#` inside a token
+#: like a regex is left alone. ISS-142 records the residual case, a comment
+#: marker inside a quoted string, which would shorten the key and never the
+#: stored query or the cost.
+_COMMENT = re.compile(r"(?m)(?:^|(?<=\s))(?:#|--)[^\n]*|/\*.*?\*/", re.DOTALL)
+
 #: Grafana's three template variable syntaxes, all still in use.
 _TEMPLATE_VAR = re.compile(r"(\$\{[^}]+\}|\$[A-Za-z_][A-Za-z0-9_]*|\[\[[^\]]+\]\])")
 
@@ -44,9 +52,19 @@ PLACEHOLDER = "\u0001"
 FINGERPRINT_LENGTH = 16
 
 
+def strip_comments(text: str | None) -> str:
+    """Comments removed, so annotating a query does not make it a new one.
+
+    A person adding `# owned by platform` above a panel query has not changed
+    what it costs, and a key that moved would lose every day of history behind
+    it.
+    """
+    return _COMMENT.sub(" ", text or "")
+
+
 def normalise(text: str | None) -> str:
-    """Whitespace and case, so formatting does not fragment a query."""
-    return _WHITESPACE.sub(" ", (text or "").strip()).lower()
+    """Comments, whitespace and case, so formatting does not fragment a query."""
+    return _WHITESPACE.sub(" ", strip_comments(text).strip()).lower()
 
 
 def has_template_vars(text: str | None) -> bool:
@@ -60,6 +78,26 @@ def template_key(text: str | None) -> str:
     variable happens to take.
     """
     return normalise(_TEMPLATE_VAR.sub(PLACEHOLDER, text or ""))
+
+
+def query_key(engine: str, query: str | None, targets: tuple[str, ...] = ()) -> str:
+    """What a query *is*, independent of where it is drawn.
+
+    Distinct from `fingerprint`, and the difference is the point.
+
+    `fingerprint` identifies one definition: a panel, on a dashboard, in a
+    workspace. It has to, because `uq_query_definition__fingerprint` makes it
+    the identity of a row, and two panels sharing one would upsert over each
+    other and lose a panel.
+
+    `query_key` identifies the query itself. Two panels running the same query
+    on different dashboards share it, which is what lets a measured execution
+    attach to both rather than to whichever one happened to be looked up first.
+    TASK-P2-013 is what consumes it.
+    """
+    parts = [engine, template_key(query), "|".join(sorted(targets))]
+    joined = "\u0000".join(parts).encode("utf-8")
+    return hashlib.sha1(joined, usedforsecurity=False).hexdigest()[:FINGERPRINT_LENGTH]
 
 
 def match_pattern(text: str | None) -> re.Pattern[str] | None:

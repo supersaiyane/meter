@@ -1,0 +1,878 @@
+<title>Home Redesign Decisions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  /* ------------------------------------------------------------------
+     The document frame is greyscale on purpose. A page that exists to
+     decide colour must not compete with the colour it is showing. Every
+     hue below belongs to a specimen, never to the chrome.
+     ------------------------------------------------------------------ */
+  :root {
+    --paper: #eceef1;
+    --card: #ffffff;
+    --ink: #16191d;
+    --ink-2: #4d545d;
+    --ink-3: #79818b;
+    --rule: #d2d6db;
+    --rule-2: #b3b9c1;
+    --mark: #16191d;
+
+    /* Meter's own tokens, light. Copied from finops-web/src/tokens.css */
+    --m-surface: #ffffff;
+    --m-sunken: #f6f7f9;
+    --m-raised: #ffffff;
+    --m-border: #d8dce2;
+    --m-border-strong: #aeb5be;
+    --m-text: #14181d;
+    --m-muted: #5a636e;
+    --m-numeral: #0a0d10;
+    --m-accent: #1f4f8f;
+    --m-accent-quiet: #e7eefa;
+    --m-failure: #a01b1b;
+    --m-failure-quiet: #fbeaea;
+    --m-stale: #8a5a00;
+    --m-stale-quiet: #fdf3e0;
+    --m-sev1: #e7eefa;
+    --m-sev2: #c3d6f2;
+    --m-sev3: #8fb2e4;
+    --m-sev4: #4f83c8;
+    --m-sev5: #1f4f8f;
+
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --sys: system-ui, -apple-system, "Segoe UI", sans-serif;
+    --sysmono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+
+    --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 36px; --s7: 56px;
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #101317;
+      --card: #181c21;
+      --ink: #e7eaee;
+      --ink-2: #a2aab4;
+      --ink-3: #79818b;
+      --rule: #2a3038;
+      --rule-2: #454d57;
+      --mark: #e7eaee;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #101317;
+    --card: #181c21;
+    --ink: #e7eaee;
+    --ink-2: #a2aab4;
+    --ink-3: #79818b;
+    --rule: #2a3038;
+    --rule-2: #454d57;
+    --mark: #e7eaee;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: var(--s6) var(--s5) var(--s7);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s7);
+  }
+
+  /* ----------------------------------------------------------- header */
+  header { display: flex; flex-direction: column; gap: var(--s3); }
+  .kicker {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.09em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  h1 {
+    margin: 0; font-weight: 600; font-size: clamp(29px, 4vw, 42px);
+    letter-spacing: -0.02em; line-height: 1.04; text-wrap: balance;
+  }
+  .lede { margin: 0; max-width: 66ch; color: var(--ink-2); font-size: 16.5px; }
+  .lede b { color: var(--ink); font-weight: 500; }
+
+  .basis {
+    display: flex; flex-wrap: wrap; gap: var(--s2) var(--s5);
+    font-family: var(--mono); font-size: 11.5px; color: var(--ink-3);
+    border-top: 1px solid var(--rule); padding-top: var(--s3); margin-top: var(--s2);
+  }
+  .basis b { color: var(--ink); font-weight: 500; }
+
+  /* ---------------------------------------------------------- section */
+  section { display: flex; flex-direction: column; gap: var(--s4); }
+  .head { display: flex; align-items: baseline; gap: var(--s3); flex-wrap: wrap; }
+  .num {
+    font-family: var(--mono); font-size: 12px; color: var(--ink-3);
+    border: 1px solid var(--rule-2); padding: 1px 7px; flex: none;
+  }
+  h2 { margin: 0; font-weight: 600; font-size: 24px; letter-spacing: -0.01em; }
+  .sub { margin: 0; color: var(--ink-2); max-width: 72ch; }
+  .sub b { color: var(--ink); font-weight: 500; }
+
+  /* --------------------------------------------------------- findings */
+  .findings { display: grid; gap: var(--s3); grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .finding {
+    background: var(--card); border: 1px solid var(--rule);
+    padding: var(--s4); display: flex; flex-direction: column; gap: var(--s2);
+  }
+  .finding .n { font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+  .finding h3 { margin: 0; font-size: 15.5px; font-weight: 600; }
+  .finding p { margin: 0; font-size: 14px; color: var(--ink-2); }
+
+  /* ------------------------------------------------------------ plan */
+  .plan { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+  .phase {
+    display: grid; grid-template-columns: 116px 1fr 168px; gap: var(--s4);
+    padding: var(--s4) 0; border-bottom: 1px solid var(--rule); align-items: start;
+  }
+  .phase .when { font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
+  .phase .when b { display: block; color: var(--ink); font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .phase h3 { margin: 0 0 var(--s1); font-size: 16px; font-weight: 600; }
+  .phase p { margin: 0; font-size: 14.5px; color: var(--ink-2); }
+  .phase .gate { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); line-height: 1.45; }
+  @media (max-width: 760px) { .phase { grid-template-columns: 1fr; gap: var(--s2); } }
+
+  /* ------------------------------------------------- the mock chrome */
+  .screen {
+    background: var(--m-sunken); border: 1px solid var(--rule-2);
+    overflow-x: auto; padding: 0;
+  }
+  .screen-inner { min-width: 940px; font-family: var(--sys); color: var(--m-text); }
+  .caption {
+    font-family: var(--mono); font-size: 11.5px; color: var(--ink-3);
+    display: flex; justify-content: space-between; gap: var(--s4); flex-wrap: wrap;
+  }
+
+  /* Meter shell */
+  .app { display: grid; grid-template-columns: 176px 1fr; min-height: 560px; }
+  .nav {
+    background: var(--m-surface); border-right: 1px solid var(--m-border);
+    padding: 14px 0; font-size: 13px;
+  }
+  .nav .brand { font-weight: 600; font-size: 15px; padding: 0 14px 12px; color: var(--m-text); }
+  .nav .grp {
+    font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--m-muted); padding: 12px 14px 4px;
+  }
+  .nav a {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 14px; color: var(--m-text); text-decoration: none;
+  }
+  .nav a.on { background: var(--m-accent-quiet); color: var(--m-accent); font-weight: 600; box-shadow: inset 2px 0 0 var(--m-accent); }
+  .nav a.off { color: var(--m-muted); }
+  .nav .later {
+    font-family: var(--sysmono); font-size: 9.5px; color: var(--m-muted);
+    border: 1px solid var(--m-border); padding: 0 3px; border-radius: 2px;
+  }
+
+  .main { padding: 0; background: var(--m-sunken); }
+
+  /* trust strip */
+  .trust {
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    padding: 8px 16px; background: var(--m-surface);
+    border-bottom: 1px solid var(--m-border); font-size: 12px;
+  }
+  .trust .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--sysmono); font-size: 11.5px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .dot.ok { background: #2f7d4f; }
+  .dot.stale { background: var(--m-stale); }
+  .trust .sep { color: var(--m-border-strong); }
+
+  /* tiers */
+  .tier { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .tier-h {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--m-muted);
+  }
+  .tier-h a { color: var(--m-accent); text-decoration: none; font-size: 11.5px; letter-spacing: 0; text-transform: none; }
+
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .tile {
+    background: var(--m-raised); border: 1px solid var(--m-border);
+    padding: 12px; display: flex; flex-direction: column; gap: 5px; min-height: 104px;
+  }
+  .tile .lab { font-size: 11.5px; color: var(--m-muted); }
+  .tile .val {
+    font-family: var(--sysmono); font-variant-numeric: tabular-nums;
+    font-size: 27px; font-weight: 500; color: var(--m-numeral); letter-spacing: -0.02em;
+  }
+  .tile .val.sm { font-size: 20px; }
+  .tile .meta { font-size: 10.5px; color: var(--m-muted); font-family: var(--sysmono); margin-top: auto; }
+  .prov {
+    display: inline-block; font-family: var(--sysmono); font-size: 9.5px;
+    letter-spacing: 0.06em; text-transform: uppercase; padding: 0 4px;
+    border: 1px solid var(--m-border-strong); color: var(--m-muted); border-radius: 2px;
+  }
+  .prov.meas { border-color: var(--m-text); color: var(--m-text); }
+  .prov.mod { border-style: dashed; }
+
+  /* severity ramp bar */
+  .ramp { display: flex; height: 9px; border: 1px solid var(--m-border); }
+  .ramp i { display: block; height: 100%; }
+  .rampkey { display: flex; gap: 9px; font-family: var(--sysmono); font-size: 10px; color: var(--m-muted); flex-wrap: wrap; }
+  .rampkey span { display: inline-flex; align-items: center; gap: 3px; }
+  .rampkey b { width: 8px; height: 8px; display: inline-block; border: 1px solid rgba(0,0,0,0.18); }
+
+  /* table */
+  table.t { width: 100%; border-collapse: collapse; background: var(--m-raised); border: 1px solid var(--m-border); }
+  table.t th {
+    text-align: left; font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--m-muted); font-weight: 500; padding: 7px 10px;
+    border-bottom: 1px solid var(--m-border); white-space: nowrap;
+  }
+  table.t td { padding: 0 10px; height: 32px; font-size: 13px; border-bottom: 1px solid var(--m-border); }
+  table.t tr:last-child td { border-bottom: 0; }
+  table.t td.n {
+    font-family: var(--sysmono); font-variant-numeric: tabular-nums;
+    text-align: right; color: var(--m-numeral); white-space: nowrap;
+  }
+  th.n { text-align: right; }
+  .sev {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-family: var(--sysmono); white-space: nowrap;
+  }
+  .sev i { width: 9px; height: 9px; display: inline-block; border: 1px solid rgba(0,0,0,0.2); }
+  .lnk { color: var(--m-accent); text-decoration: none; }
+  .fail {
+    font-family: var(--sysmono); font-size: 11px; color: var(--m-failure);
+    background: var(--m-failure-quiet); padding: 1px 5px; border-radius: 2px;
+  }
+
+  /* the arriving rail: the key move */
+  .rail {
+    display: flex; gap: 0; border: 1px solid var(--m-border);
+    background: var(--m-raised); flex-wrap: wrap;
+  }
+  .rail div {
+    flex: 1 1 150px; padding: 8px 11px; border-right: 1px solid var(--m-border);
+    display: flex; flex-direction: column; gap: 2px; min-width: 0;
+  }
+  .rail div:last-child { border-right: 0; }
+  .rail .k { font-size: 11.5px; color: var(--m-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rail .v { font-family: var(--sysmono); font-size: 10px; color: var(--m-muted); }
+
+  /* --------------------------------------------------------- options */
+  .opts { display: grid; gap: var(--s3); grid-template-columns: repeat(auto-fit, minmax(268px, 1fr)); }
+  .opt {
+    background: var(--card); border: 1px solid var(--rule);
+    display: flex; flex-direction: column;
+  }
+  .opt.rec { border-color: var(--mark); border-width: 2px; }
+  .opt .oh {
+    padding: 10px 13px; border-bottom: 1px solid var(--rule);
+    display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  }
+  .opt .oh strong { font-size: 14.5px; font-weight: 600; }
+  .opt .oh em {
+    font-family: var(--mono); font-size: 10px; font-style: normal;
+    letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-3);
+  }
+  .opt.rec .oh em { color: var(--ink); }
+  .opt .spec { padding: 15px 13px; background: var(--m-sunken); border-bottom: 1px solid var(--rule); }
+  .opt .why { padding: 11px 13px; font-size: 13.5px; color: var(--ink-2); margin: 0; }
+  .opt .why b { color: var(--ink); font-weight: 500; }
+
+  .swatches { display: flex; }
+  .swatches i { flex: 1; height: 30px; display: block; }
+  .swlab { display: flex; font-family: var(--mono); font-size: 9.5px; color: var(--ink-3); margin-top: 3px; }
+  .swlab span { flex: 1; }
+
+  .typespec { font-variant-numeric: tabular-nums; color: var(--m-text); }
+  .typespec .row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 2px 0; }
+  .typespec .lbl { font-size: 13px; }
+  .typespec .amt { font-size: 16px; font-weight: 500; }
+
+  /* ------------------------------------------------------------ note */
+  .note {
+    border-left: 3px solid var(--mark); background: var(--card);
+    padding: var(--s3) var(--s5); max-width: 82ch;
+  }
+  .note .l {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-3); display: block; margin-bottom: 3px;
+  }
+  .note p { margin: 0; font-size: 14.5px; }
+  .note p + p { margin-top: var(--s2); }
+
+  .keeps { display: grid; gap: var(--s3); grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .keep { border-left: 2px solid var(--rule-2); padding-left: var(--s3); }
+  .keep h4 { margin: 0 0 2px; font-size: 14.5px; font-weight: 600; }
+  .keep p { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+
+  code {
+    font-family: var(--mono); font-size: 0.86em;
+    background: var(--paper); border: 1px solid var(--rule);
+    padding: 0.05em 0.32em; border-radius: 2px;
+  }
+
+  footer {
+    border-top: 1px solid var(--rule); padding-top: var(--s4);
+    font-family: var(--mono); font-size: 11.5px; color: var(--ink-3);
+    display: flex; flex-wrap: wrap; gap: var(--s2) var(--s5);
+  }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  @media (max-width: 700px) {
+    .wrap { padding: var(--s5) var(--s4); gap: var(--s6); }
+    h1 { font-size: 27px; } h2 { font-size: 20px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <span class="kicker">Meter, front page</span>
+    <h1>Home, redesigned</h1>
+    <p class="lede">
+      A plan that fits what P2 actually finished, and a mock at full fidelity so
+      the colour, type and density can be settled <b>before</b> any code is
+      written. Four decisions are marked. One of them is a real defect in the
+      palette that is shipping today.
+    </p>
+    <div class="basis">
+      <span>Built on <b>Datadog DRUIDS</b>, <b>Bach dashboard patterns</b>, <b>AWS Cloud Intelligence IA</b></span>
+      <span>P2: <b>20 of 25</b> done</span>
+      <span>Palette from <b>tokens.css</b></span>
+      <span>Figures below are <b>example data</b></span>
+    </div>
+  </header>
+
+  <!-- =========================================================== WHY -->
+  <section>
+    <div class="head"><span class="num">1</span><h2>Why it reads as vague</h2></div>
+    <p class="sub">
+      Three separate causes. Only the third is a design problem, and it is the
+      one worth fixing first because it is the one that is free.
+    </p>
+    <div class="findings">
+      <div class="finding">
+        <span class="n">cause 01</span>
+        <h3>Most panels have no data yet</h3>
+        <p>
+          Five of six slots read <span class="prov">not yet collected</span>
+          and name P1, P3 or P5. That is correct behaviour, not a bug. It is
+          also most of the screen.
+        </p>
+      </div>
+      <div class="finding">
+        <span class="n">cause 02</span>
+        <h3>Two panels are showing a parse error</h3>
+        <p>
+          Only in the dev server, which serves <code>index.html</code> for
+          <code>/api</code>. On the compose stack those two render. Not a
+          product defect.
+        </p>
+      </div>
+      <div class="finding">
+        <span class="n">cause 03</span>
+        <h3>Nothing outranks anything else</h3>
+        <p>
+          Six identical bordered blocks, one type size, no severity, no
+          coverage, no shape. An absence is drawn at the same weight as the
+          money. <b>This is the real one.</b>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================== PLAN -->
+  <section>
+    <div class="head"><span class="num">2</span><h2>The plan, sized to P2</h2></div>
+    <p class="sub">
+      P2 is <b>20 of 25</b>: 015 and 016 parked behind ISS-122, 020 waiting on
+      real CUR, 007 and 008 descoped. So the findings, surfaces and enforcement
+      data all exist now, and nothing in phase A waits on AWS. Phases are
+      ordered so that <b>each one is shippable alone</b>.
+    </p>
+
+    <div class="plan">
+      <div class="phase">
+        <div class="when"><b>Phase A</b>no new backend</div>
+        <div>
+          <h3>Rank the page</h3>
+          <p>
+            Introduce the three tiers from the AWS pattern: a summary strip, one
+            thing that needs attention, then breadth. Collapse the five named
+            absences from full cards into a single rail. Nothing new is fetched,
+            no route changes, and the two Home rules hold.
+          </p>
+        </div>
+        <div class="gate">unblocks nothing<br>blocked by nothing<br>reversible in one commit</div>
+      </div>
+
+      <div class="phase">
+        <div class="when"><b>Phase B</b>P2 data, live</div>
+        <div>
+          <h3>Make the P2 numbers first class</h3>
+          <p>
+            Governed spend, open findings by severity and surface coverage are
+            already served by live routes. They become the summary tiles, so the
+            front page shows what P2 actually bought rather than a single
+            findings table.
+          </p>
+        </div>
+        <div class="gate">uses <code>/query/findings</code><br><code>/query/groups</code>, <code>/query/instances</code><br>all live today</div>
+      </div>
+
+      <div class="phase">
+        <div class="when"><b>Phase C</b>after ISS-122</div>
+        <div>
+          <h3>Enforcement becomes a state, not a screen</h3>
+          <p>
+            TASK-P2-016 is parked because nothing has run against AWS, and two
+            of the five missing routes wait on it. When it lands, the summary
+            strip gains an enforcement state and the rail loses an entry.
+          </p>
+        </div>
+        <div class="gate">blocked by ISS-122<br>needs a real apply<br>design already reserves the slot</div>
+      </div>
+
+      <div class="phase">
+        <div class="when"><b>Phase D</b>P1, P3, P5</div>
+        <div>
+          <h3>The rail empties itself</h3>
+          <p>
+            Each sub project that lands turns one rail entry into a tile. The
+            layout does not change again. This is the point of naming absences
+            rather than hiding them.
+          </p>
+        </div>
+        <div class="gate">no further design work<br>tile slots already sized<br>rail shrinks to nothing</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================== MOCK -->
+  <section>
+    <div class="head"><span class="num">3</span><h2>The mock</h2></div>
+    <p class="sub">
+      Phase A and B together, at 1440 px, in Meter's real tokens. Every number
+      here is <b>invented for the mock</b>. The point is the ranking, not the
+      figures.
+    </p>
+
+    <div class="screen">
+      <div class="screen-inner">
+        <div class="app">
+
+          <!-- nav -->
+          <nav class="nav">
+            <div class="brand">Meter</div>
+
+            <div class="grp">Home</div>
+            <a class="on" href="#">Home</a>
+
+            <div class="grp">Governance</div>
+            <a href="#">Query findings</a>
+            <a href="#">Query surfaces</a>
+            <a href="#">Enforcement</a>
+
+            <div class="grp">Inventory</div>
+            <a href="#">Accounts</a>
+            <a href="#">Organization</a>
+            <a href="#">Freshness</a>
+            <a href="#">Ingest</a>
+
+            <div class="grp">Platform</div>
+            <a href="#">Meter cost</a>
+
+            <div class="grp">Not yet collected</div>
+            <a class="off" href="#">Cost <span class="later">P1</span></a>
+            <a class="off" href="#">Waste <span class="later">P3</span></a>
+            <a class="off" href="#">Quotas <span class="later">P5</span></a>
+          </nav>
+
+          <!-- main -->
+          <div class="main">
+
+            <!-- trust strip: Bach "meta information", persistent, never a toast -->
+            <div class="trust">
+              <span class="pill"><i class="dot ok"></i> 3 of 3 accounts</span>
+              <span class="sep">|</span>
+              <span class="pill">as of 04:00 today</span>
+              <span class="sep">|</span>
+              <span class="pill">collected 6 min ago</span>
+              <span class="sep">|</span>
+              <span class="pill"><i class="dot stale"></i> 1 surface refused</span>
+              <span class="sep">|</span>
+              <span class="pill" style="color:var(--m-accent)">source: query_audit, platform_cost</span>
+            </div>
+
+            <!-- TIER 1 -->
+            <div class="tier">
+              <div class="tier-h"><span>Summary</span><span>month to date</span></div>
+              <div class="tiles">
+
+                <div class="tile">
+                  <span class="lab">Governed query spend</span>
+                  <span class="val">$4,218.60</span>
+                  <span class="prov mod">modelled</span>
+                  <span class="meta">28 findings, 3 accounts</span>
+                </div>
+
+                <div class="tile">
+                  <span class="lab">Meter's own cost</span>
+                  <span class="val">$182.04</span>
+                  <span class="prov meas">measured</span>
+                  <span class="meta">as of 04:00 today</span>
+                </div>
+
+                <div class="tile">
+                  <span class="lab">Open findings by severity</span>
+                  <span class="val sm">28</span>
+                  <div class="ramp">
+                    <i style="flex:3;background:var(--m-sev5)"></i>
+                    <i style="flex:6;background:var(--m-sev4)"></i>
+                    <i style="flex:11;background:var(--m-sev3)"></i>
+                    <i style="flex:8;background:var(--m-sev2)"></i>
+                  </div>
+                  <div class="rampkey">
+                    <span><b style="background:var(--m-sev5)"></b>3 crit</span>
+                    <span><b style="background:var(--m-sev4)"></b>6 high</span>
+                    <span><b style="background:var(--m-sev3)"></b>11 med</span>
+                    <span><b style="background:var(--m-sev2)"></b>8 low</span>
+                  </div>
+                </div>
+
+                <div class="tile">
+                  <span class="lab">Surfaces under audit</span>
+                  <span class="val sm">4 of 5</span>
+                  <span class="prov meas">measured</span>
+                  <span class="meta"><span class="fail">1 AccessDenied</span></span>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- TIER 2 -->
+            <div class="tier" style="padding-top:0">
+              <div class="tier-h">
+                <span>Needs attention</span>
+                <a href="#">All 28 findings &rsaquo;</a>
+              </div>
+              <table class="t">
+                <thead>
+                  <tr>
+                    <th style="width:106px">Severity</th>
+                    <th>Finding</th>
+                    <th style="width:120px">Owner</th>
+                    <th style="width:104px">Cause</th>
+                    <th class="n" style="width:108px">Monthly</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="sev"><i style="background:var(--m-sev5)"></i>CRITICAL</span></td>
+                    <td><a class="lnk" href="#">Platform overview, p99 latency</a></td>
+                    <td>core-infra</td>
+                    <td>alert always on</td>
+                    <td class="n">$1,412.80</td>
+                  </tr>
+                  <tr>
+                    <td><span class="sev"><i style="background:var(--m-sev5)"></i>CRITICAL</span></td>
+                    <td><a class="lnk" href="#">Billing, spend by service</a></td>
+                    <td>finops</td>
+                    <td>very wide window</td>
+                    <td class="n">$1,104.25</td>
+                  </tr>
+                  <tr>
+                    <td><span class="sev"><i style="background:var(--m-sev4)"></i>HIGH</span></td>
+                    <td><a class="lnk" href="#">Edge health, error budget</a></td>
+                    <td>unattributed</td>
+                    <td>very fast refresh</td>
+                    <td class="n">$486.10</td>
+                  </tr>
+                  <tr>
+                    <td><span class="sev"><i style="background:var(--m-sev4)"></i>HIGH</span></td>
+                    <td><a class="lnk" href="#">Ingest lag, per topic</a></td>
+                    <td>data-platform</td>
+                    <td>metric fanout</td>
+                    <td class="n">$402.00</td>
+                  </tr>
+                  <tr>
+                    <td><span class="sev" style="color:var(--m-muted)"><i style="background:var(--m-border);border-style:dashed"></i>UNKNOWN</span></td>
+                    <td>Ops workspace, 6 panels</td>
+                    <td>unattributed</td>
+                    <td><span class="fail">AccessDenied</span></td>
+                    <td class="n" style="color:var(--m-failure);font-size:11px">not a number</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- TIER 3: the rail -->
+            <div class="tier" style="padding-top:0">
+              <div class="tier-h"><span>Not yet collected</span><span>each names what fills it</span></div>
+              <div class="rail">
+                <div><span class="k">Total spend MTD</span><span class="v">P1 Cost Intelligence</span></div>
+                <div><span class="k">Trend, 30 days</span><span class="v">P1 Cost Intelligence</span></div>
+                <div><span class="k">Top movers</span><span class="v">P1 Cost Intelligence</span></div>
+                <div><span class="k">Realized savings</span><span class="v">P3 Utilization</span></div>
+                <div><span class="k">Quota headroom</span><span class="v">P5 Quotas and Limits</span></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="caption">
+      <span>Five absences now occupy one 44 px rail instead of five cards.</span>
+      <span>Same information, one twelfth of the page.</span>
+    </div>
+  </section>
+
+  <!-- ====================================================== DECISION 1 -->
+  <section>
+    <div class="head"><span class="num">4</span><h2>Decision one: severity collides with interactive</h2></div>
+    <p class="sub">
+      In <code>tokens.css</code> today, <code>--severity-5</code> and
+      <code>--accent</code> are <b>the same colour</b>, <code>#1f4f8f</code>.
+      So the most severe finding is painted the exact blue that everywhere else
+      in the product means "this is a link". That breaks the documented rule
+      that colour is interactive-only, and it is the strongest reason the screen
+      reads as undifferentiated.
+    </p>
+
+    <div class="opts">
+      <div class="opt">
+        <div class="oh"><strong>A. Keep it</strong><em>no change</em></div>
+        <div class="spec">
+          <div class="swatches">
+            <i style="background:#e7eefa"></i><i style="background:#c3d6f2"></i>
+            <i style="background:#8fb2e4"></i><i style="background:#4f83c8"></i>
+            <i style="background:#1f4f8f"></i>
+          </div>
+          <div class="swlab"><span>1</span><span>2</span><span>3</span><span>4</span><span>5 = accent</span></div>
+        </div>
+        <p class="why">
+          Sequential and ordered, as documented. But <b>critical and clickable
+          are indistinguishable</b>, and the ramp's light end is nearly the page
+          background.
+        </p>
+      </div>
+
+      <div class="opt rec">
+        <div class="oh"><strong>B. Warm ramp</strong><em>recommended</em></div>
+        <div class="spec">
+          <div class="swatches">
+            <i style="background:#f2ead9"></i><i style="background:#e3cb9a"></i>
+            <i style="background:#cfa04e"></i><i style="background:#b0701f"></i>
+            <i style="background:#8a4a0c"></i>
+          </div>
+          <div class="swlab"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+        </div>
+        <p class="why">
+          Still one sequential hue, still ordered, and now <b>severity can never
+          be confused with a link or with a failure</b>. Blue stays interactive,
+          red stays failure, amber stays freshness. Each colour keeps one job.
+        </p>
+      </div>
+
+      <div class="opt">
+        <div class="oh"><strong>C. Neutral ramp</strong><em>most austere</em></div>
+        <div class="spec">
+          <div class="swatches">
+            <i style="background:#e8eaed"></i><i style="background:#c4c9cf"></i>
+            <i style="background:#949ca6"></i><i style="background:#5e6771"></i>
+            <i style="background:#2b323a"></i>
+          </div>
+          <div class="swlab"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+        </div>
+        <p class="why">
+          Severity by weight alone. Maximum honesty, zero colour collision, and
+          it survives any print or colourblind case. <b>Reads as flat</b> when a
+          page is mostly low severity.
+        </p>
+      </div>
+    </div>
+
+    <div class="note">
+      <span class="l">Either way</span>
+      <p>
+        The shape stays redundant with the colour. A severity chip is a square
+        plus a word, never a square alone, so the ramp is never the only carrier
+        of the meaning. That is already the rule in
+        <code>docs/12-UI-DESIGN.md</code> and the mock keeps it.
+      </p>
+    </div>
+  </section>
+
+  <!-- ====================================================== DECISION 2 -->
+  <section>
+    <div class="head"><span class="num">5</span><h2>Decision two: the typeface is not what the doc says</h2></div>
+    <p class="sub">
+      <code>docs/12-UI-DESIGN.md</code> specifies JetBrains Mono or IBM Plex
+      Mono for numerals and Inter or IBM Plex Sans for prose. <code>tokens.css</code>
+      ships <code>system-ui</code> and <code>ui-mono&#8203;space</code>. One of the two
+      is wrong and should be corrected.
+    </p>
+
+    <div class="opts">
+      <div class="opt">
+        <div class="oh"><strong>A. System stack</strong><em>shipping now</em></div>
+        <div class="spec">
+          <div class="typespec" style="font-family:var(--sys)">
+            <div class="row"><span class="lbl">Platform overview</span><span class="amt" style="font-family:var(--sysmono);font-variant-numeric:tabular-nums">$1,412.80</span></div>
+            <div class="row"><span class="lbl">Billing, spend by service</span><span class="amt" style="font-family:var(--sysmono);font-variant-numeric:tabular-nums">$1,104.25</span></div>
+            <div class="row"><span class="lbl">Edge health</span><span class="amt" style="font-family:var(--sysmono);font-variant-numeric:tabular-nums">$486.10</span></div>
+          </div>
+        </div>
+        <p class="why">
+          Zero bytes, zero network, no font swap. <b>But it is a different face
+          on every machine</b>, so density and column widths are not the same
+          for two people looking at the same screen.
+        </p>
+      </div>
+
+      <div class="opt rec">
+        <div class="oh"><strong>B. IBM Plex</strong><em>recommended</em></div>
+        <div class="spec">
+          <div class="typespec" style="font-family:var(--sans)">
+            <div class="row"><span class="lbl">Platform overview</span><span class="amt" style="font-family:var(--mono);font-variant-numeric:tabular-nums">$1,412.80</span></div>
+            <div class="row"><span class="lbl">Billing, spend by service</span><span class="amt" style="font-family:var(--mono);font-variant-numeric:tabular-nums">$1,104.25</span></div>
+            <div class="row"><span class="lbl">Edge health</span><span class="amt" style="font-family:var(--mono);font-variant-numeric:tabular-nums">$486.10</span></div>
+          </div>
+        </div>
+        <p class="why">
+          What the design doc already asked for, and what this page is set in.
+          Genuinely tabular, identical everywhere, and <b>self hosted so there is
+          no third party request</b> from a page showing customer spend.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================== DECISION 3 -->
+  <section>
+    <div class="head"><span class="num">6</span><h2>Decision three: how an absence is drawn</h2></div>
+    <p class="sub">
+      The rule stays: an unfilled slot names the sub project that will fill it,
+      and never renders as zero or blank. The question is only how much of the
+      page that claim is allowed to occupy.
+    </p>
+    <div class="opts">
+      <div class="opt">
+        <div class="oh"><strong>A. Full cards</strong><em>today</em></div>
+        <p class="why" style="padding-top:13px">
+          Five bordered blocks at the same weight as the money.
+          <b>Roughly 60 percent of the screen</b> is a promise about the future.
+          Honest, and it is what makes the page look empty.
+        </p>
+      </div>
+      <div class="opt rec">
+        <div class="oh"><strong>B. One rail</strong><em>recommended</em></div>
+        <p class="why" style="padding-top:13px">
+          One 44 px strip below the fold carrying all five names, as in the mock.
+          <b>Same information, one twelfth of the space</b>, and it still turns
+          into a tile when each sub project lands.
+        </p>
+      </div>
+      <div class="opt">
+        <div class="oh"><strong>C. Hide entirely</strong><em>rejected</em></div>
+        <p class="why" style="padding-top:13px">
+          Cleanest looking, and <b>it breaks the progress view</b>. A reader can
+          no longer tell the difference between "not built" and "nothing found",
+          which is the exact confusion the product exists to prevent.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================== DECISION 4 -->
+  <section>
+    <div class="head"><span class="num">7</span><h2>Decision four: density of the summary strip</h2></div>
+    <p class="sub">
+      The design doc sets 32 px rows for tables and "generous" for a single
+      judgement. It does not say what a summary tile is. The mock uses four
+      tiles at 104 px. <b>Three would be calmer, five would need a second row at
+      1440 px.</b> Four is the recommendation, and it is the only one of the
+      four decisions that is purely taste.
+    </p>
+  </section>
+
+  <!-- ======================================================== INVARIANT -->
+  <section>
+    <div class="head"><span class="num">8</span><h2>What does not change</h2></div>
+    <div class="keeps">
+      <div class="keep">
+        <h4>Home owns no data</h4>
+        <p>
+          Every figure is still read through the detail screen's own hook and
+          query key, so the two can never disagree. The tiles are roll ups, not
+          new queries.
+        </p>
+      </div>
+      <div class="keep">
+        <h4>A failure is never a number</h4>
+        <p>
+          The <code>UNKNOWN</code> row in the mock shows the typed cause and the
+          words "not a number" where a figure would sit. It is never a zero and
+          never a blank.
+        </p>
+      </div>
+      <div class="keep">
+        <h4>Two timestamps, always</h4>
+        <p>
+          <code>as of 04:00 today</code> is absolute, <code>collected 6 min ago</code>
+          is an age. Never "live", because Meter is never live.
+        </p>
+      </div>
+      <div class="keep">
+        <h4>Coverage is persistent</h4>
+        <p>
+          The trust strip sits above the money and stays there. It is not a
+          toast, and it names the source, which is the Bach meta information
+          pattern applied literally.
+        </p>
+      </div>
+    </div>
+
+    <div class="note">
+      <span class="l">Before anyone signs off on the look</span>
+      <p>
+        None of this has run against a real AWS account. The mock's coverage
+        reads <b>3 of 3 accounts</b> because the seeded local estate has three.
+        Against a real organization the first honest render of this page is far
+        more likely to be a partial coverage line and several typed failures,
+        which is the state worth designing for and the one hardest to make
+        look good.
+      </p>
+      <p>
+        That is an argument for deciding the failure and partial states now,
+        with the palette, rather than after the happy path is built.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <span>docs/12-UI-DESIGN.md, the rules</span>
+    <span>docs/13-UI-ARCHITECTURE.md, section 6</span>
+    <span>finops-web/src/tokens.css, the palette</span>
+    <span>tasks/STATUS.md, P2 at 20 of 25</span>
+  </footer>
+
+</div>

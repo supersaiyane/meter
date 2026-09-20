@@ -7,6 +7,11 @@ import { CAUSE_LABEL, type Cause } from './provenance';
  * column of costs at the moment one of them is missing will not go looking. The
  * cause is written in full rather than abbreviated, so a screenshot of this
  * pasted into a ticket still says what happened.
+ *
+ * In a table it wraps rather than being trimmed. Trimming it was tried and is
+ * wrong: not every failure a row can carry is also in the trust strip, so the
+ * remediation would have been lost rather than moved. `layout.css` bounds its
+ * width so a sentence cannot push the columns after it off the screen.
  */
 export interface TypedErrorProps {
   readonly cause: Exclude<Cause, 'NoData'>;

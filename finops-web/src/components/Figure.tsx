@@ -1,3 +1,4 @@
+import { useIsDense } from './density';
 import { FreshnessIndicator } from './FreshnessIndicator';
 import { TypedError } from './TypedError';
 import { rendersAsNumeral, type FigureValue, type Freshness } from './provenance';
@@ -15,6 +16,13 @@ import { rendersAsNumeral, type FigureValue, type Freshness } from './provenance
  * Provenance is encoded three times over. The fill is solid or hatched, the
  * numeral carries a tilde prefix when it is not measured, and a text label says
  * which it is. Any one of the three survives colour being unavailable.
+ *
+ * Inside a dense table all three stay and the freshness line does not, because
+ * the trust strip above the page already carries it, worst case across every
+ * collector feeding the page. `freshness` is still required here: the argument
+ * for making it impossible to render a number without timestamps does not
+ * weaken because one context displays them somewhere else, and a figure outside
+ * a table still shows them.
  */
 export interface FigureProps {
   readonly value: FigureValue;
@@ -54,6 +62,11 @@ export function Figure({
   onAction,
   actionLabel,
 }: FigureProps) {
+  const dense = useIsDense();
+  const when = dense ? null : (
+    <FreshnessIndicator freshness={freshness} {...(now ? { now } : {})} />
+  );
+
   if (value.kind === 'failed') {
     if (rendersAsNumeral(value.cause)) {
       // The one legitimate zero. It reads as a zero because it is one.
@@ -61,7 +74,7 @@ export function Figure({
         <span data-testid="figure" data-provenance="measured" data-cause="NoData">
           <span className="meter-numeral meter-fill-measured">{formatAmount(0, unit)}</span>
           <span> measured</span>
-          <FreshnessIndicator freshness={freshness} {...(now ? { now } : {})} />
+          {when}
         </span>
       );
     }
@@ -73,7 +86,7 @@ export function Figure({
           {...(actionLabel ? { actionLabel } : {})}
           {...(onAction ? { onAction } : {})}
         />
-        <FreshnessIndicator freshness={freshness} {...(now ? { now } : {})} />
+        {when}
       </span>
     );
   }
@@ -98,9 +111,20 @@ export function Figure({
         {prefix}
         {text}
       </span>
-      <span> {value.kind}</span>
-      {accuracy ? <span>, {accuracy}</span> : null}
-      <FreshnessIndicator freshness={freshness} {...(now ? { now } : {})} />
+      {/* Under the numeral in a table, beside it everywhere else. Inline, the
+          word set the width of every numeric column and the table ran past the
+          right edge of a 1440 px screen with monthly cost, the sort column,
+          outside it. All three provenance encodings survive the move. */}
+      {/* The comma is attached to the word before it. Left on the accuracy
+          clause it became the first character of a wrapped line in a narrow
+          surface, which reads as a typo rather than as a sentence. */}
+      <span className={dense ? 'meter-provenance' : undefined}>
+        {' '}
+        {value.kind}
+        {accuracy && !dense ? ',' : null}
+      </span>
+      {accuracy && !dense ? <span> {accuracy}</span> : null}
+      {when}
     </span>
   );
 }

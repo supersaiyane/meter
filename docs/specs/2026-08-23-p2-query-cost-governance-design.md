@@ -50,6 +50,19 @@ it is a control.
   See section 12.
 - Any narration or natural language explanation. P7.
 
+**Carried over from the prototype, and what was not.** This specification was
+written from a working prototype, and until 2026-10-12 it did not say which of
+that prototype's capabilities it declined to carry. Two were dropped silently
+as a result. Ad hoc query detection is now in scope as FEAT-051. Trend over
+time was declined here on the same reasoning and then brought in on 2026-09-06
+as ISS-172, once it was clear the two are different questions. Whether one
+query costs more this week than last is governance, and what an account spends
+over time is P1. It also needed no snapshot table: `query_finding` upserts on
+tenant, query and run date, so the audit had been writing one row per query per
+day since it was built and nothing read them. The prototype's
+billing and capacity tab is not in scope either: quota headroom is P5 and cost
+by usage type is P1.
+
 ## 4. Module structure
 
 ```
@@ -120,7 +133,13 @@ CREATE TABLE grafana_instance (
     -- AMG rows are discovered and must carry their location. The others are
     -- entered by a person and must not pretend to have one.
     CONSTRAINT ck_grafana_instance__amg_located
-        CHECK ((kind = 'AMG') = (account_id IS NOT NULL AND region_id IS NOT NULL))
+        CHECK ((kind = 'AMG') = (account_id IS NOT NULL AND region_id IS NOT NULL)),
+    -- Added at TASK-P2-009. The same invariant SurfaceInstance enforces in the
+    -- domain: an unexplained absence is what makes an estate look smaller than
+    -- it is, and the domain being careful is not a reason for the table not to
+    -- be.
+    CONSTRAINT ck_grafana_instance__unreachable_has_reason
+        CHECK (reachable OR unreachable_reason IS NOT NULL)
 );
 
 CREATE TABLE query_definition (
@@ -439,6 +458,7 @@ Neither blocks starting. OPEN-04 is answered: all three surfaces are in scope.
 | FEAT-016 | Owner attribution |
 | FEAT-017 | Auto remediation |
 | FEAT-018 | Cost model calibration |
+| FEAT-051 | Ad hoc query detection |
 
 FEAT-019, multi platform, is explicitly **not** delivered here. It becomes
 reachable because the port is named `QuerySurface` rather than after Grafana.

@@ -42,7 +42,9 @@ function renderNode(node: TreeNode) {
               </Button>
             ) : null}
             <span>{node.name}</span>
-            <span> {node.node_type.toLowerCase()}</span>
+            {/* The kind, muted and after the name. It reads as a label rather
+                than as part of the name, which `platform ou` did not. */}
+            <span className="meter-kind">{node.node_type.toLowerCase()}</span>
             {node.reachable ? null : (
               // Marked in words, not only by styling. A reader who cannot see
               // the treatment still learns why the numbers stop here.

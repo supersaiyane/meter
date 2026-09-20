@@ -147,8 +147,12 @@ make dep-check pkg=some-package npm=1    # frontend
 ### Before a merge request
 
 ```bash
-make verify     # lint, writing rules, doc checks, tests, security scan
+make verify     # lint, writing rules, doc checks, every test, security scan
 ```
+
+`verify` needs Docker, because the backend tests it runs include the ones that
+want a database and the fixture starts one. Without Docker, `make test-unit`
+is the offline subset.
 
 ### Starting a coding session
 
@@ -186,6 +190,29 @@ make migrate        # apply Alembic migrations
 make psql           # database shell
 make down           # stop, keep data.  make nuke  deletes the volume
 ```
+
+**Seeing the data once it is running.** There is no login screen. The interface
+reads a session token from `localStorage` and nothing puts one there, so a
+browser opened on the local stack shows an empty dashboard while every request
+answers 401, which looks exactly like a seeding failure and is not one.
+Production identity is OPEN-01 and parked. Locally:
+
+```bash
+make seed           # a demo estate written through the real collectors
+make seed DAYS=7    # the same, run once per day for seven days, so trends draw
+make token          # prints the one line to paste into the browser console
+```
+
+`DAYS` seeds a past as well as a present. The fake estate ran its queries about
+four percent less often on each earlier day, so the trend screens draw a line
+that rises toward today. That growth is a property of the estate, not of the
+chart: the collectors do the same arithmetic on each day's evidence, so a line
+that rises is the run counts reaching the screen intact.
+
+`make token` mints for `auditor@example.local`, the global user in
+`local-auth.yaml`. The other user there, `dev@example.local`, is scoped to two
+account ids the seed never creates, so it authenticates and then shows an empty
+estate, which is the more confusing of the two failures.
 
 **What LocalStack is doing in the stack.** It emulates the AWS APIs Meter
 calls: STS, SQS, S3, Secrets Manager, Organizations, Cost Explorer, Logs and

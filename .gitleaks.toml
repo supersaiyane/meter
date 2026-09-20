@@ -1,0 +1,41 @@
+# Gitleaks configuration.
+#
+# This is scanner configuration, not a security exception. The difference
+# matters and this project already draws it: `security/policy/allowlist.yaml`
+# says in its own header that it is "not a way to make a scanner quiet", and it
+# requires an owner, a reason and an expiry because an entry there is a decision
+# to ship a known finding. Nothing below is a known finding. Every entry is a
+# statement that a matched string is not a credential at all.
+#
+# The bar for adding something here: the match must be source code whose value
+# is visible in the repository and is not, and could never become, a secret. If
+# you cannot show that, it belongs in allowlist.yaml with an expiry instead.
+
+[extend]
+# Every default rule stays on. This file only narrows what counts as a match.
+useDefault = true
+
+[allowlist]
+description = "Matches that are source code rather than credentials"
+
+regexes = [
+  # `generic-api-key` fires on `<something>_key, <value>` and treats the value
+  # as a secret. Across this codebase that shape is a typed error being raised:
+  #
+  #     raise AccessDenied(scope_key=instance.scope_key, collector=COLLECTOR)
+  #
+  # COLLECTOR is a module constant holding a collector name such as
+  # "query_audit". It is written in plain sight in a dozen files, it is used as
+  # a database column value, and it is the opposite of a secret: a run that
+  # could not name its collector would be unattributable.
+  '''collector=COLLECTOR''',
+]
+
+stopwords = [
+  # Collector names, for the same reason. These appear as COLLECTOR values and
+  # as `collector` column values in ingest_run and sync_error.
+  "query_audit",
+  "account_health",
+  "platform_cost",
+  "org_tree",
+]

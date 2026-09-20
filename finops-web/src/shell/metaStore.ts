@@ -9,15 +9,39 @@ import type { ApiFailure, ApiMeta } from '../api/types';
  * newest panel would make it look current while a stale number sits beside it.
  */
 
+export interface CoverageLine {
+  readonly unit: string;
+  readonly visible: number;
+  readonly total: number;
+}
+
 export interface AggregateMeta {
   readonly asOf: string | null;
   readonly collectedAt: string | null;
   readonly visible: number;
   readonly total: number;
   readonly isPartial: boolean;
+  /** What the counts are counting. `in view` when two surfaces disagree. */
+  readonly unit: string;
+  /**
+   * One line per thing being counted, so a page whose panels count different
+   * things states each rather than one ratio that describes neither.
+   *
+   * Home is the case. It shows Meter's own cost, counted in accounts, beside
+   * the top findings, counted in workspaces. The conservative rule took the
+   * smallest visible and the largest total across both and produced "0 of 3",
+   * which was true of nothing on the page.
+   *
+   * A unit whose total is zero is left out. There is nothing to be partial
+   * about, and "all 0 accounts" is noise beside a real count.
+   */
+  readonly coverage: readonly CoverageLine[];
   readonly degraded: boolean;
   readonly failures: readonly ApiFailure[];
 }
+
+/** What a coverage line says when the response did not name what it counted. */
+const FALLBACK_UNIT = 'in view';
 
 export const EMPTY_AGGREGATE: AggregateMeta = {
   asOf: null,
@@ -25,6 +49,8 @@ export const EMPTY_AGGREGATE: AggregateMeta = {
   visible: 0,
   total: 0,
   isPartial: false,
+  unit: 'accounts',
+  coverage: [],
   degraded: false,
   failures: [],
 };
@@ -67,12 +93,33 @@ export function aggregate(metas: readonly ApiMeta[]): AggregateMeta {
   }
 
   const resolvedVisible = Number.isFinite(visible) ? visible : 0;
+  // Two surfaces counting different things cannot be described by either noun,
+  // and picking one of them would be a claim nothing supports.
+  // Defaulted, because a response that predates the field, or one from a
+  // version that never had it, would otherwise render the literal word
+  // `undefined` in a coverage statement. A missing noun is not a noun.
+  const units = new Set(metas.map((meta) => meta.scope_coverage.unit || FALLBACK_UNIT));
+  const byUnit = new Map<string, CoverageLine>();
+  for (const meta of metas) {
+    const { visible: seen, total: all } = meta.scope_coverage;
+    const unit = meta.scope_coverage.unit || FALLBACK_UNIT;
+    const line = byUnit.get(unit);
+    byUnit.set(unit, {
+      unit,
+      // Conservative within a unit, where the two numbers describe the same
+      // thing and the smaller claim is the safe one.
+      visible: line === undefined ? seen : Math.min(line.visible, seen),
+      total: line === undefined ? all : Math.max(line.total, all),
+    });
+  }
   return {
     asOf,
     collectedAt,
     visible: resolvedVisible,
     total,
     isPartial: resolvedVisible < total,
+    unit: units.size === 1 ? ([...units][0] as string) : 'in view',
+    coverage: [...byUnit.values()].filter((line) => line.total > 0),
     degraded,
     failures: dedupe(failures),
   };

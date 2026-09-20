@@ -1,0 +1,607 @@
+<title>Meter Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --ink: #151a21;
+    --paper: #f5f6f7;
+    --surface: #ffffff;
+    --rule: #cfd5dc;
+    --rule-strong: #a9b3bf;
+    --accent: #0e6b6b;
+    --accent-soft: #e2efee;
+    --warn: #9c5411;
+    --warn-soft: #f7ece1;
+    --muted: #5c6673;
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px;
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e6eaef; --paper: #101419; --surface: #171c23;
+      --rule: #2b333d; --rule-strong: #4b5764;
+      --accent: #5cc7c1; --accent-soft: #12302f;
+      --warn: #d8934c; --warn-soft: #2c2016; --muted: #98a3b0;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #e6eaef; --paper: #101419; --surface: #171c23;
+    --rule: #2b333d; --rule-strong: #4b5764;
+    --accent: #5cc7c1; --accent-soft: #12302f;
+    --warn: #d8934c; --warn-soft: #2c2016; --muted: #98a3b0;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: var(--s6) var(--s5) var(--s7);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s7);
+  }
+
+  header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s3);
+    padding-bottom: var(--s4);
+    border-bottom: 2px solid var(--ink);
+  }
+
+  h1 {
+    font-weight: 600;
+    font-size: clamp(30px, 4.5vw, 44px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+
+  .lede { font-size: 17px; margin: 0; max-width: 62ch; color: var(--muted); }
+  .lede b { color: var(--ink); font-weight: 500; }
+
+  .facts {
+    display: flex; flex-wrap: wrap; gap: var(--s2) var(--s5);
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+  }
+  .facts b { color: var(--ink); font-weight: 500; }
+
+  section { display: flex; flex-direction: column; gap: var(--s3); }
+
+  .step { display: flex; align-items: baseline; gap: var(--s3); }
+  .step .n {
+    font-family: var(--mono); font-size: 13px; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 2px;
+    padding: 1px 7px; flex: none;
+  }
+  h2 {
+    font-weight: 600; font-size: 25px; letter-spacing: -0.01em;
+    margin: 0; line-height: 1.15;
+  }
+
+  .one-liner { margin: 0; color: var(--muted); font-size: 15.5px; max-width: 70ch; }
+  .one-liner b { color: var(--ink); font-weight: 500; }
+
+  .frame {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    padding: var(--s5);
+    overflow-x: auto;
+    margin-top: var(--s2);
+  }
+  .frame svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+
+  figure { margin: 0; display: flex; flex-direction: column; gap: var(--s3); }
+  figcaption { font-size: 14px; color: var(--muted); max-width: 74ch; }
+  figcaption b { color: var(--ink); font-weight: 500; }
+
+  code {
+    font-family: var(--mono); font-size: 0.88em;
+    background: var(--accent-soft); color: var(--ink);
+    padding: 0.1em 0.34em; border-radius: 2px;
+  }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: var(--s4);
+    font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+    align-items: center;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: var(--s2); }
+  .swatch { width: 20px; height: 11px; border: 1px solid var(--rule-strong); display: inline-block; }
+  .swatch.solid { background: var(--accent-soft); border-color: var(--accent); }
+  .swatch.hand { background: var(--warn-soft); border-color: var(--warn); }
+
+  .note {
+    border-left: 3px solid var(--warn);
+    background: var(--warn-soft);
+    padding: var(--s3) var(--s5);
+    max-width: 78ch;
+  }
+  .note p { margin: 0; font-size: 14.5px; }
+  .note .label {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--warn);
+    display: block; margin-bottom: 4px;
+  }
+
+  footer {
+    border-top: 1px solid var(--rule); padding-top: var(--s4);
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: var(--s2) var(--s5);
+  }
+
+  @media (max-width: 640px) {
+    .wrap { padding: var(--s5) var(--s4); gap: var(--s6); }
+    .frame { padding: var(--s3); }
+    h1 { font-size: 28px; }
+    h2 { font-size: 21px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <h1>Meter Architecture</h1>
+    <p class="lede">
+      The whole system in five pictures: <b>how you deploy it</b>, how it
+      collects, how a screen reads, what protects it, and what it is made of.
+    </p>
+    <div class="facts">
+      <span><b>3</b> Terraform stacks</span>
+      <span><b>6</b> packages</span>
+      <span><b>11</b> ports</span>
+      <span><b>6</b> collectors</span>
+      <span><b>20</b> tables</span>
+      <span><b>13</b> routes</span>
+      <span><b>10</b> screens</span>
+      <span><b>0</b> access keys</span>
+    </div>
+  </header>
+
+  <!-- ============================================================ DEPLOY -->
+  <section>
+    <div class="step"><span class="n">1</span><h2>Deploying it</h2></div>
+    <p class="one-liner">
+      Eight steps across three places. <b>The order is not obvious:</b> the two
+      role stacks go first, because they trust a hub role by name, not by ARN.
+    </p>
+
+    <figure>
+      <div class="frame">
+        <svg viewBox="0 0 1000 430" role="img" aria-label="Deployment sequence in three swim lanes. On your laptop you enable trusted access, create a state bucket and generate an external id. In the management account you apply the management stack and the member StackSet. In the hub account you apply the hub stack, push images, then migrate and check health.">
+          <defs>
+            <marker id="d1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <polygon points="0,0 10,5 0,10" fill="currentColor"></polygon>
+            </marker>
+          </defs>
+
+          <text x="164" y="26" font-family="IBM Plex Sans, sans-serif" font-size="13" fill="currentColor" font-weight="600">
+            Follow the arrow. Steps 1 to 3 are done by a person and cannot be automated.
+          </text>
+
+          <g opacity="0.5">
+            <line x1="150" y1="48" x2="990" y2="48" stroke="currentColor" stroke-width="1"></line>
+            <line x1="150" y1="178" x2="990" y2="178" stroke="currentColor" stroke-width="1"></line>
+            <line x1="150" y1="308" x2="990" y2="308" stroke="currentColor" stroke-width="1"></line>
+            <line x1="150" y1="424" x2="990" y2="424" stroke="currentColor" stroke-width="1"></line>
+          </g>
+
+          <g font-family="IBM Plex Mono, monospace" font-size="12" fill="currentColor">
+            <text x="16" y="96">your laptop</text>
+            <text x="16" y="112" font-size="10" opacity="0.65">a person, once</text>
+
+            <text x="16" y="226">management</text>
+            <text x="16" y="242" font-size="10" opacity="0.65">account</text>
+
+            <text x="16" y="366">hub account</text>
+            <text x="16" y="382" font-size="10" opacity="0.65">the service</text>
+          </g>
+
+          <g font-family="IBM Plex Sans, sans-serif" font-size="12.5">
+            <rect x="164" y="66" width="182" height="80" fill="#9c5411" fill-opacity="0.1" stroke="#9c5411" stroke-width="1.3"></rect>
+            <text x="176" y="86" font-family="IBM Plex Mono, monospace" font-size="11" fill="#9c5411">01</text>
+            <text x="176" y="106" fill="currentColor" font-weight="600">Trusted access</text>
+            <text x="176" y="124" fill="currentColor" opacity="0.75">let CloudFormation</text>
+            <text x="176" y="139" fill="currentColor" opacity="0.75">reach your accounts</text>
+
+            <rect x="366" y="66" width="182" height="80" fill="#9c5411" fill-opacity="0.1" stroke="#9c5411" stroke-width="1.3"></rect>
+            <text x="378" y="86" font-family="IBM Plex Mono, monospace" font-size="11" fill="#9c5411">02</text>
+            <text x="378" y="106" fill="currentColor" font-weight="600">State bucket</text>
+            <text x="378" y="124" fill="currentColor" opacity="0.75">a stack cannot hold</text>
+            <text x="378" y="139" fill="currentColor" opacity="0.75">its own state</text>
+
+            <rect x="568" y="66" width="182" height="80" fill="#9c5411" fill-opacity="0.1" stroke="#9c5411" stroke-width="1.3"></rect>
+            <text x="580" y="86" font-family="IBM Plex Mono, monospace" font-size="11" fill="#9c5411">03</text>
+            <text x="580" y="106" fill="currentColor" font-weight="600">Shared secret</text>
+            <text x="580" y="124" fill="currentColor" opacity="0.75">32 characters, into</text>
+            <text x="580" y="139" fill="currentColor" opacity="0.75">Secrets Manager</text>
+          </g>
+
+          <g font-family="IBM Plex Sans, sans-serif" font-size="12.5">
+            <rect x="164" y="196" width="182" height="80" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="176" y="216" font-family="IBM Plex Mono, monospace" font-size="11" fill="#0e6b6b">04</text>
+            <text x="176" y="236" fill="currentColor" font-weight="600">Management stack</text>
+            <text x="176" y="254" fill="currentColor" opacity="0.75">one role that lists</text>
+            <text x="176" y="269" fill="currentColor" opacity="0.75">the organization</text>
+
+            <rect x="366" y="196" width="182" height="80" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="378" y="216" font-family="IBM Plex Mono, monospace" font-size="11" fill="#0e6b6b">05</text>
+            <text x="378" y="236" fill="currentColor" font-weight="600">Member StackSet</text>
+            <text x="378" y="254" fill="currentColor" opacity="0.75">a read only role in</text>
+            <text x="378" y="269" fill="currentColor" opacity="0.75">every account</text>
+          </g>
+
+          <g font-family="IBM Plex Sans, sans-serif" font-size="12.5">
+            <rect x="568" y="326" width="130" height="80" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="580" y="346" font-family="IBM Plex Mono, monospace" font-size="11" fill="#0e6b6b">06</text>
+            <text x="580" y="366" fill="currentColor" font-weight="600">Hub stack</text>
+            <text x="580" y="384" fill="currentColor" opacity="0.75">network, database,</text>
+            <text x="580" y="399" fill="currentColor" opacity="0.75">the service itself</text>
+
+            <rect x="716" y="326" width="122" height="80" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="728" y="346" font-family="IBM Plex Mono, monospace" font-size="11" fill="#0e6b6b">07</text>
+            <text x="728" y="366" fill="currentColor" font-weight="600">Images</text>
+            <text x="728" y="384" fill="currentColor" opacity="0.75">amd64 only, or</text>
+            <text x="728" y="399" fill="currentColor" opacity="0.75">it will not start</text>
+
+            <rect x="856" y="326" width="130" height="80" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="868" y="346" font-family="IBM Plex Mono, monospace" font-size="11" fill="#0e6b6b">08</text>
+            <text x="868" y="366" fill="currentColor" font-weight="600">Migrate, check</text>
+            <text x="868" y="384" fill="currentColor" opacity="0.75">degraded is the</text>
+            <text x="868" y="399" fill="currentColor" opacity="0.75">right first answer</text>
+          </g>
+
+          <g stroke="currentColor" stroke-width="1.3" fill="none" marker-end="url(#d1)">
+            <line x1="350" y1="106" x2="362" y2="106"></line>
+            <line x1="552" y1="106" x2="564" y2="106"></line>
+            <path d="M 659 150 L 659 166 L 120 166 L 120 236 L 160 236"></path>
+            <line x1="350" y1="236" x2="362" y2="236"></line>
+            <path d="M 457 280 L 457 298 L 633 298 L 633 322"></path>
+            <line x1="702" y1="366" x2="712" y2="366"></line>
+            <line x1="842" y1="366" x2="852" y2="366"></line>
+          </g>
+        </svg>
+      </div>
+      <figcaption>
+        <b>Why the role stacks come before the service.</b> They trust
+        <code>FinOpsHubTaskRole</code> by name, so they can be applied before it
+        exists. Do the hub first and the service starts with nothing it can
+        read, failing with AccessDenied that looks like a bug.
+      </figcaption>
+    </figure>
+
+    <div class="legend">
+      <span><i class="swatch hand"></i> a person does this, once</span>
+      <span><i class="swatch solid"></i> terraform apply</span>
+    </div>
+  </section>
+
+  <!-- =============================================================== RUN -->
+  <section>
+    <div class="step"><span class="n">2</span><h2>How it collects</h2></div>
+    <p class="one-liner">
+      A queue of small jobs, not a nightly batch. <b>One account failing never
+      fails the run.</b>
+    </p>
+
+    <figure>
+      <div class="frame">
+        <svg viewBox="0 0 1000 320" role="img" aria-label="A schedule creates one job per account, a queue feeds workers, each worker claims a job, reads AWS through a temporary role, and writes the fact and its age to the database. A failed job stores its reason instead, and the window is retried later.">
+          <defs>
+            <marker id="r1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <polygon points="0,0 10,5 0,10" fill="currentColor"></polygon>
+            </marker>
+            <marker id="r1w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <polygon points="0,0 10,5 0,10" fill="#9c5411"></polygon>
+            </marker>
+          </defs>
+
+          <text x="16" y="34" font-family="IBM Plex Sans, sans-serif" font-size="13" fill="currentColor" font-weight="600">
+            Six collectors run this loop: the account tree, role health, Meter's own cost, Grafana queries, retention, partitions.
+          </text>
+          <text x="16" y="56" font-family="IBM Plex Sans, sans-serif" font-size="12.5" fill="currentColor" opacity="0.75">
+            Each job covers one collector, one account, one time window.
+          </text>
+
+          <g font-family="IBM Plex Sans, sans-serif" font-size="13" fill="currentColor">
+            <rect x="16" y="96" width="126" height="62" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="79" y="122" text-anchor="middle" font-weight="600">Schedule</text>
+            <text x="79" y="140" text-anchor="middle" font-size="11" opacity="0.7">every 1 to 24 h</text>
+
+            <rect x="186" y="96" width="126" height="62" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="249" y="122" text-anchor="middle" font-weight="600">Queue</text>
+            <text x="249" y="140" text-anchor="middle" font-size="11" opacity="0.7">one job per account</text>
+
+            <rect x="356" y="96" width="126" height="62" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="419" y="122" text-anchor="middle" font-weight="600">Worker</text>
+            <text x="419" y="140" text-anchor="middle" font-size="11" opacity="0.7">claims the job</text>
+
+            <rect x="526" y="96" width="146" height="62" fill="#0e6b6b" fill-opacity="0.1" stroke="#0e6b6b" stroke-width="1.4"></rect>
+            <text x="599" y="122" text-anchor="middle" font-weight="600">Reads AWS</text>
+            <text x="599" y="140" text-anchor="middle" font-size="11" opacity="0.75">via a temporary role</text>
+
+            <rect x="716" y="96" width="150" height="62" fill="none" stroke="currentColor" stroke-width="1.6"></rect>
+            <text x="791" y="122" text-anchor="middle" font-weight="600">Database</text>
+            <text x="791" y="140" text-anchor="middle" font-size="11" opacity="0.7">the fact, and its age</text>
+
+            <rect x="716" y="228" width="150" height="62" fill="#9c5411" fill-opacity="0.1" stroke="#9c5411" stroke-width="1.3"></rect>
+            <text x="791" y="254" text-anchor="middle" font-weight="600">Or the reason</text>
+            <text x="791" y="272" text-anchor="middle" font-size="11" opacity="0.78">AccessDenied, and so on</text>
+          </g>
+
+          <g stroke="currentColor" stroke-width="1.3" fill="none" marker-end="url(#r1)">
+            <line x1="146" y1="127" x2="182" y2="127"></line>
+            <line x1="316" y1="127" x2="352" y2="127"></line>
+            <line x1="486" y1="127" x2="522" y2="127"></line>
+            <line x1="676" y1="127" x2="712" y2="127"></line>
+          </g>
+          <path d="M 599 162 L 599 259 L 712 259" stroke="#9c5411" stroke-width="1.3" fill="none"
+                stroke-dasharray="5 3" marker-end="url(#r1w)"></path>
+          <text x="612" y="205" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="#9c5411">if it fails</text>
+
+          <g font-family="IBM Plex Sans, sans-serif" fill="currentColor">
+            <text x="16" y="248" font-size="12.5" font-weight="600">A failure is stored,</text>
+            <text x="16" y="266" font-size="12.5" opacity="0.75">never turned into a zero.</text>
+            <text x="16" y="290" font-size="12.5" opacity="0.75">The window is retried next time.</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>
+        <b>The bookmark only moves after a job is recorded as finished.</b> A
+        job that fails leaves it where it was, so the next run covers the same
+        window again, and a duplicate delivery from the queue changes nothing.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================== READ -->
+  <section>
+    <div class="step"><span class="n">3</span><h2>How a screen reads</h2></div>
+    <p class="one-liner">
+      Every answer carries <b>how old it is</b> and <b>how much of the estate it
+      covers</b>, so a partial view is never shown as a total.
+    </p>
+
+    <figure>
+      <div class="frame">
+        <svg viewBox="0 0 1000 290" role="img" aria-label="A browser and an AI assistant both call the same API. The API checks the caller's permissions twice, reads the database, and returns the numbers together with their age, their coverage and any failures.">
+          <defs>
+            <marker id="r2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <polygon points="0,0 10,5 0,10" fill="currentColor"></polygon>
+            </marker>
+          </defs>
+
+          <text x="16" y="30" font-family="IBM Plex Sans, sans-serif" font-size="13" fill="currentColor" font-weight="600">
+            The AI assistant gets no private path. It calls the same API over the network, with your token.
+          </text>
+
+          <g font-family="IBM Plex Sans, sans-serif" font-size="13" fill="currentColor">
+            <rect x="16" y="56" width="132" height="52" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="82" y="87" text-anchor="middle" font-weight="600">Browser</text>
+
+            <rect x="16" y="134" width="132" height="52" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="82" y="158" text-anchor="middle" font-weight="600">AI assistant</text>
+            <text x="82" y="175" text-anchor="middle" font-size="11" opacity="0.7">same API, same token</text>
+
+            <rect x="222" y="80" width="250" height="122" fill="#0e6b6b" fill-opacity="0.07" stroke="#0e6b6b" stroke-width="1.5"></rect>
+            <text x="347" y="106" text-anchor="middle" font-weight="600">The API</text>
+            <text x="347" y="126" text-anchor="middle" font-size="11.5" opacity="0.8">the only place access is decided</text>
+            <rect x="242" y="140" width="94" height="44" fill="none" stroke="#0e6b6b"></rect>
+            <text x="289" y="160" text-anchor="middle" font-size="11.5">check 1</text>
+            <text x="289" y="175" text-anchor="middle" font-size="10" opacity="0.7">on the request</text>
+            <rect x="356" y="140" width="96" height="44" fill="none" stroke="#0e6b6b"></rect>
+            <text x="404" y="160" text-anchor="middle" font-size="11.5">check 2</text>
+            <text x="404" y="175" text-anchor="middle" font-size="10" opacity="0.7">on the query</text>
+
+            <rect x="540" y="114" width="126" height="54" fill="none" stroke="currentColor" stroke-width="1.6"></rect>
+            <text x="603" y="146" text-anchor="middle" font-weight="600">Database</text>
+
+            <rect x="734" y="52" width="250" height="184" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="750" y="78" font-weight="600">What comes back</text>
+            <g font-family="IBM Plex Mono, monospace" font-size="11.5" opacity="0.85">
+              <text x="750" y="106">the numbers</text>
+              <text x="750" y="128">measured, or modelled</text>
+              <text x="750" y="150">true at 04:00</text>
+              <text x="750" y="172">fetched 6 min ago</text>
+              <text x="750" y="194">2 of 3 accounts</text>
+              <text x="750" y="216">1 workspace refused</text>
+            </g>
+          </g>
+
+          <g stroke="currentColor" stroke-width="1.3" fill="none" marker-end="url(#r2)">
+            <path d="M 152 82 L 186 82 L 186 124 L 218 124"></path>
+            <path d="M 152 160 L 186 160 L 186 144 L 218 144"></path>
+            <line x1="476" y1="141" x2="536" y2="141"></line>
+            <line x1="670" y1="141" x2="730" y2="141"></line>
+          </g>
+
+          <g font-family="IBM Plex Sans, sans-serif" font-size="12" fill="currentColor" opacity="0.8">
+            <text x="222" y="232">Two checks, written separately. A route that forgets the first one still</text>
+            <text x="222" y="250">cannot read another customer's rows, because the second one lives inside</text>
+            <text x="222" y="268">the code that builds every query.</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>
+        <b>Coverage travels with the number.</b> If Meter could read two of your
+        three accounts, the screen says so above the total, because a total
+        drawn from part of an estate that looks complete is worse than no total.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- ========================================================== SECURITY -->
+  <section>
+    <div class="step"><span class="n">4</span><h2>What protects it</h2></div>
+    <p class="one-liner">
+      <b>There is no password or access key anywhere in the system.</b> Every
+      read into your accounts is a short lived session it has to ask for.
+    </p>
+
+    <figure>
+      <div class="frame">
+        <svg viewBox="0 0 1000 380" role="img" aria-label="The trust chain. The running service takes its identity from AWS, reads a shared secret from Secrets Manager, and uses both to request a temporary session in the management account and in each member account. Sessions last one hour, each assume needs two locks, and writing is off by default.">
+          <defs>
+            <marker id="s1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <polygon points="0,0 10,5 0,10" fill="#0e6b6b"></polygon>
+            </marker>
+          </defs>
+
+          <text x="16" y="34" font-family="IBM Plex Sans, sans-serif" font-size="13" fill="currentColor" font-weight="600">
+            Meter never holds a credential to your accounts. It asks AWS for one each time, and AWS decides.
+          </text>
+
+          <g font-family="IBM Plex Sans, sans-serif" font-size="13" fill="currentColor">
+            <rect x="16" y="88" width="172" height="86" fill="#0e6b6b" fill-opacity="0.1" stroke="#0e6b6b" stroke-width="1.5"></rect>
+            <text x="102" y="118" text-anchor="middle" font-weight="600">Meter, running</text>
+            <text x="102" y="138" text-anchor="middle" font-size="11.5" opacity="0.8">its identity comes</text>
+            <text x="102" y="154" text-anchor="middle" font-size="11.5" opacity="0.8">from AWS itself</text>
+
+            <rect x="16" y="222" width="172" height="76" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="102" y="250" text-anchor="middle" font-weight="600">Shared secret</text>
+            <text x="102" y="270" text-anchor="middle" font-size="11.5" opacity="0.75">in Secrets Manager,</text>
+            <text x="102" y="286" text-anchor="middle" font-size="11.5" opacity="0.75">never in the code</text>
+
+            <rect x="320" y="60" width="212" height="86" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="426" y="90" text-anchor="middle" font-weight="600">Your management account</text>
+            <text x="426" y="112" text-anchor="middle" font-size="11.5" opacity="0.75">a read only role that lists</text>
+            <text x="426" y="128" text-anchor="middle" font-size="11.5" opacity="0.75">the organization</text>
+
+            <rect x="320" y="196" width="212" height="86" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="426" y="226" text-anchor="middle" font-weight="600">Each of your accounts</text>
+            <text x="426" y="248" text-anchor="middle" font-size="11.5" opacity="0.75">a read only role that sees</text>
+            <text x="426" y="264" text-anchor="middle" font-size="11.5" opacity="0.75">cost and usage</text>
+
+            <rect x="640" y="56" width="344" height="86" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="656" y="84" font-weight="600">The session lasts one hour</text>
+            <text x="656" y="106" font-size="12" opacity="0.78">Nothing is stored. It is requested again when needed,</text>
+            <text x="656" y="123" font-size="12" opacity="0.78">so removing the role stops Meter within the hour.</text>
+
+            <rect x="640" y="162" width="344" height="86" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="656" y="190" font-weight="600">Two locks on every request</text>
+            <text x="656" y="212" font-size="12" opacity="0.78">Your role names Meter's role specifically, and also</text>
+            <text x="656" y="229" font-size="12" opacity="0.78">demands the shared secret.</text>
+
+            <rect x="640" y="268" width="344" height="86" fill="#9c5411" fill-opacity="0.1" stroke="#9c5411" stroke-width="1.3"></rect>
+            <text x="656" y="296" font-weight="600">Writing is off</text>
+            <text x="656" y="318" font-size="12" opacity="0.8">Meter only reads. Changing anything in your estate</text>
+            <text x="656" y="335" font-size="12" opacity="0.8">needs a setting somebody deliberately turns on.</text>
+          </g>
+
+          <g stroke="#0e6b6b" stroke-width="1.4" fill="none" marker-end="url(#s1)">
+            <path d="M 192 114 L 254 114 L 254 100 L 316 100"></path>
+            <path d="M 192 148 L 254 148 L 254 236 L 316 236"></path>
+          </g>
+          <path d="M 102 218 L 102 178" stroke="currentColor" stroke-width="1.2" fill="none" stroke-dasharray="4 3"></path>
+
+          <text x="200" y="82" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="#0e6b6b" font-weight="600">asks for a</text>
+          <text x="200" y="97" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="#0e6b6b" font-weight="600">temporary key</text>
+        </svg>
+      </div>
+      <figcaption>
+        <b>What this means in practice.</b> If Meter is compromised there is no
+        stored key to steal. Remove the role in your account and access stops
+        within the hour, without anyone touching Meter.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- ======================================================== COMPONENTS -->
+  <section>
+    <div class="step"><span class="n">5</span><h2>What it is made of</h2></div>
+    <p class="one-liner">
+      Six parts stacked, each allowed to use the ones below it and
+      <b>never the ones above</b>. A test fails if that is broken.
+    </p>
+
+    <figure>
+      <div class="frame">
+        <svg viewBox="0 0 1000 350" role="img" aria-label="Six stacked components. The AI assistant server sits on the API and screens, which sit on collection, which sits on the cost model, which sits on the cloud adapters, which sit on the core. The core knows nothing about any cloud.">
+          <defs>
+            <marker id="c1" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="7" markerHeight="7" orient="auto">
+              <polygon points="0,0 10,0 5,10" fill="currentColor"></polygon>
+            </marker>
+          </defs>
+
+          <line x1="30" y1="26" x2="30" y2="312" stroke="currentColor" stroke-width="1.4" marker-end="url(#c1)"></line>
+          <text x="24" y="172" fill="currentColor" font-family="IBM Plex Mono, monospace" font-size="11"
+                text-anchor="middle" transform="rotate(-90 24 172)" opacity="0.75">may use</text>
+
+          <g font-family="IBM Plex Sans, sans-serif" font-size="13.5" fill="currentColor">
+            <rect x="56" y="20" width="290" height="46" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="72" y="49" font-weight="600">AI assistant server</text>
+            <text x="368" y="49" opacity="0.8">Answers questions by calling the API, like anyone else.</text>
+
+            <rect x="56" y="76" width="290" height="46" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="72" y="105" font-weight="600">The API and the screens</text>
+            <text x="368" y="105" opacity="0.8">Decides who may see what. Ten screens read from it.</text>
+
+            <rect x="56" y="132" width="290" height="46" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="72" y="161" font-weight="600">Collection</text>
+            <text x="368" y="161" opacity="0.8">The six collectors, the queue, and a record of every run.</text>
+
+            <rect x="56" y="188" width="290" height="46" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="72" y="217" font-weight="600">The cost model</text>
+            <text x="368" y="217" opacity="0.8">Pure arithmetic. No network, no clock, no surprises.</text>
+
+            <rect x="56" y="244" width="290" height="46" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+            <text x="72" y="273" font-weight="600">Cloud adapters</text>
+            <text x="368" y="273" opacity="0.8">The only part that knows AWS exists. Plus a stand in.</text>
+
+            <rect x="56" y="300" width="290" height="46" fill="#0e6b6b" fill-opacity="0.1" stroke="#0e6b6b" stroke-width="1.6"></rect>
+            <text x="72" y="329" font-weight="600">The core</text>
+            <text x="368" y="329" opacity="0.9" font-weight="500">Knows nothing about any cloud. This is the important one.</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>
+        <b>Why the bottom layer matters.</b> Because the core knows nothing
+        about AWS, supporting Google Cloud or Azure means adding one adapter
+        near the bottom rather than rewriting the product. The same property is
+        what lets the whole test suite run with no AWS account at all.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <div class="note">
+      <span class="label">One thing to know before trusting any of this</span>
+      <p>
+        None of it has ever run against a real AWS account. Every test, the demo
+        data and every screen run against a stand in that satisfies the same
+        eleven interfaces as the real AWS adapter. That is a deliberate design
+        property, and it is also the largest unknown: matching interfaces prove
+        the two agree with each other, not that either agrees with AWS.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <span>docs/runbooks/deploy.md to stand it up</span>
+    <span>docs/02-ARCHITECTURE.md for the decisions</span>
+    <span>docs/adr/ for the 21 records</span>
+    <span>project_map.md for the module map</span>
+  </footer>
+
+</div>

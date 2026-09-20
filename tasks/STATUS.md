@@ -9,7 +9,7 @@
      own content rather than scaffolding, and is not tagged.
 -->
 
-Last updated: 2026-09-05
+Last updated: 2026-09-19
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -22,11 +22,11 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 50 total, 8 specified, 7 in build, 5 delivered |
-| Decisions | 19 architecture decision records |
-| Changes | 71 recorded |
-| Issues | 92 fixed, 38 open, 0 parked |
-| Open questions | 6 awaiting a decision |
+| Features | 51 total, 12 specified, 10 in build, 5 delivered |
+| Decisions | 21 architecture decision records |
+| Changes | 90 recorded |
+| Issues | 124 fixed, 58 open, 0 parked |
+| Open questions | 9 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
 
@@ -36,34 +36,74 @@ Generated from `docs/registry.yaml`. Change a status there, then run `make doc-s
 
 **P0 is code complete and is NOT signed off.**
 
-All 35 tasks are written, tested and committed. `make verify` passes: lint,
-the writing rules, the eight documentation checks, the docstring gate, the
-memory gate, 443 tests at 98 percent, and a security scan with zero findings.
+All 39 tasks are written, tested and committed. `make verify` passes: lint, the
+writing rules, the eight documentation checks, the docstring gate, the memory
+gate, 898 backend tests, 249 frontend tests, a typed web build, 6 Playwright
+journeys, and a security scan with zero unresolved findings and five accepted
+as unfixable.
 
-Lint and type checking now cover every directory that holds Python, which is
-160 files under mypy where it was 25. `scripts/`, `migrations/` and the test
-suite had all been outside one or both.
+The gate ran 545 of those backend tests until 2026-09-06, the subset that needs
+no services. The other 211 are where ISS-175 and ISS-177 both lived, the same
+bug on two tables. `make verify` now runs every one of them and therefore needs
+Docker, because the database fixture starts a PostgreSQL container. ISS-154.
 
-**P2 has started. 4 of 22 done, 2 descoped, 16 to build.**
+Lint and type checking cover every directory that holds Python, which is 181
+files under mypy where it was 25. `scripts/`, `migrations/` and the test suite
+had all been outside one or both.
 
-Wave A is complete. The 2,740 line prototype was imported byte identical,
-pinned by 15 golden files, taken apart into `finops_query` and deleted. Those
-goldens now reproduce from `Settings` rather than from the prototype's own
-config, which was the condition for deleting it. `QuerySurface` is defined and
-named for the pattern rather than for Grafana.
+**P1's cost surface is 13 of 13 done.** Ingest to two screens, against a fake
+export. `/cost` and `/cost/allocation` read live data on a seeded estate, and
+the navigation group's other three screens still say which sub project brings
+them. Anomalies, commitments and the chargeback export are a deliberate second
+cut, named in section 3 of the specification with a reason for each.
 
-Next is TASK-P2-005, the fake query surface. The resume vector is the newest
-row in `docs/checkpoint.md`.
+Two gaps inside it are recorded rather than hidden. The collector reads only the
+latest billing period, so a restated closed month is never picked up, ISS-183,
+and the seed works around it by ingesting each period itself. The Athena adapter
+buffers a whole period, and that ceiling is unmeasured because nothing has run
+against a real export, ISS-181.
 
-What that sentence does not cover is the part that matters for a sign off.
+**P2 is 21 of 26 done, 2 parked, 2 descoped, 1 not started.**
 
-**Nothing has ever run against AWS.** The three Terraform stacks pass
-`validate` and `fmt`, which checks syntax, provider schema and references, and
-checks nothing about whether the stack builds. No plan has been produced and
-nothing has been applied. ISS-122.
+TASK-P2-026 was added late, after the restored prototype was read against what P2 delivered. Ad hoc query detection was in that prototype, reached neither the specification nor the code, and was brought into scope rather than left as ISS-171. It was small, exactly as predicted: the evidence the measured overlay already collects contained it. It is done, and FEAT-051 is live at `/governance/adhoc`.
 
-**The restore drill has not been performed.** It needs an Aurora cluster to
-restore into a scratch database. ISS-111.
+The backend is complete through wave J. The collector runs, prices what it
+reads, measures what it can observe, and attributes an owner. Six of the eight
+routes in spec section 8.2 exist and are live; the other two read data that
+does not exist yet and are held under ISS-148, which names what each one waits
+on. One task has not started: TASK-P2-020, which needs real CUR data and so
+cannot be started from inside this repository.
+
+**The interface is built and every screen has been through a pass.** Ten screens
+read live data against a seeded local estate, and each has been opened at 1440
+px and corrected. That pass found fourteen defects, none of which any test could
+see, and the rule it produced is in `tasks/lessons.md`: a route that has never
+been called is not evidence. The remaining screens are unbuilt and each one
+names the sub project that will fill it, which is what makes the front page the
+progress view.
+
+What the sentences above do not cover is the part that matters for a sign off.
+
+**Nothing has ever run in CI either.** The repository has no git remote, so
+`.gitlab-ci.yml` has never executed, and every statement anywhere in this
+repository about what the pipeline does is a reading of the file rather than a
+result. Found 2026-09-06, by asking what a variable in the test job was for:
+the answer was nothing, and the job as written could not have run an
+integration test at all. ISS-178 fixed the job, ISS-179 records that the first
+push will be the first run and should be watched rather than trusted.
+
+**Nothing has ever run against AWS.** The three Terraform stacks pass `validate`
+and `fmt`, which checks syntax, provider schema and references, and checks
+nothing about whether the stack builds. No plan has been produced and nothing
+has been applied. ISS-122. This is also what keeps TASK-P2-016 parked, and
+TASK-P2-016 is what two of the five missing routes wait on.
+
+**The restore drill is performed except for its first step.** `make
+restore-drill` restores a copy into a scratch database, runs the migrations to
+head, starts the application against it and reads the freshness route, and it
+has been run against a real restore. Restoring from an Aurora snapshot has not
+been done, because there is no account. ISS-111 is now that one link rather
+than the whole chain, and `docs/runbooks/restore.md` is the procedure.
 
 Both are open and both are acceptance criteria. P0 is not done until they are
 closed, and calling it done before then would be exactly the kind of claim this
@@ -80,10 +120,11 @@ ISS-003.
 <!-- generated:task-status start -->
 <!-- This block is GENERATED from docs/plans/ by scripts/docs/sync.py. Edit docs/plans/, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-| Sub project | Done | Partly | Descoped | Not started | Total | Plan |
-| --- | --- | --- | --- | --- | --- | --- |
-| P0 | 35 | 0 | 0 | 0 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P2 | 4 | 0 | 2 | 16 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
+| Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P1 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P1-implementation-plan.md) |
+| P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -120,10 +161,40 @@ ISS-003.
 | `TASK-P0-027` | Done, 2026-08-27 | accounts screen and organization map |
 | `TASK-P0-028` | Done, 2026-08-27, with one criterion not performed | ingest, freshness and platform cost screens, plus the end to end journey |
 | `TASK-P0-032` | Done, 2026-08-27, with one criterion deferred to TASK-P0-015 | retention jobs and the erasure script |
+| `TASK-P0-036` | Done, 2026-09-07 | routing, the seven groups, and the route migration |
+| `TASK-P0-037` | Done, 2026-09-09 | the fixture seam and the fixture marker |
+| `TASK-P0-038` | Done, 2026-09-11 | the home screen |
+| `TASK-P0-039` | Done, 2026-09-21 | the visual layer |
 | `TASK-P0-029` | **Done 2026-08-23**, commit `9754a59` | establish the security tool chain and the first posture |
 | `TASK-P0-030` | Done, 2026-08-27 | MCP server scaffold and the four P0 tools |
 | `TASK-P0-031` | Done, 2026-08-28 | wire the documentation and graph gates into the pipeline |
 | `TASK-P0-033` | Done, 2026-08-29, not applied | SLOs, alerts and runbooks |
+
+**P1, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P1-001` | Done, 2026-09-18 | the cost port and the types that carry a measure |
+| `TASK-P1-002` | Done, 2026-09-18 | a fake estate with a bill |
+| `TASK-P1-003` | Done, 2026-09-18, and unproved by construction | the Athena adapter, written and unproved |
+| `TASK-P1-004` | Done, 2026-09-18 | the collector, and what makes a line item itself |
+| `TASK-P1-005` | Done, 2026-09-18 | retraction, which is the dangerous half |
+| `TASK-P1-006` | Done, 2026-09-19 | the monthly rollup, derived and never ingested |
+| `TASK-P1-007` | Done, 2026-09-19 | cadence, as data |
+| `TASK-P1-008` | Done, 2026-09-19 | the guard, then the repository |
+| `TASK-P1-009` | Done, 2026-09-19 | four routes |
+| `TASK-P1-010` | Done, 2026-09-19 | the spend and trend screen |
+| `TASK-P1-011` | Done, 2026-09-19 | the allocation screen and the bucket nobody wants |
+| `TASK-P1-012` | Done, 2026-09-19 | the demo estate gets a bill |
+| `TASK-P1-013` | Done, 2026-09-19, and unapplied by construction | the infrastructure that will not be applied |
+| `TASK-P1-014` | Done, 2026-09-20 | a day that does not look like the days before it |
+| `TASK-P1-015` | Done, 2026-09-20 | the anomalies screen |
+| `TASK-P1-016` | Done, 2026-09-20, with a deviation | what was committed, and how much was used |
+| `TASK-P1-017` | Done, 2026-09-20 | the commitments screen |
+| `TASK-P1-018` | Done, 2026-09-20 | the file finance opens |
+| `TASK-P1-019` | Done, 2026-09-20 | the demo estate |
+| `TASK-P1-020` | Done, 2026-09-20 | the design pass |
+| `TASK-P1-021` | Done, 2026-09-20 | the demo walk |
 
 **P2, not in the default state**
 
@@ -133,8 +204,27 @@ ISS-003.
 | `TASK-P2-002` | Done, 2026-09-03 | extract the cost model under the golden files |
 | `TASK-P2-003` | Done, 2026-09-04 | decompose the remainder and delete the legacy copy |
 | `TASK-P2-004` | Done, 2026-09-05 | define the QuerySurface port |
+| `TASK-P2-005` | Done, 2026-09-23 | the fake Grafana surface |
+| `TASK-P2-006` | Done, 2026-09-24 | the AMG connection strategy |
 | `TASK-P2-007` | Descoped, 2026-09-02 | the self hosted connection strategy |
 | `TASK-P2-008` | Descoped, 2026-09-02 | the Grafana Cloud connection strategy |
+| `TASK-P2-009` | Done, 2026-08-30 | the six P2 tables |
+| `TASK-P2-010` | Done, 2026-08-31 | the query audit collector |
+| `TASK-P2-011` | Done, 2026-09-01 | fingerprinting and template variables |
+| `TASK-P2-012` | Done, 2026-09-14 | severity, ranking and grouping |
+| `TASK-P2-013` | Done, 2026-09-05 | the measured overlay |
+| `TASK-P2-014` | Done, 2026-09-06 | owner attribution |
+| `TASK-P2-015` | Parked, 2026-08-29 | detection and alerting |
+| `TASK-P2-016` | Parked, 2026-08-29 | throttle and deny, with the guardrails |
+| `TASK-P2-017` | Done, 2026-09-14, the AMG write refuses. ISS-166 | the workspace refresh floor |
+| `TASK-P2-018` | Done, 2026-09-15 | the CI policy gate |
+| `TASK-P2-019` | Done, 2026-09-16, short on the notification. ISS-167 | panel rewrite with undo |
+| `TASK-P2-021` | Done, 2026-09-08, short on two criteria. ISS-148 | routes and MCP tools |
+| `TASK-P2-022` | Done, 2026-09-13 | the query findings screen |
+| `TASK-P2-023` | Done, 2026-09-15 | the finding detail screen |
+| `TASK-P2-024` | Done, 2026-09-17 | the query surfaces screen |
+| `TASK-P2-025` | Done, 2026-09-05 | the enforcement screen and the end to end journey |
+| `TASK-P2-026` | Done, 2026-09-06 | the queries that belong to nobody |
 
 <!-- generated:task-status end -->
 
@@ -208,6 +298,8 @@ tasks and TASK-P0-029 as not started after it was finished. See ADR-0014.
 | `[x]` | TASK-P0-027, accounts screen and organization map | Broken onboarding one click. Tree default. Unreachable branches drawn |
 | `[x]` | TASK-P0-003 and 004, index checker tests and the pipeline gate | Failure paths tested. Dash rejection demonstrated. Wave A complete |
 | `[~]` | TASK-P0-028, the last screens, journey and budgets | Screens and budgets done. Restore drill not performed, ISS-111 |
+| `[x]` | Architect the interface | `docs/13-UI-ARCHITECTURE.md`, ADR-0020. Seven fixed navigation groups, every route, the home screen, and 25 screens mapped across P0 to P7. The visual system had no frame to hang screens on |
+| `[x]` | Plan the interface | Seven tasks. Three in the P0 plan for routing, the fixture seam and the home screen, four in the P2 plan replacing the single screens task. Wave K does not wait for wave J |
 
 ## Remaining sub projects
 
