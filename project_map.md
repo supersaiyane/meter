@@ -109,18 +109,30 @@ meter/
 │   ├── templates/             spec, task, ADR, change and issue templates
 │   ├── checkpoint.md          session continuity log with resume vectors
 │   ├── adr/                   architecture decision records, 0001 to 0008
-│   ├── specs/                 design specs, one per sub project. The P1 one
-│   │                          covers the cost surface only, and its section 3
-│   │                          names what the rest of P1 is waiting for
+│   ├── specs/                 design specs, one per sub project. P1's section 3
+│   │                          named what it deferred, and its section 16
+│   │                          records what changed when that came back
 │   │   ├── 2026-08-23-p0-foundation-design.md
 │   │   ├── 2026-08-23-p2-query-cost-governance-design.md
-│   │   └── 2026-09-18-p1-cost-intelligence-design.md
+│   │   ├── 2026-09-18-p1-cost-intelligence-design.md
+│   │   ├── 2026-09-20-p3-utilization-and-rightsizing-design.md
+│   │   │                      Section 5.5 is the one to read: what a realized
+│   │   │                      saving can honestly claim, and why a third
+│   │   │                      verdict of inconclusive exists
+│   │   └── 2026-09-20-p4-inventory-and-topology-design.md
+│   │                          Section 6 is the whole sub project: an edge Meter
+│   │                          cannot see is not an absent edge, and a partial
+│   │                          graph still renders and answers wrongly
 │   └── plans/                 implementation plans, written per sub project.
 │                              `sync.py` reads task status out of these, so the
-│                              Status row in each task is data, not prose
+│                              Status row in each task is data, not prose. It
+│                              globs rather than listing them, since a literal
+│                              list once hid P1's whole plan from the table
 │       ├── P0-implementation-plan.md
 │       ├── P1-implementation-plan.md
-│       └── P2-implementation-plan.md
+│       ├── P2-implementation-plan.md
+│       ├── P3-implementation-plan.md    20 tasks, not started
+│       └── P4-implementation-plan.md    11 tasks, not started
 │
 ├── audits/                    point in time reviews, one file per audit
 │   ├── README.md              naming convention, finding ids, cadence
@@ -653,7 +665,7 @@ continuous integration, not by good intentions.
 | Anything at all, as a starting point | `INDEX.md` |
 | Where do I record this change | `docs/03-CHANGE-CONTROL.md` |
 | How does code reach production | `docs/04-DEPLOYMENT.md` |
-| What exactly do I build next, and how | `docs/plans/P1-implementation-plan.md`, TASK-P1-001. P0 and P2 are done except for what needs an AWS account |
+| What exactly do I build next, and how | `docs/plans/P3-implementation-plan.md`, TASK-P3-001. P0, P1 and P2 are done except for what needs an AWS account. The higher value move is the account itself, ISS-122, which is what every unproved adapter in P1, P3 and P4 is waiting for |
 | Task counts, which change | `grep -c '^### TASK' docs/plans/*.md`. Not written into prose, because a count in prose goes stale silently |
 | What does this feature do | `docs/features/FEAT-nnn-*.md` |
 | How do these files depend on each other | `docs/architecture/file-graph.md`, `make graph` |
@@ -679,7 +691,9 @@ continuous integration, not by good intentions.
 | How do the pieces fit together | `docs/02-ARCHITECTURE.md` |
 | What exactly is P0 delivering | `docs/specs/2026-08-23-p0-foundation-design.md` |
 | What exactly is P2 delivering | `docs/specs/2026-08-23-p2-query-cost-governance-design.md` |
-| What exactly is P1 delivering | `docs/specs/2026-09-18-p1-cost-intelligence-design.md`. The cost surface. Anomalies, commitments and the export are a second cut |
+| What exactly is P1 delivering | `docs/specs/2026-09-18-p1-cost-intelligence-design.md`. The cost surface, and section 16 for the second cut that delivered anomalies, commitments and the export |
+| What exactly is P3 delivering | `docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md`. What the estate should cost instead, and whether the bill actually moved |
+| What exactly is P4 delivering | `docs/specs/2026-09-20-p4-inventory-and-topology-design.md`. What is out there and what is connected to what, and an honest record of what could not be read |
 | What is done and what is left | `tasks/STATUS.md` |
 | What is broken, what is risky, what is undecided | `tasks/ISSUES.md` |
 | Where did the last session stop | `docs/checkpoint.md` |
