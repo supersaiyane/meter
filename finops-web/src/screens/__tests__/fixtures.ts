@@ -57,12 +57,29 @@ export const TREE: FlatNode[] = [
   },
 ];
 
-/** A client that answers a fixed envelope per path, or fails. */
+/**
+ * A client that answers a fixed envelope per path, or fails.
+ *
+ * `posted` records what was written, so a test can assert that a control which
+ * should not have called anything did not, which is the half of a refusal that
+ * an assertion on the rendering alone would miss.
+ */
+export const posted: string[] = [];
+
 export function clientReturning(
   answers: Readonly<Record<string, ApiEnvelope<unknown>>>,
   failure?: Error,
 ): ApiClient {
   return {
+    post: <T>(path: string): Promise<ApiEnvelope<T>> => {
+      posted.push(path);
+      if (failure) return Promise.reject(failure);
+      const answer = answers[path];
+      if (answer === undefined) {
+        return Promise.reject(new Error(`no stub for ${path}`));
+      }
+      return Promise.resolve(answer as ApiEnvelope<T>);
+    },
     get: <T>(path: string): Promise<ApiEnvelope<T>> => {
       if (failure) return Promise.reject(failure);
       const answer = answers[path];

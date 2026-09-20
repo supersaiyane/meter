@@ -345,6 +345,10 @@ class QueryFindingDetailOut(QueryFindingOut):
     #: hardcoded in the screen, so the arithmetic it publishes has no constant
     #: the reader cannot see.
     rate_usd_per_gib: Decimal
+    #: The change still applied to this finding, if any. Null means there is
+    #: nothing to undo, and a screen uses it to decide whether the control
+    #: exists at all rather than rendering one that does nothing.
+    applied_change_id: UUID | None = None
     #: Null until FEAT-018 publishes a calibration. Never invented, because the
     #: honest rendering of an unpublished accuracy is to say it is unpublished.
     accuracy_percent: Decimal | None = None

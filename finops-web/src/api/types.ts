@@ -140,6 +140,16 @@ export interface ApiQueryFinding {
   readonly collected_at: string;
 }
 
+export interface ApiRemediation {
+  readonly finding_id: string;
+  readonly applied: boolean;
+  /** True when the write did not take and was put back. The estate is unchanged. */
+  readonly reverted: boolean;
+  /** Why, when it did not apply. A refusal is a normal answer and carries a reason. */
+  readonly detail: string;
+  readonly change_id: string | null;
+}
+
 export interface ApiQueryGroup {
   readonly cause: string;
   /** A sentence a reader acts on. The code is what groups; this is what is read. */
@@ -163,6 +173,8 @@ export interface ApiQueryFindingDetail extends ApiQueryFinding {
   readonly rate_usd_per_gib: string;
   /** FEAT-018. Null until a calibration is published, and then never invented. */
   readonly accuracy_percent: number | null;
+  /** The change still applied, if any. Null means there is nothing to undo. */
+  readonly applied_change_id: string | null;
 }
 
 export interface ApiSurfaceInstance {

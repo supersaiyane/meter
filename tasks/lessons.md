@@ -94,4 +94,8 @@ configured.
 **Triggers:** a new route or endpoint, a change to `SCOPED_TABLES` or any
 registry a route depends on, a new response model, anything touching
 `docker-compose.yml`, a Dockerfile, or nginx, "the tests pass so it works",
-"imports cleanly", marking a task done.
+"imports cleanly", marking a task done, and **changing the signature of anything
+called during application assembly**: on 2026-09-05 turning `get_settings` into
+a request dependency left 750 tests green and the container unable to boot,
+because every test passes settings explicitly and only the image calls the
+factory.

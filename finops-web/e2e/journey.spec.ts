@@ -300,6 +300,9 @@ test('a violating dashboard is found, attributed, and its control is legible', a
           last_editor: null,
           rate_usd_per_gib: '0.005',
           accuracy_percent: null,
+          // A change is still applied, so the screen offers the undo and not a
+          // second remediation on top of it.
+          applied_change_id: 'aaaaaaaa-0000-4000-8000-000000000001',
         },
         meta,
       },
@@ -333,6 +336,29 @@ test('a violating dashboard is found, attributed, and its control is legible', a
   await expect(page).toHaveURL(/\/governance\/queries\/11111111/);
   await expect(page.getByTestId('finding-working')).toContainText('1,036,800 GiB scanned per month');
   await expect(page.getByText('~ $5,184.00', { exact: false })).toBeVisible();
+
+  // TASK-P2-019 and the two remediation routes. The control is present because
+  // a change is still applied, and it is absent rather than disabled when there
+  // is nothing to undo, which is the rule this screen shares with revoke.
+  await expect(page.getByTestId('undo')).toBeVisible();
+  await expect(page.getByTestId('remediate')).toHaveCount(0);
+
+  await page.route('**/api/v1/query/remediate/*/undo', async (route) => {
+    await route.fulfill({
+      json: {
+        data: {
+          finding_id: '11111111-1111-1111-1111-111111111111',
+          applied: true,
+          reverted: true,
+          detail: '',
+          change_id: 'aaaaaaaa-0000-4000-8000-000000000001',
+        },
+        meta,
+      },
+    });
+  });
+  await page.getByTestId('undo').click();
+  await expect(page.getByTestId('remediation-outcome')).toHaveAttribute('data-applied', 'true');
 
   // The instance list is where under counting is stopped. Route backed since
   // TASK-P2-021, so it is stubbed like the rest of the arc.

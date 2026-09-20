@@ -33,7 +33,7 @@ a duplicate.
 | `ConfigurationError` | class | `finops_core/config.py:35` | The process cannot start with the configuration it was given. | nothing in this tree |
 | `Settings` | class | `finops_core/config.py:39` | Every `METER_` variable in `.env.example`, typed, with no hidden defaults. | nothing in this tree |
 | `Settings.region_list` | method | `finops_core/config.py:204` | `regions` is held as text because a comma separated list from the | nothing in this tree |
-| `load_settings` | function | `finops_core/config.py:224` | Build the settings, or refuse to start and say which variable is at fault. | `finops_api/deps.py` |
+| `load_settings` | function | `finops_core/config.py:224` | Build the settings, or refuse to start and say which variable is at fault. | `finops_api/deps.py`, `finops_api/main.py` |
 | `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | `finops_api/identity/session.py`, `finops_api/routes/accounts.py`, `finops_ingest/collectors/org_tree.py` |
 | `AccountStatus` | class | `finops_core/domain/account.py:26` | What the provider says about the account, not what we infer. | nothing in this tree |
 | `RoleHealth` | class | `finops_core/domain/account.py:47` | Whether the collector role in a member account is actually usable. | `finops_ingest/collectors/account_health.py` |
@@ -316,7 +316,7 @@ a duplicate.
 | `SurfaceInstanceRepository.unreachable` | method | `finops_api/db/repositories/query.py:137` | The workspaces that could not be read, with their typed cause. | `finops_api/routes/query.py` |
 | `SurfaceInstanceRepository.coverage` | method | `finops_api/db/repositories/query.py:150` | Workspaces read, over workspaces the tenant has. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py` |
 | `SurfaceInstanceRepository.all_with_counts` | method | `finops_api/db/repositories/query.py:180` |  | `finops_api/routes/query.py` |
-| `get_settings` | function | `finops_api/deps.py:37` | The configuration this application was built with. | `finops_api/main.py` |
+| `get_settings` | function | `finops_api/deps.py:37` | The configuration this application was built with. | nothing in this tree |
 | `get_request_id` | function | `finops_api/deps.py:50` | The id every log line and every audit row for this request carries. | nothing in this tree |
 | `get_connection` | function | `finops_api/deps.py:56` | One transaction per request, so a read and its audit row commit together. | nothing in this tree |
 | `get_principal` | function | `finops_api/deps.py:62` | Who is asking. Absent, malformed and forged all get one answer. | nothing in this tree |
@@ -353,7 +353,7 @@ a duplicate.
 | `p0_routers` | function | `finops_api/main.py:173` | The seven P0 routes, from the spec's section 8 table. | nothing in this tree |
 | `p2_routers` | function | `finops_api/main.py:180` | The query governance routes, from the P2 spec's section 8.2 table. | nothing in this tree |
 | `create_app` | function | `finops_api/main.py:191` | Build the application, refusing to start on a broken envelope contract. | nothing in this tree |
-| `bootstrap` | function | `finops_api/main.py:238` | Build the application the container runs, from the environment alone. | nothing in this tree |
+| `bootstrap` | function | `finops_api/main.py:242` | Build the application the container runs, from the environment alone. | nothing in this tree |
 | `RequestIdMiddleware` | class | `finops_api/middleware.py:27` | Give every request an id, log it, and hand it back on the response. | nothing in this tree |
 | `RequestIdMiddleware.dispatch` | method | `finops_api/middleware.py:30` |  | nothing in this tree |
 | `freshness_of` | function | `finops_api/routes/__init__.py:35` | The stalest `as_of` and `collected_at` in a set, or None when it is empty. | nothing in this tree |
@@ -373,9 +373,9 @@ a duplicate.
 | `query_findings` | function | `finops_api/routes/query.py:112` |  | nothing in this tree |
 | `query_groups` | function | `finops_api/routes/query.py:139` | Findings summed by cause, worst group first. ADR-0016. | nothing in this tree |
 | `query_finding` | function | `finops_api/routes/query.py:182` |  | nothing in this tree |
-| `remediate` | function | `finops_api/routes/query.py:287` | Bring one panel back inside the policy, subject to the write level. | nothing in this tree |
-| `undo_remediation` | function | `finops_api/routes/query.py:372` | Put back what the last remediation replaced. | nothing in this tree |
-| `query_instances` | function | `finops_api/routes/query.py:445` |  | nothing in this tree |
+| `remediate` | function | `finops_api/routes/query.py:292` | Bring one panel back inside the policy, subject to the write level. | nothing in this tree |
+| `undo_remediation` | function | `finops_api/routes/query.py:377` | Put back what the last remediation replaced. | nothing in this tree |
+| `query_instances` | function | `finops_api/routes/query.py:450` |  | nothing in this tree |
 | `CoverageOut` | class | `finops_api/schemas.py:26` | What was seen against everything there was to see. ISS-016. | nothing in this tree |
 | `CoverageOut.is_partial` | method | `finops_api/schemas.py:41` |  | nothing in this tree |
 | `FailureOut` | class | `finops_api/schemas.py:45` | One thing that is broken, and what the reader should do about it. | `finops_api/routes/__init__.py`, `finops_api/routes/query.py` |
@@ -396,7 +396,7 @@ a duplicate.
 | `RemediationOut` | class | `finops_api/schemas.py:287` | What a remediation did, or why it did not. | `finops_api/routes/query.py` |
 | `QueryGroupOut` | class | `finops_api/schemas.py:310` | One cause, with the money behind it summed across every finding. | `finops_api/routes/query.py` |
 | `QueryFindingDetailOut` | class | `finops_api/schemas.py:334` | One finding with its full working, for the detail screen. | `finops_api/routes/query.py` |
-| `SurfaceInstanceOut` | class | `finops_api/schemas.py:353` | One place queries live, reachable or not. | `finops_api/routes/query.py` |
+| `SurfaceInstanceOut` | class | `finops_api/schemas.py:357` | One place queries live, reachable or not. | `finops_api/routes/query.py` |
 
 ## finops_mcp
 

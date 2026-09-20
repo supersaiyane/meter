@@ -194,6 +194,7 @@ def query_finding(
         raise HTTPException(status_code=404, detail="no such finding")
 
     surfaces = SurfaceInstanceRepository(connection, context)
+    applied = QueryFindingRepository(connection, context).latest_change(scope, finding_id)
     base = _finding(row)
     target = row.target or {}
     detail = QueryFindingDetailOut(
@@ -203,6 +204,10 @@ def query_finding(
         region=target.get("region"),
         last_editor=row.last_editor,
         rate_usd_per_gib=settings.query_logs_scan_price_per_gb,
+        # So the screen can decide whether an undo control exists at all. A
+        # control that looks available and does nothing is worse than an absent
+        # one, which is the rule TASK-P2-025 states for revoke and holds here.
+        applied_change_id=(applied.change_id if applied is not None else None),
         # FEAT-018 publishes this. Until it does the field is null and the
         # screen says the accuracy is not yet published, which is worse looking
         # and more honest than a number nobody measured.

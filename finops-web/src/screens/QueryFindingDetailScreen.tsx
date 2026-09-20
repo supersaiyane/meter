@@ -2,6 +2,7 @@ import { useParams } from 'react-router';
 
 import { useQueryFinding } from '../api/queries';
 import { Figure } from '../components/Figure';
+import { RemediationControls } from './RemediationControls';
 import { FixtureBand } from '../components/FixtureBand';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Freshness } from '../components/provenance';
@@ -91,6 +92,8 @@ export function QueryFindingDetailScreen() {
                 GiB scanned per month
               </li>
             </ul>
+
+            <RemediationControls detail={detail} />
 
             <h3>Measured evidence</h3>
             {detail.measured_runs === null ? (

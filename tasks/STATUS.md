@@ -45,7 +45,7 @@ Lint and type checking cover every directory that holds Python, which is 181
 files under mypy where it was 25. `scripts/`, `migrations/` and the test suite
 had all been outside one or both.
 
-**P2 is 19 of 25 done, 1 partly, 2 parked, 2 descoped, 1 not started.**
+**P2 is 20 of 25 done, 2 parked, 2 descoped, 1 not started.**
 
 The backend is complete through wave J. The collector runs, prices what it
 reads, measures what it can observe, and attributes an owner. Three of the eight
@@ -94,7 +94,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P2 | 19 | 1 | 2 | 2 | 1 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
+| P2 | 20 | 0 | 2 | 2 | 1 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -167,7 +167,7 @@ ISS-003.
 | `TASK-P2-022` | Done, 2026-09-13 | the query findings screen |
 | `TASK-P2-023` | Done, 2026-09-15 | the finding detail screen |
 | `TASK-P2-024` | Done, 2026-09-17 | the query surfaces screen |
-| `TASK-P2-025` | Partly, 2026-09-19 | the enforcement screen and the end to end journey |
+| `TASK-P2-025` | Done, 2026-09-05 | the enforcement screen and the end to end journey |
 
 <!-- generated:task-status end -->
 

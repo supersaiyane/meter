@@ -6,6 +6,7 @@ import type { ApiClient } from './api/client';
 
 const NEVER_ANSWERS: ApiClient = {
   get: () => new Promise(() => undefined),
+  post: () => new Promise(() => undefined),
 };
 
 function open(path: string) {

@@ -61,6 +61,30 @@ export function createApiClient({ baseUrl = '', token, fetchImpl = fetch }: ApiC
       }
       return payload;
     },
+
+    /**
+     * The only writing method, and it sends no body.
+     *
+     * Every write this product makes is an instruction rather than a document:
+     * remediate this finding, undo that change. What to write is decided by the
+     * server from the finding it already holds, so a body would be a second
+     * description of the same thing and a chance for the two to disagree.
+     */
+    async post<T>(path: string): Promise<ApiEnvelope<T>> {
+      const response = await fetchImpl(`${baseUrl}${path}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const detail = await response.text();
+        throw new ApiError(response.status, detail || response.statusText);
+      }
+      const payload: unknown = await response.json();
+      if (!isEnvelope<T>(payload)) {
+        throw new EnvelopeError(path);
+      }
+      return payload;
+    },
   };
 }
 

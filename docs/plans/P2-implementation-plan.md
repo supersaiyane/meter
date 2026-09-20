@@ -1461,7 +1461,7 @@ screen that stops silent under counting."
 
 | Field | Value |
 | --- | --- |
-| Status | Partly, 2026-09-19 |
+| Status | Done, 2026-09-05 |
 | Implements | P2 spec section 9.4, `docs/13-UI-ARCHITECTURE.md` section 9.4 |
 | Delivers | FEAT-014, FEAT-015 and FEAT-017 at the surface |
 | Depends on | TASK-P2-022, TASK-P2-023, TASK-P2-024 |
@@ -1478,11 +1478,10 @@ screen that stops silent under counting."
 - [~] An end to end Playwright journey: a violating dashboard is detected, seen
       ranked, its owner seen, the workspace floor applied, and the undo confirmed.
       **Detect, rank and attribute are done, and the journey also covers the
-      unreachable instance, the genuine zero, both expiry forms, revoke, and
-      since 2026-09-16 the workspace refresh floor from TASK-P2-017. The undo is
-      still not covered: TASK-P2-019 built it, and no route exposes it, which is
-      ISS-148. The journey drives the interface, so it cannot reach a mechanism
-      the interface has no way to call.**
+      unreachable instance, the genuine zero, both expiry forms, revoke, the
+      workspace refresh floor from TASK-P2-017 since 2026-09-16, and the undo
+      since 2026-09-05, once the remediation routes and the control on the
+      detail screen gave the journey something to click.**
 - [x] Axe reports zero violations
 
 **Plan defect found here.** This task's dependency list names TASK-P2-022 to
@@ -1490,10 +1489,10 @@ screen that stops silent under counting."
 the undo from TASK-P2-019. The criterion was written against the finished sub
 project rather than against this task's own dependencies.
 
-Both landed on 2026-09-16 and the journey covers the floor. The undo has a
-mechanism and no route, so this task stays Partly until ISS-148 closes. That is
-a second instance of the same defect: a journey criterion depends on the routes
-task, and nothing in the dependency list said so.
+Both landed on 2026-09-16, and the routes and the screen control followed on
+2026-09-05, which is what finally closed this. It was a second instance of the
+same defect: a journey criterion depended on the routes task, and nothing in the
+dependency list said so.
 
 **Do not.**
 

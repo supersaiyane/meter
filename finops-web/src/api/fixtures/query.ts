@@ -169,6 +169,7 @@ export const QUERY_FINDING_DETAILS: Readonly<Record<string, ApiQueryFindingDetai
     last_editor: null,
     rate_usd_per_gib: '0.005',
     accuracy_percent: null,
+    applied_change_id: null,
   },
   '22222222-2222-2222-2222-222222222222': {
     ...listRow('22222222-2222-2222-2222-222222222222'),
@@ -178,6 +179,7 @@ export const QUERY_FINDING_DETAILS: Readonly<Record<string, ApiQueryFindingDetai
     last_editor: null,
     rate_usd_per_gib: '0.005',
     accuracy_percent: null,
+    applied_change_id: null,
   },
 };
 

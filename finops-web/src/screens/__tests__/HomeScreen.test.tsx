@@ -84,6 +84,7 @@ describe('HomeScreen', () => {
     const asked: string[] = [];
     const inner = clientReturning({ '/api/v1/platform/cost': COST });
     const recording: ApiClient = {
+      post: <T,>(path: string) => inner.post<T>(path),
       get: <T,>(path: string) => {
         asked.push(path);
         return inner.get<T>(path);

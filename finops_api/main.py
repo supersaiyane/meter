@@ -27,11 +27,11 @@ from fastapi.routing import APIRoute
 from sqlalchemy import Engine, text
 from sqlalchemy.engine import Connection
 
-from finops_api.deps import get_connection, get_settings
+from finops_api.deps import get_connection
 from finops_api.guards import ScopeViolationError
 from finops_api.middleware import RequestIdMiddleware
 from finops_api.schemas import CollectorHealth, Envelope, HealthOut
-from finops_core.config import Settings
+from finops_core.config import Settings, load_settings
 from finops_core.constants import STALE_AFTER_CADENCE_MULTIPLE
 
 LOGGER = logging.getLogger("meter.api")
@@ -199,7 +199,11 @@ def create_app(
     include_p0_routes: bool = True,
 ) -> FastAPI:
     """Build the application, refusing to start on a broken envelope contract."""
-    resolved = settings or get_settings()
+    # `load_settings`, not the request dependency of the same idea. Assembly
+    # happens once and has no request, and calling the dependency here is what
+    # stopped the container booting: every test passes settings explicitly, so
+    # nothing caught it until the image ran.
+    resolved = settings or load_settings()
     app = FastAPI(title="Meter", version="0", docs_url="/docs")
     app.state.engine = engine
     app.state.entitlements = entitlements
@@ -254,7 +258,7 @@ def bootstrap() -> FastAPI:
     from finops_api.identity.session import SessionSigner
     from finops_core.constants import LOCAL_IDENTITY_PROVIDER
 
-    settings = get_settings()
+    settings = load_settings()
     if settings.identity_provider != LOCAL_IDENTITY_PROVIDER:
         raise RuntimeError(
             f"identity provider {settings.identity_provider!r} is configured but not "

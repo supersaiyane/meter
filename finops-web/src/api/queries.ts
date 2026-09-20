@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useApi } from './apiContext';
 import { resolveSurface, type Resolved } from './fixtureSeam';
@@ -14,6 +14,7 @@ import type {
   ApiEnvelope,
   ApiQueryFinding,
   ApiQueryGroup,
+  ApiRemediation,
   ApiQueryFindingDetail,
   ApiEnforcementAction,
   ApiSurfaceInstance,
@@ -118,6 +119,32 @@ export function useQueryFinding(id: string) {
     `/api/v1/query/findings/${id}`,
     () => queryFindingDetailFixture(id),
   );
+}
+
+/**
+ * Remediate one finding, or put the last remediation back.
+ *
+ * Both invalidate the finding rather than patching a local copy, so what the
+ * screen shows afterwards is what the server actually holds. A remediation can
+ * refuse, and can revert itself when the write did not take, and a screen that
+ * assumed success would then be showing a state that does not exist anywhere.
+ */
+export function useRemediate(findingId: string) {
+  const client = useApi();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: () => client.post<ApiRemediation>(`/api/v1/query/remediate/${findingId}`),
+    onSettled: () => queries.invalidateQueries({ queryKey: ['query-finding', findingId] }),
+  });
+}
+
+export function useUndoRemediation(findingId: string) {
+  const client = useApi();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: () => client.post<ApiRemediation>(`/api/v1/query/remediate/${findingId}/undo`),
+    onSettled: () => queries.invalidateQueries({ queryKey: ['query-finding', findingId] }),
+  });
 }
 
 export function useQueryGroups() {
