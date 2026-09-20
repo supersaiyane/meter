@@ -303,19 +303,25 @@ tasks and TASK-P0-029 as not started after it was finished. See ADR-0014.
 | `[x]` | Architect the interface | `docs/13-UI-ARCHITECTURE.md`, ADR-0020. Seven fixed navigation groups, every route, the home screen, and 25 screens mapped across P0 to P7. The visual system had no frame to hang screens on |
 | `[x]` | Plan the interface | Seven tasks. Three in the P0 plan for routing, the fixture seam and the home screen, four in the P2 plan replacing the single screens task. Wave K does not wait for wave J |
 
-## Remaining sub projects
+## Sub projects
 
-See `docs/01-ROADMAP.md` for scope. None have a specification yet.
+See `docs/01-ROADMAP.md` for scope. This table was stale until 2026-09-20: it
+said no sub project had a specification, on a day when three were delivered.
 
 | Sub project | Status |
 | --- | --- |
-| P2 Query Cost Governance | **Specified and planned.** Built after P0 |
-| P1 Cost Intelligence | Not started |
-| P3 Utilization and Rightsizing | Not started |
-| P4 Inventory and Topology | Not started |
-| P5 Quotas and Limits | Not started |
-| P6 Containers, EKS and ECS | Not started |
-| P7 Insight and LLM layer | Not started |
+| P0 Foundation | **Delivered**, 39 of 39. Not signed off: ISS-111 and ISS-122 |
+| P1 Cost Intelligence | **Delivered**, 21 of 21, including the second cut |
+| P2 Query Cost Governance | **Delivered**, 21 of 25. Two descoped, two parked on ISS-122 |
+| P3 Utilization and Rightsizing | **Specified and planned** 2026-09-20, 20 tasks. Not started |
+| P4 Inventory and Topology | **Specified and planned** 2026-09-20, 11 tasks. Not started |
+| P5 Quotas and Limits | No specification |
+| P6 Containers, EKS and ECS | No specification |
+| P7 Insight and LLM layer | No specification |
+
+P3's last task waits on P4, because FEAT-044 scores blast radius by walking the
+edge tables FEAT-031 creates. Build order decided 2026-09-20: P3 without that
+task, then P4, then that task.
 
 ## External dependencies
 
