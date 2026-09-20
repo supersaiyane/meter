@@ -253,7 +253,10 @@ meter/
 │       ├── org.py             OrgNode and the closed ROOT, OU, ACCOUNT set
 │       ├── identity.py        Principal and Entitlement
 │       ├── ingest.py          IngestRun, CollectionFailure, Watermark
-│       ├── cost.py            CostRecord, FOCUS 1.1 names, Decimal money
+│       ├── cost.py            CostRecord, FOCUS 1.1 names, Decimal money.
+│       │                      Also CommitmentUse and CommitmentCoverage, kept
+│       │                      apart for the reason the port keeps its methods
+│       │                      apart, and BillingPeriod and source_fingerprint
 │       ├── metrics.py         MetricPoint. `at` is the instant, `as_of` the freshness
 │       ├── resource.py        ResourceRef. Opaque identifier, never parsed
 │       └── quota.py           QuotaUsage. Unpublished usage is None, never zero
@@ -268,6 +271,13 @@ meter/
 │       ├── accounts.py        AccountDiscovery
 │       ├── credentials.py     CredentialBroker plus the opaque ProviderSession
 │       ├── cost.py            CostExport
+│       ├── commitment.py      CommitmentReport, two methods on purpose.
+│       │                      Utilization is per commitment, coverage is per
+│       │                      service, because a covered dollar cannot be
+│       │                      attributed to one of several overlapping plans.
+│       │                      One method returning both would invite that
+│       │                      fabrication. Not a widening of CostExport: a
+│       │                      Savings Plan is not a line item
 │       ├── metrics.py         MetricSource
 │       ├── inventory.py       ResourceInventory
 │       ├── quotas.py          QuotaSource
@@ -279,6 +289,12 @@ meter/
 │   │   ├── accounts.py        the exact org tree. Every call paginated
 │   │   ├── health.py          is the role usable, and if not, whose fix is it
 │   │   ├── platform_cost.py   the one Cost Explorer request, grouped
+│   │   ├── commitment.py      utilization and coverage, four Cost Explorer
+│   │   │                      calls. **Never yet run**, ISS-122. Savings
+│   │   │                      Plans report money and reservations report
+│   │   │                      hours, so half its figures are measured and
+│   │   │                      half are modelled, and _reservation_money says
+│   │   │                      which is which
 │   │   ├── query_evidence.py  runs from CloudTrail, bytes from query history.
 │   │   │                      A window that saw nothing returns an absent key,
 │   │   │                      never a zero: absent means unobserved
@@ -498,6 +514,16 @@ meter/
 │       │                    shared by the collector and retention. Only the
 │       │                    collector may prune, because retention's rows have
 │       │                    to outlive the partitions it drops
+│       ├── cost_anomaly.py    judges one day, the most recent with data, because re
+│       │                      judging history rewrites verdicts somebody may have
+│       │                      acted on. Reads twice the window it needs and takes the
+│       │                      last days that have data, so a quiet Sunday does not
+│       │                      starve it. Refuses without settings: severity comes
+│       │                      from the money and a default would invent one
+│       ├── commitment.py      two reads, two upserts, one transaction. A window is
+│       │                      replaced rather than accumulated, and NoData is absorbed
+│       │                      because a payer with no commitments is a fact rather
+│       │                      than a broken collection
 │       └── partitions.py      months created ahead. Without one, cost rows are refused
 │   └── metrics.py             only SLO 1 needs a custom metric. The other three are AWS's
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
