@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 51 total, 12 specified, 10 in build, 5 delivered |
+| Features | 51 total, 29 specified, 10 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
-| Changes | 96 recorded |
+| Changes | 99 recorded |
 | Issues | 124 fixed, 58 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
@@ -127,6 +127,8 @@ ISS-003.
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 | P3 | 0 | 0 | 0 | 0 | 20 | 20 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 0 | 0 | 0 | 0 | 11 | 11 | [plan](../docs/plans/P4-implementation-plan.md) |
+| P5 | 0 | 0 | 0 | 0 | 8 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
+| P6 | 0 | 0 | 0 | 0 | 12 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -315,8 +317,8 @@ said no sub project had a specification, on a day when three were delivered.
 | P2 Query Cost Governance | **Delivered**, 21 of 25. Two descoped, two parked on ISS-122 |
 | P3 Utilization and Rightsizing | **Specified and planned** 2026-09-20, 20 tasks. Not started |
 | P4 Inventory and Topology | **Specified and planned** 2026-09-20, 11 tasks. Not started |
-| P5 Quotas and Limits | No specification |
-| P6 Containers, EKS and ECS | No specification |
+| P5 Quotas and Limits | **Specified and planned** 2026-09-20, 8 tasks. Not started |
+| P6 Containers, EKS and ECS | **Specified and planned** 2026-09-20, 12 tasks, first cut. Not started |
 | P7 Insight and LLM layer | No specification |
 
 P3's last task waits on P4, because FEAT-044 scores blast radius by walking the

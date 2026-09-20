@@ -3,9 +3,9 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P6 |
-| Status | Planned |
-| Specification | Not written. This document expands when P6 is specified |
-| Tasks | Not planned |
+| Status | Specified |
+| Specification | [P6 spec](../specs/2026-09-20-p6-containers-design.md), section 3 |
+| Tasks | Second cut, not planned |
 | Refresh cadence | 24 hours |
 | Source | Adopted from a competitive review on 2026-08-23 |
 
@@ -23,11 +23,36 @@ Inputs are the aggregate demand from FEAT-036 and the instance catalogue with on
 
 The output is a recommendation like every other: it carries its evidence window, its confidence, its measured or modelled flag, and a dollar impact that sets its severity under ADR-0016. It is not applied automatically.
 
-## Status of this document
+## How it works
 
-Planned. The remaining sections are written when P6 is specified. Recording
-only what is decided is deliberate: a document that invents detail ahead of the
-decision is worse than a short one, because it will be believed.
+Not yet designed in detail, and deliberately so. It consumes FEAT-036's aggregate
+demand, and an optimiser fed by figures nobody has seen yet produces confident
+answers that are wrong.
 
-See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P6, and
-[docs/11-COMPETITIVE-REVIEW.md](../11-COMPETITIVE-REVIEW.md).
+What is decided: it is a cost minimising integer linear program over the instance
+catalogue, constrained by family availability per region, Spot interruption
+tolerance per workload class, and any node group a team has pinned. Its output is a
+recommendation like every other, carrying its evidence window, its confidence, its
+measured or modelled flag and a dollar impact that sets its severity.
+
+## Failure behaviour
+
+Undecided. The known risk is that a fleet recommendation computed from partial
+demand is confidently wrong, in the same way a blast radius score from a partial
+graph is, and it will need the same kind of refusal.
+
+## Security considerations
+
+Read only, and it recommends rather than applies. Constraint 6.
+
+## Interface
+
+Undecided.
+
+## Not doing
+
+**Anything, yet.** This is the P6 second cut, deferred for the reason P6 spec
+section 3 gives. A solver is also a new dependency and goes through `make
+dep-check` like any other, and it is the first thing in this product whose output a
+reader cannot check by hand, so it will need its inputs and constraints visible
+beside the answer.

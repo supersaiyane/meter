@@ -13,6 +13,8 @@ Naming: `P<n>-implementation-plan.md`.
 | P2 query cost governance | Written. 25 tasks, 21 delivered, 2 descoped, 2 parked |
 | P3 utilization and rightsizing | Written 2026-09-20. 20 tasks in nine waves. Not started |
 | P4 inventory and topology | Written 2026-09-20. 11 tasks in seven waves. Not started |
+| P5 quotas and limits | Written 2026-09-20. 8 tasks in five waves. Not started |
+| P6 containers, EKS and ECS | Written 2026-09-20. 12 tasks in five waves, first cut only. Not started |
 
 Later sub projects get their plan when their specification is approved, per
 ADR-0001. Writing a plan for work whose foundations do not exist yet produces

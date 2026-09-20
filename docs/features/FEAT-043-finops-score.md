@@ -3,9 +3,9 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P3 |
-| Status | Planned |
-| Specification | Not written. This document expands when P3 is specified |
-| Tasks | Not planned |
+| Status | Specified |
+| Specification | [P3 spec](../specs/2026-09-20-p3-utilization-and-rightsizing-design.md), section 9 |
+| Tasks | TASK-P3-015, TASK-P3-016, TASK-P3-019 |
 | Refresh cadence | 6 hours |
 | Source | Adopted from a competitive review on 2026-08-23, over an objection |
 
@@ -23,11 +23,38 @@ It gives an executive a number and a team a trend. It was adopted on the project
 
 It does not replace the north star metric. Realized savings, confirmed against CUR 60 days after a recommendation is marked done, remains the measure of whether Meter is worth running. The score measures posture, which is a different and easier thing.
 
-## Status of this document
+## How it works
 
-Planned. The remaining sections are written when P3 is specified. Recording
-only what is decided is deliberate: a document that invents detail ahead of the
-decision is worse than a short one, because it will be believed.
+A 0 to 100 score for optimisation posture, per account and per team, recalculated
+every six hours from the open findings and their money.
 
-See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P3, and
-[docs/11-COMPETITIVE-REVIEW.md](../11-COMPETITIVE-REVIEW.md).
+**The objection became the ship condition.** This ships only if the score
+decomposes. `score()` returns components, never a bare number; every component names
+the findings that produced it; and a change between two runs resolves to a list of
+findings that opened or closed. A score that cannot be taken apart is not a score,
+it is an opinion with a number on it.
+
+Each run stores its components, not only its total, which is what makes the
+difference between two runs explainable rather than merely visible.
+
+## Failure behaviour
+
+**A scope with no findings has no score, rather than a score of 100.** A perfect
+score for an estate nobody has looked at is the worst possible output of this
+feature, and it is the output a naive implementation produces on its first day.
+
+## Security considerations
+
+Scoped by account, and the team level score is computed from the same tag
+allocation the cost screens use, so a score and a bill attribute to the same owner.
+
+## Interface
+
+`GET /waste/score` and `/waste/score`. The components are on the same screen as the
+score, not behind a link, and each links to the findings that moved it.
+
+## Not doing
+
+**Benchmarking against other organizations.** A score is only meaningful against
+its own history here, and a comparison against an anonymised cohort is a different
+product with different data protection questions.

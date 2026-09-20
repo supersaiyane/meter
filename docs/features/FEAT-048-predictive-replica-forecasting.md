@@ -3,9 +3,9 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P6 |
-| Status | Planned |
-| Specification | Not written. This document expands when P6 is specified |
-| Tasks | Not planned |
+| Status | Specified |
+| Specification | [P6 spec](../specs/2026-09-20-p6-containers-design.md), section 14 |
+| Tasks | TASK-P6-012 in the first cut, the rest is second cut |
 | Refresh cadence | 24 hours, 7 day horizon |
 | Source | Adopted from a competitive review on 2026-08-23, over an objection |
 
@@ -25,11 +25,40 @@ Four conditions, all four or it does not ship. Backtest accuracy published in th
 
 It cannot ship before there is a full seasonal cycle of telemetry to backtest against, realistically 8 weeks.
 
-## Status of this document
+## How it works
 
-Planned. The remaining sections are written when P6 is specified. Recording
-only what is decided is deliberate: a document that invents detail ahead of the
-decision is worse than a short one, because it will be believed.
+Not yet designed in detail. **ADR-0015 governs it, and its four conditions are all
+four or it does not ship.**
 
-See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P6, and
-[docs/11-COMPETITIVE-REVIEW.md](../11-COMPETITIVE-REVIEW.md).
+1. Backtested on held out data, with the accuracy published in the product next to
+   the number.
+2. An error bound on every forecast. A recommendation reads "6 to 9 replicas, 80
+   percent interval", never "7 replicas".
+3. A deterministic fallback to the p95 rule when the forecast is unavailable or its
+   recent accuracy falls below a stated floor, and the screen says so.
+4. Labelled `forecast`, a third value alongside `measured` and `modelled`.
+
+## Failure behaviour
+
+Condition 3 is the failure behaviour, and it is a condition rather than a
+mitigation: a forecaster with no fallback is one that silently stops working.
+
+## Security considerations
+
+None beyond the read only posture. The risk here is epistemic rather than
+technical: a number nobody can check, presented beside numbers that can be.
+
+## Interface
+
+Undecided, except that condition 4 requires the third provenance value to render
+distinctly from the other two.
+
+## Not doing
+
+**Shipping without all four conditions.** ADR-0015 is explicit and this document
+does not soften it.
+
+Condition 4 is delivered early, in TASK-P6-012 of the **first** cut, because it
+touches the `Figure` component every screen shares. Doing it inside the task that
+first needs it would mean a forecasting feature also carrying a refactor of the
+whole interface.

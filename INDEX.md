@@ -86,7 +86,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-51 features across 8 sub projects. 12 specified, 24 planned, 10 in build, 5 delivered.
+51 features across 8 sub projects. 29 specified, 7 planned, 10 in build, 5 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -137,38 +137,38 @@ block is caught by `make check-docs`. See
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-025](docs/features/FEAT-025-aws-native-recommendation-ingest.md) | Cost Optimization Hub, Compute Optimizer and Trusted Advisor ingest | Planned | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 4, [P3 plan](docs/plans/P3-implementation-plan.md) |
-| [FEAT-026](docs/features/FEAT-026-bespoke-waste-collectors.md) | Bespoke waste collectors where AWS is blind | Planned | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.2, [P3 plan](docs/plans/P3-implementation-plan.md) |
-| [FEAT-027](docs/features/FEAT-027-cloudwatch-cost-module.md) | CloudWatch cost module: retention, unqueried logs, stale alarms | Planned | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.2, [P3 plan](docs/plans/P3-implementation-plan.md) |
-| [FEAT-028](docs/features/FEAT-028-recommendation-lifecycle.md) | Recommendation lifecycle with owner and ticketing | Planned | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.1, [P3 plan](docs/plans/P3-implementation-plan.md) |
-| [FEAT-029](docs/features/FEAT-029-realized-savings-verification.md) | Realized savings verification, the north star metric | Planned | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.5, [P3 plan](docs/plans/P3-implementation-plan.md) |
-| [FEAT-043](docs/features/FEAT-043-finops-score.md) | FinOps Score, decomposable to the findings that moved it | Planned | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 9, [P3 plan](docs/plans/P3-implementation-plan.md) |
-| [FEAT-044](docs/features/FEAT-044-blast-radius-scoring.md) | Blast radius scoring from the dependency graph, gating auto apply | Planned | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 12, [P3 plan](docs/plans/P3-implementation-plan.md) |
+| [FEAT-025](docs/features/FEAT-025-aws-native-recommendation-ingest.md) | Cost Optimization Hub, Compute Optimizer and Trusted Advisor ingest | Specified | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 4, [P3 plan](docs/plans/P3-implementation-plan.md) |
+| [FEAT-026](docs/features/FEAT-026-bespoke-waste-collectors.md) | Bespoke waste collectors where AWS is blind | Specified | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.2, [P3 plan](docs/plans/P3-implementation-plan.md) |
+| [FEAT-027](docs/features/FEAT-027-cloudwatch-cost-module.md) | CloudWatch cost module: retention, unqueried logs, stale alarms | Specified | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.2, [P3 plan](docs/plans/P3-implementation-plan.md) |
+| [FEAT-028](docs/features/FEAT-028-recommendation-lifecycle.md) | Recommendation lifecycle with owner and ticketing | Specified | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.1, [P3 plan](docs/plans/P3-implementation-plan.md) |
+| [FEAT-029](docs/features/FEAT-029-realized-savings-verification.md) | Realized savings verification, the north star metric | Specified | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.5, [P3 plan](docs/plans/P3-implementation-plan.md) |
+| [FEAT-043](docs/features/FEAT-043-finops-score.md) | FinOps Score, decomposable to the findings that moved it | Specified | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 9, [P3 plan](docs/plans/P3-implementation-plan.md) |
+| [FEAT-044](docs/features/FEAT-044-blast-radius-scoring.md) | Blast radius scoring from the dependency graph, gating auto apply | Specified | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 12, [P3 plan](docs/plans/P3-implementation-plan.md) |
 
 ### P4 Inventory and Topology
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-030](docs/features/FEAT-030-config-aggregator-inventory.md) | AWS Config aggregator inventory by region and zone | Planned | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.1, [P4 plan](docs/plans/P4-implementation-plan.md) |
-| [FEAT-031](docs/features/FEAT-031-topology-graph.md) | Topology graph, node and edge model | Planned | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.2, [P4 plan](docs/plans/P4-implementation-plan.md) |
-| [FEAT-032](docs/features/FEAT-032-topology-map-interface.md) | Topology map interface | Planned | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 9, [P4 plan](docs/plans/P4-implementation-plan.md) |
+| [FEAT-030](docs/features/FEAT-030-config-aggregator-inventory.md) | AWS Config aggregator inventory by region and zone | Specified | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.1, [P4 plan](docs/plans/P4-implementation-plan.md) |
+| [FEAT-031](docs/features/FEAT-031-topology-graph.md) | Topology graph, node and edge model | Specified | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.2, [P4 plan](docs/plans/P4-implementation-plan.md) |
+| [FEAT-032](docs/features/FEAT-032-topology-map-interface.md) | Topology map interface | Specified | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 9, [P4 plan](docs/plans/P4-implementation-plan.md) |
 
 ### P5 Quotas and Limits
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-033](docs/features/FEAT-033-quota-utilization.md) | Quota utilization per service per region, with stated coverage gaps | Planned | [roadmap](docs/01-ROADMAP.md) P5 |
-| [FEAT-034](docs/features/FEAT-034-quota-increase-workflow.md) | Quota increase request workflow | Planned | [roadmap](docs/01-ROADMAP.md) P5 |
+| [FEAT-033](docs/features/FEAT-033-quota-utilization.md) | Quota utilization per service per region, with stated coverage gaps | Specified | [P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 5.2, [P5 plan](docs/plans/P5-implementation-plan.md) |
+| [FEAT-034](docs/features/FEAT-034-quota-increase-workflow.md) | Quota increase request drafting and tracking, never submission | Specified | [P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 6, [P5 plan](docs/plans/P5-implementation-plan.md) |
 
 ### P6 Containers
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-035](docs/features/FEAT-035-eks-split-cost-allocation.md) | EKS pod level cost from split cost allocation data | Planned | [roadmap](docs/01-ROADMAP.md) P6 |
-| [FEAT-036](docs/features/FEAT-036-k8s-in-cluster-telemetry.md) | In cluster telemetry, requested versus used | Planned | [roadmap](docs/01-ROADMAP.md) P6 |
-| [FEAT-037](docs/features/FEAT-037-ecs-task-utilization.md) | ECS task and Fargate utilization, snapped to valid sizes | Planned | [roadmap](docs/01-ROADMAP.md) P6 |
-| [FEAT-047](docs/features/FEAT-047-node-fleet-optimisation.md) | Cluster node fleet optimisation as an integer linear program | Planned | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
-| [FEAT-048](docs/features/FEAT-048-predictive-replica-forecasting.md) | Predictive replica forecasting, under the four ADR-0015 conditions | Planned | [ADR-0015](docs/adr/ADR-0015-deterministic-forecasting-is-permitted.md) |
+| [FEAT-035](docs/features/FEAT-035-eks-split-cost-allocation.md) | EKS pod level cost from split cost allocation data | Specified | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.1, [P6 plan](docs/plans/P6-implementation-plan.md) |
+| [FEAT-036](docs/features/FEAT-036-k8s-in-cluster-telemetry.md) | In cluster telemetry, requested versus used | Specified | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.4, [P6 plan](docs/plans/P6-implementation-plan.md) |
+| [FEAT-037](docs/features/FEAT-037-ecs-task-utilization.md) | ECS task and Fargate utilization, snapped to valid sizes | Specified | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.5, [P6 plan](docs/plans/P6-implementation-plan.md) |
+| [FEAT-047](docs/features/FEAT-047-node-fleet-optimisation.md) | Cluster node fleet optimisation as an integer linear program | Specified | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 3, [P6 plan](docs/plans/P6-implementation-plan.md) |
+| [FEAT-048](docs/features/FEAT-048-predictive-replica-forecasting.md) | Predictive replica forecasting, under the four ADR-0015 conditions | Specified | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 14, [P6 plan](docs/plans/P6-implementation-plan.md) |
 
 ### P7 Insight and LLM layer
 
@@ -323,6 +323,9 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0094 | 2026-09-20 | Correction | TASK-P1-019, 020 and 021. The design pass found five defects on screens whose tests were green, including a front page still promising a sub project that had shipped, and a seeded database found a sixth that no test had, where the commitment fake reported four commitments obliging zero dollars at any clock but its own. Adds the demo runbook and its journey | `pending` | [P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-019 to TASK-P1-021 |
 | CHG-0095 | 2026-09-20 | Design | P3 specification and implementation plan written, 20 tasks in nine waves. The sub project is FEAT-029, verifying that the bill actually moved, and everything else is upstream of it. Estimated and realized savings are different kinds of number and one task exists only to prove they cannot be added. Blast radius refuses to score against an incomplete graph rather than returning a low one | `pending` | [P3 plan](docs/plans/P3-implementation-plan.md) |
 | CHG-0096 | 2026-09-20 | Design | P4 specification and implementation plan written, 11 tasks in seven waves. One rule shapes it. An edge Meter cannot see is not an absent edge, so graph_coverage is written on every run including failed ones, traversal returns its own coverage as part of its return type, and the fake estate is incomplete by default. ISS-012 decided as selective Config recording, with the estimated monthly cost written into the task before it is applied | `pending` | [P4 plan](docs/plans/P4-implementation-plan.md) |
+| CHG-0097 | 2026-09-20 | Design | P5 specification and implementation plan written, 8 tasks in five waves. Its central decision is a refusal. RequestServiceQuotaIncrease is a write into a member account and constraint 6 forbids it, so Meter drafts the request, shows the console link and the CLI command, and tracks it to completion without submitting it. The IAM permission is deliberately absent and a test names the API. The other rule is that a quota with no usage source reports limit known and usage unknown, never zero, enforced by a database constraint | `pending` | [P5 plan](docs/plans/P5-implementation-plan.md) |
+| CHG-0098 | 2026-09-20 | Design | P6 specification and implementation plan written, 12 tasks in the first cut, with FEAT-047 and FEAT-048 deferred to a second cut for the reason P1 deferred its own. Two decisions carry it. Pod cost is measured rather than apportioned, because split cost allocation data arrives as columns on the billing export already being read. And there is no agent in the cluster, which costs four named signals including OOMKilled, so every memory recommendation for a workload whose OOM history is unknown says in its rationale that the check could not be made | `pending` | [P6 plan](docs/plans/P6-implementation-plan.md) |
+| CHG-0099 | 2026-09-20 | Correction | FEAT-034 renamed from quota increase request workflow to drafting and tracking, never submission. The old name promised a feature constraint 6 forbids, and a feature document promising what the product will not do is one that will be quoted back | `pending` | [P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 6 |
 
 <!-- generated:changes end -->
 

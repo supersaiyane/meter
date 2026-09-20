@@ -119,10 +119,18 @@ meter/
 │   │   │                      Section 5.5 is the one to read: what a realized
 │   │   │                      saving can honestly claim, and why a third
 │   │   │                      verdict of inconclusive exists
-│   │   └── 2026-09-20-p4-inventory-and-topology-design.md
-│   │                          Section 6 is the whole sub project: an edge Meter
-│   │                          cannot see is not an absent edge, and a partial
-│   │                          graph still renders and answers wrongly
+│   │   ├── 2026-09-20-p4-inventory-and-topology-design.md
+│   │   │                      Section 6 is the whole sub project: an edge Meter
+│   │   │                      cannot see is not an absent edge, and a partial
+│   │   │                      graph still renders and answers wrongly
+│   │   ├── 2026-09-20-p5-quotas-and-limits-design.md
+│   │   │                      Section 6 is a refusal: a quota increase is a
+│   │   │                      write, so Meter drafts and tracks it and never
+│   │   │                      submits it. The IAM permission is absent
+│   │   └── 2026-09-20-p6-containers-design.md
+│   │                          Section 5.4 is the cost of having no agent in the
+│   │                          cluster, stated per signal so the trade can be
+│   │                          revisited with evidence rather than memory
 │   └── plans/                 implementation plans, written per sub project.
 │                              `sync.py` reads task status out of these, so the
 │                              Status row in each task is data, not prose. It
@@ -132,7 +140,9 @@ meter/
 │       ├── P1-implementation-plan.md
 │       ├── P2-implementation-plan.md
 │       ├── P3-implementation-plan.md    20 tasks, not started
-│       └── P4-implementation-plan.md    11 tasks, not started
+│       ├── P4-implementation-plan.md    11 tasks, not started
+│       ├── P5-implementation-plan.md     8 tasks, not started
+│       └── P6-implementation-plan.md    12 tasks, first cut, not started
 │
 ├── audits/                    point in time reviews, one file per audit
 │   ├── README.md              naming convention, finding ids, cadence
@@ -694,6 +704,8 @@ continuous integration, not by good intentions.
 | What exactly is P1 delivering | `docs/specs/2026-09-18-p1-cost-intelligence-design.md`. The cost surface, and section 16 for the second cut that delivered anomalies, commitments and the export |
 | What exactly is P3 delivering | `docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md`. What the estate should cost instead, and whether the bill actually moved |
 | What exactly is P4 delivering | `docs/specs/2026-09-20-p4-inventory-and-topology-design.md`. What is out there and what is connected to what, and an honest record of what could not be read |
+| What exactly is P5 delivering | `docs/specs/2026-09-20-p5-quotas-and-limits-design.md`. Used against limit where that can be measured, and a refusal to write the increase |
+| What exactly is P6 delivering | `docs/specs/2026-09-20-p6-containers-design.md`. Namespace cost from the bill and reservation against use, in a first cut. The optimiser and the forecaster are a second |
 | What is done and what is left | `tasks/STATUS.md` |
 | What is broken, what is risky, what is undecided | `tasks/ISSUES.md` |
 | Where did the last session stop | `docs/checkpoint.md` |
