@@ -84,6 +84,8 @@
     "finops-web/dist-types/src/screens/AccountsScreen.d.ts",
     "finops-web/dist-types/src/screens/CostAllocationScreen.d.ts",
     "finops-web/dist-types/src/screens/CostAnomaliesScreen.d.ts",
+    "finops-web/dist-types/src/screens/CostCommitmentsScreen.d.ts",
+    "finops-web/dist-types/src/screens/CostExportScreen.d.ts",
     "finops-web/dist-types/src/screens/CostScreen.d.ts",
     "finops-web/dist-types/src/screens/EnforcementScreen.d.ts",
     "finops-web/dist-types/src/screens/FreshnessScreen.d.ts",
@@ -100,6 +102,8 @@
     "finops-web/dist-types/src/screens/__tests__/AccountsScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/CostAllocationScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/CostAnomaliesScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/CostCommitmentsScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/CostExportScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/CostScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/EnforcementScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/FreshnessScreen.test.d.ts",
@@ -120,6 +124,7 @@
     "finops-web/dist-types/src/screens/findingFigure.d.ts",
     "finops-web/dist-types/src/screens/platformRollUp.d.ts",
     "finops-web/dist-types/src/screens/querySeverity.d.ts",
+    "finops-web/dist-types/src/screens/saveFile.d.ts",
     "finops-web/dist-types/src/screens/surfaceStateFor.d.ts",
     "finops-web/dist-types/src/shell/AppShell.d.ts",
     "finops-web/dist-types/src/shell/MetaContext.d.ts",
@@ -189,6 +194,7 @@
     "finops-web/src/screens/CostAllocationScreen.tsx",
     "finops-web/src/screens/CostAnomaliesScreen.tsx",
     "finops-web/src/screens/CostCommitmentsScreen.tsx",
+    "finops-web/src/screens/CostExportScreen.tsx",
     "finops-web/src/screens/CostScreen.tsx",
     "finops-web/src/screens/EnforcementScreen.tsx",
     "finops-web/src/screens/FreshnessScreen.tsx",
@@ -206,6 +212,7 @@
     "finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx",
     "finops-web/src/screens/__tests__/CostAnomaliesScreen.test.tsx",
     "finops-web/src/screens/__tests__/CostCommitmentsScreen.test.tsx",
+    "finops-web/src/screens/__tests__/CostExportScreen.test.tsx",
     "finops-web/src/screens/__tests__/CostScreen.test.tsx",
     "finops-web/src/screens/__tests__/EnforcementScreen.test.tsx",
     "finops-web/src/screens/__tests__/FreshnessScreen.test.tsx",
@@ -226,6 +233,7 @@
     "finops-web/src/screens/findingFigure.ts",
     "finops-web/src/screens/platformRollUp.ts",
     "finops-web/src/screens/querySeverity.ts",
+    "finops-web/src/screens/saveFile.ts",
     "finops-web/src/screens/surfaceStateFor.ts",
     "finops-web/src/shell/AppShell.tsx",
     "finops-web/src/shell/MetaProvider.tsx",
@@ -404,6 +412,7 @@
     "tests/__init__.py",
     "tests/api/__init__.py",
     "tests/api/test_cost_commitments.py",
+    "tests/api/test_cost_export_route.py",
     "tests/api/test_cost_repository.py",
     "tests/api/test_cost_routes.py",
     "tests/api/test_fixture_surfaces.py",
@@ -913,6 +922,11 @@
     {
       "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/CostExportScreen.tsx",
       "k": "typescript"
     },
     {
@@ -1532,6 +1546,41 @@
     },
     {
       "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/api/apiContext.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/screens/saveFile.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
       "k": "typescript"
     },
@@ -2202,6 +2251,31 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/CostCommitmentsScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostExportScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostExportScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostExportScreen.test.tsx",
+      "t": "finops-web/src/screens/CostExportScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostExportScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostExportScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
       "k": "typescript"
     },
@@ -4313,6 +4387,16 @@
     {
       "s": "tests/api/test_cost_commitments.py",
       "t": "finops_providers/fake/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_export_route.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_export_route.py",
+      "t": "finops_core/domain/platform.py",
       "k": "python"
     },
     {

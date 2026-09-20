@@ -17,11 +17,14 @@ minute of a new month than it did in the last minute of the old one.
 
 from __future__ import annotations
 
+import csv
+from collections.abc import Iterable, Sequence
 from datetime import UTC, date, datetime
 from decimal import Decimal
+from io import StringIO
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.engine import Connection
 
 from finops_api.db.repositories import AccessContext
@@ -361,3 +364,117 @@ def cost_commitments(
     )
     meta = build_meta(connection, scope, context, visible=len(rows), rows=[*rows, *slices])
     return Envelope(data=found, meta=meta)
+
+
+#: The header row, and the whole reason this endpoint is not a generic dump.
+#:
+#: Every money column names its measure. A spreadsheet column headed "cost" is a
+#: column somebody will reconcile against an invoice and then argue about, because
+#: amortized and billed differ by exactly the commitment discount and nothing in a
+#: bare number says which one is in the cell. FOCUS 1.1 calls them EffectiveCost and
+#: BilledCost, and those names travel with the file.
+EXPORT_HEADER = (
+    "billing_period",
+    "account_id",
+    "service_name",
+    "tag_value",
+    "effective_cost_amortized_usd",
+    "billed_cost_usd",
+    "line_items",
+    # Both timestamps, per constraint 10, and on every row rather than in a header
+    # comment. A CSV cannot carry the meta envelope the JSON routes carry, and the
+    # envelope exists so a reader can tell stale from fresh. A spreadsheet outlives
+    # the moment it was downloaded, gets mailed on and pasted into a deck, so the
+    # freshness has to travel in the cells or it does not travel.
+    "as_of",
+    "collected_at",
+    # The scope coverage, on every row, for the reason FEAT-045 gives: a spreadsheet
+    # that leaves the product without its coverage becomes a number in a board pack
+    # with no way back to what it meant. A file drawn from two of three hundred
+    # accounts is not the estate, and a reader who pastes one row into a deck has
+    # taken the coverage with them.
+    "accounts_in_file",
+    "accounts_in_organization",
+)
+
+
+def _csv(header: tuple[str, ...], rows: Iterable[Sequence[object]]) -> str:
+    """The file, built through the csv module rather than by joining on commas.
+
+    A service name with a comma in it, or a tag value with a quote, breaks a hand
+    joined line in a way that shifts every later column by one and still opens in a
+    spreadsheet. That is worse than failing.
+    """
+    buffer = StringIO()
+    writer = csv.writer(buffer, lineterminator="\n")
+    writer.writerow(header)
+    writer.writerows(rows)
+    return buffer.getvalue()
+
+
+@router.get("/cost/export")
+def cost_export(
+    tag: str = Query(default="team", min_length=1, max_length=128),
+    period: date | None = None,
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Response:
+    """One period as CSV, at the grain finance asks for. FEAT-045.
+
+    Generated from the same repository, the same scope predicate and the same
+    unallocated bucket the screens read, so the file cannot drift from what a reader
+    was shown. Summing the amortized column gives the figure on `/cost/summary`, and
+    a test asserts that by summing it.
+
+    Not an envelope, because this is a file rather than a payload: a caller saves it
+    and opens it in a spreadsheet, and a JSON wrapper round a CSV is a wrapper
+    somebody has to strip by hand.
+    """
+    repository = CostRepository(connection, context)
+    resolved = _resolve(repository, scope, period)
+    rows = repository.for_export(scope, resolved, tag)
+    totals = repository.period_total(scope, resolved)
+    as_of, collected_at = totals[0][3], totals[0][4]
+    # The same two numbers the coverage banner shows, from the same place, so the
+    # screen and the file cannot disagree about how much of the estate this is.
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        visible=repository.accounts_in(scope, resolved),
+        as_of=as_of,
+        collected_at=collected_at,
+    )
+
+    body = _csv(
+        EXPORT_HEADER,
+        (
+            (
+                resolved.isoformat(),
+                account,
+                service,
+                # `unallocated` is a row like any other here. An export that quietly
+                # dropped what it could not attribute would report a smaller estate
+                # than exists, and the gap is the first thing finance finds.
+                tag_value,
+                f"{Decimal(effective):.4f}",
+                f"{Decimal(billed):.4f}",
+                int(line_items),
+                as_of.isoformat(),
+                collected_at.isoformat(),
+                meta.scope_coverage.visible,
+                meta.scope_coverage.total,
+            )
+            for account, service, tag_value, effective, billed, line_items in rows
+        ),
+    )
+    return Response(
+        content=body,
+        media_type="text/csv",
+        headers={
+            # Named for the period, so two downloads do not overwrite each other in
+            # a downloads folder, which is where every one of these files ends up.
+            "Content-Disposition": (f'attachment; filename="meter-cost-{resolved.isoformat()}.csv"')
+        },
+    )

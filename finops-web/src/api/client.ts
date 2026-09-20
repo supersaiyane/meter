@@ -63,6 +63,28 @@ export function createApiClient({ baseUrl = '', token, fetchImpl = fetch }: ApiC
     },
 
     /**
+     * A response that is a file rather than a payload.
+     *
+     * Separate from `get` because it deliberately does not check for the envelope.
+     * The CSV export is the one route without one, and the reason is in
+     * `ENVELOPE_EXEMPT`: a JSON wrapper round a CSV is a wrapper somebody has to
+     * strip by hand. Its freshness travels as two columns in the file instead.
+     *
+     * Kept as its own method rather than a flag on `get`, so a route that should
+     * carry an envelope cannot lose its check by passing an argument.
+     */
+    async getText(path: string): Promise<string> {
+      const response = await fetchImpl(`${baseUrl}${path}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const detail = await response.text();
+        throw new ApiError(response.status, detail || response.statusText);
+      }
+      return response.text();
+    },
+
+    /**
      * The only writing method, and it sends no body.
      *
      * Every write this product makes is an instruction rather than a document:

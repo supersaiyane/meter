@@ -22,7 +22,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 51 total, 11 specified, 10 in build, 5 delivered |
+| Features | 51 total, 12 specified, 10 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
 | Changes | 90 recorded |
 | Issues | 124 fixed, 55 open, 0 parked |
@@ -123,7 +123,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P1 | 17 | 0 | 0 | 0 | 4 | 21 | [plan](../docs/plans/P1-implementation-plan.md) |
+| P1 | 18 | 0 | 0 | 0 | 3 | 21 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -191,6 +191,7 @@ ISS-003.
 | `TASK-P1-015` | Done, 2026-09-20 | the anomalies screen |
 | `TASK-P1-016` | Done, 2026-09-20, with a deviation | what was committed, and how much was used |
 | `TASK-P1-017` | Done, 2026-09-20 | the commitments screen |
+| `TASK-P1-018` | Done, 2026-09-20 | the file finance opens |
 
 **P2, not in the default state**
 

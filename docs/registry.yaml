@@ -326,9 +326,9 @@ features:
   detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md)'
   doc: docs/features/FEAT-044-blast-radius-scoring.md
 - id: FEAT-045
-  name: Chargeback and showback export, CSV and Excel
+  name: Chargeback and showback export, CSV
   subproject: P1
-  status: Planned
+  status: Specified
   detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md)'
   doc: docs/features/FEAT-045-chargeback-export.md
 - id: FEAT-046

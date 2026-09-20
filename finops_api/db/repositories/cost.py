@@ -135,6 +135,37 @@ class CostRepository(ScopedRepository):
         )
         return _fetch(self, scope, statement)
 
+    def for_export(self, scope: Scope, period: date, key: str) -> Sequence[Row[tuple[Any, ...]]]:
+        """One row per account, service and tag value, for the file finance opens.
+
+        The same table, the same scope predicate and the same unallocated bucket as
+        every screen. That is the point rather than a convenience: a file generated
+        from a second query shape is a file that can disagree with the screen, and
+        the gap between an export and an invoice is the first thing finance finds.
+
+        Grouped three ways instead of one, so the file can be pivoted. Summing the
+        effective cost column of the whole file therefore equals the period total on
+        `/cost/summary`, which `tests/api/test_cost_export.py` asserts by doing
+        exactly that.
+        """
+        account = func.coalesce(self.table.c.sub_account_id, UNALLOCATED)
+        tagged = func.coalesce(self.table.c.tags[key].astext, UNALLOCATED)
+        statement = (
+            self.scoped_select(scope)
+            .with_only_columns(
+                account,
+                self.table.c.service_name,
+                tagged,
+                func.sum(self.table.c.effective_cost),
+                func.sum(self.table.c.billed_cost),
+                func.count(),
+            )
+            .where(self.table.c.billing_period_start == period)
+            .group_by(account, self.table.c.service_name, tagged)
+            .order_by(func.sum(self.table.c.effective_cost).desc())
+        )
+        return _fetch(self, scope, statement)
+
     def by_tag(self, scope: Scope, period: date, key: str) -> Sequence[Row[tuple[Any, ...]]]:
         """Allocation: charges grouped by one tag key, with an explicit bucket
         for everything nobody tagged.

@@ -986,7 +986,7 @@ the payer's whole commitment position.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-20 |
 | Implements | P1 spec section 16, FEAT-045 |
 | Delivers | FEAT-045 |
 | Depends on | TASK-P1-009 |
@@ -1006,7 +1006,7 @@ repository the screens read, so it cannot drift from what they show.
 | --- | --- |
 | `finops_api/routes/cost.py` | `GET /cost/export` |
 | `finops-web/src/screens/CostExportScreen.tsx` | created |
-| `tests/api/test_cost_export.py` | created |
+| `tests/api/test_cost_export_route.py` | created, named for the route because the port contract already owns the other name |
 
 **Acceptance criteria.**
 

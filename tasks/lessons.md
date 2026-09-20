@@ -155,3 +155,29 @@ fix is byte for byte the fix from last time, the test is wrong, not the code.
 assertion containing a literal route, id or fixture name where the test title
 says "a" or "an" rather than that name, and writing the same repair to a test
 twice.
+
+## 2026-09-20: a type check that checked nothing
+
+**Mistake:** I used `npx tsc --noEmit` in `finops-web` a dozen times across a
+session as my proof that a change type checked, and it exits 0 without reading a
+single file. The root `tsconfig.json` is `{"files": [], "references": [...]}`, and
+project references are only followed by `tsc --build`. Plain `--noEmit` against a
+solution file has no input, finds no errors and reports success. When I finally
+ran `tsc -p tsconfig.app.json` for an unrelated reason, three type errors were
+sitting there, one of them in a file I had edited two commits earlier.
+
+**Correction:** self caught, and only because a stub client was obviously missing
+a method the interface now required, which made a clean type check impossible to
+believe.
+
+**Rule:** in `finops-web`, type check with `npx tsc --build` (or `npm run build`,
+which runs `tsc --build && vite build`). Never `tsc --noEmit` there. More
+generally: before trusting any checker's silence, make it fail once. A checker
+that reports success over zero inputs is indistinguishable from a checker that
+reports success over correct inputs, and the first one is what a solution style
+tsconfig, an empty glob or a wrong path gives you. `make verify` was never fooled,
+because `build-web` runs `tsc --build`; only my ad hoc command was.
+
+**Triggers:** `tsc --noEmit`, any checker invoked with a config I did not read,
+"types are clean", a lint or type run that finishes suspiciously fast, and any
+tsconfig containing `"files": []`.

@@ -40,8 +40,26 @@ LOGGER = logging.getLogger("meter.api")
 #: describe the service rather than reporting a figure, and listing them here
 #: means the exemption is a decision somebody made rather than a route that
 #: quietly slipped through.
+#: Routes that return something other than a data payload, so the envelope does not
+#: apply to them.
+#:
+#: `/api/v1/cost/export` is the only one that returns tenant data, and it is exempt
+#: because it returns a file rather than a payload: a JSON wrapper round a CSV is a
+#: wrapper somebody has to strip by hand before a spreadsheet will open it. The
+#: envelope exists so a reader can tell stale from fresh, and that requirement is met
+#: instead by `as_of` and `collected_at` columns on every row of the file, which is
+#: stronger than a header, because a spreadsheet gets mailed on and pasted into a deck
+#: and the cells are what survive that. `tests/api/test_cost_export_route.py` asserts
+#: the columns are there.
 ENVELOPE_EXEMPT = frozenset(
-    {"/healthz", "/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc"}
+    {
+        "/healthz",
+        "/openapi.json",
+        "/docs",
+        "/docs/oauth2-redirect",
+        "/redoc",
+        "/api/v1/cost/export",
+    }
 )
 
 HEALTHY = "ok"

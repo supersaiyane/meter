@@ -85,7 +85,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-51 features across 8 sub projects. 11 specified, 25 planned, 10 in build, 5 delivered.
+51 features across 8 sub projects. 12 specified, 24 planned, 10 in build, 5 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -130,7 +130,7 @@ block is caught by `make check-docs`. See
 | [FEAT-022](docs/features/FEAT-022-allocation-and-showback.md) | Allocation, showback and the unallocated bucket | In build | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 9 |
 | [FEAT-023](docs/features/FEAT-023-cost-anomaly-detection.md) | Anomaly detection and ingest of AWS Cost Anomaly Detection | Specified | [roadmap](docs/01-ROADMAP.md) P1 |
 | [FEAT-024](docs/features/FEAT-024-commitment-coverage.md) | Savings Plan and Reserved Instance utilization and coverage | Specified | [roadmap](docs/01-ROADMAP.md) P1 |
-| [FEAT-045](docs/features/FEAT-045-chargeback-export.md) | Chargeback and showback export, CSV and Excel | Planned | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
+| [FEAT-045](docs/features/FEAT-045-chargeback-export.md) | Chargeback and showback export, CSV | Specified | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
 
 ### P3 Utilization and Rightsizing
 

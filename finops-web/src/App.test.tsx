@@ -6,6 +6,7 @@ import type { ApiClient } from './api/client';
 
 const NEVER_ANSWERS: ApiClient = {
   get: () => new Promise(() => undefined),
+  getText: () => new Promise<string>(() => undefined),
   post: () => new Promise(() => undefined),
 };
 
@@ -14,10 +15,7 @@ function open(path: string) {
   return render(<App client={NEVER_ANSWERS} />);
 }
 
-function withStorage(
-  stub: Pick<Storage, 'getItem' | 'setItem'>,
-  run: () => void,
-): void {
+function withStorage(stub: Pick<Storage, 'getItem' | 'setItem'>, run: () => void): void {
   const original = Object.getOwnPropertyDescriptor(window, 'localStorage');
   Object.defineProperty(window, 'localStorage', { value: stub, configurable: true });
   try {
@@ -70,7 +68,9 @@ describe('App', () => {
     // A finding detail is not in the navigation, and the screen names the
     // finding itself underneath.
     open('/governance/queries/abc-123');
-    expect(screen.getByRole('heading', { level: 1, name: 'Query findings' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Query findings' }),
+    ).toBeInTheDocument();
   });
 
   it('opens only the section holding the current screen', () => {
@@ -105,7 +105,9 @@ describe('App', () => {
     // browser's own behaviour, which is the part this cannot see.
     open('/');
     for (const href of ['/cost', '/waste', '/inventory/accounts', '/governance/queries']) {
-      expect(document.querySelector(`nav[aria-label='Sections'] a[href='${href}']`)).not.toBeNull();
+      expect(
+        document.querySelector(`nav[aria-label='Sections'] a[href='${href}']`),
+      ).not.toBeNull();
     }
   });
 
