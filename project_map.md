@@ -214,18 +214,36 @@ meter/
 │       │   │                  templates, not urls, so a detail path matches.
 │       │   │                  A failing route raises, it never falls back
 │       │   └── fixtures/      ships in the bundle. Production code, not test
-│       │       └── query.ts   one modelled row, one measured, one unattributed.
-│       │                      A happy path only fixture pins the wrong screen
+│       │       └── query.ts   findings, details, instances and enforcement
+│       │                      actions. Carries a null count beside a genuine
+│       │                      zero, and an unreachable instance beside a
+│       │                      reachable one. A happy path only fixture pins the
+│       │                      wrong screen
 │       ├── shell/             coverage and freshness, page level and worst case
 │       │   └── sections.ts    GROUPS, the seven of ADR-0020. It never grows: a
 │       │                      sub project adds screens inside an existing group
-│       └── screens/           seven built. TASK-P2-023 to 025 add the remaining
-│                              P2 screens and are planned, not built
+│       └── screens/           ten built. All four P2 screens exist and are
+│                              fixture backed until TASK-P2-021 lands the routes
 │           ├── HomeScreen.tsx          owns no data of its own. An unfilled slot
 │           │                           names the sub project that will fill it
 │           ├── QueryFindingsScreen.tsx ranked by cost as decimals. The reason is
 │           │                           a column, because a tooltip is invisible
 │           │                           in a screenshot
+│           ├── QueryFindingDetailScreen.tsx  publishes the working. A test
+│           │                           derives each cost from its own inputs,
+│           │                           because a sum that fails when checked is
+│           │                           worse than no sum
+│           ├── findingFigure.ts        cost to figure. Accuracy is passed through
+│           │                           only when published, never invented
+│           ├── QuerySurfacesScreen.tsx unreachable instances listed with their
+│           │                           cause. A null count is not a zero, and
+│           │                           both appear here so neither is mistaken
+│           ├── EnforcementScreen.tsx   revoke absent, not disabled, when the API
+│           │                           says so. Constraint 8: one enforcement
+│           │                           point, not two
+│           ├── enforcementTime.ts      both expiry forms, dated and in UTC. A
+│           │                           bare time made a three day old control
+│           │                           read as this morning
 │           ├── AccountsScreen.tsx      broken onboarding is one filter, not four
 │           ├── OrganizationScreen.tsx  tree default, graph secondary
 │           ├── IngestScreen.tsx        runs with typed causes per account
