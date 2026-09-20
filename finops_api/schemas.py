@@ -321,6 +321,63 @@ class CostAnomaliesOut(BaseModel):
     days_needed: int
 
 
+class CommitmentUseOut(BaseModel):
+    """One commitment, and how much of what we paid for was consumed.
+
+    No coverage figure, and its absence is deliberate. A dollar of covered spend
+    cannot be attributed to one of several overlapping plans, so a coverage field
+    here would be a number nobody measured. Coverage is `CommitmentCoverageOut`.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    commitment_id: str
+    commitment_type: str
+    #: QUEUED, ACTIVE or EXPIRED. An expired commitment is reported rather than
+    #: dropped, because the coverage gap its expiry leaves is the finding.
+    status: str
+    term_start: date
+    term_end: date
+    committed: Decimal
+    used: Decimal
+    #: Money already spent that bought nothing. The one figure on this row a
+    #: reader can act on without further arithmetic.
+    wasted: Decimal
+    #: Null where nothing was committed in the window, which is what a queued
+    #: commitment looks like. Zero would say the whole commitment was wasted, and
+    #: it has not started.
+    utilization: Decimal | None
+
+
+class CommitmentCoverageOut(BaseModel):
+    """How much of one slice of the estate was on a commitment."""
+
+    model_config = ConfigDict(frozen=True)
+
+    commitment_type: str
+    dimension: str
+    dimension_value: str
+    eligible_spend: Decimal
+    covered_spend: Decimal
+    #: Null where nothing was eligible. Zero says the estate is uncovered and
+    #: somebody should buy; null says there was nothing there to buy for.
+    coverage: Decimal | None
+
+
+class CommitmentsOut(BaseModel):
+    """Both figures for one window, and never one derived from the other."""
+
+    model_config = ConfigDict(frozen=True)
+
+    window_start: date
+    window_end: date
+    commitments: list[CommitmentUseOut]
+    coverage: list[CommitmentCoverageOut]
+    #: Every commitment's unused money, added up. Carried rather than left to the
+    #: screen, so the file, the screen and the API agree on it.
+    wasted_total: Decimal
+
+
 class CostSliceOut(BaseModel):
     """One row of a grouping: a service, an account, a region or a tag value."""
 

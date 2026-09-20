@@ -33,6 +33,7 @@ VARIABLE = re.compile(r"^(METER_[A-Z0-9_]+)=(.*)$", re.MULTILINE)
 ACCOUNT_DISCOVERY = "AccountDiscovery"
 CREDENTIAL_BROKER = "CredentialBroker"
 COST_EXPORT = "CostExport"
+COMMITMENT_REPORT = "CommitmentReport"
 
 
 class ProviderPorts(Protocol):
@@ -72,7 +73,7 @@ def build_fake(_monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
         known_account=fixtures.ACCOUNT_KEYS[0],
         denied_account=fixtures.DENIED_ACCOUNT_KEY,
         unknown_account=AccountKey(provider=Provider.AWS, account_id="fake-not-enrolled"),
-        supports=frozenset({ACCOUNT_DISCOVERY, CREDENTIAL_BROKER, COST_EXPORT}),
+        supports=frozenset({ACCOUNT_DISCOVERY, CREDENTIAL_BROKER, COST_EXPORT, COMMITMENT_REPORT}),
     )
 
 
@@ -179,6 +180,135 @@ class ContractAthena:
         )
 
 
+class ContractCostExplorer:
+    """Recorded Cost Explorer responses, shaped as the documentation describes them.
+
+    Recorded rather than moto, because moto does not implement the Savings Plans or
+    reservation reports at all. That is a real limit on what this contract proves:
+    it holds the adapter to the documented response shape, and only a real account
+    can settle whether the shape is right. ISS-122.
+
+    The four commitments mirror the fake's on purpose, so a contract assertion that
+    passes for one provider and fails for the other is telling us about the adapter
+    and not about the data. The reservation figures are in hours, which is what the
+    API actually returns and what makes the adapter derive money from them.
+    """
+
+    def get_savings_plans_utilization_details(self, **_: Any) -> dict[str, Any]:
+        return {
+            "SavingsPlansUtilizationDetails": [
+                {
+                    # Fully consumed. Utilization is one and the waste is nothing.
+                    "SavingsPlanArn": "arn:aws:savingsplans::111122223333:savingsplan/live",
+                    "Attributes": {
+                        "startDateTime": "2026-01-01T00:00:00Z",
+                        "endDateTime": "2027-01-01T00:00:00Z",
+                    },
+                    "Utilization": {
+                        "TotalCommitment": "761.07",
+                        "UsedCommitment": "761.07",
+                        "UnusedCommitment": "0",
+                        "UtilizationPercentage": "100",
+                    },
+                },
+                {
+                    # Ended inside the window. Reported as expired, never dropped.
+                    "SavingsPlanArn": "arn:aws:savingsplans::111122223333:savingsplan/gone",
+                    "Attributes": {
+                        "startDateTime": "2025-08-01T00:00:00Z",
+                        "endDateTime": "2026-08-15T00:00:00Z",
+                    },
+                    "Utilization": {
+                        "TotalCommitment": "202.95",
+                        "UsedCommitment": "202.95",
+                        "UnusedCommitment": "0",
+                        "UtilizationPercentage": "100",
+                    },
+                },
+                {
+                    # Purchased and not yet started, so it obliged nothing.
+                    "SavingsPlanArn": "arn:aws:savingsplans::111122223333:savingsplan/queued",
+                    "Attributes": {
+                        "startDateTime": "2026-09-01T00:00:00Z",
+                        "endDateTime": "2027-09-01T00:00:00Z",
+                    },
+                    "Utilization": {
+                        "TotalCommitment": "0",
+                        "UsedCommitment": "0",
+                        "UnusedCommitment": "0",
+                        "UtilizationPercentage": "0",
+                    },
+                },
+            ]
+        }
+
+    def get_savings_plans_coverage(self, **_: Any) -> dict[str, Any]:
+        return {
+            "SavingsPlansCoverages": [
+                {
+                    "Attributes": {"SERVICE": "AmazonEC2"},
+                    "Coverage": {
+                        "SpendCoveredBySavingsPlans": "964.02",
+                        "OnDemandCost": "1423.66",
+                        "TotalCost": "2387.68",
+                        "CoveragePercentage": "40.37",
+                    },
+                },
+                {
+                    # Eligible and entirely uncovered, which is a zero and not a None.
+                    "Attributes": {"SERVICE": "AWSLambda"},
+                    "Coverage": {
+                        "SpendCoveredBySavingsPlans": "0",
+                        "OnDemandCost": "149.23",
+                        "TotalCost": "149.23",
+                        "CoveragePercentage": "0",
+                    },
+                },
+            ]
+        }
+
+    def get_reservation_utilization(self, **_: Any) -> dict[str, Any]:
+        return {
+            "UtilizationsByTime": [
+                {
+                    "Groups": [
+                        {
+                            "Key": "ri-rds-contract",
+                            # Hours, not money. The adapter derives the money and
+                            # says so, which is the point of recording it this way.
+                            "Utilization": {
+                                "PurchasedHours": "744",
+                                "TotalActualHours": "461.28",
+                                "UnusedHours": "282.72",
+                                "UtilizationPercentage": "62",
+                                "TotalAmortizedFee": "967.01",
+                            },
+                        }
+                    ]
+                }
+            ]
+        }
+
+    def get_reservation_coverage(self, **_: Any) -> dict[str, Any]:
+        return {
+            "CoveragesByTime": [
+                {
+                    "Groups": [
+                        {
+                            "Attributes": {"SERVICE": "AmazonRDS"},
+                            "Coverage": {
+                                "CoverageCost": {
+                                    "OnDemandCost": "474.90",
+                                    "ReservedCost": "599.55",
+                                }
+                            },
+                        }
+                    ]
+                }
+            ]
+        }
+
+
 class ContractS3:
     def get_paginator(self, _: str) -> _ContractPages:
         return _ContractPages(
@@ -189,10 +319,17 @@ class ContractS3:
 class AwsUnderContract:
     """The AWS adapters presented as the one object the contract talks to."""
 
-    def __init__(self, broker: Any, discovery: Any, cost: Any) -> None:
+    def __init__(self, broker: Any, discovery: Any, cost: Any, commitment: Any) -> None:
         self._broker = broker
         self._discovery = discovery
         self._cost = cost
+        self._commitment = commitment
+
+    def utilization(self, window_start: Any, window_end: Any) -> Any:
+        return self._commitment.utilization(window_start, window_end)
+
+    def coverage(self, window_start: Any, window_end: Any) -> Any:
+        return self._commitment.coverage(window_start, window_end)
 
     def latest_available_period(self) -> Any:
         return self._cost.latest_available_period()
@@ -223,6 +360,7 @@ def build_aws(monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
     from moto import mock_aws
 
     from finops_providers.aws.accounts import AwsAccountDiscovery
+    from finops_providers.aws.commitment import CostExplorerCommitmentReport
     from finops_providers.aws.credentials import AwsCredentialBroker
     from finops_providers.aws.cur import AthenaCostExport
 
@@ -269,12 +407,19 @@ def build_aws(monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
                     ),
                     sleeper=lambda _: None,
                 ),
+                commitment=CostExplorerCommitmentReport(
+                    settings,
+                    tenant_id=fixtures.TENANT_ID,
+                    client_factory=lambda: ContractCostExplorer(),
+                ),
             ),
             region=AWS_REGION,
             known_account=AWS_KNOWN,
             denied_account=AWS_DENIED,
             unknown_account=AWS_UNKNOWN,
-            supports=frozenset({ACCOUNT_DISCOVERY, CREDENTIAL_BROKER, COST_EXPORT}),
+            supports=frozenset(
+                {ACCOUNT_DISCOVERY, CREDENTIAL_BROKER, COST_EXPORT, COMMITMENT_REPORT}
+            ),
         )
     finally:
         mock.stop()

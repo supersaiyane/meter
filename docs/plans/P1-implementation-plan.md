@@ -907,7 +907,7 @@ whom.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-20, with a deviation |
 | Implements | P1 spec section 16, FEAT-024 |
 | Delivers | FEAT-024 |
 | Depends on | TASK-P1-001 |
@@ -926,13 +926,28 @@ Plan is not a line item and modelling it as one would put a second meaning on
 
 | Path | Action |
 | --- | --- |
-| `migrations/versions/0009_commitment_coverage.py` | created |
+| `migrations/versions/0009_commitment_coverage.py` | created, two tables |
 | `finops_core/ports/commitment.py` | created |
 | `finops_core/domain/cost.py` | `CommitmentUse` |
 | `finops_providers/fake/commitment.py` | created |
 | `finops_providers/aws/commitment.py` | created, unproved |
 | `finops_ingest/collectors/commitment.py` | created |
 | `tests/contract/test_commitment.py` | created |
+
+**Deviation from this plan, and why.** The plan put utilization and coverage on
+one row, and that row would have carried a number nobody measured. A provider
+reports utilization per commitment and coverage per service or region, because a
+dollar of covered spend cannot be attributed to one of three overlapping plans. A
+`covered_spend` column on `commitment_use` would have been an invention, and
+summing it across commitments would have counted the same eligible dollar once per
+plan. So the migration creates two tables, the port has two methods, and
+`CommitmentCoverage` is a second entity. The acceptance criteria below are met more
+strongly by the split than they would have been by the single row.
+
+The other deviation is the guard. `PayerWide` is a new rule shape in
+`finops_api/guards.py`, because neither existing answer was right: `ByAccount` has
+no column to match, and `None` would have served a viewer scoped to two accounts
+the payer's whole commitment position.
 
 **Acceptance criteria.**
 
@@ -950,7 +965,7 @@ Plan is not a line item and modelling it as one would put a second meaning on
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-20 |
 | Implements | P1 spec section 16 |
 | Delivers | FEAT-024 |
 | Depends on | TASK-P1-016 |

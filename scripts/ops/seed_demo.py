@@ -107,6 +107,10 @@ DEMO_TABLES = (
     "grafana_instance",
     # P1, FEAT-023. Derived from the daily rows, so it goes before them.
     "cost_anomaly",
+    # P1, FEAT-024. Neither references the other, and both reference only the
+    # tenant, so their order between themselves does not matter.
+    "commitment_coverage",
+    "commitment_use",
     # P1. The monthly aggregate goes before the daily rows it is derived from,
     # for the same reason as everything else in this list: reverse dependency
     # order, so a removal never orphans a foreign key.

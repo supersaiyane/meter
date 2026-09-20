@@ -308,6 +308,50 @@ export interface ApiCostDay {
 }
 
 /** One day that did not look like the days before it. FEAT-023. */
+export interface ApiCommitmentUse {
+  readonly commitment_id: string;
+  readonly commitment_type: string;
+  /** QUEUED, ACTIVE or EXPIRED. An expired commitment is reported, not dropped. */
+  readonly status: string;
+  readonly term_start: string;
+  readonly term_end: string;
+  readonly committed: string;
+  readonly used: string;
+  /** Money already spent that bought nothing. */
+  readonly wasted: string;
+  /**
+   * Null where nothing was committed in the window, which is a commitment that
+   * has not started. Zero would say the whole commitment was wasted, so the
+   * screen renders the two differently.
+   *
+   * There is deliberately no coverage field here. A dollar of covered spend
+   * cannot be attributed to one of several overlapping plans, so a coverage
+   * figure on a commitment would be a number nobody measured.
+   */
+  readonly utilization: string | null;
+}
+
+export interface ApiCommitmentCoverage {
+  readonly commitment_type: string;
+  readonly dimension: string;
+  readonly dimension_value: string;
+  readonly eligible_spend: string;
+  readonly covered_spend: string;
+  /**
+   * Null where nothing was eligible. Zero says the estate is uncovered and
+   * somebody should buy; null says there was nothing there to buy for.
+   */
+  readonly coverage: string | null;
+}
+
+export interface ApiCommitments {
+  readonly window_start: string;
+  readonly window_end: string;
+  readonly commitments: readonly ApiCommitmentUse[];
+  readonly coverage: readonly ApiCommitmentCoverage[];
+  readonly wasted_total: string;
+}
+
 export interface ApiCostAnomaly {
   readonly account_id: string;
   readonly service_name: string;

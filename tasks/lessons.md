@@ -128,7 +128,7 @@ a command whose success matters, "the build finished", "the image is rebuilt",
 restarting a service after a code change, and any claim about what a container
 is running that was not read out of that container.
 
-## 2026-09-20 — a test that names its subject instead of deriving it
+## 2026-09-20: a test that names its subject instead of deriving it
 
 **Mistake:** three tests asserted that an unbuilt screen names the sub project
 that will bring it, and each did so by naming one path. `/cost` shipped, so I

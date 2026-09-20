@@ -196,13 +196,13 @@ features:
 - id: FEAT-023
   name: Anomaly detection and ingest of AWS Cost Anomaly Detection
   subproject: P1
-  status: Planned
+  status: Specified
   detail: '[roadmap](docs/01-ROADMAP.md) P1'
   doc: docs/features/FEAT-023-cost-anomaly-detection.md
 - id: FEAT-024
   name: Savings Plan and Reserved Instance utilization and coverage
   subproject: P1
-  status: Planned
+  status: Specified
   detail: '[roadmap](docs/01-ROADMAP.md) P1'
   doc: docs/features/FEAT-024-commitment-coverage.md
 - id: FEAT-025

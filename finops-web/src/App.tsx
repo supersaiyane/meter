@@ -16,6 +16,7 @@ import { QueryFindingDetailScreen } from './screens/QueryFindingDetailScreen';
 import { CostScreen } from './screens/CostScreen';
 import { CostAllocationScreen } from './screens/CostAllocationScreen';
 import { CostAnomaliesScreen } from './screens/CostAnomaliesScreen';
+import { CostCommitmentsScreen } from './screens/CostCommitmentsScreen';
 import { QueryAdhocScreen } from './screens/QueryAdhocScreen';
 import { QueryFindingsScreen } from './screens/QueryFindingsScreen';
 import { EnforcementScreen } from './screens/EnforcementScreen';
@@ -78,6 +79,7 @@ export function App({
                 <Route path="/cost" element={<CostScreen />} />
                 <Route path="/cost/allocation" element={<CostAllocationScreen />} />
                 <Route path="/cost/anomalies" element={<CostAnomaliesScreen />} />
+                <Route path="/cost/commitments" element={<CostCommitmentsScreen />} />
                 <Route path="/inventory/accounts" element={<AccountsScreen />} />
                 <Route path="/inventory/organization" element={<OrganizationScreen />} />
                 <Route path="/governance/queries" element={<QueryFindingsScreen />} />

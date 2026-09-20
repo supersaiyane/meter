@@ -28,12 +28,17 @@ from finops_api.db.repositories import AccessContext
 from finops_api.db.repositories.cost import (
     GROUPABLE,
     AnomalyRepository,
+    CommitmentCoverageRepository,
+    CommitmentRepository,
     CostRepository,
     previous_month,
 )
 from finops_api.deps import get_access_context, get_connection, get_scope
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
+    CommitmentCoverageOut,
+    CommitmentsOut,
+    CommitmentUseOut,
     CostAnomaliesOut,
     CostAnomalyOut,
     CostDayOut,
@@ -52,6 +57,11 @@ router = APIRouter(prefix=API_PREFIX, tags=["cost"])
 #: does not exist. A zero would say the estate spent nothing, which is a claim
 #: nobody has earned the right to make.
 NO_COST = "No billing period has been collected for this tenant yet."
+
+#: What a caller gets when no commitment has ever been collected. Distinct
+#: from an estate that holds no commitments, which is an empty list and a
+#: sentence saying so.
+NO_COMMITMENTS = "No commitment window has been collected for this tenant yet."
 
 
 def _period_end(start: date) -> date:
@@ -78,6 +88,20 @@ def _resolve(repository: CostRepository, scope: Scope, asked: date | None) -> da
     if latest is None:
         raise HTTPException(status_code=404, detail=NO_COST)
     return latest
+
+
+def _fraction(part: Decimal, whole: Decimal) -> Decimal | None:
+    """`part` over `whole`, or None where there is no whole.
+
+    None rather than zero, and the distinction carries a screen. Zero says the
+    commitment was wasted or the estate is uncovered, which are claims a reader
+    acts on. None says the question has no answer here, which is a different
+    sentence, and a queued commitment or a service with no eligible spend is the
+    second case.
+    """
+    if whole == 0:
+        return None
+    return part / whole
 
 
 def _slices(rows: Any) -> list[CostSliceOut]:
@@ -271,4 +295,69 @@ def cost_anomalies(
         days_needed=MINIMUM_HISTORY,
     )
     meta = build_meta(connection, scope, context, visible=len(rows), rows=rows)
+    return Envelope(data=found, meta=meta)
+
+
+@router.get("/cost/commitments", response_model=Envelope[CommitmentsOut])
+def cost_commitments(
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[CommitmentsOut]:
+    """What was committed, what it consumed, and what it covered.
+
+    Two reads of two tables at two grains, and the route is what holds them to one
+    window. Utilization is per commitment and coverage is per service, because a
+    dollar of covered spend cannot be attributed to one of several overlapping
+    plans, and a payload that put coverage on a commitment would be reporting a
+    number nobody measured.
+
+    Both tables are `PayerWide` in the guard, so a caller scoped to fewer than all
+    accounts reads nothing here. A commitment is bought by the payer and consumed
+    by whichever accounts ran the usage, and no API reports which, so there is no
+    honest way to narrow it. Reading nothing is the right answer and the screen
+    says why.
+    """
+    uses = CommitmentRepository(connection, context)
+    window = uses.latest_window(scope)
+    if window is None:
+        raise HTTPException(status_code=404, detail=NO_COMMITMENTS)
+
+    rows = uses.worst_first(scope, window)
+    slices = CommitmentCoverageRepository(connection, context).slices(scope, window)
+
+    commitments = [
+        CommitmentUseOut(
+            commitment_id=str(row.commitment_id),
+            commitment_type=str(row.commitment_type),
+            status=str(row.status),
+            term_start=row.term_start,
+            term_end=row.term_end,
+            committed=Decimal(row.committed),
+            used=Decimal(row.used),
+            wasted=Decimal(row.wasted),
+            utilization=_fraction(Decimal(row.used), Decimal(row.committed)),
+        )
+        for row in rows
+    ]
+    found = CommitmentsOut(
+        window_start=window,
+        window_end=rows[0].window_end if rows else _period_end(window),
+        commitments=commitments,
+        coverage=[
+            CommitmentCoverageOut(
+                commitment_type=str(row.commitment_type),
+                dimension=str(row.dimension),
+                dimension_value=str(row.dimension_value),
+                eligible_spend=Decimal(row.eligible_spend),
+                covered_spend=Decimal(row.covered_spend),
+                coverage=_fraction(Decimal(row.covered_spend), Decimal(row.eligible_spend)),
+            )
+            for row in slices
+        ],
+        # Summed from the rows being returned, so the total cannot disagree with
+        # the list underneath it.
+        wasted_total=sum((one.wasted for one in commitments), Decimal("0")),
+    )
+    meta = build_meta(connection, scope, context, visible=len(rows), rows=[*rows, *slices])
     return Envelope(data=found, meta=meta)

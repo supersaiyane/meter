@@ -481,6 +481,52 @@ cost_anomaly = Table(
 )
 
 
+commitment_use = Table(
+    "commitment_use",
+    metadata,
+    Column("use_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("commitment_id", Text, nullable=False),
+    Column("commitment_type", Text, nullable=False),
+    #: QUEUED, ACTIVE or EXPIRED. An expired commitment keeps its row, because
+    #: the coverage gap its expiry leaves is the finding.
+    Column("status", Text, nullable=False),
+    Column("term_start", Date, nullable=False),
+    Column("term_end", Date, nullable=False),
+    Column("window_start", Date, nullable=False),
+    Column("window_end", Date, nullable=False),
+    Column("committed", Numeric(20, 10), nullable=False),
+    Column("used", Numeric(20, 10), nullable=False),
+    #: Carried rather than computed on read, and constrained in the database to be
+    #: the difference, so a screen and a file cannot disagree about it.
+    Column("wasted", Numeric(20, 10), nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
+#: Coverage, at the only grain a provider reports it. There is deliberately no
+#: `commitment_id` here: a dollar of covered spend cannot be attributed to one of
+#: several overlapping plans, so a column naming one would be an invention.
+commitment_coverage = Table(
+    "commitment_coverage",
+    metadata,
+    Column("coverage_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("commitment_type", Text, nullable=False),
+    Column("dimension", Text, nullable=False),
+    Column("dimension_value", Text, nullable=False),
+    Column("window_start", Date, nullable=False),
+    Column("window_end", Date, nullable=False),
+    Column("eligible_spend", Numeric(20, 10), nullable=False),
+    Column("covered_spend", Numeric(20, 10), nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
 query_adhoc = Table(
     "query_adhoc",
     metadata,

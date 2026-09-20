@@ -1,4 +1,5 @@
 import type {
+  ApiCommitments,
   ApiCostAnomalies,
   ApiCostDay,
   ApiCostSlice,
@@ -172,6 +173,96 @@ export function costTrendFixture(): ApiEnvelope<ApiCostDay[]> {
     });
   }
   return { data: days, meta: meta(5) };
+}
+
+export function costCommitmentsFixture(): ApiEnvelope<ApiCommitments> {
+  return {
+    data: {
+      window_start: '2026-09-01',
+      window_end: '2026-10-01',
+      commitments: [
+        {
+          // Over bought. The coverage looks healthy and the purchase was still a
+          // mistake, which is the pair of readings this screen exists to separate.
+          commitment_id: 'fake-ri-rds',
+          commitment_type: 'ReservedInstance',
+          status: 'ACTIVE',
+          term_start: '2026-03-01',
+          term_end: '2027-03-01',
+          committed: '967.0100',
+          used: '599.5500',
+          wasted: '367.4600',
+          utilization: '0.6200',
+        },
+        {
+          // Fully consumed and under committed. Reading utilization alone says the
+          // purchase was correct; its service is under half covered.
+          commitment_id: 'fake-sp-compute',
+          commitment_type: 'SavingsPlan',
+          status: 'ACTIVE',
+          term_start: '2026-01-01',
+          term_end: '2027-01-01',
+          committed: '761.0700',
+          used: '761.0700',
+          wasted: '0.0000',
+          utilization: '1.0000',
+        },
+        {
+          commitment_id: 'fake-sp-expired',
+          commitment_type: 'SavingsPlan',
+          status: 'EXPIRED',
+          term_start: '2025-08-01',
+          term_end: '2026-09-15',
+          committed: '202.9500',
+          used: '202.9500',
+          wasted: '0.0000',
+          utilization: '1.0000',
+        },
+        {
+          // Null on purpose. It has not started, and zero would say the whole
+          // commitment was wasted.
+          commitment_id: 'fake-sp-queued',
+          commitment_type: 'SavingsPlan',
+          status: 'QUEUED',
+          term_start: '2026-10-01',
+          term_end: '2027-10-01',
+          committed: '0.0000',
+          used: '0.0000',
+          wasted: '0.0000',
+          utilization: null,
+        },
+      ],
+      coverage: [
+        {
+          commitment_type: 'SavingsPlan',
+          dimension: 'SERVICE',
+          dimension_value: 'AmazonEC2',
+          eligible_spend: '2387.6760',
+          covered_spend: '964.0200',
+          coverage: '0.4037',
+        },
+        {
+          commitment_type: 'ReservedInstance',
+          dimension: 'SERVICE',
+          dimension_value: 'AmazonRDS',
+          eligible_spend: '1074.4542',
+          covered_spend: '599.5500',
+          coverage: '0.5580',
+        },
+        {
+          // Eligible and entirely uncovered, which is a zero and says buy.
+          commitment_type: 'SavingsPlan',
+          dimension: 'SERVICE',
+          dimension_value: 'AWSLambda',
+          eligible_spend: '149.2298',
+          covered_spend: '0.0000',
+          coverage: '0.0000',
+        },
+      ],
+      wasted_total: '367.4600',
+    },
+    meta: meta(4),
+  };
 }
 
 export function costAnomaliesFixture(): ApiEnvelope<ApiCostAnomalies> {

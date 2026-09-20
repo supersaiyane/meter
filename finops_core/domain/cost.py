@@ -211,3 +211,147 @@ class CostRecord(Fact):
         # behind it being edited, and a shared tag dictionary quietly mutated by
         # one caller is the kind of defect that only shows up in aggregate.
         object.__setattr__(self, "tags", MappingProxyType(dict(self.tags)))
+
+
+#: A commitment whose term has not started. AWS queues a Savings Plan to begin on
+#: the hour after purchase, and a queued plan has committed nothing and consumed
+#: nothing, which is a third state rather than a zero of either.
+QUEUED = "QUEUED"
+ACTIVE = "ACTIVE"
+EXPIRED = "EXPIRED"
+
+#: What a coverage figure is broken down by. Coverage is never per commitment,
+#: see `CommitmentCoverage`.
+BY_SERVICE = "SERVICE"
+BY_REGION = "REGION"
+
+
+@dataclass(frozen=True, kw_only=True)
+class CommitmentUse(Fact):
+    """What one commitment obliged us to pay, and how much of it was consumed.
+
+    Utilization only. Coverage is a different entity at a different grain, and the
+    reason is not tidiness: see `CommitmentCoverage`.
+
+    **An expired commitment is a row, not an absence.** The money was spent, and
+    the coverage gap its expiry leaves is the finding. Dropping it would make the
+    estate look like it never had the commitment, which is exactly the situation
+    somebody needs to be told about.
+    """
+
+    tenant_id: UUID
+    commitment_id: str
+    #: SavingsPlan or ReservedInstance. Not an enum, because a provider that
+    #: invents a third kind should reach a screen rather than a parse failure.
+    commitment_type: str
+    status: str
+    term_start: date
+    #: Exclusive, like every other period in this schema.
+    term_end: date
+
+    #: The window this row reports on, which is shorter than the term.
+    window_start: date
+    window_end: date
+
+    #: What the commitment obliged us to pay across the window.
+    committed: Decimal
+    #: How much of that obligation real usage consumed.
+    used: Decimal
+    #: `committed` minus `used`. Money already spent that bought nothing, which is
+    #: the one figure here a reader can act on without further arithmetic.
+    wasted: Decimal
+
+    def __post_init__(self) -> None:
+        if self.term_end <= self.term_start:
+            raise ValueError(
+                f"a commitment term ends after it starts: {self.term_start} to {self.term_end}"
+            )
+        if self.window_end <= self.window_start:
+            raise ValueError(
+                f"a window ends after it starts: {self.window_start} to {self.window_end}"
+            )
+        if self.committed < 0 or self.used < 0:
+            raise ValueError("a commitment's money is never negative")
+        if self.wasted != self.committed - self.used:
+            # Carried rather than computed on read, so a screen and a file cannot
+            # disagree about it, and checked here as well as in the database
+            # because an adapter is where a wrong subtraction would enter.
+            raise ValueError(
+                f"wasted is committed minus used: {self.committed} - {self.used} "
+                f"is not {self.wasted}"
+            )
+
+    @property
+    def utilization(self) -> Decimal | None:
+        """How much of what we paid for was consumed, as a fraction.
+
+        None where nothing was committed in the window, which is what a queued
+        commitment looks like. Zero would say the whole commitment was wasted, and
+        it was not: it has not started.
+        """
+        if self.committed == 0:
+            return None
+        return self.used / self.committed
+
+    @property
+    def is_expired(self) -> bool:
+        return self.status == EXPIRED
+
+
+@dataclass(frozen=True, kw_only=True)
+class CommitmentCoverage(Fact):
+    """How much of the eligible estate was on a commitment, for one dimension.
+
+    **Separate from `CommitmentUse`, and not by choice.** Utilization is a fact
+    about one commitment: this plan obliged us to pay so much and consumed so
+    much of it. Coverage is a fact about a slice of the estate: of the EC2 spend
+    that could have been on a commitment, this much was. A provider reports the
+    first per commitment and the second per service or region, because a dollar of
+    covered spend cannot be attributed to one of three overlapping plans, and
+    neither can we. Putting a coverage figure on a commitment row would invent a
+    number nobody measured, and summing such a column would count the same
+    eligible dollar once per commitment.
+
+    The two answers also point at opposite actions, which is why neither may be
+    derived from the other. A plan at full utilization covering a tenth of the
+    estate says buy more. A plan at half utilization covering everything says the
+    last purchase was too large.
+    """
+
+    tenant_id: UUID
+    commitment_type: str
+    #: SERVICE or REGION.
+    dimension: str
+    dimension_value: str
+    window_start: date
+    window_end: date
+
+    #: Spend in the window a commitment of this kind could have covered, priced
+    #: at on demand.
+    eligible_spend: Decimal
+    #: How much of that eligible spend a commitment actually covered.
+    covered_spend: Decimal
+
+    def __post_init__(self) -> None:
+        if self.window_end <= self.window_start:
+            raise ValueError(
+                f"a window ends after it starts: {self.window_start} to {self.window_end}"
+            )
+        if self.eligible_spend < 0 or self.covered_spend < 0:
+            raise ValueError("coverage money is never negative")
+        if self.covered_spend > self.eligible_spend:
+            raise ValueError(
+                f"a commitment cannot cover more than was eligible: "
+                f"{self.covered_spend} of {self.eligible_spend}"
+            )
+
+    @property
+    def coverage(self) -> Decimal | None:
+        """The covered fraction, or None where nothing was eligible.
+
+        Zero would say the estate is uncovered and somebody should buy. None says
+        there was nothing there to buy for, which is a different sentence.
+        """
+        if self.eligible_spend == 0:
+            return None
+        return self.covered_spend / self.eligible_spend

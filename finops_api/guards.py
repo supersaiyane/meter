@@ -62,10 +62,29 @@ class Through:
     remote_column: str
 
 
+@dataclass(frozen=True)
+class PayerWide:
+    """The row describes the whole payer and belongs to no account.
+
+    Distinct from `None`, and the distinction is the point. `None` means the
+    tenant filter is the whole of a table's scoping, so every viewer of the
+    tenant sees every row. That is right for a run ledger and wrong for money: a
+    commitment is bought at the payer level and cannot be apportioned to the
+    accounts that consumed it, so showing it to a viewer restricted to two
+    accounts would tell them the size of the organization's commitment position,
+    which is exactly what their scope was meant to withhold.
+
+    There is no honest way to narrow such a row, so a narrowed scope reads
+    nothing rather than reading everything. The screen's job is then to say the
+    figure needs organization wide scope, which is a sentence a reader can act
+    on, rather than to show a number that is not theirs.
+    """
+
+
 #: Tables holding tenant data, and how the account a row belongs to is found.
 #: `None` means the table carries no account identifier and none can be reached
 #: from it, so the tenant filter is the whole of its scoping.
-SCOPED_TABLES: dict[str, ByAccount | Through | None] = {
+SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | None] = {
     "cloud_account": ByAccount("account_id", "provider"),
     "org_node": None,
     "ingest_run": None,
@@ -93,6 +112,13 @@ SCOPED_TABLES: dict[str, ByAccount | Through | None] = {
     # same shape as the tables it is derived from. In before the route, per the
     # rule at the top of the P1 plan and the six defects that produced it.
     "cost_anomaly": ByAccount("sub_account_id"),
+    # A commitment is bought by the payer and consumed by whichever accounts
+    # happened to run the usage, and no API reports which. `PayerWide` rather
+    # than `None` because the figure is money: a viewer scoped to two accounts
+    # reading the payer's whole commitment position learns the scale of the
+    # organization. In before the route, per the rule at the top of the P1 plan.
+    "commitment_use": PayerWide(),
+    "commitment_coverage": PayerWide(),
     "platform_cost": None,
     "principal": None,
     "principal_scope": None,
@@ -140,6 +166,14 @@ def scope_predicate(table: Table, scope: Scope) -> ColumnElement[bool]:
     clauses: list[ColumnElement[bool]] = [table.c["tenant_id"] == scope.tenant_id]
 
     rule = SCOPED_TABLES[table.name]
+    if isinstance(rule, PayerWide):
+        # Handled whole, here, rather than left to fall through. A payer wide row
+        # has no account column to match, so reaching `_account_predicate` would
+        # raise a KeyError, and reaching the `rule is None` line would hand the row
+        # to a narrowed caller.
+        if not scope.is_global:
+            clauses.append(false())
+        return and_(*clauses)
     if rule is None or scope.is_global:
         return and_(*clauses)
 

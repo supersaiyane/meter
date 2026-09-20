@@ -22,7 +22,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 51 total, 9 specified, 10 in build, 5 delivered |
+| Features | 51 total, 11 specified, 10 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
 | Changes | 90 recorded |
 | Issues | 124 fixed, 55 open, 0 parked |
@@ -123,7 +123,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P1 | 14 | 0 | 0 | 0 | 7 | 21 | [plan](../docs/plans/P1-implementation-plan.md) |
+| P1 | 17 | 0 | 0 | 0 | 4 | 21 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -188,7 +188,9 @@ ISS-003.
 | `TASK-P1-012` | Done, 2026-09-19 | the demo estate gets a bill |
 | `TASK-P1-013` | Done, 2026-09-19, and unapplied by construction | the infrastructure that will not be applied |
 | `TASK-P1-014` | Done, 2026-09-20 | a day that does not look like the days before it |
-| `TASK-P1-015` | Done, 2026-09-20 | the anomalies screen, and the empty state that means two things |
+| `TASK-P1-015` | Done, 2026-09-20 | the anomalies screen |
+| `TASK-P1-016` | Done, 2026-09-20, with a deviation | what was committed, and how much was used |
+| `TASK-P1-017` | Done, 2026-09-20 | the commitments screen |
 
 **P2, not in the default state**
 

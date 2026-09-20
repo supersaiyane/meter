@@ -17,10 +17,12 @@ import {
   costAllocationFixture,
   costTrendFixture,
   costAnomaliesFixture,
+  costCommitmentsFixture,
 } from './fixtures/cost';
 import type {
   ApiAdhocQuery,
   Account,
+  ApiCommitments,
   ApiCostAnomalies,
   ApiCostDay,
   ApiCostSlice,
@@ -237,6 +239,15 @@ export function useCostAnomalies() {
     '/api/v1/cost/anomalies',
     '/api/v1/cost/anomalies',
     costAnomaliesFixture,
+  );
+}
+
+export function useCostCommitments() {
+  return useQuerySurface<ApiCommitments>(
+    ['cost-commitments'],
+    '/api/v1/cost/commitments',
+    '/api/v1/cost/commitments',
+    costCommitmentsFixture,
   );
 }
 

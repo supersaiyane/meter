@@ -212,6 +212,69 @@ class AnomalyRepository(ScopedRepository):
         return int(rows[0][0] or 0) if rows else 0
 
 
+class CommitmentRepository(ScopedRepository):
+    """What was committed and how much of it was consumed. FEAT-024.
+
+    Utilization only. Coverage is `CommitmentCoverageRepository`, because it is a
+    fact about a slice of the estate rather than about a commitment, and one
+    repository reading both tables would be one place where a screen could pair
+    utilization from one window with coverage from another.
+    """
+
+    table: ClassVar[Table] = models.commitment_use
+    resource: ClassVar[str] = "commitment_use"
+
+    def latest_window(self, scope: Scope) -> date | None:
+        """The most recent window anything was reported for, or None.
+
+        None means no commitment has ever been collected for this scope, which the
+        route turns into a typed refusal rather than into a page of zeroes.
+        """
+        statement = self.scoped_select(scope).with_only_columns(func.max(self.table.c.window_start))
+        rows = _fetch(self, scope, statement)
+        return rows[0][0] if rows and rows[0][0] is not None else None
+
+    def worst_first(self, scope: Scope, window_start: date) -> Sequence[Row[tuple[Any, ...]]]:
+        """Every commitment in the window, most wasted money first.
+
+        Ranked by the waste rather than by utilization, per ADR-0016. A ranking by
+        percentage puts a ten dollar reservation at forty percent above a ten
+        thousand dollar plan at ninety five, and only one of those is worth a
+        morning.
+        """
+        statement = (
+            self.scoped_select(scope)
+            .where(self.table.c.window_start == window_start)
+            .order_by(self.table.c.wasted.desc(), self.table.c.commitment_id)
+        )
+        return _fetch(self, scope, statement)
+
+
+class CommitmentCoverageRepository(ScopedRepository):
+    """How much of the eligible estate was on a commitment, per dimension."""
+
+    table: ClassVar[Table] = models.commitment_coverage
+    resource: ClassVar[str] = "commitment_coverage"
+
+    def slices(self, scope: Scope, window_start: date) -> Sequence[Row[tuple[Any, ...]]]:
+        """Coverage rows in the window, most uncovered money first.
+
+        Ordered by the money left uncovered rather than by the coverage fraction.
+        Two reasons, and the second is the one that matters. Money is what ADR-0016
+        ranks by, and a percentage of a small eligible total is not an action. And
+        the fraction has a zero denominator whenever nothing was eligible, which
+        PostgreSQL raises on rather than sorting last, so ordering by it would make
+        the screen fail exactly on the estate that has least to show.
+        """
+        uncovered = self.table.c.eligible_spend - self.table.c.covered_spend
+        statement = (
+            self.scoped_select(scope)
+            .where(self.table.c.window_start == window_start)
+            .order_by(uncovered.desc(), self.table.c.dimension_value)
+        )
+        return _fetch(self, scope, statement)
+
+
 class MonthlyCostRepository(ScopedRepository):
     """The derived monthly shape, for setting one period beside another.
 

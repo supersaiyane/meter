@@ -17,7 +17,7 @@ from datetime import date, datetime
 from typing import Any
 
 from finops_core.domain.account import AccountKey, CloudAccount
-from finops_core.domain.cost import CostRecord
+from finops_core.domain.cost import CommitmentCoverage, CommitmentUse, CostRecord
 from finops_core.domain.identity import Entitlement, Principal
 from finops_core.domain.metrics import MetricPoint
 from finops_core.domain.org import OrgNode
@@ -26,6 +26,7 @@ from finops_core.domain.resource import ResourceRef
 from finops_core.domain.tenant import Scope
 from finops_core.errors import AccessDenied, CollectionError
 from finops_providers.fake import fixtures
+from finops_providers.fake.commitment import FakeCommitmentReport
 from finops_providers.fake.cur import FakeCostExport
 
 COLLECTOR = "fake"
@@ -72,6 +73,7 @@ class FakeProvider:
         # one of them means. The failure plan above still governs, because it is
         # this provider's plan and not the export's.
         self._cost = FakeCostExport(rows=fixtures.COST_ROWS)
+        self._commitment = FakeCommitmentReport()
 
     # -- the failure plan --------------------------------------------------
 
@@ -143,6 +145,21 @@ class FakeProvider:
     def read_period(self, period_start: date, period_end: date) -> Iterable[CostRecord]:
         self._fail_if_planned(fixtures.ORGANIZATION_SCOPE)
         return self._cost.read_period(period_start, period_end)
+
+    # -- CommitmentReport --------------------------------------------------
+
+    # Delegated for the same reason as `CostExport`: two implementations of one
+    # answer is two answers. The failure plan is checked here as well, because a
+    # provider planned to fail should fail on every port and not only the ones
+    # that remembered to ask.
+
+    def utilization(self, window_start: date, window_end: date) -> Iterable[CommitmentUse]:
+        self._fail_if_planned(fixtures.ORGANIZATION_SCOPE)
+        return self._commitment.utilization(window_start, window_end)
+
+    def coverage(self, window_start: date, window_end: date) -> Iterable[CommitmentCoverage]:
+        self._fail_if_planned(fixtures.ORGANIZATION_SCOPE)
+        return self._commitment.coverage(window_start, window_end)
 
     # -- MetricSource ------------------------------------------------------
 
