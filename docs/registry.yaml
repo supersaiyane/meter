@@ -592,7 +592,7 @@ changes:
   what: 'Configuration and feature flags: one typed settings object, a documented .env.example, a flag
     register with owners and expiries, and two checks that fail the build. Regions confirmed as Ireland
     and London. Management account taken off the critical path via LocalStack'
-  commit: pending
+  commit: 5a78798
   detail: '[ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md)'
 issues:
 - id: ISS-001
