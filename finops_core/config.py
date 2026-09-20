@@ -67,6 +67,11 @@ class Settings(BaseSettings):
     cur_athena_table: str = Field(min_length=1)
     cur_athena_workgroup: str = Field(min_length=1)
 
+    # Anomaly detection. P1, FEAT-023. Both are here rather than in code so
+    # meeting a real estate is a change of a number rather than a release.
+    anomaly_sensitivity: float = Field(gt=0)
+    anomaly_floor_usd: float = Field(ge=0)
+
     # Ingestion
     queue_url: str = Field(min_length=1)
     run_claim_timeout_minutes: int = Field(ge=1)

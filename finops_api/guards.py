@@ -89,6 +89,10 @@ SCOPED_TABLES: dict[str, ByAccount | Through | None] = {
     # for a line item, keyed by fingerprint, so the tenant filter is the whole
     # of its scoping.
     "cost_provider_extra": None,
+    # An anomaly names the account it happened in, so the guard entry is the
+    # same shape as the tables it is derived from. In before the route, per the
+    # rule at the top of the P1 plan and the six defects that produced it.
+    "cost_anomaly": ByAccount("sub_account_id"),
     "platform_cost": None,
     "principal": None,
     "principal_scope": None,

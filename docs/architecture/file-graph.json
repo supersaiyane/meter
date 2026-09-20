@@ -294,6 +294,7 @@
     "finops_ingest/__init__.py",
     "finops_ingest/collectors/__init__.py",
     "finops_ingest/collectors/account_health.py",
+    "finops_ingest/collectors/cost_anomaly.py",
     "finops_ingest/collectors/cost_focus.py",
     "finops_ingest/collectors/cost_rollup.py",
     "finops_ingest/collectors/org_tree.py",
@@ -332,6 +333,7 @@
     "finops_providers/grafana/amg.py",
     "finops_providers/grafana/client.py",
     "finops_query/__init__.py",
+    "finops_query/anomaly.py",
     "finops_query/classify.py",
     "finops_query/cost_model.py",
     "finops_query/gate.py",
@@ -370,6 +372,7 @@
     "migrations/versions/0005_finding_cause.py",
     "migrations/versions/0006_refresh_floor.py",
     "migrations/versions/0007_query_adhoc.py",
+    "migrations/versions/0008_cost_anomaly.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_flags.py",
     "scripts/ci/check_forbidden_imports.py",
@@ -416,6 +419,7 @@
     "tests/ingest/__init__.py",
     "tests/ingest/collectors/__init__.py",
     "tests/ingest/collectors/test_account_health.py",
+    "tests/ingest/collectors/test_cost_anomaly.py",
     "tests/ingest/collectors/test_cost_focus.py",
     "tests/ingest/collectors/test_cost_focus_restatement.py",
     "tests/ingest/collectors/test_cost_rollup.py",
@@ -451,6 +455,7 @@
     "tests/providers/test_grafana_client.py",
     "tests/query/__init__.py",
     "tests/query/conftest.py",
+    "tests/query/test_anomaly.py",
     "tests/query/test_classify.py",
     "tests/query/test_cost_model.py",
     "tests/query/test_gate.py",
@@ -3326,6 +3331,21 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/cost_anomaly.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/cost_anomaly.py",
+      "t": "finops_query/anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/cost_anomaly.py",
+      "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/cost_focus.py",
       "t": "finops_core/domain/cost.py",
       "k": "python"
@@ -4496,6 +4516,31 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_cost_anomaly.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_anomaly.py",
+      "t": "finops_ingest/collectors/cost_anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_anomaly.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_anomaly.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_anomaly.py",
+      "t": "finops_query/anomaly.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_cost_focus.py",
       "t": "finops_core/__init__.py",
       "k": "python"
@@ -5153,6 +5198,11 @@
     {
       "s": "tests/query/conftest.py",
       "t": "finops_query/cost_model.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_anomaly.py",
+      "t": "finops_query/anomaly.py",
       "k": "python"
     },
     {

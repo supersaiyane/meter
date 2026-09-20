@@ -1,0 +1,49 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Meter security report</title>
+<style>
+  :root { color-scheme: light dark; --bg:#fff; --fg:#111; --mut:#666;
+          --line:#e3e3e3; --card:#fafafa; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#111417; --fg:#e8e8e8; --mut:#9aa0a6; --line:#2a2f35; --card:#181c20; }
+  }
+  body { background:var(--bg); color:var(--fg); margin:0;
+         font:15px/1.55 ui-sans-serif,system-ui,-apple-system,sans-serif; }
+  .wrap { max-width:1180px; margin:0 auto; padding:2.5rem 1.25rem 5rem; }
+  h1 { font-size:1.6rem; margin:0 0 .35rem; }
+  .sub { color:var(--mut); margin:0 0 2rem; }
+  .verdict { padding:1rem 1.25rem; border-radius:10px; font-weight:600;
+             margin-bottom:2rem; }
+  .pass { background:#0d5c2e; color:#fff; }
+  .fail { background:#8c1c1c; color:#fff; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+           gap:.75rem; margin-bottom:2.25rem; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px;
+          padding:.85rem 1rem; }
+  .card .n { font-size:1.5rem; font-weight:650; }
+  .card .l { color:var(--mut); font-size:.78rem; text-transform:uppercase;
+             letter-spacing:.05em; }
+  h2 { font-size:1.05rem; margin:2.5rem 0 .75rem; }
+  .scroll { overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; font-size:.88rem; }
+  th,td { text-align:left; padding:.6rem .7rem; border-bottom:1px solid var(--line);
+          vertical-align:top; }
+  th { color:var(--mut); font-weight:600; font-size:.75rem; text-transform:uppercase;
+       letter-spacing:.04em; white-space:nowrap; }
+  .sev { font-weight:650; white-space:nowrap; }
+  .Critical{color:#e5484d}.High{color:#e5734d}.Medium{color:#d9a520}
+  .Low{color:#7a9}.Negligible,.Unknown{color:var(--mut)}
+  code { background:var(--card); border:1px solid var(--line); border-radius:4px;
+         padding:.1rem .35rem; font-size:.85em; }
+  .fix { color:var(--mut); }
+  .empty { color:var(--mut); font-style:italic; }
+  footer { margin-top:4rem; color:var(--mut); font-size:.82rem;
+           border-top:1px solid var(--line); padding-top:1rem; }
+</style>
+<div class="wrap">
+<h1>Meter security report</h1><p class="sub">working tree &middot; generated 2026-09-20 05:10:00Z</p><div class="verdict pass">PASS. Zero unresolved findings.</div><div class="cards"><div class="card"><div class="n Critical">0</div><div class="l">Critical</div></div><div class="card"><div class="n High">0</div><div class="l">High</div></div><div class="card"><div class="n Medium">0</div><div class="l">Medium</div></div><div class="card"><div class="n Low">0</div><div class="l">Low</div></div><div class="card"><div class="n Negligible">0</div><div class="l">Negligible</div></div><div class="card"><div class="n Unknown">0</div><div class="l">Unknown</div></div><div class="card"><div class="n">0</div><div class="l">Allowlisted</div></div><div class="card"><div class="n">5</div><div class="l">Unfixable, accepted</div></div></div><h2>Unresolved findings and their fixes</h2><p class="empty">None. Nothing to fix.</p><h2>Accepted under a time boxed allowlist entry</h2><p class="empty">None.</p><h2>Accepted as unfixable, with a reachability argument</h2><div class="scroll"><table><thead><tr><th>Advisory</th><th>Package</th><th>Owner</th><th>Review</th><th>Why it is not reachable</th></tr></thead><tbody><tr><td>AWS-0054</td><td><code>hub/alb.tf</code></td><td>PLACEHOLDER-security</td><td>2026-11-27</td><td>The plain HTTP listener serves only when certificate_arn is empty, which is development. With a certificate it does nothing but redirect to HTTPS with a 301. Production cannot be applied without a certificate: a precondition in alb.tf fails the plan, because &quot;we will add TLS before we go live&quot; is a sentence that survives going live. The scanner reads the dynamic block statically and cannot see the precondition.
+</td></tr><tr><td>AWS-0053</td><td><code>hub/alb.tf</code></td><td>PLACEHOLDER-security</td><td>2026-11-27</td><td>The load balancer is internet facing because Meter is a web product that people sign into from a browser. It is the only resource in the hub with a public address, every task sits in a private subnet with no route to the internet, and the tasks accept traffic from this security group only. Making it internal would mean the product is not reachable, which is not a fix.
+</td></tr><tr><td>AWS-0132</td><td><code>hub/storage.tf</code></td><td>PLACEHOLDER-security</td><td>2026-11-27</td><td>S3 server access logging cannot deliver to a bucket encrypted with a customer managed key. The delivery is performed by the S3 log delivery group, which has no grant on the key and cannot be given one. The choice is SSE-S3 on the log bucket or no access log at all, and no access log is worse. The data bucket it logs uses the customer managed key.
+</td></tr><tr><td>AWS-0343</td><td><code>hub/database.tf</code></td><td>PLACEHOLDER-security</td><td>2026-11-27</td><td>Deletion protection is set to var.env == &quot;prod&quot;, so production has it and development does not. A development cluster that cannot be destroyed is a development cluster somebody works around by creating a second one. The scanner evaluates the conditional statically and reports the development branch.
+</td></tr><tr><td>AWS-0089</td><td><code>hub/storage.tf</code></td><td>PLACEHOLDER-security</td><td>2026-11-27</td><td>This finding is against the access log bucket itself. A bucket that logs its own access to itself produces a log entry for every log entry, which does not terminate. The bucket it exists to log, aws_s3_bucket.data, does have access logging, which is what this same rule asked for and what was fixed on the same day.
+</td></tr></tbody></table></div><footer>Policy is zero findings that have a published fix. An accepted finding with a fix carries a named owner and an expiry no more than 90 days out. A finding with no published fix carries a reachability argument instead, reviewed rather than expired. A posture is only as current as its last scan against the running digest, not the last build. See <code>docs/05-SECURITY.md</code> and <code>ADR-0010</code>.</footer></div>

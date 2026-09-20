@@ -458,6 +458,29 @@ query_definition = Table(
 #: workspace, because a query somebody typed into the console belongs to none.
 #: There is no provenance column: an ad hoc row exists only in the evidence, so
 #: there is nothing to model it from and every row is measured by construction.
+cost_anomaly = Table(
+    "cost_anomaly",
+    metadata,
+    Column("anomaly_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column("service_name", Text, nullable=False),
+    Column("day", Date, nullable=False),
+    Column("observed", Numeric(20, 10), nullable=False),
+    Column("baseline", Numeric(20, 10), nullable=False),
+    Column("delta", Numeric(20, 10), nullable=False),
+    #: Null when the baseline had not moved. Every departure from an unmoving
+    #: baseline is infinitely many deviations, so the column says nothing rather
+    #: than something false.
+    Column("deviations", Numeric(12, 4)),
+    Column("severity", Text, nullable=False),
+    #: The working, so a reader can disagree with the verdict.
+    Column("why", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
 query_adhoc = Table(
     "query_adhoc",
     metadata,

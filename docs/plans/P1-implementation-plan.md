@@ -800,7 +800,7 @@ than pretending it was never raised.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-20 |
 | Implements | P1 spec section 16, FEAT-023 |
 | Delivers | FEAT-023 |
 | Depends on | TASK-P1-006 |
@@ -823,26 +823,42 @@ rather than a release.
 | Path | Action |
 | --- | --- |
 | `migrations/versions/0008_cost_anomaly.py` | created |
+| `finops_api/db/models.py` | the table described |
+| `finops_api/guards.py` | `ByAccount` on `sub_account_id`, before any route |
 | `finops_query/anomaly.py` | created, the arithmetic, no IO |
 | `finops_ingest/collectors/cost_anomaly.py` | created |
-| `tests/query/test_anomaly.py` | created |
-| `tests/ingest/collectors/test_cost_anomaly.py` | created |
+| `finops_core/config.py` and `.env.example` | sensitivity and floor |
+| `scripts/ops/seed_demo.py` | `cost_anomaly` in `DEMO_TABLES` |
+| `tests/query/test_anomaly.py` | created, 13 tests on lists |
+| `tests/ingest/collectors/test_cost_anomaly.py` | created, 8 tests against a database |
 
 **Acceptance criteria.**
 
-- [ ] Fewer than 14 days of history for a pair produces no verdict, and a test
-      asserts the absence rather than a zero
-- [ ] The baseline is a median and a median absolute deviation, not a mean and a
-      standard deviation. One spike in the baseline window drags a mean up far
-      enough to hide the next spike, which is the failure mode that matters
-- [ ] A deviation under a dollar floor is not an anomaly however large the
-      ratio. A service costing two cents that triples is not news, and ADR-0016
-      says severity comes from the money
-- [ ] Severity comes from the dollar delta, through the same `severity_for` the
+- [x] Fewer than 14 days of history produces no verdict, and the test asserts
+      the absence rather than a zero. One pair being too young does not stop
+      another being judged
+- [x] The baseline is a median and a median absolute deviation. **Watched
+      failing against a mean and a standard deviation**: with those, a single
+      spike inside the window hides the next one, so the detector reports once
+      and then goes blind for as long as the window is wide
+- [x] A deviation under a dollar floor is not an anomaly however large the
+      ratio, and a fall is not reported at all
+- [x] Severity comes from the dollar delta through the same `severity_for` the
       query findings use, so two screens do not mean different things by high
-- [ ] Re running the detector for a day it has already judged changes nothing
-- [ ] The arithmetic is in `finops_query` with no database and no clock, so it
-      can be tested on lists
+- [x] Re running over a day already judged replaces rather than duplicates,
+      enforced by a unique constraint rather than by the collector
+- [x] The arithmetic is in `finops_query` with no database and no clock
+- [x] The row carries its working, so a reader can disagree with the verdict
+- [x] The collector **refuses without settings**. Severity boundaries are money
+      and money is configuration; defaulting them would put an invented severity
+      on a screen
+
+**Two things this found.** The lookback was a fixed calendar window exactly as
+wide as the detector needs, which starves it the moment collection falls a day
+behind or a pair has a quiet day. It reads twice as far now and takes the last
+days that have data, so a gap costs nothing. And the derived teardown test
+caught `cost_anomaly` missing from `DEMO_TABLES` the same day the table was
+added, which is precisely what ISS-176 put it there for.
 
 **Deliberately not in this task.** No ingest of AWS Cost Anomaly Detection
 findings. That is a second source with its own port and no way to be proved,
