@@ -123,7 +123,7 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P1 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P1-implementation-plan.md) |
+| P1 | 13 | 0 | 0 | 0 | 8 | 21 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**

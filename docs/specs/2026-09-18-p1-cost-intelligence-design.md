@@ -314,3 +314,50 @@ The same shape P2 used, and the parts of it that were learned the hard way.
 8. `make verify` passes.
 9. This document's open questions are answered or carried into the registry as
    open questions with an owner.
+
+## 16. The second cut, and what changed about the decisions
+
+Section 3 deferred three things with a reason each. This section records what
+changed, because a deferral reversed without saying why is a deferral nobody
+will trust next time.
+
+**Anomalies, FEAT-023.** The reason stands: there is no baseline until the
+surface has collected, and tuning a detector against fabricated history teaches
+it the fixture. What changed is the shape of the answer. The detector refuses
+rather than guesses, so a pair with fewer than fourteen days of history produces
+no verdict at all. Its threshold is configuration rather than code, so meeting a
+real estate is a change of a number and not a release. And it uses a median and
+a median absolute deviation rather than a mean and a standard deviation, because
+one spike inside a baseline window drags a mean far enough to hide the next
+spike, which is the failure that matters for a detector nobody is watching.
+
+Ingesting AWS Cost Anomaly Detection is still out. It is a second source with
+its own port, it cannot be proved, and a screen showing two detectors that
+disagree is worse than one that does not.
+
+**Commitments, FEAT-024.** The reason stands and is why this is its own port and
+its own collector rather than a widening of `CostExport`. A Savings Plan is not
+a line item, and modelling it as one would put a second meaning on
+`cost_focus_daily`.
+
+Two numbers, never one. Utilization is how much of what you bought you used.
+Coverage is how much of what you ran was bought in advance. A commitment can be
+fully utilized and cover a tenth of the estate, and those are different
+conversations with different actions, so a screen that reports one of them and
+calls it commitment health is a screen that recommends the wrong thing half the
+time.
+
+**Export, FEAT-045.** The reason was that an export of a surface still changing
+shape is one nobody can rely on. The surface stopped changing when TASK-P1-008
+to TASK-P1-011 landed. The file is generated from the same repository the
+screens read, so it cannot drift from what they show, and a test sums the file
+and compares it against the summary route.
+
+CSV only. Excel would mean admitting a dependency through `make dep-check` for a
+format that spreadsheet software already opens, and the feature document says so
+rather than leaving the gap to be discovered.
+
+**Exit criteria for this cut.** The three remaining screens in the `Cost`
+navigation group carry no "arrives with" note, every figure on them is scoped
+twice and carries both timestamps, and the estate seeded by `make seed` contains
+an anomaly the detector finds rather than one it was told about.

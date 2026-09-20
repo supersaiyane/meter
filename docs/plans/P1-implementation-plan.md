@@ -4,10 +4,12 @@ Date: 2026-09-18
 Status: Provisional, pending approval of `docs/specs/2026-09-18-p1-cost-intelligence-design.md`
 Spec: `docs/specs/2026-09-18-p1-cost-intelligence-design.md`
 Depends on: P0 delivered
-Tasks: 13
+Tasks: 21
 
-This plan covers the **cost surface** only. Section 3 of the spec names what P1
-leaves for a second cut and why.
+The **cost surface** is tasks 001 to 013 and is delivered. The **second cut** is
+014 to 021, and it is what section 3 of the specification deferred: anomalies,
+commitments and the export. Section 16 of the specification records what
+changed about those decisions and why they are being built now.
 
 ## How to work this plan
 
@@ -45,6 +47,10 @@ writing code, not after. If reality does not match the spec, stop, raise an
 | C. Surface | 008 to 009 | The guard, the repository and four routes | B |
 | D. Screens | 010 to 012 | Two screens, a seeded bill and a journey | C |
 | E. Infrastructure | 013 | Terraform that validates and is not applied | A |
+| F. Anomalies | 014 to 015 | A day that does not look like the days before it | D |
+| G. Commitments | 016 to 017 | What was committed, and how much of it was used | D |
+| H. Export | 018 | The file finance actually opens | D |
+| I. Demo | 019 to 021 | A seeded estate and a design pass across every screen | F, G, H |
 
 Wave E does not depend on B, C or D. It can be done at any point and is last
 because it cannot be proved.
@@ -779,3 +785,285 @@ in the hub stack.
 
 **Deliberately not in this task.** No member account IAM. CUR is read from the
 payer, which the hub role already reaches.
+
+---
+
+# Second cut
+
+Section 3 of the specification deferred these three with a reason each. The
+reasons have not gone away, so each task below says how it is dealt with rather
+than pretending it was never raised.
+
+---
+
+### TASK-P1-014: a day that does not look like the days before it
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | P1 spec section 16, FEAT-023 |
+| Delivers | FEAT-023 |
+| Depends on | TASK-P1-006 |
+| Estimate | L |
+
+**Goal.** Detect a day whose cost for one account and service is out of keeping
+with the days before it, and write it to `cost_anomaly`.
+
+**The objection, and what answers it.** Section 3 said an anomaly is a deviation
+from a baseline and there is no baseline until the surface has collected for
+weeks, so building the detector first means tuning it against fabricated
+history. That is still true. What changes is that the detector is now written to
+**refuse** rather than to guess: fewer than 14 days of history for a pair
+produces no verdict at all, not a quiet zero and not a cautious one. The
+threshold is a row, so tuning it against a real estate is a configuration change
+rather than a release.
+
+**Files.**
+
+| Path | Action |
+| --- | --- |
+| `migrations/versions/0008_cost_anomaly.py` | created |
+| `finops_query/anomaly.py` | created, the arithmetic, no IO |
+| `finops_ingest/collectors/cost_anomaly.py` | created |
+| `tests/query/test_anomaly.py` | created |
+| `tests/ingest/collectors/test_cost_anomaly.py` | created |
+
+**Acceptance criteria.**
+
+- [ ] Fewer than 14 days of history for a pair produces no verdict, and a test
+      asserts the absence rather than a zero
+- [ ] The baseline is a median and a median absolute deviation, not a mean and a
+      standard deviation. One spike in the baseline window drags a mean up far
+      enough to hide the next spike, which is the failure mode that matters
+- [ ] A deviation under a dollar floor is not an anomaly however large the
+      ratio. A service costing two cents that triples is not news, and ADR-0016
+      says severity comes from the money
+- [ ] Severity comes from the dollar delta, through the same `severity_for` the
+      query findings use, so two screens do not mean different things by high
+- [ ] Re running the detector for a day it has already judged changes nothing
+- [ ] The arithmetic is in `finops_query` with no database and no clock, so it
+      can be tested on lists
+
+**Deliberately not in this task.** No ingest of AWS Cost Anomaly Detection
+findings. That is a second source with its own port and no way to be proved,
+and a screen showing two detectors that disagree is worse than one that does
+not. It is named in the feature document as the part that waits on ISS-122.
+
+---
+
+### TASK-P1-015: the anomalies screen
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | P1 spec section 16 |
+| Delivers | FEAT-023 |
+| Depends on | TASK-P1-014 |
+| Estimate | M |
+
+**Goal.** `/cost/anomalies`. What changed, by how much, on which day, and for
+whom.
+
+**Files.**
+
+| Path | Action |
+| --- | --- |
+| `finops_api/guards.py` | `cost_anomaly` scoped `ByAccount` |
+| `finops_api/db/repositories/cost.py` | the anomaly read |
+| `finops_api/routes/cost.py` | `GET /cost/anomalies` |
+| `finops-web/src/screens/CostAnomaliesScreen.tsx` | created |
+| `tests/api/test_cost_routes.py` | extended |
+| `finops-web/src/screens/__tests__/CostAnomaliesScreen.test.tsx` | created |
+
+**Acceptance criteria.**
+
+- [ ] The guard entry goes in before the route, and a test reads out of scope
+      and is refused
+- [ ] Every row says what it was, what it was expected to be, and the difference
+      in money. A percentage alone is not actionable
+- [ ] An estate with no anomalies is a sentence, not an empty table, and it is
+      distinguishable from an estate with too little history to judge
+- [ ] The route is called, not imported
+
+---
+
+### TASK-P1-016: what was committed, and how much was used
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | P1 spec section 16, FEAT-024 |
+| Delivers | FEAT-024 |
+| Depends on | TASK-P1-001 |
+| Estimate | L |
+
+**Goal.** A port for commitment utilization and coverage, a fake, an unproved
+AWS adapter, a collector and a table.
+
+**The objection, and what answers it.** Section 3 said this comes from a
+different API on a different cadence, and it does. That is why it is its own
+port and its own collector rather than a widening of `CostExport`: a Savings
+Plan is not a line item and modelling it as one would put a second meaning on
+`cost_focus_daily`.
+
+**Files.**
+
+| Path | Action |
+| --- | --- |
+| `migrations/versions/0009_commitment_coverage.py` | created |
+| `finops_core/ports/commitment.py` | created |
+| `finops_core/domain/cost.py` | `CommitmentUse` |
+| `finops_providers/fake/commitment.py` | created |
+| `finops_providers/aws/commitment.py` | created, unproved |
+| `finops_ingest/collectors/commitment.py` | created |
+| `tests/contract/test_commitment.py` | created |
+
+**Acceptance criteria.**
+
+- [ ] Utilization and coverage are separate numbers and neither is derived from
+      the other. A commitment can be fully used and cover a tenth of the estate,
+      and the two questions have different answers and different actions
+- [ ] An expired commitment is reported as expired, not dropped, because the
+      money was spent and the coverage gap it leaves is the finding
+- [ ] The AWS adapter has never made a call, and the document says so
+- [ ] Contract tested against both adapters
+
+---
+
+### TASK-P1-017: the commitments screen
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | P1 spec section 16 |
+| Delivers | FEAT-024 |
+| Depends on | TASK-P1-016 |
+| Estimate | M |
+
+**Goal.** `/cost/commitments`. What is committed, what it covers, what it wasted.
+
+**Acceptance criteria.**
+
+- [ ] Utilization and coverage are both shown and are labelled distinctly enough
+      that nobody reads one as the other
+- [ ] Unused commitment is money already spent, and it is shown in money
+- [ ] The guard entry precedes the route, and the route is called
+
+---
+
+### TASK-P1-018: the file finance opens
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | P1 spec section 16, FEAT-045 |
+| Delivers | FEAT-045 |
+| Depends on | TASK-P1-009 |
+| Estimate | M |
+
+**Goal.** `GET /cost/export`, a CSV of one period at the grain finance asks for:
+account, service, tag value, amortized, billed, line items.
+
+**The objection, and what answers it.** Section 3 said an export of a surface
+still changing shape is one nobody can rely on. The surface stopped changing
+when tasks 008 to 011 landed, and the export is generated from the same
+repository the screens read, so it cannot drift from what they show.
+
+**Files.**
+
+| Path | Action |
+| --- | --- |
+| `finops_api/routes/cost.py` | `GET /cost/export` |
+| `finops-web/src/screens/CostExportScreen.tsx` | created |
+| `tests/api/test_cost_export.py` | created |
+
+**Acceptance criteria.**
+
+- [ ] The file's totals equal the screen's totals, asserted by summing the CSV
+      and comparing against `/cost/summary`. A file that disagrees with the
+      screen is worse than no file
+- [ ] The unallocated bucket is a row in the file, named, never dropped
+- [ ] Every figure says which measure it is, in the header, because a column of
+      numbers in a spreadsheet has nothing else to say it
+- [ ] Scoped like every other read, and a narrow scope exports less
+- [ ] Excel is **not** in this task, and the feature document says why
+
+---
+
+### TASK-P1-019: the demo estate
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | P1 spec section 16 |
+| Delivers | FEAT-023, FEAT-024 |
+| Depends on | TASK-P1-015, TASK-P1-017 |
+| Estimate | M |
+
+**Goal.** The seeded estate contains an anomaly worth looking at and a
+commitment worth acting on, so the screens have something to show.
+
+**Acceptance criteria.**
+
+- [ ] The fake estate contains one genuine spike, produced by the estate rather
+      than inserted into the table, so the detector finds it rather than being
+      told about it
+- [ ] It contains a commitment that is fully used and one that is not, because
+      those are the two conversations
+- [ ] `make unseed` removes every new table, held by the derived teardown test
+
+---
+
+### TASK-P1-020: the design pass
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | ADR-0021, `docs/12-UI-DESIGN.md` |
+| Delivers | Nothing new. It makes what exists legible |
+| Depends on | TASK-P1-019 |
+| Estimate | L |
+
+**Goal.** Every screen readable at a glance by somebody who did not build it.
+
+**What this is not.** It is not a restyle. The tokens, the warm severity ramp
+and IBM Plex are already decided and already used by Home. This is the pass that
+applies them consistently, gives each screen a shape, and removes the places
+where a functional screen reads as an unfinished one.
+
+**Acceptance criteria.**
+
+- [ ] Every screen has been opened at 1440px and read, and the list of what that
+      found is written down. That pass found two defects on `/cost` alone that
+      no test had
+- [ ] ADR-0021 holds: `layout.css` targets no class a component had to add, and
+      `surface.test.ts` passes
+- [ ] No accessibility violations on any screen
+- [ ] Dark mode is checked, not assumed
+- [ ] Nothing is made to look more certain than it is. A modelled figure still
+      reads as modelled after the pass, and a failure still reads as a failure
+
+---
+
+### TASK-P1-021: the demo walk
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | P1 spec section 16 |
+| Delivers | Nothing new |
+| Depends on | TASK-P1-020 |
+| Estimate | S |
+
+**Goal.** One journey that walks the whole product in the order a person would
+demonstrate it, and a written script for the person driving.
+
+**Acceptance criteria.**
+
+- [ ] The journey visits Home, the cost surface, governance and inventory, and
+      asserts a figure on each, so a broken screen fails the build rather than
+      the demo
+- [ ] `docs/runbooks/demo.md` says what to run, in what order, and which three
+      numbers to point at
+- [ ] It says plainly which parts are fake, because a demo that implies a live
+      AWS connection is a demo that creates a promise somebody has to keep
