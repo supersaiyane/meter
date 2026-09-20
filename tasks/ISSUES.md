@@ -44,7 +44,7 @@ Status: `OPEN`, `IN PROGRESS`, `FIXED`, `WONT FIX`, `PARKED`, `CLOSED`.
 <!-- generated:issue-register start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-135 issues. 92 fixed, 41 open, 0 parked.
+136 issues. 92 fixed, 42 open, 0 parked.
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in `tasks/STATUS.md`.
 
@@ -168,6 +168,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-133 | MEDIUM | An unrecognised datasource reports its own type as the engine, so a Postgres panel is priced at zero rather than reported as not understood | OPEN | Zero reads as free. The honest answer for an engine with no rate is that the query was not priced, which is a different thing from a query that costs nothing. Pinned by tests/query/test_classify.py. Fix alongside ISS-132 |
 | ISS-134 | MEDIUM | check_hardcoded.py never scanned finops_query, so TASK-P2-002's criterion that the gate passes was satisfied over code the gate had not read | FIXED | check_forbidden_imports.py already listed the package and this one did not, which is what two lists of one thing produces. Now 76 files scanned where 73 were, and probed by planting a region literal in cost_model.py and confirming it is caught |
 | ISS-137 | MEDIUM | A scanned volume under one MiB renders as the numeral zero on the query findings screen. Figure formats a count with no decimal places, so any sub unit quantity rounds to zero and a query that scans something reads as a query that scans nothing. Found on 2026-09-12 when a one MiB fixture row rendered as 0 in a GiB column, which was corrected to MiB. The general fix is a byte aware unit on Figure that picks its scale from the magnitude, rather than a caller chosen divisor | OPEN | `finops-web/src/components/Figure.tsx`, `finops-web/src/screens/QueryFindingsScreen.tsx` |
+| ISS-139 | MEDIUM | TASK-P2-025 acceptance requires an end to end journey applying the workspace floor and confirming the undo, but its dependency list names only TASK-P2-022 to 024. The floor is TASK-P2-017 and the undo is TASK-P2-019, so the criterion was written against the finished sub project rather than the task. The screen and the rest of the journey are built and the task is Partly. Complete the journey when TASK-P2-019 lands, then move the task to Done | OPEN | [P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-025 |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |

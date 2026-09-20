@@ -1034,7 +1034,28 @@ changes:
     008 and a fixture claiming them would show an estate that cannot exist
   commit: '92e2eea'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-024'
+- id: CHG-0080
+  date: '2026-09-19'
+  type: Feature
+  what: TASK-P2-025, the enforcement screen and the P2 journey, left Partly rather than Done.
+    Revoke is absent rather than disabled when the API says an action is not revocable, and on a
+    fixture backed screen it says it did nothing rather than failing silently. Expiry carries an
+    absolute stamp with its date and a countdown together, after a bare time made a control applied
+    three days ago read as one applied this morning. The journey criterion needs the workspace
+    floor and the undo from TASK-P2-017 and 019, which this task never depended on
+  commit: 'a9ac9d7'
+  detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-025'
 issues:
+- id: ISS-139
+  severity: MEDIUM
+  summary: TASK-P2-025 acceptance requires an end to end journey applying the workspace floor and
+    confirming the undo, but its dependency list names only TASK-P2-022 to 024. The floor is
+    TASK-P2-017 and the undo is TASK-P2-019, so the criterion was written against the finished sub
+    project rather than the task. The screen and the rest of the journey are built and the task is
+    Partly. Complete the journey when TASK-P2-019 lands, then move the task to Done
+  status: OPEN
+  detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-025'
+
 - id: ISS-138
   severity: HIGH
   summary: ADR-0019 decided Tailwind driven by our tokens, and it was never installed or admitted
