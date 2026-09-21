@@ -810,6 +810,50 @@ SPECS: tuple[Spec, ...] = (
 _BY_ID: Mapping[str, Spec] = MappingProxyType({s.resource_id: s for s in SPECS})
 
 
+#: Which billing service each resource id prefix belongs to. The estate names its
+#: resources `{service}/{account}/{index}` in lower case, and the capitalisation AWS
+#: uses is not derivable from that, so it is written down once here rather than
+#: guessed at by whichever module needs it. `cur.py` reads this, which is what makes
+#: the bill and the estate join on more than coincidence.
+SERVICE_BY_PREFIX: Mapping[str, str] = MappingProxyType(
+    {
+        "amazonec2": "AmazonEC2",
+        "amazonrds": "AmazonRDS",
+        "amazonebs": "AmazonEBS",
+        "amazonelasticache": "AmazonElastiCache",
+        "amazonmsk": "AmazonMSK",
+        "amazonvpc": "AmazonVPC",
+        "amazoncloudwatch": "AmazonCloudWatch",
+        "elasticloadbalancing": "ElasticLoadBalancing",
+    }
+)
+
+
+def service_of(resource_id: str) -> str:
+    """Which service a resource bills under.
+
+    Raises on an unknown prefix rather than returning a default, because a resource
+    billed under a service nobody named would sit in the bill under a heading no
+    screen groups by, and would then be missing from every total without being
+    missing from the table.
+    """
+    prefix = resource_id.split("/")[0]
+    if prefix not in SERVICE_BY_PREFIX:
+        raise ValueError(f"{resource_id} has no known billing service for prefix {prefix!r}")
+    return SERVICE_BY_PREFIX[prefix]
+
+
+def specs_for(account_id: str, service_name: str) -> tuple[Spec, ...]:
+    """Every resource one account runs under one service, in id order.
+
+    The join `cur.py` needs, expressed once. A caller filtering `SPECS` itself would
+    be a second implementation of the prefix rule above.
+    """
+    return tuple(
+        s for s in SPECS if s.account_id == account_id and service_of(s.resource_id) == service_name
+    )
+
+
 def spec(resource_id: str) -> Spec:
     return _BY_ID[resource_id]
 

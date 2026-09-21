@@ -25,7 +25,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | Features | 51 total, 23 specified, 10 in build, 11 delivered |
 | Decisions | 22 architecture decision records |
 | Changes | 99 recorded |
-| Issues | 128 fixed, 62 open, 0 parked |
+| Issues | 129 fixed, 62 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.

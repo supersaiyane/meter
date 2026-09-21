@@ -18,11 +18,11 @@ read exists for.
 no agent, has no key in the result. Returning an empty tuple would be a series of
 no values, which a percentile over would read as nought.
 
-**The money is not in the estate.** `DATA_DICTIONARY.md` is explicit that cost comes
-from `cur.py` and joins on `resource_id`, and that the join covers only two
-resources per account today. So the prices below are a fake price list, marked as
-one, used to scale a saving in a demo. They are not AWS prices and nothing should
-ever read them as such.
+**The money comes from `prices.py`.** The estate itself carries none, on purpose.
+Until 2026-09-21 that meant the join `DATA_DICTIONARY.md` decision 6 describes was
+missing and this module kept its own instance price list. `cur.py` now bills every
+estate resource from the same module, so the estimated saving and the charge it is
+about cannot disagree about what a thing costs.
 """
 
 from __future__ import annotations
@@ -37,43 +37,16 @@ from finops_core.domain.metrics import MetricPoint
 from finops_core.errors import CollectionError
 from finops_core.ports.metrics import MetricRequest
 from finops_fakes import estate_shape as shape
-from finops_fakes import fixtures, utilization
-
-#: A fake price list, in dollars per month, keyed by instance type. Invented, and
-#: labelled as invented: the estate carries no money on purpose, and a demo needs a
-#: figure to rank findings by. Roughly proportional to size so the ranking is not
-#: nonsense, and roughly in the shape of a real bill so the severity bands land
-#: somewhere plausible. Never a source of truth about what anything costs.
-FAKE_MONTHLY_USD: Mapping[str, Decimal] = {
-    "t3.micro": Decimal("7.60"),
-    "t3.small": Decimal("15.20"),
-    "t3.medium": Decimal("30.40"),
-    "t3.large": Decimal("60.80"),
-    "m5.large": Decimal("70.10"),
-    "m5.xlarge": Decimal("140.20"),
-    "m5.2xlarge": Decimal("280.40"),
-    "m5.4xlarge": Decimal("560.80"),
-    "m6g.xlarge": Decimal("112.20"),
-    "m6i.large": Decimal("73.00"),
-    "m6i.xlarge": Decimal("146.00"),
-    "m6i.4xlarge": Decimal("584.00"),
-    "c5.2xlarge": Decimal("248.20"),
-    "c5.4xlarge": Decimal("496.40"),
-    "c6i.2xlarge": Decimal("248.20"),
-    "r5.xlarge": Decimal("183.90"),
-    "r5.2xlarge": Decimal("367.80"),
-    "r6i.xlarge": Decimal("191.60"),
-    "g4dn.xlarge": Decimal("384.20"),
-}
-
-#: What an instance type nobody priced is worth. Deliberately small, so a missing
-#: price produces a finding nobody acts on rather than a headline nobody checked.
-UNPRICED = Decimal("25.00")
+from finops_fakes import fixtures, prices, utilization
 
 
-def monthly_cost(instance_type: str) -> Decimal:
-    """A fake monthly price for one instance type. See `FAKE_MONTHLY_USD`."""
-    return FAKE_MONTHLY_USD.get(instance_type, UNPRICED)
+#: The price list lives in `prices.py`, read by this module and by `cur.py`, so a
+#: rightsizing saving and the bill line it is about come from one number. Two lists
+#: drifted apart is how an estimated saving and a realized saving disagree for a
+#: reason that is an artefact of the fixture.
+def monthly_cost(spec: utilization.Spec) -> Decimal:
+    """What one estate resource costs per month. Invented, see `prices.py`."""
+    return prices.monthly_usd(spec)
 
 
 def _resource_of(dimensions: Mapping[str, str]) -> str | None:
@@ -240,7 +213,7 @@ def ec2_candidates(*, at: datetime = fixtures.AS_OF) -> tuple[EstateCandidate, .
                 account_id=spec.account_id,
                 region_id=spec.region_id,
                 observation_days=max(days, 0),
-                monthly_cost=monthly_cost(str(spec.config.get("instance_type", ""))),
+                monthly_cost=monthly_cost(spec),
                 credit_balance=_credits(spec, window_end, at),
             )
         )

@@ -481,10 +481,21 @@ meter/
 │                              ADR-0022. Imported by the tests and by scripts/demo/.
 │                              No network and no clock, enforced by a test that walks
 │                              the syntax tree refusing any name that reads like one
-│   ├── cur.py             the estate's bill, 2,100 FOCUS rows across three
-│   │                     periods, the newest a part month. 22 percent untagged
-│   │                     on purpose, and the account Meter cannot read is on it,
-│   │                     because the bill comes from the payer
+│   ├── cur.py             the estate's bill. One line per estate resource, so a
+│   │                     charge joins to the thing it is about, plus aggregate
+│   │                     lines for the two services that name no resource. 22
+│   │                     percent untagged on purpose, and the account Meter
+│   │                     cannot read is on it, because the bill comes from the
+│   │                     payer. LANDED moves three resources' cost and usage by
+│   │                     different amounts from one day, which is what lets the
+│   │                     realized savings collector reach all three verdicts
+│   │                     from charges rather than from a fixture. ISS-197
+│   ├── prices.py          what every estate resource costs, derived from its own
+│   │                     configuration. Invented, and labelled as invented. Read
+│   │                     by cur.py and by estate_metrics.py, because two price
+│   │                     lists drifting apart is how an estimated saving and a
+│   │                     realized saving disagree about the fixture rather than
+│   │                     about the estate
 │   ├── utilization.py     the generated estate: 36 resources, two years of
 │   │                     hourly behaviour, three regions. Deterministic, so
 │   │                     the 29 MB export is output and this is the source,

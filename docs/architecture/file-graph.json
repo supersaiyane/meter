@@ -339,6 +339,7 @@
     "finops_fakes/health.py",
     "finops_fakes/planted.py",
     "finops_fakes/platform_cost.py",
+    "finops_fakes/prices.py",
     "finops_fakes/provider.py",
     "finops_fakes/quotas.py",
     "finops_fakes/recommendations.py",
@@ -6331,6 +6332,11 @@
     {
       "s": "tests/providers/fake/test_cur.py",
       "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_cur.py",
+      "t": "finops_query/realized.py",
       "k": "python"
     },
     {

@@ -1352,6 +1352,25 @@ issues:
   status: FIXED
   detail: '`finops_core/domain/quota.py`, FEAT-033'
 
+- id: ISS-197
+  severity: HIGH
+  summary: The fake bill and the fake utilization estate did not join. cur.py billed one EC2 and
+    one RDS resource per account and named them {service}/{account}/0001, while the estate ran 36
+    resources, so only two per account appeared in both. Every consumer that joins a charge to a
+    resource found nothing for the other 26, which meant FEAT-029 could not measure what a
+    completed recommendation did to the bill and FEAT-035 will not be able to reconcile pod cost.
+    TASK-P3-013 shipped a workaround, three resources seeded with hand written daily charges, so
+    the one screen that proves this product works was reading a fixture written for it. Named as
+    decision 6 of the fake estate data dictionary when the estate was adopted, and fixed 2026-09-21
+    rather than carried into P4. The bill now derives its services from the estate, emits one line
+    per resource, and prices each from that resource's own configuration through a price module the
+    sizing estimate reads too, so an estimated saving and the charge it is about cannot disagree.
+    cur.LANDED moves three resources' cost and usage by different amounts from a fixed day, so the
+    collector reaches all three verdicts from the charges rather than from a fixture, and a bill
+    whose usage never moved could not have produced the third at all
+  status: FIXED
+  detail: '`finops_fakes/cur.py`, `finops_fakes/prices.py`, FEAT-029, FEAT-035'
+
 - id: ISS-164
   severity: MEDIUM
   summary: security/reports/latest is a committed symlink and the scan script wrote it as an

@@ -11,14 +11,14 @@ comes from the payer.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 import pytest
 
 from finops_core import errors
 from finops_core.domain.cost import CostRecord
-from finops_fakes import cur, fixtures
+from finops_fakes import cur, fixtures, prices, utilization
 from finops_fakes.cur import (
     CLOSED_PERIOD,
     OPEN_PERIOD,
@@ -176,12 +176,19 @@ class TestTheRowsAreNotEasierThanReality:
             and row.service_name == cur.SPIKE_SERVICE
             and row.billing_period_start == cur.OPEN_PERIOD
         ]
-        spiked = [row for row in pair if row.charge_period_start.date() == wrong_day]
-        normal = [row for row in pair if row.charge_period_start.date() != wrong_day]
-        assert len(spiked) == 1
+        # Compared as daily totals rather than as rows. Since 2026-09-21 the bill
+        # names every resource the utilization estate runs, so one account and one
+        # service on one day is several lines, and the detector reads their sum. A
+        # row count here would have asserted the old one line per service shape and
+        # would fail the day the estate grew a fifth instance.
+        by_day: dict[object, Decimal] = {}
+        for row in pair:
+            day = row.charge_period_start.date()
+            by_day[day] = by_day.get(day, Decimal("0")) + row.effective_cost
+        assert wrong_day in by_day
+        normal = [total for day, total in by_day.items() if day != wrong_day]
         assert normal
-        worst_normal = max(row.effective_cost for row in normal)
-        assert spiked[0].effective_cost > worst_normal * 4
+        assert by_day[wrong_day] > max(normal) * 4
 
     def test_the_spike_is_on_the_last_day_the_estate_bills(self) -> None:
         # Not a fixture convenience. The collector judges the most recent day with
@@ -210,3 +217,123 @@ class TestTheRowsAreNotEasierThanReality:
         first = [row.effective_cost for row in rows_in(FakeCostExport(), CLOSED_PERIOD)]
         second = [row.effective_cost for row in rows_in(FakeCostExport(), CLOSED_PERIOD)]
         assert first == second
+
+
+class TestTheBillAndTheEstateJoin:
+    """`DATA_DICTIONARY.md` decision 6, closed and kept closed.
+
+    Until 2026-09-21 the bill named `{service}/{account}/0001` for two services and
+    nothing else, so of the utilization estate's 36 resources exactly two per account
+    appeared on it. Every consumer that joins a charge to a resource found nothing for
+    the rest: FEAT-029 could not measure what a completed recommendation did to the
+    bill, and TASK-P3-013 worked around it by seeding three resources of its own with
+    hand written charges.
+
+    Asserted in both directions and derived from the estate, so a resource added to
+    one and not the other fails here rather than producing a screen with a charge
+    nobody can attribute or a recommendation nobody can price.
+    """
+
+    def test_every_estate_resource_is_on_the_bill(self) -> None:
+        billed = {row.resource_id for row in cur.ESTATE if row.resource_id}
+        missing = {spec.resource_id for spec in utilization.SPECS} - billed
+        assert not missing, (
+            f"these resources exist in the estate and have no charge, so nothing can "
+            f"measure what changing them saved: {sorted(missing)}"
+        )
+
+    def test_every_billed_resource_is_in_the_estate(self) -> None:
+        # The other direction, and a different bug. A charge against a resource the
+        # estate does not model is spend a screen shows and nothing explains, which is
+        # worse than a gap because it looks like data.
+        billed = {row.resource_id for row in cur.ESTATE if row.resource_id}
+        invented = billed - {spec.resource_id for spec in utilization.SPECS}
+        assert not invented, f"billed and not modelled: {sorted(invented)}"
+
+    def test_a_resource_is_priced_from_its_own_configuration(self) -> None:
+        """Two resources of the same kind and different sizes cost different amounts.
+
+        A bill that charged every volume the same would join correctly and rank
+        uselessly, and the ranking is what the screens are for.
+        """
+        volumes = [spec for spec in utilization.SPECS if spec.kind == "volume"]
+        assert len(volumes) > 1
+        assert len({prices.monthly_usd(spec) for spec in volumes}) > 1
+
+    def test_the_aggregate_services_still_bill_without_a_resource(self) -> None:
+        # S3 and Lambda name no resource, here or in a real bill at this granularity.
+        # A row with no `resource_id` is a fact about the bill rather than a gap in it,
+        # and the allocation screen has to render it as one.
+        aggregate = {row.service_name for row in cur.ESTATE if row.resource_id is None}
+        assert aggregate == set(cur.AGGREGATE_SERVICES)
+
+
+class TestAChangeThatLanded:
+    """The three verdicts come out of the bill rather than out of a fixture.
+
+    Each entry in `cur.LANDED` moves a resource's cost and its usage by different
+    amounts from one day onward, and `finops_query.realized` reaches a different
+    verdict for each. Nothing writes the verdicts down: this asserts the charges
+    support them, which is what makes the savings screen a measurement.
+    """
+
+    def windows(self) -> tuple[date, date, date, date]:
+        landed = cur.landed_on()
+        return (
+            landed - timedelta(days=30),
+            landed,
+            landed + timedelta(days=30),
+            landed + timedelta(days=60),
+        )
+
+    def totals(self, resource: str, start: date, end: date) -> tuple[Decimal, Decimal]:
+        rows = [
+            row
+            for row in cur.estate(periods=5)
+            if row.resource_id == resource and start <= row.charge_period_start.date() < end
+        ]
+        cost = sum((row.effective_cost for row in rows), Decimal("0"))
+        usage = sum((row.consumed_quantity or Decimal("0") for row in rows), Decimal("0"))
+        return cost, usage
+
+    def test_every_landed_change_has_a_full_window_either_side(self) -> None:
+        # Without both windows the collector has nothing to compare and every verdict
+        # would be inconclusive for a reason that is the fixture's fault.
+        b_start, b_end, a_start, a_end = self.windows()
+        for change in cur.LANDED:
+            before_cost, _ = self.totals(change.resource_id, b_start, b_end)
+            after_rows = self.totals(change.resource_id, a_start, a_end)
+            assert before_cost > 0, change.resource_id
+            assert after_rows[0] >= 0, change.resource_id
+
+    def test_the_three_changes_produce_three_different_verdicts(self) -> None:
+        from finops_query.realized import Window, judge
+
+        b_start, b_end, a_start, a_end = self.windows()
+        verdicts = set()
+        for change in cur.LANDED:
+            cost_before, usage_before = self.totals(change.resource_id, b_start, b_end)
+            cost_after, usage_after = self.totals(change.resource_id, a_start, a_end)
+            verdicts.add(
+                judge(
+                    before=Window(start=b_start, end=b_end),
+                    after=Window(start=a_start, end=a_end),
+                    cost_before=cost_before,
+                    cost_after=cost_after,
+                    usage_before=usage_before,
+                    usage_after=usage_after,
+                ).verdict.value
+            )
+        assert verdicts == {"VERIFIED", "REGRESSED", "INCONCLUSIVE"}, verdicts
+
+    def test_a_resource_nobody_changed_bills_the_same_either_side(self) -> None:
+        """The control. If the drift alone moved a cost enough to change a verdict,
+        every one of these would be a verdict about the fixture's slope."""
+        b_start, b_end, a_start, a_end = self.windows()
+        untouched = "amazonrds/fake-platform-a/0001"
+        assert untouched not in {change.resource_id for change in cur.LANDED}
+        before, _ = self.totals(untouched, b_start, b_end)
+        after, _ = self.totals(untouched, a_start, a_end)
+        # The drift rises, so after is a little above before and nowhere near a fall.
+        assert after > before
+        assert after < before * Decimal("1.2")
