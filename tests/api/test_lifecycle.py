@@ -21,9 +21,9 @@ from sqlalchemy import Engine, text
 
 from finops_api.lifecycle import TransitionRefusedError, move
 from finops_core.domain.waste import Lifecycle
+from finops_fakes.recommendations import FakeRecommendationSource
 from finops_ingest.collectors.recommendations import RecommendationCollector
 from finops_ingest.registry import CollectorContext
-from finops_providers.fake.recommendations import FakeRecommendationSource
 
 pytestmark = pytest.mark.integration
 

@@ -111,15 +111,30 @@ a choice the plans have not made yet.
    must be the source of true and false.
 5. **Enumerations are proposals.** Node kinds, edge kinds and `usage_source`
    values are named here because the plans do not name them.
-6. **The bill and the utilization estate only partly join.** This is the largest
-   gap. `cur.py` bills one EC2 and one RDS resource per account for three months.
-   The utilization estate has 36 resources for two years. Only
-   `amazonec2/<account>/0001` and `amazonrds/<account>/0001` appear in both. Two
-   consumers need more: TASK-P3-013 reads `cost_focus_daily` 60 days after a
-   recommendation is done, and TASK-P6-002 asserts pod cost reconciles to the
-   period total. Both need per resource bill lines for the other resources and
-   `estate()` threading `count=24` into `periods_ending_at`. That is a change to
-   `cur.py`, and a decision rather than a side effect.
+6. **The bill and the utilization estate join.** Closed 2026-09-21, and this
+   entry is kept because the shape of the fix matters. It was the largest gap:
+   `cur.py` billed one EC2 and one RDS resource per account for three months while
+   the estate had 36 resources for two years, so only `amazonec2/<account>/0001`
+   and `amazonrds/<account>/0001` appeared in both, and TASK-P3-013 worked around
+   it by seeding three resources of its own with hand written charges.
+
+   The bill now derives its services from `utilization.SERVICE_BY_PREFIX`, emits one
+   line per estate resource, and prices each from that resource's own configuration
+   through `finops_fakes/prices.py`. `estate_metrics.py` reads the same module, so
+   the estimated saving and the charge it is about cannot disagree about what a
+   thing costs. Two tests hold it: every estate resource is on the bill, and every
+   billed resource is in the estate.
+
+   `cur.LANDED` is the second half. Three resources change what they cost and what
+   they consume from a fixed day onward, by different amounts, so the realized
+   savings collector reaches VERIFIED, REGRESSED and INCONCLUSIVE from the charges
+   rather than from a fixture written to produce them. A bill whose usage never
+   moved could not produce the third verdict at all.
+
+   `estate()` takes a period count, and the seed asks for five: a before window
+   thirty days back from a change, and an after window ending sixty days forward,
+   is ninety days and does not fit in three calendar months with any margin.
+
 7. **No plan table stores raw metrics.** P3 reads `GetMetricData` and writes
    recommendations. `metric_point_hourly` is for the fake metric source, a time
    series store, or analysis, not for a Meter table.

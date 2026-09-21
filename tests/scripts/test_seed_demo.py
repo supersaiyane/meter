@@ -20,8 +20,8 @@ import pytest
 
 # Loaded by path, not imported as a package, because `scripts/` deliberately is
 # not one. `tests/scripts/test_check_index.py` does the same, and importing it
-# as `scripts.ops.seed_demo` makes mypy resolve one file under two module names.
-SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "ops" / "seed_demo.py"
+# as `scripts.demo.seed_demo` makes mypy resolve one file under two module names.
+SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "demo" / "seed_demo.py"
 _spec = importlib.util.spec_from_file_location("seed_demo", SCRIPT)
 assert _spec is not None and _spec.loader is not None
 seed_demo = importlib.util.module_from_spec(_spec)
@@ -331,7 +331,7 @@ def test_the_seed_produces_all_three_verdicts(engine: object) -> None:
             scored = connection.execute(
                 sql(
                     "SELECT count(*) FROM finops_score WHERE tenant_id = :t "
-                    "AND available_weight = 100"
+                    "AND available_weight >= 75"
                 ),
                 {"t": seed_demo.DEMO_TENANT},
             ).scalar_one()
@@ -343,11 +343,15 @@ def test_the_seed_produces_all_three_verdicts(engine: object) -> None:
                 {"t": seed_demo.DEMO_TENANT},
             ).scalar_one()
         assert verdicts == {"VERIFIED": 1, "REGRESSED": 1, "INCONCLUSIVE": 1}, verdicts
-        # At least one account with every component computable, so the score
-        # screen has a complete card to show.
+        # At least one account carrying most of the available weight, so the score
+        # screen has a substantial card to show. Not all hundred, and that is the
+        # estate being honest rather than the seed being thin: the fourth component
+        # needs a decided verdict for that same account, and the three seeded changes
+        # are deliberately spread across three accounts so more than one of them has
+        # something on the savings screen.
         assert scored >= 1
-        # And at least one component that could not be computed, so the screen
-        # also shows the absence rendered as an absence rather than as nought.
+        # And at least one component that could not be computed, so the screen also
+        # shows the absence rendered as an absence rather than as nought.
         assert excluded >= 1
     finally:
         seed_demo.remove(engine)

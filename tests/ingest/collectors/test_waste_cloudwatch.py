@@ -17,9 +17,9 @@ import pytest
 from sqlalchemy import Engine, text
 
 from finops_core.config import Settings
+from finops_fakes.cloudwatch_estate import FakeCloudWatchEstate
 from finops_ingest.collectors.waste_cloudwatch import WasteCloudWatchCollector
 from finops_ingest.registry import CollectorContext
-from finops_providers.fake.cloudwatch_estate import FakeCloudWatchEstate
 
 pytestmark = pytest.mark.integration
 

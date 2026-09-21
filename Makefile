@@ -33,7 +33,14 @@ ECR_REGISTRY  ?= $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 # Override only if you genuinely need a different target.
 PLATFORM      ?= linux/amd64
 
-PY_PKGS := finops_core finops_providers finops_ingest finops_api finops_mcp finops_query
+# `finops_fakes` is here and is deliberately not in the wheel: it is linted and
+# type checked to the same standard as production code, because a fake nobody
+# checks drifts from the port it is standing in for, and then the tests pass
+# against something the real adapter does not do. ADR-0022.
+# One line, and it has to stay one line: tests/scripts/test_lint_scope.py reads
+# this assignment with a single line regex, which is how it catches a package
+# that quietly leaves the linter's sight.
+PY_PKGS := finops_core finops_providers finops_fakes finops_ingest finops_api finops_mcp finops_query
 # scripts/ and migrations/ are here because they were outside the linter for
 # long enough to accumulate 10 ruff findings and 36 mypy errors that nothing
 # ever reported. Two of those were real: a list annotated flat while holding
@@ -302,12 +309,37 @@ psql: ## Open a psql shell against the local database
 # ---------------------------------------------------------------- database
 
 .PHONY: migrate
+# Also from the working tree, for the second reason above. Running alembic inside
+# the image applies the migrations the image was built with, which is a silent no op
+# whenever a revision has been added since. It printed nothing and exited zero.
 migrate: ## Apply migrations to the local database
-	$(COMPOSE) run --rm api alembic upgrade head
+	@set -a; . ./.env; set +a; \
+	  METER_DATABASE_URL="postgresql+psycopg://meter:meter_local_only@localhost:$${METER_POSTGRES_PORT:-5432}/meter" \
+	  $(BIN)/alembic upgrade head
 
+# Run from the working tree, not inside the api image, and for two reasons.
+#
+# The image no longer carries `finops_fakes`: a module that fabricates a bill has no
+# business in the image that reports a real one, ADR-0022. So the seed cannot run
+# there at all.
+#
+# The second reason is the better one. The image bakes the source in at build time,
+# so `$(COMPOSE) run api` executes whatever the tree looked like at the last
+# `make up`. On 2026-09-21 that meant `make migrate` exited zero having applied
+# nothing, and `make seed` then reported writing 2292 rows through the same stale
+# image, while the local database sat four revisions behind. Running from the tree
+# against the exposed port cannot drift.
+#
+# PYTHONPATH is the working tree because `finops_fakes` is deliberately not in the
+# wheel, so it is importable from the repository and from nowhere else. That is the
+# same rule as the forbidden import contract, arriving from the other direction.
 .PHONY: seed
 seed: ## Fill the local database with a demo estate. DAYS=n for history. Refuses a non local database
-	$(COMPOSE) run --rm api python scripts/ops/seed_demo.py --days $(or $(DAYS),1)
+	@set -a; . ./.env; set +a; \
+	  METER_DATABASE_URL="postgresql+psycopg://meter:meter_local_only@localhost:$${METER_POSTGRES_PORT:-5432}/meter" \
+	  METER_LOCAL_AUTH_FILE="$(PWD)/local-auth.yaml" \
+	  PYTHONPATH="$(PWD)" \
+	  $(BIN)/python scripts/demo/seed_demo.py --days $(or $(DAYS),1)
 
 .PHONY: restore-drill
 restore-drill: ## Restore into a scratch database and prove it works. TASK-P0-028
@@ -330,7 +362,11 @@ token: ## Mint a demo session token and print how to use it. SUBJECT=x for anoth
 
 .PHONY: unseed
 unseed: ## Clear the demo estate. Every row it wrote, in one command
-	$(COMPOSE) run --rm api python scripts/ops/seed_demo.py --remove
+	@set -a; . ./.env; set +a; \
+	  METER_DATABASE_URL="postgresql+psycopg://meter:meter_local_only@localhost:$${METER_POSTGRES_PORT:-5432}/meter" \
+	  METER_LOCAL_AUTH_FILE="$(PWD)/local-auth.yaml" \
+	  PYTHONPATH="$(PWD)" \
+	  $(BIN)/python scripts/demo/seed_demo.py --remove
 
 .PHONY: migration
 migration: ## Autogenerate a migration. Usage: make migration m="add org_node"

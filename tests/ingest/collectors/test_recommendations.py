@@ -20,9 +20,9 @@ from sqlalchemy import Engine, text
 
 from finops_core.domain.waste import Source
 from finops_core.errors import AccessDenied
+from finops_fakes.recommendations import FakeRecommendationSource, findings
 from finops_ingest.collectors.recommendations import RecommendationCollector
 from finops_ingest.registry import CollectorContext
-from finops_providers.fake.recommendations import FakeRecommendationSource, findings
 
 pytestmark = pytest.mark.integration
 

@@ -28,10 +28,10 @@ from finops_core.config import Settings
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.platform import UNALLOCATED
 from finops_core.domain.tenant import Scope
+from finops_fakes.cur import CLOSED_PERIOD, ESTATE, FakeCostExport, estate
 from finops_ingest.collectors.cost_focus import CostFocusCollector
 from finops_ingest.collectors.partitions import ensure_partition
 from finops_ingest.registry import CollectorContext
-from finops_providers.fake.cur import CLOSED_PERIOD, ESTATE, FakeCostExport, estate
 from tests.api.test_query_routes import auth, client_for
 
 pytestmark = pytest.mark.integration

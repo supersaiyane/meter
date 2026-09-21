@@ -24,10 +24,10 @@ from finops_api.routes.waste import NO_RECOMMENDATIONS
 from finops_core.config import Settings
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.tenant import Scope
+from finops_fakes.recommendations import FakeRecommendationSource
+from finops_fakes.tickets import FakeTicketSink
 from finops_ingest.collectors.recommendations import RecommendationCollector
 from finops_ingest.registry import CollectorContext
-from finops_providers.fake.recommendations import FakeRecommendationSource
-from finops_providers.fake.tickets import FakeTicketSink
 from tests.api.test_query_routes import auth, client_for
 
 pytestmark = pytest.mark.integration

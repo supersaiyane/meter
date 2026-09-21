@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from finops_providers.fake.evidence import DAILY_GROWTH, FakeQueryEvidence
+from finops_fakes.evidence import DAILY_GROWTH, FakeQueryEvidence
 from finops_query.parser import GrafanaQueryParser
 
 BUSY = "fields @timestamp, @message | filter @message like /ERROR/"

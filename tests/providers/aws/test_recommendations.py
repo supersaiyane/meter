@@ -20,8 +20,8 @@ from finops_core.config import Settings
 from finops_core.domain.observation import MINIMUM_HISTORY
 from finops_core.domain.waste import Source, WasteClass
 from finops_core.errors import AccessDenied, NotOptedIn, SchemaDrift
+from finops_fakes import fixtures
 from finops_providers.aws.recommendations import CostRecommendationSource
-from finops_providers.fake import fixtures
 
 NOW = datetime(2026, 9, 21, 6, 0, tzinfo=UTC)
 EMPTY: dict[str, Any] = {}

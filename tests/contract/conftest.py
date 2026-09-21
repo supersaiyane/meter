@@ -23,8 +23,8 @@ import pytest
 
 from finops_core.config import Settings, load_settings
 from finops_core.domain.account import AccountKey, Provider
-from finops_providers.fake import fixtures
-from finops_providers.fake.provider import FakeProvider
+from finops_fakes import fixtures
+from finops_fakes.provider import FakeProvider
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 ENV_EXAMPLE = ROOT / ".env.example"

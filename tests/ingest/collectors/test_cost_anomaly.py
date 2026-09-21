@@ -168,9 +168,9 @@ class TestTheDemoEstateIsFoundByTheDetector:
     def test_the_seeded_estate_produces_a_finding(
         self, engine: Engine, tenant_id: UUID, settings: Settings
     ) -> None:
+        from finops_fakes import cur
+        from finops_fakes.cur import FakeCostExport
         from finops_ingest.collectors.cost_focus import CostFocusCollector
-        from finops_providers.fake import cur
-        from finops_providers.fake.cur import FakeCostExport
 
         at = datetime(2026, 8, 24, 6, 0, tzinfo=UTC)
         rows = cur.estate(at=at)
@@ -221,9 +221,9 @@ class TestTheDemoEstateIsFoundByTheDetector:
         the drift alone, and then the test above would pass with the spike removed. It
         must not.
         """
+        from finops_fakes import cur
+        from finops_fakes.cur import FakeCostExport
         from finops_ingest.collectors.cost_focus import CostFocusCollector
-        from finops_providers.fake import cur
-        from finops_providers.fake.cur import FakeCostExport
 
         at = datetime(2026, 8, 24, 6, 0, tzinfo=UTC)
         rows = cur.estate(at=at, spike=False)

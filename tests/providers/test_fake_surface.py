@@ -24,7 +24,7 @@ from finops_core.errors import (
     Unreachable,
 )
 from finops_core.ports.query import QuerySurface
-from finops_providers.fake.surface import FakeQuerySurface
+from finops_fakes.surface import FakeQuerySurface
 
 
 def test_it_satisfies_the_port() -> None:

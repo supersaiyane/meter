@@ -19,8 +19,8 @@ from pathlib import Path
 import pytest
 
 from finops_core.errors import AccessDenied, NotOptedIn
-from finops_providers.fake import containers, cur, fixtures, planted, quotas, topology, utilization
-from finops_providers.fake import estate_shape as shape
+from finops_fakes import containers, cur, fixtures, planted, quotas, topology, utilization
+from finops_fakes import estate_shape as shape
 
 START, END = shape.window(fixtures.AS_OF)
 LAST_WEEK = END - timedelta(days=7)

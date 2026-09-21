@@ -23,9 +23,9 @@ from sqlalchemy import Engine, text
 from sqlalchemy.exc import IntegrityError
 
 from finops_core.errors import AccessDenied
+from finops_fakes.commitment import FakeCommitmentReport
 from finops_ingest.collectors.commitment import CommitmentCollector
 from finops_ingest.registry import CollectorContext
-from finops_providers.fake.commitment import FakeCommitmentReport
 
 pytestmark = pytest.mark.integration
 

@@ -29,16 +29,16 @@ from finops_api.db.repositories.cost import (
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.platform import UNALLOCATED
 from finops_core.domain.tenant import Scope
-from finops_ingest.collectors.cost_focus import CostFocusCollector
-from finops_ingest.collectors.partitions import ensure_partition
-from finops_ingest.registry import CollectorContext
-from finops_providers.fake.cur import (
+from finops_fakes.cur import (
     CLOSED_PERIOD,
     ESTATE,
     OLDEST_PERIOD,
     OPEN_PERIOD,
     FakeCostExport,
 )
+from finops_ingest.collectors.cost_focus import CostFocusCollector
+from finops_ingest.collectors.partitions import ensure_partition
+from finops_ingest.registry import CollectorContext
 
 pytestmark = pytest.mark.integration
 
