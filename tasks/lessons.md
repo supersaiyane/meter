@@ -246,3 +246,32 @@ The counts moving by one in the list you meant is the check.
 **Triggers:** any edit to `docs/registry.yaml`, any insert positioned relative to
 a following key rather than a preceding one, and `KeyError` from a generator over
 a list that parsed cleanly.
+
+## 2026-09-21: a local database four revisions behind a passing test suite
+
+**Mistake:** I ran `make migrate`, saw it exit zero, and believed the local
+database was at head. It was at `0009` while the repository was at `0013`. The
+compose `api` image bakes the source in at build time, so the container that ran
+`alembic upgrade head` held a snapshot of the tree from the last `make up`, and it
+had nothing newer to apply. It printed no output at all, which I read as quiet
+success rather than as a command that did nothing. Then `make seed` ran the same
+stale image and reported seeding an estate, so two green signals in a row said the
+opposite of the truth.
+
+Every test passed throughout, because the integration suite migrates its own
+throwaway database from the working tree. The gap was only ever in the database a
+person looks at.
+
+**Correction:** self caught, by querying `realized_saving` and being told the
+relation does not exist after a seed that claimed to have written 2292 rows.
+
+**Rule:** after `make migrate`, assert the head rather than the exit code:
+`docker compose exec -T postgres psql -U meter -d meter -t -c "SELECT version_num FROM alembic_version"`
+and compare it to the newest file in `migrations/versions/`. If they differ, run
+`make up` first, because the image and not the database is what is stale. The same
+applies to any compose `run` of a script I have just edited: a passing test suite
+says nothing about the image, because the suite never uses it.
+
+**Triggers:** `make migrate`, `make seed`, any `docker compose run` after editing
+Python, a command inside compose that produces no output, and any "relation does
+not exist" for a table whose migration is committed.
