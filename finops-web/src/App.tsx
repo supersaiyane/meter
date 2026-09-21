@@ -22,6 +22,9 @@ import { QueryAdhocScreen } from './screens/QueryAdhocScreen';
 import { QueryFindingsScreen } from './screens/QueryFindingsScreen';
 import { EnforcementScreen } from './screens/EnforcementScreen';
 import { QuerySurfacesScreen } from './screens/QuerySurfacesScreen';
+import { WasteScreen } from './screens/WasteScreen';
+import { WasteSavingsScreen } from './screens/WasteSavingsScreen';
+import { WasteScoreScreen } from './screens/WasteScoreScreen';
 import { PlatformScreen } from './screens/PlatformScreen';
 
 /**
@@ -82,6 +85,9 @@ export function App({
                 <Route path="/cost/anomalies" element={<CostAnomaliesScreen />} />
                 <Route path="/cost/commitments" element={<CostCommitmentsScreen />} />
                 <Route path="/cost/export" element={<CostExportScreen />} />
+                <Route path="/waste" element={<WasteScreen />} />
+                <Route path="/waste/savings" element={<WasteSavingsScreen />} />
+                <Route path="/waste/score" element={<WasteScoreScreen />} />
                 <Route path="/inventory/accounts" element={<AccountsScreen />} />
                 <Route path="/inventory/organization" element={<OrganizationScreen />} />
                 <Route path="/governance/queries" element={<QueryFindingsScreen />} />

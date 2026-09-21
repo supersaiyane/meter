@@ -86,7 +86,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-51 features across 8 sub projects. 23 specified, 7 planned, 13 in build, 8 delivered.
+51 features across 8 sub projects. 23 specified, 7 planned, 10 in build, 11 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -140,9 +140,9 @@ block is caught by `make check-docs`. See
 | [FEAT-025](docs/features/FEAT-025-aws-native-recommendation-ingest.md) | Cost Optimization Hub, Compute Optimizer and Trusted Advisor ingest | Delivered | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 4, [P3 plan](docs/plans/P3-implementation-plan.md) |
 | [FEAT-026](docs/features/FEAT-026-bespoke-waste-collectors.md) | Bespoke waste collectors where AWS is blind | Delivered | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.2, [P3 plan](docs/plans/P3-implementation-plan.md) |
 | [FEAT-027](docs/features/FEAT-027-cloudwatch-cost-module.md) | CloudWatch cost module: retention, unqueried logs, stale alarms | Delivered | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.2, [P3 plan](docs/plans/P3-implementation-plan.md) |
-| [FEAT-028](docs/features/FEAT-028-recommendation-lifecycle.md) | Recommendation lifecycle with owner and ticketing | In build | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.1, [P3 plan](docs/plans/P3-implementation-plan.md) |
-| [FEAT-029](docs/features/FEAT-029-realized-savings-verification.md) | Realized savings verification, the north star metric | In build | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.5, [P3 plan](docs/plans/P3-implementation-plan.md) |
-| [FEAT-043](docs/features/FEAT-043-finops-score.md) | FinOps Score, decomposable to the findings that moved it | In build | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 9, [P3 plan](docs/plans/P3-implementation-plan.md) |
+| [FEAT-028](docs/features/FEAT-028-recommendation-lifecycle.md) | Recommendation lifecycle with owner and ticketing | Delivered | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.1, [P3 plan](docs/plans/P3-implementation-plan.md) |
+| [FEAT-029](docs/features/FEAT-029-realized-savings-verification.md) | Realized savings verification, the north star metric | Delivered | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.5, [P3 plan](docs/plans/P3-implementation-plan.md) |
+| [FEAT-043](docs/features/FEAT-043-finops-score.md) | FinOps Score, decomposable to the findings that moved it | Delivered | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 9, [P3 plan](docs/plans/P3-implementation-plan.md) |
 | [FEAT-044](docs/features/FEAT-044-blast-radius-scoring.md) | Blast radius scoring from the dependency graph, gating auto apply | Specified | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 12, [P3 plan](docs/plans/P3-implementation-plan.md) |
 
 ### P4 Inventory and Topology

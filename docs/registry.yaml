@@ -226,13 +226,13 @@ features:
 - id: FEAT-028
   name: Recommendation lifecycle with owner and ticketing
   subproject: P3
-  status: In build
+  status: Delivered
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.1, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-028-recommendation-lifecycle.md
 - id: FEAT-029
   name: Realized savings verification, the north star metric
   subproject: P3
-  status: In build
+  status: Delivered
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.5, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-029-realized-savings-verification.md
 - id: FEAT-030
@@ -316,7 +316,7 @@ features:
 - id: FEAT-043
   name: FinOps Score, decomposable to the findings that moved it
   subproject: P3
-  status: In build
+  status: Delivered
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 9, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-043-finops-score.md
 - id: FEAT-044

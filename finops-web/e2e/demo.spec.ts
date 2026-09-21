@@ -170,6 +170,90 @@ async function demoEstate(page: Page): Promise<void> {
     },
     meta: PAYER_META,
   });
+
+  // P3. Three surfaces, and each one carries the case it exists to render
+  // honestly rather than a tidy row of successes.
+  await stub(page, '/api/v1/waste/recommendations', {
+    data: {
+      recommendations: [
+        {
+          recommendation_id: '2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
+          account_id: 'fake-product-a',
+          source: 'METER',
+          waste_class: 'RIGHTSIZE_INSTANCE',
+          resource_id: 'i-0a1b2c3d4e5f6a7b8',
+          region_id: 'eu-west-1',
+          estimated_monthly_saving: '412.6400',
+          severity: 'HIGH',
+          // Large money, low confidence. The pair the screen must not let a
+          // reader collapse into one judgement.
+          confidence: 'LOW',
+          observation_days: 15,
+          lifecycle: 'OPEN',
+          owner: null,
+          ticket_reference: null,
+          rationale: 'p99 CPU of 11.4 percent against 4 vCPU over 15 days, so 1 vCPU',
+        },
+      ],
+      unowned: 1,
+    },
+    meta: META,
+  });
+
+  await stub(page, '/api/v1/waste/savings', {
+    data: {
+      savings: [
+        {
+          recommendation_id: '3a4b5c6d-7e8f-4a0b-9c1d-2e3f4a5b6c7d',
+          cost_before: '540.0000',
+          cost_after: '324.0000',
+          usage_before: null,
+          usage_after: null,
+          verdict: 'INCONCLUSIVE',
+          why: 'The billing rows carry no usage quantity for this resource, so there is no control. Unobserved, not zero',
+          window_before_start: '2026-05-24',
+          window_after_end: '2026-08-22',
+        },
+      ],
+      by_verdict: {
+        VERIFIED: { count: 1, realized_monthly: '192.0000' },
+        INCONCLUSIVE: { count: 1, realized_monthly: '216.0000' },
+      },
+    },
+    meta: META,
+  });
+
+  await stub(page, '/api/v1/waste/score', {
+    data: {
+      scores: [
+        {
+          account_id: 'fake-product-a',
+          total: 54,
+          available_weight: 85,
+          why: '54 out of 100, from 3 of 4 components carrying 85 of 100 weight',
+          components: [
+            {
+              name: 'waste',
+              points: '22.400',
+              weight: 40,
+              why: '412.64 of identified monthly saving against 9380.00 of spend',
+              findings: ['2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f'],
+            },
+            {
+              name: 'verification',
+              points: null,
+              weight: 15,
+              why: 'Nothing has been verified either way',
+              findings: [],
+            },
+          ],
+          as_of: '2026-09-21T06:00:00+00:00',
+        },
+      ],
+      unscored: ['fake-sandbox-c'],
+    },
+    meta: META,
+  });
 }
 
 test('the demo walk reaches every screen the runbook points at', async ({ page }) => {
@@ -216,6 +300,60 @@ test('the demo walk reaches every screen the runbook points at', async ({ page }
   await page.goto('/cost/export');
   await expect(page.getByTestId('export-claim')).toContainText('3,781.93');
   await expect(page.getByTestId('export-not-excel')).toContainText(/CSV only/);
+
+  // 7. Recommendations. The estimate is labelled modelled, and the finding
+  // nobody owns says so in words rather than leaving a cell blank.
+  await page.goto('/waste');
+  await expect(page.getByText('412.64')).toBeVisible();
+  await expect(page.getByTestId('unowned-2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f')).toHaveText(
+    'nobody yet',
+  );
+  await expect(
+    page.getByTestId('confidence-2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f'),
+  ).toContainText('LOW on 15 days');
+
+  // 8. Realized savings. The screen allowed to disappoint, and the inconclusive
+  // row is the one the runbook tells the driver to stop on.
+  await page.goto('/waste/savings');
+  await expect(page.getByTestId('total-VERIFIED')).toBeVisible();
+  await expect(page.getByTestId('total-INCONCLUSIVE')).toBeVisible();
+  await expect(
+    page.getByTestId('unobserved-3a4b5c6d-7e8f-4a0b-9c1d-2e3f4a5b6c7d'),
+  ).toContainText('not published');
+
+  // 9. The score, with its parts on the same page. A component nobody could
+  // compute says so rather than scoring nought.
+  await page.goto('/waste/score');
+  await expect(page.getByTestId('score-fake-product-a')).toContainText(
+    'out of 85 available weight',
+  );
+  await expect(page.getByTestId('component-absent-verification')).toContainText(
+    'rather than counted as nought',
+  );
+  await expect(page.getByTestId('unscored-fake-sandbox-c')).toBeVisible();
+});
+
+test('the P3 walk keeps the estimate and the realization on separate screens', async ({
+  page,
+}) => {
+  /**
+   * TASK-P3-014 against the real bundle. The two figures are different kinds of
+   * number, and the whole of FEAT-029 rests on nobody adding them. A screen
+   * carrying both would make that one subtraction away.
+   */
+  await demoEstate(page);
+
+  await page.goto('/waste');
+  // Lower cased, because the table headers render through a text transform and
+  // innerText returns what is painted rather than what the source says.
+  const recommendations = (await page.locator('body').innerText()).toLowerCase();
+  expect(recommendations).toContain('412.64');
+  expect(recommendations).not.toContain('cost before');
+
+  await page.goto('/waste/savings');
+  const savings = (await page.locator('body').innerText()).toLowerCase();
+  expect(savings).toContain('cost before');
+  expect(savings).not.toContain('412.64');
 });
 
 test('the commitments screen never puts the two percentages side by side', async ({ page }) => {

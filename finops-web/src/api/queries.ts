@@ -19,6 +19,11 @@ import {
   costAnomaliesFixture,
   costCommitmentsFixture,
 } from './fixtures/cost';
+import {
+  recommendationsFixture,
+  realizedSavingsFixture,
+  scoresFixture,
+} from './fixtures/waste';
 import type {
   ApiAdhocQuery,
   Account,
@@ -32,6 +37,9 @@ import type {
   ApiQueryGroup,
   ApiRemediation,
   ApiQueryFindingDetail,
+  ApiRealizedSavings,
+  ApiRecommendations,
+  ApiScores,
   ApiEnforcementAction,
   ApiSurfaceInstance,
   Freshness,
@@ -248,6 +256,40 @@ export function useCostCommitments() {
     '/api/v1/cost/commitments',
     '/api/v1/cost/commitments',
     costCommitmentsFixture,
+  );
+}
+
+/**
+ * The P3 surfaces. FEAT-028, FEAT-029 and FEAT-043.
+ *
+ * Three hooks rather than one, mirroring the three routes, and that separation
+ * is the feature: a single hook returning the estimate and the realization would
+ * be the one place a screen could add them together.
+ */
+export function useRecommendations() {
+  return useQuerySurface<ApiRecommendations>(
+    ['waste-recommendations'],
+    '/api/v1/waste/recommendations',
+    '/api/v1/waste/recommendations',
+    recommendationsFixture,
+  );
+}
+
+export function useRealizedSavings() {
+  return useQuerySurface<ApiRealizedSavings>(
+    ['waste-savings'],
+    '/api/v1/waste/savings',
+    '/api/v1/waste/savings',
+    realizedSavingsFixture,
+  );
+}
+
+export function useFinopsScore() {
+  return useQuerySurface<ApiScores>(
+    ['waste-score'],
+    '/api/v1/waste/score',
+    '/api/v1/waste/score',
+    scoresFixture,
   );
 }
 

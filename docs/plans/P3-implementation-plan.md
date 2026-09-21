@@ -550,7 +550,7 @@ explainable.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 9 |
 | Delivers | Part of FEAT-028 |
 | Depends on | TASK-P3-012 |
@@ -574,7 +574,7 @@ explainable.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 9, FEAT-029 |
 | Delivers | Part of FEAT-029 |
 | Depends on | TASK-P3-014, TASK-P3-017 |
@@ -600,7 +600,7 @@ product works.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 9, FEAT-043 |
 | Delivers | FEAT-043 |
 | Depends on | TASK-P3-016, TASK-P3-018 |

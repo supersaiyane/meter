@@ -32,6 +32,7 @@
     "finops-web/dist-types/src/api/fixtureSeam.d.ts",
     "finops-web/dist-types/src/api/fixtures/cost.d.ts",
     "finops-web/dist-types/src/api/fixtures/query.d.ts",
+    "finops-web/dist-types/src/api/fixtures/waste.d.ts",
     "finops-web/dist-types/src/api/queries.d.ts",
     "finops-web/dist-types/src/api/types",
     "finops-web/dist-types/src/api/types.d.ts",
@@ -99,6 +100,9 @@
     "finops-web/dist-types/src/screens/QueryGroups.d.ts",
     "finops-web/dist-types/src/screens/QuerySurfacesScreen.d.ts",
     "finops-web/dist-types/src/screens/RemediationControls.d.ts",
+    "finops-web/dist-types/src/screens/WasteSavingsScreen.d.ts",
+    "finops-web/dist-types/src/screens/WasteScoreScreen.d.ts",
+    "finops-web/dist-types/src/screens/WasteScreen.d.ts",
     "finops-web/dist-types/src/screens/__tests__/AccountsScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/CostAllocationScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/CostAnomaliesScreen.test.d.ts",
@@ -117,6 +121,8 @@
     "finops-web/dist-types/src/screens/__tests__/QueryFindingsScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/QuerySurfacesScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/RemediationControls.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/WasteSavingsScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/WasteScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/enforcementTime.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/fixtures.d.ts",
     "finops-web/dist-types/src/screens/__tests__/surfaceStateFor.test.d.ts",
@@ -155,6 +161,7 @@
     "finops-web/src/api/fixtureSeam.ts",
     "finops-web/src/api/fixtures/cost.ts",
     "finops-web/src/api/fixtures/query.ts",
+    "finops-web/src/api/fixtures/waste.ts",
     "finops-web/src/api/queries.ts",
     "finops-web/src/api/types.ts",
     "finops-web/src/components/CoverageBanner.tsx",
@@ -209,6 +216,9 @@
     "finops-web/src/screens/QueryGroups.tsx",
     "finops-web/src/screens/QuerySurfacesScreen.tsx",
     "finops-web/src/screens/RemediationControls.tsx",
+    "finops-web/src/screens/WasteSavingsScreen.tsx",
+    "finops-web/src/screens/WasteScoreScreen.tsx",
+    "finops-web/src/screens/WasteScreen.tsx",
     "finops-web/src/screens/__tests__/AccountsScreen.test.tsx",
     "finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx",
     "finops-web/src/screens/__tests__/CostAnomaliesScreen.test.tsx",
@@ -227,6 +237,8 @@
     "finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx",
     "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
     "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
+    "finops-web/src/screens/__tests__/WasteSavingsScreen.test.tsx",
+    "finops-web/src/screens/__tests__/WasteScreen.test.tsx",
     "finops-web/src/screens/__tests__/enforcementTime.test.ts",
     "finops-web/src/screens/__tests__/fixtures.ts",
     "finops-web/src/screens/__tests__/surfaceStateFor.test.ts",
@@ -702,6 +714,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/dist-types/src/api/fixtures/waste.d.ts",
+      "t": "finops-web/dist-types/src/api/types",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/dist-types/src/api/queries.d.ts",
       "t": "finops-web/dist-types/src/api/fixtureSeam",
       "k": "typescript"
@@ -1033,6 +1050,21 @@
     },
     {
       "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/WasteSavingsScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/WasteScoreScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/WasteScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/shell/AppShell.tsx",
       "k": "typescript"
     },
@@ -1092,6 +1124,16 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/api/fixtures/waste.ts",
+      "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/fixtures/waste.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/api/queries.ts",
       "t": "finops-web/src/api/apiContext.ts",
       "k": "typescript"
@@ -1109,6 +1151,11 @@
     {
       "s": "finops-web/src/api/queries.ts",
       "t": "finops-web/src/api/fixtures/query.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/queries.ts",
+      "t": "finops-web/src/api/fixtures/waste.ts",
       "k": "typescript"
     },
     {
@@ -2212,6 +2259,131 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/WasteSavingsScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteSavingsScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteSavingsScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteSavingsScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteSavingsScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteSavingsScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteSavingsScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteSavingsScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScoreScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScoreScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScoreScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScoreScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScoreScreen.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScoreScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScoreScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/components/SeverityBadge.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/screens/querySeverity.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/AccountsScreen.test.tsx",
       "t": "finops-web/src/screens/AccountsScreen.tsx",
       "k": "typescript"
@@ -2618,6 +2790,61 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/WasteSavingsScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/waste.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/WasteSavingsScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/WasteSavingsScreen.test.tsx",
+      "t": "finops-web/src/screens/WasteSavingsScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/WasteSavingsScreen.test.tsx",
+      "t": "finops-web/src/screens/WasteScoreScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/WasteSavingsScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/WasteSavingsScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/WasteScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/waste.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/WasteScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/WasteScreen.test.tsx",
+      "t": "finops-web/src/screens/WasteScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/WasteScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/WasteScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
       "k": "typescript"
     },
@@ -4713,6 +4940,31 @@
     },
     {
       "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/realized_savings.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/score.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/waste_cloudwatch.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_ingest/collectors/waste_compute.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
       "t": "finops_ingest/ledger.py",
       "k": "python"
     },
@@ -4724,6 +4976,11 @@
     {
       "s": "scripts/ops/seed_demo.py",
       "t": "finops_providers/fake/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/cloudwatch_estate.py",
       "k": "python"
     },
     {
@@ -4758,7 +5015,17 @@
     },
     {
       "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
       "t": "finops_providers/fake/surface.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/seed_demo.py",
+      "t": "finops_providers/fake/waste.py",
       "k": "python"
     },
     {

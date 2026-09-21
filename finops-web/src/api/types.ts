@@ -381,3 +381,103 @@ export interface ApiCostAnomalies {
   readonly days_collected: number;
   readonly days_needed: number;
 }
+
+/* ---------------------------------------------------------------- P3, waste */
+
+export interface ApiRecommendation {
+  readonly recommendation_id: string;
+  readonly account_id: string;
+  readonly source: string;
+  readonly waste_class: string;
+  readonly resource_id: string;
+  readonly region_id: string;
+  /** Modelled, not measured. The screen labels it so. */
+  readonly estimated_monthly_saving: string;
+  readonly severity: string;
+  /**
+   * From the observation window, and deliberately not derived from the money.
+   * A ten thousand dollar finding on three weeks of data is CRITICAL and LOW,
+   * and a single blended score could not say so.
+   */
+  readonly confidence: string;
+  readonly observation_days: number;
+  readonly lifecycle: string;
+  /** Null where nobody owns it, which ISS-021 says is how a finding dies. */
+  readonly owner: string | null;
+  readonly ticket_reference: string | null;
+  readonly rationale: string;
+}
+
+export interface ApiRecommendations {
+  readonly recommendations: readonly ApiRecommendation[];
+  /** How many carry no owner. Surfaced rather than left for somebody to count. */
+  readonly unowned: number;
+}
+
+export interface ApiRecommendationEvent {
+  readonly from_lifecycle: string | null;
+  readonly to_lifecycle: string;
+  readonly actor: string;
+  readonly reason: string | null;
+  readonly occurred_at: string;
+}
+
+export interface ApiRecommendationDetail {
+  readonly recommendation: ApiRecommendation;
+  readonly history: readonly ApiRecommendationEvent[];
+}
+
+export interface ApiRealizedSaving {
+  readonly recommendation_id: string;
+  readonly cost_before: string;
+  readonly cost_after: string;
+  /**
+   * Null where the billing rows published no usage quantity. Unobserved, not
+   * zero: a zero would say the workload went away.
+   */
+  readonly usage_before: string | null;
+  readonly usage_after: string | null;
+  readonly verdict: string;
+  readonly why: string;
+  readonly window_before_start: string;
+  readonly window_after_end: string;
+}
+
+export interface ApiVerdictTotal {
+  readonly count: number;
+  readonly realized_monthly: string;
+}
+
+export interface ApiRealizedSavings {
+  readonly savings: readonly ApiRealizedSaving[];
+  /**
+   * Grouped by verdict rather than totalled. A single realized total would be
+   * added to the estimated total by the first person who saw them side by side.
+   */
+  readonly by_verdict: Readonly<Record<string, ApiVerdictTotal>>;
+}
+
+export interface ApiScoreComponent {
+  readonly name: string;
+  /** Null where this part could not be computed. Excluded, not nought. */
+  readonly points: string | null;
+  readonly weight: number;
+  readonly why: string;
+  readonly findings: readonly string[];
+}
+
+export interface ApiScore {
+  readonly account_id: string;
+  readonly total: number;
+  /** What the total is out of, because a component may be excluded. */
+  readonly available_weight: number;
+  readonly why: string;
+  readonly components: readonly ApiScoreComponent[];
+  readonly as_of: string;
+}
+
+export interface ApiScores {
+  readonly scores: readonly ApiScore[];
+  /** Accounts nobody could assess. Different from accounts scoring badly. */
+  readonly unscored: readonly string[];
+}
