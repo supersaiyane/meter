@@ -108,6 +108,9 @@ DEMO_TABLES = (
     "query_finding",
     "query_definition",
     "grafana_instance",
+    # P3, FEAT-043. The components reference the score, so they go first.
+    "finops_score_component",
+    "finops_score",
     # P3, FEAT-025 and FEAT-029. Both of these reference `recommendation`, so
     # both go before it: the measured verdict and the lifecycle log first, the
     # finding they are about second.

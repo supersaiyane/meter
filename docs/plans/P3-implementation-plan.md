@@ -499,7 +499,7 @@ always happens by quietly adding a modelled number to a measured one.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 9, FEAT-043 |
 | Delivers | Part of FEAT-043 |
 | Depends on | TASK-P3-014 |
@@ -528,7 +528,7 @@ added afterwards, it is the return type.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 7, FEAT-043 |
 | Delivers | FEAT-043 |
 | Depends on | TASK-P3-015 |

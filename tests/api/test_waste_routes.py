@@ -11,7 +11,7 @@ added together anywhere in these responses. The second is TASK-P3-014.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 from uuid import UUID, uuid4
@@ -460,6 +460,151 @@ class TestTheSavingsRouteOverRealRows:
         data = get(client, token, "/api/v1/waste/savings")["data"]
         assert [row["verdict"] for row in data["savings"]] == ["INCONCLUSIVE"]
         assert "INCONCLUSIVE" in data["by_verdict"]
+
+
+class TestTheScoreRoute:
+    """FEAT-043 at the boundary. The components arrive with the total or not at all.
+
+    A second call for the components is a second call a screen can decline to make,
+    which is how a decomposable score becomes a number on its own by the time anybody
+    reads it.
+    """
+
+    SCORE_PATH = "/api/v1/waste/score"
+
+    def an_account(self, engine: Engine, tenant: UUID, account: str) -> None:
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "INSERT INTO cloud_account (account_pk, tenant_id, provider, account_id, "
+                    "name, status, as_of, collected_at) "
+                    "VALUES (:pk, :t, 'aws', :a, :a, 'ACTIVE', :at, :at) ON CONFLICT DO NOTHING"
+                ),
+                {"pk": uuid4(), "t": tenant, "a": account, "at": NOW},
+            )
+
+    def a_score(
+        self,
+        engine: Engine,
+        tenant: UUID,
+        account: str,
+        *,
+        total: int,
+        coverage_points: str | None = "20",
+    ) -> UUID:
+        score_id = uuid4()
+        self.an_account(engine, tenant, account)
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "INSERT INTO finops_score (score_id, tenant_id, sub_account_id, team, "
+                    "total, available_weight, why, as_of, collected_at) "
+                    "VALUES (:id, :t, :a, NULL, :total, 100, 'the working', :at, :at)"
+                ),
+                {"id": score_id, "t": tenant, "a": account, "total": total, "at": NOW},
+            )
+            for name, points, weight in (
+                ("waste", "30", 40),
+                ("coverage", coverage_points, 20),
+                ("responsiveness", "25", 25),
+                ("verification", "15", 15),
+            ):
+                connection.execute(
+                    text(
+                        "INSERT INTO finops_score_component (component_id, score_id, tenant_id, "
+                        "name, points, weight, why, as_of, collected_at) "
+                        "VALUES (:c, :id, :t, :name, :points, :weight, 'the working', :at, :at)"
+                    ),
+                    {
+                        "c": uuid4(),
+                        "id": score_id,
+                        "t": tenant,
+                        "name": name,
+                        "points": None if points is None else Decimal(points),
+                        "weight": weight,
+                        "at": NOW,
+                    },
+                )
+        return score_id
+
+    def test_a_score_arrives_with_its_components(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        self.a_score(engine, tenant_id, "fake-platform-a", total=70)
+        client, token = client_for(engine, everything(tenant_id), settings)
+        payload = get(client, token, self.SCORE_PATH)
+        row = payload["data"]["scores"][0]
+        assert row["total"] == 70
+        assert row["available_weight"] == 100
+        assert {part["name"] for part in row["components"]} == {
+            "waste",
+            "coverage",
+            "responsiveness",
+            "verification",
+        }
+        assert payload["meta"]["as_of"]
+
+    def test_the_worst_score_is_first(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        # A list sorted best first is a list nobody scrolls, and the account at the
+        # bottom is the one the reader came for.
+        self.a_score(engine, tenant_id, "fake-platform-a", total=80)
+        self.a_score(engine, tenant_id, "fake-platform-b", total=30)
+        client, token = client_for(engine, everything(tenant_id), settings)
+        totals = [row["total"] for row in get(client, token, self.SCORE_PATH)["data"]["scores"]]
+        assert totals == sorted(totals)
+
+    def test_a_component_that_could_not_be_computed_serializes_as_null(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """The last boundary before a reader sees it.
+
+        A zero would say this dimension scored nothing, which is the worst possible
+        posture, for a dimension nobody could measure.
+        """
+        self.a_score(engine, tenant_id, "fake-platform-a", total=70, coverage_points=None)
+        client, token = client_for(engine, everything(tenant_id), settings)
+        row = get(client, token, self.SCORE_PATH)["data"]["scores"][0]
+        coverage = next(part for part in row["components"] if part["name"] == "coverage")
+        assert coverage["points"] is None
+        assert coverage["weight"] == 20
+
+    def test_an_account_with_no_score_is_listed_rather_than_omitted(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        # An account nobody could assess is different from an account with a bad
+        # score, and a shorter league table is not something anybody notices.
+        self.a_score(engine, tenant_id, "fake-platform-a", total=70)
+        self.an_account(engine, tenant_id, "fake-platform-z")
+        client, token = client_for(engine, everything(tenant_id), settings)
+        data = get(client, token, self.SCORE_PATH)["data"]
+        assert [row["account_id"] for row in data["scores"]] == ["fake-platform-a"]
+        assert "fake-platform-z" in data["unscored"]
+
+    def test_only_the_newest_score_per_account_is_served(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """The history exists and the list is not it.
+
+        Two rows for one account, six hours apart. A list showing both would double
+        every account on the screen and sort the same account against itself.
+        """
+        self.a_score(engine, tenant_id, "fake-platform-a", total=40)
+        score_id = uuid4()
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "INSERT INTO finops_score (score_id, tenant_id, sub_account_id, team, "
+                    "total, available_weight, why, as_of, collected_at) "
+                    "VALUES (:id, :t, 'fake-platform-a', NULL, 90, 100, 'later', :at, :at)"
+                ),
+                {"id": score_id, "t": tenant_id, "at": NOW + timedelta(hours=6)},
+            )
+        client, token = client_for(engine, everything(tenant_id), settings)
+        scores = get(client, token, self.SCORE_PATH)["data"]["scores"]
+        assert len(scores) == 1
+        assert scores[0]["total"] == 90
 
 
 class TestWhenThereIsNothing:

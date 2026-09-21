@@ -277,25 +277,37 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
     ),
     ScheduleEntry(
         collector="waste_compute",
-        cadence_seconds=DAILY,
+        cadence_seconds=SIX_HOURLY,
         reason=(
-            "The sizing rules need fourteen days of hourly metrics, so one more day of "
-            "history changes a percentile by very little and a recommendation does not "
-            "move between mornings. This is the expensive one: GetMetricData is charged "
-            "per metric requested and the batched read asks for four metrics per "
-            "instance, so an hourly cadence would multiply that bill by twenty four to "
-            "restate yesterday's answer."
+            "Six hours because the P3 specification section 7 says so for the bespoke "
+            "collectors. It is the most expensive cadence in this schedule and the "
+            "trade is worth stating: GetMetricData is charged per metric requested, the "
+            "batched read asks for four metrics per instance over fourteen days, and "
+            "the sizing rules barely move between mornings, so four runs a day pay four "
+            "times to restate the same percentile. Daily would be the cheaper number "
+            "and ADR-0012 is why it is a row rather than a constant. ISS-194."
         ),
         est_cost_per_run="0.05",
     ),
     ScheduleEntry(
         collector="waste_cloudwatch",
-        cadence_seconds=DAILY,
+        cadence_seconds=SIX_HOURLY,
         reason=(
-            "Retention settings and alarm definitions are configuration, and "
-            "configuration changes when a person changes it. Describe calls are free, "
-            "so the cadence is set by how quickly a reader should see a new log group "
-            "rather than by cost."
+            "Six hours, with the other bespoke collector, per P3 specification section "
+            "7. Retention settings and alarm definitions are configuration rather than "
+            "measurements, and the describe calls are free, so nothing here is paying "
+            "for the interval."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="finops_score",
+        cadence_seconds=SIX_HOURLY,
+        reason=(
+            "The interval FEAT-043 asks for, and it reads rows already in the database, "
+            "so it costs nothing. Six hours is short enough that a team sees its own "
+            "score move on the day it closes something, which is the only reason a "
+            "posture number changes anybody's behaviour."
         ),
         est_cost_per_run="0",
     ),

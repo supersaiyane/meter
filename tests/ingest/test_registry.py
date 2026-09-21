@@ -20,7 +20,7 @@ from pathlib import Path
 
 import pytest
 
-from finops_ingest.registry import DAILY, DEFAULT_SCHEDULE, ScheduleEntry
+from finops_ingest.registry import DAILY, DEFAULT_SCHEDULE, SIX_HOURLY, ScheduleEntry
 
 COLLECTORS = Path(__file__).resolve().parents[2] / "finops_ingest" / "collectors"
 
@@ -105,15 +105,19 @@ def test_every_cadence_explains_itself(entry: ScheduleEntry) -> None:
     assert entry.est_cost_per_run
 
 
-def test_the_p3_collectors_are_daily_and_say_why_the_expensive_one_is() -> None:
-    """The cadence with a real bill behind it, named rather than left to a reader.
+def test_the_p3_cadences_are_the_ones_the_specification_asks_for() -> None:
+    """Checked against the spec rather than against somebody's judgement.
 
-    GetMetricData is charged per metric requested, and `waste_compute` asks for
-    four per instance over a fourteen day window. Hourly would multiply that by
-    twenty four to restate the same percentile.
+    P3 section 7 sets the AWS native source and realized savings daily, and the
+    bespoke collectors and the score every six hours. The expensive one is
+    `waste_compute`, because GetMetricData is charged per metric requested and the
+    batched read asks for four per instance over fourteen days, so its entry has to
+    carry the trade rather than only the number. ISS-194 keeps that argument open.
     """
     by_name = {entry.collector: entry for entry in DEFAULT_SCHEDULE}
-    for name in ("recommendations", "waste_compute", "waste_cloudwatch", "realized_savings"):
+    for name in ("recommendations", "realized_savings"):
         assert by_name[name].cadence_seconds == DAILY, name
+    for name in ("waste_compute", "waste_cloudwatch", "finops_score"):
+        assert by_name[name].cadence_seconds == SIX_HOURLY, name
     assert by_name["waste_compute"].est_cost_per_run != "0"
     assert "GetMetricData" in by_name["waste_compute"].reason

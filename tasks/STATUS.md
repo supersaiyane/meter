@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 51 total, 24 specified, 12 in build, 8 delivered |
+| Features | 51 total, 23 specified, 13 in build, 8 delivered |
 | Decisions | 21 architecture decision records |
 | Changes | 99 recorded |
-| Issues | 126 fixed, 59 open, 0 parked |
+| Issues | 126 fixed, 62 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -125,7 +125,7 @@ ISS-003.
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P1 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
-| P3 | 14 | 0 | 0 | 0 | 6 | 20 | [plan](../docs/plans/P3-implementation-plan.md) |
+| P3 | 16 | 0 | 0 | 0 | 4 | 20 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 0 | 0 | 0 | 0 | 11 | 11 | [plan](../docs/plans/P4-implementation-plan.md) |
 | P5 | 0 | 0 | 0 | 0 | 8 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 0 | 0 | 0 | 0 | 12 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
@@ -248,6 +248,8 @@ ISS-003.
 | `TASK-P3-012` | Done, 2026-09-21 | the routes |
 | `TASK-P3-013` | Done, 2026-09-21 | what actually appeared in the bill |
 | `TASK-P3-014` | Done, 2026-09-21 | the two numbers that must not be added |
+| `TASK-P3-015` | Done, 2026-09-21 | a score that decomposes, or no score |
+| `TASK-P3-016` | Done, 2026-09-21 | the score collector and its history |
 
 <!-- generated:task-status end -->
 

@@ -329,6 +329,7 @@
     "finops_ingest/collectors/realized_savings.py",
     "finops_ingest/collectors/recommendations.py",
     "finops_ingest/collectors/retention.py",
+    "finops_ingest/collectors/score.py",
     "finops_ingest/collectors/waste_cloudwatch.py",
     "finops_ingest/collectors/waste_compute.py",
     "finops_ingest/dispatcher.py",
@@ -378,6 +379,7 @@
     "finops_query/parser.py",
     "finops_query/policy.py",
     "finops_query/realized.py",
+    "finops_query/score.py",
     "finops_query/severity.py",
     "finops_query/waste.py",
     "infra/terraform/hub/alb.tf",
@@ -416,6 +418,7 @@
     "migrations/versions/0010_recommendations.py",
     "migrations/versions/0011_realized_saving.py",
     "migrations/versions/0012_realized_usage_unobserved.py",
+    "migrations/versions/0013_finops_score.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_flags.py",
     "scripts/ci/check_forbidden_imports.py",
@@ -483,6 +486,7 @@
     "tests/ingest/collectors/test_realized_savings.py",
     "tests/ingest/collectors/test_recommendations.py",
     "tests/ingest/collectors/test_retention.py",
+    "tests/ingest/collectors/test_score.py",
     "tests/ingest/collectors/test_waste_cloudwatch.py",
     "tests/ingest/collectors/test_waste_compute.py",
     "tests/ingest/test_dispatcher.py",
@@ -526,6 +530,7 @@
     "tests/query/test_policy.py",
     "tests/query/test_ports.py",
     "tests/query/test_realized.py",
+    "tests/query/test_score.py",
     "tests/query/test_severity.py",
     "tests/query/test_waste.py",
     "tests/scripts/__init__.py",
@@ -3403,6 +3408,11 @@
     },
     {
       "s": "finops_api/routes/waste.py",
+      "t": "finops_api/db/repositories/accounts.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/waste.py",
       "t": "finops_api/db/repositories/waste.py",
       "k": "python"
     },
@@ -3884,6 +3894,26 @@
     {
       "s": "finops_ingest/collectors/retention.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/score.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/score.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/score.py",
+      "t": "finops_query/realized.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/score.py",
+      "t": "finops_query/score.py",
       "k": "python"
     },
     {
@@ -4539,6 +4569,16 @@
     {
       "s": "finops_query/parser.py",
       "t": "finops_query/policy.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/score.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/score.py",
+      "t": "finops_query/realized.py",
       "k": "python"
     },
     {
@@ -5647,6 +5687,21 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_score.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_score.py",
+      "t": "finops_ingest/collectors/score.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_score.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_waste_cloudwatch.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -6314,6 +6369,21 @@
     {
       "s": "tests/query/test_realized.py",
       "t": "finops_query/realized.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_score.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_score.py",
+      "t": "finops_query/realized.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_score.py",
+      "t": "finops_query/score.py",
       "k": "python"
     },
     {

@@ -1,4 +1,4 @@
-"""The three P3 tables refuse an out of scope read, before any route reads them.
+"""The five P3 tables refuse an out of scope read, before any route reads them.
 
 This file exists because TASK-P2-021 wrote six routes over six unguarded tables
 and every one returned 500 on its first real call while importing cleanly and
@@ -25,7 +25,13 @@ from finops_core.domain.tenant import Scope
 
 pytestmark = pytest.mark.integration
 
-P3_TABLES = ("recommendation", "recommendation_event", "realized_saving")
+P3_TABLES = (
+    "recommendation",
+    "recommendation_event",
+    "realized_saving",
+    "finops_score",
+    "finops_score_component",
+)
 
 
 def narrow(tenant: UUID, account: str = "111122223333") -> Scope:
@@ -152,3 +158,90 @@ class TestAnOutOfScopeReadReturnsNothing:
                 table.select().where(scope_predicate(table, everything(tenant_id)))
             ).all()
         assert len(rows) == 2
+
+
+class TestTheScoreTables:
+    """FEAT-043, and the one table in P3 whose subject is sometimes not an account.
+
+    A team spans accounts. So a team score has no `sub_account_id`, a narrowed reader
+    is served none of them, and that is the deliberate answer rather than an
+    oversight: a team score computed from the two accounts a reader can see, shown
+    under the whole team's name, is worse than no score at all.
+    """
+
+    def seed_score(
+        self, engine: Engine, tenant: UUID, *, account: str | None, team: str | None
+    ) -> UUID:
+        score_id = uuid4()
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "INSERT INTO finops_score (score_id, tenant_id, sub_account_id, team, "
+                    "total, available_weight, why, as_of, collected_at) "
+                    "VALUES (:id, :t, :a, :team, 70, 100, 'because', now(), now())"
+                ),
+                {"id": score_id, "t": tenant, "a": account, "team": team},
+            )
+            connection.execute(
+                text(
+                    "INSERT INTO finops_score_component (component_id, score_id, tenant_id, "
+                    "name, points, weight, why, as_of, collected_at) "
+                    "VALUES (:c, :id, :t, 'waste', 30, 40, 'because', now(), now())"
+                ),
+                {"c": uuid4(), "id": score_id, "t": tenant},
+            )
+        return score_id
+
+    def test_an_account_score_out_of_scope_is_unreachable(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        self.seed_score(engine, tenant_id, account="111122223333", team=None)
+        self.seed_score(engine, tenant_id, account="444455556666", team=None)
+
+        table = models.metadata.tables["finops_score"]
+        with engine.connect() as connection:
+            rows = connection.execute(
+                table.select().where(scope_predicate(table, narrow(tenant_id)))
+            ).all()
+        assert len(rows) == 1
+        assert rows[0].sub_account_id == "111122223333"
+
+    def test_a_team_score_is_not_served_to_a_narrowed_reader(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        # Deliberate, and the reason is in the class docstring. A partial team score
+        # under a whole team's name is worse than none.
+        self.seed_score(engine, tenant_id, account=None, team="platform")
+
+        table = models.metadata.tables["finops_score"]
+        with engine.connect() as connection:
+            narrowed = connection.execute(
+                table.select().where(scope_predicate(table, narrow(tenant_id)))
+            ).all()
+            global_reader = connection.execute(
+                table.select().where(scope_predicate(table, everything(tenant_id)))
+            ).all()
+        assert narrowed == []
+        assert len(global_reader) == 1
+
+    def test_a_component_hanging_off_an_unreachable_score_is_unreachable(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        self.seed_score(engine, tenant_id, account="111122223333", team=None)
+        self.seed_score(engine, tenant_id, account="444455556666", team=None)
+
+        table = models.metadata.tables["finops_score_component"]
+        with engine.connect() as connection:
+            rows = connection.execute(
+                table.select().where(scope_predicate(table, narrow(tenant_id)))
+            ).all()
+        assert len(rows) == 1
+
+    def test_neither_score_table_grows_a_second_copy_of_the_account(self) -> None:
+        # The component reaches its account through the score, for the same reason
+        # an event reaches one through its recommendation.
+        columns = {
+            column.name for column in models.metadata.tables["finops_score_component"].columns
+        }
+        assert "sub_account_id" not in columns
+        assert "team" not in columns

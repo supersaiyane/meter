@@ -130,6 +130,15 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | None] = {
     # A realized saving belongs to the recommendation it verifies, and inherits
     # its account for the same reason the event does.
     "realized_saving": Through("recommendation", "recommendation_id", "recommendation_id"),
+    # FEAT-043. An account score names its account. A team score does not, and
+    # deliberately: a team spans accounts, so narrowing by account would serve a
+    # partial team score under a whole team's name, which is worse than serving
+    # none. The repository refuses a team row to a narrowed reader outright, which
+    # is what the null branch on `sub_account_id` means here.
+    "finops_score": ByAccount("sub_account_id"),
+    # A component has no subject of its own and inherits the score's, for the same
+    # reason an event inherits a recommendation's.
+    "finops_score_component": Through("finops_score", "score_id", "score_id"),
     "platform_cost": None,
     "principal": None,
     "principal_scope": None,

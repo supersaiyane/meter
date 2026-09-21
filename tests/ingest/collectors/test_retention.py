@@ -527,6 +527,7 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         "waste_compute",
         "waste_cloudwatch",
         "realized_savings",
+        "finops_score",
     }
 
 

@@ -37,7 +37,7 @@ from sqlalchemy import (
     UniqueConstraint,
     text,
 )
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 
 metadata = MetaData()
 
@@ -565,6 +565,55 @@ realized_saving = Table(
     #: is the evidence this metric is not the vanity number ISS-029 warns about.
     Column("verdict", Text, nullable=False),
     Column("why", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
+#: FEAT-043. The score's components live in their own table, and that is the ship
+#: condition rather than a normalization choice: the components of last week's score
+#: cannot be recomputed once the findings have changed, so a schema holding only the
+#: total makes the decomposition unmeetable forever.
+finops_score = Table(
+    "finops_score",
+    metadata,
+    Column("score_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    #: One of these is set and the other is null. An account score and a team score
+    #: are read by different people, and a row belonging to neither would appear on
+    #: both screens or on nobody's.
+    Column("sub_account_id", Text),
+    Column("team", Text),
+    Column("total", Integer, nullable=False),
+    #: Stored rather than derived, so a reader looking at an old row can tell a score
+    #: out of sixty from a score out of a hundred.
+    Column("available_weight", Integer, nullable=False),
+    Column("why", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
+finops_score_component = Table(
+    "finops_score_component",
+    metadata,
+    Column("component_id", UUID(as_uuid=True), primary_key=True),
+    Column(
+        "score_id",
+        UUID(as_uuid=True),
+        ForeignKey("finops_score.score_id"),
+        nullable=False,
+    ),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("name", Text, nullable=False),
+    #: Nullable, and the null is not a zero. A component that could not be computed
+    #: is excluded from the denominator rather than scored as nought.
+    Column("points", Numeric(6, 3)),
+    Column("weight", Integer, nullable=False),
+    Column("why", Text, nullable=False),
+    #: The findings that produced this component. What makes a difference between two
+    #: runs a list of things that opened or closed rather than two numbers.
+    Column("finding_ids", ARRAY(UUID(as_uuid=True)), nullable=False, server_default=text("'{}'")),
     Column("as_of", DateTime(timezone=True), nullable=False),
     Column("collected_at", DateTime(timezone=True), nullable=False),
 )

@@ -1,6 +1,6 @@
-"""Reading recommendations, their events, and what they actually saved.
+"""Reading recommendations, their events, what they saved, and the posture score.
 
-Three repositories rather than one, along the same seam the tables follow. The one
+Four repositories rather than one, along the same seam the tables follow. The one
 that matters is that `RealizedSavingRepository` is separate: an estimate and a
 realization are different kinds of number, and a single repository able to return
 both is the first place somebody adds them together.
@@ -154,5 +154,81 @@ class RealizedSavingRepository(ScopedRepository):
                 func.coalesce(func.sum(self.table.c.cost_before - self.table.c.cost_after), 0),
             )
             .group_by(self.table.c.verdict)
+        )
+        return _fetch(self, scope, statement)
+
+
+class ScoreRepository(ScopedRepository):
+    """The posture score and its history. FEAT-043.
+
+    Every read returns rows a caller has to join to their components, deliberately.
+    There is no method returning a total on its own, because FEAT-043 ships only if
+    the score decomposes and a convenient total is the first thing a screen would
+    render alone.
+    """
+
+    table: ClassVar[Table] = models.finops_score
+    resource: ClassVar[str] = "finops_score"
+
+    def latest(self, scope: Scope, limit: int = 200) -> Sequence[Row[tuple[Any, ...]]]:
+        """The most recent score per subject.
+
+        Newest first across subjects rather than one row per subject, because the
+        screen shows a list of accounts and their current standing and the trend
+        comes from `history`.
+        """
+        newest = (
+            self.scoped_select(scope)
+            .with_only_columns(self.table.c.sub_account_id, func.max(self.table.c.as_of))
+            .group_by(self.table.c.sub_account_id)
+            .subquery()
+        )
+        statement = (
+            self.scoped_select(scope)
+            .join(
+                newest,
+                (self.table.c.sub_account_id == newest.c.sub_account_id)
+                & (self.table.c.as_of == newest.c[1]),
+            )
+            .order_by(self.table.c.total.asc())
+            .limit(limit)
+        )
+        return _fetch(self, scope, statement)
+
+    def history(
+        self, scope: Scope, *, account: str, limit: int = 60
+    ) -> Sequence[Row[tuple[Any, ...]]]:
+        """One subject's scores, newest first, for the trend."""
+        statement = (
+            self.scoped_select(scope)
+            .where(self.table.c.sub_account_id == account)
+            .order_by(self.table.c.as_of.desc())
+            .limit(limit)
+        )
+        return _fetch(self, scope, statement)
+
+
+class ScoreComponentRepository(ScopedRepository):
+    """The parts of a score, which is the part FEAT-043 actually ships.
+
+    Scoped through `finops_score`, so a component is exactly as reachable as the
+    score it belongs to and not one row more.
+    """
+
+    table: ClassVar[Table] = models.finops_score_component
+    resource: ClassVar[str] = "finops_score_component"
+
+    def of(self, scope: Scope, score_ids: Sequence[Any]) -> Sequence[Row[tuple[Any, ...]]]:
+        """Every component of the given scores, in one read.
+
+        A read per score would be a fan out over a list the screen already has, and
+        at forty accounts that is forty queries to render one page.
+        """
+        if not score_ids:
+            return ()
+        statement = (
+            self.scoped_select(scope)
+            .where(self.table.c.score_id.in_(list(score_ids)))
+            .order_by(self.table.c.score_id, self.table.c.name)
         )
         return _fetch(self, scope, statement)

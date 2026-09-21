@@ -432,6 +432,56 @@ class VerdictTotalOut(BaseModel):
     realized_monthly: Decimal
 
 
+class ScoreComponentOut(BaseModel):
+    """One part of a score, with the findings that produced it.
+
+    `points` is nullable and the null is not a zero. A component that could not be
+    computed is excluded from the score's denominator, and rendering it as nought
+    would report the worst possible posture for something nobody measured.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    name: str
+    points: Decimal | None
+    weight: int
+    why: str
+    #: The recommendations that moved this component, so the screen can link to them.
+    findings: list[UUID]
+
+
+class ScoreOut(BaseModel):
+    """A score that arrives with its parts, because that is FEAT-043's ship condition.
+
+    `components` is required rather than optional. A response that could carry a
+    total on its own is a response a screen would render on its own.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    account_id: str
+    total: int
+    #: What the total is out of. A score of sixty out of sixty available weight is
+    #: not the same claim as sixty out of a hundred, and a reader cannot tell without
+    #: this.
+    available_weight: int
+    why: str
+    components: list[ScoreComponentOut]
+    as_of: datetime
+
+
+class ScoresOut(BaseModel):
+    """Every scored account, worst first, and the ones nobody could score."""
+
+    model_config = ConfigDict(frozen=True)
+
+    scores: list[ScoreOut]
+    #: Accounts with no score at all. Listed rather than omitted: an account nobody
+    #: could assess is different from an account with a bad score, and a shorter list
+    #: is not something anybody notices.
+    unscored: list[str]
+
+
 class CommitmentUseOut(BaseModel):
     """One commitment, and how much of what we paid for was consumed.
 

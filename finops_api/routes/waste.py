@@ -16,10 +16,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import Connection
 
 from finops_api.db.repositories import AccessContext
+from finops_api.db.repositories.accounts import AccountRepository
 from finops_api.db.repositories.waste import (
     RealizedSavingRepository,
     RecommendationEventRepository,
     RecommendationRepository,
+    ScoreComponentRepository,
+    ScoreRepository,
 )
 from finops_api.deps import get_access_context, get_connection, get_scope, get_tickets
 from finops_api.lifecycle import TransitionRefusedError, move
@@ -32,6 +35,9 @@ from finops_api.schemas import (
     RecommendationEventOut,
     RecommendationOut,
     RecommendationsOut,
+    ScoreComponentOut,
+    ScoreOut,
+    ScoresOut,
     VerdictTotalOut,
 )
 from finops_core.domain.tenant import Scope
@@ -273,6 +279,66 @@ def savings(
             str(row[0]): VerdictTotalOut(count=int(row[1]), realized_monthly=Decimal(row[2]))
             for row in totals
         },
+    )
+    meta = build_meta(connection, scope, context, visible=len(rows), rows=rows)
+    return Envelope(data=found, meta=meta)
+
+
+@router.get("/waste/score", response_model=Envelope[ScoresOut])
+def posture_score(
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[ScoresOut]:
+    """The score and, with it, the components that produced it. FEAT-043.
+
+    The components are in the same response as the total rather than behind a second
+    call, because the feature ships only if it decomposes and a second call is a
+    second thing a screen can decline to make.
+
+    Worst first. A list of scores sorted best first is a list nobody scrolls, and the
+    account at the bottom is the one the reader came for.
+    """
+    scores = ScoreRepository(connection, context)
+    rows = scores.latest(scope)
+    parts: dict[Any, list[ScoreComponentOut]] = {}
+    for part in ScoreComponentRepository(connection, context).of(
+        scope, [row.score_id for row in rows]
+    ):
+        parts.setdefault(part.score_id, []).append(
+            ScoreComponentOut(
+                name=part.name,
+                # None stays None all the way out. See `ScoreComponentOut`.
+                points=None if part.points is None else Decimal(part.points),
+                weight=int(part.weight),
+                why=part.why,
+                findings=list(part.finding_ids),
+            )
+        )
+
+    scored = {row.sub_account_id for row in rows}
+    found = ScoresOut(
+        scores=[
+            ScoreOut(
+                account_id=row.sub_account_id,
+                total=int(row.total),
+                available_weight=int(row.available_weight),
+                why=row.why,
+                components=parts.get(row.score_id, []),
+                as_of=row.as_of,
+            )
+            for row in rows
+        ],
+        # Accounts in scope that produced no score. Listed, because an account nobody
+        # could assess must not simply be missing from a league table.
+        unscored=sorted(
+            account
+            for account in (
+                str(row.account_id)
+                for row in AccountRepository(connection, context).list_in_scope(scope)
+            )
+            if account not in scored
+        ),
     )
     meta = build_meta(connection, scope, context, visible=len(rows), rows=rows)
     return Envelope(data=found, meta=meta)

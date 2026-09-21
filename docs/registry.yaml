@@ -316,7 +316,7 @@ features:
 - id: FEAT-043
   name: FinOps Score, decomposable to the findings that moved it
   subproject: P3
-  status: Specified
+  status: In build
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 9, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-043-finops-score.md
 - id: FEAT-044
@@ -1279,6 +1279,46 @@ issues:
     asserts it reaches the response as null rather than as zero
   status: FIXED
   detail: '`finops_api/routes/waste.py`, `finops_api/schemas.py`, FEAT-029'
+
+- id: ISS-192
+  severity: MEDIUM
+  summary: The score's coverage component asks how much of the estate could be judged, and the
+    finest signal that exists is the account. Which individual resources a waste collector
+    managed to observe is not recorded anywhere, so an account where nine instances in ten
+    published no metrics scores the same as one where all ten did. The waste_compute collector
+    already knows the number and writes it into a sync_error detail as prose, which is not
+    something to parse. The fix is a counted column, either on the run ledger or on a small table
+    of judged resources, written at collection time when the figure is in hand. Until then the
+    Posture carries subject_unit so the figure never renders without saying what it counted, which
+    is the fourth time that lesson has been applied
+  status: OPEN
+  detail: '`finops_query/score.py`, `finops_ingest/collectors/score.py`, FEAT-043'
+
+- id: ISS-193
+  severity: MEDIUM
+  summary: FEAT-043 asks for a score per account and per team, and only the per account half is
+    built. A team score needs the P2 tag allocation join, and a team score computed from a partial
+    allocation is the same misleading figure as one computed from the accounts a single reader
+    happens to see, which is why the guard refuses a team row to a narrowed reader. The schema,
+    the guard and the route all carry the team column already, so the work is the allocation join
+    and the decision about what to do with spend no team owns. Stated on 2026-09-21 rather than
+    left for somebody to notice the rows are missing
+  status: OPEN
+  detail: '`finops_ingest/collectors/score.py`, `finops_api/guards.py`, FEAT-043'
+
+- id: ISS-194
+  severity: LOW
+  summary: waste_compute runs every six hours because the P3 specification section 7 says the
+    bespoke collectors do, and it is the most expensive cadence in the schedule. GetMetricData is
+    charged per metric requested, the batched read asks for four metrics per instance over
+    fourteen days, and a percentile over that window barely moves between mornings, so four runs
+    a day pay four times for the same answer. Daily would be the cheaper number and the spec is
+    the approved design, so the cadence follows the spec and the objection is recorded here
+    instead of being applied quietly. ADR-0012 is why this is a row in collector_schedule rather
+    than a constant, so changing it later costs one update and no deploy. Revisit against a real
+    bill, which is ISS-122
+  status: OPEN
+  detail: '`finops_ingest/registry.py`, ADR-0012, FEAT-026'
 
 - id: ISS-164
   severity: MEDIUM
