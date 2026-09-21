@@ -536,6 +536,40 @@ recommendation_event = Table(
 )
 
 
+#: The measured half, in its own table so it cannot be summed with the estimate by
+#: accident. Every tool that inflates identified savings does it by adding a
+#: modelled number to a measured one.
+realized_saving = Table(
+    "realized_saving",
+    metadata,
+    Column("realized_id", UUID(as_uuid=True), primary_key=True),
+    Column(
+        "recommendation_id",
+        UUID(as_uuid=True),
+        ForeignKey("recommendation.recommendation_id"),
+        nullable=False,
+    ),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("window_before_start", Date, nullable=False),
+    Column("window_before_end", Date, nullable=False),
+    Column("window_after_start", Date, nullable=False),
+    Column("window_after_end", Date, nullable=False),
+    #: Measured, from cost_focus_daily.
+    Column("cost_before", Numeric(20, 10), nullable=False),
+    Column("cost_after", Numeric(20, 10), nullable=False),
+    #: The control. Without it a fall in cost cannot be told apart from a fall in
+    #: use, and the counterfactual is unobservable.
+    Column("usage_before", Numeric(20, 10), nullable=False),
+    Column("usage_after", Numeric(20, 10), nullable=False),
+    #: VERIFIED, REGRESSED or INCONCLUSIVE. The third is expected to be common and
+    #: is the evidence this metric is not the vanity number ISS-029 warns about.
+    Column("verdict", Text, nullable=False),
+    Column("why", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
 commitment_use = Table(
     "commitment_use",
     metadata,

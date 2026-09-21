@@ -119,6 +119,17 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | None] = {
     # organization. In before the route, per the rule at the top of the P1 plan.
     "commitment_use": PayerWide(),
     "commitment_coverage": PayerWide(),
+    # P3. A recommendation names the account its resource lives in, so a caller
+    # narrowed to two accounts reads two accounts' waste.
+    "recommendation": ByAccount("sub_account_id"),
+    # An event has no account of its own. It inherits the one belonging to the
+    # recommendation it hangs off, which is the same reasoning `query_finding`
+    # uses: a denormalised account column here would be a second copy of a fact
+    # and therefore a second chance to disagree with the first.
+    "recommendation_event": Through("recommendation", "recommendation_id", "recommendation_id"),
+    # A realized saving belongs to the recommendation it verifies, and inherits
+    # its account for the same reason the event does.
+    "realized_saving": Through("recommendation", "recommendation_id", "recommendation_id"),
     "platform_cost": None,
     "principal": None,
     "principal_scope": None,
