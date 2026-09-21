@@ -39,6 +39,8 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-08-23 | Close the final five findings | Done | Disaster recovery in the architecture, observability as `docs/10-OBSERVABILITY.md`, the running cost estimate in the deployment guide, exit criteria in the roadmap, and the performance budget as P0 spec section 11b. Writing the cost estimate found a real error in prior work, ISS-080: the VPC endpoints were justified on cost and NAT is cheaper below roughly 1,560 GB per month. Reasoning corrected, conclusion kept on security grounds | CHG-0023, commit `6cceaa8`. TASK-P0-033 added for SLOs |
 | 2026-08-23 | Record token usage for coding sessions | Done | `make dev` launches Claude Code behind the pxpipe proxy, `make stats` reports what a session cost. Verified against the real log, which reported a last write of 2026-08-10 and so proved this session was never behind the proxy. Two caveats written into the README rather than left to be discovered: the proxy currently compresses nothing, every request skipped as `unsupported_model`, and its log is machine global rather than scoped to Meter | `Makefile` targets `dev`, `stats`, `stats-json`. `README.md` section 3. CHG-0024, ISS-081, commit `a92ae60` |
 | 2026-08-23 | Correct stale counts found by the checkpoint gate | Done | `project_map.md` and `INDEX.md` both claimed the Makefile had 28 targets when it has 51. Both now describe it without naming a number, because a count in prose goes stale silently and nothing checks it | `project_map.md` line 22, `INDEX.md` build and deployment table |
+| 2026-08-23 | Competitive review of NudgeBee AI FinOps | Done | Six capabilities adopted as FEAT-043 to FEAT-048, three existing features amended, four rejected. Two adopted over my objection on the owner's decision, and both objections became design constraints: the FinOps Score ships only if it decomposes to the findings that moved it, and forecasting produced ADR-0015 drawing the line between a forecaster and a language model. Nothing on their page addresses observability query cost governance, which is evidence rather than assertion that P2 is the differentiator | `docs/11-COMPETITIVE-REVIEW.md`, ADR-0015, ADR-0016. CHG-0025, commit `c7f45f0` |
+| 2026-08-23 | Configuration, feature flags, and the management account taken off the critical path | Done | Regions confirmed as eu-west-1 and eu-west-2, closing OPEN-06. TASK-P0-017 no longer depends on the member StackSet, because LocalStack emulates sts and organizations, which moves 6 tasks off somebody else's calendar. ADR-0017 with `.env.example` documenting 54 values by what, why and which file reads them, `docs/feature-flags.yaml` with owner, reason, expiry and removal per flag, and two checks that fail the build | `.env.example`, `docs/feature-flags.yaml`, `scripts/ci/check_flags.py`, `scripts/ci/check_hardcoded.py`. TASK-P0-034 added. CHG-0026, commit `5a78798` |
 
 ## Next action
 
@@ -62,7 +64,25 @@ P0.
 | Where a change gets recorded | `docs/03-CHANGE-CONTROL.md` |
 | Rules binding every change | `CLAUDE.md` |
 
-### Resume vector, as of 2026-09-15
+### Resume vector, as of 2026-09-20
+
+| What | Where |
+| --- | --- |
+| Git position | branch `main`, 52 commits, working tree clean |
+| **The gate, still open** | `docs/specs/2026-08-23-p0-foundation-design.md` status is `In review`. Never approved |
+| **First task** | TASK-P0-029, verify the Minimus tags. Then group 1: 001, 002, 003, 034, 031, 004 |
+| Unblocked now | **Waves A to E, 22 of 34 tasks.** The management account came off the critical path via LocalStack |
+| Plan size | 34 tasks. 034 configuration and flags, added this session, runs in group 1 |
+| Registers | 49 features, 17 decisions, 26 changes, 89 issues, 6 open questions of which 1 answered |
+| Auth placeholder | TASK-P0-012. Two ports, a local provider that refuses to start in prod. The scope guard, audit and coverage are fully built, only the "who is this" adapter is deferred. OPEN-01 |
+| Regions | `METER_REGIONS=eu-west-1,eu-west-2`. OPEN-06 answered |
+| Needs a person | ISS-087 flag and CODEOWNERS owners, before the first merge request. ISS-078 regulatory retention floor, before the schema is built. ISS-079 audit_event non erasure sign off |
+| Still needed from AWS | Management account access, ISS-002, for live verification at the end of wave E only. Not blocking |
+| Check everything | `make check-docs && make check-writing` |
+| End a session | `make session-end` |
+| Next audit due | P0 boundary, scope `code` |
+
+### Earlier resume vector, as of 2026-09-15
 
 | What | Where |
 | --- | --- |
