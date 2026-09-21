@@ -226,3 +226,23 @@ own recipe line; only my ad hoc chains are exposed.
 **Triggers:** any `| tail`, `| head` or `| grep` on mypy, ruff, pytest or tsc;
 any `&& git commit`; and the words "it passed" about output I filtered rather
 than read.
+
+## 2026-09-21: a registry entry that landed in the wrong list
+
+**Mistake:** twice now I have added an entry to `docs/registry.yaml` by finding
+the `issues:` key and inserting **before** it, which puts the entry at the end of
+the `changes:` list rather than the start of `issues:`. Both lists are sequences
+of id first mappings, so YAML parses it happily and only `make doc-sync` notices,
+with a `KeyError: 'date'` from a change row that has no date.
+
+**Correction:** self caught both times, by doc-sync, within a minute.
+
+**Rule:** when adding to a YAML list that is followed immediately by another list,
+insert **after** the key line rather than before the next one, and verify with a
+parse before running anything else:
+`python3 -c "import yaml; r=yaml.safe_load(open('docs/registry.yaml')); print(len(r['changes']), len(r['issues']))"`.
+The counts moving by one in the list you meant is the check.
+
+**Triggers:** any edit to `docs/registry.yaml`, any insert positioned relative to
+a following key rather than a preceding one, and `KeyError` from a generator over
+a list that parsed cleanly.
