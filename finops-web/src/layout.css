@@ -1,0 +1,473 @@
+/*
+ * The visual layer, per ADR-0021 and docs/12-UI-DESIGN.md sections 7 and 10.
+ *
+ * tokens.css holds what a number means: provenance fill, numeral, failure,
+ * staleness. This file holds where things sit. The split follows the document
+ * it implements, and it is why neither file needs to know much about the other.
+ *
+ * Element selectors are used deliberately. DataTable is the only table in the
+ * product and Figure is the only component that renders a numeral, so `th`
+ * addresses the one table header that exists rather than reaching across
+ * unrelated components by accident. ADR-0021 records why that holds here and
+ * would not hold in most codebases.
+ *
+ * No rule in this file requires a component to accept a className. That is the
+ * property ADR-0021 was decided on.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--surface-sunken);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-2);
+  line-height: 1.45;
+  /* An instrument, not a dashboard. Nothing here is centred in a hero. */
+  text-rendering: optimizeLegibility;
+}
+
+/* ------------------------------------------------------------------ shell */
+
+[data-testid='shell'] {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+[data-testid='shell'] > header {
+  grid-column: 1;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: var(--space-3);
+  /* Compact. It is chrome, not content. */
+  font-size: var(--font-size-1);
+  overflow-y: auto;
+  max-height: 100vh;
+  position: sticky;
+  top: 0;
+}
+
+[data-testid='shell'] > header h1 {
+  font-size: var(--font-size-4);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin: 0 0 var(--space-4);
+}
+
+[data-testid='shell'] > main {
+  grid-column: 2;
+  padding: var(--space-4);
+  min-width: 0;
+}
+
+/* ------------------------------------------------------------- navigation */
+
+nav[aria-label='Sections'] h2 {
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: var(--space-4) 0 var(--space-1);
+}
+
+nav[aria-label='Sections'] ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav[aria-label='Sections'] a {
+  display: block;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  color: var(--text);
+  text-decoration: none;
+}
+
+nav[aria-label='Sections'] a:hover {
+  background: var(--accent-quiet);
+}
+
+nav[aria-label='Sections'] a[aria-current='page'] {
+  background: var(--accent-quiet);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* An unbuilt screen is listed and reachable. It is quieter, never hidden:
+   hiding it would make the product look smaller than it is. */
+.meter-arrives {
+  display: block;
+  color: var(--text-muted);
+  font-size: var(--font-size-1);
+}
+
+nav[aria-label='Sections'] a[data-arrives] {
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------ trust strip */
+
+[data-testid='coverage'] {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  margin-bottom: var(--space-2);
+}
+
+[data-testid='coverage'][data-partial='true'] {
+  background: var(--stale-quiet);
+  border-color: var(--stale);
+}
+
+[data-testid='global-freshness'] {
+  color: var(--text-muted);
+  margin: 0 0 var(--space-2);
+}
+
+[data-testid='global-freshness'][data-state='never-collected'] {
+  color: var(--stale);
+}
+
+[data-testid='shell-failures'] {
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-2);
+}
+
+[data-testid='shell-failures'] ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Invented numbers say so, in the same place a coverage warning goes. */
+[data-testid='fixture-band'] {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--stale-quiet);
+  border-left: 3px solid var(--stale);
+  color: var(--stale);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ------------------------------------------------------------------ table */
+
+[data-testid='table-scroll'] {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--font-size-2);
+}
+
+caption {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--font-size-1);
+  border-bottom: 1px solid var(--border);
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  text-align: left;
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-strong);
+  white-space: nowrap;
+}
+
+tbody tr {
+  /*
+   * Dense where the content allows. A minimum rather than a fixed height,
+   * because every Figure renders its own freshness inline and a cell carrying
+   * a figure, its provenance, its accuracy and two timestamps cannot be one
+   * line. ISS-140 records that per cell freshness is redundant with the
+   * shell's worst case line and is what stops this being 32 px.
+   */
+  min-height: var(--row-height);
+  border-bottom: 1px solid var(--border);
+}
+
+tbody tr:last-child {
+  border-bottom: none;
+}
+
+td {
+  padding: var(--space-1) var(--space-3);
+  vertical-align: top;
+}
+
+td.meter-numeral {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ----------------------------------------------------------------- figure */
+
+[data-testid='figure'] {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-1);
+}
+
+[data-testid='figure'] .meter-numeral {
+  font-size: var(--font-size-2);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius);
+}
+
+/* The label that says which kind, and the accuracy that travels with it. */
+[data-testid='figure'] > span:not(.meter-numeral),
+[data-testid='freshness'] {
+  color: var(--text-muted);
+  font-size: var(--font-size-1);
+}
+
+/* -------------------------------------------------------------- severity */
+
+/* Sequential, not a traffic light, because severity is ordered. The squares
+   and the word carry it too, so colour is the third channel and never the
+   only one. */
+[data-testid='severity'] {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius);
+  font-size: var(--font-size-1);
+  white-space: nowrap;
+}
+
+[data-testid='severity'][data-level='1'] {
+  background: var(--severity-1);
+}
+[data-testid='severity'][data-level='2'] {
+  background: var(--severity-2);
+}
+[data-testid='severity'][data-level='3'] {
+  background: var(--severity-3);
+}
+[data-testid='severity'][data-level='4'] {
+  background: var(--severity-4);
+  color: var(--surface);
+}
+[data-testid='severity'][data-level='5'] {
+  background: var(--severity-5);
+  color: var(--surface);
+}
+
+/* ------------------------------------------------------------- the states */
+
+[data-testid='state'] {
+  padding: var(--space-3);
+}
+
+[data-testid='state'][data-state='ready'] {
+  padding: 0;
+}
+
+[data-testid='skeleton-row'] {
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--border);
+}
+
+[data-testid='state'][data-state='never-collected'],
+[data-state='never-collected'] {
+  color: var(--text-muted);
+}
+
+[data-testid='state'][data-state='failed'] {
+  background: var(--failure-quiet);
+  border-left: 3px solid var(--failure);
+}
+
+[data-testid='state'][data-state='partial'],
+[data-testid='state'][data-state='degraded'] {
+  background: var(--stale-quiet);
+  border-left: 3px solid var(--stale);
+}
+
+/* ----------------------------------------------------------------- screens */
+
+main section {
+  margin-bottom: var(--space-4);
+}
+
+main h2 {
+  font-size: var(--font-size-5);
+  font-weight: 600;
+  margin: 0 0 var(--space-3);
+}
+
+main h3 {
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin: var(--space-4) 0 var(--space-1);
+}
+
+main a {
+  color: var(--accent);
+}
+
+/* A judgement, not a scan. Generous, per section 7. */
+main article {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  max-width: 78ch;
+  /* Generous. The reader is making a judgement and needs room to read the
+     evidence, so prose steps up a size from the scanning surfaces. */
+  font-size: var(--font-size-3);
+}
+
+[data-testid='finding-query'] {
+  font-family: var(--font-numeral);
+  font-size: var(--font-size-2);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  overflow-x: auto;
+  margin: 0;
+}
+
+/* The arithmetic, published so it can be checked line by line. */
+[data-testid='finding-working'] {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-numeral);
+  font-size: var(--font-size-2);
+}
+
+[data-testid='finding-working'] li {
+  padding: var(--space-1) 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+[data-testid='finding-working'] li:last-child {
+  border-bottom: none;
+  font-weight: 600;
+}
+
+/* Home. An unfilled slot names what will fill it and shows no figure. */
+[data-testid^='home-slot-'] {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+[data-testid^='home-slot-'] h3 {
+  margin-top: 0;
+}
+
+[data-testid='not-built'],
+[data-testid='not-a-screen'],
+[data-testid='revoke-note'] {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+}
+
+button {
+  font: inherit;
+  font-size: var(--font-size-1);
+  padding: var(--space-1) var(--space-2);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--accent-quiet);
+  border-color: var(--accent);
+}
+
+/* Focus is always visible. */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ----------------------------------------------------------------- motion */
+
+/*
+ * The whole list. A 120 ms opacity transition on state change, and nothing
+ * else. Borders, never shadows: a shadow implies elevation, which suits a
+ * consumer application and not an instrument.
+ */
+a,
+button,
+[data-testid='coverage'],
+[data-testid='fixture-band'] {
+  transition: opacity 120ms ease, background-color 120ms ease;
+}
+
+/* --------------------------------------------------------------- responsive */
+
+/* Section 10. Desktop first, honestly: this is an analyst's tool used on a
+   large screen. */
+@media (max-width: 1280px) {
+  /* Secondary columns collapse behind a disclosure. Until one exists, the
+     table scrolls rather than truncating a figure. */
+  [data-testid='table-scroll'] {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 1024px) {
+  /* A phone checking a number during an incident. It needs the figure, its
+     provenance and its age. It does not need the whole instrument. */
+  [data-testid='shell'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-testid='shell'] > header {
+    grid-column: 1;
+    position: static;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  [data-testid='shell'] > main {
+    grid-column: 1;
+  }
+
+  [data-testid='graph'] {
+    display: none;
+  }
+}

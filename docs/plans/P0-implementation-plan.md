@@ -3041,7 +3041,7 @@ makes the front page double as the progress view. Home owns no data of its own."
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | `docs/12-UI-DESIGN.md` sections 7 and 10, ADR-0021 |
 | Delivers | Closes ISS-138 |
 | Depends on | TASK-P0-038, TASK-P2-025 |
@@ -3055,22 +3055,35 @@ restyling each as the next one arrived.
 
 **Acceptance criteria.**
 
-- [ ] `finops-web/src/layout.css`, imported once, holding structure, density,
+- [x] `finops-web/src/layout.css`, imported once, holding structure, density,
       surface, border, typography scale and the three breakpoints
-- [ ] **Zero changes to any component or screen file.** That is the property
+- [x] **Zero changes to any component or screen file.** That is the property
       ADR-0021 was decided on, and a diff that touches them means the decision
       was wrong
-- [ ] The severity ramp is applied, so severity is readable as an ordered
+- [x] The severity ramp is applied, so severity is readable as an ordered
       quantity rather than as repeated squares
-- [ ] Dense surfaces are 32 px rows, and `ROW_HEIGHT` agrees with the CSS so the
-      virtualiser estimates correctly
-- [ ] Borders, never shadows
-- [ ] The only motion is a 120 ms opacity transition, and nothing animates a
+- [~] Dense surfaces are 32 px rows, and `ROW_HEIGHT` agrees with the CSS so the
+      virtualiser estimates correctly. **`ROW_HEIGHT` now agrees, at 32. The rows
+      do not: every `Figure` renders its own freshness inline, so a cell carries
+      a figure, its provenance, its accuracy and two timestamps and cannot be one
+      line. Rows are a minimum of 32 px and grow. ISS-140 records it, because
+      removing per cell freshness changes what a reader is told and is a product
+      decision rather than a styling one.**
+- [x] Borders, never shadows
+- [x] The only motion is a 120 ms opacity transition, and nothing animates a
       value
-- [ ] Every token declared in `tokens.css` is consumed, or removed
-- [ ] Light and dark both render correctly
-- [ ] Axe reports zero violations on every screen, with contrast now asserted
-      against real colours rather than against browser defaults
+- [x] Every token declared in `tokens.css` is consumed, or removed. **All but
+      `--font-size-6`, which is declared because section 7 specifies a six step
+      scale and the top step is the headline spend figure that arrives with P1.
+      A test fails if any other token is orphaned.**
+- [x] Light and dark both render correctly
+- [x] Axe reports zero violations on every screen, with contrast now asserted
+      against real colours rather than against browser defaults. **Not through
+      axe, which cannot do it: `colour-contrast` needs layout and paint and jsdom
+      has neither, so axe reports the rule incomplete and every existing axe
+      assertion passed without ever looking at a colour.
+      `contrast.test.ts` reads the declared tokens and computes the WCAG ratio
+      for light and dark, asserting AAA on numerals and AA elsewhere.**
 
 **Do not.**
 

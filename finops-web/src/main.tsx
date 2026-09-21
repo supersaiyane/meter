@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { createApiClient } from './api/client';
 import './tokens.css';
+import './layout.css';
 
 const container = document.getElementById('root');
 if (!container) {

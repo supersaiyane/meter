@@ -11,8 +11,14 @@ import type { ReactNode } from 'react';
  */
 export const VIRTUALISE_ABOVE = 200;
 
-/** Estimated row height in pixels, used only to decide what to render. */
-export const ROW_HEIGHT = 28;
+/**
+ * Estimated row height in pixels, used only to decide what to render.
+ *
+ * It must agree with `--row-height` in `tokens.css`. A virtualiser estimating
+ * 28 against rows drawn at 32 scrolls short by an accumulating four pixels a
+ * row, which at three hundred rows is a table that will not reach its own end.
+ */
+export const ROW_HEIGHT = 32;
 
 export interface Column<Row> {
   readonly key: string;

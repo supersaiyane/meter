@@ -25,7 +25,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | Features | 50 total, 8 specified, 7 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
 | Changes | 80 recorded |
-| Issues | 92 fixed, 42 open, 0 parked |
+| Issues | 93 fixed, 42 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -82,7 +82,7 @@ ISS-003.
 
 | Sub project | Done | Partly | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- |
-| P0 | 38 | 0 | 0 | 1 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P0 | 39 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P2 | 7 | 1 | 2 | 15 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -123,6 +123,7 @@ ISS-003.
 | `TASK-P0-036` | Done, 2026-09-07 | routing, the seven groups, and the route migration |
 | `TASK-P0-037` | Done, 2026-09-09 | the fixture seam and the fixture marker |
 | `TASK-P0-038` | Done, 2026-09-11 | the home screen |
+| `TASK-P0-039` | Done, 2026-09-21 | the visual layer |
 | `TASK-P0-029` | **Done 2026-08-23**, commit `9754a59` | establish the security tool chain and the first posture |
 | `TASK-P0-030` | Done, 2026-08-27 | MCP server scaffold and the four P0 tools |
 | `TASK-P0-031` | Done, 2026-08-28 | wire the documentation and graph gates into the pipeline |

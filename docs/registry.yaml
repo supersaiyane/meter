@@ -1050,6 +1050,18 @@ changes:
   commit: 'a9ac9d7'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-025'
 issues:
+- id: ISS-140
+  severity: MEDIUM
+  summary: Every Figure renders its own freshness inline, so a table cell carries the figure, its
+    provenance, its accuracy and two timestamps, and a dense row cannot be the 32 px that
+    docs/12-UI-DESIGN.md section 7 asks for. The shell already shows worst case freshness for the
+    whole view, so the per cell repetition may be redundant rather than load bearing. Rows are a
+    minimum of 32 px and grow with their content. Deciding this is a product question rather than a
+    styling one, because removing per cell freshness would change what a reader is told, and hiding
+    it in CSS would take it from assistive technology as well. Found 2026-09-21 while styling the
+    tables
+  status: OPEN
+  detail: '`finops-web/src/components/Figure.tsx`, `finops-web/src/layout.css`, TASK-P0-039'
 - id: ISS-139
   severity: MEDIUM
   summary: TASK-P2-025 acceptance requires an end to end journey applying the workspace floor and
@@ -1069,8 +1081,8 @@ issues:
     spacing, surface, border and responsive, are not. The severity ramp is declared and never
     applied, so severity reads as repeated squares with no colour. Found 2026-09-16 while running
     the application
-  status: OPEN
-  detail: '[ADR-0019](docs/adr/ADR-0019-headless-components-own-visual-layer.md), `finops-web/src/tokens.css`'
+  status: FIXED
+  detail: '[ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md), TASK-P0-039, `finops-web/src/layout.css`'
 - id: ISS-137
   severity: MEDIUM
   summary: A scanned volume under one MiB renders as the numeral zero on the query findings screen.

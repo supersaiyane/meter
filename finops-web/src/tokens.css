@@ -57,6 +57,19 @@
 
   --font-ui: system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-numeral: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
+
+  /* Six sizes. A seventh means the hierarchy is unclear rather than
+     insufficient, per docs/12-UI-DESIGN.md section 7. */
+  --font-size-1: 12px;
+  --font-size-2: 14px;
+  --font-size-3: 16px;
+  --font-size-4: 20px;
+  --font-size-5: 28px;
+  --font-size-6: 40px;
+
+  /* Dense means no wasted vertical space, with alignment doing the work padding
+     would otherwise do. The virtualiser's ROW_HEIGHT must agree with this. */
+  --row-height: 32px;
 }
 
 /* An explicit choice wins over the operating system in both directions. */
