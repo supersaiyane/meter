@@ -1235,6 +1235,7 @@ changes:
     promising what the product will not do is one that will be quoted back
   commit: pending
   detail: '[P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 6'
+issues:
 - id: ISS-189
   severity: LOW
   summary: FEAT-027 asks for high ingest log groups with no queries in 90 days, and the signal
@@ -1250,7 +1251,6 @@ changes:
   status: OPEN
   detail: '`finops_ingest/collectors/waste_cloudwatch.py`, FEAT-027'
 
-issues:
 - id: ISS-164
   severity: MEDIUM
   summary: security/reports/latest is a committed symlink and the scan script wrote it as an
