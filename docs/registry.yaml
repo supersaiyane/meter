@@ -1235,6 +1235,21 @@ changes:
     promising what the product will not do is one that will be quoted back
   commit: pending
   detail: '[P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 6'
+- id: ISS-189
+  severity: LOW
+  summary: FEAT-027 asks for high ingest log groups with no queries in 90 days, and the signal
+    to answer it does not exist. P2 records which Logs Insights queries ran and what they
+    scanned, in query_adhoc, but not which log groups they named. The group is inside the query
+    text and extracting it means parsing the query language for a purpose the P2 parser was not
+    built for. Deferred deliberately on 2026-09-21 rather than inferred, because guessing wrong
+    produces a recommendation to delete logs somebody is actively reading, which is the most
+    damaging output this product could produce. The other two FEAT-027 checks, retention and
+    stale alarms, are built. The fix is either a log group column on the P2 evidence tables,
+    written at audit time when the query text is already parsed, or reading the CloudWatch Logs
+    Insights query history directly and accepting its retention limit
+  status: OPEN
+  detail: '`finops_ingest/collectors/waste_cloudwatch.py`, FEAT-027'
+
 issues:
 - id: ISS-164
   severity: MEDIUM
