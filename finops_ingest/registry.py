@@ -235,6 +235,93 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         ),
         est_cost_per_run="0",
     ),
+    # P1. Both of these were written without an entry here, which meant
+    # `due_collectors` never returned them and neither ever ran on cadence. Their
+    # tests call them directly, so nothing noticed. ISS-190, and the test in
+    # `tests/ingest/test_registry.py` derives this list from the source so a sixth
+    # cannot happen.
+    ScheduleEntry(
+        collector="cost_anomaly",
+        cadence_seconds=DAILY,
+        reason=(
+            "It judges the most recent day that has data, and a day gets its data "
+            "once. Running more often re reaches the same verdict about the same day "
+            "and risks rewriting one somebody has already acted on. It reads rows "
+            "already in the database, so the cadence costs nothing and the only thing "
+            "a slower one buys is a later warning."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="commitment",
+        cadence_seconds=DAILY,
+        reason=(
+            "AWS reports utilization and coverage per day, so an hourly read would "
+            "return the same figures and pay Cost Explorer for each one. Daily is the "
+            "grain the source actually has."
+        ),
+        est_cost_per_run="0.02",
+    ),
+    # P3.
+    ScheduleEntry(
+        collector="recommendations",
+        cadence_seconds=DAILY,
+        reason=(
+            "Compute Optimizer and Cost Optimization Hub refresh at most daily, and "
+            "Trusted Advisor less often than that. A faster cadence re reads an "
+            "unchanged answer, and the withdrawal pass means each read can retract "
+            "findings, so running it more often than the source changes would churn a "
+            "list people are working from."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="waste_compute",
+        cadence_seconds=SIX_HOURLY,
+        reason=(
+            "Six hours because the P3 specification section 7 says so for the bespoke "
+            "collectors. It is the most expensive cadence in this schedule and the "
+            "trade is worth stating: GetMetricData is charged per metric requested, the "
+            "batched read asks for four metrics per instance over fourteen days, and "
+            "the sizing rules barely move between mornings, so four runs a day pay four "
+            "times to restate the same percentile. Daily would be the cheaper number "
+            "and ADR-0012 is why it is a row rather than a constant. ISS-194."
+        ),
+        est_cost_per_run="0.05",
+    ),
+    ScheduleEntry(
+        collector="waste_cloudwatch",
+        cadence_seconds=SIX_HOURLY,
+        reason=(
+            "Six hours, with the other bespoke collector, per P3 specification section "
+            "7. Retention settings and alarm definitions are configuration rather than "
+            "measurements, and the describe calls are free, so nothing here is paying "
+            "for the interval."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="finops_score",
+        cadence_seconds=SIX_HOURLY,
+        reason=(
+            "The interval FEAT-043 asks for, and it reads rows already in the database, "
+            "so it costs nothing. Six hours is short enough that a team sees its own "
+            "score move on the day it closes something, which is the only reason a "
+            "posture number changes anybody's behaviour."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="realized_savings",
+        cadence_seconds=DAILY,
+        reason=(
+            "A verdict is only reachable sixty days after the change was done, so "
+            "nothing here is urgent. Daily means a recommendation is judged on the "
+            "first day its after window is complete rather than up to a week later, "
+            "and it reads rows already in the database, so that costs nothing."
+        ),
+        est_cost_per_run="0",
+    ),
 )
 
 

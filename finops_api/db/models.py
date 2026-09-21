@@ -37,7 +37,7 @@ from sqlalchemy import (
     UniqueConstraint,
     text,
 )
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 
 metadata = MetaData()
 
@@ -476,6 +476,144 @@ cost_anomaly = Table(
     Column("severity", Text, nullable=False),
     #: The working, so a reader can disagree with the verdict.
     Column("why", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
+recommendation = Table(
+    "recommendation",
+    metadata,
+    Column("recommendation_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    #: Which of the three AWS services, or METER for our own. One table, not one
+    #: per source, because a lifecycle that works for one and not the other is two.
+    Column("source", Text, nullable=False),
+    Column("source_reference", Text, nullable=False),
+    Column("waste_class", Text, nullable=False),
+    Column("resource_id", Text, nullable=False),
+    Column("region_id", Text, nullable=False),
+    #: Modelled, always. What we think would be saved, never what was saved.
+    Column("estimated_monthly_saving", Numeric(20, 10), nullable=False),
+    #: From the observation days. Deliberately not from the money.
+    Column("confidence", Text, nullable=False),
+    #: From the money, ADR-0016. Deliberately not from the observation days.
+    Column("severity", Text, nullable=False),
+    Column("observation_days", Integer, nullable=False),
+    Column("lifecycle", Text, nullable=False),
+    #: Null is a reported condition, not a gap. ISS-021: an unowned finding is
+    #: never fixed, so the screen says so rather than rendering blank.
+    Column("owner", Text),
+    Column("ticket_reference", Text),
+    Column("rationale", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
+#: Append only. The lifecycle column says where a recommendation is; only this can
+#: say that somebody accepted it in March and quietly dismissed it in June.
+recommendation_event = Table(
+    "recommendation_event",
+    metadata,
+    Column("event_id", UUID(as_uuid=True), primary_key=True),
+    Column(
+        "recommendation_id",
+        UUID(as_uuid=True),
+        ForeignKey("recommendation.recommendation_id"),
+        nullable=False,
+    ),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    #: Null exactly once per recommendation: the row recording that it was found.
+    Column("from_lifecycle", Text),
+    Column("to_lifecycle", Text, nullable=False),
+    Column("actor", Text, nullable=False),
+    Column("reason", Text),
+    Column("occurred_at", DateTime(timezone=True), nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
+#: The measured half, in its own table so it cannot be summed with the estimate by
+#: accident. Every tool that inflates identified savings does it by adding a
+#: modelled number to a measured one.
+realized_saving = Table(
+    "realized_saving",
+    metadata,
+    Column("realized_id", UUID(as_uuid=True), primary_key=True),
+    Column(
+        "recommendation_id",
+        UUID(as_uuid=True),
+        ForeignKey("recommendation.recommendation_id"),
+        nullable=False,
+    ),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("window_before_start", Date, nullable=False),
+    Column("window_before_end", Date, nullable=False),
+    Column("window_after_start", Date, nullable=False),
+    Column("window_after_end", Date, nullable=False),
+    #: Measured, from cost_focus_daily.
+    Column("cost_before", Numeric(20, 10), nullable=False),
+    Column("cost_after", Numeric(20, 10), nullable=False),
+    #: The control. Without it a fall in cost cannot be told apart from a fall in
+    #: use, and the counterfactual is unobservable.
+    Column("usage_before", Numeric(20, 10)),
+    Column("usage_after", Numeric(20, 10)),
+    #: VERIFIED, REGRESSED or INCONCLUSIVE. The third is expected to be common and
+    #: is the evidence this metric is not the vanity number ISS-029 warns about.
+    Column("verdict", Text, nullable=False),
+    Column("why", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
+#: FEAT-043. The score's components live in their own table, and that is the ship
+#: condition rather than a normalization choice: the components of last week's score
+#: cannot be recomputed once the findings have changed, so a schema holding only the
+#: total makes the decomposition unmeetable forever.
+finops_score = Table(
+    "finops_score",
+    metadata,
+    Column("score_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    #: One of these is set and the other is null. An account score and a team score
+    #: are read by different people, and a row belonging to neither would appear on
+    #: both screens or on nobody's.
+    Column("sub_account_id", Text),
+    Column("team", Text),
+    Column("total", Integer, nullable=False),
+    #: Stored rather than derived, so a reader looking at an old row can tell a score
+    #: out of sixty from a score out of a hundred.
+    Column("available_weight", Integer, nullable=False),
+    Column("why", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
+finops_score_component = Table(
+    "finops_score_component",
+    metadata,
+    Column("component_id", UUID(as_uuid=True), primary_key=True),
+    Column(
+        "score_id",
+        UUID(as_uuid=True),
+        ForeignKey("finops_score.score_id"),
+        nullable=False,
+    ),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("name", Text, nullable=False),
+    #: Nullable, and the null is not a zero. A component that could not be computed
+    #: is excluded from the denominator rather than scored as nought.
+    Column("points", Numeric(6, 3)),
+    Column("weight", Integer, nullable=False),
+    Column("why", Text, nullable=False),
+    #: The findings that produced this component. What makes a difference between two
+    #: runs a list of things that opened or closed rather than two numbers.
+    Column("finding_ids", ARRAY(UUID(as_uuid=True)), nullable=False, server_default=text("'{}'")),
     Column("as_of", DateTime(timezone=True), nullable=False),
     Column("collected_at", DateTime(timezone=True), nullable=False),
 )

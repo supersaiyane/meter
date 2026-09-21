@@ -605,11 +605,39 @@ meter/
 │       ├── 0002_cost_monthly.py  somewhere for retention to aggregate into
 │       ├── 0004_query_key.py  a nullable query_key, so evidence can attach to a
 │       │                      query rather than to one panel drawing it
+│       ├── 0010_recommendations.py  one table for every source, and an append
+│       │                      only event log, because a lifecycle column cannot
+│       │                      say that somebody accepted a finding and nothing
+│       │                      then happened
+│       ├── 0011_realized_saving.py  the measured half, in its own table so it
+│       │                      cannot be summed with the estimate by accident
+│       ├── 0012_realized_usage_unobserved.py  the usage columns go nullable and
+│       │                      a paired check refuses a verified saving with no
+│       │                      control behind it
+│       ├── 0013_finops_score.py  the score and its components in two tables,
+│       │                      because last week's components cannot be
+│       │                      recomputed once the findings have changed
 │       └── 0003_p2_tables.py  the six P2 tables. Three of its constraints are
 │                              the feature: a deny cannot be written without an
 │                              expiry, a modelled row cannot claim a measured
 │                              count, and a change cannot exist without its undo
-├── finops_query/              IN BUILD  P2, query cost governance
+├── finops_query/              IN BUILD  P2 query cost governance, P3 waste
+│   ├── waste.py               the sizing arithmetic. p99 for CPU, observed peak
+│   │                          plus a margin for memory, and the two are
+│   │                          deliberately not unified: a low CPU request
+│   │                          throttles, a low memory request kills. Every
+│   │                          series is hourly, which is what keeps p99 from
+│   │                          quietly becoming the max rule
+│   ├── realized.py            three verdicts from two windows. The most careful
+│   │                          arithmetic in the product, because it is where a
+│   │                          FinOps tool usually starts lying. Where usage fell
+│   │                          faster than cost, the fall cannot be claimed
+│   ├── score.py               a posture score that cannot be returned as a bare
+│   │                          number, plus movement() which resolves a change
+│   │                          between two runs to findings that opened or closed.
+│   │                          A component nobody could compute is excluded rather
+│   │                          than scored nought, and an unjudged estate has no
+│   │                          score at all
 │   ├── classify.py            what engine a target runs on. Separate from the
 │   │                          arithmetic, so a new engine is a branch not a rate
 │   ├── cost_model.py          runs per day, cost per run, quota pressure. No IO,

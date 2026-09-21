@@ -24,7 +24,11 @@ import type {
 const AS_OF = '2026-08-24T06:00:00Z';
 const COLLECTED_AT = '2026-08-24T06:05:00Z';
 
-function meta(visible: number) {
+/**
+ * Shared by the P3 fixtures too, so every offline surface carries the same two
+ * timestamps. Constraint 10 in a fixture rather than only in production.
+ */
+export function meta(visible: number) {
   return {
     as_of: AS_OF,
     collected_at: COLLECTED_AT,

@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P3 |
-| Status | Specified |
+| Status | Delivered |
 | Specification | [P3 spec](../specs/2026-09-20-p3-utilization-and-rightsizing-design.md), section 5.1 |
 | Tasks | TASK-P3-010 to TASK-P3-012, TASK-P3-017 |
 | Refresh cadence | Live |

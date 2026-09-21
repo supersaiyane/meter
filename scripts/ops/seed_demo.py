@@ -33,10 +33,11 @@ from __future__ import annotations
 import argparse
 import sys
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
+from decimal import Decimal
 from typing import Any
 from urllib.parse import urlsplit
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import create_engine, text
 
@@ -55,16 +56,29 @@ from finops_ingest.collectors.query_audit import (
     default_ingest_rate,
     rates_from,
 )
+from finops_ingest.collectors.realized_savings import (
+    MATURITY_DAYS,
+    SETTLE_DAYS,
+    WINDOW_DAYS,
+    RealizedSavingsCollector,
+)
+from finops_ingest.collectors.recommendations import RecommendationCollector
+from finops_ingest.collectors.score import ScoreCollector
+from finops_ingest.collectors.waste_cloudwatch import WasteCloudWatchCollector
+from finops_ingest.collectors.waste_compute import Candidate, WasteComputeCollector
 from finops_ingest.ledger import RunLedger
 from finops_ingest.registry import CollectorContext, install_default_schedule
 from finops_providers.fake import fixtures
+from finops_providers.fake.cloudwatch_estate import FakeCloudWatchEstate
 from finops_providers.fake.commitment import FakeCommitmentReport
 from finops_providers.fake.cur import FakeCostExport, estate
 from finops_providers.fake.evidence import FakeQueryEvidence
 from finops_providers.fake.health import FakeRoleHealth
 from finops_providers.fake.platform_cost import FakePlatformCost
 from finops_providers.fake.provider import FakeProvider
+from finops_providers.fake.recommendations import FakeRecommendationSource
 from finops_providers.fake.surface import FakeQuerySurface, queries_as_of
+from finops_providers.fake.waste import FakeWasteMetrics, instances
 from finops_query.parser import GrafanaQueryParser
 
 #: Fixed, and readable as "seeded" in the first block, so a row found in a
@@ -108,6 +122,15 @@ DEMO_TABLES = (
     "query_finding",
     "query_definition",
     "grafana_instance",
+    # P3, FEAT-043. The components reference the score, so they go first.
+    "finops_score_component",
+    "finops_score",
+    # P3, FEAT-025 and FEAT-029. Both of these reference `recommendation`, so
+    # both go before it: the measured verdict and the lifecycle log first, the
+    # finding they are about second.
+    "realized_saving",
+    "recommendation_event",
+    "recommendation",
     # P1, FEAT-023. Derived from the daily rows, so it goes before them.
     "cost_anomaly",
     # P1, FEAT-024. Neither references the other, and both reference only the
@@ -216,6 +239,171 @@ def _through_the_ledger(
         return 0
     ledger.complete(claim, items_written=outcome.items_written, bytes_read=0)
     return int(outcome.items_written)
+
+
+#: The account and region the seeded verifications sit in. Named rather than
+#: repeated, because three functions read them and a typo in one would produce a
+#: recommendation whose resource never joins to a charge.
+DEMO_ACCOUNT = "fake-platform-a"
+DEMO_REGION = "eu-west-1"
+
+#: A day of instance hours. The control that makes a cost fall claimable or not.
+D24 = Decimal("24")
+
+#: Three changes somebody finished, and the shape of the bill afterwards.
+#:
+#: One per verdict, because a demo estate where every verification succeeds cannot
+#: show what this product is for. The numbers are chosen so the real collector
+#: reaches each verdict from the billing rows rather than being told the answer:
+#:
+#: - `i-verified` cost fell and usage held, so the resource is cheaper per unit
+#: - `i-regressed` cost did not move, so whatever was done did not land
+#: - `i-shrank` cost fell forty percent and usage fell seventy five, so the fall is
+#:   explained by a smaller workload and cannot be claimed
+COMPLETED: tuple[tuple[str, str, Decimal, Decimal, Decimal | None, Decimal | None], ...] = (
+    ("i-verified", "RIGHTSIZE_INSTANCE", Decimal("12.00"), Decimal("7.00"), D24, D24),
+    ("i-regressed", "IDLE_INSTANCE", Decimal("9.00"), Decimal("9.00"), D24, D24),
+    ("i-shrank", "GRAVITON_CANDIDATE", Decimal("10.00"), Decimal("6.00"), D24, Decimal("6")),
+)
+
+
+def _completed_work(connection: Any, now: datetime) -> None:
+    """Three finished recommendations and the bill that followed them.
+
+    Written directly rather than driven through the routes, because the point of
+    the fixture is the state of the bill sixty days later and walking four
+    transitions per recommendation would make this a test of the lifecycle. The
+    verdicts themselves are not written: `RealizedSavingsCollector` reads these
+    rows and reaches them, which is what makes the demo screen show a real result
+    rather than a staged one.
+    """
+    done_on = now.date() - timedelta(days=MATURITY_DAYS)
+    done_at = datetime(done_on.year, done_on.month, done_on.day, 12, tzinfo=UTC)
+
+    for resource, waste_class, before, after, usage_before, usage_after in COMPLETED:
+        recommendation_id = uuid4()
+        # Idempotent like every collector around it. `make seed` is run once per
+        # day of history, and a second insert of the same finished work would
+        # either fail on the unique constraint or double the verdicts.
+        created = connection.execute(
+            text(
+                "INSERT INTO recommendation (recommendation_id, tenant_id, sub_account_id, "
+                "source, source_reference, waste_class, resource_id, region_id, "
+                "estimated_monthly_saving, confidence, severity, observation_days, "
+                "lifecycle, owner, rationale, as_of, collected_at) "
+                "VALUES (:id, :t, :a, 'METER', :ref, :class, :res, :region, :saving, 'HIGH', "
+                "'MEDIUM', 30, 'DONE', 'platform@example.local', :why, :at, :at) "
+                "ON CONFLICT (tenant_id, source, source_reference) DO NOTHING "
+                "RETURNING recommendation_id"
+            ),
+            {
+                "id": recommendation_id,
+                "t": DEMO_TENANT,
+                "a": DEMO_ACCOUNT,
+                "ref": f"seed:{resource}",
+                "class": waste_class,
+                "res": resource,
+                "region": DEMO_REGION,
+                # Modelled, and deliberately larger than any of these actually
+                # realized. The gap between this and the savings screen is what
+                # the runbook stops on.
+                "saving": (before - after) * Decimal("30") + Decimal("40"),
+                "why": f"{resource} was judged over 30 days and the work was completed",
+                "at": now,
+            },
+        ).first()
+        if created is None:
+            # Already seeded on an earlier day. The events and the charges went in
+            # with it, so there is nothing to add.
+            continue
+
+        for target, occurred, previous in (
+            ("OPEN", done_at - timedelta(days=7), None),
+            ("ACCEPTED", done_at - timedelta(days=6), "OPEN"),
+            ("IN_PROGRESS", done_at - timedelta(days=5), "ACCEPTED"),
+            ("DONE", done_at, "IN_PROGRESS"),
+        ):
+            connection.execute(
+                text(
+                    "INSERT INTO recommendation_event (event_id, recommendation_id, tenant_id, "
+                    "from_lifecycle, to_lifecycle, actor, reason, occurred_at, as_of, "
+                    "collected_at) VALUES (:e, :id, :t, :from, :to, 'demo-seed', NULL, :at, "
+                    ":at, :at)"
+                ),
+                {
+                    "e": uuid4(),
+                    "id": recommendation_id,
+                    "t": DEMO_TENANT,
+                    "from": previous,
+                    "to": target,
+                    "at": occurred,
+                },
+            )
+
+        for offset in range(WINDOW_DAYS):
+            _charge(
+                connection,
+                resource,
+                done_on - timedelta(days=offset + 1),
+                before,
+                usage_before,
+                now,
+            )
+            _charge(
+                connection,
+                resource,
+                done_on + timedelta(days=SETTLE_DAYS + offset),
+                after,
+                usage_after,
+                now,
+            )
+
+
+def _charge(
+    connection: Any,
+    resource: str,
+    day: date,
+    cost: Decimal,
+    quantity: Decimal | None,
+    now: datetime,
+) -> None:
+    """One day of charge for one resource, in its own partition.
+
+    `quantity` of None leaves `consumed_quantity` null, which a real export does
+    for the services that publish no usage figure. None of the three seeded
+    changes uses it, so the demo's inconclusive verdict comes from usage falling
+    faster than cost rather than from a missing control: both paths exist and the
+    more interesting one is the one that had a control and still could not claim.
+    """
+    period = date(day.year, day.month, 1)
+    ensure_partition(connection, "cost_focus_daily", period)
+    start = datetime(day.year, day.month, day.day, tzinfo=UTC)
+    connection.execute(
+        text(
+            "INSERT INTO cost_focus_daily (tenant_id, ingest_run_id, source_fingerprint, "
+            "as_of, collected_at, billing_account_id, sub_account_id, billing_period_start, "
+            "billing_period_end, charge_period_start, charge_period_end, provider_name, "
+            "service_name, resource_id, charge_category, billed_cost, effective_cost, "
+            "consumed_quantity, tags) "
+            "VALUES (:t, :run, :fp, :at, :at, 'fake-payer', :a, :period, :period_end, "
+            ":start, :end, 'Fake', 'AmazonEC2', :res, 'Usage', :cost, :cost, :q, '{}'::jsonb) "
+            "ON CONFLICT DO NOTHING"
+        ),
+        {
+            "t": DEMO_TENANT,
+            "run": uuid4(),
+            "fp": f"seed:{resource}:{day}",
+            "at": now,
+            "a": DEMO_ACCOUNT,
+            "period": period,
+            "period_end": date(period.year + (period.month // 12), (period.month % 12) + 1, 1),
+            "start": start,
+            "end": start + timedelta(days=1),
+            "res": resource,
+            "cost": cost,
+            "q": quantity,
+        },
+    )
 
 
 def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = None) -> Seeded:
@@ -376,6 +564,71 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
             connection,
             unit(),
             "query_audit",
+        )
+
+        # P3. The recommendations first, then the finished work and the bill it
+        # left behind, then the collector that judges it. In that order because
+        # each step reads what the one before it wrote, and a verification run
+        # before the charges exist would find nothing and say so correctly.
+        written += _through_the_ledger(
+            ledger,
+            RecommendationCollector(FakeRecommendationSource(), clock=lambda: now),
+            connection,
+            unit(),
+            "recommendations",
+        )
+        # Our own findings, from the metrics the fake estate publishes. These two
+        # runs are also what makes an account count as judged for the score: an
+        # account no waste collector reached has no score rather than a bad one,
+        # and an estate where nothing ran would show that state for everything.
+        written += _through_the_ledger(
+            ledger,
+            WasteComputeCollector(
+                FakeWasteMetrics(),
+                lambda _context: [
+                    Candidate(
+                        resource_id=shape.instance_id,
+                        account_id=DEMO_ACCOUNT,
+                        region_id=DEMO_REGION,
+                        observation_days=shape.days,
+                        monthly_cost=shape.monthly_cost,
+                        credit_balance=shape.credit_balance,
+                    )
+                    for shape in instances()
+                ],
+                clock=lambda: now,
+            ),
+            connection,
+            unit(scope_key=f"aws:{DEMO_ACCOUNT}:{DEMO_REGION}"),
+            "waste_compute",
+            settings=settings,
+        )
+        written += _through_the_ledger(
+            ledger,
+            WasteCloudWatchCollector(FakeCloudWatchEstate(), clock=lambda: now),
+            connection,
+            unit(scope_key=f"aws:{DEMO_ACCOUNT}:{DEMO_REGION}"),
+            "waste_cloudwatch",
+            settings=settings,
+        )
+        _completed_work(connection, now)
+        written += _through_the_ledger(
+            ledger,
+            RealizedSavingsCollector(clock=lambda: now),
+            connection,
+            unit(),
+            "realized_savings",
+        )
+        # The score last, because it reads every one of the above. An account
+        # counts as judged only where a waste collector reached it, so the seeded
+        # estate deliberately scores some accounts and leaves the rest with no
+        # number rather than a bad one, which is the distinction the screen shows.
+        written += _through_the_ledger(
+            ledger,
+            ScoreCollector(clock=lambda: now),
+            connection,
+            unit(),
+            "finops_score",
         )
 
         counts = {

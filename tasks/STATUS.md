@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 51 total, 29 specified, 10 in build, 5 delivered |
+| Features | 51 total, 23 specified, 10 in build, 11 delivered |
 | Decisions | 21 architecture decision records |
 | Changes | 99 recorded |
-| Issues | 124 fixed, 58 open, 0 parked |
+| Issues | 126 fixed, 62 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -125,7 +125,7 @@ ISS-003.
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P1 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
-| P3 | 0 | 0 | 0 | 0 | 20 | 20 | [plan](../docs/plans/P3-implementation-plan.md) |
+| P3 | 19 | 0 | 0 | 0 | 1 | 20 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 0 | 0 | 0 | 0 | 11 | 11 | [plan](../docs/plans/P4-implementation-plan.md) |
 | P5 | 0 | 0 | 0 | 0 | 8 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 0 | 0 | 0 | 0 | 12 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
@@ -229,6 +229,30 @@ ISS-003.
 | `TASK-P2-024` | Done, 2026-09-17 | the query surfaces screen |
 | `TASK-P2-025` | Done, 2026-09-05 | the enforcement screen and the end to end journey |
 | `TASK-P2-026` | Done, 2026-09-06 | the queries that belong to nobody |
+
+**P3, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P3-001` | Done, 2026-09-21 | the recommendation entity, and the two numbers it refuses to merge |
+| `TASK-P3-002` | Done, 2026-09-21 | the arithmetic, with no database and no clock in it |
+| `TASK-P3-003` | Done, 2026-09-21 | the recommendation port, and one table for every source |
+| `TASK-P3-004` | Done, 2026-09-21 | the AWS adapters that have never run |
+| `TASK-P3-005` | Done, 2026-09-21 | the AWS native collector |
+| `TASK-P3-006` | Done, 2026-09-21 | a fake estate with waste that is not waste |
+| `TASK-P3-007` | Done, 2026-09-21 | reading metrics without spending a fortune on it |
+| `TASK-P3-008` | Done, 2026-09-21 | the bespoke waste collector |
+| `TASK-P3-009` | Done, 2026-09-21 | the module that bills for watching |
+| `TASK-P3-010` | Done, 2026-09-21 | the guard, before any route |
+| `TASK-P3-011` | Done, 2026-09-21 | the lifecycle, and the ticket port with no adapter |
+| `TASK-P3-012` | Done, 2026-09-21 | the routes |
+| `TASK-P3-013` | Done, 2026-09-21 | what actually appeared in the bill |
+| `TASK-P3-014` | Done, 2026-09-21 | the two numbers that must not be added |
+| `TASK-P3-015` | Done, 2026-09-21 | a score that decomposes, or no score |
+| `TASK-P3-016` | Done, 2026-09-21 | the score collector and its history |
+| `TASK-P3-017` | Done, 2026-09-21 | the recommendations screen |
+| `TASK-P3-018` | Done, 2026-09-21 | the screen that is allowed to disappoint |
+| `TASK-P3-019` | Done, 2026-09-21 | the score screen and the P3 journey |
 
 <!-- generated:task-status end -->
 

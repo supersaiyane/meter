@@ -205,3 +205,73 @@ a sentence the product says to every reader that nobody has ever read.
 
 **Triggers:** any `build_meta` call, `visible=len(`, adding a route whose rows are
 not accounts, and any screen that renders a count next to a noun.
+
+## 2026-09-21: a checker whose exit code the shell threw away
+
+**Mistake:** I ran `mypy ... | tail -1 && git commit`, saw "Found 1 error in 1
+file" scroll past, and committed anyway. The `&&` was testing `tail`, which
+succeeds whatever it is fed. The error sat in a commit until I happened to re run
+the check a minute later. This is the same family as the `tsc --noEmit` lesson
+from 2026-09-20, arriving through a different door: there the checker examined
+nothing, here the checker worked and the shell discarded its verdict.
+
+**Correction:** self caught, one command later.
+
+**Rule:** never put a checker in a pipeline whose exit code decides anything. Run
+it on its own line and read the result, or use `set -o pipefail`. When chaining a
+commit behind a check, chain it behind the check itself and never behind a
+formatter of the check's output. `make verify` is immune because each step is its
+own recipe line; only my ad hoc chains are exposed.
+
+**Triggers:** any `| tail`, `| head` or `| grep` on mypy, ruff, pytest or tsc;
+any `&& git commit`; and the words "it passed" about output I filtered rather
+than read.
+
+## 2026-09-21: a registry entry that landed in the wrong list
+
+**Mistake:** twice now I have added an entry to `docs/registry.yaml` by finding
+the `issues:` key and inserting **before** it, which puts the entry at the end of
+the `changes:` list rather than the start of `issues:`. Both lists are sequences
+of id first mappings, so YAML parses it happily and only `make doc-sync` notices,
+with a `KeyError: 'date'` from a change row that has no date.
+
+**Correction:** self caught both times, by doc-sync, within a minute.
+
+**Rule:** when adding to a YAML list that is followed immediately by another list,
+insert **after** the key line rather than before the next one, and verify with a
+parse before running anything else:
+`python3 -c "import yaml; r=yaml.safe_load(open('docs/registry.yaml')); print(len(r['changes']), len(r['issues']))"`.
+The counts moving by one in the list you meant is the check.
+
+**Triggers:** any edit to `docs/registry.yaml`, any insert positioned relative to
+a following key rather than a preceding one, and `KeyError` from a generator over
+a list that parsed cleanly.
+
+## 2026-09-21: a local database four revisions behind a passing test suite
+
+**Mistake:** I ran `make migrate`, saw it exit zero, and believed the local
+database was at head. It was at `0009` while the repository was at `0013`. The
+compose `api` image bakes the source in at build time, so the container that ran
+`alembic upgrade head` held a snapshot of the tree from the last `make up`, and it
+had nothing newer to apply. It printed no output at all, which I read as quiet
+success rather than as a command that did nothing. Then `make seed` ran the same
+stale image and reported seeding an estate, so two green signals in a row said the
+opposite of the truth.
+
+Every test passed throughout, because the integration suite migrates its own
+throwaway database from the working tree. The gap was only ever in the database a
+person looks at.
+
+**Correction:** self caught, by querying `realized_saving` and being told the
+relation does not exist after a seed that claimed to have written 2292 rows.
+
+**Rule:** after `make migrate`, assert the head rather than the exit code:
+`docker compose exec -T postgres psql -U meter -d meter -t -c "SELECT version_num FROM alembic_version"`
+and compare it to the newest file in `migrations/versions/`. If they differ, run
+`make up` first, because the image and not the database is what is stale. The same
+applies to any compose `run` of a script I have just edited: a passing test suite
+says nothing about the image, because the suite never uses it.
+
+**Triggers:** `make migrate`, `make seed`, any `docker compose run` after editing
+Python, a command inside compose that produces no output, and any "relation does
+not exist" for a table whose migration is committed.

@@ -321,6 +321,167 @@ class CostAnomaliesOut(BaseModel):
     days_needed: int
 
 
+class RecommendationOut(BaseModel):
+    """One thing worth changing.
+
+    Severity and confidence are two fields and never one. Severity is what is at
+    stake, confidence is how sure the estimate is, and a reader needs both to
+    decide whether to act this week.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    recommendation_id: UUID
+    account_id: str
+    source: str
+    waste_class: str
+    resource_id: str
+    region_id: str
+    #: Modelled, always. Never add this to a realized saving.
+    estimated_monthly_saving: Decimal
+    severity: str
+    confidence: str
+    observation_days: int
+    lifecycle: str
+    #: Null is a reported condition, not a gap. An unowned finding is never fixed.
+    owner: str | None
+    ticket_reference: str | None
+    #: The working, so a reader can disagree with the verdict.
+    rationale: str
+
+
+class RecommendationEventOut(BaseModel):
+    """One step in a recommendation's life."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: Null exactly once, on the row recording that it was found.
+    from_lifecycle: str | None
+    to_lifecycle: str
+    actor: str
+    reason: str | None
+    occurred_at: datetime
+
+
+class RecommendationDetailOut(BaseModel):
+    """One recommendation and how it got where it is."""
+
+    model_config = ConfigDict(frozen=True)
+
+    recommendation: RecommendationOut
+    history: list[RecommendationEventOut]
+
+
+class RecommendationsOut(BaseModel):
+    """The list, and the one number that is about the list rather than in it."""
+
+    model_config = ConfigDict(frozen=True)
+
+    recommendations: list[RecommendationOut]
+    #: How many open recommendations nobody is responsible for. ISS-021: an
+    #: unowned finding is never fixed, so the count is shown rather than left for
+    #: somebody to notice.
+    unowned: int
+
+
+class RealizedSavingOut(BaseModel):
+    """What actually appeared in the bill, and what it can claim.
+
+    Deliberately carries no estimated figure. The two are different kinds of
+    number and a response holding both is the first place somebody adds them.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    recommendation_id: UUID
+    #: Measured, from the cost rows.
+    cost_before: Decimal
+    cost_after: Decimal
+    #: The control. A fall in cost with a larger fall in usage is not a saving.
+    #: Nullable, and the null is load bearing: `consumed_quantity` is absent from the
+    #: billing rows for some services, and None means nobody published a quantity
+    #: rather than a quantity of zero. A zero here would read as a workload that
+    #: vanished. Constraint 5, and migration `0012` holds the same rule in the
+    #: database.
+    usage_before: Decimal | None
+    usage_after: Decimal | None
+    verdict: str
+    why: str
+    window_before_start: date
+    window_after_end: date
+
+
+class RealizedSavingsOut(BaseModel):
+    """Realized savings, grouped by verdict rather than summed.
+
+    A single realized total would be added to the estimated total by the first
+    person who saw them side by side, and an inconclusive saving is not a saving.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    savings: list[RealizedSavingOut]
+    #: Verdict to count and money. Never a grand total.
+    by_verdict: dict[str, VerdictTotalOut]
+
+
+class VerdictTotalOut(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    count: int
+    realized_monthly: Decimal
+
+
+class ScoreComponentOut(BaseModel):
+    """One part of a score, with the findings that produced it.
+
+    `points` is nullable and the null is not a zero. A component that could not be
+    computed is excluded from the score's denominator, and rendering it as nought
+    would report the worst possible posture for something nobody measured.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    name: str
+    points: Decimal | None
+    weight: int
+    why: str
+    #: The recommendations that moved this component, so the screen can link to them.
+    findings: list[UUID]
+
+
+class ScoreOut(BaseModel):
+    """A score that arrives with its parts, because that is FEAT-043's ship condition.
+
+    `components` is required rather than optional. A response that could carry a
+    total on its own is a response a screen would render on its own.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    account_id: str
+    total: int
+    #: What the total is out of. A score of sixty out of sixty available weight is
+    #: not the same claim as sixty out of a hundred, and a reader cannot tell without
+    #: this.
+    available_weight: int
+    why: str
+    components: list[ScoreComponentOut]
+    as_of: datetime
+
+
+class ScoresOut(BaseModel):
+    """Every scored account, worst first, and the ones nobody could score."""
+
+    model_config = ConfigDict(frozen=True)
+
+    scores: list[ScoreOut]
+    #: Accounts with no score at all. Listed rather than omitted: an account nobody
+    #: could assess is different from an account with a bad score, and a shorter list
+    #: is not something anybody notices.
+    unscored: list[str]
+
+
 class CommitmentUseOut(BaseModel):
     """One commitment, and how much of what we paid for was consumed.
 

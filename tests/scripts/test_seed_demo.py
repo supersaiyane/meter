@@ -157,6 +157,12 @@ def test_seed_then_remove_leaves_nothing_behind(engine: object) -> None:
             "cost_anomaly",
             "commitment_use",
             "commitment_coverage",
+            # TASK-P3-019. The three waste screens are empty without these, and
+            # an empty screen in a demo reads as a product that does not work.
+            "recommendation",
+            "realized_saving",
+            "finops_score",
+            "finops_score_component",
         ):
             rows = connection.execute(
                 sql(f"SELECT count(*) FROM {table_name} WHERE tenant_id = :t"),
@@ -292,3 +298,56 @@ def test_every_tenant_scoped_table_is_in_the_teardown() -> None:
         f"these tables reference the tenant, are not torn down, and are not "
         f"declared unseeded: {sorted(missing)}. Unseed will fail on the foreign key."
     )
+
+
+@pytest.mark.integration
+def test_the_seed_produces_all_three_verdicts(engine: object) -> None:
+    """TASK-P3-019, and the sharpest assertion about the demo estate.
+
+    None of these rows is written directly. The seed lays down three finished
+    recommendations and the billing rows that followed them, and the real
+    collector reads those rows and reaches each verdict. So if the arithmetic
+    ever stops distinguishing a saving from a workload that shrank, this fails
+    rather than the demo doing it in front of an audience.
+
+    The inconclusive one is the reason the test exists. An estate that only ever
+    verifies cannot demonstrate the honesty the screen is built around, and it is
+    the verdict a reader is least likely to believe until they see the working.
+    """
+    from sqlalchemy import text as sql
+
+    seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
+    try:
+        with engine.connect() as connection:  # type: ignore[attr-defined]
+            verdicts = dict(
+                connection.execute(
+                    sql(
+                        "SELECT verdict, count(*) FROM realized_saving "
+                        "WHERE tenant_id = :t GROUP BY verdict"
+                    ),
+                    {"t": seed_demo.DEMO_TENANT},
+                ).all()
+            )
+            scored = connection.execute(
+                sql(
+                    "SELECT count(*) FROM finops_score WHERE tenant_id = :t "
+                    "AND available_weight = 100"
+                ),
+                {"t": seed_demo.DEMO_TENANT},
+            ).scalar_one()
+            excluded = connection.execute(
+                sql(
+                    "SELECT count(*) FROM finops_score_component WHERE tenant_id = :t "
+                    "AND points IS NULL"
+                ),
+                {"t": seed_demo.DEMO_TENANT},
+            ).scalar_one()
+        assert verdicts == {"VERIFIED": 1, "REGRESSED": 1, "INCONCLUSIVE": 1}, verdicts
+        # At least one account with every component computable, so the score
+        # screen has a complete card to show.
+        assert scored >= 1
+        # And at least one component that could not be computed, so the screen
+        # also shows the absence rendered as an absence rather than as nought.
+        assert excluded >= 1
+    finally:
+        seed_demo.remove(engine)

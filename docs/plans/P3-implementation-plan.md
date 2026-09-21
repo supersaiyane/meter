@@ -67,7 +67,7 @@ is the decision recorded on 2026-09-20.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec sections 4 and 5, FEAT-028 |
 | Delivers | Part of FEAT-028 |
 | Depends on | P1 delivered |
@@ -109,7 +109,7 @@ first, so the ports have something to be about.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 4, FEAT-026 |
 | Delivers | Part of FEAT-026 |
 | Depends on | TASK-P3-001 |
@@ -151,7 +151,7 @@ lists first.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 5.1, FEAT-025 |
 | Delivers | Part of FEAT-025 |
 | Depends on | TASK-P3-001 |
@@ -184,7 +184,7 @@ lists first.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 4, FEAT-025 |
 | Delivers | Part of FEAT-025 |
 | Depends on | TASK-P3-003 |
@@ -219,7 +219,7 @@ Hub, Compute Optimizer and Trusted Advisor.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 7, FEAT-025 |
 | Delivers | FEAT-025 |
 | Depends on | TASK-P3-004 |
@@ -244,7 +244,7 @@ provider's own identifier, and a `collector_schedule` row with its cost.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 11, FEAT-026 |
 | Delivers | Part of FEAT-026 |
 | Depends on | TASK-P3-002 |
@@ -275,7 +275,7 @@ not, and a test above it must still find only the real waste.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec sections 7 and 12, FEAT-026 |
 | Delivers | Part of FEAT-026 |
 | Depends on | TASK-P3-006 |
@@ -305,7 +305,7 @@ specification so it is not left to somebody's judgement at three in the afternoo
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 7, FEAT-026 |
 | Delivers | FEAT-026 |
 | Depends on | TASK-P3-007 |
@@ -328,7 +328,7 @@ recommendations for the compute and storage classes.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 5.2, FEAT-027 |
 | Delivers | FEAT-027 |
 | Depends on | TASK-P3-008 |
@@ -360,7 +360,7 @@ and this task reads P2's existing tables rather than re reading the source.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 8, constraint 3 |
 | Delivers | Part of FEAT-028 |
 | Depends on | TASK-P3-003 |
@@ -390,7 +390,7 @@ every time, and a test reads out of scope and is refused before a route exists.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec sections 5.3 and 13, FEAT-028 |
 | Delivers | Part of FEAT-028 |
 | Depends on | TASK-P3-010 |
@@ -420,7 +420,7 @@ and tested now, with the Jira or ServiceNow adapter as one later task. Decided o
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 8, FEAT-028 |
 | Delivers | FEAT-028 |
 | Depends on | TASK-P3-011 |
@@ -444,7 +444,7 @@ its tests.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec sections 5.4 and 5.5, FEAT-029 |
 | Delivers | Part of FEAT-029 |
 | Depends on | TASK-P3-012 |
@@ -472,7 +472,7 @@ is why the verdict has three values rather than two. See spec section 5.5.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 2, FEAT-029 |
 | Delivers | FEAT-029 |
 | Depends on | TASK-P3-013 |
@@ -499,7 +499,7 @@ always happens by quietly adding a modelled number to a measured one.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 9, FEAT-043 |
 | Delivers | Part of FEAT-043 |
 | Depends on | TASK-P3-014 |
@@ -528,7 +528,7 @@ added afterwards, it is the return type.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 7, FEAT-043 |
 | Delivers | FEAT-043 |
 | Depends on | TASK-P3-015 |
@@ -550,7 +550,7 @@ explainable.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 9 |
 | Delivers | Part of FEAT-028 |
 | Depends on | TASK-P3-012 |
@@ -574,7 +574,7 @@ explainable.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 9, FEAT-029 |
 | Delivers | Part of FEAT-029 |
 | Depends on | TASK-P3-014, TASK-P3-017 |
@@ -600,7 +600,7 @@ product works.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-21 |
 | Implements | P3 spec section 9, FEAT-043 |
 | Delivers | FEAT-043 |
 | Depends on | TASK-P3-016, TASK-P3-018 |

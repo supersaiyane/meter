@@ -208,31 +208,31 @@ features:
 - id: FEAT-025
   name: Cost Optimization Hub, Compute Optimizer and Trusted Advisor ingest
   subproject: P3
-  status: Specified
+  status: Delivered
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 4, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-025-aws-native-recommendation-ingest.md
 - id: FEAT-026
   name: Bespoke waste collectors where AWS is blind
   subproject: P3
-  status: Specified
+  status: Delivered
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.2, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-026-bespoke-waste-collectors.md
 - id: FEAT-027
   name: 'CloudWatch cost module: retention, unqueried logs, stale alarms'
   subproject: P3
-  status: Specified
+  status: Delivered
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.2, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-027-cloudwatch-cost-module.md
 - id: FEAT-028
   name: Recommendation lifecycle with owner and ticketing
   subproject: P3
-  status: Specified
+  status: Delivered
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.1, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-028-recommendation-lifecycle.md
 - id: FEAT-029
   name: Realized savings verification, the north star metric
   subproject: P3
-  status: Specified
+  status: Delivered
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.5, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-029-realized-savings-verification.md
 - id: FEAT-030
@@ -316,7 +316,7 @@ features:
 - id: FEAT-043
   name: FinOps Score, decomposable to the findings that moved it
   subproject: P3
-  status: Specified
+  status: Delivered
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 9, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-043-finops-score.md
 - id: FEAT-044
@@ -1236,6 +1236,90 @@ changes:
   commit: pending
   detail: '[P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 6'
 issues:
+- id: ISS-189
+  severity: LOW
+  summary: FEAT-027 asks for high ingest log groups with no queries in 90 days, and the signal
+    to answer it does not exist. P2 records which Logs Insights queries ran and what they
+    scanned, in query_adhoc, but not which log groups they named. The group is inside the query
+    text and extracting it means parsing the query language for a purpose the P2 parser was not
+    built for. Deferred deliberately on 2026-09-21 rather than inferred, because guessing wrong
+    produces a recommendation to delete logs somebody is actively reading, which is the most
+    damaging output this product could produce. The other two FEAT-027 checks, retention and
+    stale alarms, are built. The fix is either a log group column on the P2 evidence tables,
+    written at audit time when the query text is already parsed, or reading the CloudWatch Logs
+    Insights query history directly and accepting its retention limit
+  status: OPEN
+  detail: '`finops_ingest/collectors/waste_cloudwatch.py`, FEAT-027'
+
+- id: ISS-190
+  severity: HIGH
+  summary: Five collectors were written, tested and merged with no entry in DEFAULT_SCHEDULE, and
+    due_collectors reads collector_schedule and nothing else, so none of them ever ran on cadence.
+    commitment and cost_anomaly from P1, and recommendations, waste_compute and waste_cloudwatch
+    from P3. Every one of them imported cleanly and passed its own tests, because those tests call
+    the collector directly, which is the same hollow signal as a screen test pinned to a path that
+    shipped, in that the thing under test worked and the wiring did not, and only the wiring was
+    in production. Found 2026-09-21 while adding the realized_savings cadence, and fixed the same day
+    with six entries and a gate. tests/ingest/test_registry.py now derives the collector list from
+    the COLLECTOR constant in each module and fails if any of them has no cadence, and fails in the
+    other direction too, because a cadence naming a collector nobody can run installs a row that
+    reads as permanently stale on the freshness screen
+  status: FIXED
+  detail: '`finops_ingest/registry.py`, `tests/ingest/test_registry.py`, ADR-0012'
+
+- id: ISS-191
+  severity: MEDIUM
+  summary: The savings route called Decimal on a usage column that migration 0012 had just made
+    nullable, so the first recommendation whose billing rows published no consumed_quantity would
+    have returned 500 rather than a null. Nothing caught it because every test of that route ran
+    against an empty realized_saving table, so the serialization of a real row was never exercised
+    at all. Found and fixed 2026-09-21 while writing TASK-P3-014. The route now passes the null
+    through, RealizedSavingOut types both usage fields as optional, and
+    tests/api/test_waste_routes.py seeds real verdicts including one with an unobserved control and
+    asserts it reaches the response as null rather than as zero
+  status: FIXED
+  detail: '`finops_api/routes/waste.py`, `finops_api/schemas.py`, FEAT-029'
+
+- id: ISS-192
+  severity: MEDIUM
+  summary: The score's coverage component asks how much of the estate could be judged, and the
+    finest signal that exists is the account. Which individual resources a waste collector
+    managed to observe is not recorded anywhere, so an account where nine instances in ten
+    published no metrics scores the same as one where all ten did. The waste_compute collector
+    already knows the number and writes it into a sync_error detail as prose, which is not
+    something to parse. The fix is a counted column, either on the run ledger or on a small table
+    of judged resources, written at collection time when the figure is in hand. Until then the
+    Posture carries subject_unit so the figure never renders without saying what it counted, which
+    is the fourth time that lesson has been applied
+  status: OPEN
+  detail: '`finops_query/score.py`, `finops_ingest/collectors/score.py`, FEAT-043'
+
+- id: ISS-193
+  severity: MEDIUM
+  summary: FEAT-043 asks for a score per account and per team, and only the per account half is
+    built. A team score needs the P2 tag allocation join, and a team score computed from a partial
+    allocation is the same misleading figure as one computed from the accounts a single reader
+    happens to see, which is why the guard refuses a team row to a narrowed reader. The schema,
+    the guard and the route all carry the team column already, so the work is the allocation join
+    and the decision about what to do with spend no team owns. Stated on 2026-09-21 rather than
+    left for somebody to notice the rows are missing
+  status: OPEN
+  detail: '`finops_ingest/collectors/score.py`, `finops_api/guards.py`, FEAT-043'
+
+- id: ISS-194
+  severity: LOW
+  summary: waste_compute runs every six hours because the P3 specification section 7 says the
+    bespoke collectors do, and it is the most expensive cadence in the schedule. GetMetricData is
+    charged per metric requested, the batched read asks for four metrics per instance over
+    fourteen days, and a percentile over that window barely moves between mornings, so four runs
+    a day pay four times for the same answer. Daily would be the cheaper number and the spec is
+    the approved design, so the cadence follows the spec and the objection is recorded here
+    instead of being applied quietly. ADR-0012 is why this is a row in collector_schedule rather
+    than a constant, so changing it later costs one update and no deploy. Revisit against a real
+    bill, which is ISS-122
+  status: OPEN
+  detail: '`finops_ingest/registry.py`, ADR-0012, FEAT-026'
+
 - id: ISS-164
   severity: MEDIUM
   summary: security/reports/latest is a committed symlink and the scan script wrote it as an

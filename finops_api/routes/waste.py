@@ -1,0 +1,344 @@
+"""What the estate should cost instead, and whether the bill moved.
+
+Six routes. The shape worth noticing is that the estimate and the realization are
+served by **different routes returning different types**, so no response object
+holds both. That is TASK-P3-014's requirement and it is a property of this module
+rather than a rule somebody has to remember.
+"""
+
+from __future__ import annotations
+
+from decimal import Decimal
+from typing import Any
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import Connection
+
+from finops_api.db.repositories import AccessContext
+from finops_api.db.repositories.accounts import AccountRepository
+from finops_api.db.repositories.waste import (
+    RealizedSavingRepository,
+    RecommendationEventRepository,
+    RecommendationRepository,
+    ScoreComponentRepository,
+    ScoreRepository,
+)
+from finops_api.deps import get_access_context, get_connection, get_scope, get_tickets
+from finops_api.lifecycle import TransitionRefusedError, move
+from finops_api.routes import API_PREFIX, build_meta
+from finops_api.schemas import (
+    Envelope,
+    RealizedSavingOut,
+    RealizedSavingsOut,
+    RecommendationDetailOut,
+    RecommendationEventOut,
+    RecommendationOut,
+    RecommendationsOut,
+    ScoreComponentOut,
+    ScoreOut,
+    ScoresOut,
+    VerdictTotalOut,
+)
+from finops_core.domain.tenant import Scope
+from finops_core.domain.waste import Lifecycle
+
+router = APIRouter(prefix=API_PREFIX, tags=["waste"])
+
+#: What a caller gets when nothing has been collected. A 404 says the thing does
+#: not exist; an empty list would say the estate has no waste, which is a claim
+#: nobody has earned the right to make about an estate nobody has looked at.
+NO_RECOMMENDATIONS = "No recommendation has been collected for this tenant yet."
+
+
+def _maybe(value: Any) -> Decimal | None:
+    """A measured quantity, or None where nothing was published.
+
+    The billing export omits `consumed_quantity` for some services, and a zero in
+    its place would read as a workload that vanished rather than as a control nobody
+    could measure.
+    """
+    return None if value is None else Decimal(value)
+
+
+def _out(row: Any) -> RecommendationOut:
+    return RecommendationOut(
+        recommendation_id=row.recommendation_id,
+        account_id=row.sub_account_id,
+        source=row.source,
+        waste_class=row.waste_class,
+        resource_id=row.resource_id,
+        region_id=row.region_id,
+        estimated_monthly_saving=Decimal(row.estimated_monthly_saving),
+        severity=row.severity,
+        confidence=row.confidence,
+        observation_days=row.observation_days,
+        lifecycle=row.lifecycle,
+        owner=row.owner,
+        ticket_reference=row.ticket_reference,
+        rationale=row.rationale,
+    )
+
+
+@router.get("/waste/recommendations", response_model=Envelope[RecommendationsOut])
+def recommendations(
+    lifecycle: str | None = None,
+    waste_class: str | None = None,
+    owner: str | None = None,
+    limit: int = Query(default=200, ge=1, le=1000),
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[RecommendationsOut]:
+    """Worst money first, filterable.
+
+    Ranked by the saving rather than by confidence, per ADR-0016. A list ordered by
+    confidence puts a certain twenty dollars above an uncertain ten thousand, and
+    only one of those is worth a morning.
+    """
+    repository = RecommendationRepository(connection, context)
+    rows = repository.worst_first(
+        scope, lifecycle=lifecycle, waste_class=waste_class, owner=owner, limit=limit
+    )
+    found = RecommendationsOut(
+        recommendations=[_out(row) for row in rows],
+        unowned=repository.unowned(scope),
+    )
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        # Accounts, not recommendations. A row count in this slot has been the
+        # defect three times; see `tasks/lessons.md`.
+        visible=repository.accounts_seen(scope),
+        rows=rows,
+    )
+    return Envelope(data=found, meta=meta)
+
+
+@router.get(
+    "/waste/recommendations/{recommendation_id}",
+    response_model=Envelope[RecommendationDetailOut],
+)
+def recommendation_detail(
+    recommendation_id: UUID,
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[RecommendationDetailOut]:
+    """One recommendation, with how it got where it is."""
+    repository = RecommendationRepository(connection, context)
+    row = repository.one(scope, recommendation_id)
+    if row is None:
+        # Out of scope and absent are the same answer, so a caller cannot
+        # enumerate other accounts' recommendations by id.
+        raise HTTPException(status_code=404, detail=NO_RECOMMENDATIONS)
+
+    history = RecommendationEventRepository(connection, context).history(scope, recommendation_id)
+    found = RecommendationDetailOut(
+        recommendation=_out(row),
+        history=[
+            RecommendationEventOut(
+                from_lifecycle=event.from_lifecycle,
+                to_lifecycle=event.to_lifecycle,
+                actor=event.actor,
+                reason=event.reason,
+                occurred_at=event.occurred_at,
+            )
+            for event in history
+        ],
+    )
+    meta = build_meta(connection, scope, context, visible=1, rows=[row])
+    return Envelope(data=found, meta=meta)
+
+
+def _transition(
+    connection: Connection,
+    scope: Scope,
+    context: AccessContext,
+    recommendation_id: UUID,
+    target: Lifecycle,
+    *,
+    reason: str | None = None,
+    owner: str | None = None,
+    tickets: Any = None,
+) -> Envelope[RecommendationDetailOut]:
+    """One transition, refused as a 409 rather than a 500.
+
+    A refused move is a statement about this recommendation's state, not a fault,
+    and the message says what moves are available instead.
+    """
+    # The read happens through the scoped repository first, so a caller cannot
+    # move a recommendation they may not see.
+    if RecommendationRepository(connection, context).one(scope, recommendation_id) is None:
+        raise HTTPException(status_code=404, detail=NO_RECOMMENDATIONS)
+    try:
+        move(
+            connection,
+            tenant_id=scope.tenant_id,
+            recommendation_id=recommendation_id,
+            target=target,
+            # Never blank. An event whose actor is unknown is an event that
+            # cannot be reviewed, and "unknown" is at least honest about it.
+            actor=str(context.principal_id or "unknown"),
+            reason=reason,
+            owner=owner,
+            tickets=tickets,
+        )
+    except TransitionRefusedError as refused:
+        raise HTTPException(status_code=409, detail=str(refused)) from refused
+    return recommendation_detail(recommendation_id, connection, scope, context)
+
+
+@router.post(
+    "/waste/recommendations/{recommendation_id}/accept",
+    response_model=Envelope[RecommendationDetailOut],
+)
+def accept(
+    recommendation_id: UUID,
+    owner: str = Query(min_length=1, max_length=256),
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+    tickets: Any = Depends(get_tickets),
+) -> Envelope[RecommendationDetailOut]:
+    """Accept it, name an owner, and open a ticket.
+
+    The owner is required. ISS-021: an unowned finding is never fixed, and an
+    acceptance with nobody's name on it is the commonest way one becomes unowned.
+    """
+    return _transition(
+        connection,
+        scope,
+        context,
+        recommendation_id,
+        Lifecycle.ACCEPTED,
+        owner=owner,
+        tickets=tickets,
+    )
+
+
+@router.post(
+    "/waste/recommendations/{recommendation_id}/dismiss",
+    response_model=Envelope[RecommendationDetailOut],
+)
+def dismiss(
+    recommendation_id: UUID,
+    reason: str = Query(min_length=1, max_length=1000),
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[RecommendationDetailOut]:
+    """Dismiss it, with a reason.
+
+    The reason is required by the route, by the service and by the database. A
+    dismissal nobody can review is indistinguishable from a recommendation nobody
+    looked at, and the three layers agreeing is deliberate.
+    """
+    return _transition(
+        connection, scope, context, recommendation_id, Lifecycle.DISMISSED, reason=reason
+    )
+
+
+@router.get("/waste/savings", response_model=Envelope[RealizedSavingsOut])
+def savings(
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[RealizedSavingsOut]:
+    """What actually appeared in the bill. FEAT-029.
+
+    Returns **no estimated figure at all**. The two are different kinds of number
+    and this response deliberately cannot be used to add them, which is the
+    property TASK-P3-014 asserts.
+
+    Grouped by verdict rather than totalled, because an inconclusive saving is not
+    a saving and a single figure would imply otherwise.
+    """
+    repository = RealizedSavingRepository(connection, context)
+    rows = repository.all_verdicts(scope)
+    totals = repository.totals(scope)
+    found = RealizedSavingsOut(
+        savings=[
+            RealizedSavingOut(
+                recommendation_id=row.recommendation_id,
+                cost_before=Decimal(row.cost_before),
+                cost_after=Decimal(row.cost_after),
+                # Passed through rather than coerced. An unobserved usage stays
+                # None all the way to the response, so the screen can say so.
+                usage_before=_maybe(row.usage_before),
+                usage_after=_maybe(row.usage_after),
+                verdict=row.verdict,
+                why=row.why,
+                window_before_start=row.window_before_start,
+                window_after_end=row.window_after_end,
+            )
+            for row in rows
+        ],
+        by_verdict={
+            str(row[0]): VerdictTotalOut(count=int(row[1]), realized_monthly=Decimal(row[2]))
+            for row in totals
+        },
+    )
+    meta = build_meta(connection, scope, context, visible=len(rows), rows=rows)
+    return Envelope(data=found, meta=meta)
+
+
+@router.get("/waste/score", response_model=Envelope[ScoresOut])
+def posture_score(
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[ScoresOut]:
+    """The score and, with it, the components that produced it. FEAT-043.
+
+    The components are in the same response as the total rather than behind a second
+    call, because the feature ships only if it decomposes and a second call is a
+    second thing a screen can decline to make.
+
+    Worst first. A list of scores sorted best first is a list nobody scrolls, and the
+    account at the bottom is the one the reader came for.
+    """
+    scores = ScoreRepository(connection, context)
+    rows = scores.latest(scope)
+    parts: dict[Any, list[ScoreComponentOut]] = {}
+    for part in ScoreComponentRepository(connection, context).of(
+        scope, [row.score_id for row in rows]
+    ):
+        parts.setdefault(part.score_id, []).append(
+            ScoreComponentOut(
+                name=part.name,
+                # None stays None all the way out. See `ScoreComponentOut`.
+                points=None if part.points is None else Decimal(part.points),
+                weight=int(part.weight),
+                why=part.why,
+                findings=list(part.finding_ids),
+            )
+        )
+
+    scored = {row.sub_account_id for row in rows}
+    found = ScoresOut(
+        scores=[
+            ScoreOut(
+                account_id=row.sub_account_id,
+                total=int(row.total),
+                available_weight=int(row.available_weight),
+                why=row.why,
+                components=parts.get(row.score_id, []),
+                as_of=row.as_of,
+            )
+            for row in rows
+        ],
+        # Accounts in scope that produced no score. Listed, because an account nobody
+        # could assess must not simply be missing from a league table.
+        unscored=sorted(
+            account
+            for account in (
+                str(row.account_id)
+                for row in AccountRepository(connection, context).list_in_scope(scope)
+            )
+            if account not in scored
+        ),
+    )
+    meta = build_meta(connection, scope, context, visible=len(rows), rows=rows)
+    return Envelope(data=found, meta=meta)

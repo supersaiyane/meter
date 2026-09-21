@@ -120,6 +120,47 @@ being correct.
 its owner where anybody tagged one. `/inventory/organization` for the account tree,
 including the one Meter cannot read.
 
+### 8. Waste, and the three screens that are allowed to disappoint
+
+`/waste` first. It is ranked by money and the estimate carries a modelled label,
+because it is arithmetic over metrics rather than a figure anybody has seen on a
+bill. Two things to say out loud:
+
+The money and the confidence are deliberately not adjacent columns. A reader
+comparing them side by side reads confidence as a discount on the money, and it is
+not one: a four hundred dollar finding on fifteen days of data is worth four
+hundred dollars if it is right, and the confidence says how likely that is.
+
+The top row has no owner, and the screen says so in words. An unowned finding is
+never fixed, and a blank cell is the least noticeable way to render the single
+fact most likely to kill the work.
+
+`/waste/savings` next, and this is the screen worth slowing down for. It shows what
+actually appeared in the bill sixty days after somebody marked a recommendation
+done, and the figure is usually smaller than the one promised on the previous
+screen. That gap is the point rather than a defect.
+
+Stop on the inconclusive row. Its cost fell by forty percent and its usage
+quantity was never published, so nobody can tell the saving apart from a workload
+that shrank on its own. Most tools would leave that row out and show a page of
+successes. This one lists it with the sentence explaining why, because a north star
+metric that is only ever green is a vanity metric.
+
+The totals are grouped by verdict and never added together, for the same reason the
+estimate and the realization are served by different routes: one number here would
+be summed with the one on `/waste` by the first person who saw both.
+
+`/waste/score` last. A score out of eighty five, not out of a hundred, and the
+screen says which. One of its four components could not be computed, so it is
+excluded from the total rather than counted as nought, and it says that too. Under
+the score are the components that produced it, each linking to the findings that
+moved it. That decomposition is the condition this feature shipped on: it was
+adopted over an objection that a composite number nobody can take apart is an
+opinion with a number on it, and the objection became the requirement.
+
+At the bottom, an account with no score at all. Nothing reached it, so it has no
+number rather than a bad one.
+
 ## Questions that will be asked
 
 **"Is this our data?"** No. See the first section.
@@ -134,6 +175,22 @@ commitment is bought by the payer and consumed by whichever accounts happened to
 the usage, and no provider reports which. Rather than invent an apportionment, the
 product says it cannot narrow the figure, and a scoped reader sees nothing there at
 all.
+
+**"Why is a saving inconclusive rather than just counted?"** Because the honest
+counterfactual, what a resource would have cost had nothing changed, is
+unobservable. A resource that cost one hundred and then sixty did not necessarily
+save forty; it may have been used less. Where the usage fell faster than the cost,
+the product says so instead of taking the credit. Expect that verdict to be common,
+and treat a tool that never produces it with suspicion.
+
+**"Why is a score out of eighty five?"** Because one of its four components could
+not be computed, and a component nobody could measure is excluded from the total
+rather than scored as nought. Scoring it zero would report the worst possible
+posture for a dimension nobody looked at.
+
+**"Why is one account missing from the score?"** No waste collection reached it, so
+it has no score. That is different from a bad score, and it is listed by name
+underneath rather than quietly left out of the table.
 
 **"Why is one account failing?"** Because the fake estate contains a failing account on
 purpose. An estate where everything works cannot demonstrate what the product does when
