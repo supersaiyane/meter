@@ -3037,6 +3037,54 @@ makes the front page double as the progress view. Home owns no data of its own."
 
 ---
 
+### TASK-P0-039: the visual layer
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | `docs/12-UI-DESIGN.md` sections 7 and 10, ADR-0021 |
+| Delivers | Closes ISS-138 |
+| Depends on | TASK-P0-038, TASK-P2-025 |
+| Estimate | M |
+
+**Why now rather than per screen.** All ten screens exist. Styling them in one
+pass means the density and spacing decisions are made against the whole set,
+and a table beside an enforcement table beside a detail page is where those
+decisions are actually tested. Styling each as it landed would have meant
+restyling each as the next one arrived.
+
+**Acceptance criteria.**
+
+- [ ] `finops-web/src/layout.css`, imported once, holding structure, density,
+      surface, border, typography scale and the three breakpoints
+- [ ] **Zero changes to any component or screen file.** That is the property
+      ADR-0021 was decided on, and a diff that touches them means the decision
+      was wrong
+- [ ] The severity ramp is applied, so severity is readable as an ordered
+      quantity rather than as repeated squares
+- [ ] Dense surfaces are 32 px rows, and `ROW_HEIGHT` agrees with the CSS so the
+      virtualiser estimates correctly
+- [ ] Borders, never shadows
+- [ ] The only motion is a 120 ms opacity transition, and nothing animates a
+      value
+- [ ] Every token declared in `tokens.css` is consumed, or removed
+- [ ] Light and dark both render correctly
+- [ ] Axe reports zero violations on every screen, with contrast now asserted
+      against real colours rather than against browser defaults
+
+**Do not.**
+
+- Do not add a `className` prop to a component to make a rule easier to write.
+  That makes the visual layer a caller's concern, and it is the cost ADR-0021
+  rejected Tailwind to avoid.
+- Do not animate a figure. A number counting up from zero is lying for four
+  hundred milliseconds.
+- Do not use colour alone for provenance or severity. Both carry a second
+  channel already, and the stylesheet must not become the only thing holding the
+  meaning.
+
+---
+
 ## Wave I: security and MCP
 
 ### TASK-P0-029: establish the security tool chain and the first posture

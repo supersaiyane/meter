@@ -1,7 +1,7 @@
 # ADR-0019: Headless component behaviour, our own visual layer
 
 Date: 2026-08-23
-Status: Accepted
+Status: Accepted. The styling row is superseded by ADR-0021
 
 ## Context
 
@@ -22,7 +22,7 @@ Headless libraries for behaviour and accessibility. Our own visual layer.
 | --- | --- |
 | Behaviour, focus, keyboard, ARIA | Radix Primitives or React Aria |
 | Data grid, virtualisation | TanStack Table, TanStack Virtual |
-| Styling | Tailwind, driven by our tokens |
+| Styling | ~~Tailwind, driven by our tokens~~. **Superseded by ADR-0021**: plain CSS against the same tokens. Tailwind was listed here and never argued, and never installed |
 | Graph | Cytoscape.js, already decided |
 | Components | Our own thin layer, the inventory in section 11 |
 

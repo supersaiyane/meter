@@ -203,8 +203,9 @@ block is caught by `make check-docs`. See
 | ADR-0016 | Severity on a cost finding is derived from the money, never chosen | Accepted | [ADR-0016](docs/adr/ADR-0016-dollar-based-severity.md) |
 | ADR-0017 | Nothing is hardcoded, and every feature flag has an owner and an expiry | Accepted | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
 | ADR-0018 | The threshold is zero fixable findings, not zero findings | Accepted | [ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md) |
-| ADR-0019 | Headless component behaviour, our own visual layer | Accepted | [ADR-0019](docs/adr/ADR-0019-headless-components-own-visual-layer.md) |
+| ADR-0019 | Headless component behaviour, our own visual layer | Accepted, styling row superseded by ADR-0021 | [ADR-0019](docs/adr/ADR-0019-headless-components-own-visual-layer.md) |
 | ADR-0020 | Seven fixed navigation groups, and the routes they fix | Accepted | [ADR-0020](docs/adr/ADR-0020-seven-fixed-navigation-groups.md) |
+| ADR-0021 | Plain CSS over a utility framework, against our own tokens | Accepted | [ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md) |
 
 Index of records: [docs/adr/README.md](docs/adr/README.md)
 

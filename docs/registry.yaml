@@ -436,12 +436,16 @@ adrs:
   doc: docs/adr/ADR-0018-zero-fixable-not-zero-findings.md
 - id: ADR-0019
   decision: Headless component behaviour, our own visual layer
-  status: Accepted
+  status: Accepted, styling row superseded by ADR-0021
   doc: docs/adr/ADR-0019-headless-components-own-visual-layer.md
 - id: ADR-0020
   decision: Seven fixed navigation groups, and the routes they fix
   status: Accepted
   doc: docs/adr/ADR-0020-seven-fixed-navigation-groups.md
+- id: ADR-0021
+  decision: Plain CSS over a utility framework, against our own tokens
+  status: Accepted
+  doc: docs/adr/ADR-0021-plain-css-over-a-utility-framework.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'

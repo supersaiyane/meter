@@ -330,7 +330,7 @@ Deferred deliberately until the requirements existed, then decided here.
 
 - **Radix Primitives** or **React Aria** for behaviour and accessibility.
 - **TanStack Table** and **TanStack Virtual** for the data grid.
-- **Tailwind** with our tokens for styling.
+- **Plain CSS** against our tokens for styling, per ADR-0021. Tailwind was the original choice here and was superseded once the measurement existed: no component in this codebase accepts a `className`, so utilities would have meant annotating 27 files to avoid writing one stylesheet.
 - **Cytoscape.js** for the graph, as already decided.
 - Our own thin component layer implementing section 11.
 
@@ -341,7 +341,7 @@ library gives you are precisely the ones we must control. Rung seven, building
 accessible tree and focus management from scratch, is disqualified because it
 is a large amount of subtle work that is not this product's problem.
 
-Recorded as ADR-0019.
+Recorded as ADR-0019, with the styling row superseded by ADR-0021.
 
 ## 13. What this does not cover
 

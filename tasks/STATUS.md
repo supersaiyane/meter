@@ -23,7 +23,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | Register | Counts |
 | --- | --- |
 | Features | 50 total, 8 specified, 7 in build, 5 delivered |
-| Decisions | 20 architecture decision records |
+| Decisions | 21 architecture decision records |
 | Changes | 80 recorded |
 | Issues | 92 fixed, 42 open, 0 parked |
 | Open questions | 6 awaiting a decision |
@@ -82,7 +82,7 @@ ISS-003.
 
 | Sub project | Done | Partly | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- |
-| P0 | 38 | 0 | 0 | 0 | 38 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P0 | 38 | 0 | 0 | 1 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P2 | 7 | 1 | 2 | 15 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
