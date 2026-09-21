@@ -205,3 +205,24 @@ a sentence the product says to every reader that nobody has ever read.
 
 **Triggers:** any `build_meta` call, `visible=len(`, adding a route whose rows are
 not accounts, and any screen that renders a count next to a noun.
+
+## 2026-09-21: a checker whose exit code the shell threw away
+
+**Mistake:** I ran `mypy ... | tail -1 && git commit`, saw "Found 1 error in 1
+file" scroll past, and committed anyway. The `&&` was testing `tail`, which
+succeeds whatever it is fed. The error sat in a commit until I happened to re run
+the check a minute later. This is the same family as the `tsc --noEmit` lesson
+from 2026-09-20, arriving through a different door: there the checker examined
+nothing, here the checker worked and the shell discarded its verdict.
+
+**Correction:** self caught, one command later.
+
+**Rule:** never put a checker in a pipeline whose exit code decides anything. Run
+it on its own line and read the result, or use `set -o pipefail`. When chaining a
+commit behind a check, chain it behind the check itself and never behind a
+formatter of the check's output. `make verify` is immune because each step is its
+own recipe line; only my ad hoc chains are exposed.
+
+**Triggers:** any `| tail`, `| head` or `| grep` on mypy, ruff, pytest or tsc;
+any `&& git commit`; and the words "it passed" about output I filtered rather
+than read.
