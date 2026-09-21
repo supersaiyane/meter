@@ -29,10 +29,15 @@ from dataclasses import dataclass
 from decimal import Decimal
 from statistics import median
 
-#: Days of history a pair needs before any verdict is given. Fourteen matches
-#: the rule P3 uses for rightsizing, deliberately: two screens that both say
-#: "not enough data" should mean the same thing by it.
-MINIMUM_HISTORY = 14
+from finops_core.domain.observation import MINIMUM_HISTORY as _MINIMUM_HISTORY
+
+#: Days of history a pair needs before any verdict is given.
+#:
+#: Imported rather than defined, since 2026-09-21. It used to be a literal here
+#: with a comment saying it matched the rule P3 would use, which is a comment that
+#: goes stale silently the first time somebody changes one of the two. The domain
+#: owns it now and both features read the same number.
+MINIMUM_HISTORY = _MINIMUM_HISTORY
 
 #: How far from the baseline a day must sit, in multiples of the median
 #: absolute deviation, before it is called out. Three is conventional and is not
