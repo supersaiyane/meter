@@ -1320,6 +1320,34 @@ issues:
   status: OPEN
   detail: '`finops_ingest/registry.py`, ADR-0012, FEAT-026'
 
+- id: ISS-195
+  severity: MEDIUM
+  summary: The sizing detector recommended shrinking a memory bound instance, because it read CPU
+    and nothing else. An instance whose work is memory work has a quiet CPU while it waits, and an
+    EC2 family halves memory along with vCPU, so the next size down would have taken a resource
+    peaking at 94 percent memory past a hundred. Found 2026-09-21 by the first run of the detector
+    against the generated utilization estate, which plants exactly that instance and expects no
+    finding. The hand written fake could not have caught it, because its seven shapes are flat and
+    none of them has a memory series. Fixed the same day, and rightsize_cpu now takes an optional
+    memory peak and refuses above a ceiling, waste_compute batches the agent memory series beside
+    the CPU one, and the rationale says whether memory was checked or could not be, so a reader can
+    tell a checked instance from an unchecked one
+  status: FIXED
+  detail: '`finops_query/waste.py`, `finops_ingest/collectors/waste_compute.py`, FEAT-026'
+
+- id: ISS-196
+  severity: LOW
+  summary: QuotaUsage.region_id was typed as a plain string, so a global quota could not be
+    expressed. IAM roles per account, S3 buckets per account and CloudFront distributions are
+    counted once for the whole account, and a region on one of those would invite a screen to show
+    the same limit once per region and a total of five times the truth. Found 2026-09-21 by the
+    generated quota estate, which has 130 quotas including global ones and could not construct
+    them. Widened to optional the same day, with the distinction from a region nobody could read,
+    which is a typed failure rather than an absent one, written on the field. P5 would have hit
+    this on its first day
+  status: FIXED
+  detail: '`finops_core/domain/quota.py`, FEAT-033'
+
 - id: ISS-164
   severity: MEDIUM
   summary: security/reports/latest is a committed symlink and the scan script wrote it as an

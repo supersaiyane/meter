@@ -41,6 +41,12 @@ from statistics import quantiles
 from finops_core.domain.observation import MINIMUM_HISTORY
 from finops_core.domain.waste import WasteClass
 
+#: At or above this memory peak, an instance is memory bound and is not shrunk on
+#: its CPU. An EC2 family halves memory with vCPU, so the next size down would take
+#: a resource peaking here past a hundred percent. Eighty rather than ninety because
+#: the peak is a maximum over hourly points and the real peak sits above it.
+MEMORY_BOUND_PERCENT = Decimal("80")
+
 #: Below this, a burstable instance is running on credits rather than on its
 #: baseline, and its low average says nothing about whether it is oversized.
 HEALTHY_CREDIT_FLOOR = Decimal("20")
@@ -109,12 +115,20 @@ def rightsize_cpu(
     observation_days: int,
     monthly_cost: Decimal,
     credit_balance: Decimal | None = None,
+    memory_peak_percent: Decimal | None = None,
 ) -> Estimate:
     """Whether an instance is larger than its own demand.
 
     `credit_balance` is None for an instance that has no credits, which is most of
     them. A burstable instance with a healthy balance is refused outright: its low
     average utilization is the design working, not waste.
+
+    `memory_peak_percent` is None where no agent publishes memory, which is the
+    common case and is unobserved rather than fine. Where it is present and high the
+    instance is refused, because an EC2 family scales vCPU and memory together: the
+    next size down halves both, so a downsize that looks free on CPU would put
+    memory over a hundred percent. The rationale says which of the two happened, so
+    a reader can tell a checked instance from an unchecked one.
     """
     kind = WasteClass.RIGHTSIZE_INSTANCE
     if too_short(observation_days):
@@ -125,6 +139,15 @@ def rightsize_cpu(
             kind,
             f"burstable with a credit balance of {credit_balance}, so low average "
             "utilization is the design rather than waste",
+        )
+    if memory_peak_percent is not None and memory_peak_percent >= MEMORY_BOUND_PERCENT:
+        # The second most common, and the one a CPU only detector cannot see. The
+        # work is memory work and the CPU is quiet because it is waiting.
+        return _refused(
+            kind,
+            f"memory peaks at {memory_peak_percent:.1f} percent, at or above the "
+            f"{MEMORY_BOUND_PERCENT} percent ceiling, so this is memory bound and a "
+            "smaller size would halve the memory along with the vCPU",
         )
 
     p99 = _percentile(utilization_percent, 99)
@@ -145,7 +168,15 @@ def rightsize_cpu(
         reason=(
             f"p99 of {p99:.1f} percent over {observation_days} days. With "
             f"{(CPU_HEADROOM - 1) * 100:.0f} percent headroom that needs "
-            f"{needed:.1f} percent of the current size"
+            f"{needed:.1f} percent of the current size. "
+            + (
+                f"Memory peaks at {memory_peak_percent:.1f} percent, which leaves room"
+                if memory_peak_percent is not None
+                # Said, not assumed. A reader deciding whether to act needs to know
+                # that the memory half of the question went unchecked.
+                else "No agent publishes memory here, so whether it is memory bound "
+                "could not be checked"
+            )
         ),
     )
 
