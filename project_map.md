@@ -340,6 +340,27 @@ meter/
 │                              the account Meter cannot read is on it, because
 │                              the bill comes from the payer. provider.py
 │                              delegates to it with the four row smoke fixture
+│       ├── utilization.py     the generated estate: 36 resources, two years of
+│       │                      hourly behaviour, three regions. Deterministic, so
+│       │                      the 29 MB export is output and this is the source,
+│       │                      and the export is never committed
+│       ├── estate_shape.py    the curves every generator shares: diurnal,
+│       │                      seasonal, jitter from a seed, and the calendar
+│       │                      predicates. No clock and no randomness, enforced
+│       │                      by a test that walks the syntax tree
+│       ├── estate_metrics.py  the estate behind the MetricSource port, so a
+│       │                      collector reads it through the port it already
+│       │                      speaks. A refusal omits its key rather than failing
+│       │                      the batch, because absent means unobserved
+│       ├── planted.py         58 expected outcomes with a reason each, the oracle
+│       │                      a detector is checked against. The NO_FINDING half
+│       │                      is the valuable half: it names the false positives,
+│       │                      and it found two on its first run, ISS-195 and 196
+│       ├── containers.py      clusters, workloads and node groups. P6's estate
+│       ├── topology.py        95 nodes and 129 edges. P4's estate
+│       ├── quotas.py          130 quotas including the ones nothing can measure,
+│       │                      and five increase requests with their status
+│       │                      history. P5's estate
 │       ├── fixtures.py        one root, two units, five accounts, one denied
 │       ├── provider.py        the failure plan. Any of the six, for any scope.
 │       │                      Takes the time it is observed at, because the

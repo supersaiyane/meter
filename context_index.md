@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-547 public symbols across 5 packages.
+625 public symbols across 5 packages.
 
 ## finops_core
 
@@ -37,7 +37,7 @@ a duplicate.
 | `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | `finops_api/identity/session.py`, `finops_api/routes/accounts.py`, `finops_ingest/collectors/org_tree.py` |
 | `AccountStatus` | class | `finops_core/domain/account.py:26` | What the provider says about the account, not what we infer. | nothing in this tree |
 | `RoleHealth` | class | `finops_core/domain/account.py:47` | Whether the collector role in a member account is actually usable. | `finops_ingest/collectors/account_health.py` |
-| `AccountKey` | class | `finops_core/domain/account.py:69` | The only way an account is referred to anywhere in the domain. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_api/routes/accounts.py`, `finops_api/routes/org.py`, and 4 more |
+| `AccountKey` | class | `finops_core/domain/account.py:69` | The only way an account is referred to anywhere in the domain. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_api/routes/accounts.py`, `finops_api/routes/org.py`, and 7 more |
 | `CloudAccount` | class | `finops_core/domain/account.py:80` | One account, as the provider described it at `as_of`. | `finops_providers/aws/accounts.py`, `finops_providers/fake/fixtures.py` |
 | `CloudAccount.provider` | method | `finops_core/domain/account.py:90` |  | nothing in this tree |
 | `AccountHealth` | class | `finops_core/domain/account.py:95` | Whether we could actually use the collector role, and why not if not. | `finops_providers/aws/health.py`, `finops_providers/fake/health.py` |
@@ -61,7 +61,7 @@ a duplicate.
 | `IngestRun` | class | `finops_core/domain/ingest.py:34` | One execution of one collector. | nothing in this tree |
 | `CollectionFailure` | class | `finops_core/domain/ingest.py:53` | One account failing inside a run, with the reason kept typed. | nothing in this tree |
 | `Watermark` | class | `finops_core/domain/ingest.py:64` | How far one collector has read for one account, so a rerun is idempotent. | nothing in this tree |
-| `MetricPoint` | class | `finops_core/domain/metrics.py:20` | One statistic of one metric, at one instant, for one account. | `finops_providers/aws/waste.py`, `finops_providers/fake/fixtures.py`, `finops_providers/fake/waste.py` |
+| `MetricPoint` | class | `finops_core/domain/metrics.py:20` | One statistic of one metric, at one instant, for one account. | `finops_providers/aws/waste.py`, `finops_providers/fake/containers.py`, `finops_providers/fake/fixtures.py`, `finops_providers/fake/utilization.py`, and 1 more |
 | `OrgNodeType` | class | `finops_core/domain/org.py:18` |  | `finops_ingest/collectors/org_tree.py` |
 | `OrgNode` | class | `finops_core/domain/org.py:25` | One node of the organization tree at `as_of`. | `finops_providers/aws/accounts.py`, `finops_providers/fake/fixtures.py` |
 | `PlatformCost` | class | `finops_core/domain/platform.py:26` | One day of one module's spend on one service. | nothing in this tree |
@@ -75,8 +75,8 @@ a duplicate.
 | `QueryDefinition` | class | `finops_core/domain/query.py:146` | One saved query, as it was defined when it was read. | `finops_providers/fake/surface.py`, `finops_providers/grafana/amg.py` |
 | `ControlOutcome` | class | `finops_core/domain/query.py:189` | What a control actually did, which is not always what was asked. | `finops_providers/fake/surface.py`, `finops_providers/grafana/amg.py` |
 | `ControlRequest` | class | `finops_core/domain/query.py:208` | An instruction to change one query's behaviour. | nothing in this tree |
-| `QuotaUsage` | class | `finops_core/domain/quota.py:18` | One quota for one account and region. | `finops_providers/fake/fixtures.py` |
-| `ResourceRef` | class | `finops_core/domain/resource.py:19` | One resource as the provider described it at `as_of`. | `finops_providers/fake/fixtures.py` |
+| `QuotaUsage` | class | `finops_core/domain/quota.py:18` | One quota for one account, in one region or across all of them. | `finops_providers/fake/fixtures.py`, `finops_providers/fake/quotas.py` |
+| `ResourceRef` | class | `finops_core/domain/resource.py:19` | One resource as the provider described it at `as_of`. | `finops_providers/fake/fixtures.py`, `finops_providers/fake/utilization.py` |
 | `Tenant` | class | `finops_core/domain/tenant.py:23` |  | nothing in this tree |
 | `Scope` | class | `finops_core/domain/tenant.py:29` | What one principal may read, held as data rather than as a query fragment. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/fake/provider.py` |
 | `Scope.permits` | method | `finops_core/domain/tenant.py:45` |  | `finops_api/routes/org.py`, `finops_ingest/remediation.py` |
@@ -92,9 +92,9 @@ a duplicate.
 | `RealizedSaving.realized_monthly_saving` | method | `finops_core/domain/waste.py:209` |  | nothing in this tree |
 | `CollectionError` | class | `finops_core/errors.py:27` | Abstract parent of the six causes. Never raised, never constructed. | nothing in this tree |
 | `CollectionError.remediation` | method | `finops_core/errors.py:53` | What the person reading the failure should actually do next. | nothing in this tree |
-| `AccessDenied` | class | `finops_core/errors.py:62` | The credential was refused, so the answer is unknown rather than zero. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/aws/client.py`, `finops_providers/fake/provider.py`, and 1 more |
+| `AccessDenied` | class | `finops_core/errors.py:62` | The credential was refused, so the answer is unknown rather than zero. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/aws/client.py`, `finops_providers/fake/provider.py`, and 3 more |
 | `Throttled` | class | `finops_core/errors.py:71` | The provider rejected the call rate. | `finops_providers/aws/client.py`, `finops_providers/fake/health.py` |
-| `NotOptedIn` | class | `finops_core/errors.py:80` | The service exists but this organization has never enabled it. | `finops_providers/aws/client.py`, `finops_providers/aws/recommendations.py`, `finops_providers/fake/recommendations.py`, `finops_providers/grafana/amg.py` |
+| `NotOptedIn` | class | `finops_core/errors.py:80` | The service exists but this organization has never enabled it. | `finops_providers/aws/client.py`, `finops_providers/aws/recommendations.py`, `finops_providers/fake/quotas.py`, `finops_providers/fake/recommendations.py`, and 2 more |
 | `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | `finops_ingest/collectors/cost_focus.py`, `finops_ingest/collectors/org_tree.py`, `finops_providers/aws/commitment.py`, `finops_providers/aws/cur.py`, and 3 more |
 | `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | `finops_providers/aws/client.py`, `finops_providers/aws/cur.py`, `finops_providers/fake/tickets.py`, `finops_providers/grafana/client.py` |
 | `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py`, `finops_ingest/collectors/account_health.py`, `finops_ingest/worker.py`, `finops_providers/aws/client.py`, and 7 more |
@@ -210,17 +210,64 @@ a duplicate.
 | `FakeCommitmentReport` | class | `finops_providers/fake/commitment.py:260` | `CommitmentReport` in memory. Every failure is asked for, never incidental. | `finops_providers/fake/provider.py` |
 | `FakeCommitmentReport.utilization` | method | `finops_providers/fake/commitment.py:282` |  | `finops_ingest/collectors/commitment.py`, `finops_providers/fake/provider.py` |
 | `FakeCommitmentReport.coverage` | method | `finops_providers/fake/commitment.py:294` |  | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_ingest/collectors/commitment.py`, `finops_providers/fake/provider.py` |
+| `LaunchType` | class | `finops_providers/fake/containers.py:54` |  | nothing in this tree |
+| `Shape` | class | `finops_providers/fake/containers.py:59` | How a workload's demand moves through the day and the year. | nothing in this tree |
+| `NodeGroup` | class | `finops_providers/fake/containers.py:69` |  | nothing in this tree |
+| `Cluster` | class | `finops_providers/fake/containers.py:82` |  | nothing in this tree |
+| `Workload` | class | `finops_providers/fake/containers.py:92` |  | nothing in this tree |
+| `Workload.key` | method | `finops_providers/fake/containers.py:114` |  | nothing in this tree |
+| `cluster` | function | `finops_providers/fake/containers.py:370` |  | `finops_providers/fake/quotas.py`, `finops_providers/fake/utilization.py` |
+| `workloads_in` | function | `finops_providers/fake/containers.py:374` |  | nothing in this tree |
+| `replicas` | function | `finops_providers/fake/containers.py:383` | Pods or tasks running in the hour starting at `ts`. | `finops_providers/fake/quotas.py` |
+| `nodes` | function | `finops_providers/fake/containers.py:407` | Nodes across the whole cluster, derived from what the pods request. | `finops_providers/fake/topology.py` |
+| `nodes_in_group` | function | `finops_providers/fake/containers.py:418` | This group's share of the cluster's nodes, never below its minimum. | `finops_providers/fake/utilization.py` |
+| `oom_killed_on` | function | `finops_providers/fake/containers.py:429` | The truth, whether or not any reader can see it. | nothing in this tree |
+| `observed_request` | function | `finops_providers/fake/containers.py:434` | The request a reader of this cluster is given, or None where unavailable. | nothing in this tree |
+| `observed_oom` | function | `finops_providers/fake/containers.py:445` | True, False, or None for unobserved. Three facts, TASK-P6-001. | nothing in this tree |
+| `per_pod_use` | function | `finops_providers/fake/containers.py:452` | (cpu average, cpu max, memory average, memory max) per pod, in m and MiB. | nothing in this tree |
+| `cluster_use` | function | `finops_providers/fake/containers.py:488` | Total cpu m and memory MiB the cluster's pods use in the hour. | `finops_providers/fake/utilization.py` |
+| `SeriesPoint` | class | `finops_providers/fake/containers.py:505` | One `MetricPoint` and the thing it is about. | `finops_providers/fake/utilization.py` |
+| `series` | function | `finops_providers/fake/containers.py:541` | Every hourly container metric in `[start, end)`, defaulting to two years. | nothing in this tree |
+| `usage_rows` | function | `finops_providers/fake/containers.py:638` | One row per workload per day, computed from the same hours as `series`. | nothing in this tree |
+| `node_group_rows` | function | `finops_providers/fake/containers.py:686` | One row per node group per day, for spot ratio and bin packing. TASK-P6-011. | nothing in this tree |
+| `cluster_rows` | function | `finops_providers/fake/containers.py:741` | Every cluster, including the one whose utilization cannot be read. | nothing in this tree |
 | `periods_ending_at` | function | `finops_providers/fake/cur.py:193` | The month containing `at` and the ones before it, oldest first. | nothing in this tree |
-| `spike_day` | function | `finops_providers/fake/cur.py:215` | The day the estate goes wrong, derived from the clock rather than written down. | nothing in this tree |
+| `spike_day` | function | `finops_providers/fake/cur.py:215` | The day the estate goes wrong, derived from the clock rather than written down. | `finops_providers/fake/utilization.py` |
 | `estate` | function | `finops_providers/fake/cur.py:224` | Three months of bill, the newest of them still running at `at`. | `finops_providers/fake/commitment.py`, `finops_providers/fake/recommendations.py` |
 | `restate` | function | `finops_providers/fake/cur.py:273` | The same bill after AWS restated it: one row corrected, one retracted. | nothing in this tree |
 | `FakeCostExport` | class | `finops_providers/fake/cur.py:300` | `CostExport` in memory. Every failure is asked for, never incidental. | `finops_providers/fake/provider.py` |
 | `FakeCostExport.latest_available_period` | method | `finops_providers/fake/cur.py:321` |  | `finops_ingest/collectors/cost_focus.py`, `finops_providers/fake/provider.py` |
 | `FakeCostExport.read_period` | method | `finops_providers/fake/cur.py:330` |  | `finops_ingest/collectors/cost_focus.py`, `finops_providers/fake/provider.py` |
+| `monthly_cost` | function | `finops_providers/fake/estate_metrics.py:74` | A fake monthly price for one instance type. See `FAKE_MONTHLY_USD`. | nothing in this tree |
+| `EstateMetrics` | class | `finops_providers/fake/estate_metrics.py:92` | `MetricSource` over the generated utilization estate. | nothing in this tree |
+| `EstateMetrics.read_series` | method | `finops_providers/fake/estate_metrics.py:104` | One series, or nothing. Refusals propagate here, unlike in a batch. | nothing in this tree |
+| `EstateMetrics.read_many` | method | `finops_providers/fake/estate_metrics.py:132` | Every requested series in one pass over each account and region. | `finops_ingest/collectors/waste_compute.py` |
+| `EstateCandidate` | class | `finops_providers/fake/estate_metrics.py:183` | One EC2 instance from the estate, as `waste_compute` needs to see it. | nothing in this tree |
+| `ec2_candidates` | function | `finops_providers/fake/estate_metrics.py:216` | Every standalone EC2 instance in the estate, with the facts a sizing rule needs. | nothing in this tree |
+| `window` | function | `finops_providers/fake/estate_shape.py:49` | The half open window `[start, end)` ending at the hour containing `at`. | `finops_providers/fake/containers.py`, `finops_providers/fake/estate_metrics.py`, `finops_providers/fake/quotas.py`, `finops_providers/fake/utilization.py` |
+| `hours` | function | `finops_providers/fake/estate_shape.py:55` | Every hour in `[start, end)`, oldest first. | `finops_providers/fake/containers.py`, `finops_providers/fake/utilization.py` |
+| `days` | function | `finops_providers/fake/estate_shape.py:63` | Every whole or part day touched by `[start, end)`, oldest first. | `finops_providers/fake/containers.py`, `finops_providers/fake/quotas.py` |
+| `slot` | function | `finops_providers/fake/estate_shape.py:71` | The hour number since the epoch. The second half of every hash key. | nothing in this tree |
+| `unit` | function | `finops_providers/fake/estate_shape.py:76` | A stable value in `[0, 1)` for `key`. | nothing in this tree |
+| `jitter` | function | `finops_providers/fake/estate_shape.py:82` | A stable value in `[-1, 1)` for one series at one hour. | `finops_providers/fake/containers.py`, `finops_providers/fake/quotas.py`, `finops_providers/fake/utilization.py` |
+| `diurnal` | function | `finops_providers/fake/estate_shape.py:87` | Demand shape in `[0, 1]`: peaks at 14:00 UTC on weekdays, low at night. | `finops_providers/fake/containers.py`, `finops_providers/fake/quotas.py`, `finops_providers/fake/utilization.py` |
+| `is_business_hours` | function | `finops_providers/fake/estate_shape.py:98` | Weekday, 08:00 to 19:00 UTC. | `finops_providers/fake/utilization.py` |
+| `last_day_of_month` | function | `finops_providers/fake/estate_shape.py:106` |  | nothing in this tree |
+| `is_month_end` | function | `finops_providers/fake/estate_shape.py:111` | The last two days of a month, when reconciliation batches run. | `finops_providers/fake/containers.py` |
+| `is_quarter_end` | function | `finops_providers/fake/estate_shape.py:116` | The last three days of March, June, September and December. | `finops_providers/fake/containers.py` |
+| `is_peak_retail` | function | `finops_providers/fake/estate_shape.py:125` | Black Friday through Cyber Monday: card volumes for a retail bank. | `finops_providers/fake/containers.py` |
+| `is_kill_window` | function | `finops_providers/fake/estate_shape.py:135` | The hours of a peak day a memory hungry workload gets killed in. | `finops_providers/fake/containers.py` |
+| `is_year_end` | function | `finops_providers/fake/estate_shape.py:147` | 18 to 31 December: holiday payments and year end close. | nothing in this tree |
+| `seasonal` | function | `finops_providers/fake/estate_shape.py:153` | The multiplier demand driven services carry on day `d`. One is ordinary. | `finops_providers/fake/containers.py`, `finops_providers/fake/quotas.py`, `finops_providers/fake/utilization.py` |
+| `progress` | function | `finops_providers/fake/estate_shape.py:167` | How far `ts` sits through `[start, end)`, in `[0, 1]`. | `finops_providers/fake/containers.py`, `finops_providers/fake/quotas.py`, `finops_providers/fake/utilization.py` |
+| `clamp` | function | `finops_providers/fake/estate_shape.py:173` |  | `finops_providers/fake/containers.py`, `finops_providers/fake/utilization.py` |
+| `dec` | function | `finops_providers/fake/estate_shape.py:177` | A float rendered as a `Decimal` with fixed places, never a binary float. | `finops_providers/fake/containers.py`, `finops_providers/fake/quotas.py`, `finops_providers/fake/utilization.py` |
+| `zone` | function | `finops_providers/fake/estate_shape.py:201` | An availability zone name in a fictional region. | `finops_providers/fake/topology.py`, `finops_providers/fake/utilization.py` |
 | `FakeQueryEvidence` | class | `finops_providers/fake/evidence.py:110` | `QueryEvidence` in memory, with a configurable failure and a past. | nothing in this tree |
 | `FakeQueryEvidence.observations` | method | `finops_providers/fake/evidence.py:134` |  | `finops_ingest/collectors/query_audit.py` |
 | `FakeRoleHealth` | class | `finops_providers/fake/health.py:38` | `RoleHealthCheck` in memory, with a stated plan. | nothing in this tree |
 | `FakeRoleHealth.check` | method | `finops_providers/fake/health.py:57` |  | `finops_api/routes/accounts.py`, `finops_ingest/collectors/account_health.py` |
+| `Planted` | class | `finops_providers/fake/planted.py:30` |  | nothing in this tree |
 | `FakePlatformCost` | class | `finops_providers/fake/platform_cost.py:35` | `PlatformCostSource` in memory. | nothing in this tree |
 | `FakePlatformCost.daily_by_module` | method | `finops_providers/fake/platform_cost.py:41` | The window, day by day, rising gently across it. | `finops_ingest/collectors/platform_cost.py` |
 | `FakeSession` | class | `finops_providers/fake/provider.py:37` | What `session_for` hands back. Opaque, like the real thing. | nothing in this tree |
@@ -239,6 +286,19 @@ a duplicate.
 | `FakeProvider.list_quotas` | method | `finops_providers/fake/provider.py:228` |  | nothing in this tree |
 | `FakeProvider.authenticate` | method | `finops_providers/fake/provider.py:234` |  | nothing in this tree |
 | `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:247` |  | `finops_api/deps.py`, `finops_ingest/collectors/org_tree.py` |
+| `QuotaDef` | class | `finops_providers/fake/quotas.py:182` |  | nothing in this tree |
+| `source_for` | function | `finops_providers/fake/quotas.py:354` | The source that actually produced a figure, or `NONE`. | nothing in this tree |
+| `reason_for` | function | `finops_providers/fake/quotas.py:365` |  | nothing in this tree |
+| `daily_peak` | function | `finops_providers/fake/quotas.py:378` | The largest usage in the day, from the sampled hours inside the window. | nothing in this tree |
+| `limit_on` | function | `finops_providers/fake/quotas.py:398` | The limit in force on day `d`. | nothing in this tree |
+| `current` | function | `finops_providers/fake/quotas.py:463` | Every quota for one slice at `at`, as the quota port returns it. | nothing in this tree |
+| `trailing_peak` | function | `finops_providers/fake/quotas.py:504` | The largest usage in the 24 hours before `at`, sampled every two hours. | nothing in this tree |
+| `usage_rows` | function | `finops_providers/fake/quotas.py:574` | The current row for every quota in every readable slice. `quota_usage`. | nothing in this tree |
+| `history_rows` | function | `finops_providers/fake/quotas.py:582` | One row per quota per slice per day, for the headroom trend. | nothing in this tree |
+| `Request` | class | `finops_providers/fake/quotas.py:595` |  | nothing in this tree |
+| `requests` | function | `finops_providers/fake/quotas.py:606` |  | nothing in this tree |
+| `request_rows` | function | `finops_providers/fake/quotas.py:664` |  | nothing in this tree |
+| `request_history_rows` | function | `finops_providers/fake/quotas.py:685` |  | nothing in this tree |
 | `findings` | function | `finops_providers/fake/recommendations.py:66` | Every finding the three fake services report, before any floor is applied. | nothing in this tree |
 | `FakeRecommendationSource` | class | `finops_providers/fake/recommendations.py:161` | `RecommendationSource` in memory. Every failure is asked for. | nothing in this tree |
 | `FakeRecommendationSource.compute_optimizer` | method | `finops_providers/fake/recommendations.py:196` |  | nothing in this tree |
@@ -257,6 +317,24 @@ a duplicate.
 | `FakeTicketSink.open_ticket` | method | `finops_providers/fake/tickets.py:34` |  | `finops_api/lifecycle.py` |
 | `FakeTicketSink.is_open` | method | `finops_providers/fake/tickets.py:43` |  | `finops_api/routes/cost.py` |
 | `FakeTicketSink.close` | method | `finops_providers/fake/tickets.py:47` | Not part of the port. A test's way of making a ticket go away. | `finops_providers/grafana/amg.py`, `finops_providers/grafana/client.py` |
+| `Node` | class | `finops_providers/fake/topology.py:76` |  | nothing in this tree |
+| `Edge` | class | `finops_providers/fake/topology.py:88` |  | nothing in this tree |
+| `nodes` | function | `finops_providers/fake/topology.py:130` |  | `finops_providers/fake/containers.py` |
+| `edges` | function | `finops_providers/fake/topology.py:232` |  | nothing in this tree |
+| `coverage_state` | function | `finops_providers/fake/topology.py:295` | The state and typed cause of one slice. Every slice has exactly one. | nothing in this tree |
+| `node_rows` | function | `finops_providers/fake/topology.py:306` |  | nothing in this tree |
+| `edge_rows` | function | `finops_providers/fake/topology.py:323` |  | nothing in this tree |
+| `coverage_rows` | function | `finops_providers/fake/topology.py:338` | Fifteen rows, one per account and region, including the refused ones. | nothing in this tree |
+| `sized` | function | `finops_providers/fake/utilization.py:84` | One numeric configuration value, or a failure naming the resource. | `finops_providers/fake/quotas.py` |
+| `Spec` | class | `finops_providers/fake/utilization.py:99` | One resource: what it is, how it is configured, how it behaves. | nothing in this tree |
+| `spec` | function | `finops_providers/fake/utilization.py:813` |  | nothing in this tree |
+| `launched_at` | function | `finops_providers/fake/utilization.py:825` | When the resource first existed, bounded below by the window start. | `finops_providers/fake/estate_metrics.py`, `finops_providers/fake/quotas.py` |
+| `resources` | function | `finops_providers/fake/utilization.py:833` | Every readable resource at `at`, as the inventory port returns it. | nothing in this tree |
+| `configuration` | function | `finops_providers/fake/utilization.py:850` | What the resource was provisioned as. `ResourceRef` has no place for this. | nothing in this tree |
+| `series_for` | function | `finops_providers/fake/utilization.py:1144` | Every hourly point for one account and region, as a collector fans out. | `finops_providers/fake/estate_metrics.py` |
+| `series` | function | `finops_providers/fake/utilization.py:1175` | Every readable hourly point in the estate, resource by resource. | nothing in this tree |
+| `vcpu_in_use` | function | `finops_providers/fake/utilization.py:1192` | vCPU running in one account and region, derived from the estate above. | `finops_providers/fake/quotas.py` |
+| `inventory_rows` | function | `finops_providers/fake/utilization.py:1229` | One row per resource: identity, tags, configuration and planted finding. | nothing in this tree |
 | `Shape` | class | `finops_providers/fake/waste.py:40` | How one instance behaves, as a function of the hour. | nothing in this tree |
 | `Shape.at` | method | `finops_providers/fake/waste.py:58` |  | nothing in this tree |
 | `instances` | function | `finops_providers/fake/waste.py:112` | Every instance in the fake estate, including the ones nothing is wrong with. | nothing in this tree |
@@ -319,8 +397,8 @@ a duplicate.
 | `register_retention` | function | `finops_ingest/collectors/retention.py:211` | Add the five to a registry. Returns how many, so a caller can assert on it. | nothing in this tree |
 | `ScoreCollector` | class | `finops_ingest/collectors/score.py:159` | One score per account, with its components, every run. | nothing in this tree |
 | `WasteCloudWatchCollector` | class | `finops_ingest/collectors/waste_cloudwatch.py:89` | FEAT-027. The module with no instances to size. | nothing in this tree |
-| `Candidate` | class | `finops_ingest/collectors/waste_compute.py:59` | One thing the collector was asked to look at. | nothing in this tree |
-| `WasteComputeCollector` | class | `finops_ingest/collectors/waste_compute.py:115` | Our own findings, from metrics the provider publishes. | nothing in this tree |
+| `Candidate` | class | `finops_ingest/collectors/waste_compute.py:69` | One thing the collector was asked to look at. | nothing in this tree |
+| `WasteComputeCollector` | class | `finops_ingest/collectors/waste_compute.py:125` | Our own findings, from metrics the provider publishes. | nothing in this tree |
 | `WorkUnit` | class | `finops_ingest/dispatcher.py:29` | One thing one worker will do, once. | nothing in this tree |
 | `WorkUnit.scope_key` | method | `finops_ingest/dispatcher.py:40` | The identifier this unit is recorded and reported under. | nothing in this tree |
 | `WorkUnit.dedup_key` | method | `finops_ingest/dispatcher.py:52` | Identical to the key the ledger claims on, deliberately. | nothing in this tree |
@@ -360,7 +438,7 @@ a duplicate.
 | `install_default_schedule` | function | `finops_ingest/registry.py:391` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
 | `CollectorRegistry` | class | `finops_ingest/registry.py:419` | The collectors this process knows how to run. | nothing in this tree |
 | `CollectorRegistry.register` | method | `finops_ingest/registry.py:425` |  | `finops_ingest/collectors/retention.py` |
-| `CollectorRegistry.get` | method | `finops_ingest/registry.py:433` |  | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 38 more |
+| `CollectorRegistry.get` | method | `finops_ingest/registry.py:433` |  | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 42 more |
 | `CollectorRegistry.names` | method | `finops_ingest/registry.py:442` |  | nothing in this tree |
 | `FloorOutcome` | class | `finops_ingest/remediation.py:43` | What happened, in enough detail to explain a refusal. | nothing in this tree |
 | `apply_refresh_floor` | function | `finops_ingest/remediation.py:59` | Raise one workspace's floor, if this deployment is permitted to. | nothing in this tree |
@@ -586,9 +664,9 @@ a duplicate.
 | `ApiError` | class | `finops_mcp/api.py:32` | The API refused or could not answer. Carries the status for the caller. | nothing in this tree |
 | `EnvelopeMissingError` | class | `finops_mcp/api.py:41` | A 200 with no `meta`. Not the contract, so not treated as data. | nothing in this tree |
 | `Transport` | class | `finops_mcp/api.py:45` | What the client needs from an HTTP library, and nothing more. | nothing in this tree |
-| `Transport.get` | method | `finops_mcp/api.py:53` |  | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 37 more |
+| `Transport.get` | method | `finops_mcp/api.py:53` |  | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 41 more |
 | `MeterApi` | class | `finops_mcp/api.py:56` | A caller of the Meter HTTP API. Holds no scope and no credential. | `finops_mcp/server.py` |
-| `MeterApi.get` | method | `finops_mcp/api.py:68` | One GET, returning the envelope exactly as the API sent it. | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 37 more |
+| `MeterApi.get` | method | `finops_mcp/api.py:68` | One GET, returning the envelope exactly as the API sent it. | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 41 more |
 | `MissingTokenError` | class | `finops_mcp/server.py:37` | No caller token. The tool refuses rather than answering as somebody else. | nothing in this tree |
 | `token_from` | function | `finops_mcp/server.py:41` | The caller's bearer token, or an error. | nothing in this tree |
 | `make_handler` | function | `finops_mcp/server.py:59` | Bind one row of the tool table to one handler. | nothing in this tree |

@@ -72,3 +72,12 @@ tmp/
 # The generated API reference. Published as a pipeline artifact rather than
 # stored, because it is 4 MB of derived HTML that changes on every docstring.
 docs/api/
+
+# The exported fake utilization estate. Deterministic build output from
+# `finops_providers/fake/`, so the generators are the source and the CSV is not:
+# 29 MB of derived rows, regenerable with one command. It would also be refused
+# on the way in, because a twelve digit byte count reads as a hardcoded value to
+# `scripts/security/check_hardcoded.py`.
+files.zip
+meter-fake-estate-data-*.zip
+fake-estate/

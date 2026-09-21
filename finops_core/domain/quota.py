@@ -16,10 +16,15 @@ from finops_core.domain.fact import Fact
 
 @dataclass(frozen=True, kw_only=True)
 class QuotaUsage(Fact):
-    """One quota for one account and region."""
+    """One quota for one account, in one region or across all of them."""
 
     account_key: AccountKey
-    region_id: str
+    #: None where the quota is global rather than regional. IAM roles per account,
+    #: S3 buckets per account and CloudFront distributions are counted once for the
+    #: whole account, and putting a region on one of those would invite a screen to
+    #: show the same limit once per region and a total of five times the truth.
+    #: Distinct from a region nobody could read, which is a typed failure.
+    region_id: str | None
     service_code: str
     quota_code: str
     quota_name: str

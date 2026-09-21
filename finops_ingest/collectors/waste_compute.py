@@ -48,6 +48,16 @@ SCOPE = "billing"
 NAMESPACE = "AWS/EC2"
 CPU = "CPUUtilization"
 
+#: Memory is not an EC2 metric. The CloudWatch agent publishes it under its own
+#: namespace, so an instance without the agent has no memory series at all, which
+#: is unobserved rather than fine. FEAT-026.
+AGENT_NAMESPACE = "CWAgent"
+MEMORY = "mem_used_percent"
+
+#: How a memory request is keyed, so it cannot collide with the CPU request for
+#: the same instance in a batch the port returns as one mapping.
+MEMORY_KEY = "memory:"
+
 Clock = Callable[[], datetime]
 
 
@@ -146,6 +156,12 @@ class WasteComputeCollector:
             days=max((c.observation_days for c in candidates), default=0)
         )
 
+        # Two series per instance in one batch. Memory is asked for because a CPU
+        # only judgement cannot tell an oversized instance from a memory bound one,
+        # and an instance whose work is memory work has a quiet CPU for a reason.
+        # Batched rather than fetched per instance, because GetMetricData is charged
+        # per metric requested and a second round trip would double the requests
+        # without reducing the metrics.
         series = self._metrics.read_many(
             [
                 MetricRequest(
@@ -156,6 +172,18 @@ class WasteComputeCollector:
                     metric_name=CPU,
                     dimensions={"InstanceId": candidate.resource_id},
                     statistic="Average",
+                )
+                for candidate in candidates
+            ]
+            + [
+                MetricRequest(
+                    key=f"{MEMORY_KEY}{candidate.resource_id}",
+                    account=AccountKey(provider=Provider.AWS, account_id=candidate.account_id),
+                    region=candidate.region_id,
+                    namespace=AGENT_NAMESPACE,
+                    metric_name=MEMORY,
+                    dimensions={"InstanceId": candidate.resource_id},
+                    statistic="Maximum",
                 )
                 for candidate in candidates
             ],
@@ -182,7 +210,11 @@ class WasteComputeCollector:
                 seen_groups.add(candidate.scaling_group)
 
             values = [point.value for point in points]
-            estimate = self._judge(candidate, values)
+            # Absent, not zero. An instance with no agent has no memory series, and
+            # the judgement says so rather than assuming there is room.
+            memory = series.get(f"{MEMORY_KEY}{candidate.resource_id}")
+            peak = max((point.value for point in memory), default=None) if memory else None
+            estimate = self._judge(candidate, values, peak)
             if estimate is None:
                 continue
             self._write(context, candidate, estimate, thresholds, now)
@@ -210,12 +242,22 @@ class WasteComputeCollector:
 
         return CollectorOutcome(items_written=written)
 
-    def _judge(self, candidate: Candidate, values: list[Decimal]) -> Estimate | None:
+    def _judge(
+        self,
+        candidate: Candidate,
+        values: list[Decimal],
+        memory_peak_percent: Decimal | None,
+    ) -> Estimate | None:
         """Idle first, then oversized.
 
         An instance doing nothing is idle and the action is to turn it off. The
         rightsizing arithmetic would also report it, truthfully and uselessly:
         nobody shrinks a machine they could delete.
+
+        The idle question does not consult memory, deliberately. An instance nobody
+        is using is worth turning off whatever its memory footprint was, and a
+        memory bound instance is not idle in the first place: its CPU is quiet and
+        its p95 is not.
         """
         gone = idle(
             utilization_percent=values,
@@ -230,6 +272,7 @@ class WasteComputeCollector:
             observation_days=candidate.observation_days,
             monthly_cost=candidate.monthly_cost,
             credit_balance=candidate.credit_balance,
+            memory_peak_percent=memory_peak_percent,
         )
         return smaller if smaller.is_worth_acting_on else None
 
