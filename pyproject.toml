@@ -57,6 +57,12 @@ build-backend = "setuptools.build_meta"
 # repository is on the path, and the image then failed on
 # `No module named 'finops_api.db'` the first time a migration ran inside it.
 # ISS-143.
+# `finops_fakes` is deliberately absent. It is a generated estate and a set of in
+# memory port implementations, used by the tests and by `make seed`, and shipping it
+# would put a module that fabricates cost data inside the image that reports real
+# cost. The forbidden contract below is the other half of that rule: absent from the
+# wheel stops it running in production, and the contract stops anything importing it
+# long before a build would notice.
 [tool.setuptools.packages.find]
 include = [
     "finops_core*",
@@ -99,13 +105,13 @@ extend-immutable-calls = [
 # protocol declares, under the declared names, or a keyword call against the
 # port breaks on this implementation and not on the others. The fake ignores
 # some of what it is handed precisely because it is a fake.
-"finops_providers/fake/provider.py" = ["ARG002"]
+"finops_fakes/provider.py" = ["ARG002"]
 # ARG001 for the same reason one layer down. The quota estate is a table of
 # usage functions, every one taking the same four arguments so the table can be
 # read as a table, and most of them need two. Renaming the unused ones breaks the
 # uniformity that makes the table legible, and dropping them means each entry
 # needs a different call site.
-"finops_providers/fake/quotas.py" = ["ARG001"]
+"finops_fakes/quotas.py" = ["ARG001"]
 
 [tool.pytest.ini_options]
 # Restored to 80 by TASK-P0-005, the task that landed the first real module.
@@ -196,6 +202,29 @@ forbidden_modules = [
     "botocore",
     "sqlalchemy",
 ]
+
+# The fakes are test and demo scaffolding, and until 2026-09-21 they lived inside
+# `finops_providers` beside the real AWS adapters and shipped in the runtime image.
+# Nothing in production imported one, but nothing stopped it either, and a module
+# that fabricates a bill sitting in the image that reports a real bill is a mistake
+# waiting for somebody in a hurry. ADR-0022.
+#
+# Named as source modules rather than forbidding `finops_fakes` from one place,
+# because the direction that matters is every production package being unable to
+# reach it. The tests and `scripts/ops/seed_demo.py` are outside these packages and
+# import it freely, which is the point.
+[[tool.importlinter.contracts]]
+name = "production code never imports a fake"
+type = "forbidden"
+source_modules = [
+    "finops_core",
+    "finops_providers",
+    "finops_query",
+    "finops_ingest",
+    "finops_api",
+    "finops_mcp",
+]
+forbidden_modules = ["finops_fakes"]
 
 [[tool.importlinter.contracts]]
 name = "layers are respected"

@@ -1,6 +1,6 @@
 """Commitments over the fake estate, in memory.
 
-Every figure here is derived from `finops_providers.fake.cur.ESTATE` rather than
+Every figure here is derived from `finops_fakes.cur.ESTATE` rather than
 written down, so a commitment can never claim to cover more than the fake bill
 actually contains. A hand written `eligible_spend` would have drifted the first
 time a service or an account weight changed, and the drift would have shown up as
@@ -40,7 +40,7 @@ from finops_core.domain.cost import (
     CostRecord,
 )
 from finops_core.errors import CollectionError, NoData
-from finops_providers.fake import cur, fixtures
+from finops_fakes import cur, fixtures
 
 COLLECTOR = "commitment"
 

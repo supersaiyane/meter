@@ -36,8 +36,8 @@ from enum import StrEnum
 
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.metrics import MetricPoint
-from finops_providers.fake import estate_shape as shape
-from finops_providers.fake import fixtures
+from finops_fakes import estate_shape as shape
+from finops_fakes import fixtures
 
 COLLECTOR = "container_usage"
 

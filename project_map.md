@@ -304,7 +304,8 @@ meter/
 │       ├── inventory.py       ResourceInventory
 │       ├── quotas.py          QuotaSource
 │       └── identity.py        IdentityProvider and EntitlementResolver
-├── finops_providers/          IN BUILD  aws/, grafana/, fake/, gcp/, azure/
+├── finops_providers/          IN BUILD  aws/, grafana/, gcp/, azure/. The fakes
+│                              left this package on 2026-09-21, ADR-0022
 │   ├── aws/                   the only package that imports boto3
 │   │   ├── client.py          bounded config, and provider code to typed cause
 │   │   ├── credentials.py     assume role, cached until before expiry
@@ -333,57 +334,6 @@ meter/
 │   │                          becomes a visible unreachable instance, never a
 │   │                          shorter list. The token is a loan, revoked in a
 │   │                          finally. v1 writes nothing, constraint 6
-│   └── fake/                  in memory, the ports, no network, no clock.
-│                              cur.py is the estate's bill, 2,100 FOCUS rows
-│                              across three periods, the newest a part month.
-│                              22 percent of it is untagged on purpose, and
-│                              the account Meter cannot read is on it, because
-│                              the bill comes from the payer. provider.py
-│                              delegates to it with the four row smoke fixture
-│       ├── utilization.py     the generated estate: 36 resources, two years of
-│       │                      hourly behaviour, three regions. Deterministic, so
-│       │                      the 29 MB export is output and this is the source,
-│       │                      and the export is never committed
-│       ├── estate_shape.py    the curves every generator shares: diurnal,
-│       │                      seasonal, jitter from a seed, and the calendar
-│       │                      predicates. No clock and no randomness, enforced
-│       │                      by a test that walks the syntax tree
-│       ├── estate_metrics.py  the estate behind the MetricSource port, so a
-│       │                      collector reads it through the port it already
-│       │                      speaks. A refusal omits its key rather than failing
-│       │                      the batch, because absent means unobserved
-│       ├── planted.py         58 expected outcomes with a reason each, the oracle
-│       │                      a detector is checked against. The NO_FINDING half
-│       │                      is the valuable half: it names the false positives,
-│       │                      and it found two on its first run, ISS-195 and 196
-│       ├── containers.py      clusters, workloads and node groups. P6's estate
-│       ├── topology.py        95 nodes and 129 edges. P4's estate
-│       ├── quotas.py          130 quotas including the ones nothing can measure,
-│       │                      and five increase requests with their status
-│       │                      history. P5's estate
-│       ├── fixtures.py        one root, two units, five accounts, one denied
-│       ├── provider.py        the failure plan. Any of the six, for any scope.
-│       │                      Takes the time it is observed at, because the
-│       │                      constants are right for a test and wrong for a
-│       │                      demo estate
-│       ├── health.py          role health. Separates an account whose role is
-│       │                      misconfigured from one Meter could not ask about
-│       │                      at all, which are different fixes and owners
-│       ├── platform_cost.py   Meter's own bill, untagged bucket included
-│       ├── evidence.py        CloudTrail and query history in memory. days_ago
-│       │                      reports the same queries run fewer times, at the
-│       │                      same bytes per run, so a measured cost is carried
-│       │                      by the run count while the scan size holds still
-│       ├── surface.py         the dashboards, and queries_as_of, which returns
-│       │                      them as they stood. A modelled cost is computed
-│       │                      from the definition, so it steps on the day
-│       │                      somebody edited one rather than drifting daily
-│       ├── surface.py         QuerySurface in memory. discover raises only when
-│       │                      nothing could be enumerated, and an empty listing
-│       │                      means empty rather than a failed read
-│       └── evidence.py        QueryEvidence in memory, keyed on the query as
-│                              executed rather than as stored, because that is
-│                              the gap match_observed exists to cross
 ├── finops-web/                IN BUILD  Vite, React and TypeScript
 │   ├── README.md              why the versions are pinned where they are
 │   ├── e2e/                   five Playwright journeys against the built
@@ -520,6 +470,65 @@ meter/
 │           ├── platformRollUp.ts       one grouped total, no second definition
 │           └── surfaceStateFor.ts      the screen side of surfaceState
 │
+├── finops_fakes/              NOT SHIPPED  the estate, and every port in memory.
+│                              Outside `finops_providers` and absent from the wheel
+│                              since 2026-09-21, because a module that fabricates a
+│                              bill has no business in the image that reports a real
+│                              one. An import contract forbids all six production
+│                              packages from reaching it, and it is linted and type
+│                              checked to the same standard as production code,
+│                              because a fake nobody checks drifts from its port.
+│                              ADR-0022. Imported by the tests and by scripts/demo/.
+│                              No network and no clock, enforced by a test that walks
+│                              the syntax tree refusing any name that reads like one
+│   ├── cur.py             the estate's bill, 2,100 FOCUS rows across three
+│   │                     periods, the newest a part month. 22 percent untagged
+│   │                     on purpose, and the account Meter cannot read is on it,
+│   │                     because the bill comes from the payer
+│   ├── utilization.py     the generated estate: 36 resources, two years of
+│   │                     hourly behaviour, three regions. Deterministic, so
+│   │                     the 29 MB export is output and this is the source,
+│   │                     and the export is never committed
+│   ├── estate_shape.py    the curves every generator shares: diurnal,
+│   │                     seasonal, jitter from a seed, and the calendar
+│   │                     predicates. No clock and no randomness, enforced
+│   │                     by a test that walks the syntax tree
+│   ├── estate_metrics.py  the estate behind the MetricSource port, so a
+│   │                     collector reads it through the port it already
+│   │                     speaks. A refusal omits its key rather than failing
+│   │                     the batch, because absent means unobserved
+│   ├── planted.py         58 expected outcomes with a reason each, the oracle
+│   │                     a detector is checked against. The NO_FINDING half
+│   │                     is the valuable half: it names the false positives,
+│   │                     and it found two on its first run, ISS-195 and 196
+│   ├── containers.py      clusters, workloads and node groups. P6's estate
+│   ├── topology.py        95 nodes and 129 edges. P4's estate
+│   ├── quotas.py          130 quotas including the ones nothing can measure,
+│   │                     and five increase requests with their status
+│   │                     history. P5's estate
+│   ├── fixtures.py        one root, two units, five accounts, one denied
+│   ├── provider.py        the failure plan. Any of the six, for any scope.
+│   │                     Takes the time it is observed at, because the
+│   │                     constants are right for a test and wrong for a
+│   │                     demo estate
+│   ├── health.py          role health. Separates an account whose role is
+│   │                     misconfigured from one Meter could not ask about
+│   │                     at all, which are different fixes and owners
+│   ├── platform_cost.py   Meter's own bill, untagged bucket included
+│   ├── evidence.py        CloudTrail and query history in memory. days_ago
+│   │                     reports the same queries run fewer times, at the
+│   │                     same bytes per run, so a measured cost is carried
+│   │                     by the run count while the scan size holds still
+│   ├── surface.py         the dashboards, and queries_as_of, which returns
+│   │                     them as they stood. A modelled cost is computed
+│   │                     from the definition, so it steps on the day
+│   │                     somebody edited one rather than drifting daily
+│   ├── surface.py         QuerySurface in memory. discover raises only when
+│   │                     nothing could be enumerated, and an empty listing
+│   │                     means empty rather than a failed read
+│       └── evidence.py        QueryEvidence in memory, keyed on the query as
+│                             executed rather than as stored, because that is
+│                             the gap match_observed exists to cross
 ├── finops_ingest/             IN BUILD  dispatcher, worker, ledger, collectors
 │   ├── ledger.py              idempotent claims, watermarks that only advance
 │   ├── registry.py            what a collector is. Cadence lives in the database

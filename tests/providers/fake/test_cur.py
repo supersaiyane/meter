@@ -18,8 +18,8 @@ import pytest
 
 from finops_core import errors
 from finops_core.domain.cost import CostRecord
-from finops_providers.fake import cur, fixtures
-from finops_providers.fake.cur import (
+from finops_fakes import cur, fixtures
+from finops_fakes.cur import (
     CLOSED_PERIOD,
     OPEN_PERIOD,
     RETRACTED_FINGERPRINT,

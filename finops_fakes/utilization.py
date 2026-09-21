@@ -47,9 +47,9 @@ from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.metrics import MetricPoint
 from finops_core.domain.resource import ResourceRef
 from finops_core.errors import AccessDenied, NotOptedIn
-from finops_providers.fake import containers, cur, fixtures
-from finops_providers.fake import estate_shape as shape
-from finops_providers.fake.containers import SeriesPoint
+from finops_fakes import containers, cur, fixtures
+from finops_fakes import estate_shape as shape
+from finops_fakes.containers import SeriesPoint
 
 COLLECTOR = "waste_compute"
 GIB = 1024 * 1024 * 1024

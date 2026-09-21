@@ -29,7 +29,7 @@ from decimal import Decimal
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.metrics import MetricPoint
 from finops_core.ports.metrics import MetricRequest
-from finops_providers.fake import fixtures
+from finops_fakes import fixtures
 
 #: An hour of points per hour, over the window each instance has existed for.
 HOURS_PER_DAY = 24

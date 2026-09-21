@@ -85,7 +85,7 @@ ROOT = Path(__file__).resolve().parent.parent
 TEST_DATABASE_URL = "METER_TEST_DATABASE_URL"
 
 #: Hosts accepted as a throwaway database. The same list as
-#: `scripts/ops/seed_demo.py`, copied rather than imported because `scripts/` is
+#: `scripts/demo/seed_demo.py`, copied rather than imported because `scripts/` is
 #: deliberately not a package, and kept honest by a test that compares the two.
 LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1", "::1", "postgres", ""})
 

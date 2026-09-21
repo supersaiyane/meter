@@ -16,17 +16,17 @@ import pytest
 from sqlalchemy import Engine, text
 
 from finops_core.errors import AccessDenied
+from finops_fakes.evidence import FakeQueryEvidence
+
+#: Derived from the fake estate rather than written out, so a fixture that grows
+#: does not fail four assertions that were never about its size.
+from finops_fakes.surface import QUERIES, FakeQuerySurface
 from finops_ingest.collectors.query_audit import (
     COLLECTOR,
     QueryAuditCollector,
     default_ingest_rate,
 )
 from finops_ingest.registry import DEFAULT_SCHEDULE, CollectorContext
-from finops_providers.fake.evidence import FakeQueryEvidence
-
-#: Derived from the fake estate rather than written out, so a fixture that grows
-#: does not fail four assertions that were never about its size.
-from finops_providers.fake.surface import QUERIES, FakeQuerySurface
 from finops_query.cost_model import Rates
 from finops_query.parser import GrafanaQueryParser
 

@@ -36,8 +36,8 @@ from finops_core.domain.account import AccountKey
 from finops_core.domain.metrics import MetricPoint
 from finops_core.errors import CollectionError
 from finops_core.ports.metrics import MetricRequest
-from finops_providers.fake import estate_shape as shape
-from finops_providers.fake import fixtures, utilization
+from finops_fakes import estate_shape as shape
+from finops_fakes import fixtures, utilization
 
 #: A fake price list, in dollars per month, keyed by instance type. Invented, and
 #: labelled as invented: the estate carries no money on purpose, and a demo needs a

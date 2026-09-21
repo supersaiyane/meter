@@ -22,8 +22,8 @@ from botocore.exceptions import ClientError
 from finops_core.config import Settings
 from finops_core.domain.cost import ACTIVE, EXPIRED, QUEUED
 from finops_core.errors import AccessDenied, NoData, SchemaDrift, Throttled
+from finops_fakes import fixtures
 from finops_providers.aws.commitment import CostExplorerCommitmentReport
-from finops_providers.fake import fixtures
 
 WINDOW_START = date(2026, 8, 1)
 WINDOW_END = date(2026, 9, 1)

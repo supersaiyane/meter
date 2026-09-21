@@ -44,6 +44,17 @@ from sqlalchemy import create_engine, text
 from finops_core.config import load_settings
 from finops_core.domain.account import AccountKey
 from finops_core.errors import CollectionError
+from finops_fakes import fixtures
+from finops_fakes.cloudwatch_estate import FakeCloudWatchEstate
+from finops_fakes.commitment import FakeCommitmentReport
+from finops_fakes.cur import FakeCostExport, estate
+from finops_fakes.evidence import FakeQueryEvidence
+from finops_fakes.health import FakeRoleHealth
+from finops_fakes.platform_cost import FakePlatformCost
+from finops_fakes.provider import FakeProvider
+from finops_fakes.recommendations import FakeRecommendationSource
+from finops_fakes.surface import FakeQuerySurface, queries_as_of
+from finops_fakes.waste import FakeWasteMetrics, instances
 from finops_ingest.collectors.account_health import AccountHealthCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
@@ -68,17 +79,6 @@ from finops_ingest.collectors.waste_cloudwatch import WasteCloudWatchCollector
 from finops_ingest.collectors.waste_compute import Candidate, WasteComputeCollector
 from finops_ingest.ledger import RunLedger
 from finops_ingest.registry import CollectorContext, install_default_schedule
-from finops_providers.fake import fixtures
-from finops_providers.fake.cloudwatch_estate import FakeCloudWatchEstate
-from finops_providers.fake.commitment import FakeCommitmentReport
-from finops_providers.fake.cur import FakeCostExport, estate
-from finops_providers.fake.evidence import FakeQueryEvidence
-from finops_providers.fake.health import FakeRoleHealth
-from finops_providers.fake.platform_cost import FakePlatformCost
-from finops_providers.fake.provider import FakeProvider
-from finops_providers.fake.recommendations import FakeRecommendationSource
-from finops_providers.fake.surface import FakeQuerySurface, queries_as_of
-from finops_providers.fake.waste import FakeWasteMetrics, instances
 from finops_query.parser import GrafanaQueryParser
 
 #: Fixed, and readable as "seeded" in the first block, so a row found in a

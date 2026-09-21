@@ -23,8 +23,8 @@ from decimal import Decimal
 import pytest
 
 from finops_core.domain.cost import ACTIVE, QUEUED
-from finops_providers.fake import fixtures
-from finops_providers.fake.commitment import FakeCommitmentReport, coverages, uses
+from finops_fakes import fixtures
+from finops_fakes.commitment import FakeCommitmentReport, coverages, uses
 
 #: Three clocks, none of them the one the module level estate was built at, and one of
 #: them in a different year. A fake that only works at its own birthday is a fake that

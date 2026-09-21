@@ -9,7 +9,7 @@ to ignore an integration.
 from __future__ import annotations
 
 from finops_core.errors import Unreachable
-from finops_providers.fake import fixtures
+from finops_fakes import fixtures
 
 
 class FakeTicketSink:

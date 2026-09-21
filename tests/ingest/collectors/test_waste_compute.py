@@ -21,9 +21,9 @@ import pytest
 from sqlalchemy import Engine, text
 
 from finops_core.config import Settings
+from finops_fakes.waste import FakeWasteMetrics, instances
 from finops_ingest.collectors.waste_compute import Candidate, WasteComputeCollector
 from finops_ingest.registry import CollectorContext
-from finops_providers.fake.waste import FakeWasteMetrics, instances
 
 pytestmark = pytest.mark.integration
 

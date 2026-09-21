@@ -452,6 +452,10 @@ adrs:
   decision: Plain CSS over a utility framework, against our own tokens
   status: Accepted
   doc: docs/adr/ADR-0021-plain-css-over-a-utility-framework.md
+- id: ADR-0022
+  decision: The fakes live outside the production packages, kept there by three mechanisms
+  status: Accepted
+  doc: docs/adr/ADR-0022-fakes-outside-the-production-packages.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'

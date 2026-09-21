@@ -20,8 +20,8 @@ import pytest
 
 # Loaded by path, not imported as a package, because `scripts/` deliberately is
 # not one. `tests/scripts/test_check_index.py` does the same, and importing it
-# as `scripts.ops.seed_demo` makes mypy resolve one file under two module names.
-SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "ops" / "seed_demo.py"
+# as `scripts.demo.seed_demo` makes mypy resolve one file under two module names.
+SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "demo" / "seed_demo.py"
 _spec = importlib.util.spec_from_file_location("seed_demo", SCRIPT)
 assert _spec is not None and _spec.loader is not None
 seed_demo = importlib.util.module_from_spec(_spec)

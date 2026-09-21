@@ -32,8 +32,8 @@ from __future__ import annotations
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 
-from finops_providers.fake import estate_shape as shape
-from finops_providers.fake import fixtures, utilization
+from finops_fakes import estate_shape as shape
+from finops_fakes import fixtures, utilization
 
 COLLECTOR = "topology"
 

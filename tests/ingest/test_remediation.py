@@ -17,6 +17,7 @@ from sqlalchemy import Engine, text
 
 from finops_core.domain.query import SurfaceInstance, SurfaceKind, WriteLevel
 from finops_core.errors import AccessDenied, NotOptedIn
+from finops_fakes.surface import FakeQuerySurface
 from finops_ingest.remediation import (
     KIND,
     FloorOutcome,
@@ -25,7 +26,6 @@ from finops_ingest.remediation import (
     apply_refresh_floor,
     undo_change,
 )
-from finops_providers.fake.surface import FakeQuerySurface
 
 pytestmark = pytest.mark.integration
 

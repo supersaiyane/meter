@@ -327,6 +327,26 @@
     "finops_core/ports/quotas.py",
     "finops_core/ports/recommendations.py",
     "finops_core/ports/tickets.py",
+    "finops_fakes/__init__.py",
+    "finops_fakes/cloudwatch_estate.py",
+    "finops_fakes/commitment.py",
+    "finops_fakes/containers.py",
+    "finops_fakes/cur.py",
+    "finops_fakes/estate_metrics.py",
+    "finops_fakes/estate_shape.py",
+    "finops_fakes/evidence.py",
+    "finops_fakes/fixtures.py",
+    "finops_fakes/health.py",
+    "finops_fakes/planted.py",
+    "finops_fakes/platform_cost.py",
+    "finops_fakes/provider.py",
+    "finops_fakes/quotas.py",
+    "finops_fakes/recommendations.py",
+    "finops_fakes/surface.py",
+    "finops_fakes/tickets.py",
+    "finops_fakes/topology.py",
+    "finops_fakes/utilization.py",
+    "finops_fakes/waste.py",
     "finops_ingest/__init__.py",
     "finops_ingest/collectors/__init__.py",
     "finops_ingest/collectors/account_health.py",
@@ -366,26 +386,6 @@
     "finops_providers/aws/query_evidence.py",
     "finops_providers/aws/recommendations.py",
     "finops_providers/aws/waste.py",
-    "finops_providers/fake/__init__.py",
-    "finops_providers/fake/cloudwatch_estate.py",
-    "finops_providers/fake/commitment.py",
-    "finops_providers/fake/containers.py",
-    "finops_providers/fake/cur.py",
-    "finops_providers/fake/estate_metrics.py",
-    "finops_providers/fake/estate_shape.py",
-    "finops_providers/fake/evidence.py",
-    "finops_providers/fake/fixtures.py",
-    "finops_providers/fake/health.py",
-    "finops_providers/fake/planted.py",
-    "finops_providers/fake/platform_cost.py",
-    "finops_providers/fake/provider.py",
-    "finops_providers/fake/quotas.py",
-    "finops_providers/fake/recommendations.py",
-    "finops_providers/fake/surface.py",
-    "finops_providers/fake/tickets.py",
-    "finops_providers/fake/topology.py",
-    "finops_providers/fake/utilization.py",
-    "finops_providers/fake/waste.py",
     "finops_providers/grafana/__init__.py",
     "finops_providers/grafana/amg.py",
     "finops_providers/grafana/client.py",
@@ -445,6 +445,8 @@
     "scripts/ci/check_memory.py",
     "scripts/ci/code_review.py",
     "scripts/ci/refresh_base_images.py",
+    "scripts/demo/export_fake_estate.py",
+    "scripts/demo/seed_demo.py",
     "scripts/docs/add_lesson.py",
     "scripts/docs/build_context_index.py",
     "scripts/docs/build_file_graph.py",
@@ -453,10 +455,8 @@
     "scripts/docs/rotate_checkpoint.py",
     "scripts/docs/sync.py",
     "scripts/ops/erase_principal.py",
-    "scripts/ops/export_fake_estate.py",
     "scripts/ops/local_token.py",
     "scripts/ops/restore_drill.py",
-    "scripts/ops/seed_demo.py",
     "tests/__init__.py",
     "tests/api/__init__.py",
     "tests/api/test_cost_commitments.py",
@@ -3939,6 +3939,256 @@
       "k": "python"
     },
     {
+      "s": "finops_fakes/cloudwatch_estate.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/cloudwatch_estate.py",
+      "t": "finops_core/ports/cloudwatch_estate.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/commitment.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/commitment.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/containers.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/containers.py",
+      "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/cur.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/cur.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/estate_metrics.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/estate_metrics.py",
+      "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/estate_metrics.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/estate_metrics.py",
+      "t": "finops_core/ports/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/evidence.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/evidence.py",
+      "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/fixtures.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/fixtures.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/fixtures.py",
+      "t": "finops_core/domain/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/fixtures.py",
+      "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/fixtures.py",
+      "t": "finops_core/domain/org.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/fixtures.py",
+      "t": "finops_core/domain/quota.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/fixtures.py",
+      "t": "finops_core/domain/resource.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/fixtures.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/health.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/health.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/platform_cost.py",
+      "t": "finops_providers/aws/platform_cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/provider.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/provider.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/provider.py",
+      "t": "finops_core/domain/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/provider.py",
+      "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/provider.py",
+      "t": "finops_core/domain/org.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/provider.py",
+      "t": "finops_core/domain/quota.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/provider.py",
+      "t": "finops_core/domain/resource.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/provider.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/provider.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/provider.py",
+      "t": "finops_core/ports/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/quotas.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/quotas.py",
+      "t": "finops_core/domain/quota.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/quotas.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/recommendations.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/recommendations.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/surface.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/surface.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/tickets.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/utilization.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/utilization.py",
+      "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/utilization.py",
+      "t": "finops_core/domain/resource.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/utilization.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/waste.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/waste.py",
+      "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/waste.py",
+      "t": "finops_core/ports/metrics.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/account_health.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -4489,346 +4739,6 @@
       "k": "python"
     },
     {
-      "s": "finops_providers/fake/__init__.py",
-      "t": "finops_providers/fake/provider.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/cloudwatch_estate.py",
-      "t": "finops_core/errors.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/cloudwatch_estate.py",
-      "t": "finops_core/ports/cloudwatch_estate.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/cloudwatch_estate.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/commitment.py",
-      "t": "finops_core/domain/cost.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/commitment.py",
-      "t": "finops_core/errors.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/commitment.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/containers.py",
-      "t": "finops_core/domain/account.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/containers.py",
-      "t": "finops_core/domain/metrics.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/containers.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/cur.py",
-      "t": "finops_core/domain/cost.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/cur.py",
-      "t": "finops_core/errors.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/cur.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/estate_metrics.py",
-      "t": "finops_core/domain/account.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/estate_metrics.py",
-      "t": "finops_core/domain/metrics.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/estate_metrics.py",
-      "t": "finops_core/errors.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/estate_metrics.py",
-      "t": "finops_core/ports/metrics.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/estate_metrics.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/estate_shape.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/evidence.py",
-      "t": "finops_core/errors.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/evidence.py",
-      "t": "finops_core/ports/query.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/fixtures.py",
-      "t": "finops_core/domain/account.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/fixtures.py",
-      "t": "finops_core/domain/cost.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/fixtures.py",
-      "t": "finops_core/domain/identity.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/fixtures.py",
-      "t": "finops_core/domain/metrics.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/fixtures.py",
-      "t": "finops_core/domain/org.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/fixtures.py",
-      "t": "finops_core/domain/quota.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/fixtures.py",
-      "t": "finops_core/domain/resource.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/fixtures.py",
-      "t": "finops_core/errors.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/health.py",
-      "t": "finops_core/domain/account.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/health.py",
-      "t": "finops_core/errors.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/health.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/platform_cost.py",
-      "t": "finops_providers/aws/platform_cost.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/provider.py",
-      "t": "finops_core/domain/account.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/provider.py",
-      "t": "finops_core/domain/cost.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/provider.py",
-      "t": "finops_core/domain/identity.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/provider.py",
-      "t": "finops_core/domain/metrics.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/provider.py",
-      "t": "finops_core/domain/org.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/provider.py",
-      "t": "finops_core/domain/quota.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/provider.py",
-      "t": "finops_core/domain/resource.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/provider.py",
-      "t": "finops_core/domain/tenant.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/provider.py",
-      "t": "finops_core/errors.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/provider.py",
-      "t": "finops_core/ports/metrics.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/provider.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/provider.py",
-      "t": "finops_providers/fake/commitment.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/provider.py",
-      "t": "finops_providers/fake/cur.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/quotas.py",
-      "t": "finops_core/domain/account.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/quotas.py",
-      "t": "finops_core/domain/quota.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/quotas.py",
-      "t": "finops_core/errors.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/quotas.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/recommendations.py",
-      "t": "finops_core/domain/waste.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/recommendations.py",
-      "t": "finops_core/errors.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/recommendations.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/surface.py",
-      "t": "finops_core/domain/query.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/surface.py",
-      "t": "finops_core/errors.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/tickets.py",
-      "t": "finops_core/errors.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/tickets.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/topology.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/utilization.py",
-      "t": "finops_core/domain/account.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/utilization.py",
-      "t": "finops_core/domain/metrics.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/utilization.py",
-      "t": "finops_core/domain/resource.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/utilization.py",
-      "t": "finops_core/errors.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/utilization.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/utilization.py",
-      "t": "finops_providers/fake/containers.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/waste.py",
-      "t": "finops_core/domain/account.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/waste.py",
-      "t": "finops_core/domain/metrics.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/waste.py",
-      "t": "finops_core/ports/metrics.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_providers/fake/waste.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
       "s": "finops_providers/grafana/amg.py",
       "t": "finops_core/domain/query.py",
       "k": "python"
@@ -4949,8 +4859,98 @@
       "k": "python"
     },
     {
-      "s": "scripts/ops/export_fake_estate.py",
-      "t": "finops_providers/fake/__init__.py",
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/account_health.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/cost_anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/org_tree.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/platform_cost.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/query_audit.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/realized_savings.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/score.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/waste_cloudwatch.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/waste_compute.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/ledger.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_query/parser.py",
       "k": "python"
     },
     {
@@ -4999,156 +4999,6 @@
       "k": "python"
     },
     {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_core/config.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_core/domain/account.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_core/errors.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_ingest/collectors/account_health.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_ingest/collectors/commitment.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_ingest/collectors/cost_anomaly.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_ingest/collectors/cost_focus.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_ingest/collectors/org_tree.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_ingest/collectors/partitions.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_ingest/collectors/platform_cost.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_ingest/collectors/query_audit.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_ingest/collectors/realized_savings.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_ingest/collectors/recommendations.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_ingest/collectors/score.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_ingest/collectors/waste_cloudwatch.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_ingest/collectors/waste_compute.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_ingest/ledger.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_ingest/registry.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_providers/fake/cloudwatch_estate.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_providers/fake/commitment.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_providers/fake/cur.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_providers/fake/evidence.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_providers/fake/health.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_providers/fake/platform_cost.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_providers/fake/provider.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_providers/fake/recommendations.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_providers/fake/surface.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_providers/fake/waste.py",
-      "k": "python"
-    },
-    {
-      "s": "scripts/ops/seed_demo.py",
-      "t": "finops_query/parser.py",
-      "k": "python"
-    },
-    {
       "s": "tests/api/test_cost_commitments.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -5171,11 +5021,6 @@
     {
       "s": "tests/api/test_cost_commitments.py",
       "t": "finops_ingest/registry.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/api/test_cost_commitments.py",
-      "t": "finops_providers/fake/commitment.py",
       "k": "python"
     },
     {
@@ -5229,11 +5074,6 @@
       "k": "python"
     },
     {
-      "s": "tests/api/test_cost_repository.py",
-      "t": "finops_providers/fake/cur.py",
-      "k": "python"
-    },
-    {
       "s": "tests/api/test_cost_routes.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -5271,11 +5111,6 @@
     {
       "s": "tests/api/test_cost_routes.py",
       "t": "finops_ingest/registry.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/api/test_cost_routes.py",
-      "t": "finops_providers/fake/cur.py",
       "k": "python"
     },
     {
@@ -5331,11 +5166,6 @@
     {
       "s": "tests/api/test_lifecycle.py",
       "t": "finops_ingest/registry.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/api/test_lifecycle.py",
-      "t": "finops_providers/fake/recommendations.py",
       "k": "python"
     },
     {
@@ -5514,16 +5344,6 @@
       "k": "python"
     },
     {
-      "s": "tests/api/test_waste_routes.py",
-      "t": "finops_providers/fake/recommendations.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/api/test_waste_routes.py",
-      "t": "finops_providers/fake/tickets.py",
-      "k": "python"
-    },
-    {
       "s": "tests/conftest.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -5561,16 +5381,6 @@
     {
       "s": "tests/contract/conftest.py",
       "t": "finops_providers/aws/cur.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/contract/conftest.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/contract/conftest.py",
-      "t": "finops_providers/fake/provider.py",
       "k": "python"
     },
     {
@@ -5789,11 +5599,6 @@
       "k": "python"
     },
     {
-      "s": "tests/ingest/collectors/test_commitment.py",
-      "t": "finops_providers/fake/commitment.py",
-      "k": "python"
-    },
-    {
       "s": "tests/ingest/collectors/test_cost_anomaly.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -5816,16 +5621,6 @@
     {
       "s": "tests/ingest/collectors/test_cost_anomaly.py",
       "t": "finops_ingest/registry.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/ingest/collectors/test_cost_anomaly.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/ingest/collectors/test_cost_anomaly.py",
-      "t": "finops_providers/fake/cur.py",
       "k": "python"
     },
     {
@@ -5854,11 +5649,6 @@
       "k": "python"
     },
     {
-      "s": "tests/ingest/collectors/test_cost_focus.py",
-      "t": "finops_providers/fake/cur.py",
-      "k": "python"
-    },
-    {
       "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
       "t": "finops_core/__init__.py",
       "k": "python"
@@ -5884,11 +5674,6 @@
       "k": "python"
     },
     {
-      "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
-      "t": "finops_providers/fake/cur.py",
-      "k": "python"
-    },
-    {
       "s": "tests/ingest/collectors/test_cost_rollup.py",
       "t": "finops_core/domain/cost.py",
       "k": "python"
@@ -5911,11 +5696,6 @@
     {
       "s": "tests/ingest/collectors/test_cost_rollup.py",
       "t": "finops_ingest/registry.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/ingest/collectors/test_cost_rollup.py",
-      "t": "finops_providers/fake/cur.py",
       "k": "python"
     },
     {
@@ -6044,11 +5824,6 @@
       "k": "python"
     },
     {
-      "s": "tests/ingest/collectors/test_recommendations.py",
-      "t": "finops_providers/fake/recommendations.py",
-      "k": "python"
-    },
-    {
       "s": "tests/ingest/collectors/test_retention.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -6109,16 +5884,6 @@
       "k": "python"
     },
     {
-      "s": "tests/ingest/collectors/test_waste_against_the_estate.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/ingest/collectors/test_waste_against_the_estate.py",
-      "t": "finops_providers/fake/estate_metrics.py",
-      "k": "python"
-    },
-    {
       "s": "tests/ingest/collectors/test_waste_cloudwatch.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -6134,11 +5899,6 @@
       "k": "python"
     },
     {
-      "s": "tests/ingest/collectors/test_waste_cloudwatch.py",
-      "t": "finops_providers/fake/cloudwatch_estate.py",
-      "k": "python"
-    },
-    {
       "s": "tests/ingest/collectors/test_waste_compute.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -6151,11 +5911,6 @@
     {
       "s": "tests/ingest/collectors/test_waste_compute.py",
       "t": "finops_ingest/registry.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/ingest/collectors/test_waste_compute.py",
-      "t": "finops_providers/fake/waste.py",
       "k": "python"
     },
     {
@@ -6210,16 +5965,6 @@
     },
     {
       "s": "tests/ingest/test_query_audit.py",
-      "t": "finops_providers/fake/evidence.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/ingest/test_query_audit.py",
-      "t": "finops_providers/fake/surface.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/ingest/test_query_audit.py",
       "t": "finops_query/cost_model.py",
       "k": "python"
     },
@@ -6246,11 +5991,6 @@
     {
       "s": "tests/ingest/test_remediation.py",
       "t": "finops_ingest/remediation.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/ingest/test_remediation.py",
-      "t": "finops_providers/fake/surface.py",
       "k": "python"
     },
     {
@@ -6444,11 +6184,6 @@
       "k": "python"
     },
     {
-      "s": "tests/providers/aws/test_commitment.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
       "s": "tests/providers/aws/test_credentials.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -6559,11 +6294,6 @@
       "k": "python"
     },
     {
-      "s": "tests/providers/aws/test_recommendations.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
       "s": "tests/providers/aws/test_waste_metrics.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -6594,16 +6324,6 @@
       "k": "python"
     },
     {
-      "s": "tests/providers/fake/test_commitment.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/providers/fake/test_commitment.py",
-      "t": "finops_providers/fake/commitment.py",
-      "k": "python"
-    },
-    {
       "s": "tests/providers/fake/test_cur.py",
       "t": "finops_core/__init__.py",
       "k": "python"
@@ -6614,38 +6334,13 @@
       "k": "python"
     },
     {
-      "s": "tests/providers/fake/test_cur.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/providers/fake/test_cur.py",
-      "t": "finops_providers/fake/cur.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/providers/fake/test_evidence.py",
-      "t": "finops_providers/fake/evidence.py",
-      "k": "python"
-    },
-    {
       "s": "tests/providers/fake/test_evidence.py",
       "t": "finops_query/parser.py",
       "k": "python"
     },
     {
-      "s": "tests/providers/fake/test_surface.py",
-      "t": "finops_providers/fake/surface.py",
-      "k": "python"
-    },
-    {
       "s": "tests/providers/fake/test_utilization_estates.py",
       "t": "finops_core/errors.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/providers/fake/test_utilization_estates.py",
-      "t": "finops_providers/fake/__init__.py",
       "k": "python"
     },
     {
@@ -6689,16 +6384,6 @@
       "k": "python"
     },
     {
-      "s": "tests/providers/test_fake.py",
-      "t": "finops_providers/fake/__init__.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/providers/test_fake.py",
-      "t": "finops_providers/fake/provider.py",
-      "k": "python"
-    },
-    {
       "s": "tests/providers/test_fake_surface.py",
       "t": "finops_core/domain/query.py",
       "k": "python"
@@ -6711,11 +6396,6 @@
     {
       "s": "tests/providers/test_fake_surface.py",
       "t": "finops_core/ports/query.py",
-      "k": "python"
-    },
-    {
-      "s": "tests/providers/test_fake_surface.py",
-      "t": "finops_providers/fake/surface.py",
       "k": "python"
     },
     {

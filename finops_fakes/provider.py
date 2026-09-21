@@ -26,9 +26,9 @@ from finops_core.domain.resource import ResourceRef
 from finops_core.domain.tenant import Scope
 from finops_core.errors import AccessDenied, CollectionError
 from finops_core.ports.metrics import MetricRequest
-from finops_providers.fake import fixtures
-from finops_providers.fake.commitment import FakeCommitmentReport
-from finops_providers.fake.cur import FakeCostExport
+from finops_fakes import fixtures
+from finops_fakes.commitment import FakeCommitmentReport
+from finops_fakes.cur import FakeCostExport
 
 COLLECTOR = "fake"
 

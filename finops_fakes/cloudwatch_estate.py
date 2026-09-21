@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from finops_core.ports.cloudwatch_estate import Alarm, LogGroup
-from finops_providers.fake import fixtures
+from finops_fakes import fixtures
 
 ACCOUNT = "fake-platform-a"
 REGION = fixtures.REGION

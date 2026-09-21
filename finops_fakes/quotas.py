@@ -47,8 +47,8 @@ from decimal import Decimal
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.quota import QuotaUsage
 from finops_core.errors import AccessDenied, NotOptedIn
-from finops_providers.fake import containers, fixtures, utilization
-from finops_providers.fake import estate_shape as shape
+from finops_fakes import containers, fixtures, utilization
+from finops_fakes import estate_shape as shape
 
 COLLECTOR = "quotas"
 

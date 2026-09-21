@@ -33,8 +33,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TypedDict
 
-from finops_providers.fake import containers, fixtures, planted, quotas, topology, utilization
-from finops_providers.fake import estate_shape as shape
+from finops_fakes import containers, fixtures, planted, quotas, topology, utilization
+from finops_fakes import estate_shape as shape
 
 FORMAT_VERSION = 1
 

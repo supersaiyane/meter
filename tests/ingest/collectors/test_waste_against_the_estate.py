@@ -37,10 +37,10 @@ from sqlalchemy import Engine, text
 from finops_core.config import Settings
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.ports.metrics import MetricRequest
+from finops_fakes import fixtures, planted
+from finops_fakes.estate_metrics import EstateMetrics, ec2_candidates
 from finops_ingest.collectors.waste_compute import Candidate, WasteComputeCollector
 from finops_ingest.registry import CollectorContext
-from finops_providers.fake import fixtures, planted
-from finops_providers.fake.estate_metrics import EstateMetrics, ec2_candidates
 
 pytestmark = pytest.mark.integration
 

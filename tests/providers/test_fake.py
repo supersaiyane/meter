@@ -21,8 +21,8 @@ import pytest
 from finops_core import errors, ports
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.org import OrgNodeType
-from finops_providers.fake import fixtures
-from finops_providers.fake.provider import FakeProvider
+from finops_fakes import fixtures
+from finops_fakes.provider import FakeProvider
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 FAKE_PACKAGE = ROOT / "finops_providers" / "fake"

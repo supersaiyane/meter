@@ -28,7 +28,7 @@ from uuid import UUID
 
 from finops_core.domain.waste import Lifecycle, Recommendation, Source, WasteClass
 from finops_core.errors import CollectionError, NotOptedIn
-from finops_providers.fake import cur, fixtures
+from finops_fakes import cur, fixtures
 
 COLLECTOR = "recommendations"
 

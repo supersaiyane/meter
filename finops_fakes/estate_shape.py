@@ -27,7 +27,7 @@ from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from hashlib import blake2b
 
-from finops_providers.fake import fixtures
+from finops_fakes import fixtures
 
 #: Two years of history. Long enough for a year over year comparison and for
 #: every calendar effect below to occur at least twice.

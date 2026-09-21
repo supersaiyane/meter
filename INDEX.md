@@ -214,6 +214,7 @@ block is caught by `make check-docs`. See
 | ADR-0019 | Headless component behaviour, our own visual layer | Accepted, styling row superseded by ADR-0021 | [ADR-0019](docs/adr/ADR-0019-headless-components-own-visual-layer.md) |
 | ADR-0020 | Seven fixed navigation groups, and the routes they fix | Accepted | [ADR-0020](docs/adr/ADR-0020-seven-fixed-navigation-groups.md) |
 | ADR-0021 | Plain CSS over a utility framework, against our own tokens | Accepted | [ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md) |
+| ADR-0022 | The fakes live outside the production packages, kept there by three mechanisms | Accepted | [ADR-0022](docs/adr/ADR-0022-fakes-outside-the-production-packages.md) |
 
 Index of records: [docs/adr/README.md](docs/adr/README.md)
 

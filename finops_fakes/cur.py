@@ -26,7 +26,7 @@ from types import MappingProxyType
 
 from finops_core.domain.cost import CostRecord, source_fingerprint
 from finops_core.errors import CollectionError, NoData
-from finops_providers.fake import fixtures
+from finops_fakes import fixtures
 
 COLLECTOR = "cost_focus"
 

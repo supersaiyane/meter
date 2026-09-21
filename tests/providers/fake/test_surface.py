@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from finops_providers.fake.surface import QUERIES, REFRESH_HISTORY, queries_as_of
+from finops_fakes.surface import QUERIES, REFRESH_HISTORY, queries_as_of
 
 ALERT = "fp-alert-0004"
 TEAM = "fp-team-0001"

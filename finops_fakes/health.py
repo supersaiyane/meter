@@ -16,7 +16,7 @@ from datetime import datetime
 
 from finops_core.domain.account import AccountHealth, AccountKey, RoleHealth
 from finops_core.errors import Throttled
-from finops_providers.fake import fixtures
+from finops_fakes import fixtures
 
 COLLECTOR = "account_health"
 

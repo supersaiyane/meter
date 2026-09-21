@@ -20,11 +20,7 @@ import pytest
 from sqlalchemy import Engine, text
 
 from finops_core.domain.cost import CostRecord
-from finops_ingest.collectors.cost_focus import CostFocusCollector
-from finops_ingest.collectors.cost_rollup import roll_up_before
-from finops_ingest.collectors.partitions import ensure_partition
-from finops_ingest.registry import CollectorContext
-from finops_providers.fake.cur import (
+from finops_fakes.cur import (
     CLOSED_PERIOD,
     ESTATE,
     OLDEST_PERIOD,
@@ -33,6 +29,10 @@ from finops_providers.fake.cur import (
     FakeCostExport,
     restate,
 )
+from finops_ingest.collectors.cost_focus import CostFocusCollector
+from finops_ingest.collectors.cost_rollup import roll_up_before
+from finops_ingest.collectors.partitions import ensure_partition
+from finops_ingest.registry import CollectorContext
 
 pytestmark = pytest.mark.integration
 

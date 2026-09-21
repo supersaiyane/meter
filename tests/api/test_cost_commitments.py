@@ -31,9 +31,9 @@ from sqlalchemy import Engine
 from finops_core.config import Settings
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.tenant import Scope
+from finops_fakes.commitment import FakeCommitmentReport
 from finops_ingest.collectors.commitment import CommitmentCollector
 from finops_ingest.registry import CollectorContext
-from finops_providers.fake.commitment import FakeCommitmentReport
 from tests.api.test_query_routes import another_tenant, auth, client_for
 
 pytestmark = pytest.mark.integration
