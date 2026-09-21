@@ -609,6 +609,13 @@ cost per run, not in code.
 
 ## 11. Architecture graph
 
+[docs/architecture/overview.html](docs/architecture/overview.html) is the whole
+system in five diagrams: deploying it, how it collects, how a screen reads,
+what protects it, and what it is made of. Each section is one line of prose and
+one picture, because the deployment order and the trust chain are faster to see
+than to read. It is written by hand, unlike everything else in that directory,
+and it states plainly what has never run against AWS. Open it in a browser.
+
 [docs/architecture/file-graph.md](docs/architecture/file-graph.md) shows how
 every file depends on every other: Python imports, TypeScript imports,
 Terraform module references and Dockerfile COPY edges, read out of the source.

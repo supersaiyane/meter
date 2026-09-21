@@ -71,7 +71,10 @@ meter/
 │   ├── registry.yaml          SOURCE OF TRUTH for the generated documents
 │   ├── feature-flags.yaml     every flag, its owner, reason, expiry, removal
 │   ├── features/              one document per feature, 50 of them
-│   ├── architecture/          generated file dependency graph
+│   ├── architecture/          generated file dependency graph, plus
+│   │                          overview.html, the one hand written file there:
+│   │                          the whole system drawn, and the only place that
+│   │                          says in one view what has never run against AWS
 │   ├── templates/             spec, task, ADR, change and issue templates
 │   ├── checkpoint.md          session continuity log with resume vectors
 │   ├── adr/                   architecture decision records, 0001 to 0008
@@ -466,6 +469,7 @@ continuous integration, not by good intentions.
 | Task counts, which change | `grep -c '^### TASK' docs/plans/*.md`. Not written into prose, because a count in prose goes stale silently |
 | What does this feature do | `docs/features/FEAT-nnn-*.md` |
 | How do these files depend on each other | `docs/architecture/file-graph.md`, `make graph` |
+| What is the shape of the whole system | `docs/architecture/overview.html`, open in a browser |
 | What is the security policy | `docs/05-SECURITY.md` |
 | What does the database look like | `docs/07-DATA-MODEL.md` |
 | Where do I change a feature status | `docs/registry.yaml`, then `make doc-sync` |
