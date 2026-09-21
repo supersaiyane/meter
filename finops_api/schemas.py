@@ -398,8 +398,13 @@ class RealizedSavingOut(BaseModel):
     cost_before: Decimal
     cost_after: Decimal
     #: The control. A fall in cost with a larger fall in usage is not a saving.
-    usage_before: Decimal
-    usage_after: Decimal
+    #: Nullable, and the null is load bearing: `consumed_quantity` is absent from the
+    #: billing rows for some services, and None means nobody published a quantity
+    #: rather than a quantity of zero. A zero here would read as a workload that
+    #: vanished. Constraint 5, and migration `0012` holds the same rule in the
+    #: database.
+    usage_before: Decimal | None
+    usage_after: Decimal | None
     verdict: str
     why: str
     window_before_start: date

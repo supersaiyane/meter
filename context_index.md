@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-536 public symbols across 5 packages.
+537 public symbols across 5 packages.
 
 ## finops_core
 
@@ -308,6 +308,7 @@ a duplicate.
 | `rates_from` | function | `finops_ingest/collectors/query_audit.py:78` | Build the model's rates from configuration. | nothing in this tree |
 | `default_ingest_rate` | function | `finops_ingest/collectors/query_audit.py:113` | The fallback used when ingestion cannot be measured for a log group. | nothing in this tree |
 | `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:136` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
+| `RealizedSavingsCollector` | class | `finops_ingest/collectors/realized_savings.py:174` | The north star metric, measured rather than modelled. | nothing in this tree |
 | `RecommendationCollector` | class | `finops_ingest/collectors/recommendations.py:113` | Reads three services and writes one table. | nothing in this tree |
 | `hashed_subject` | function | `finops_ingest/collectors/retention.py:66` | A stable, non reversible stand in, so a duplicate sign in is still one row. | nothing in this tree |
 | `retention_principal` | function | `finops_ingest/collectors/retention.py:75` | Anonymise principals unseen past the window. Never removes a row. | nothing in this tree |
@@ -349,17 +350,17 @@ a duplicate.
 | `publish` | function | `finops_ingest/metrics.py:146` | Send the measurements. Returns how many were sent. | `finops_ingest/dispatcher.py` |
 | `screen_and_alert_thresholds` | function | `finops_ingest/metrics.py:175` | The two multiples, returned together so a test can hold them apart. | nothing in this tree |
 | `CollectorScope` | class | `finops_ingest/registry.py:25` | What one unit of this collector's work covers. | nothing in this tree |
-| `CollectorOutcome` | class | `finops_ingest/registry.py:35` | What a collector did, for the run ledger to record. | `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/commitment.py`, `finops_ingest/collectors/cost_anomaly.py`, `finops_ingest/collectors/cost_focus.py`, and 8 more |
+| `CollectorOutcome` | class | `finops_ingest/registry.py:35` | What a collector did, for the run ledger to record. | `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/commitment.py`, `finops_ingest/collectors/cost_anomaly.py`, `finops_ingest/collectors/cost_focus.py`, and 9 more |
 | `CollectorContext` | class | `finops_ingest/registry.py:48` | Everything a collector is given, and nothing it is not. | `finops_ingest/worker.py` |
 | `Collector` | class | `finops_ingest/registry.py:82` |  | `finops_ingest/collectors/retention.py` |
 | `ScheduleEntry` | class | `finops_ingest/registry.py:89` | One collector's cadence, with the reason it is that number. | nothing in this tree |
-| `governed_by_retention_flag` | function | `finops_ingest/registry.py:253` |  | nothing in this tree |
-| `due_collectors` | function | `finops_ingest/registry.py:257` | Which of a tenant's collectors are due, honouring the kill switch. | nothing in this tree |
-| `install_default_schedule` | function | `finops_ingest/registry.py:304` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
-| `CollectorRegistry` | class | `finops_ingest/registry.py:332` | The collectors this process knows how to run. | nothing in this tree |
-| `CollectorRegistry.register` | method | `finops_ingest/registry.py:338` |  | `finops_ingest/collectors/retention.py` |
-| `CollectorRegistry.get` | method | `finops_ingest/registry.py:346` |  | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 37 more |
-| `CollectorRegistry.names` | method | `finops_ingest/registry.py:355` |  | nothing in this tree |
+| `governed_by_retention_flag` | function | `finops_ingest/registry.py:328` |  | nothing in this tree |
+| `due_collectors` | function | `finops_ingest/registry.py:332` | Which of a tenant's collectors are due, honouring the kill switch. | nothing in this tree |
+| `install_default_schedule` | function | `finops_ingest/registry.py:379` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
+| `CollectorRegistry` | class | `finops_ingest/registry.py:407` | The collectors this process knows how to run. | nothing in this tree |
+| `CollectorRegistry.register` | method | `finops_ingest/registry.py:413` |  | `finops_ingest/collectors/retention.py` |
+| `CollectorRegistry.get` | method | `finops_ingest/registry.py:421` |  | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 38 more |
+| `CollectorRegistry.names` | method | `finops_ingest/registry.py:430` |  | nothing in this tree |
 | `FloorOutcome` | class | `finops_ingest/remediation.py:43` | What happened, in enough detail to explain a refusal. | nothing in this tree |
 | `apply_refresh_floor` | function | `finops_ingest/remediation.py:59` | Raise one workspace's floor, if this deployment is permitted to. | nothing in this tree |
 | `RewriteOutcome` | class | `finops_ingest/remediation.py:143` | What a panel rewrite did, including the case where it undid itself. | nothing in this tree |
@@ -430,7 +431,7 @@ a duplicate.
 | `QueryFindingRepository.grouped` | method | `finops_api/db/repositories/query.py:149` | Findings summed by cause, worst group first. | `finops_api/routes/cost.py`, `finops_api/routes/query.py` |
 | `QueryFindingRepository.latest_change` | method | `finops_api/db/repositories/query.py:182` | The most recent change on this finding that has not been reverted. | `finops_api/routes/query.py` |
 | `QueryFindingRepository.history` | method | `finops_api/db/repositories/query.py:204` | What this query has cost on each day it was audited. ISS-172. | `finops_api/routes/query.py`, `finops_api/routes/waste.py` |
-| `QueryFindingRepository.one` | method | `finops_api/db/repositories/query.py:244` |  | `finops_api/routes/query.py`, `finops_api/routes/waste.py`, `finops_ingest/collectors/query_audit.py` |
+| `QueryFindingRepository.one` | method | `finops_api/db/repositories/query.py:244` |  | `finops_api/routes/query.py`, `finops_api/routes/waste.py`, `finops_ingest/collectors/query_audit.py`, `finops_ingest/collectors/realized_savings.py` |
 | `AdhocQueryRepository` | class | `finops_api/db/repositories/query.py:250` | The Logs Insights executions no panel and no alert rule claims. | `finops_api/routes/query.py` |
 | `AdhocQueryRepository.most_expensive` | method | `finops_api/db/repositories/query.py:261` | Worst first, which is the only order this list is useful in. | `finops_api/routes/query.py` |
 | `SurfaceInstanceRepository` | class | `finops_api/db/repositories/query.py:279` | Every place queries live, including the ones that could not be read. | `finops_api/routes/query.py` |
@@ -439,7 +440,7 @@ a duplicate.
 | `SurfaceInstanceRepository.all_with_counts` | method | `finops_api/db/repositories/query.py:328` |  | `finops_api/routes/query.py` |
 | `RecommendationRepository` | class | `finops_api/db/repositories/waste.py:33` | What is worth changing, ranked by money. FEAT-028. | `finops_api/routes/waste.py` |
 | `RecommendationRepository.worst_first` | method | `finops_api/db/repositories/waste.py:39` | Biggest money first, filterable. | `finops_api/routes/cost.py`, `finops_api/routes/waste.py` |
-| `RecommendationRepository.one` | method | `finops_api/db/repositories/waste.py:67` |  | `finops_api/routes/query.py`, `finops_api/routes/waste.py`, `finops_ingest/collectors/query_audit.py` |
+| `RecommendationRepository.one` | method | `finops_api/db/repositories/waste.py:67` |  | `finops_api/routes/query.py`, `finops_api/routes/waste.py`, `finops_ingest/collectors/query_audit.py`, `finops_ingest/collectors/realized_savings.py` |
 | `RecommendationRepository.accounts_seen` | method | `finops_api/db/repositories/waste.py:75` | How many accounts this scope has recommendations for. | `finops_api/routes/waste.py` |
 | `RecommendationRepository.unowned` | method | `finops_api/db/repositories/waste.py:87` | How many open recommendations nobody is responsible for. | `finops_api/routes/waste.py` |
 | `RecommendationEventRepository` | class | `finops_api/db/repositories/waste.py:103` | How a recommendation got where it is. | `finops_api/routes/waste.py` |
@@ -523,11 +524,11 @@ a duplicate.
 | `undo_remediation` | function | `finops_api/routes/query.py:407` | Put back what the last remediation replaced. | nothing in this tree |
 | `query_adhoc` | function | `finops_api/routes/query.py:480` | Queries that ran and belong to no panel and no alert rule. FEAT-051. | nothing in this tree |
 | `query_instances` | function | `finops_api/routes/query.py:528` |  | nothing in this tree |
-| `recommendations` | function | `finops_api/routes/waste.py:68` | Worst money first, filterable. | nothing in this tree |
-| `recommendation_detail` | function | `finops_api/routes/waste.py:107` | One recommendation, with how it got where it is. | nothing in this tree |
-| `accept` | function | `finops_api/routes/waste.py:181` | Accept it, name an owner, and open a ticket. | nothing in this tree |
-| `dismiss` | function | `finops_api/routes/waste.py:209` | Dismiss it, with a reason. | nothing in this tree |
-| `savings` | function | `finops_api/routes/waste.py:228` | What actually appeared in the bill. FEAT-029. | nothing in this tree |
+| `recommendations` | function | `finops_api/routes/waste.py:78` | Worst money first, filterable. | nothing in this tree |
+| `recommendation_detail` | function | `finops_api/routes/waste.py:117` | One recommendation, with how it got where it is. | nothing in this tree |
+| `accept` | function | `finops_api/routes/waste.py:191` | Accept it, name an owner, and open a ticket. | nothing in this tree |
+| `dismiss` | function | `finops_api/routes/waste.py:219` | Dismiss it, with a reason. | nothing in this tree |
+| `savings` | function | `finops_api/routes/waste.py:238` | What actually appeared in the bill. FEAT-029. | nothing in this tree |
 | `CoverageOut` | class | `finops_api/schemas.py:26` | What was seen against everything there was to see. ISS-016. | nothing in this tree |
 | `CoverageOut.is_partial` | method | `finops_api/schemas.py:41` |  | nothing in this tree |
 | `FailureOut` | class | `finops_api/schemas.py:45` | One thing that is broken, and what the reader should do about it. | `finops_api/routes/__init__.py`, `finops_api/routes/query.py` |
@@ -553,20 +554,20 @@ a duplicate.
 | `RecommendationDetailOut` | class | `finops_api/schemas.py:366` | One recommendation and how it got where it is. | `finops_api/routes/waste.py` |
 | `RecommendationsOut` | class | `finops_api/schemas.py:375` | The list, and the one number that is about the list rather than in it. | `finops_api/routes/waste.py` |
 | `RealizedSavingOut` | class | `finops_api/schemas.py:387` | What actually appeared in the bill, and what it can claim. | `finops_api/routes/waste.py` |
-| `RealizedSavingsOut` | class | `finops_api/schemas.py:409` | Realized savings, grouped by verdict rather than summed. | `finops_api/routes/waste.py` |
-| `VerdictTotalOut` | class | `finops_api/schemas.py:423` |  | `finops_api/routes/waste.py` |
-| `CommitmentUseOut` | class | `finops_api/schemas.py:430` | One commitment, and how much of what we paid for was consumed. | `finops_api/routes/cost.py` |
-| `CommitmentCoverageOut` | class | `finops_api/schemas.py:458` | How much of one slice of the estate was on a commitment. | `finops_api/routes/cost.py` |
-| `CommitmentsOut` | class | `finops_api/schemas.py:473` | Both figures for one window, and never one derived from the other. | `finops_api/routes/cost.py` |
-| `CostSliceOut` | class | `finops_api/schemas.py:487` | One row of a grouping: a service, an account, a region or a tag value. | `finops_api/routes/cost.py` |
-| `CostDayOut` | class | `finops_api/schemas.py:500` | Effective cost on one day, for the chart on the cost screen. | `finops_api/routes/cost.py` |
-| `CostPointOut` | class | `finops_api/schemas.py:509` | What one query cost on one day. ISS-172. | `finops_api/routes/query.py` |
-| `QueryFindingOut` | class | `finops_api/schemas.py:525` | One expensive query, as the findings list shows it. | `finops_api/routes/query.py` |
-| `RemediationOut` | class | `finops_api/schemas.py:571` | What a remediation did, or why it did not. | `finops_api/routes/query.py` |
-| `QueryGroupOut` | class | `finops_api/schemas.py:594` | One cause, with the money behind it summed across every finding. | `finops_api/routes/query.py` |
-| `QueryFindingDetailOut` | class | `finops_api/schemas.py:618` | One finding with its full working, for the detail screen. | `finops_api/routes/query.py` |
-| `AdhocQueryOut` | class | `finops_api/schemas.py:641` | One Logs Insights query that ran and belongs to no panel or alert rule. | `finops_api/routes/query.py` |
-| `SurfaceInstanceOut` | class | `finops_api/schemas.py:667` | One place queries live, reachable or not. | `finops_api/routes/query.py` |
+| `RealizedSavingsOut` | class | `finops_api/schemas.py:414` | Realized savings, grouped by verdict rather than summed. | `finops_api/routes/waste.py` |
+| `VerdictTotalOut` | class | `finops_api/schemas.py:428` |  | `finops_api/routes/waste.py` |
+| `CommitmentUseOut` | class | `finops_api/schemas.py:435` | One commitment, and how much of what we paid for was consumed. | `finops_api/routes/cost.py` |
+| `CommitmentCoverageOut` | class | `finops_api/schemas.py:463` | How much of one slice of the estate was on a commitment. | `finops_api/routes/cost.py` |
+| `CommitmentsOut` | class | `finops_api/schemas.py:478` | Both figures for one window, and never one derived from the other. | `finops_api/routes/cost.py` |
+| `CostSliceOut` | class | `finops_api/schemas.py:492` | One row of a grouping: a service, an account, a region or a tag value. | `finops_api/routes/cost.py` |
+| `CostDayOut` | class | `finops_api/schemas.py:505` | Effective cost on one day, for the chart on the cost screen. | `finops_api/routes/cost.py` |
+| `CostPointOut` | class | `finops_api/schemas.py:514` | What one query cost on one day. ISS-172. | `finops_api/routes/query.py` |
+| `QueryFindingOut` | class | `finops_api/schemas.py:530` | One expensive query, as the findings list shows it. | `finops_api/routes/query.py` |
+| `RemediationOut` | class | `finops_api/schemas.py:576` | What a remediation did, or why it did not. | `finops_api/routes/query.py` |
+| `QueryGroupOut` | class | `finops_api/schemas.py:599` | One cause, with the money behind it summed across every finding. | `finops_api/routes/query.py` |
+| `QueryFindingDetailOut` | class | `finops_api/schemas.py:623` | One finding with its full working, for the detail screen. | `finops_api/routes/query.py` |
+| `AdhocQueryOut` | class | `finops_api/schemas.py:646` | One Logs Insights query that ran and belongs to no panel or alert rule. | `finops_api/routes/query.py` |
+| `SurfaceInstanceOut` | class | `finops_api/schemas.py:672` | One place queries live, reachable or not. | `finops_api/routes/query.py` |
 
 ## finops_mcp
 
@@ -575,9 +576,9 @@ a duplicate.
 | `ApiError` | class | `finops_mcp/api.py:32` | The API refused or could not answer. Carries the status for the caller. | nothing in this tree |
 | `EnvelopeMissingError` | class | `finops_mcp/api.py:41` | A 200 with no `meta`. Not the contract, so not treated as data. | nothing in this tree |
 | `Transport` | class | `finops_mcp/api.py:45` | What the client needs from an HTTP library, and nothing more. | nothing in this tree |
-| `Transport.get` | method | `finops_mcp/api.py:53` |  | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 36 more |
+| `Transport.get` | method | `finops_mcp/api.py:53` |  | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 37 more |
 | `MeterApi` | class | `finops_mcp/api.py:56` | A caller of the Meter HTTP API. Holds no scope and no credential. | `finops_mcp/server.py` |
-| `MeterApi.get` | method | `finops_mcp/api.py:68` | One GET, returning the envelope exactly as the API sent it. | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 36 more |
+| `MeterApi.get` | method | `finops_mcp/api.py:68` | One GET, returning the envelope exactly as the API sent it. | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 37 more |
 | `MissingTokenError` | class | `finops_mcp/server.py:37` | No caller token. The tool refuses rather than answering as somebody else. | nothing in this tree |
 | `token_from` | function | `finops_mcp/server.py:41` | The caller's bearer token, or an error. | nothing in this tree |
 | `make_handler` | function | `finops_mcp/server.py:59` | Bind one row of the tool table to one handler. | nothing in this tree |

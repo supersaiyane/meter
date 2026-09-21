@@ -232,7 +232,7 @@ features:
 - id: FEAT-029
   name: Realized savings verification, the north star metric
   subproject: P3
-  status: Specified
+  status: In build
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.5, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-029-realized-savings-verification.md
 - id: FEAT-030
@@ -1250,6 +1250,35 @@ issues:
     Insights query history directly and accepting its retention limit
   status: OPEN
   detail: '`finops_ingest/collectors/waste_cloudwatch.py`, FEAT-027'
+
+- id: ISS-190
+  severity: HIGH
+  summary: Five collectors were written, tested and merged with no entry in DEFAULT_SCHEDULE, and
+    due_collectors reads collector_schedule and nothing else, so none of them ever ran on cadence.
+    commitment and cost_anomaly from P1, and recommendations, waste_compute and waste_cloudwatch
+    from P3. Every one of them imported cleanly and passed its own tests, because those tests call
+    the collector directly, which is the same hollow signal as a screen test pinned to a path that
+    shipped, in that the thing under test worked and the wiring did not, and only the wiring was
+    in production. Found 2026-09-21 while adding the realized_savings cadence, and fixed the same day
+    with six entries and a gate. tests/ingest/test_registry.py now derives the collector list from
+    the COLLECTOR constant in each module and fails if any of them has no cadence, and fails in the
+    other direction too, because a cadence naming a collector nobody can run installs a row that
+    reads as permanently stale on the freshness screen
+  status: FIXED
+  detail: '`finops_ingest/registry.py`, `tests/ingest/test_registry.py`, ADR-0012'
+
+- id: ISS-191
+  severity: MEDIUM
+  summary: The savings route called Decimal on a usage column that migration 0012 had just made
+    nullable, so the first recommendation whose billing rows published no consumed_quantity would
+    have returned 500 rather than a null. Nothing caught it because every test of that route ran
+    against an empty realized_saving table, so the serialization of a real row was never exercised
+    at all. Found and fixed 2026-09-21 while writing TASK-P3-014. The route now passes the null
+    through, RealizedSavingOut types both usage fields as optional, and
+    tests/api/test_waste_routes.py seeds real verdicts including one with an unobserved control and
+    asserts it reaches the response as null rather than as zero
+  status: FIXED
+  detail: '`finops_api/routes/waste.py`, `finops_api/schemas.py`, FEAT-029'
 
 - id: ISS-164
   severity: MEDIUM

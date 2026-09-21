@@ -559,8 +559,8 @@ realized_saving = Table(
     Column("cost_after", Numeric(20, 10), nullable=False),
     #: The control. Without it a fall in cost cannot be told apart from a fall in
     #: use, and the counterfactual is unobservable.
-    Column("usage_before", Numeric(20, 10), nullable=False),
-    Column("usage_after", Numeric(20, 10), nullable=False),
+    Column("usage_before", Numeric(20, 10)),
+    Column("usage_after", Numeric(20, 10)),
     #: VERIFIED, REGRESSED or INCONCLUSIVE. The third is expected to be common and
     #: is the evidence this metric is not the vanity number ISS-029 warns about.
     Column("verdict", Text, nullable=False),

@@ -18,7 +18,7 @@ from uuid import UUID, uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine
+from sqlalchemy import Engine, text
 
 from finops_api.routes.waste import NO_RECOMMENDATIONS
 from finops_core.config import Settings
@@ -377,6 +377,89 @@ class TestTheTwoNumbersCannotBeAdded:
         realized = get(client, token, "/api/v1/waste/savings")["data"]
         assert "savings" not in estimates
         assert "recommendations" not in realized
+
+
+class TestTheSavingsRouteOverRealRows:
+    """Every other savings test runs against an empty table, which hid a crash.
+
+    The route called `Decimal(row.usage_before)` on a column migration `0012` made
+    nullable, so the first unobserved control would have been a 500 rather than a
+    null. Nothing caught it, because no test had put a row in `realized_saving`.
+    """
+
+    def a_verdict(
+        self,
+        engine: Engine,
+        tenant: UUID,
+        *,
+        verdict: str,
+        usage: Decimal | None,
+    ) -> UUID:
+        with engine.begin() as connection:
+            identifier = connection.execute(
+                text("SELECT recommendation_id FROM recommendation WHERE tenant_id = :t LIMIT 1"),
+                {"t": tenant},
+            ).scalar_one()
+            connection.execute(
+                text(
+                    "INSERT INTO realized_saving (realized_id, recommendation_id, tenant_id, "
+                    "window_before_start, window_before_end, window_after_start, "
+                    "window_after_end, cost_before, cost_after, usage_before, usage_after, "
+                    "verdict, why, as_of, collected_at) "
+                    "VALUES (:id, :rec, :t, '2026-06-01', '2026-07-01', '2026-07-31', "
+                    "'2026-08-30', 100, 60, :usage, :usage, :verdict, 'the working', :at, :at)"
+                ),
+                {
+                    "id": uuid4(),
+                    "rec": identifier,
+                    "t": tenant,
+                    "usage": usage,
+                    "verdict": verdict,
+                    "at": NOW,
+                },
+            )
+        assert isinstance(identifier, UUID)
+        return identifier
+
+    def test_an_unobserved_control_serializes_as_null_not_zero(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """Constraint 5, at the last boundary before a person reads it.
+
+        A zero here would say the workload went away. The whole chain, billing rows
+        to collector to column to response, has to carry the null, and this is the
+        end of it.
+        """
+        seed(engine, tenant_id)
+        self.a_verdict(engine, tenant_id, verdict="INCONCLUSIVE", usage=None)
+        client, token = client_for(engine, everything(tenant_id), settings)
+        row = get(client, token, "/api/v1/waste/savings")["data"]["savings"][0]
+        assert row["usage_before"] is None
+        assert row["usage_after"] is None
+        assert row["verdict"] == "INCONCLUSIVE"
+
+    def test_a_measured_control_serializes_as_a_figure(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        # The other direction, so the null above is not simply what this route
+        # returns for every row.
+        seed(engine, tenant_id)
+        self.a_verdict(engine, tenant_id, verdict="VERIFIED", usage=Decimal("720"))
+        client, token = client_for(engine, everything(tenant_id), settings)
+        row = get(client, token, "/api/v1/waste/savings")["data"]["savings"][0]
+        assert Decimal(row["usage_before"]) == Decimal("720")
+
+    def test_the_inconclusive_rows_are_listed_rather_than_hidden(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """ISS-029. The inconclusive verdicts are the evidence this is not a vanity
+        metric, so they appear in the list and in the totals."""
+        seed(engine, tenant_id)
+        self.a_verdict(engine, tenant_id, verdict="INCONCLUSIVE", usage=None)
+        client, token = client_for(engine, everything(tenant_id), settings)
+        data = get(client, token, "/api/v1/waste/savings")["data"]
+        assert [row["verdict"] for row in data["savings"]] == ["INCONCLUSIVE"]
+        assert "INCONCLUSIVE" in data["by_verdict"]
 
 
 class TestWhenThereIsNothing:

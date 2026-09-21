@@ -326,6 +326,7 @@
     "finops_ingest/collectors/partitions.py",
     "finops_ingest/collectors/platform_cost.py",
     "finops_ingest/collectors/query_audit.py",
+    "finops_ingest/collectors/realized_savings.py",
     "finops_ingest/collectors/recommendations.py",
     "finops_ingest/collectors/retention.py",
     "finops_ingest/collectors/waste_cloudwatch.py",
@@ -376,6 +377,7 @@
     "finops_query/ownership.py",
     "finops_query/parser.py",
     "finops_query/policy.py",
+    "finops_query/realized.py",
     "finops_query/severity.py",
     "finops_query/waste.py",
     "infra/terraform/hub/alb.tf",
@@ -413,6 +415,7 @@
     "migrations/versions/0009_commitment_coverage.py",
     "migrations/versions/0010_recommendations.py",
     "migrations/versions/0011_realized_saving.py",
+    "migrations/versions/0012_realized_usage_unobserved.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_flags.py",
     "scripts/ci/check_forbidden_imports.py",
@@ -443,6 +446,7 @@
     "tests/api/test_query_routes.py",
     "tests/api/test_routes.py",
     "tests/api/test_scope_enforcement.py",
+    "tests/api/test_the_two_savings_figures.py",
     "tests/api/test_waste_guard.py",
     "tests/api/test_waste_routes.py",
     "tests/conftest.py",
@@ -462,6 +466,7 @@
     "tests/db/__init__.py",
     "tests/db/test_models.py",
     "tests/db/test_p2_constraints.py",
+    "tests/db/test_p3_constraints.py",
     "tests/db/test_schema.py",
     "tests/db/test_scope_guard.py",
     "tests/ingest/__init__.py",
@@ -475,6 +480,7 @@
     "tests/ingest/collectors/test_org_tree.py",
     "tests/ingest/collectors/test_partitions.py",
     "tests/ingest/collectors/test_platform_cost.py",
+    "tests/ingest/collectors/test_realized_savings.py",
     "tests/ingest/collectors/test_recommendations.py",
     "tests/ingest/collectors/test_retention.py",
     "tests/ingest/collectors/test_waste_cloudwatch.py",
@@ -483,6 +489,7 @@
     "tests/ingest/test_ledger.py",
     "tests/ingest/test_metrics.py",
     "tests/ingest/test_query_audit.py",
+    "tests/ingest/test_registry.py",
     "tests/ingest/test_remediation.py",
     "tests/ingest/test_worker.py",
     "tests/mcp/__init__.py",
@@ -518,6 +525,7 @@
     "tests/query/test_ownership.py",
     "tests/query/test_policy.py",
     "tests/query/test_ports.py",
+    "tests/query/test_realized.py",
     "tests/query/test_severity.py",
     "tests/query/test_waste.py",
     "tests/scripts/__init__.py",
@@ -3834,6 +3842,21 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/realized_savings.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/realized_savings.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/realized_savings.py",
+      "t": "finops_query/realized.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/recommendations.py",
       "t": "finops_core/domain/waste.py",
       "k": "python"
@@ -5014,6 +5037,11 @@
       "k": "python"
     },
     {
+      "s": "tests/api/test_the_two_savings_figures.py",
+      "t": "finops_api/__init__.py",
+      "k": "python"
+    },
+    {
       "s": "tests/api/test_waste_guard.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -5554,6 +5582,26 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_realized_savings.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_realized_savings.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_realized_savings.py",
+      "t": "finops_ingest/collectors/realized_savings.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_realized_savings.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_recommendations.py",
       "t": "finops_core/domain/waste.py",
       "k": "python"
@@ -5706,6 +5754,11 @@
     {
       "s": "tests/ingest/test_query_audit.py",
       "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_registry.py",
+      "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {
@@ -6256,6 +6309,11 @@
     {
       "s": "tests/query/test_ports.py",
       "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_realized.py",
+      "t": "finops_query/realized.py",
       "k": "python"
     },
     {

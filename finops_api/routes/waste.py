@@ -45,6 +45,16 @@ router = APIRouter(prefix=API_PREFIX, tags=["waste"])
 NO_RECOMMENDATIONS = "No recommendation has been collected for this tenant yet."
 
 
+def _maybe(value: Any) -> Decimal | None:
+    """A measured quantity, or None where nothing was published.
+
+    The billing export omits `consumed_quantity` for some services, and a zero in
+    its place would read as a workload that vanished rather than as a control nobody
+    could measure.
+    """
+    return None if value is None else Decimal(value)
+
+
 def _out(row: Any) -> RecommendationOut:
     return RecommendationOut(
         recommendation_id=row.recommendation_id,
@@ -248,8 +258,10 @@ def savings(
                 recommendation_id=row.recommendation_id,
                 cost_before=Decimal(row.cost_before),
                 cost_after=Decimal(row.cost_after),
-                usage_before=Decimal(row.usage_before),
-                usage_after=Decimal(row.usage_after),
+                # Passed through rather than coerced. An unobserved usage stays
+                # None all the way to the response, so the screen can say so.
+                usage_before=_maybe(row.usage_before),
+                usage_after=_maybe(row.usage_after),
                 verdict=row.verdict,
                 why=row.why,
                 window_before_start=row.window_before_start,

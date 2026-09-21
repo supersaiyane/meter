@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P3 |
-| Status | Specified |
+| Status | In build |
 | Specification | [P3 spec](../specs/2026-09-20-p3-utilization-and-rightsizing-design.md), section 5.5 |
 | Tasks | TASK-P3-013, TASK-P3-014, TASK-P3-018 |
 | Refresh cadence | Monthly, 60 day lag |
