@@ -25,6 +25,7 @@ from finops_core.domain.quota import QuotaUsage
 from finops_core.domain.resource import ResourceRef
 from finops_core.domain.tenant import Scope
 from finops_core.errors import AccessDenied, CollectionError
+from finops_core.ports.metrics import MetricRequest
 from finops_providers.fake import fixtures
 from finops_providers.fake.commitment import FakeCommitmentReport
 from finops_providers.fake.cur import FakeCostExport
@@ -178,6 +179,33 @@ class FakeProvider:
         return tuple(
             point for point in fixtures.METRIC_POINTS if window_start <= point.at <= window_end
         )
+
+    def read_many(
+        self,
+        requests: Iterable[MetricRequest],
+        window_start: datetime,
+        window_end: datetime,
+        period_seconds: int = 3600,
+    ) -> Mapping[str, tuple[MetricPoint, ...]]:
+        """The batched read, over the same fixture `read_series` uses.
+
+        A key is absent where its account is one this provider refuses, rather
+        than empty, because the port says an unobserved series does not appear and
+        a caller must tell that from a series of zeroes. The refusal is per
+        request here rather than raised for the batch, since a batch that failed
+        entirely because one account was denied would be unusable at the scale the
+        method exists for.
+        """
+        found: dict[str, tuple[MetricPoint, ...]] = {}
+        for request in requests:
+            if request.account not in fixtures.ACCOUNT_KEYS:
+                continue
+            points = tuple(
+                point for point in fixtures.METRIC_POINTS if window_start <= point.at <= window_end
+            )
+            if points:
+                found[request.key] = points
+        return found
 
     # -- ResourceInventory -------------------------------------------------
 

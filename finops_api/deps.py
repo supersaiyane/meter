@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from functools import lru_cache
+from typing import Any
 from uuid import uuid4
 
 from fastapi import Depends, Header, HTTPException, Request, status
@@ -45,6 +46,21 @@ def get_settings(request: Request) -> Settings:
     """
     configured = getattr(request.app.state, "settings", None)
     return configured if configured is not None else load_settings()
+
+
+def get_tickets(request: Request) -> Any:
+    """Where an accepted recommendation goes, or None.
+
+    None when the application was assembled without a sink, which is the current
+    default: OPEN-05 has been open since 2026-08-23 and no adapter has been chosen.
+    The lifecycle works without one, and a recommendation accepted with no sink
+    configured simply carries no ticket reference.
+
+    Returning None rather than raising is deliberate. A product that refused to
+    accept a recommendation because nobody had picked a ticketing system would be
+    holding its own feature hostage to a decision that is not urgent.
+    """
+    return getattr(request.app.state, "tickets", None)
 
 
 def get_request_id(request: Request) -> str:

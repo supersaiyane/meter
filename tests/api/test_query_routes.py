@@ -140,10 +140,18 @@ def seed(engine: Engine, tenant: UUID) -> None:
             )
 
 
-def client_for(engine: Engine, scope: Scope, settings: Settings) -> tuple[TestClient, str]:
+def client_for(
+    engine: Engine, scope: Scope, settings: Settings, tickets: object | None = None
+) -> tuple[TestClient, str]:
     signer = SessionSigner(SIGNING_KEY, ttl_hours=8, clock=lambda: NOW)
     app = create_app(
-        engine=engine, entitlements=StubEntitlements(scope), signer=signer, settings=settings
+        engine=engine,
+        entitlements=StubEntitlements(scope),
+        signer=signer,
+        settings=settings,
+        # Defaulted to None, which is what the application ships with while
+        # OPEN-05 is unanswered. A test that wants to assert on a ticket passes one.
+        tickets=tickets,
     )
     return TestClient(app, raise_server_exceptions=False), signer.issue(
         "p2", "someone@example.local", scope

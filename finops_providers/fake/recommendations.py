@@ -72,6 +72,16 @@ def findings(
     ec2 = _service_cost("AmazonEC2", at)
     rds = _service_cost("AmazonRDS", at)
 
+    def arn(account: str, instance: str) -> str:
+        """An instance ARN built from its own parts.
+
+        Not a literal, so the account inside the ARN cannot disagree with the
+        account on the recommendation, which is exactly the kind of fixture
+        inconsistency that survives until somebody groups by one of them.
+        """
+        prefix = "arn:aws:ec2"  # allow-hardcoded: the ARN grammar is AWS's and is fixed
+        return f"{prefix}:{fixtures.REGION}:{account}:instance/{instance}"
+
     def build(
         *,
         source: Source,
@@ -103,7 +113,7 @@ def findings(
     return (
         build(
             source=Source.COMPUTE_OPTIMIZER,
-            reference="arn:aws:ec2:eu-west-1:fake-platform-a:instance/i-oversized",
+            reference=arn("fake-platform-a", "i-oversized"),
             waste_class=WasteClass.RIGHTSIZE_INSTANCE,
             resource="i-oversized",
             # A fifth of the estate's EC2 bill, which is a plausible rightsizing
@@ -114,7 +124,7 @@ def findings(
         ),
         build(
             source=Source.COMPUTE_OPTIMIZER,
-            reference="arn:aws:ec2:eu-west-1:fake-platform-b:instance/i-burstable",
+            reference=arn("fake-platform-b", "i-burstable"),
             waste_class=WasteClass.RIGHTSIZE_INSTANCE,
             resource="i-burstable",
             saving=_money(ec2 * Decimal("0.04")),

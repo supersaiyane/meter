@@ -208,25 +208,25 @@ features:
 - id: FEAT-025
   name: Cost Optimization Hub, Compute Optimizer and Trusted Advisor ingest
   subproject: P3
-  status: Specified
+  status: Delivered
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 4, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-025-aws-native-recommendation-ingest.md
 - id: FEAT-026
   name: Bespoke waste collectors where AWS is blind
   subproject: P3
-  status: Specified
+  status: Delivered
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.2, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-026-bespoke-waste-collectors.md
 - id: FEAT-027
   name: 'CloudWatch cost module: retention, unqueried logs, stale alarms'
   subproject: P3
-  status: Specified
+  status: Delivered
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.2, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-027-cloudwatch-cost-module.md
 - id: FEAT-028
   name: Recommendation lifecycle with owner and ticketing
   subproject: P3
-  status: Specified
+  status: In build
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.1, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-028-recommendation-lifecycle.md
 - id: FEAT-029

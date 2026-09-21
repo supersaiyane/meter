@@ -15,7 +15,7 @@ from finops_core.ports.cloudwatch_estate import Alarm, LogGroup
 from finops_providers.fake import fixtures
 
 ACCOUNT = "fake-platform-a"
-REGION = "eu-west-1"
+REGION = fixtures.REGION
 
 #: Roughly the eu-west-1 list price. A fake, and the adapter reads the real one.
 PRICE_PER_GB_MONTH = Decimal("0.03")

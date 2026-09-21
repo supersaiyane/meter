@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P3 |
-| Status | Specified |
+| Status | Delivered |
 | Specification | [P3 spec](../specs/2026-09-20-p3-utilization-and-rightsizing-design.md), section 5.2 |
 | Tasks | TASK-P3-009 |
 | Refresh cadence | 24 hours |

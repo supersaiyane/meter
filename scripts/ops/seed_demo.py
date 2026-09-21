@@ -108,6 +108,12 @@ DEMO_TABLES = (
     "query_finding",
     "query_definition",
     "grafana_instance",
+    # P3, FEAT-025 and FEAT-029. Both of these reference `recommendation`, so
+    # both go before it: the measured verdict and the lifecycle log first, the
+    # finding they are about second.
+    "realized_saving",
+    "recommendation_event",
+    "recommendation",
     # P1, FEAT-023. Derived from the daily rows, so it goes before them.
     "cost_anomaly",
     # P1, FEAT-024. Neither references the other, and both reference only the

@@ -207,6 +207,17 @@ def p1_routers() -> tuple[APIRouter, ...]:
     return (cost.router,)
 
 
+def p3_routers() -> tuple[APIRouter, ...]:
+    """The rightsizing surface, from the P3 spec's section 8 table.
+
+    All six. Unlike P1 and P2 at the same stage, every table behind these has a
+    collector, so none of them answers a question with a confident nothing.
+    """
+    from finops_api.routes import waste
+
+    return (waste.router,)
+
+
 def p2_routers() -> tuple[APIRouter, ...]:
     """The query governance routes, from the P2 spec's section 8.2 table.
 
@@ -225,6 +236,10 @@ def create_app(
     settings: Settings | None = None,
     health_check: Any = None,
     remediation_control: Any = None,
+    #: Where an accepted recommendation goes. None is the current default and
+    #: is not a failure: OPEN-05 is unanswered and the lifecycle works without
+    #: one, carrying no ticket reference.
+    tickets: Any = None,
     extra_routers: tuple[APIRouter, ...] = (),
     include_p0_routes: bool = True,
 ) -> FastAPI:
@@ -238,6 +253,7 @@ def create_app(
     app.state.engine = engine
     app.state.entitlements = entitlements
     app.state.signer = signer
+    app.state.tickets = tickets
     app.state.settings = resolved
     app.state.health_check = health_check
     # Absent by default, and a route that needs it refuses rather than pretends.
@@ -249,6 +265,7 @@ def create_app(
         build_router(),
         *(p0_routers() if include_p0_routes else ()),
         *(p1_routers() if include_p0_routes else ()),
+        *(p3_routers() if include_p0_routes else ()),
         *(p2_routers() if include_p0_routes else ()),
         *extra_routers,
     )

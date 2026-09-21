@@ -22,7 +22,7 @@ from finops_core.domain.waste import Source
 from finops_core.errors import AccessDenied
 from finops_ingest.collectors.recommendations import RecommendationCollector
 from finops_ingest.registry import CollectorContext
-from finops_providers.fake.recommendations import FakeRecommendationSource
+from finops_providers.fake.recommendations import FakeRecommendationSource, findings
 
 pytestmark = pytest.mark.integration
 
@@ -176,7 +176,13 @@ class TestWithdrawal:
         collect(engine, tenant_id, NoLongerReporting())
         found = {row[0]: row[1] for row in rows(engine, tenant_id)}
         assert len(found) == 4, "a withdrawn recommendation must keep its row"
-        assert found["arn:aws:ec2:eu-west-1:fake-platform-a:instance/i-oversized"] == "DISMISSED"
+        # Derived from the fake rather than written out, because the fake builds
+        # its ARNs from `fixtures.REGION` and a literal here would go stale the
+        # first time that moved.
+        withdrawn = next(
+            item.source_reference for item in findings() if item.resource_id == "i-oversized"
+        )
+        assert found[withdrawn] == "DISMISSED"
 
     def test_the_withdrawal_event_names_where_it_came_from(
         self, engine: Engine, tenant_id: UUID
