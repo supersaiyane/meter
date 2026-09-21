@@ -215,7 +215,9 @@ class TestNotOptedInIsNotAFault:
                     settings, Services(get_ec2_instance_recommendations=error)
                 ).compute_optimizer()
             )
-        assert AccessDenied is not NotOptedIn
+        # And the two causes remain distinct elsewhere. The folding is specific to
+        # these three services, not a widening of the shared translation.
+        assert not issubclass(NotOptedIn, AccessDenied)
 
 
 class TestCostOptimizationHub:
