@@ -165,7 +165,10 @@ meter/
 │                              runtime stages keep USER 65532:65532, which is the
 │                              posture ADR-0010 protects. The api image also
 │                              carries scripts/ops, because those are run by a
-│                              person against a live database
+│                              person against a live database, and carries neither
+│                              scripts/demo nor finops_fakes, because a module that
+│                              fabricates a bill has no business in the image that
+│                              reports a real one. ADR-0022
 │   └── base-images.lock       pinned digests, chosen by measurement. ADR-0010
 │   └── base-images.lock       pinned digests, resolved by measurement at TASK-P0-029
 ├── docker-compose.yml         local stack, plus a `security` profile of one shot
@@ -208,29 +211,38 @@ meter/
 │   │                          check_forbidden_imports.py, check_memory.py,
 │   │                          refresh_base_images.py, flag and hardcoding checks,
 │   │                          forbidden imports, the memory gate, base image resolver
-│   ├── ops/                   erase_principal.py, run by a person against a live
-│   │                          database. Deliberately not an API route.
-│   │                          seed_demo.py fills a local database by running all
-│   │                          collectors. DEMO_TABLES is its teardown, and a test
-│   │                          derives it from the schema so a new tenant scoped
-│   │                          table cannot be forgotten there. ISS-176
-│   │                          --days runs the collectors once per day at that
-│   │                          day's clock, which is how a trend gets a history,
-│   │                          and passes each run its distance from the newest
-│   │                          day so the fake estate reports the past as quieter
-│   │                          four real collectors against the fake adapters and
-│   │                          through the real run ledger, so seeded rows cannot
-│   │                          drift from collected ones and the ingest and
-│   │                          freshness screens fill from the same act. Refuses
-│   │                          any non local host before an engine exists, and
-│   │                          make unseed clears it by its fixed tenant.
+│   ├── ops/                   run by a person against a live database, which is
+│   │                          why the api image carries this directory and only
+│   │                          this one. erase_principal.py, deliberately not an
+│   │                          API route. local_token.py mints a session.
 │   │                          restore_drill.py restores a copy into a scratch
 │   │                          database, migrates it, starts the application
-│   │                          against it and reads the freshness route. The
-│   │                          same non local refusal, for the same reason
+│   │                          against it and reads the freshness route. Refuses
+│   │                          any non local host before an engine exists
+│   ├── demo/                  needs the fakes, so it is not in the image and not
+│   │                          in `scripts/ops`. Split out 2026-09-21 with
+│   │                          ADR-0022, so what the image contains follows from
+│   │                          where a file lives rather than from a comment.
+│   │                          seed_demo.py fills a local database by running the
+│   │                          real collectors against the fake adapters and
+│   │                          through the real run ledger, so seeded rows cannot
+│   │                          drift from collected ones and the ingest and
+│   │                          freshness screens fill from the same act.
+│   │                          DEMO_TABLES is its teardown, and a test derives it
+│   │                          from the schema so a new tenant scoped table cannot
+│   │                          be forgotten there. ISS-176. --days runs the
+│   │                          collectors once per day at that day's clock, which
+│   │                          is how a trend gets a history. It writes no charges
+│   │                          of its own since ISS-197: the bill names every
+│   │                          estate resource, so the savings screen reads the
+│   │                          rows a cost screen shows. Refuses any non local
+│   │                          host before an engine exists, and make unseed
+│   │                          clears it by its fixed tenant.
+│   │                          export_fake_estate.py writes the estate to CSV,
+│   │                          which is build output and is never committed
 │   └── deploy/                migration task runner
 │
-├── tests/                     the suite, 777 tests. conftest.py refuses to run
+├── tests/                     the suite, 1,420 tests. conftest.py refuses to run
 │                              against a real AWS account when no endpoint
 │                              override is set, and its session scoped `engine`
 │                              starts a PostgreSQL container and migrates it,
