@@ -10,6 +10,27 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [react()],
   build: { outDir: 'dist', sourcemap: true },
+  // The port comes from the environment when something else assigns one,
+  // because vite does not read PORT on its own. Without this it silently
+  // picks the next free port, which looks like a started server to whoever
+  // asked for a specific one and is then unreachable. strictPort is on only
+  // when a port was assigned, so a plain npm run dev still steps aside when
+  // the compose stack already holds 5173.
+  server: {
+    port: process.env.PORT ? Number(process.env.PORT) : 5173,
+    strictPort: Boolean(process.env.PORT),
+    // Without this the dev server answers /api itself, and the SPA fallback
+    // returns index.html with status 200. Every screen then fails on
+    // "Unexpected token '<'", which reads as a product defect and is not one.
+    // The api container publishes 8000, and mounts its routes under /api
+    // already, so nothing is rewritten.
+    proxy: {
+      '/api': {
+        target: process.env.METER_API_ORIGIN ?? 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',
