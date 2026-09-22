@@ -1371,6 +1371,22 @@ issues:
   status: FIXED
   detail: '`finops_fakes/cur.py`, `finops_fakes/prices.py`, FEAT-029, FEAT-035'
 
+- id: ISS-198
+  severity: LOW
+  summary: scripts/docs/rotate_checkpoint.py cannot run against docs/checkpoint.md and never has.
+    It requires the checkpoint table to be one contiguous block of rows, and the file has always
+    held prose sections between blocks, so it refuses with "the checkpoint table is not one
+    contiguous block of rows". The effect is that the archive rule CLAUDE.md states, rotate at 50
+    entries and keep the latest 20, has never been applied. The file reached 104 entries with 84 of
+    them past the window, and make check-memory warns about it every session rather than failing,
+    so nothing ever forced the issue. Found 2026-09-22 by running the script rather than trusting
+    the warning. Eight rows appended after the closing prose on 2026-09-21 were moved into the log
+    table the same day, which took the block count from 19 to 11 and is not a fix. The fix is
+    either a script that rotates the first block and leaves the prose alone, or a checkpoint file
+    that is one table with the prose moved to its own document
+  status: OPEN
+  detail: '`scripts/docs/rotate_checkpoint.py`, `docs/checkpoint.md`, CLAUDE.md section 3'
+
 - id: ISS-164
   severity: MEDIUM
   summary: security/reports/latest is a committed symlink and the scan script wrote it as an

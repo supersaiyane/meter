@@ -247,6 +247,19 @@ The counts moving by one in the list you meant is the check.
 a following key rather than a preceding one, and `KeyError` from a generator over
 a list that parsed cleanly.
 
+**Amended 2026-09-22, same file and a different way to break it.** Three times in
+one day I wrote a colon followed by a space inside an unquoted `summary:` and the
+file stopped parsing, because in a plain YAML scalar `": "` is a mapping
+indicator. Each time the fix was to rewrite the sentence and each time I had
+already written the whole entry.
+
+**Rule:** no colon in a registry summary. Write "Fixed the same day, and X now
+does Y" rather than "Fixed the same day: X does Y", and parse before running
+anything else, with the parse as its own command whose output I read:
+`python -c "import yaml; yaml.safe_load(open('docs/registry.yaml'))"`. A colon is
+the only punctuation in that file that turns prose into structure, so avoiding it
+outright is cheaper than remembering where it is safe.
+
 ## 2026-09-21: a local database four revisions behind a passing test suite
 
 **Mistake:** I ran `make migrate`, saw it exit zero, and believed the local

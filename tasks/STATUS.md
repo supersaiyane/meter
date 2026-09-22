@@ -9,7 +9,7 @@
      own content rather than scaffolding, and is not tagged.
 -->
 
-Last updated: 2026-09-19
+Last updated: 2026-09-22
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -25,7 +25,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | Features | 51 total, 23 specified, 10 in build, 11 delivered |
 | Decisions | 22 architecture decision records |
 | Changes | 99 recorded |
-| Issues | 129 fixed, 62 open, 0 parked |
+| Issues | 129 fixed, 63 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -339,15 +339,20 @@ said no sub project had a specification, on a day when three were delivered.
 | P0 Foundation | **Delivered**, 39 of 39. Not signed off: ISS-111 and ISS-122 |
 | P1 Cost Intelligence | **Delivered**, 21 of 21, including the second cut |
 | P2 Query Cost Governance | **Delivered**, 21 of 25. Two descoped, two parked on ISS-122 |
-| P3 Utilization and Rightsizing | **Specified and planned** 2026-09-20, 20 tasks. Not started |
+| P3 Utilization and Rightsizing | **Delivered**, 19 of 20. TASK-P3-020 blocked on P4 |
 | P4 Inventory and Topology | **Specified and planned** 2026-09-20, 11 tasks. Not started |
 | P5 Quotas and Limits | **Specified and planned** 2026-09-20, 8 tasks. Not started |
 | P6 Containers, EKS and ECS | **Specified and planned** 2026-09-20, 12 tasks, first cut. Not started |
 | P7 Insight and LLM layer | No specification |
 
 P3's last task waits on P4, because FEAT-044 scores blast radius by walking the
-edge tables FEAT-031 creates. Build order decided 2026-09-20: P3 without that
-task, then P4, then that task.
+edge tables FEAT-031 creates. Build order decided 2026-09-20 and followed: P3
+without that task, delivered 2026-09-21, then P4, then that task.
+
+P4, P5 and P6 each start with their estate data already generated and tested, in
+`finops_fakes/`, with 26 of the 58 planted expectations naming their subjects. What
+none of them has is a table to load it into, so the first task of each is its
+migration rather than its fixture. ADR-0022 and ISS-197.
 
 ## External dependencies
 
