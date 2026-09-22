@@ -61,7 +61,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-49 features across 8 sub projects. 11 specified, 38 planned, 0 in build, 0 delivered.
+49 features across 8 sub projects. 19 specified, 30 planned, 0 in build, 0 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -85,14 +85,14 @@ block is caught by `make check-docs`. See
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-011](docs/features/FEAT-011-grafana-workspace-scanner.md) | Grafana workspace, dashboard and alert rule scanner | Planned | [roadmap](docs/01-ROADMAP.md) P2. Prototype exists |
-| [FEAT-012](docs/features/FEAT-012-query-cost-model.md) | Query cost model, Logs Insights and metric engines | Planned | [roadmap](docs/01-ROADMAP.md) P2. Prototype exists |
-| [FEAT-013](docs/features/FEAT-013-measured-query-overlay.md) | Measured overlay from CloudTrail and DescribeQueries | Planned | [roadmap](docs/01-ROADMAP.md) P2. Prototype exists |
-| [FEAT-014](docs/features/FEAT-014-preventive-query-controls.md) | Preventive controls: refresh floor and CI policy gate | Planned | [roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-020 |
-| [FEAT-015](docs/features/FEAT-015-query-cost-kill-switch.md) | Near real time kill switch with Budgets Actions | Planned | [roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-020 |
-| [FEAT-016](docs/features/FEAT-016-query-owner-attribution.md) | Owner attribution from folder, team and last editor | Planned | [roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-021 |
-| [FEAT-017](docs/features/FEAT-017-query-auto-remediation.md) | Auto remediation with change record and undo | Planned | [roadmap](docs/01-ROADMAP.md) P2 |
-| [FEAT-018](docs/features/FEAT-018-cost-model-calibration.md) | Cost model calibration against actual CUR usage types | Planned | [roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-022 |
+| [FEAT-011](docs/features/FEAT-011-grafana-workspace-scanner.md) | Grafana workspace, dashboard and alert rule scanner | Specified | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
+| [FEAT-012](docs/features/FEAT-012-query-cost-model.md) | Query cost model, Logs Insights and metric engines | Specified | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
+| [FEAT-013](docs/features/FEAT-013-measured-query-overlay.md) | Measured overlay from CloudTrail and DescribeQueries | Specified | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
+| [FEAT-014](docs/features/FEAT-014-preventive-query-controls.md) | Preventive controls: refresh floor and CI policy gate | Specified | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
+| [FEAT-015](docs/features/FEAT-015-query-cost-kill-switch.md) | Near real time kill switch with Budgets Actions | Specified | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
+| [FEAT-016](docs/features/FEAT-016-query-owner-attribution.md) | Owner attribution from folder, team and last editor | Specified | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
+| [FEAT-017](docs/features/FEAT-017-query-auto-remediation.md) | Auto remediation with change record and undo | Specified | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
+| [FEAT-018](docs/features/FEAT-018-cost-model-calibration.md) | Cost model calibration against actual CUR usage types | Specified | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
 | [FEAT-019](docs/features/FEAT-019-multi-platform-query-governance.md) | Multi platform query governance: QuickSight, Athena, Redshift, OpenSearch | Planned | [roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-025 |
 
 ### P1 Cost Intelligence
@@ -222,6 +222,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0024 | 2026-08-23 | Process | Coding sessions run behind the pxpipe proxy so token usage is recorded. make dev launches, make stats reports | `a92ae60` | [README.md](README.md), "Starting a coding session" |
 | CHG-0025 | 2026-08-23 | Scope | Competitive review of NudgeBee AI FinOps. Six features added, three amended, two decisions recorded, four capabilities explicitly rejected | `c7f45f0` | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
 | CHG-0026 | 2026-08-23 | Design | Configuration and feature flags: one typed settings object, a documented .env.example, a flag register with owners and expiries, and two checks that fail the build. Regions confirmed as Ireland and London. Management account taken off the critical path via LocalStack | `5a78798` | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
+| CHG-0027 | 2026-08-23 | Design | P2 query cost governance specification written. All three Grafana surfaces in scope, three enforcement levels and three write levels behind per tenant flags, both defaulting safe | `pending` | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
 
 <!-- generated:changes end -->
 
@@ -232,7 +233,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**60 FIXED, 26 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**60 FIXED, 33 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -269,6 +270,9 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-059 | HIGH | The CI dependency-scan job runs scan.sh which requires gitleaks, but the security tools anchor does not install it, so the job exits 2 | FIXED | [A001-F03](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-060 | HIGH | make verify runs security-scan but nothing installs the scanners first, so a clean machine fails on tooling and it reads like a security failure | FIXED | [A001-F05](audits/AUDIT-001-2026-08-23-full-project.md) |
 | ISS-085 | HIGH | Nothing scans what leaves for the language model provider, so a secret could be sent outbound in a prompt | OPEN | FEAT-046. Seven scanners cover what comes in and none cover what goes out |
+| ISS-090 | HIGH | A self hosted Grafana in a private subnet is not reachable from the hub VPC, so its queries cannot be scanned | OPEN | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 12. Instance marked unreachable and excluded with a stated note. Agent based collection is a later sub project |
+| ISS-092 | HIGH | A deny action can cut an engineer off from Logs Insights during an incident, when it is exactly the tool they need | OPEN | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 12. Auto expiry, a never deny list, a revoke route and an enforcement screen |
+| ISS-093 | HIGH | The modelled query cost has no published accuracy, so every figure is a projection presented alongside measured ones | OPEN | FEAT-018. Until it lands, every modelled figure carries a visible caveat |
 | ISS-011 | MEDIUM | A model producing sizing numbers destroys trust on the first hallucination | FIXED | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
 | ISS-012 | MEDIUM | Organization wide AWS Config recording is a five figure monthly cost | OPEN | [tasks/ISSUES.md](tasks/ISSUES.md), resolved in P4 |
 | ISS-013 | MEDIUM | Hundreds of describe loops for inventory is a year of work | FIXED | [roadmap](docs/01-ROADMAP.md) P4 |
@@ -314,6 +318,9 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-087 | MEDIUM | Feature flag owners and CODEOWNERS entries are placeholders, and a flag with no named owner is a branch nobody will ever remove | OPEN | `make check-docs` warns on each. Becomes an error before the first merge request |
 | ISS-088 | MEDIUM | Values were being written into code, compose and the Makefile with no single place to change them and no note of what each one does | FIXED | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md), `.env.example`, enforced by `scripts/ci/check_hardcoded.py` |
 | ISS-089 | MEDIUM | The management account dependency sat on the critical path, blocking the credential broker and everything downstream of it | FIXED | Organizations is emulated by LocalStack, so the whole organization path is built and tested locally. The real management account is needed only for final verification. ISS-002 downgraded |
+| ISS-091 | MEDIUM | Scanning Grafana Cloud puts a third party API key inside Meter, which the threat model does not currently cover | OPEN | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 12. Needs a new row in threat model boundary 5 |
+| ISS-094 | MEDIUM | A change to the Grafana dashboard JSON shape could cause silent under reporting | OPEN | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 6. SchemaDrift is loud by design and an unrecognised panel raises rather than being skipped |
+| ISS-095 | MEDIUM | Nobody owns the never deny list, and enabling deny without one risks cutting off incident response | OPEN | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 13. Blocks enabling deny, not building it |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
@@ -324,6 +331,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-071 | LOW | No definition of done for any sub project beyond P0 | FIXED | [A001-F17](audits/AUDIT-001-2026-08-23-full-project.md) -> [Roadmap, exit criteria](docs/01-ROADMAP.md) |
 | ISS-072 | LOW | No performance budget for ingestion throughput, full organization sweep time, or API latency under load | FIXED | [A001-F18](audits/AUDIT-001-2026-08-23-full-project.md) -> [P0 spec section 11b](docs/specs/2026-08-23-p0-foundation-design.md) |
 | ISS-081 | LOW | The pxpipe proxy currently compresses nothing, every request skipped as unsupported_model, so it provides accounting rather than savings. Its log is also machine global rather than scoped to this project | OPEN | Documented in [README.md](README.md). Re check with make stats after a session on the current model |
+| ISS-096 | LOW | Unknown whether any dashboards are managed as code today, which determines the value of the CI policy gate | OPEN | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 13. Affects FEAT-014 scope |
 
 <!-- generated:issues end -->
 
@@ -339,7 +347,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | OPEN-01 | Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS relying party | PARKED at user request | Production login. Not the P0 build | [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md) |
 | OPEN-02 | Single payer or multiple payer accounts | OPEN | P1 design | [tasks/ISSUES.md](tasks/ISSUES.md) |
 | OPEN-03 | Is Business or Enterprise support available | OPEN | P3 and P5 coverage | [tasks/ISSUES.md](tasks/ISSUES.md) |
-| OPEN-04 | Amazon Managed Grafana only, or self hosted and Grafana Cloud too | OPEN | P2 scope | [tasks/ISSUES.md](tasks/ISSUES.md) |
+| OPEN-04 | Amazon Managed Grafana only, or self hosted and Grafana Cloud too. ANSWERED 2026-08-23: all three, behind per tenant flags | ANSWERED | nothing | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 4.1 |
 | OPEN-05 | Jira or ServiceNow for the recommendation lifecycle | OPEN | P3 design | [tasks/ISSUES.md](tasks/ISSUES.md) |
 | OPEN-06 | Which regions beyond Ireland and London. ANSWERED 2026-08-23: those two only, eu-west-1 and eu-west-2 | ANSWERED | nothing | Set in METER_REGIONS, see .env.example section 3 |
 

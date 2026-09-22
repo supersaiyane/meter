@@ -17,8 +17,8 @@ subprojects:
   depends_on: P0
 - id: P2
   name: Query Cost Governance
-  status: Not started
-  spec: ''
+  status: Design approved, spec in review
+  spec: docs/specs/2026-08-23-p2-query-cost-governance-design.md
   plan: ''
   depends_on: P0
 - id: P3
@@ -115,50 +115,50 @@ features:
 - id: FEAT-011
   name: Grafana workspace, dashboard and alert rule scanner
   subproject: P2
-  status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P2. Prototype exists'
+  status: Specified
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md)'
   doc: docs/features/FEAT-011-grafana-workspace-scanner.md
 - id: FEAT-012
   name: Query cost model, Logs Insights and metric engines
   subproject: P2
-  status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P2. Prototype exists'
+  status: Specified
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md)'
   doc: docs/features/FEAT-012-query-cost-model.md
 - id: FEAT-013
   name: Measured overlay from CloudTrail and DescribeQueries
   subproject: P2
-  status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P2. Prototype exists'
+  status: Specified
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md)'
   doc: docs/features/FEAT-013-measured-query-overlay.md
 - id: FEAT-014
   name: 'Preventive controls: refresh floor and CI policy gate'
   subproject: P2
-  status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-020'
+  status: Specified
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md)'
   doc: docs/features/FEAT-014-preventive-query-controls.md
 - id: FEAT-015
   name: Near real time kill switch with Budgets Actions
   subproject: P2
-  status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-020'
+  status: Specified
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md)'
   doc: docs/features/FEAT-015-query-cost-kill-switch.md
 - id: FEAT-016
   name: Owner attribution from folder, team and last editor
   subproject: P2
-  status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-021'
+  status: Specified
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md)'
   doc: docs/features/FEAT-016-query-owner-attribution.md
 - id: FEAT-017
   name: Auto remediation with change record and undo
   subproject: P2
-  status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P2'
+  status: Specified
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md)'
   doc: docs/features/FEAT-017-query-auto-remediation.md
 - id: FEAT-018
   name: Cost model calibration against actual CUR usage types
   subproject: P2
-  status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P2. Addresses ISS-022'
+  status: Specified
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md)'
   doc: docs/features/FEAT-018-cost-model-calibration.md
 - id: FEAT-019
   name: 'Multi platform query governance: QuickSight, Athena, Redshift, OpenSearch'
@@ -594,6 +594,13 @@ changes:
     and London. Management account taken off the critical path via LocalStack'
   commit: 5a78798
   detail: '[ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md)'
+- id: CHG-0027
+  date: '2026-08-23'
+  type: Design
+  what: P2 query cost governance specification written. All three Grafana surfaces in scope, three enforcement
+    levels and three write levels behind per tenant flags, both defaulting safe
+  commit: pending
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1077,6 +1084,52 @@ issues:
     and everything downstream of it
   detail: Organizations is emulated by LocalStack, so the whole organization path is built and tested
     locally. The real management account is needed only for final verification. ISS-002 downgraded
+- id: ISS-090
+  severity: HIGH
+  status: OPEN
+  summary: A self hosted Grafana in a private subnet is not reachable from the hub VPC, so its queries
+    cannot be scanned
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 12. Instance marked
+    unreachable and excluded with a stated note. Agent based collection is a later sub project'
+- id: ISS-091
+  severity: MEDIUM
+  status: OPEN
+  summary: Scanning Grafana Cloud puts a third party API key inside Meter, which the threat model does
+    not currently cover
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 12. Needs a new
+    row in threat model boundary 5'
+- id: ISS-092
+  severity: HIGH
+  status: OPEN
+  summary: A deny action can cut an engineer off from Logs Insights during an incident, when it is exactly
+    the tool they need
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 12. Auto expiry,
+    a never deny list, a revoke route and an enforcement screen'
+- id: ISS-093
+  severity: HIGH
+  status: OPEN
+  summary: The modelled query cost has no published accuracy, so every figure is a projection presented
+    alongside measured ones
+  detail: FEAT-018. Until it lands, every modelled figure carries a visible caveat
+- id: ISS-094
+  severity: MEDIUM
+  status: OPEN
+  summary: A change to the Grafana dashboard JSON shape could cause silent under reporting
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 6. SchemaDrift
+    is loud by design and an unrecognised panel raises rather than being skipped'
+- id: ISS-095
+  severity: MEDIUM
+  status: OPEN
+  summary: Nobody owns the never deny list, and enabling deny without one risks cutting off incident response
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 13. Blocks enabling
+    deny, not building it'
+- id: ISS-096
+  severity: LOW
+  status: OPEN
+  summary: Unknown whether any dashboards are managed as code today, which determines the value of the
+    CI policy gate
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 13. Affects FEAT-014
+    scope'
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS
@@ -1095,10 +1148,11 @@ open_questions:
   blocks: P3 and P5 coverage
   detail: '[tasks/ISSUES.md](tasks/ISSUES.md)'
 - id: OPEN-04
-  question: Amazon Managed Grafana only, or self hosted and Grafana Cloud too
-  status: OPEN
-  blocks: P2 scope
-  detail: '[tasks/ISSUES.md](tasks/ISSUES.md)'
+  question: 'Amazon Managed Grafana only, or self hosted and Grafana Cloud too. ANSWERED 2026-08-23: all
+    three, behind per tenant flags'
+  status: ANSWERED
+  blocks: nothing
+  detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 4.1'
 - id: OPEN-05
   question: Jira or ServiceNow for the recommendation lifecycle
   status: OPEN

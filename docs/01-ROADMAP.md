@@ -40,7 +40,7 @@ P0 Foundation
 | --- | --- | --- | --- | --- |
 | P0 | Foundation | 11 | 11 | 0 |
 | P1 | Cost Intelligence | 6 | 0 | 6 |
-| P2 | Query Cost Governance | 9 | 0 | 9 |
+| P2 | Query Cost Governance | 9 | 8 | 1 |
 | P3 | Utilization and Rightsizing | 7 | 0 | 7 |
 | P4 | Inventory and Topology | 3 | 0 | 3 |
 | P5 | Quotas and Limits | 2 | 0 | 2 |
@@ -102,7 +102,7 @@ rather than that one saving happened.
 | --- | --- | --- | --- | --- | --- | --- |
 | P0 | Foundation | Design approved, spec in review | 11 (11 specified) | [spec](specs/2026-08-23-p0-foundation-design.md) | [plan](plans/P0-implementation-plan.md) | none |
 | P1 | Cost Intelligence | Not started | 6 (0 specified) | not written | not written | P0 |
-| P2 | Query Cost Governance | Not started | 9 (0 specified) | not written | not written | P0 |
+| P2 | Query Cost Governance | Design approved, spec in review | 9 (8 specified) | [spec](specs/2026-08-23-p2-query-cost-governance-design.md) | not written | P0 |
 | P3 | Utilization and Rightsizing | Not started | 7 (0 specified) | not written | not written | P0, P1 |
 | P4 | Inventory and Topology | Not started | 3 (0 specified) | not written | not written | P0 |
 | P5 | Quotas and Limits | Not started | 2 (0 specified) | not written | not written | P0, P4 |
@@ -174,6 +174,12 @@ days, and renders an HTML report to S3 with an SNS summary.
 9. Generalization. The same engine covers QuickSight SPICE refreshes, Athena
    workgroups, Redshift, and OpenSearch Dashboards. Grafana is the first
    adapter, not the only one.
+
+**Specification written 2026-08-23.** All three Grafana surfaces are in scope,
+Amazon Managed Grafana, self hosted and Grafana Cloud, behind per tenant flags.
+Three enforcement levels, alert, throttle and deny, defaulting to alert. Three
+write levels, none, workspace floor and full, defaulting to none. See
+`docs/specs/2026-08-23-p2-query-cost-governance-design.md`.
 
 **Why this is the differentiator.** The established FinOps vendors do not do
 observability query cost governance. This is the part of Meter that has no

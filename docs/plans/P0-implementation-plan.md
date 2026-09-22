@@ -1542,11 +1542,16 @@ pytest tests/ingest/collectors/test_retention.py -v
 | --- | --- |
 | Status | Not started |
 | Implements | P0 spec section 11a, ADR-0010 |
-| Depends on | none. **Run this first, before TASK-P0-001** |
+| Depends on | none |
+| Order | **First. Before everything, including 001** |
 | Estimate | M |
 
 **Goal.** Prove the security ground rules hold before any code is written
 against them.
+
+It runs before TASK-P0-001 and needs nothing from it. `make security-tools`
+installs the scanners, and `make dep-check` builds its own throwaway
+environment, so neither needs the project virtualenv to exist yet.
 
 **Files.**
 

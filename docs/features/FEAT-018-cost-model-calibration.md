@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P2 |
-| Status | Planned |
+| Status | Specified |
 | Specification | Not written. This document expands when P2 is specified |
 | Tasks | Not planned |
 | Refresh cadence | Monthly |
