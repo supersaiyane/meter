@@ -1049,6 +1049,16 @@ changes:
     floor and the undo from TASK-P2-017 and 019, which this task never depended on
   commit: 'a9ac9d7'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-025'
+- id: CHG-0081
+  date: '2026-09-21'
+  type: Feature
+  what: TASK-P0-039, the visual layer, closing ISS-138. One stylesheet against the tokens that
+    already existed, with zero component or screen files touched, which is the property ADR-0021
+    was decided on. Contrast is computed from the declared tokens rather than trusted, because axe
+    cannot measure it in jsdom and every existing axe assertion had been passing without looking at
+    a colour. ROW_HEIGHT moved from 28 to 32 to agree with the CSS. P0 reaches 39 of 39 tasks
+  commit: 'd5c8cdc'
+  detail: '[ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md)'
 issues:
 - id: ISS-140
   severity: MEDIUM

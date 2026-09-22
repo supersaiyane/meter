@@ -183,7 +183,12 @@ meter/
 │   ├── README.md              why the versions are pinned where they are
 │   ├── eslint.config.js       flat config. eslintrc is not read by ESLint 9
 │   └── src/
-│       ├── tokens.css         light and dark in one declaration, via light-dark()
+│       ├── tokens.css         light and dark in one declaration, via light-dark().
+│       │                      Tokens, and the classes that carry meaning
+│       ├── layout.css         where things sit. Element selectors, because
+│       │                      DataTable is the only table and Figure the only
+│       │                      numeral. Needs no component to accept a className,
+│       │                      which is the property ADR-0021 was decided on
 │       ├── components/        built once, used by every sub project. All ten of
 │       │                      12-UI-DESIGN section 11 exist, plus FixtureBand,
 │       │                      which that inventory predates
