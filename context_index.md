@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-283 public symbols across 5 packages.
+287 public symbols across 5 packages.
 
 ## finops_core
 
@@ -57,10 +57,10 @@ a duplicate.
 | `SurfaceKind` | class | `finops_core/domain/query.py:28` | What kind of tool holds the queries. | nothing in this tree |
 | `QueryOrigin` | class | `finops_core/domain/query.py:45` | Why the query runs, which decides how often it runs. | nothing in this tree |
 | `ControlAction` | class | `finops_core/domain/query.py:62` | What can be done to a query that costs too much. | nothing in this tree |
-| `SurfaceInstance` | class | `finops_core/domain/query.py:79` | One place queries live: a workspace, a cluster, a project. | nothing in this tree |
+| `SurfaceInstance` | class | `finops_core/domain/query.py:79` | One place queries live: a workspace, a cluster, a project. | `finops_providers/fake/surface.py` |
 | `SurfaceInstance.scope_key` | method | `finops_core/domain/query.py:106` | How a failure against this instance is recorded and reported. | nothing in this tree |
-| `QueryDefinition` | class | `finops_core/domain/query.py:112` | One saved query, as it was defined when it was read. | nothing in this tree |
-| `ControlOutcome` | class | `finops_core/domain/query.py:151` | What a control actually did, which is not always what was asked. | nothing in this tree |
+| `QueryDefinition` | class | `finops_core/domain/query.py:112` | One saved query, as it was defined when it was read. | `finops_providers/fake/surface.py` |
+| `ControlOutcome` | class | `finops_core/domain/query.py:151` | What a control actually did, which is not always what was asked. | `finops_providers/fake/surface.py` |
 | `ControlRequest` | class | `finops_core/domain/query.py:170` | An instruction to change one query's behaviour. | nothing in this tree |
 | `QuotaUsage` | class | `finops_core/domain/quota.py:18` | One quota for one account and region. | `finops_providers/fake/fixtures.py` |
 | `ResourceRef` | class | `finops_core/domain/resource.py:19` | One resource as the provider described it at `as_of`. | `finops_providers/fake/fixtures.py` |
@@ -136,6 +136,10 @@ a duplicate.
 | `FakeProvider.list_quotas` | method | `finops_providers/fake/provider.py:167` |  | nothing in this tree |
 | `FakeProvider.authenticate` | method | `finops_providers/fake/provider.py:173` |  | nothing in this tree |
 | `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:186` |  | `finops_api/deps.py`, `finops_ingest/collectors/org_tree.py` |
+| `FakeQuerySurface` | class | `finops_providers/fake/surface.py:131` | `QuerySurface` in memory. Every failure is asked for, never incidental. | nothing in this tree |
+| `FakeQuerySurface.discover` | method | `finops_providers/fake/surface.py:169` |  | nothing in this tree |
+| `FakeQuerySurface.list_queries` | method | `finops_providers/fake/surface.py:178` |  | nothing in this tree |
+| `FakeQuerySurface.apply_control` | method | `finops_providers/fake/surface.py:192` |  | nothing in this tree |
 | `Workspace` | class | `finops_providers/grafana/client.py:68` | One Grafana workspace, however it was discovered. | nothing in this tree |
 | `Workspace.scope_key` | method | `finops_providers/grafana/client.py:77` | How a failure against this workspace is recorded and reported. | nothing in this tree |
 | `endpoint_from_url` | function | `finops_providers/grafana/client.py:82` | The host part of a configured workspace URL, or None. | nothing in this tree |
@@ -211,7 +215,7 @@ a duplicate.
 | `install_default_schedule` | function | `finops_ingest/registry.py:264` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
 | `CollectorRegistry` | class | `finops_ingest/registry.py:292` | The collectors this process knows how to run. | nothing in this tree |
 | `CollectorRegistry.register` | method | `finops_ingest/registry.py:298` |  | `finops_ingest/collectors/retention.py` |
-| `CollectorRegistry.get` | method | `finops_ingest/registry.py:306` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 21 more |
+| `CollectorRegistry.get` | method | `finops_ingest/registry.py:306` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 22 more |
 | `CollectorRegistry.names` | method | `finops_ingest/registry.py:315` |  | nothing in this tree |
 | `Outcome` | class | `finops_ingest/worker.py:46` | What happened to one unit. Every one of these is a normal result. | nothing in this tree |
 | `BatchResult` | class | `finops_ingest/worker.py:59` |  | nothing in this tree |
@@ -322,9 +326,9 @@ a duplicate.
 | `ApiError` | class | `finops_mcp/api.py:32` | The API refused or could not answer. Carries the status for the caller. | nothing in this tree |
 | `EnvelopeMissingError` | class | `finops_mcp/api.py:41` | A 200 with no `meta`. Not the contract, so not treated as data. | nothing in this tree |
 | `Transport` | class | `finops_mcp/api.py:45` | What the client needs from an HTTP library, and nothing more. | nothing in this tree |
-| `Transport.get` | method | `finops_mcp/api.py:53` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 20 more |
+| `Transport.get` | method | `finops_mcp/api.py:53` |  | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 21 more |
 | `MeterApi` | class | `finops_mcp/api.py:56` | A caller of the Meter HTTP API. Holds no scope and no credential. | `finops_mcp/server.py` |
-| `MeterApi.get` | method | `finops_mcp/api.py:68` | One GET, returning the envelope exactly as the API sent it. | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 20 more |
+| `MeterApi.get` | method | `finops_mcp/api.py:68` | One GET, returning the envelope exactly as the API sent it. | `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, `finops_api/identity/local_config.py`, and 21 more |
 | `MissingTokenError` | class | `finops_mcp/server.py:37` | No caller token. The tool refuses rather than answering as somebody else. | nothing in this tree |
 | `token_from` | function | `finops_mcp/server.py:41` | The caller's bearer token, or an error. | nothing in this tree |
 | `make_handler` | function | `finops_mcp/server.py:59` | Bind one row of the tool table to one handler. | nothing in this tree |
@@ -353,10 +357,7 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `SurfaceKind` in `finops_core/domain/query.py:28`
 - `QueryOrigin` in `finops_core/domain/query.py:45`
 - `ControlAction` in `finops_core/domain/query.py:62`
-- `SurfaceInstance` in `finops_core/domain/query.py:79`
 - `SurfaceInstance.scope_key` in `finops_core/domain/query.py:106`
-- `QueryDefinition` in `finops_core/domain/query.py:112`
-- `ControlOutcome` in `finops_core/domain/query.py:151`
 - `ControlRequest` in `finops_core/domain/query.py:170`
 - `Tenant` in `finops_core/domain/tenant.py:23`
 - `CollectionError` in `finops_core/errors.py:27`
@@ -398,3 +399,6 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `FakeProvider.read_series` in `finops_providers/fake/provider.py:133`
 - `FakeProvider.list_resources` in `finops_providers/fake/provider.py:151`
 - `FakeProvider.list_dependencies` in `finops_providers/fake/provider.py:161`
+- `FakeProvider.list_quotas` in `finops_providers/fake/provider.py:167`
+- `FakeProvider.authenticate` in `finops_providers/fake/provider.py:173`
+- `FakeQuerySurface` in `finops_providers/fake/surface.py:131`

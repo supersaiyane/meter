@@ -275,6 +275,7 @@
     "finops_providers/fake/__init__.py",
     "finops_providers/fake/fixtures.py",
     "finops_providers/fake/provider.py",
+    "finops_providers/fake/surface.py",
     "finops_providers/grafana/__init__.py",
     "finops_providers/grafana/client.py",
     "finops_query/__init__.py",
@@ -363,6 +364,7 @@
     "tests/providers/aws/test_credentials.py",
     "tests/providers/aws/test_health.py",
     "tests/providers/test_fake.py",
+    "tests/providers/test_fake_surface.py",
     "tests/providers/test_grafana_client.py",
     "tests/query/__init__.py",
     "tests/query/conftest.py",
@@ -2906,6 +2908,16 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/fake/surface.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/fake/surface.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/grafana/client.py",
       "t": "finops_core/errors.py",
       "k": "python"
@@ -3628,6 +3640,26 @@
     {
       "s": "tests/providers/test_fake.py",
       "t": "finops_providers/fake/provider.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_fake_surface.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_fake_surface.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_fake_surface.py",
+      "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_fake_surface.py",
+      "t": "finops_providers/fake/surface.py",
       "k": "python"
     },
     {

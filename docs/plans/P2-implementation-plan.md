@@ -372,17 +372,17 @@ pytest tests/query/test_ports.py -v && .venv/bin/lint-imports
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-23 |
 | Depends on | TASK-P2-004 |
 | Estimate | M |
 
 **Acceptance criteria.**
 
-- [ ] Implements `QuerySurface` in memory
-- [ ] Can be configured to raise any of the six error types per instance
-- [ ] Ships a fixture estate: 3 instances, one of each kind, one of them
+- [x] Implements `QuerySurface` in memory
+- [x] Can be configured to raise any of the six error types per instance
+- [x] Ships a fixture estate: 3 instances, one of each kind, one of them
       unreachable
-- [ ] Deterministic
+- [x] Deterministic
 
 **Do not.** Do not make the fake only capable of success. The unreachable
 instance case has its own test in the spec and needs a fixture that produces it.
