@@ -222,7 +222,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0024 | 2026-08-23 | Process | Coding sessions run behind the pxpipe proxy so token usage is recorded. make dev launches, make stats reports | `a92ae60` | [README.md](README.md), "Starting a coding session" |
 | CHG-0025 | 2026-08-23 | Scope | Competitive review of NudgeBee AI FinOps. Six features added, three amended, two decisions recorded, four capabilities explicitly rejected | `c7f45f0` | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
 | CHG-0026 | 2026-08-23 | Design | Configuration and feature flags: one typed settings object, a documented .env.example, a flag register with owners and expiries, and two checks that fail the build. Regions confirmed as Ireland and London. Management account taken off the critical path via LocalStack | `5a78798` | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
-| CHG-0027 | 2026-08-23 | Design | P2 query cost governance specification written. All three Grafana surfaces in scope, three enforcement levels and three write levels behind per tenant flags, both defaulting safe | `pending` | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
+| CHG-0027 | 2026-08-23 | Design | P2 query cost governance specification written. All three Grafana surfaces in scope, three enforcement levels and three write levels behind per tenant flags, both defaulting safe | `ee3ea68` | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
 
 <!-- generated:changes end -->
 

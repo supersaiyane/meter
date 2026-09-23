@@ -599,7 +599,7 @@ changes:
   type: Design
   what: P2 query cost governance specification written. All three Grafana surfaces in scope, three enforcement
     levels and three write levels behind per tenant flags, both defaulting safe
-  commit: pending
+  commit: ee3ea68
   detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md)'
 issues:
 - id: ISS-001
