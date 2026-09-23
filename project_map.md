@@ -75,6 +75,9 @@ meter/
 │   │                          overview.html, the one hand written file there:
 │   │                          the whole system drawn, and the only place that
 │   │                          says in one view what has never run against AWS
+│   ├── design/                hand written interface mocks. home-redesign.html
+│   │                          carries the three tier front page, its four open
+│   │                          decisions, and the severity to accent collision
 │   ├── templates/             spec, task, ADR, change and issue templates
 │   ├── checkpoint.md          session continuity log with resume vectors
 │   ├── adr/                   architecture decision records, 0001 to 0008

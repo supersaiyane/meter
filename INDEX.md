@@ -53,6 +53,7 @@ block is caught by `make check-docs`. See
 | SLOs, alerts, and what pages someone | [docs/10-OBSERVABILITY.md](docs/10-OBSERVABILITY.md) |
 | How a number is shown, and how failure is shown | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) |
 | Where a screen lives, and what a user sees first | [docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md) |
+| What Home should look like, and the open decisions | [docs/design/home-redesign.html](docs/design/home-redesign.html) |
 | Runbooks for the paging alerts | [docs/runbooks/](docs/runbooks/README.md) |
 | Runbook, collection stalled and widespread | [docs/runbooks/collection-stalled.md](docs/runbooks/collection-stalled.md) |
 | Runbook, API server errors | [docs/runbooks/api-5xx.md](docs/runbooks/api-5xx.md) |
