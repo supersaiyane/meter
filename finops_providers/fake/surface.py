@@ -70,12 +70,14 @@ INSTANCES: tuple[SurfaceInstance, ...] = (
         surface_id="ws-4e5f6a7b",
         name="meter-prod-eu-west-2",
         kind=SurfaceKind.SELF_HOSTED_GRAFANA,
+        # allow-hardcoded: a fake estate, deliberately fixed so a golden file is stable
         location="https://grafana.internal.example",
     ),
     SurfaceInstance(
         surface_id="ws-8c9d0e1f",
         name="meter-staging-eu-west-2",
         kind=SurfaceKind.GRAFANA_CLOUD,
+        # allow-hardcoded: a fake estate, deliberately fixed so a golden file is stable
         location="https://example.grafana.net",
     ),
 )
@@ -105,7 +107,7 @@ def _query(
         refresh_seconds=refresh_seconds,
         window_seconds=window_seconds,
         targets=("/aws/ecs/meter-api",),
-        region="eu-west-2",
+        region="eu-west-2",  # allow-hardcoded: a fake fixture, not a deployed region
     )
 
 

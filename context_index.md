@@ -147,10 +147,10 @@ a duplicate.
 | `FakeProvider.list_quotas` | method | `finops_providers/fake/provider.py:167` |  | nothing in this tree |
 | `FakeProvider.authenticate` | method | `finops_providers/fake/provider.py:173` |  | nothing in this tree |
 | `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:186` |  | `finops_api/deps.py`, `finops_ingest/collectors/org_tree.py` |
-| `FakeQuerySurface` | class | `finops_providers/fake/surface.py:131` | `QuerySurface` in memory. Every failure is asked for, never incidental. | nothing in this tree |
-| `FakeQuerySurface.discover` | method | `finops_providers/fake/surface.py:169` |  | nothing in this tree |
-| `FakeQuerySurface.list_queries` | method | `finops_providers/fake/surface.py:178` |  | nothing in this tree |
-| `FakeQuerySurface.apply_control` | method | `finops_providers/fake/surface.py:192` |  | nothing in this tree |
+| `FakeQuerySurface` | class | `finops_providers/fake/surface.py:133` | `QuerySurface` in memory. Every failure is asked for, never incidental. | nothing in this tree |
+| `FakeQuerySurface.discover` | method | `finops_providers/fake/surface.py:171` |  | nothing in this tree |
+| `FakeQuerySurface.list_queries` | method | `finops_providers/fake/surface.py:180` |  | nothing in this tree |
+| `FakeQuerySurface.apply_control` | method | `finops_providers/fake/surface.py:194` |  | nothing in this tree |
 | `Scope` | class | `finops_providers/grafana/amg.py:54` | One account and region pair to look for workspaces in. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/fake/provider.py` |
 | `Scope.key` | method | `finops_providers/grafana/amg.py:61` |  | nothing in this tree |
 | `AmgQuerySurface` | class | `finops_providers/grafana/amg.py:84` | `QuerySurface` over Amazon Managed Grafana, read only. | nothing in this tree |
