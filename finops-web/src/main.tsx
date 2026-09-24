@@ -3,6 +3,10 @@ import { createRoot } from 'react-dom/client';
 
 import { App } from './App';
 import { createApiClient } from './api/client';
+// Latin only, self hosted. The file declares every weight but a browser
+// fetches only the ones the stylesheet actually uses.
+import '@fontsource/ibm-plex-sans/latin.css';
+import '@fontsource/ibm-plex-mono/latin.css';
 import './tokens.css';
 import './layout.css';
 

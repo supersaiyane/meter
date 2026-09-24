@@ -41,11 +41,21 @@
 
   /* Sequential, not a traffic light. Severity is a ramp of one hue so that
      rank is readable without relying on hue discrimination. */
-  --severity-1: light-dark(#e7eefa, #17253a);
-  --severity-2: light-dark(#c3d6f2, #1f3550);
-  --severity-3: light-dark(#8fb2e4, #2c4d75);
-  --severity-4: light-dark(#4f83c8, #4472a8);
-  --severity-5: light-dark(#1f4f8f, #7fa9e8);
+  /* Warm, because the old ramp ended on the accent. severity-5 and accent were
+     both #1f4f8f, so the most severe finding was painted the one colour that
+     means "this is a link" everywhere else, and the rule above is that colour
+     is interactive only. The ramp is still one sequential hue, since severity
+     is an ordered quantity and a categorical palette would make HIGH and
+     MEDIUM look like different kinds of thing rather than different amounts.
+     It sits about 20 degrees from the failure red and about 18 from the
+     staleness amber, which is the most separation a warm ramp can have when
+     those two bracket it. The word in the chip, not the fill, is what actually
+     carries the level. */
+  --severity-1: light-dark(#faf0ea, #2d1e16);
+  --severity-2: light-dark(#efcdba, #472e21);
+  --severity-3: light-dark(#d79878, #7f4831);
+  --severity-4: light-dark(#a4542c, #c4744c);
+  --severity-5: light-dark(#68300f, #eeab86);
 
   --hatch-line: light-dark(rgba(20, 24, 29, 0.32), rgba(230, 234, 239, 0.34));
 
@@ -55,8 +65,13 @@
   --space-4: 16px;
   --radius: 3px;
 
-  --font-ui: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-numeral: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
+  /* Named faces, not the machine's own. A system stack renders a different
+     font per operating system, so column widths and density differ between two
+     people reading the same figures. Plex is self hosted from node_modules, so
+     nothing is requested from a third party by a page showing spend. This is
+     what docs/12-UI-DESIGN.md section 7 already asked for. */
+  --font-ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-numeral: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* Six sizes. A seventh means the hierarchy is unclear rather than
      insufficient, per docs/12-UI-DESIGN.md section 7. */

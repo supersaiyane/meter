@@ -178,6 +178,15 @@ Numerals are **always** tabular, **always** right aligned, and a currency
 column always shows the same number of decimal places, including trailing
 zeros. `$0.00`, never `$0`.
 
+**Decided, 2026-09-24: IBM Plex Sans and IBM Plex Mono, self hosted.** The
+table above offered alternatives and `tokens.css` shipped neither, using
+`system-ui` instead. A system stack renders a different face per operating
+system, so column widths and density differ between two people reading the same
+figures, which is not acceptable for a screen whose whole job is comparing
+numbers down a column. The faces are served from `node_modules` through the
+bundle, latin subset only, so a page showing customer spend makes no request to
+a third party font host.
+
 Scale: 12, 14, 16, 20, 28, 40. Six sizes. A seventh means the hierarchy is
 unclear rather than insufficient.
 
@@ -198,6 +207,18 @@ alone.
 Severity is sequential because severity is ordered. A categorical palette for
 an ordered quantity makes `HIGH` and `MEDIUM` look like different kinds of
 thing rather than different amounts.
+
+**The ramp is warm, decided 2026-09-24.** It used to be blue, and its darkest
+step was the same value as `--accent`, `#1f4f8f`, in light and in dark. The most
+severe finding was therefore painted the one colour that means "this is a link"
+everywhere else, which contradicts the rule two rows above that the accent is
+interactive only. A warm ramp is squeezed between the failure red and the
+staleness amber and sits about twenty degrees of hue from each, which is the
+most separation available; the redundant square glyph and the word in the chip
+are what actually carry the level, and the fill only ranks it. The ordering is
+enforced by `contrast.test.ts`, which asserts the ramp descends by luminance
+rather than merely differing, and the two darkest steps carry text so they are
+also held to 4.5 to 1.
 
 **Red is never used for "expensive".** A large number is not an error. Red is
 reserved for a failure, so that when it appears it means one thing.

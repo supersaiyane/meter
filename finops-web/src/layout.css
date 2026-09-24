@@ -491,17 +491,120 @@ main article {
   font-weight: 600;
 }
 
-/* Home. An unfilled slot names what will fill it and shows no figure. */
-[data-testid^='home-slot-'] {
+/* Home, in three tiers. The summary, then the one thing that needs attention,
+   then the absences. Before this the absences were panels the same size as the
+   money, so nothing on the page outranked anything else. */
+
+[data-testid='home-summary'] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+[data-testid='home-tile'] {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: var(--space-3);
-  margin-bottom: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
-[data-testid^='home-slot-'] h3 {
+[data-testid='home-tile'] h3 {
+  margin: 0;
+  font-size: var(--font-size-2);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+[data-testid='home-count'] {
+  margin: 0;
+  font-family: var(--font-numeral);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-5);
+  color: var(--text-numeral);
+}
+
+[data-testid='home-severity-key'] {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+[data-testid='home-severity-key'] li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* The count only. A bare descendant selector here also caught the badge's own
+   text, which dropped it to the muted colour on the two palest levels. */
+[data-testid='home-severity-count'] {
+  font-family: var(--font-numeral);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-1);
+  color: var(--text-muted);
+}
+
+[data-testid='home-attention'] {
+  margin-bottom: var(--space-4);
+}
+
+[data-testid='home-attention'] h3 {
   margin-top: 0;
+  font-size: var(--font-size-3);
+}
+
+/* The rail. An unfilled slot still names what will fill it and still shows no
+   figure. It is one strip rather than one panel each, because a promise about
+   a sub project should not outweigh a number that already exists. */
+[data-testid='home-rail'] h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-1);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+[data-testid='home-rail'] ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+[data-testid='home-rail'] li {
+  flex: 1 1 180px;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+[data-testid='home-rail'] li:last-child {
+  border-right: 0;
+}
+
+[data-testid='home-rail-label'] {
+  font-size: var(--font-size-1);
+  color: var(--text);
+}
+
+[data-testid='home-rail-arrives'] {
+  font-size: var(--font-size-1);
+  color: var(--text-muted);
 }
 
 [data-testid='not-built'],
