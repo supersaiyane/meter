@@ -738,7 +738,7 @@ meter/
 | --- | --- | --- | --- |
 | `finops_core` | Domain entities, the nine ports, the typed error taxonomy | nothing | boto3, botocore, fastapi, sqlalchemy, requests |
 | `finops_providers/aws` | The six cloud ports implemented against boto3 | `finops_core`, boto3 | `finops_api`, `finops-web` |
-| `finops_providers/fake` | Every port implemented in memory, used by all core and API tests | `finops_core` | boto3 |
+| `finops_fakes` | Every port in memory, plus the generated estate. Used by the tests and by `scripts/demo/`. Not in the wheel, ADR-0022 | `finops_core` | boto3, and every production package is forbidden from importing it |
 | `finops_ingest` | Dispatcher, worker, run ledger, watermarks, collectors | `finops_core`, a provider | `finops-web` |
 | `finops_api` | HTTP surface, scope dependency, repository guard | `finops_core`, a provider | boto3 directly |
 | `finops-web` | User interface | `finops_api` over HTTP | anything Python |

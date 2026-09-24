@@ -253,12 +253,24 @@ file stopped parsing, because in a plain YAML scalar `": "` is a mapping
 indicator. Each time the fix was to rewrite the sentence and each time I had
 already written the whole entry.
 
-**Rule:** no colon in a registry summary. Write "Fixed the same day, and X now
-does Y" rather than "Fixed the same day: X does Y", and parse before running
-anything else, with the parse as its own command whose output I read:
-`python -c "import yaml; yaml.safe_load(open('docs/registry.yaml'))"`. A colon is
-the only punctuation in that file that turns prose into structure, so avoiding it
-outright is cheaper than remembering where it is safe.
+**Amended again 2026-09-24, fourth occurrence, one day after writing the rule
+down.** Writing "no colon in a summary" did not work, because I write the entry
+first and proofread it against a rule I have already stopped thinking about. Per
+CLAUDE.md section 4, a lesson that fails three times is the wrong rule.
+
+**Rule, mechanical this time.** Do not hand write the YAML. Build the entry as a
+Python dict and let the library do the quoting, then insert the dumped block:
+
+```python
+import yaml
+block = yaml.dump([{"id": "ISS-nnn", "severity": "LOW", "summary": text,
+                    "status": "OPEN", "detail": where}],
+                  sort_keys=False, width=96, allow_unicode=True)
+```
+
+`yaml.dump` quotes whatever needs quoting, so a colon, a hash, a leading dash and
+a trailing space all stop being my problem. Prose rules about punctuation rely on
+memory at exactly the moment memory is busy writing the prose.
 
 ## 2026-09-21: a local database four revisions behind a passing test suite
 

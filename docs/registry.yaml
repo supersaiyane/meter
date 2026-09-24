@@ -1387,6 +1387,22 @@ issues:
   status: OPEN
   detail: '`scripts/docs/rotate_checkpoint.py`, `docs/checkpoint.md`, CLAUDE.md section 3'
 
+- id: ISS-199
+  severity: MEDIUM
+  summary: The interrogate docstring gate excluded finops_providers/fake, and ADR-0022 moved that
+    package without moving the exclude, so for two days the gate named a directory that did not
+    exist and held the fakes to a standard the original comment argues they should not be held to.
+    The fakes sit at 54.7 percent, the overall figure was 70.6 against a minimum of 70, and the
+    gate was passing by six tenths of a point for a reason nobody had chosen. Restoring the exclude
+    to finops_fakes takes it to 75.3 percent. Found 2026-09-24 by sweeping the documents for the
+    old path rather than by anything failing, and that is the point worth keeping, because a path in a tool
+    configuration is not checked by the tool that reads it, so a rename is silent there in a way it
+    is not in code. The same sweep found the responsibilities table in project_map.md, the
+    provenance line of the fake estate data dictionary, and nine pointer fields in the registry,
+    all naming paths nobody can open
+  status: FIXED
+  detail: '`pyproject.toml` tool.interrogate, `project_map.md`, `docs/reference/fake-estate-data-dictionary.md`, ADR-0022'
+
 - id: ISS-164
   severity: MEDIUM
   summary: security/reports/latest is a committed symlink and the scan script wrote it as an
@@ -1480,7 +1496,7 @@ issues:
     passing a clock per day, which is what production does over time anyway. Low because the
     demo works and the limitation is written into the fixture beside the constant that causes it
   status: OPEN
-  detail: '`finops_providers/fake/cur.py` SPIKE_DAYS_BACK, and `scripts/ops/seed_demo.py`'
+  detail: '`finops_fakes/cur.py` SPIKE_DAYS_BACK, and `scripts/demo/seed_demo.py`'
 - id: ISS-184
   severity: HIGH
   summary: cost_focus_daily and cost_focus_monthly sat in SCOPED_TABLES with the rule None,
@@ -1524,7 +1540,7 @@ issues:
   status: OPEN
   blocks: 'Running ingestion in a deployed task. Not the local stack, which seeds directly'
   detail: '`finops_ingest/registry.py`, `finops_ingest/dispatcher.py`, `finops_ingest/worker.py`
-    and `scripts/ops/seed_demo.py`'
+    and `scripts/demo/seed_demo.py`'
 - id: ISS-181
   severity: MEDIUM
   summary: AthenaCostExport materializes a whole billing period before returning it, so a large
@@ -1604,7 +1620,7 @@ issues:
     each to be either torn down or declared as never seeded, so the next table added is
     caught the day it is added rather than the day somebody unseeds
   status: FIXED
-  detail: '`scripts/ops/seed_demo.py`, DEMO_TABLES, and `tests/scripts/test_seed_demo.py`'
+  detail: '`scripts/demo/seed_demo.py`, DEMO_TABLES, and `tests/scripts/test_seed_demo.py`'
 - id: ISS-175
   severity: HIGH
   summary: The findings list and the grouped view returned every audited day rather than
@@ -1712,8 +1728,8 @@ issues:
     schedule, without which every collector read "not scheduled" and therefore "stale" one minute
     after it ran. Fixed 2026-09-12
   status: FIXED
-  detail: '`scripts/ops/seed_demo.py`, `finops_providers/fake/health.py`,
-    `finops_providers/fake/platform_cost.py`'
+  detail: '`scripts/demo/seed_demo.py`, `finops_fakes/health.py`,
+    `finops_fakes/platform_cost.py`'
 - id: ISS-159
   severity: HIGH
   summary: The ingest screen could never show a run. `build_meta` derives freshness from an
@@ -1742,7 +1758,7 @@ issues:
     the fake role health now accept the time they are observed at, restamping the fixtures rather
     than replacing them. Fixed 2026-09-12
   status: FIXED
-  detail: '`finops_providers/fake/provider.py`, `finops_providers/fake/health.py`'
+  detail: '`finops_fakes/provider.py`, `finops_fakes/health.py`'
 - id: ISS-162
   severity: MEDIUM
   summary: The organization tree drew every node at the same left edge, so the one thing the
