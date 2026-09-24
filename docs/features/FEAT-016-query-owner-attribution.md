@@ -4,7 +4,7 @@
 | --- | --- |
 | Sub project | P2 |
 | Status | Specified |
-| Specification | Not written. This document expands when P2 is specified |
+| Specification | [P2 spec](../specs/2026-08-23-p2-query-cost-governance-design.md) |
 | Tasks | Not planned |
 | Refresh cadence | 6 hours |
 
@@ -16,17 +16,26 @@ Attaches a human owner to every expensive query: Grafana folder to team mapping,
 
 ISS-021. An unowned finding is never fixed. This is the difference between a report and a resolution.
 
+## How it works
+
+Resolves a human owner for every expensive query, from three sources in priority order: the Grafana folder to team mapping, the dashboard's last editor from the Grafana API, and the CloudTrail principal that ran the query.
+
 ## What is already known
 
 The prototype already extracts the CloudTrail principal. Folder and editor attribution is new.
 
-## Status of this document
+## Failure behaviour
 
-Planned. The sections a specified feature carries, how it works in detail, its
-data sources, its measured versus modelled figures, its failure behaviour, its
-security considerations and its interface, are written when P2 is specified.
-Recording only what is actually decided is deliberate: a document that invents
-detail ahead of the decision is worse than a short one, because it will be
-believed.
+A query with no resolvable owner is reported as unowned rather than assigned to a default. A wrongly assigned owner is worse than an absent one, because it gets ignored by the person it was sent to and never reaches the person who could act.
 
-See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P2.
+## Security considerations
+
+`folder_team_map` holds email addresses, which is personal data. It is classified and retained under `docs/09-DATA-CLASSIFICATION.md` like any other class P table.
+
+## Interface
+
+`query_finding.owner_email` and `owner_source`, so a reader can see which of the three sources produced it. See [P2 spec](../specs/2026-08-23-p2-query-cost-governance-design.md) section 7.1.
+
+## Not doing
+
+Does not create or manage teams. The folder mapping is entered, not derived.

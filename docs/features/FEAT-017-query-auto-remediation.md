@@ -4,7 +4,7 @@
 | --- | --- |
 | Sub project | P2 |
 | Status | Specified |
-| Specification | Not written. This document expands when P2 is specified |
+| Specification | [P2 spec](../specs/2026-08-23-p2-query-cost-governance-design.md) |
 | Tasks | Not planned |
 | Refresh cadence | On demand |
 
@@ -16,17 +16,26 @@ Rewrites an offending panel through the Grafana API, with a change record, an ow
 
 Finding the problem is most of the work but none of the saving.
 
+## How it works
+
+Rewrites an offending panel through the Grafana API, recording the previous state, notifying the owner, and keeping an undo.
+
 ## What is already known
 
 Applies only to violations of an explicit policy, never to a judgement call. Every change is reversible and recorded.
 
-## Status of this document
+## Failure behaviour
 
-Planned. The sections a specified feature carries, how it works in detail, its
-data sources, its measured versus modelled figures, its failure behaviour, its
-security considerations and its interface, are written when P2 is specified.
-Recording only what is actually decided is deliberate: a document that invents
-detail ahead of the decision is worse than a short one, because it will be
-believed.
+A rewrite that cannot be applied is reported with the Grafana error. A rewrite that succeeds but whose verification read back does not match is reverted automatically.
 
-See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P2.
+## Security considerations
+
+**The highest risk feature in P2.** It is the first time Meter writes to anything. Gated behind `query_write_level` at `full`, defaulting to `none`, so enabling it is a decision someone signs rather than a default they inherit. `remediation_change.before` is `NOT NULL`: a change Meter cannot undo is a change Meter does not make.
+
+## Interface
+
+`POST /api/v1/query/remediate/{id}` and `POST /api/v1/query/remediate/{id}/undo`. Every change appears on the enforcement screen. See [P2 spec](../specs/2026-08-23-p2-query-cost-governance-design.md) section 5.
+
+## Not doing
+
+Applies only to explicit policy violations, never to a judgement call. Does not touch anything outside the offending panel.

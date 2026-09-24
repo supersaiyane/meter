@@ -4,7 +4,7 @@
 | --- | --- |
 | Sub project | P2 |
 | Status | Specified |
-| Specification | Not written. This document expands when P2 is specified |
+| Specification | [P2 spec](../specs/2026-08-23-p2-query-cost-governance-design.md) |
 | Tasks | Not planned |
 | Refresh cadence | Event driven, seconds to minutes |
 
@@ -16,17 +16,26 @@ Detects a runaway query pattern in near real time and stops it: counts CloudTrai
 
 A six hour audit of the original failure would still have let roughly 25,000 USD burn between sweeps. Prevention cannot run on a survey cadence.
 
+## How it works
+
+An EventBridge rule on CloudTrail `StartQuery` counts executions per principal per rolling hour. On breach it always writes an `enforcement_action`, pages, and raises a ticket. Above `alert` it may throttle after a grace window, and above `throttle` it may apply a Budgets Action deny policy on `logs:StartQuery` for that principal.
+
 ## What is already known
 
 EventBridge rule on CloudTrail. This is deliberately a separate feature from the audit, at a separate cadence. See ADR-0012.
 
-## Status of this document
+## Failure behaviour
 
-Planned. The sections a specified feature carries, how it works in detail, its
-data sources, its measured versus modelled figures, its failure behaviour, its
-security considerations and its interface, are written when P2 is specified.
-Recording only what is actually decided is deliberate: a document that invents
-detail ahead of the decision is worse than a short one, because it will be
-believed.
+The control runs as a Lambda rather than on Fargate because it must respond in seconds and is idle between events. A failure to apply an enforcement action still records the attempt and pages, because the alert is the part that always happens.
 
-See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P2.
+## Security considerations
+
+**Two rules enforced by the database, not by intention.** A `DENY` action cannot be written without an expiry, so a deny cannot become permanent by being forgotten. And a never deny list exists, because cutting an engineer off from Logs Insights during an outage, caused by that outage, is a self inflicted second incident. Default expiry is 60 minutes.
+
+## Interface
+
+`GET /api/v1/query/enforcement` and `POST /api/v1/query/enforcement/{id}/revoke`, the break glass path. Level is set per tenant by the `query_control_level` flag, defaulting to `alert`. See [P2 spec](../specs/2026-08-23-p2-query-cost-governance-design.md) section 7.2.
+
+## Not doing
+
+Does not act on anything other than CloudWatch Logs Insights query volume. Broader spend control is AWS Budgets and belongs in P1.
