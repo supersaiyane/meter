@@ -1060,6 +1060,17 @@ changes:
   commit: 'd5c8cdc'
   detail: '[ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md)'
 issues:
+- id: ISS-141
+  severity: MEDIUM
+  summary: TASK-P2-006 asked for the contract suite under moto, and moto implements no Grafana
+    operation at all. ListWorkspaces, DescribeWorkspace, CreateWorkspace and every service account
+    call answer Not yet implemented, while botocore knows them from the service model, so the gap
+    is invisible until a call is made. botocore.stub is used instead and is stronger for API
+    correctness, validating a request and a response against the real model. It caught the first
+    draft of the test fixture omitting created, modified, grafanaVersion and authentication, all
+    required by ListWorkspaces. Revisit if moto adds a grafana backend. Found 2026-09-24
+  status: OPEN
+  detail: '`tests/providers/test_amg_surface.py`, [P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-006'
 - id: ISS-140
   severity: MEDIUM
   summary: Every Figure renders its own freshness inline, so a table cell carries the figure, its

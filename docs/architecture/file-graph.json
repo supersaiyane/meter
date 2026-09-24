@@ -277,11 +277,13 @@
     "finops_providers/fake/provider.py",
     "finops_providers/fake/surface.py",
     "finops_providers/grafana/__init__.py",
+    "finops_providers/grafana/amg.py",
     "finops_providers/grafana/client.py",
     "finops_query/__init__.py",
     "finops_query/classify.py",
     "finops_query/cost_model.py",
     "finops_query/ownership.py",
+    "finops_query/parser.py",
     "finops_query/policy.py",
     "infra/terraform/hub/alb.tf",
     "infra/terraform/hub/database.tf",
@@ -363,6 +365,7 @@
     "tests/providers/aws/test_accounts.py",
     "tests/providers/aws/test_credentials.py",
     "tests/providers/aws/test_health.py",
+    "tests/providers/test_amg_surface.py",
     "tests/providers/test_fake.py",
     "tests/providers/test_fake_surface.py",
     "tests/providers/test_grafana_client.py",
@@ -2918,6 +2921,31 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/grafana/amg.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/grafana/amg.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/grafana/amg.py",
+      "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/grafana/amg.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/grafana/amg.py",
+      "t": "finops_providers/grafana/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/grafana/client.py",
       "t": "finops_core/errors.py",
       "k": "python"
@@ -2930,6 +2958,16 @@
     {
       "s": "finops_query/ownership.py",
       "t": "finops_query/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/parser.py",
+      "t": "finops_query/classify.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/parser.py",
+      "t": "finops_query/policy.py",
       "k": "python"
     },
     {
@@ -3615,6 +3653,31 @@
     {
       "s": "tests/providers/aws/test_health.py",
       "t": "finops_providers/aws/health.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_amg_surface.py",
+      "t": "finops_core/domain/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_amg_surface.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_amg_surface.py",
+      "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_amg_surface.py",
+      "t": "finops_providers/grafana/amg.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_amg_surface.py",
+      "t": "finops_query/parser.py",
       "k": "python"
     },
     {

@@ -25,8 +25,8 @@ raising something undocumented is a branch nobody wrote.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-from typing import Protocol, runtime_checkable
+from collections.abc import Iterable, Mapping
+from typing import Any, Protocol, runtime_checkable
 
 from finops_core.domain.query import (
     ControlOutcome,
@@ -106,4 +106,70 @@ class QuerySurface(Protocol):
             SchemaDrift: The instance accepted the change and returned something
                 this adapter cannot confirm from.
         """
+        ...
+
+
+@runtime_checkable
+class Classified(Protocol):
+    """What one target turned out to be, as an adapter needs to see it.
+
+    Read only members. Declared as variables they would be invariant, and a
+    frozen dataclass, which is what every value in this domain is, could not
+    satisfy the protocol.
+    """
+
+    @property
+    def engine(self) -> str: ...
+
+    @property
+    def query(self) -> str: ...
+
+    @property
+    def region(self) -> str | None: ...
+
+    @property
+    def log_groups(self) -> tuple[str, ...]: ...
+
+
+@runtime_checkable
+class QueryParser(Protocol):
+    """Reading meaning out of a vendor's saved query.
+
+    Declared here, and implemented above, because of the layer order in
+    `pyproject.toml`: `finops_query` sits above `finops_providers` precisely
+    because it reads what an adapter fetched. An adapter that imported it would
+    invert that, and the import contract says so out loud.
+
+    So the adapter names the interface it needs and a collector supplies the
+    implementation. The same inversion as every other port here: the thing that
+    talks to a vendor depends on an abstraction, never on the layer above it.
+    """
+
+    def classify(self, target: Mapping[str, Any], panel_datasource: Any = None) -> Classified:
+        """What engine this target runs on, and what it runs against."""
+        ...
+
+    def iter_panels(self, panels: Any) -> Iterable[Mapping[str, Any]]:
+        """Every panel, including the ones nested inside a row."""
+        ...
+
+    def refresh_seconds(self, raw: Any) -> int:
+        """A dashboard refresh interval in seconds. Zero means no auto refresh."""
+        ...
+
+    def relative_range_seconds(self, raw: Any) -> int | None:
+        """How far back a range looks. None for an absolute range."""
+        ...
+
+    def fingerprint(
+        self,
+        *,
+        account_id: str,
+        workspace_name: str,
+        dashboard_uid: str,
+        panel: str,
+        ref_id: str,
+        query: str,
+    ) -> str:
+        """A stable identifier for one query, across days and variable values."""
         ...

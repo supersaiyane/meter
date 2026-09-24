@@ -393,18 +393,30 @@ instance case has its own test in the spec and needs a fixture that produces it.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-24 |
 | Delivers | FEAT-011 |
 | Depends on | TASK-P2-005 |
 | Estimate | M |
 
 **Acceptance criteria.**
 
-- [ ] Discovery via `grafana:ListWorkspaces` per account per region
-- [ ] Temporary service account token minted per run and **revoked at the end
+- [x] Discovery via `grafana:ListWorkspaces` per account per region
+- [x] Temporary service account token minted per run and **revoked at the end
       of the run, including on failure**
-- [ ] Falls back to a Secrets Manager token when configured
-- [ ] Passes the contract suite under `moto`
+- [x] Falls back to a Secrets Manager token when configured
+- [~] Passes the contract suite under `moto`. **Not possible: moto implements
+      no Grafana operation at all, and botocore knows them from the service
+      model so the gap is invisible until a call is made. `botocore.stub`
+      validates a request and a response against the real model instead, which
+      is stronger for API correctness and immediately caught the fixture
+      omitting four fields `ListWorkspaces` requires. ISS-141.**
+
+**Layering found here.** The first implementation imported `finops_query` to
+classify and fingerprint, and the import contract refused it: `finops_query`
+sits above `finops_providers` precisely because it reads what an adapter
+fetched. The adapter now names a `QueryParser` port in `finops_core.ports.query`
+and a collector supplies `finops_query.parser.GrafanaQueryParser`. The adapter
+fetches, the layer above interprets, and the import direction points down.
 
 **Do not.**
 

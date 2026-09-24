@@ -25,7 +25,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | Features | 50 total, 8 specified, 7 in build, 5 delivered |
 | Decisions | 21 architecture decision records |
 | Changes | 81 recorded |
-| Issues | 93 fixed, 42 open, 0 parked |
+| Issues | 93 fixed, 43 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -83,7 +83,7 @@ ISS-003.
 | Sub project | Done | Partly | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P2 | 8 | 1 | 2 | 14 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
+| P2 | 9 | 1 | 2 | 13 | 25 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -138,6 +138,7 @@ ISS-003.
 | `TASK-P2-003` | Done, 2026-09-04 | decompose the remainder and delete the legacy copy |
 | `TASK-P2-004` | Done, 2026-09-05 | define the QuerySurface port |
 | `TASK-P2-005` | Done, 2026-09-23 | the fake Grafana surface |
+| `TASK-P2-006` | Done, 2026-09-24 | the AMG connection strategy |
 | `TASK-P2-007` | Descoped, 2026-09-02 | the self hosted connection strategy |
 | `TASK-P2-008` | Descoped, 2026-09-02 | the Grafana Cloud connection strategy |
 | `TASK-P2-022` | Done, 2026-09-13 | the query findings screen |
