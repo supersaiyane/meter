@@ -249,7 +249,11 @@ meter/
 │   ├── eslint.config.js       flat config. eslintrc is not read by ESLint 9
 │   └── src/
 │       ├── tokens.css         light and dark in one declaration, via light-dark().
-│       │                      Tokens, and the classes that carry meaning
+│       │                      Tokens, and the classes that carry meaning. The
+│       │                      severity ramp is warm because a blue one ended on
+│       │                      the accent, and the faces are IBM Plex, self
+│       │                      hosted, so a column of figures is the same width
+│       │                      on every machine
 │       ├── layout.css         where things sit. Element selectors, because
 │       │                      DataTable is the only table and Figure the only
 │       │                      numeral. Needs no component to accept a className,
@@ -305,10 +309,14 @@ meter/
 │           ├── querySeverity.ts       the word to the ramp. Its own module
 │           │                          because two screens rank the same findings
 │           │                          and a second copy is a second answer
-│           ├── HomeScreen.tsx          owns no data of its own. An unfilled slot
+│           ├── HomeScreen.tsx          owns no data of its own. Three tiers: a
+│           │                           summary, the findings worth acting on,
+│           │                           then ArrivingRail. An unfilled slot still
 │           │                           names the sub project that will fill it,
-│           │                           and the findings slot is filled, read
-│           │                           through the findings screen's own hook
+│           │                           in one rail rather than a panel each, so
+│           │                           a promise does not outweigh a number.
+│           │                           Every figure is read through the owning
+│           │                           screen's own hook
 │           ├── QueryFindingsScreen.tsx ranked by cost as decimals. The reason is
 │           │                           a column, because a tooltip is invisible
 │           │                           in a screenshot
