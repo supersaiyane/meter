@@ -17,9 +17,9 @@ subprojects:
   depends_on: P0
 - id: P2
   name: Query Cost Governance
-  status: Design approved, spec in review
+  status: Spec approved, plan in review
   spec: docs/specs/2026-08-23-p2-query-cost-governance-design.md
-  plan: ''
+  plan: docs/plans/P2-implementation-plan.md
   depends_on: P0
 - id: P3
   name: Utilization and Rightsizing
@@ -601,6 +601,13 @@ changes:
     levels and three write levels behind per tenant flags, both defaulting safe
   commit: ee3ea68
   detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md)'
+- id: CHG-0028
+  date: '2026-08-23'
+  type: Design
+  what: P2 implementation plan written, 22 tasks in ten waves. The prototype is pinned by golden files
+    before anything touches it
+  commit: pending
+  detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL

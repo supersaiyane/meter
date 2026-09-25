@@ -102,7 +102,7 @@ rather than that one saving happened.
 | --- | --- | --- | --- | --- | --- | --- |
 | P0 | Foundation | Design approved, spec in review | 11 (11 specified) | [spec](specs/2026-08-23-p0-foundation-design.md) | [plan](plans/P0-implementation-plan.md) | none |
 | P1 | Cost Intelligence | Not started | 6 (0 specified) | not written | not written | P0 |
-| P2 | Query Cost Governance | Design approved, spec in review | 9 (8 specified) | [spec](specs/2026-08-23-p2-query-cost-governance-design.md) | not written | P0 |
+| P2 | Query Cost Governance | Spec approved, plan in review | 9 (8 specified) | [spec](specs/2026-08-23-p2-query-cost-governance-design.md) | [plan](plans/P2-implementation-plan.md) | P0 |
 | P3 | Utilization and Rightsizing | Not started | 7 (0 specified) | not written | not written | P0, P1 |
 | P4 | Inventory and Topology | Not started | 3 (0 specified) | not written | not written | P0 |
 | P5 | Quotas and Limits | Not started | 2 (0 specified) | not written | not written | P0, P4 |

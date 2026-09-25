@@ -8,4 +8,9 @@ Naming: `P<n>-implementation-plan.md`.
 
 | Plan | Status |
 | --- | --- |
-| P0 foundation | Not written. Blocked on user review of `docs/specs/2026-08-23-p0-foundation-design.md` |
+| P0 foundation | Written. 34 tasks in eleven groups |
+| P2 query cost governance | Written. 22 tasks in ten waves |
+
+Later sub projects get their plan when their specification is approved, per
+ADR-0001. Writing a plan for work whose foundations do not exist yet produces
+guesses that look like decisions.
