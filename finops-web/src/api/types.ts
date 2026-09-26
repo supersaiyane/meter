@@ -481,3 +481,87 @@ export interface ApiScores {
   /** Accounts nobody could assess. Different from accounts scoring badly. */
   readonly unscored: readonly string[];
 }
+/**
+ * P4. The graph, and how much of it is real.
+ *
+ * `coverage` is on `ApiSubgraph` rather than fetched separately, which is the whole
+ * point of the P4 specification's section 6 reaching this file: a screen cannot draw
+ * the map without having been handed the list of slices the map is missing. A map that
+ * renders without it draws an unreadable region as sparse, and sparse is
+ * indistinguishable from well connected on a diagram.
+ */
+export interface ApiTopologyNode {
+  readonly node_id: string;
+  /** The ARN. A reader has to be able to find the thing in their own console. */
+  readonly provider_id: string;
+  readonly account_id: string;
+  /** One of fourteen kinds, and OTHER for a type the adapter cannot name. */
+  readonly node_kind: string;
+  /** The provider's own word for it, because ten of the estate's types are OTHER. */
+  readonly resource_type: string;
+  /** Null means global rather than regional. Never a region nobody could read. */
+  readonly region_id: string | null;
+  /** Null means regional rather than zonal. Never an unknown zone. */
+  readonly availability_zone: string | null;
+  readonly name: string | null;
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
+export interface ApiTopologyEdge {
+  readonly from_node_id: string;
+  readonly to_node_id: string;
+  readonly edge_kind: string;
+  readonly is_cross_account: boolean;
+  /** The API that supplied it, so a missing edge and a refused call read differently. */
+  readonly source: string;
+  /** True where the far end is not in this payload. Drawn as a boundary, not a line. */
+  readonly leaves_the_graph: boolean;
+}
+
+export interface ApiSliceCoverage {
+  readonly account_id: string;
+  /** Null is the account's global slice, where the IAM roles live. */
+  readonly region_id: string | null;
+  /** COMPLETE, PARTIAL or UNREAD. Unread is not a synonym for partial. */
+  readonly state: string;
+  /** One of seven causes, null only when COMPLETE. Never free text. */
+  readonly cause: string | null;
+  readonly node_count: number;
+  readonly edge_count: number;
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
+export interface ApiSubgraph {
+  readonly root_id: string;
+  readonly nodes: readonly ApiTopologyNode[];
+  readonly edges: readonly ApiTopologyEdge[];
+  /** Not optional and not a second request. See the comment above. */
+  readonly coverage: readonly ApiSliceCoverage[];
+  readonly depth_reached: number;
+  readonly max_depth: number;
+  /** Nodes inside the depth bound that did not fit. Non zero has to be said out loud. */
+  readonly omitted_nodes: number;
+  /** False only when the walk hit the ceiling, so the number above is a floor. */
+  readonly omitted_is_exact: boolean;
+  readonly max_nodes: number;
+}
+
+export interface ApiGraphCoverage {
+  readonly incomplete: readonly ApiSliceCoverage[];
+}
+
+export interface ApiInventoryRoot {
+  readonly node_id: string;
+  readonly provider_id: string;
+  readonly account_id: string;
+  readonly node_kind: string;
+  readonly resource_type: string;
+  readonly region_id: string | null;
+  readonly name: string | null;
+}
+
+export interface ApiInventoryRoots {
+  readonly roots: readonly ApiInventoryRoot[];
+}

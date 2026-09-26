@@ -161,6 +161,7 @@
     "finops-web/src/api/fixtureSeam.ts",
     "finops-web/src/api/fixtures/cost.ts",
     "finops-web/src/api/fixtures/query.ts",
+    "finops-web/src/api/fixtures/topology.ts",
     "finops-web/src/api/fixtures/waste.ts",
     "finops-web/src/api/queries.ts",
     "finops-web/src/api/types.ts",
@@ -175,6 +176,7 @@
     "finops-web/src/components/SeverityBadge.tsx",
     "finops-web/src/components/Sparkline.tsx",
     "finops-web/src/components/StateBoundary.tsx",
+    "finops-web/src/components/TopologyCanvas.tsx",
     "finops-web/src/components/TypedError.tsx",
     "finops-web/src/components/__tests__/DataTable.test.tsx",
     "finops-web/src/components/__tests__/Figure.test.tsx",
@@ -216,6 +218,7 @@
     "finops-web/src/screens/QueryGroups.tsx",
     "finops-web/src/screens/QuerySurfacesScreen.tsx",
     "finops-web/src/screens/RemediationControls.tsx",
+    "finops-web/src/screens/TopologyScreen.tsx",
     "finops-web/src/screens/WasteSavingsScreen.tsx",
     "finops-web/src/screens/WasteScoreScreen.tsx",
     "finops-web/src/screens/WasteScreen.tsx",
@@ -237,6 +240,7 @@
     "finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx",
     "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
     "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
+    "finops-web/src/screens/__tests__/TopologyScreen.test.tsx",
     "finops-web/src/screens/__tests__/WasteSavingsScreen.test.tsx",
     "finops-web/src/screens/__tests__/WasteScreen.test.tsx",
     "finops-web/src/screens/__tests__/enforcementTime.test.ts",
@@ -1081,6 +1085,11 @@
     },
     {
       "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/TopologyScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/WasteSavingsScreen.tsx",
       "k": "typescript"
     },
@@ -1155,6 +1164,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/api/fixtures/topology.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/api/fixtures/waste.ts",
       "t": "finops-web/src/api/fixtures/cost.ts",
       "k": "typescript"
@@ -1182,6 +1196,11 @@
     {
       "s": "finops-web/src/api/queries.ts",
       "t": "finops-web/src/api/fixtures/query.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/queries.ts",
+      "t": "finops-web/src/api/fixtures/topology.ts",
       "k": "typescript"
     },
     {
@@ -1272,6 +1291,11 @@
     {
       "s": "finops-web/src/components/StateBoundary.tsx",
       "t": "finops-web/src/components/surfaceState.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/TopologyCanvas.tsx",
+      "t": "finops-web/src/api/types.ts",
       "k": "typescript"
     },
     {
@@ -2290,6 +2314,36 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/TopologyScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/TopologyScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/TopologyScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/TopologyScreen.tsx",
+      "t": "finops-web/src/components/TopologyCanvas.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/TopologyScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/TopologyScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/WasteSavingsScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
@@ -2821,6 +2875,31 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/TopologyScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/topology.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/TopologyScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/TopologyScreen.test.tsx",
+      "t": "finops-web/src/screens/TopologyScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/TopologyScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/TopologyScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
       "k": "typescript"
     },

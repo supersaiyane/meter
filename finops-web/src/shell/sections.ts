@@ -72,7 +72,7 @@ export const GROUPS: readonly GroupDef[] = [
         label: 'Resources',
         arrives: 'P4 Inventory and Topology',
       },
-      { path: '/inventory/topology', label: 'Topology', arrives: 'P4 Inventory and Topology' },
+      { path: '/inventory/topology', label: 'Topology', arrives: null },
     ],
   },
   {
