@@ -150,6 +150,7 @@ check-docs: ## Fail if any generated document is out of step with the registry
 	@$(DOCPY) scripts/docs/check_feature_docs.py
 	@$(DOCPY) scripts/docs/build_file_graph.py --check
 	@$(DOCPY) scripts/docs/build_context_index.py --check
+	@$(DOCPY) scripts/docs/check_map_counts.py --check
 	@$(DOCPY) scripts/ci/check_flags.py
 	@$(DOCPY) scripts/ci/check_hardcoded.py
 	@$(DOCPY) scripts/ci/check_forbidden_imports.py
@@ -159,6 +160,7 @@ doc-sync: ## Regenerate every derived document from docs/registry.yaml and the s
 	@$(DOCPY) scripts/docs/sync.py
 	@$(DOCPY) scripts/docs/build_file_graph.py
 	@$(DOCPY) scripts/docs/build_context_index.py
+	@$(DOCPY) scripts/docs/check_map_counts.py
 	@echo "Derived documents regenerated. Review the diff before committing."
 
 .PHONY: session-end

@@ -506,6 +506,7 @@
     "scripts/docs/build_file_graph.py",
     "scripts/docs/check_feature_docs.py",
     "scripts/docs/check_index.py",
+    "scripts/docs/check_map_counts.py",
     "scripts/docs/rotate_checkpoint.py",
     "scripts/docs/sync.py",
     "scripts/ops/erase_principal.py",

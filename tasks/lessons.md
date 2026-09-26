@@ -403,11 +403,11 @@ and the prose describes the thing without counting it. When adding a line with a
 write the derivation beside it in the same sentence, because that sentence is what makes
 the next reader check rather than trust.
 
-And before saying a map sweep is done, run the counts rather than reading them: the
-screens from `grep -c 'arrives: null'`, the journeys from `grep -cE '^\s*test\('` across
-the spec files, the routes from `grep -c '^@router'`, the revisions from `ls
-migrations/versions`. Four commands, and they are the difference between a sweep and a
-reading.
+This is now enforced rather than remembered. `scripts/docs/check_map_counts.py` derives
+every count into a generated block and runs in `check-docs`, so a stale figure fails the
+build. It also checks that every revision file is named somewhere in the map, which is a
+separate claim from the count: on its first run it found seven revisions the map had never
+named, five of them from months earlier, and a count alone would have passed all seven.
 
 **Triggers:** any edit to `project_map.md`, any task that adds a screen, a route, a
 journey, a migration or a collector, the instruction "do the projectmap", and any

@@ -19,6 +19,26 @@ Master index: `INDEX.md`
 Verified against the tree: 2026-10-09
 Update trigger: any new module, moved module, or changed responsibility.
 
+## Counted, not claimed
+
+<!-- generated:map-counts start -->
+<!-- This block is GENERATED from the source by scripts/docs/check_map_counts.py. Hand edits here are overwritten and make check-docs will fail. Every figure below is derived, which is the point: three sweeps in two days found stale counts in this file when they were written by hand. See ADR-0014 and tasks/lessons.md. -->
+
+| Counted | Now | Derived from |
+| --- | --- | --- |
+| Screens built | 20 of 24 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 15 in 4 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Inventory routes | 5 | `@router.` in finops_api/routes/inventory.py |
+| Collectors | 20 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 16 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 111 | test_*.py under tests/ |
+| Test functions | 1527 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+
+No prose line in this file repeats a figure from this table. That is the rule, and it
+exists because the figures in the prose were wrong on three consecutive sweeps.
+
+<!-- generated:map-counts end -->
+
 ## Current reality
 
 P0 is in build. The Python packages now exist as empty namespaces, created at
@@ -242,7 +262,11 @@ meter/
 │   │                          which is build output and is never committed
 │   └── deploy/                migration task runner
 │
-├── tests/                     the suite, 1,821 tests. conftest.py refuses to run
+├── tests/                     the suite. Its size is in the counted table above, as test
+│                              files and test functions; the pytest total is what `make
+│                              verify` prints and is not repeated here, because it counts
+│                              parametrised expansions and nothing else can compute it.
+│                              conftest.py refuses to run
 │                              against a real AWS account when no endpoint
 │                              override is set, and its session scoped `engine`
 │                              starts a PostgreSQL container and migrates it,
@@ -348,7 +372,7 @@ meter/
 │   │                          finally. v1 writes nothing, constraint 6
 ├── finops-web/                IN BUILD  Vite, React and TypeScript
 │   ├── README.md              why the versions are pinned where they are
-│   ├── e2e/                   fifteen Playwright journeys in four spec files,
+│   ├── e2e/                   the Playwright journeys, counted in the table above,
 │   │                          against the built bundle rather than the test
 │   │                          renderer. They are what proves the honesty rules
 │   │                          survive the build. The figure is read from what
@@ -435,9 +459,10 @@ meter/
 │       │                      and no single ratio is true of both, ISS-157
 │       │   └── sections.ts    GROUPS, the seven of ADR-0020. It never grows: a
 │       │                      sub project adds screens inside an existing group
-│       └── screens/           twenty of twenty four built, counted from the
-│                              `arrives` field in sections.ts rather than from this
-│                              line, which is why that field exists. Three of the
+│       └── screens/           how many are built is in the counted table above, derived
+│                              from the `arrives` field in sections.ts, which is why that
+│                              field exists. This line stated it anyway for three sub
+│                              projects and was wrong twice. Three of the
 │                              four P2 screens read live routes since TASK-P2-021;
 │                              enforcement stays fixture backed and says so,
 │                              because TASK-P2-016 is parked. TopologyScreen is
@@ -631,7 +656,8 @@ meter/
 │   ├── middleware.py          request id on every line and back on the response
 │   ├── schemas.py             the meta envelope. degraded is computed, never set
 │   ├── routes/                the seven P0 routes, all returning the envelope.
-│   │                          inventory.py is P4's five: the subgraph, the estate
+│   │                          inventory.py holds P4's routes, counted above: the subgraph,
+│   │                          the estate
 │   │                          wide coverage banner, the roots to start a map
 │   │                          from, FEAT-053's one resource and FEAT-056's list
 │   │                          of them all, which is what closed ISS-204. The
@@ -688,6 +714,21 @@ meter/
 │       ├── 0002_cost_monthly.py  somewhere for retention to aggregate into
 │       ├── 0004_query_key.py  a nullable query_key, so evidence can attach to a
 │       │                      query rather than to one panel drawing it
+│       ├── 0005_finding_cause.py  the cause a finding is grouped by, beside the
+│       │                      prose that explains it, because a vocabulary nobody
+│       │                      can group by is a column nobody reads
+│       ├── 0006_refresh_floor.py  the refresh floor a workspace enforces on
+│       │                      itself, which is the one query cost input the
+│       │                      provider supplies rather than us modelling it
+│       ├── 0007_query_adhoc.py  the queries that belong to nobody, FEAT-051
+│       ├── 0008_cost_anomaly.py  a day that did not look like the days before
+│       │                      it. Three thresholds concurrently, which is the
+│       │                      specific thing that stops anomaly detection
+│       │                      becoming noise and then being muted
+│       ├── 0009_commitment_coverage.py  what was committed, what it consumed and
+│       │                      what it covered, at two grains, because a covered
+│       │                      dollar cannot be attributed to one of several
+│       │                      overlapping plans
 │       ├── 0010_recommendations.py  one table for every source, and an append
 │       │                      only event log, because a lifecycle column cannot
 │       │                      say that somebody accepted a finding and nothing

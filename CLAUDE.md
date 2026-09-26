@@ -156,7 +156,7 @@ INDEX.md            master index, the entry point for the project
 docker/             three Dockerfiles plus the nginx config, Minimus based
 security/           scan reports, SBOMs, posture, policy, allowlist
 scripts/security/   scanning, admission gate, report, auto fix
-scripts/docs/       index check, feature doc check, file graph
+scripts/docs/       index check, feature doc check, file graph, map counts
 scripts/ci/         pipeline helpers including the code review
 scripts/deploy/     deployment helpers
 docs/features/      one document per feature, 42 of them
