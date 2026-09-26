@@ -348,9 +348,13 @@ meter/
 │   │                          finally. v1 writes nothing, constraint 6
 ├── finops-web/                IN BUILD  Vite, React and TypeScript
 │   ├── README.md              why the versions are pinned where they are
-│   ├── e2e/                   five Playwright journeys against the built
-│   │                          bundle, not the test renderer. They are what
-│   │                          proves the honesty rules survive the build
+│   ├── e2e/                   fourteen Playwright journeys in four spec files,
+│   │                          against the built bundle rather than the test
+│   │                          renderer. They are what proves the honesty rules
+│   │                          survive the build. The figure is read from what
+│   │                          `make verify` runs, not from counting files: this
+│   │                          line said five for three sub projects, which is
+│   │                          how long a count in prose stays wrong
 │   ├── eslint.config.js       flat config. eslintrc is not read by ESLint 9.
 │   │                          Names all three tsconfig projects: a file in none
 │   │                          of them is a fatal parse error, not a skip
