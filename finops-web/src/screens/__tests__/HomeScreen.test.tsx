@@ -127,6 +127,11 @@ describe('HomeScreen', () => {
       '/api/v1/query/findings',
       '/api/v1/query/groups',
       '/api/v1/query/instances',
+      // `useRecommendations`, which is the recommendations screen's own hook, added with
+      // FEAT-052's Top actions panel. The panel summarises exactly the rows `/waste` shows
+      // and ranks them the same way, which is why it reuses the key rather than asking for
+      // its own slice.
+      '/api/v1/waste/recommendations',
     ]);
   });
 

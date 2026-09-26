@@ -348,6 +348,17 @@ class RecommendationOut(BaseModel):
     ticket_reference: str | None
     #: The working, so a reader can disagree with the verdict.
     rationale: str
+    #: FEAT-052. What applying this would cost if it turns out to be wrong, from
+    #: `finops_query.actions`. Three fields rather than one label, because the two
+    #: questions are independent and neither is confidence: a high confidence resize still
+    #: restarts the workload, and a low confidence snapshot deletion is still permanent.
+    reversible: bool
+    disturbs_running_work: bool
+    #: Reversible and disturbing nothing, both halves. Not a synonym for safe: five of the
+    #: eight classes that disturb nothing cannot be undone.
+    is_no_regret: bool
+    #: The sentence. A flag with no sentence behind it is one a reader cannot argue with.
+    risk_why: str
 
 
 class RecommendationEventOut(BaseModel):

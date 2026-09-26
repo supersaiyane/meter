@@ -406,6 +406,18 @@ export interface ApiRecommendation {
   readonly owner: string | null;
   readonly ticket_reference: string | null;
   readonly rationale: string;
+  /**
+   * FEAT-052. What applying this costs if it is wrong, from `finops_query.actions`.
+   *
+   * Four fields rather than one label, and none of them is confidence. A high confidence
+   * resize still restarts the workload; a low confidence snapshot deletion is still
+   * permanent. `is_no_regret` is computed on the server so a client cannot disagree with it.
+   */
+  readonly reversible: boolean;
+  readonly disturbs_running_work: boolean;
+  readonly is_no_regret: boolean;
+  /** The sentence. A flag with no sentence behind it is one a reader cannot argue with. */
+  readonly risk_why: string;
 }
 
 export interface ApiRecommendations {

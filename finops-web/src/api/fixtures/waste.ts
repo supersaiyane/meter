@@ -42,6 +42,12 @@ export function recommendationsFixture(): ApiEnvelope<ApiRecommendations> {
           rationale:
             'p99 CPU of 11.4 percent against 4 vCPU over 15 days, so 1 vCPU with the ' +
             '30 percent headroom rule. Sized on 15 days, which is one day over the floor',
+          reversible: true,
+          disturbs_running_work: true,
+          is_no_regret: false,
+          risk_why:
+            'A resize needs a stop and a start, so the workload is interrupted. The instance ' +
+            'type can be set back afterwards.',
         },
         {
           recommendation_id: '3a4b5c6d-7e8f-4a0b-9c1d-2e3f4a5b6c7d',
@@ -60,6 +66,13 @@ export function recommendationsFixture(): ApiEnvelope<ApiRecommendations> {
           rationale:
             'm5.xlarge on x86 with no architecture specific workload detected over 45 days. ' +
             'The equivalent m6g.xlarge is 20 percent cheaper per hour',
+          reversible: true,
+          disturbs_running_work: true,
+          is_no_regret: false,
+          risk_why:
+            'A different processor architecture, so every binary on the instance has to run on ' +
+            'arm64. Reversible, and the most likely finding on this list to fail in a way the ' +
+            'bill cannot see.',
         },
         {
           recommendation_id: '4b5c6d7e-8f90-4b1c-8d2e-3f4a5b6c7d8e',
@@ -77,9 +90,43 @@ export function recommendationsFixture(): ApiEnvelope<ApiRecommendations> {
           ticket_reference: 'FAKE-1019',
           rationale:
             '800 GiB gp3 volume attached to nothing for 92 days. The saving is the whole cost',
+          reversible: false,
+          disturbs_running_work: false,
+          is_no_regret: false,
+          risk_why:
+            'Deleting a volume is final. It is attached to nothing, so nothing stops, and ' +
+            'nothing gets the data back either. It reads as safe because of the first half.',
+        },
+        {
+          // The no regret case, and the reason this fixture gained an entry. An alarm that
+          // has never left insufficient data has never fired, so deleting it removes no
+          // coverage that ever existed, and it can be recreated from its own definition.
+          // Small money deliberately: the group's claim is that these are easy, not big.
+          recommendation_id: '7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c0d',
+          account_id: 'fake-platform-a',
+          source: 'METER',
+          waste_class: 'ALARM_INSUFFICIENT_DATA',
+          resource_id: 'fake-orphaned-queue-depth',
+          region_id: 'eu-west-1',
+          estimated_monthly_saving: '0.1000',
+          severity: 'LOW',
+          confidence: 'HIGH',
+          observation_days: 243,
+          lifecycle: 'OPEN',
+          owner: null,
+          ticket_reference: null,
+          rationale:
+            'In INSUFFICIENT_DATA since 2026-01-26, 243 days, so it has never evaluated. ' +
+            'The queue it watches no longer exists',
+          reversible: true,
+          disturbs_running_work: false,
+          is_no_regret: true,
+          risk_why:
+            'An alarm can be recreated from its own definition, and one that has never left ' +
+            'insufficient data has never fired. Deleting it removes no coverage that existed.',
         },
       ],
-      unowned: 1,
+      unowned: 2,
     },
     meta: meta(6),
   };

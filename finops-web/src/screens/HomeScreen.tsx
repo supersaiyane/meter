@@ -7,12 +7,14 @@ import {
   useQueryFindings,
   useQueryGroups,
   useQuerySurfaces,
+  useRecommendations,
 } from '../api/queries';
 import { grandTotal, rollUp } from './platformRollUp';
 import { Figure } from '../components/Figure';
 import { DataTable } from '../components/DataTable';
 import { SeverityBadge, type Severity } from '../components/SeverityBadge';
 import { StateBoundary } from '../components/StateBoundary';
+import { TopActions } from '../components/TopActions';
 import type { Column } from '../components/tableConfig';
 import { useReportMeta } from '../shell/metaRegistry';
 import { severityOf } from './querySeverity';
@@ -36,7 +38,10 @@ import type { ApiQueryFinding, ApiQueryGroup, ApiSurfaceInstance } from '../api/
  * sub project that lands turns one named absence into a number.
  *
  * The page is ranked in three tiers, after the AWS Cloud Intelligence pattern:
- * a summary, then the one thing that needs attention, then the absences. The
+ * a summary, then what to do about it, then the absences. Tier two held one panel until
+ * 2026-09-26 and holds two now, Top actions above the query findings table, because the
+ * first answers what to do across the whole estate and the second is the same question
+ * narrowed to one sub project. The
  * absences used to be panels drawn at the same weight as the money, which meant
  * nothing on the page outranked anything else. They are one rail now. The claim
  * they make is unchanged, it just no longer outweighs the facts.
@@ -185,6 +190,29 @@ export function HomeScreen() {
     rows.length,
     'none',
     'query_audit',
+  );
+
+  // The recommendations screen's own hook, for FEAT-052's Top actions panel. Home still
+  // owns no query: this is the same key `/waste` uses, so the panel and the screen it
+  // summarises cannot disagree about what is open or about how it is ranked.
+  //
+  // It summarises the rows that hook returned rather than asking for its own slice, which
+  // means the no regret group is drawn from the same two hundred the screen shows. A
+  // dedicated query would have found the small reversible findings that fall past that
+  // limit, and would also have been the second answer this page is built to avoid.
+  const recommendations = useRecommendations();
+  const recommendationEnvelope = recommendations.data?.data;
+  const actionRows = useMemo(
+    () => recommendationEnvelope?.data.recommendations ?? [],
+    [recommendationEnvelope],
+  );
+  useReportMeta('home-recommendations', recommendationEnvelope?.meta);
+  const actionsState = surfaceStateFor(
+    recommendations,
+    recommendationEnvelope?.meta,
+    actionRows.length,
+    'none',
+    'recommendation',
   );
 
   // The groups screen's own hook and the surfaces screen's own hook. Home still
@@ -385,7 +413,16 @@ export function HomeScreen() {
         </div>
       </section>
 
-      {/* Tier two. The one thing worth doing something about. */}
+      {/* Tier two. What to do about it. Two panels since 2026-09-26, and the order is the
+          claim: Top actions answers what should I do this morning across the whole estate,
+          and the findings table below it is the same question narrowed to query governance.
+          A reader who acts on the first one is acting on the larger number. */}
+      <section data-testid="home-actions" aria-label="Top actions">
+        <StateBoundary state={actionsState}>
+          <TopActions recommendations={actionRows} freshness={freshness} />
+        </StateBoundary>
+      </section>
+
       <section data-testid="home-attention" aria-label="Top findings by dollar">
         <h3>
           <Link to="/governance/queries">Top findings by dollar</Link>

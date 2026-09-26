@@ -367,6 +367,12 @@ features:
   status: Specified
   detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md)'
   doc: docs/features/FEAT-051-adhoc-query-detection.md
+- id: FEAT-052
+  name: Top actions, ranked, with what each change costs if it is wrong
+  subproject: P3
+  status: Delivered
+  detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
+  doc: docs/features/FEAT-052-top-actions-and-change-risk.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1

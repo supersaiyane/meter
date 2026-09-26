@@ -625,3 +625,83 @@ class TestWhenThereIsNothing:
         payload = get(client, token)
         assert payload["data"]["recommendations"] == []
         assert payload["data"]["unowned"] == 0
+
+
+# --- FEAT-052, the risk that rides along with every recommendation -----------
+
+
+def test_every_recommendation_carries_its_risk(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """On the existing route rather than a new one, because the home screen rolls up from
+    the hook `/waste` already uses and a second query would one day disagree with it."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    rows = get(client, token)["data"]["recommendations"]
+    assert rows
+    for row in rows:
+        assert isinstance(row["reversible"], bool)
+        assert isinstance(row["disturbs_running_work"], bool)
+        # Both halves, computed rather than sent, so a client cannot disagree with it.
+        assert row["is_no_regret"] == (row["reversible"] and not row["disturbs_running_work"])
+        assert len(row["risk_why"]) > 40
+
+
+def test_a_rightsizing_is_reversible_and_still_not_no_regret(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The half a confidence score hides. It can be undone and it stops the workload to do
+    it, so it is never one of the easy wins."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    rows = get(client, token)["data"]["recommendations"]
+    sizing = [row for row in rows if row["waste_class"] == "RIGHTSIZE_INSTANCE"]
+    assert sizing, "the seeded estate no longer contains a rightsizing to assert on"
+    for row in sizing:
+        assert row["reversible"] is True
+        assert row["disturbs_running_work"] is True
+        assert row["is_no_regret"] is False
+
+
+def test_a_no_regret_finding_and_a_risky_one_come_back_together(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """Both verdicts through the real path, because a field that is only ever seen in one
+    state is a field nobody has watched work.
+
+    The first party source produces only rightsizings and an unassociated address, both
+    risky, so this seeds the CloudWatch collector as well: the estate holds two alarms stuck
+    in insufficient data, and an alarm that has never fired is the clearest no regret finding
+    there is.
+    """
+    from finops_fakes.cloudwatch_estate import FakeCloudWatchEstate
+    from finops_ingest.collectors.waste_cloudwatch import WasteCloudWatchCollector
+
+    seed(engine, tenant_id)
+    with engine.begin() as connection:
+        WasteCloudWatchCollector(FakeCloudWatchEstate(), clock=lambda: NOW)(
+            CollectorContext(
+                unit=Unit(tenant_id=tenant_id),
+                connection=connection,
+                run_id=uuid4(),
+                settings=settings,
+            )
+        )
+
+    client, token = client_for(engine, everything(tenant_id), settings)
+    rows = get(client, token)["data"]["recommendations"]
+    by_class = {row["waste_class"]: row for row in rows}
+
+    alarm = by_class.get("ALARM_INSUFFICIENT_DATA")
+    assert alarm is not None, "the estate no longer holds an alarm stuck in insufficient data"
+    assert alarm["is_no_regret"] is True
+    assert alarm["reversible"] is True
+    assert alarm["disturbs_running_work"] is False
+
+    # And the trap, in the same response. Nothing is running and the address is still gone
+    # forever, so it must not be grouped with the alarm.
+    address = by_class.get("ELASTIC_IP_UNASSOCIATED")
+    assert address is not None
+    assert address["disturbs_running_work"] is False
+    assert address["reversible"] is False
+    assert address["is_no_regret"] is False

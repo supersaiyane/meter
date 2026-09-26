@@ -181,6 +181,7 @@
     "finops-web/src/components/SeverityBadge.tsx",
     "finops-web/src/components/Sparkline.tsx",
     "finops-web/src/components/StateBoundary.tsx",
+    "finops-web/src/components/TopActions.tsx",
     "finops-web/src/components/TopologyCanvas.tsx",
     "finops-web/src/components/TypedError.tsx",
     "finops-web/src/components/__tests__/DataTable.test.tsx",
@@ -190,11 +191,13 @@
     "finops-web/src/components/__tests__/OrgTree.test.tsx",
     "finops-web/src/components/__tests__/Sparkline.test.tsx",
     "finops-web/src/components/__tests__/StateBoundary.test.tsx",
+    "finops-web/src/components/__tests__/TopActions.test.tsx",
     "finops-web/src/components/__tests__/axe.ts",
     "finops-web/src/components/__tests__/contrast.test.ts",
     "finops-web/src/components/__tests__/orgNodes.test.ts",
     "finops-web/src/components/__tests__/shell.test.tsx",
     "finops-web/src/components/__tests__/surface.test.ts",
+    "finops-web/src/components/actionRisk.ts",
     "finops-web/src/components/density.ts",
     "finops-web/src/components/index.ts",
     "finops-web/src/components/orgNodes.ts",
@@ -408,6 +411,7 @@
     "finops_providers/grafana/amg.py",
     "finops_providers/grafana/client.py",
     "finops_query/__init__.py",
+    "finops_query/actions.py",
     "finops_query/anomaly.py",
     "finops_query/classify.py",
     "finops_query/cost_model.py",
@@ -580,6 +584,7 @@
     "tests/providers/test_grafana_client.py",
     "tests/query/__init__.py",
     "tests/query/conftest.py",
+    "tests/query/test_actions.py",
     "tests/query/test_anomaly.py",
     "tests/query/test_classify.py",
     "tests/query/test_cost_model.py",
@@ -1316,6 +1321,36 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/TopActions.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/TopActions.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/TopActions.tsx",
+      "t": "finops-web/src/components/SeverityBadge.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/TopActions.tsx",
+      "t": "finops-web/src/components/actionRisk.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/TopActions.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/TopActions.tsx",
+      "t": "finops-web/src/screens/querySeverity.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/components/TopologyCanvas.tsx",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -1411,6 +1446,31 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/__tests__/TopActions.test.tsx",
+      "t": "finops-web/src/api/fixtures/waste.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/TopActions.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/TopActions.test.tsx",
+      "t": "finops-web/src/components/TopActions.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/TopActions.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/TopActions.test.tsx",
+      "t": "finops-web/src/components/actionRisk.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/components/__tests__/contrast.test.ts",
       "t": "finops-web/src/tokens.css?raw",
       "k": "typescript"
@@ -1463,6 +1523,11 @@
     {
       "s": "finops-web/src/components/__tests__/surface.test.ts",
       "t": "finops-web/src/tokens.css?raw",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/actionRisk.ts",
+      "t": "finops-web/src/api/types.ts",
       "k": "typescript"
     },
     {
@@ -1913,6 +1978,11 @@
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
       "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/HomeScreen.tsx",
+      "t": "finops-web/src/components/TopActions.tsx",
       "k": "typescript"
     },
     {
@@ -3881,6 +3951,11 @@
       "k": "python"
     },
     {
+      "s": "finops_api/routes/waste.py",
+      "t": "finops_query/actions.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/config.py",
       "t": "finops_core/constants.py",
       "k": "python"
@@ -5096,6 +5171,11 @@
       "k": "python"
     },
     {
+      "s": "finops_query/actions.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
       "s": "finops_query/anomaly.py",
       "t": "finops_core/domain/observation.py",
       "k": "python"
@@ -5728,6 +5808,11 @@
     {
       "s": "tests/api/test_waste_routes.py",
       "t": "finops_ingest/collectors/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_waste_routes.py",
+      "t": "finops_ingest/collectors/waste_cloudwatch.py",
       "k": "python"
     },
     {
@@ -6978,6 +7063,16 @@
     {
       "s": "tests/query/conftest.py",
       "t": "finops_query/cost_model.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_actions.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_actions.py",
+      "t": "finops_query/actions.py",
       "k": "python"
     },
     {

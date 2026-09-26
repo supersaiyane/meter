@@ -41,7 +41,8 @@ from finops_api.schemas import (
     VerdictTotalOut,
 )
 from finops_core.domain.tenant import Scope
-from finops_core.domain.waste import Lifecycle
+from finops_core.domain.waste import Lifecycle, WasteClass
+from finops_query.actions import risk_of
 
 router = APIRouter(prefix=API_PREFIX, tags=["waste"])
 
@@ -62,6 +63,11 @@ def _maybe(value: Any) -> Decimal | None:
 
 
 def _out(row: Any) -> RecommendationOut:
+    # FEAT-052. Computed here from the closed table rather than stored on the row, because
+    # the risk of a class is a property of the class and not of one finding: storing it would
+    # need a migration every time the sentence was improved, and seventeen copies of a
+    # sentence is seventeen chances for one of them to be the old one.
+    risk = risk_of(WasteClass(row.waste_class))
     return RecommendationOut(
         recommendation_id=row.recommendation_id,
         account_id=row.sub_account_id,
@@ -77,6 +83,10 @@ def _out(row: Any) -> RecommendationOut:
         owner=row.owner,
         ticket_reference=row.ticket_reference,
         rationale=row.rationale,
+        reversible=risk.reversible,
+        disturbs_running_work=risk.disturbs_running_work,
+        is_no_regret=risk.is_no_regret,
+        risk_why=risk.why,
     )
 
 
