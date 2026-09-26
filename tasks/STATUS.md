@@ -22,7 +22,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 53 total, 20 specified, 10 in build, 16 delivered |
+| Features | 59 total, 24 specified, 10 in build, 16 delivered |
 | Decisions | 24 architecture decision records |
 | Changes | 99 recorded |
 | Issues | 130 fixed, 69 open, 0 parked |
@@ -141,10 +141,10 @@ ISS-003.
 | Sub project | Done | Partly | Parked | Descoped | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
-| P1 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P1-implementation-plan.md) |
+| P1 | 21 | 0 | 0 | 0 | 1 | 22 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
-| P3 | 19 | 0 | 0 | 0 | 1 | 20 | [plan](../docs/plans/P3-implementation-plan.md) |
-| P4 | 11 | 0 | 0 | 0 | 0 | 11 | [plan](../docs/plans/P4-implementation-plan.md) |
+| P3 | 19 | 0 | 0 | 0 | 2 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
+| P4 | 11 | 0 | 0 | 0 | 2 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
 | P5 | 0 | 0 | 0 | 0 | 8 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 0 | 0 | 0 | 0 | 12 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 

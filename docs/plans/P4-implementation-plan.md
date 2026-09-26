@@ -358,6 +358,106 @@ find the test already waiting rather than be trusted to remember.
 
 ---
 
+### TASK-P4-012: the resource list, which the navigation has promised since P4 began
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | ISS-204. Competitive review 2026-09-26, no resource list |
+| Delivers | FEAT-056 |
+| Depends on | TASK-P4-008 delivered |
+| Estimate | M |
+
+**Goal.** `/inventory/resources`. Every resource this scope can see, filterable by
+account, region, kind and resource type, each row linking to the entity page
+FEAT-053 built.
+
+**This closes ISS-204 rather than working around it.** The navigation has promised
+this screen since P4 started and the P4 specification never scheduled one, so a
+delivered sub project was named as the thing that would bring a screen nobody
+planned. Adding the task is one of the two closures ISS-204 names, and it is the
+one that does not involve editing a marker to make an inconsistency disappear.
+
+**The objection, and what answers it.** We built a map so a list looks like a step
+backwards. The map answers what is connected to what for one root, bounded to four
+hops. It cannot answer "how many gp2 volumes do I have in Frankfurt", which is the
+question somebody actually arrives with, and orientation is the gap the competitive
+review names twice.
+
+**The failure this task exists to avoid.** A list that looks complete. Every row
+comes out of a slice, and a slice that refused us contributes nothing while looking
+identical to a region that is genuinely empty. The estate wide coverage banner is
+already built, FEAT-032, and this screen shows it above the list rather than beside
+it. A count at the top of a list is a claim about the estate.
+
+**Acceptance criteria.**
+
+- [ ] Server side pagination and filtering. An estate of three hundred accounts is
+      not a list the browser sorts, and TASK-P4-007's bound exists for this reason
+- [ ] The coverage banner above the list, not below, and the count says how many
+      slices it is drawn from
+- [ ] Every row links to `/inventory/resources/:nodeId`, which FEAT-053 built
+- [ ] A null region renders as global and a null zone as regional, never as unknown
+      or as an empty cell
+- [ ] The `arrives` marker for this path in `sections.ts` becomes null in the same
+      commit, and `sections.test.ts` passes without its exception
+- [ ] One journey: filter to a kind, land on a resource, come back
+
+---
+
+### TASK-P4-013: which file manages this resource
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | Competitive review 2026-09-26, candidate list, adopted by the owner on 2026-09-26 |
+| Delivers | FEAT-057 |
+| Depends on | TASK-P4-002 delivered |
+| Estimate | M |
+
+**Goal.** Record, per resource, whether infrastructure as code manages it and
+which state file and address own it. Read from Terraform state, attached to
+`topology_node`.
+
+**Why it lives in P4 and not in P7 with FEAT-040.** The review lists this as
+Terraform state discovery so FEAT-040 knows which file to change, which made it
+look like an LLM layer prerequisite. It is not: who manages a resource is an
+inventory fact about that resource, and it belongs beside its region and its zone.
+FEAT-040 is a consumer. P7 has no plan and no approved specification, and writing
+tasks into one would be the guess the plans README warns about.
+
+**The objection, and what answers it.** Reading somebody's Terraform state sounds
+like a large new integration. The useful ninety percent is small: state holds a
+resource address and a provider identifier, and the identifier is the ARN
+`topology_node` already keys on. The hard part is not parsing, it is that state
+lives wherever the customer put it.
+
+**The failure this task exists to avoid.** Claiming a resource is unmanaged because
+we could not find its state. Unmanaged is an actionable fact and "we did not look
+in the right bucket" is not, and rendering the second as the first would tell
+somebody to import a resource that is already in a module. So the field is three
+valued: managed with an address, unmanaged, or not determined, and not determined
+is the default rather than unmanaged.
+
+**Acceptance criteria.**
+
+- [ ] The column is nullable and a null means not determined. A test asserts that
+      no code path writes unmanaged when no state was read
+- [ ] State is read only, and the backend location is configuration rather than
+      discovery. Constraint 6, and guessing at buckets is reconnaissance
+- [ ] No credential for a customer state backend is stored in this repository, and
+      the scan gate covers the new configuration
+- [ ] The entity page shows the address where there is one, and says not determined
+      where there is not
+- [ ] Backward compatible migration, constraint 12. Add, backfill, then nothing is
+      dropped
+
+**Deliberately not in this task.** Writing a pull request, which is FEAT-040, and
+reading CloudFormation or CDK. One format first, and the port is shaped so a second
+is an adapter.
+
+---
+
 ## What this plan does not answer
 
 **ISS-122.** Neither adapter has run. The Config mapping in TASK-P4-003 is the

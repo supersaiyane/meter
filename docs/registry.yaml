@@ -379,6 +379,42 @@ features:
   status: Delivered
   detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
   doc: docs/features/FEAT-053-entity-detail-page.md
+- id: FEAT-054
+  name: The hours nothing runs, as a finding
+  subproject: P3
+  status: Specified
+  detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
+  doc: docs/features/FEAT-054-workload-parking.md
+- id: FEAT-055
+  name: A commitment coverage gap as a ranked action
+  subproject: P1
+  status: Specified
+  detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
+  doc: docs/features/FEAT-055-commitment-coverage-actions.md
+- id: FEAT-056
+  name: The resource list
+  subproject: P4
+  status: Specified
+  detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
+  doc: docs/features/FEAT-056-resource-list.md
+- id: FEAT-057
+  name: Which file manages this resource
+  subproject: P4
+  status: Specified
+  detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
+  doc: docs/features/FEAT-057-iac-state-discovery.md
+- id: FEAT-058
+  name: A performance dimension, underprovisioned as well as oversized
+  subproject: P5
+  status: Planned
+  detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
+  doc: docs/features/FEAT-058-performance-dimension.md
+- id: FEAT-059
+  name: An application layer on the topology graph
+  subproject: P6
+  status: Planned
+  detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
+  doc: docs/features/FEAT-059-application-layer.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1

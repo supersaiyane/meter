@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-53 features across 8 sub projects. 20 specified, 7 planned, 10 in build, 16 delivered.
+59 features across 8 sub projects. 24 specified, 9 planned, 10 in build, 16 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -133,6 +133,7 @@ block is caught by `make check-docs`. See
 | [FEAT-023](docs/features/FEAT-023-cost-anomaly-detection.md) | Anomaly detection and ingest of AWS Cost Anomaly Detection | Specified | [roadmap](docs/01-ROADMAP.md) P1 |
 | [FEAT-024](docs/features/FEAT-024-commitment-coverage.md) | Savings Plan and Reserved Instance utilization and coverage | Specified | [roadmap](docs/01-ROADMAP.md) P1 |
 | [FEAT-045](docs/features/FEAT-045-chargeback-export.md) | Chargeback and showback export, CSV | Specified | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
+| [FEAT-055](docs/features/FEAT-055-commitment-coverage-actions.md) | A commitment coverage gap as a ranked action | Specified | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 
 ### P3 Utilization and Rightsizing
 
@@ -146,6 +147,7 @@ block is caught by `make check-docs`. See
 | [FEAT-043](docs/features/FEAT-043-finops-score.md) | FinOps Score, decomposable to the findings that moved it | Delivered | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 9, [P3 plan](docs/plans/P3-implementation-plan.md) |
 | [FEAT-044](docs/features/FEAT-044-blast-radius-scoring.md) | Blast radius scoring from the dependency graph, gating auto apply | Specified | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 12, [P3 plan](docs/plans/P3-implementation-plan.md) |
 | [FEAT-052](docs/features/FEAT-052-top-actions-and-change-risk.md) | Top actions, ranked, with what each change costs if it is wrong | Delivered | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
+| [FEAT-054](docs/features/FEAT-054-workload-parking.md) | The hours nothing runs, as a finding | Specified | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 
 ### P4 Inventory and Topology
 
@@ -155,6 +157,8 @@ block is caught by `make check-docs`. See
 | [FEAT-031](docs/features/FEAT-031-topology-graph.md) | Topology graph, node and edge model | Delivered | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.2, [P4 plan](docs/plans/P4-implementation-plan.md) |
 | [FEAT-032](docs/features/FEAT-032-topology-map-interface.md) | Topology map interface | Delivered | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 9, [P4 plan](docs/plans/P4-implementation-plan.md) |
 | [FEAT-053](docs/features/FEAT-053-entity-detail-page.md) | One resource, and everything we know about it | Delivered | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
+| [FEAT-056](docs/features/FEAT-056-resource-list.md) | The resource list | Specified | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
+| [FEAT-057](docs/features/FEAT-057-iac-state-discovery.md) | Which file manages this resource | Specified | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 
 ### P5 Quotas and Limits
 
@@ -162,6 +166,7 @@ block is caught by `make check-docs`. See
 | --- | --- | --- | --- |
 | [FEAT-033](docs/features/FEAT-033-quota-utilization.md) | Quota utilization per service per region, with stated coverage gaps | Specified | [P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 5.2, [P5 plan](docs/plans/P5-implementation-plan.md) |
 | [FEAT-034](docs/features/FEAT-034-quota-increase-workflow.md) | Quota increase request drafting and tracking, never submission | Specified | [P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 6, [P5 plan](docs/plans/P5-implementation-plan.md) |
+| [FEAT-058](docs/features/FEAT-058-performance-dimension.md) | A performance dimension, underprovisioned as well as oversized | Planned | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 
 ### P6 Containers
 
@@ -172,6 +177,7 @@ block is caught by `make check-docs`. See
 | [FEAT-037](docs/features/FEAT-037-ecs-task-utilization.md) | ECS task and Fargate utilization, snapped to valid sizes | Specified | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.5, [P6 plan](docs/plans/P6-implementation-plan.md) |
 | [FEAT-047](docs/features/FEAT-047-node-fleet-optimisation.md) | Cluster node fleet optimisation as an integer linear program | Specified | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 3, [P6 plan](docs/plans/P6-implementation-plan.md) |
 | [FEAT-048](docs/features/FEAT-048-predictive-replica-forecasting.md) | Predictive replica forecasting, under the four ADR-0015 conditions | Specified | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 14, [P6 plan](docs/plans/P6-implementation-plan.md) |
+| [FEAT-059](docs/features/FEAT-059-application-layer.md) | An application layer on the topology graph | Planned | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 
 ### P7 Insight and LLM layer
 
