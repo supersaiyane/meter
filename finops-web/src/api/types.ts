@@ -577,3 +577,29 @@ export interface ApiInventoryRoot {
 export interface ApiInventoryRoots {
   readonly roots: readonly ApiInventoryRoot[];
 }
+
+/**
+ * FEAT-053. One resource, and everything we know about it.
+ *
+ * Two of these fields are admissions rather than facts, and both exist because the
+ * alternative is a page that reads as reassuring. `coverage` says whether the slice this
+ * resource came from was read whole, because a neighbour list drawn from a PARTIAL slice may
+ * be missing the edge that matters. `unmatched_findings` says how many findings in the same
+ * account could not be joined to any resource, because an empty finding list otherwise reads
+ * as a clean resource.
+ */
+export interface ApiEntity {
+  readonly node: ApiTopologyNode;
+  /** Null means no coverage row exists at all, which is itself worth saying out loud. */
+  readonly coverage: ApiSliceCoverage | null;
+  /** One hop. Enough to answer what this is attached to without drawing the estate. */
+  readonly neighbours: readonly ApiTopologyNode[];
+  readonly edges: readonly ApiTopologyEdge[];
+  /** Open and closed both, worst money first, carrying FEAT-052's risk verdict. */
+  readonly findings: readonly ApiRecommendation[];
+  /** Findings in the same account that joined to no resource. Non zero has to be said. */
+  readonly unmatched_findings: number;
+  /** Null is not zero. A resource the bill does not mention is not a free one. */
+  readonly monthly_cost: string | null;
+  readonly cost_period: string | null;
+}

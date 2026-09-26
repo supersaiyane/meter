@@ -373,6 +373,12 @@ features:
   status: Delivered
   detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
   doc: docs/features/FEAT-052-top-actions-and-change-risk.md
+- id: FEAT-053
+  name: One resource, and everything we know about it
+  subproject: P4
+  status: Delivered
+  detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
+  doc: docs/features/FEAT-053-entity-detail-page.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -2898,6 +2904,11 @@ issues:
   status: OPEN
   summary: The navigation promises an /inventory/resources screen arriving with P4, and the P4 specification never scheduled one, so a delivered sub project is named as the thing that will bring a screen nobody planned
   detail: 'Found on 2026-09-26 while reviewing IBM Turbonomic, whose equivalent is its Search and entity list views. Section 9 of the P4 specification names only /inventory/topology, and all eleven P4 tasks are done, so the arrives marker in finops-web/src/shell/sections.ts now reads as a bug to anybody who clicks it. The data the screen would render already exists: topology_node carries the region and the zone FEAT-030 was built for. Two ways to close it and the choice is the owner''s. Either add a task to the P4 plan and amend the specification, or move the marker to the sub project that will actually bring it. The marker is deliberately left alone until then, because the test in sections.test.ts requires it to name a sub project and picking one silently would hide the inconsistency rather than record it'
+- id: ISS-205
+  severity: MEDIUM
+  status: OPEN
+  summary: A recommendation from a first party source names a bare provider identifier and topology_node.provider_id is an ARN, so the two do not join and the entity detail page lists no findings for exactly the resources a reader is most likely to open
+  detail: 'Measured on 2026-09-26 while building FEAT-053 rather than argued about. The seven bespoke waste_compute candidates carry an ARN and join. The first party findings carry what the source returned, i-oversized and eipalloc-fake in the seeded estate, and match no node. The page reports the count of unmatched findings for this reason, so the gap is visible rather than rendered as a clean resource, and that count is the measurement of how often it happens. Same root cause as the second paragraph of ISS-202: three of the four supplementary APIs return bare identifiers and the ARN is the identity everywhere else. Two ways to close it and the choice is the owner''s. Either normalise the identifier at ingest, which is where FOCUS normalisation already happens and which needs a partition and a service prefix the collector does not always have, or store both the ARN and the bare identifier on the node and join on either, which is a migration and an index. Normalising at ingest is the one that matches constraint 2'
 open_questions:
 - id: OPEN-07
   question: What does the cost screen show for a tenant whose first ingest has not run, an

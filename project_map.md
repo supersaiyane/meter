@@ -242,7 +242,7 @@ meter/
 │   │                          which is build output and is never committed
 │   └── deploy/                migration task runner
 │
-├── tests/                     the suite, 1,673 tests. conftest.py refuses to run
+├── tests/                     the suite, 1,704 tests. conftest.py refuses to run
 │                              against a real AWS account when no endpoint
 │                              override is set, and its session scoped `engine`
 │                              starts a PostgreSQL container and migrates it,
@@ -443,6 +443,20 @@ meter/
 │           ├── querySeverity.ts       the word to the ramp. Its own module
 │           │                          because two screens rank the same findings
 │           │                          and a second copy is a second answer
+│           ├── sliceCoverage.ts       how a slice that was not read whole is
+│           │                          said. Extracted for FEAT-053, because the
+│           │                          map says it above the drawing and the
+│           │                          entity page above the neighbour list, and
+│           │                          that is one claim about one row
+│           ├── EntityScreen.tsx       FEAT-053, one resource. Reached from the
+│           │                          map rather than from the navigation, like
+│           │                          the query finding detail page. Two of its
+│           │                          five sections are admissions: the coverage
+│           │                          of the slice it came from, above the
+│           │                          neighbour list, and the count of findings
+│           │                          in the account that joined to no resource
+│           │                          at all, which is ISS-205 measured rather
+│           │                          than argued about
 │           ├── HomeScreen.tsx          owns no data of its own. Three tiers: a
 │           │                           summary of four tiles, the findings worth
 │           │                           acting on, then ArrivingRail. The tiles
@@ -613,9 +627,10 @@ meter/
 │   ├── middleware.py          request id on every line and back on the response
 │   ├── schemas.py             the meta envelope. degraded is computed, never set
 │   ├── routes/                the seven P0 routes, all returning the envelope.
-│   │                          inventory.py is P4's three: the subgraph, the estate
-│   │                          wide coverage banner and the roots to start a map
-│   │                          from. The subgraph response carries the coverage of
+│   │                          inventory.py is P4's four: the subgraph, the estate
+│   │                          wide coverage banner, the roots to start a map
+│   │                          from, and FEAT-053's one resource. The subgraph
+│   │                          response carries the coverage of
 │   │                          every slice it crossed, so a screen cannot draw the
 │   │                          map without the list of what is missing from it.
 │   │                          cost.py is P1's four: summary, by service, by

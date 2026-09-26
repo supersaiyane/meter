@@ -62,7 +62,13 @@ def _maybe(value: Any) -> Decimal | None:
     return None if value is None else Decimal(value)
 
 
-def _out(row: Any) -> RecommendationOut:
+def recommendation_out(row: Any) -> RecommendationOut:
+    """One recommendation row on the wire, risk included.
+
+    Public rather than underscored since FEAT-053, because the entity detail page shows the
+    same findings and a second serialiser would be a second answer to what a recommendation
+    looks like, including a second chance to forget the risk fields.
+    """
     # FEAT-052. Computed here from the closed table rather than stored on the row, because
     # the risk of a class is a property of the class and not of one finding: storing it would
     # need a migration every time the sentence was improved, and seventeen copies of a
@@ -111,7 +117,7 @@ def recommendations(
         scope, lifecycle=lifecycle, waste_class=waste_class, owner=owner, limit=limit
     )
     found = RecommendationsOut(
-        recommendations=[_out(row) for row in rows],
+        recommendations=[recommendation_out(row) for row in rows],
         unowned=repository.unowned(scope),
     )
     meta = build_meta(
@@ -146,7 +152,7 @@ def recommendation_detail(
 
     history = RecommendationEventRepository(connection, context).history(scope, recommendation_id)
     found = RecommendationDetailOut(
-        recommendation=_out(row),
+        recommendation=recommendation_out(row),
         history=[
             RecommendationEventOut(
                 from_lifecycle=event.from_lifecycle,

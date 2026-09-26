@@ -1,7 +1,9 @@
 import type {
+  ApiEntity,
   ApiEnvelope,
   ApiGraphCoverage,
   ApiInventoryRoots,
+  ApiRecommendation,
   ApiSubgraph,
 } from '../types';
 import type { ApiMeta } from '../types';
@@ -189,5 +191,108 @@ export function subgraphFixture(rootId: string): ApiEnvelope<ApiSubgraph> {
       max_nodes: 2,
     },
     meta: metaWith(1, 2),
+  };
+}
+
+/**
+ * One resource, offline. FEAT-053.
+ *
+ * Deliberately not a clean resource. It carries one finding that joined, one that could
+ * not be joined to anything, a PARTIAL slice, and a cost, because those four together are
+ * what the screen exists to render honestly. A fixture with a complete slice, a matched
+ * finding and no unmatched count would let the three hardest parts of the page go
+ * unexercised by anything a developer opens locally.
+ */
+export function entityFixture(nodeId: string): ApiEnvelope<ApiEntity> {
+  const finding: ApiRecommendation = {
+    recommendation_id: '7c9e6f80-1a2b-4c3d-8e4f-5a6b7c8d9e01',
+    account_id: 'fake-platform-a',
+    source: 'METER',
+    waste_class: 'EBS_GP2_TO_GP3',
+    resource_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:vpc/vpc-platform',
+    region_id: 'fake-region-a',
+    estimated_monthly_saving: '18.4000',
+    confidence: 'HIGH',
+    severity: 'LOW',
+    observation_days: 30,
+    lifecycle: 'OPEN',
+    // Unowned, which is the state ISS-021 says a finding dies in, and the state the
+    // recommendations screen counts. A fixture where everything had an owner would never
+    // show the screen what it looks like.
+    owner: null,
+    ticket_reference: null,
+    rationale: 'The volume is gp2 and gp3 delivers the same baseline for less.',
+    reversible: true,
+    disturbs_running_work: false,
+    is_no_regret: true,
+    risk_why:
+      'A volume type change is applied online and can be changed back. Nothing detaches ' +
+      'and nothing restarts.',
+  };
+  return {
+    data: {
+      node: {
+        node_id: nodeId || ROOT,
+        provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:vpc/vpc-platform',
+        account_id: 'fake-platform-a',
+        node_kind: 'VPC',
+        resource_type: 'AWS::EC2::VPC',
+        region_id: 'fake-region-a',
+        availability_zone: null,
+        name: 'platform',
+        as_of: AS_OF,
+        collected_at: COLLECTED_AT,
+      },
+      // PARTIAL, so the page has to say the neighbour list may be short.
+      coverage: {
+        account_id: 'fake-platform-a',
+        region_id: 'fake-region-a',
+        state: 'PARTIAL',
+        cause: 'Throttled',
+        node_count: 27,
+        edge_count: 40,
+        as_of: AS_OF,
+        collected_at: COLLECTED_AT,
+      },
+      neighbours: [
+        {
+          node_id: SUBNET,
+          provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:subnet/subnet-a',
+          account_id: 'fake-platform-a',
+          node_kind: 'SUBNET',
+          resource_type: 'AWS::EC2::Subnet',
+          region_id: 'fake-region-a',
+          availability_zone: 'fake-region-a-a',
+          name: 'private-a',
+          as_of: AS_OF,
+          collected_at: COLLECTED_AT,
+        },
+      ],
+      edges: [
+        {
+          from_node_id: nodeId || ROOT,
+          to_node_id: SUBNET,
+          edge_kind: 'CONTAINS',
+          is_cross_account: false,
+          source: 'CONFIG_RELATIONSHIP',
+          leaves_the_graph: false,
+        },
+        {
+          from_node_id: nodeId || ROOT,
+          to_node_id: FAR,
+          edge_kind: 'PEERS_WITH',
+          is_cross_account: true,
+          source: 'ec2:DescribeVpcPeeringConnections',
+          leaves_the_graph: true,
+        },
+      ],
+      findings: [finding],
+      // Two findings in this account joined to nothing, so the single finding above is not
+      // the whole story and the screen is not allowed to imply that it is.
+      unmatched_findings: 2,
+      monthly_cost: '214.8800',
+      cost_period: '2026-08-01',
+    },
+    meta: metaWith(0, 1),
   };
 }
