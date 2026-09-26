@@ -153,6 +153,26 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | None] = {
     # console belongs to none. They carry the account they ran in, so they are
     # scoped directly rather than through anything.
     "query_adhoc": ByAccount("account_id"),
+    # P4. A node names the account its resource lives in, so a caller narrowed to two
+    # accounts reads two accounts' graph. In before the route, per the rule at the top of
+    # the P1 plan and the six defects that produced it.
+    "topology_node": ByAccount("sub_account_id"),
+    # An edge carries the account of its origin, not of the pair, which is the only
+    # honest answer for a cross account edge: it belongs to whichever slice read it. A
+    # caller narrowed to the platform account therefore sees the edge from the platform
+    # account's Transit Gateway attachment to a product account's VPC, and does not see
+    # the product account's own interior. That is the right disclosure, because the edge
+    # is a fact about the platform account's network and the interior is not.
+    #
+    # `Through` on the origin node was the alternative and it is worse in two ways. It
+    # would hide an edge whose origin node the caller can see, whenever the node row is
+    # missing for any reason, and it would make every edge read a join to a table whose
+    # rows the retraction may already have removed.
+    "topology_edge": ByAccount("sub_account_id"),
+    # Coverage names its slice, so a narrowed caller sees the coverage of the accounts
+    # it can read and nothing about the ones it cannot. A global scope sees all of it,
+    # which is what makes the operations view of the estate possible.
+    "graph_coverage": ByAccount("sub_account_id"),
     # folder_team_map, enforcement_action and remediation_change are absent on
     # purpose. Nobody has decided how they scope, and the fail closed branch
     # below is a better answer than a guess: the first route to read one gets a

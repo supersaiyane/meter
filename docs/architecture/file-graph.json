@@ -274,6 +274,7 @@
     "finops_api/db/repositories/ingest.py",
     "finops_api/db/repositories/org.py",
     "finops_api/db/repositories/query.py",
+    "finops_api/db/repositories/topology.py",
     "finops_api/db/repositories/waste.py",
     "finops_api/deps.py",
     "finops_api/flags.py",
@@ -401,6 +402,7 @@
     "finops_query/classify.py",
     "finops_query/cost_model.py",
     "finops_query/gate.py",
+    "finops_query/graph.py",
     "finops_query/ownership.py",
     "finops_query/parser.py",
     "finops_query/policy.py",
@@ -478,6 +480,7 @@
     "tests/api/test_routes.py",
     "tests/api/test_scope_enforcement.py",
     "tests/api/test_the_two_savings_figures.py",
+    "tests/api/test_topology_repository.py",
     "tests/api/test_waste_guard.py",
     "tests/api/test_waste_routes.py",
     "tests/conftest.py",
@@ -563,6 +566,7 @@
     "tests/query/test_classify.py",
     "tests/query/test_cost_model.py",
     "tests/query/test_gate.py",
+    "tests/query/test_graph.py",
     "tests/query/test_ownership.py",
     "tests/query/test_policy.py",
     "tests/query/test_ports.py",
@@ -3229,6 +3233,41 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/topology.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/topology.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/topology.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/topology.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/topology.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/topology.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/topology.py",
+      "t": "finops_query/graph.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/waste.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -4944,6 +4983,11 @@
       "k": "python"
     },
     {
+      "s": "finops_query/graph.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
       "s": "finops_query/ownership.py",
       "t": "finops_query/__init__.py",
       "k": "python"
@@ -5436,6 +5480,36 @@
     {
       "s": "tests/api/test_the_two_savings_figures.py",
       "t": "finops_api/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_topology_repository.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_topology_repository.py",
+      "t": "finops_api/db/repositories/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_topology_repository.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_topology_repository.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_topology_repository.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_topology_repository.py",
+      "t": "finops_query/graph.py",
       "k": "python"
     },
     {
@@ -6741,6 +6815,21 @@
     {
       "s": "tests/query/test_gate.py",
       "t": "finops_query/gate.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_graph.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_graph.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_graph.py",
+      "t": "finops_query/graph.py",
       "k": "python"
     },
     {
