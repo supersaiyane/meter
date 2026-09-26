@@ -156,51 +156,53 @@ def test_the_node_kinds_in_the_schema_match_the_domain_enum() -> None:
 def test_a_partial_slice_without_a_cause_is_refused(engine: Engine, tenant_id: UUID) -> None:
     """The one that matters. A PARTIAL row with a null cause renders a banner
     saying data is missing that cannot say which data or why."""
-    with pytest.raises(IntegrityError, match="cause_iff_not_complete"):
-        with engine.begin() as connection:
-            run = a_run(connection, tenant_id)
-            coverage(connection, tenant_id, run, state="PARTIAL", cause=None)
+    with (
+        pytest.raises(IntegrityError, match="cause_iff_not_complete"),
+        engine.begin() as connection,
+    ):
+        run = a_run(connection, tenant_id)
+        coverage(connection, tenant_id, run, state="PARTIAL", cause=None)
 
 
 def test_a_complete_slice_with_a_cause_is_refused(engine: Engine, tenant_id: UUID) -> None:
-    with pytest.raises(IntegrityError, match="cause_iff_not_complete"):
-        with engine.begin() as connection:
-            run = a_run(connection, tenant_id)
-            coverage(connection, tenant_id, run, state="COMPLETE", cause="AccessDenied")
+    with (
+        pytest.raises(IntegrityError, match="cause_iff_not_complete"),
+        engine.begin() as connection,
+    ):
+        run = a_run(connection, tenant_id)
+        coverage(connection, tenant_id, run, state="COMPLETE", cause="AccessDenied")
 
 
 def test_an_unread_slice_carrying_a_failure_is_refused(engine: Engine, tenant_id: UUID) -> None:
     """Nothing failed, so naming a failure describes something that did not happen."""
-    with pytest.raises(IntegrityError, match="unread_is_not_yet_attempted"):
-        with engine.begin() as connection:
-            run = a_run(connection, tenant_id)
-            coverage(
-                connection, tenant_id, run, state="UNREAD", cause="Throttled", nodes=0, edges=0
-            )
+    with (
+        pytest.raises(IntegrityError, match="unread_is_not_yet_attempted"),
+        engine.begin() as connection,
+    ):
+        run = a_run(connection, tenant_id)
+        coverage(connection, tenant_id, run, state="UNREAD", cause="Throttled", nodes=0, edges=0)
 
 
 def test_an_unread_slice_with_something_in_it_is_refused(engine: Engine, tenant_id: UUID) -> None:
-    with pytest.raises(IntegrityError, match="unread_is_empty"):
-        with engine.begin() as connection:
-            run = a_run(connection, tenant_id)
-            coverage(
-                connection,
-                tenant_id,
-                run,
-                state="UNREAD",
-                cause="NotYetAttempted",
-                nodes=4,
-                edges=0,
-            )
+    with pytest.raises(IntegrityError, match="unread_is_empty"), engine.begin() as connection:
+        run = a_run(connection, tenant_id)
+        coverage(
+            connection,
+            tenant_id,
+            run,
+            state="UNREAD",
+            cause="NotYetAttempted",
+            nodes=4,
+            edges=0,
+        )
 
 
 def test_an_unknown_cause_is_refused(engine: Engine, tenant_id: UUID) -> None:
     """A cause outside the seven is a collector inventing one, which is how a
     typed failure becomes a free text note nobody can route."""
-    with pytest.raises(IntegrityError, match="cause_known"):
-        with engine.begin() as connection:
-            run = a_run(connection, tenant_id)
-            coverage(connection, tenant_id, run, state="PARTIAL", cause="SomethingWentWrong")
+    with pytest.raises(IntegrityError, match="cause_known"), engine.begin() as connection:
+        run = a_run(connection, tenant_id)
+        coverage(connection, tenant_id, run, state="PARTIAL", cause="SomethingWentWrong")
 
 
 def test_a_second_row_for_one_slice_is_refused(engine: Engine, tenant_id: UUID) -> None:
@@ -209,10 +211,12 @@ def test_a_second_row_for_one_slice_is_refused(engine: Engine, tenant_id: UUID) 
     with engine.begin() as connection:
         run = a_run(connection, tenant_id)
         coverage(connection, tenant_id, run, state="COMPLETE", cause=None)
-    with pytest.raises(IntegrityError, match="uq_graph_coverage__slice"):
-        with engine.begin() as connection:
-            run = a_run(connection, tenant_id)
-            coverage(connection, tenant_id, run, state="PARTIAL", cause="AccessDenied")
+    with (
+        pytest.raises(IntegrityError, match="uq_graph_coverage__slice"),
+        engine.begin() as connection,
+    ):
+        run = a_run(connection, tenant_id)
+        coverage(connection, tenant_id, run, state="PARTIAL", cause="AccessDenied")
 
 
 def test_a_valid_unread_and_a_valid_partial_are_both_accepted(
@@ -274,21 +278,25 @@ def test_both_directions_of_one_pair_are_accepted(engine: Engine, tenant_id: UUI
 
 
 def test_the_same_directed_edge_twice_is_refused(engine: Engine, tenant_id: UUID) -> None:
-    with pytest.raises(IntegrityError, match="uq_topology_edge__directed"):
-        with engine.begin() as connection:
-            run = a_run(connection, tenant_id)
-            first = a_node(connection, tenant_id, run)
-            second = a_node(connection, tenant_id, run)
-            an_edge(connection, tenant_id, run, frm=first, to=second)
-            an_edge(connection, tenant_id, run, frm=first, to=second)
+    with (
+        pytest.raises(IntegrityError, match="uq_topology_edge__directed"),
+        engine.begin() as connection,
+    ):
+        run = a_run(connection, tenant_id)
+        first = a_node(connection, tenant_id, run)
+        second = a_node(connection, tenant_id, run)
+        an_edge(connection, tenant_id, run, frm=first, to=second)
+        an_edge(connection, tenant_id, run, frm=first, to=second)
 
 
 def test_a_self_edge_is_refused_unless_it_permits(engine: Engine, tenant_id: UUID) -> None:
-    with pytest.raises(IntegrityError, match="self_edge_only_permits"):
-        with engine.begin() as connection:
-            run = a_run(connection, tenant_id)
-            node = a_node(connection, tenant_id, run)
-            an_edge(connection, tenant_id, run, frm=node, to=node, kind="CONTAINS")
+    with (
+        pytest.raises(IntegrityError, match="self_edge_only_permits"),
+        engine.begin() as connection,
+    ):
+        run = a_run(connection, tenant_id)
+        node = a_node(connection, tenant_id, run)
+        an_edge(connection, tenant_id, run, frm=node, to=node, kind="CONTAINS")
     with engine.begin() as connection:
         run = a_run(connection, tenant_id)
         group = a_node(connection, tenant_id, run, kind="SECURITY_GROUP", type="AWS::EC2::Group")
@@ -304,10 +312,9 @@ def test_a_self_edge_is_refused_unless_it_permits(engine: Engine, tenant_id: UUI
 
 
 def test_an_edge_without_a_source_is_refused(engine: Engine, tenant_id: UUID) -> None:
-    with pytest.raises(IntegrityError, match="has_source"):
-        with engine.begin() as connection:
-            run = a_run(connection, tenant_id)
-            an_edge(connection, tenant_id, run, source="")
+    with pytest.raises(IntegrityError, match="has_source"), engine.begin() as connection:
+        run = a_run(connection, tenant_id)
+        an_edge(connection, tenant_id, run, source="")
 
 
 def test_an_edge_may_point_at_a_node_that_was_never_read(engine: Engine, tenant_id: UUID) -> None:
@@ -340,10 +347,9 @@ def test_an_edge_from_a_node_that_does_not_exist_is_refused(
 ) -> None:
     """The other direction does carry a key, because every edge is written outward
     from a resource the run actually read, and that invariant is true."""
-    with pytest.raises(IntegrityError, match="from_node_id"):
-        with engine.begin() as connection:
-            run = a_run(connection, tenant_id)
-            an_edge(connection, tenant_id, run, frm=uuid4(), to=a_node(connection, tenant_id, run))
+    with pytest.raises(IntegrityError, match="from_node_id"), engine.begin() as connection:
+        run = a_run(connection, tenant_id)
+        an_edge(connection, tenant_id, run, frm=uuid4(), to=a_node(connection, tenant_id, run))
 
 
 #: Removing a row, as two statements the cases below reuse. Deliberately not a
@@ -359,13 +365,12 @@ def test_removing_a_node_before_its_edges_is_refused(engine: Engine, tenant_id: 
     """The ordering is forced by the key, so forgetting it is loud rather than
     silent. A collector that removes a departed resource and leaves its edges
     behind fails here instead of leaving a graph with edges out of nowhere."""
-    with pytest.raises(IntegrityError, match="topology_edge"):
-        with engine.begin() as connection:
-            run = a_run(connection, tenant_id)
-            vpc = a_node(connection, tenant_id, run)
-            subnet = a_node(connection, tenant_id, run)
-            an_edge(connection, tenant_id, run, frm=vpc, to=subnet)
-            connection.execute(DROP_NODE, {"node": vpc})
+    with pytest.raises(IntegrityError, match="topology_edge"), engine.begin() as connection:
+        run = a_run(connection, tenant_id)
+        vpc = a_node(connection, tenant_id, run)
+        subnet = a_node(connection, tenant_id, run)
+        an_edge(connection, tenant_id, run, frm=vpc, to=subnet)
+        connection.execute(DROP_NODE, {"node": vpc})
 
 
 def test_removing_the_edges_first_lets_the_node_go(engine: Engine, tenant_id: UUID) -> None:
@@ -388,37 +393,38 @@ def test_removing_the_edges_first_lets_the_node_go(engine: Engine, tenant_id: UU
 def test_one_provider_identifier_per_tenant(engine: Engine, tenant_id: UUID) -> None:
     """A second row for the same resource would appear twice on the map with half
     its edges each time, which is worse than a duplicate because both look whole."""
-    with pytest.raises(IntegrityError, match="uq_topology_node__provider_id"):
-        with engine.begin() as connection:
-            run = a_run(connection, tenant_id)
-            arn = f"arn:aws:ec2:{REGION}:{ACCOUNT}:vpc/vpc-fixed"
-            a_node(connection, tenant_id, run, provider=arn)
-            connection.execute(
-                INSERT_NODE,
-                {
-                    "node": uuid4(),
-                    "t": tenant_id,
-                    "run": run,
-                    "account": ACCOUNT,
-                    "provider": arn,
-                    "kind": "VPC",
-                    "type": "AWS::EC2::VPC",
-                    "region": REGION,
-                    "zone": None,
-                    "name": "a second row for one resource",
-                    "as_of": NOW,
-                    "collected": FETCHED,
-                },
-            )
+    with (
+        pytest.raises(IntegrityError, match="uq_topology_node__provider_id"),
+        engine.begin() as connection,
+    ):
+        run = a_run(connection, tenant_id)
+        arn = f"arn:aws:ec2:{REGION}:{ACCOUNT}:vpc/vpc-fixed"
+        a_node(connection, tenant_id, run, provider=arn)
+        connection.execute(
+            INSERT_NODE,
+            {
+                "node": uuid4(),
+                "t": tenant_id,
+                "run": run,
+                "account": ACCOUNT,
+                "provider": arn,
+                "kind": "VPC",
+                "type": "AWS::EC2::VPC",
+                "region": REGION,
+                "zone": None,
+                "name": "a second row for one resource",
+                "as_of": NOW,
+                "collected": FETCHED,
+            },
+        )
 
 
 def test_a_zone_outside_its_own_region_is_refused(engine: Engine, tenant_id: UUID) -> None:
     """The likeliest way to write one is a collector that read the zone from one
     call and the region from another."""
-    with pytest.raises(IntegrityError, match="zone_within_region"):
-        with engine.begin() as connection:
-            run = a_run(connection, tenant_id)
-            a_node(connection, tenant_id, run, kind="INSTANCE", zone="us-east-1a")
+    with pytest.raises(IntegrityError, match="zone_within_region"), engine.begin() as connection:
+        run = a_run(connection, tenant_id)
+        a_node(connection, tenant_id, run, kind="INSTANCE", zone="us-east-1a")
 
 
 def test_a_regional_resource_keeps_its_null_zone(engine: Engine, tenant_id: UUID) -> None:
@@ -435,16 +441,14 @@ def test_a_regional_resource_keeps_its_null_zone(engine: Engine, tenant_id: UUID
 def test_an_unknown_node_kind_is_refused(engine: Engine, tenant_id: UUID) -> None:
     """A resource type the adapter does not recognise is OTHER plus a SchemaDrift,
     not a new value invented at the write."""
-    with pytest.raises(IntegrityError, match="kind_known"):
-        with engine.begin() as connection:
-            run = a_run(connection, tenant_id)
-            a_node(connection, tenant_id, run, kind="QUANTUM_GATEWAY")
+    with pytest.raises(IntegrityError, match="kind_known"), engine.begin() as connection:
+        run = a_run(connection, tenant_id)
+        a_node(connection, tenant_id, run, kind="QUANTUM_GATEWAY")
 
 
 def test_a_fact_collected_before_it_was_true_is_refused(engine: Engine, tenant_id: UUID) -> None:
     """Constraint 10, at the schema. `collected_at` before `as_of` is the two
     timestamps having been filled in the wrong order."""
-    with pytest.raises(IntegrityError, match="collected_after_as_of"):
-        with engine.begin() as connection:
-            run = a_run(connection, tenant_id)
-            a_node(connection, tenant_id, run, as_of=FETCHED, collected=NOW)
+    with pytest.raises(IntegrityError, match="collected_after_as_of"), engine.begin() as connection:
+        run = a_run(connection, tenant_id)
+        a_node(connection, tenant_id, run, as_of=FETCHED, collected=NOW)
