@@ -27,12 +27,15 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import Connection
 
 from finops_api.db.repositories import AccessContext
+from finops_api.db.repositories.cost import CostRepository
 from finops_api.db.repositories.topology import TopologyRepository
 from finops_api.deps import get_access_context, get_connection, get_scope
 from finops_api.routes import API_PREFIX, build_meta
+from finops_api.routes.waste import recommendation_out
 from finops_api.schemas import (
     CoverageOutList,
     EdgeOut,
+    EntityOut,
     Envelope,
     InventoryRootOut,
     InventoryRootsOut,
@@ -231,5 +234,76 @@ def roots(
         # resources across accounts rather than a view of slices.
         visible=repository.accounts_seen(scope),
         rows=rows,
+    )
+    return Envelope(data=found, meta=meta)
+
+
+@router.get("/inventory/nodes/{node_id}", response_model=Envelope[EntityOut])
+def entity(
+    node_id: UUID,
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[EntityOut]:
+    """One resource: what it is, what it is attached to, what it costs, what is wrong with it.
+
+    FEAT-053. The destination every list in the product needed and did not have, adopted from
+    the 2026-09-26 IBM Turbonomic review.
+
+    Two of the fields are admissions rather than facts, and both are there because the
+    alternative is a page that reads as reassuring. `coverage` says whether the slice this
+    resource came from was read whole, because a neighbour list drawn from a PARTIAL slice may
+    be missing the edge that matters. `unmatched_findings` says how many findings in the same
+    account could not be joined to any resource, because an empty finding list otherwise reads
+    as a clean resource.
+
+    A 404 for a node this scope cannot see, which is the same answer as one that does not
+    exist. Distinguishing them would tell a narrowed reader that a resource exists in an
+    account they were not granted.
+    """
+    topology = TopologyRepository(connection, context)
+    node = topology.one(scope, node_id)
+    if node is None:
+        raise HTTPException(status_code=404, detail=NO_SUCH_NODE)
+
+    # One hop, through the same bounded traversal the map uses, so the neighbour list and the
+    # map cannot disagree about what this resource is attached to.
+    around = topology.subgraph(scope, root_id=node_id, bounds=Bounds(max_depth=1))
+    neighbours = tuple(one for one in around.nodes if one.node_id != node.node_id)
+
+    findings, unmatched = topology.findings_for(scope, node)
+
+    costs = CostRepository(connection, context)
+    period = costs.latest_period(scope)
+    monthly = None if period is None else costs.for_resource(scope, node.provider_id, period)
+
+    found = EntityOut(
+        node=_node_out(node),
+        coverage=None
+        if (slice_row := topology.slice_coverage(scope, node)) is None
+        else _coverage_out(slice_row),
+        neighbours=tuple(_node_out(one) for one in neighbours),
+        edges=tuple(
+            _edge_out(edge, {one.node_id for one in around.nodes}) for edge in around.edges
+        ),
+        findings=tuple(recommendation_out(row) for row in findings),
+        unmatched_findings=unmatched,
+        monthly_cost=monthly,
+        cost_period=period,
+    )
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        # One resource, so the coverage question is about its own slice rather than about the
+        # estate. One of one when the slice is complete, nought of one when it is not, which is
+        # what makes the trust strip say degraded on a page drawn from an unread region.
+        visible=1 if found.coverage is not None and found.coverage.state == "COMPLETE" else 0,
+        rows=[node],
+        coverage=(
+            1 if found.coverage is not None and found.coverage.state == "COMPLETE" else 0,
+            1,
+        ),
+        coverage_unit="slices",
     )
     return Envelope(data=found, meta=meta)

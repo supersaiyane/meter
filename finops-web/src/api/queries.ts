@@ -25,6 +25,7 @@ import {
   scoresFixture,
 } from './fixtures/waste';
 import {
+  entityFixture,
   graphCoverageFixture,
   inventoryRootsFixture,
   subgraphFixture,
@@ -32,6 +33,7 @@ import {
 import type {
   ApiAdhocQuery,
   Account,
+  ApiEntity,
   ApiGraphCoverage,
   ApiInventoryRoots,
   ApiSubgraph,
@@ -370,5 +372,26 @@ export function useTopologySubgraph(
       () => subgraphFixture(rootId ?? ''),
     ),
     enabled: rootId !== null,
+  });
+}
+
+/**
+ * One resource. FEAT-053.
+ *
+ * `enabled` is false until a node is chosen, for the same reason the subgraph hook's is:
+ * firing with an empty identifier produces a 404 the screen would then have to explain
+ * away as though it meant something.
+ */
+export function useEntity(nodeId: string | null) {
+  const client = useApi();
+  const path = nodeId === null ? '' : `/api/v1/inventory/nodes/${nodeId}`;
+  return useQuery<Resolved<ApiEnvelope<ApiEntity>>>({
+    queryKey: ['inventory-entity', nodeId],
+    queryFn: resolveSurface(
+      '/api/v1/inventory/nodes/{node_id}',
+      () => client.get<ApiEntity>(path),
+      () => entityFixture(nodeId ?? ''),
+    ),
+    enabled: nodeId !== null,
   });
 }

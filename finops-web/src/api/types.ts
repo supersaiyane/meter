@@ -406,6 +406,18 @@ export interface ApiRecommendation {
   readonly owner: string | null;
   readonly ticket_reference: string | null;
   readonly rationale: string;
+  /**
+   * FEAT-052. What applying this costs if it is wrong, from `finops_query.actions`.
+   *
+   * Four fields rather than one label, and none of them is confidence. A high confidence
+   * resize still restarts the workload; a low confidence snapshot deletion is still
+   * permanent. `is_no_regret` is computed on the server so a client cannot disagree with it.
+   */
+  readonly reversible: boolean;
+  readonly disturbs_running_work: boolean;
+  readonly is_no_regret: boolean;
+  /** The sentence. A flag with no sentence behind it is one a reader cannot argue with. */
+  readonly risk_why: string;
 }
 
 export interface ApiRecommendations {
@@ -564,4 +576,30 @@ export interface ApiInventoryRoot {
 
 export interface ApiInventoryRoots {
   readonly roots: readonly ApiInventoryRoot[];
+}
+
+/**
+ * FEAT-053. One resource, and everything we know about it.
+ *
+ * Two of these fields are admissions rather than facts, and both exist because the
+ * alternative is a page that reads as reassuring. `coverage` says whether the slice this
+ * resource came from was read whole, because a neighbour list drawn from a PARTIAL slice may
+ * be missing the edge that matters. `unmatched_findings` says how many findings in the same
+ * account could not be joined to any resource, because an empty finding list otherwise reads
+ * as a clean resource.
+ */
+export interface ApiEntity {
+  readonly node: ApiTopologyNode;
+  /** Null means no coverage row exists at all, which is itself worth saying out loud. */
+  readonly coverage: ApiSliceCoverage | null;
+  /** One hop. Enough to answer what this is attached to without drawing the estate. */
+  readonly neighbours: readonly ApiTopologyNode[];
+  readonly edges: readonly ApiTopologyEdge[];
+  /** Open and closed both, worst money first, carrying FEAT-052's risk verdict. */
+  readonly findings: readonly ApiRecommendation[];
+  /** Findings in the same account that joined to no resource. Non zero has to be said. */
+  readonly unmatched_findings: number;
+  /** Null is not zero. A resource the bill does not mention is not a free one. */
+  readonly monthly_cost: string | null;
+  readonly cost_period: string | null;
 }

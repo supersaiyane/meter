@@ -61,7 +61,9 @@ describe('TopologyScreen', () => {
   it('opens on a list of roots rather than on an empty canvas', async () => {
     renderScreen();
     await waitFor(() => {
-      expect(screen.getByText('Choose a resource to map what it connects to.')).toBeInTheDocument();
+      expect(
+        screen.getByText('Choose a resource to map what it connects to.'),
+      ).toBeInTheDocument();
     });
     expect(screen.queryByTestId('topology-canvas')).toBeNull();
   });
@@ -116,7 +118,9 @@ describe('TopologyScreen', () => {
     // a canvas a keyboard cannot land on.
     await openTheMap();
     expect(screen.getByTestId('topology-canvas')).toHaveAttribute('tabindex', '0');
-    expect(screen.getByRole('img', { name: /Topology map of 2 resources/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: /Topology map of 2 resources/ }),
+    ).toBeInTheDocument();
   });
 
   it('has no accessibility violations once the map is open', async () => {
@@ -130,5 +134,15 @@ describe('TopologyScreen', () => {
       expect(screen.getByTestId('estate-coverage')).toBeInTheDocument();
     });
     expect(await violationsIn(document.body)).toEqual([]);
+  });
+
+  it('leads from every resource on the map to the page about that resource', async () => {
+    // FEAT-053. The map answers what is connected to what and nothing else, so a resource on
+    // it that led nowhere left a reader who found something with no way to ask what it costs.
+    await openTheMap();
+    expect(screen.getByRole('link', { name: 'platform' })).toHaveAttribute(
+      'href',
+      `/inventory/resources/${ROOT}`,
+    );
   });
 });

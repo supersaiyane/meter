@@ -383,3 +383,176 @@ def test_every_root_carries_its_provider_identifier_and_type(
     for one in get(client, token, ROOTS)["data"]["roots"]:
         assert one["provider_id"].startswith("arn:aws:")
         assert one["resource_type"] == "AWS::EC2::VPC"
+
+
+# --- FEAT-053, the entity detail page ---------------------------------------
+
+NODES = "/api/v1/inventory/nodes"
+
+
+def entity_path(tenant: UUID, name: str = "vpc") -> str:
+    return f"{NODES}/{identifier(tenant, MINE, REGION, name)}"
+
+
+def test_the_entity_route_says_what_a_resource_is(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    node = get(client, token, entity_path(tenant_id))["data"]["node"]
+    assert node["node_kind"] == "VPC"
+    assert node["resource_type"] == "AWS::EC2::VPC"
+    assert node["account_id"] == MINE
+    assert node["region_id"] == REGION
+    # The ARN, because a reader has to be able to find the thing in their own console.
+    assert node["provider_id"].startswith("arn:aws:")
+
+
+def test_the_entity_route_lists_one_hop_of_neighbours(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """One hop, through the same bounded traversal the map uses, so the two cannot disagree
+    about what a resource is attached to."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    data = get(client, token, entity_path(tenant_id))["data"]
+    names = {one["name"] for one in data["neighbours"]}
+    assert names == {"subnet-000", "subnet-001", "subnet-002", "far"}
+    # The resource itself is not among its own neighbours.
+    assert data["node"]["node_id"] not in {one["node_id"] for one in data["neighbours"]}
+    assert len(data["edges"]) == 4
+
+
+def test_the_entity_route_carries_the_coverage_of_its_own_slice(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """A page drawn from a PARTIAL slice may be missing the neighbour that matters, so the
+    slice's state travels with it rather than being assumed."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    body = get(client, token, entity_path(tenant_id))
+    coverage = body["data"]["coverage"]
+    assert coverage is not None
+    assert (coverage["account_id"], coverage["region_id"]) == (MINE, REGION)
+    assert coverage["state"] == "COMPLETE"
+    # One of one slices, because the page is about one resource.
+    assert body["meta"]["scope_coverage"] == {
+        "visible": 1,
+        "total": 1,
+        "is_partial": False,
+        "unit": "slices",
+    }
+
+
+def test_a_resource_in_an_unreadable_slice_reports_the_page_as_degraded(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The case the coverage field exists for. The trust strip has to say degraded rather than
+    leaving a reader to treat a short neighbour list as the whole truth."""
+    seed(engine, tenant_id)
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "UPDATE graph_coverage SET state = 'PARTIAL', cause = 'AccessDenied' "
+                "WHERE tenant_id = :t AND sub_account_id = :a AND region_id = :r"
+            ),
+            {"t": tenant_id, "a": MINE, "r": REGION},
+        )
+    client, token = client_for(engine, everything(tenant_id), settings)
+    body = get(client, token, entity_path(tenant_id))
+    assert body["data"]["coverage"]["state"] == "PARTIAL"
+    assert body["data"]["coverage"]["cause"] == "AccessDenied"
+    assert body["meta"]["scope_coverage"]["is_partial"] is True
+    assert body["meta"]["degraded"] is True
+
+
+def test_a_node_this_scope_cannot_see_is_a_404(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The same answer as one that does not exist. Distinguishing them would tell a narrowed
+    reader that a resource exists in an account they were not granted."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, only(tenant_id, THEIRS), settings)
+    refused = client.get(entity_path(tenant_id), headers=auth(token))
+    assert refused.status_code == 404
+    missing = client.get(f"{NODES}/{uuid4()}", headers=auth(token))
+    assert missing.status_code == 404
+    assert refused.json()["detail"] == missing.json()["detail"]
+
+
+def test_a_resource_the_bill_does_not_mention_has_a_null_cost_rather_than_zero(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """Null is not zero. A resource with no line item is one the bill does not mention, which
+    happens for one created after the period closed and for one whose charges land under a
+    parent. A zero would tell a reader it is free."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    data = get(client, token, entity_path(tenant_id))["data"]
+    assert data["monthly_cost"] is None
+    # And no period either, because this estate has no cost rows at all.
+    assert data["cost_period"] is None
+
+
+def test_the_entity_route_says_how_many_findings_could_not_be_matched(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The honest half. A recommendation joins to a node on the provider's identifier, and the
+    first party sources report identifiers that do not always match what Config recorded, so
+    an empty finding list would otherwise read as a clean resource."""
+    seed(engine, tenant_id)
+    run = uuid4()
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "INSERT INTO ingest_run (run_id, tenant_id, collector, scope_key, "
+                "idempotency_key, status, as_of_window_start, as_of_window_end) "
+                "VALUES (:run, :t, 'recommendations', 'scope', :key, 'SUCCEEDED', :at, :at)"
+            ),
+            {"run": run, "t": tenant_id, "key": str(run), "at": NOW},
+        )
+        # One finding that joins, and one whose resource this tenant holds no node for.
+        for resource, reference in (
+            (arn(MINE, REGION, "vpc"), "joins"),
+            ("i-not-a-node", "does-not-join"),
+        ):
+            connection.execute(
+                text(
+                    "INSERT INTO recommendation (recommendation_id, tenant_id, sub_account_id, "
+                    "source, source_reference, waste_class, resource_id, region_id, "
+                    "estimated_monthly_saving, confidence, severity, observation_days, "
+                    "lifecycle, rationale, as_of, collected_at) "
+                    "VALUES (:id, :t, :a, 'METER', :ref, 'EBS_GP2_TO_GP3', :resource, :r, "
+                    "'12.5000', 'HIGH', 'LOW', 30, 'OPEN', 'seeded for the entity page', "
+                    ":at, :at)"
+                ),
+                {
+                    "id": uuid4(),
+                    "t": tenant_id,
+                    "a": MINE,
+                    "ref": reference,
+                    "resource": resource,
+                    "r": REGION,
+                    "at": NOW,
+                },
+            )
+
+    client, token = client_for(engine, everything(tenant_id), settings)
+    data = get(client, token, entity_path(tenant_id))["data"]
+    assert len(data["findings"]) == 1
+    assert data["findings"][0]["waste_class"] == "EBS_GP2_TO_GP3"
+    # FEAT-052's risk rides along, so the entity page and the home panel say the same thing.
+    assert data["findings"][0]["is_no_regret"] is True
+    assert data["unmatched_findings"] == 1
+
+
+def test_a_resource_with_no_findings_and_none_unmatched_says_both(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """Zero and zero is the only combination that means clean, and the page has to be able to
+    say it rather than leaving a blank list to imply it."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    data = get(client, token, entity_path(tenant_id))["data"]
+    assert data["findings"] == []
+    assert data["unmatched_findings"] == 0

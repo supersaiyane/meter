@@ -1,9 +1,11 @@
 import { lazy, Suspense, useState } from 'react';
+import { Link } from 'react-router';
 
 import { useGraphCoverage, useInventoryRoots, useTopologySubgraph } from '../api/queries';
 import type { ApiSliceCoverage } from '../api/types';
 import { StateBoundary } from '../components/StateBoundary';
 import { useReportMeta } from '../shell/metaRegistry';
+import { saidOf } from './sliceCoverage';
 import { surfaceStateFor } from './surfaceStateFor';
 
 /**
@@ -35,12 +37,6 @@ const TopologyCanvas = lazy(async () => {
 });
 
 /** One incomplete slice, as a sentence a reader can act on. */
-function saidOf(slice: ApiSliceCoverage): string {
-  const where = slice.region_id ?? 'the global slice';
-  const because = slice.cause === null ? '' : ` (${slice.cause})`;
-  return `${slice.account_id} in ${where} is ${slice.state}${because}`;
-}
-
 export function TopologyScreen() {
   const [rootId, setRootId] = useState<string | null>(null);
   const [depth, setDepth] = useState<number>(2);
@@ -90,7 +86,9 @@ export function TopologyScreen() {
           </p>
           <ul>
             {unreadable.map((slice) => (
-              <li key={`${slice.account_id}:${slice.region_id ?? 'global'}`}>{saidOf(slice)}</li>
+              <li key={`${slice.account_id}:${slice.region_id ?? 'global'}`}>
+                {saidOf(slice)}
+              </li>
             ))}
           </ul>
         </div>
@@ -171,7 +169,10 @@ export function TopologyScreen() {
             ) : null}
             {crossed.length > 0 ? (
               <div role="status" data-testid="subgraph-coverage" className="meter-stale">
-                <p>This map crosses a slice that was not read whole, so edges into it may be missing.</p>
+                <p>
+                  This map crosses a slice that was not read whole, so edges into it may be
+                  missing.
+                </p>
                 <ul>
                   {crossed.map((slice) => (
                     <li key={`${slice.account_id}:${slice.region_id ?? 'global'}`}>
@@ -189,8 +190,8 @@ export function TopologyScreen() {
             <table>
               <caption>
                 The same {String(subgraph.nodes.length)} resources and{' '}
-                {String(subgraph.edges.length)} relationships, in a readable order. This is
-                the accessible equivalent of the map above rather than a summary of it.
+                {String(subgraph.edges.length)} relationships, in a readable order. This is the
+                accessible equivalent of the map above rather than a summary of it.
               </caption>
               <thead>
                 <tr>
@@ -204,7 +205,14 @@ export function TopologyScreen() {
               <tbody>
                 {subgraph.nodes.map((node) => (
                   <tr key={node.node_id}>
-                    <th scope="row">{node.name ?? node.provider_id}</th>
+                    <th scope="row">
+                      {/* FEAT-053. The map answers what is connected to what and nothing
+                          else, so every resource on it leads to the page that answers what
+                          it costs and what is wrong with it. */}
+                      <Link to={`/inventory/resources/${node.node_id}`}>
+                        {node.name ?? node.provider_id}
+                      </Link>
+                    </th>
                     <td>{node.resource_type}</td>
                     <td>{node.account_id}</td>
                     {/* A null region is global, never a region nobody could read. */}

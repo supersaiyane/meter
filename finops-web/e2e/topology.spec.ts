@@ -96,6 +96,74 @@ async function withSession(page: Page): Promise<void> {
     });
   });
 
+  // FEAT-053. The drill down destination, stubbed for the same reason the others are: a
+  // failed route raises rather than falling back to a fixture, so a journey against a dead
+  // API would be asserting the failure state.
+  await page.route('**/api/v1/inventory/nodes/**', async (route) => {
+    await route.fulfill({
+      json: {
+        data: {
+          node: {
+            node_id: ROOT,
+            provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:vpc/vpc-platform',
+            account_id: 'fake-platform-a',
+            node_kind: 'VPC',
+            resource_type: 'AWS::EC2::VPC',
+            region_id: 'fake-region-a',
+            availability_zone: null,
+            name: 'platform',
+            as_of: AS_OF,
+            collected_at: COLLECTED_AT,
+          },
+          // PARTIAL, so the page has to warn before it lists a single neighbour.
+          coverage: slice('fake-platform-a', 'fake-region-a', 'PARTIAL', 'Throttled'),
+          neighbours: [
+            {
+              node_id: SUBNET,
+              provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:subnet/subnet-a',
+              account_id: 'fake-platform-a',
+              node_kind: 'SUBNET',
+              resource_type: 'AWS::EC2::Subnet',
+              region_id: 'fake-region-a',
+              availability_zone: 'fake-region-a-a',
+              name: 'private-a',
+              as_of: AS_OF,
+              collected_at: COLLECTED_AT,
+            },
+          ],
+          edges: [
+            {
+              from_node_id: ROOT,
+              to_node_id: SUBNET,
+              edge_kind: 'CONTAINS',
+              is_cross_account: false,
+              source: 'CONFIG_RELATIONSHIP',
+              leaves_the_graph: false,
+            },
+            {
+              from_node_id: ROOT,
+              to_node_id: FAR,
+              edge_kind: 'PEERS_WITH',
+              is_cross_account: true,
+              source: 'ec2:DescribeVpcPeeringConnections',
+              leaves_the_graph: true,
+            },
+          ],
+          findings: [],
+          // No findings listed and three that joined to nothing, which is the combination
+          // that would otherwise read as a clean resource.
+          unmatched_findings: 3,
+          monthly_cost: null,
+          cost_period: '2026-08-01',
+        },
+        meta: {
+          ...META,
+          scope_coverage: { visible: 0, total: 1, is_partial: true, unit: 'slices' },
+        },
+      },
+    });
+  });
+
   await page.route('**/api/v1/inventory/topology/**', async (route) => {
     await route.fulfill({
       json: {
@@ -236,5 +304,43 @@ test.describe('the topology map', () => {
     await page.goto('/inventory/topology');
     await page.getByRole('button', { name: /AWS::EC2::VPC/ }).click();
     await expect(page.getByTestId('coverage')).toContainText('slices');
+  });
+
+  test('walks from the map into one resource, and is told what the page cannot say', async ({
+    page,
+  }) => {
+    // FEAT-053. The arc the map existed without: a reader finds a resource on the picture and
+    // has somewhere to go. The three assertions after the navigation are the ones worth
+    // having, because each is a place the page could read as reassuring and does not.
+    await page.goto('/inventory/topology');
+    await page.getByRole('button', { name: /AWS::EC2::VPC/ }).click();
+    await expect(page.getByTestId('topology-canvas')).toBeVisible();
+
+    await page.getByRole('link', { name: 'platform' }).click();
+    await expect(page).toHaveURL(new RegExp(`/inventory/resources/${ROOT}$`));
+    await expect(page.getByTestId('entity-arn')).toContainText('vpc/vpc-platform');
+
+    // One, the neighbour list may be short, said above the list rather than under it.
+    const warning = page.getByTestId('entity-coverage');
+    await expect(warning).toContainText(
+      'fake-platform-a in fake-region-a is PARTIAL (Throttled)',
+    );
+    const neighbours = page.getByTestId('entity-neighbours');
+    const warningBox = await warning.boundingBox();
+    const neighbourBox = await neighbours.boundingBox();
+    expect(warningBox?.y ?? 0).toBeLessThan(neighbourBox?.y ?? 0);
+
+    // Two, the bill does not mention it, which is not the same as costing nothing.
+    await expect(page.getByTestId('entity-cost-absent')).toContainText(
+      'not the same as costing nothing',
+    );
+    await expect(page.getByTestId('entity-cost')).toHaveCount(0);
+
+    // Three, an empty finding list with findings that joined to nothing is not a clean
+    // resource, and the page says both halves rather than the flattering one.
+    await expect(page.getByTestId('entity-findings-empty')).toBeVisible();
+    await expect(page.getByTestId('entity-unmatched')).toContainText(
+      '3 findings in this account could not be matched',
+    );
   });
 });

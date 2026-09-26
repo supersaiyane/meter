@@ -250,6 +250,70 @@ class TopologyRepository(ScopedRepository):
             statement.order_by(self.table.c.node_kind, self.table.c.name).limit(limit),
         )
 
+    def one(self, scope: Scope, node_id: UUID) -> Node | None:
+        """One node, or None where the scope cannot see it.
+
+        FEAT-053. None rather than an exception, because a reader following a stale link has
+        asked a legitimate question and the answer is that it is not there any more.
+        """
+        found = self._nodes(scope, (node_id,))
+        return found[0] if found else None
+
+    def slice_coverage(self, scope: Scope, node: Node) -> GraphCoverage | None:
+        """The coverage of the one slice this node came from.
+
+        None means the collector has never written a row for the slice, which should be
+        impossible because `enrol` writes one per enrolled slice on every run. The page says
+        so rather than assuming COMPLETE, because assuming it is the exact failure P4 exists
+        to prevent and a missing row is evidence that something upstream is wrong.
+        """
+        found = self._coverage(scope, {(node.account_key.account_id, node.region_id)})
+        return found[0] if found else None
+
+    def findings_for(self, scope: Scope, node: Node) -> tuple[Sequence[Row[Any]], int]:
+        """Recommendations about this resource, and how many in the account did not match.
+
+        The second number is the honest part. A recommendation joins to a node on the
+        provider's own identifier, and the first party sources report identifiers that do not
+        always match what Config recorded: the generated estate has three such findings and
+        seven that join. So a page showing an empty list would be saying this resource is
+        clean when the truth is that nothing could be matched to it.
+
+        Counted per account rather than per tenant, because an unmatched finding in another
+        account tells a reader nothing about the resource they are looking at.
+        """
+        recommendation = models.recommendation
+        account = node.account_key.account_id
+
+        mine = (
+            recommendation.select()
+            .where(recommendation.c.tenant_id == scope.tenant_id)
+            .where(scope_predicate(recommendation, scope))
+            .where(recommendation.c.sub_account_id == account)
+            .where(recommendation.c.resource_id == node.provider_id)
+            .order_by(recommendation.c.estimated_monthly_saving.desc())
+        )
+        matched = self._connection.execute(mine).all()
+
+        # Every node identifier in the account, so an unmatched finding is one whose resource
+        # this tenant holds no node for at all rather than one belonging to another resource.
+        known = self._connection.execute(
+            self.scoped_select(scope)
+            .with_only_columns(self.table.c.provider_id)
+            .where(self.table.c.sub_account_id == account)
+        ).all()
+        provider_ids = {str(row.provider_id) for row in known}
+
+        in_account = self._connection.execute(
+            recommendation.select()
+            .with_only_columns(recommendation.c.resource_id)
+            .where(recommendation.c.tenant_id == scope.tenant_id)
+            .where(scope_predicate(recommendation, scope))
+            .where(recommendation.c.sub_account_id == account)
+        ).all()
+        unmatched = sum(1 for row in in_account if str(row.resource_id) not in provider_ids)
+        return matched, unmatched
+
     # -- the reads underneath -----------------------------------------------
 
     def _accounts_for(self, scope: Scope) -> list[str]:

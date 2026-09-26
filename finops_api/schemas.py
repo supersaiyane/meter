@@ -348,6 +348,17 @@ class RecommendationOut(BaseModel):
     ticket_reference: str | None
     #: The working, so a reader can disagree with the verdict.
     rationale: str
+    #: FEAT-052. What applying this would cost if it turns out to be wrong, from
+    #: `finops_query.actions`. Three fields rather than one label, because the two
+    #: questions are independent and neither is confidence: a high confidence resize still
+    #: restarts the workload, and a low confidence snapshot deletion is still permanent.
+    reversible: bool
+    disturbs_running_work: bool
+    #: Reversible and disturbing nothing, both halves. Not a synonym for safe: five of the
+    #: eight classes that disturb nothing cannot be undone.
+    is_no_regret: bool
+    #: The sentence. A flag with no sentence behind it is one a reader cannot argue with.
+    risk_why: str
 
 
 class RecommendationEventOut(BaseModel):
@@ -869,3 +880,42 @@ class InventoryRootsOut(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     roots: tuple[InventoryRootOut, ...]
+
+
+class EntityOut(BaseModel):
+    """One resource, and everything Meter knows about it. FEAT-053.
+
+    The destination every list in the product needed and did not have. Adopted from the
+    2026-09-26 IBM Turbonomic review, whose entity detail view is the thing their Supply Chain
+    drills into.
+
+    Five things, and two of them are admissions rather than facts. `coverage` says whether the
+    slice this resource came from was read whole, because a page drawn from a PARTIAL slice may
+    be missing the neighbour that matters. `unmatched_findings` says how many findings in the
+    same account could not be matched to any resource, because an empty finding list otherwise
+    reads as a clean resource when the truth may be that nothing could be joined to it.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    node: NodeOut
+    #: Null means no coverage row exists for the slice, which should be impossible because the
+    #: collector writes one per enrolled slice on every run. Reported rather than assumed
+    #: complete, because assuming it is the failure P4 exists to prevent.
+    coverage: SliceCoverageOut | None
+    #: One hop. Enough to answer what this is attached to without drawing the estate.
+    neighbours: tuple[NodeOut, ...]
+    edges: tuple[EdgeOut, ...]
+    #: Open and closed both, worst money first. A reader looking at a resource wants to know
+    #: what was already decided about it as much as what is outstanding.
+    findings: tuple[RecommendationOut, ...]
+    #: Findings in the same account whose resource this tenant holds no node for. Non zero
+    #: means the list above may be short for a reason that is nothing to do with this
+    #: resource, and the screen says so.
+    unmatched_findings: int
+    #: What it cost in the latest billing period, effective, measured from the bill. Null
+    #: where no line item joined, and null is not zero: a resource the bill does not mention
+    #: is not a free one.
+    monthly_cost: Decimal | None
+    #: The period that cost belongs to. Null when the scope has no cost at all.
+    cost_period: date | None

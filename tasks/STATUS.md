@@ -9,7 +9,7 @@
      own content rather than scaffolding, and is not tagged.
 -->
 
-Last updated: 2026-09-22
+Last updated: 2026-09-26
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 51 total, 20 specified, 10 in build, 14 delivered |
+| Features | 53 total, 20 specified, 10 in build, 16 delivered |
 | Decisions | 24 architecture decision records |
 | Changes | 99 recorded |
-| Issues | 130 fixed, 68 open, 0 parked |
+| Issues | 130 fixed, 69 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -83,6 +83,24 @@ names the sub project that will fill it, which is what makes the front page the
 progress view.
 
 What the sentences above do not cover is the part that matters for a sign off.
+
+**Two features were adopted from a competitive review and carry no tasks.** The IBM
+Turbonomic review of 2026-09-26, in `docs/11-COMPETITIVE-REVIEW.md`, named seven gaps and two
+of them were cheap enough to close with what already existed. FEAT-052 is the top actions
+panel on the home screen and a risk verdict on every recommendation, which turned out to be
+the substance: of the seventeen waste classes, eight disturb no running work and only three
+of those eight can be undone, so a surface flagging the quiet ones as low risk would have
+been reassuring about the wrong findings. FEAT-053 is the entity detail page, which is the
+destination every list in the product pointed nowhere to. Both are delivered and neither was
+scheduled, which is recorded here because a feature with no task in a plan is invisible in
+the generated table below.
+
+Building FEAT-053 measured a join nobody had checked. A recommendation from a first party
+source names a bare provider identifier and `topology_node.provider_id` is an ARN, so the two
+do not match and the page lists no findings for exactly the resources a reader is most likely
+to open. ISS-205. The page reports the count of findings that matched nothing rather than
+rendering an empty list, so the gap is visible on the screen instead of reading as a clean
+resource.
 
 **Nothing has ever run in CI either.** The repository has no git remote, so
 `.gitlab-ci.yml` has never executed, and every statement anywhere in this

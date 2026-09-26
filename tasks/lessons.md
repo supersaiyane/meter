@@ -310,3 +310,33 @@ says nothing about the image, because the suite never uses it.
 **Triggers:** `make migrate`, `make seed`, any `docker compose run` after editing
 Python, a command inside compose that produces no output, and any "relation does
 not exist" for a table whose migration is committed.
+
+## 2026-09-26: a passing vitest run over code that does not typecheck
+
+**Mistake:** committed FEAT-052 after running `pytest` on the changed backend tests
+and `vitest` on the new component test, both green. The commit contained two real
+TypeScript errors. `rows()[0]` is `ApiRecommendation | undefined` under
+`noUncheckedIndexedAccess`, so spreading it produced an object whose every field was
+optional, which is not the type the component takes. The build was broken for the
+next two commits and I only found it because the next feature ran `tsc` for its own
+reasons.
+
+Vitest transpiles with esbuild and does not typecheck. A green vitest run over a
+file with a type error is the expected outcome, not a surprising one, so the test
+result carried no information about the thing that was wrong.
+
+**Correction:** self caught, by running `npx tsc --build` while adding a type to
+`api/types.ts` and seeing two errors in a file I had already called done.
+
+**Rule:** a change that touches any `.ts` or `.tsx` file is not verified until
+`cd finops-web && npx tsc --build` has been run and has printed nothing. Run it
+before the commit, in its own Bash call, and read the output rather than the exit
+code, because `tsc --build` prints errors and can still be followed by a command
+that succeeds. `vitest` passing is not a substitute and never was. The full gate is
+`make verify`, and for anything larger than one file that is the thing to run rather
+than a subset chosen by which files I remember touching.
+
+**Triggers:** any edit to `.ts` or `.tsx`, any use of `vitest run` as the evidence
+for a frontend change, indexing an array whose element type is then spread, and any
+commit whose verification was a set of targeted test commands rather than
+`make verify`.

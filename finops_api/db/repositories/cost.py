@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from datetime import date
+from decimal import Decimal
 from typing import Any, ClassVar, cast
 
 from sqlalchemy import Row, Select, Table, func, select
@@ -79,6 +80,29 @@ class CostRepository(ScopedRepository):
         )
         rows = _fetch(self, scope, statement)
         return rows[0][0] if rows else None
+
+    def for_resource(self, scope: Scope, resource_id: str, period: date) -> Decimal | None:
+        """What one resource cost in one billing period, effective.
+
+        FEAT-053. None where no charge joined, and None is not zero: a resource with no line
+        item in the period is one the bill does not mention, which happens for a resource
+        created after the period closed, for one whose charges land under a parent, and for
+        one whose identifier the export spells differently. A zero there would tell a reader
+        the thing is free.
+
+        Effective rather than billed, because effective is the primary measure everywhere per
+        the roadmap, and a page mixing the two would let somebody compare this resource
+        against a total drawn the other way.
+        """
+        statement = (
+            self.scoped_select(scope)
+            .with_only_columns(func.sum(self.table.c.effective_cost))
+            .where(self.table.c.billing_period_start == period)
+            .where(self.table.c.resource_id == resource_id)
+        )
+        rows = _fetch(self, scope, statement)
+        found = rows[0][0] if rows else None
+        return None if found is None else Decimal(found)
 
     def accounts_in(self, scope: Scope, period: date) -> int:
         """How many accounts this scope can see spending in the period.
