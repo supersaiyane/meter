@@ -606,7 +606,7 @@ changes:
   type: Design
   what: P2 implementation plan written, 22 tasks in ten waves. The prototype is pinned by golden files
     before anything touches it
-  commit: pending
+  commit: 80a0ac3
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
 issues:
 - id: ISS-001
