@@ -9,6 +9,7 @@ not drifted from the error taxonomy it was derived from.
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from uuid import UUID
 
 import pytest
 
@@ -22,19 +23,21 @@ from finops_core.domain import (
     Node,
     NodeKind,
     Provider,
+    node_id_for,
 )
 from finops_core.errors import CollectionError
 
 NOW = datetime(2026, 9, 26, 6, 0, tzinfo=UTC)
 FETCHED = datetime(2026, 9, 26, 6, 5, tzinfo=UTC)
 KEY = AccountKey(provider=Provider.AWS, account_id="111111111111")
+TENANT = UUID("11111111-1111-1111-1111-111111111111")
 
 
-def a_node(node_id: str = "n1", **overrides: object) -> Node:
+def a_node(name: str = "n1", **overrides: object) -> Node:
     values: dict[str, object] = {
-        "node_id": node_id,
+        "node_id": node_id_for(tenant_id=TENANT, provider_id=name),
         "account_key": KEY,
-        "provider_id": f"arn:aws:ec2:eu-west-1:111111111111:vpc/{node_id}",
+        "provider_id": f"arn:aws:ec2:eu-west-1:111111111111:vpc/{name}",
         "node_kind": NodeKind.VPC,
         "resource_type": "AWS::EC2::VPC",
         "region_id": "eu-west-1",
@@ -50,8 +53,8 @@ def a_node(node_id: str = "n1", **overrides: object) -> Node:
 
 def an_edge(frm: str = "n1", to: str = "n2", **overrides: object) -> Edge:
     values: dict[str, object] = {
-        "from_node_id": frm,
-        "to_node_id": to,
+        "from_node_id": node_id_for(tenant_id=TENANT, provider_id=frm),
+        "to_node_id": node_id_for(tenant_id=TENANT, provider_id=to),
         "edge_kind": EdgeKind.CONTAINS,
         "is_cross_account": False,
         "source": "CONFIG_RELATIONSHIP",

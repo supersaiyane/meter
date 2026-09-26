@@ -50,6 +50,30 @@ RUN_STATUSES = ("CLAIMED", "RUNNING", "SUCCEEDED", "FAILED", "PARTIAL")
 ACCOUNT_STATUSES = ("ACTIVE", "SUSPENDED", "PENDING", "DEPARTED", "UNKNOWN")
 ROLE_HEALTH = ("HEALTHY", "ACCESS_DENIED", "NOT_DEPLOYED", "THROTTLED", "UNKNOWN")
 NODE_TYPES = ("ROOT", "OU", "ACCOUNT")
+
+#: P4. The closed sets `topology_node` and `topology_edge` admit, mirrored from
+#: `finops_core.domain.topology`.
+NODE_KINDS = (
+    "VPC",
+    "SUBNET",
+    "INSTANCE",
+    "ENI",
+    "SECURITY_GROUP",
+    "TARGET_GROUP",
+    "LOAD_BALANCER",
+    "NAT_GATEWAY",
+    "TGW_ATTACHMENT",
+    "VPC_ENDPOINT",
+    "VOLUME",
+    "DB_INSTANCE",
+    "FUNCTION",
+    "OTHER",
+)
+EDGE_KINDS = ("CONTAINS", "ATTACHED_TO", "ROUTES_TO", "TARGETS", "PERMITS", "PEERS_WITH", "TRUSTS")
+COVERAGE_STATES = ("COMPLETE", "PARTIAL", "UNREAD")
+#: The taxonomy plus one. ADR-0023: an UNREAD slice has no cause among the six,
+#: because nothing failed. `NotYetAttempted` is that state.
+COVERAGE_CAUSES = (*ERROR_TYPES, "NotYetAttempted")
 TIERS = ("viewer", "analyst", "owner")
 
 
@@ -796,6 +820,152 @@ remediation_change = Table(
 )
 
 
+topology_node = Table(
+    "topology_node",
+    metadata,
+    #: Derived from `(tenant_id, provider_id)` by
+    #: `finops_core.domain.topology.node_id_for`, not allocated, so an edge can be
+    #: written without a round trip to look up the row it points at.
+    Column("node_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), ForeignKey("ingest_run.run_id"), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column("provider_id", Text, nullable=False),
+    Column("node_kind", Text, nullable=False),
+    #: The provider's own word for the type, beside the lossy kind. Six AWS types
+    #: map to OTHER, and a reader looking at an unfamiliar box needs to know which.
+    Column("resource_type", Text, nullable=False),
+    Column("region_id", Text, nullable=False),
+    #: Null means regional rather than zonal, never that the zone is unknown. An
+    #: unknown zone is a PARTIAL row in `graph_coverage`.
+    Column("availability_zone", Text),
+    Column("name", Text),
+    Column("tags", JSONB, nullable=False, server_default=text("'{}'")),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint("tenant_id", "provider_id", name="uq_topology_node__provider_id"),
+    CheckConstraint(_in_list("node_kind", NODE_KINDS), name="ck_topology_node__kind_known"),
+    CheckConstraint(
+        "availability_zone IS NULL OR availability_zone LIKE region_id || '%'",
+        name="ck_topology_node__zone_within_region",
+    ),
+    CheckConstraint("collected_at >= as_of", name="ck_topology_node__collected_after_as_of"),
+    Index("ix_topology_node__slice", "tenant_id", "sub_account_id", "region_id"),
+    Index("ix_topology_node__run", "tenant_id", "ingest_run_id"),
+)
+
+
+#: Directed, and the direction is part of the identity. There is deliberately no
+#: foreign key on `to_node_id`: the far end of a cross account TRUSTS edge is
+#: routinely a principal in an account Meter does not collect from, and a key
+#: there would refuse exactly the rows the blast radius read exists to find.
+topology_edge = Table(
+    "topology_edge",
+    metadata,
+    Column("edge_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), ForeignKey("ingest_run.run_id"), nullable=False),
+    #: Not cascading. `principal_scope` is the only table here that cascades, and a
+    #: cascade would remove edges nothing counted, so a run's `items_removed` would
+    #: undercount every departed resource by the size of its neighbourhood.
+    Column(
+        "from_node_id",
+        UUID(as_uuid=True),
+        ForeignKey("topology_node.node_id"),
+        nullable=False,
+    ),
+    Column("to_node_id", UUID(as_uuid=True), nullable=False),
+    Column("edge_kind", Text, nullable=False),
+    #: Materialised, because the cross account question is the expensive one to ask
+    #: repeatedly and the interesting one to answer.
+    Column("is_cross_account", Boolean, nullable=False),
+    #: The API call that produced the edge. An edge whose absence cannot be told
+    #: apart from a refused API is the failure this sub project is about.
+    Column("source", Text, nullable=False),
+    #: The origin's slice, not the edge's. Denormalised so the retraction that
+    #: removes a withdrawn edge needs no join to a node row this run may already
+    #: have removed.
+    Column("sub_account_id", Text, nullable=False),
+    Column("region_id", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint(
+        "tenant_id",
+        "from_node_id",
+        "to_node_id",
+        "edge_kind",
+        name="uq_topology_edge__directed",
+    ),
+    CheckConstraint(_in_list("edge_kind", EDGE_KINDS), name="ck_topology_edge__kind_known"),
+    CheckConstraint("length(source) > 0", name="ck_topology_edge__has_source"),
+    CheckConstraint(
+        "from_node_id <> to_node_id OR edge_kind = 'PERMITS'",
+        name="ck_topology_edge__self_edge_only_permits",
+    ),
+    CheckConstraint("collected_at >= as_of", name="ck_topology_edge__collected_after_as_of"),
+    Index("ix_topology_edge__outward", "tenant_id", "from_node_id"),
+    Index("ix_topology_edge__inward", "tenant_id", "to_node_id"),
+    Index("ix_topology_edge__slice", "tenant_id", "sub_account_id", "region_id"),
+    Index(
+        "ix_topology_edge__cross_account",
+        "tenant_id",
+        "from_node_id",
+        postgresql_where=text("is_cross_account"),
+    ),
+)
+
+
+#: The table P4 exists for. One row per account and region, written on every run
+#: including a failed one, because absence of a row and absence of resources are
+#: indistinguishable to a consumer and one of them is dangerous.
+graph_coverage = Table(
+    "graph_coverage",
+    metadata,
+    Column("coverage_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), ForeignKey("ingest_run.run_id"), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column("region_id", Text, nullable=False),
+    Column("state", Text, nullable=False),
+    Column("cause", Text),
+    Column("node_count", Integer, nullable=False),
+    Column("edge_count", Integer, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint("tenant_id", "sub_account_id", "region_id", name="uq_graph_coverage__slice"),
+    CheckConstraint(_in_list("state", COVERAGE_STATES), name="ck_graph_coverage__state_known"),
+    CheckConstraint(
+        f"cause IS NULL OR {_in_list('cause', COVERAGE_CAUSES)}",
+        name="ck_graph_coverage__cause_known",
+    ),
+    # Both halves as one rule. A slice that cannot say why it is incomplete shows a
+    # banner that sends nobody anywhere, and a complete slice carrying a cause
+    # shows a reader a failure over a graph that is whole.
+    CheckConstraint(
+        "(state = 'COMPLETE') = (cause IS NULL)",
+        name="ck_graph_coverage__cause_iff_not_complete",
+    ),
+    CheckConstraint(
+        "state <> 'UNREAD' OR cause = 'NotYetAttempted'",
+        name="ck_graph_coverage__unread_is_not_yet_attempted",
+    ),
+    CheckConstraint(
+        "state <> 'UNREAD' OR (node_count = 0 AND edge_count = 0)",
+        name="ck_graph_coverage__unread_is_empty",
+    ),
+    CheckConstraint(
+        "node_count >= 0 AND edge_count >= 0", name="ck_graph_coverage__counts_not_negative"
+    ),
+    CheckConstraint("collected_at >= as_of", name="ck_graph_coverage__collected_after_as_of"),
+    Index(
+        "ix_graph_coverage__incomplete",
+        "tenant_id",
+        "sub_account_id",
+        "region_id",
+        postgresql_where=text("state <> 'COMPLETE'"),
+    ),
+)
+
 #: Every table in the schema. Used by the drift test and by the repository layer.
 ALL_TABLES = tuple(metadata.sorted_tables)
 
@@ -806,4 +976,7 @@ FACT_TABLES = (
     "cost_focus_daily",
     "cost_focus_monthly",
     "platform_cost",
+    "topology_node",
+    "topology_edge",
+    "graph_coverage",
 )

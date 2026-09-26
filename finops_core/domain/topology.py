@@ -34,6 +34,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 from types import MappingProxyType
+from uuid import UUID, uuid5
 
 from finops_core.domain.account import AccountKey
 from finops_core.domain.fact import Fact
@@ -123,6 +124,38 @@ class CoverageCause(StrEnum):
     NOT_YET_ATTEMPTED = "NotYetAttempted"
 
 
+#: The namespace `node_id_for` derives identifiers in. A fixed UUID rather than a
+#: generated one, because the whole point is that two runs, two adapters and the
+#: demo seeder all arrive at the same identifier for the same resource.
+NODE_NAMESPACE = UUID("6f2b3a1e-9c4d-5f8a-b7e6-1d0c9a8b7f6e")
+
+
+def node_id_for(*, tenant_id: UUID, provider_id: str) -> UUID:
+    """The identity of a node, derived rather than allocated.
+
+    `topology_node.node_id` is Meter's own identifier and `provider_id` is the
+    ARN. Deriving the first from the second is what lets an edge be written
+    without first reading back the row it points at: the collector holds the ARN
+    of both ends of a Config relationship and needs no round trip to turn either
+    into a key.
+
+    It lives here for the reason `source_fingerprint` does. Both adapters and the
+    demo seeder must produce the same identifier for the same resource, and two
+    implementations of an identity is how a duplicate is created. A node written
+    under one identifier and its edges written under another is worse than a
+    duplicate: the graph is whole, every query returns, and the resource appears
+    twice with half its edges each time.
+
+    `uuid5` and not `hash()`. The builtin is salted per process, so an identifier
+    from it is stable within one run and different in the next, and the symptom is
+    a table that doubles every time the worker restarts.
+
+    Scoped by tenant, so two tenants holding the same ARN, which happens whenever
+    a demo tenant is seeded beside a real one, do not collide on one row.
+    """
+    return uuid5(NODE_NAMESPACE, f"{tenant_id}\x1f{provider_id}")
+
+
 #: Where an edge came from, as the name of the API call that produced it, never
 #: as a free text note. `topology_edge.source` is what a reader uses to decide
 #: whether a missing edge means the resource is unconnected or means the one API
@@ -138,9 +171,9 @@ SOURCE_MAX_LENGTH = 64
 class Node(Fact):
     """One resource, as a vertex. Identified by the provider's own identifier."""
 
-    #: Meter's identifier for the vertex, stable across runs for the same
-    #: resource. Opaque: nothing parses it, for the reason `ResourceRef` gives.
-    node_id: str
+    #: Meter's identifier for the vertex, from `node_id_for`, so it is stable
+    #: across runs for the same resource without a round trip to look it up.
+    node_id: UUID
     account_key: AccountKey
     #: The provider's identifier, an ARN on AWS. Unique within a tenant, which is
     #: what makes a second run of the same resource an update rather than a
@@ -178,8 +211,8 @@ class Edge(Fact):
     answer "what is inside this VPC" with its parent.
     """
 
-    from_node_id: str
-    to_node_id: str
+    from_node_id: UUID
+    to_node_id: UUID
     edge_kind: EdgeKind
     #: Materialised rather than derived by joining both nodes, because the whole
     #: point of the blast radius read is to find the cross account edges, and a
