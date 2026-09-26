@@ -381,6 +381,7 @@
     "finops_providers/aws/accounts.py",
     "finops_providers/aws/client.py",
     "finops_providers/aws/commitment.py",
+    "finops_providers/aws/config_inventory.py",
     "finops_providers/aws/credentials.py",
     "finops_providers/aws/cur.py",
     "finops_providers/aws/health.py",
@@ -440,6 +441,7 @@
     "migrations/versions/0011_realized_saving.py",
     "migrations/versions/0012_realized_usage_unobserved.py",
     "migrations/versions/0013_finops_score.py",
+    "migrations/versions/0014_topology.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_flags.py",
     "scripts/ci/check_forbidden_imports.py",
@@ -481,6 +483,7 @@
     "tests/contract/test_commitment.py",
     "tests/contract/test_cost_export.py",
     "tests/contract/test_credential_broker.py",
+    "tests/contract/test_topology_source.py",
     "tests/core/__init__.py",
     "tests/core/test_config.py",
     "tests/core/test_cost_domain.py",
@@ -493,6 +496,7 @@
     "tests/db/test_models.py",
     "tests/db/test_p2_constraints.py",
     "tests/db/test_p3_constraints.py",
+    "tests/db/test_p4_constraints.py",
     "tests/db/test_schema.py",
     "tests/db/test_scope_guard.py",
     "tests/ingest/__init__.py",
@@ -529,6 +533,7 @@
     "tests/providers/aws/__init__.py",
     "tests/providers/aws/test_accounts.py",
     "tests/providers/aws/test_commitment.py",
+    "tests/providers/aws/test_config_inventory.py",
     "tests/providers/aws/test_credentials.py",
     "tests/providers/aws/test_cur.py",
     "tests/providers/aws/test_health.py",
@@ -3927,6 +3932,11 @@
       "k": "python"
     },
     {
+      "s": "finops_core/ports/inventory.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/ports/metrics.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -4123,6 +4133,11 @@
     },
     {
       "s": "finops_fakes/provider.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/provider.py",
       "t": "finops_core/errors.py",
       "k": "python"
     },
@@ -4169,6 +4184,16 @@
     {
       "s": "finops_fakes/tickets.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/topology.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/topology.py",
+      "t": "finops_core/domain/topology.py",
       "k": "python"
     },
     {
@@ -4628,6 +4653,31 @@
     },
     {
       "s": "finops_providers/aws/commitment.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/config_inventory.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/config_inventory.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/config_inventory.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/config_inventory.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/config_inventory.py",
       "t": "finops_providers/aws/client.py",
       "k": "python"
     },
@@ -5393,6 +5443,11 @@
     },
     {
       "s": "tests/contract/conftest.py",
+      "t": "finops_providers/aws/config_inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/conftest.py",
       "t": "finops_providers/aws/credentials.py",
       "k": "python"
     },
@@ -5429,6 +5484,16 @@
     {
       "s": "tests/contract/test_credential_broker.py",
       "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_topology_source.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_topology_source.py",
+      "t": "finops_core/ports/inventory.py",
       "k": "python"
     },
     {
@@ -5554,6 +5619,16 @@
     {
       "s": "tests/db/test_models.py",
       "t": "finops_core/domain/org.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/db/test_p4_constraints.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/db/test_p4_constraints.py",
+      "t": "finops_core/domain/topology.py",
       "k": "python"
     },
     {
@@ -6209,6 +6284,31 @@
     {
       "s": "tests/providers/aws/test_commitment.py",
       "t": "finops_providers/aws/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_config_inventory.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_config_inventory.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_config_inventory.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_config_inventory.py",
+      "t": "finops_core/ports/inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_config_inventory.py",
+      "t": "finops_providers/aws/config_inventory.py",
       "k": "python"
     },
     {

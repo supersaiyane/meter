@@ -2863,6 +2863,16 @@ issues:
     two orderings equal did not catch it, because they agreed about a package neither mentioned.
     tests/scripts/test_layer_agreement.py now asserts every declared package has a layer, and the
     constraint was probed by importing finops_api and confirming it breaks'
+- id: ISS-200
+  severity: MEDIUM
+  status: OPEN
+  summary: finops_providers/aws/config_inventory.py has never made a call. Every response shape in it is read from the AWS Config advanced query documentation and from nothing else, and the tests answer from a literal
+  detail: 'Three mappings are the part a first real call will correct, and the module docstring names all three: the resource type to node kind table, the prose relationship names, and the set of types treated as global rather than regional. The last is the least certain, because Config records a global resource under whichever region had global recording enabled, so awsRegion is a fact about our own configuration rather than about the resource'
+- id: ISS-201
+  severity: LOW
+  status: OPEN
+  summary: The node kind enumeration has fourteen members and the estate has more kinds of thing than that, so a container cluster, a cache, a stream, a transit gateway and a peering connection all draw as OTHER
+  detail: 'Ten of the twenty four resource types the generated estate contains map to OTHER. resource_type travels beside node_kind so a screen can still name them, and the fourteen are fixed by the P4 specification and held by a check constraint, so widening them is a migration. The edge kinds have the same gap in one place: replication has no member, and a read replica is joined with ROUTES_TO, which is the closest of the seven and not the right word. An unmapped type is deliberately not a coverage shortfall, because an estate with a fleet of clusters would then be PARTIAL on every run forever'
 open_questions:
 - id: OPEN-07
   question: What does the cost screen show for a tenant whose first ingest has not run, an

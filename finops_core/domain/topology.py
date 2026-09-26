@@ -243,6 +243,118 @@ class Edge(Fact):
             )
 
 
+#: The order a cause wins in when one slice fell short in several ways at once.
+#: `graph_coverage` has one cause column and a reader needs the one that tells them
+#: what to do, so an AccessDenied somebody can fix beats a Throttled that resolves
+#: itself. `NoData` is last because it is the one cause that is not a fault.
+CAUSE_PRECEDENCE: tuple[CoverageCause, ...] = (
+    CoverageCause.ACCESS_DENIED,
+    CoverageCause.NOT_OPTED_IN,
+    CoverageCause.SCHEMA_DRIFT,
+    CoverageCause.UNREACHABLE,
+    CoverageCause.THROTTLED,
+    CoverageCause.NOT_YET_ATTEMPTED,
+    CoverageCause.NO_DATA,
+)
+
+
+@dataclass(frozen=True, kw_only=True)
+class Shortfall:
+    """One API that did not answer, and what that costs the slice.
+
+    Not a `Fact`. It is a record of our own failure rather than something that was
+    true at a source, which is the distinction `IngestRun` makes for the same
+    reason: giving it an `as_of` would invite the question of what the value means.
+
+    `source` is the API call, not a description, and it matches the `source` an
+    `Edge` from that call would have carried. That pairing is the point: a reader
+    seeing no PEERS_WITH edges in a region can look at the shortfalls and find
+    `ec2:DescribeVpcPeeringConnections` refused, instead of concluding the estate
+    has no peering.
+    """
+
+    source: str
+    cause: CoverageCause
+    detail: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.source:
+            raise ValueError(
+                "A shortfall must name the API that fell short, or it says only that "
+                "something is missing, which is what the graph already said."
+            )
+
+
+@dataclass(frozen=True, kw_only=True)
+class SliceRead:
+    """Everything one account and region yielded, and everything it did not.
+
+    The return type of a topology read, and the reason it is one type rather than
+    two calls. An adapter that returned nodes and edges, with the shortfalls
+    available from a second method, is an adapter whose caller writes the graph and
+    forgets the second method, and the graph then renders complete.
+
+    A read where every API refused is still a `SliceRead`, with no nodes, no edges
+    and a shortfall per API. That is deliberately not an exception: the run has to
+    continue to the next account, which is constraint 5, and the caller has to
+    write a PARTIAL coverage row rather than nothing at all.
+    """
+
+    account_key: AccountKey
+    region_id: str | None
+    nodes: tuple[Node, ...]
+    edges: tuple[Edge, ...]
+    shortfalls: tuple[Shortfall, ...]
+    #: Provider type names this source could not map to a `NodeKind`. The nodes are
+    #: present, as `OTHER`, with their `resource_type` intact, so nothing is missing
+    #: and this is **not** a shortfall and does not make the slice PARTIAL.
+    #:
+    #: That distinction was made the other way first and the contract suite caught
+    #: it. An estate with a fleet of EKS clusters has no kind for them, so every
+    #: slice would have been PARTIAL on every run forever, and a banner that says
+    #: data is missing every time is a banner nobody reads by the second week. A
+    #: shortfall means a fact Meter could not see. This means a fact it can see and
+    #: cannot name, which is ISS-201 and belongs in a run's detail rather than in a
+    #: coverage row.
+    unmapped: tuple[str, ...] = ()
+
+    @property
+    def is_whole(self) -> bool:
+        """True only when every API this read depends on answered."""
+        return not self.shortfalls
+
+    @property
+    def cause(self) -> CoverageCause | None:
+        """The one cause the coverage row carries, or None for a whole read."""
+        return dominant_cause(self.shortfalls)
+
+    @property
+    def state(self) -> CoverageState:
+        """COMPLETE or PARTIAL. Never UNREAD: this read was attempted."""
+        return CoverageState.COMPLETE if self.is_whole else CoverageState.PARTIAL
+
+
+def dominant_cause(shortfalls: tuple[Shortfall, ...]) -> CoverageCause | None:
+    """The cause a slice's coverage row carries when several APIs fell short.
+
+    None for no shortfalls at all, which is the COMPLETE case.
+
+    Deliberately not the first shortfall in call order. That would make the cause a
+    function of which API the adapter happens to call first, so reordering two calls
+    for performance would change what a screen tells somebody to fix.
+    """
+    if not shortfalls:
+        return None
+    present = {shortfall.cause for shortfall in shortfalls}
+    for candidate in CAUSE_PRECEDENCE:
+        if candidate in present:
+            return candidate
+    # Unreachable while `CAUSE_PRECEDENCE` covers the enum, which a test asserts.
+    # Raised rather than returning one arbitrarily, because a cause chosen at random
+    # is a screen telling somebody to fix something that is not broken.
+    raise ValueError(f"No precedence for any of {sorted(cause.value for cause in present)}")
+
+
 @dataclass(frozen=True, kw_only=True)
 class GraphCoverage(Fact):
     """How much of one account's one region the graph was built from.
