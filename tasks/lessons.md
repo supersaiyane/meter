@@ -376,3 +376,39 @@ window is ragged, which is every real window.
 `if candidates:` guard around a write, folding a series by hour of week or day of month,
 and any fixture whose start time was chosen because it is a Monday or the first of a
 month.
+
+## 2026-09-27: a count in the map, stale for the third sweep running
+
+**Mistake:** three sweeps of `project_map.md` in two days, and every one of them found
+counts that had drifted. On 2026-09-26 the suite count was two sub projects behind and
+the routes block did not mention a module. Later the same day the journey count was nine
+behind, written when there was one spec file. On 2026-09-27 the journey count, the screens
+count, the route count and the migrations list were all wrong again, and the migrations
+list was the worst of the four: a list of revisions that silently stops being a list of
+revisions is how a reader concludes the schema has not changed.
+
+The lesson of 2026-08-23 already says to commit documentation with the change that made
+it stale, and I have broken it three times. So the rule is wrong rather than
+under-applied: it asks me to remember, at the end of a task, which prose numbers a change
+moved. Nothing surfaces them, nothing fails, and the map is the one file nobody reads
+until they need it.
+
+**Correction:** self caught each time, by sweeping the map on the owner's instruction
+rather than by anything in the build.
+
+**Rule:** a number in `project_map.md` is written in one of two forms and never a third.
+Either it names where it comes from, as two lines already do ("counted from the `arrives`
+field in sections.ts", "read from what `make verify` runs"), or it is not written at all
+and the prose describes the thing without counting it. When adding a line with a number,
+write the derivation beside it in the same sentence, because that sentence is what makes
+the next reader check rather than trust.
+
+And before saying a map sweep is done, run the counts rather than reading them: the
+screens from `grep -c 'arrives: null'`, the journeys from `grep -cE '^\s*test\('` across
+the spec files, the routes from `grep -c '^@router'`, the revisions from `ls
+migrations/versions`. Four commands, and they are the difference between a sweep and a
+reading.
+
+**Triggers:** any edit to `project_map.md`, any task that adds a screen, a route, a
+journey, a migration or a collector, the instruction "do the projectmap", and any
+sentence in a document containing a numeral that was not computed in front of me.

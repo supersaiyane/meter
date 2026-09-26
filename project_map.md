@@ -348,7 +348,7 @@ meter/
 │   │                          finally. v1 writes nothing, constraint 6
 ├── finops-web/                IN BUILD  Vite, React and TypeScript
 │   ├── README.md              why the versions are pinned where they are
-│   ├── e2e/                   fourteen Playwright journeys in four spec files,
+│   ├── e2e/                   fifteen Playwright journeys in four spec files,
 │   │                          against the built bundle rather than the test
 │   │                          renderer. They are what proves the honesty rules
 │   │                          survive the build. The figure is read from what
@@ -435,7 +435,7 @@ meter/
 │       │                      and no single ratio is true of both, ISS-157
 │       │   └── sections.ts    GROUPS, the seven of ADR-0020. It never grows: a
 │       │                      sub project adds screens inside an existing group
-│       └── screens/           nineteen of twenty four built, counted from the
+│       └── screens/           twenty of twenty four built, counted from the
 │                              `arrives` field in sections.ts rather than from this
 │                              line, which is why that field exists. Three of the
 │                              four P2 screens read live routes since TASK-P2-021;
@@ -631,10 +631,11 @@ meter/
 │   ├── middleware.py          request id on every line and back on the response
 │   ├── schemas.py             the meta envelope. degraded is computed, never set
 │   ├── routes/                the seven P0 routes, all returning the envelope.
-│   │                          inventory.py is P4's four: the subgraph, the estate
+│   │                          inventory.py is P4's five: the subgraph, the estate
 │   │                          wide coverage banner, the roots to start a map
-│   │                          from, and FEAT-053's one resource. The subgraph
-│   │                          response carries the coverage of
+│   │                          from, FEAT-053's one resource and FEAT-056's list
+│   │                          of them all, which is what closed ISS-204. The
+│   │                          subgraph response carries the coverage of
 │   │                          every slice it crossed, so a screen cannot draw the
 │   │                          map without the list of what is missing from it.
 │   │                          cost.py is P1's four: summary, by service, by
@@ -705,6 +706,20 @@ meter/
 │       │                      routinely in an account Meter cannot read and a key
 │       │                      would refuse exactly those rows. ADR-0023 for why
 │       │                      the cause column admits seven values
+│       ├── 0015_commitment_action.py  a payer wide finding in its own table,
+│       │                      ADR-0025. A commitment cannot be apportioned to the
+│       │                      accounts that consumed it, so a finding derived from
+│       │                      one inherits that scoping rather than the scoping of
+│       │                      the findings table it resembles. The cost is the
+│       │                      lifecycle vocabulary written twice, held by a test
+│       │                      that compares the two constraints at their source
+│       ├── 0016_resource_management.py  presence and never absence. A row means we
+│       │                      found a resource in state; no row means we did not
+│       │                      find it, which is a different fact from nobody
+│       │                      managing it. UNMANAGED is derived per request from a
+│       │                      declaration about our own configuration and is never
+│       │                      stored, because a stored judgement outlives the
+│       │                      configuration it was made under
 │       └── 0003_p2_tables.py  the six P2 tables. Three of its constraints are
 │                              the feature: a deny cannot be written without an
 │                              expiry, a modelled row cannot claim a measured
