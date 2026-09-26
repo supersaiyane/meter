@@ -119,6 +119,10 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | None] = {
     # organization. In before the route, per the rule at the top of the P1 plan.
     "commitment_use": PayerWide(),
     "commitment_coverage": PayerWide(),
+    # FEAT-055, and the reason the table exists. A finding derived from a payer wide fact is
+    # payer wide, so it inherits the scoping of the coverage it was computed from rather than
+    # the scoping of the findings table it resembles. ADR-0025.
+    "commitment_action": PayerWide(),
     # P3. A recommendation names the account its resource lives in, so a caller
     # narrowed to two accounts reads two accounts' waste.
     "recommendation": ByAccount("sub_account_id"),

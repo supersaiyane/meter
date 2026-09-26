@@ -380,6 +380,7 @@
     "finops_ingest/collectors/__init__.py",
     "finops_ingest/collectors/account_health.py",
     "finops_ingest/collectors/commitment.py",
+    "finops_ingest/collectors/commitment_actions.py",
     "finops_ingest/collectors/cost_anomaly.py",
     "finops_ingest/collectors/cost_focus.py",
     "finops_ingest/collectors/cost_rollup.py",
@@ -428,6 +429,7 @@
     "finops_query/actions.py",
     "finops_query/anomaly.py",
     "finops_query/classify.py",
+    "finops_query/commitment.py",
     "finops_query/cost_model.py",
     "finops_query/gate.py",
     "finops_query/graph.py",
@@ -483,6 +485,7 @@
     "migrations/versions/0012_realized_usage_unobserved.py",
     "migrations/versions/0013_finops_score.py",
     "migrations/versions/0014_topology.py",
+    "migrations/versions/0015_commitment_action.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_flags.py",
     "scripts/ci/check_forbidden_imports.py",
@@ -547,6 +550,7 @@
     "tests/ingest/collectors/__init__.py",
     "tests/ingest/collectors/test_account_health.py",
     "tests/ingest/collectors/test_commitment.py",
+    "tests/ingest/collectors/test_commitment_actions.py",
     "tests/ingest/collectors/test_cost_anomaly.py",
     "tests/ingest/collectors/test_cost_focus.py",
     "tests/ingest/collectors/test_cost_focus_restatement.py",
@@ -603,6 +607,7 @@
     "tests/query/test_actions.py",
     "tests/query/test_anomaly.py",
     "tests/query/test_classify.py",
+    "tests/query/test_commitment.py",
     "tests/query/test_cost_model.py",
     "tests/query/test_gate.py",
     "tests/query/test_graph.py",
@@ -870,11 +875,6 @@
     {
       "s": "finops-web/dist-types/src/components/TypedError.d.ts",
       "t": "finops-web/dist-types/src/components/provenance",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/dist-types/src/components/actionRisk.d.ts",
-      "t": "finops-web/dist-types/src/api/types",
       "k": "typescript"
     },
     {
@@ -1573,11 +1573,6 @@
       "k": "typescript"
     },
     {
-      "s": "finops-web/src/components/actionRisk.ts",
-      "t": "finops-web/src/api/types.ts",
-      "k": "typescript"
-    },
-    {
       "s": "finops-web/src/components/index.ts",
       "t": "finops-web/src/components/CoverageBanner.tsx",
       "k": "typescript"
@@ -1814,12 +1809,27 @@
     },
     {
       "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/components/SeverityBadge.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
       "t": "finops-web/src/components/StateBoundary.tsx",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/components/actionRisk.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
       "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/screens/querySeverity.ts",
       "k": "typescript"
     },
     {
@@ -4743,6 +4753,26 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/commitment_actions.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/commitment_actions.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/commitment_actions.py",
+      "t": "finops_query/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/commitment_actions.py",
+      "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/cost_anomaly.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
@@ -5559,6 +5589,11 @@
     },
     {
       "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/commitment_actions.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/cost_anomaly.py",
       "k": "python"
     },
@@ -5700,6 +5735,11 @@
     {
       "s": "tests/api/test_cost_commitments.py",
       "t": "finops_ingest/collectors/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_commitments.py",
+      "t": "finops_ingest/collectors/commitment_actions.py",
       "k": "python"
     },
     {
@@ -6399,6 +6439,21 @@
     },
     {
       "s": "tests/ingest/collectors/test_commitment.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_commitment_actions.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_commitment_actions.py",
+      "t": "finops_ingest/collectors/commitment_actions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_commitment_actions.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
@@ -7385,6 +7440,11 @@
     {
       "s": "tests/query/test_classify.py",
       "t": "finops_query/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_commitment.py",
+      "t": "finops_query/commitment.py",
       "k": "python"
     },
     {

@@ -121,6 +121,15 @@ class Settings(BaseSettings):
     #: Shorter than this is not worth a stop and a start.
     parking_minimum_window_hours: int = Field(ge=1)
 
+    # Commitment coverage as actions, FEAT-055. The discount rate is an assumption about a
+    # price nobody has been quoted, and the term decides how long a mistake lasts, so
+    # neither is a literal in a collector.
+    commitment_discount_percent: Decimal
+    commitment_term_months: int = Field(ge=1)
+    #: Below this a finding is not produced. Advising somebody to sign a multi year
+    #: obligation to save a few dollars a month costs more to act on than it returns.
+    commitment_minimum_monthly_saving_usd: Decimal
+
     # Topology
     max_graph_nodes: int = Field(ge=1)
 

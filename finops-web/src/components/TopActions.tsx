@@ -18,7 +18,7 @@ import { PER_GROUP, riskLabel } from './actionRisk';
  * **Two groups, and the second one is short on purpose.** Biggest saving is ranked by money,
  * per ADR-0016, which is the same order `/waste` uses so a reader moving between the two
  * sees the same list. No regret is reversible and disturbing nothing, and only three of the
- * eighteen waste classes qualify, so this group is often nearly empty. That is the honest
+ * waste classes qualify, so this group is often nearly empty. That is the honest
  * shape rather than a defect: a page of easy wins would be inventing most of them.
  *
  * **Every row says whether it is permanent.** This is the part a naive low risk flag gets

@@ -31,6 +31,7 @@ from finops_api.db.repositories import AccessContext
 from finops_api.db.repositories.cost import (
     GROUPABLE,
     AnomalyRepository,
+    CommitmentActionRepository,
     CommitmentCoverageRepository,
     CommitmentRepository,
     CostRepository,
@@ -39,6 +40,7 @@ from finops_api.db.repositories.cost import (
 from finops_api.deps import get_access_context, get_connection, get_scope
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
+    CommitmentActionOut,
     CommitmentCoverageOut,
     CommitmentsOut,
     CommitmentUseOut,
@@ -334,6 +336,11 @@ def cost_commitments(
 
     rows = uses.worst_first(scope, window)
     slices = CommitmentCoverageRepository(connection, context).slices(scope, window)
+    # FEAT-055. On the same payload rather than behind a second route, so it inherits this
+    # route's scope behaviour exactly: both tables are PayerWide, so a narrowed caller reads
+    # nothing here and the screen says why. A second route would have been a second place for
+    # that rule to be got right.
+    actions = CommitmentActionRepository(connection, context).worst_first(scope)
 
     commitments = [
         CommitmentUseOut(
@@ -363,6 +370,26 @@ def cost_commitments(
                 coverage=_fraction(Decimal(row.covered_spend), Decimal(row.eligible_spend)),
             )
             for row in slices
+        ],
+        actions=[
+            CommitmentActionOut(
+                commitment_type=str(row.commitment_type),
+                dimension=str(row.dimension),
+                dimension_value=str(row.dimension_value),
+                window_start=row.window_start,
+                window_end=row.window_end,
+                eligible_spend=Decimal(row.eligible_spend),
+                covered_spend=Decimal(row.covered_spend),
+                estimated_monthly_saving=Decimal(row.estimated_monthly_saving),
+                usage_floor_percent=Decimal(row.usage_floor_percent),
+                term_months=int(row.term_months),
+                confidence=str(row.confidence),
+                severity=str(row.severity),
+                lifecycle=str(row.lifecycle),
+                owner=row.owner,
+                rationale=str(row.rationale),
+            )
+            for row in actions
         ],
         # Summed from the rows being returned, so the total cannot disagree with
         # the list underneath it.

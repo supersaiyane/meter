@@ -78,6 +78,13 @@ class Settings:
     parking_minimum_weeks = 2
     parking_minimum_window_hours = 3
 
+    # FEAT-055's three, which the commitment collector refuses to run without. The discount is
+    # an assumption about a price nobody has been quoted and the term is how long a wrong
+    # decision lasts. Same values as `.env.example`.
+    commitment_discount_percent = Decimal("30")
+    commitment_term_months = 12
+    commitment_minimum_monthly_saving_usd = Decimal("25")
+
 
 class TestItRefusesAnythingNotLocalError:
     def test_a_remote_host_is_refused(self) -> None:
@@ -448,3 +455,32 @@ def test_the_seeded_estate_holds_a_parking_finding(engine: object) -> None:
         assert row.estimated_monthly_saving > 0
         assert "UTC" in row.rationale
         assert "observed weeks" in row.rationale
+
+
+def test_the_seeded_estate_holds_a_commitment_action(engine: object) -> None:
+    """FEAT-055. The same lesson as the parking assertion above: a collector wired into the seed
+    that produces nothing passes every test and leaves the screen empty.
+
+    The fake estate has eligible spend that no commitment covers, so a gap exists to be found.
+    A failure here is worth reading the numbers before changing the floor: an estate whose gaps
+    all fell below the minimum saving is a change in the fake, not a change in the rule.
+    """
+    from sqlalchemy import text as sql
+
+    seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
+    with engine.connect() as connection:  # type: ignore[attr-defined]
+        rows = connection.execute(
+            sql(
+                "SELECT dimension, estimated_monthly_saving, usage_floor_percent, rationale "
+                "FROM commitment_action WHERE tenant_id = :t"
+            ),
+            {"t": seed_demo.DEMO_TENANT},
+        ).all()
+    assert rows, "the seeded estate produced no commitment action, so the screen would be empty"
+    for row in rows:
+        assert row.dimension in {"SERVICE", "REGION"}
+        assert row.estimated_monthly_saving > 0
+        # The figure that makes it a decision rather than an observation, and the one a
+        # coverage chart cannot show.
+        assert 0 < row.usage_floor_percent <= 100
+        assert "obligates" in row.rationale

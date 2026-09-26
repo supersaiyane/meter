@@ -7,7 +7,14 @@ import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
 import { useReportMeta } from '../shell/metaRegistry';
 import { surfaceStateFor } from './surfaceStateFor';
-import type { ApiCommitmentCoverage, ApiCommitmentUse } from '../api/types';
+import { riskLabel, type RiskVerdict } from '../components/actionRisk';
+import { SeverityBadge } from '../components/SeverityBadge';
+import { severityLevel } from './querySeverity';
+import type {
+  ApiCommitmentAction,
+  ApiCommitmentCoverage,
+  ApiCommitmentUse,
+} from '../api/types';
 
 /**
  * What was committed, what it consumed, and what it covered. FEAT-024.
@@ -41,12 +48,21 @@ function share(value: string | null, absent: string): string {
   return `${(Number(value) * 100).toFixed(1)}%`;
 }
 
+/** Every commitment. Nothing stops to buy one, which is exactly why it reads as safe, and
+ *  it cannot be handed back. The least reversible finding in the product. */
+const COMMITMENT_RISK: RiskVerdict = {
+  reversible: false,
+  disturbs_running_work: false,
+  is_no_regret: false,
+};
+
 export function CostCommitmentsScreen() {
   const query = useCostCommitments();
   const envelope = query.data?.data;
   const found = envelope?.data;
   const commitments = useMemo(() => found?.commitments ?? [], [found]);
   const coverage = useMemo(() => found?.coverage ?? [], [found]);
+  const actions = useMemo(() => found?.actions ?? [], [found]);
 
   useReportMeta('cost-commitments', envelope?.meta);
   const state = surfaceStateFor(
@@ -196,6 +212,80 @@ export function CostCommitmentsScreen() {
             rowKey={(row) => `${row.commitment_type}:${row.dimension_value}`}
             caption={`${String(coverage.length)} services, most on demand spend first`}
           />
+
+          {/* FEAT-055. The gap above, as something somebody owns. The coverage table answers
+              how much is uncovered and this answers what to do about it, which is the
+              difference between a fact and a decision. */}
+          <h2 data-testid="actions-heading">What to do about the gap</h2>
+          {actions.length === 0 ? (
+            // Said, not blank, and carefully not called full coverage. Every gap being below
+            // the configured minimum saving is a different claim from there being no gap, and
+            // the coverage table above is where a reader checks which.
+            <p data-testid="actions-empty">
+              No coverage gap is large enough to be worth a commitment at the configured
+              minimum. That is not the same as full coverage: the table above says how much is
+              uncovered.
+            </p>
+          ) : (
+            <table data-testid="actions">
+              <caption>
+                {actions.length === 1
+                  ? 'One gap worth committing to, with what being wrong would cost.'
+                  : `${String(actions.length)} gaps worth committing to, worst money first, ` +
+                    'with what being wrong would cost.'}
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Gap</th>
+                  <th scope="col">Saving a month</th>
+                  <th scope="col">Severity</th>
+                  <th scope="col">If it is wrong</th>
+                </tr>
+              </thead>
+              <tbody>
+                {actions.map((row: ApiCommitmentAction) => (
+                  <tr key={`${row.commitment_type}:${row.dimension}:${row.dimension_value}`}>
+                    <th scope="row">
+                      {row.dimension_value}
+                      <span> {row.commitment_type}</span>
+                    </th>
+                    <td>
+                      {/* Modelled, never measured, and the rationale says the discount came
+                          from configuration rather than from a quote. */}
+                      <Figure
+                        value={{
+                          kind: 'modelled',
+                          amount: Number(row.estimated_monthly_saving),
+                        }}
+                        freshness={freshness}
+                        unit="usd"
+                      />
+                    </td>
+                    <td>
+                      <SeverityBadge level={severityLevel(row.severity)} />
+                    </td>
+                    <td>
+                      {/* The same two words the waste screen and the home panel use, from the
+                          same module, so a reader is not told a change is permanent in one
+                          place and reversible in another. A commitment is the least
+                          reversible thing in the product. */}
+                      {/* Constant, and correct by construction rather than by a flag on the
+                          row: every commitment is permanent and none of them stops anything.
+                          Through the shared module so the wording matches the waste screen. */}
+                      <strong>{riskLabel(COMMITMENT_RISK)}</strong>
+                      {/* The floor is the decision. A commitment obligates its whole term
+                          whether or not the usage continues. */}
+                      <span>
+                        {' '}
+                        Worth it while usage stays above {row.usage_floor_percent} percent of
+                        today's for {row.term_months} months.
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </>
       </StateBoundary>
     </section>

@@ -263,6 +263,36 @@ export function costCommitmentsFixture(): ApiEnvelope<ApiCommitments> {
           coverage: '0.0000',
         },
       ],
+      // FEAT-055. The coverage above as things somebody owns. Deliberately one action rather
+      // than one per coverage row: most gaps fall below the configured minimum saving, and a
+      // fixture where every gap became an action would hide that the floor exists.
+      actions: [
+        {
+          commitment_type: 'SAVINGS_PLAN',
+          dimension: 'SERVICE',
+          dimension_value: 'AmazonEC2',
+          window_start: '2026-09-01',
+          window_end: '2026-10-01',
+          eligible_spend: '18400.0000',
+          covered_spend: '7360.0000',
+          estimated_monthly_saving: '3360.7200',
+          usage_floor_percent: '70.0',
+          term_months: 12,
+          confidence: 'MEDIUM',
+          severity: 'CRITICAL',
+          lifecycle: 'OPEN',
+          // Unowned, which is the state ISS-021 says a finding dies in.
+          owner: null,
+          rationale:
+            '40.0 percent of eligible SERVICE spend for AmazonEC2 was covered by a ' +
+            'commitment between 2026-09-01 and 2026-10-01, leaving 11040.0000 USD uncovered ' +
+            'over that window. Covering it would save about 3360.7200 USD a month, modelled ' +
+            'from a configured discount rather than from a quote. A commitment obligates 12 ' +
+            'months whether or not the usage continues, so this is worth doing while usage ' +
+            "stays above 70.0 percent of today's for the whole term, and costs more than it " +
+            'saves below that.',
+        },
+      ],
       wasted_total: '367.4600',
     },
     meta: meta(4),

@@ -11,6 +11,9 @@ row eventually exists.
 
 from __future__ import annotations
 
+import re
+from pathlib import Path
+
 from sqlalchemy import CheckConstraint, UniqueConstraint
 
 from finops_api.db import models
@@ -216,3 +219,39 @@ def test_the_stored_role_health_values_match_the_domain_enum() -> None:
     from finops_core.domain.account import RoleHealth
 
     assert set(models.ROLE_HEALTH) == {member.value for member in RoleHealth}
+
+
+def test_the_two_lifecycle_vocabularies_are_the_same_set() -> None:
+    """ADR-0025's cost, held rather than hoped for.
+
+    `commitment_action` exists because a payer wide finding cannot live in `recommendation`, and
+    the price is that the lifecycle vocabulary is written down twice. Two vocabularies that
+    drift is how one screen comes to mean something different by DONE.
+
+    Compared at the source rather than in a running database, because the source is where a
+    drift would be introduced and this way the failure arrives in the fast suite rather than
+    only where Docker is available.
+
+    If this fails the fix is not to relax it. Update both constraints, or, if a third payer wide
+    finding class has appeared by then, move the vocabulary into a lookup table both reference,
+    which is what ADR-0025 says to do at that point.
+    """
+    versions = Path(__file__).resolve().parents[2] / "migrations" / "versions"
+    found: dict[str, frozenset[str]] = {}
+    for path in sorted(versions.glob("*.py")):
+        body = path.read_text(encoding="utf-8")
+        for name in ("recommendation", "commitment_action"):
+            match = re.search(
+                rf"ck_{name}__lifecycle_known\s*\n?\s*CHECK \(lifecycle IN \(([^)]*)\)\)",
+                body,
+                re.DOTALL,
+            )
+            if match is not None:
+                found[name] = frozenset(re.findall(r"'([A-Z_]+)'", match.group(1)))
+    assert set(found) == {"recommendation", "commitment_action"}, (
+        f"expected a lifecycle constraint for both tables, found {sorted(found)}"
+    )
+    assert found["recommendation"] == found["commitment_action"], (
+        "the two lifecycle vocabularies have drifted: "
+        f"{sorted(found['recommendation'] ^ found['commitment_action'])}"
+    )
