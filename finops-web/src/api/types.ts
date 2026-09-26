@@ -659,4 +659,17 @@ export interface ApiEntity {
   /** Null is not zero. A resource the bill does not mention is not a free one. */
   readonly monthly_cost: string | null;
   readonly cost_period: string | null;
+  /**
+   * FEAT-057. MANAGED, UNMANAGED or NOT_DETERMINED, derived by the server rather than stored.
+   *
+   * NOT_DETERMINED is the default and is not a synonym for UNMANAGED. The first says we did not
+   * find the resource in the state we read; the second says nobody manages it, and only the
+   * second is an instruction. Telling somebody to import a resource already inside a module
+   * produces a duplicate or a state conflict, so the screen renders the three differently.
+   */
+  readonly management_state: string;
+  /** `module.network.aws_vpc.main`, where there is one. */
+  readonly iac_address: string | null;
+  /** The state location, so a reader can find the file. */
+  readonly iac_state_reference: string | null;
 }

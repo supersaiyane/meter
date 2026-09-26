@@ -140,6 +140,36 @@ export function EntityScreen() {
               <dd data-testid="entity-arn">{entity.node.provider_id}</dd>
             </dl>
 
+            <h3>What manages it</h3>
+            {/* FEAT-057. Three answers, rendered as three different things, because the
+                difference between them is what somebody would act on. Not determined is the
+                default and is not a synonym for unmanaged: telling somebody to import a
+                resource already inside a module produces a duplicate or a state conflict. */}
+            {entity.management_state === 'MANAGED' ? (
+              <p data-testid="entity-managed">
+                <code>{entity.iac_address}</code>
+                <span>
+                  {' '}
+                  in {entity.iac_state_reference ?? 'a state location that was not recorded'}
+                </span>
+              </p>
+            ) : entity.management_state === 'UNMANAGED' ? (
+              <p data-testid="entity-unmanaged">
+                No infrastructure as code manages this resource. Your configuration declares
+                this account fully described by the state Meter reads, and every location was
+                read, so this is a claim rather than an absence of one.
+              </p>
+            ) : (
+              // The default, and the honest one. It says what is missing and what would make
+              // the answer possible, because "not determined" alone reads as a defect.
+              <p data-testid="entity-not-determined" data-state="never-collected">
+                Not determined. This resource is not in any state Meter read, which is not the
+                same as nothing managing it: Meter only reads the state locations it is
+                configured with, and says unmanaged only for accounts an operator has declared
+                fully described by them.
+              </p>
+            )}
+
             <h3>What it cost</h3>
             {entity.monthly_cost === null ? (
               // Null is not zero, and the difference is the whole reason this branch exists.

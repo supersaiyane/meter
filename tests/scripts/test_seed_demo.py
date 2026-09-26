@@ -85,6 +85,32 @@ class Settings:
     commitment_term_months = 12
     commitment_minimum_monthly_saving_usd = Decimal("25")
 
+    # FEAT-057. The seed overrides the locations with the fake's, because the demo has no real
+    # backend to name. Nothing is declared exhaustive, so the seeded estate never says unmanaged,
+    # which is correct: the fake has one backend that refuses.
+    iac_state_locations = ""
+    iac_exhaustive_accounts = ""
+
+    @property
+    def iac_locations(self) -> tuple[str, ...]:
+        return tuple(p.strip() for p in self.iac_state_locations.split(",") if p.strip())
+
+    @property
+    def iac_exhaustive(self) -> frozenset[str]:
+        return frozenset(p.strip() for p in self.iac_exhaustive_accounts.split(",") if p.strip())
+
+    def model_copy(self, *, update: dict[str, object] | None = None) -> Settings:
+        """The stub's own copy, because the seed uses it to override the state locations.
+
+        A real `Settings` is a pydantic model and gets this for free. This stub is a plain class,
+        so without it the seed would fail on an attribute error rather than on anything to do
+        with what it was testing.
+        """
+        clone = Settings()
+        for key, value in (update or {}).items():
+            setattr(clone, key, value)
+        return clone
+
 
 class TestItRefusesAnythingNotLocalError:
     def test_a_remote_host_is_refused(self) -> None:
@@ -484,3 +510,38 @@ def test_the_seeded_estate_holds_a_commitment_action(engine: object) -> None:
         # coverage chart cannot show.
         assert 0 < row.usage_floor_percent <= 100
         assert "obligates" in row.rationale
+
+
+def test_the_seeded_estate_records_what_manages_a_resource(engine: object) -> None:
+    """FEAT-057. The third time this assertion has earned its place: a collector wired into the
+    seed that writes nothing passes every test and leaves the screen empty.
+
+    The fake state owns three of the estate's resources and one of its three backends refuses, so
+    the seeded estate holds both halves of the honest answer: rows for what was found, and a
+    `sync_error` row saying why Meter will not call any account unmanaged.
+    """
+    from sqlalchemy import text as sql
+
+    seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
+    with engine.connect() as connection:  # type: ignore[attr-defined]
+        rows = connection.execute(
+            sql(
+                "SELECT provider_id, address, state_reference FROM resource_management "
+                "WHERE tenant_id = :t"
+            ),
+            {"t": seed_demo.DEMO_TENANT},
+        ).all()
+        refused = connection.execute(
+            sql(
+                "SELECT scope_key, error_type FROM sync_error "
+                "WHERE tenant_id = :t AND collector = 'iac_state' AND error_type <> 'NoData'"
+            ),
+            {"t": seed_demo.DEMO_TENANT},
+        ).all()
+    assert rows, "the seeded estate records nothing as managed, so the entity page would be blank"
+    for row in rows:
+        assert row.address
+        assert row.state_reference.startswith("s3://")
+    # The refusal, because the fake is partial by default and the whole feature turns on what
+    # that prevents: no account can be called unmanaged while a location is unreadable.
+    assert refused, "the fake's refusing backend left no record, so the partial path is untested"

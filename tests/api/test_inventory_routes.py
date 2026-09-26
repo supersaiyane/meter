@@ -699,3 +699,149 @@ def test_a_bound_outside_the_allowed_range_is_refused(
     seed(engine, tenant_id)
     client, token = client_for(engine, everything(tenant_id), settings)
     assert client.get(f"{RESOURCES}?{query}", headers=auth(token)).status_code == 422
+
+
+# --- FEAT-057, which file manages this resource ------------------------------
+
+MANAGE = text(
+    "INSERT INTO resource_management (management_id, tenant_id, ingest_run_id, "
+    "sub_account_id, provider_id, address, state_reference, as_of, collected_at) "
+    "VALUES (:id, :t, :run, :a, :p, :address, :reference, :at, :at)"
+)
+STATE_ERROR = text(
+    "INSERT INTO sync_error (error_id, tenant_id, collector, scope_key, error_type, "
+    "detail, remediation, first_seen_at, last_seen_at, occurrences) "
+    "VALUES (:id, :t, 'iac_state', :s, :type, 'x', 'y', :at, :at, 1)"
+)
+
+
+def manage(engine: Engine, tenant: UUID, *, name: str = "vpc") -> None:
+    with engine.begin() as connection:
+        connection.execute(
+            MANAGE,
+            {
+                "id": uuid4(),
+                "t": tenant,
+                "run": uuid4(),
+                "a": MINE,
+                "p": arn(MINE, REGION, name),
+                "address": "module.network.aws_vpc.main",
+                "reference": "s3://example-state/network.tfstate",
+                "at": NOW,
+            },
+        )
+
+
+def state_refused(engine: Engine, tenant: UUID, *, cause: str = "AccessDenied") -> None:
+    with engine.begin() as connection:
+        connection.execute(
+            STATE_ERROR,
+            {
+                "id": uuid4(),
+                "t": tenant,
+                "s": "s3://other-state/app.tfstate",
+                "type": cause,
+                "at": NOW,
+            },
+        )
+
+
+def entity_of(engine: Engine, tenant: UUID, settings: Settings) -> dict[str, Any]:
+    client, token = client_for(engine, everything(tenant), settings)
+    data = get(client, token, entity_path(tenant))["data"]
+    assert isinstance(data, dict)
+    return data
+
+
+def test_a_resource_in_the_state_says_which_address_owns_it(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    manage(engine, tenant_id)
+    data = entity_of(engine, tenant_id, settings)
+    assert data["management_state"] == "MANAGED"
+    assert data["iac_address"] == "module.network.aws_vpc.main"
+    # The file, so a reader can find the code rather than being told something unnamed owns it.
+    assert data["iac_state_reference"] == "s3://example-state/network.tfstate"
+
+
+def test_a_resource_not_in_the_state_is_not_determined_rather_than_unmanaged(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The default, and the claim this feature exists to protect. UNMANAGED tells somebody to
+    import a resource or write it into code, and doing that to one already inside a module
+    produces a duplicate or a state conflict. Nothing in a state file says whether it is the
+    only state file in the organization, so absence carries no information."""
+    seed(engine, tenant_id)
+    data = entity_of(engine, tenant_id, settings)
+    assert data["management_state"] == "NOT_DETERMINED"
+    assert data["iac_address"] is None
+    assert data["iac_state_reference"] is None
+
+
+def test_unmanaged_needs_the_account_declared_exhaustive(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """Absence becomes evidence only once an operator has said the backends we read are the whole
+    of the infrastructure as code for that account. The declaration is about our configuration
+    rather than about the cloud, which is why it cannot be inferred."""
+    seed(engine, tenant_id)
+    declared = settings.model_copy(update={"iac_exhaustive_accounts": MINE})
+    assert entity_of(engine, tenant_id, declared)["management_state"] == "UNMANAGED"
+
+
+def test_a_declaration_for_another_account_does_not_carry_across(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    elsewhere = settings.model_copy(update={"iac_exhaustive_accounts": THEIRS})
+    assert entity_of(engine, tenant_id, elsewhere)["management_state"] == "NOT_DETERMINED"
+
+
+def test_a_declaration_is_worth_nothing_while_a_state_location_is_unreadable(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The second condition, and the one a naive implementation drops. A run where one backend
+    refused us would otherwise report every resource in it as unmanaged, on the strength of a
+    failure, and somebody would import a resource that was already in code."""
+    seed(engine, tenant_id)
+    state_refused(engine, tenant_id)
+    declared = settings.model_copy(update={"iac_exhaustive_accounts": MINE})
+    assert entity_of(engine, tenant_id, declared)["management_state"] == "NOT_DETERMINED"
+
+
+def test_an_unplaceable_count_does_not_block_the_declaration(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The collector records two different things on `sync_error`: a location it could not read,
+    and a count of state resources it could not join to any node. Only the first casts doubt on
+    whether the read was whole. Treating the second as a failure would mean one unjoinable
+    association in a state file suppressed the answer for the entire estate."""
+    seed(engine, tenant_id)
+    state_refused(engine, tenant_id, cause="NoData")
+    declared = settings.model_copy(update={"iac_exhaustive_accounts": MINE})
+    assert entity_of(engine, tenant_id, declared)["management_state"] == "UNMANAGED"
+
+
+def test_a_managed_resource_stays_managed_while_another_location_is_unreadable(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The asymmetry is the point. A partial read cannot prove absence and still proves presence,
+    so a resource we found is managed whatever else failed."""
+    seed(engine, tenant_id)
+    manage(engine, tenant_id)
+    state_refused(engine, tenant_id)
+    assert entity_of(engine, tenant_id, settings)["management_state"] == "MANAGED"
+
+
+def test_a_narrowed_reader_reads_no_address_for_another_account(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """Scoped by account, like the resource it is about. A reader granted one account may know
+    what manages the resources in it and nothing about anybody else's."""
+    seed(engine, tenant_id)
+    manage(engine, tenant_id)
+    client, token = client_for(engine, only(tenant_id, THEIRS), settings)
+    # The node itself is out of scope, so the answer is the 404 it already gives, which is the
+    # right disclosure: the address cannot leak because the resource cannot be reached.
+    assert client.get(entity_path(tenant_id), headers=auth(token)).status_code == 404

@@ -40,6 +40,7 @@ from finops_api.db import models
 from finops_api.db.repositories.base import ScopedRepository
 from finops_api.guards import require_scope, scope_predicate
 from finops_core.domain.account import AccountKey, Provider
+from finops_core.domain.iac import ManagementState, management_of
 from finops_core.domain.tenant import Scope
 from finops_core.domain.topology import (
     CoverageCause,
@@ -338,6 +339,67 @@ class TopologyRepository(ScopedRepository):
         """
         found = self._nodes(scope, (node_id,))
         return found[0] if found else None
+
+    def management_of(
+        self, scope: Scope, node: Node, settings: Any
+    ) -> tuple[str, str | None, str | None]:
+        """What manages this resource, as the three valued answer plus the address.
+
+        FEAT-057. Returns the state, the address where there is one, and the state location it
+        was read from. The state is derived here rather than stored, because `UNMANAGED` rests on
+        a declaration about our own configuration and a stored judgement outlives the
+        configuration it was made under.
+
+        The declaration is not enough on its own. A run in which one state location refused us
+        cannot support `UNMANAGED` for anything, because absence from a read that fell short is
+        absence of evidence. That is why the open `sync_error` rows for the collector are
+        consulted: they are the record of which locations could not be read.
+        """
+        rows = models.resource_management
+        confirmed = require_scope(scope)
+        found = self._connection.execute(
+            rows.select()
+            .where(rows.c.tenant_id == confirmed.tenant_id)
+            .where(scope_predicate(rows, confirmed))
+            .where(rows.c.provider_id == node.provider_id)
+        ).all()
+        if found:
+            return (
+                ManagementState.MANAGED.value,
+                str(found[0].address),
+                str(found[0].state_reference),
+            )
+
+        declared = frozenset(getattr(settings, "iac_exhaustive", frozenset()))
+        state = management_of(
+            node.provider_id,
+            managed=frozenset(),
+            account_id=node.account_key.account_id,
+            exhaustive_accounts=declared,
+            read_was_whole=self._state_read_was_whole(confirmed),
+        )
+        return state.value, None, None
+
+    def _state_read_was_whole(self, scope: Scope) -> bool:
+        """Whether every configured state location was read on the latest run.
+
+        Read from `sync_error`, which is where the collector records a location it could not
+        read. A row there means the run fell short, and a declaration that the configured
+        backends are exhaustive is worth nothing on such a run: the resources in the unreadable
+        location would otherwise be reported as unmanaged on the strength of a failure.
+
+        Deliberately not scoped by account. A state location is not an account, and one
+        unreadable backend casts doubt on every account it might have contained.
+        """
+        errors = models.sync_error
+        count = self._connection.execute(
+            errors.select()
+            .with_only_columns(func.count())
+            .where(errors.c.tenant_id == scope.tenant_id)
+            .where(errors.c.collector == "iac_state")
+            .where(errors.c.error_type != "NoData")
+        ).scalar_one()
+        return int(count or 0) == 0
 
     def slice_coverage(self, scope: Scope, node: Node) -> GraphCoverage | None:
         """The coverage of the one slice this node came from.

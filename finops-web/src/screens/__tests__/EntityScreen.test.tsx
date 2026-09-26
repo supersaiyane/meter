@@ -186,4 +186,48 @@ describe('EntityScreen', () => {
     await screen.findByTestId('entity-neighbours');
     expect(await violationsIn(container)).toEqual([]);
   });
+
+  describe('what manages it, FEAT-057', () => {
+    it('names the address and the file when state owns it', async () => {
+      // Both. The address is what FEAT-040 opens a pull request against, and the file is what a
+      // reader opens, and an address with no file named tells them something unnamed owns it.
+      renderEntity();
+      const managed = await screen.findByTestId('entity-managed');
+      expect(managed).toHaveTextContent('module.network.aws_vpc.main');
+      expect(managed).toHaveTextContent('s3://fake-state/network.tfstate');
+    });
+
+    it('says not determined rather than unmanaged when it found nothing', async () => {
+      // The claim this feature exists to protect. Unmanaged tells somebody to import a resource
+      // or write it into code, and doing that to one already inside a module produces a
+      // duplicate or a state conflict. The wording says what would make the answer possible.
+      renderEntity(
+        withEntity({
+          management_state: 'NOT_DETERMINED',
+          iac_address: null,
+          iac_state_reference: null,
+        }),
+      );
+      const unknown = await screen.findByTestId('entity-not-determined');
+      expect(unknown).toHaveTextContent(/not the same as nothing managing it/);
+      expect(unknown).toHaveTextContent(/only reads the state locations it is configured with/);
+      expect(screen.queryByTestId('entity-unmanaged')).toBeNull();
+    });
+
+    it('says unmanaged is a claim, not an absence of one', async () => {
+      // Reached only where an operator declared the account fully described and every location
+      // was read. Saying so on the page is what lets a reader judge whether to trust it.
+      renderEntity(
+        withEntity({
+          management_state: 'UNMANAGED',
+          iac_address: null,
+          iac_state_reference: null,
+        }),
+      );
+      const unmanaged = await screen.findByTestId('entity-unmanaged');
+      expect(unmanaged).toHaveTextContent(/declares this account fully described/);
+      expect(unmanaged).toHaveTextContent(/a claim rather than an absence of one/);
+      expect(screen.queryByTestId('entity-not-determined')).toBeNull();
+    });
+  });
 });

@@ -293,6 +293,12 @@ export function entityFixture(nodeId: string): ApiEnvelope<ApiEntity> {
       unmatched_findings: 2,
       monthly_cost: '214.8800',
       cost_period: '2026-08-01',
+      // Managed, with the address, because that is the case the page has something to show
+      // for. The not determined case is exercised by the screen test, which is where a fixture
+      // would otherwise have to choose one of three and leave two unrendered locally.
+      management_state: 'MANAGED',
+      iac_address: 'module.network.aws_vpc.main',
+      iac_state_reference: 's3://fake-state/network.tfstate',
     },
     meta: metaWith(0, 1),
   };

@@ -126,6 +126,10 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | None] = {
     # P3. A recommendation names the account its resource lives in, so a caller
     # narrowed to two accounts reads two accounts' waste.
     "recommendation": ByAccount("sub_account_id"),
+    # FEAT-057. A resource belongs to an account, so which file manages it does too. Scoped by
+    # account and not PayerWide, because unlike a commitment this genuinely narrows: a reader
+    # granted one account may know what manages the resources in it.
+    "resource_management": ByAccount("sub_account_id"),
     # An event has no account of its own. It inherits the one belonging to the
     # recommendation it hangs off, which is the same reasoning `query_finding`
     # uses: a denormalised account column here would be a second copy of a fact

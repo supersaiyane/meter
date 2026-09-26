@@ -540,6 +540,8 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         # the two above it are: the list is exhaustive, so a collector with a schedule row and
         # no declaration fails here rather than reaching a dispatcher nobody was watching.
         "commitment_actions",
+        # FEAT-057, added with the collector in TASK-P4-013.
+        "iac_state",
     }
 
 

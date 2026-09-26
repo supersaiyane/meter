@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 59 total, 21 specified, 10 in build, 19 delivered |
+| Features | 59 total, 20 specified, 10 in build, 20 delivered |
 | Decisions | 25 architecture decision records |
 | Changes | 99 recorded |
-| Issues | 131 fixed, 71 open, 0 parked |
+| Issues | 131 fixed, 72 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -102,11 +102,17 @@ to open. ISS-205. The page reports the count of findings that matched nothing ra
 rendering an empty list, so the gap is visible on the screen instead of reading as a clean
 resource.
 
-**Three of the four adopted Turbonomic candidates are delivered.** The owner adopted the three
+**All four adopted Turbonomic candidates are delivered.** The owner adopted the three
 Medium ones plus the resource list on 2026-09-26. TASK-P3-021 workload parking, TASK-P4-012 the
 resource list, and TASK-P1-022 commitment coverage as actions are done. TASK-P4-013, recording
-which file manages a resource, is written and not started. All four are in the owning sub
-project's plan rather than in an adoption plan of their own.
+which file manages a resource, is done. All four are in the owning sub project's plan rather
+than in an adoption plan of their own.
+
+FEAT-057 reads Terraform state from locations an operator configures. It says `MANAGED`,
+`UNMANAGED` or `NOT_DETERMINED`, and the third is the default: reading state tells you what is
+managed and never what is not, so `UNMANAGED` needs a declaration that the configured backends
+are the whole of an account's code plus a run in which all of them were read. It has never read
+a real state file, ISS-209.
 
 FEAT-056 closes ISS-204: the navigation had promised an `/inventory/resources` screen since P4
 began and the P4 specification never scheduled one.
@@ -161,7 +167,7 @@ ISS-003.
 | P1 | 22 | 0 | 0 | 0 | 0 | 22 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 | P3 | 20 | 0 | 0 | 0 | 1 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
-| P4 | 12 | 0 | 0 | 0 | 1 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
+| P4 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
 | P5 | 0 | 0 | 0 | 0 | 8 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 0 | 0 | 0 | 0 | 12 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 
@@ -307,6 +313,7 @@ ISS-003.
 | `TASK-P4-010` | Done, 2026-09-26 | Terraform that states its own cost |
 | `TASK-P4-011` | Done, 2026-09-26 | the test every consumer has to pass |
 | `TASK-P4-012` | Done, 2026-09-26 | the resource list, which the navigation has promised since P4 began |
+| `TASK-P4-013` | Done, 2026-09-26 | which file manages this resource |
 
 <!-- generated:task-status end -->
 

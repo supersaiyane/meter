@@ -57,12 +57,15 @@ from finops_fakes.platform_cost import FakePlatformCost
 from finops_fakes.provider import FakeProvider
 from finops_fakes.recommendations import FakeRecommendationSource
 from finops_fakes.surface import FakeQuerySurface, queries_as_of
+from finops_fakes.terraform_state import LOCATIONS as FAKE_STATE_LOCATIONS
+from finops_fakes.terraform_state import FakeTerraformState
 from finops_fakes.topology import FakeTopologySource
 from finops_ingest.collectors.account_health import AccountHealthCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
 from finops_ingest.collectors.commitment_actions import CommitmentActionsCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
+from finops_ingest.collectors.iac_state import IacStateCollector
 from finops_ingest.collectors.inventory import InventoryCollector
 from finops_ingest.collectors.org_tree import OrgTreeCollector
 from finops_ingest.collectors.partitions import ensure_partition, partition_maintenance
@@ -147,6 +150,9 @@ DEMO_TABLES = (
     # P1, FEAT-055. Derived from commitment_coverage, so it goes before it, even though it
     # holds no foreign key to it: reverse dependency order is the rule this list follows and
     # an exception justified by the absence of a key is one somebody will later add.
+    # P4, FEAT-057. References only the tenant, so its place here is reverse dependency
+    # order for its own sake rather than for a key.
+    "resource_management",
     "commitment_action",
     # P1, FEAT-024. Neither references the other, and both reference only the
     # tenant, so their order between themselves does not matter.
@@ -696,6 +702,30 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
             connection,
             unit(),
             "inventory",
+        )
+
+        # FEAT-057. Seeded after the inventory on purpose, because it joins to it: the
+        # account on a resource_management row comes from the node the identifier matched,
+        # so a run before the nodes exist places nothing and writes nothing while reporting
+        # success. That is exactly what the first draft did, and the assertion in
+        # tests/scripts/test_seed_demo.py is what caught it.
+        #
+        # The fake state owns three of the estate's resources and one of its three
+        # backends refuses, so a local reader sees a managed resource, a not determined one, and
+        # the sync_error row that says why Meter will not call any account unmanaged.
+        #
+        # The locations come from the fake rather than from settings, because the demo has no
+        # real backend to name and a seed that read the configured locations would read nothing
+        # and leave the whole feature invisible locally.
+        written += _through_the_ledger(
+            ledger,
+            IacStateCollector(FakeTerraformState(), clock=lambda: now),
+            connection,
+            unit(scope_key="iac"),
+            "iac_state",
+            settings=settings.model_copy(
+                update={"iac_state_locations": ",".join(FAKE_STATE_LOCATIONS)}
+            ),
         )
 
         counts = {

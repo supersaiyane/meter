@@ -29,7 +29,12 @@ from sqlalchemy import Connection
 from finops_api.db.repositories import AccessContext
 from finops_api.db.repositories.cost import CostRepository
 from finops_api.db.repositories.topology import TopologyRepository, as_node
-from finops_api.deps import get_access_context, get_connection, get_scope
+from finops_api.deps import (
+    get_access_context,
+    get_connection,
+    get_scope,
+    get_settings,
+)
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.routes.waste import recommendation_out
 from finops_api.schemas import (
@@ -45,6 +50,7 @@ from finops_api.schemas import (
     SliceCoverageOut,
     SubgraphOut,
 )
+from finops_core.config import Settings
 from finops_core.domain.tenant import Scope
 from finops_core.domain.topology import CoverageState, Edge, GraphCoverage, Node
 from finops_query.graph import (
@@ -311,6 +317,7 @@ def resources(
 def entity(
     node_id: UUID,
     connection: Connection = Depends(get_connection),
+    settings: Settings = Depends(get_settings),
     scope: Scope = Depends(get_scope),
     context: AccessContext = Depends(get_access_context),
 ) -> Envelope[EntityOut]:
@@ -342,6 +349,10 @@ def entity(
 
     findings, unmatched = topology.findings_for(scope, node)
 
+    # FEAT-057. Derived here rather than stored, because UNMANAGED rests on a declaration about
+    # our own configuration and a stored judgement outlives the configuration it was made under.
+    management, address, reference = topology.management_of(scope, node, settings)
+
     costs = CostRepository(connection, context)
     period = costs.latest_period(scope)
     monthly = None if period is None else costs.for_resource(scope, node.provider_id, period)
@@ -359,6 +370,9 @@ def entity(
         unmatched_findings=unmatched,
         monthly_cost=monthly,
         cost_period=period,
+        management_state=management,
+        iac_address=address,
+        iac_state_reference=reference,
     )
     meta = build_meta(
         connection,

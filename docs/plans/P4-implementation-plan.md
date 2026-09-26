@@ -409,7 +409,7 @@ it. A count at the top of a list is a claim about the estate.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-26 |
 | Implements | Competitive review 2026-09-26, candidate list, adopted by the owner on 2026-09-26 |
 | Delivers | FEAT-057 |
 | Depends on | TASK-P4-002 delivered |

@@ -301,6 +301,22 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0",
     ),
     ScheduleEntry(
+        collector="iac_state",
+        cadence_seconds=DAILY,
+        reason=(
+            "Daily, and the number is about how often the thing being read changes rather than "
+            "about cost. State changes when somebody applies, which is many times a day in an "
+            "active estate and never in a quiet one, and neither pattern is worth reading "
+            "hourly: the address of a resource that has not moved is the same address. The read "
+            "itself is a handful of S3 GETs, so this is nearly free, which is exactly why a "
+            "faster cadence would be tempting and still pointless. Nothing is locked, because a "
+            "Terraform state lock blocks whoever is mid apply and a tool that can stall a "
+            "deployment is not read only in the sense the person on call cares about. ADR-0012 "
+            "and constraint 9."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
         collector="commitment_actions",
         cadence_seconds=DAILY,
         reason=(

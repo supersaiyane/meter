@@ -400,7 +400,7 @@ features:
 - id: FEAT-057
   name: Which file manages this resource
   subproject: P4
-  status: Specified
+  status: Delivered
   detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
   doc: docs/features/FEAT-057-iac-state-discovery.md
 - id: FEAT-058
@@ -2964,6 +2964,11 @@ issues:
   status: OPEN
   summary: FEAT-041 measures whether a recommendation delivered by joining it to cost on the resource, and a commitment action has no resource, so no commitment purchase can be verified against the bill yet
   detail: 'Named in ADR-0025 as a consequence rather than found later. The existing path joins recommendation to cost_focus_daily on resource_id over two windows, and a commitment covers a class of usage rather than one thing, so there is nothing to join on. The honest verification is different arithmetic as well as a different join: the question is not whether a resource got cheaper but whether the commitment was used, which is already measured in commitment_use as utilization. So the work is to relate a closed commitment_action to the commitment_use rows that appeared after it, and that relation does not exist because nothing tells us which purchase answered which finding. Deliberately not built: the measurement is only meaningful after a term has run, no term has started, and a verification path written now would be tested against nothing'
+- id: ISS-209
+  severity: MEDIUM
+  status: OPEN
+  summary: finops_providers/aws/terraform_state.py has never read a real state file. The state format and the addressing rules are read from the Terraform documentation for state version 4 and from nothing else, and the tests answer from a literal
+  detail: 'Same footing as ISS-200 and ISS-202. The part most likely to be wrong is the address, because an address that is slightly wrong points FEAT-040 at the wrong block, which is worse than pointing at none: the rules for counted and for_each resources render differently, aws_vpc.main[0] and aws_vpc.main["a"] are different addresses, and only one of them exists in any given file. The second is the identifier: only the arn attribute is read, and a resource type that does not publish one cannot be joined at all, which is counted rather than guessed at but means whole classes of resource are invisible to this feature. Building it also demonstrated ISS-202 rather than just describing it: the fake estate''s provider_id is amazonvpc/account/region/name and not an ARN, although the column is documented as an ARN, so the fake state had to follow the estate rather than the schema comment. Closing ISS-202 or ISS-205 by normalising identifiers at ingest moves those three fake rows with it'
 open_questions:
 - id: OPEN-07
   question: What does the cost screen show for a tenant whose first ingest has not run, an
