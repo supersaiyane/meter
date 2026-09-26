@@ -33,7 +33,7 @@ from collections.abc import Sequence
 from typing import Any, ClassVar
 from uuid import UUID
 
-from sqlalchemy import Table, text
+from sqlalchemy import Select, Table, func, text
 from sqlalchemy.engine import Row
 
 from finops_api.db import models
@@ -102,6 +102,18 @@ WALK_INWARD = (
     )
     .replace("NOT (e.to_node_id = ANY(r.path))", "NOT (e.from_node_id = ANY(r.path))")
 )
+
+
+def _fetch(
+    repository: ScopedRepository, scope: Scope, statement: Select[tuple[Any, ...]]
+) -> Sequence[Row[tuple[Any, ...]]]:
+    """Run a projected select through the scoped path.
+
+    One helper rather than a cast at every call site, the same one `waste.py` keeps for the
+    same reason: `with_only_columns` narrows the row type and the base class is typed for
+    the wide one.
+    """
+    return repository.fetch(scope, statement)
 
 
 class TopologyRepository(ScopedRepository):
@@ -194,6 +206,49 @@ class TopologyRepository(ScopedRepository):
         found = self._connection.execute(statement).all()
         self._audit(confirmed, action="read", outcome="ALLOWED")
         return tuple(_as_coverage(row) for row in found)
+
+    def slice_count(self, scope: Scope) -> int:
+        """How many slices the caller can see at all, which is the banner's denominator.
+
+        Slices, not accounts and not rows. A view over eleven of twelve regions is partial
+        in a way counting accounts cannot express, and a row count in that slot has been the
+        defect three times.
+        """
+        rows = models.graph_coverage
+        confirmed = require_scope(scope)
+        statement = (
+            rows.select()
+            .with_only_columns(func.count())
+            .where(rows.c.tenant_id == confirmed.tenant_id)
+            .where(scope_predicate(rows, confirmed))
+        )
+        found = self._connection.execute(statement).all()
+        return int(found[0][0] or 0) if found else 0
+
+    def accounts_seen(self, scope: Scope) -> int:
+        """How many accounts this scope holds any graph for, for the ordinary banner."""
+        statement = self.scoped_select(scope).with_only_columns(
+            func.count(func.distinct(self.table.c.sub_account_id))
+        )
+        rows = _fetch(self, scope, statement)
+        return int(rows[0][0] or 0) if rows else 0
+
+    def roots(
+        self, scope: Scope, *, node_kind: str | None = None, limit: int = 200
+    ) -> Sequence[Row[Any]]:
+        """Nodes a reader can start a map from, containers first.
+
+        Ordered by kind and then by name rather than by identifier, because a reader
+        scanning this list is looking for a name they recognise and a UUID order is a random
+        one to them.
+        """
+        statement = self.scoped_select(scope)
+        if node_kind is not None:
+            statement = statement.where(self.table.c.node_kind == node_kind)
+        return self.fetch(
+            scope,
+            statement.order_by(self.table.c.node_kind, self.table.c.name).limit(limit),
+        )
 
     # -- the reads underneath -----------------------------------------------
 

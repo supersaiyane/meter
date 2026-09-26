@@ -113,10 +113,41 @@ def test_a_cap_below_one_is_refused() -> None:
         Bounds(max_nodes=0)
 
 
-def test_the_fetch_limit_is_one_more_than_the_cap() -> None:
-    """A statement limited to exactly the cap returns the same thing for an estate of two
-    thousand and an estate of two million, and the difference is the one a reader needs."""
-    assert Bounds(max_nodes=10).fetch_limit == 11
+def test_the_fetch_limit_is_the_ceiling_rather_than_the_callers_cap() -> None:
+    """The first version limited at the cap plus one, and a route test caught what that
+    costs: the statement returned five rows for a cap of four however large the
+    neighbourhood was, so the omission count could only ever say one more, and
+    TASK-P4-009 asks the map to say how many were omitted rather than that some were."""
+    assert Bounds(max_nodes=10).fetch_limit == MAX_ALLOWED_NODES + 1
+    assert Bounds(max_nodes=DEFAULT_MAX_NODES).fetch_limit == MAX_ALLOWED_NODES + 1
+
+
+def test_a_count_under_the_ceiling_is_exact() -> None:
+    nodes = tuple((node(f"n{index:03d}"), 1) for index in range(10))
+    graph = assemble(
+        root_id=nodes[0][0].node_id,
+        found=nodes,
+        edges=(),
+        coverage=(),
+        bounds=Bounds(max_nodes=4),
+    )
+    assert graph.omitted_nodes == 6
+    assert graph.omitted_is_exact
+
+
+def test_a_walk_that_hit_the_ceiling_reports_a_floor() -> None:
+    """The one case where a reader is told "at least" rather than a number, because the
+    traversal stopped counting rather than ran out."""
+    nodes = tuple((node(f"n{index:06d}"), 1) for index in range(MAX_ALLOWED_NODES + 1))
+    graph = assemble(
+        root_id=nodes[0][0].node_id,
+        found=nodes,
+        edges=(),
+        coverage=(),
+        bounds=Bounds(max_nodes=10),
+    )
+    assert graph.omitted_nodes == MAX_ALLOWED_NODES + 1 - 10
+    assert not graph.omitted_is_exact
 
 
 # --- the depth bound --------------------------------------------------------

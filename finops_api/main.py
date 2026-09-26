@@ -229,6 +229,18 @@ def p2_routers() -> tuple[APIRouter, ...]:
     return (query.router,)
 
 
+def p4_routers() -> tuple[APIRouter, ...]:
+    """The inventory and topology routes, from the P4 spec's section 8 table.
+
+    Three of them. All three read tables a collector writes, so none answers a question
+    with a confident nothing, which is the test the P1 and P2 route sets did not all pass
+    at the same stage.
+    """
+    from finops_api.routes import inventory
+
+    return (inventory.router,)
+
+
 def create_app(
     engine: Engine,
     entitlements: Any,
@@ -267,6 +279,7 @@ def create_app(
         *(p1_routers() if include_p0_routes else ()),
         *(p3_routers() if include_p0_routes else ()),
         *(p2_routers() if include_p0_routes else ()),
+        *(p4_routers() if include_p0_routes else ()),
         *extra_routers,
     )
     # Checked before anything is registered, so a broken contract fails at

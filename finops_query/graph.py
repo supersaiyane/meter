@@ -92,13 +92,21 @@ class Bounds:
 
     @property
     def fetch_limit(self) -> int:
-        """One more node than the cap, so the caller can tell truncation from a fit.
+        """How many reachable nodes the statement may return: the ceiling, plus one.
 
-        A statement limited to exactly the cap returns the same thing for an estate of two
-        thousand and an estate of two million, and the difference is the one a reader
-        needs. Asking for one more costs a row and answers it.
+        The ceiling rather than the caller's cap, and the first version used the cap plus
+        one, which was wrong in a way a test caught. With `max_nodes + 1` the statement
+        returns five rows for a cap of four however large the neighbourhood is, so
+        `omitted_nodes` could only ever say "one more", and TASK-P4-009 asks the map to say
+        how many were omitted rather than that some were.
+
+        Limiting at the ceiling instead makes the count exact in every case under ten
+        thousand, and the work stays bounded because the statement returns an identifier and
+        a depth per row rather than a node. Beyond the ceiling the count is a floor and
+        `Subgraph.omitted_is_exact` says so, which is the one case where a reader is told
+        "at least" rather than a number.
         """
-        return self.max_nodes + 1
+        return MAX_ALLOWED_NODES + 1
 
 
 @dataclass(frozen=True)
@@ -123,6 +131,10 @@ class Subgraph:
     #: answer is whole with respect to the cap, and a non zero number is what a screen has
     #: to say out loud.
     omitted_nodes: int
+    #: False only when the traversal itself hit the ceiling, in which case `omitted_nodes` is
+    #: a floor rather than a count and a screen has to say "at least". True in every
+    #: neighbourhood under ten thousand nodes, which is every real one so far.
+    omitted_is_exact: bool = True
 
     def __post_init__(self) -> None:
         if self.omitted_nodes < 0:
@@ -255,4 +267,7 @@ def assemble(
         coverage=tuple(coverage),
         depth_reached=max((depth for _node, depth in kept), default=0),
         omitted_nodes=omitted,
+        # The statement is limited at the ceiling, so more rows than that means the walk
+        # stopped counting rather than ran out, and the number above is a floor.
+        omitted_is_exact=len(found) <= MAX_ALLOWED_NODES,
     )

@@ -743,3 +743,129 @@ class SurfaceInstanceOut(BaseModel):
     query_count: int | None
     as_of: datetime
     collected_at: datetime
+
+
+# --- P4, the graph and how much of it is real ---------------------------------
+#
+# The shape worth noticing is that `SubgraphOut` carries its coverage rather than
+# leaving a screen to ask for it. That is section 6 of the P4 specification reaching
+# the wire: a map that renders without knowing which regions were unreadable draws
+# them as sparse, and sparse is indistinguishable from well connected on a diagram.
+
+
+class NodeOut(BaseModel):
+    """One resource on the map."""
+
+    model_config = ConfigDict(frozen=True)
+
+    node_id: UUID
+    #: The ARN. On the wire because a person has to be able to find the thing in
+    #: their own console, and the kind alone does not let them.
+    provider_id: str
+    account_id: str
+    #: One of the fourteen kinds, and OTHER for a type the adapter cannot name.
+    node_kind: str
+    #: The provider's own word for the type, beside the lossy kind. Ten of the
+    #: generated estate's twenty four types are OTHER, so without this the map is a
+    #: field of unlabelled boxes. ISS-201.
+    resource_type: str
+    #: Null means global rather than regional: an IAM role belongs to an account and
+    #: to no region. Never a region Meter could not read, which is a coverage row.
+    region_id: str | None
+    #: Null means regional rather than zonal, never that the zone is unknown.
+    availability_zone: str | None
+    name: str | None
+    as_of: datetime
+    collected_at: datetime
+
+
+class EdgeOut(BaseModel):
+    """One directed relationship. The direction is part of what it is."""
+
+    model_config = ConfigDict(frozen=True)
+
+    from_node_id: UUID
+    to_node_id: UUID
+    edge_kind: str
+    #: True where the two ends are in different accounts. Materialised at write time,
+    #: because it is the expensive question to ask repeatedly and the interesting one
+    #: to answer.
+    is_cross_account: bool
+    #: The API call that supplied it. On the wire so a reader seeing no peering edges
+    #: can tell an estate with no peering from a slice where the peering call refused.
+    source: str
+    #: True where the far end has no node in this payload. The map draws it as a
+    #: boundary rather than as a line to nowhere, and the coverage rows say why.
+    leaves_the_graph: bool
+
+
+class SliceCoverageOut(BaseModel):
+    """How much of one account's one region the graph was built from."""
+
+    model_config = ConfigDict(frozen=True)
+
+    account_id: str
+    #: Null is the account's global slice, where the IAM roles live.
+    region_id: str | None
+    #: COMPLETE, PARTIAL or UNREAD. Unread is not a synonym for partial: partial
+    #: means a read happened and fell short, unread means none has been attempted.
+    state: str
+    #: One of the seven causes, null only when COMPLETE. Never free text. ADR-0023.
+    cause: str | None
+    node_count: int
+    edge_count: int
+    as_of: datetime
+    collected_at: datetime
+
+
+class SubgraphOut(BaseModel):
+    """A bounded neighbourhood, and everything it could not see."""
+
+    model_config = ConfigDict(frozen=True)
+
+    root_id: UUID
+    nodes: tuple[NodeOut, ...]
+    edges: tuple[EdgeOut, ...]
+    #: Every slice this subgraph crossed, complete or not. Not optional and not
+    #: behind a second call, so a screen cannot draw the map without it.
+    coverage: tuple[SliceCoverageOut, ...]
+    #: How far the walk actually got, which is at most the bound.
+    depth_reached: int
+    max_depth: int
+    #: Nodes inside the depth bound that did not fit under the cap. Non zero means
+    #: the map is showing part of a neighbourhood and has to say so.
+    omitted_nodes: int
+    #: False only when the traversal hit the ceiling, in which case the number above is a
+    #: floor and the screen says "at least". True in every real neighbourhood so far.
+    omitted_is_exact: bool
+    max_nodes: int
+
+
+class CoverageOutList(BaseModel):
+    """Every incomplete slice a reader can see, for the estate wide banner."""
+
+    model_config = ConfigDict(frozen=True)
+
+    incomplete: tuple[SliceCoverageOut, ...]
+
+
+class InventoryRootOut(BaseModel):
+    """One node a reader can start a map from."""
+
+    model_config = ConfigDict(frozen=True)
+
+    node_id: UUID
+    provider_id: str
+    account_id: str
+    node_kind: str
+    resource_type: str
+    region_id: str | None
+    name: str | None
+
+
+class InventoryRootsOut(BaseModel):
+    """What there is to look at, before anybody has picked a root."""
+
+    model_config = ConfigDict(frozen=True)
+
+    roots: tuple[InventoryRootOut, ...]

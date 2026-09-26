@@ -290,6 +290,7 @@
     "finops_api/routes/accounts.py",
     "finops_api/routes/cost.py",
     "finops_api/routes/ingest.py",
+    "finops_api/routes/inventory.py",
     "finops_api/routes/me.py",
     "finops_api/routes/org.py",
     "finops_api/routes/platform.py",
@@ -475,6 +476,7 @@
     "tests/api/test_cost_routes.py",
     "tests/api/test_fixture_surfaces.py",
     "tests/api/test_identity_local.py",
+    "tests/api/test_inventory_routes.py",
     "tests/api/test_lifecycle.py",
     "tests/api/test_query_routes.py",
     "tests/api/test_routes.py",
@@ -3548,6 +3550,46 @@
       "k": "python"
     },
     {
+      "s": "finops_api/routes/inventory.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/inventory.py",
+      "t": "finops_api/db/repositories/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/inventory.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/inventory.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/inventory.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/inventory.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/inventory.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/inventory.py",
+      "t": "finops_query/graph.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/routes/me.py",
       "t": "finops_api/db/repositories/__init__.py",
       "k": "python"
@@ -5335,6 +5377,31 @@
     {
       "s": "tests/api/test_identity_local.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_inventory_routes.py",
+      "t": "finops_api/routes/inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_inventory_routes.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_inventory_routes.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_inventory_routes.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_inventory_routes.py",
+      "t": "finops_core/domain/topology.py",
       "k": "python"
     },
     {
