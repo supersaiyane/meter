@@ -18,8 +18,9 @@ of these, so collapsing them into one number would be wrong in both directions.
 2. **Does it disturb running work?** Does applying it interrupt, restart or throttle
    something that is serving traffic?
 
-A finding with no regret is reversible and disturbs nothing. Three of the eighteen waste
-classes qualify.
+A finding with no regret is reversible and disturbs nothing. Three of the waste classes
+qualify, and the count is not written down anywhere here on purpose: it has been wrong twice
+already, once per class added.
 
 **The useful part is which ones do not.** The three findings that read as safest to somebody
 scanning a list are releasing an unassociated Elastic IP, deleting an unattached volume, and
@@ -207,6 +208,15 @@ RISK_OF: Mapping[WasteClass, Risk] = {
             "insufficient data has never fired. Deleting it removes no coverage that existed."
         ),
     ),
+    WasteClass.COMMITMENT_UNCOVERED: Risk(
+        reversible=False,
+        disturbs_running_work=False,
+        why=(
+            "A commitment cannot be handed back. Nothing stops to buy one, which is exactly "
+            "why it reads as safe, and it obligates its whole term whether or not the usage "
+            "that justified it continues. The least reversible finding in this product."
+        ),
+    ),
     WasteClass.PARKABLE_WINDOW: Risk(
         reversible=True,
         disturbs_running_work=True,
@@ -239,9 +249,11 @@ def risk_of(waste_class: WasteClass) -> Risk:
     return RISK_OF[waste_class]
 
 
-#: The classes a reader can try and undo. Derived rather than listed, so it cannot drift
-#: from the table above, and small enough that the number itself is worth knowing: three of
-#: eighteen. A surface promising a page of safe wins would be inventing most of them.
+#: The classes a reader can try and undo. Derived rather than listed, so it cannot drift from
+#: the table above, and a small minority of it. The count is deliberately not written here, in
+#: a comment or anywhere else in prose: it was written down in seven places and went stale
+#: twice, once per class added, and the test asserts it as a bound instead. A surface promising
+#: a page of safe wins would be inventing most of them.
 NO_REGRET_CLASSES: frozenset[WasteClass] = frozenset(
     waste_class for waste_class, risk in RISK_OF.items() if risk.is_no_regret
 )

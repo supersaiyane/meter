@@ -388,13 +388,13 @@ features:
 - id: FEAT-055
   name: A commitment coverage gap as a ranked action
   subproject: P1
-  status: Specified
+  status: Delivered
   detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
   doc: docs/features/FEAT-055-commitment-coverage-actions.md
 - id: FEAT-056
   name: The resource list
   subproject: P4
-  status: Specified
+  status: Delivered
   detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
   doc: docs/features/FEAT-056-resource-list.md
 - id: FEAT-057
@@ -512,6 +512,10 @@ adrs:
   decision: One collector owns a slice's graph, with a composite source rather than two schedules
   status: Accepted
   doc: docs/adr/ADR-0024-one-collector-owns-a-slice.md
+- id: ADR-0025
+  decision: A payer wide finding gets its own table, not a row in recommendation
+  status: Accepted
+  doc: docs/adr/ADR-0025-a-payer-wide-finding-is-its-own-table.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'
@@ -2937,7 +2941,7 @@ issues:
   detail: 'terraform validate and fmt check pass on the stack and make tf-validate runs them on all four. The recorders cost money per configuration item, so provisioning them before the estimate has been argued with somebody who owns the bill is the failure ISS-012 exists to prevent. The least certain assumption is four configuration items per resource per month: an estate with autoscaling groups cycling instances is very much more, and at ten the estimate is 3600 USD rather than 1440. Constraint 7 tags every resource finops:module equals config, so the real figure will appear beside the estimate on the platform cost screen'
 - id: ISS-204
   severity: LOW
-  status: OPEN
+  status: FIXED
   summary: The navigation promises an /inventory/resources screen arriving with P4, and the P4 specification never scheduled one, so a delivered sub project is named as the thing that will bring a screen nobody planned
   detail: 'Found on 2026-09-26 while reviewing IBM Turbonomic, whose equivalent is its Search and entity list views. Section 9 of the P4 specification names only /inventory/topology, and all eleven P4 tasks are done, so the arrives marker in finops-web/src/shell/sections.ts now reads as a bug to anybody who clicks it. The data the screen would render already exists: topology_node carries the region and the zone FEAT-030 was built for. Two ways to close it and the choice is the owner''s. Either add a task to the P4 plan and amend the specification, or move the marker to the sub project that will actually bring it. The marker is deliberately left alone until then, because the test in sections.test.ts requires it to name a sub project and picking one silently would hide the inconsistency rather than record it'
 - id: ISS-205
@@ -2955,6 +2959,11 @@ issues:
   status: OPEN
   summary: recommendation.waste_class is a free text column with no check constraint, so the closed list is a convention in Python rather than an invariant, which is exactly what constraint 11 forbids
   detail: 'Found on 2026-09-26 adding PARKABLE_WINDOW for FEAT-054. The WasteClass docstring says adding a member is a migration rather than a string, and it is not: the column is Text with nothing behind it, so any string reaches the database and any screen that switches on the value silently falls through for one nobody declared. The docstring being wrong is the worse half, because it is the thing a contributor reads before deciding whether they need a migration. Two ways to close it: a check constraint listing the members, which is a migration on every addition and is what constraint 11 asks for, or a lookup table with a foreign key, which is one insert per addition and also tells a reader what the list is. The same question applies to source and lifecycle, which were not checked while looking at this'
+- id: ISS-208
+  severity: LOW
+  status: OPEN
+  summary: FEAT-041 measures whether a recommendation delivered by joining it to cost on the resource, and a commitment action has no resource, so no commitment purchase can be verified against the bill yet
+  detail: 'Named in ADR-0025 as a consequence rather than found later. The existing path joins recommendation to cost_focus_daily on resource_id over two windows, and a commitment covers a class of usage rather than one thing, so there is nothing to join on. The honest verification is different arithmetic as well as a different join: the question is not whether a resource got cheaper but whether the commitment was used, which is already measured in commitment_use as utilization. So the work is to relate a closed commitment_action to the commitment_use rows that appeared after it, and that relation does not exist because nothing tells us which purchase answered which finding. Deliberately not built: the measurement is only meaningful after a term has run, no term has started, and a verification path written now would be tested against nothing'
 open_questions:
 - id: OPEN-07
   question: What does the cost screen show for a tenant whose first ingest has not run, an

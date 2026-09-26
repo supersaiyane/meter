@@ -689,6 +689,46 @@ commitment_coverage = Table(
 )
 
 
+#: FEAT-055. A coverage gap as a finding somebody owns, and payer wide because the coverage
+#: it derives from is. See ADR-0025: `recommendation` is scoped by account, and stamping an
+#: account on a payer wide figure would disclose the organization's commitment position to
+#: whoever held that one account.
+commitment_action = Table(
+    "commitment_action",
+    metadata,
+    Column("action_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("commitment_type", Text, nullable=False),
+    #: SERVICE or REGION, the two `commitment_coverage` allows. A finding cannot describe a
+    #: dimension its own source could never have produced.
+    Column("dimension", Text, nullable=False),
+    Column("dimension_value", Text, nullable=False),
+    Column("window_start", Date, nullable=False),
+    Column("window_end", Date, nullable=False),
+    #: Measured, from the bill. Stored beside the modelled figures so a reader a year later
+    #: can check the arithmetic rather than take it.
+    Column("eligible_spend", Numeric(20, 10), nullable=False),
+    Column("covered_spend", Numeric(20, 10), nullable=False),
+    #: Modelled, from a configured discount rate rather than from a quote.
+    Column("estimated_monthly_saving", Numeric(20, 10), nullable=False),
+    #: How far usage may fall before the commitment costs more than it saves. The number
+    #: that decides whether buying it was a mistake, and the one a coverage chart cannot show.
+    Column("usage_floor_percent", Numeric(5, 1), nullable=False),
+    Column("term_months", Integer, nullable=False),
+    Column("confidence", Text, nullable=False),
+    Column("severity", Text, nullable=False),
+    #: The same vocabulary `recommendation` uses, held to it by a test. Two lifecycles that
+    #: drift is how one screen comes to mean something different by DONE.
+    Column("lifecycle", Text, nullable=False),
+    Column("owner", Text),
+    Column("ticket_reference", Text),
+    Column("rationale", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
 query_adhoc = Table(
     "query_adhoc",
     metadata,

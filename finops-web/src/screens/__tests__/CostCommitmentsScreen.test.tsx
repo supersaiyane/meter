@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { CostCommitmentsScreen } from '../CostCommitmentsScreen';
@@ -105,5 +105,46 @@ describe('CostCommitmentsScreen', () => {
     const { container } = renderCommitments();
     await screen.findByText('fake-ri-rds');
     expect(await violationsIn(container)).toEqual([]);
+  });
+
+  describe('the gap as an action, FEAT-055', () => {
+    it('says what to do about the gap, not only how big it is', async () => {
+      // The coverage table answers how much is uncovered. This answers what to do about it,
+      // which is the difference between a fact nobody owns and a decision somebody works.
+      renderCommitments();
+      const actions = await screen.findByTestId('actions');
+      expect(actions).toHaveTextContent('AmazonEC2');
+      expect(actions).toHaveTextContent('SAVINGS_PLAN');
+    });
+
+    it('publishes the usage floor, which is what being wrong looks like', async () => {
+      // The figure a coverage chart cannot show and the reason this is a decision. A commitment
+      // obligates its whole term whether or not the usage continues, so a row with the saving
+      // and not the floor would be recommending a multi year obligation while withholding the
+      // risk.
+      renderCommitments();
+      const actions = await screen.findByTestId('actions');
+      expect(actions).toHaveTextContent('above 70.0 percent of today');
+      expect(actions).toHaveTextContent('for 12 months');
+    });
+
+    it('calls a commitment permanent, because it cannot be handed back', async () => {
+      // Through the same module the waste screen and the home panel use, so a reader is not
+      // told a change is permanent in one place and reversible in another. Nothing stops to buy
+      // a commitment, which is exactly why it reads as safe.
+      renderCommitments();
+      expect(await screen.findByTestId('actions')).toHaveTextContent('permanent');
+    });
+
+    it('marks the saving modelled, never measured', async () => {
+      // The discount is an assumption about a price nobody has been quoted. The utilization
+      // figures on the same screen are measured, so rendering the two identically would invite
+      // a reader to treat the estimate as a fact.
+      renderCommitments();
+      const actions = await screen.findByTestId('actions');
+      for (const figure of within(actions).getAllByTestId('figure')) {
+        expect(figure).toHaveAttribute('data-provenance', 'modelled');
+      }
+    });
   });
 });

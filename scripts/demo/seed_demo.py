@@ -60,6 +60,7 @@ from finops_fakes.surface import FakeQuerySurface, queries_as_of
 from finops_fakes.topology import FakeTopologySource
 from finops_ingest.collectors.account_health import AccountHealthCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
+from finops_ingest.collectors.commitment_actions import CommitmentActionsCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
 from finops_ingest.collectors.inventory import InventoryCollector
@@ -143,6 +144,10 @@ DEMO_TABLES = (
     "recommendation",
     # P1, FEAT-023. Derived from the daily rows, so it goes before them.
     "cost_anomaly",
+    # P1, FEAT-055. Derived from commitment_coverage, so it goes before it, even though it
+    # holds no foreign key to it: reverse dependency order is the rule this list follows and
+    # an exception justified by the absence of a key is one somebody will later add.
+    "commitment_action",
     # P1, FEAT-024. Neither references the other, and both reference only the
     # tenant, so their order between themselves does not matter.
     "commitment_coverage",
@@ -520,6 +525,18 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
             connection,
             unit(scope_key="billing:commitments"),
             "commitment",
+        )
+        # FEAT-055, immediately after the coverage it reads. Turning the gaps into findings in
+        # the same seed run is what makes the commitments screen show the actions rather than
+        # only the chart, and ordering matters: seeded before the coverage it would read an
+        # empty table and write nothing while reporting success.
+        written += _through_the_ledger(
+            ledger,
+            CommitmentActionsCollector(clock=lambda: now),
+            connection,
+            unit(scope_key="billing:commitments"),
+            "commitment_actions",
+            settings=settings,
         )
         written += _through_the_ledger(
             ledger,

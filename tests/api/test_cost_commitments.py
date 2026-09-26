@@ -259,3 +259,86 @@ class TestWhenThereIsNothing:
         client, token = client_for(engine, everything(tenant_id), settings)
         response = client.get(PATH, headers=auth(token))
         assert response.status_code == 404
+
+
+# --- FEAT-055, coverage gaps as actions --------------------------------------
+
+
+def seed_actions(engine: Engine, tenant: UUID, settings: Settings) -> None:
+    """The coverage collector, then the one that turns its gaps into findings.
+
+    Both, in order, because the second reads what the first writes and seeding the second
+    alone would test it against an empty table, which is the shape of a passing test that
+    proves nothing.
+    """
+    from finops_ingest.collectors.commitment_actions import CommitmentActionsCollector
+
+    seed(engine, tenant)
+    with engine.begin() as connection:
+        CommitmentActionsCollector(clock=lambda: NOW)(
+            CollectorContext(
+                unit=Unit(tenant_id=tenant),
+                connection=connection,
+                run_id=uuid4(),
+                settings=settings,
+            )
+        )
+
+
+class TestCoverageGapsAsActions:
+    """FEAT-055. The gaps the coverage list already shows, as things somebody owns."""
+
+    def test_an_uncovered_dimension_arrives_as_an_action(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        seed_actions(engine, tenant_id, settings)
+        client, token = client_for(engine, everything(tenant_id), settings)
+        actions = get(client, token)["data"]["actions"]
+        assert actions, "the fake estate has uncovered eligible spend and produced no action"
+        assert {one["dimension"] for one in actions} <= {"SERVICE", "REGION"}
+
+    def test_every_action_publishes_the_floor_and_the_term(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """The two figures that make it a decision rather than an observation. The saving says
+        what there is to gain and the floor says what being wrong looks like, and a commitment
+        cannot be handed back, so a payload with the first and not the second would be
+        recommending a multi year obligation while withholding the risk."""
+        seed_actions(engine, tenant_id, settings)
+        client, token = client_for(engine, everything(tenant_id), settings)
+        for one in get(client, token)["data"]["actions"]:
+            assert Decimal(one["estimated_monthly_saving"]) > 0
+            assert Decimal("0") < Decimal(one["usage_floor_percent"]) <= Decimal("100")
+            assert one["term_months"] > 0
+            assert "obligates" in one["rationale"]
+            # The measured inputs travel beside the modelled output, so a reader can check
+            # the arithmetic rather than take it.
+            assert Decimal(one["eligible_spend"]) > Decimal(one["covered_spend"])
+
+    def test_the_worst_gap_is_first(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """ADR-0016, money first, the same order the coverage list beside it uses."""
+        seed_actions(engine, tenant_id, settings)
+        client, token = client_for(engine, everything(tenant_id), settings)
+        savings = [
+            Decimal(one["estimated_monthly_saving"])
+            for one in get(client, token)["data"]["actions"]
+        ]
+        assert savings == sorted(savings, reverse=True)
+
+    def test_a_narrow_scope_reads_no_actions_either(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """ADR-0025, which is why `commitment_action` is its own table. A finding derived from a
+        payer wide fact is payer wide, and a narrowed reader reads nothing rather than a number
+        that is not theirs. Had these rows gone into `recommendation`, which is scoped by
+        account, whoever held the stamped account would read the organization's commitment
+        position through a findings list."""
+        seed_actions(engine, tenant_id, settings)
+        client, token = client_for(engine, only(tenant_id, "fake-platform-a"), settings)
+        refused = client.get(PATH, headers=auth(token))
+        # The same answer the rest of this payload gives a narrowed reader, because it is the
+        # same payload and the same rule. A 200 with an empty action list would have said the
+        # estate has no uncovered baseline, which is a different claim.
+        assert refused.status_code == 404

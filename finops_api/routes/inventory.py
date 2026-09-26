@@ -28,7 +28,7 @@ from sqlalchemy import Connection
 
 from finops_api.db.repositories import AccessContext
 from finops_api.db.repositories.cost import CostRepository
-from finops_api.db.repositories.topology import TopologyRepository
+from finops_api.db.repositories.topology import TopologyRepository, as_node
 from finops_api.deps import get_access_context, get_connection, get_scope
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.routes.waste import recommendation_out
@@ -40,6 +40,8 @@ from finops_api.schemas import (
     InventoryRootOut,
     InventoryRootsOut,
     NodeOut,
+    ResourceFiltersOut,
+    ResourceListOut,
     SliceCoverageOut,
     SubgraphOut,
 )
@@ -234,6 +236,73 @@ def roots(
         # resources across accounts rather than a view of slices.
         visible=repository.accounts_seen(scope),
         rows=rows,
+    )
+    return Envelope(data=found, meta=meta)
+
+
+@router.get("/inventory/resources", response_model=Envelope[ResourceListOut])
+def resources(
+    account_id: str | None = Query(default=None, description="Narrow to one account."),
+    region_id: str | None = Query(
+        default=None, description="Narrow to one region. Omit for every region."
+    ),
+    node_kind: str | None = Query(default=None, description="Narrow to one kind of resource."),
+    resource_type: str | None = Query(
+        default=None, description="Narrow to one provider resource type."
+    ),
+    limit: int = Query(default=50, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[ResourceListOut]:
+    """Every resource this scope can see, filtered and paginated on the server.
+
+    FEAT-056, TASK-P4-012, closing ISS-204. The map answers what is connected to what for one
+    root, bounded to four hops. It cannot answer how many gp2 volumes are in one region, which
+    is the question a reader actually arrives with.
+
+    Paginated here rather than in the browser. An estate of three hundred accounts is not a
+    list a client sorts, and the bound exists for the same reason the traversal's does: an
+    unbounded read of a real estate returns the estate.
+
+    The coverage in `meta` counts slices rather than accounts and rows. A list is drawn from
+    whatever slices were read, and a slice that refused us contributes nothing while looking
+    identical to a region that is genuinely empty, so the denominator a reader needs is the
+    number of slices behind the list and not the number of rows in it.
+    """
+    repository = TopologyRepository(connection, context)
+    rows, total = repository.page(
+        scope,
+        account_id=account_id,
+        region_id=region_id,
+        node_kind=node_kind,
+        resource_type=resource_type,
+        limit=limit,
+        offset=offset,
+    )
+    # Read once each. Two calls for the same denominator could disagree, which is the same
+    # reason `page` returns its own total rather than leaving the caller to count again.
+    slices = repository.slice_count(scope)
+    unread = repository.incomplete(scope)
+    found = ResourceListOut(
+        resources=tuple(_node_out(as_node(row)) for row in rows),
+        total=total,
+        limit=limit,
+        offset=offset,
+        filters=ResourceFiltersOut(**repository.vocabularies(scope)),
+    )
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        # Slices, like the map's, because the honest question about a list of resources is how
+        # much of the estate it was drawn from. Counting the rows would report a full page as
+        # complete coverage of an estate half of which was never read.
+        visible=slices - len(unread),
+        rows=rows,
+        coverage=(slices - len(unread), slices),
+        coverage_unit="slices",
     )
     return Envelope(data=found, meta=meta)
 

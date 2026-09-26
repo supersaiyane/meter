@@ -536,6 +536,10 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         # reason: this list is exhaustive, so a collector with a schedule row and no
         # declaration fails here rather than reaching a dispatcher nobody was watching.
         "waste_parking",
+        # FEAT-055, added with the collector in TASK-P1-022. Declared here for the same reason
+        # the two above it are: the list is exhaustive, so a collector with a schedule row and
+        # no declaration fails here rather than reaching a dispatcher nobody was watching.
+        "commitment_actions",
     }
 
 

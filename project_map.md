@@ -242,7 +242,7 @@ meter/
 │   │                          which is build output and is never committed
 │   └── deploy/                migration task runner
 │
-├── tests/                     the suite, 1,732 tests. conftest.py refuses to run
+├── tests/                     the suite, 1,774 tests. conftest.py refuses to run
 │                              against a real AWS account when no endpoint
 │                              override is set, and its session scoped `engine`
 │                              starts a PostgreSQL container and migrates it,
@@ -722,6 +722,12 @@ meter/
 │   │                          throttles, a low memory request kills. Every
 │   │                          series is hourly, which is what keeps p99 from
 │   │                          quietly becoming the max rule
+│   ├── commitment.py          FEAT-055. What an uncovered baseline is worth, and the
+│   │                          usage floor, which is the figure that decides whether
+│   │                          buying the commitment was a mistake. The plan asked for
+│   │                          a break even month and that is one on every row for a no
+│   │                          upfront plan, so it would have satisfied the criterion
+│   │                          and told a reader nothing
 │   ├── parking.py             FEAT-054. A fortnight folded into a 168 hour week,
 │   │                          returning the contiguous hours nothing runs. The
 │   │                          evidence rule is per hour, not per estate: an hour

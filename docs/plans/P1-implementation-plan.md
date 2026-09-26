@@ -1134,7 +1134,7 @@ somebody would quietly remove.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-26 |
 | Implements | Competitive review 2026-09-26, candidate list, adopted by the owner on 2026-09-26 |
 | Delivers | FEAT-055 |
 | Depends on | TASK-P1-014 delivered, which is the commitment coverage this reads |

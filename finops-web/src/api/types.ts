@@ -344,11 +344,42 @@ export interface ApiCommitmentCoverage {
   readonly coverage: string | null;
 }
 
+/**
+ * FEAT-055. A coverage gap as something somebody owns.
+ *
+ * `usage_floor_percent` is the number that decides whether buying the commitment was a mistake.
+ * A commitment obligates its whole term whether or not the usage continues, so it beats on
+ * demand only while usage stays above that fraction of today's. A screen showing the saving
+ * without the floor would be recommending a multi year obligation while withholding the risk.
+ */
+export interface ApiCommitmentAction {
+  readonly commitment_type: string;
+  /** SERVICE or REGION. Never an account: coverage cannot be apportioned to one. */
+  readonly dimension: string;
+  readonly dimension_value: string;
+  readonly window_start: string;
+  readonly window_end: string;
+  /** Measured, from the bill, beside the modelled figures below it. */
+  readonly eligible_spend: string;
+  readonly covered_spend: string;
+  /** Modelled from a configured discount rather than from a quote. */
+  readonly estimated_monthly_saving: string;
+  readonly usage_floor_percent: string;
+  readonly term_months: number;
+  readonly confidence: string;
+  readonly severity: string;
+  readonly lifecycle: string;
+  readonly owner: string | null;
+  readonly rationale: string;
+}
+
 export interface ApiCommitments {
   readonly window_start: string;
   readonly window_end: string;
   readonly commitments: readonly ApiCommitmentUse[];
   readonly coverage: readonly ApiCommitmentCoverage[];
+  /** The coverage above as things somebody owns, worst money first. */
+  readonly actions: readonly ApiCommitmentAction[];
   readonly wasted_total: string;
 }
 
@@ -576,6 +607,32 @@ export interface ApiInventoryRoot {
 
 export interface ApiInventoryRoots {
   readonly roots: readonly ApiInventoryRoot[];
+}
+
+/**
+ * FEAT-056. A page of resources, and the denominator.
+ *
+ * `total` is the count of rows matching the filter that this reader may see, counted through
+ * the same scope guard as the page. A count over everything beside a page of the readable rows
+ * is the arithmetic that tells a narrowed reader how much they are not allowed to look at.
+ */
+export interface ApiResourceFilters {
+  readonly account_id: readonly string[];
+  /** Never an empty string. A null region is the global slice and the screen names it. */
+  readonly region_id: readonly string[];
+  readonly node_kind: readonly string[];
+  /** The provider's own words. It has no enumeration, so the data is the only list. */
+  readonly resource_type: readonly string[];
+}
+
+export interface ApiResourceList {
+  readonly resources: readonly ApiTopologyNode[];
+  /** Matching rows in scope. Not the size of the estate and not the size of the page. */
+  readonly total: number;
+  readonly limit: number;
+  readonly offset: number;
+  /** Read from the data, so a filter the estate cannot satisfy is never offered. */
+  readonly filters: ApiResourceFilters;
 }
 
 /**

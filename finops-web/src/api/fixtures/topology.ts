@@ -4,6 +4,7 @@ import type {
   ApiGraphCoverage,
   ApiInventoryRoots,
   ApiRecommendation,
+  ApiResourceList,
   ApiSubgraph,
 } from '../types';
 import type { ApiMeta } from '../types';
@@ -294,5 +295,71 @@ export function entityFixture(nodeId: string): ApiEnvelope<ApiEntity> {
       cost_period: '2026-08-01',
     },
     meta: metaWith(0, 1),
+  };
+}
+
+/**
+ * A page of resources, offline. FEAT-056.
+ *
+ * Deliberately a partial page of a larger estate, and drawn from fewer slices than exist. A
+ * fixture whose page held everything and whose coverage was complete would let the two things
+ * this screen has to say honestly go unexercised by anything a developer opens locally: that
+ * the list is a page, and that it was drawn from an estate part of which was never read.
+ */
+export function resourceListFixture(): ApiEnvelope<ApiResourceList> {
+  return {
+    data: {
+      resources: [
+        {
+          node_id: ROOT,
+          provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:vpc/vpc-platform',
+          account_id: 'fake-platform-a',
+          node_kind: 'VPC',
+          resource_type: 'AWS::EC2::VPC',
+          region_id: 'fake-region-a',
+          availability_zone: null,
+          name: 'platform',
+          as_of: AS_OF,
+          collected_at: COLLECTED_AT,
+        },
+        {
+          node_id: SUBNET,
+          provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:subnet/subnet-a',
+          account_id: 'fake-platform-a',
+          node_kind: 'SUBNET',
+          resource_type: 'AWS::EC2::Subnet',
+          region_id: 'fake-region-a',
+          availability_zone: 'fake-region-a-a',
+          name: 'private-a',
+          as_of: AS_OF,
+          collected_at: COLLECTED_AT,
+        },
+        {
+          // A global resource. Null region means global, never a region nobody could read,
+          // and the screen has to render it as such rather than as an empty cell.
+          node_id: FAR,
+          provider_id: 'arn:aws:iam::fake-platform-a:role/deploy',
+          account_id: 'fake-platform-a',
+          node_kind: 'IAM_ROLE',
+          resource_type: 'AWS::IAM::Role',
+          region_id: null,
+          availability_zone: null,
+          name: 'deploy',
+          as_of: AS_OF,
+          collected_at: COLLECTED_AT,
+        },
+      ],
+      // Three of twenty seven, so the screen has to say it is showing a page.
+      total: 27,
+      limit: 3,
+      offset: 0,
+      filters: {
+        account_id: ['fake-platform-a', 'fake-product-denied'],
+        region_id: ['fake-region-a', 'fake-region-b'],
+        node_kind: ['IAM_ROLE', 'SUBNET', 'VPC'],
+        resource_type: ['AWS::EC2::Subnet', 'AWS::EC2::VPC', 'AWS::IAM::Role'],
+      },
+    },
+    meta: metaWith(18, 20),
   };
 }

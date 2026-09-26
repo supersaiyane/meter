@@ -1,5 +1,3 @@
-import type { ApiRecommendation } from '../api/types';
-
 /**
  * The words for what applying a finding costs if it is wrong.
  *
@@ -19,6 +17,21 @@ import type { ApiRecommendation } from '../api/types';
 export const PER_GROUP = 5;
 
 /**
+ * The three booleans `riskLabel` reads, and nothing else.
+ *
+ * Narrower than `ApiRecommendation` on purpose. FEAT-055's commitment actions live in their own
+ * payload, because a payer wide finding cannot sit in the per account findings table (ADR-0025),
+ * and they still have to be labelled with the same words. A signature demanding a whole
+ * recommendation forced the first draft of that screen to cast a three field object through
+ * `never`, which is a lie the compiler was talked out of noticing.
+ */
+export interface RiskVerdict {
+  readonly reversible: boolean;
+  readonly disturbs_running_work: boolean;
+  readonly is_no_regret: boolean;
+}
+
+/**
  * The risk of one row, leading with the part that cannot be undone.
  *
  * Permanent comes first on purpose. Five of the eight waste classes that disturb nothing
@@ -26,7 +39,7 @@ export const PER_GROUP = 5;
  * so a label that led with the absence of disruption would be reassuring about exactly the
  * wrong findings.
  */
-export function riskLabel(row: ApiRecommendation): string {
+export function riskLabel(row: RiskVerdict): string {
   if (row.is_no_regret) return 'no regret';
   if (!row.reversible && row.disturbs_running_work) return 'permanent, interrupts the workload';
   if (!row.reversible) return 'permanent';

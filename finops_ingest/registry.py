@@ -301,6 +301,19 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0",
     ),
     ScheduleEntry(
+        collector="commitment_actions",
+        cadence_seconds=DAILY,
+        reason=(
+            "Daily, following the commitment collector it reads rather than choosing an "
+            "interval of its own. It makes no provider call at all: everything it needs is "
+            "in commitment_coverage, which FEAT-019 writes from the bill, so this is the one "
+            "collector in the schedule whose cost per run is genuinely zero rather than "
+            "rounded to it. A faster cadence would restate the same coverage window, because "
+            "the window only moves when the bill does. ADR-0012 and constraint 9."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
         collector="waste_parking",
         cadence_seconds=DAILY,
         reason=(

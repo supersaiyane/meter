@@ -328,6 +328,33 @@ class CommitmentRepository(ScopedRepository):
         return _fetch(self, scope, statement)
 
 
+class CommitmentActionRepository(ScopedRepository):
+    """Coverage gaps as findings somebody owns. FEAT-055.
+
+    `PayerWide` in the guard, like the coverage it derives from, per ADR-0025. A finding
+    inherits the scoping of the fact it was computed from rather than the scoping of the table
+    it resembles, so a narrowed reader reads nothing here and the screen says why.
+    """
+
+    table: ClassVar[Table] = models.commitment_action
+    resource: ClassVar[str] = "commitment_action"
+
+    def worst_first(self, scope: Scope) -> Sequence[Row[tuple[Any, ...]]]:
+        """Every open action, most money first, per ADR-0016.
+
+        Not filtered to a window. A coverage gap is upserted on its dimension rather than its
+        window, so there is one current row per dimension and the newest window is already the
+        one stored. Filtering by window here would hide a finding whose gap had not been
+        recomputed this month.
+        """
+        statement = (
+            self.scoped_select(scope)
+            .where(self.table.c.lifecycle == "OPEN")
+            .order_by(self.table.c.estimated_monthly_saving.desc(), self.table.c.dimension_value)
+        )
+        return _fetch(self, scope, statement)
+
+
 class CommitmentCoverageRepository(ScopedRepository):
     """How much of the eligible estate was on a commitment, per dimension."""
 

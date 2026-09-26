@@ -362,7 +362,7 @@ find the test already waiting rather than be trusted to remember.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-26 |
 | Implements | ISS-204. Competitive review 2026-09-26, no resource list |
 | Delivers | FEAT-056 |
 | Depends on | TASK-P4-008 delivered |

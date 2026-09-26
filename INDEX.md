@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-59 features across 8 sub projects. 23 specified, 9 planned, 10 in build, 17 delivered.
+59 features across 8 sub projects. 21 specified, 9 planned, 10 in build, 19 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -133,7 +133,7 @@ block is caught by `make check-docs`. See
 | [FEAT-023](docs/features/FEAT-023-cost-anomaly-detection.md) | Anomaly detection and ingest of AWS Cost Anomaly Detection | Specified | [roadmap](docs/01-ROADMAP.md) P1 |
 | [FEAT-024](docs/features/FEAT-024-commitment-coverage.md) | Savings Plan and Reserved Instance utilization and coverage | Specified | [roadmap](docs/01-ROADMAP.md) P1 |
 | [FEAT-045](docs/features/FEAT-045-chargeback-export.md) | Chargeback and showback export, CSV | Specified | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
-| [FEAT-055](docs/features/FEAT-055-commitment-coverage-actions.md) | A commitment coverage gap as a ranked action | Specified | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
+| [FEAT-055](docs/features/FEAT-055-commitment-coverage-actions.md) | A commitment coverage gap as a ranked action | Delivered | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 
 ### P3 Utilization and Rightsizing
 
@@ -157,7 +157,7 @@ block is caught by `make check-docs`. See
 | [FEAT-031](docs/features/FEAT-031-topology-graph.md) | Topology graph, node and edge model | Delivered | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.2, [P4 plan](docs/plans/P4-implementation-plan.md) |
 | [FEAT-032](docs/features/FEAT-032-topology-map-interface.md) | Topology map interface | Delivered | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 9, [P4 plan](docs/plans/P4-implementation-plan.md) |
 | [FEAT-053](docs/features/FEAT-053-entity-detail-page.md) | One resource, and everything we know about it | Delivered | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
-| [FEAT-056](docs/features/FEAT-056-resource-list.md) | The resource list | Specified | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
+| [FEAT-056](docs/features/FEAT-056-resource-list.md) | The resource list | Delivered | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 | [FEAT-057](docs/features/FEAT-057-iac-state-discovery.md) | Which file manages this resource | Specified | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 
 ### P5 Quotas and Limits
@@ -225,6 +225,7 @@ block is caught by `make check-docs`. See
 | ADR-0022 | The fakes live outside the production packages, kept there by three mechanisms | Accepted | [ADR-0022](docs/adr/ADR-0022-fakes-outside-the-production-packages.md) |
 | ADR-0023 | A coverage cause is the error taxonomy plus one member, never attempted | Accepted | [ADR-0023](docs/adr/ADR-0023-coverage-cause-is-the-taxonomy-plus-one.md) |
 | ADR-0024 | One collector owns a slice's graph, with a composite source rather than two schedules | Accepted | [ADR-0024](docs/adr/ADR-0024-one-collector-owns-a-slice.md) |
+| ADR-0025 | A payer wide finding gets its own table, not a row in recommendation | Accepted | [ADR-0025](docs/adr/ADR-0025-a-payer-wide-finding-is-its-own-table.md) |
 
 Index of records: [docs/adr/README.md](docs/adr/README.md)
 
@@ -348,7 +349,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**130 FIXED, 71 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**131 FIXED, 71 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -556,7 +557,8 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-196 | LOW | QuotaUsage.region_id was typed as a plain string, so a global quota could not be expressed. IAM roles per account, S3 buckets per account and CloudFront distributions are counted once for the whole account, and a region on one of those would invite a screen to show the same limit once per region and a total of five times the truth. Found 2026-09-21 by the generated quota estate, which has 130 quotas including global ones and could not construct them. Widened to optional the same day, with the distinction from a region nobody could read, which is a typed failure rather than an absent one, written on the field. P5 would have hit this on its first day | FIXED | `finops_core/domain/quota.py`, FEAT-033 |
 | ISS-198 | LOW | scripts/docs/rotate_checkpoint.py cannot run against docs/checkpoint.md and never has. It requires the checkpoint table to be one contiguous block of rows, and the file has always held prose sections between blocks, so it refuses with "the checkpoint table is not one contiguous block of rows". The effect is that the archive rule CLAUDE.md states, rotate at 50 entries and keep the latest 20, has never been applied. The file reached 104 entries with 84 of them past the window, and make check-memory warns about it every session rather than failing, so nothing ever forced the issue. Found 2026-09-22 by running the script rather than trusting the warning. Eight rows appended after the closing prose on 2026-09-21 were moved into the log table the same day, which took the block count from 19 to 11 and is not a fix. The fix is either a script that rotates the first block and leaves the prose alone, or a checkpoint file that is one table with the prose moved to its own document | OPEN | `scripts/docs/rotate_checkpoint.py`, `docs/checkpoint.md`, CLAUDE.md section 3 |
 | ISS-201 | LOW | The node kind enumeration has fourteen members and the estate has more kinds of thing than that, so a container cluster, a cache, a stream, a transit gateway and a peering connection all draw as OTHER | OPEN | Ten of the twenty four resource types the generated estate contains map to OTHER. resource_type travels beside node_kind so a screen can still name them, and the fourteen are fixed by the P4 specification and held by a check constraint, so widening them is a migration. The edge kinds have the same gap in one place: replication has no member, and a read replica is joined with ROUTES_TO, which is the closest of the seven and not the right word. An unmapped type is deliberately not a coverage shortfall, because an estate with a fleet of clusters would then be PARTIAL on every run forever |
-| ISS-204 | LOW | The navigation promises an /inventory/resources screen arriving with P4, and the P4 specification never scheduled one, so a delivered sub project is named as the thing that will bring a screen nobody planned | OPEN | Found on 2026-09-26 while reviewing IBM Turbonomic, whose equivalent is its Search and entity list views. Section 9 of the P4 specification names only /inventory/topology, and all eleven P4 tasks are done, so the arrives marker in finops-web/src/shell/sections.ts now reads as a bug to anybody who clicks it. The data the screen would render already exists: topology_node carries the region and the zone FEAT-030 was built for. Two ways to close it and the choice is the owner's. Either add a task to the P4 plan and amend the specification, or move the marker to the sub project that will actually bring it. The marker is deliberately left alone until then, because the test in sections.test.ts requires it to name a sub project and picking one silently would hide the inconsistency rather than record it |
+| ISS-204 | LOW | The navigation promises an /inventory/resources screen arriving with P4, and the P4 specification never scheduled one, so a delivered sub project is named as the thing that will bring a screen nobody planned | FIXED | Found on 2026-09-26 while reviewing IBM Turbonomic, whose equivalent is its Search and entity list views. Section 9 of the P4 specification names only /inventory/topology, and all eleven P4 tasks are done, so the arrives marker in finops-web/src/shell/sections.ts now reads as a bug to anybody who clicks it. The data the screen would render already exists: topology_node carries the region and the zone FEAT-030 was built for. Two ways to close it and the choice is the owner's. Either add a task to the P4 plan and amend the specification, or move the marker to the sub project that will actually bring it. The marker is deliberately left alone until then, because the test in sections.test.ts requires it to name a sub project and picking one silently would hide the inconsistency rather than record it |
+| ISS-208 | LOW | FEAT-041 measures whether a recommendation delivered by joining it to cost on the resource, and a commitment action has no resource, so no commitment purchase can be verified against the bill yet | OPEN | Named in ADR-0025 as a consequence rather than found later. The existing path joins recommendation to cost_focus_daily on resource_id over two windows, and a commitment covers a class of usage rather than one thing, so there is nothing to join on. The honest verification is different arithmetic as well as a different join: the question is not whether a resource got cheaper but whether the commitment was used, which is already measured in commitment_use as utilization. So the work is to relate a closed commitment_action to the commitment_use rows that appeared after it, and that relation does not exist because nothing tells us which purchase answered which finding. Deliberately not built: the measurement is only meaningful after a term has run, no term has started, and a verification path written now would be tested against nothing |
 
 <!-- generated:issues end -->
 

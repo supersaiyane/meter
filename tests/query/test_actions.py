@@ -86,7 +86,7 @@ def test_most_classes_that_disturb_nothing_are_still_permanent() -> None:
 
 
 def test_no_regret_is_a_small_minority() -> None:
-    """Three of eighteen at the time of writing. Asserted as a bound rather than an exact
+    """A small minority, and the count is deliberately not written here. Asserted as a bound
     count so adding a class does not fail here, and bounded above because a surface promising
     a page of safe wins would be inventing most of them."""
     assert 0 < len(NO_REGRET_CLASSES) <= len(RISK_OF) // 4
