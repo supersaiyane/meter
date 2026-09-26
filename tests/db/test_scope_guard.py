@@ -295,3 +295,61 @@ def test_unhealthy_accounts_are_still_confined_to_the_scope(
     with engine.begin() as connection:
         rows = AccountRepository(connection, CONTEXT).list_unhealthy(scope)
     assert {row.account_id for row in rows} == {"acct-a"}
+
+
+# --- P4, before any route reads these tables --------------------------------
+#
+# The order matters and is the point. TASK-P4-008's criterion is that each of the
+# three tables is read out of scope and refused **before any route exists**, which is
+# the rule at the top of the P1 plan and the six defects that produced it: a table
+# whose guard entry arrives after its route has a window in which the route is the
+# only thing confining the read.
+
+P4_TABLES = ("topology_node", "topology_edge", "graph_coverage")
+
+
+@pytest.mark.parametrize("table_name", P4_TABLES)
+def test_a_p4_table_has_a_scope_rule(table_name: str) -> None:
+    """A table nobody has decided how to scope must not be readable through this path."""
+    from finops_api.guards import SCOPED_TABLES
+
+    assert table_name in SCOPED_TABLES
+
+
+@pytest.mark.parametrize("table_name", P4_TABLES)
+def test_a_hand_rolled_select_on_a_p4_table_is_refused(table_name: str) -> None:
+    """The backstop. A select that did not come from `scoped_select` has nothing confining
+    it to a tenant, and the first route to hand roll one gets a loud error."""
+    table = models.metadata.tables[table_name]
+    with pytest.raises(ScopeViolationError, match="not built by scoped_select"):
+        assert_scoped(select(table), table)
+
+
+@pytest.mark.parametrize("table_name", P4_TABLES)
+def test_a_p4_table_read_with_an_empty_scope_admits_nothing(table_name: str) -> None:
+    """Empty means nothing, not everything. This is the fail closed case, and it is asserted
+    on the rendered predicate because an empty scope folds to `false` and the string is the
+    only thing left to look at."""
+    table = models.metadata.tables[table_name]
+    scope = Scope(tenant_id=uuid4(), is_global=False, accounts=frozenset())
+    rendered = str(scope_predicate(table, scope))
+    assert "false" in rendered.lower()
+
+
+@pytest.mark.parametrize("table_name", P4_TABLES)
+def test_a_p4_table_read_with_a_narrow_scope_names_the_accounts(table_name: str) -> None:
+    """All three are `ByAccount("sub_account_id")`, including the edge table. An edge carries
+    the account of its origin rather than of the pair, which is the only honest answer for a
+    cross account edge: it belongs to whichever slice read it."""
+    table = models.metadata.tables[table_name]
+    scope = Scope(tenant_id=uuid4(), is_global=False, accounts=keys("111122223333"))
+    rendered = str(scope_predicate(table, scope))
+    assert "sub_account_id" in rendered
+    assert "tenant_id" in rendered
+
+
+@pytest.mark.parametrize("table_name", P4_TABLES)
+def test_a_p4_table_cannot_be_read_without_a_scope_at_all(table_name: str) -> None:
+    table = models.metadata.tables[table_name]
+    with pytest.raises(ScopeViolationError, match="needs a Scope"):
+        scoped_select(table, None)  # type: ignore[arg-type]

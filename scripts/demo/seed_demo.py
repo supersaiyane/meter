@@ -42,9 +42,10 @@ from uuid import UUID, uuid4
 from sqlalchemy import create_engine, text
 
 from finops_core.config import load_settings
-from finops_core.domain.account import AccountKey
+from finops_core.domain.account import AccountKey, Provider
 from finops_core.errors import CollectionError
 from finops_fakes import cur, fixtures, prices, utilization
+from finops_fakes import estate_shape as shape
 from finops_fakes.cloudwatch_estate import FakeCloudWatchEstate
 from finops_fakes.commitment import FakeCommitmentReport
 from finops_fakes.cur import FakeCostExport, estate
@@ -55,10 +56,12 @@ from finops_fakes.platform_cost import FakePlatformCost
 from finops_fakes.provider import FakeProvider
 from finops_fakes.recommendations import FakeRecommendationSource
 from finops_fakes.surface import FakeQuerySurface, queries_as_of
+from finops_fakes.topology import FakeTopologySource
 from finops_ingest.collectors.account_health import AccountHealthCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
+from finops_ingest.collectors.inventory import InventoryCollector
 from finops_ingest.collectors.org_tree import OrgTreeCollector
 from finops_ingest.collectors.partitions import ensure_partition, partition_maintenance
 from finops_ingest.collectors.platform_cost import PlatformCostCollector
@@ -105,6 +108,14 @@ DEMO_TABLES = (
     "audit_event",
     "sync_error",
     "ingest_watermark",
+    # P4, FEAT-030 and FEAT-031, and they go here rather than further down because all
+    # three reference `ingest_run`. The first draft put them after it, and
+    # `test_seed_then_remove_leaves_nothing_behind` failed on the foreign key, which is
+    # exactly what happened to `query_adhoc` and is why that comment is still below.
+    # Within the three: the edges reference the nodes, so the edges go first.
+    "topology_edge",
+    "topology_node",
+    "graph_coverage",
     "ingest_run",
     "platform_cost",
     "org_node",
@@ -243,6 +254,16 @@ def _through_the_ledger(
 #: recommendation whose resource never joins to a charge.
 DEMO_ACCOUNT = "fake-platform-a"
 DEMO_REGION = "eu-west-1"
+
+#: The one slice the seeded inventory run deliberately does not read, so its
+#: `graph_coverage` row stays UNREAD.
+#:
+#: The same pair `finops_fakes.topology.coverage_state` already calls unread, so the seeded
+#: estate and a live read of the fake agree about which slice it is. Named here because
+#: `docs/runbooks/demo.md` has to name it and a demo whose deliberately broken part is
+#: undocumented reads as a bug.
+UNREAD_ACCOUNT = "fake-product-b"
+UNREAD_REGION = shape.REGION_B
 
 #: The clock the utilization estate is generated against. Two years of hourly
 #: behaviour end here, so a collector run on a later clock would read a window half
@@ -586,6 +607,30 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
             connection,
             unit(),
             "finops_score",
+        )
+
+        # P4. The graph, and one slice deliberately left unread.
+        #
+        # `covers` is nineteen of the twenty slices the source enrols, so the twentieth
+        # keeps its UNREAD row. That is not a trick to make the screen interesting: it is
+        # the state a dispatcher fanning out per account produces whenever one unit has not
+        # run yet, and it is the one state a demo estate cannot show if every slice is
+        # read. `docs/runbooks/demo.md` names which slice and why.
+        source = FakeTopologySource()
+        unread = (
+            AccountKey(provider=Provider.AWS, account_id=UNREAD_ACCOUNT),
+            UNREAD_REGION,
+        )
+        written += _through_the_ledger(
+            ledger,
+            InventoryCollector(
+                source,
+                clock=lambda: now,
+                covers=tuple(one for one in source.enrolled_slices if one != unread),
+            ),
+            connection,
+            unit(),
+            "inventory",
         )
 
         counts = {

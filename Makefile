@@ -109,6 +109,22 @@ lint: ## Lint everything, no changes written
 	$(TF) -chdir=infra/terraform/management fmt -check -recursive
 	$(TF) -chdir=infra/terraform/member fmt -check -recursive
 	$(TF) -chdir=infra/terraform/hub fmt -check -recursive
+	$(TF) -chdir=infra/terraform/config fmt -check -recursive
+
+.PHONY: tf-validate
+tf-validate: ## terraform validate on all four stacks. Needs network for the first init
+# Not in `lint`, and the reason is that it is not a lint. `validate` needs the provider
+# schema, so the first run downloads it, and a gate that needs the network is a gate that
+# fails on a train. `-backend=false` is what keeps it from needing credentials or state:
+# it checks the configuration rather than what is deployed.
+#
+# TASK-P4-010 asks for validate to pass on all stacks, so it is a target somebody can run
+# rather than a claim in a commit message.
+	@for stack in management member hub config; do \
+		echo "validating $$stack"; \
+		$(TF) -chdir=infra/terraform/$$stack init -backend=false -input=false >/dev/null || exit 1; \
+		$(TF) -chdir=infra/terraform/$$stack validate || exit 1; \
+	done
 
 .PHONY: check-dashboards
 check-dashboards: ## Refuse a dashboard whose panels would cost too much. TASK-P2-018

@@ -12,6 +12,7 @@ passed. A port nobody has implemented yet reports as skipped, by name.
 
 from __future__ import annotations
 
+import json
 import re
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
@@ -20,6 +21,7 @@ from pathlib import Path
 from typing import Any, Protocol
 
 import pytest
+from botocore.exceptions import ClientError
 
 from finops_core.config import Settings, load_settings
 from finops_core.domain.account import AccountKey, Provider
@@ -34,6 +36,7 @@ ACCOUNT_DISCOVERY = "AccountDiscovery"
 CREDENTIAL_BROKER = "CredentialBroker"
 COST_EXPORT = "CostExport"
 COMMITMENT_REPORT = "CommitmentReport"
+TOPOLOGY_SOURCE = "TopologySource"
 
 
 class ProviderPorts(Protocol):
@@ -73,7 +76,15 @@ def build_fake(_monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
         known_account=fixtures.ACCOUNT_KEYS[0],
         denied_account=fixtures.DENIED_ACCOUNT_KEY,
         unknown_account=AccountKey(provider=Provider.AWS, account_id="fake-not-enrolled"),
-        supports=frozenset({ACCOUNT_DISCOVERY, CREDENTIAL_BROKER, COST_EXPORT, COMMITMENT_REPORT}),
+        supports=frozenset(
+            {
+                ACCOUNT_DISCOVERY,
+                CREDENTIAL_BROKER,
+                COST_EXPORT,
+                COMMITMENT_REPORT,
+                TOPOLOGY_SOURCE,
+            }
+        ),
     )
 
 
@@ -316,14 +327,120 @@ class ContractS3:
         )
 
 
+#: One recorded Config aggregator page, holding exactly the shapes the contract
+#: asks about: a regional resource with a relationship, the resource that
+#: relationship names, a global resource, and a type the adapter cannot name.
+#:
+#: Recorded rather than moto, because moto does not implement
+#: `select_aggregate_resource_config` at all. That is a real limit on what this
+#: proves, and it is the same limit ISS-200 already records: the contract holds the
+#: adapter to the documented response shape, and only a real account can settle
+#: whether the shape is right.
+CONTRACT_CAPTURED = "2026-08-24T06:00:00.000Z"
+CONTRACT_VPC = f"arn:aws:ec2:{AWS_REGION}:{AWS_KNOWN.account_id}:vpc/vpc-contract"
+CONTRACT_SUBNET = f"arn:aws:ec2:{AWS_REGION}:{AWS_KNOWN.account_id}:subnet/subnet-contract"
+CONTRACT_ROLE = f"arn:aws:iam::{AWS_KNOWN.account_id}:role/contract-ci"
+CONTRACT_CLUSTER = f"arn:aws:eks:{AWS_REGION}:{AWS_KNOWN.account_id}:cluster/contract"
+
+
+def _config_item(**overrides: Any) -> dict[str, Any]:
+    values: dict[str, Any] = {
+        "accountId": AWS_KNOWN.account_id,
+        "awsRegion": AWS_REGION,
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": CONTRACT_VPC,
+        "resourceName": "contract",
+        "arn": CONTRACT_VPC,
+        "availabilityZone": None,
+        "tags": [{"key": "finops:module", "value": "fixture"}],
+        "configurationItemCaptureTime": CONTRACT_CAPTURED,
+        "relationships": [],
+    }
+    values.update(overrides)
+    return values
+
+
+class ContractConfig:
+    """Answers the aggregator query, and refuses for the denied account.
+
+    The refusal is the half that matters. moto never refuses, and what the contract
+    is asking is whether a refused slice comes back as a `SliceRead` carrying a typed
+    cause rather than as an exception that discards every account after this one.
+    """
+
+    def select_aggregate_resource_config(self, **request: Any) -> Any:
+        expression = str(request.get("Expression", ""))
+        if AWS_DENIED.account_id in expression or AWS_UNKNOWN.account_id in expression:
+            raise ClientError(
+                {"Error": {"Code": "AccessDenied", "Message": "refused"}},
+                "SelectAggregateResourceConfig",
+            )
+        if "resourceType IN (" in expression:
+            return {
+                "Results": [
+                    json.dumps(
+                        _config_item(
+                            resourceType="AWS::IAM::Role",
+                            resourceId=CONTRACT_ROLE,
+                            arn=CONTRACT_ROLE,
+                            awsRegion=AWS_REGION,
+                            resourceName="contract-ci",
+                        )
+                    )
+                ]
+            }
+        return {
+            "Results": [
+                json.dumps(
+                    _config_item(
+                        relationships=[
+                            {
+                                "resourceType": "AWS::EC2::Subnet",
+                                "resourceId": CONTRACT_SUBNET,
+                                "relationshipName": "Contains Subnet",
+                            }
+                        ]
+                    )
+                ),
+                json.dumps(
+                    _config_item(
+                        resourceType="AWS::EC2::Subnet",
+                        resourceId=CONTRACT_SUBNET,
+                        arn=CONTRACT_SUBNET,
+                        resourceName="private-a",
+                        availabilityZone=f"{AWS_REGION}a",
+                    )
+                ),
+                json.dumps(
+                    _config_item(
+                        resourceType="AWS::EKS::Cluster",
+                        resourceId=CONTRACT_CLUSTER,
+                        arn=CONTRACT_CLUSTER,
+                        resourceName="contract-eks",
+                    )
+                ),
+            ]
+        }
+
+
 class AwsUnderContract:
     """The AWS adapters presented as the one object the contract talks to."""
 
-    def __init__(self, broker: Any, discovery: Any, cost: Any, commitment: Any) -> None:
+    def __init__(
+        self, broker: Any, discovery: Any, cost: Any, commitment: Any, topology: Any
+    ) -> None:
         self._broker = broker
         self._discovery = discovery
         self._cost = cost
         self._commitment = commitment
+        self._topology = topology
+
+    @property
+    def enrolled_slices(self) -> Any:
+        return self._topology.enrolled_slices
+
+    def read_slice(self, account: AccountKey, region: str | None) -> Any:
+        return self._topology.read_slice(account, region)
 
     def utilization(self, window_start: Any, window_end: Any) -> Any:
         return self._commitment.utilization(window_start, window_end)
@@ -361,6 +478,7 @@ def build_aws(monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
 
     from finops_providers.aws.accounts import AwsAccountDiscovery
     from finops_providers.aws.commitment import CostExplorerCommitmentReport
+    from finops_providers.aws.config_inventory import ConfigAggregatorInventory
     from finops_providers.aws.credentials import AwsCredentialBroker
     from finops_providers.aws.cur import AthenaCostExport
 
@@ -412,13 +530,31 @@ def build_aws(monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
                     tenant_id=fixtures.TENANT_ID,
                     client_factory=lambda: ContractCostExplorer(),
                 ),
+                topology=ConfigAggregatorInventory(
+                    settings,
+                    client=ContractConfig(),
+                    aggregator_name="contract-aggregator",
+                    tenant_id=fixtures.TENANT_ID,
+                    enrolled=(
+                        (AWS_KNOWN, AWS_REGION),
+                        (AWS_KNOWN, None),
+                        (AWS_DENIED, AWS_REGION),
+                    ),
+                    sleeper=lambda _seconds: None,
+                ),
             ),
             region=AWS_REGION,
             known_account=AWS_KNOWN,
             denied_account=AWS_DENIED,
             unknown_account=AWS_UNKNOWN,
             supports=frozenset(
-                {ACCOUNT_DISCOVERY, CREDENTIAL_BROKER, COST_EXPORT, COMMITMENT_REPORT}
+                {
+                    ACCOUNT_DISCOVERY,
+                    CREDENTIAL_BROKER,
+                    COST_EXPORT,
+                    COMMITMENT_REPORT,
+                    TOPOLOGY_SOURCE,
+                }
             ),
         )
     finally:

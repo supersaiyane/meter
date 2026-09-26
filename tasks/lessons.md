@@ -217,15 +217,25 @@ nothing, here the checker worked and the shell discarded its verdict.
 
 **Correction:** self caught, one command later.
 
-**Rule:** never put a checker in a pipeline whose exit code decides anything. Run
-it on its own line and read the result, or use `set -o pipefail`. When chaining a
-commit behind a check, chain it behind the check itself and never behind a
-formatter of the check's output. `make verify` is immune because each step is its
-own recipe line; only my ad hoc chains are exposed.
+**Rule:** a checker and a commit never appear in the same Bash call. The check runs
+alone, redirected to a file, with `echo "exit: $?"` on the next line, and I read
+that number. The commit is a separate call made after reading it.
+
+Rewritten 2026-09-26, after it happened a second time. The first version said
+"never put a checker in a pipeline whose exit code decides anything", which is a
+thing to remember at the moment I am typing the pipeline, and that is the moment I
+am thinking about something else.
+
+That removes the judgement. There is nothing to notice, because there is no
+pipeline and no `&&` for a pipe to sit in front of.
+
+`make verify` was always immune, because each step is its own recipe line. Only ad
+hoc chains are exposed, and the second occurrence was `pytest ... | tail -6` with
+`git add && git commit` after it, which committed three failing tests.
 
 **Triggers:** any `| tail`, `| head` or `| grep` on mypy, ruff, pytest or tsc;
-any `&& git commit`; and the words "it passed" about output I filtered rather
-than read.
+any `&& git commit` or `&& git add`; a Bash call that both checks and commits; and
+the words "it passed" about output I filtered rather than read.
 
 ## 2026-09-21: a registry entry that landed in the wrong list
 

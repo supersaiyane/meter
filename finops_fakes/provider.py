@@ -24,11 +24,13 @@ from finops_core.domain.org import OrgNode
 from finops_core.domain.quota import QuotaUsage
 from finops_core.domain.resource import ResourceRef
 from finops_core.domain.tenant import Scope
+from finops_core.domain.topology import CoverageCause, Shortfall, SliceRead
 from finops_core.errors import AccessDenied, CollectionError
 from finops_core.ports.metrics import MetricRequest
 from finops_fakes import fixtures
 from finops_fakes.commitment import FakeCommitmentReport
 from finops_fakes.cur import FakeCostExport
+from finops_fakes.topology import AGGREGATOR, FakeTopologySource
 
 COLLECTOR = "fake"
 
@@ -110,6 +112,50 @@ class FakeProvider:
                 collector=COLLECTOR,
                 detail="the fixture organization does not contain this account",
             )
+
+    # -- TopologySource ----------------------------------------------------
+
+    @property
+    def enrolled_slices(self) -> tuple[tuple[AccountKey, str | None], ...]:
+        return FakeTopologySource().enrolled_slices
+
+    def read_slice(self, account: AccountKey, region: str | None) -> SliceRead:
+        """One slice of the generated estate, with what it could not read named.
+
+        **A planned failure becomes a shortfall here, not an exception.** Every other
+        method on this class raises the planned error, because for every other port a
+        refusal means the answer is unknown and unknown is not zero. This port reports
+        on partial success, so a refusal that reached the caller as an exception would
+        discard the slices already read and leave nothing to write a PARTIAL coverage
+        row from. The contract asserts it for both providers.
+
+        An account the fixture organization does not contain still raises, because
+        that is not a fact about the estate: no slice was read and there is nothing
+        partial to report.
+        """
+        if not self._known(account):
+            raise AccessDenied(
+                scope_key=str(account),
+                collector=COLLECTOR,
+                detail="the fixture organization does not contain this account",
+            )
+        scope_key = str(account) if region is None else f"{account}:{region}"
+        planned = self._failures.get(scope_key) or self._failures.get(str(account))
+        if planned is not None:
+            return SliceRead(
+                account_key=account,
+                region_id=region,
+                nodes=(),
+                edges=(),
+                shortfalls=(
+                    Shortfall(
+                        source=AGGREGATOR,
+                        cause=CoverageCause(planned.cause),
+                        detail="planned by the fake provider",
+                    ),
+                ),
+            )
+        return FakeTopologySource().read_slice(account, region)
 
     # -- CredentialBroker --------------------------------------------------
 

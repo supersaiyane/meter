@@ -301,6 +301,25 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0",
     ),
     ScheduleEntry(
+        collector="inventory",
+        cadence_seconds=DAILY,
+        reason=(
+            "The graph and its coverage, from the Config aggregator plus the four APIs "
+            "Config does not cover. Daily, and it is the floor rather than a comfortable "
+            "choice. FEAT-044 asks about a change somebody made this morning, so a day "
+            "old graph answers about yesterday's estate, which argues for six hourly. "
+            "Against that: five calls per slice, so three hundred accounts across eleven "
+            "regions is about sixteen thousand calls a run, and four runs a day is where "
+            "the throttle rather than the price becomes the constraint. The calls "
+            "themselves are free, which is why the estimate below is nought: the money in "
+            "FEAT-030 is the Config recorder, which charges per configuration item "
+            "recorded and runs continuously whatever this cadence says. ADR-0012 makes "
+            "this a row so the argument can be settled with a number from a real estate "
+            "rather than from this paragraph."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
         collector="finops_score",
         cadence_seconds=SIX_HOURLY,
         reason=(

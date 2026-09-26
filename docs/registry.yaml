@@ -38,9 +38,9 @@ subprojects:
   depends_on: P0, P1
 - id: P4
   name: Inventory and Topology
-  status: Not started
-  spec: ''
-  plan: ''
+  status: Delivered
+  spec: specs/2026-09-20-p4-inventory-and-topology-design.md
+  plan: plans/P4-implementation-plan.md
   depends_on: P0
 - id: P5
   name: Quotas and Limits
@@ -238,19 +238,19 @@ features:
 - id: FEAT-030
   name: AWS Config aggregator inventory by region and zone
   subproject: P4
-  status: Specified
+  status: Delivered
   detail: '[P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.1, [P4 plan](docs/plans/P4-implementation-plan.md)'
   doc: docs/features/FEAT-030-config-aggregator-inventory.md
 - id: FEAT-031
   name: Topology graph, node and edge model
   subproject: P4
-  status: Specified
+  status: Delivered
   detail: '[P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.2, [P4 plan](docs/plans/P4-implementation-plan.md)'
   doc: docs/features/FEAT-031-topology-graph.md
 - id: FEAT-032
   name: Topology map interface
   subproject: P4
-  status: Specified
+  status: Delivered
   detail: '[P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 9, [P4 plan](docs/plans/P4-implementation-plan.md)'
   doc: docs/features/FEAT-032-topology-map-interface.md
 - id: FEAT-033
@@ -456,6 +456,14 @@ adrs:
   decision: The fakes live outside the production packages, kept there by three mechanisms
   status: Accepted
   doc: docs/adr/ADR-0022-fakes-outside-the-production-packages.md
+- id: ADR-0023
+  decision: A coverage cause is the error taxonomy plus one member, never attempted
+  status: Accepted
+  doc: docs/adr/ADR-0023-coverage-cause-is-the-taxonomy-plus-one.md
+- id: ADR-0024
+  decision: One collector owns a slice's graph, with a composite source rather than two schedules
+  status: Accepted
+  doc: docs/adr/ADR-0024-one-collector-owns-a-slice.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'
@@ -2859,6 +2867,26 @@ issues:
     two orderings equal did not catch it, because they agreed about a package neither mentioned.
     tests/scripts/test_layer_agreement.py now asserts every declared package has a layer, and the
     constraint was probed by importing finops_api and confirming it breaks'
+- id: ISS-200
+  severity: MEDIUM
+  status: OPEN
+  summary: finops_providers/aws/config_inventory.py has never made a call. Every response shape in it is read from the AWS Config advanced query documentation and from nothing else, and the tests answer from a literal
+  detail: 'Three mappings are the part a first real call will correct, and the module docstring names all three: the resource type to node kind table, the prose relationship names, and the set of types treated as global rather than regional. The last is the least certain, because Config records a global resource under whichever region had global recording enabled, so awsRegion is a fact about our own configuration rather than about the resource'
+- id: ISS-201
+  severity: LOW
+  status: OPEN
+  summary: The node kind enumeration has fourteen members and the estate has more kinds of thing than that, so a container cluster, a cache, a stream, a transit gateway and a peering connection all draw as OTHER
+  detail: 'Ten of the twenty four resource types the generated estate contains map to OTHER. resource_type travels beside node_kind so a screen can still name them, and the fourteen are fixed by the P4 specification and held by a check constraint, so widening them is a migration. The edge kinds have the same gap in one place: replication has no member, and a read replica is joined with ROUTES_TO, which is the closest of the seven and not the right word. An unmapped type is deliberately not a coverage shortfall, because an estate with a fleet of clusters would then be PARTIAL on every run forever'
+- id: ISS-202
+  severity: MEDIUM
+  status: OPEN
+  summary: finops_providers/aws/topology.py has never made a call. The four APIs it reads, Transit Gateway attachments, VPC peering, PrivateLink endpoint connections and IAM trust policies, are exercised against clients that answer from a literal
+  detail: 'The trust policy parser is the part most likely to be wrong, because the document arrives URL encoded as a string and the adapter reads only account principals from it. Service and federated principals are skipped on purpose, since an edge to ec2.amazonaws.com would put every instance role in every other one''s blast radius. The ARN builders are the second: three of the four APIs return bare identifiers and topology_node.provider_id is an ARN everywhere else, so a partition or a service prefix that is wrong would produce a node that never joins the one Config wrote'
+- id: ISS-203
+  severity: MEDIUM
+  status: OPEN
+  summary: infra/terraform/config has never been planned and never been applied, which is what done means for TASK-P4-010 rather than a caveat on it. No AWS Config recorder exists, so every figure in its COST.md is modelled and none is measured
+  detail: 'terraform validate and fmt check pass on the stack and make tf-validate runs them on all four. The recorders cost money per configuration item, so provisioning them before the estimate has been argued with somebody who owns the bill is the failure ISS-012 exists to prevent. The least certain assumption is four configuration items per resource per month: an estate with autoscaling groups cycling instances is very much more, and at ten the estimate is 3600 USD rather than 1440. Constraint 7 tags every resource finops:module equals config, so the real figure will appear beside the estimate on the platform cost screen'
 open_questions:
 - id: OPEN-07
   question: What does the cost screen show for a tenant whose first ingest has not run, an

@@ -24,9 +24,17 @@ import {
   realizedSavingsFixture,
   scoresFixture,
 } from './fixtures/waste';
+import {
+  graphCoverageFixture,
+  inventoryRootsFixture,
+  subgraphFixture,
+} from './fixtures/topology';
 import type {
   ApiAdhocQuery,
   Account,
+  ApiGraphCoverage,
+  ApiInventoryRoots,
+  ApiSubgraph,
   ApiCommitments,
   ApiCostAnomalies,
   ApiCostDay,
@@ -309,4 +317,58 @@ export function useEnforcementActions() {
     '/api/v1/query/enforcement',
     enforcementActionsFixture,
   );
+}
+/**
+ * The P4 surfaces. FEAT-030 and FEAT-032.
+ *
+ * Three hooks for three routes, and the subgraph hook takes its bounds as arguments
+ * rather than holding them, because the depth and the node cap are things a reader
+ * changes on the screen and a hook with them baked in would need a second hook per
+ * combination.
+ */
+export function useInventoryRoots(nodeKind?: string) {
+  const query = nodeKind === undefined ? '' : `?node_kind=${encodeURIComponent(nodeKind)}`;
+  return useQuerySurface<ApiInventoryRoots>(
+    ['inventory-roots', nodeKind ?? 'all'],
+    '/api/v1/inventory/roots',
+    `/api/v1/inventory/roots${query}`,
+    inventoryRootsFixture,
+  );
+}
+
+export function useGraphCoverage() {
+  return useQuerySurface<ApiGraphCoverage>(
+    ['inventory-coverage'],
+    '/api/v1/inventory/coverage',
+    '/api/v1/inventory/coverage',
+    graphCoverageFixture,
+  );
+}
+
+/**
+ * One subgraph, by root.
+ *
+ * `enabled` is false until a root is chosen, because a map with no root is not a
+ * request that can be made and firing one with an empty identifier would produce a
+ * 404 the screen would then have to explain away.
+ */
+export function useTopologySubgraph(
+  rootId: string | null,
+  bounds: { readonly depth: number; readonly nodes: number },
+) {
+  const client = useApi();
+  const path =
+    rootId === null
+      ? ''
+      : `/api/v1/inventory/topology/${rootId}?depth=${String(bounds.depth)}` +
+        `&nodes=${String(bounds.nodes)}`;
+  return useQuery<Resolved<ApiEnvelope<ApiSubgraph>>>({
+    queryKey: ['inventory-topology', rootId, bounds.depth, bounds.nodes],
+    queryFn: resolveSurface(
+      '/api/v1/inventory/topology/{node_id}',
+      () => client.get<ApiSubgraph>(path),
+      () => subgraphFixture(rootId ?? ''),
+    ),
+    enabled: rootId !== null,
+  });
 }

@@ -233,11 +233,22 @@ def test_node_counts_follow_the_pods_at_quarter_end() -> None:
 # -------------------------------------------------------------------- P4
 
 
-def test_every_edge_joins_two_known_nodes() -> None:
+def test_every_edge_leaves_a_known_node_and_one_arrives_at_a_boundary() -> None:
+    """The rule changed with TASK-P4-002 and this is the new one, stated in both
+    halves so neither can loosen.
+
+    Every edge's origin is a node the estate holds, because `topology_edge`
+    references `topology_node` on that column and an edge out of nowhere would fail
+    the write. A target need not be, because that is where a cross account edge
+    points, and exactly one target here is a boundary: the denied account's VPC,
+    known only from the far end of the attachment the platform account owns.
+    """
     ids = {n.node_id for n in topology.nodes()}
     assert len(ids) == len(topology.nodes())
     for e in topology.edges():
-        assert e.from_node_id in ids and e.to_node_id in ids
+        assert e.from_node_id in ids, e.from_node_id
+    boundaries = {e.to_node_id for e in topology.edges()} - ids
+    assert boundaries == {topology.DENIED_VPC}
 
 
 def test_a_security_group_references_itself() -> None:
@@ -259,11 +270,23 @@ def test_cross_account_edges_exist_and_name_their_source() -> None:
 
 
 def test_every_slice_has_exactly_one_coverage_row_and_a_cause_when_not_complete() -> None:
+    """One row per account and region, plus one global slice per account, which is
+    where the IAM roles and the TRUSTS edges between them live."""
     rows = list(topology.coverage_rows())
-    assert len(rows) == len(fixtures.ACCOUNT_IDS) * len(shape.REGIONS)
+    assert len(rows) == len(fixtures.ACCOUNT_IDS) * (len(shape.REGIONS) + 1)
+    assert len({(r["sub_account_id"], r["region_id"]) for r in rows}) == len(rows)
     assert {r["state"] for r in rows} == {"COMPLETE", "PARTIAL", "UNREAD"}
     for r in rows:
         assert (r["state"] == "COMPLETE") == (r["cause"] is None)
+
+
+def test_the_coverage_counts_account_for_every_node_and_edge() -> None:
+    """A slice with nothing in it is COMPLETE and empty, which is what makes it
+    distinguishable from an unread one without a second query. That only holds if
+    every node landed in exactly one slice's count."""
+    rows = list(topology.coverage_rows())
+    assert sum(_number(r, "node_count") for r in rows) == len(list(topology.node_rows()))
+    assert sum(_number(r, "edge_count") for r in rows) == len(list(topology.edge_rows()))
 
 
 # -------------------------------------------------------------------- P5
@@ -325,6 +348,10 @@ def test_every_planted_code_on_a_spec_or_workload_is_in_the_manifest() -> None:
 def test_every_planted_resource_subject_exists() -> None:
     known = {s.resource_id for s in utilization.SPECS} | {w.key for w in containers.WORKLOADS}
     known |= {n.node_id for n in topology.nodes()}
+    # A boundary node is a legitimate subject. TOPOLOGY_EXTERIOR_ONLY_NODE is planted
+    # precisely because the denied account's VPC is known only from the far end of an
+    # edge, so it has no node row and is still a thing the estate makes a claim about.
+    known |= {e.to_node_id for e in topology.edges()}
     for p in planted.PLANTED:
         for subject in p.subjects:
             if "/" in subject and not subject.startswith(("fake-", "*")):

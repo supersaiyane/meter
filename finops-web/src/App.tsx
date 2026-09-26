@@ -12,6 +12,7 @@ import { HomeScreen } from './screens/HomeScreen';
 import { FreshnessScreen } from './screens/FreshnessScreen';
 import { IngestScreen } from './screens/IngestScreen';
 import { OrganizationScreen } from './screens/OrganizationScreen';
+import { TopologyScreen } from './screens/TopologyScreen';
 import { QueryFindingDetailScreen } from './screens/QueryFindingDetailScreen';
 import { CostScreen } from './screens/CostScreen';
 import { CostAllocationScreen } from './screens/CostAllocationScreen';
@@ -90,6 +91,7 @@ export function App({
                 <Route path="/waste/score" element={<WasteScoreScreen />} />
                 <Route path="/inventory/accounts" element={<AccountsScreen />} />
                 <Route path="/inventory/organization" element={<OrganizationScreen />} />
+        <Route path="/inventory/topology" element={<TopologyScreen />} />
                 <Route path="/governance/queries" element={<QueryFindingsScreen />} />
                 <Route path="/governance/queries/:id" element={<QueryFindingDetailScreen />} />
                 <Route path="/governance/instances" element={<QuerySurfacesScreen />} />

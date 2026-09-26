@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P4 |
-| Status | Specified |
+| Status | Delivered |
 | Specification | [P4 spec](../specs/2026-09-20-p4-inventory-and-topology-design.md), section 5.1 |
 | Tasks | TASK-P4-002, TASK-P4-003, TASK-P4-006, TASK-P4-010 |
 | Refresh cadence | 6 hours, plus change driven |
@@ -25,10 +25,30 @@ Known cost risk: recording all resource types organization wide is a five figure
 An organization wide AWS Config aggregator supplies every resource with its region
 and availability zone, and most of the relationships FEAT-031 needs.
 
-**Selective recording**, decided 2026-09-20 against ISS-012: continuous recording
-for the resource types the graph is built from and the ones carrying cost, periodic
-for stable types, nothing for types no feature reads. The type list lives in
-Terraform so what is recorded is reviewable in a diff.
+**Selective recording**, decided 2026-09-20 against ISS-012: continuous recording for
+the resource types the graph is built from and the ones carrying cost, and nothing for
+types no feature reads. The list lives in `infra/terraform/config/resource_types.tf` so
+what is recorded is reviewable in a diff, grouped by the feature that needs each group,
+with the four deliberately excluded types and the reason for each.
+
+**What it costs, modelled.** Twenty two resource types, three hundred accounts, two
+regions with a recorder, two hundred recorded resources per account and region, and four
+configuration items per resource per month, at 0.003 USD per item, is **1,440 USD a
+month**. Every figure in that sentence is modelled and none is measured: no recorder has
+ever run, ISS-203. `infra/terraform/config/COST.md` carries the working and says which
+assumption is least certain, which is the four items per resource: an estate with
+autoscaling groups cycling instances is very much more, and at ten the estimate is 3,600
+USD. The same estate with `AllSupported` recording is modelled at about 8,600 USD, which
+is the five figure line item ISS-012 warns about and the number this decision avoids.
+
+The arithmetic is also in `cost.tf` as locals and in an output, so a plan prints it and a
+diff that adds a resource type or a region moves the number where a reviewer sees it.
+Constraint 7 tags every resource `finops:module = config`, so the real bill will appear
+beside the estimate on the platform cost screen rather than in a console.
+
+**Nothing has been planned and nothing has been applied.** That is what done means for
+TASK-P4-010 rather than a caveat on it. `make tf-validate` runs `terraform validate` on
+all four stacks and `make lint` runs `fmt -check` on them.
 
 ## Failure behaviour
 

@@ -1,0 +1,385 @@
+"""The three P4 routes, called rather than imported.
+
+TASK-P2-021 wrote six routes that imported cleanly, passed their tests and returned 500 on
+every real call. Every case here goes through the client.
+
+Two things carry this file. Whether the coverage travels in the envelope, so a screen cannot
+draw the map without the list of slices it is missing; and whether the banner counts slices
+rather than accounts or rows, which is asserted against another route because a number that
+looks plausible on its own is how that defect survived three times.
+"""
+
+from __future__ import annotations
+
+from datetime import UTC, datetime
+from typing import Any
+from uuid import UUID, uuid4
+
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import Engine, text
+
+from finops_api.routes.inventory import NO_SUCH_NODE
+from finops_core.config import Settings
+from finops_core.domain.account import AccountKey, Provider
+from finops_core.domain.tenant import Scope
+from finops_core.domain.topology import EdgeKind, NodeKind, node_id_for
+from tests.api.test_query_routes import auth, client_for
+
+pytestmark = pytest.mark.integration
+
+NOW = datetime(2026, 9, 26, 6, 0, tzinfo=UTC)
+FETCHED = datetime(2026, 9, 26, 6, 5, tzinfo=UTC)
+MINE = "111122223333"
+THEIRS = "444455556666"
+REGION = "eu-west-1"
+REFUSED_REGION = "eu-north-1"
+
+TOPOLOGY = "/api/v1/inventory/topology"
+COVERAGE = "/api/v1/inventory/coverage"
+ROOTS = "/api/v1/inventory/roots"
+ACCOUNTS = "/api/v1/accounts"
+
+INSERT_ACCOUNT = text(
+    "INSERT INTO cloud_account (account_pk, tenant_id, provider, account_id, name, status, "
+    "as_of, collected_at) VALUES (:pk, :t, 'aws', :a, :a, 'ACTIVE', :at, :at) "
+    "ON CONFLICT DO NOTHING"
+)
+INSERT_RUN = text(
+    "INSERT INTO ingest_run (run_id, tenant_id, collector, scope_key, idempotency_key, "
+    "status, as_of_window_start, as_of_window_end) "
+    "VALUES (:run, :t, 'inventory', 'scope', :key, 'SUCCEEDED', :at, :at)"
+)
+INSERT_NODE = text(
+    "INSERT INTO topology_node (node_id, tenant_id, ingest_run_id, sub_account_id, "
+    "provider_id, node_kind, resource_type, region_id, availability_zone, name, as_of, "
+    "collected_at) VALUES (:node, :t, :run, :a, :p, :k, 'AWS::EC2::VPC', :r, NULL, :n, "
+    ":at, :fetched)"
+)
+INSERT_EDGE = text(
+    "INSERT INTO topology_edge (edge_id, tenant_id, ingest_run_id, from_node_id, to_node_id, "
+    "edge_kind, is_cross_account, source, sub_account_id, region_id, as_of, collected_at) "
+    "VALUES (:e, :t, :run, :frm, :to, :kind, :cross, 'CONFIG_RELATIONSHIP', :a, :r, :at, "
+    ":fetched)"
+)
+INSERT_COVERAGE = text(
+    "INSERT INTO graph_coverage (coverage_id, tenant_id, ingest_run_id, sub_account_id, "
+    "region_id, state, cause, node_count, edge_count, as_of, collected_at) "
+    "VALUES (:c, :t, :run, :a, :r, :s, :cause, 1, 1, :at, :fetched)"
+)
+
+
+def arn(account: str, region: str | None, name: str) -> str:
+    return f"arn:aws:ec2:{region or 'global'}:{account}:vpc/{name}"
+
+
+def identifier(tenant: UUID, account: str, region: str | None, name: str) -> UUID:
+    return node_id_for(tenant_id=tenant, provider_id=arn(account, region, name))
+
+
+def seed(engine: Engine, tenant: UUID, *, fan_out: int = 3) -> None:
+    """A VPC with `fan_out` subnets, one cross account edge, and one refused region.
+
+    The refused region holds nothing, which is the point: a reader has to be able to tell it
+    from a region that genuinely has nothing, and the coverage row is the only thing that
+    can.
+    """
+    with engine.begin() as connection:
+        run = uuid4()
+        for account in (MINE, THEIRS):
+            connection.execute(
+                INSERT_ACCOUNT, {"pk": uuid4(), "t": tenant, "a": account, "at": NOW}
+            )
+        connection.execute(INSERT_RUN, {"run": run, "t": tenant, "key": str(run), "at": NOW})
+
+        def add_node(account: str, name: str, kind: NodeKind) -> None:
+            connection.execute(
+                INSERT_NODE,
+                {
+                    "node": identifier(tenant, account, REGION, name),
+                    "t": tenant,
+                    "run": run,
+                    "a": account,
+                    "p": arn(account, REGION, name),
+                    "k": kind.value,
+                    "r": REGION,
+                    "n": name,
+                    "at": NOW,
+                    "fetched": FETCHED,
+                },
+            )
+
+        def add_edge(origin: tuple[str, str], target: tuple[str, str], *, cross: bool) -> None:
+            connection.execute(
+                INSERT_EDGE,
+                {
+                    "e": uuid4(),
+                    "t": tenant,
+                    "run": run,
+                    "frm": identifier(tenant, origin[0], REGION, origin[1]),
+                    "to": identifier(tenant, target[0], REGION, target[1]),
+                    "kind": EdgeKind.PEERS_WITH.value if cross else EdgeKind.CONTAINS.value,
+                    "cross": cross,
+                    "a": origin[0],
+                    "r": REGION,
+                    "at": NOW,
+                    "fetched": FETCHED,
+                },
+            )
+
+        add_node(MINE, "vpc", NodeKind.VPC)
+        for index in range(fan_out):
+            add_node(MINE, f"subnet-{index:03d}", NodeKind.SUBNET)
+            add_edge((MINE, "vpc"), (MINE, f"subnet-{index:03d}"), cross=False)
+        add_node(THEIRS, "far", NodeKind.VPC)
+        add_edge((MINE, "vpc"), (THEIRS, "far"), cross=True)
+
+        for account, region, state, cause in (
+            (MINE, REGION, "COMPLETE", None),
+            (MINE, REFUSED_REGION, "PARTIAL", "AccessDenied"),
+            (MINE, None, "COMPLETE", None),
+            (THEIRS, REGION, "COMPLETE", None),
+        ):
+            connection.execute(
+                INSERT_COVERAGE,
+                {
+                    "c": uuid4(),
+                    "t": tenant,
+                    "run": run,
+                    "a": account,
+                    "r": region,
+                    "s": state,
+                    "cause": cause,
+                    "at": NOW,
+                    "fetched": FETCHED,
+                },
+            )
+
+
+def everything(tenant: UUID) -> Scope:
+    return Scope(tenant_id=tenant, is_global=True, accounts=frozenset())
+
+
+def only(tenant: UUID, account: str) -> Scope:
+    return Scope(
+        tenant_id=tenant,
+        is_global=False,
+        accounts=frozenset({AccountKey(provider=Provider.AWS, account_id=account)}),
+    )
+
+
+def get(client: TestClient, token: str, path: str, **params: Any) -> dict[str, Any]:
+    response = client.get(path, headers=auth(token), params=params)
+    assert response.status_code == 200, f"{path} returned {response.status_code}: {response.text}"
+    result = response.json()
+    assert isinstance(result, dict)
+    return result
+
+
+def root_path(tenant: UUID) -> str:
+    return f"{TOPOLOGY}/{identifier(tenant, MINE, REGION, 'vpc')}"
+
+
+# --- the subgraph route -----------------------------------------------------
+
+
+def test_the_subgraph_route_answers_and_carries_its_coverage(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The criterion. A screen cannot draw the map without the list of slices it is missing,
+    because the list is in the same payload."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    body = get(client, token, root_path(tenant_id))
+    data = body["data"]
+    assert len(data["nodes"]) == 5
+    assert data["coverage"], "a subgraph with no coverage is the one thing P4 forbids"
+    assert {entry["account_id"] for entry in data["coverage"]} == {MINE, THEIRS}
+
+
+def test_an_edge_leaving_the_graph_is_marked(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """A boundary rather than a line to nowhere. Under a narrow scope the far VPC is not
+    drawn, and the edge to it has to say so or the map draws an arrow into empty space."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, only(tenant_id, MINE), settings)
+    body = get(client, token, root_path(tenant_id))
+    crossing = [edge for edge in body["data"]["edges"] if edge["is_cross_account"]]
+    assert len(crossing) == 1
+    assert crossing[0]["leaves_the_graph"] is True
+    assert crossing[0]["source"] == "CONFIG_RELATIONSHIP"
+
+
+def test_a_root_nothing_has_collected_is_a_404(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """An empty graph would say the resource is connected to nothing, which is a different
+    and unearned claim."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    response = client.get(f"{TOPOLOGY}/{uuid4()}", headers=auth(token))
+    assert response.status_code == 404
+    assert NO_SUCH_NODE in response.json()["detail"]
+
+
+def test_the_route_enforces_the_cap_and_reports_the_truncation(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """TASK-P4-009's criterion, asserted at the route rather than only in the query layer. A
+    map that quietly drew four of twelve nodes is indistinguishable from an estate with
+    four."""
+    seed(engine, tenant_id, fan_out=11)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    body = get(client, token, root_path(tenant_id), nodes=4)
+    data = body["data"]
+    assert len(data["nodes"]) == 4
+    assert data["omitted_nodes"] == 9
+    assert data["max_nodes"] == 4
+
+
+def test_a_cap_above_the_ceiling_is_refused_by_the_route(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """A bound any caller can widen without limit is not a bound."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    response = client.get(root_path(tenant_id), headers=auth(token), params={"nodes": 999_999})
+    assert response.status_code == 422
+
+
+def test_the_depth_bound_is_a_parameter_the_caller_can_lower(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    body = get(client, token, root_path(tenant_id), depth=0)
+    assert len(body["data"]["nodes"]) == 1
+    assert body["data"]["max_depth"] == 0
+    assert body["data"]["edges"] == []
+
+
+def test_the_inward_walk_is_a_parameter_too(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    subnet = identifier(tenant_id, MINE, REGION, "subnet-000")
+    outward = get(client, token, f"{TOPOLOGY}/{subnet}")
+    inward = get(client, token, f"{TOPOLOGY}/{subnet}", inward=True)
+    assert len(outward["data"]["nodes"]) == 1
+    assert len(inward["data"]["nodes"]) == 2
+
+
+# --- the banner counts slices, asserted against another route ---------------
+
+
+def test_the_banner_counts_slices_and_says_so(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    body = get(client, token, root_path(tenant_id))
+    coverage = body["meta"]["scope_coverage"]
+    assert coverage["unit"] == "slices"
+    # Two slices crossed, both complete, so this map is whole even though the estate has a
+    # refused region elsewhere.
+    assert (coverage["visible"], coverage["total"]) == (2, 2)
+
+
+def test_the_slice_unit_is_not_the_account_unit_another_route_uses(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The assertion the criterion asks for. A plausible looking number in this slot has been
+    the defect three times, and comparing it with a route that counts a different unit is
+    what stops it being plausible."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    estate = get(client, token, COVERAGE)["meta"]["scope_coverage"]
+    accounts = get(client, token, ACCOUNTS)["meta"]["scope_coverage"]
+    assert estate["unit"] == "slices"
+    assert accounts["unit"] == "accounts"
+    # Four slices across two accounts, so the two denominators cannot be the same number.
+    assert estate["total"] == 4
+    assert accounts["total"] == 2
+
+
+def test_the_estate_banner_is_partial_while_a_slice_is_refused(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    body = get(client, token, COVERAGE)
+    (incomplete,) = body["data"]["incomplete"]
+    assert (incomplete["region_id"], incomplete["state"]) == (REFUSED_REGION, "PARTIAL")
+    assert incomplete["cause"] == "AccessDenied"
+    assert body["meta"]["scope_coverage"]["is_partial"] is True
+    assert body["meta"]["degraded"] is True
+
+
+# --- the scope, at the route -------------------------------------------------
+
+
+def test_a_narrow_scope_sees_less_of_the_graph_than_a_global_one(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    wide, wide_token = client_for(engine, everything(tenant_id), settings)
+    narrow, narrow_token = client_for(engine, only(tenant_id, MINE), settings)
+    whole = get(wide, wide_token, root_path(tenant_id))["data"]
+    part = get(narrow, narrow_token, root_path(tenant_id))["data"]
+    assert len(part["nodes"]) < len(whole["nodes"])
+    assert {node["account_id"] for node in part["nodes"]} == {MINE}
+
+
+def test_a_narrow_scope_sees_only_its_own_coverage(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    client, token = client_for(engine, only(tenant_id, THEIRS), settings)
+    body = get(client, token, COVERAGE)
+    assert body["data"]["incomplete"] == []
+    assert body["meta"]["scope_coverage"]["total"] == 1
+
+
+def test_a_narrow_scope_cannot_reach_another_accounts_root(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    client, token = client_for(engine, only(tenant_id, THEIRS), settings)
+    response = client.get(root_path(tenant_id), headers=auth(token))
+    assert response.status_code == 404
+
+
+# --- the roots list ---------------------------------------------------------
+
+
+def test_the_roots_route_offers_somewhere_to_start(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    body = get(client, token, ROOTS)
+    assert len(body["data"]["roots"]) == 5
+    assert body["meta"]["scope_coverage"]["unit"] == "accounts"
+
+
+def test_the_roots_route_can_narrow_to_one_kind(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    body = get(client, token, ROOTS, node_kind=NodeKind.VPC.value)
+    assert {one["node_kind"] for one in body["data"]["roots"]} == {"VPC"}
+
+
+def test_every_root_carries_its_provider_identifier_and_type(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """A reader has to be able to find the thing in their own console, and ten of the
+    generated estate's twenty four types draw as OTHER, so the kind alone is not enough."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    for one in get(client, token, ROOTS)["data"]["roots"]:
+        assert one["provider_id"].startswith("arn:aws:")
+        assert one["resource_type"] == "AWS::EC2::VPC"

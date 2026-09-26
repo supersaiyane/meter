@@ -30,3 +30,13 @@ Status values: `Proposed`, `Accepted`, `Superseded by ADR-NNNN`, `Rejected`.
 | 0012 | Collection cadence is data, not code | Accepted |
 | 0013 | Seven rung ladder, disqualification record, security sign off | Accepted |
 | 0014 | Derived documentation is generated from a registry | Accepted |
+| 0015 | Deterministic forecasting is permitted where a language model number is not | Accepted |
+| 0016 | Severity on a cost finding is derived from the money, never chosen | Accepted |
+| 0017 | Nothing is hardcoded, and every feature flag has an owner and an expiry | Accepted |
+| 0018 | The threshold is zero fixable findings, not zero findings | Accepted |
+| 0019 | Headless component behaviour, our own visual layer | Accepted, styling row superseded by ADR-0021 |
+| 0020 | Seven fixed navigation groups, and the routes they fix | Accepted |
+| 0021 | Plain CSS over a utility framework, against our own tokens | Accepted |
+| 0022 | The fakes live outside the production packages, kept there by three mechanisms | Accepted |
+| 0023 | A coverage cause is the error taxonomy plus one member, never attempted | Accepted |
+| 0024 | One collector owns a slice's graph | Accepted |

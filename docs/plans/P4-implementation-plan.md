@@ -53,7 +53,7 @@ Same contract as P0, P1, P2 and P3. One task, one commit.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-26 |
 | Implements | P4 spec section 5, FEAT-030, FEAT-031 |
 | Delivers | Part of FEAT-031 |
 | Depends on | P0 delivered |
@@ -82,7 +82,7 @@ score against, but only one of them is a fault somebody should fix.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-26 |
 | Implements | P4 spec section 5 |
 | Delivers | Part of FEAT-030 |
 | Depends on | TASK-P4-001 |
@@ -109,7 +109,7 @@ score against, but only one of them is a fault somebody should fix.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-26 |
 | Implements | P4 spec section 4, FEAT-030 |
 | Delivers | Part of FEAT-030 |
 | Depends on | TASK-P4-002 |
@@ -135,7 +135,7 @@ relationships from an organization aggregator.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-26 |
 | Implements | P4 spec section 4, FEAT-031 |
 | Delivers | Part of FEAT-031 |
 | Depends on | TASK-P4-003 |
@@ -164,7 +164,7 @@ boundary is the one most likely to be confidently wrong.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-26 |
 | Implements | P4 spec section 6 |
 | Delivers | Part of FEAT-030 |
 | Depends on | TASK-P4-002 |
@@ -194,7 +194,7 @@ score against.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-26 |
 | Implements | P4 spec section 7, FEAT-030, FEAT-031 |
 | Delivers | FEAT-030 |
 | Depends on | TASK-P4-004, TASK-P4-005 |
@@ -219,7 +219,7 @@ schedule rows.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-26 |
 | Implements | P4 spec sections 6 and 8, FEAT-031 |
 | Delivers | FEAT-031 |
 | Depends on | TASK-P4-006 |
@@ -248,7 +248,7 @@ forgets is FEAT-044, scoring somebody's production change.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-26 |
 | Implements | P4 spec section 8, constraint 3 |
 | Delivers | Part of FEAT-032 |
 | Depends on | TASK-P4-007 |
@@ -273,7 +273,7 @@ forgets is FEAT-044, scoring somebody's production change.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-26 |
 | Implements | P4 spec section 9, FEAT-032 |
 | Delivers | FEAT-032 |
 | Depends on | TASK-P4-008 |
@@ -297,7 +297,7 @@ forgets is FEAT-044, scoring somebody's production change.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-26 |
 | Implements | P4 spec section 10, ISS-012 |
 | Delivers | Part of FEAT-030 |
 | Depends on | TASK-P4-001 |
@@ -330,7 +330,7 @@ becomes a decision or becomes a surprise. Selective recording was decided on
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-26 |
 | Implements | P4 spec section 6, exit criterion 6 |
 | Delivers | FEAT-031 |
 | Depends on | TASK-P4-009 |
