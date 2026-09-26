@@ -301,6 +301,23 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0",
     ),
     ScheduleEntry(
+        collector="waste_parking",
+        cadence_seconds=DAILY,
+        reason=(
+            "Daily, not six hourly with the other two bespoke collectors, and the reason is "
+            "the shape of the thing being measured. A parking window is a property of a "
+            "fortnight folded into a week, so four runs a day would fold almost exactly the "
+            "same fortnight four times and restate the same window. The read is also the "
+            "most expensive in the schedule per run: one metric per resource at hourly "
+            "resolution over fourteen days is 336 data points each, and GetMetricData is "
+            "charged per metric requested. Daily is the cadence at which the answer can "
+            "actually change, because it takes a new day of readings to move a window. "
+            "ADR-0012 and constraint 9 are why this is a row with a reason rather than a "
+            "constant somebody would later have to guess at."
+        ),
+        est_cost_per_run="0.02",
+    ),
+    ScheduleEntry(
         collector="inventory",
         cadence_seconds=DAILY,
         reason=(

@@ -70,6 +70,14 @@ class Settings:
     query_quota_getmetricdata_tps = 50
     run_claim_timeout_minutes = 15
 
+    # FEAT-054's four, which the parking collector refuses to run without, because each one
+    # decides what gets flagged on somebody's production schedule. Same values as
+    # `.env.example`, so the seeded finding is the one a real run would produce.
+    parking_observation_days = 14
+    parking_idle_percent = Decimal("5")
+    parking_minimum_weeks = 2
+    parking_minimum_window_hours = 3
+
 
 class TestItRefusesAnythingNotLocalError:
     def test_a_remote_host_is_refused(self) -> None:
@@ -410,3 +418,33 @@ def test_the_seeded_graph_has_an_edge_leaving_it(engine: object) -> None:
         ).scalar_one()
     assert int(dangling) >= 1
     assert int(crossing) >= 1
+
+
+def test_the_seeded_estate_holds_a_parking_finding(engine: object) -> None:
+    """FEAT-054. A collector wired into the seed that produces nothing is the hollow green
+    signal this project keeps finding: the seed tests pass, `make verify` passes, and the
+    screen the feature was built for is empty.
+
+    The estate's development box is busy in business hours and idles at about two percent
+    outside them, so a window exists to be found. If this ever fails it is worth reading the
+    rationale before changing the threshold: an estate whose quiet hours drifted above five
+    percent is a change in the fake, not a change in the rule.
+    """
+    from sqlalchemy import text as sql
+
+    seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
+    with engine.connect() as connection:  # type: ignore[attr-defined]
+        rows = connection.execute(
+            sql(
+                "SELECT resource_id, estimated_monthly_saving, rationale FROM recommendation "
+                "WHERE tenant_id = :t AND waste_class = 'PARKABLE_WINDOW'"
+            ),
+            {"t": seed_demo.DEMO_TENANT},
+        ).all()
+    assert rows, "the seeded estate produced no parking finding, so the screen would be empty"
+    # Every one of them publishes its working and labels the clock, because a window in an
+    # unnamed timezone is one nobody can act on. ISS-206.
+    for row in rows:
+        assert row.estimated_monthly_saving > 0
+        assert "UTC" in row.rationale
+        assert "observed weeks" in row.rationale

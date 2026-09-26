@@ -95,6 +95,7 @@ class WasteClass(StrEnum):
     METRIC_UNQUERIED = "METRIC_UNQUERIED"
     ALARM_INSUFFICIENT_DATA = "ALARM_INSUFFICIENT_DATA"
     CONTAINER_RIGHTSIZE = "CONTAINER_RIGHTSIZE"
+    PARKABLE_WINDOW = "PARKABLE_WINDOW"
 
 
 #: Where confidence steps up. Two weeks is the floor for existing at all, a month

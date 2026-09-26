@@ -35,6 +35,7 @@ import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 from typing import Any
 from urllib.parse import urlsplit
 from uuid import UUID, uuid4
@@ -77,6 +78,7 @@ from finops_ingest.collectors.recommendations import RecommendationCollector
 from finops_ingest.collectors.score import ScoreCollector
 from finops_ingest.collectors.waste_cloudwatch import WasteCloudWatchCollector
 from finops_ingest.collectors.waste_compute import Candidate, WasteComputeCollector
+from finops_ingest.collectors.waste_parking import Parkable, WasteParkingCollector
 from finops_ingest.ledger import RunLedger
 from finops_ingest.registry import CollectorContext, install_default_schedule
 from finops_query.parser import GrafanaQueryParser
@@ -276,15 +278,19 @@ ESTATE_AT = fixtures.AS_OF
 BILL_PERIODS = 5
 
 
-def _always(chosen: list[Candidate]) -> Callable[[CollectorContext], list[Candidate]]:
+def _always[Chosen](chosen: list[Chosen]) -> Callable[[CollectorContext], list[Chosen]]:
     """The candidate list this run was built with, whatever context it is handed.
 
     A named factory rather than a lambda closing over the loop variable. The lambda
     form needs a default argument to capture the current list, which mypy cannot infer
     and which reads like the closure bug it exists to avoid.
+
+    Generic since FEAT-054, because two collectors now take a candidate list and they take
+    different records. Written for `Candidate` alone first, which made the second caller a
+    type error rather than a copy of this function.
     """
 
-    def candidates(_context: CollectorContext) -> list[Candidate]:
+    def candidates(_context: CollectorContext) -> list[Chosen]:
         return chosen
 
     return candidates
@@ -579,6 +585,48 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
                 connection,
                 unit(scope_key=f"aws:{judged}:{chosen[0].region_id}"),
                 "waste_compute",
+                settings=settings,
+            )
+        # FEAT-054. The development box in the fake estate is busy in business hours and
+        # idles at about two percent outside them, so a parking window is there to be found.
+        # Seeded from the same estate and the same clock as the rightsizing findings, because
+        # two collectors disagreeing about what a fortnight looked like would be worse than
+        # either of them being absent.
+        #
+        # `storage_monthly_cost` is None on purpose. The candidate record does not carry the
+        # volume cost, and inventing one would put a number in a rationale that nobody could
+        # reconcile against the bill. The finding says it is not known, which is true.
+        # Once per account, for the same two reasons the rightsizing loop above gives: the
+        # score counts an account as judged by finding a run whose scope key names it, and a
+        # run per account is what the dispatcher actually does. The first draft filtered to
+        # DEMO_ACCOUNT, which holds no EC2 candidates at all, so the collector was handed an
+        # empty list and the guard below skipped it in silence.
+        for parked in sorted({c.account_id for c in ec2_candidates(at=ESTATE_AT)}):
+            parkable = [
+                Parkable(
+                    account_id=c.account_id,
+                    region_id=c.region_id,
+                    resource_id=c.resource_id,
+                    # Compute only, from the monthly figure over the hours in a month. The
+                    # storage share is excluded here and named as not known in the finding,
+                    # because the candidate record does not carry the volume cost and a
+                    # number invented for a rationale is one nobody can reconcile.
+                    hourly_rate=(c.monthly_cost / Decimal("730")).quantize(Decimal("0.0001")),
+                    storage_monthly_cost=None,
+                )
+                for c in ec2_candidates(at=ESTATE_AT)
+                if c.account_id == parked
+            ]
+            written += _through_the_ledger(
+                ledger,
+                WasteParkingCollector(
+                    EstateMetrics(at=ESTATE_AT),
+                    _always(parkable),
+                    clock=lambda: ESTATE_AT,
+                ),
+                connection,
+                unit(scope_key=f"aws:{parked}:{parkable[0].region_id}"),
+                "waste_parking",
                 settings=settings,
             )
         written += _through_the_ledger(

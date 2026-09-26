@@ -1129,3 +1129,56 @@ somebody would quietly remove.
       numbers to point at
 - [ ] It says plainly which parts are fake, because a demo that implies a live
       AWS connection is a demo that creates a promise somebody has to keep
+
+### TASK-P1-022: a coverage gap as a ranked action, not a chart
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | Competitive review 2026-09-26, candidate list, adopted by the owner on 2026-09-26 |
+| Delivers | FEAT-055 |
+| Depends on | TASK-P1-014 delivered, which is the commitment coverage this reads |
+| Estimate | M |
+
+**Goal.** Turn the commitment coverage we already report into recommendations with
+a money figure and a lifecycle, so a coverage gap arrives in the same list as every
+other finding instead of on a chart nobody is accountable for.
+
+**Added after the plan was approved.** Same route as TASK-P2-026 and TASK-P3-021.
+
+**The objection, and what answers it.** We already have a commitments screen, so
+this looks like a second view of one number. The difference is who owns it. A
+coverage percentage on a chart is a fact; a recommendation has an owner, a
+lifecycle and a realized saving measured afterwards, which is the machinery P3
+built and which nothing in P1 uses. A chart is read once a quarter and a finding is
+worked.
+
+**The failure this task exists to avoid.** Recommending a commitment purchase from
+coverage alone. Coverage says what fraction of usage was covered; it does not say
+that usage will continue. A Savings Plan is a one or three year obligation, so a
+recommendation to buy one on the strength of thirty days of steady usage is
+advising somebody to commit real money on our model. The rule is that the finding
+states the commitment term, the break even point in months, and the usage window it
+was computed from, and that the saving is modelled and labelled.
+
+**Acceptance criteria.**
+
+- [ ] A new `WasteClass` member for an uncovered steady usage baseline, with its
+      risk row in `finops_query/actions.py`. Not reversible, because a commitment
+      cannot be handed back, and this is the least reversible finding in the product
+- [ ] The rationale states the term, the break even month and the usage window.
+      A recommendation to commit money that does not publish its working is the
+      thing ADR-0007 exists to prevent
+- [ ] Usage below the observation minimum produces no finding, on the same
+      principle as TASK-P3-021
+- [ ] The saving is modelled, never measured, and the screen labels it. Realized
+      saving is measured later by the existing FEAT-041 machinery
+- [ ] Existing commitment reporting is not changed. This adds a consumer
+
+**Deliberately not in this task.** Buying anything, and recommending a specific
+Savings Plan product. The finding says that a baseline is uncovered and what
+covering it would be worth. Which instrument to use is a procurement decision with
+its own constraints, and a tool that picked one would be wrong in a way nobody
+could see until the term ended.
+
+---

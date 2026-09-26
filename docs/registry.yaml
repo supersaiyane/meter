@@ -379,6 +379,42 @@ features:
   status: Delivered
   detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
   doc: docs/features/FEAT-053-entity-detail-page.md
+- id: FEAT-054
+  name: The hours nothing runs, as a finding
+  subproject: P3
+  status: Delivered
+  detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
+  doc: docs/features/FEAT-054-workload-parking.md
+- id: FEAT-055
+  name: A commitment coverage gap as a ranked action
+  subproject: P1
+  status: Specified
+  detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
+  doc: docs/features/FEAT-055-commitment-coverage-actions.md
+- id: FEAT-056
+  name: The resource list
+  subproject: P4
+  status: Specified
+  detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
+  doc: docs/features/FEAT-056-resource-list.md
+- id: FEAT-057
+  name: Which file manages this resource
+  subproject: P4
+  status: Specified
+  detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
+  doc: docs/features/FEAT-057-iac-state-discovery.md
+- id: FEAT-058
+  name: A performance dimension, underprovisioned as well as oversized
+  subproject: P5
+  status: Planned
+  detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
+  doc: docs/features/FEAT-058-performance-dimension.md
+- id: FEAT-059
+  name: An application layer on the topology graph
+  subproject: P6
+  status: Planned
+  detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
+  doc: docs/features/FEAT-059-application-layer.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -2909,6 +2945,16 @@ issues:
   status: OPEN
   summary: A recommendation from a first party source names a bare provider identifier and topology_node.provider_id is an ARN, so the two do not join and the entity detail page lists no findings for exactly the resources a reader is most likely to open
   detail: 'Measured on 2026-09-26 while building FEAT-053 rather than argued about. The seven bespoke waste_compute candidates carry an ARN and join. The first party findings carry what the source returned, i-oversized and eipalloc-fake in the seeded estate, and match no node. The page reports the count of unmatched findings for this reason, so the gap is visible rather than rendered as a clean resource, and that count is the measurement of how often it happens. Same root cause as the second paragraph of ISS-202: three of the four supplementary APIs return bare identifiers and the ARN is the identity everywhere else. Two ways to close it and the choice is the owner''s. Either normalise the identifier at ingest, which is where FOCUS normalisation already happens and which needs a partition and a service prefix the collector does not always have, or store both the ARN and the bare identifier on the node and join on either, which is a migration and an index. Normalising at ingest is the one that matches constraint 2'
+- id: ISS-206
+  severity: MEDIUM
+  status: OPEN
+  summary: Meter holds no timezone for a tenant, so a parking window is reported in UTC and a team outside UTC has to convert it before they can act on it
+  detail: 'Found on 2026-09-26 building FEAT-054. A window of 19:00 to 08:00 means a different thing to a team in Sydney than to a team in Dublin, and a bare clock time is read by whoever opens the screen as their own. The rationale labels every time UTC and says why, which makes the finding correct rather than convenient: nobody is misled, and somebody still has to do arithmetic before they can act. The fix is a timezone on the tenant, which is one column and a screen setting, and it is not free because every other screen that shows a time then has to decide whether it uses it. Deliberately not done inside a collector: a timezone is a tenant fact and inventing a default there would put a policy decision in the wrong layer'
+- id: ISS-207
+  severity: MEDIUM
+  status: OPEN
+  summary: recommendation.waste_class is a free text column with no check constraint, so the closed list is a convention in Python rather than an invariant, which is exactly what constraint 11 forbids
+  detail: 'Found on 2026-09-26 adding PARKABLE_WINDOW for FEAT-054. The WasteClass docstring says adding a member is a migration rather than a string, and it is not: the column is Text with nothing behind it, so any string reaches the database and any screen that switches on the value silently falls through for one nobody declared. The docstring being wrong is the worse half, because it is the thing a contributor reads before deciding whether they need a migration. Two ways to close it: a check constraint listing the members, which is a migration on every addition and is what constraint 11 asks for, or a lookup table with a foreign key, which is one insert per addition and also tells a reader what the list is. The same question applies to source and lifecycle, which were not checked while looking at this'
 open_questions:
 - id: OPEN-07
   question: What does the cost screen show for a tenant whose first ingest has not run, an

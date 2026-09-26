@@ -108,6 +108,19 @@ class Settings(BaseSettings):
     rightsizing_memory_headroom_percent: int = Field(ge=0)
     rightsizing_memory_headroom_oomkilled_percent: int = Field(ge=0)
 
+    # Workload parking, FEAT-054. Every one of these decides what gets flagged on
+    # somebody's production schedule, so none of them is a literal in a collector.
+    # ADR-0012's argument about cadence applies unchanged: a number in code is a
+    # number nobody can argue with.
+    parking_observation_days: int = Field(ge=14)
+    parking_idle_percent: Decimal
+    #: Two is the floor and the reason is in finops_query/parking.py: one week holds
+    #: exactly one of each weekday, so one bank holiday is indistinguishable from the
+    #: normal shape of the week.
+    parking_minimum_weeks: int = Field(ge=2)
+    #: Shorter than this is not worth a stop and a start.
+    parking_minimum_window_hours: int = Field(ge=1)
+
     # Topology
     max_graph_nodes: int = Field(ge=1)
 

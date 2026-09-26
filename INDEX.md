@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-53 features across 8 sub projects. 20 specified, 7 planned, 10 in build, 16 delivered.
+59 features across 8 sub projects. 23 specified, 9 planned, 10 in build, 17 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -133,6 +133,7 @@ block is caught by `make check-docs`. See
 | [FEAT-023](docs/features/FEAT-023-cost-anomaly-detection.md) | Anomaly detection and ingest of AWS Cost Anomaly Detection | Specified | [roadmap](docs/01-ROADMAP.md) P1 |
 | [FEAT-024](docs/features/FEAT-024-commitment-coverage.md) | Savings Plan and Reserved Instance utilization and coverage | Specified | [roadmap](docs/01-ROADMAP.md) P1 |
 | [FEAT-045](docs/features/FEAT-045-chargeback-export.md) | Chargeback and showback export, CSV | Specified | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
+| [FEAT-055](docs/features/FEAT-055-commitment-coverage-actions.md) | A commitment coverage gap as a ranked action | Specified | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 
 ### P3 Utilization and Rightsizing
 
@@ -146,6 +147,7 @@ block is caught by `make check-docs`. See
 | [FEAT-043](docs/features/FEAT-043-finops-score.md) | FinOps Score, decomposable to the findings that moved it | Delivered | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 9, [P3 plan](docs/plans/P3-implementation-plan.md) |
 | [FEAT-044](docs/features/FEAT-044-blast-radius-scoring.md) | Blast radius scoring from the dependency graph, gating auto apply | Specified | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 12, [P3 plan](docs/plans/P3-implementation-plan.md) |
 | [FEAT-052](docs/features/FEAT-052-top-actions-and-change-risk.md) | Top actions, ranked, with what each change costs if it is wrong | Delivered | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
+| [FEAT-054](docs/features/FEAT-054-workload-parking.md) | The hours nothing runs, as a finding | Delivered | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 
 ### P4 Inventory and Topology
 
@@ -155,6 +157,8 @@ block is caught by `make check-docs`. See
 | [FEAT-031](docs/features/FEAT-031-topology-graph.md) | Topology graph, node and edge model | Delivered | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.2, [P4 plan](docs/plans/P4-implementation-plan.md) |
 | [FEAT-032](docs/features/FEAT-032-topology-map-interface.md) | Topology map interface | Delivered | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 9, [P4 plan](docs/plans/P4-implementation-plan.md) |
 | [FEAT-053](docs/features/FEAT-053-entity-detail-page.md) | One resource, and everything we know about it | Delivered | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
+| [FEAT-056](docs/features/FEAT-056-resource-list.md) | The resource list | Specified | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
+| [FEAT-057](docs/features/FEAT-057-iac-state-discovery.md) | Which file manages this resource | Specified | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 
 ### P5 Quotas and Limits
 
@@ -162,6 +166,7 @@ block is caught by `make check-docs`. See
 | --- | --- | --- | --- |
 | [FEAT-033](docs/features/FEAT-033-quota-utilization.md) | Quota utilization per service per region, with stated coverage gaps | Specified | [P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 5.2, [P5 plan](docs/plans/P5-implementation-plan.md) |
 | [FEAT-034](docs/features/FEAT-034-quota-increase-workflow.md) | Quota increase request drafting and tracking, never submission | Specified | [P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 6, [P5 plan](docs/plans/P5-implementation-plan.md) |
+| [FEAT-058](docs/features/FEAT-058-performance-dimension.md) | A performance dimension, underprovisioned as well as oversized | Planned | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 
 ### P6 Containers
 
@@ -172,6 +177,7 @@ block is caught by `make check-docs`. See
 | [FEAT-037](docs/features/FEAT-037-ecs-task-utilization.md) | ECS task and Fargate utilization, snapped to valid sizes | Specified | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.5, [P6 plan](docs/plans/P6-implementation-plan.md) |
 | [FEAT-047](docs/features/FEAT-047-node-fleet-optimisation.md) | Cluster node fleet optimisation as an integer linear program | Specified | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 3, [P6 plan](docs/plans/P6-implementation-plan.md) |
 | [FEAT-048](docs/features/FEAT-048-predictive-replica-forecasting.md) | Predictive replica forecasting, under the four ADR-0015 conditions | Specified | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 14, [P6 plan](docs/plans/P6-implementation-plan.md) |
+| [FEAT-059](docs/features/FEAT-059-application-layer.md) | An application layer on the topology graph | Planned | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 
 ### P7 Insight and LLM layer
 
@@ -342,7 +348,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**130 FIXED, 69 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**130 FIXED, 71 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -516,6 +522,8 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-202 | MEDIUM | finops_providers/aws/topology.py has never made a call. The four APIs it reads, Transit Gateway attachments, VPC peering, PrivateLink endpoint connections and IAM trust policies, are exercised against clients that answer from a literal | OPEN | The trust policy parser is the part most likely to be wrong, because the document arrives URL encoded as a string and the adapter reads only account principals from it. Service and federated principals are skipped on purpose, since an edge to ec2.amazonaws.com would put every instance role in every other one's blast radius. The ARN builders are the second: three of the four APIs return bare identifiers and topology_node.provider_id is an ARN everywhere else, so a partition or a service prefix that is wrong would produce a node that never joins the one Config wrote |
 | ISS-203 | MEDIUM | infra/terraform/config has never been planned and never been applied, which is what done means for TASK-P4-010 rather than a caveat on it. No AWS Config recorder exists, so every figure in its COST.md is modelled and none is measured | OPEN | terraform validate and fmt check pass on the stack and make tf-validate runs them on all four. The recorders cost money per configuration item, so provisioning them before the estimate has been argued with somebody who owns the bill is the failure ISS-012 exists to prevent. The least certain assumption is four configuration items per resource per month: an estate with autoscaling groups cycling instances is very much more, and at ten the estimate is 3600 USD rather than 1440. Constraint 7 tags every resource finops:module equals config, so the real figure will appear beside the estimate on the platform cost screen |
 | ISS-205 | MEDIUM | A recommendation from a first party source names a bare provider identifier and topology_node.provider_id is an ARN, so the two do not join and the entity detail page lists no findings for exactly the resources a reader is most likely to open | OPEN | Measured on 2026-09-26 while building FEAT-053 rather than argued about. The seven bespoke waste_compute candidates carry an ARN and join. The first party findings carry what the source returned, i-oversized and eipalloc-fake in the seeded estate, and match no node. The page reports the count of unmatched findings for this reason, so the gap is visible rather than rendered as a clean resource, and that count is the measurement of how often it happens. Same root cause as the second paragraph of ISS-202: three of the four supplementary APIs return bare identifiers and the ARN is the identity everywhere else. Two ways to close it and the choice is the owner's. Either normalise the identifier at ingest, which is where FOCUS normalisation already happens and which needs a partition and a service prefix the collector does not always have, or store both the ARN and the bare identifier on the node and join on either, which is a migration and an index. Normalising at ingest is the one that matches constraint 2 |
+| ISS-206 | MEDIUM | Meter holds no timezone for a tenant, so a parking window is reported in UTC and a team outside UTC has to convert it before they can act on it | OPEN | Found on 2026-09-26 building FEAT-054. A window of 19:00 to 08:00 means a different thing to a team in Sydney than to a team in Dublin, and a bare clock time is read by whoever opens the screen as their own. The rationale labels every time UTC and says why, which makes the finding correct rather than convenient: nobody is misled, and somebody still has to do arithmetic before they can act. The fix is a timezone on the tenant, which is one column and a screen setting, and it is not free because every other screen that shows a time then has to decide whether it uses it. Deliberately not done inside a collector: a timezone is a tenant fact and inventing a default there would put a policy decision in the wrong layer |
+| ISS-207 | MEDIUM | recommendation.waste_class is a free text column with no check constraint, so the closed list is a convention in Python rather than an invariant, which is exactly what constraint 11 forbids | OPEN | Found on 2026-09-26 adding PARKABLE_WINDOW for FEAT-054. The WasteClass docstring says adding a member is a migration rather than a string, and it is not: the column is Text with nothing behind it, so any string reaches the database and any screen that switches on the value silently falls through for one nobody declared. The docstring being wrong is the worse half, because it is the thing a contributor reads before deciding whether they need a migration. Two ways to close it: a check constraint listing the members, which is a migration on every addition and is what constraint 11 asks for, or a lookup table with a foreign key, which is one insert per addition and also tells a reader what the list is. The same question applies to source and lifecycle, which were not checked while looking at this |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |

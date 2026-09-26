@@ -654,6 +654,72 @@ built before the thing it gates, and that is the order on purpose.
 
 ---
 
+### TASK-P3-021: the hours nothing runs, as a finding
+
+| Field | Value |
+| --- | --- |
+| Status | Done, 2026-09-26 |
+| Implements | Competitive review 2026-09-26, candidate list, adopted by the owner on 2026-09-26 |
+| Delivers | FEAT-054 |
+| Depends on | TASK-P3-004 delivered, which is the metric read this reuses |
+| Estimate | M |
+
+**Goal.** `finops_ingest/collectors/waste_parking.py` and a new
+`WasteClass.PARKABLE_WINDOW`. Read hourly utilization over fourteen days, fold it
+into a one hundred and sixty eight hour week, and find the contiguous hours in
+which every observed week was idle. The finding names the window and what stopping
+during it would save.
+
+**Added after the plan was approved**, like TASK-P2-026 was, and for the same
+reason: a competitive review found a gap the specification never considered and it
+was brought into scope rather than left as an issue nobody would action.
+
+**The objection, and what answers it.** This looks like `IDLE_INSTANCE` with extra
+steps. It is the opposite finding. `IDLE_INSTANCE` says nothing ever uses this, so
+delete it. Parking says something uses this every weekday and nothing uses it at
+night, so keep it and stop paying for the nights. A resource that is busy at noon
+is invisible to every rule we have, and in most estates the nights and weekends
+are the largest untouched saving precisely because the resource looks used.
+
+**The failure this task exists to avoid.** Recommending a park from one week of
+data. One week contains exactly one of each weekday, so a bank holiday, a single
+deployment freeze or a batch job that runs monthly all read as the normal shape of
+the week. The rule is two full observed weeks minimum, and below that the finding
+is not produced at all rather than produced with low confidence: a confidence band
+on a claim about somebody's production schedule is not a warning anybody acts on.
+
+**Acceptance criteria.**
+
+- [ ] `WasteClass.PARKABLE_WINDOW` exists, and `finops_query/actions.py` gains its
+      risk row in the same commit, because the table is total over the enumeration
+      and the build fails otherwise. Reversible, disturbs running work, since a
+      stop and a start is exactly what parking is
+- [ ] The fold is over `period_seconds=3600` through `read_many`, so the batch size
+      setting is honoured and the adapter does the batching, per the metrics port
+- [ ] Fewer than two full observed weeks produces **no finding**, and a test asserts
+      that, watched failing with the guard removed
+- [ ] An hour with no data point is not an idle hour. A resource already stopped
+      publishes nothing, and treating absence as idle would recommend parking a
+      window in which it is already parked. `NoData` for the whole window is a
+      typed cause, never a zero
+- [ ] The window is contiguous and stated in the tenant's own terms: the rationale
+      names the hours and the day range, never a raw hour index
+- [ ] The saving is modelled and says so, computed as the on demand rate for the
+      parked hours. It is never the whole monthly cost, because a parked resource
+      still holds its storage, and the rationale says which part is not saved
+- [ ] `collector_schedule` gains a row with its reason and its cost, per ADR-0012
+      and constraint 9. Daily, because a schedule shape does not change hourly
+- [ ] No write path and no schedule is created. Constraint 6. The finding says what
+      window to park and FEAT-040 is how a schedule would ever be authored
+
+**Deliberately not in this task.** The schedule itself. The review's phrasing is a
+finding first and a schedule later, and the later half needs a write path we do not
+have. Also not in it: parking a resource a tag says is production. That needs a tag
+convention we do not enforce, and inventing one inside a collector would put a
+policy decision in the wrong layer.
+
+---
+
 ## What this plan does not answer
 
 **ISS-122 is unchanged.** Every adapter here is written against documentation and
