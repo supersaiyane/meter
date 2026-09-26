@@ -670,11 +670,23 @@ meter/
 │       ├── 0013_finops_score.py  the score and its components in two tables,
 │       │                      because last week's components cannot be
 │       │                      recomputed once the findings have changed
+│       ├── 0014_topology.py    the graph, and graph_coverage, which is the table
+│       │                      the sub project exists for. No key on to_node_id,
+│       │                      because the far end of a cross account edge is
+│       │                      routinely in an account Meter cannot read and a key
+│       │                      would refuse exactly those rows. ADR-0023 for why
+│       │                      the cause column admits seven values
 │       └── 0003_p2_tables.py  the six P2 tables. Three of its constraints are
 │                              the feature: a deny cannot be written without an
 │                              expiry, a modelled row cannot claim a measured
 │                              count, and a change cannot exist without its undo
-├── finops_query/              IN BUILD  P2 query cost governance, P3 waste
+├── finops_query/              IN BUILD  P2 query cost governance, P3 waste, P4 graph
+│   ├── graph.py               the bounds, the node cap and the return type that
+│   │                          carries coverage. Pure: the recursive statement is
+│   │                          in the repository, because the guard's scoped_select
+│   │                          lives in finops_api and this package may not import
+│   │                          it. require_whole() is what FEAT-044 calls, and it
+│   │                          refuses rather than answering short
 │   ├── waste.py               the sizing arithmetic. p99 for CPU, observed peak
 │   │                          plus a margin for memory, and the two are
 │   │                          deliberately not unified: a low CPU request
@@ -721,9 +733,15 @@ meter/
 │   └── server.py             binds the table to the SDK. No credential of its own
 │                              Directory exists, __init__.py only. Ships as a
 │                              second process on the api image, ADR-0009
-└── infra/terraform/           IN BUILD  three root modules, none applied yet
+└── infra/terraform/           IN BUILD  four root modules, none applied yet
     ├── management/            one read only role in the management account
     ├── member/                a service managed StackSet, so new accounts self onboard
+    ├── config/                the organization Config aggregator and the recorders.
+    │                          resource_types.tf is the cost decision, reviewable in
+    │                          a diff: twenty two types, each group naming the feature
+    │                          that needs it. COST.md carries the working for the
+    │                          modelled 1,440 USD a month and says which assumption is
+    │                          least certain. Validated, never planned. ISS-203
     └── hub/                   the VPC with no NAT, Aurora, SQS, ECR, ECS, ALB, alarms.
                                cost_exports.tf is P1's export bucket, Glue database
                                and Athena workgroup. The workgroup carries the result
@@ -743,7 +761,7 @@ meter/
 | `finops_api` | HTTP surface, scope dependency, repository guard | `finops_core`, a provider | boto3 directly |
 | `finops-web` | User interface | `finops_api` over HTTP | anything Python |
 | `finops_mcp` | MCP tools for any model client | `finops_api` over HTTP | the service layer, repositories, boto3 |
-| `infra/terraform` | Hub stack, member StackSet, management role | nothing | nothing |
+| `infra/terraform` | Hub stack, member StackSet, management role, Config aggregator and recorders | nothing | nothing |
 
 The rule that keeps multi cloud cheap: `finops_core` never imports a cloud
 software development kit. It is enforced by an import linter rule in
@@ -756,7 +774,7 @@ continuous integration, not by good intentions.
 | Anything at all, as a starting point | `INDEX.md` |
 | Where do I record this change | `docs/03-CHANGE-CONTROL.md` |
 | How does code reach production | `docs/04-DEPLOYMENT.md` |
-| What exactly do I build next, and how | `docs/plans/P3-implementation-plan.md`, TASK-P3-001. P0, P1 and P2 are done except for what needs an AWS account. The higher value move is the account itself, ISS-122, which is what every unproved adapter in P1, P3 and P4 is waiting for |
+| What exactly do I build next, and how | `docs/plans/P3-implementation-plan.md`, TASK-P3-020, which P4 unblocked: `topology_edge` exists and `finops_query.graph` carries the coverage FEAT-044 has to refuse on. P0 to P4 are otherwise done except for what needs an AWS account. The higher value move is still the account itself, ISS-122, which is what every unproved adapter in P1, P3 and P4 is waiting for |
 | Task counts, which change | `grep -c '^### TASK' docs/plans/*.md`. Not written into prose, because a count in prose goes stale silently |
 | What does this feature do | `docs/features/FEAT-nnn-*.md` |
 | How do these files depend on each other | `docs/architecture/file-graph.md`, `make graph` |

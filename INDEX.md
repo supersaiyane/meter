@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-51 features across 8 sub projects. 20 specified, 7 planned, 13 in build, 11 delivered.
+51 features across 8 sub projects. 20 specified, 7 planned, 10 in build, 14 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -150,9 +150,9 @@ block is caught by `make check-docs`. See
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-030](docs/features/FEAT-030-config-aggregator-inventory.md) | AWS Config aggregator inventory by region and zone | In build | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.1, [P4 plan](docs/plans/P4-implementation-plan.md) |
-| [FEAT-031](docs/features/FEAT-031-topology-graph.md) | Topology graph, node and edge model | In build | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.2, [P4 plan](docs/plans/P4-implementation-plan.md) |
-| [FEAT-032](docs/features/FEAT-032-topology-map-interface.md) | Topology map interface | In build | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 9, [P4 plan](docs/plans/P4-implementation-plan.md) |
+| [FEAT-030](docs/features/FEAT-030-config-aggregator-inventory.md) | AWS Config aggregator inventory by region and zone | Delivered | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.1, [P4 plan](docs/plans/P4-implementation-plan.md) |
+| [FEAT-031](docs/features/FEAT-031-topology-graph.md) | Topology graph, node and edge model | Delivered | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.2, [P4 plan](docs/plans/P4-implementation-plan.md) |
+| [FEAT-032](docs/features/FEAT-032-topology-map-interface.md) | Topology map interface | Delivered | [P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 9, [P4 plan](docs/plans/P4-implementation-plan.md) |
 
 ### P5 Quotas and Limits
 

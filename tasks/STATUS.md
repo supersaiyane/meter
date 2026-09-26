@@ -22,7 +22,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 51 total, 20 specified, 13 in build, 11 delivered |
+| Features | 51 total, 20 specified, 10 in build, 14 delivered |
 | Decisions | 24 architecture decision records |
 | Changes | 99 recorded |
 | Issues | 130 fixed, 67 open, 0 parked |
@@ -126,7 +126,7 @@ ISS-003.
 | P1 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 | P3 | 19 | 0 | 0 | 0 | 1 | 20 | [plan](../docs/plans/P3-implementation-plan.md) |
-| P4 | 0 | 0 | 0 | 0 | 11 | 11 | [plan](../docs/plans/P4-implementation-plan.md) |
+| P4 | 11 | 0 | 0 | 0 | 0 | 11 | [plan](../docs/plans/P4-implementation-plan.md) |
 | P5 | 0 | 0 | 0 | 0 | 8 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 0 | 0 | 0 | 0 | 12 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 
@@ -254,6 +254,22 @@ ISS-003.
 | `TASK-P3-018` | Done, 2026-09-21 | the screen that is allowed to disappoint |
 | `TASK-P3-019` | Done, 2026-09-21 | the score screen and the P3 journey |
 
+**P4, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P4-001` | Done, 2026-09-26 | nodes, edges, and a coverage that can say unread |
+| `TASK-P4-002` | Done, 2026-09-26 | three tables and the constraints that keep them honest |
+| `TASK-P4-003` | Done, 2026-09-26 | the Config aggregator, unproved |
+| `TASK-P4-004` | Done, 2026-09-26 | the edges Config does not give you |
+| `TASK-P4-005` | Done, 2026-09-26 | the record of what was not read |
+| `TASK-P4-006` | Done, 2026-09-26 | the collectors |
+| `TASK-P4-007` | Done, 2026-09-26 | traversal that carries its own coverage |
+| `TASK-P4-008` | Done, 2026-09-26 | the guard, then the routes |
+| `TASK-P4-009` | Done, 2026-09-26 | the map, and what it admits |
+| `TASK-P4-010` | Done, 2026-09-26 | Terraform that states its own cost |
+| `TASK-P4-011` | Done, 2026-09-26 | the test every consumer has to pass |
+
 <!-- generated:task-status end -->
 
 Read from the plan files, not maintained here. This section used to be a hand
@@ -339,15 +355,18 @@ said no sub project had a specification, on a day when three were delivered.
 | P0 Foundation | **Delivered**, 39 of 39. Not signed off: ISS-111 and ISS-122 |
 | P1 Cost Intelligence | **Delivered**, 21 of 21, including the second cut |
 | P2 Query Cost Governance | **Delivered**, 21 of 25. Two descoped, two parked on ISS-122 |
-| P3 Utilization and Rightsizing | **Delivered**, 19 of 20. TASK-P3-020 blocked on P4 |
-| P4 Inventory and Topology | **Specified and planned** 2026-09-20, 11 tasks. Not started |
+| P3 Utilization and Rightsizing | **Delivered**, 19 of 20. TASK-P3-020 was blocked on P4 and is now unblocked: `topology_edge` exists and `finops_query.graph` carries the coverage FEAT-044 has to refuse on |
+| P4 Inventory and Topology | **Delivered**, 11 of 11, 2026-09-26. Neither adapter has run, ISS-200 and ISS-202, and the Config stack has never been applied, ISS-203 |
 | P5 Quotas and Limits | **Specified and planned** 2026-09-20, 8 tasks. Not started |
 | P6 Containers, EKS and ECS | **Specified and planned** 2026-09-20, 12 tasks, first cut. Not started |
 | P7 Insight and LLM layer | No specification |
 
-P3's last task waits on P4, because FEAT-044 scores blast radius by walking the
-edge tables FEAT-031 creates. Build order decided 2026-09-20 and followed: P3
-without that task, delivered 2026-09-21, then P4, then that task.
+P3's last task waited on P4 and no longer does. FEAT-044 scores blast radius by
+walking the topology graph, and both halves it needs now exist: `topology_edge`,
+and `finops_query.graph.Subgraph.require_whole`, which refuses over a PARTIAL or
+UNREAD slice rather than scoring what it can see. The contract test for that rule
+was written in P4 rather than waiting for its first consumer, so TASK-P3-020 will
+find it already in place.
 
 P4, P5 and P6 each start with their estate data already generated and tested, in
 `finops_fakes/`, with 26 of the 58 planted expectations naming their subjects. What

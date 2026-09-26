@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P4 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P4 spec](../specs/2026-09-20-p4-inventory-and-topology-design.md), section 9 |
 | Tasks | TASK-P4-009 |
 | Refresh cadence | Live |
