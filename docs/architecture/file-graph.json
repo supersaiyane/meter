@@ -329,6 +329,7 @@
     "finops_core/domain/account.py",
     "finops_core/domain/cost.py",
     "finops_core/domain/fact.py",
+    "finops_core/domain/iac.py",
     "finops_core/domain/identity.py",
     "finops_core/domain/ingest.py",
     "finops_core/domain/metrics.py",
@@ -348,6 +349,7 @@
     "finops_core/ports/commitment.py",
     "finops_core/ports/cost.py",
     "finops_core/ports/credentials.py",
+    "finops_core/ports/iac.py",
     "finops_core/ports/identity.py",
     "finops_core/ports/inventory.py",
     "finops_core/ports/metrics.py",
@@ -372,6 +374,7 @@
     "finops_fakes/quotas.py",
     "finops_fakes/recommendations.py",
     "finops_fakes/surface.py",
+    "finops_fakes/terraform_state.py",
     "finops_fakes/tickets.py",
     "finops_fakes/topology.py",
     "finops_fakes/utilization.py",
@@ -384,6 +387,7 @@
     "finops_ingest/collectors/cost_anomaly.py",
     "finops_ingest/collectors/cost_focus.py",
     "finops_ingest/collectors/cost_rollup.py",
+    "finops_ingest/collectors/iac_state.py",
     "finops_ingest/collectors/inventory.py",
     "finops_ingest/collectors/org_tree.py",
     "finops_ingest/collectors/partitions.py",
@@ -420,6 +424,7 @@
     "finops_providers/aws/platform_cost.py",
     "finops_providers/aws/query_evidence.py",
     "finops_providers/aws/recommendations.py",
+    "finops_providers/aws/terraform_state.py",
     "finops_providers/aws/topology.py",
     "finops_providers/aws/waste.py",
     "finops_providers/grafana/__init__.py",
@@ -486,6 +491,7 @@
     "migrations/versions/0013_finops_score.py",
     "migrations/versions/0014_topology.py",
     "migrations/versions/0015_commitment_action.py",
+    "migrations/versions/0016_resource_management.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_flags.py",
     "scripts/ci/check_forbidden_imports.py",
@@ -536,6 +542,7 @@
     "tests/core/test_cost_domain.py",
     "tests/core/test_domain.py",
     "tests/core/test_errors.py",
+    "tests/core/test_iac.py",
     "tests/core/test_ports.py",
     "tests/core/test_topology.py",
     "tests/core/test_waste_domain.py",
@@ -555,6 +562,7 @@
     "tests/ingest/collectors/test_cost_focus.py",
     "tests/ingest/collectors/test_cost_focus_restatement.py",
     "tests/ingest/collectors/test_cost_rollup.py",
+    "tests/ingest/collectors/test_iac_state.py",
     "tests/ingest/collectors/test_inventory.py",
     "tests/ingest/collectors/test_org_tree.py",
     "tests/ingest/collectors/test_partitions.py",
@@ -591,6 +599,7 @@
     "tests/providers/aws/test_health.py",
     "tests/providers/aws/test_query_evidence.py",
     "tests/providers/aws/test_recommendations.py",
+    "tests/providers/aws/test_terraform_state.py",
     "tests/providers/aws/test_waste_metrics.py",
     "tests/providers/fake/__init__.py",
     "tests/providers/fake/test_commitment.py",
@@ -3649,6 +3658,11 @@
     },
     {
       "s": "finops_api/db/repositories/topology.py",
+      "t": "finops_core/domain/iac.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/topology.py",
       "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
@@ -3979,6 +3993,11 @@
     },
     {
       "s": "finops_api/routes/inventory.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/inventory.py",
       "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
@@ -4253,6 +4272,11 @@
       "k": "python"
     },
     {
+      "s": "finops_core/domain/iac.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/domain/identity.py",
       "t": "finops_core/domain/fact.py",
       "k": "python"
@@ -4410,6 +4434,11 @@
     {
       "s": "finops_core/ports/credentials.py",
       "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/iac.py",
+      "t": "finops_core/domain/iac.py",
       "k": "python"
     },
     {
@@ -4678,6 +4707,11 @@
       "k": "python"
     },
     {
+      "s": "finops_fakes/terraform_state.py",
+      "t": "finops_core/domain/iac.py",
+      "k": "python"
+    },
+    {
       "s": "finops_fakes/tickets.py",
       "t": "finops_core/errors.py",
       "k": "python"
@@ -4809,6 +4843,16 @@
     },
     {
       "s": "finops_ingest/collectors/cost_focus.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/iac_state.py",
+      "t": "finops_core/domain/iac.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/iac_state.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
@@ -5383,6 +5427,21 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/terraform_state.py",
+      "t": "finops_core/domain/iac.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/terraform_state.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/terraform_state.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/topology.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -5600,6 +5659,11 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/iac_state.py",
       "k": "python"
     },
     {
@@ -6313,6 +6377,11 @@
       "k": "python"
     },
     {
+      "s": "tests/core/test_iac.py",
+      "t": "finops_core/domain/iac.py",
+      "k": "python"
+    },
+    {
       "s": "tests/core/test_ports.py",
       "t": "finops_core/__init__.py",
       "k": "python"
@@ -6554,6 +6623,26 @@
     },
     {
       "s": "tests/ingest/collectors/test_cost_rollup.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_iac_state.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_iac_state.py",
+      "t": "finops_core/domain/iac.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_iac_state.py",
+      "t": "finops_ingest/collectors/iac_state.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_iac_state.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
@@ -7290,6 +7379,16 @@
     {
       "s": "tests/providers/aws/test_recommendations.py",
       "t": "finops_providers/aws/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_terraform_state.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_terraform_state.py",
+      "t": "finops_providers/aws/terraform_state.py",
       "k": "python"
     },
     {

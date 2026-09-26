@@ -999,3 +999,14 @@ class EntityOut(BaseModel):
     monthly_cost: Decimal | None
     #: The period that cost belongs to. Null when the scope has no cost at all.
     cost_period: date | None
+    #: FEAT-057. MANAGED, UNMANAGED or NOT_DETERMINED, derived rather than stored.
+    #: NOT_DETERMINED is the default and is not a synonym for UNMANAGED: the first says we did
+    #: not find the resource in the state we read, the second says nobody manages it, and only
+    #: the second is an instruction. Telling somebody to import a resource that is already
+    #: inside a module produces a duplicate or a state conflict.
+    management_state: str
+    #: The infrastructure as code address, where there is one. `module.network.aws_vpc.main`.
+    iac_address: str | None
+    #: Which state it was read from, so a reader can find the file rather than being told
+    #: something unnamed manages their resource.
+    iac_state_reference: str | None

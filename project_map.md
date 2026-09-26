@@ -242,7 +242,7 @@ meter/
 │   │                          which is build output and is never committed
 │   └── deploy/                migration task runner
 │
-├── tests/                     the suite, 1,774 tests. conftest.py refuses to run
+├── tests/                     the suite, 1,821 tests. conftest.py refuses to run
 │                              against a real AWS account when no endpoint
 │                              override is set, and its session scoped `engine`
 │                              starts a PostgreSQL container and migrates it,
@@ -722,6 +722,13 @@ meter/
 │   │                          throttles, a low memory request kills. Every
 │   │                          series is hourly, which is what keeps p99 from
 │   │                          quietly becoming the max rule
+│   ├── iac.py                 FEAT-057, in finops_core/domain/. Three answers to what
+│   │                          manages a resource, and the default is the honest one.
+│   │                          Reading state tells you what is managed and never what is
+│   │                          not, so UNMANAGED needs a declaration that the configured
+│   │                          backends are the whole of an account's code, plus a run in
+│   │                          which all of them were read. Never stored: a judgement
+│   │                          outlives the configuration it was made under
 │   ├── commitment.py          FEAT-055. What an uncovered baseline is worth, and the
 │   │                          usage floor, which is the figure that decides whether
 │   │                          buying the commitment was a mistake. The plan asked for

@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P4 |
-| Status | Specified |
+| Status | Delivered |
 | Specification | [competitive review](../11-COMPETITIVE-REVIEW.md), 2026-09-26 candidate list |
 | Tasks | `TASK-P4-013` |
 | Refresh cadence | Follows FEAT-030 |
@@ -27,14 +27,47 @@ P7 has no plan and no approved specification, and writing tasks into one would b
 
 ## How it works
 
-Terraform state holds a resource address and a provider identifier, and that identifier is the
-ARN `topology_node` already keys on. The backend location is configuration, not discovery.
+`finops_core/domain/iac.py` holds the three valued rule and is pure. `management_of` decides
+`MANAGED`, `UNMANAGED` or `NOT_DETERMINED` from what was read, what an operator declared, and
+whether the read was whole.
+
+The adapter reads the configured S3 objects, skips `data` sources because a state file also
+records reads of things Terraform does not own, and builds the Terraform address including the
+index key: `aws_vpc.main[0]` and `aws_vpc.main["a"]` are different addresses and only one exists
+in any given file.
+
+The collector resolves each resource to an account through `topology_node` before writing, and
+counts the ones it cannot place. A state file routinely owns resources Meter has never
+inventoried and has no account column of its own, so parsing the account out of the identifier
+would have written rows keyed by a string that looked like an account.
+
+`UNMANAGED` is never stored. It is derived per request from two things that are both about our
+own configuration: the account being declared exhaustive, and no state location having refused
+us on the latest run. Storing it would freeze a judgement made under yesterday's configuration
+into a row that outlives it.
+
+**Its own table rather than columns on `topology_node`, per ADR-0024.** One collector owns a
+slice's graph: a second writer would race the inventory collector's run scoped retraction, and
+the retraction would delete what the second writer had just put there.
 
 ## Failure behaviour
 
-The field is three valued and the default is **not determined**, never unmanaged. Unmanaged is
-an actionable fact and "we did not look in the right bucket" is not, and rendering the second
-as the first would tell somebody to import a resource that is already inside a module.
+The default is **not determined**, never unmanaged. Unmanaged is an actionable fact and "we did
+not look in the right bucket" is not, and rendering the second as the first would tell somebody
+to import a resource already inside a module, which produces a duplicate, a state conflict or a
+second copy of a live resource.
+
+**A location that refuses us suppresses `UNMANAGED` everywhere**, not just for what it held. One
+unreadable backend casts doubt on every account it might have contained, and the declaration
+that the configured backends are exhaustive is worth nothing on a run where one of them was not
+read. A refusal that could not be read also keeps its existing rows: removing them would turn a
+managed resource into a not determined one on the strength of a failure.
+
+**A read where every location refuses raises.** That is a configuration failure rather than a
+partial answer, and an estate whose every backend refused us is not an estate with no code.
+
+**No location configured writes nothing and says nothing is wrong.** That is a real deployment,
+and every resource then reads as not determined, which is true.
 
 ## Security considerations
 
@@ -49,5 +82,13 @@ there is not.
 
 ## Not doing
 
-Writing a pull request, which is FEAT-040. Reading CloudFormation or CDK: one format first,
-and the port is shaped so that a second is an adapter rather than a rewrite.
+Writing a pull request, which is FEAT-040. Reading CloudFormation or CDK: one format first, and
+the port is shaped so a second is an adapter rather than a rewrite.
+
+Taking a state lock. A Terraform lock blocks whoever is mid apply, so a tool that took one could
+stall somebody's deployment, which is not read only in the sense the person on call cares about.
+
+Joining a resource whose type publishes no ARN. An association, an attachment or a policy
+document carries no identifier this can match, so those are counted as unplaceable rather than
+guessed at. ISS-209 records how much of a state file that covers, which is not yet measured
+against anything real.

@@ -729,6 +729,32 @@ commitment_action = Table(
 )
 
 
+#: FEAT-057. Which infrastructure as code address owns a resource, stored only where one was
+#: found. Presence and never absence: NOT_DETERMINED is the absence of a row and UNMANAGED is
+#: derived at read time from a declaration about our own configuration, never stored, because a
+#: stored judgement outlives the configuration it was made under.
+resource_management = Table(
+    "resource_management",
+    metadata,
+    Column("management_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    #: Resolved from the node the resource joined to, not parsed out of the ARN, so the row
+    #: exists only where the account is known rather than where a string looked like one.
+    Column("sub_account_id", Text, nullable=False),
+    #: The ARN, which is what `topology_node` keys on. No foreign key: Terraform manages
+    #: resources Meter has never inventoried, and a key would refuse exactly those.
+    Column("provider_id", Text, nullable=False),
+    #: `module.network.aws_vpc.main`. FEAT-040 opens a pull request against a block, and a bare
+    #: resource name appears in every module that declares one.
+    Column("address", Text, nullable=False),
+    #: Which state we read it from, so a reader can find the file.
+    Column("state_reference", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
 query_adhoc = Table(
     "query_adhoc",
     metadata,

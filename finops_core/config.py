@@ -130,6 +130,17 @@ class Settings(BaseSettings):
     #: obligation to save a few dollars a month costs more to act on than it returns.
     commitment_minimum_monthly_saving_usd: Decimal
 
+    # Infrastructure as code state, FEAT-057. Locations are configured because searching for
+    # them would mean listing somebody's buckets to see what is in them, which is
+    # reconnaissance whatever the intent. Empty by default, so a deployment that has not
+    # configured any reads nothing and says so.
+    iac_state_locations: str = ""
+    #: Accounts whose infrastructure as code the configured backends wholly describe. A
+    #: declaration about our own configuration, which is why it cannot be inferred: an operator
+    #: who adds a workspace and does not say so would otherwise have every resource in it
+    #: reported as unmanaged, confidently and wrongly.
+    iac_exhaustive_accounts: str = ""
+
     # Topology
     max_graph_nodes: int = Field(ge=1)
 
@@ -199,6 +210,30 @@ class Settings(BaseSettings):
             # flag must never be ambiguous about.
             raise ValueError(f"METER_QUERY_WRITE_LEVEL must be one of {allowed}, not {value!r}")
         return value
+
+    @property
+    def iac_locations(self) -> tuple[str, ...]:
+        """The configured state locations, split.
+
+        Comma separated on the wire like `regions`, rather than JSON, because an operator sets
+        this in a task definition environment variable and a JSON array there is a quoting
+        problem waiting to happen. Empty means none configured, which is a real deployment: the
+        collector then reads nothing and every resource reads as not determined, which is true.
+        """
+        return tuple(part.strip() for part in self.iac_state_locations.split(",") if part.strip())
+
+    @property
+    def iac_exhaustive(self) -> frozenset[str]:
+        """Accounts whose infrastructure as code the configured backends wholly describe.
+
+        A `frozenset` because the only question asked of it is membership, and the only thing
+        it is allowed to do is turn an absence into `UNMANAGED`. Empty means Meter can never
+        say unmanaged, which is the right default: the claim is about this configuration, and
+        nobody has made it.
+        """
+        return frozenset(
+            part.strip() for part in self.iac_exhaustive_accounts.split(",") if part.strip()
+        )
 
     @field_validator("regions")
     @classmethod
