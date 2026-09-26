@@ -388,6 +388,7 @@
     "finops_providers/aws/platform_cost.py",
     "finops_providers/aws/query_evidence.py",
     "finops_providers/aws/recommendations.py",
+    "finops_providers/aws/topology.py",
     "finops_providers/aws/waste.py",
     "finops_providers/grafana/__init__.py",
     "finops_providers/grafana/amg.py",
@@ -532,6 +533,7 @@
     "tests/providers/__init__.py",
     "tests/providers/aws/__init__.py",
     "tests/providers/aws/test_accounts.py",
+    "tests/providers/aws/test_aws_topology.py",
     "tests/providers/aws/test_commitment.py",
     "tests/providers/aws/test_config_inventory.py",
     "tests/providers/aws/test_credentials.py",
@@ -4787,6 +4789,31 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/topology.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/topology.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/topology.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/topology.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/topology.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/waste.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -5494,6 +5521,11 @@
     {
       "s": "tests/contract/test_topology_source.py",
       "t": "finops_core/ports/inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_topology_source.py",
+      "t": "finops_providers/aws/__init__.py",
       "k": "python"
     },
     {
@@ -6264,6 +6296,31 @@
     {
       "s": "tests/providers/aws/test_accounts.py",
       "t": "finops_providers/aws/accounts.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_aws_topology.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_aws_topology.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_aws_topology.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_aws_topology.py",
+      "t": "finops_core/ports/inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_aws_topology.py",
+      "t": "finops_providers/aws/topology.py",
       "k": "python"
     },
     {

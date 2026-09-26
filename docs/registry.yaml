@@ -2873,6 +2873,11 @@ issues:
   status: OPEN
   summary: The node kind enumeration has fourteen members and the estate has more kinds of thing than that, so a container cluster, a cache, a stream, a transit gateway and a peering connection all draw as OTHER
   detail: 'Ten of the twenty four resource types the generated estate contains map to OTHER. resource_type travels beside node_kind so a screen can still name them, and the fourteen are fixed by the P4 specification and held by a check constraint, so widening them is a migration. The edge kinds have the same gap in one place: replication has no member, and a read replica is joined with ROUTES_TO, which is the closest of the seven and not the right word. An unmapped type is deliberately not a coverage shortfall, because an estate with a fleet of clusters would then be PARTIAL on every run forever'
+- id: ISS-202
+  severity: MEDIUM
+  status: OPEN
+  summary: finops_providers/aws/topology.py has never made a call. The four APIs it reads, Transit Gateway attachments, VPC peering, PrivateLink endpoint connections and IAM trust policies, are exercised against clients that answer from a literal
+  detail: 'The trust policy parser is the part most likely to be wrong, because the document arrives URL encoded as a string and the adapter reads only account principals from it. Service and federated principals are skipped on purpose, since an edge to ec2.amazonaws.com would put every instance role in every other one''s blast radius. The ARN builders are the second: three of the four APIs return bare identifiers and topology_node.provider_id is an ARN everywhere else, so a partition or a service prefix that is wrong would produce a node that never joins the one Config wrote'
 open_questions:
 - id: OPEN-07
   question: What does the cost screen show for a tenant whose first ingest has not run, an

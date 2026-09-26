@@ -65,7 +65,12 @@ CONFIG = "CONFIG_RELATIONSHIP"
 TGW_API = "ec2:DescribeTransitGatewayAttachments"
 PEERING_API = "ec2:DescribeVpcPeeringConnections"
 ENDPOINT_API = "ec2:DescribeVpcEndpointConnections"
-TRUST_API = "iam:GetRole"
+#: The four API names are imported from the adapter rather than repeated, because
+#: a consumer grouping edges by source would otherwise see two different estates
+#: behind one port. `iam:GetRole` was written here first and the adapter calls
+#: `iam:ListRoles`, so a screen filtering on the source would have shown no trust
+#: edges for exactly one of the two providers.
+TRUST_API = "iam:ListRoles"
 
 #: Node kinds by provider resource type, from the real fourteen. Ten of the
 #: twenty four types here land on `OTHER`, which is the estate showing the gap

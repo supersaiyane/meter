@@ -285,8 +285,8 @@ def test_the_coverage_counts_account_for_every_node_and_edge() -> None:
     distinguishable from an unread one without a second query. That only holds if
     every node landed in exactly one slice's count."""
     rows = list(topology.coverage_rows())
-    assert sum(int(r["node_count"]) for r in rows) == len(list(topology.node_rows()))
-    assert sum(int(r["edge_count"]) for r in rows) == len(list(topology.edge_rows()))
+    assert sum(_number(r, "node_count") for r in rows) == len(list(topology.node_rows()))
+    assert sum(_number(r, "edge_count") for r in rows) == len(list(topology.edge_rows()))
 
 
 # -------------------------------------------------------------------- P5

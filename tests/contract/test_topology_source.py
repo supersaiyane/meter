@@ -175,3 +175,23 @@ def test_a_type_the_source_cannot_name_does_not_make_the_slice_partial(
         assert not any(name in shortfall.detail for shortfall in read.shortfalls)
     if read.unmapped:
         assert read.state is CoverageState.COMPLETE
+
+
+def test_the_two_providers_name_the_same_four_apis() -> None:
+    """Not parameterised over a subject, because the point is the pair.
+
+    A consumer grouping edges by `source` sees two different estates if the fake calls
+    a trust read `iam:GetRole` and the adapter calls it `iam:ListRoles`, which is what
+    they did until this test existed. Held as an equality rather than as a docstring
+    note, because a docstring note is what the first version was.
+    """
+    from finops_fakes import topology as fake
+    from finops_providers.aws import topology as real
+
+    assert (fake.TGW_API, fake.PEERING_API, fake.ENDPOINT_API, fake.TRUST_API) == (
+        real.TGW_API,
+        real.PEERING_API,
+        real.ENDPOINT_API,
+        real.TRUST_API,
+    )
+    assert fake.CONFIG == "CONFIG_RELATIONSHIP"
