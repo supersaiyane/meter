@@ -391,6 +391,7 @@
     "finops_ingest/collectors/topology.py",
     "finops_ingest/collectors/waste_cloudwatch.py",
     "finops_ingest/collectors/waste_compute.py",
+    "finops_ingest/collectors/waste_parking.py",
     "finops_ingest/coverage.py",
     "finops_ingest/dispatcher.py",
     "finops_ingest/ledger.py",
@@ -427,6 +428,7 @@
     "finops_query/gate.py",
     "finops_query/graph.py",
     "finops_query/ownership.py",
+    "finops_query/parking.py",
     "finops_query/parser.py",
     "finops_query/policy.py",
     "finops_query/realized.py",
@@ -556,6 +558,7 @@
     "tests/ingest/collectors/test_waste_against_the_estate.py",
     "tests/ingest/collectors/test_waste_cloudwatch.py",
     "tests/ingest/collectors/test_waste_compute.py",
+    "tests/ingest/collectors/test_waste_parking.py",
     "tests/ingest/test_coverage.py",
     "tests/ingest/test_dispatcher.py",
     "tests/ingest/test_ledger.py",
@@ -600,6 +603,7 @@
     "tests/query/test_gate.py",
     "tests/query/test_graph.py",
     "tests/query/test_ownership.py",
+    "tests/query/test_parking.py",
     "tests/query/test_policy.py",
     "tests/query/test_ports.py",
     "tests/query/test_realized.py",
@@ -4945,6 +4949,41 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/waste_parking.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/waste_parking.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/waste_parking.py",
+      "t": "finops_core/ports/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/waste_parking.py",
+      "t": "finops_ingest/collectors/waste_compute.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/waste_parking.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/waste_parking.py",
+      "t": "finops_query/parking.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/waste_parking.py",
+      "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/coverage.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -5360,6 +5399,11 @@
       "k": "python"
     },
     {
+      "s": "finops_query/parking.py",
+      "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
       "s": "finops_query/parser.py",
       "t": "finops_query/classify.py",
       "k": "python"
@@ -5497,6 +5541,11 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/waste_compute.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/waste_parking.py",
       "k": "python"
     },
     {
@@ -6635,6 +6684,41 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_waste_parking.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_waste_parking.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_waste_parking.py",
+      "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_waste_parking.py",
+      "t": "finops_core/ports/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_waste_parking.py",
+      "t": "finops_ingest/collectors/waste_parking.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_waste_parking.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_waste_parking.py",
+      "t": "finops_query/parking.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/test_coverage.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -7267,6 +7351,21 @@
     {
       "s": "tests/query/test_ownership.py",
       "t": "finops_query/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_parking.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_parking.py",
+      "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_parking.py",
+      "t": "finops_query/parking.py",
       "k": "python"
     },
     {

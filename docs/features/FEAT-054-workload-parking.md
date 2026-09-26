@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P3 |
-| Status | Specified |
+| Status | Delivered |
 | Specification | [competitive review](../11-COMPETITIVE-REVIEW.md), 2026-09-26 candidate list |
 | Tasks | `TASK-P3-021` |
 | Refresh cadence | Daily. A schedule shape does not change hourly, ADR-0012 |

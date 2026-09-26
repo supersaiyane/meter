@@ -658,7 +658,7 @@ built before the thing it gates, and that is the order on purpose.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-26 |
 | Implements | Competitive review 2026-09-26, candidate list, adopted by the owner on 2026-09-26 |
 | Delivers | FEAT-054 |
 | Depends on | TASK-P3-004 delivered, which is the metric read this reuses |

@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 59 total, 24 specified, 10 in build, 16 delivered |
+| Features | 59 total, 23 specified, 10 in build, 17 delivered |
 | Decisions | 24 architecture decision records |
 | Changes | 99 recorded |
-| Issues | 130 fixed, 69 open, 0 parked |
+| Issues | 130 fixed, 71 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -88,7 +88,7 @@ What the sentences above do not cover is the part that matters for a sign off.
 Turbonomic review of 2026-09-26, in `docs/11-COMPETITIVE-REVIEW.md`, named seven gaps and two
 of them were cheap enough to close with what already existed. FEAT-052 is the top actions
 panel on the home screen and a risk verdict on every recommendation, which turned out to be
-the substance: of the seventeen waste classes, eight disturb no running work and only three
+the substance: of the eighteen waste classes, eight disturb no running work and only three
 of those eight can be undone, so a surface flagging the quiet ones as low risk would have
 been reassuring about the wrong findings. FEAT-053 is the entity detail page, which is the
 destination every list in the product pointed nowhere to. Both are delivered and neither was
@@ -101,6 +101,13 @@ do not match and the page lists no findings for exactly the resources a reader i
 to open. ISS-205. The page reports the count of findings that matched nothing rather than
 rendering an empty list, so the gap is visible on the screen instead of reading as a clean
 resource.
+
+**FEAT-054, workload parking, is delivered and the rest of the Turbonomic adoption is
+planned.** The owner adopted the three Medium candidates plus the resource list on 2026-09-26.
+TASK-P3-021 is done. TASK-P1-022, TASK-P4-012 and TASK-P4-013 are written and not started, in
+the owning sub project's plan rather than in an adoption plan of their own. Two candidates are
+registered Planned with no tasks and the decisions that would have to be made first written
+down, FEAT-058 and FEAT-059, because writing tasks for them now would produce guesses.
 
 **Nothing has ever run in CI either.** The repository has no git remote, so
 `.gitlab-ci.yml` has never executed, and every statement anywhere in this
@@ -143,7 +150,7 @@ ISS-003.
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P1 | 21 | 0 | 0 | 0 | 1 | 22 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
-| P3 | 19 | 0 | 0 | 0 | 2 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
+| P3 | 20 | 0 | 0 | 0 | 1 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 11 | 0 | 0 | 0 | 2 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
 | P5 | 0 | 0 | 0 | 0 | 8 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 0 | 0 | 0 | 0 | 12 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
@@ -271,6 +278,7 @@ ISS-003.
 | `TASK-P3-017` | Done, 2026-09-21 | the recommendations screen |
 | `TASK-P3-018` | Done, 2026-09-21 | the screen that is allowed to disappoint |
 | `TASK-P3-019` | Done, 2026-09-21 | the score screen and the P3 journey |
+| `TASK-P3-021` | Done, 2026-09-26 | the hours nothing runs, as a finding |
 
 **P4, not in the default state**
 

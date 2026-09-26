@@ -38,7 +38,7 @@ needs a restart. A low confidence snapshot deletion is still permanent. `confide
 from the length of the observation window and says nothing about either, so a single blended
 number would be wrong in both directions.
 
-**Most changes that disturb nothing are still permanent.** Of the seventeen waste classes,
+**Most changes that disturb nothing are still permanent.** Of the eighteen waste classes,
 eight disturb no running work and only three of those eight can be undone. The three a reader
 is most likely to apply without thinking are among the five that cannot: releasing an
 unassociated Elastic IP, deleting an unattached volume, and setting a retention period on a
@@ -61,8 +61,8 @@ default available at that point is a lie in one direction or the other.
 The three flags and the sentence ride on `RecommendationOut`, so every consumer of the
 existing route gets them and there is no second route to keep in step. They are computed from
 the class rather than stored on the row, because the risk of a class is a property of the
-class: storing it would need a migration every time a sentence was improved, and seventeen
-copies of a sentence is seventeen chances for one to be the old one.
+class: storing it would need a migration every time a sentence was improved, and eighteen
+copies of a sentence is eighteen chances for one to be the old one.
 
 `components/TopActions.tsx` rolls up from `useRecommendations`, which is the recommendations
 screen's own hook and its own query key. The home screen owns no query, per
@@ -78,7 +78,7 @@ a second answer to how dangerous a change is.
 An empty group says so in words rather than rendering blank, because a blank panel reads as
 broken and an empty group is a claim about the estate.
 
-The no regret group is short by design and is sometimes empty. Three classes of seventeen
+The no regret group is short by design and is sometimes empty. Three classes of eighteen
 qualify, and a page of easy wins would be inventing most of them.
 
 The panel summarises the rows the recommendations hook returned, which is at most two hundred

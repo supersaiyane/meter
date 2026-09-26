@@ -71,8 +71,8 @@ def recommendation_out(row: Any) -> RecommendationOut:
     """
     # FEAT-052. Computed here from the closed table rather than stored on the row, because
     # the risk of a class is a property of the class and not of one finding: storing it would
-    # need a migration every time the sentence was improved, and seventeen copies of a
-    # sentence is seventeen chances for one of them to be the old one.
+    # need a migration every time the sentence was improved, and eighteen copies of a
+    # sentence is eighteen chances for one of them to be the old one.
     risk = risk_of(WasteClass(row.waste_class))
     return RecommendationOut(
         recommendation_id=row.recommendation_id,

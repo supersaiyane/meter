@@ -340,3 +340,39 @@ than a subset chosen by which files I remember touching.
 for a frontend change, indexing an array whose element type is then spread, and any
 commit whose verification was a set of targeted test commands rather than
 `make verify`.
+
+## 2026-09-26: a collector wired into the seed that produced nothing
+
+**Mistake:** built FEAT-054's parking collector, wired it into `scripts/demo/seed_demo.py`,
+and ran the seed tests. All eighteen passed. The collector had produced zero findings,
+for two independent reasons, and nothing anywhere failed.
+
+The filter selected `DEMO_ACCOUNT`, which holds no EC2 candidates at all, so the
+collector was handed an empty list and an `if parkable:` guard skipped it in silence.
+Underneath that, the fold's evidence rule was wrong: it required every hour to be
+present in every week the data touched, and a window of now minus a fortnight starts
+and ends mid week, so it straddles three Monday aligned weeks whose ragged ends share
+no hour. Nothing was ever quiet. Both bugs produced the same symptom, which is no
+symptom.
+
+The unit tests passed throughout, because they generated an aligned fortnight from a
+Monday. The aligned fixture was the thing hiding the bug, and it was the fixture I
+wrote to make the fold easy to reason about.
+
+**Correction:** self caught, by writing an assertion that the seeded estate holds at
+least one row of the new kind and watching it fail.
+
+**Rule:** a new collector is not done until a test asserts the seeded estate contains
+at least one row it produced. Write that assertion before wiring the collector up, and
+watch it fail for the right reason. A count of rows written is not enough, because a
+collector handed an empty candidate list writes zero and returns successfully.
+
+Second rule, for any code that buckets a time series by position in a week or a month:
+at least one test window must start and end off the boundary. An aligned fixture makes
+the arithmetic easy to read and cannot see the class of bug that only appears when the
+window is ragged, which is every real window.
+
+**Triggers:** adding a collector, adding a branch to `seed_demo.py`, any `if rows:` or
+`if candidates:` guard around a write, folding a series by hour of week or day of month,
+and any fixture whose start time was chosen because it is a Monday or the first of a
+month.

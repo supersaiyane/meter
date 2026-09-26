@@ -242,7 +242,7 @@ meter/
 │   │                          which is build output and is never committed
 │   └── deploy/                migration task runner
 │
-├── tests/                     the suite, 1,704 tests. conftest.py refuses to run
+├── tests/                     the suite, 1,732 tests. conftest.py refuses to run
 │                              against a real AWS account when no endpoint
 │                              override is set, and its session scoped `engine`
 │                              starts a PostgreSQL container and migrates it,
@@ -722,6 +722,17 @@ meter/
 │   │                          throttles, a low memory request kills. Every
 │   │                          series is hourly, which is what keeps p99 from
 │   │                          quietly becoming the max rule
+│   ├── parking.py             FEAT-054. A fortnight folded into a 168 hour week,
+│   │                          returning the contiguous hours nothing runs. The
+│   │                          evidence rule is per hour, not per estate: an hour
+│   │                          counts when it was seen in at least two weeks and
+│   │                          was quiet in every one of them. Per estate refused
+│   │                          everything, because a window of now minus a
+│   │                          fortnight straddles three Monday aligned weeks
+│   │                          whose ragged ends share no hour. A week quiet
+│   │                          throughout returns nothing: that is IDLE_INSTANCE,
+│   │                          and two findings saying schedule it and delete it
+│   │                          is a pair nobody can act on
 │   ├── realized.py            three verdicts from two windows. The most careful
 │   │                          arithmetic in the product, because it is where a
 │   │                          FinOps tool usually starts lying. Where usage fell

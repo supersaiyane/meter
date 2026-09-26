@@ -18,7 +18,7 @@ of these, so collapsing them into one number would be wrong in both directions.
 2. **Does it disturb running work?** Does applying it interrupt, restart or throttle
    something that is serving traffic?
 
-A finding with no regret is reversible and disturbs nothing. Three of the seventeen waste
+A finding with no regret is reversible and disturbs nothing. Three of the eighteen waste
 classes qualify.
 
 **The useful part is which ones do not.** The three findings that read as safest to somebody
@@ -207,6 +207,15 @@ RISK_OF: Mapping[WasteClass, Risk] = {
             "insufficient data has never fired. Deleting it removes no coverage that existed."
         ),
     ),
+    WasteClass.PARKABLE_WINDOW: Risk(
+        reversible=True,
+        disturbs_running_work=True,
+        why=(
+            "Parking is a stop and a start, so the workload is interrupted by definition, "
+            "and starting it again restores it. The risk is not the stop: it is that the "
+            "quiet window was measured and the next bank holiday is not in the measurement."
+        ),
+    ),
     WasteClass.CONTAINER_RIGHTSIZE: Risk(
         reversible=True,
         disturbs_running_work=True,
@@ -232,7 +241,7 @@ def risk_of(waste_class: WasteClass) -> Risk:
 
 #: The classes a reader can try and undo. Derived rather than listed, so it cannot drift
 #: from the table above, and small enough that the number itself is worth knowing: three of
-#: seventeen. A surface promising a page of safe wins would be inventing most of them.
+#: eighteen. A surface promising a page of safe wins would be inventing most of them.
 NO_REGRET_CLASSES: frozenset[WasteClass] = frozenset(
     waste_class for waste_class, risk in RISK_OF.items() if risk.is_no_regret
 )

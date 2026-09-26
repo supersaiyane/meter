@@ -532,6 +532,10 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         # list is where it had to be declared, which is the point of it being exhaustive
         # rather than a subset.
         "inventory",
+        # FEAT-054, added with the collector in TASK-P3-021. Declared here for the same
+        # reason: this list is exhaustive, so a collector with a schedule row and no
+        # declaration fails here rather than reaching a dispatcher nobody was watching.
+        "waste_parking",
     }
 
 
