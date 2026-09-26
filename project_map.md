@@ -242,7 +242,7 @@ meter/
 │   │                          which is build output and is never committed
 │   └── deploy/                migration task runner
 │
-├── tests/                     the suite, 1,420 tests. conftest.py refuses to run
+├── tests/                     the suite, 1,673 tests. conftest.py refuses to run
 │                              against a real AWS account when no endpoint
 │                              override is set, and its session scoped `engine`
 │                              starts a PostgreSQL container and migrates it,
@@ -431,10 +431,15 @@ meter/
 │       │                      and no single ratio is true of both, ISS-157
 │       │   └── sections.ts    GROUPS, the seven of ADR-0020. It never grows: a
 │       │                      sub project adds screens inside an existing group
-│       └── screens/           ten built. Three of the four P2 screens read live
-│                              routes since TASK-P2-021; enforcement stays
-│                              fixture backed and says so, because TASK-P2-016 is
-│                              parked
+│       └── screens/           nineteen of twenty four built, counted from the
+│                              `arrives` field in sections.ts rather than from this
+│                              line, which is why that field exists. Three of the
+│                              four P2 screens read live routes since TASK-P2-021;
+│                              enforcement stays fixture backed and says so,
+│                              because TASK-P2-016 is parked. TopologyScreen is
+│                              P4's, and its map is the second Cytoscape surface:
+│                              the table beside it is the accessible path rather
+│                              than the fallback, as on the organization screen
 │           ├── querySeverity.ts       the word to the ramp. Its own module
 │           │                          because two screens rank the same findings
 │           │                          and a second copy is a second answer
@@ -608,6 +613,11 @@ meter/
 │   ├── middleware.py          request id on every line and back on the response
 │   ├── schemas.py             the meta envelope. degraded is computed, never set
 │   ├── routes/                the seven P0 routes, all returning the envelope.
+│   │                          inventory.py is P4's three: the subgraph, the estate
+│   │                          wide coverage banner and the roots to start a map
+│   │                          from. The subgraph response carries the coverage of
+│   │                          every slice it crossed, so a screen cannot draw the
+│   │                          map without the list of what is missing from it.
 │   │                          cost.py is P1's four: summary, by service, by
 │   │                          account and trend, plus allocation by tag key.
 │   │                          An open period says so in the payload, because
