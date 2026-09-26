@@ -92,11 +92,17 @@ describe('HomeScreen', () => {
     };
     renderHome(recording);
     await screen.findByText('$431.00');
-    // Both paths belong to a screen that already requests them, through that
-    // screen's own hook and its own query key: `usePlatformCost` for the first
-    // and `useQueryFindings` for the second. The rule is that Home has no query
-    // of its own, not that it makes one request.
-    expect([...asked].sort()).toEqual(['/api/v1/platform/cost', '/api/v1/query/findings']);
+    // Every path belongs to a screen that already requests it, through that
+    // screen's own hook and its own query key: `usePlatformCost`,
+    // `useQueryFindings`, `useQueryGroups` and `useQuerySurfaces`. The rule is
+    // that Home has no query of its own, not that it makes one request. A path
+    // appearing here that no other screen owns is the failure this guards.
+    expect([...asked].sort()).toEqual([
+      '/api/v1/platform/cost',
+      '/api/v1/query/findings',
+      '/api/v1/query/groups',
+      '/api/v1/query/instances',
+    ]);
   });
 
   it('has no accessibility violations', async () => {

@@ -46,6 +46,29 @@ describe('StateBoundary', () => {
     }
   });
 
+  it('states the coverage claim by default', () => {
+    render(
+      <StateBoundary state={EXAMPLES.partial}>
+        <p>rows</p>
+      </StateBoundary>,
+    );
+    expect(screen.getByRole('status')).toHaveTextContent('3 missing');
+  });
+
+  it('drops the sentence, never the rows, when coverage is claimed elsewhere', () => {
+    // Four tiles summarising one partially read estate repeat an identical
+    // sentence four times and announce it four times, which buries the claim.
+    // The opt out must never take the data with it.
+    render(
+      <StateBoundary state={EXAMPLES.partial} coverageShownElsewhere>
+        <p>rows</p>
+      </StateBoundary>,
+    );
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.getByText('rows')).toBeInTheDocument();
+    expect(screen.getByTestId('state').dataset['state']).toBe('partial');
+  });
+
   it('renders a skeleton at the final dimensions rather than a spinner', () => {
     render(
       <StateBoundary state={{ kind: 'loading', rows: 4 }}>

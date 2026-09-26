@@ -542,6 +542,30 @@ main article {
   gap: var(--space-1);
 }
 
+[data-testid='home-tile-note'] {
+  margin: 0;
+  font-size: var(--font-size-1);
+  color: var(--text-muted);
+}
+
+/* Why each unreadable surface refused. One row per typed cause, so a reader
+   sees the reason and not merely a smaller number. */
+[data-testid='home-refusals'] {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+[data-testid='home-refusals'] li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-1);
+}
+
 /* The count only. A bare descendant selector here also caught the badge's own
    text, which dropped it to the muted colour on the two palest levels. */
 [data-testid='home-severity-count'] {

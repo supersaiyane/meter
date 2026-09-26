@@ -310,8 +310,11 @@ meter/
 │           │                          because two screens rank the same findings
 │           │                          and a second copy is a second answer
 │           ├── HomeScreen.tsx          owns no data of its own. Three tiers: a
-│           │                           summary, the findings worth acting on,
-│           │                           then ArrivingRail. An unfilled slot still
+│           │                           summary of four tiles, the findings worth
+│           │                           acting on, then ArrivingRail. The tiles
+│           │                           read four hooks that four other screens
+│           │                           already own, and each links to its owner.
+│           │                           An unfilled slot still
 │           │                           names the sub project that will fill it,
 │           │                           in one rail rather than a panel each, so
 │           │                           a promise does not outweigh a number.

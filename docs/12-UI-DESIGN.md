@@ -162,6 +162,13 @@ A user seeing 42 of 310 accounts must never be able to forget it.
 - Out of scope branches in the organization tree are **drawn and marked
   unreachable**, never pruned. A tree with unexplained gaps reads as broken
   data and destroys trust in the parts that are correct.
+- **Made once per page, not once per panel.** Four summary tiles reading one
+  partially collected estate each repeated the same sentence, and announced it
+  four times to a screen reader, which buries a claim rather than making it.
+  `StateBoundary` takes `coverageShownElsewhere` for exactly this: it drops the
+  sentence and never the rows, and it is only correct where the shell above
+  already carries the claim. A surface that sets it and shows coverage nowhere
+  is a defect, which is what the test beside it exists to catch.
 
 ## 7. Visual system
 
