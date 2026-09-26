@@ -2882,6 +2882,11 @@ issues:
   status: OPEN
   summary: finops_providers/aws/topology.py has never made a call. The four APIs it reads, Transit Gateway attachments, VPC peering, PrivateLink endpoint connections and IAM trust policies, are exercised against clients that answer from a literal
   detail: 'The trust policy parser is the part most likely to be wrong, because the document arrives URL encoded as a string and the adapter reads only account principals from it. Service and federated principals are skipped on purpose, since an edge to ec2.amazonaws.com would put every instance role in every other one''s blast radius. The ARN builders are the second: three of the four APIs return bare identifiers and topology_node.provider_id is an ARN everywhere else, so a partition or a service prefix that is wrong would produce a node that never joins the one Config wrote'
+- id: ISS-203
+  severity: MEDIUM
+  status: OPEN
+  summary: infra/terraform/config has never been planned and never been applied, which is what done means for TASK-P4-010 rather than a caveat on it. No AWS Config recorder exists, so every figure in its COST.md is modelled and none is measured
+  detail: 'terraform validate and fmt check pass on the stack and make tf-validate runs them on all four. The recorders cost money per configuration item, so provisioning them before the estimate has been argued with somebody who owns the bill is the failure ISS-012 exists to prevent. The least certain assumption is four configuration items per resource per month: an estate with autoscaling groups cycling instances is very much more, and at ten the estimate is 3600 USD rather than 1440. Constraint 7 tags every resource finops:module equals config, so the real figure will appear beside the estimate on the platform cost screen'
 open_questions:
 - id: OPEN-07
   question: What does the cost screen show for a tenant whose first ingest has not run, an

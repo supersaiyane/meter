@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+# One AWS Config recorder per account and region, recording only the resource types
+# `resource_types.tf` names. Never applied, ISS-203.
+#
+# The recorder is the thing that costs money, per configuration item, and the whole
+# design of this template is about making that visible rather than convenient. It records
+# a named list rather than everything, it takes no periodic snapshot beyond the daily one
+# Config requires, and every resource it creates is tagged so the bill reaches Meter's own
+# cost screen.
+Description: >-
+  Selective AWS Config recording for Meter. Records the resource types the topology graph
+  and the waste findings consume, and nothing else.
+
+Parameters:
+  RecordedResourceTypes:
+    Type: CommaDelimitedList
+    Description: >-
+      The exact types to record, from infra/terraform/config/resource_types.tf. A type
+      added here costs the number of those resources times how often each changes.
+  DeliveryBucketName:
+    Type: String
+    Description: >-
+      The bucket Config delivers to. Required by Config and unread by Meter, which queries
+      the aggregator API instead.
+  RecorderRoleName:
+    Type: String
+    Default: AWSServiceRoleForConfig
+    Description: The service linked role Config uses in this account.
+  HomeRegion:
+    Type: String
+    Description: >-
+      The one region that records global types. IAM roles are global, so recording them in
+      every region stores the same role once per region and bills for each copy.
+  FinOpsOwner:
+    Type: String
+    Description: The team accountable for the bill this stack creates. Constraint 7.
+
+Conditions:
+  # True in exactly one region, which is what stops a global resource being recorded once
+  # per region. Without it the same IAM role would arrive eleven times, and the hub would
+  # store eleven nodes with eleven regions and one provider identifier.
+  IsHomeRegion: !Equals [!Ref "AWS::Region", !Ref HomeRegion]
+
+Resources:
+  ConfigurationRecorder:
+    Type: AWS::Config::ConfigurationRecorder
+    Properties:
+      Name: meter-selective
+      RoleARN: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/aws-service-role/config.amazonaws.com/${RecorderRoleName}"
+      RecordingGroup:
+        # False, and this is the cost decision. True here is the five figure monthly line
+        # item ISS-012 records, because it records every supported type in every account.
+        AllSupported: false
+        IncludeGlobalResourceTypes: !If [IsHomeRegion, true, false]
+        ResourceTypes: !Ref RecordedResourceTypes
+      RecordingMode:
+        # Continuous for everything named, because a topology graph built from a daily
+        # snapshot is a graph of yesterday's estate and FEAT-044 asks about a change
+        # somebody made this morning.
+        RecordingFrequency: CONTINUOUS
+
+  DeliveryChannel:
+    Type: AWS::Config::DeliveryChannel
+    Properties:
+      Name: meter-selective
+      S3BucketName: !Ref DeliveryBucketName
+      ConfigSnapshotDeliveryProperties:
+        # The longest interval Config accepts. Meter reads the aggregator API and never
+        # the delivered snapshots, so a shorter interval buys nothing and pays for every
+        # snapshot written.
+        DeliveryFrequency: TwentyFour_Hours
+
+Outputs:
+  RecorderName:
+    Description: The recorder's name, so an operator can find it by the name this stack chose.
+    Value: !Ref ConfigurationRecorder
+  RecordedTypeCount:
+    Description: >-
+      How many resource types this recorder was told to record. The number the cost
+      estimate in COST.md is computed from.
+    Value: !Sub
+      - "${Count}"
+      - Count: !Select [0, !Ref RecordedResourceTypes]
