@@ -882,6 +882,48 @@ class InventoryRootsOut(BaseModel):
     roots: tuple[InventoryRootOut, ...]
 
 
+class ResourceFiltersOut(BaseModel):
+    """The filter values that occur in this scope, read from the data rather than listed.
+
+    FEAT-056. Offering all fourteen node kinds when the estate holds four teaches a reader
+    that ten of the filters return nothing, and `resource_type` has no enumeration at all: it
+    is the provider's own word, so the data is the only place the list exists.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    account_id: tuple[str, ...]
+    #: Never an empty string. A null region is the account's global slice and the screen
+    #: offers it under that name, because a blank option in a select reads as a defect.
+    region_id: tuple[str, ...]
+    node_kind: tuple[str, ...]
+    resource_type: tuple[str, ...]
+
+
+class ResourceListOut(BaseModel):
+    """A page of resources, and the denominator. FEAT-056, closing ISS-204.
+
+    The navigation has promised this screen since P4 began and the P4 specification never
+    scheduled one, so a delivered sub project was named as the thing that would bring a screen
+    nobody planned.
+
+    `total` is the count of rows matching the filter **that this reader may see**, counted
+    through the same scope guard as the page. A count over everything beside a page of the
+    readable rows is the arithmetic that tells a narrowed reader how much they are not
+    allowed to look at.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    resources: tuple[NodeOut, ...]
+    #: Matching rows in scope, which is the denominator the screen shows. Not the size of the
+    #: estate, and not the size of the page.
+    total: int
+    limit: int
+    offset: int
+    filters: ResourceFiltersOut
+
+
 class EntityOut(BaseModel):
     """One resource, and everything Meter knows about it. FEAT-053.
 

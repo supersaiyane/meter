@@ -579,6 +579,32 @@ export interface ApiInventoryRoots {
 }
 
 /**
+ * FEAT-056. A page of resources, and the denominator.
+ *
+ * `total` is the count of rows matching the filter that this reader may see, counted through
+ * the same scope guard as the page. A count over everything beside a page of the readable rows
+ * is the arithmetic that tells a narrowed reader how much they are not allowed to look at.
+ */
+export interface ApiResourceFilters {
+  readonly account_id: readonly string[];
+  /** Never an empty string. A null region is the global slice and the screen names it. */
+  readonly region_id: readonly string[];
+  readonly node_kind: readonly string[];
+  /** The provider's own words. It has no enumeration, so the data is the only list. */
+  readonly resource_type: readonly string[];
+}
+
+export interface ApiResourceList {
+  readonly resources: readonly ApiTopologyNode[];
+  /** Matching rows in scope. Not the size of the estate and not the size of the page. */
+  readonly total: number;
+  readonly limit: number;
+  readonly offset: number;
+  /** Read from the data, so a filter the estate cannot satisfy is never offered. */
+  readonly filters: ApiResourceFilters;
+}
+
+/**
  * FEAT-053. One resource, and everything we know about it.
  *
  * Two of these fields are admissions rather than facts, and both exist because the

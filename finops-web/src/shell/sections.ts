@@ -67,11 +67,7 @@ export const GROUPS: readonly GroupDef[] = [
     screens: [
       { path: '/inventory/accounts', label: 'Accounts', arrives: null },
       { path: '/inventory/organization', label: 'Organization', arrives: null },
-      {
-        path: '/inventory/resources',
-        label: 'Resources',
-        arrives: 'P4 Inventory and Topology',
-      },
+      { path: '/inventory/resources', label: 'Resources', arrives: null },
       { path: '/inventory/topology', label: 'Topology', arrives: null },
     ],
   },

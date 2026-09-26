@@ -106,6 +106,7 @@
     "finops-web/dist-types/src/screens/QueryGroups.d.ts",
     "finops-web/dist-types/src/screens/QuerySurfacesScreen.d.ts",
     "finops-web/dist-types/src/screens/RemediationControls.d.ts",
+    "finops-web/dist-types/src/screens/ResourceListScreen.d.ts",
     "finops-web/dist-types/src/screens/TopologyScreen.d.ts",
     "finops-web/dist-types/src/screens/WasteSavingsScreen.d.ts",
     "finops-web/dist-types/src/screens/WasteScoreScreen.d.ts",
@@ -129,6 +130,7 @@
     "finops-web/dist-types/src/screens/__tests__/QueryFindingsScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/QuerySurfacesScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/RemediationControls.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/ResourceListScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/TopologyScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/WasteSavingsScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/WasteScreen.test.d.ts",
@@ -233,6 +235,7 @@
     "finops-web/src/screens/QueryGroups.tsx",
     "finops-web/src/screens/QuerySurfacesScreen.tsx",
     "finops-web/src/screens/RemediationControls.tsx",
+    "finops-web/src/screens/ResourceListScreen.tsx",
     "finops-web/src/screens/TopologyScreen.tsx",
     "finops-web/src/screens/WasteSavingsScreen.tsx",
     "finops-web/src/screens/WasteScoreScreen.tsx",
@@ -256,6 +259,7 @@
     "finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx",
     "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
     "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
+    "finops-web/src/screens/__tests__/ResourceListScreen.test.tsx",
     "finops-web/src/screens/__tests__/TopologyScreen.test.tsx",
     "finops-web/src/screens/__tests__/WasteSavingsScreen.test.tsx",
     "finops-web/src/screens/__tests__/WasteScreen.test.tsx",
@@ -1146,6 +1150,11 @@
     {
       "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/QuerySurfacesScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/ResourceListScreen.tsx",
       "k": "typescript"
     },
     {
@@ -2504,6 +2513,41 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/ResourceListScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ResourceListScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ResourceListScreen.tsx",
+      "t": "finops-web/src/components/FixtureBand.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ResourceListScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ResourceListScreen.tsx",
+      "t": "finops-web/src/screens/sliceCoverage.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ResourceListScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ResourceListScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/TopologyScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
@@ -3100,6 +3144,36 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ResourceListScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/topology.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ResourceListScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ResourceListScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ResourceListScreen.test.tsx",
+      "t": "finops-web/src/screens/ResourceListScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ResourceListScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ResourceListScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
       "k": "typescript"
     },

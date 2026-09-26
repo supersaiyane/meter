@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 59 total, 23 specified, 10 in build, 17 delivered |
+| Features | 59 total, 22 specified, 10 in build, 18 delivered |
 | Decisions | 24 architecture decision records |
 | Changes | 99 recorded |
-| Issues | 130 fixed, 71 open, 0 parked |
+| Issues | 131 fixed, 70 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -151,7 +151,7 @@ ISS-003.
 | P1 | 21 | 0 | 0 | 0 | 1 | 22 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 | P3 | 20 | 0 | 0 | 0 | 1 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
-| P4 | 11 | 0 | 0 | 0 | 2 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
+| P4 | 12 | 0 | 0 | 0 | 1 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
 | P5 | 0 | 0 | 0 | 0 | 8 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 0 | 0 | 0 | 0 | 12 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 
@@ -295,6 +295,7 @@ ISS-003.
 | `TASK-P4-009` | Done, 2026-09-26 | the map, and what it admits |
 | `TASK-P4-010` | Done, 2026-09-26 | Terraform that states its own cost |
 | `TASK-P4-011` | Done, 2026-09-26 | the test every consumer has to pass |
+| `TASK-P4-012` | Done, 2026-09-26 | the resource list, which the navigation has promised since P4 began |
 
 <!-- generated:task-status end -->
 

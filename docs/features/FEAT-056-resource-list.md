@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P4 |
-| Status | Specified |
+| Status | Delivered |
 | Specification | ISS-204, and the [competitive review](../11-COMPETITIVE-REVIEW.md) 2026-09-26 |
 | Tasks | `TASK-P4-012` |
 | Refresh cadence | Follows FEAT-030, the inventory collector |

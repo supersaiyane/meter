@@ -27,6 +27,7 @@ import {
 import {
   entityFixture,
   graphCoverageFixture,
+  resourceListFixture,
   inventoryRootsFixture,
   subgraphFixture,
 } from './fixtures/topology';
@@ -36,6 +37,7 @@ import type {
   ApiEntity,
   ApiGraphCoverage,
   ApiInventoryRoots,
+  ApiResourceList,
   ApiSubgraph,
   ApiCommitments,
   ApiCostAnomalies,
@@ -394,4 +396,49 @@ export function useEntity(nodeId: string | null) {
     ),
     enabled: nodeId !== null,
   });
+}
+
+/**
+ * A page of resources. FEAT-056.
+ *
+ * Filters and bounds are arguments rather than state held here, for the same reason the
+ * subgraph hook's are: a reader changes them on the screen, and a hook holding them would
+ * need one instance per combination.
+ *
+ * The query key carries every filter, so two different filters are two cached answers rather
+ * than one answer served for both.
+ */
+export function useResources(query: {
+  // `| undefined` explicitly, because `exactOptionalPropertyTypes` is on: an optional property
+  // and a property that may hold undefined are different types under it, and the caller builds
+  // this object with undefined for the filters it is not applying.
+  readonly accountId?: string | undefined;
+  readonly regionId?: string | undefined;
+  readonly nodeKind?: string | undefined;
+  readonly resourceType?: string | undefined;
+  readonly limit: number;
+  readonly offset: number;
+}) {
+  const search = new URLSearchParams({
+    limit: String(query.limit),
+    offset: String(query.offset),
+  });
+  if (query.accountId !== undefined) search.set('account_id', query.accountId);
+  if (query.regionId !== undefined) search.set('region_id', query.regionId);
+  if (query.nodeKind !== undefined) search.set('node_kind', query.nodeKind);
+  if (query.resourceType !== undefined) search.set('resource_type', query.resourceType);
+  return useQuerySurface<ApiResourceList>(
+    [
+      'inventory-resources',
+      query.accountId ?? 'all',
+      query.regionId ?? 'all',
+      query.nodeKind ?? 'all',
+      query.resourceType ?? 'all',
+      query.limit,
+      query.offset,
+    ],
+    '/api/v1/inventory/resources',
+    `/api/v1/inventory/resources?${search.toString()}`,
+    resourceListFixture,
+  );
 }

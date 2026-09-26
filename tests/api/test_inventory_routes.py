@@ -169,6 +169,11 @@ def only(tenant: UUID, account: str) -> Scope:
 
 
 def get(client: TestClient, token: str, path: str, **params: Any) -> dict[str, Any]:
+    # httpx replaces a URL's query string when `params` is passed, including when it is empty,
+    # so a filter written into the path here is discarded in silence and the route answers as
+    # though nothing was asked. Refused rather than merged: a caller who wrote one into the
+    # path meant it to apply, and the route being correct makes that failure very hard to see.
+    assert "?" not in path, f"pass query parameters as keywords, not in the path: {path}"
     response = client.get(path, headers=auth(token), params=params)
     assert response.status_code == 200, f"{path} returned {response.status_code}: {response.text}"
     result = response.json()
@@ -556,3 +561,141 @@ def test_a_resource_with_no_findings_and_none_unmatched_says_both(
     data = get(client, token, entity_path(tenant_id))["data"]
     assert data["findings"] == []
     assert data["unmatched_findings"] == 0
+
+
+# --- FEAT-056, the resource list ---------------------------------------------
+
+RESOURCES = "/api/v1/inventory/resources"
+
+
+def test_the_resource_list_pages_and_states_the_denominator(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """Five resources across two accounts: a VPC with three subnets, and the far end of the
+    cross account edge. A page of two says so rather than implying it is everything, because a
+    list that does not publish its denominator reads as complete."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    body = get(client, token, RESOURCES, limit=2)
+    assert len(body["data"]["resources"]) == 2
+    assert body["data"]["total"] == 5
+    assert (body["data"]["limit"], body["data"]["offset"]) == (2, 0)
+
+
+def test_the_pages_partition_the_estate_rather_than_overlapping(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The failure a non deterministic order produces: a page boundary that repeats one row
+    and skips another, which nothing notices because both pages look full. The order ends at
+    the identifier for exactly this reason."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    seen: list[str] = []
+    for offset in (0, 2, 4):
+        page = get(client, token, RESOURCES, limit=2, offset=offset)["data"]["resources"]
+        seen.extend(one["node_id"] for one in page)
+    assert len(seen) == 5
+    assert len(set(seen)) == 5
+
+
+def test_every_filter_narrows_the_list_and_the_total_with_it(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The total has to follow the filter. A denominator that stayed at the estate size while
+    the page narrowed would tell a reader their filter was hiding rows it never matched."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    subnets = get(client, token, RESOURCES, node_kind="SUBNET")["data"]
+    assert subnets["total"] == 3
+    assert {one["node_kind"] for one in subnets["resources"]} == {"SUBNET"}
+
+    mine = get(client, token, RESOURCES, account_id=MINE)["data"]
+    assert mine["total"] == 4
+    assert {one["account_id"] for one in mine["resources"]} == {MINE}
+
+    by_type = get(client, token, RESOURCES, resource_type="AWS::EC2::VPC")["data"]
+    assert by_type["total"] == 5
+
+
+def test_a_narrowed_reader_sees_a_total_of_what_they_may_see(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The case that makes the count worth asserting. A total over everything beside a page of
+    the readable rows is the arithmetic that tells a narrowed reader how much they are not
+    allowed to look at, and it is counted through the same guard as the page for that reason."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, only(tenant_id, THEIRS), settings)
+    body = get(client, token, RESOURCES)["data"]
+    assert body["total"] == 1
+    assert {one["account_id"] for one in body["resources"]} == {THEIRS}
+
+
+def test_the_filter_vocabularies_come_from_the_data(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """Read rather than listed. Offering all fourteen node kinds when the estate holds two
+    teaches a reader that twelve of the filters return nothing, and `resource_type` has no
+    enumeration at all, so the data is the only place that list exists."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    filters = get(client, token, RESOURCES)["data"]["filters"]
+    assert set(filters["node_kind"]) == {"VPC", "SUBNET"}
+    assert set(filters["account_id"]) == {MINE, THEIRS}
+    assert filters["resource_type"] == ["AWS::EC2::VPC"]
+    # Never an empty string. A null region is the global slice and the screen names it, and a
+    # blank option in a select reads as a defect.
+    assert "" not in filters["region_id"]
+
+
+def test_a_narrowed_reader_is_not_offered_a_filter_for_somebody_elses_account(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The vocabularies go through the scope guard too. A select listing every account in the
+    estate would disclose the estate to a reader granted one account of it."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, only(tenant_id, THEIRS), settings)
+    filters = get(client, token, RESOURCES)["data"]["filters"]
+    assert filters["account_id"] == [THEIRS]
+
+
+def test_the_list_counts_slices_rather_than_rows_in_its_coverage(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """A full page of rows is not complete coverage of an estate half of which was never read.
+    The seeded estate has one refused region, so the list is drawn from fewer slices than
+    exist and the strip says so."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    body = get(client, token, RESOURCES)
+    coverage = body["meta"]["scope_coverage"]
+    assert coverage["unit"] == "slices"
+    assert coverage["visible"] < coverage["total"]
+    assert coverage["is_partial"] is True
+    assert body["meta"]["degraded"] is True
+
+
+def test_a_filter_matching_nothing_is_an_empty_list_rather_than_an_error(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """An empty result is an answer about the estate. A 404 here would say the filter was
+    wrong when what it said was that nothing matches."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    body = get(client, token, RESOURCES, node_kind="LAMBDA_FUNCTION")["data"]
+    assert body["resources"] == []
+    assert body["total"] == 0
+    # And the vocabularies still describe the estate, so the reader can widen the filter
+    # rather than being left on a dead end with no options.
+    assert body["filters"]["node_kind"]
+
+
+@pytest.mark.parametrize("query", ["limit=0", "limit=501", "offset=-1"])
+def test_a_bound_outside_the_allowed_range_is_refused(
+    engine: Engine, tenant_id: UUID, settings: Settings, query: str
+) -> None:
+    """Refused rather than clamped. An unbounded read of a real estate returns the estate, and
+    silently correcting the request would leave the caller believing the bound they asked for
+    was honoured."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    assert client.get(f"{RESOURCES}?{query}", headers=auth(token)).status_code == 422

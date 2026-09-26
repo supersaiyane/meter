@@ -250,6 +250,86 @@ class TopologyRepository(ScopedRepository):
             statement.order_by(self.table.c.node_kind, self.table.c.name).limit(limit),
         )
 
+    def page(
+        self,
+        scope: Scope,
+        *,
+        account_id: str | None = None,
+        region_id: str | None = None,
+        node_kind: str | None = None,
+        resource_type: str | None = None,
+        limit: int,
+        offset: int,
+    ) -> tuple[Sequence[Row[Any]], int]:
+        """One page of resources, and how many match the filter in total.
+
+        FEAT-056, TASK-P4-012. The count comes back with the page rather than from a second
+        call, because a reader is told "showing 50 of 4,312" and two statements could disagree
+        about the denominator in a way nothing would catch.
+
+        Counted through `scoped_select` like the page, so the total is the total this reader
+        may see. A count of every row with a page of the readable ones is the arithmetic that
+        tells a narrowed reader how much they are not allowed to look at.
+
+        Ordered by account, then region, then kind, then name. A reader scanning this is
+        looking for something they recognise, and the identifier order is a random one to
+        them. Deterministic to the identifier at the end, because a page boundary in a
+        non deterministic order silently repeats and skips rows.
+        """
+        statement = self.scoped_select(scope)
+        for column, wanted in (
+            (self.table.c.sub_account_id, account_id),
+            (self.table.c.region_id, region_id),
+            (self.table.c.node_kind, node_kind),
+            (self.table.c.resource_type, resource_type),
+        ):
+            if wanted is not None:
+                statement = statement.where(column == wanted)
+
+        total = self._connection.execute(
+            statement.with_only_columns(func.count()).order_by(None)
+        ).scalar_one()
+        rows = self.fetch(
+            scope,
+            statement.order_by(
+                self.table.c.sub_account_id,
+                self.table.c.region_id,
+                self.table.c.node_kind,
+                self.table.c.name,
+                self.table.c.node_id,
+            )
+            .limit(limit)
+            .offset(offset),
+        )
+        return rows, int(total)
+
+    def vocabularies(self, scope: Scope) -> dict[str, tuple[str, ...]]:
+        """The filter values that actually occur in this scope.
+
+        Read rather than taken from the enumerations, and the difference matters twice. A
+        select offering all fourteen node kinds when the estate holds four teaches a reader
+        that twelve filters return nothing. And `resource_type` has no enumeration at all: it
+        is the provider's own word, ten of which map to OTHER, so the only place the list
+        exists is the data.
+
+        A region of null is the account's global slice and is offered as such by the caller,
+        never as an empty string, which reads as a bug in a select.
+        """
+        found: dict[str, tuple[str, ...]] = {}
+        for name, column in (
+            ("account_id", self.table.c.sub_account_id),
+            ("region_id", self.table.c.region_id),
+            ("node_kind", self.table.c.node_kind),
+            ("resource_type", self.table.c.resource_type),
+        ):
+            statement = (
+                self.scoped_select(scope).with_only_columns(column).distinct().order_by(column)
+            )
+            found[name] = tuple(
+                row[0] for row in self._connection.execute(statement).all() if row[0] is not None
+            )
+        return found
+
     def one(self, scope: Scope, node_id: UUID) -> Node | None:
         """One node, or None where the scope cannot see it.
 
@@ -349,7 +429,7 @@ class TopologyRepository(ScopedRepository):
 
     def _nodes(self, scope: Scope, node_ids: tuple[UUID, ...]) -> tuple[Node, ...]:
         statement = self.scoped_select(scope).where(self.table.c.node_id.in_(node_ids))
-        return tuple(_as_node(row) for row in self._connection.execute(statement).all())
+        return tuple(as_node(row) for row in self._connection.execute(statement).all())
 
     def _edges(self, scope: Scope, node_ids: tuple[UUID, ...]) -> tuple[Edge, ...]:
         """Every edge whose origin is in the answer, including those leaving it.
@@ -384,7 +464,12 @@ class TopologyRepository(ScopedRepository):
         )
 
 
-def _as_node(row: Row[Any]) -> Node:
+def as_node(row: Row[Any]) -> Node:
+    """One row as a domain node.
+
+    Public since FEAT-056, because the resource list route maps rows the same way the
+    traversal does and a second copy of the field mapping is a second place for a column
+    rename to be missed."""
     return Node(
         node_id=row.node_id,
         account_key=AccountKey(provider=Provider.AWS, account_id=str(row.sub_account_id)),

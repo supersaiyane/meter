@@ -13,6 +13,7 @@ import { FreshnessScreen } from './screens/FreshnessScreen';
 import { IngestScreen } from './screens/IngestScreen';
 import { OrganizationScreen } from './screens/OrganizationScreen';
 import { EntityScreen } from './screens/EntityScreen';
+import { ResourceListScreen } from './screens/ResourceListScreen';
 import { TopologyScreen } from './screens/TopologyScreen';
 import { QueryFindingDetailScreen } from './screens/QueryFindingDetailScreen';
 import { CostScreen } from './screens/CostScreen';
@@ -96,6 +97,9 @@ export function App({
                 {/* FEAT-053. The detail page, reached from the map, the waste list and
                     the anomaly list. Not the resource inventory list ISS-204 tracks,
                     which is a different screen at the parent path. */}
+                {/* FEAT-056, closing ISS-204. Declared before the detail route so the
+                    literal path is not eaten by the parameter. */}
+                <Route path="/inventory/resources" element={<ResourceListScreen />} />
                 <Route path="/inventory/resources/:nodeId" element={<EntityScreen />} />
                 <Route path="/governance/queries" element={<QueryFindingsScreen />} />
                 <Route path="/governance/queries/:id" element={<QueryFindingDetailScreen />} />
