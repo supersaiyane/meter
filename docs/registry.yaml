@@ -238,19 +238,19 @@ features:
 - id: FEAT-030
   name: AWS Config aggregator inventory by region and zone
   subproject: P4
-  status: Specified
+  status: In build
   detail: '[P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.1, [P4 plan](docs/plans/P4-implementation-plan.md)'
   doc: docs/features/FEAT-030-config-aggregator-inventory.md
 - id: FEAT-031
   name: Topology graph, node and edge model
   subproject: P4
-  status: Specified
+  status: In build
   detail: '[P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 5.2, [P4 plan](docs/plans/P4-implementation-plan.md)'
   doc: docs/features/FEAT-031-topology-graph.md
 - id: FEAT-032
   name: Topology map interface
   subproject: P4
-  status: Specified
+  status: In build
   detail: '[P4 spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) section 9, [P4 plan](docs/plans/P4-implementation-plan.md)'
   doc: docs/features/FEAT-032-topology-map-interface.md
 - id: FEAT-033
@@ -456,6 +456,10 @@ adrs:
   decision: The fakes live outside the production packages, kept there by three mechanisms
   status: Accepted
   doc: docs/adr/ADR-0022-fakes-outside-the-production-packages.md
+- id: ADR-0023
+  decision: A coverage cause is the error taxonomy plus one member, never attempted
+  status: Accepted
+  doc: docs/adr/ADR-0023-coverage-cause-is-the-taxonomy-plus-one.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'

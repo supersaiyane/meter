@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P4 |
-| Status | Specified |
+| Status | In build |
 | Specification | [P4 spec](../specs/2026-09-20-p4-inventory-and-topology-design.md), section 5.2 |
 | Tasks | TASK-P4-004 to TASK-P4-007, TASK-P4-011 |
 | Refresh cadence | Follows FEAT-030 |

@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-484 public symbols across 5 packages.
+492 public symbols across 5 packages.
 
 ## finops_core
 
@@ -80,6 +80,14 @@ a duplicate.
 | `Tenant` | class | `finops_core/domain/tenant.py:23` |  | nothing in this tree |
 | `Scope` | class | `finops_core/domain/tenant.py:29` | What one principal may read, held as data rather than as a query fragment. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py` |
 | `Scope.permits` | method | `finops_core/domain/tenant.py:45` |  | `finops_api/routes/org.py`, `finops_ingest/remediation.py` |
+| `NodeKind` | class | `finops_core/domain/topology.py:42` | The kinds of thing the graph can hold, as a closed set. | nothing in this tree |
+| `EdgeKind` | class | `finops_core/domain/topology.py:69` | How two nodes are related, in the direction the relationship runs. | nothing in this tree |
+| `CoverageState` | class | `finops_core/domain/topology.py:92` | How much of one account's one region the graph is built from. | nothing in this tree |
+| `CoverageCause` | class | `finops_core/domain/topology.py:107` | Why a slice is not COMPLETE. The taxonomy's six, plus never attempted. | nothing in this tree |
+| `Node` | class | `finops_core/domain/topology.py:138` | One resource, as a vertex. Identified by the provider's own identifier. | nothing in this tree |
+| `Edge` | class | `finops_core/domain/topology.py:171` | One directed relationship between two nodes. | nothing in this tree |
+| `GraphCoverage` | class | `finops_core/domain/topology.py:209` | How much of one account's one region the graph was built from. | nothing in this tree |
+| `GraphCoverage.is_whole` | method | `finops_core/domain/topology.py:253` | True only for a slice the graph can be trusted to be complete over. | nothing in this tree |
 | `Confidence` | class | `finops_core/domain/waste.py:31` | How much data the estimate rests on. Never derived from the money. | nothing in this tree |
 | `Lifecycle` | class | `finops_core/domain/waste.py:39` | Where a recommendation is. The event log is what says how it got there. | `finops_api/lifecycle.py`, `finops_ingest/collectors/score.py` |
 | `Source` | class | `finops_core/domain/waste.py:68` | Who found it. One table holds all of them. | nothing in this tree |
@@ -563,6 +571,14 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `QuotaUsage` in `finops_core/domain/quota.py:18`
 - `ResourceRef` in `finops_core/domain/resource.py:19`
 - `Tenant` in `finops_core/domain/tenant.py:23`
+- `NodeKind` in `finops_core/domain/topology.py:42`
+- `EdgeKind` in `finops_core/domain/topology.py:69`
+- `CoverageState` in `finops_core/domain/topology.py:92`
+- `CoverageCause` in `finops_core/domain/topology.py:107`
+- `Node` in `finops_core/domain/topology.py:138`
+- `Edge` in `finops_core/domain/topology.py:171`
+- `GraphCoverage` in `finops_core/domain/topology.py:209`
+- `GraphCoverage.is_whole` in `finops_core/domain/topology.py:253`
 - `Confidence` in `finops_core/domain/waste.py:31`
 - `Source` in `finops_core/domain/waste.py:68`
 - `WasteClass` in `finops_core/domain/waste.py:77`
@@ -591,11 +607,3 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `MetricSource.read_series` in `finops_core/ports/metrics.py:48`
 - `QuerySurface` in `finops_core/ports/query.py:40`
 - `QuerySurface.apply_control` in `finops_core/ports/query.py:87`
-- `RefreshFloor` in `finops_core/ports/query.py:113`
-- `PanelRewrite` in `finops_core/ports/query.py:157`
-- `Classified` in `finops_core/ports/query.py:204`
-- `Classified.engine` in `finops_core/ports/query.py:213`
-- `Classified.query` in `finops_core/ports/query.py:216`
-- `Classified.region` in `finops_core/ports/query.py:219`
-- `QueryParser` in `finops_core/ports/query.py:226`
-- `QueryEvidence` in `finops_core/ports/query.py:289`

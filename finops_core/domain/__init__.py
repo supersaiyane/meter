@@ -21,8 +21,19 @@ from finops_core.domain.ingest import CollectionFailure, IngestRun, RunStatus, W
 from finops_core.domain.org import OrgNode, OrgNodeType
 from finops_core.domain.platform import UNALLOCATED, PlatformCost
 from finops_core.domain.tenant import Scope, Tenant
+from finops_core.domain.topology import (
+    SOURCE_MAX_LENGTH,
+    CoverageCause,
+    CoverageState,
+    Edge,
+    EdgeKind,
+    GraphCoverage,
+    Node,
+    NodeKind,
+)
 
 __all__ = [
+    "SOURCE_MAX_LENGTH",
     "UNALLOCATED",
     "AccountHealth",
     "AccountKey",
@@ -33,9 +44,16 @@ __all__ = [
     "CostMeasure",
     "CostRecord",
     "CostTotal",
+    "CoverageCause",
+    "CoverageState",
+    "Edge",
+    "EdgeKind",
     "Entitlement",
     "Fact",
+    "GraphCoverage",
     "IngestRun",
+    "Node",
+    "NodeKind",
     "OrgNode",
     "OrgNodeType",
     "PlatformCost",

@@ -312,6 +312,7 @@
     "finops_core/domain/quota.py",
     "finops_core/domain/resource.py",
     "finops_core/domain/tenant.py",
+    "finops_core/domain/topology.py",
     "finops_core/domain/waste.py",
     "finops_core/errors.py",
     "finops_core/ports/__init__.py",
@@ -486,6 +487,7 @@
     "tests/core/test_domain.py",
     "tests/core/test_errors.py",
     "tests/core/test_ports.py",
+    "tests/core/test_topology.py",
     "tests/core/test_waste_domain.py",
     "tests/db/__init__.py",
     "tests/db/test_models.py",
@@ -3735,6 +3737,11 @@
       "k": "python"
     },
     {
+      "s": "finops_core/domain/__init__.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/domain/account.py",
       "t": "finops_core/domain/fact.py",
       "k": "python"
@@ -3817,6 +3824,16 @@
     {
       "s": "finops_core/domain/tenant.py",
       "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/topology.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/topology.py",
+      "t": "finops_core/domain/fact.py",
       "k": "python"
     },
     {
@@ -5492,6 +5509,16 @@
     {
       "s": "tests/core/test_ports.py",
       "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_topology.py",
+      "t": "finops_core/domain/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_topology.py",
+      "t": "finops_core/errors.py",
       "k": "python"
     },
     {

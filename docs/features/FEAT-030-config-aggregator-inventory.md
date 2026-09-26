@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P4 |
-| Status | Specified |
+| Status | In build |
 | Specification | [P4 spec](../specs/2026-09-20-p4-inventory-and-topology-design.md), section 5.1 |
 | Tasks | TASK-P4-002, TASK-P4-003, TASK-P4-006, TASK-P4-010 |
 | Refresh cadence | 6 hours, plus change driven |
