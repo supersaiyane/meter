@@ -27,6 +27,22 @@ function rows(): readonly ApiRecommendation[] {
   return recommendationsFixture().data.recommendations;
 }
 
+/**
+ * The fixture's first row, as a row rather than as a possibly absent one.
+ *
+ * Indexing the array gives `ApiRecommendation | undefined`, and spreading that produces an
+ * object whose every field is optional, which is not the type the panel takes. Throwing here
+ * rather than asserting non null says what an empty fixture would actually mean: every case
+ * below that builds on this row would pass without testing anything.
+ */
+function base(): ApiRecommendation {
+  const [first] = rows();
+  if (first === undefined) {
+    throw new Error('the waste fixture has no rows, so the cases below would be vacuous');
+  }
+  return first;
+}
+
 function renderPanel(recommendations: readonly ApiRecommendation[] = rows()) {
   return render(
     <MemoryRouter>
@@ -60,7 +76,7 @@ describe('TopActions', () => {
     // the lifecycle case the recommendations screen needs, and a panel test leaning on it
     // would have been asserting against a row the open filter correctly removes.
     const permanent: ApiRecommendation = {
-      ...rows()[0],
+      ...base(),
       recommendation_id: 'b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e',
       waste_class: 'EBS_UNATTACHED',
       resource_id: 'vol-0a1b2c3d',
@@ -144,7 +160,7 @@ describe('TopActions', () => {
 describe('riskLabel', () => {
   function row(reversible: boolean, disturbs: boolean): ApiRecommendation {
     return {
-      ...rows()[0],
+      ...base(),
       reversible,
       disturbs_running_work: disturbs,
       is_no_regret: reversible && !disturbs,
