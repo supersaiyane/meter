@@ -460,6 +460,10 @@ adrs:
   decision: A coverage cause is the error taxonomy plus one member, never attempted
   status: Accepted
   doc: docs/adr/ADR-0023-coverage-cause-is-the-taxonomy-plus-one.md
+- id: ADR-0024
+  decision: One collector owns a slice's graph, with a composite source rather than two schedules
+  status: Accepted
+  doc: docs/adr/ADR-0024-one-collector-owns-a-slice.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'

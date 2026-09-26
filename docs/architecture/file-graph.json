@@ -356,6 +356,7 @@
     "finops_ingest/collectors/cost_anomaly.py",
     "finops_ingest/collectors/cost_focus.py",
     "finops_ingest/collectors/cost_rollup.py",
+    "finops_ingest/collectors/inventory.py",
     "finops_ingest/collectors/org_tree.py",
     "finops_ingest/collectors/partitions.py",
     "finops_ingest/collectors/platform_cost.py",
@@ -364,8 +365,10 @@
     "finops_ingest/collectors/recommendations.py",
     "finops_ingest/collectors/retention.py",
     "finops_ingest/collectors/score.py",
+    "finops_ingest/collectors/topology.py",
     "finops_ingest/collectors/waste_cloudwatch.py",
     "finops_ingest/collectors/waste_compute.py",
+    "finops_ingest/coverage.py",
     "finops_ingest/dispatcher.py",
     "finops_ingest/ledger.py",
     "finops_ingest/metrics.py",
@@ -508,6 +511,7 @@
     "tests/ingest/collectors/test_cost_focus.py",
     "tests/ingest/collectors/test_cost_focus_restatement.py",
     "tests/ingest/collectors/test_cost_rollup.py",
+    "tests/ingest/collectors/test_inventory.py",
     "tests/ingest/collectors/test_org_tree.py",
     "tests/ingest/collectors/test_partitions.py",
     "tests/ingest/collectors/test_platform_cost.py",
@@ -518,6 +522,7 @@
     "tests/ingest/collectors/test_waste_against_the_estate.py",
     "tests/ingest/collectors/test_waste_cloudwatch.py",
     "tests/ingest/collectors/test_waste_compute.py",
+    "tests/ingest/test_coverage.py",
     "tests/ingest/test_dispatcher.py",
     "tests/ingest/test_ledger.py",
     "tests/ingest/test_metrics.py",
@@ -4299,6 +4304,31 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/inventory.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/inventory.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/inventory.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/inventory.py",
+      "t": "finops_ingest/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/inventory.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/org_tree.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -4449,6 +4479,16 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/topology.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/topology.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/waste_cloudwatch.py",
       "t": "finops_core/domain/waste.py",
       "k": "python"
@@ -4501,6 +4541,16 @@
     {
       "s": "finops_ingest/collectors/waste_compute.py",
       "t": "finops_query/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/coverage.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/coverage.py",
+      "t": "finops_core/domain/topology.py",
       "k": "python"
     },
     {
@@ -5834,6 +5884,46 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_inventory.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_inventory.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_inventory.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_inventory.py",
+      "t": "finops_core/ports/inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_inventory.py",
+      "t": "finops_ingest/collectors/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_inventory.py",
+      "t": "finops_ingest/collectors/inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_inventory.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_inventory.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_org_tree.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -6046,6 +6136,21 @@
     {
       "s": "tests/ingest/collectors/test_waste_compute.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_coverage.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_coverage.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_coverage.py",
+      "t": "finops_ingest/__init__.py",
       "k": "python"
     },
     {

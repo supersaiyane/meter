@@ -39,3 +39,4 @@ Status values: `Proposed`, `Accepted`, `Superseded by ADR-NNNN`, `Rejected`.
 | 0021 | Plain CSS over a utility framework, against our own tokens | Accepted |
 | 0022 | The fakes live outside the production packages, kept there by three mechanisms | Accepted |
 | 0023 | A coverage cause is the error taxonomy plus one member, never attempted | Accepted |
+| 0024 | One collector owns a slice's graph | Accepted |

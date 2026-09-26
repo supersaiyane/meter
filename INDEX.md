@@ -216,6 +216,7 @@ block is caught by `make check-docs`. See
 | ADR-0021 | Plain CSS over a utility framework, against our own tokens | Accepted | [ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md) |
 | ADR-0022 | The fakes live outside the production packages, kept there by three mechanisms | Accepted | [ADR-0022](docs/adr/ADR-0022-fakes-outside-the-production-packages.md) |
 | ADR-0023 | A coverage cause is the error taxonomy plus one member, never attempted | Accepted | [ADR-0023](docs/adr/ADR-0023-coverage-cause-is-the-taxonomy-plus-one.md) |
+| ADR-0024 | One collector owns a slice's graph, with a composite source rather than two schedules | Accepted | [ADR-0024](docs/adr/ADR-0024-one-collector-owns-a-slice.md) |
 
 Index of records: [docs/adr/README.md](docs/adr/README.md)
 
