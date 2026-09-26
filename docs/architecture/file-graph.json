@@ -32,6 +32,7 @@
     "finops-web/dist-types/src/api/fixtureSeam.d.ts",
     "finops-web/dist-types/src/api/fixtures/cost.d.ts",
     "finops-web/dist-types/src/api/fixtures/query.d.ts",
+    "finops-web/dist-types/src/api/fixtures/topology.d.ts",
     "finops-web/dist-types/src/api/fixtures/waste.d.ts",
     "finops-web/dist-types/src/api/queries.d.ts",
     "finops-web/dist-types/src/api/types",
@@ -55,6 +56,7 @@
     "finops-web/dist-types/src/components/Sparkline.d.ts",
     "finops-web/dist-types/src/components/StateBoundary",
     "finops-web/dist-types/src/components/StateBoundary.d.ts",
+    "finops-web/dist-types/src/components/TopologyCanvas.d.ts",
     "finops-web/dist-types/src/components/TypedError",
     "finops-web/dist-types/src/components/TypedError.d.ts",
     "finops-web/dist-types/src/components/__tests__/DataTable.test.d.ts",
@@ -100,6 +102,7 @@
     "finops-web/dist-types/src/screens/QueryGroups.d.ts",
     "finops-web/dist-types/src/screens/QuerySurfacesScreen.d.ts",
     "finops-web/dist-types/src/screens/RemediationControls.d.ts",
+    "finops-web/dist-types/src/screens/TopologyScreen.d.ts",
     "finops-web/dist-types/src/screens/WasteSavingsScreen.d.ts",
     "finops-web/dist-types/src/screens/WasteScoreScreen.d.ts",
     "finops-web/dist-types/src/screens/WasteScreen.d.ts",
@@ -121,6 +124,7 @@
     "finops-web/dist-types/src/screens/__tests__/QueryFindingsScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/QuerySurfacesScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/RemediationControls.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/TopologyScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/WasteSavingsScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/WasteScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/enforcementTime.test.d.ts",
@@ -149,6 +153,7 @@
     "finops-web/e2e/cost.spec.ts",
     "finops-web/e2e/demo.spec.ts",
     "finops-web/e2e/journey.spec.ts",
+    "finops-web/e2e/topology.spec.ts",
     "finops-web/playwright.config.ts",
     "finops-web/src/App.test.tsx",
     "finops-web/src/App.tsx",
@@ -502,6 +507,7 @@
     "tests/contract/test_commitment.py",
     "tests/contract/test_cost_export.py",
     "tests/contract/test_credential_broker.py",
+    "tests/contract/test_partial_graph_consumers.py",
     "tests/contract/test_topology_source.py",
     "tests/core/__init__.py",
     "tests/core/test_config.py",
@@ -755,6 +761,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/dist-types/src/api/fixtures/topology.d.ts",
+      "t": "finops-web/dist-types/src/api/types",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/dist-types/src/api/fixtures/waste.d.ts",
       "t": "finops-web/dist-types/src/api/types",
       "k": "typescript"
@@ -817,6 +828,11 @@
     {
       "s": "finops-web/dist-types/src/components/StateBoundary.d.ts",
       "t": "finops-web/dist-types/src/components/surfaceState",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/TopologyCanvas.d.ts",
+      "t": "finops-web/dist-types/src/api/types",
       "k": "typescript"
     },
     {
@@ -5211,6 +5227,11 @@
     },
     {
       "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/org_tree.py",
       "k": "python"
     },
@@ -5787,6 +5808,26 @@
     {
       "s": "tests/contract/test_credential_broker.py",
       "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_partial_graph_consumers.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_partial_graph_consumers.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_partial_graph_consumers.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_partial_graph_consumers.py",
+      "t": "finops_query/graph.py",
       "k": "python"
     },
     {

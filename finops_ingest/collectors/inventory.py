@@ -22,6 +22,12 @@ transaction, so a read that fails part way rolls back everything including any r
 and that is what does the work in the deployed shape. The ordering is the second
 protection and it costs nothing to keep.
 
+**Enrolment and reading are two different lists.** `enrol` covers every slice the source
+declares; the loop reads the slices this run was given. A run that reads nineteen of twenty
+leaves the twentieth `UNREAD`, which is the state TASK-P4-005 asks for and the one a
+dispatcher fanning out per account produces naturally. With one list they could not differ,
+and `UNREAD` would be a value in an enumeration that no run could ever leave behind.
+
 **One account failing never fails the run.** Each slice is read inside its own guard, and
 a failure lands in `graph_coverage` and in `sync_error` both. The two are not redundant.
 Coverage is the state of a slice, which a screen reads to decide whether a number can be
@@ -164,9 +170,23 @@ def scope_key(account: AccountKey, region: str | None) -> str:
 class InventoryCollector:
     """Reads every enrolled slice, writes what it found, and records what it missed."""
 
-    def __init__(self, source: Any, clock: Clock = _system_clock) -> None:
+    def __init__(
+        self,
+        source: Any,
+        clock: Clock = _system_clock,
+        covers: tuple[tuple[AccountKey, str | None], ...] | None = None,
+    ) -> None:
         self._source = source
         self._clock = clock
+        # Which slices this run reads, as against which are enrolled. None means all of
+        # them, which is what a single worker doing the whole estate passes.
+        #
+        # They are separate for the reason TASK-P4-005 states: the UNREAD row is created
+        # at enrolment and not at first failure, so a slice that is enrolled and that this
+        # run did not reach has to keep it. With one list the two could not differ and
+        # UNREAD would be a state no run could leave behind, which would make it a value
+        # in an enum that never appears.
+        self._covers = covers
 
     def __call__(self, context: CollectorContext) -> CollectorOutcome:
         if context.run_id is None:
@@ -181,17 +201,19 @@ class InventoryCollector:
 
         at = self._clock()
         tenant: UUID = context.unit.tenant_id
-        slices = self._source.enrolled_slices
+        enrolled = self._source.enrolled_slices
+        reading = enrolled if self._covers is None else self._covers
 
-        # Before any reading. A slice this run never reaches keeps an UNREAD row, which is
-        # what makes it distinguishable from a slice that holds nothing.
+        # Every enrolled slice, before any reading. A slice this run never reaches keeps an
+        # UNREAD row, which is what makes it distinguishable from a slice that holds
+        # nothing.
         coverage.enrol(
-            context.connection, tenant=tenant, run_id=context.run_id, slices=slices, at=at
+            context.connection, tenant=tenant, run_id=context.run_id, slices=enrolled, at=at
         )
 
         written = 0
         removed = 0
-        for account, region in slices:
+        for account, region in reading:
             try:
                 read = self._source.read_slice(account, region)
             except CollectionError as failure:

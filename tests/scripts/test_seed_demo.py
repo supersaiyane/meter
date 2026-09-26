@@ -355,3 +355,58 @@ def test_the_seed_produces_all_three_verdicts(engine: object) -> None:
         assert excluded >= 1
     finally:
         seed_demo.remove(engine)
+
+
+def test_the_seeded_estate_has_exactly_one_unread_slice(engine: object) -> None:
+    """TASK-P4-011's fourth criterion. An estate where every slice was read cannot show the
+    one state P4 exists to distinguish, and an estate where several were not read makes the
+    demo about the gap rather than about the product."""
+    from sqlalchemy import text as sql
+
+    seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
+    with engine.connect() as connection:  # type: ignore[attr-defined]
+        rows = connection.execute(
+            sql(
+                "SELECT sub_account_id, region_id, state, cause FROM graph_coverage "
+                "WHERE tenant_id = :t ORDER BY state, sub_account_id"
+            ),
+            {"t": seed_demo.DEMO_TENANT},
+        ).all()
+    by_state: dict[str, int] = {}
+    for row in rows:
+        by_state[row.state] = by_state.get(row.state, 0) + 1
+    unread = [row for row in rows if row.state == "UNREAD"]
+    assert len(unread) == 1, f"expected one unread slice, got {by_state}"
+    assert (unread[0].sub_account_id, unread[0].region_id) == (
+        seed_demo.UNREAD_ACCOUNT,
+        seed_demo.UNREAD_REGION,
+    )
+    assert unread[0].cause == "NotYetAttempted"
+    # And the estate still has refused slices, which are a different thing: a read
+    # happened and fell short. A demo with only one of the two teaches the wrong lesson.
+    assert by_state.get("PARTIAL", 0) > 0
+    assert by_state.get("COMPLETE", 0) > 0
+
+
+def test_the_seeded_graph_has_an_edge_leaving_it(engine: object) -> None:
+    """The denied account's VPC has no node row, so the attachment pointing at it is an edge
+    whose far end Meter has not read. That is the shape the map draws as a boundary, and a
+    seeded estate without one cannot exercise it."""
+    from sqlalchemy import text as sql
+
+    seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
+    with engine.connect() as connection:  # type: ignore[attr-defined]
+        dangling = connection.execute(
+            sql(
+                "SELECT count(*) FROM topology_edge e WHERE e.tenant_id = :t AND NOT EXISTS "
+                "(SELECT 1 FROM topology_node n WHERE n.node_id = e.to_node_id "
+                "AND n.tenant_id = e.tenant_id)"
+            ),
+            {"t": seed_demo.DEMO_TENANT},
+        ).scalar_one()
+        crossing = connection.execute(
+            sql("SELECT count(*) FROM topology_edge WHERE tenant_id = :t AND is_cross_account"),
+            {"t": seed_demo.DEMO_TENANT},
+        ).scalar_one()
+    assert int(dangling) >= 1
+    assert int(crossing) >= 1

@@ -653,3 +653,30 @@ def test_the_collector_runs_against_a_composite_end_to_end(engine: Engine, tenan
     assert count(engine, "topology_edge", tenant_id) == 2
     (row,) = rows(engine, "SELECT state FROM graph_coverage WHERE tenant_id = :t", tenant_id)
     assert row.state == "COMPLETE"
+
+
+def test_a_run_that_reads_fewer_slices_than_are_enrolled_leaves_the_rest_unread(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    """The state TASK-P4-005 asks for, produced rather than staged. A dispatcher fanning
+    out per account makes this shape naturally, and with one list of slices the collector
+    could not express it: UNREAD would be a value no run could leave behind."""
+    source = Source(
+        {(ACCOUNT.account_id, REGION): whole(tenant_id)},
+        slices=((ACCOUNT, REGION), (ACCOUNT, SECOND_REGION)),
+    )
+    with engine.begin() as connection:
+        run = a_run(connection, tenant_id)
+        context = CollectorContext(unit=unit_for(tenant_id), connection=connection, run_id=run)
+        InventoryCollector(source, clock=lambda: AT, covers=((ACCOUNT, REGION),))(context)
+    states = {
+        row.region_id: (row.state, row.cause)
+        for row in rows(
+            engine,
+            "SELECT region_id, state, cause FROM graph_coverage WHERE tenant_id = :t",
+            tenant_id,
+        )
+    }
+    assert states[REGION] == ("COMPLETE", None)
+    assert states[SECOND_REGION] == ("UNREAD", "NotYetAttempted")
+    assert source.asked == [(ACCOUNT.account_id, REGION)]

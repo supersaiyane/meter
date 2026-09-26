@@ -7,7 +7,8 @@ the one that stops a promise being made that somebody then has to keep.
 
 **No part of this demo talks to AWS.** ISS-122. Nothing in the product has ever made a
 call to an AWS account, and the figures on every screen come from
-`finops_providers/fake/`, seeded into a local PostgreSQL by `make seed`.
+`finops_fakes/`, seeded into a local PostgreSQL by `make seed`. ADR-0022 moved that
+package out of the production tree, so the deployed image cannot import it.
 
 Say that out loud, early. A demo that implies a live connection creates an expectation
 about integration effort that is not true, and the correction lands later, with an
@@ -161,6 +162,58 @@ opinion with a number on it, and the objection became the requirement.
 At the bottom, an account with no score at all. Nothing reached it, so it has no
 number rather than a bad one.
 
+## P4, the topology map, and the region that is unreadable on purpose
+
+`/inventory/topology`. Open it and read the banner before touching anything.
+
+**Two slices of the seeded estate cannot be read, and they are two different problems.**
+The screen says which is which, and the difference is the whole of what this sub project
+built.
+
+- `fake-platform-a` in `fake-region-c` is **PARTIAL**, cause `NotOptedIn`. A read happened
+  and fell short. Every account's `fake-region-c` slice is partial, because that region
+  refuses in the fake estate.
+- `fake-product-b` in `fake-region-b` is **UNREAD**, cause `NotYetAttempted`. No read has
+  been attempted. `make seed` deliberately runs the inventory collector over nineteen of
+  the twenty slices it enrols, so the twentieth keeps the row enrolment gave it.
+
+Say the second one out loud. An estate where every slice was read cannot show the state
+this sub project exists to distinguish: a region nobody has looked at and a region with
+nothing in it are the same row count and opposite facts, and only one of them is safe to
+score against. The unread slice is named in `scripts/demo/seed_demo.py` as
+`UNREAD_ACCOUNT` and `UNREAD_REGION`, so it is a documented choice rather than a gap
+somebody will report as a bug.
+
+**Then pick a root and watch two more notices appear above the graph.** Choose the
+platform VPC. The map is capped, so it says how many resources it omitted and out of how
+many. And the walk crosses `fake-product-denied`, whose slice is PARTIAL with
+`AccessDenied`, so the map says that too.
+
+Both notices are above the drawing rather than under it, and that placement is
+deliberate. A reader who sees the picture first has already concluded something by the
+time they reach a footnote, and the conclusion they reach is that the estate is less
+connected than it is.
+
+**The interesting edge is the one going nowhere.** The platform VPC peers with a VPC in
+the denied account, and that VPC has no box on the map because Meter has never read it.
+The edge is drawn dashed to a boundary marker rather than dropped. An edge Meter cannot
+see is not an absent edge, and a graph that quietly omitted it would answer "what talks to
+this" with a shorter list and no warning. The relationships table below names the API that
+supplied each edge, so a reader can tell a missing edge from a refused call.
+
+**The table beside the map is not a summary of it.** A force directed layout cannot be
+navigated by a screen reader, so the same nodes and edges are listed in a readable order
+from the same payload. If somebody asks whether the map is accessible, the answer is that
+the table is the accessible path and the map is the convenience, which is the same
+arrangement the organization screen uses.
+
+**What is not real here, beyond the usual.** Neither AWS adapter behind this screen has
+ever made a call: ISS-200 for the Config aggregator and ISS-202 for the four APIs that
+supply the cross account edges. And `infra/terraform/config` has never been planned or
+applied, ISS-203, so the 1,440 USD a month in `infra/terraform/config/COST.md` is
+modelled and not measured. If somebody asks what Config would cost, that file has the
+working and says which assumption is least certain.
+
 ## Questions that will be asked
 
 **"Is this our data?"** No. See the first section.
@@ -195,6 +248,27 @@ underneath rather than quietly left out of the table.
 **"Why is one account failing?"** Because the fake estate contains a failing account on
 purpose. An estate where everything works cannot demonstrate what the product does when
 something does not.
+
+**"Why is one region unread rather than empty?"** Because they are different facts and
+only one is safe to act on. A region with no resources and a region nobody has looked at
+have the same row count, so the product stores the state rather than inferring it from
+the count. `make seed` leaves one slice unread on purpose so the demo can show the
+difference; the runbook section above names which.
+
+**"Why does the map show a line to nothing?"** Because the thing at the other end is in an
+account Meter has not read, and dropping the line would make the estate look less
+connected than it is. That is the single rule this sub project is built on: an edge Meter
+cannot see is not an absent edge.
+
+**"Why is the map capped?"** Because a force directed drawing of twenty thousand nodes is
+unreadable and makes the tab unresponsive, and because the honest answer to too much data
+is to say how much was left out rather than to try. The cap is a number the reader can
+change on the screen, and the route refuses a request above a ceiling.
+
+**"Why does this screen count slices rather than accounts?"** Because a graph is read per
+account and per region, so a view over eleven of twelve regions is partial in a way
+counting accounts cannot express. Every route reports what it counted, and the interface
+shows the noun the route sent.
 
 ## Afterwards
 

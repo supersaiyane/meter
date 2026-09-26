@@ -528,6 +528,10 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         "waste_cloudwatch",
         "realized_savings",
         "finops_score",
+        # P4, FEAT-030 and FEAT-031. Added with the collector in TASK-P4-006, and this
+        # list is where it had to be declared, which is the point of it being exhaustive
+        # rather than a subset.
+        "inventory",
     }
 
 

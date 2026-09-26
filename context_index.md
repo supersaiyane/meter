@@ -252,8 +252,8 @@ a duplicate.
 | `CostFocusCollector` | class | `finops_ingest/collectors/cost_focus.py:120` | Reads one billing period, writes it, and removes what was withdrawn. | nothing in this tree |
 | `roll_up_period` | function | `finops_ingest/collectors/cost_rollup.py:66` | Recompute one month from its line items, and drop what is no longer there. | `finops_ingest/collectors/cost_focus.py` |
 | `roll_up_before` | function | `finops_ingest/collectors/cost_rollup.py:85` | Aggregate every month older than the boundary, ahead of dropping them. | `finops_ingest/collectors/retention.py` |
-| `scope_key` | function | `finops_ingest/collectors/inventory.py:155` | The slice, as `docs/07-DATA-MODEL.md` spells a scope key. | nothing in this tree |
-| `InventoryCollector` | class | `finops_ingest/collectors/inventory.py:164` | Reads every enrolled slice, writes what it found, and records what it missed. | nothing in this tree |
+| `scope_key` | function | `finops_ingest/collectors/inventory.py:161` | The slice, as `docs/07-DATA-MODEL.md` spells a scope key. | nothing in this tree |
+| `InventoryCollector` | class | `finops_ingest/collectors/inventory.py:170` | Reads every enrolled slice, writes what it found, and records what it missed. | nothing in this tree |
 | `compute_paths` | function | `finops_ingest/collectors/org_tree.py:45` | The materialised path and depth of every node. | nothing in this tree |
 | `OrgTreeCollector` | class | `finops_ingest/collectors/org_tree.py:79` | Reads the organization and writes it, whole, in one transaction. | nothing in this tree |
 | `month_floor` | function | `finops_ingest/collectors/partitions.py:55` |  | `finops_ingest/collectors/retention.py` |
