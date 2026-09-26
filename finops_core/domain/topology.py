@@ -184,7 +184,12 @@ class Node(Fact):
     #: kind is lossy by design: six AWS types map to `OTHER` and a reader looking
     #: at an unfamiliar box needs to know which one it was.
     resource_type: str
-    region_id: str
+    #: None means the resource is global rather than regional: an IAM role belongs
+    #: to an account and to no region. Distinct from a region Meter could not read,
+    #: which is a PARTIAL slice in `GraphCoverage`. ISS-196 made the same change to
+    #: `QuotaUsage` for the same reason, and the workaround both times would have
+    #: been a magic region string that shows on a screen as a region nobody has.
+    region_id: str | None
     #: None means the resource is regional rather than zonal: a VPC, a security
     #: group, a target group and a load balancer have no single zone, and
     #: `availability_zone` is null for every one of them. It does **not** mean
@@ -248,7 +253,9 @@ class GraphCoverage(Fact):
     """
 
     account_key: AccountKey
-    region_id: str
+    #: None is the account's global slice, which is where a TRUSTS edge between two
+    #: IAM roles is recorded. One row per account, like every regional slice.
+    region_id: str | None
     state: CoverageState
     #: None only when the state is COMPLETE. The database says the same thing as
     #: a check constraint, because constraint 11 in CLAUDE.md: if this method is

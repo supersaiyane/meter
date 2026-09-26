@@ -452,3 +452,61 @@ def test_a_fact_collected_before_it_was_true_is_refused(engine: Engine, tenant_i
     with pytest.raises(IntegrityError, match="collected_after_as_of"), engine.begin() as connection:
         run = a_run(connection, tenant_id)
         a_node(connection, tenant_id, run, as_of=FETCHED, collected=NOW)
+
+
+# --- the global slice, which has no region ----------------------------------
+
+
+def test_a_global_resource_has_a_null_region(engine: Engine, tenant_id: UUID) -> None:
+    """An IAM role belongs to an account and to no region, and a TRUSTS edge between
+    two roles is one of the four edge kinds FEAT-031 exists to supply. ISS-196 made
+    the same change to `QuotaUsage`, and the workaround both times would have been a
+    magic region string that shows on a screen as a region nobody has."""
+    with engine.begin() as connection:
+        run = a_run(connection, tenant_id)
+        a_node(
+            connection,
+            tenant_id,
+            run,
+            provider=f"arn:aws:iam::{ACCOUNT}:role/platform-ci",
+            kind="OTHER",
+            type="AWS::IAM::Role",
+            region=None,
+            zone=None,
+        )
+        found = connection.execute(
+            text("SELECT region_id FROM topology_node WHERE tenant_id = :t"), {"t": tenant_id}
+        ).scalar_one()
+    assert found is None
+
+
+def test_a_global_resource_cannot_have_a_zone(engine: Engine, tenant_id: UUID) -> None:
+    with pytest.raises(IntegrityError, match="zone_within_region"), engine.begin() as connection:
+        run = a_run(connection, tenant_id)
+        a_node(connection, tenant_id, run, kind="INSTANCE", region=None, zone="eu-west-1a")
+
+
+def test_one_global_coverage_row_per_account(engine: Engine, tenant_id: UUID) -> None:
+    """The unique index coalesces the region, because a unique index treats nulls as
+    distinct and two rows for one account's global slice would both be accepted with
+    nothing saying which was current."""
+    with engine.begin() as connection:
+        run = a_run(connection, tenant_id)
+        coverage(connection, tenant_id, run, region=None, state="COMPLETE", cause=None)
+    with (
+        pytest.raises(IntegrityError, match="uq_graph_coverage__slice"),
+        engine.begin() as (connection),
+    ):
+        run = a_run(connection, tenant_id)
+        coverage(connection, tenant_id, run, region=None, state="PARTIAL", cause="AccessDenied")
+
+
+def test_a_global_slice_and_a_regional_slice_coexist(engine: Engine, tenant_id: UUID) -> None:
+    with engine.begin() as connection:
+        run = a_run(connection, tenant_id)
+        coverage(connection, tenant_id, run, region=None)
+        coverage(connection, tenant_id, run, region=REGION)
+        count = connection.execute(
+            text("SELECT count(*) FROM graph_coverage WHERE tenant_id = :t"), {"t": tenant_id}
+        ).scalar_one()
+    assert count == 2

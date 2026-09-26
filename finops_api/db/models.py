@@ -835,7 +835,9 @@ topology_node = Table(
     #: The provider's own word for the type, beside the lossy kind. Six AWS types
     #: map to OTHER, and a reader looking at an unfamiliar box needs to know which.
     Column("resource_type", Text, nullable=False),
-    Column("region_id", Text, nullable=False),
+    #: Null means global rather than regional: an IAM role belongs to an account and
+    #: to no region. ISS-196, in a new table.
+    Column("region_id", Text),
     #: Null means regional rather than zonal, never that the zone is unknown. An
     #: unknown zone is a PARTIAL row in `graph_coverage`.
     Column("availability_zone", Text),
@@ -846,7 +848,8 @@ topology_node = Table(
     UniqueConstraint("tenant_id", "provider_id", name="uq_topology_node__provider_id"),
     CheckConstraint(_in_list("node_kind", NODE_KINDS), name="ck_topology_node__kind_known"),
     CheckConstraint(
-        "availability_zone IS NULL OR availability_zone LIKE region_id || '%'",
+        "availability_zone IS NULL OR "
+        "(region_id IS NOT NULL AND availability_zone LIKE region_id || '%')",
         name="ck_topology_node__zone_within_region",
     ),
     CheckConstraint("collected_at >= as_of", name="ck_topology_node__collected_after_as_of"),
@@ -886,7 +889,7 @@ topology_edge = Table(
     #: removes a withdrawn edge needs no join to a node row this run may already
     #: have removed.
     Column("sub_account_id", Text, nullable=False),
-    Column("region_id", Text, nullable=False),
+    Column("region_id", Text),
     Column("as_of", DateTime(timezone=True), nullable=False),
     Column("collected_at", DateTime(timezone=True), nullable=False),
     UniqueConstraint(
@@ -925,14 +928,22 @@ graph_coverage = Table(
     Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
     Column("ingest_run_id", UUID(as_uuid=True), ForeignKey("ingest_run.run_id"), nullable=False),
     Column("sub_account_id", Text, nullable=False),
-    Column("region_id", Text, nullable=False),
+    Column("region_id", Text),
     Column("state", Text, nullable=False),
     Column("cause", Text),
     Column("node_count", Integer, nullable=False),
     Column("edge_count", Integer, nullable=False),
     Column("as_of", DateTime(timezone=True), nullable=False),
     Column("collected_at", DateTime(timezone=True), nullable=False),
-    UniqueConstraint("tenant_id", "sub_account_id", "region_id", name="uq_graph_coverage__slice"),
+    #: Coalesced in the migration, because a unique index treats nulls as distinct
+    #: and two rows for one account's global slice would both be accepted.
+    Index(
+        "uq_graph_coverage__slice",
+        "tenant_id",
+        "sub_account_id",
+        text("COALESCE(region_id, '')"),
+        unique=True,
+    ),
     CheckConstraint(_in_list("state", COVERAGE_STATES), name="ck_graph_coverage__state_known"),
     CheckConstraint(
         f"cause IS NULL OR {_in_list('cause', COVERAGE_CAUSES)}",

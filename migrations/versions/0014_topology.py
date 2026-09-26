@@ -44,6 +44,18 @@ forever and the graph keeps an edge to a resource that no longer exists. They ar
 the origin's slice and not the edge's, and a cross account edge's other end is in
 another slice: that is what `is_cross_account` is for.
 
+**`region_id` is nullable on all three tables, and a null means a global
+resource.** An IAM role belongs to an account and to no region, and a TRUSTS edge
+between two roles is one of the four edge kinds FEAT-031 exists to supply. This is
+ISS-196 arriving in a new table: a scope column typed as non-null cannot express a
+global resource, and the workaround every time is a magic region string that then
+appears on a screen as a region nobody has. `uq_graph_coverage__slice` coalesces
+it for the reason `uq_finops_score__subject_at` does, because a unique index
+treats nulls as distinct and two rows for one account's global slice would both be
+accepted with nothing saying which was current. A null region is distinct from a
+region Meter could not read, which is a PARTIAL coverage row, and from a zone that
+is null because the resource is regional.
+
 **`cause` admits seven values, not the four the specification lists.** ADR-0023.
 The cause arrives from a caught `CollectionError` and there are six of those, so
 narrowing here would mean mapping an unexpected cause onto something else, which
@@ -123,7 +135,7 @@ STATEMENTS: tuple[str, ...] = (
         provider_id       TEXT        NOT NULL,
         node_kind         TEXT        NOT NULL,
         resource_type     TEXT        NOT NULL,
-        region_id         TEXT        NOT NULL,
+        region_id         TEXT,
         availability_zone TEXT,
         name              TEXT,
         tags              JSONB       NOT NULL DEFAULT '{}',
@@ -151,7 +163,10 @@ STATEMENTS: tuple[str, ...] = (
     """
     ALTER TABLE topology_node
         ADD CONSTRAINT ck_topology_node__zone_within_region
-        CHECK (availability_zone IS NULL OR availability_zone LIKE region_id || '%')
+        CHECK (
+            availability_zone IS NULL
+            OR (region_id IS NOT NULL AND availability_zone LIKE region_id || '%')
+        )
     """,
     """
     ALTER TABLE topology_node
@@ -180,7 +195,7 @@ STATEMENTS: tuple[str, ...] = (
         is_cross_account BOOLEAN     NOT NULL,
         source           TEXT        NOT NULL,
         sub_account_id   TEXT        NOT NULL,
-        region_id        TEXT        NOT NULL,
+        region_id        TEXT,
         as_of            TIMESTAMPTZ NOT NULL,
         collected_at     TIMESTAMPTZ NOT NULL
     )
@@ -247,7 +262,7 @@ STATEMENTS: tuple[str, ...] = (
         tenant_id      UUID        NOT NULL REFERENCES tenant (tenant_id),
         ingest_run_id  UUID        NOT NULL REFERENCES ingest_run (run_id),
         sub_account_id TEXT        NOT NULL,
-        region_id      TEXT        NOT NULL,
+        region_id      TEXT,
         state          TEXT        NOT NULL,
         cause          TEXT,
         node_count     INTEGER     NOT NULL,
@@ -261,7 +276,7 @@ STATEMENTS: tuple[str, ...] = (
     # the graph can be trusted, and nothing would say which was current.
     """
     CREATE UNIQUE INDEX uq_graph_coverage__slice
-        ON graph_coverage (tenant_id, sub_account_id, region_id)
+        ON graph_coverage (tenant_id, sub_account_id, COALESCE(region_id, ''))
     """,
     """
     ALTER TABLE graph_coverage
