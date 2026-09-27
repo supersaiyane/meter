@@ -241,6 +241,9 @@ class TopologyRepository(ScopedRepository):
         estate of three hundred accounts is millions of nodes, and the question here is nine
         numbers.
 
+        Returns the account identifiers rather than their count, for ISS-214. See the comment
+        on the column.
+
         A region of null is returned as a row rather than filtered out. Those are the global
         resources, IAM and Route 53 and the organization itself, and they are a real part of the
         estate that belongs to no region. Dropping them would make the totals on this screen
@@ -263,7 +266,13 @@ class TopologyRepository(ScopedRepository):
             .with_only_columns(
                 self.table.c.region_id,
                 func.count().label("resources"),
-                func.count(func.distinct(self.table.c.sub_account_id)).label("accounts"),
+                # The accounts themselves, not a count of them. ISS-214: counting per region and
+                # adding the counts up double counts an account present in two regions of one
+                # continent, which is the common case rather than the odd one, because a platform
+                # account with a disaster recovery copy is exactly that. The caller unions these
+                # per geography and counts once, which is the only way to get a distinct figure
+                # without resolving the prefix a second time in SQL.
+                func.array_agg(func.distinct(self.table.c.sub_account_id)).label("accounts"),
                 func.min(self.table.c.as_of).label("as_of"),
                 func.min(self.table.c.collected_at).label("collected_at"),
             )

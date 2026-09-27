@@ -59,6 +59,38 @@ function project(lon: number, lat: number): readonly [number, number] {
 const SMALLEST = 7;
 const LARGEST = 34;
 
+/**
+ * Where a compass word puts a region inside its continent, in degrees from the anchor.
+ *
+ * ISS-213, reduced. The prefix says Europe and can never say Dublin, but the name's second fact
+ * is a compass point, so `eu-west-1` and `eu-central-1` land in different parts of the continent
+ * with no table of regions to go stale when the next one opens.
+ *
+ * Modest on purpose. Ten degrees of longitude is a few hundred miles and keeps a marker on the
+ * landmass it belongs to; enough to separate two regions and far short of claiming a city, which
+ * the caption still says it is not doing.
+ */
+const OFFSETS: Readonly<Record<string, readonly [number, number]>> = {
+  north: [0, 7],
+  south: [0, -7],
+  east: [10, 0],
+  west: [-10, 0],
+  central: [0, 0],
+  northeast: [8, 5],
+  northwest: [-8, 5],
+  southeast: [8, -5],
+  southwest: [-8, -5],
+};
+
+/** One region, ready to draw: where it goes and which geography it belongs to. */
+interface Placed {
+  readonly key: string;
+  readonly regionId: string;
+  readonly resources: number;
+  readonly lon: number;
+  readonly lat: number;
+}
+
 export interface WorldMapProps {
   readonly geographies: readonly ApiGeography[];
   /** The geography whose resources are being listed, or null for none. */
@@ -74,8 +106,29 @@ function radiusFor(resources: number, peak: number): number {
 }
 
 export function WorldMap({ geographies, selected, onSelect }: WorldMapProps) {
-  const peak = geographies.reduce((most, one) => Math.max(most, one.resources), 0);
-  const placed = geographies.filter((one) => ANCHORS[one.key] !== undefined);
+  // A marker per region rather than per continent, which is ISS-213's reduction: the name says
+  // which part of the continent, so the drawing can say it too. A region whose name carries no
+  // compass word sits on the continent's own anchor, which is the honest answer to a name that
+  // did not say.
+  const placed: Placed[] = geographies.flatMap((one) => {
+    const anchor = ANCHORS[one.key];
+    if (anchor === undefined) return [];
+    const [lon, lat] = anchor;
+    return one.regions.map((region) => {
+      const [dlon, dlat] =
+        region.direction === null ? [0, 0] : (OFFSETS[region.direction] ?? [0, 0]);
+      return {
+        key: one.key,
+        regionId: region.region_id,
+        resources: region.resources,
+        lon: lon + dlon,
+        lat: lat + dlat,
+      };
+    });
+  });
+  // The peak is over the regions now, because the markers are regions. Taking it over the
+  // continents would size every marker against a total none of them is.
+  const peak = placed.reduce((most, one) => Math.max(most, one.resources), 0);
   const unplaced = geographies.filter((one) => ANCHORS[one.key] === undefined);
 
   return (
@@ -113,11 +166,10 @@ export function WorldMap({ geographies, selected, onSelect }: WorldMapProps) {
           ))}
         </g>
         {placed.map((one) => {
-          const [lon, lat] = ANCHORS[one.key] as readonly [number, number];
-          const [x, y] = project(lon, lat);
+          const [x, y] = project(one.lon, one.lat);
           return (
             <g
-              key={one.key}
+              key={one.regionId}
               data-testid="world-map-marker"
               data-key={one.key}
               data-selected={selected === one.key}
@@ -137,7 +189,7 @@ export function WorldMap({ geographies, selected, onSelect }: WorldMapProps) {
               />
               <circle data-testid="world-map-point" cx={x} cy={y} r={3.5} />
               <text x={x} y={y - radiusFor(one.resources, peak) - 12}>
-                {one.name}
+                {one.regionId}
               </text>
               {/* The count on the marker, so the drawing can be read without running the eye
                   down to the legend for every continent. */}
@@ -185,10 +237,19 @@ export function WorldMap({ geographies, selected, onSelect }: WorldMapProps) {
               <span data-testid="world-map-name">{one.name}</span>
               <span data-testid="world-map-count">
                 {one.resources} {one.resources === 1 ? 'resource' : 'resources'}
+                {', '}
+                {/* Distinct across the geography, not the sum of its regions. ISS-214: an
+                    account with a disaster recovery copy in a second region of the same
+                    continent used to be counted twice. */}
+                <span data-testid="world-map-accounts">
+                  {one.accounts} {one.accounts === 1 ? 'account' : 'accounts'}
+                </span>
               </span>
               {/* Named, because the prefix cannot tell one city from another and a reader
                   looking at Europe is entitled to know which regions that means. */}
-              <span data-testid="world-map-regions">{one.regions.join(', ')}</span>
+              <span data-testid="world-map-regions">
+                {one.regions.map((region) => region.region_id).join(', ')}
+              </span>
             </button>
           </li>
         ))}

@@ -129,8 +129,9 @@ def test_groups_the_estate_by_the_region_name_prefix(
     assert by_key["eu"]["resources"] == 3
     assert by_key["us"]["resources"] == 1
     # Listed rather than counted, because the prefix cannot tell Dublin from Frankfurt and a
-    # reader looking at Europe needs to know which it is.
-    assert by_key["eu"]["regions"] == [FRANKFURT, DUBLIN]
+    # reader looking at Europe needs to know which it is. Largest first: Dublin has two and
+    # Frankfurt one.
+    assert [one["region_id"] for one in by_key["eu"]["regions"]] == [DUBLIN, FRANKFURT]
     assert by_key["eu"]["name"] == "Europe"
 
 
@@ -195,9 +196,8 @@ def test_a_narrowed_reader_sees_only_their_own_continents(
     client, token = client_for(engine, only(tenant_id, MINE), settings)
     found = get(client, token, GEOGRAPHY)["data"]
     by_key = {entry["key"]: entry for entry in found["geographies"]}
-    assert by_key["eu"]["regions"] == [DUBLIN]
+    assert [one["region_id"] for one in by_key["eu"]["regions"]] == [DUBLIN]
     assert by_key["eu"]["resources"] == 2
-    assert FRANKFURT not in by_key["eu"]["regions"]
 
 
 def test_carries_coverage_in_slices_so_a_continent_count_is_a_floor(
@@ -313,3 +313,98 @@ def test_the_map_and_the_list_agree_about_every_geography(
     for entry in get(client, token, GEOGRAPHY)["data"]["geographies"]:
         listed = get(client, token, RESOURCES, geography=entry["key"])["data"]
         assert listed["total"] == entry["resources"], entry["key"]
+
+
+# --- ISS-213 and ISS-214 ------------------------------------------------------
+
+
+def test_counts_an_account_once_per_geography_however_many_regions_it_is_in(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """ISS-214, and the estate is built so the wrong answer is a different number.
+
+    The MINE account has resources in Dublin and in Virginia, two geographies, and the seed also
+    gives it a second Dublin resource. Europe therefore holds one account across one region and
+    the United States one account, but the failure this guards is the general one: a count taken
+    per region and added up counts an account twice when it spans two regions of one continent.
+    """
+    seed(engine, tenant_id)
+    with engine.begin() as connection:
+        # A second European region for the same account, which is the case that used to double.
+        run = uuid4()
+        connection.execute(INSERT_RUN, {"run": run, "t": tenant_id, "key": str(run), "at": NOW})
+        connection.execute(
+            INSERT_NODE,
+            {
+                "node": identifier(tenant_id, MINE, FRANKFURT, "vpc-fra-mine"),
+                "t": tenant_id,
+                "run": run,
+                "a": MINE,
+                "p": arn(MINE, FRANKFURT, "vpc-fra-mine"),
+                "k": NodeKind.VPC.value,
+                "r": FRANKFURT,
+                "n": "vpc-fra-mine",
+                "at": NOW,
+                "fetched": FETCHED,
+            },
+        )
+
+    client, token = client_for(engine, everything(tenant_id), settings)
+    found = get(client, token, GEOGRAPHY)["data"]
+    europe = next(one for one in found["geographies"] if one["key"] == "eu")
+
+    # Two accounts in Europe: MINE, now in Dublin and Frankfurt, and THEIRS in Frankfurt. Adding
+    # the per region counts would give three.
+    assert europe["accounts"] == 2
+    assert len(europe["regions"]) == 2
+
+
+def test_carries_the_compass_word_each_region_name_holds(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """ISS-213, reduced rather than closed.
+
+    The prefix gives a continent and can never give a city. The name's second fact is a compass
+    point, which lets a drawing separate western from central Europe with no table of regions to
+    go stale. It is a word here and becomes a position in the drawing, never the other way round.
+    """
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    found = get(client, token, GEOGRAPHY)["data"]
+    by_region = {
+        one["region_id"]: one for entry in found["geographies"] for one in entry["regions"]
+    }
+    assert by_region[DUBLIN]["direction"] == "west"
+    assert by_region[FRANKFURT]["direction"] == "central"
+    assert by_region[VIRGINIA]["direction"] == "east"
+
+
+def test_a_region_whose_name_says_no_direction_carries_none(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    # None and never a default, because a default puts a region somewhere the name did not say,
+    # which is the guess the whole prefix design refuses to make.
+    seed(engine, tenant_id)
+    with engine.begin() as connection:
+        run = uuid4()
+        connection.execute(INSERT_RUN, {"run": run, "t": tenant_id, "key": str(run), "at": NOW})
+        connection.execute(
+            INSERT_NODE,
+            {
+                "node": identifier(tenant_id, MINE, "eu-fake-9", "vpc-nodir"),
+                "t": tenant_id,
+                "run": run,
+                "a": MINE,
+                "p": arn(MINE, "eu-fake-9", "vpc-nodir"),
+                "k": NodeKind.VPC.value,
+                "r": "eu-fake-9",
+                "n": "vpc-nodir",
+                "at": NOW,
+                "fetched": FETCHED,
+            },
+        )
+    client, token = client_for(engine, everything(tenant_id), settings)
+    found = get(client, token, GEOGRAPHY)["data"]
+    europe = next(one for one in found["geographies"] if one["key"] == "eu")
+    nameless = next(one for one in europe["regions"] if one["region_id"] == "eu-fake-9")
+    assert nameless["direction"] is None

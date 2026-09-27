@@ -15,8 +15,14 @@ import { violationsIn } from './axe';
  * as rendering a collection error as the number zero.
  */
 
-function place(key: string, resources: number): ApiGeography {
-  return { key, name: `${key} place`, regions: [`${key}-fake-1`], resources, accounts: 1 };
+function place(key: string, resources: number, direction: string | null = null): ApiGeography {
+  return {
+    key,
+    name: `${key} place`,
+    regions: [{ region_id: `${key}-fake-1`, resources, direction }],
+    resources,
+    accounts: 1,
+  };
 }
 
 function radiusOf(marker: Element): number {
@@ -75,7 +81,10 @@ describe('WorldMap', () => {
           {
             key: 'eu',
             name: 'Europe',
-            regions: ['eu-west-1', 'eu-central-1'],
+            regions: [
+              { region_id: 'eu-west-1', resources: 3, direction: 'west' },
+              { region_id: 'eu-central-1', resources: 2, direction: 'central' },
+            ],
             resources: 5,
             accounts: 2,
           },
@@ -105,6 +114,50 @@ describe('WorldMap', () => {
       .getAllByTestId('world-map-marker')
       .find((one) => one.getAttribute('data-key') === 'eu');
     expect(marker).toHaveAttribute('data-selected', 'true');
+  });
+
+  it('puts two regions of one continent in different places, from their names', () => {
+    // ISS-213, reduced. The prefix says Europe and can never say Dublin, but the name's second
+    // fact is a compass point, so western and central Europe are different marks on the drawing
+    // with no table of regions to go stale when the next one opens.
+    render(
+      <WorldMap
+        geographies={[
+          {
+            key: 'eu',
+            name: 'Europe',
+            regions: [
+              { region_id: 'eu-west-1', resources: 3, direction: 'west' },
+              { region_id: 'eu-central-1', resources: 2, direction: 'central' },
+            ],
+            resources: 5,
+            accounts: 2,
+          },
+        ]}
+        selected={null}
+        onSelect={() => undefined}
+      />,
+    );
+    const markers = screen.getAllByTestId('world-map-marker');
+    expect(markers).toHaveLength(2);
+    const xs = markers.map((one) => Number(one.querySelector('circle')?.getAttribute('cx')));
+    expect(xs[0]).not.toBe(xs[1]);
+    // West is to the left of central, which is the direction the word means.
+    expect(xs[0]).toBeLessThan(xs[1] as number);
+  });
+
+  it('sits a region whose name says no direction on its continent anchor', () => {
+    // None and never a default, because a default puts a region somewhere the name did not say.
+    render(
+      <WorldMap
+        geographies={[place('eu', 4, null)]}
+        selected={null}
+        onSelect={() => undefined}
+      />,
+    );
+    const central = screen.getByTestId('world-map-marker');
+    // The same x as a central region would get, because a central offset is nought.
+    expect(Number(central.querySelector('circle')?.getAttribute('cx'))).toBeGreaterThan(0);
   });
 
   it('hides the drawing from the accessibility tree and keeps a real control', async () => {

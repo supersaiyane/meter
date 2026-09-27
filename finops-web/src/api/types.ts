@@ -689,6 +689,20 @@ export interface ApiResourceFilters {
   readonly resource_type: readonly string[];
 }
 
+/**
+ * One region inside a geography. FEAT-061, ISS-213.
+ *
+ * `direction` is the compass word the region's own name carries, or null where it carries none.
+ * It is what lets the drawing put `eu-west-1` and `eu-central-1` in different parts of Europe
+ * with no table of regions to go stale. A word, never a coordinate: where a compass point lands
+ * in a picture is the picture's business, which is why the offsets live in `WorldMap`.
+ */
+export interface ApiRegion {
+  readonly region_id: string;
+  readonly resources: number;
+  readonly direction: string | null;
+}
+
 /** One continent's worth of the estate. FEAT-061. */
 export interface ApiGeography {
   /** The region name prefix, which is the stable key the drawing positions by. */
@@ -697,12 +711,13 @@ export interface ApiGeography {
   /**
    * Listed rather than counted. The prefix is continental and cannot tell Dublin from
    * Frankfurt, so naming the regions is the honest way to admit what it does not know.
+   * Largest first.
    */
-  readonly regions: readonly string[];
+  readonly regions: readonly ApiRegion[];
   readonly resources: number;
   /**
-   * Account slices, summed across the regions in the geography, so an account present in two
-   * of them is counted twice. ISS-214, and the screen says account slices for that reason.
+   * Distinct across the whole geography, not the sum of its regions' counts. ISS-214: adding
+   * per region counts counts an account twice when it is in two regions of one continent.
    */
   readonly accounts: number;
 }

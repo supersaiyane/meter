@@ -89,6 +89,49 @@ PREFIXES: dict[str, Geography] = {
 }
 
 
+#: The compass words a provider puts in a region name, longest first so `northeast` is matched
+#: before `north` would strip it to the wrong answer.
+#:
+#: This is the second thing a region name says, and it is the whole of ISS-213's reduction. The
+#: prefix gives a continent and can never give a city, and that was recorded as a hard limit. It
+#: is not quite: `eu-west-1` and `eu-central-1` are both Europe and the name also says one is
+#: western and one is central, so a drawing can put them in different parts of the continent
+#: without any table of regions and without going stale when the next one opens.
+#:
+#: It still cannot say Dublin. Western Europe is not a city, and the caption keeps saying so.
+DIRECTIONS: tuple[str, ...] = (
+    "northeast",
+    "northwest",
+    "southeast",
+    "southwest",
+    "central",
+    "north",
+    "south",
+    "east",
+    "west",
+)
+
+
+def direction_of(region_id: str | None) -> str | None:
+    """Where in its geography a region is, from its own name, or None where the name does not say.
+
+    Read from any component rather than a fixed position, because the position varies: `us-east-1`
+    has it second and `us-gov-west-1` has it third, and a rule counting hyphens would place every
+    GovCloud region in the wrong half of the United States.
+
+    Returns a word and never a coordinate. Which compass point a region is in is a fact about its
+    name; where that lands in a picture is a fact about the picture, and the drawing owns that for
+    the same reason it owns the continent anchors.
+    """
+    if region_id is None:
+        return None
+    parts = region_id.strip().lower().split("-")
+    for part in parts[1:]:
+        if part in DIRECTIONS:
+            return part
+    return None
+
+
 def geography_of(region_id: str | None) -> Geography | None:
     """The geography a region is in, or None where its name does not say.
 

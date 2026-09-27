@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-600 public symbols across 5 packages.
+602 public symbols across 5 packages.
 
 ## finops_core
 
@@ -65,8 +65,9 @@ a duplicate.
 | `CommitmentCoverage.coverage` | method | `finops_core/domain/cost.py:349` | The covered fraction, or None where nothing was eligible. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_ingest/collectors/commitment.py` |
 | `Fact` | class | `finops_core/domain/fact.py:27` | A value that was true somewhere, at a time, and was read at another time. | nothing in this tree |
 | `Geography` | class | `finops_core/domain/geography.py:30` | A continental grouping of regions, named by the prefix its regions share. | nothing in this tree |
-| `geography_of` | function | `finops_core/domain/geography.py:92` | The geography a region is in, or None where its name does not say. | `finops_api/routes/inventory.py` |
-| `is_global` | function | `finops_core/domain/geography.py:110` | True where the resource belongs to no region. | `finops_api/routes/inventory.py` |
+| `direction_of` | function | `finops_core/domain/geography.py:115` | Where in its geography a region is, from its own name, or None where the name does not say. | `finops_api/routes/inventory.py` |
+| `geography_of` | function | `finops_core/domain/geography.py:135` | The geography a region is in, or None where its name does not say. | `finops_api/routes/inventory.py` |
+| `is_global` | function | `finops_core/domain/geography.py:153` | True where the resource belongs to no region. | `finops_api/routes/inventory.py` |
 | `ManagementState` | class | `finops_core/domain/iac.py:42` | The three answers. `NOT_DETERMINED` is the default and is never inferred away. | nothing in this tree |
 | `ManagedResource` | class | `finops_core/domain/iac.py:53` | One resource a state file owns, and the address that owns it. | `finops_providers/aws/terraform_state.py` |
 | `StateRead` | class | `finops_core/domain/iac.py:72` | What one read of the configured state found, including what it could not read. | `finops_providers/aws/terraform_state.py` |
@@ -456,15 +457,15 @@ a duplicate.
 | `TopologyRepository.slice_count` | method | `finops_api/db/repositories/topology.py:211` | How many slices the caller can see at all, which is the banner's denominator. | `finops_api/routes/inventory.py` |
 | `TopologyRepository.accounts_seen` | method | `finops_api/db/repositories/topology.py:229` | How many accounts this scope holds any graph for, for the ordinary banner. | `finops_api/routes/inventory.py`, `finops_api/routes/waste.py` |
 | `TopologyRepository.by_region` | method | `finops_api/db/repositories/topology.py:237` | How many resources and how many accounts sit in each region this scope can see. | `finops_api/routes/inventory.py` |
-| `TopologyRepository.roots` | method | `finops_api/db/repositories/topology.py:275` | Nodes a reader can start a map from, containers first. | `finops_api/routes/inventory.py` |
-| `TopologyRepository.page` | method | `finops_api/db/repositories/topology.py:292` | One page of resources, and how many match the filter in total. | `finops_api/routes/inventory.py` |
-| `TopologyRepository.vocabularies` | method | `finops_api/db/repositories/topology.py:353` | The filter values that actually occur in this scope. | `finops_api/routes/inventory.py` |
-| `TopologyRepository.one` | method | `finops_api/db/repositories/topology.py:380` | One node, or None where the scope cannot see it. | `finops_api/routes/inventory.py`, `finops_api/routes/query.py`, `finops_api/routes/waste.py`, `finops_ingest/collectors/query_audit.py`, and 1 more |
-| `TopologyRepository.management_of` | method | `finops_api/db/repositories/topology.py:389` | What manages this resource, as the three valued answer plus the address. | `finops_api/routes/inventory.py` |
-| `TopologyRepository.slice_coverage` | method | `finops_api/db/repositories/topology.py:450` | The coverage of the one slice this node came from. | `finops_api/routes/inventory.py` |
-| `TopologyRepository.findings_for` | method | `finops_api/db/repositories/topology.py:461` | Recommendations about this resource, and how many in the account did not match. | `finops_api/routes/inventory.py` |
-| `as_node` | function | `finops_api/db/repositories/topology.py:575` | One row as a domain node. | `finops_api/routes/inventory.py` |
-| `slices_of` | function | `finops_api/db/repositories/topology.py:621` | The distinct slices a set of nodes came from, sorted for a stable banner. | nothing in this tree |
+| `TopologyRepository.roots` | method | `finops_api/db/repositories/topology.py:284` | Nodes a reader can start a map from, containers first. | `finops_api/routes/inventory.py` |
+| `TopologyRepository.page` | method | `finops_api/db/repositories/topology.py:301` | One page of resources, and how many match the filter in total. | `finops_api/routes/inventory.py` |
+| `TopologyRepository.vocabularies` | method | `finops_api/db/repositories/topology.py:362` | The filter values that actually occur in this scope. | `finops_api/routes/inventory.py` |
+| `TopologyRepository.one` | method | `finops_api/db/repositories/topology.py:389` | One node, or None where the scope cannot see it. | `finops_api/routes/inventory.py`, `finops_api/routes/query.py`, `finops_api/routes/waste.py`, `finops_ingest/collectors/query_audit.py`, and 1 more |
+| `TopologyRepository.management_of` | method | `finops_api/db/repositories/topology.py:398` | What manages this resource, as the three valued answer plus the address. | `finops_api/routes/inventory.py` |
+| `TopologyRepository.slice_coverage` | method | `finops_api/db/repositories/topology.py:459` | The coverage of the one slice this node came from. | `finops_api/routes/inventory.py` |
+| `TopologyRepository.findings_for` | method | `finops_api/db/repositories/topology.py:470` | Recommendations about this resource, and how many in the account did not match. | `finops_api/routes/inventory.py` |
+| `as_node` | function | `finops_api/db/repositories/topology.py:584` | One row as a domain node. | `finops_api/routes/inventory.py` |
+| `slices_of` | function | `finops_api/db/repositories/topology.py:630` | The distinct slices a set of nodes came from, sorted for a stable banner. | nothing in this tree |
 | `RecommendationRepository` | class | `finops_api/db/repositories/waste.py:33` | What is worth changing, ranked by money. FEAT-028. | `finops_api/routes/waste.py` |
 | `RecommendationRepository.worst_first` | method | `finops_api/db/repositories/waste.py:39` | Biggest money first, filterable. | `finops_api/routes/cost.py`, `finops_api/routes/waste.py` |
 | `RecommendationRepository.one` | method | `finops_api/db/repositories/waste.py:67` |  | `finops_api/routes/inventory.py`, `finops_api/routes/query.py`, `finops_api/routes/waste.py`, `finops_ingest/collectors/query_audit.py`, and 1 more |
@@ -547,13 +548,13 @@ a duplicate.
 | `staleness` | function | `finops_api/routes/ingest.py:84` |  | nothing in this tree |
 | `never_collected` | function | `finops_api/routes/ingest.py:104` | A pair that has been attempted and has never once succeeded. | nothing in this tree |
 | `freshness` | function | `finops_api/routes/ingest.py:126` |  | nothing in this tree |
-| `subgraph` | function | `finops_api/routes/inventory.py:151` | Everything within `depth` hops of one node, with the coverage of its slices. | nothing in this tree |
-| `coverage` | function | `finops_api/routes/inventory.py:189` | Every slice a reader can see that is not COMPLETE. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_ingest/collectors/commitment.py` |
-| `roots` | function | `finops_api/routes/inventory.py:217` | Nodes a reader can start a map from, so the first screen is not a blank field. | nothing in this tree |
-| `blast_radius` | function | `finops_api/routes/inventory.py:258` | What a change to this resource can reach, or why we will not say. | nothing in this tree |
-| `resources` | function | `finops_api/routes/inventory.py:348` | Every resource this scope can see, filtered and paginated on the server. | nothing in this tree |
-| `geography` | function | `finops_api/routes/inventory.py:449` | The estate by continent, worked out from region names. FEAT-061. | nothing in this tree |
-| `entity` | function | `finops_api/routes/inventory.py:554` | One resource: what it is, what it is attached to, what it costs, what is wrong with it. | nothing in this tree |
+| `subgraph` | function | `finops_api/routes/inventory.py:157` | Everything within `depth` hops of one node, with the coverage of its slices. | nothing in this tree |
+| `coverage` | function | `finops_api/routes/inventory.py:195` | Every slice a reader can see that is not COMPLETE. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_ingest/collectors/commitment.py` |
+| `roots` | function | `finops_api/routes/inventory.py:223` | Nodes a reader can start a map from, so the first screen is not a blank field. | nothing in this tree |
+| `blast_radius` | function | `finops_api/routes/inventory.py:264` | What a change to this resource can reach, or why we will not say. | nothing in this tree |
+| `resources` | function | `finops_api/routes/inventory.py:354` | Every resource this scope can see, filtered and paginated on the server. | nothing in this tree |
+| `geography` | function | `finops_api/routes/inventory.py:461` | The estate by continent, worked out from region names. FEAT-061. | nothing in this tree |
+| `entity` | function | `finops_api/routes/inventory.py:574` | One resource: what it is, what it is attached to, what it costs, what is wrong with it. | nothing in this tree |
 | `me` | function | `finops_api/routes/me.py:25` |  | nothing in this tree |
 | `reachable_for` | function | `finops_api/routes/org.py:32` | Structure is always visible. Whether an account can be read is the scope's answer. | nothing in this tree |
 | `org_tree` | function | `finops_api/routes/org.py:40` |  | nothing in this tree |
@@ -627,10 +628,11 @@ a duplicate.
 | `BlastPartOut` | class | `finops_api/schemas.py:968` | One thing counted, and what it means. FEAT-044. | `finops_api/routes/inventory.py` |
 | `BlastRadiusOut` | class | `finops_api/schemas.py:978` | What a change to one resource can reach, or why we will not say. FEAT-044. | `finops_api/routes/inventory.py` |
 | `ResourceFiltersOut` | class | `finops_api/schemas.py:1010` | The filter values that occur in this scope, read from the data rather than listed. | `finops_api/routes/inventory.py` |
-| `GeographyOut` | class | `finops_api/schemas.py:1028` | One continent's worth of the estate. FEAT-061. | `finops_api/routes/inventory.py` |
-| `GeographiesOut` | class | `finops_api/schemas.py:1047` | The estate by continent, with everything the continent view cannot hold. FEAT-061. | `finops_api/routes/inventory.py` |
-| `ResourceListOut` | class | `finops_api/schemas.py:1080` | A page of resources, and the denominator. FEAT-056, closing ISS-204. | `finops_api/routes/inventory.py` |
-| `EntityOut` | class | `finops_api/schemas.py:1104` | One resource, and everything Meter knows about it. FEAT-053. | `finops_api/routes/inventory.py` |
+| `RegionOut` | class | `finops_api/schemas.py:1028` | One region inside a geography. FEAT-061, ISS-213. | `finops_api/routes/inventory.py` |
+| `GeographyOut` | class | `finops_api/schemas.py:1044` | One continent's worth of the estate. FEAT-061. | `finops_api/routes/inventory.py` |
+| `GeographiesOut` | class | `finops_api/schemas.py:1068` | The estate by continent, with everything the continent view cannot hold. FEAT-061. | `finops_api/routes/inventory.py` |
+| `ResourceListOut` | class | `finops_api/schemas.py:1101` | A page of resources, and the denominator. FEAT-056, closing ISS-204. | `finops_api/routes/inventory.py` |
+| `EntityOut` | class | `finops_api/schemas.py:1125` | One resource, and everything Meter knows about it. FEAT-053. | `finops_api/routes/inventory.py` |
 
 ## finops_mcp
 

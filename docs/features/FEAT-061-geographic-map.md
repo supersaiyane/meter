@@ -116,6 +116,26 @@ open another region, which is what `check_hardcoded.py` exists to prevent. A coa
 about the world: nothing a provider does changes where Africa is. That is the property the region
 table lacked, and it is the whole distinction.
 
+A marker is drawn per region rather than per continent, changed 2026-09-27 for ISS-213. A region
+name carries a second fact after its prefix, a compass word: `eu-west-1` and `eu-central-1` are
+both Europe and the name also says one is western and one is central. So the drawing offsets each
+region inside its geography by that word, which needs no table of regions and goes stale for
+nothing, the same property the prefix was chosen for.
+
+`finops_core` returns the word and the drawing turns it into a position, so the domain still holds
+no coordinates, exactly as it holds none for the continents. A region whose name carries no
+compass word sits on the continent's own anchor, which is the honest answer to a name that did not
+say.
+
+This reduces ISS-213 rather than closing it. A compass point is a part of a continent and still
+not a city.
+
+The account figure is a distinct count across the geography, not the sum of its regions' counts.
+That was ISS-214, and the fix is neither of the two the issue proposed: the grouped read returns
+the account identifiers rather than a count of them, and the route unions them per geography and
+counts once. No second read, and no second implementation of the prefix rule, which was the
+objection to both.
+
 The regions inside each continent are listed rather than counted, which is the honest way to admit
 what the name cannot say.
 ISS-213.

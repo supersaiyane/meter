@@ -3042,10 +3042,10 @@ issues:
     a graticule with no coastline, because a coastline implies a precision the data does not have.
     Closing it properly means a coordinate source that is not a hardcoded table, which is either a
     published dataset admitted through make dep-check or a provider API that returns a location,
-    and neither exists in a form this product can read today'
+    and neither exists in a form this product can read today. REDUCED on 2026-09-27 by a third option neither of those is. A region name carries a second fact after its prefix, a compass word: eu-west-1 and eu-central-1 are both Europe and the name also says one is western and one is central. The drawing places a marker per region rather than per continent now, offset inside its geography by that word, which needs no table of regions and goes stale for nothing, the property the prefix was chosen for. finops_core returns the word and the drawing turns it into a position, so the domain still holds no coordinates. What remains open is the original gap and is smaller: a compass point is a part of a continent and still not a city, and a region whose name carries no direction sits on the continent anchor, which is the honest answer to a name that did not say'
 - id: ISS-214
   severity: LOW
-  status: OPEN
+  status: FIXED
   summary: The account count on a geography is summed across the regions inside it, so an account
     present in two regions of one continent is counted twice
   detail: 'Found on 2026-09-27 building FEAT-061 and left visible rather than quietly wrong. The
@@ -3056,7 +3056,7 @@ issues:
     prefix in SQL and therefore a second implementation of the rule, or a distinct count over a
     derived column. Until then the field is named account slices on the screen rather than
     accounts, so the number is not presented as something it is not. The resource count is
-    unaffected, since a resource is in exactly one region'
+    unaffected, since a resource is in exactly one region. FIXED on 2026-09-27, and by neither of the two routes above: the grouped read returns the account identifiers rather than a count of them, and the route unions them per geography and counts once. That needs no second read and no second implementation of the prefix rule, which was the objection to both original options. The figure is a distinct count now and the screen says accounts, because it is. A route test builds an estate where an account spans two regions of one continent and asserts the figure is two rather than three'
 
 open_questions:
 - id: OPEN-07

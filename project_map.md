@@ -32,7 +32,7 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Collectors | 21 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 17 | files in migrations/versions, all of which are listed below in this file |
 | Test files | 116 | test_*.py under tests/ |
-| Test functions | 1589 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test functions | 1597 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -983,7 +983,14 @@ meter/
 │   │                          which is ISS-213. Three absences kept apart: no region at
 │   │                          all is global and is not a gap, a name with no prefix
 │   │                          tells us nothing, and an unknown prefix means the table
-│   │                          needs a row
+│   │                          needs a row. It also reads the compass word a name
+│   │                          carries after its prefix, which is ISS-213's
+│   │                          reduction: eu-west-1 and eu-central-1 are both
+│   │                          Europe and the name says which part, so the drawing
+│   │                          can separate them with no table of regions to go
+│   │                          stale. A word and never a coordinate, because where
+│   │                          a compass point lands in a picture is the picture's
+│   │                          business
 │   ├── iac.py                 FEAT-057, in finops_core/domain/. Three answers to what
 │   │                          manages a resource, and the default is the honest one.
 │   │                          Reading state tells you what is managed and never what is
