@@ -97,6 +97,27 @@ describe('WasteScreen', () => {
     ).toHaveTextContent('OPEN');
   });
 
+  it('charts only the waste that is still open', async () => {
+    // The rule that can be wrong here. The fixture's Graviton candidate is ACCEPTED and its
+    // unattached volume is DONE, so two of its four rows are work. Charting all four would draw
+    // money that is not available, and the picture would grow every time somebody fixed
+    // something, which is the wrong direction for a chart about waste.
+    renderWaste();
+    const rows = await screen.findAllByTestId('ranked-label');
+    expect(rows.map((row) => row.textContent)).toEqual([
+      'RIGHTSIZE_INSTANCE',
+      'ALARM_INSUFFICIENT_DATA',
+    ]);
+  });
+
+  it('hatches the chart, because no saving on it has been measured', async () => {
+    renderWaste();
+    expect(await screen.findByTestId('ranked-bars')).toHaveAttribute(
+      'data-provenance',
+      'modelled',
+    );
+  });
+
   it('has no accessibility violations', async () => {
     const { container } = renderWaste();
     await screen.findByText(/i-0a1b2c3d4e5f6a7b8/);

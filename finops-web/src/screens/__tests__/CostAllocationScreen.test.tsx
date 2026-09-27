@@ -57,7 +57,7 @@ describe('CostAllocationScreen', () => {
 
   it('shows every figure as measured', async () => {
     renderAllocation();
-    await screen.findByText('platform');
+    await screen.findByTestId('ranked-bars');
     const figures = document.querySelectorAll('[data-testid="figure"]');
     expect(figures.length).toBeGreaterThan(0);
     for (const figure of figures) {
@@ -67,7 +67,7 @@ describe('CostAllocationScreen', () => {
 
   it('has no accessibility violations', async () => {
     const { container } = renderAllocation();
-    await screen.findByText('platform');
+    await screen.findByTestId('ranked-bars');
     expect(await violationsIn(container)).toEqual([]);
   });
 });

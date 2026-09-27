@@ -58,6 +58,19 @@ above.
 
 `GET /waste/recommendations`, with a `source` of `METER`.
 
+The screen draws modelled saving per waste class as a ranked bar above the queue, added
+2026-09-27. The queue sorted by saving answers which single finding is largest. The chart answers
+which kind of waste the estate has, which is the question that changes what somebody builds next.
+
+Open findings only. A finding that is DONE has had its saving taken and one that is DISMISSED was
+judged not to be waste, so charting the whole queue would draw money that is not available and
+would grow the picture every time somebody fixed something.
+
+Hatched, because every figure in it is modelled. The hatch is the same mark a figure and a bar
+chart already use, so a reader learns it once. `provenance` is a required property on the
+component rather than one that defaults to measured, because a default there is a default that
+quietly promotes a modelled saving.
+
 ## Not doing
 
 **Applying anything.** Constraint 6. Remediation is delivered as a generated

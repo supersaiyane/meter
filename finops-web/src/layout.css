@@ -1548,3 +1548,85 @@ main > section > [role='group'] {
 [data-testid='budgets-untracked-heading'] {
   margin: var(--space-6) 0 0;
 }
+
+/* ------------------------------------------------------------ ranked bars */
+
+/* A four column grid rather than four floated things, so the labels form a column,
+   the tracks all start at the same x and the figures form a column the eye runs
+   down. The track is the flexible one, because a label that wraps must not shorten
+   the bar beside it. */
+[data-testid='ranked-bars'] {
+  display: grid;
+  grid-template-columns: minmax(7em, 14em) 1fr auto auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-testid='ranked-row'] {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+
+[data-testid='ranked-label'] {
+  font-size: var(--font-size-2);
+  overflow-wrap: anywhere;
+}
+
+[data-testid='ranked-track'] {
+  height: 12px;
+  border-radius: var(--radius);
+  background: var(--surface-3);
+}
+
+[data-testid='ranked-track'] i {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius);
+  background: var(--chart-bar);
+}
+
+/* The largest row is the answer to the question the chart was drawn for, so it is
+   the one bar that is not the same colour as its neighbours. */
+[data-testid='ranked-row']:first-child [data-testid='ranked-track'] i {
+  background: var(--chart-bar-peak);
+}
+
+/* The hatch means modelled, exactly as it does on a figure and on a bar chart, so a
+   reader who learned it once on the spend card reads it here without being told.
+   Reserved for provenance and used for nothing else. */
+[data-testid='ranked-bars'][data-provenance='modelled'] [data-testid='ranked-track'] i {
+  background: repeating-linear-gradient(135deg, var(--chart-bar) 0 2px, transparent 2px 5px);
+  outline: 1px solid var(--chart-bar);
+  outline-offset: -1px;
+}
+
+/* A row that is not one of the things being ranked. Unallocated spend and the
+   collapsed remainder are both real money that belongs to no owner, so they are
+   present and countable and visibly not a group. An outline rather than a hatch,
+   because the hatch already means modelled and a mark with two meanings is a mark
+   nobody can read. */
+[data-testid='ranked-row'][data-gap='true'] [data-testid='ranked-track'] i {
+  background: var(--surface);
+  border: 1px dashed var(--text-faint);
+}
+
+[data-testid='ranked-row'][data-gap='true'] [data-testid='ranked-label'] {
+  color: var(--text-muted);
+}
+
+[data-testid='ranked-value'],
+[data-testid='ranked-share'] {
+  font-family: var(--font-numeral);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-2);
+  text-align: right;
+}
+
+[data-testid='ranked-share'] {
+  font-size: var(--font-size-1);
+  color: var(--text-faint);
+}

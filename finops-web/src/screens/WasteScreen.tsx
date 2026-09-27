@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { useRecommendations } from '../api/queries';
 import { DataTable } from '../components/DataTable';
+import { RankedBars, type RankedPoint } from '../components/RankedBars';
 import { Figure } from '../components/Figure';
 import { SeverityBadge } from '../components/SeverityBadge';
 import { StateBoundary } from '../components/StateBoundary';
@@ -38,12 +39,31 @@ function money(amount: string): number {
   return Number(amount);
 }
 
+/**
+ * Modelled monthly saving per waste class, open findings only.
+ *
+ * Open only, because a finding that is DONE has had its saving taken and one that is DISMISSED
+ * was judged not to be waste. Charting the whole queue would draw money that is not available and
+ * would grow the picture every time somebody fixed something, which is the wrong direction.
+ * FEAT-041 is the only thing in the product allowed to say a saving happened.
+ */
+function savingByClass(rows: readonly ApiRecommendation[]): readonly RankedPoint[] {
+  const totals = new Map<string, number>();
+  for (const row of rows) {
+    if (row.lifecycle !== 'OPEN') continue;
+    const current = totals.get(row.waste_class) ?? 0;
+    totals.set(row.waste_class, current + Number(row.estimated_monthly_saving));
+  }
+  return [...totals].map(([label, value]) => ({ label, value }));
+}
+
 export function WasteScreen() {
   const query = useRecommendations();
   const envelope = query.data?.data;
   const found = envelope?.data;
   const rows = useMemo(() => found?.recommendations ?? [], [found]);
 
+  const byClass = useMemo(() => savingByClass(rows), [rows]);
   useReportMeta('waste-recommendations', envelope?.meta);
   const state = surfaceStateFor(query, envelope?.meta, rows.length, 'none', 'recommendation');
 
@@ -142,6 +162,18 @@ export function WasteScreen() {
       </p>
 
       <StateBoundary state={state}>
+        {/* Where the money is, before the list of what to do about it. A queue sorted by
+            saving answers which single finding is largest; this answers which kind of waste
+            the estate has, which is the question that changes what somebody builds next.
+            Hatched, because every figure in it is modelled: no saving here has been
+            measured, and FEAT-041 is the only thing allowed to say one happened. */}
+        <RankedBars
+          points={byClass}
+          provenance="modelled"
+          format={(value) => `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`}
+          restLabel="smaller classes"
+        />
+
         <DataTable
           rows={rows}
           columns={columns}

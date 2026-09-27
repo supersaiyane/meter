@@ -406,6 +406,24 @@ meter/
 │   │                          fact. The fill is clamped, so an overspent budget
 │   │                          draws full and says OVER beside it rather than
 │   │                          running past its own track
+│   ├── components/RankedBars.tsx  the second chart. Horizontal and CSS rather
+│   │                          than SVG, because its axis is categories and a
+│   │                          category is a word: vertical bars would need
+│   │                          rotated labels nobody reads or truncation that
+│   │                          hides what the row is about. Bars are a share of
+│   │                          the total and not of the largest, since scaling to
+│   │                          the largest makes one owner at ninety percent look
+│   │                          like three evenly matched. Past the limit the
+│   │                          remainder is summed into a row that says how many
+│   │                          it stands for, because showing the top eight of
+│   │                          forty silently is a lie by omission. The bars are
+│   │                          aria-hidden decoration and every number is written
+│   │                          as text, which is the opposite of BarChart, where
+│   │                          twenty six rows would be unreadable. Hatch means
+│   │                          modelled and an outline means a row that is not one
+│   │                          of the things being ranked, one device each, because
+│   │                          a mark with two meanings cannot be read. Used by the
+│   │                          allocation screen and the waste queue
 │   ├── screens/BudgetsScreen.tsx  FEAT-060. Budgets with a number, then the ones
 │   │                          without, counted, with the reason on each card. Two
 │   │                          reasons kept apart because they need different
