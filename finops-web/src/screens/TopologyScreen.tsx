@@ -84,18 +84,28 @@ export function TopologyScreen() {
               : `${String(unreadable.length)} slices of the estate could not be read, so ` +
                 'anything drawn here may be missing edges into them.'}
           </p>
-          <ul>
-            {unreadable.map((slice) => (
-              <li key={`${slice.account_id}:${slice.region_id ?? 'global'}`}>
-                {saidOf(slice)}
-              </li>
-            ))}
-          </ul>
+          {/* Collapsed, like the resource list's. Nine lines of slice identifiers above a graph
+              is the honesty machinery being the first thing a reader sees instead of the
+              picture they came for. The count and the typed causes stay visible, nothing is
+              fetched to open it, and the slices are still in the document. */}
+          <details data-testid="estate-coverage-detail">
+            <summary data-testid="estate-coverage-causes">
+              {[...new Set(unreadable.map((slice) => slice.state))].join(', ')}
+            </summary>
+            <ul>
+              {unreadable.map((slice) => (
+                <li key={`${slice.account_id}:${slice.region_id ?? 'global'}`}>
+                  {saidOf(slice)}
+                </li>
+              ))}
+            </ul>
+          </details>
         </div>
       ) : null}
 
       <StateBoundary state={state}>
-        <div role="group" aria-label="Root resource">
+        <div role="group" aria-label="Root resource" data-testid="roots">
+          <h2>Start the map from</h2>
           <ul>
             {available.map((root) => (
               <li key={root.node_id}>

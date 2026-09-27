@@ -103,6 +103,17 @@ Read only, constraint 6. The page offers no control that changes anything in a m
 
 ## Interface
 
+The page is a document in one card, and its sections are divided by their own headings rather than
+by more cards, changed 2026-09-27. Nesting a panel per section inside a panel is the one thing
+that makes a panelled layout worse than no panels, so the headings do the work: a rule above each
+and room under it.
+
+Two faults fixed at the same time. The cost was rendering at body size in a run of prose, which is
+the same fault the cost screen had: the number is the answer and the sentence around it is the
+qualification. And the blast radius row labels were right aligned, so a label long enough to wrap
+stepped inward across two lines and read as a ragged column. They are names, and a column of names
+is read down its left edge.
+
 `/inventory/resources/:nodeId`, linked from every resource in the topology map's accessible
 table, and linking back to the map. Not in the navigation, because it is a destination rather
 than a screen you choose, which is how `/governance/queries/:id` works.
