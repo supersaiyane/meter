@@ -22,7 +22,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 59 total, 20 specified, 10 in build, 20 delivered |
+| Features | 59 total, 19 specified, 10 in build, 21 delivered |
 | Decisions | 25 architecture decision records |
 | Changes | 99 recorded |
 | Issues | 131 fixed, 72 open, 0 parked |
@@ -125,6 +125,17 @@ twice, held by a test that compares the two check constraints at the source. Two
 registered Planned with no tasks and the decisions that would have to be made first written
 down, FEAT-058 and FEAT-059, because writing tasks for them now would produce guesses.
 
+**P3 is complete.** TASK-P3-020, blast radius scoring, was the last of its twenty one tasks and
+landed on 2026-09-27. It is the gate rather than the thing it gates: nothing in the product
+applies anything, constraint 6, and a scorer written after an applier is a scorer written under
+pressure to approve.
+
+It refuses rather than guesses. An absent score reads as "we do not know"; a low score over a
+graph missing a region reads as "this change is safe", which is a claim the product would be
+making on its own initiative about somebody's production estate. The refusal is about the slices
+the answer rests on, not about any incomplete slice anywhere, because the second would make every
+score unavailable forever on an estate with one unread region.
+
 **Nothing has ever run in CI either.** The repository has no git remote, so
 `.gitlab-ci.yml` has never executed, and every statement anywhere in this
 repository about what the pipeline does is a reading of the file rather than a
@@ -166,7 +177,7 @@ ISS-003.
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P1 | 22 | 0 | 0 | 0 | 0 | 22 | [plan](../docs/plans/P1-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
-| P3 | 20 | 0 | 0 | 0 | 1 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
+| P3 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
 | P5 | 0 | 0 | 0 | 0 | 8 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 0 | 0 | 0 | 0 | 12 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
@@ -295,6 +306,7 @@ ISS-003.
 | `TASK-P3-017` | Done, 2026-09-21 | the recommendations screen |
 | `TASK-P3-018` | Done, 2026-09-21 | the screen that is allowed to disappoint |
 | `TASK-P3-019` | Done, 2026-09-21 | the score screen and the P3 journey |
+| `TASK-P3-020` | Done, 2026-09-27 | blast radius, which refuses rather than guesses |
 | `TASK-P3-021` | Done, 2026-09-26 | the hours nothing runs, as a finding |
 
 **P4, not in the default state**

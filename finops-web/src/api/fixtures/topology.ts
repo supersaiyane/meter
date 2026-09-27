@@ -1,4 +1,5 @@
 import type {
+  ApiBlastRadius,
   ApiEntity,
   ApiEnvelope,
   ApiGraphCoverage,
@@ -365,6 +366,33 @@ export function resourceListFixture(): ApiEnvelope<ApiResourceList> {
         node_kind: ['IAM_ROLE', 'SUBNET', 'VPC'],
         resource_type: ['AWS::EC2::Subnet', 'AWS::EC2::VPC', 'AWS::IAM::Role'],
       },
+    },
+    meta: metaWith(18, 20),
+  };
+}
+
+/**
+ * A blast radius, offline. FEAT-044.
+ *
+ * Refused, deliberately. The refusal is the half of this feature that is easy to leave
+ * unexercised: a fixture carrying a band would render the panel a developer wants to look at and
+ * would never render the sentence the whole task exists for. The screen test carries the scored
+ * case, where it can assert the band and the lower bound together.
+ */
+export function blastRadiusFixture(): ApiEnvelope<ApiBlastRadius> {
+  return {
+    data: {
+      band: null,
+      parts: [],
+      reach: null,
+      accounts: null,
+      boundary_edges: null,
+      depth_bound_reached: false,
+      is_lower_bound: true,
+      refused_because: [
+        'fake-product-denied in fake-region-a is PARTIAL because of AccessDenied',
+      ],
+      max_depth: 4,
     },
     meta: metaWith(18, 20),
   };

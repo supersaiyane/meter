@@ -25,6 +25,7 @@ import {
   scoresFixture,
 } from './fixtures/waste';
 import {
+  blastRadiusFixture,
   entityFixture,
   graphCoverageFixture,
   resourceListFixture,
@@ -34,6 +35,7 @@ import {
 import type {
   ApiAdhocQuery,
   Account,
+  ApiBlastRadius,
   ApiEntity,
   ApiGraphCoverage,
   ApiInventoryRoots,
@@ -441,4 +443,25 @@ export function useResources(query: {
     `/api/v1/inventory/resources?${search.toString()}`,
     resourceListFixture,
   );
+}
+
+/**
+ * One resource's blast radius. FEAT-044.
+ *
+ * Its own hook and its own route rather than a field on the entity payload, because the entity
+ * page walks one hop and this walks four: folding it in would make every visit to a resource
+ * pay for a traversal most visits do not need.
+ */
+export function useBlastRadius(nodeId: string | null) {
+  const client = useApi();
+  const path = nodeId === null ? '' : `/api/v1/inventory/nodes/${nodeId}/blast-radius`;
+  return useQuery<Resolved<ApiEnvelope<ApiBlastRadius>>>({
+    queryKey: ['inventory-blast-radius', nodeId],
+    queryFn: resolveSurface(
+      '/api/v1/inventory/nodes/{node_id}/blast-radius',
+      () => client.get<ApiBlastRadius>(path),
+      () => blastRadiusFixture(),
+    ),
+    enabled: nodeId !== null,
+  });
 }

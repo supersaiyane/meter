@@ -284,6 +284,33 @@ async function withSession(page: Page): Promise<void> {
       },
     });
   });
+  // FEAT-044. Registered last on purpose. Playwright matches routes in reverse registration
+  // order, and `**/inventory/nodes/**` above also matches this URL, so a stub declared before
+  // it never runs: the first draft of this journey had the entity payload served for the blast
+  // radius request, the screen read a band that was not there, and the page crashed.
+  //
+  // Refused, which is the half of FEAT-044 worth walking end to end. A scored band renders a
+  // table; the refusal renders the sentence the whole task exists for.
+  await page.route('**/api/v1/inventory/nodes/*/blast-radius*', async (route) => {
+    await route.fulfill({
+      json: {
+        data: {
+          band: null,
+          parts: [],
+          reach: null,
+          accounts: null,
+          boundary_edges: null,
+          depth_bound_reached: false,
+          is_lower_bound: true,
+          refused_because: [
+            'fake-product-denied in fake-region-a is PARTIAL because of AccessDenied',
+          ],
+          max_depth: 4,
+        },
+        meta: META,
+      },
+    });
+  });
 }
 
 test.describe('the topology map', () => {
@@ -373,6 +400,12 @@ test.describe('the topology map', () => {
     await page.getByRole('link', { name: 'platform' }).click();
     await expect(page).toHaveURL(new RegExp(`/inventory/resources/${ROOT}$`));
     await expect(page.getByTestId('entity-arn')).toContainText('vpc/vpc-platform');
+
+    // FEAT-044. No score, and the slice named, because a radius over a graph with a hole in it
+    // would look more contained than it is in the one direction nobody checks.
+    const refused = page.getByTestId('blast-refused');
+    await expect(refused).toContainText('No score');
+    await expect(refused).toContainText('fake-product-denied in fake-region-a is PARTIAL');
 
     // One, the neighbour list may be short, said above the list rather than under it.
     const warning = page.getByTestId('entity-coverage');

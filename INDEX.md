@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-59 features across 8 sub projects. 20 specified, 9 planned, 10 in build, 20 delivered.
+59 features across 8 sub projects. 19 specified, 9 planned, 10 in build, 21 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -145,7 +145,7 @@ block is caught by `make check-docs`. See
 | [FEAT-028](docs/features/FEAT-028-recommendation-lifecycle.md) | Recommendation lifecycle with owner and ticketing | Delivered | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.1, [P3 plan](docs/plans/P3-implementation-plan.md) |
 | [FEAT-029](docs/features/FEAT-029-realized-savings-verification.md) | Realized savings verification, the north star metric | Delivered | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 5.5, [P3 plan](docs/plans/P3-implementation-plan.md) |
 | [FEAT-043](docs/features/FEAT-043-finops-score.md) | FinOps Score, decomposable to the findings that moved it | Delivered | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 9, [P3 plan](docs/plans/P3-implementation-plan.md) |
-| [FEAT-044](docs/features/FEAT-044-blast-radius-scoring.md) | Blast radius scoring from the dependency graph, gating auto apply | Specified | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 12, [P3 plan](docs/plans/P3-implementation-plan.md) |
+| [FEAT-044](docs/features/FEAT-044-blast-radius-scoring.md) | Blast radius scoring from the dependency graph, gating auto apply | Delivered | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 12, [P3 plan](docs/plans/P3-implementation-plan.md) |
 | [FEAT-052](docs/features/FEAT-052-top-actions-and-change-risk.md) | Top actions, ranked, with what each change costs if it is wrong | Delivered | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 | [FEAT-054](docs/features/FEAT-054-workload-parking.md) | The hours nothing runs, as a finding | Delivered | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 

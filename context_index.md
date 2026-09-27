@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-571 public symbols across 5 packages.
+574 public symbols across 5 packages.
 
 ## finops_core
 
@@ -32,10 +32,10 @@ a duplicate.
 | --- | --- | --- | --- | --- |
 | `ConfigurationError` | class | `finops_core/config.py:35` | The process cannot start with the configuration it was given. | nothing in this tree |
 | `Settings` | class | `finops_core/config.py:39` | Every `METER_` variable in `.env.example`, typed, with no hidden defaults. | nothing in this tree |
-| `Settings.iac_locations` | method | `finops_core/config.py:215` | The configured state locations, split. | nothing in this tree |
-| `Settings.iac_exhaustive` | method | `finops_core/config.py:226` | Accounts whose infrastructure as code the configured backends wholly describe. | nothing in this tree |
-| `Settings.region_list` | method | `finops_core/config.py:273` | `regions` is held as text because a comma separated list from the | nothing in this tree |
-| `load_settings` | function | `finops_core/config.py:293` | Build the settings, or refuse to start and say which variable is at fault. | `finops_api/deps.py`, `finops_api/main.py` |
+| `Settings.iac_locations` | method | `finops_core/config.py:224` | The configured state locations, split. | nothing in this tree |
+| `Settings.iac_exhaustive` | method | `finops_core/config.py:235` | Accounts whose infrastructure as code the configured backends wholly describe. | nothing in this tree |
+| `Settings.region_list` | method | `finops_core/config.py:282` | `regions` is held as text because a comma separated list from the | nothing in this tree |
+| `load_settings` | function | `finops_core/config.py:302` | Build the settings, or refuse to start and say which variable is at fault. | `finops_api/deps.py`, `finops_api/main.py` |
 | `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | `finops_api/identity/session.py`, `finops_api/routes/accounts.py`, `finops_ingest/collectors/org_tree.py` |
 | `AccountStatus` | class | `finops_core/domain/account.py:26` | What the provider says about the account, not what we infer. | nothing in this tree |
 | `RoleHealth` | class | `finops_core/domain/account.py:47` | Whether the collector role in a member account is actually usable. | `finops_ingest/collectors/account_health.py` |
@@ -526,11 +526,12 @@ a duplicate.
 | `staleness` | function | `finops_api/routes/ingest.py:84` |  | nothing in this tree |
 | `never_collected` | function | `finops_api/routes/ingest.py:104` | A pair that has been attempted and has never once succeeded. | nothing in this tree |
 | `freshness` | function | `finops_api/routes/ingest.py:126` |  | nothing in this tree |
-| `subgraph` | function | `finops_api/routes/inventory.py:143` | Everything within `depth` hops of one node, with the coverage of its slices. | nothing in this tree |
-| `coverage` | function | `finops_api/routes/inventory.py:181` | Every slice a reader can see that is not COMPLETE. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_ingest/collectors/commitment.py` |
-| `roots` | function | `finops_api/routes/inventory.py:209` | Nodes a reader can start a map from, so the first screen is not a blank field. | nothing in this tree |
-| `resources` | function | `finops_api/routes/inventory.py:250` | Every resource this scope can see, filtered and paginated on the server. | nothing in this tree |
-| `entity` | function | `finops_api/routes/inventory.py:317` | One resource: what it is, what it is attached to, what it costs, what is wrong with it. | nothing in this tree |
+| `subgraph` | function | `finops_api/routes/inventory.py:147` | Everything within `depth` hops of one node, with the coverage of its slices. | nothing in this tree |
+| `coverage` | function | `finops_api/routes/inventory.py:185` | Every slice a reader can see that is not COMPLETE. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_ingest/collectors/commitment.py` |
+| `roots` | function | `finops_api/routes/inventory.py:213` | Nodes a reader can start a map from, so the first screen is not a blank field. | nothing in this tree |
+| `blast_radius` | function | `finops_api/routes/inventory.py:254` | What a change to this resource can reach, or why we will not say. | nothing in this tree |
+| `resources` | function | `finops_api/routes/inventory.py:344` | Every resource this scope can see, filtered and paginated on the server. | nothing in this tree |
+| `entity` | function | `finops_api/routes/inventory.py:411` | One resource: what it is, what it is attached to, what it costs, what is wrong with it. | nothing in this tree |
 | `me` | function | `finops_api/routes/me.py:25` |  | nothing in this tree |
 | `reachable_for` | function | `finops_api/routes/org.py:32` | Structure is always visible. Whether an account can be read is the scope's answer. | nothing in this tree |
 | `org_tree` | function | `finops_api/routes/org.py:40` |  | nothing in this tree |
@@ -599,9 +600,11 @@ a duplicate.
 | `CoverageOutList` | class | `finops_api/schemas.py:893` | Every incomplete slice a reader can see, for the estate wide banner. | `finops_api/routes/inventory.py` |
 | `InventoryRootOut` | class | `finops_api/schemas.py:901` | One node a reader can start a map from. | `finops_api/routes/inventory.py` |
 | `InventoryRootsOut` | class | `finops_api/schemas.py:915` | What there is to look at, before anybody has picked a root. | `finops_api/routes/inventory.py` |
-| `ResourceFiltersOut` | class | `finops_api/schemas.py:923` | The filter values that occur in this scope, read from the data rather than listed. | `finops_api/routes/inventory.py` |
-| `ResourceListOut` | class | `finops_api/schemas.py:941` | A page of resources, and the denominator. FEAT-056, closing ISS-204. | `finops_api/routes/inventory.py` |
-| `EntityOut` | class | `finops_api/schemas.py:965` | One resource, and everything Meter knows about it. FEAT-053. | `finops_api/routes/inventory.py` |
+| `BlastPartOut` | class | `finops_api/schemas.py:923` | One thing counted, and what it means. FEAT-044. | `finops_api/routes/inventory.py` |
+| `BlastRadiusOut` | class | `finops_api/schemas.py:933` | What a change to one resource can reach, or why we will not say. FEAT-044. | `finops_api/routes/inventory.py` |
+| `ResourceFiltersOut` | class | `finops_api/schemas.py:965` | The filter values that occur in this scope, read from the data rather than listed. | `finops_api/routes/inventory.py` |
+| `ResourceListOut` | class | `finops_api/schemas.py:983` | A page of resources, and the denominator. FEAT-056, closing ISS-204. | `finops_api/routes/inventory.py` |
+| `EntityOut` | class | `finops_api/schemas.py:1007` | One resource, and everything Meter knows about it. FEAT-053. | `finops_api/routes/inventory.py` |
 
 ## finops_mcp
 
@@ -628,9 +631,9 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 
 - `ConfigurationError` in `finops_core/config.py:35`
 - `Settings` in `finops_core/config.py:39`
-- `Settings.iac_locations` in `finops_core/config.py:215`
-- `Settings.iac_exhaustive` in `finops_core/config.py:226`
-- `Settings.region_list` in `finops_core/config.py:273`
+- `Settings.iac_locations` in `finops_core/config.py:224`
+- `Settings.iac_exhaustive` in `finops_core/config.py:235`
+- `Settings.region_list` in `finops_core/config.py:282`
 - `AccountStatus` in `finops_core/domain/account.py:26`
 - `CloudAccount.provider` in `finops_core/domain/account.py:90`
 - `AccountHealth.is_usable` in `finops_core/domain/account.py:105`
