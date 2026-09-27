@@ -26,6 +26,16 @@ import { rankedRows } from './rankedRows';
  * the drawing therefore carries a summary label instead.
  */
 
+/**
+ * What the bar lengths are relative to.
+ *
+ * `total` is the default and the honest one for a breakdown of a whole: a bar filling a third of
+ * its track means a third of the money. `largest` is for a set of figures that must not be added
+ * up, where the only comparison available is with each other, and it suppresses the share column
+ * because a percentage with no whole behind it is a number nobody can check.
+ */
+export type RankedBasis = 'total' | 'largest';
+
 export interface RankedPoint {
   readonly label: string;
   readonly value: number;
@@ -59,6 +69,8 @@ export interface RankedBarsProps {
   readonly limit?: number;
   /** What the rest row is called. Named by the caller because "other" means different things. */
   readonly restLabel?: string;
+  /** Defaults to `total`. See `RankedBasis`. */
+  readonly basis?: RankedBasis;
 }
 
 export function RankedBars({
@@ -67,8 +79,9 @@ export function RankedBars({
   format,
   limit = 8,
   restLabel = 'everything else',
+  basis = 'total',
 }: RankedBarsProps) {
-  const rows = rankedRows(points, limit, restLabel);
+  const rows = rankedRows(points, limit, restLabel, basis);
   if (rows.length === 0) {
     return null;
   }
@@ -82,7 +95,11 @@ export function RankedBars({
             <i style={{ width: `${String(row.share * 100)}%` }} />
           </span>
           <span data-testid="ranked-value">{row.note ?? format(row.value)}</span>
-          <span data-testid="ranked-share">{(row.share * 100).toFixed(1)}%</span>
+          {/* Omitted where the values are not parts of a whole. A percentage printed there
+              would be a share of a total this product refuses to compute. */}
+          {basis === 'total' ? (
+            <span data-testid="ranked-share">{(row.share * 100).toFixed(1)}%</span>
+          ) : null}
         </li>
       ))}
     </ol>

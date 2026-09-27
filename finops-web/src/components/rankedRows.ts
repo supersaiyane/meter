@@ -1,4 +1,4 @@
-import type { RankedPoint } from './RankedBars';
+import type { RankedBasis, RankedPoint } from './RankedBars';
 
 /**
  * The rows a ranked breakdown draws, largest first, with anything past the limit summed into one.
@@ -18,12 +18,27 @@ export function rankedRows(
   points: readonly RankedPoint[],
   limit: number,
   restLabel: string,
+  basis: RankedBasis = 'total',
 ): readonly Row[] {
+  const ordered = [...points].sort((left, right) => right.value - left.value);
+
+  // Where the values must not be added up, the bar is scaled to the largest of them and no
+  // share is computed at all. The realized savings screen is the case: its totals are grouped
+  // by verdict and never summed, because one verdict's realized figure and another's are not
+  // parts of a whole, so a percentage here would be a share of a number the product refuses
+  // to state. Nothing is collapsed either, since collapsing a remainder is that same sum.
+  if (basis === 'largest') {
+    const peak = ordered.reduce((most, point) => Math.max(most, point.value), 0);
+    return ordered.map((point) => ({
+      ...point,
+      share: peak > 0 ? point.value / peak : 0,
+    }));
+  }
+
   // The total is over everything, before any collapse, so a share is a share of the estate and
   // not of the part that happened to fit.
   const total = points.reduce((sum, point) => sum + point.value, 0);
   const shareOf = (value: number) => (total > 0 ? value / total : 0);
-  const ordered = [...points].sort((left, right) => right.value - left.value);
   if (ordered.length <= limit) {
     return ordered.map((point) => ({ ...point, share: shareOf(point.value) }));
   }

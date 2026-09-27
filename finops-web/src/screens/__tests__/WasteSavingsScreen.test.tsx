@@ -84,6 +84,25 @@ describe('WasteSavingsScreen', () => {
     );
   });
 
+  it('draws the verdicts without ever printing a share of their total', async () => {
+    // The rule this whole screen exists to hold. One realized figure would be added to the
+    // estimate on the recommendations screen within a week of anybody seeing both, so the total
+    // is the number the product refuses to state. A chart of shares would have stated it
+    // implicitly: forty percent of something is only meaningful if the something exists.
+    renderSavings();
+    expect(await screen.findByTestId('ranked-bars')).toBeInTheDocument();
+    expect(screen.queryAllByTestId('ranked-share')).toEqual([]);
+  });
+
+  it('marks the realized chart measured, because this is where a saving is observed', async () => {
+    // The one chart in the product that is not hatched. Everywhere else a saving is modelled.
+    renderSavings();
+    expect(await screen.findByTestId('ranked-bars')).toHaveAttribute(
+      'data-provenance',
+      'measured',
+    );
+  });
+
   it('has no accessibility violations', async () => {
     const { container } = renderSavings();
     await screen.findByTestId('total-VERIFIED');

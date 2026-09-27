@@ -406,6 +406,20 @@ meter/
 │   │                          fact. The fill is clamped, so an overspent budget
 │   │                          draws full and says OVER beside it rather than
 │   │                          running past its own track
+│   ├── components/PercentCell.tsx  a percentage in a table cell with a rule
+│   │                          under it. A fraction of a hundred and never a share
+│   │                          of a total, which is why it is not RankedBars: two
+│   │                          services at eighty percent coverage are both at
+│   │                          eighty percent and neither is half of anything. It
+│   │                          owns the absence, because that is the rule most
+│   │                          likely to be undone by a later edit while every
+│   │                          rendering assertion still passes: a null renders the
+│   │                          caller's words and draws no bar, since an empty
+│   │                          track reads as a measurement that came back zero and
+│   │                          for a commitment that says the money was wasted.
+│   │                          Deliberately not built on BudgetBar, which is a ten
+│   │                          pixel card bar with a pace tick: the two share three
+│   │                          lines of clamping and no context
 │   ├── components/RankedBars.tsx  the second chart. Horizontal and CSS rather
 │   │                          than SVG, because its axis is categories and a
 │   │                          category is a word: vertical bars would need

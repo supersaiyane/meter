@@ -1630,3 +1630,56 @@ main > section > [role='group'] {
   font-size: var(--font-size-1);
   color: var(--text-faint);
 }
+
+/* ------------------------------------------------------------ percent cells */
+
+/* A figure with a rule under it, inside a table cell. The cell is right aligned
+   like every other numeric column, so the bar is too: it grows leftward from the
+   figure's edge, which keeps the numbers in a column the eye can run down. */
+[data-testid='percent-cell'] {
+  display: inline-grid;
+  justify-items: end;
+  gap: 3px;
+  min-width: 5em;
+}
+
+[data-testid='percent-figure'] {
+  font-family: var(--font-numeral);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-testid='percent-track'] {
+  display: block;
+  width: 100%;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-3);
+}
+
+[data-testid='percent-track'] i {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--chart-bar);
+}
+
+/* Where a high figure is the finding rather than the goal. Nothing passes this yet,
+   and it exists so that the first caller who needs it does not reach for a colour
+   override on a shared class. */
+[data-testid='percent-track'][data-inverted='true'] i {
+  background: var(--severity-4);
+}
+
+/* The hatch means modelled here too, the same mark as everywhere else. */
+[data-testid='percent-cell'][data-provenance='modelled'] [data-testid='percent-track'] i {
+  background: repeating-linear-gradient(135deg, var(--chart-bar) 0 2px, transparent 2px 5px);
+  outline: 1px solid var(--chart-bar);
+  outline-offset: -1px;
+}
+
+/* A row with no figure says so in words. Quiet, because it is not the answer
+   somebody came for, and never blank, because a blank cell reads as a fault. */
+[data-testid='percent-absent'] {
+  font-size: var(--font-size-1);
+  color: var(--text-muted);
+}
