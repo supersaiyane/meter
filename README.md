@@ -610,7 +610,7 @@ AWS, not by Meter, which is why every figure carries two timestamps.
 **Check.** Is the collector actually running, or is the source simply that old?
 
 ```bash
-curl -s localhost:8000/api/v1/health/freshness | jq
+curl -s localhost:9731/api/v1/health/freshness | jq
 ```
 
 A collector past its configured cadence is flagged stale even when it has data.
@@ -631,7 +631,7 @@ second is a defect, tracked as ISS-015.
 **Check.** The ingest screen distinguishes them, and so does the API.
 
 ```bash
-curl -s localhost:8000/api/v1/ingest/runs | jq '.data[] | {collector, scope_key, status, error_type}'
+curl -s localhost:9731/api/v1/ingest/runs | jq '.data[] | {collector, scope_key, status, error_type}'
 ```
 
 `NoData` is the only error type that legitimately renders as zero.

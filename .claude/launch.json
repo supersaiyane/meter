@@ -5,7 +5,7 @@
       "name": "meter-web",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--prefix", "finops-web"],
-      "port": 5173,
+      "port": 9735,
       "autoPort": true
     }
   ]

@@ -390,10 +390,24 @@ td .meter-failure {
 /* After both, so it wins. The explanation is the column a reader acts on, and
    it gets the width every other column did not need. */
 td.meter-prose,
-th.meter-prose {
+th.meter-prose,
+td.meter-prose {
   white-space: normal;
   width: auto;
   min-width: 26ch;
+}
+
+/* The row header of the blast radius parts, whose rows are named things rather than
+   numbered ones. Without it "Dependencies that leave the graph" stacks one word per line
+   in a column sized to the shortest label in the table.
+
+   Targeted by testid and not by a class, because a class here would be one a screen has to
+   remember to add and the visual layer would become a caller's concern. That is the property
+   ADR-0021 was decided on, and `surface.test.ts` holds it: the first draft of this rule used
+   a class and the contract refused it. */
+[data-testid='blast-radius'] th[scope='row'] {
+  white-space: normal;
+  min-width: 14ch;
 }
 
 /* ----------------------------------------------------------------- figure */

@@ -15,13 +15,13 @@ export default defineConfig({
   fullyParallel: true,
   reporter: [['list']],
   use: {
-    baseURL: 'http://127.0.0.1:4173',
+    baseURL: 'http://127.0.0.1:9736',
     trace: 'on-first-retry',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    command: 'npm run preview -- --host 127.0.0.1 --port 4173 --strictPort',
-    url: 'http://127.0.0.1:4173',
+    command: 'npm run preview -- --host 127.0.0.1 --port 9736 --strictPort',
+    url: 'http://127.0.0.1:9736',
     reuseExistingServer: false,
     timeout: 60_000,
   },

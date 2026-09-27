@@ -15,6 +15,21 @@
 
 name: meter
 
+# Host ports are the 9730 series and nothing else. 8000 is the most contested port on a
+# developer's machine: on 2026-09-27 this stack could not start because another project on the
+# same laptop held it, and the failure reads as a docker networking error rather than as a
+# clash. Only the host side moved. Every container still listens on the port its image expects,
+# because an image's own port is its business and changing it means changing health checks,
+# internal URLs and anything that talks container to container.
+#
+#   9731 api        9732 web, the built bundle behind nginx
+#   9733 mcp        9734 localstack
+#
+# The web development server and the Playwright preview take 9735 and 9736, in
+# finops-web/vite.config.ts and finops-web/playwright.config.ts. They are separate from 9732 on
+# purpose: the dev server and the built bundle used to share 5173, so the two could never run
+# at once and nobody could compare them.
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -64,7 +79,7 @@ services:
       SERVICES: sts,sqs,s3,secretsmanager,organizations,ce,logs,cloudwatch
       DEBUG: 0
     ports:
-      - "4566:4566"
+      - "9734:4566"
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:4566/_localstack/health || exit 1"]
       interval: 5s
@@ -94,7 +109,7 @@ services:
       AWS_SECRET_ACCESS_KEY: test
       AWS_DEFAULT_REGION: eu-west-1
     ports:
-      - "8000:8000"
+      - "9731:8000"
     volumes:
       - ./local-auth.yaml:/app/local-auth.yaml:ro
     depends_on:
@@ -127,7 +142,7 @@ services:
     environment:
       METER_API_BASE_URL: http://api:8000
     ports:
-      - "8001:8001"
+      - "9733:8001"
     depends_on:
       - api
 
@@ -186,7 +201,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.web
     ports:
-      - "5173:8080"
+      - "9732:8080"
     # The deployed configuration has no `/api` proxy because the load balancer
     # terminates that path. Locally there is no load balancer, so without this
     # overlay every screen renders an nginx 404 where its data should be.

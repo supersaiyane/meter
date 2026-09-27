@@ -319,8 +319,11 @@ export function EntityScreen() {
                     {radius.parts.map((part) => (
                       <tr key={part.name}>
                         <th scope="row">{part.name}</th>
-                        <td>{part.count}</td>
-                        <td>{part.why}</td>
+                        <td className="meter-numeral">{part.count}</td>
+                        {/* Prose, so it wraps. Without the class it inherits the nowrap every
+                            data cell needs and the table grows past its container: measured at
+                            1456px inside 955px before this was here. */}
+                        <td className="meter-prose">{part.why}</td>
                       </tr>
                     ))}
                   </tbody>
