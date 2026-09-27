@@ -424,6 +424,16 @@ th.meter-prose {
   border-left: 3px solid var(--stale);
 }
 
+/* Not inside a summary tile. The state wraps the tile's whole content, so the
+   wash becomes the tile rather than a mark on it, and three stale tiles of four
+   read as a page of warnings with no ranking left between them. The encoding
+   survives: the rule down the left edge stays, and the figure carries its two
+   timestamps either way. */
+[data-testid='home-tile'] [data-testid='state'][data-state='partial'],
+[data-testid='home-tile'] [data-testid='state'][data-state='degraded'] {
+  background: none;
+}
+
 /* ----------------------------------------------------------------- screens */
 
 main section {

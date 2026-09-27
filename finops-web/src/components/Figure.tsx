@@ -115,8 +115,15 @@ export function Figure({
           word set the width of every numeric column and the table ran past the
           right edge of a 1440 px screen with monthly cost, the sort column,
           outside it. All three provenance encodings survive the move. */}
-      <span className={dense ? 'meter-provenance' : undefined}> {value.kind}</span>
-      {accuracy && !dense ? <span>, {accuracy}</span> : null}
+      {/* The comma is attached to the word before it. Left on the accuracy
+          clause it became the first character of a wrapped line in a narrow
+          surface, which reads as a typo rather than as a sentence. */}
+      <span className={dense ? 'meter-provenance' : undefined}>
+        {' '}
+        {value.kind}
+        {accuracy && !dense ? ',' : null}
+      </span>
+      {accuracy && !dense ? <span> {accuracy}</span> : null}
       {when}
     </span>
   );
