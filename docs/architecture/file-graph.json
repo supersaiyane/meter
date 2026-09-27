@@ -2535,6 +2535,11 @@
     },
     {
       "s": "finops-web/src/screens/PlatformScreen.tsx",
+      "t": "finops-web/src/components/RankedBars.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/PlatformScreen.tsx",
       "t": "finops-web/src/components/Sparkline.tsx",
       "k": "typescript"
     },

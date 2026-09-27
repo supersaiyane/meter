@@ -38,6 +38,15 @@ audit event recording the scope evaluated.
 
 ## Interface
 
+The screen states the total and draws the breakdown, added 2026-09-27. Constraint 7 puts the
+platform's own cost on the front page, and it was on the front page and not on its own screen, so
+the one place that exists to answer what Meter costs to run made a reader add four rows up.
+
+The total is dated by its stalest module rather than its freshest. `grandTotal` takes the minimum
+for that reason: a total is only as fresh as the oldest thing in it, and reporting the newest
+would make a total containing a stale module look like it was read this morning. A test asserts
+the older of two days is the one shown.
+
 API routes are listed in the specification section 8. MCP tools exposing this
 feature are listed in [ADR-0009](../adr/ADR-0009-mcp-alongside-http-api.md).
 
