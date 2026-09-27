@@ -425,11 +425,22 @@ meter/
 │   │                          absences with two sentences: no age is never
 │   │                          collected, no cadence is not scheduled, and they
 │   │                          need different actions
-│   ├── components/WorldMap.tsx  the estate on a schematic world. A graticule and
-│   │                          one marker per continent, and no coastline, because
-│   │                          the geography comes from a region name prefix which
-│   │                          knows Europe and cannot know Dublin, and a coastline
-│   │                          would claim otherwise. Markers are sized by area, so
+│   ├── components/worldLand.ts  a coarse world as longitude and latitude, about
+│   │                          thirty points a continent. Coordinates are safe here
+│   │                          when a region coordinate table is not, and that is
+│   │                          the whole distinction: a region table is a fact about
+│   │                          somebody else's estate and goes stale the day they
+│   │                          open another region, while a coastline is a fact
+│   │                          about the world and is written once and never
+│   │                          maintained
+│   ├── components/WorldMap.tsx  the estate on a world map, equirectangular and
+│   │                          cropped to the latitudes people run things in. It
+│   │                          shipped first as a graticule and two dots, on the
+│   │                          argument that a coastline implies a precision the
+│   │                          prefix lacks, and that was wrong about where the
+│   │                          claim lives: a coastline says this is the world, and
+│   │                          it is the marker position that would claim a
+│   │                          datacentre. Markers are sized by area, so
 │   │                          four times the resources is four times the ink:
 │   │                          sizing by radius would claim four times again. The
 │   │                          positions live here rather than in the domain because

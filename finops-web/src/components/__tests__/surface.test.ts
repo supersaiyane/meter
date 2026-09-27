@@ -101,6 +101,28 @@ describe('the visual layer', () => {
     expect([...targeted].filter((name) => !emitted.has(name))).toEqual([]);
   });
 
+  it('never reads a token nothing declares', () => {
+    // The other half of the rule above, and the half that was missing. ISS-138 caught tokens
+    // declared and never used. This catches the inverse, which is worse: a var() naming a token
+    // that does not exist is not an error anywhere. The declaration is simply dropped at
+    // computed value time and the property falls back to its initial value, so a track styled
+    // `background: var(--surface-3)` renders transparent on a white card and looks like a
+    // deliberate design. Four invented names shipped that way on 2026-09-27, across the budget
+    // bar, the ranked bars, the percent cells, the cadence bars and the world map.
+    //
+    // A fallback is the exception, and it is the exception because writing one is the author
+    // saying out loud that the value comes from somewhere else. React Aria stamps
+    // `--tree-item-level` on a row at runtime, and `var(--tree-item-level, 1)` says so.
+    const declared = new Set(
+      [...tokens.matchAll(/^\s*(--[a-z0-9-]+):/gm)].map((m) => m[1] as string),
+    );
+    const read = [...layout.matchAll(/var\((--[a-z0-9-]+)\s*(,?)/g)];
+    const invented = read
+      .filter(([, name, comma]) => comma !== ',' && !declared.has(name as string))
+      .map(([, name]) => name as string);
+    expect([...new Set(invented)]).toEqual([]);
+  });
+
   it('uses borders and never shadows', () => {
     // A shadow implies elevation and physicality, which suits a consumer
     // application and not an instrument.

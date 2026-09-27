@@ -1,17 +1,25 @@
 import type { ApiGeography } from '../api/types';
+import { ANCHORS, LAND, type Ring } from './worldLand';
 
 /**
  * The estate on a schematic world. FEAT-061.
  *
- * **A schematic and not a projection, and it says so.** The geography comes from a region name
- * prefix, which is continental: it knows a resource is in Europe and cannot know whether that is
- * Dublin or Frankfurt. Drawing coastlines would imply a precision the data does not have, so this
- * draws a graticule and places one marker per continent. The caption states the limit rather than
- * leaving a reader to assume the dot is where the datacentre is.
+ * **A real coastline, coarsely drawn.** The first version was a graticule and two dots, on the
+ * argument that a coastline implies a precision the prefix does not have. That argument was wrong
+ * about where the claim lives: a coastline says "this is the world", and it is the marker's
+ * position that would claim a datacentre. Without land a reader cannot tell which dot is North
+ * America without reading the label, which makes the picture decorative rather than informative.
+ * The outlines in `worldLand.ts` are deliberately coarse, so they read as a schematic, and the
+ * caption still says a marker is a continent and not a datacentre.
  *
- * **The positions live here and not in the domain.** The backend decides which geography a region
- * is in; where that geography sits in a picture is a fact about the picture. A geography the
- * backend returns and this table has no position for is therefore not dropped: it is absent from
+ * **Equirectangular, and cropped north and south.** The simplest projection there is, one
+ * multiplication per axis, because the drawing's job is recognition and not measurement. Cropped
+ * to the latitudes that hold land people run things in, which drops Antarctica and most of the
+ * empty ocean the full range spends half its height on.
+ *
+ * **The positions live in the drawing and not in the domain.** The backend decides which geography
+ * a region is in; where that geography sits in a picture is a fact about the picture. A geography
+ * the backend returns and this table has no anchor for is therefore not dropped: it is absent from
  * the drawing, still listed in the legend, and counted in a sentence, because a map that silently
  * omits a continent reports a smaller estate than exists.
  *
@@ -25,27 +33,35 @@ import type { ApiGeography } from '../api/types';
  * compare numbers that are all written down.
  */
 
-/** Fractions of the drawing, west to east. Not coordinates of anything in the world. */
-const POSITIONS: Readonly<Record<string, readonly [number, number]>> = {
-  us: [0.19, 0.36],
-  ca: [0.2, 0.21],
-  sa: [0.3, 0.7],
-  eu: [0.49, 0.25],
-  af: [0.52, 0.58],
-  il: [0.565, 0.4],
-  me: [0.62, 0.44],
-  cn: [0.755, 0.33],
-  ap: [0.8, 0.56],
-};
+//: The latitudes the drawing keeps. Antarctica is out, which costs nothing because no provider
+//: has a region there, and the far north is trimmed to where Greenland ends. The full range spends
+//: half its height on empty ocean.
+const NORTH = 83;
+const SOUTH = -56;
 
 const WIDTH = 1000;
-//: Roughly two to one, the shape of an equirectangular world, which is what stops the drawing
-//: reading as an empty panel with two dots in it.
-const HEIGHT = 500;
+//: Set by the projection rather than chosen: at this crop the degrees per pixel are equal on both
+//: axes, so the continents are the shape people recognise instead of squashed or stretched.
+const HEIGHT = Math.round((WIDTH * (NORTH - SOUTH)) / 360);
 
-//: Evenly spaced with the middle one picked out. A grid at even intervals with a stronger line
-//: through the centre is what makes an eye see a projection rather than a box with lines in it.
-const GRATICULE = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875];
+//: Every thirty degrees, with the equator and the prime meridian picked out. A graticule at real
+//: intervals is what tells a reader this is a projection rather than a decorative grid.
+const MERIDIANS = [-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150];
+const PARALLELS = [60, 30, 0, -30];
+
+/** Longitude and latitude to a point in the drawing. Equirectangular, which is two multiplies. */
+function project(lon: number, lat: number): readonly [number, number] {
+  return [((lon + 180) / 360) * WIDTH, ((NORTH - lat) / (NORTH - SOUTH)) * HEIGHT];
+}
+
+function pointsOf(ring: Ring): string {
+  return ring
+    .map(([lon, lat]) => {
+      const [x, y] = project(lon, lat);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(' ');
+}
 const SMALLEST = 7;
 const LARGEST = 34;
 
@@ -65,8 +81,8 @@ function radiusFor(resources: number, peak: number): number {
 
 export function WorldMap({ geographies, selected, onSelect }: WorldMapProps) {
   const peak = geographies.reduce((most, one) => Math.max(most, one.resources), 0);
-  const placed = geographies.filter((one) => POSITIONS[one.key] !== undefined);
-  const unplaced = geographies.filter((one) => POSITIONS[one.key] === undefined);
+  const placed = geographies.filter((one) => ANCHORS[one.key] !== undefined);
+  const unplaced = geographies.filter((one) => ANCHORS[one.key] === undefined);
 
   return (
     <figure data-testid="world-map">
@@ -74,29 +90,37 @@ export function WorldMap({ geographies, selected, onSelect }: WorldMapProps) {
         {/* The graticule. It says "schematic" without pretending to be cartography, and it
             gives the markers something to be positioned against. */}
         <g data-testid="world-map-grid">
-          {GRATICULE.map((at) => (
+          {PARALLELS.map((lat) => (
             <line
-              key={`h${String(at)}`}
+              key={`lat${String(lat)}`}
               x1={0}
               x2={WIDTH}
-              y1={at * HEIGHT}
-              y2={at * HEIGHT}
-              data-major={at === 0.5}
+              y1={project(0, lat)[1]}
+              y2={project(0, lat)[1]}
+              data-major={lat === 0}
             />
           ))}
-          {GRATICULE.map((at) => (
+          {MERIDIANS.map((lon) => (
             <line
-              key={`v${String(at)}`}
+              key={`lon${String(lon)}`}
               y1={0}
               y2={HEIGHT}
-              x1={at * WIDTH}
-              x2={at * WIDTH}
-              data-major={at === 0.5}
+              x1={project(lon, 0)[0]}
+              x2={project(lon, 0)[0]}
+              data-major={lon === 0}
             />
           ))}
         </g>
+        {/* The land, under the graticule's lines and over its background. Coarse on purpose:
+            recognisable enough to place a marker, plainly not cartography. */}
+        <g data-testid="world-map-land">
+          {LAND.map((ring) => (
+            <polygon key={pointsOf(ring).slice(0, 24)} points={pointsOf(ring)} />
+          ))}
+        </g>
         {placed.map((one) => {
-          const [x, y] = POSITIONS[one.key] as readonly [number, number];
+          const [lon, lat] = ANCHORS[one.key] as readonly [number, number];
+          const [x, y] = project(lon, lat);
           return (
             <g
               key={one.key}
@@ -107,16 +131,16 @@ export function WorldMap({ geographies, selected, onSelect }: WorldMapProps) {
                 onSelect(one.key);
               }}
             >
-              <circle cx={x * WIDTH} cy={y * HEIGHT} r={radiusFor(one.resources, peak)} />
-              <text x={x * WIDTH} y={y * HEIGHT - radiusFor(one.resources, peak) - 12}>
+              <circle cx={x} cy={y} r={radiusFor(one.resources, peak)} />
+              <text x={x} y={y - radiusFor(one.resources, peak) - 12}>
                 {one.name}
               </text>
               {/* The count on the marker, so the drawing can be read without running the eye
                   down to the legend for every continent. */}
               <text
                 data-testid="world-map-marker-count"
-                x={x * WIDTH}
-                y={y * HEIGHT + radiusFor(one.resources, peak) + 22}
+                x={x}
+                y={y + radiusFor(one.resources, peak) + 22}
               >
                 {one.resources}
               </text>
