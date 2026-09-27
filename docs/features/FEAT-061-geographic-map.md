@@ -77,10 +77,27 @@ way, and that is asserted separately, because a filter and a grouping are two co
 
 `/inventory/geography`, under the Inventory group.
 
-A schematic and never a projection. The geography is continental, so the drawing is a graticule
-with one marker per continent and no coastline: a coastline would imply it knows which city, and
-the caption says a marker is a continent and not a datacentre. The regions inside each continent
-are listed rather than counted, which is the honest way to admit what the name cannot say.
+A world map with coarse coastlines, one marker per continent, in an equirectangular projection
+cropped to the latitudes where people run things.
+
+It shipped first as a graticule with no coastline, on the argument that a coastline would imply a
+precision the prefix does not have. That argument was wrong about where the claim lives. A
+coastline says "this is the world"; it is the marker's position that would claim a datacentre, and
+the caption already handles that. Without land a reader cannot tell which dot is North America
+without reading the label, which makes the picture decorative rather than informative, and it
+looked like an empty panel with two dots in it.
+
+The outlines in `finops-web/src/components/worldLand.ts` are hand authored at roughly thirty
+points a continent. Coarse on purpose, so they are recognisable and are plainly not cartography.
+
+**Why these coordinates are safe when a region coordinate table is not.** A table naming
+`eu-west-1` and `eu-west-2` is a fact about somebody else's estate and goes stale the day they
+open another region, which is what `check_hardcoded.py` exists to prevent. A coastline is a fact
+about the world: nothing a provider does changes where Africa is, so it is written once and never
+maintained. That is the property the region table lacked, and it is the whole distinction.
+
+The regions inside each continent are listed rather than counted, which is the honest way to admit
+what the name cannot say.
 ISS-213.
 
 Markers are sized by **area**, so four times the resources is four times the ink. Sizing by radius

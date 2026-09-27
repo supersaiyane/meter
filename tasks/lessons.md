@@ -465,3 +465,26 @@ way it does for any fact.
 **Triggers:** Adding a route. Writing a repository method with `group_by`,
 `with_only_columns` or any aggregate. Any read whose rows are not whole table rows.
 Seeing `build_meta(..., rows=rows)` where `rows` came from an aggregate.
+
+## 2026-09-27: a design argument that was right about the risk and wrong about where it lived
+
+**Mistake:** Built the geographic map as a graticule with no coastline, reasoning that
+drawing land would imply a precision the region name prefix does not have. The owner
+sent back a screenshot: an empty grid with two dots on it, and "this should be on
+world map ... it should look good".
+
+**Correction:** The argument was about the right risk and the wrong element. A
+coastline says "this is the world". It is the marker's *position* that would claim a
+datacentre, and the caption already said a marker is a continent and not a
+datacentre. Removing the land did not reduce a false claim, it removed the reference
+that made the remaining marks mean anything, so a reader could not tell which dot was
+North America without reading the label.
+
+**Rule:** When an honesty argument says to remove something from a drawing, name the
+specific element that would carry the false claim and remove only that. If the thing
+being removed is context rather than the claim, the drawing loses information and
+gains no honesty. A backdrop is not a claim.
+
+**Triggers:** Deciding to leave something out of a visualisation "because it would
+imply" something. Any sentence of the form "drawing X would suggest Y" where X is a
+reference frame, an axis, a label or a background rather than the data mark itself.

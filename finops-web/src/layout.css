@@ -1423,9 +1423,9 @@ main > section > [role='group'] {
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-4);
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   border-radius: var(--radius-card);
-  background: var(--surface-2);
+  background: var(--surface-raised-2);
 }
 
 /* The name and the status on one line, name first. A reader scans down the
@@ -1453,7 +1453,7 @@ main > section > [role='group'] {
   font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  background: var(--surface-3);
+  background: var(--surface-sunken);
   color: var(--text-muted);
 }
 
@@ -1493,7 +1493,7 @@ main > section > [role='group'] {
   position: relative;
   height: 10px;
   border-radius: var(--radius-pill);
-  background: var(--surface-3);
+  background: var(--surface-sunken);
   overflow: hidden;
 }
 
@@ -1579,7 +1579,7 @@ main > section > [role='group'] {
 [data-testid='ranked-track'] {
   height: 12px;
   border-radius: var(--radius);
-  background: var(--surface-3);
+  background: var(--surface-sunken);
 }
 
 [data-testid='ranked-track'] i {
@@ -1653,7 +1653,7 @@ main > section > [role='group'] {
   width: 100%;
   height: 4px;
   border-radius: var(--radius-pill);
-  background: var(--surface-3);
+  background: var(--surface-sunken);
 }
 
 [data-testid='percent-track'] i {
@@ -1715,32 +1715,54 @@ main > section > [role='group'] {
   display: block;
   width: 100%;
   height: auto;
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   border-radius: var(--radius-card);
-  background: var(--surface-2);
+  background: var(--surface-raised-2);
 }
 
-/* The grid has to be visible or the drawing reads as an empty panel with two dots
-   in it. Faint but present, with the middle parallel and meridian picked out, which
-   is what makes an eye see a projection rather than a box with lines in it. */
+/* The graticule sits under the land and reads as ocean ruling: present enough to say
+   projection, quiet enough that the coastline is the thing the eye follows. The
+   equator and the prime meridian are solid. */
 [data-testid='world-map-grid'] line {
   stroke: var(--text-faint);
-  stroke-opacity: 0.35;
+  stroke-opacity: 0.22;
   stroke-width: 1;
-  stroke-dasharray: 3 5;
+  stroke-dasharray: 2 6;
 }
 
 [data-testid='world-map-grid'] line[data-major='true'] {
-  stroke-opacity: 0.6;
+  stroke-opacity: 0.38;
   stroke-dasharray: none;
+}
+
+/* The land. A flat fill a step above the ocean with a hairline coast, so it reads as
+   a backdrop and never competes with the markers, which are the data. Coarse
+   outlines, which is deliberate: a precise coastline would invite the reading that a
+   marker is a datacentre. */
+[data-testid='world-map-land'] polygon {
+  /* A neutral a clear step from the ocean. The sunken surface was the first choice and is
+     four hex points away from the raised one behind it, so the continents were there and
+     nobody could see them. A landmass wants the value a divider has, not the value a
+     recessed panel has. */
+  fill: var(--border);
+  stroke: var(--border-strong);
+  stroke-width: 1;
+  stroke-linejoin: round;
 }
 
 [data-testid='world-map-marker'] circle {
   fill: var(--chart-bar);
-  fill-opacity: 0.45;
-  stroke: var(--chart-bar);
-  stroke-width: 1.5;
+  fill-opacity: 0.55;
+  stroke: var(--surface-raised-2);
+  stroke-width: 2.5;
   cursor: pointer;
+}
+
+/* A second ring in the marker's own colour, outside the pale one. The pale ring
+   separates the marker from whatever coast it is sitting on, and this keeps the
+   marker's edge legible against it. */
+[data-testid='world-map-marker'] circle {
+  paint-order: stroke;
 }
 
 [data-testid='world-map-marker'][data-selected='true'] circle {
@@ -1750,6 +1772,9 @@ main > section > [role='group'] {
   stroke-width: 2.5;
 }
 
+/* Labels sit over land as often as over sea, so each one carries a halo in the ocean
+   colour: without it a name crossing a coastline is unreadable exactly where the
+   drawing is busiest. */
 [data-testid='world-map-marker'] text {
   fill: var(--text);
   font-family: var(--font-ui);
@@ -1757,6 +1782,10 @@ main > section > [role='group'] {
   font-weight: 600;
   text-anchor: middle;
   pointer-events: none;
+  paint-order: stroke;
+  stroke: var(--surface-raised-2);
+  stroke-width: 4;
+  stroke-linejoin: round;
 }
 
 /* The count on the marker itself, so the drawing can be read without running the
@@ -1856,7 +1885,7 @@ main > section > [role='group'] {
   width: 100%;
   height: 5px;
   border-radius: var(--radius-pill);
-  background: var(--surface-3);
+  background: var(--surface-sunken);
 }
 
 [data-testid='cadence-track'] i {
@@ -1900,7 +1929,7 @@ main > section > [role='group'] {
   width: 4px;
   background: repeating-linear-gradient(
     90deg,
-    var(--surface-2) 0 1px,
+    var(--surface-raised-2) 0 1px,
     var(--severity-5) 1px 2px
   );
 }
