@@ -22,11 +22,11 @@
      stack into mud, and a border plus one step of lightness does the same job for
      nothing. `raised` is a card, `raised-2` is a row inside a card that needs
      separating from it. */
-  --surface: light-dark(#f7f9fc, #0b0f14);
+  --surface: light-dark(#f5f7fa, #0b0f14);
   --surface-sunken: light-dark(#eef2f7, #090d12);
   --surface-raised: light-dark(#ffffff, #121820);
   --surface-raised-2: light-dark(#f4f7fb, #171f29);
-  --border: light-dark(#dde4ed, #212c39);
+  --border: light-dark(#e3e8ef, #212c39);
   --border-soft: light-dark(#e9eef4, #1a232e);
   --border-strong: light-dark(#b9c4d2, #354356);
 
@@ -82,6 +82,30 @@
   --severity-3: light-dark(#d79878, #7f4831);
   --severity-4: light-dark(#a4542c, #c4744c);
   --severity-5: light-dark(#68300f, #eeab86);
+
+  /* The navigation is dark in both themes, and that is a decision rather than an
+     oversight. It is chrome: it does not carry a figure, nothing in it has to be
+     read against a number, and a dark rail against a light page is what separates
+     the thing you navigate with from the thing you are reading. Every real tool in
+     this category does it, and the one that does not is the one where the sidebar
+     and the content blur into each other.
+
+     Fixed hues rather than tokens, because a value that followed the theme would
+     make this rule untrue half the time. */
+  --nav-surface: #0f1620;
+  --nav-surface-2: #17202c;
+  --nav-line: #1e2937;
+  --nav-text: #b3c0d1;
+  --nav-text-strong: #f2f6fb;
+  --nav-text-faint: #6b7b90;
+  --nav-active: rgba(77, 163, 255, 0.16);
+  --nav-accent: #57a9ff;
+
+  /* Chart ink. One hue for a measured series, and the peak lifted out of it,
+     because the eye finds the tallest bar anyway and then has to be told what it
+     found. */
+  --chart-bar: light-dark(#7fb2f0, #2f6ca8);
+  --chart-bar-peak: light-dark(#1a6fd4, #4da3ff);
 
   --hatch-line: light-dark(rgba(20, 24, 29, 0.32), rgba(230, 234, 239, 0.34));
 
@@ -184,4 +208,14 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Emitted by BarChart. The peak is a different colour and not a different shape,
+   because the shape is the data. */
+.meter-bar {
+  fill: var(--chart-bar);
+}
+
+.meter-bar-peak {
+  fill: var(--chart-bar-peak);
 }

@@ -123,6 +123,11 @@ describe('HomeScreen', () => {
       // `useCostSummary`, which is the spend screen's own hook. Home shows the total
       // and the change; it computes neither.
       '/api/v1/cost/summary',
+      // `useCostTrend`, the same hook and the same query key CostScreen uses. Added with the
+      // chart on the spend card: the headline figure says what this period cost and the shape
+      // says what happened inside it, and the seeded estate's last day is half as expensive
+      // again as the one before, which is invisible in a figure and unmissable in a picture.
+      '/api/v1/cost/trend',
       '/api/v1/platform/cost',
       '/api/v1/query/findings',
       '/api/v1/query/groups',

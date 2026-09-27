@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 
 import {
   useCostSummary,
+  useCostTrend,
   usePlatformCost,
   useQueryFindings,
   useQueryGroups,
@@ -10,6 +11,7 @@ import {
   useRecommendations,
 } from '../api/queries';
 import { grandTotal, rollUp } from './platformRollUp';
+import { BarChart } from '../components/BarChart';
 import { Figure } from '../components/Figure';
 import { DataTable } from '../components/DataTable';
 import { SeverityBadge, type Severity } from '../components/SeverityBadge';
@@ -168,6 +170,11 @@ export function HomeScreen() {
   // and a front page disagreeing with the page behind it is the one inconsistency a
   // reader always notices.
   const spend = useCostSummary();
+  // The daily shape behind the headline. Through the cost screen's own hook, because the
+  // home screen owns no data of its own: a panel with its own query will one day disagree
+  // with the screen it summarises.
+  const trend = useCostTrend();
+  const days = trend.data?.data.data ?? [];
   const spendEnvelope = spend.data?.data;
   const summary = spendEnvelope?.data;
   const spendState = surfaceStateFor(
@@ -322,6 +329,25 @@ export function HomeScreen() {
                 against {summary.previous?.period ?? 'the period before'}
               </p>
             )}
+            {/* The shape, which is the thing a table of twenty six rows cannot show. The
+                seeded estate's last day is half as expensive again as the one before it,
+                and that is invisible in a figure and unmissable in a picture. */}
+            <BarChart
+              points={days.map((day) => ({
+                label: day.day.slice(5),
+                value: Number(day.effective_cost),
+              }))}
+              provenance="measured"
+              label={
+                days.length > 1
+                  ? `Daily effective cost across ${String(days.length)} days, ` +
+                    `from ${days[0]?.day ?? ''} to ${days[days.length - 1]?.day ?? ''}`
+                  : 'Daily effective cost, not enough days collected to show a shape'
+              }
+              format={(value) =>
+                `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`
+              }
+            />
           </StateBoundary>
         </div>
 
