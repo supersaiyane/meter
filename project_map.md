@@ -406,6 +406,25 @@ meter/
 │   │                          fact. The fill is clamped, so an overspent budget
 │   │                          draws full and says OVER beside it rather than
 │   │                          running past its own track
+│   ├── components/lateness.ts  the age over the cadence, and nothing else. Its
+│   │                          own module because the screen's count and the bar
+│   │                          must decide lateness the same way: a sentence saying
+│   │                          one collector is late above bars showing two is the
+│   │                          fault a reader finds first
+│   ├── components/CadenceBar.tsx  how late a collector is against its own
+│   │                          cadence, which is a third scaling rule because
+│   │                          neither of the other two fits: collectors do not
+│   │                          add up so a share of a total is wrong, and there is
+│   │                          no maximum so a fraction of one is wrong too. The
+│   │                          track runs to twice the cadence with the due point
+│   │                          in the middle, so the only question a reader has is
+│   │                          answered by which side of the tick the fill ends on.
+│   │                          Past twice, the bar stops and the end is notched,
+│   │                          because a collector at nine times and one at two and
+│   │                          a half would otherwise draw identically. Two
+│   │                          absences with two sentences: no age is never
+│   │                          collected, no cadence is not scheduled, and they
+│   │                          need different actions
 │   ├── components/WorldMap.tsx  the estate on a schematic world. A graticule and
 │   │                          one marker per continent, and no coastline, because
 │   │                          the geography comes from a region name prefix which

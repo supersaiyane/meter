@@ -39,6 +39,7 @@
     "finops-web/dist-types/src/api/types.d.ts",
     "finops-web/dist-types/src/components/BarChart.d.ts",
     "finops-web/dist-types/src/components/BudgetBar.d.ts",
+    "finops-web/dist-types/src/components/CadenceBar.d.ts",
     "finops-web/dist-types/src/components/CoverageBanner",
     "finops-web/dist-types/src/components/CoverageBanner.d.ts",
     "finops-web/dist-types/src/components/DataTable",
@@ -66,6 +67,7 @@
     "finops-web/dist-types/src/components/TypedError",
     "finops-web/dist-types/src/components/TypedError.d.ts",
     "finops-web/dist-types/src/components/WorldMap.d.ts",
+    "finops-web/dist-types/src/components/__tests__/CadenceBar.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/DataTable.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/Figure.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/FixtureBand.test.d.ts",
@@ -85,6 +87,7 @@
     "finops-web/dist-types/src/components/actionRisk.d.ts",
     "finops-web/dist-types/src/components/density.d.ts",
     "finops-web/dist-types/src/components/index.d.ts",
+    "finops-web/dist-types/src/components/lateness.d.ts",
     "finops-web/dist-types/src/components/orgNodes",
     "finops-web/dist-types/src/components/orgNodes.d.ts",
     "finops-web/dist-types/src/components/provenance",
@@ -194,6 +197,7 @@
     "finops-web/src/api/types.ts",
     "finops-web/src/components/BarChart.tsx",
     "finops-web/src/components/BudgetBar.tsx",
+    "finops-web/src/components/CadenceBar.tsx",
     "finops-web/src/components/CoverageBanner.tsx",
     "finops-web/src/components/DataTable.tsx",
     "finops-web/src/components/DenseRegion.tsx",
@@ -211,6 +215,7 @@
     "finops-web/src/components/TopologyCanvas.tsx",
     "finops-web/src/components/TypedError.tsx",
     "finops-web/src/components/WorldMap.tsx",
+    "finops-web/src/components/__tests__/CadenceBar.test.tsx",
     "finops-web/src/components/__tests__/DataTable.test.tsx",
     "finops-web/src/components/__tests__/Figure.test.tsx",
     "finops-web/src/components/__tests__/FixtureBand.test.tsx",
@@ -230,6 +235,7 @@
     "finops-web/src/components/actionRisk.ts",
     "finops-web/src/components/density.ts",
     "finops-web/src/components/index.ts",
+    "finops-web/src/components/lateness.ts",
     "finops-web/src/components/orgNodes.ts",
     "finops-web/src/components/provenance.ts",
     "finops-web/src/components/rankedRows.ts",
@@ -1394,6 +1400,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/CadenceBar.tsx",
+      "t": "finops-web/src/components/lateness.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/components/CoverageBanner.tsx",
       "t": "finops-web/src/shell/metaStore.ts",
       "k": "typescript"
@@ -1526,6 +1537,21 @@
     {
       "s": "finops-web/src/components/WorldMap.tsx",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/CadenceBar.test.tsx",
+      "t": "finops-web/src/components/CadenceBar.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/CadenceBar.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/CadenceBar.test.tsx",
+      "t": "finops-web/src/components/lateness.ts",
       "k": "typescript"
     },
     {
@@ -2260,12 +2286,22 @@
     },
     {
       "s": "finops-web/src/screens/FreshnessScreen.tsx",
+      "t": "finops-web/src/components/CadenceBar.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/FreshnessScreen.tsx",
       "t": "finops-web/src/components/DataTable.tsx",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/FreshnessScreen.tsx",
       "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/FreshnessScreen.tsx",
+      "t": "finops-web/src/components/lateness.ts",
       "k": "typescript"
     },
     {

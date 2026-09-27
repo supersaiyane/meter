@@ -113,4 +113,95 @@ describe('FreshnessScreen', () => {
     });
     expect(screen.getByText('not scheduled')).toBeInTheDocument();
   });
+
+  it('counts the collectors past their own cadence, and only those', async () => {
+    // The question somebody opens this screen with, answered rather than left as four rows to
+    // read. The fixture has two collectors that can be judged and one of them is nine times its
+    // cadence, so the count is one of two and never one of four.
+    render(
+      <Harness
+        client={clientReturning({ '/api/v1/health/freshness': { data: ROWS, meta: metaOf() } })}
+      >
+        <FreshnessScreen />
+      </Harness>,
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('freshness-summary')).toHaveTextContent(
+        '1 of 2 collectors are past their own cadence',
+      );
+    });
+  });
+
+  it('leaves what cannot be judged out of both halves of that count', async () => {
+    // The failure the count makes easy. A collector nothing schedules cannot be late, and one
+    // that never succeeded has no age at all. Rolling either into the numerator inflates the
+    // number that decides whether somebody investigates, and rolling them into the denominator
+    // deflates it. Both are named separately instead.
+    render(
+      <Harness
+        client={clientReturning({ '/api/v1/health/freshness': { data: ROWS, meta: metaOf() } })}
+      >
+        <FreshnessScreen />
+      </Harness>,
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('freshness-summary')).toHaveTextContent(
+        '2 more cannot be judged at all, and are counted as neither late nor current',
+      );
+    });
+  });
+
+  it('agrees in number when exactly one collector cannot be judged', async () => {
+    // Found by looking at the seeded estate, where exactly one collector is unschedulable and
+    // the sentence read "1 more cannot be judged at all, and are". The fixture has two of them,
+    // so every assertion above exercised only the plural.
+    const one = ROWS.filter((row) => row.collector !== 'unscheduled');
+    render(
+      <Harness
+        client={clientReturning({ '/api/v1/health/freshness': { data: one, meta: metaOf() } })}
+      >
+        <FreshnessScreen />
+      </Harness>,
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('freshness-summary')).toHaveTextContent(
+        '1 more cannot be judged at all, and is counted as neither late nor current',
+      );
+    });
+  });
+
+  it('draws each row against its own cadence rather than a shared threshold', async () => {
+    // Two collectors, both an hour of cadence, one at nine times and one at a twelfth. The
+    // screen has to show that difference as a difference, which the age column alone does not:
+    // 32400 seconds beside 300 is arithmetic a reader should not have to do.
+    render(
+      <Harness
+        client={clientReturning({ '/api/v1/health/freshness': { data: ROWS, meta: metaOf() } })}
+      >
+        <FreshnessScreen />
+      </Harness>,
+    );
+    const bars = await screen.findAllByTestId('cadence');
+    expect(bars).toHaveLength(2);
+    const states = bars.map((one) => one.getAttribute('data-state'));
+    expect(states).toEqual(['due', 'over']);
+  });
+
+  it('says why a row has no bar rather than leaving the cell blank', async () => {
+    // A blank cell reads as a rendering fault and sends somebody looking for a value that was
+    // never there. Two rows here have no lateness and they have different reasons.
+    render(
+      <Harness
+        client={clientReturning({ '/api/v1/health/freshness': { data: ROWS, meta: metaOf() } })}
+      >
+        <FreshnessScreen />
+      </Harness>,
+    );
+    const absent = await screen.findAllByTestId('cadence-absent');
+    expect(absent).toHaveLength(2);
+    expect(absent.map((one) => one.textContent)).toEqual([
+      'nothing schedules this, so it cannot be late',
+      'never collected, so there is no age',
+    ]);
+  });
 });
