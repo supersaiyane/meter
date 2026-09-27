@@ -226,6 +226,26 @@ def unlisted_revisions(text: str) -> list[str]:
     return [revision for revision in _revisions() if revision not in text]
 
 
+def unlisted_collectors(text: str) -> list[str]:
+    """Collectors the map never names.
+
+    The same claim as `unlisted_revisions` about a different directory, added on 2026-09-27
+    after a sweep found seven of twenty one collectors described nowhere while the count above
+    them said twenty one. A count and a listing are two different claims and only one was being
+    checked.
+
+    That sweep also found `recommendations.py` had lost its name line in an edit, so its
+    description sat under `query_audit.py` and read as part of it. A check on the names catches
+    that too: the file stops being named the moment its line is lost.
+    """
+    names = sorted(
+        path.name
+        for path in (ROOT / "finops_ingest" / "collectors").glob("*.py")
+        if path.name != "__init__.py"
+    )
+    return [name for name in names if name not in text]
+
+
 def replaced(text: str, block: str) -> str:
     if START not in text or END not in text:
         raise SystemExit(
@@ -245,6 +265,7 @@ def main() -> int:
     current = MAP.read_text(encoding="utf-8")
     wanted = replaced(current, render())
     missing = unlisted_revisions(current)
+    undescribed = unlisted_collectors(current)
 
     if not args.check:
         MAP.write_text(wanted, encoding="utf-8")
@@ -253,6 +274,8 @@ def main() -> int:
             # Written anyway, then reported. The counts being right is worth having even on a
             # run where the listing is incomplete, and the next line says what is still wrong.
             print(f"WARN: these revisions are not named anywhere in the map: {missing}")
+        if undescribed:
+            print(f"WARN: these collectors are not named anywhere in the map: {undescribed}")
         return 0
 
     # Each fault carries its own remediation. A single line naming both fixes would send
@@ -266,6 +289,15 @@ def main() -> int:
             (
                 f"these revisions are not named anywhere in the map: {missing}",
                 "Add a line for each under migrations/versions in the map, by hand. "
+                "doc-sync cannot write prose and will not fix this.",
+            )
+        )
+
+    if undescribed:
+        problems.append(
+            (
+                f"these collectors are not named anywhere in the map: {undescribed}",
+                "Add a line for each under finops_ingest/collectors in the map, by hand. "
                 "doc-sync cannot write prose and will not fix this.",
             )
         )

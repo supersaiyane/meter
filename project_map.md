@@ -465,6 +465,13 @@ meter/
 │   │                          continent was clicked. Nothing loads until one is
 │   │                          chosen, because a screen that loads the first has
 │   │                          decided which continent matters
+│   ├── components/rankedRows.ts  the collapse and the truncation, and the one
+│   │                          place a ranked chart can be quietly wrong: a total
+│   │                          taken after the remainder was folded in makes every
+│   │                          share too large and the picture still looks right.
+│   │                          On the largest basis nothing is summed at all, not
+│   │                          even into a rest row, because that sum is the number
+│   │                          the basis exists to avoid
 │   ├── components/PercentCell.tsx  a percentage in a table cell with a rule
 │   │                          under it. A fraction of a hundred and never a share
 │   │                          of a total, which is why it is not RankedBars: two
@@ -794,7 +801,29 @@ meter/
 │       │                      replaced rather than accumulated, and NoData is absorbed
 │       │                      because a payer with no commitments is a fact rather
 │       │                      than a broken collection
-│       └── partitions.py      months created ahead. Without one, cost rows are refused
+│       ├── partitions.py      months created ahead. Without one, cost rows are refused
+│       ├── inventory.py       the resources themselves, from AWS Config. ISS-200: it
+│       │                      has never made a real call
+│       ├── topology.py        the edges between them, four APIs. ISS-202, same footing
+│       ├── waste_compute.py   the bespoke candidates, which are the ones carrying an
+│       │                      ARN and therefore the ones that join to a node
+│       ├── waste_cloudwatch.py  log retention and alarms that have never fired
+│       ├── waste_parking.py   FEAT-054. A workload quiet on the same hours every week,
+│       │                      judged per hour and never per estate, because a window
+│       │                      of a fortnight straddles three Monday weeks
+│       ├── commitment_actions.py  FEAT-055. An uncovered baseline as a finding with
+│       │                      an owner, in its own table per ADR-0025
+│       ├── realized_savings.py  FEAT-041. The only thing in the product allowed to
+│       │                      say a saving happened, sixty days after a finding is
+│       │                      marked done
+│       ├── score.py           the posture score, which is never a bare number
+│       ├── iac_state.py       FEAT-057. Presence and never absence: a row means we
+│       │                      found a resource in state, no row means we did not look
+│       │                      or did not find it, and those are different facts
+│       └── budgets.py         FEAT-060. What somebody said this should cost, read from
+│                              the provider. Stores nothing derived, retracts nothing,
+│                              and counts the budgets whose scope it cannot reproduce
+│                              on sync_error rather than dropping them
 │   └── metrics.py             only SLO 1 needs a custom metric. The other three are AWS's
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
 │   ├── flags.py               flag resolution, tenant then environment then declared
