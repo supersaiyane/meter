@@ -109,7 +109,7 @@ export function GeographyScreen() {
               <h3 data-testid="geography-chosen">
                 {selected.name}, {selected.resources}{' '}
                 {selected.resources === 1 ? 'resource' : 'resources'} in{' '}
-                {selected.regions.join(' and ')}
+                {selected.regions.map((region) => region.region_id).join(' and ')}
               </h3>
               <table data-testid="geography-table">
                 <caption data-testid="geography-table-count">

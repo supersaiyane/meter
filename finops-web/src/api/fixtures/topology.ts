@@ -412,14 +412,20 @@ export function geographyFixture(): ApiEnvelope<ApiGeographies> {
         {
           key: 'us',
           name: 'United States',
-          regions: ['us-fake-1'],
+          // Two regions, one of them with a compass word and one without, so the drawing has
+          // to handle both: a placed offset and a fall back to the continent's own anchor.
+          regions: [
+            { region_id: 'us-east-1', resources: 29, direction: 'east' },
+            { region_id: 'us-fake-1', resources: 12, direction: null },
+          ],
           resources: 41,
+          // Four, and deliberately fewer than the sum of any per region count would give.
           accounts: 4,
         },
         {
           key: 'eu',
           name: 'Europe',
-          regions: ['eu-fake-1'],
+          regions: [{ region_id: 'eu-fake-1', resources: 12, direction: null }],
           resources: 12,
           accounts: 2,
         },

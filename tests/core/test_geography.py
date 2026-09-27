@@ -8,7 +8,13 @@ from __future__ import annotations
 
 import pytest
 
-from finops_core.domain.geography import GEOGRAPHIES, PREFIXES, geography_of, is_global
+from finops_core.domain.geography import (
+    GEOGRAPHIES,
+    PREFIXES,
+    direction_of,
+    geography_of,
+    is_global,
+)
 
 
 @pytest.mark.parametrize(
@@ -108,3 +114,64 @@ def test_every_prefix_resolves_to_a_place_that_exists() -> None:
 def test_keys_are_unique() -> None:
     keys = [geography.key for geography in GEOGRAPHIES]
     assert len(keys) == len(set(keys))
+
+
+# --- where in its geography, ISS-213 -----------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("region", "expected"),
+    [
+        ("us-east-1", "east"),
+        ("us-west-2", "west"),
+        ("eu-central-1", "central"),
+        ("eu-north-1", "north"),
+        ("eu-south-2", "south"),
+        ("ap-northeast-1", "northeast"),
+        ("ap-southeast-2", "southeast"),
+        ("ca-central-1", "central"),
+        ("mx-central-1", "central"),
+        ("af-south-1", "south"),
+    ],
+)
+def test_reads_the_compass_point_from_the_name(region: str, expected: str) -> None:
+    assert direction_of(region) == expected
+
+
+def test_finds_it_wherever_in_the_name_it_sits() -> None:
+    """The position varies, so the rule cannot count hyphens.
+
+    `us-east-1` carries it second and `us-gov-west-1` carries it third. A rule taking the second
+    component would read `gov` as the direction and place every GovCloud region nowhere, or worse,
+    in the wrong half of the United States if `gov` were ever a compass word.
+    """
+    assert direction_of("us-gov-west-1") == "west"
+    assert direction_of("eusc-de-east-1") == "east"
+
+
+def test_matches_the_longer_compass_word_first() -> None:
+    """`northeast` must not be read as `north`.
+
+    The table is ordered longest first for exactly this, and a shorter first ordering would put
+    Tokyo in northern Asia Pacific rather than its northeast, which is a different place and a
+    plausible looking wrong answer.
+    """
+    assert direction_of("ap-northeast-1") == "northeast"
+    assert direction_of("ap-southeast-3") == "southeast"
+
+
+def test_says_nothing_rather_than_guessing_a_direction() -> None:
+    # A name with no compass word gets no offset and sits on its continent's anchor, which is the
+    # honest answer: the name did not say.
+    assert direction_of("eu-fake-1") is None
+    assert direction_of("us-fake-1") is None
+    assert direction_of(None) is None
+    assert direction_of("") is None
+
+
+def test_a_direction_is_a_word_and_never_a_coordinate() -> None:
+    # Which compass point a region is in is a fact about its name. Where that lands in a picture
+    # is a fact about the picture, and the drawing owns that, like the continent anchors.
+    for region in ("us-east-1", "ap-southeast-2", "eu-north-1"):
+        found = direction_of(region)
+        assert isinstance(found, str)

@@ -50,13 +50,19 @@ from finops_api.schemas import (
     InventoryRootOut,
     InventoryRootsOut,
     NodeOut,
+    RegionOut,
     ResourceFiltersOut,
     ResourceListOut,
     SliceCoverageOut,
     SubgraphOut,
 )
 from finops_core.config import Settings
-from finops_core.domain.geography import GEOGRAPHIES, geography_of, is_global
+from finops_core.domain.geography import (
+    GEOGRAPHIES,
+    direction_of,
+    geography_of,
+    is_global,
+)
 from finops_core.domain.tenant import Scope
 from finops_core.domain.topology import CoverageState, Edge, GraphCoverage, Node
 from finops_query.blast_radius import assess
@@ -437,12 +443,18 @@ class _Tally:
 
     A mutable accumulator rather than a dictionary of objects, because the dictionary version
     needed a cast on every read and a cast is a place a type error hides.
+
+    `accounts` is a set and not a running total, which is ISS-214. A count per region added up
+    counts an account twice when it is present in two regions of one continent, and that is the
+    common case: a platform account with a disaster recovery copy is exactly it. Unioning the
+    identifiers and counting once is the only way to a distinct figure without resolving the
+    prefix a second time in SQL, which would be two implementations of one rule.
     """
 
     name: str
-    regions: set[str] = field(default_factory=set)
+    regions: list[RegionOut] = field(default_factory=list)
     resources: int = 0
-    account_slices: int = 0
+    accounts: set[str] = field(default_factory=set)
 
 
 @router.get("/inventory/geography", response_model=Envelope[GeographiesOut])
@@ -492,13 +504,17 @@ def geography(
             unplaceable[str(region_id)] = resources
             continue
         tally = grouped.setdefault(placed.key, _Tally(name=placed.name))
-        tally.regions.add(str(region_id))
+        tally.regions.append(
+            RegionOut(
+                region_id=str(region_id),
+                resources=resources,
+                # A word from the region's own name, or None where the name does not say. The
+                # drawing turns it into a position; this route never does. ISS-213.
+                direction=direction_of(str(region_id)),
+            )
+        )
         tally.resources += resources
-        # Summed across the regions inside the geography, which counts an account twice when it
-        # is present in two of them. Named rather than quietly corrected: the honest figure needs
-        # a distinct count per geography, which is a second grouped read, and until there is one
-        # the screen says account slices rather than accounts. ISS-214.
-        tally.account_slices += int(row.accounts or 0)
+        tally.accounts.update(str(one) for one in (row.accounts or ()) if one is not None)
 
     # Ordered by the table rather than by size, so the drawing does not reshuffle itself every
     # time a region grows. GEOGRAPHIES is west to east.
@@ -506,9 +522,13 @@ def geography(
         GeographyOut(
             key=key,
             name=grouped[key].name,
-            regions=tuple(sorted(grouped[key].regions)),
+            # Largest first, so a continent with one busy region and four quiet ones reads in
+            # the order a person would ask about them.
+            regions=tuple(
+                sorted(grouped[key].regions, key=lambda one: (-one.resources, one.region_id))
+            ),
             resources=grouped[key].resources,
-            accounts=grouped[key].account_slices,
+            accounts=len(grouped[key].accounts),
         )
         for key in (item.key for item in GEOGRAPHIES)
         if key in grouped

@@ -1025,12 +1025,33 @@ class ResourceFiltersOut(BaseModel):
     resource_type: tuple[str, ...]
 
 
+class RegionOut(BaseModel):
+    """One region inside a geography. FEAT-061, ISS-213.
+
+    `direction` is the compass word the region's own name carries, or None where it carries
+    none. It is what lets a drawing put `eu-west-1` and `eu-central-1` in different parts of
+    Europe with no table of regions to go stale, and it is a word rather than a coordinate
+    because where a compass point lands in a picture is the picture's business.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    region_id: str
+    resources: int
+    direction: str | None
+
+
 class GeographyOut(BaseModel):
     """One continent's worth of the estate. FEAT-061.
 
     `regions` is listed rather than counted, because the geography is continental and a reader
     who sees Europe wants to know whether that means Dublin, Frankfurt or both. It is the
     honest way to admit what the prefix cannot tell us.
+
+    `accounts` is a distinct count across the whole geography and not the sum of its regions'
+    counts. ISS-214: adding per region counts double counts an account present in two regions of
+    one continent, which is the common case rather than the odd one, because a platform account
+    with a disaster recovery copy is exactly that.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -1038,8 +1059,8 @@ class GeographyOut(BaseModel):
     #: The region name prefix, which is also the stable key the drawing positions by.
     key: str
     name: str
-    #: Every region inside it that this reader can see, alphabetical.
-    regions: tuple[str, ...]
+    #: Every region inside it that this reader can see, largest first.
+    regions: tuple[RegionOut, ...]
     resources: int
     accounts: int
 
