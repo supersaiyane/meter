@@ -45,6 +45,20 @@ The same two scope points as FEAT-021, over the same table.
 
 `GET /cost/allocation?tag=<key>`, returning the meta envelope.
 
+The screen draws the breakdown as a ranked bar above the table, added 2026-09-27. A table of
+twenty rows answers which owner is largest slowly; a ranked bar answers it at once, and the
+question this screen exists for is a comparison rather than a lookup. The bars are a share of the
+total rather than of the largest row, because scaling to the largest makes a breakdown where one
+owner holds ninety percent look identical to one where the top three are evenly matched.
+
+What nobody tagged is drawn in the same picture as the owners, as an outline rather than a solid.
+It is real measured money that belongs to no owner, it is frequently the largest row on the
+screen, and shown separately it reads as a footnote.
+
+Past eight rows the remainder is summed into one row that says how many rows it stands for. Forty
+owners at two percent each are forty stubs, which is a picture of nothing, and a chart that shows
+the top eight of forty without saying so lies by omission.
+
 ## Not doing
 
 Showback as a file. That is FEAT-045 and the roadmap is right that finance is the

@@ -52,6 +52,8 @@
     "finops-web/dist-types/src/components/FreshnessIndicator.d.ts",
     "finops-web/dist-types/src/components/GraphCanvas.d.ts",
     "finops-web/dist-types/src/components/OrgTree.d.ts",
+    "finops-web/dist-types/src/components/RankedBars",
+    "finops-web/dist-types/src/components/RankedBars.d.ts",
     "finops-web/dist-types/src/components/SeverityBadge",
     "finops-web/dist-types/src/components/SeverityBadge.d.ts",
     "finops-web/dist-types/src/components/Sparkline",
@@ -67,6 +69,7 @@
     "finops-web/dist-types/src/components/__tests__/FixtureBand.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/GraphCanvas.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/OrgTree.test.d.ts",
+    "finops-web/dist-types/src/components/__tests__/RankedBars.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/Sparkline.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/StateBoundary.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/TopActions.test.d.ts",
@@ -82,6 +85,7 @@
     "finops-web/dist-types/src/components/orgNodes.d.ts",
     "finops-web/dist-types/src/components/provenance",
     "finops-web/dist-types/src/components/provenance.d.ts",
+    "finops-web/dist-types/src/components/rankedRows.d.ts",
     "finops-web/dist-types/src/components/surfaceState",
     "finops-web/dist-types/src/components/surfaceState.d.ts",
     "finops-web/dist-types/src/components/tableConfig",
@@ -192,6 +196,7 @@
     "finops-web/src/components/FreshnessIndicator.tsx",
     "finops-web/src/components/GraphCanvas.tsx",
     "finops-web/src/components/OrgTree.tsx",
+    "finops-web/src/components/RankedBars.tsx",
     "finops-web/src/components/SeverityBadge.tsx",
     "finops-web/src/components/Sparkline.tsx",
     "finops-web/src/components/StateBoundary.tsx",
@@ -203,6 +208,7 @@
     "finops-web/src/components/__tests__/FixtureBand.test.tsx",
     "finops-web/src/components/__tests__/GraphCanvas.test.tsx",
     "finops-web/src/components/__tests__/OrgTree.test.tsx",
+    "finops-web/src/components/__tests__/RankedBars.test.tsx",
     "finops-web/src/components/__tests__/Sparkline.test.tsx",
     "finops-web/src/components/__tests__/StateBoundary.test.tsx",
     "finops-web/src/components/__tests__/TopActions.test.tsx",
@@ -216,6 +222,7 @@
     "finops-web/src/components/index.ts",
     "finops-web/src/components/orgNodes.ts",
     "finops-web/src/components/provenance.ts",
+    "finops-web/src/components/rankedRows.ts",
     "finops-web/src/components/surfaceState.ts",
     "finops-web/src/components/tableConfig.ts",
     "finops-web/src/layout.css",
@@ -887,6 +894,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/dist-types/src/components/RankedBars.d.ts",
+      "t": "finops-web/dist-types/src/components/provenance",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/dist-types/src/components/Sparkline.d.ts",
       "t": "finops-web/dist-types/src/components/provenance",
       "k": "typescript"
@@ -974,6 +986,11 @@
     {
       "s": "finops-web/dist-types/src/components/index.d.ts",
       "t": "finops-web/dist-types/src/components/tableConfig",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/components/rankedRows.d.ts",
+      "t": "finops-web/dist-types/src/components/RankedBars",
       "k": "typescript"
     },
     {
@@ -1407,6 +1424,16 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/RankedBars.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/RankedBars.tsx",
+      "t": "finops-web/src/components/rankedRows.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/components/Sparkline.tsx",
       "t": "finops-web/src/components/provenance.ts",
       "k": "typescript"
@@ -1524,6 +1551,21 @@
     {
       "s": "finops-web/src/components/__tests__/OrgTree.test.tsx",
       "t": "finops-web/src/components/orgNodes.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/RankedBars.test.tsx",
+      "t": "finops-web/src/components/RankedBars.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/RankedBars.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/RankedBars.test.tsx",
+      "t": "finops-web/src/components/rankedRows.ts",
       "k": "typescript"
     },
     {
@@ -1687,6 +1729,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/rankedRows.ts",
+      "t": "finops-web/src/components/RankedBars.tsx",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/components/surfaceState.ts",
       "t": "finops-web/src/components/provenance.ts",
       "k": "typescript"
@@ -1804,6 +1851,11 @@
     {
       "s": "finops-web/src/screens/CostAllocationScreen.tsx",
       "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "t": "finops-web/src/components/RankedBars.tsx",
       "k": "typescript"
     },
     {
@@ -2784,6 +2836,11 @@
     {
       "s": "finops-web/src/screens/WasteScreen.tsx",
       "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/components/RankedBars.tsx",
       "k": "typescript"
     },
     {
