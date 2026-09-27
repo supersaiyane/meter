@@ -1831,3 +1831,91 @@ main > section > [role='group'] {
 [data-testid='geography-prompt'] {
   margin-top: var(--space-4);
 }
+
+/* ----------------------------------------------------------- cadence bars */
+
+/* Lateness against a collector's own cadence, in a table cell. The track runs from
+   nothing to twice the cadence with the due point in the middle, so the only
+   question a reader has is answered by which side of the tick the fill ends on. */
+
+[data-testid='cadence'] {
+  display: inline-grid;
+  justify-items: end;
+  gap: 3px;
+  min-width: 6em;
+}
+
+[data-testid='cadence-multiple'] {
+  font-family: var(--font-numeral);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-testid='cadence-track'] {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-3);
+}
+
+[data-testid='cadence-track'] i {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--good);
+}
+
+/* Past its own cadence. The warm ramp rather than the failure red, because late is
+   not failed: the collector may be running right now, and the cause column is the
+   thing that says whether anything actually broke. */
+[data-testid='cadence'][data-state='over'] [data-testid='cadence-track'] i {
+  background: var(--severity-4);
+}
+
+[data-testid='cadence'][data-state='over'] [data-testid='cadence-multiple'] {
+  color: var(--severity-5);
+}
+
+/* The due point. Ink rather than a hue, because it is not a measurement on the
+   bar's scale, it is the promise the cadence made. */
+[data-testid='cadence-track'] b {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--text);
+}
+
+/* Running off the scale. A collector at nine times its cadence and one at two and a
+   half would otherwise draw identically, so the end of the track is notched. Clamping
+   without the mark is how a chart flattens its worst rows into its merely bad ones. */
+[data-testid='cadence'][data-clamped='true'] [data-testid='cadence-track']::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -1px;
+  bottom: -2px;
+  width: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--surface-2) 0 1px,
+    var(--severity-5) 1px 2px
+  );
+}
+
+/* No age or no cadence. Words, never an empty track, because an empty track reads as
+   a measurement that came back zero and for freshness that says collected this
+   instant, which is the opposite of the truth. */
+[data-testid='cadence-absent'] {
+  font-size: var(--font-size-1);
+  color: var(--text-muted);
+}
+
+/* The one sentence above the table. How many collectors are past their own cadence is
+   the question somebody opens this screen with, and counting rows to answer it is
+   work the screen should have done. */
+[data-testid='freshness-summary'] {
+  margin-bottom: var(--space-3);
+}
