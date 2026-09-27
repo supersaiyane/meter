@@ -650,6 +650,7 @@
     "tests/providers/aws/test_health.py",
     "tests/providers/aws/test_query_evidence.py",
     "tests/providers/aws/test_recommendations.py",
+    "tests/providers/aws/test_response_shapes.py",
     "tests/providers/aws/test_terraform_state.py",
     "tests/providers/aws/test_waste_metrics.py",
     "tests/providers/fake/__init__.py",
@@ -7871,6 +7872,11 @@
     {
       "s": "tests/providers/aws/test_recommendations.py",
       "t": "finops_providers/aws/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_response_shapes.py",
+      "t": "finops_providers/aws/client.py",
       "k": "python"
     },
     {
