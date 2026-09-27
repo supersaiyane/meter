@@ -214,6 +214,30 @@ def test_carries_coverage_in_slices_so_a_continent_count_is_a_floor(
     assert coverage["is_partial"] is True
 
 
+def test_the_envelope_carries_freshness_so_the_screen_is_not_blank(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """Constraint 4, and the case every other test here missed.
+
+    The first version of this route returned counts and no timestamps. `build_meta` reads
+    freshness off the rows, found none because a grouped row is not a fact row, and put null in
+    `as_of`. The screen reads exactly that field to decide whether anything has been collected,
+    so a correct estate of ninety two resources rendered as "not yet collected by topology".
+
+    Every case above passed while that was true, because every one of them asserted on the data
+    and none on the envelope. This one asserts on the envelope.
+    """
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    meta = get(client, token, GEOGRAPHY)["meta"]
+    assert meta["as_of"] is not None
+    assert meta["collected_at"] is not None
+    # The stalest, like every other route, because an aggregate is only as fresh as its oldest
+    # input and a max here would report the whole estate as fresh as its newest row.
+    assert meta["as_of"].startswith("2026-09-26T06:00")
+    assert meta["collected_at"].startswith("2026-09-26T06:05")
+
+
 def test_an_empty_estate_is_empty_and_not_an_error(
     engine: Engine, tenant_id: UUID, settings: Settings
 ) -> None:

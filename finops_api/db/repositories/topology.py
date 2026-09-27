@@ -249,6 +249,14 @@ class TopologyRepository(ScopedRepository):
         Counted through `scoped_select`, so the numbers are this reader's numbers. A narrowed
         reader sees a smaller estate, which is correct, and the coverage in the envelope is what
         says so.
+
+        **The two timestamps are aggregated with the rest and named as themselves.** An aggregate
+        is only as fresh as its stalest input, so both are a `min`, which is what `freshness_of`
+        does to a set of rows and is the conservative half of constraint 10. Named `as_of` and
+        `collected_at` so the envelope picks them up the way it does for any fact: the first
+        version of this returned counts alone, `build_meta` found no timestamps on rows that were
+        not facts, and the screen rendered a full estate as never collected. The counts were all
+        correct and every test passed, because they asserted on the data and not on the meta.
         """
         statement = (
             self.scoped_select(scope)
@@ -256,6 +264,8 @@ class TopologyRepository(ScopedRepository):
                 self.table.c.region_id,
                 func.count().label("resources"),
                 func.count(func.distinct(self.table.c.sub_account_id)).label("accounts"),
+                func.min(self.table.c.as_of).label("as_of"),
+                func.min(self.table.c.collected_at).label("collected_at"),
             )
             .group_by(self.table.c.region_id)
             .order_by(func.count().desc())

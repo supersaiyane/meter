@@ -39,7 +39,13 @@ const POSITIONS: Readonly<Record<string, readonly [number, number]>> = {
 };
 
 const WIDTH = 1000;
-const HEIGHT = 460;
+//: Roughly two to one, the shape of an equirectangular world, which is what stops the drawing
+//: reading as an empty panel with two dots in it.
+const HEIGHT = 500;
+
+//: Evenly spaced with the middle one picked out. A grid at even intervals with a stronger line
+//: through the centre is what makes an eye see a projection rather than a box with lines in it.
+const GRATICULE = [0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875];
 const SMALLEST = 7;
 const LARGEST = 34;
 
@@ -68,11 +74,25 @@ export function WorldMap({ geographies, selected, onSelect }: WorldMapProps) {
         {/* The graticule. It says "schematic" without pretending to be cartography, and it
             gives the markers something to be positioned against. */}
         <g data-testid="world-map-grid">
-          {[0.2, 0.4, 0.6, 0.8].map((at) => (
-            <line key={`h${String(at)}`} x1={0} x2={WIDTH} y1={at * HEIGHT} y2={at * HEIGHT} />
+          {GRATICULE.map((at) => (
+            <line
+              key={`h${String(at)}`}
+              x1={0}
+              x2={WIDTH}
+              y1={at * HEIGHT}
+              y2={at * HEIGHT}
+              data-major={at === 0.5}
+            />
           ))}
-          {[0.2, 0.4, 0.6, 0.8].map((at) => (
-            <line key={`v${String(at)}`} y1={0} y2={HEIGHT} x1={at * WIDTH} x2={at * WIDTH} />
+          {GRATICULE.map((at) => (
+            <line
+              key={`v${String(at)}`}
+              y1={0}
+              y2={HEIGHT}
+              x1={at * WIDTH}
+              x2={at * WIDTH}
+              data-major={at === 0.5}
+            />
           ))}
         </g>
         {placed.map((one) => {
@@ -88,8 +108,17 @@ export function WorldMap({ geographies, selected, onSelect }: WorldMapProps) {
               }}
             >
               <circle cx={x * WIDTH} cy={y * HEIGHT} r={radiusFor(one.resources, peak)} />
-              <text x={x * WIDTH} y={y * HEIGHT - radiusFor(one.resources, peak) - 8}>
+              <text x={x * WIDTH} y={y * HEIGHT - radiusFor(one.resources, peak) - 12}>
                 {one.name}
+              </text>
+              {/* The count on the marker, so the drawing can be read without running the eye
+                  down to the legend for every continent. */}
+              <text
+                data-testid="world-map-marker-count"
+                x={x * WIDTH}
+                y={y * HEIGHT + radiusFor(one.resources, peak) + 22}
+              >
+                {one.resources}
               </text>
             </g>
           );
