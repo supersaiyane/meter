@@ -117,9 +117,16 @@ meter/
 │   │                          overview.html, the one hand written file there:
 │   │                          the whole system drawn, and the only place that
 │   │                          says in one view what has never run against AWS
-│   ├── design/                hand written interface mocks. home-redesign.html
-│   │                          carries the three tier front page, its four open
-│   │                          decisions, and the severity to accent collision
+│   ├── design/                hand written interface mocks, wired to nothing.
+│   │                          home-redesign.html carries the three tier front page,
+│   │                          its four open decisions, and the severity to accent
+│   │                          collision. 2026-09-27-home-direction.html is the
+│   │                          answer to the design pass of that day being rejected
+│   │                          in full: a different visual language built from the
+│   │                          seeded figures, and its header says which of its
+│   │                          numbers are real, because a mockup that passed
+│   │                          invented numbers off as measured ones would be doing
+│   │                          the thing this product exists to stop
 │   ├── reference/             source Meter was built from, read never imported.
 │   │                          sample_lambda.py.txt is the 2,740 line prototype
 │   │                          P2 was planned against, byte identical to the
@@ -229,8 +236,17 @@ meter/
 │   │                          table rather than shown as 13 not started
 │   ├── ci/                    code_review.py, check_flags.py, check_hardcoded.py,
 │   │                          check_forbidden_imports.py, check_memory.py,
-│   │                          refresh_base_images.py, flag and hardcoding checks,
-│   │                          forbidden imports, the memory gate, base image resolver
+│   │                          check_env_keys.py, refresh_base_images.py. Flag and
+│   │                          hardcoding checks, forbidden imports, the memory
+│   │                          gate, base image resolver. check_env_keys names the
+│   │                          settings .env.example has gained that a local .env
+│   │                          never did, before make up starts anything: it is
+│   │                          copied once and never again, so eleven accumulated
+│   │                          over one session and the failure was eleven lines of
+│   │                          Field required from inside a container. It reports
+│   │                          and never writes, because the one thing worse than a
+│   │                          missing key is a credential quietly replaced with an
+│   │                          example value
 │   ├── ops/                   run by a person against a live database, which is
 │   │                          why the api image carries this directory and only
 │   │                          this one. erase_principal.py, deliberately not an
