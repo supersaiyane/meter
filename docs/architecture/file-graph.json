@@ -98,6 +98,7 @@
     "finops-web/dist-types/src/components/tableConfig",
     "finops-web/dist-types/src/components/tableConfig.d.ts",
     "finops-web/dist-types/src/components/worldLand.d.ts",
+    "finops-web/dist-types/src/components/worldPaths.d.ts",
     "finops-web/dist-types/src/layout.css",
     "finops-web/dist-types/src/main.d.ts",
     "finops-web/dist-types/src/queryClient.d.ts",
@@ -243,6 +244,7 @@
     "finops-web/src/components/surfaceState.ts",
     "finops-web/src/components/tableConfig.ts",
     "finops-web/src/components/worldLand.ts",
+    "finops-web/src/components/worldPaths.ts",
     "finops-web/src/layout.css",
     "finops-web/src/layout.css?raw",
     "finops-web/src/main.tsx",
@@ -1544,6 +1546,11 @@
     {
       "s": "finops-web/src/components/WorldMap.tsx",
       "t": "finops-web/src/components/worldLand.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/WorldMap.tsx",
+      "t": "finops-web/src/components/worldPaths.ts",
       "k": "typescript"
     },
     {

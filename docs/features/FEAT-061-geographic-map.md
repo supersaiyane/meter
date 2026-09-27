@@ -87,14 +87,23 @@ the caption already handles that. Without land a reader cannot tell which dot is
 without reading the label, which makes the picture decorative rather than informative, and it
 looked like an empty panel with two dots in it.
 
-The outlines in `finops-web/src/components/worldLand.ts` are hand authored at roughly thirty
-points a continent. Coarse on purpose, so they are recognisable and are plainly not cartography.
+The second attempt hand authored the continents at roughly thirty points each, and that was the
+wrong approach rather than a poor attempt at the right one: coastlines written out from memory
+produce shapes nobody recognises. They are generated now, by `make world`, from the Natural Earth
+110m land polygons that every mapping library uses.
 
-**Why these coordinates are safe when a region coordinate table is not.** A table naming
+**Generated at build time, with nothing new at runtime.** `world-atlas` and `topojson-client` are
+dev dependencies, admitted through `make dep-check`, and neither reaches a browser. What ships is
+`worldPaths.ts`, a committed string of SVG path data, so the page draws a real coastline with no
+mapping library, no projection code and no fetch. Islands under a threshold are dropped and
+anything outside the crop is left out of the file, because invisible bytes are still bytes a
+reader downloads.
+
+**Why a coastline may be written down when a region coordinate table may not.** A table naming
 `eu-west-1` and `eu-west-2` is a fact about somebody else's estate and goes stale the day they
 open another region, which is what `check_hardcoded.py` exists to prevent. A coastline is a fact
-about the world: nothing a provider does changes where Africa is, so it is written once and never
-maintained. That is the property the region table lacked, and it is the whole distinction.
+about the world: nothing a provider does changes where Africa is. That is the property the region
+table lacked, and it is the whole distinction.
 
 The regions inside each continent are listed rather than counted, which is the honest way to admit
 what the name cannot say.

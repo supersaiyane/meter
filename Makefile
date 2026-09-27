@@ -455,6 +455,10 @@ security-fix: ## Apply available fixes on a branch, run tests, re scan. Never me
 security-fix-dry: ## Show what security-fix would change
 	@$(DOCPY) scripts/security/autofix.py --summary security/reports/latest/summary.json
 
+.PHONY: world
+world: ## Regenerate the map coastline from Natural Earth. Only needed if the crop changes
+	cd finops-web && node scripts/build_world.mjs
+
 .PHONY: dep-check
 dep-check: ## Admission gate before adding a dependency. Usage: make dep-check pkg=name
 	@test -n "$(pkg)" || (echo 'Usage: make dep-check pkg=<package>  [npm=1]'; exit 1)
