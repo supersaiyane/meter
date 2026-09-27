@@ -97,6 +97,21 @@ test('a session carries a user through to the organization map', async ({ page }
   await expect(page.getByTestId('shell')).toHaveAttribute('data-degraded', 'true');
   await expect(page.getByTestId('global-freshness')).toContainText('as of 2026-08-27 04:00');
 
+  // A count first, then the cause one click behind it. The list used to render in full and
+  // was fifteen lines above the fold on a real estate, which is the honesty machinery working
+  // and also the first thing a reader saw instead of their own data.
+  //
+  // Both halves are asserted, which is stronger than the single assertion this replaced: the
+  // number has to be visible without opening anything, and opening it has to name the cause.
+  // Collapsing the list would otherwise be indistinguishable from dropping it.
+  const failures = page.getByTestId('shell-failures-count');
+  // Singular here, because this fixture has exactly one. The plural branch is covered in
+  // the shell's own tests; asserting the shared half keeps this journey about the arc.
+  await expect(failures).toContainText('1 collection is failing');
+  await expect(failures).toContainText('AccessDenied');
+  await expect(page.getByText('ACCESS DENIED').first()).toBeHidden();
+
+  await failures.click();
   // Which collector is failing, rather than a generic error.
   await expect(page.getByText('ACCESS DENIED').first()).toBeVisible();
 
@@ -208,7 +223,9 @@ test('the organization map stays usable at three hundred accounts', async ({ pag
   expect(elapsed).toBeLessThan(10_000);
 });
 
-test('an unbuilt screen is listed, reachable, and names what will fill it', async ({ page }) => {
+test('an unbuilt screen is listed, reachable, and names what will fill it', async ({
+  page,
+}) => {
   // Hiding an unbuilt screen would make the product look smaller than it is and
   // would hide the roadmap. ADR-0020.
   //
@@ -255,7 +272,9 @@ test('an unbuilt screen is listed, reachable, and names what will fill it', asyn
   await expect(page.getByTestId('not-built')).toHaveCount(0);
 });
 
-test('a violating dashboard is found, attributed, and its control is legible', async ({ page }) => {
+test('a violating dashboard is found, attributed, and its control is legible', async ({
+  page,
+}) => {
   // The P2 arc that exists today. The findings screen went live with
   // TASK-P2-021, so it no longer carries the fixture band: enforcement is the
   // screen that still does, and this journey checks both ends of that.
@@ -365,7 +384,9 @@ test('a violating dashboard is found, attributed, and its control is legible', a
   // Through to the working, which must reconcile to the figure above it.
   await page.getByRole('link', { name: /Error rate by service/ }).click();
   await expect(page).toHaveURL(/\/governance\/queries\/11111111/);
-  await expect(page.getByTestId('finding-working')).toContainText('1,036,800 GiB scanned per month');
+  await expect(page.getByTestId('finding-working')).toContainText(
+    '1,036,800 GiB scanned per month',
+  );
   await expect(page.getByText('~ $5,184.00', { exact: false })).toBeVisible();
 
   // TASK-P2-019 and the two remediation routes. The control is present because
@@ -448,9 +469,9 @@ test('a violating dashboard is found, attributed, and its control is legible', a
   await page.goto('/governance/enforcement');
   const throttle = page.getByRole('row').filter({ hasText: 'grafana-datasource' });
   await expect(throttle).toContainText('UTC');
-  await expect(
-    page.getByRole('row').filter({ hasText: 'reporting' }),
-  ).toContainText('does not expire');
+  await expect(page.getByRole('row').filter({ hasText: 'reporting' })).toContainText(
+    'does not expire',
+  );
   await throttle.getByRole('button', { name: /revoke/i }).click();
   await expect(page.getByTestId('revoke-note')).toContainText('not connected yet');
 });

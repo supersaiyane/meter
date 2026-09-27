@@ -159,7 +159,6 @@ export function AppShell({ children, now }: AppShellProps) {
             ),
           )}
         </nav>
-
       </header>
 
       {/* One band, full width, above everything. Section 8 of
@@ -189,26 +188,52 @@ export function AppShell({ children, now }: AppShellProps) {
         )}
 
         {meta.degraded && meta.failures.length > 0 ? (
-          // Which collector is failing, rather than a generic error toast.
+          // A count, then the list behind a disclosure. It used to render every failure
+          // verbatim, and on a real estate that is fifteen lines above the fold on every
+          // screen: the honesty machinery working, and also the first thing a reader sees
+          // instead of their own data.
+          //
+          // Collapsed rather than dropped. The rule this product runs on is that a failure is
+          // never hidden and never rendered as a zero, and a count plus one click breaks
+          // neither: the number is always visible, the causes are named in the summary, and
+          // nothing has to be fetched to open it. A toast would have broken both, because a
+          // toast leaves.
           <section data-testid="shell-failures" aria-label="Problems affecting this view">
-            <ul>
-              {meta.failures.map((failure) => (
-                <li key={`${failure.scope_key}|${failure.collector}|${failure.cause}`}>
-                  {KNOWN_CAUSES.has(failure.cause) ? (
-                    <TypedError
-                      cause={failure.cause as Exclude<Cause, 'NoData'>}
-                      remediation={`${failure.collector} on ${failure.scope_key}. ${failure.remediation}`}
-                    />
-                  ) : (
-                    // A cause the frontend does not know is still shown. Hiding
-                    // it because the vocabulary drifted would hide the drift.
-                    <span className="meter-failure">
-                      {failure.cause} on {failure.scope_key}. {failure.remediation}
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <details>
+              <summary data-testid="shell-failures-count">
+                <span className="meter-failure">
+                  {meta.failures.length === 1
+                    ? '1 collection is failing'
+                    : `${String(meta.failures.length)} collections are failing`}
+                </span>{' '}
+                <span>
+                  {/* The causes, not the instances. Six AccessDenied rows across six accounts
+                      are one thing to fix, and naming the cause is what tells a reader whether
+                      it is theirs to fix before they open anything. */}
+                  {[...new Set(meta.failures.map((failure) => failure.cause))]
+                    .sort()
+                    .join(', ')}
+                </span>
+              </summary>
+              <ul>
+                {meta.failures.map((failure) => (
+                  <li key={`${failure.scope_key}|${failure.collector}|${failure.cause}`}>
+                    {KNOWN_CAUSES.has(failure.cause) ? (
+                      <TypedError
+                        cause={failure.cause as Exclude<Cause, 'NoData'>}
+                        remediation={`${failure.collector} on ${failure.scope_key}. ${failure.remediation}`}
+                      />
+                    ) : (
+                      // A cause the frontend does not know is still shown. Hiding it because
+                      // the vocabulary drifted would hide the drift.
+                      <span className="meter-failure">
+                        {failure.cause} on {failure.scope_key}. {failure.remediation}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </details>
           </section>
         ) : null}
       </div>
