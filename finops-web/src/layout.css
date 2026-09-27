@@ -77,8 +77,9 @@ body {
 [data-testid='shell'] > header {
   grid-area: nav;
   grid-row: 1 / 3;
-  background: var(--surface-raised);
-  border-right: 1px solid var(--border);
+  background: var(--nav-surface);
+  border-right: 1px solid var(--nav-line);
+  color: var(--nav-text);
   padding: var(--space-4) 0;
   font-size: var(--font-size-2);
   overflow-y: auto;
@@ -104,23 +105,24 @@ body {
   width: calc(100% - var(--space-4) * 2);
   margin: 0 var(--space-4) var(--space-3);
   padding: var(--space-1) var(--space-2);
-  background: var(--surface-raised-2);
-  border: 1px solid var(--border);
+  background: var(--nav-surface-2);
+  border: 1px solid var(--nav-line);
   border-radius: var(--radius);
-  color: var(--text-muted);
+  color: var(--nav-text-faint);
   font-family: var(--font-ui);
   font-size: var(--font-size-1);
   cursor: pointer;
 }
 
 [data-testid='nav-toggle']:hover {
-  color: var(--text);
-  border-color: var(--border-strong);
+  color: var(--nav-text-strong);
+  border-color: var(--nav-accent);
 }
 
 /* The mark is drawn, not an image: one gradient, no request, and it survives a
    theme switch because both stops are fixed hues rather than tokens. */
 [data-testid='shell'] > header [data-testid='brand'] {
+  color: var(--nav-text-strong);
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -164,7 +166,7 @@ nav[aria-label='Sections'] summary {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.11em;
-  color: var(--text-faint);
+  color: var(--nav-text-faint);
   margin: var(--space-4) 0 var(--space-1);
   padding: var(--space-1) var(--space-4);
   cursor: pointer;
@@ -172,7 +174,7 @@ nav[aria-label='Sections'] summary {
 }
 
 nav[aria-label='Sections'] summary:hover {
-  color: var(--text-muted);
+  color: var(--nav-text);
 }
 
 nav[aria-label='Sections'] > [data-testid='nav-self-link'] {
@@ -194,20 +196,20 @@ nav[aria-label='Sections'] a {
   gap: var(--space-2);
   padding: var(--space-1) var(--space-4);
   border-left: 2px solid transparent;
-  color: var(--text-muted);
+  color: var(--nav-text);
   text-decoration: none;
   font-size: 13.5px;
 }
 
 nav[aria-label='Sections'] a:hover {
-  color: var(--text);
-  background: var(--surface-raised-2);
+  color: var(--nav-text-strong);
+  background: var(--nav-surface-2);
 }
 
 nav[aria-label='Sections'] a[aria-current='page'] {
-  background: var(--accent-quiet);
-  border-left-color: var(--accent);
-  color: var(--text);
+  background: var(--nav-active);
+  border-left-color: var(--nav-accent);
+  color: var(--nav-text-strong);
   font-weight: 500;
 }
 
@@ -215,12 +217,12 @@ nav[aria-label='Sections'] a[aria-current='page'] {
    would make the product look smaller than it is. */
 .meter-arrives {
   display: block;
-  color: var(--text-faint);
+  color: var(--nav-text-faint);
   font-size: var(--font-size-1);
 }
 
 nav[aria-label='Sections'] a[data-arrives] {
-  color: var(--text-faint);
+  color: var(--nav-text-faint);
 }
 
 /* ------------------------------------------------------------ trust strip */
@@ -1369,4 +1371,33 @@ main > section > [role='group'] {
 [data-testid='home-tile'] [data-testid='state'][data-state='degraded'],
 [data-testid='home-tile'] [data-testid='state'][data-state='partial'] {
   border-left: 0;
+}
+
+/* ---------------------------------------------------------------- charts */
+
+[data-testid='bar-chart'] {
+  margin: var(--space-3) 0 0;
+}
+
+[data-testid='bar-chart'] svg {
+  display: block;
+  width: 100%;
+  color: var(--chart-bar);
+}
+
+/* The axis is three facts on one line: where the series starts, what its peak
+   was, and where it ends. A full axis on twenty six days is twenty six labels
+   nobody reads. */
+[data-testid='bar-chart-axis'] {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-family: var(--font-numeral);
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+[data-testid='bar-chart-peak'] {
+  color: var(--text-muted);
 }

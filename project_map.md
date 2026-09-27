@@ -388,6 +388,14 @@ meter/
 │   │                          finally. v1 writes nothing, constraint 6
 ├── finops-web/                IN BUILD  Vite, React and TypeScript
 │   ├── README.md              why the versions are pinned where they are
+│   ├── components/BarChart.tsx  the days, drawn. Hand rolled SVG like Sparkline,
+│   │                          so no charting dependency needs admitting and
+│   │                          nothing animates a bar up from zero, which is a
+│   │                          number lying for four hundred milliseconds. Not a
+│   │                          sparkline: that one refuses to be read off and this
+│   │                          one has a scale and a labelled peak. Bars start at
+│   │                          zero, because a non zero baseline makes a normal
+│   │                          week look like a crisis
 │   ├── src/tokens.css         the palette, and the only file that decides what a
 │   │                          colour means. Three surface depths because a card
 │   │                          needs to differ from the page without a shadow,
