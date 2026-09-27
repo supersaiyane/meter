@@ -3058,6 +3058,47 @@ issues:
     accounts, so the number is not presented as something it is not. The resource count is
     unaffected, since a resource is in exactly one region. FIXED on 2026-09-27, and by neither of the two routes above: the grouped read returns the account identifiers rather than a count of them, and the route unions them per geography and counts once. That needs no second read and no second implementation of the prefix rule, which was the objection to both original options. The figure is a distinct count now and the screen says accounts, because it is. A route test builds an estate where an account spans two regions of one continent and asserts the figure is two rather than three'
 
+- id: ISS-215
+  severity: MEDIUM
+  status: OPEN
+  summary: A misconfiguration reaches the screen as SchemaDrift, which names the wrong remedy. A
+    wrong aggregator name or a state file path that does not exist tells an operator their schema
+    has drifted, when the fix is one setting
+  detail: 'Found on 2026-09-28 by comparing the error codes each operation declares in the
+    botocore service model against the three sets translate maps, rather than by hitting one.
+    Nothing is hidden: an unmapped code becomes SchemaDrift, which is loud and is deliberately
+    never NoData, because an unknown failure rendered as a zero is the defect the whole taxonomy
+    exists to prevent. The problem is the word rather than the visibility. Eleven declared codes
+    fall through across four operations and most of them are configuration rather than drift:
+    NoSuchConfigurationAggregatorException is an aggregator name that does not exist, NoSuchKey is
+    a state file path that does not exist, NotFoundException is an account with no budgets, and
+    InvalidNextTokenException and ExpiredNextTokenException are a page token that expired part way
+    through a long read, which is a retry and not a fault at all. Two ways to close it and the
+    choice is the owner s. A seventh cause, which is an ADR because it changes the check
+    constraint in 0014, every screen that renders a cause and the six way taxonomy those screens
+    were designed around. Or a per adapter remediation string on the existing SchemaDrift, which
+    changes nothing structural and gives an operator the right sentence, at the cost of the cause
+    itself still reading as drift in every count and filter. Pinned meanwhile by
+    tests/providers/aws/test_response_shapes.py, which asserts the fall through set exactly, so a
+    code a future SDK adds is a failure rather than a silent join'
+- id: ISS-216
+  severity: LOW
+  status: OPEN
+  summary: The four adapters that have never made a real call now have their field names, their
+    pagination tokens and their required request parameters verified against the botocore service
+    model, and that is the whole of what can be checked without an account
+  detail: 'Recorded on 2026-09-28 to say precisely what ISS-200, ISS-202, ISS-209 and ISS-211
+    still mean, because the verification that was added is easy to mistake for closing them. What
+    is now checked is names: every response field each adapter reads exists in the model boto3
+    builds its clients from, every continuation token is the one the service pages on, and every
+    required request parameter is sent. All of it passed on the first run, so no name was wrong,
+    and the checks are falsifiable, which was confirmed by claiming a field S3 does not have and
+    watching the assertion name it. What is not checked, and what keeps the four issues open, is
+    everything a shape cannot express: whether a field is populated in practice, whether an empty
+    list means none or means not permitted, how throttling actually arrives under load, and
+    whether the semantics match what each adapter assumes about them. Those need a real account,
+    which is ISS-002 and has been waiting since 2026-08-23'
+
 open_questions:
 - id: OPEN-07
   question: What does the cost screen show for a tenant whose first ingest has not run, an

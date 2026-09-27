@@ -31,8 +31,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 7 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 21 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 17 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 116 | test_*.py under tests/ |
-| Test functions | 1597 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 117 | test_*.py under tests/ |
+| Test functions | 1601 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -825,6 +825,16 @@ meter/
 │                              and counts the budgets whose scope it cannot reproduce
 │                              on sync_error rather than dropping them
 │   └── metrics.py             only SLO 1 needs a custom metric. The other three are AWS's
+│   └── tests/providers/aws/test_response_shapes.py  not a module, but the one
+│                              place that says what the four unproven adapters
+│                              depend on. Every response field they read, every
+│                              pagination token and every required request
+│                              parameter, checked against the botocore service
+│                              model boto3 builds its clients from. It makes no
+│                              call and closes nothing: it removes the part of
+│                              ISS-200, ISS-202, ISS-209 and ISS-211 that is about
+│                              names. It also pins which declared errors fall
+│                              through to SchemaDrift, which is ISS-215
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
 │   ├── flags.py               flag resolution, tenant then environment then declared
 │   ├── main.py                app factory. Refuses to start on a bare route
