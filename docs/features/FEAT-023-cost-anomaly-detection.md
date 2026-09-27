@@ -89,6 +89,19 @@ total, and the whole verdict sentence. The sentence is never shortened: a verdic
 a reader cannot argue with is one they have to take on trust, and nobody takes a
 cost alert on trust twice.
 
+A chart was added above the table on 2026-09-27, and this is the screen in the product where a
+picture explains the most, because the finding is a comparison between two numbers that the table
+puts in two adjacent columns for the reader to subtract. The bar is what the day cost, the tick is
+what that day usually costs, and how far past the tick the bar runs is the anomaly.
+
+Scaled to the largest observed day and never to a total, with no share printed. The days belong to
+different accounts and services, so adding them up produces a figure that is not the estate's
+spend and is not anything else either.
+
+The tick is drawn on the same divisor as the bar. A bar scaled by the peak and a tick scaled by
+the total would put the mark in a position that means nothing, and it would look entirely
+plausible, so the arithmetic is tested at its source rather than through the rendering.
+
 ## Not doing
 
 AWS Cost Anomaly Detection findings are not ingested. Our own detection is

@@ -116,6 +116,43 @@ describe('rankedRows on the largest basis', () => {
   });
 });
 
+describe('rankedRows with a reference marker', () => {
+  it('puts the marker on the same divisor as the bar', () => {
+    // The failure this guards. A bar divided by the peak and a marker divided by the total
+    // would draw a tick in a position that means nothing, and it would look plausible: the
+    // tick is somewhere on the track and the bar is the right length.
+    const rows = rankedRows(
+      [{ label: 'a day', value: 300, marker: 100 }],
+      8,
+      'rest',
+      'largest',
+    );
+    expect(rows[0]?.share).toBe(1);
+    // 100 against the peak of 300, so a third of the way along, not 100 of nothing.
+    expect(rows[0]?.markerShare).toBeCloseTo(1 / 3);
+  });
+
+  it('puts it on the total when the basis is the total', () => {
+    const rows = rankedRows(
+      [
+        { label: 'a', value: 50, marker: 25 },
+        { label: 'b', value: 50 },
+      ],
+      8,
+      'rest',
+    );
+    expect(rows[0]?.share).toBeCloseTo(0.5);
+    expect(rows[0]?.markerShare).toBeCloseTo(0.25);
+  });
+
+  it('leaves the marker undefined where a row has none', () => {
+    // Undefined and not zero. A marker at zero draws a tick at the left edge, which reads as
+    // a baseline of nothing rather than as no baseline at all.
+    const rows = rankedRows([{ label: 'a', value: 5 }], 8, 'rest');
+    expect(rows[0]?.markerShare).toBeUndefined();
+  });
+});
+
 describe('RankedBars', () => {
   it('writes every value as text, so the bars are never the only carrier', () => {
     // The bars are aria-hidden decoration. That is only honest if the number is written down.

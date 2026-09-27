@@ -416,3 +416,28 @@ named, five of them from months earlier, and a count alone would have passed all
 **Triggers:** any edit to `project_map.md`, any task that adds a screen, a route, a
 journey, a migration or a collector, the instruction "do the projectmap", and any
 sentence in a document containing a numeral that was not computed in front of me.
+
+## 2026-09-27: a derived count written from memory
+**Mistake:** Wrote "chart coverage is 10 of 25 screens" in a checkpoint row, having
+counted earlier in the session and then reasoned forward about it. It was 11. Then,
+in the row that recorded fixing that, wrote 13 for the same figure. It was 12. Twice
+in one session, the second time inside the correction itself.
+**Correction:** Found by running the count rather than by being told, which is the
+only reason it was found at all. A wrong number in a checkpoint is exactly the
+failure the project's writing rules exist to prevent, and nothing in the toolchain
+checks prose figures.
+**Rule:** A number that is derived from the repository is computed in the same
+command that writes it down. Never state a count in a document from memory, from
+arithmetic on an earlier count, or from a number seen earlier in the session. If
+the figure cannot be computed in the command that writes it, it does not go in the
+document.
+**Triggers:** Writing a checkpoint row, a status paragraph, a feature document or a
+commit message that contains a count of files, screens, tests, tasks or issues.
+Phrases like "N of M", "up from", "now at".
+
+**Related:** the 2026-09-27 lesson above, about counts in `project_map.md` going
+stale for three sweeps running, is the same failure in a place where it could be
+automated, and `scripts/docs/check_map_counts.py` now covers those seven figures.
+This one is the version that cannot be: a count in a sentence in a checkpoint row
+has no schema, so the only defence is computing it in the command that writes it.
+That is why the rule above is about the command and not about being careful.

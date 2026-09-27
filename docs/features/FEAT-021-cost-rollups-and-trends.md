@@ -50,6 +50,21 @@ read writes an `audit_event` in the same transaction.
 `GET /cost/summary`, `/cost/by-service`, `/cost/by-account`, `/cost/trend`. All
 return the meta envelope, and the summary says whether the period is still open.
 
+Two charts were added to `/cost` on 2026-09-27, and one of them replaced an instrument that was
+wrong for the screen. The trend was a sparkline, and a sparkline by its own definition answers
+whether something is going up and refuses to be read off. This is the screen somebody opens in
+order to read the trend off it, so it draws the bar chart instead, which has a scale and a
+labelled peak. The sparkline is still right where it was chosen for that property, on the platform
+screen's per module rows.
+
+The service breakdown is now a ranked bar above the table. This is the most opened screen in the
+product and its breakdown was a column of numbers: which services the spend is on is a comparison,
+and a comparison read off a column is arithmetic a reader should not have to do. Share of the
+period's total, so the first few bars add up by eye to most of the bill.
+
+The chart and the table are the same rows and are held to the same order by a test. A reader who
+catches those two disagreeing about which service is largest stops trusting both.
+
 ## Not doing
 
 Per resource attribution has a column and no screen. The rows are stored and who
