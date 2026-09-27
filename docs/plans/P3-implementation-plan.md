@@ -623,7 +623,7 @@ realized saving.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started, blocked on P4 |
+| Status | Done, 2026-09-27 |
 | Implements | P3 spec section 12, FEAT-044 |
 | Delivers | FEAT-044 |
 | Depends on | TASK-P3-019, **P4 delivered** |

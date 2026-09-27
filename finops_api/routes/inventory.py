@@ -38,6 +38,8 @@ from finops_api.deps import (
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.routes.waste import recommendation_out
 from finops_api.schemas import (
+    BlastPartOut,
+    BlastRadiusOut,
     CoverageOutList,
     EdgeOut,
     EntityOut,
@@ -53,12 +55,14 @@ from finops_api.schemas import (
 from finops_core.config import Settings
 from finops_core.domain.tenant import Scope
 from finops_core.domain.topology import CoverageState, Edge, GraphCoverage, Node
+from finops_query.blast_radius import assess
 from finops_query.graph import (
     DEFAULT_MAX_DEPTH,
     DEFAULT_MAX_NODES,
     MAX_ALLOWED_DEPTH,
     MAX_ALLOWED_NODES,
     Bounds,
+    IncompleteGraphError,
     Subgraph,
 )
 
@@ -244,6 +248,96 @@ def roots(
         rows=rows,
     )
     return Envelope(data=found, meta=meta)
+
+
+@router.get("/inventory/nodes/{node_id}/blast-radius", response_model=Envelope[BlastRadiusOut])
+def blast_radius(
+    node_id: UUID,
+    connection: Connection = Depends(get_connection),
+    settings: Settings = Depends(get_settings),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[BlastRadiusOut]:
+    """What a change to this resource can reach, or why we will not say.
+
+    FEAT-044, TASK-P3-020, P3 specification section 12. The gate, built before the thing it
+    gates: constraint 6 means nothing here applies anything, and a scorer written after an
+    applier is a scorer written under pressure to approve.
+
+    **A refusal is a 200 with a reason, not an error.** The graph having a hole in it is a fact
+    about the estate rather than a fault in the request, and a status code would make the screen
+    render a failure. So both halves travel on one payload and exactly one is populated.
+
+    **Its own route rather than a field on the entity page.** That page walks one hop and this
+    walks four, so folding it in would make every visit to a resource pay for a traversal most
+    visits do not need, and a refusal here would have to be explained as part of a payload that
+    otherwise succeeded.
+    """
+    repository = TopologyRepository(connection, context)
+    node = repository.one(scope, node_id)
+    if node is None:
+        raise HTTPException(status_code=404, detail=NO_SUCH_NODE)
+
+    bounds = Bounds(max_depth=settings.blast_radius_depth)
+    graph = repository.subgraph(scope, root_id=node_id, bounds=bounds)
+    try:
+        found = assess(
+            graph,
+            target=node,
+            wide_at=settings.blast_radius_wide_at,
+            max_depth=bounds.max_depth,
+        )
+    except IncompleteGraphError as refused:
+        # Not caught to hide it. Caught so the slices reach the screen as words, which is the
+        # difference between a refusal somebody can act on and one they can only be annoyed by.
+        answer = BlastRadiusOut(
+            band=None,
+            parts=(),
+            reach=None,
+            accounts=None,
+            boundary_edges=None,
+            depth_bound_reached=False,
+            is_lower_bound=True,
+            refused_because=tuple(
+                f"{entry.account_key.account_id} in {entry.region_id or 'the global slice'} is "
+                f"{entry.state.value}"
+                + (f" because of {entry.cause.value}" if entry.cause is not None else "")
+                for entry in refused.subgraph.incomplete_slices
+            )
+            or (
+                f"the walk was cut short by the {bounds.max_nodes} node cap, so at least "
+                f"{refused.subgraph.omitted_nodes} resources were never looked at",
+            ),
+            max_depth=bounds.max_depth,
+        )
+    else:
+        answer = BlastRadiusOut(
+            band=found.band.value,
+            parts=tuple(
+                BlastPartOut(name=part.name, count=part.count, why=part.why) for part in found.parts
+            ),
+            reach=found.reach,
+            accounts=found.accounts,
+            boundary_edges=found.boundary_edges,
+            depth_bound_reached=found.depth_bound_reached,
+            is_lower_bound=found.is_lower_bound,
+            refused_because=(),
+            max_depth=bounds.max_depth,
+        )
+
+    visible, total = _slice_coverage(graph)
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        visible=visible,
+        rows=graph.nodes,
+        # Slices, like every other P4 surface. The coverage is also the reason a refusal
+        # happened, so a screen that reads the strip already knows why before it reads the body.
+        coverage=(visible, total),
+        coverage_unit="slices",
+    )
+    return Envelope(data=answer, meta=meta)
 
 
 @router.get("/inventory/resources", response_model=Envelope[ResourceListOut])

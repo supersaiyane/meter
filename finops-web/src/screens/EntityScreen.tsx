@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router';
 
-import { useEntity } from '../api/queries';
+import { useBlastRadius, useEntity } from '../api/queries';
 import { Figure } from '../components/Figure';
 import { FixtureBand } from '../components/FixtureBand';
 import { SeverityBadge } from '../components/SeverityBadge';
@@ -65,9 +65,11 @@ function relationOf(
 export function EntityScreen() {
   const { nodeId = '' } = useParams();
   const query = useEntity(nodeId === '' ? null : nodeId);
+  const blast = useBlastRadius(nodeId === '' ? null : nodeId);
   const envelope = query.data?.data;
   const entity: ApiEntity | null = envelope?.data ?? null;
   useReportMeta('inventory-entity', envelope?.meta);
+  const radius = blast.data?.data.data ?? null;
 
   const settled = !query.isPending && !query.isError && envelope !== undefined;
   if (settled && entity === null) {
@@ -262,6 +264,69 @@ export function EntityScreen() {
                     'that belong here.'}
               </p>
             ) : null}
+
+            {/* FEAT-044. The gate, not the thing it gates: nothing here applies anything,
+                constraint 6. Its own request, because this walks four hops and the neighbour
+                list above walks one. */}
+            <h3>What a change here can reach</h3>
+            {radius === null ? (
+              <p data-testid="blast-loading">Working out what this is connected to.</p>
+            ) : !radius.band ? (
+              // Truthiness rather than a null check, so a body arriving without a band
+              // renders the refusal instead of reaching `parts.map` on nothing. A stubbed
+              // route in the journey did exactly that and crashed the page.
+              // A refusal is an answer, so it is rendered as one rather than as an error. The
+              // slices are named because "the graph is incomplete" sends nobody anywhere, and
+              // the reason we refuse at all is that a low score over a graph missing a region
+              // reads as "this change is safe".
+              <div data-testid="blast-refused" className="meter-stale">
+                <p>
+                  No score. Part of the graph this answer would rest on was not read, and a
+                  radius computed from it would look more contained than it is.
+                </p>
+                <ul>
+                  {radius.refused_because.map((one) => (
+                    <li key={one}>{one}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <div data-testid="blast-radius">
+                <p>
+                  <strong data-testid="blast-band">{radius.band}</strong>
+                </p>
+                <table>
+                  <caption>
+                    {/* Not optional, and not a footnote. An infrastructure graph cannot see
+                        that one service reads another's queue, or that a report somebody runs
+                        every Monday is built on this table, so every figure below is a floor. */}
+                    At least this wide. An infrastructure graph holds what a resource is
+                    attached to and not what reads it, so application level dependencies are
+                    invisible here and the real radius can only be larger.
+                    {radius.depth_bound_reached
+                      ? ` The walk also stopped at its ${String(radius.max_depth)} hop bound,
+                         so anything beyond that was never looked at.`
+                      : ''}
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Counted</th>
+                      <th scope="col">How many</th>
+                      <th scope="col">What it means</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {radius.parts.map((part) => (
+                      <tr key={part.name}>
+                        <th scope="row">{part.name}</th>
+                        <td>{part.count}</td>
+                        <td>{part.why}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
             <h3>What it is attached to</h3>
             {entity.neighbours.length === 0 ? (

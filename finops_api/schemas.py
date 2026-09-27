@@ -920,6 +920,48 @@ class InventoryRootsOut(BaseModel):
     roots: tuple[InventoryRootOut, ...]
 
 
+class BlastPartOut(BaseModel):
+    """One thing counted, and what it means. FEAT-044."""
+
+    model_config = ConfigDict(frozen=True)
+
+    name: str
+    count: int
+    why: str
+
+
+class BlastRadiusOut(BaseModel):
+    """What a change to one resource can reach, or why we will not say. FEAT-044.
+
+    **Both halves are on one payload and exactly one of them is populated.** A refusal is an
+    answer here, not an error, so it travels as a field rather than as a status code: a 409 or a
+    500 would make the screen render a failure, and the graph having a hole in it is a fact
+    about the estate rather than a fault in the request.
+
+    `refused_because` names the slices when it is set. "The graph is incomplete" sends nobody
+    anywhere, and the whole reason this refuses at all is that a low score over a graph missing
+    a region reads as "this change is safe".
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    #: CONTAINED, WIDE or CROSS_ACCOUNT. Null when refused.
+    band: str | None
+    parts: tuple[BlastPartOut, ...]
+    reach: int | None
+    accounts: int | None
+    boundary_edges: int | None
+    #: True where the walk reached its depth bound, so `reach` is a floor for that reason too.
+    depth_bound_reached: bool
+    #: Always true when a band is given. An infrastructure graph cannot see that one service
+    #: reads another's queue, so every radius is at least this wide and possibly wider.
+    is_lower_bound: bool
+    #: The slices that stopped us, by name and state. Empty when a band is given.
+    refused_because: tuple[str, ...]
+    #: How far the walk was allowed, so a reader can tell a bounded answer from a finished one.
+    max_depth: int
+
+
 class ResourceFiltersOut(BaseModel):
     """The filter values that occur in this scope, read from the data rather than listed.
 

@@ -322,7 +322,7 @@ features:
 - id: FEAT-044
   name: Blast radius scoring from the dependency graph, gating auto apply
   subproject: P3
-  status: Specified
+  status: Delivered
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 12, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-044-blast-radius-scoring.md
 - id: FEAT-045

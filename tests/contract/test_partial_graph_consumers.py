@@ -52,6 +52,7 @@ from finops_core.domain.topology import (
     NodeKind,
     node_id_for,
 )
+from finops_query import blast_radius
 from finops_query.graph import Bounds, IncompleteGraphError, Subgraph, assemble
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -121,6 +122,20 @@ CONSUMERS: tuple[Consumer, ...] = (
         module="finops_api.routes.inventory",
         refuses=False,
         answer=_rendered_route,
+    ),
+    Consumer(
+        module="finops_query.blast_radius",
+        # Refuses, and it is the reason the whole contract exists. A low radius over a graph
+        # missing a region reads as "this change is safe", which is a claim the product would be
+        # making on its own initiative about somebody's production estate, and nobody checks the
+        # answer that agrees with them.
+        refuses=True,
+        answer=lambda graph: blast_radius.assess(
+            graph,
+            target=graph.nodes[0],
+            wide_at=10,
+            max_depth=4,
+        ),
     ),
     Consumer(
         module="finops_api.db.repositories.topology",

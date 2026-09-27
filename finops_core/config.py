@@ -141,6 +141,15 @@ class Settings(BaseSettings):
     #: reported as unmanaged, confidently and wrongly.
     iac_exhaustive_accounts: str = ""
 
+    # Blast radius, FEAT-044. How many reachable resources count as wide. A number in code
+    # deciding what is wide is a number nobody can argue with, which is ADR-0012's argument
+    # about cadence applied to a judgement rather than to an interval.
+    blast_radius_wide_at: int = Field(ge=1)
+    #: How far the walk goes. Separate from max_graph_nodes, which is the cap on what fits: a
+    #: radius that stopped at two hops is a different claim from one the cap cut short, and
+    #: only the second is a refusal.
+    blast_radius_depth: int = Field(ge=1, le=10)
+
     # Topology
     max_graph_nodes: int = Field(ge=1)
 

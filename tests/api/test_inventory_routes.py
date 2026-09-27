@@ -845,3 +845,157 @@ def test_a_narrowed_reader_reads_no_address_for_another_account(
     # The node itself is out of scope, so the answer is the 404 it already gives, which is the
     # right disclosure: the address cannot leak because the resource cannot be reached.
     assert client.get(entity_path(tenant_id), headers=auth(token)).status_code == 404
+
+
+# --- FEAT-044, blast radius ---------------------------------------------------
+
+BLAST = "/api/v1/inventory/nodes/{}/blast-radius"
+
+
+def blast_of(engine: Engine, tenant: UUID, settings: Settings, name: str = "vpc") -> dict[str, Any]:
+    client, token = client_for(engine, everything(tenant), settings)
+    node = identifier(tenant, MINE, REGION, name)
+    body = get(client, token, BLAST.format(node))
+    assert isinstance(body, dict)
+    return body
+
+
+def test_a_refused_slice_gives_a_reason_rather_than_a_score(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The criterion this task exists for, at the route.
+
+    The slice marked PARTIAL here is the one holding the far end of the cross account edge, and
+    that is deliberate: the estate's own refused region holds nothing and the walk never enters
+    it, so the walk is genuinely whole and is scored. Refusing because some unrelated region was
+    unread would make every score in the product unavailable forever, which is not the trade the
+    specification asks for. The refusal is about the slices the answer actually rests on.
+    """
+    seed(engine, tenant_id)
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "UPDATE graph_coverage SET state = 'PARTIAL', cause = 'AccessDenied' "
+                "WHERE tenant_id = :t AND sub_account_id = :a"
+            ),
+            {"t": tenant_id, "a": THEIRS},
+        )
+    body = blast_of(engine, tenant_id, settings)
+    found = body["data"]
+    assert found["band"] is None
+    assert found["reach"] is None
+    assert found["refused_because"], "a refusal with no reason sends nobody anywhere"
+    assert any("PARTIAL" in one or "UNREAD" in one for one in found["refused_because"])
+
+
+def test_a_refusal_is_a_two_hundred_rather_than_an_error(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The graph having a hole in it is a fact about the estate, not a fault in the request. A
+    status code would make the screen render a failure, and a reader would go looking for a
+    broken service instead of for a permission."""
+    seed(engine, tenant_id)
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "UPDATE graph_coverage SET state = 'PARTIAL', cause = 'AccessDenied' "
+                "WHERE tenant_id = :t AND sub_account_id = :a"
+            ),
+            {"t": tenant_id, "a": THEIRS},
+        )
+    client, token = client_for(engine, everything(tenant_id), settings)
+    node = identifier(tenant_id, MINE, REGION, "vpc")
+    assert client.get(BLAST.format(node), headers=auth(token)).status_code == 200
+
+
+def test_a_whole_graph_is_scored_with_its_parts_published(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """With every slice COMPLETE the walk can be scored. The band is what a reader scans and the
+    parts are what they argue with, so a band arriving without them would be a judgement nobody
+    could check."""
+    seed(engine, tenant_id)
+    with engine.begin() as connection:
+        connection.execute(
+            text("UPDATE graph_coverage SET state = 'COMPLETE', cause = NULL WHERE tenant_id = :t"),
+            {"t": tenant_id},
+        )
+    found = blast_of(engine, tenant_id, settings)["data"]
+    assert found["band"] is not None
+    assert len(found["parts"]) == 3
+    for part in found["parts"]:
+        assert len(part["why"]) > 40
+    assert found["refused_because"] == []
+
+
+def test_the_cross_account_edge_makes_the_band_cross_account(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The seeded estate's VPC peers with a VPC in another account. One reachable resource would
+    be CONTAINED on the count alone, and a change reaching somebody else's account is a
+    different kind of fact rather than a wider version of the same one."""
+    seed(engine, tenant_id)
+    with engine.begin() as connection:
+        connection.execute(
+            text("UPDATE graph_coverage SET state = 'COMPLETE', cause = NULL WHERE tenant_id = :t"),
+            {"t": tenant_id},
+        )
+    found = blast_of(engine, tenant_id, settings)["data"]
+    assert found["band"] == "CROSS_ACCOUNT"
+    assert found["accounts"] >= 2
+
+
+def test_every_answer_says_it_is_a_lower_bound(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """On the refusal as well as on the score. An infrastructure graph cannot see that one
+    service reads another's queue, and there is no estate in which that stops being true."""
+    seed(engine, tenant_id)
+    assert blast_of(engine, tenant_id, settings)["data"]["is_lower_bound"] is True
+
+
+def test_a_blast_radius_for_a_node_out_of_scope_is_a_404(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The same answer the entity page gives. Distinguishing it from a node that does not exist
+    would tell a narrowed reader that a resource exists in an account they were not granted."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, only(tenant_id, THEIRS), settings)
+    node = identifier(tenant_id, MINE, REGION, "vpc")
+    assert client.get(BLAST.format(node), headers=auth(token)).status_code == 404
+
+
+def test_the_coverage_travels_with_the_answer(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """In slices, like every other P4 surface. The coverage is also the reason a refusal
+    happened, so a screen reading the trust strip knows why before it reads the body."""
+    seed(engine, tenant_id)
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "UPDATE graph_coverage SET state = 'PARTIAL', cause = 'AccessDenied' "
+                "WHERE tenant_id = :t AND sub_account_id = :a"
+            ),
+            {"t": tenant_id, "a": THEIRS},
+        )
+    body = blast_of(engine, tenant_id, settings)
+    assert body["meta"]["scope_coverage"]["unit"] == "slices"
+    assert body["meta"]["degraded"] is True
+
+
+def test_an_unrelated_unread_region_does_not_suppress_the_score(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The first draft of the refusal case assumed otherwise and was wrong.
+
+    The estate's refused region holds nothing and the walk never enters it, so the answer does
+    not rest on it and is scored. Refusing on any incomplete slice anywhere would make every
+    score in the product unavailable forever on an estate with one unread region, which is not
+    the trade the specification asks for: it asks for a refusal where the graph the answer rests
+    on is not known to be complete.
+    """
+    seed(engine, tenant_id)
+    found = blast_of(engine, tenant_id, settings)["data"]
+    assert found["band"] is not None, "an unrelated refused region suppressed the score"
+    assert found["refused_because"] == []

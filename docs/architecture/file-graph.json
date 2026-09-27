@@ -433,6 +433,7 @@
     "finops_query/__init__.py",
     "finops_query/actions.py",
     "finops_query/anomaly.py",
+    "finops_query/blast_radius.py",
     "finops_query/classify.py",
     "finops_query/commitment.py",
     "finops_query/cost_model.py",
@@ -616,6 +617,7 @@
     "tests/query/conftest.py",
     "tests/query/test_actions.py",
     "tests/query/test_anomaly.py",
+    "tests/query/test_blast_radius.py",
     "tests/query/test_classify.py",
     "tests/query/test_commitment.py",
     "tests/query/test_cost_model.py",
@@ -4009,6 +4011,11 @@
     },
     {
       "s": "finops_api/routes/inventory.py",
+      "t": "finops_query/blast_radius.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/inventory.py",
       "t": "finops_query/graph.py",
       "k": "python"
     },
@@ -5528,6 +5535,16 @@
       "k": "python"
     },
     {
+      "s": "finops_query/blast_radius.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/blast_radius.py",
+      "t": "finops_query/graph.py",
+      "k": "python"
+    },
+    {
       "s": "finops_query/cost_model.py",
       "t": "finops_query/__init__.py",
       "k": "python"
@@ -6280,6 +6297,11 @@
     {
       "s": "tests/contract/test_partial_graph_consumers.py",
       "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_partial_graph_consumers.py",
+      "t": "finops_query/__init__.py",
       "k": "python"
     },
     {
@@ -7535,6 +7557,21 @@
     {
       "s": "tests/query/test_anomaly.py",
       "t": "finops_query/anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_blast_radius.py",
+      "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_blast_radius.py",
+      "t": "finops_query/blast_radius.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_blast_radius.py",
+      "t": "finops_query/graph.py",
       "k": "python"
     },
     {

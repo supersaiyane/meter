@@ -28,11 +28,11 @@ Update trigger: any new module, moved module, or changed responsibility.
 | --- | --- | --- |
 | Screens built | 20 of 24 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 15 in 4 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
-| Inventory routes | 5 | `@router.` in finops_api/routes/inventory.py |
+| Inventory routes | 6 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 20 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 16 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 111 | test_*.py under tests/ |
-| Test functions | 1527 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 112 | test_*.py under tests/ |
+| Test functions | 1547 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -766,6 +766,15 @@ meter/
 │                              expiry, a modelled row cannot claim a measured
 │                              count, and a change cannot exist without its undo
 ├── finops_query/              IN BUILD  P2 query cost governance, P3 waste, P4 graph
+│   ├── blast_radius.py        FEAT-044. What a change can reach, and the refusal that
+│   │                          is the feature: a score that is sometimes absent beats one
+│   │                          always present, because an absent score reads as we do not
+│   │                          know and a low one over a graph missing a region reads as
+│   │                          this change is safe. A band rather than a number, with the
+│   │                          parts published beside it, and CROSS_ACCOUNT is a different
+│   │                          kind of fact rather than a wider WIDE. Every answer is a
+│   │                          lower bound and the field says so, because an
+│   │                          infrastructure graph cannot see an application dependency
 │   ├── graph.py               the bounds, the node cap and the return type that
 │   │                          carries coverage. Pure: the recursive statement is
 │   │                          in the repository, because the guard's scoped_select

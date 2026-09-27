@@ -2,8 +2,8 @@ import { render, screen, within } from '@testing-library/react';
 import { Route, Routes } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
-import { entityFixture } from '../../api/fixtures/topology';
-import type { ApiEntity, ApiEnvelope } from '../../api/types';
+import { blastRadiusFixture, entityFixture } from '../../api/fixtures/topology';
+import type { ApiBlastRadius, ApiEntity, ApiEnvelope } from '../../api/types';
 import { violationsIn } from '../../components/__tests__/axe';
 import { EntityScreen } from '../EntityScreen';
 import { Harness } from './Harness';
@@ -25,12 +25,18 @@ const SUBNET = '4a9d2b3c-5e6f-4071-9b82-0c3d4e5f6071';
 function renderEntity(
   body: ApiEnvelope<ApiEntity> | null = entityFixture(NODE),
   nodeId: string = NODE,
+  blast?: ApiEnvelope<ApiBlastRadius>,
 ) {
   // A null body is what the API's 404 resolves to through the client, and it is the shape
   // the not found branch reads. `clientReturning` takes an envelope over unknown, so this
   // needs no cast: a cast here would be asserting something the stub already accepts.
   const answer: ApiEnvelope<unknown> = body ?? { data: null, meta: entityFixture(nodeId).meta };
-  const client = clientReturning({ [`/api/v1/inventory/nodes/${nodeId}`]: answer });
+  const client = clientReturning({
+    [`/api/v1/inventory/nodes/${nodeId}`]: answer,
+    // FEAT-044's own route. Refused by default, from the fixture, because a refusal is the half
+    // of that feature easiest to leave unexercised.
+    [`/api/v1/inventory/nodes/${nodeId}/blast-radius`]: blast ?? blastRadiusFixture(),
+  });
   return render(
     <Harness client={client} initialPath={`/inventory/resources/${nodeId}`}>
       <Routes>
@@ -228,6 +234,84 @@ describe('EntityScreen', () => {
       expect(unmanaged).toHaveTextContent(/declares this account fully described/);
       expect(unmanaged).toHaveTextContent(/a claim rather than an absence of one/);
       expect(screen.queryByTestId('entity-not-determined')).toBeNull();
+    });
+  });
+
+  describe('what a change here can reach, FEAT-044', () => {
+    it('says no score and names the slice when the graph has a hole in it', async () => {
+      // The refusal is an answer, not an error. A radius computed from a graph missing a region
+      // would look more contained than it is, in the one direction nobody checks.
+      renderEntity();
+      const refused = await screen.findByTestId('blast-refused');
+      expect(refused).toHaveTextContent(/No score/);
+      expect(refused).toHaveTextContent(/would look more contained than it is/);
+      expect(refused).toHaveTextContent('fake-product-denied in fake-region-a is PARTIAL');
+      expect(screen.queryByTestId('blast-radius')).toBeNull();
+    });
+
+    it('publishes the band with its parts and says the figure is a floor', async () => {
+      // The band is what a reader scans and the parts are what they argue with. The floor
+      // sentence is not a footnote: an infrastructure graph cannot see that one service reads
+      // another's queue, so the real radius can only be larger than what is shown.
+      const scored: ApiEnvelope<ApiBlastRadius> = {
+        ...blastRadiusFixture(),
+        data: {
+          band: 'CROSS_ACCOUNT',
+          parts: [
+            {
+              name: 'Resources reached',
+              count: 4,
+              why: 'Attached to the target, or to something that is.',
+            },
+            {
+              name: 'Other accounts touched',
+              count: 1,
+              why: 'An estate whose owner has not been asked.',
+            },
+            {
+              name: 'Dependencies that leave the graph',
+              count: 2,
+              why: 'Far ends nobody here can follow.',
+            },
+          ],
+          reach: 4,
+          accounts: 2,
+          boundary_edges: 2,
+          depth_bound_reached: false,
+          is_lower_bound: true,
+          refused_because: [],
+          max_depth: 4,
+        },
+      };
+      renderEntity(entityFixture(NODE), NODE, scored);
+      expect(await screen.findByTestId('blast-band')).toHaveTextContent('CROSS_ACCOUNT');
+      const panel = screen.getByTestId('blast-radius');
+      expect(panel).toHaveTextContent(/At least this wide/);
+      expect(panel).toHaveTextContent(/application level dependencies are invisible/);
+      expect(panel).toHaveTextContent('Other accounts touched');
+    });
+
+    it('says so when the walk stopped at its depth bound', async () => {
+      // The floor require_whole cannot catch. A walk that completed within its depth is bounded
+      // rather than truncated, so nothing about it is incomplete and the resources beyond it
+      // were never looked at.
+      const bounded: ApiEnvelope<ApiBlastRadius> = {
+        ...blastRadiusFixture(),
+        data: {
+          ...blastRadiusFixture().data,
+          band: 'CONTAINED',
+          parts: [{ name: 'Resources reached', count: 2, why: 'Attached to the target.' }],
+          reach: 2,
+          accounts: 1,
+          boundary_edges: 0,
+          depth_bound_reached: true,
+          refused_because: [],
+        },
+      };
+      renderEntity(entityFixture(NODE), NODE, bounded);
+      expect(await screen.findByTestId('blast-radius')).toHaveTextContent(
+        /stopped at its 4 hop bound/,
+      );
     });
   });
 });

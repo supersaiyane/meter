@@ -595,6 +595,36 @@ export interface ApiGraphCoverage {
   readonly incomplete: readonly ApiSliceCoverage[];
 }
 
+/**
+ * FEAT-044. What a change to one resource can reach, or why we will not say.
+ *
+ * Both halves arrive on one payload and exactly one is populated. A refusal is an answer, not an
+ * error: the graph having a hole in it is a fact about the estate rather than a fault in the
+ * request, so a status code would make the screen render a failure and send a reader looking for
+ * a broken service instead of for a permission.
+ */
+export interface ApiBlastPart {
+  readonly name: string;
+  readonly count: number;
+  readonly why: string;
+}
+
+export interface ApiBlastRadius {
+  /** CONTAINED, WIDE or CROSS_ACCOUNT. Null when refused. */
+  readonly band: string | null;
+  readonly parts: readonly ApiBlastPart[];
+  readonly reach: number | null;
+  readonly accounts: number | null;
+  readonly boundary_edges: number | null;
+  /** True where the walk reached its depth bound, so the reach is a floor for that reason too. */
+  readonly depth_bound_reached: boolean;
+  /** Always true. An infrastructure graph cannot see an application level dependency. */
+  readonly is_lower_bound: boolean;
+  /** The slices that stopped us, by name and state. Empty when a band is given. */
+  readonly refused_because: readonly string[];
+  readonly max_depth: number;
+}
+
 export interface ApiInventoryRoot {
   readonly node_id: string;
   readonly provider_id: string;
