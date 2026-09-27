@@ -152,13 +152,26 @@ export function ResourceListScreen() {
                 'resources in them are missing from this list rather than absent from the ' +
                 'estate.'}
           </p>
-          <ul>
-            {unreadable.map((slice: ApiSliceCoverage) => (
-              <li key={`${slice.account_id}:${slice.region_id ?? 'global'}`}>
-                {saidOf(slice)}
-              </li>
-            ))}
-          </ul>
+          {/* The list is one click behind a disclosure, the same treatment the shell's failure
+              wall got on 2026-09-27 and for the same reason. Nine slices is nine lines of
+              identifiers above the fold on a screen whose whole purpose is the table under
+              them, so the honesty machinery was the first thing a reader saw instead of their
+              own data. Collapsed and never dropped: the count and the causes stay visible, and
+              nothing is fetched to open it, so a reader loses nothing but the wall. */}
+          <details data-testid="estate-coverage-detail">
+            <summary data-testid="estate-coverage-causes">
+              {[...new Set(unreadable.map((slice: ApiSliceCoverage) => slice.state))].join(
+                ', ',
+              )}
+            </summary>
+            <ul>
+              {unreadable.map((slice: ApiSliceCoverage) => (
+                <li key={`${slice.account_id}:${slice.region_id ?? 'global'}`}>
+                  {saidOf(slice)}
+                </li>
+              ))}
+            </ul>
+          </details>
         </div>
       ) : null}
 

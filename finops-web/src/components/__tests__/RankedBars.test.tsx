@@ -98,16 +98,22 @@ describe('rankedRows on the largest basis', () => {
     expect(rows.reduce((sum, row) => sum + row.share, 0)).toBeGreaterThan(1);
   });
 
-  it('collapses nothing on that basis, because a remainder row is a sum', () => {
-    // The rule that is easy to lose. Summing anything here, even into a row labelled as the
-    // rest, is the addition the basis exists to avoid.
+  it('truncates on that basis rather than collapsing, because a remainder row is a sum', () => {
+    // The rule that is easy to lose, and the reason truncation is not the same thing. Summing
+    // anything here, even into a row labelled as the rest, is the addition the basis exists to
+    // avoid. Drawing only the largest few and saying how many were left is not an addition.
+    //
+    // It drew every row until 2026-09-27, which made the anomalies screen thirty bars of nearly
+    // equal length: no sum, and also no answer.
     const many = Array.from({ length: 12 }, (_, index) => ({
       label: `row-${String(index)}`,
       value: index + 1,
     }));
     const rows = rankedRows(many, 8, 'rest', 'largest');
-    expect(rows).toHaveLength(12);
+    expect(rows).toHaveLength(8);
     expect(rows.some((row) => row.label.includes('rest'))).toBe(false);
+    // The largest kept, not the first eight given.
+    expect(rows[0]?.label).toBe('row-11');
   });
 
   it('gives every row a zero share when the largest is zero', () => {
@@ -154,6 +160,24 @@ describe('rankedRows with a reference marker', () => {
 });
 
 describe('RankedBars', () => {
+  it('says how many rows a truncated chart is not drawing', () => {
+    // A chart showing the largest eight of thirty without saying so lies by omission, exactly
+    // as the collapsed remainder does on the other basis. It cannot say it with a row, because
+    // a row would need a value and the value would be a sum.
+    render(
+      <RankedBars
+        points={Array.from({ length: 30 }, (_, index) => ({
+          label: `row-${String(index)}`,
+          value: index + 1,
+        }))}
+        format={FORMAT}
+        provenance="measured"
+        basis="largest"
+      />,
+    );
+    expect(screen.getByTestId('ranked-undrawn')).toHaveTextContent('22 more are not drawn');
+  });
+
   it('writes every value as text, so the bars are never the only carrier', () => {
     // The bars are aria-hidden decoration. That is only honest if the number is written down.
     render(

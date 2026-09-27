@@ -46,6 +46,13 @@ reader sees their own accounts and no count that includes anybody else's.
 
 ## Interface
 
+The coverage notice above the table is a count and its typed causes, with the slices one click
+behind a disclosure, changed 2026-09-27. Nine slices is nine lines of identifiers above the fold
+on a screen whose purpose is the table under them, so the honesty machinery was the first thing a
+reader saw instead of their own data. Collapsed and never dropped: nothing is fetched to open it,
+and the slices are still in the document, which is what makes this different from hiding them. The
+same treatment the shell's failure wall got, so a reader learns one shape.
+
 `/inventory/resources`, in the Inventory group, and the `arrives` marker in `sections.ts`
 becomes null in the same commit that ships it.
 

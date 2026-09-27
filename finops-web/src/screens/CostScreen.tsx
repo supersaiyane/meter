@@ -87,45 +87,52 @@ export function CostScreen() {
   return (
     <section aria-label="Spend and trend">
       <StateBoundary state={state}>
-        <div data-testid="cost-summary">
-          <p data-testid="cost-period">
-            {current ? current.period : ''}
-            {current?.is_open ? (
-              // Beside the figure, not in a footnote. A reader who misses this
-              // is comparing a part month against a whole one.
-              <strong data-testid="cost-open"> still open, so this period is incomplete</strong>
-            ) : null}
-          </p>
-          <p data-testid="cost-total">
-            {current ? (
-              <Figure
-                value={{ kind: 'measured', amount: money(current.effective_cost) }}
-                freshness={freshness}
-              />
-            ) : null}
-          </p>
-          <p data-testid="cost-change">
-            {change === null ? (
-              // Not a zero. No earlier period was collected, and a change of
-              // nought would claim the estate spent the same as a month nobody
-              // ever read.
-              <span data-testid="cost-no-comparison">
-                No earlier period has been collected, so there is nothing to compare against
-              </span>
-            ) : (
-              <>
+        {/* The figure and the chart of that figure are one panel. Two would say they are two
+            things, which is the reading a panelled layout exists to prevent. */}
+        <div data-testid="cost-headline">
+          <h2>What this period has cost</h2>
+          <div data-testid="cost-summary">
+            <p data-testid="cost-period">
+              {current ? current.period : ''}
+              {current?.is_open ? (
+                // Beside the figure, not in a footnote. A reader who misses this
+                // is comparing a part month against a whole one.
+                <strong data-testid="cost-open">
+                  {' '}
+                  still open, so this period is incomplete
+                </strong>
+              ) : null}
+            </p>
+            <p data-testid="cost-total">
+              {current ? (
                 <Figure
-                  value={{ kind: 'measured', amount: money(change) }}
+                  value={{ kind: 'measured', amount: money(current.effective_cost) }}
                   freshness={freshness}
                 />
-                <span> against {previous?.period}</span>
-              </>
-            )}
-          </p>
-        </div>
+              ) : null}
+            </p>
+            <p data-testid="cost-change">
+              {change === null ? (
+                // Not a zero. No earlier period was collected, and a change of
+                // nought would claim the estate spent the same as a month nobody
+                // ever read.
+                <span data-testid="cost-no-comparison">
+                  No earlier period has been collected, so there is nothing to compare against
+                </span>
+              ) : (
+                <>
+                  <Figure
+                    value={{ kind: 'measured', amount: money(change) }}
+                    freshness={freshness}
+                  />
+                  <span> against {previous?.period}</span>
+                </>
+              )}
+            </p>
+          </div>
 
-        <div data-testid="cost-trend">
-          {/*
+          <div data-testid="cost-trend">
+            {/*
             A shape, not eighteen rows. The first version rendered one line per day with the
             freshness label repeated on each, which was the same sentence eighteen times around
             numbers nobody could compare. That became a sparkline, and a sparkline is the wrong
@@ -135,46 +142,47 @@ export function CostScreen() {
             actually needs. Bars start at zero, because a non zero baseline makes a normal week
             look like a crisis.
           */}
-          <BarChart
-            points={days.map((day) => ({
-              label: day.day.slice(5),
-              value: money(day.effective_cost),
-            }))}
-            provenance="measured"
-            label={
-              days.length > 1
-                ? `Daily effective cost across ${String(days.length)} days, ` +
-                  `from ${days[0]?.day ?? ''} to ${days[days.length - 1]?.day ?? ''}`
-                : 'Daily effective cost, not enough days collected to show a shape'
-            }
-            format={(value) =>
-              `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`
-            }
-          />
-          {days.length > 1 ? (
-            <p data-testid="cost-trend-range">
-              <span data-testid="cost-trend-day">{days[0]?.day}</span>
-              <Figure
-                value={{ kind: 'measured', amount: money(days[0]?.effective_cost ?? '0') }}
-                freshness={freshness}
-              />
-              <span> to </span>
-              <span data-testid="cost-trend-day">{days[days.length - 1]?.day}</span>
-              <Figure
-                value={{
-                  kind: 'measured',
-                  amount: money(days[days.length - 1]?.effective_cost ?? '0'),
-                }}
-                freshness={freshness}
-              />
-            </p>
-          ) : (
-            // One point is not a trend. Saying so beats drawing a flat line,
-            // which would imply a stability nobody has observed.
-            <p data-testid="cost-trend-range">
-              One day collected so far, which is not yet a trend
-            </p>
-          )}
+            <BarChart
+              points={days.map((day) => ({
+                label: day.day.slice(5),
+                value: money(day.effective_cost),
+              }))}
+              provenance="measured"
+              label={
+                days.length > 1
+                  ? `Daily effective cost across ${String(days.length)} days, ` +
+                    `from ${days[0]?.day ?? ''} to ${days[days.length - 1]?.day ?? ''}`
+                  : 'Daily effective cost, not enough days collected to show a shape'
+              }
+              format={(value) =>
+                `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`
+              }
+            />
+            {days.length > 1 ? (
+              <p data-testid="cost-trend-range">
+                <span data-testid="cost-trend-day">{days[0]?.day}</span>
+                <Figure
+                  value={{ kind: 'measured', amount: money(days[0]?.effective_cost ?? '0') }}
+                  freshness={freshness}
+                />
+                <span> to </span>
+                <span data-testid="cost-trend-day">{days[days.length - 1]?.day}</span>
+                <Figure
+                  value={{
+                    kind: 'measured',
+                    amount: money(days[days.length - 1]?.effective_cost ?? '0'),
+                  }}
+                  freshness={freshness}
+                />
+              </p>
+            ) : (
+              // One point is not a trend. Saying so beats drawing a flat line,
+              // which would imply a stability nobody has observed.
+              <p data-testid="cost-trend-range">
+                One day collected so far, which is not yet a trend
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Where the money is, before the table of how much each one was. This is the most
@@ -182,15 +190,20 @@ export function CostScreen() {
             services the spend is on is a comparison, and a comparison read off a column is
             arithmetic a reader should not have to do. Share of the period's total, so the
             first few bars add up by eye to most of the bill. */}
-        <RankedBars
-          points={rows.map((row) => ({
-            label: row.name,
-            value: money(row.effective_cost),
-          }))}
-          provenance="measured"
-          format={(value) => `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`}
-          restLabel="smaller services"
-        />
+        <div data-testid="cost-by-service">
+          <h2>Which services it is on</h2>
+          <RankedBars
+            points={rows.map((row) => ({
+              label: row.name,
+              value: money(row.effective_cost),
+            }))}
+            provenance="measured"
+            format={(value) =>
+              `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`
+            }
+            restLabel="smaller services"
+          />
+        </div>
 
         <DataTable
           rows={rows}

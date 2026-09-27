@@ -46,7 +46,11 @@ export function rankedRows(
   // to state. Nothing is collapsed either, since collapsing a remainder is that same sum.
   if (basis === 'largest') {
     const peak = ordered.reduce((most, point) => Math.max(most, point.value), 0);
-    return ordered.map((point) => withMarker(point, peak));
+    // Truncated rather than collapsed. Summing a remainder into one row is the addition this
+    // basis exists to avoid, so the rows past the limit are simply not drawn and the component
+    // says how many. Thirty anomalies of nearly equal size is a wall of identical bars that
+    // answers nothing, which is what the anomalies screen looked like before this.
+    return ordered.slice(0, limit).map((point) => withMarker(point, peak));
   }
 
   // The total is over everything, before any collapse, so a share is a share of the estate and

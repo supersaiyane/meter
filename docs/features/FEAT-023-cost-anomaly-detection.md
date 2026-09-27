@@ -102,6 +102,12 @@ The tick is drawn on the same divisor as the bar. A bar scaled by the peak and a
 the total would put the mark in a position that means nothing, and it would look entirely
 plausible, so the arithmetic is tested at its source rather than through the rendering.
 
+The chart draws the largest few and says how many it left out, changed 2026-09-27. It drew every
+row at first, which on a real estate is thirty bars of nearly equal length: no sum, and also no
+answer. Truncating is not collapsing, and the distinction is the point: a remainder row would need
+a value and that value would be the forbidden total, so the rows past the limit are simply not
+drawn and the count is stated in a sentence instead.
+
 ## Not doing
 
 AWS Cost Anomaly Detection findings are not ingested. Our own detection is
