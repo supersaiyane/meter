@@ -228,6 +228,26 @@ nav[aria-label='Sections'] a[data-arrives] {
   padding-top: var(--space-2);
 }
 
+/* A count on one line, the list one click behind it. The summary is a row, not a heading:
+   it sits in the trust strip beside the coverage and the freshness, and a reader who does not
+   need it should be able to pass over it in one glance. */
+[data-testid='shell-failures'] summary {
+  cursor: pointer;
+  padding: 2px 0;
+  font-size: var(--font-size-1);
+  list-style-position: outside;
+}
+
+[data-testid='shell-failures'] summary:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+[data-testid='shell-failures'] summary > span:last-child {
+  color: var(--text-muted);
+  font-family: var(--font-numeral);
+}
+
 [data-testid='shell-failures'] ul {
   list-style: none;
   margin: 0;
