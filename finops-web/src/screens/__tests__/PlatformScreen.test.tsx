@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, within, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { PlatformScreen } from '../PlatformScreen';
@@ -48,7 +48,7 @@ describe('PlatformScreen', () => {
       </Harness>,
     );
     await waitFor(() => {
-      expect(screen.getByText('ingest')).toBeInTheDocument();
+      expect(within(screen.getByRole('table')).getByText('ingest')).toBeInTheDocument();
     });
     expect(screen.getAllByTestId('sparkline').length).toBeGreaterThan(0);
   });
@@ -64,7 +64,39 @@ describe('PlatformScreen', () => {
       </Harness>,
     );
     await waitFor(() => {
-      expect(screen.getByText('unallocated')).toBeInTheDocument();
+      expect(within(screen.getByRole('table')).getByText('unallocated')).toBeInTheDocument();
     });
+  });
+
+  it('states what Meter costs to run rather than leaving the rows to add up', async () => {
+    // Constraint 7: the platform meters itself and its own cost is on the front page. It was on
+    // the front page and not on its own screen, so the one place that exists to answer this
+    // question made a reader sum the table. The fixture is 1.00 and 1.50 of ingest plus 0.20
+    // unallocated.
+    render(
+      <Harness
+        client={clientReturning({ '/api/v1/platform/cost': { data: ROWS, meta: metaOf() } })}
+      >
+        <PlatformScreen />
+      </Harness>,
+    );
+    const figure = await screen.findByTestId('platform-total-figure');
+    expect(figure).toHaveTextContent('$2.70');
+  });
+
+  it('dates the total by its stalest day, not its freshest', async () => {
+    // A total is only as fresh as the oldest thing in it, and `grandTotal` takes the minimum for
+    // that reason. Reporting the newest would make a total containing a stale module look like
+    // it was read this morning. The fixture's oldest day is the 25th and its newest is the 26th.
+    render(
+      <Harness
+        client={clientReturning({ '/api/v1/platform/cost': { data: ROWS, meta: metaOf() } })}
+      >
+        <PlatformScreen />
+      </Harness>,
+    );
+    const figure = await screen.findByTestId('platform-total-figure');
+    expect(figure).toHaveTextContent('2026-08-25');
+    expect(figure).not.toHaveTextContent('2026-08-26');
   });
 });

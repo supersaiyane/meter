@@ -2192,3 +2192,77 @@ main > section > [data-testid='state'] > article > h3 {
 main > section > [data-testid='state'] > article > h3:first-of-type {
   margin-top: var(--space-4);
 }
+
+/* ------------------------------------------------- home screen corrections */
+
+/* The provenance word and the freshness phrase each carry a leading space in their
+   text, and `display: inline-block` collapses whitespace at the start of the box, so
+   they rendered butted together: MEASUREDAS OF 2026-09-02. The space has to be a
+   margin here, because the text's own space is not one the layout can see. */
+[data-testid='home-spend'] [data-testid='figure'] > span:not(.meter-numeral),
+[data-testid='cost-total'] [data-testid='figure'] > span:not(.meter-numeral) {
+  margin-right: 0.35em;
+}
+
+/* The delta is a chip and a chip is the width of what is in it. It was stretching to
+   five hundred pixels, which turns a green pill into a green band across the card and
+   reads as a filled row rather than as a small piece of good news. */
+[data-testid='home-spend-change'] {
+  align-self: start;
+  width: fit-content;
+  max-width: 100%;
+}
+
+/* The chip was five hundred pixels wide because of what was inside it, not because of
+   a width: it carried a freshness phrase identical to the one on the figure directly
+   above, twenty pixels away. Two copies of "as of 2026-09-02 00:00, collected 4 h ago"
+   in one card is not twice the provenance, it is the same provenance twice, and it
+   turned a pill into a band. The timestamps go; the provenance word stays, because
+   whether the change is measured or modelled is a different claim from when it was
+   read, and the figure above still states both. */
+[data-testid='home-spend-change'] [data-testid='freshness'] {
+  display: none;
+}
+
+/* A hero figure is read from its left edge like the label above it. `.meter-numeral`
+   is right aligned for the column of figures in a table, which is right there and
+   wrong here: as a block at forty pixels it pushed the number to the far side of the
+   card, away from the words naming it. */
+[data-testid='home-spend'] .meter-numeral,
+[data-testid='home-count'],
+[data-testid='cost-total'] .meter-numeral,
+[data-testid='entity-cost'] .meter-numeral {
+  text-align: left;
+}
+
+/* The actions panel is a wide table inside a narrow card, and it was simply clipped:
+   eight hundred pixels of the risk sentence, which is the column a reader most needs,
+   ran off the right edge with nothing to say so and no way to reach it. */
+[data-testid='top-actions-saving'],
+[data-testid='top-actions-no-regret'] {
+  overflow-x: auto;
+}
+
+/* The platform's own cost, at the size of a headline. Constraint 7 puts this number on
+   the front page, and it was on the front page and not on its own screen. */
+[data-testid='platform-total-figure'] .meter-numeral {
+  font-size: var(--font-size-6);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  text-align: left;
+  display: block;
+  margin: var(--space-1) 0 0;
+}
+
+[data-testid='platform-total-figure'] [data-testid='figure'] > span:not(.meter-numeral) {
+  display: inline-block;
+  margin-right: 0.35em;
+  margin-top: var(--space-1);
+}
+
+[data-testid='platform-total-note'] {
+  margin: var(--space-3) 0 0;
+  font-size: var(--font-size-2);
+  color: var(--text-muted);
+}
