@@ -1924,6 +1924,11 @@
     },
     {
       "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "t": "finops-web/src/components/RankedBars.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
       "t": "finops-web/src/components/SeverityBadge.tsx",
       "k": "typescript"
     },
@@ -2059,6 +2064,11 @@
     },
     {
       "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/components/BarChart.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
       "t": "finops-web/src/components/DataTable.tsx",
       "k": "typescript"
     },
@@ -2069,7 +2079,7 @@
     },
     {
       "s": "finops-web/src/screens/CostScreen.tsx",
-      "t": "finops-web/src/components/Sparkline.tsx",
+      "t": "finops-web/src/components/RankedBars.tsx",
       "k": "typescript"
     },
     {

@@ -1683,3 +1683,20 @@ main > section > [role='group'] {
   font-size: var(--font-size-1);
   color: var(--text-muted);
 }
+
+/* The reference tick on a ranked bar. The anomalies screen is what it is for: the
+   bar is what a day cost and the tick is what that day usually costs, so how far
+   past the tick the bar runs is the finding. In the ink colour rather than a hue,
+   because it is not a measurement on the bar's own scale, it is the expectation. */
+[data-testid='ranked-track'] {
+  position: relative;
+}
+
+[data-testid='ranked-track'] b {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--text);
+}

@@ -42,6 +42,15 @@ export interface RankedPoint {
   /** Rendered instead of the formatted value where a caller has something better to say. */
   readonly note?: ReactNode;
   /**
+   * A reference value on the same scale as `value`, drawn as a tick in the track.
+   *
+   * The anomalies screen is what this is for: the bar is what a day actually cost and the tick
+   * is what that day usually costs, so how far past the tick the bar runs is the finding. Kept
+   * on the same divisor as the bar, because a tick scaled any other way would be a mark in a
+   * position that means nothing.
+   */
+  readonly marker?: number;
+  /**
    * A row that is not one of the things being ranked. Unallocated spend is the case this exists
    * for: it is a real measured number that belongs to nobody, so it must be in the picture and
    * must not look like an owner. Drawn as an outline rather than a solid, and deliberately not
@@ -93,6 +102,9 @@ export function RankedBars({
           {/* Decoration over content. The number is written to its right either way. */}
           <span data-testid="ranked-track" aria-hidden="true">
             <i style={{ width: `${String(row.share * 100)}%` }} />
+            {row.markerShare === undefined ? null : (
+              <b style={{ left: `${String(Math.min(row.markerShare, 1) * 100)}%` }} />
+            )}
           </span>
           <span data-testid="ranked-value">{row.note ?? format(row.value)}</span>
           {/* Omitted where the values are not parts of a whole. A percentage printed there

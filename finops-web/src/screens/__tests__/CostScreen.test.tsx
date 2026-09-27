@@ -57,7 +57,7 @@ describe('CostScreen', () => {
     // A charge is what the provider billed. There is no model here for it to
     // be a projection of, so a modelled badge would be an invention.
     renderCost();
-    await screen.findByText('AmazonEC2');
+    await screen.findByTestId('ranked-bars');
     const figures = document.querySelectorAll('[data-testid="figure"]');
     expect(figures.length).toBeGreaterThan(0);
     for (const figure of figures) {
@@ -67,7 +67,7 @@ describe('CostScreen', () => {
 
   it('puts the most expensive service first', async () => {
     renderCost();
-    await screen.findByText('AmazonEC2');
+    await screen.findByTestId('ranked-bars');
     const rows = [...document.querySelectorAll('tbody tr')];
     expect(rows[0]?.textContent).toContain('AmazonEC2');
     expect(rows[rows.length - 1]?.textContent).toContain('AWSLambda');
@@ -77,8 +77,11 @@ describe('CostScreen', () => {
     // Eighteen rows repeating one freshness label is not a trend, it is the
     // same sentence eighteen times around numbers nobody can compare.
     renderCost();
-    await screen.findByText('AmazonEC2');
-    expect(screen.getByTestId('sparkline')).toBeInTheDocument();
+    await screen.findByTestId('ranked-bars');
+    expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
+    // And it can be read off, which a sparkline by its own definition cannot. The peak is
+    // labelled, so a reader asking why a week was expensive has a number to point at.
+    expect(screen.getByTestId('bar-chart-peak')).toBeInTheDocument();
     expect(screen.getAllByTestId('cost-trend-day')).toHaveLength(2);
   });
 
@@ -98,13 +101,23 @@ describe('CostScreen', () => {
         <CostScreen />
       </Harness>,
     );
-    await screen.findByText('AmazonEC2');
+    await screen.findByTestId('ranked-bars');
     expect(screen.getByTestId('cost-trend-range').textContent).toMatch(/not yet a trend/);
+  });
+
+  it('ranks the services in the chart as well as in the table', async () => {
+    // The chart and the table are the same rows, so they must not disagree about which
+    // service is largest. A reader who spots that disagreement stops trusting both.
+    renderCost();
+    await screen.findByTestId('ranked-bars');
+    const labels = screen.getAllByTestId('ranked-label');
+    expect(labels[0]).toHaveTextContent('AmazonEC2');
+    expect(screen.getByTestId('ranked-bars')).toHaveAttribute('data-provenance', 'measured');
   });
 
   it('has no accessibility violations', async () => {
     const { container } = renderCost();
-    await screen.findByText('AmazonEC2');
+    await screen.findByTestId('ranked-bars');
     expect(await violationsIn(container)).toEqual([]);
   });
 });

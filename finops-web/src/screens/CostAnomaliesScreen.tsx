@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { useCostAnomalies } from '../api/queries';
 import { DataTable } from '../components/DataTable';
+import { RankedBars } from '../components/RankedBars';
 import { Figure } from '../components/Figure';
 import { SeverityBadge } from '../components/SeverityBadge';
 import { StateBoundary } from '../components/StateBoundary';
@@ -135,6 +136,31 @@ export function CostAnomaliesScreen() {
       ) : null}
 
       <StateBoundary state={state}>
+        {/* What the day cost, with a tick at what it usually costs. This is the screen where
+            a picture explains the most, because the finding is a comparison between two
+            numbers and the table puts them in two columns for the reader to subtract. The
+            bar is the observed cost, the tick is the baseline, and how far past the tick the
+            bar runs is the anomaly.
+
+            Scaled to the largest observed day rather than to a total, because the days belong
+            to different accounts and services and adding them up would produce a figure that
+            is not the estate's spend and is not anything else either. No share is printed for
+            the same reason. */}
+        {rows.length > 0 ? (
+          <RankedBars
+            points={rows.map((row) => ({
+              label: `${row.day}, ${row.service_name}`,
+              value: money(row.observed),
+              marker: money(row.baseline),
+            }))}
+            provenance="measured"
+            basis="largest"
+            format={(value) =>
+              `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`
+            }
+          />
+        ) : null}
+
         <DataTable
           rows={rows}
           columns={columns}

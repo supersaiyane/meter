@@ -12,6 +12,23 @@ import type { RankedBasis, RankedPoint } from './RankedBars';
 
 interface Row extends RankedPoint {
   readonly share: number;
+  /** The reference, on the same divisor as `share`, or undefined where the row has none. */
+  readonly markerShare?: number;
+}
+
+/**
+ * One row, with its bar and its reference both divided by the same number.
+ *
+ * One helper rather than the arithmetic twice, because a marker scaled by the total on one
+ * basis and by the peak on the other would be a tick whose position quietly meant a different
+ * thing per chart, and no rendering assertion would show it.
+ */
+function withMarker(point: RankedPoint, divisor: number): Row {
+  const share = divisor > 0 ? point.value / divisor : 0;
+  if (point.marker === undefined) {
+    return { ...point, share };
+  }
+  return { ...point, share, markerShare: divisor > 0 ? point.marker / divisor : 0 };
 }
 
 export function rankedRows(
@@ -29,10 +46,7 @@ export function rankedRows(
   // to state. Nothing is collapsed either, since collapsing a remainder is that same sum.
   if (basis === 'largest') {
     const peak = ordered.reduce((most, point) => Math.max(most, point.value), 0);
-    return ordered.map((point) => ({
-      ...point,
-      share: peak > 0 ? point.value / peak : 0,
-    }));
+    return ordered.map((point) => withMarker(point, peak));
   }
 
   // The total is over everything, before any collapse, so a share is a share of the estate and
@@ -40,7 +54,7 @@ export function rankedRows(
   const total = points.reduce((sum, point) => sum + point.value, 0);
   const shareOf = (value: number) => (total > 0 ? value / total : 0);
   if (ordered.length <= limit) {
-    return ordered.map((point) => ({ ...point, share: shareOf(point.value) }));
+    return ordered.map((point) => withMarker(point, total));
   }
   const shown = ordered.slice(0, limit);
   const rest = ordered.slice(limit);

@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 
 import { useCostByService, useCostSummary, useCostTrend } from '../api/queries';
+import { BarChart } from '../components/BarChart';
 import { DataTable } from '../components/DataTable';
 import { Figure } from '../components/Figure';
-import { Sparkline } from '../components/Sparkline';
+import { RankedBars } from '../components/RankedBars';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
 import { useReportMeta } from '../shell/metaRegistry';
@@ -69,7 +70,10 @@ export function CostScreen() {
       header: 'Billed',
       numeric: true,
       render: (row) => (
-        <Figure value={{ kind: 'measured', amount: money(row.billed_cost) }} freshness={freshness} />
+        <Figure
+          value={{ kind: 'measured', amount: money(row.billed_cost) }}
+          freshness={freshness}
+        />
       ),
     },
     {
@@ -110,7 +114,10 @@ export function CostScreen() {
               </span>
             ) : (
               <>
-                <Figure value={{ kind: 'measured', amount: money(change) }} freshness={freshness} />
+                <Figure
+                  value={{ kind: 'measured', amount: money(change) }}
+                  freshness={freshness}
+                />
                 <span> against {previous?.period}</span>
               </>
             )}
@@ -119,16 +126,30 @@ export function CostScreen() {
 
         <div data-testid="cost-trend">
           {/*
-            A shape, not eighteen rows. The first version of this rendered one
-            line per day with the freshness label repeated on each, which was
-            the same sentence eighteen times around numbers nobody could
-            compare. The sparkline answers whether it is going up, and the two
-            ends give the range a reader would otherwise measure off it.
+            A shape, not eighteen rows. The first version rendered one line per day with the
+            freshness label repeated on each, which was the same sentence eighteen times around
+            numbers nobody could compare. That became a sparkline, and a sparkline is the wrong
+            instrument here: by its own definition it refuses to be read off, and this is the
+            screen somebody opens when they want to read the trend off it. The bar chart has a
+            scale and a labelled peak, which is what a reader asking why last week was expensive
+            actually needs. Bars start at zero, because a non zero baseline makes a normal week
+            look like a crisis.
           */}
-          <Sparkline
-            points={days.map((day) => money(day.effective_cost))}
+          <BarChart
+            points={days.map((day) => ({
+              label: day.day.slice(5),
+              value: money(day.effective_cost),
+            }))}
             provenance="measured"
-            label={`Daily spend across ${String(days.length)} days of this period`}
+            label={
+              days.length > 1
+                ? `Daily effective cost across ${String(days.length)} days, ` +
+                  `from ${days[0]?.day ?? ''} to ${days[days.length - 1]?.day ?? ''}`
+                : 'Daily effective cost, not enough days collected to show a shape'
+            }
+            format={(value) =>
+              `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`
+            }
           />
           {days.length > 1 ? (
             <p data-testid="cost-trend-range">
@@ -155,6 +176,21 @@ export function CostScreen() {
             </p>
           )}
         </div>
+
+        {/* Where the money is, before the table of how much each one was. This is the most
+            opened screen in the product and its breakdown was a list of numbers: which
+            services the spend is on is a comparison, and a comparison read off a column is
+            arithmetic a reader should not have to do. Share of the period's total, so the
+            first few bars add up by eye to most of the bill. */}
+        <RankedBars
+          points={rows.map((row) => ({
+            label: row.name,
+            value: money(row.effective_cost),
+          }))}
+          provenance="measured"
+          format={(value) => `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`}
+          restLabel="smaller services"
+        />
 
         <DataTable
           rows={rows}
