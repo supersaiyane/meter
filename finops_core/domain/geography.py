@@ -36,17 +36,15 @@ class Geography:
     name: str
 
 
-#: The geographies every major provider's region names begin with.
+#: The places, ordered west to east so a caller that iterates produces a stable order.
 #:
-#: These are prefixes and not regions, which is the whole argument of this module: no entry here
-#: names a region, and a region this table has never heard of still resolves as long as its
-#: geography has. Ordered west to east so a caller that iterates produces a stable order.
-#:
-#: `us-gov-west-1` resolves to the United States through `us`, which is correct: it is a
-#: geography question and not a compliance one, and the partition is a different fact.
+#: Checked against the AWS region list on 2026-09-27 rather than written from memory, which found
+#: two things memory had missed: Mexico is a live region and had no entry, and the European
+#: Sovereign Cloud carries a four letter prefix that no one letter pair would ever match.
 GEOGRAPHIES: tuple[Geography, ...] = (
     Geography("us", "United States"),
     Geography("ca", "Canada"),
+    Geography("mx", "Mexico"),
     Geography("sa", "South America"),
     Geography("eu", "Europe"),
     Geography("af", "Africa"),
@@ -57,6 +55,38 @@ GEOGRAPHIES: tuple[Geography, ...] = (
 )
 
 _BY_KEY = {geography.key: geography for geography in GEOGRAPHIES}
+
+#: Which prefix means which place, and it is a separate table from the places for one reason.
+#:
+#: The first version keyed the places by their prefix, which assumed one prefix per place, and
+#: `eusc-de-east-1` is the counterexample: the AWS European Sovereign Cloud is a partition rather
+#: than a location, and it is in Europe. Two prefixes therefore have to reach one place, which a
+#: table keyed by prefix cannot express without inventing a second Europe that the drawing would
+#: then have to position twice.
+#:
+#: Still prefixes and never regions, which is the argument the whole module rests on: no entry
+#: here names a region, and a region this table has never heard of resolves as long as its prefix
+#: has. `eu-south-3` works on the day it opens.
+#:
+#: `us-gov-west-1` resolves to the United States through `us`, which is correct: where a region is
+#: and which partition it is in are different questions, and this one is geography.
+PREFIXES: dict[str, Geography] = {
+    prefix: _BY_KEY[key]
+    for prefix, key in (
+        ("us", "us"),
+        ("ca", "ca"),
+        ("mx", "mx"),
+        ("sa", "sa"),
+        ("eu", "eu"),
+        # The sovereign cloud, which is a partition and not a place. Germany is in Europe.
+        ("eusc", "eu"),
+        ("af", "af"),
+        ("il", "il"),
+        ("me", "me"),
+        ("cn", "cn"),
+        ("ap", "ap"),
+    )
+}
 
 
 def geography_of(region_id: str | None) -> Geography | None:
@@ -74,7 +104,7 @@ def geography_of(region_id: str | None) -> Geography | None:
         # A region name with no hyphen tells us nothing. Returning None rather than guessing,
         # because a guess here places real resources on the wrong continent.
         return None
-    return _BY_KEY.get(prefix)
+    return PREFIXES.get(prefix)
 
 
 def is_global(region_id: str | None) -> bool:

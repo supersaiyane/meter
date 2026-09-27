@@ -1751,13 +1751,16 @@ main > section > [data-testid='state'] > p[role='status'] {
   margin: 0;
 }
 
+/* The ocean is the raised surface rather than the one below it, so the land sitting on
+   top of it has somewhere to be darker than. With both at the tinted surface the two
+   were four hex points apart and the continents were present and invisible. */
 [data-testid='world-map'] svg {
   display: block;
   width: 100%;
   height: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
-  background: var(--surface-raised-2);
+  background: var(--surface-raised);
 }
 
 /* The graticule sits under the land and reads as ocean ruling: present enough to say
@@ -1790,26 +1793,36 @@ main > section > [data-testid='state'] > p[role='status'] {
   stroke-linejoin: round;
 }
 
-[data-testid='world-map-marker'] circle {
+/* The halo carries the count. Translucent so the coast under it stays readable, with
+   its own edge so a small one is still a shape rather than a smudge. */
+[data-testid='world-map-halo'] {
   fill: var(--chart-bar);
-  fill-opacity: 0.55;
-  stroke: var(--surface-raised-2);
-  stroke-width: 2.5;
+  fill-opacity: 0.42;
+  stroke: var(--chart-bar-peak);
+  stroke-width: 1.5;
+  stroke-opacity: 0.7;
   cursor: pointer;
 }
 
-/* A second ring in the marker's own colour, outside the pale one. The pale ring
-   separates the marker from whatever coast it is sitting on, and this keeps the
-   marker's edge legible against it. */
-[data-testid='world-map-marker'] circle {
+/* The core says where, and it is the same size whatever the count, because position is
+   not a quantity. Solid and saturated, with a ring in the ocean colour so it reads
+   against land and sea alike. */
+[data-testid='world-map-point'] {
+  fill: var(--chart-bar-peak);
+  stroke: var(--surface-raised);
+  stroke-width: 1.5;
   paint-order: stroke;
+  cursor: pointer;
 }
 
-[data-testid='world-map-marker'][data-selected='true'] circle {
-  fill: var(--chart-bar-peak);
-  fill-opacity: 0.75;
-  stroke: var(--chart-bar-peak);
-  stroke-width: 2.5;
+[data-testid='world-map-marker'][data-selected='true'] [data-testid='world-map-halo'] {
+  fill-opacity: 0.55;
+  stroke-opacity: 1;
+  stroke-width: 2;
+}
+
+[data-testid='world-map-marker'][data-selected='true'] [data-testid='world-map-point'] {
+  r: 5;
 }
 
 /* Labels sit over land as often as over sea, so each one carries a halo in the ocean
@@ -1823,7 +1836,7 @@ main > section > [data-testid='state'] > p[role='status'] {
   text-anchor: middle;
   pointer-events: none;
   paint-order: stroke;
-  stroke: var(--surface-raised-2);
+  stroke: var(--surface-raised);
   stroke-width: 4;
   stroke-linejoin: round;
 }

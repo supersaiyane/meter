@@ -65,8 +65,8 @@ a duplicate.
 | `CommitmentCoverage.coverage` | method | `finops_core/domain/cost.py:349` | The covered fraction, or None where nothing was eligible. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_ingest/collectors/commitment.py` |
 | `Fact` | class | `finops_core/domain/fact.py:27` | A value that was true somewhere, at a time, and was read at another time. | nothing in this tree |
 | `Geography` | class | `finops_core/domain/geography.py:30` | A continental grouping of regions, named by the prefix its regions share. | nothing in this tree |
-| `geography_of` | function | `finops_core/domain/geography.py:62` | The geography a region is in, or None where its name does not say. | `finops_api/routes/inventory.py` |
-| `is_global` | function | `finops_core/domain/geography.py:80` | True where the resource belongs to no region. | `finops_api/routes/inventory.py` |
+| `geography_of` | function | `finops_core/domain/geography.py:92` | The geography a region is in, or None where its name does not say. | `finops_api/routes/inventory.py` |
+| `is_global` | function | `finops_core/domain/geography.py:110` | True where the resource belongs to no region. | `finops_api/routes/inventory.py` |
 | `ManagementState` | class | `finops_core/domain/iac.py:42` | The three answers. `NOT_DETERMINED` is the default and is never inferred away. | nothing in this tree |
 | `ManagedResource` | class | `finops_core/domain/iac.py:53` | One resource a state file owns, and the address that owns it. | `finops_providers/aws/terraform_state.py` |
 | `StateRead` | class | `finops_core/domain/iac.py:72` | What one read of the configured state found, including what it could not read. | `finops_providers/aws/terraform_state.py` |
