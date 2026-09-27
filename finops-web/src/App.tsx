@@ -12,6 +12,7 @@ import { HomeScreen } from './screens/HomeScreen';
 import { FreshnessScreen } from './screens/FreshnessScreen';
 import { IngestScreen } from './screens/IngestScreen';
 import { OrganizationScreen } from './screens/OrganizationScreen';
+import { BudgetsScreen } from './screens/BudgetsScreen';
 import { EntityScreen } from './screens/EntityScreen';
 import { ResourceListScreen } from './screens/ResourceListScreen';
 import { TopologyScreen } from './screens/TopologyScreen';
@@ -87,6 +88,7 @@ export function App({
                 <Route path="/cost/allocation" element={<CostAllocationScreen />} />
                 <Route path="/cost/anomalies" element={<CostAnomaliesScreen />} />
                 <Route path="/cost/commitments" element={<CostCommitmentsScreen />} />
+                <Route path="/cost/budgets" element={<BudgetsScreen />} />
                 <Route path="/cost/export" element={<CostExportScreen />} />
                 <Route path="/waste" element={<WasteScreen />} />
                 <Route path="/waste/savings" element={<WasteSavingsScreen />} />

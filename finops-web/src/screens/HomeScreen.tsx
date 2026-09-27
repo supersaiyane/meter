@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Link } from 'react-router';
 
 import {
+  useBudgets,
   useCostSummary,
   useCostTrend,
   usePlatformCost,
@@ -12,6 +13,7 @@ import {
 } from '../api/queries';
 import { grandTotal, rollUp } from './platformRollUp';
 import { BarChart } from '../components/BarChart';
+import { BudgetBar } from '../components/BudgetBar';
 import { Figure } from '../components/Figure';
 import { DataTable } from '../components/DataTable';
 import { SeverityBadge, type Severity } from '../components/SeverityBadge';
@@ -21,7 +23,12 @@ import type { Column } from '../components/tableConfig';
 import { useReportMeta } from '../shell/metaRegistry';
 import { severityOf } from './querySeverity';
 import { surfaceStateFor } from './surfaceStateFor';
-import type { ApiQueryFinding, ApiQueryGroup, ApiSurfaceInstance } from '../api/types';
+import type {
+  ApiBudget,
+  ApiQueryFinding,
+  ApiQueryGroup,
+  ApiSurfaceInstance,
+} from '../api/types';
 
 /**
  * The front page. A trust strip above the money, per
@@ -152,6 +159,22 @@ function ArrivingRail() {
   );
 }
 
+/**
+ * The budget a reader needs to see first, which is the one furthest ahead of its own calendar.
+ *
+ * Not the largest limit and not the most spent: both of those rank a big healthy budget above a
+ * small one that is about to blow. Ranking by how far the spend has run ahead of the period puts
+ * the finding first, and a budget with no number is never the answer, because an absence cannot
+ * be the worst thing on a page that has real ones on it.
+ */
+function mostAtRisk(budgets: readonly ApiBudget[]): ApiBudget | null {
+  const ranked = budgets
+    .filter((one) => one.used !== null)
+    .map((one) => ({ one, ahead: Number(one.used) - Number(one.elapsed) }))
+    .sort((left, right) => right.ahead - left.ahead);
+  return ranked[0]?.one ?? null;
+}
+
 export function HomeScreen() {
   const cost = usePlatformCost();
   useReportMeta('platform-cost', cost.data?.meta);
@@ -169,6 +192,19 @@ export function HomeScreen() {
   // below: a total this screen computed could disagree with the screen it links to,
   // and a front page disagreeing with the page behind it is the one inconsistency a
   // reader always notices.
+  const budgets = useBudgets();
+  const budgetEnvelope = budgets.data?.data;
+  const budgetRows = useMemo(() => budgetEnvelope?.data.budgets ?? [], [budgetEnvelope]);
+  const worstBudget = useMemo(() => mostAtRisk(budgetRows), [budgetRows]);
+  useReportMeta('home-budgets', budgetEnvelope?.meta);
+  const budgetState = surfaceStateFor(
+    budgets,
+    budgetEnvelope?.meta,
+    budgetRows.length,
+    'none',
+    'budgets',
+  );
+
   const spend = useCostSummary();
   // The daily shape behind the headline. Through the cost screen's own hook, because the
   // home screen owns no data of its own: a panel with its own query will one day disagree
@@ -348,6 +384,40 @@ export function HomeScreen() {
                 `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`
               }
             />
+          </StateBoundary>
+        </div>
+
+        <div data-testid="home-tile" aria-label="Budget">
+          <h3>
+            <Link to="/cost/budgets">Budget, this period</Link>
+          </h3>
+          <StateBoundary state={budgetState} coverageShownElsewhere>
+            {worstBudget === null ? null : (
+              <>
+                <p data-testid="home-tile-note">{worstBudget.name}</p>
+                {/* The tile shows the budget running furthest ahead of its calendar rather
+                    than a total, because budgets do not add up: four healthy ones and one
+                    blown one average to fine and the blown one is the news. */}
+                <p data-testid="home-budget-figure">
+                  {Number(worstBudget.actual ?? 0).toLocaleString('en-GB', {
+                    style: 'currency',
+                    currency: worstBudget.currency,
+                    currencyDisplay: 'narrowSymbol',
+                    maximumFractionDigits: 0,
+                  })}
+                </p>
+                <BudgetBar budget={worstBudget} />
+                {/* The count of the others, so one card never reads as the whole position. */}
+                <p data-testid="home-budget-count">
+                  {budgetRows.length === 1
+                    ? 'the only budget collected'
+                    : `worst of ${String(budgetRows.length)} budgets`}
+                  {budgetEnvelope?.data.unsupported
+                    ? `, ${String(budgetEnvelope.data.unsupported)} with no number`
+                    : ''}
+                </p>
+              </>
+            )}
           </StateBoundary>
         </div>
 

@@ -38,6 +38,7 @@ export const GROUPS: readonly GroupDef[] = [
       { path: '/cost/allocation', label: 'Allocation', arrives: null },
       { path: '/cost/anomalies', label: 'Anomalies', arrives: null },
       { path: '/cost/commitments', label: 'Commitments', arrives: null },
+      { path: '/cost/budgets', label: 'Budgets', arrives: null },
       { path: '/cost/export', label: 'Export', arrives: null },
     ],
   },

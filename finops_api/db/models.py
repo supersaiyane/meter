@@ -755,6 +755,37 @@ resource_management = Table(
 )
 
 
+#: FEAT-060. What somebody said this should cost, read from the provider rather than typed
+#: in, so it carries a provenance like everything else a screen renders here.
+#:
+#: Nothing derived is stored: not the actual, not the status, not the percentage. Status
+#: depends on where today falls in the period, so a stored one is wrong by the next morning.
+budget = Table(
+    "budget",
+    metadata,
+    Column("budget_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    #: The provider's own identifier, stable across periods, which is what lets a budget keep
+    #: its identity when its limit is revised.
+    Column("budget_id", Text, nullable=False),
+    Column("name", Text, nullable=False),
+    #: ACCOUNT, SERVICE, ALL or UNSUPPORTED. The last is a budget that exists and cannot be
+    #: joined, counted rather than dropped, because an estate with ten budgets over tag
+    #: expressions is not an estate with no budgets.
+    Column("scope", Text, nullable=False),
+    Column("scope_value", Text, nullable=False),
+    #: Not `limit`, which is reserved in SQL and would need quoting in every statement
+    #: forever, which is a thing somebody forgets exactly once.
+    Column("limit_amount", Numeric(20, 10), nullable=False),
+    Column("currency", Text, nullable=False),
+    Column("period_start", Date, nullable=False),
+    Column("period_end", Date, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
 query_adhoc = Table(
     "query_adhoc",
     metadata,

@@ -47,6 +47,7 @@ from finops_core.domain.account import AccountKey, Provider
 from finops_core.errors import CollectionError
 from finops_fakes import cur, fixtures, prices, utilization
 from finops_fakes import estate_shape as shape
+from finops_fakes.budgets import FakeBudgets
 from finops_fakes.cloudwatch_estate import FakeCloudWatchEstate
 from finops_fakes.commitment import FakeCommitmentReport
 from finops_fakes.cur import FakeCostExport, estate
@@ -61,6 +62,7 @@ from finops_fakes.terraform_state import LOCATIONS as FAKE_STATE_LOCATIONS
 from finops_fakes.terraform_state import FakeTerraformState
 from finops_fakes.topology import FakeTopologySource
 from finops_ingest.collectors.account_health import AccountHealthCollector
+from finops_ingest.collectors.budgets import BudgetCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
 from finops_ingest.collectors.commitment_actions import CommitmentActionsCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
@@ -153,6 +155,8 @@ DEMO_TABLES = (
     # P4, FEAT-057. References only the tenant, so its place here is reverse dependency
     # order for its own sake rather than for a key.
     "resource_management",
+    # P1, FEAT-060. References only the tenant.
+    "budget",
     "commitment_action",
     # P1, FEAT-024. Neither references the other, and both reference only the
     # tenant, so their order between themselves does not matter.
@@ -531,6 +535,16 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
             connection,
             unit(scope_key="billing:commitments"),
             "commitment",
+        )
+        # FEAT-060. Four budgets, two of which this product cannot join, because the first
+        # thing a finance reader asks is how many of their budgets can actually be tracked and
+        # a seed where everything joined would leave that answer rendered by nothing.
+        written += _through_the_ledger(
+            ledger,
+            BudgetCollector(FakeBudgets(), clock=lambda: now),
+            connection,
+            unit(scope_key="billing:budgets"),
+            "budgets",
         )
         # FEAT-055, immediately after the coverage it reads. Turning the gaps into findings in
         # the same seed run is what makes the commitments screen show the actions rather than

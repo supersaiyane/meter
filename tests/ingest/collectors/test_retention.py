@@ -542,6 +542,8 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         "commitment_actions",
         # FEAT-057, added with the collector in TASK-P4-013.
         "iac_state",
+        # FEAT-060, added with the collector.
+        "budgets",
     }
 
 

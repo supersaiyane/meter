@@ -31,15 +31,18 @@ from finops_api.db.repositories import AccessContext
 from finops_api.db.repositories.cost import (
     GROUPABLE,
     AnomalyRepository,
+    BudgetRepository,
     CommitmentActionRepository,
     CommitmentCoverageRepository,
     CommitmentRepository,
     CostRepository,
     previous_month,
 )
-from finops_api.deps import get_access_context, get_connection, get_scope
+from finops_api.deps import get_access_context, get_connection, get_scope, get_settings
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
+    BudgetOut,
+    BudgetsOut,
     CommitmentActionOut,
     CommitmentCoverageOut,
     CommitmentsOut,
@@ -52,6 +55,8 @@ from finops_api.schemas import (
     CostTotalOut,
     Envelope,
 )
+from finops_core.config import Settings
+from finops_core.domain.budget import elapsed_fraction, status_of
 from finops_core.domain.cost import BillingPeriod
 from finops_core.domain.tenant import Scope
 from finops_query.anomaly import MINIMUM_HISTORY
@@ -307,6 +312,137 @@ def cost_anomalies(
         connection, scope, context, visible=repository.accounts_judged(scope), rows=rows
     )
     return Envelope(data=found, meta=meta)
+
+
+def _actual_for(
+    costs: CostRepository,
+    scope: Scope,
+    budget_scope: str,
+    value: str,
+    period: date,
+) -> Decimal | None:
+    """The spend a budget should be judged against, or None where there is none.
+
+    None rather than zero, in all three branches. A period with no collected cost has not cost
+    nothing, and an account or a service that does not appear in the bill is one the bill does
+    not mention rather than one that was free. That is constraint 5 applied to a join, and it
+    is the same rule the entity page follows for a resource.
+
+    The dimension names come from `GROUPABLE`, which is the same mapping the cost screen groups
+    by, so a budget over a service is compared against exactly the number that screen shows for
+    it. A second mapping here would be a second answer to what a service is.
+    """
+    if budget_scope == "ALL":
+        rows = costs.period_total(scope, period)
+        if not rows:
+            return None
+        total = rows[0][0]
+        # A payer with no line items in the period. Zero rows and a zero sum are different
+        # facts and `coalesce` in the statement has already flattened them, so the count is
+        # what distinguishes them.
+        return None if not rows[0][2] else Decimal(total)
+
+    dimension = {"ACCOUNT": "account", "SERVICE": "service"}.get(budget_scope)
+    if dimension is None:
+        return None
+    for row in costs.grouped(scope, period, dimension):
+        if str(row[0]) == value:
+            return Decimal(row[1])
+    return None
+
+
+@router.get("/cost/budgets", response_model=Envelope[BudgetsOut])
+def cost_budgets(
+    period: date | None = Query(default=None, description="Billing period. Latest if omitted."),
+    connection: Connection = Depends(get_connection),
+    settings: Settings = Depends(get_settings),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[BudgetsOut]:
+    """What was budgeted, what has been spent against it, and whether that is on course.
+
+    FEAT-060. The gap three independent sources named: budget against actual is the top of a
+    finance dashboard and a red amber green status is the top of an executive one, and this
+    product had neither.
+
+    **Status is computed here, never stored.** It depends on where today falls in the period,
+    so a stored one is wrong by the next morning and wrong in the direction nobody checks: a
+    budget stored green on the first of the month stays green while the month is spent.
+
+    **Pace, not forecast.** Eighty percent spent sixty percent of the way through is at risk,
+    and that is arithmetic anybody can check. A forecast would be better and it is FEAT-048,
+    which ADR-0015 constrains with four conditions, none of them met. Calling a pace
+    projection a forecast is how a model nobody validated ends up in a board pack.
+
+    **A budget this product cannot join gets no status rather than a green one.** A budget over
+    a tag expression, over several accounts, or measuring usage rather than cost is returned
+    with a null actual and UNKNOWN, and the count of them is on the payload. An estate with ten
+    such budgets is not an estate with no budgets.
+
+    `PayerWide` per ADR-0025, so a narrowed caller reads nothing here and the screen says why.
+    """
+    budgets = BudgetRepository(connection, context)
+    costs = CostRepository(connection, context)
+    # The period comes from the bill where there is one, and from the budgets otherwise. A
+    # tenant with budgets and no collected cost is the exact case a budget screen exists for:
+    # resolving only from cost answered 404, which told a reader their budgets did not exist
+    # when what had not happened was the first ingest.
+    resolved = period or costs.latest_period(scope) or budgets.latest_period(scope)
+    if resolved is None:
+        raise HTTPException(status_code=404, detail=NO_COST)
+
+    rows = budgets.for_period(scope, resolved)
+    today = date.today()
+    found: list[BudgetOut] = []
+    unsupported = 0
+
+    for row in rows:
+        scope_name = str(row.scope)
+        joinable = scope_name != "UNSUPPORTED"
+        if not joinable:
+            unsupported += 1
+
+        # Measured, from the bill, and only where the scope is one we can reproduce. An
+        # actual assembled for a scope we do not understand would be the wrong number under
+        # the right name, which is worse than no number at all.
+        actual: Decimal | None = None
+        if joinable:
+            actual = _actual_for(costs, scope, scope_name, str(row.scope_value), resolved)
+
+        limit = Decimal(row.limit_amount)
+        elapsed = elapsed_fraction(start=row.period_start, end=row.period_end, today=today)
+        found.append(
+            BudgetOut(
+                budget_id=str(row.budget_id),
+                name=str(row.name),
+                scope=scope_name,
+                scope_value=str(row.scope_value),
+                limit=limit,
+                currency=str(row.currency),
+                period_start=row.period_start,
+                period_end=row.period_end,
+                actual=actual,
+                status=status_of(
+                    limit=limit,
+                    actual=actual,
+                    elapsed=elapsed,
+                    at_risk_when_ahead_by=settings.budget_at_risk_margin,
+                    joinable=joinable,
+                ).value,
+                elapsed=elapsed,
+                used=None if actual is None else (actual / limit).quantize(Decimal("0.0001")),
+            )
+        )
+
+    answer = BudgetsOut(period=resolved, budgets=tuple(found), unsupported=unsupported)
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        visible=1,
+        rows=rows,
+    )
+    return Envelope(data=answer, meta=meta)
 
 
 @router.get("/cost/commitments", response_model=Envelope[CommitmentsOut])

@@ -1,4 +1,5 @@
 import type {
+  ApiBudgets,
   ApiCommitments,
   ApiCostAnomalies,
   ApiCostDay,
@@ -333,5 +334,90 @@ export function costAnomaliesFixture(): ApiEnvelope<ApiCostAnomalies> {
       days_needed: 14,
     },
     meta: meta(5),
+  };
+}
+
+/**
+ * Budgets, offline. FEAT-060.
+ *
+ * Four, and only two of them join. That ratio is the point: the first thing a finance reader
+ * asks is how many of their budgets this product can actually track, and a fixture where
+ * everything joined would leave the answer rendered by nothing a developer opens. One of the
+ * two that join is already over, because a demo where every budget is green shows the one
+ * state nobody needs a tool for.
+ */
+export function costBudgetsFixture(): ApiEnvelope<ApiBudgets> {
+  return {
+    data: {
+      period: '2026-09-01',
+      budgets: [
+        {
+          budget_id: 'Cloud, all accounts',
+          name: 'Cloud, all accounts',
+          scope: 'ALL',
+          scope_value: '',
+          limit: '12500.0000',
+          currency: 'USD',
+          period_start: '2026-09-01',
+          period_end: '2026-10-01',
+          actual: '11907.6863',
+          status: 'AT_RISK',
+          elapsed: '0.8333',
+          used: '0.9526',
+        },
+        {
+          budget_id: 'Platform team',
+          name: 'Platform team',
+          scope: 'ACCOUNT',
+          scope_value: 'fake-platform-a',
+          limit: '6000.0000',
+          currency: 'USD',
+          period_start: '2026-09-01',
+          period_end: '2026-10-01',
+          actual: '6402.1100',
+          status: 'OVER',
+          elapsed: '0.8333',
+          used: '1.0670',
+        },
+        {
+          // A tag expression. Read, counted, never matched to a number, because the slice it
+          // describes is not one this product computes.
+          budget_id: 'Cost centre 4471',
+          name: 'Cost centre 4471',
+          scope: 'UNSUPPORTED',
+          scope_value: '',
+          limit: '9000.0000',
+          currency: 'USD',
+          period_start: '2026-09-01',
+          period_end: '2026-10-01',
+          actual: null,
+          status: 'UNKNOWN',
+          elapsed: '0.8333',
+          used: null,
+        },
+        {
+          budget_id: 'EC2 hours',
+          name: 'EC2 hours',
+          scope: 'UNSUPPORTED',
+          scope_value: '',
+          limit: '40000.0000',
+          currency: 'USD',
+          period_start: '2026-09-01',
+          period_end: '2026-10-01',
+          actual: null,
+          status: 'UNKNOWN',
+          elapsed: '0.8333',
+          used: null,
+        },
+      ],
+      unsupported: 2,
+    },
+    meta: {
+      as_of: '2026-09-26T06:00:00Z',
+      collected_at: '2026-09-26T06:05:00Z',
+      scope_coverage: { visible: 1, total: 1, is_partial: false, unit: 'accounts' },
+      degraded: false,
+      failures: [],
+    },
   };
 }

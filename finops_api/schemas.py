@@ -536,6 +536,51 @@ class CommitmentCoverageOut(BaseModel):
     coverage: Decimal | None
 
 
+class BudgetOut(BaseModel):
+    """One budget, the spend against it, and what that means. FEAT-060.
+
+    Everything derived travels on the payload rather than being recomputed by the screen, so
+    the interface and the API cannot disagree about whether something is over.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    budget_id: str
+    name: str
+    #: ACCOUNT, SERVICE, ALL or UNSUPPORTED.
+    scope: str
+    scope_value: str
+    limit: Decimal
+    currency: str
+    period_start: date
+    period_end: date
+    #: Measured, from the bill. Null where no cost was collected for the period, or where the
+    #: scope is one this product cannot reproduce. Null is not zero in either case.
+    actual: Decimal | None
+    #: UNDER, AT_RISK, OVER or UNKNOWN. Unknown is not a fourth colour on a traffic light: it
+    #: is the answer when the period has not started, when no spend was collected, or when the
+    #: scope cannot be joined, and it exists so none of those three renders as green.
+    status: str
+    #: How far through the period today is, nought to one. The denominator of the pace rule,
+    #: on the wire so a reader can check the arithmetic rather than take it.
+    elapsed: Decimal
+    #: Spend as a fraction of the limit. Null wherever `actual` is.
+    used: Decimal | None
+
+
+class BudgetsOut(BaseModel):
+    """Every budget for a period, and the count of the ones nothing can be compared against."""
+
+    model_config = ConfigDict(frozen=True)
+
+    period: date
+    budgets: tuple[BudgetOut, ...]
+    #: Budgets read, kept and never matched to a number. Non zero has to be said out loud: an
+    #: estate with ten budgets over tag expressions is not an estate with no budgets, and a
+    #: screen showing two greens out of twelve budgets would be saying the wrong thing.
+    unsupported: int
+
+
 class CommitmentActionOut(BaseModel):
     """A coverage gap as something somebody is accountable for closing. FEAT-055.
 

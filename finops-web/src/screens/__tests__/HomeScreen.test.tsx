@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { HomeScreen } from '../HomeScreen';
 import { Harness } from './Harness';
 import { clientReturning, metaOf } from './fixtures';
+import { costBudgetsFixture } from '../../api/fixtures/cost';
 import { violationsIn } from '../../components/__tests__/axe';
 import type { ApiClient } from '../../api/client';
 
@@ -120,6 +121,10 @@ describe('HomeScreen', () => {
     // that Home has no query of its own, not that it makes one request. A path
     // appearing here that no other screen owns is the failure this guards.
     expect([...asked].sort()).toEqual([
+      // `useBudgets`, the budgets screen's own hook and its own key. Home shows the one
+      // budget running furthest ahead of its calendar, which is a ranking over the rows that
+      // screen already holds rather than a slice of its own. FEAT-060.
+      '/api/v1/cost/budgets',
       // `useCostSummary`, which is the spend screen's own hook. Home shows the total
       // and the change; it computes neither.
       '/api/v1/cost/summary',
@@ -138,6 +143,27 @@ describe('HomeScreen', () => {
       // its own slice.
       '/api/v1/waste/recommendations',
     ]);
+  });
+
+  it('picks the budget furthest ahead of its calendar, not the biggest one', async () => {
+    // FEAT-060. The ranking is the only arithmetic this screen does for the tile, so it is the
+    // only thing here that can be wrong. Ranking by limit would put the 40,000 EC2 hours budget
+    // first, and it has no number at all. Ranking by amount spent would put the 11,908 payer
+    // wide budget first, and it is still inside its limit. The one that needs somebody today is
+    // the 6,402 against 6,000, because it is already over with a sixth of the month left.
+    renderHome(
+      clientReturning({
+        '/api/v1/platform/cost': COST,
+        '/api/v1/cost/budgets': costBudgetsFixture(),
+      }),
+    );
+    expect(await screen.findByTestId('home-budget-figure')).toHaveTextContent('$6,402');
+    const tile = screen.getByLabelText('Budget');
+    expect(tile).toHaveTextContent('Platform team');
+    // And the card never reads as the whole position: three others exist, two of them unscored.
+    expect(screen.getByTestId('home-budget-count')).toHaveTextContent(
+      'worst of 4 budgets, 2 with no number',
+    );
   });
 
   it('has no accessibility violations', async () => {

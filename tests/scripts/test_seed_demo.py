@@ -85,6 +85,9 @@ class Settings:
     commitment_term_months = 12
     commitment_minimum_monthly_saving_usd = Decimal("25")
 
+    # FEAT-060's margin.
+    budget_at_risk_margin = Decimal("0.1")
+
     # FEAT-057. The seed overrides the locations with the fake's, because the demo has no real
     # backend to name. Nothing is declared exhaustive, so the seeded estate never says unmanaged,
     # which is correct: the fake has one backend that refuses.
@@ -545,3 +548,29 @@ def test_the_seeded_estate_records_what_manages_a_resource(engine: object) -> No
     # The refusal, because the fake is partial by default and the whole feature turns on what
     # that prevents: no account can be called unmanaged while a location is unreadable.
     assert refused, "the fake's refusing backend left no record, so the partial path is untested"
+
+
+def test_the_seeded_estate_holds_budgets_including_ones_it_cannot_join(engine: object) -> None:
+    """FEAT-060. Fourth time this assertion has earned its place.
+
+    Two of the four seeded budgets are deliberately unjoinable, because the first thing a
+    finance reader asks is how many of their budgets this product can actually track. A seed
+    where everything joined would leave that answer rendered by nothing anybody runs.
+    """
+    from sqlalchemy import text as sql
+
+    seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
+    with engine.connect() as connection:  # type: ignore[attr-defined]
+        rows = connection.execute(
+            sql("SELECT scope, limit_amount FROM budget WHERE tenant_id = :t"),
+            {"t": seed_demo.DEMO_TENANT},
+        ).all()
+    assert rows, "the seeded estate holds no budgets, so the screen would be empty"
+    scopes = [row.scope for row in rows]
+    assert "ALL" in scopes, "no payer wide budget, which is the figure an executive view asks for"
+    assert scopes.count("UNSUPPORTED") == 2, (
+        "the seed no longer contains budgets this product cannot join, so the count the screen "
+        "shows for them is rendered by nothing"
+    )
+    for row in rows:
+        assert row.limit_amount > 0

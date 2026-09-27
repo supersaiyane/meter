@@ -301,6 +301,18 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0",
     ),
     ScheduleEntry(
+        collector="budgets",
+        cadence_seconds=DAILY,
+        reason=(
+            "Daily, because a budget is a decision somebody made and decisions are not made "
+            "hourly. The status a screen shows moves every day on its own, since it is spend "
+            "against where the calendar has got to, and that recomputes per request from the "
+            "stored limit: reading the provider more often would not move it. The call is one "
+            "DescribeBudgets at the payer and costs nothing. ADR-0012 and constraint 9."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
         collector="iac_state",
         cadence_seconds=DAILY,
         reason=(

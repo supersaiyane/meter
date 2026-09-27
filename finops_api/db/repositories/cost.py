@@ -328,6 +328,45 @@ class CommitmentRepository(ScopedRepository):
         return _fetch(self, scope, statement)
 
 
+class BudgetRepository(ScopedRepository):
+    """Budgets as collected. FEAT-060.
+
+    `PayerWide` per ADR-0025, like the commitment tables: a budget is set at the payer and the
+    API reporting it is a payer API, so a narrowed reader reads nothing rather than a number
+    that is not theirs.
+    """
+
+    table: ClassVar[Table] = models.budget
+    resource: ClassVar[str] = "budget"
+
+    def latest_period(self, scope: Scope) -> date | None:
+        """The most recent period any budget covers.
+
+        The fallback when no cost has been collected, which is the case a budget screen exists
+        for: an estate whose first ingest has not run still has budgets, and answering 404
+        would tell a reader their budgets do not exist.
+        """
+        statement = self.scoped_select(scope).with_only_columns(func.max(self.table.c.period_start))
+        found = self._connection.execute(statement).scalar_one_or_none()
+        return found
+
+    def for_period(self, scope: Scope, period: date) -> Sequence[Row[tuple[Any, ...]]]:
+        """Every budget covering a period, largest limit first.
+
+        By limit rather than by status, because status is computed per request and ordering by
+        something the database does not hold would mean fetching everything and sorting in
+        Python, which is the same work with a worse name. The screen re orders by status
+        itself, where it already has the statuses.
+        """
+        statement = (
+            self.scoped_select(scope)
+            .where(self.table.c.period_start <= period)
+            .where(self.table.c.period_end > period)
+            .order_by(self.table.c.limit_amount.desc(), self.table.c.name)
+        )
+        return _fetch(self, scope, statement)
+
+
 class CommitmentActionRepository(ScopedRepository):
     """Coverage gaps as findings somebody owns. FEAT-055.
 

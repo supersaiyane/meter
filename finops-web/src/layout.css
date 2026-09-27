@@ -1401,3 +1401,150 @@ main > section > [role='group'] {
 [data-testid='bar-chart-peak'] {
   color: var(--text-muted);
 }
+
+/* ---------------------------------------------------------------- budgets */
+
+/* Section 9 of docs/12-UI-DESIGN.md, applied to a comparison rather than a
+   figure. A budget is two numbers and a calendar, and the reason this gets a
+   drawn bar rather than a table row is that the comparison a reader actually
+   needs, am I ahead of pace, is arithmetic across all three. Drawn, it is a
+   glance. */
+
+[data-testid='budgets-tracked'],
+[data-testid='budgets-untracked'] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+[data-testid='budget'] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface-2);
+}
+
+/* The name and the status on one line, name first. A reader scans down the
+   left edge for the budget they own and across for how it is doing. */
+[data-testid='budget'] > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+[data-testid='budget'] > header h3 {
+  margin: 0;
+  font-size: var(--font-size-2);
+}
+
+/* The status chip. Four colours for four states, and the fourth is deliberately
+   not a colour: UNKNOWN is grey because amber would rank it against the others
+   and it is not on that scale at all. */
+[data-testid='budget-status'] {
+  flex: none;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  background: var(--surface-3);
+  color: var(--text-muted);
+}
+
+[data-testid='budget-status'][data-status='UNDER'] {
+  background: var(--good-quiet);
+  color: var(--good);
+}
+
+[data-testid='budget-status'][data-status='AT_RISK'] {
+  background: var(--severity-1);
+  color: var(--severity-5);
+}
+
+[data-testid='budget-status'][data-status='OVER'] {
+  background: var(--failure-quiet);
+  color: var(--failure);
+}
+
+/* Spent against limit. The spent half is the figure somebody came for, so it
+   carries the numeral face and the size; the limit is context. */
+[data-testid='budget-figure'] {
+  margin: 0;
+  font-family: var(--font-numeral);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-2);
+  color: var(--text-muted);
+}
+
+[data-testid='budget-figure'] strong {
+  font-size: var(--font-size-4);
+  color: var(--text);
+}
+
+/* The track. Fixed height and a full width rail, so two cards side by side are
+   comparable by length rather than only by their numbers. */
+[data-testid='budget-bar'] {
+  position: relative;
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+/* The fill, from the left edge, because a bar that does not start at zero is a
+   bar that lies about its own proportion. */
+[data-testid='budget-bar'] i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: var(--radius-pill);
+  background: var(--chart-bar);
+}
+
+[data-testid='budget-bar'] i[data-over='true'] {
+  background: var(--failure);
+}
+
+/* The pace marker, and the whole reason this is a drawing. It is where the
+   period has got to, so a fill past the tick is a budget running ahead of the
+   calendar and a fill short of it is one running behind. Two pixels, full
+   height, and in the ink colour rather than a hue, because it is not a
+   measurement on the same scale as the bar: it is the date. */
+[data-testid='budget-bar'] b {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--text);
+}
+
+/* The two percentages under the bar, at its ends, so the drawing can be read
+   by somebody who needs the numbers and by somebody who does not. */
+[data-testid='budget-pace'] {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-numeral);
+  font-size: var(--font-size-1);
+  color: var(--text-faint);
+}
+
+/* A budget with no number says so in prose, on the card, in the space the bar
+   would have taken. An empty track would read as nothing spent. */
+[data-testid='budget-unknown'] {
+  margin: 0;
+  font-size: var(--font-size-1);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+[data-testid='budgets-untracked-heading'] {
+  margin: var(--space-6) 0 0;
+}
