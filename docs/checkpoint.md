@@ -41,6 +41,10 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-08-23 | Correct stale counts found by the checkpoint gate | Done | `project_map.md` and `INDEX.md` both claimed the Makefile had 28 targets when it has 51. Both now describe it without naming a number, because a count in prose goes stale silently and nothing checks it | `project_map.md` line 22, `INDEX.md` build and deployment table |
 | 2026-08-23 | Competitive review of NudgeBee AI FinOps | Done | Six capabilities adopted as FEAT-043 to FEAT-048, three existing features amended, four rejected. Two adopted over my objection on the owner's decision, and both objections became design constraints: the FinOps Score ships only if it decomposes to the findings that moved it, and forecasting produced ADR-0015 drawing the line between a forecaster and a language model. Nothing on their page addresses observability query cost governance, which is evidence rather than assertion that P2 is the differentiator | `docs/11-COMPETITIVE-REVIEW.md`, ADR-0015, ADR-0016. CHG-0025, commit `c7f45f0` |
 | 2026-08-23 | Configuration, feature flags, and the management account taken off the critical path | Done | Regions confirmed as eu-west-1 and eu-west-2, closing OPEN-06. TASK-P0-017 no longer depends on the member StackSet, because LocalStack emulates sts and organizations, which moves 6 tasks off somebody else's calendar. ADR-0017 with `.env.example` documenting 54 values by what, why and which file reads them, `docs/feature-flags.yaml` with owner, reason, expiry and removal per flag, and two checks that fail the build | `.env.example`, `docs/feature-flags.yaml`, `scripts/ci/check_flags.py`, `scripts/ci/check_hardcoded.py`. TASK-P0-034 added. CHG-0026, commit `5a78798` |
+| 2026-08-23 | Write the P2 specification | Done | All three Grafana surfaces in scope, answering OPEN-04. The connection strategy sits below the adapter because the three variants share about 90 percent of their logic. Three enforcement levels and three write levels, per tenant, both defaulting safe. Two rules on the deny path enforced by database constraint rather than intention: no DENY without an expiry, and a never deny list | `docs/specs/2026-08-23-p2-query-cost-governance-design.md`, 458 lines. ISS-090 to ISS-096. CHG-0027, commit `ee3ea68` |
+| 2026-08-23 | Fix a red gate I had committed through | Done | The previous commit marked eight features Specified while their documents carried only the Planned section set, and `make check-docs` was red when it landed. A process failure on my part, not a tooling one. All eight expanded from the specification | `docs/features/FEAT-011` to `FEAT-018`, commit `63329e6` |
+| 2026-08-23 | Write the P2 implementation plan | Done | 22 tasks in ten waves. The prototype is pinned by golden files before anything touches it, and TASK-P2-001 forbids fixing even obvious bugs, because a baseline that already includes your fixes is not a baseline. Waves F and G do not depend on the audit path, which is the fastest route to the control that stops the bleed | `docs/plans/P2-implementation-plan.md`. CHG-0028, commit `80a0ac3` |
+| 2026-08-23 | Correct another stale count found by the checkpoint gate | Done | `project_map.md` said the P0 plan had 28 tasks in 8 waves when it has 34 in eleven groups. Second occurrence of this defect class. Fixed the same way as the first: the map no longer names a number, and points at the command that counts them | `project_map.md` lines 57 to 62 |
 
 ## Next action
 
@@ -64,7 +68,24 @@ P0.
 | Where a change gets recorded | `docs/03-CHANGE-CONTROL.md` |
 | Rules binding every change | `CLAUDE.md` |
 
-### Resume vector, as of 2026-09-20
+### Resume vector, as of 2026-09-26
+
+| What | Where |
+| --- | --- |
+| Git position | branch `main`, 58 commits, working tree clean |
+| **The gate, still open** | `docs/specs/2026-08-23-p0-foundation-design.md` is `In review`. The only thing between here and code |
+| Also in review, not blocking | The P2 spec and plan |
+| **First task** | TASK-P0-029, verify the Minimus tags. Then group 1: 001, 002, 003, 034, 031, 004 |
+| Plans that exist | P0, 34 tasks in eleven groups. P2, 22 tasks in ten waves. **56 tasks total** |
+| Plans that do not | P1, P3 to P7. Written when their spec is approved, per ADR-0001 |
+| Unblocked in P0 | Waves A to E, 22 of 34, needing nobody |
+| Answered this session | OPEN-04, all three Grafana surfaces in scope. OPEN-06 was answered earlier |
+| Needs a person | ISS-095 who owns the never deny list, before `deny` is enabled. ISS-078 regulatory retention floor, before the schema is built. ISS-087 flag and CODEOWNERS owners, before the first merge request |
+| Check everything | `make check-docs && make check-writing` |
+| End a session | `make session-end` |
+| Next audit due | P0 boundary, scope `code` |
+
+### Earlier resume vector, as of 2026-09-20
 
 | What | Where |
 | --- | --- |
