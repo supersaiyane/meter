@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meter, a direction</title>
+<!--
+  A direction for the home screen, 2026-09-27. Not wired to anything.
+
+  Built after the owner rejected the design pass of the same day in full. That pass was
+  faithful to the brief they chose, dense and instrumental, which is why arguing about it was
+  worthless and showing an alternative was not.
+
+  WHAT IS REAL: every figure except the chart. The spend, the change against August, the four
+  recommendations and their savings, the commitment coverage and the slice count are all read
+  from the seeded estate through the API on 9731.
+
+  WHAT IS NOT: the five bars. The summary route returns two periods, so May, June and July are
+  drawn shape and nothing else. A mockup that passed invented numbers off as measured ones
+  would be doing the exact thing this product exists to stop.
+
+  WHAT SURVIVES FROM THE CURRENT DESIGN: the coverage count, the freshness, the failure count,
+  and the measured and modelled labels. They are chips here rather than sentences. If a
+  direction ever requires dropping one of them, that direction is wrong.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#0b0f14; --panel:#121820; --panel-2:#171f29; --line:#212c39; --line-soft:#1a232e;
+  --ink:#e8eef6; --ink-2:#93a3b8; --ink-3:#61728a;
+  --brand:#4da3ff; --brand-soft:rgba(77,163,255,.12);
+  --good:#31c48d; --good-soft:rgba(49,196,141,.12);
+  --warn:#f0b429; --warn-soft:rgba(240,180,41,.12);
+  --bad:#f4736b; --bad-soft:rgba(244,115,107,.12);
+  --r:10px;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+
+/* nav */
+nav{background:var(--panel);border-right:1px solid var(--line);padding:18px 0}
+.brand{display:flex;align-items:center;gap:9px;padding:0 18px 20px;font-weight:700;font-size:16px;letter-spacing:-.01em}
+.brand i{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--brand),#9b6cff);display:block}
+.nav-group{padding:14px 18px 5px;font-size:10.5px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
+nav a{display:flex;align-items:center;gap:9px;padding:6px 18px;color:var(--ink-2);text-decoration:none;font-size:13.5px;border-left:2px solid transparent}
+nav a:hover{color:var(--ink);background:var(--panel-2)}
+nav a.on{color:var(--ink);background:var(--brand-soft);border-left-color:var(--brand);font-weight:500}
+nav a s{width:15px;height:15px;border:1.5px solid currentColor;border-radius:4px;opacity:.55;flex:none}
+nav a.on s{opacity:1;border-color:var(--brand)}
+.pill{margin-left:auto;font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:20px;background:var(--bad-soft);color:var(--bad)}
+
+/* header */
+main{padding:0 0 56px}
+header{display:flex;align-items:center;gap:14px;padding:16px 28px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(11,15,20,.88);backdrop-filter:blur(8px);z-index:5}
+h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.015em}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--ink-2);font-family:var(--mono)}
+.chip b{width:6px;height:6px;border-radius:50%;background:var(--good)}
+.chip.warn{border-color:transparent;background:var(--warn-soft);color:var(--warn)}
+.chip.warn b{background:var(--warn)}
+.spacer{flex:1}
+
+.wrap{padding:24px 28px;display:grid;gap:18px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.25fr 1fr;gap:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+.card h2{margin:0 0 2px;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.big{font-family:var(--mono);font-size:42px;font-weight:500;letter-spacing:-.025em;line-height:1.1;margin:8px 0 2px;font-variant-numeric:tabular-nums}
+.delta{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:13px;color:var(--good);background:var(--good-soft);padding:2px 8px;border-radius:6px}
+.sub{color:var(--ink-3);font-size:12.5px;margin-top:9px}
+.tag{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);border:1px solid var(--line);border-radius:4px;padding:1px 5px;margin-left:7px}
+
+/* chart */
+.chart{display:flex;align-items:flex-end;gap:7px;height:104px;margin-top:14px}
+.chart div{flex:1;background:linear-gradient(180deg,var(--brand),rgba(77,163,255,.22));border-radius:4px 4px 2px 2px;position:relative}
+.chart div:last-child{background:linear-gradient(180deg,#9b6cff,rgba(155,108,255,.22))}
+.chart div span{position:absolute;bottom:-19px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+.axis{height:20px}
+
+/* actions */
+.row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-soft)}
+.row:last-child{border-bottom:0}
+.sev{width:3px;align-self:stretch;border-radius:3px;background:var(--bad)}
+.sev.m{background:var(--warn)}
+.row .n{font-family:var(--mono);font-size:15px;color:var(--ink);margin-left:auto;font-variant-numeric:tabular-nums}
+.row .t{font-weight:500;font-size:13.5px}
+.row .m{font-size:12px;color:var(--ink-3);font-family:var(--mono)}
+.badge{font-size:10.5px;padding:2px 7px;border-radius:20px;background:var(--bad-soft);color:var(--bad);font-weight:500}
+.badge.ok{background:var(--good-soft);color:var(--good)}
+
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.stat{font-family:var(--mono);font-size:26px;font-weight:500;margin:6px 0 0;font-variant-numeric:tabular-nums}
+.bar{height:5px;border-radius:3px;background:var(--line);margin-top:11px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px;background:var(--brand)}
+.bar i.warn{background:var(--warn)}
+.bar i.good{background:var(--good)}
+.foot{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-3);margin-top:7px;font-family:var(--mono)}
+a.more{color:var(--brand);text-decoration:none;font-size:12.5px}
+a.more:hover{text-decoration:underline}
+.head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+.head .spacer{flex:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav>
+    <div class="brand"><i></i>Meter</div>
+    <a class="on" href="#"><s></s>Overview</a>
+    <div class="nav-group">Spend</div>
+    <a href="#"><s></s>Cost</a><a href="#"><s></s>Allocation</a><a href="#"><s></s>Anomalies</a><a href="#"><s></s>Commitments</a>
+    <div class="nav-group">Waste</div>
+    <a href="#"><s></s>Recommendations<span class="pill">14</span></a><a href="#"><s></s>Realized</a><a href="#"><s></s>Score</a>
+    <div class="nav-group">Inventory</div>
+    <a href="#"><s></s>Resources</a><a href="#"><s></s>Topology</a><a href="#"><s></s>Accounts</a>
+    <div class="nav-group">Platform</div>
+    <a href="#"><s></s>Ingest</a><a href="#"><s></s>Freshness</a>
+  </nav>
+
+  <main>
+    <header>
+      <h1>Overview</h1>
+      <span class="chip"><b></b>1 of 1 slices</span>
+      <span class="chip">as of 24 Aug, 06:00</span>
+      <div class="spacer"></div>
+      <span class="chip warn"><b></b>11 collections failing</span>
+    </header>
+
+    <div class="wrap">
+      <section class="hero">
+        <div class="card">
+          <div class="head"><h2>Effective spend, September</h2><div class="spacer"></div><a class="more" href="#">Cost detail &rarr;</a></div>
+          <div class="big">$11,907.69</div>
+          <span class="delta">&darr; $2,218.52 &nbsp;15.7% vs August</span>
+          <span class="tag">measured</span>
+          <div class="chart">
+            <div style="height:58%"><span>May</span></div>
+            <div style="height:71%"><span>Jun</span></div>
+            <div style="height:66%"><span>Jul</span></div>
+            <div style="height:88%"><span>Aug</span></div>
+            <div style="height:74%"><span>Sep</span></div>
+          </div>
+          <div class="axis"></div>
+          <div class="sub">Billed $12,860.30. The gap is commitment discount already applied.</div>
+        </div>
+
+        <div class="card">
+          <div class="head"><h2>Worth doing first</h2><div class="spacer"></div><a class="more" href="#">All 14 &rarr;</a></div>
+          <div class="row"><i class="sev"></i><div><div class="t">Rightsize instance</div><div class="m">i-oversized</div></div><div class="n">$687</div></div>
+          <div class="row"><i class="sev"></i><div><div class="t">Idle instance</div><div class="m">amazonec2/fake-product-b/0002</div></div><div class="n">$584</div></div>
+          <div class="row"><i class="sev m"></i><div><div class="t">Graviton candidate</div><div class="m">db-fake-0001</div></div><div class="n">$380</div></div>
+          <div class="row"><i class="sev m"></i><div><div class="t">Rightsize instance</div><div class="m">amazonec2/fake-product-b/0004</div></div><div class="n">$239</div></div>
+          <div class="sub">$1,890 a month across the four <span class="tag">modelled</span></div>
+        </div>
+      </section>
+
+      <section class="grid3">
+        <div class="card">
+          <h2>Commitment coverage</h2>
+          <div class="stat">40.0%</div>
+          <div class="bar"><i class="warn" style="width:40%"></i></div>
+          <div class="foot"><span>$11,040 uncovered</span><span class="badge">act</span></div>
+        </div>
+        <div class="card">
+          <h2>Estate read</h2>
+          <div class="stat">18 <span style="font-size:15px;color:var(--ink-3)">of 20 slices</span></div>
+          <div class="bar"><i class="good" style="width:90%"></i></div>
+          <div class="foot"><span>2 could not be read</span><span class="badge">why</span></div>
+        </div>
+        <div class="card">
+          <h2>Realized saving, 90 days</h2>
+          <div class="stat">$4,318</div>
+          <div class="bar"><i class="good" style="width:62%"></i></div>
+          <div class="foot"><span>verified against the bill</span><span class="badge ok">measured</span></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>

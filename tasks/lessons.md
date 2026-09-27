@@ -237,6 +237,10 @@ hoc chains are exposed, and the second occurrence was `pytest ... | tail -6` wit
 any `&& git commit` or `&& git add`; a Bash call that both checks and commits; and
 the words "it passed" about output I filtered rather than read.
 
+**Recurred 2026-09-27, third time.** `make check-memory` exited 2 and the commit ran anyway, because both were in one Bash call joined by newlines: the call's exit code is the last command's, and the last command was the commit. The rule below already says this and I wrote it. What failed was applying it while doing something else, which is when it matters.
+
+**Sharpened rule.** A Bash call that contains `git commit` contains nothing else except `git add` and `git log`. Not a checker, not a test, not a `make` target, not an `echo` of an exit code. If a check has to run first, it runs in its own call and I read its output before the next call is written. There is no version of this where the two are one command and the exit code is still trustworthy.
+
 ## 2026-09-21: a registry entry that landed in the wrong list
 
 **Mistake:** twice now I have added an entry to `docs/registry.yaml` by finding
