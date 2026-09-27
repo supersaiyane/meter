@@ -119,6 +119,10 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | None] = {
     # organization. In before the route, per the rule at the top of the P1 plan.
     "commitment_use": PayerWide(),
     "commitment_coverage": PayerWide(),
+    # FEAT-060. A budget is set at the payer and the API reporting it is a payer API, so it
+    # inherits that scoping the way commitment coverage does, per ADR-0025. The cost is real
+    # and is ISS-212: an account scoped budget is invisible to the team that owns the account.
+    "budget": PayerWide(),
     # FEAT-055, and the reason the table exists. A finding derived from a payer wide fact is
     # payer wide, so it inherits the scoping of the coverage it was computed from rather than
     # the scoping of the findings table it resembles. ADR-0025.

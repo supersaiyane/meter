@@ -17,6 +17,7 @@ import {
   costAllocationFixture,
   costTrendFixture,
   costAnomaliesFixture,
+  costBudgetsFixture,
   costCommitmentsFixture,
 } from './fixtures/cost';
 import {
@@ -41,6 +42,7 @@ import type {
   ApiInventoryRoots,
   ApiResourceList,
   ApiSubgraph,
+  ApiBudgets,
   ApiCommitments,
   ApiCostAnomalies,
   ApiCostDay,
@@ -464,4 +466,20 @@ export function useBlastRadius(nodeId: string | null) {
     ),
     enabled: nodeId !== null,
   });
+}
+
+/**
+ * Budgets for a period. FEAT-060.
+ *
+ * The budgets screen owns this, and the home screen's panel reads the same hook and the same
+ * query key rather than asking for its own slice, per docs/13-UI-ARCHITECTURE.md: a panel with
+ * its own query will one day disagree with the screen it summarises.
+ */
+export function useBudgets() {
+  return useQuerySurface<ApiBudgets>(
+    ['cost-budgets'],
+    '/api/v1/cost/budgets',
+    '/api/v1/cost/budgets',
+    costBudgetsFixture,
+  );
 }

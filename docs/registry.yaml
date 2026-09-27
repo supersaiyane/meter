@@ -415,6 +415,13 @@ features:
   status: Planned
   detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic'
   doc: docs/features/FEAT-059-application-layer.md
+- id: FEAT-060
+  name: Budget against actual, with a red amber green status
+  subproject: P1
+  status: Delivered
+  detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-27, adopted from the FinOpsForge dashboard checklist'
+  doc: docs/features/FEAT-060-budgets.md
+
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -2969,6 +2976,48 @@ issues:
   status: OPEN
   summary: finops_providers/aws/terraform_state.py has never read a real state file. The state format and the addressing rules are read from the Terraform documentation for state version 4 and from nothing else, and the tests answer from a literal
   detail: 'Same footing as ISS-200 and ISS-202. The part most likely to be wrong is the address, because an address that is slightly wrong points FEAT-040 at the wrong block, which is worse than pointing at none: the rules for counted and for_each resources render differently, aws_vpc.main[0] and aws_vpc.main["a"] are different addresses, and only one of them exists in any given file. The second is the identifier: only the arn attribute is read, and a resource type that does not publish one cannot be joined at all, which is counted rather than guessed at but means whole classes of resource are invisible to this feature. Building it also demonstrated ISS-202 rather than just describing it: the fake estate''s provider_id is amazonvpc/account/region/name and not an ARN, although the column is documented as an ARN, so the fake state had to follow the estate rather than the schema comment. Closing ISS-202 or ISS-205 by normalising identifiers at ingest moves those three fake rows with it'
+- id: ISS-210
+  severity: MEDIUM
+  status: OPEN
+  summary: A budget must exist at the provider to exist in Meter, so an organization that tracks
+    budgets in a spreadsheet or in a finance system has none here and sees an empty screen
+  detail: 'Decided on 2026-09-27 building FEAT-060 rather than discovered afterwards. The budget
+    table carries ingest_run_id and both timestamps because a budget read from a provider is a
+    fact with a provenance, and everything in Meter that a screen renders has one. A budget typed
+    into Meter would be the first thing in the product with none. Closing it is not one column: it
+    needs a write API, which nothing else in v1 has, a form, validation, and an audit trail,
+    because a limit somebody can change silently is a limit nobody can rely on. It also needs a
+    decision about which source wins when a provider budget and a Meter budget describe the same
+    scope, and that decision is the expensive half'
+- id: ISS-211
+  severity: MEDIUM
+  status: OPEN
+  summary: finops_providers/aws/budgets.py has never made a real call. Every response shape in it
+    is read from the AWS Budgets API documentation and from nothing else, and the tests answer
+    from a literal
+  detail: 'Same footing as ISS-200, ISS-202 and ISS-209. The part most likely to be wrong is the
+    filter to scope mapping: only LinkedAccount and Service are recognised, and everything else
+    becomes UNSUPPORTED, so a budget filtered on a dimension that is actually reproducible would
+    be counted as uncomputable rather than compared. That fails safe, which is why it was built
+    this way, but it fails quietly. The second is the period: only MONTHLY COST budgets are
+    matched, and a quarterly budget is marked unsupported rather than being divided, because
+    dividing a quarterly limit by three invents a monthly limit nobody set'
+- id: ISS-212
+  severity: MEDIUM
+  status: OPEN
+  summary: An account scoped budget is invisible to the team that owns the account, because the
+    budget table is PayerWide and a narrowed reader reads nothing
+  detail: 'Named in ADR-0025 terms on 2026-09-27 as a consequence rather than found later. A
+    budget is set at the payer and the API that reports it is a payer API, so the guard scopes the
+    table the way it scopes commitment_coverage: a narrowed reader reads nothing rather than a
+    figure that is not theirs. The cost is that a budget drawn around one account, which is
+    exactly the budget that account team most needs, is hidden from them. Closing it properly
+    means a per row rule rather than a per table one, so a budget whose scope names an account is
+    readable by that account and a payer wide one is not, and that is the same per class rule
+    ADR-0025 already refused once because two implementations of an authorization rule is how an
+    authorization bug is created. It is a scoping decision with a real security surface, so it is
+    the owner call rather than mine'
+
 open_questions:
 - id: OPEN-07
   question: What does the cost screen show for a tenant whose first ingest has not run, an

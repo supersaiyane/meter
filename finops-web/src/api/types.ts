@@ -383,6 +383,40 @@ export interface ApiCommitments {
   readonly wasted_total: string;
 }
 
+/**
+ * FEAT-060. What somebody said this should cost, and whether it is on course.
+ *
+ * `status` is computed by the server, never by the screen, so the interface and the API cannot
+ * disagree about whether something is over. UNKNOWN is not a fourth colour on a traffic light:
+ * it is the answer when the period has not started, when no spend was collected, or when the
+ * budget's scope is one this product cannot reproduce, and it exists so none of those renders
+ * as green.
+ */
+export interface ApiBudget {
+  readonly budget_id: string;
+  readonly name: string;
+  /** ACCOUNT, SERVICE, ALL or UNSUPPORTED. */
+  readonly scope: string;
+  readonly scope_value: string;
+  readonly limit: string;
+  readonly currency: string;
+  readonly period_start: string;
+  readonly period_end: string;
+  /** Measured, from the bill. Null is not zero, in either of the two ways it can be null. */
+  readonly actual: string | null;
+  readonly status: string;
+  /** How far through the period today is, nought to one. The denominator of the pace rule. */
+  readonly elapsed: string;
+  readonly used: string | null;
+}
+
+export interface ApiBudgets {
+  readonly period: string;
+  readonly budgets: readonly ApiBudget[];
+  /** Read, kept, and never matched to a number. Non zero has to be said out loud. */
+  readonly unsupported: number;
+}
+
 export interface ApiCostAnomaly {
   readonly account_id: string;
   readonly service_name: string;

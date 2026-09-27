@@ -39,7 +39,7 @@ P0 Foundation
 | ID | Name | Features | Specified | Planned |
 | --- | --- | --- | --- | --- |
 | P0 | Foundation | 12 | 0 | 0 |
-| P1 | Cost Intelligence | 7 | 3 | 0 |
+| P1 | Cost Intelligence | 8 | 3 | 0 |
 | P2 | Query Cost Governance | 10 | 9 | 1 |
 | P3 | Utilization and Rightsizing | 9 | 0 | 0 |
 | P4 | Inventory and Topology | 6 | 0 | 0 |
@@ -101,7 +101,7 @@ rather than that one saving happened.
 | ID | Name | Status | Features | Spec | Plan | Depends on |
 | --- | --- | --- | --- | --- | --- | --- |
 | P0 | Foundation | Spec approved, in build | 12 (0 specified) | [spec](specs/2026-08-23-p0-foundation-design.md) | [plan](plans/P0-implementation-plan.md) | none |
-| P1 | Cost Intelligence | Cost surface delivered, 13 of 13 tasks. Anomalies, commitments and the export are a second cut and are not started | 7 (3 specified) | [spec](specs/2026-09-18-p1-cost-intelligence-design.md) | [plan](plans/P1-implementation-plan.md) | P0 |
+| P1 | Cost Intelligence | Cost surface delivered, 13 of 13 tasks. Anomalies, commitments and the export are a second cut and are not started | 8 (3 specified) | [spec](specs/2026-09-18-p1-cost-intelligence-design.md) | [plan](plans/P1-implementation-plan.md) | P0 |
 | P2 | Query Cost Governance | Spec approved, plan in review | 10 (9 specified) | [spec](specs/2026-08-23-p2-query-cost-governance-design.md) | [plan](plans/P2-implementation-plan.md) | P0 |
 | P3 | Utilization and Rightsizing | Not started | 9 (0 specified) | not written | not written | P0, P1 |
 | P4 | Inventory and Topology | Delivered | 6 (0 specified) | [spec](specs/2026-09-20-p4-inventory-and-topology-design.md) | [plan](plans/P4-implementation-plan.md) | P0 |

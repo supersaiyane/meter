@@ -9,7 +9,7 @@
      own content rather than scaffolding, and is not tagged.
 -->
 
-Last updated: 2026-09-26
+Last updated: 2026-09-27
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 59 total, 19 specified, 10 in build, 21 delivered |
+| Features | 60 total, 19 specified, 10 in build, 22 delivered |
 | Decisions | 25 architecture decision records |
 | Changes | 99 recorded |
-| Issues | 131 fixed, 72 open, 0 parked |
+| Issues | 131 fixed, 75 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -50,6 +50,14 @@ Docker, because the database fixture starts a PostgreSQL container. ISS-154.
 Lint and type checking cover every directory that holds Python, which is 181
 files under mypy where it was 25. `scripts/`, `migrations/` and the test suite
 had all been outside one or both.
+
+**Budgets landed on 2026-09-27 as FEAT-060, outside the P1 plan.** Three
+independent reviews named the same absence and the plan named none of it: the
+product had no budget entity, which blocked budget against actual, a status
+light and forecast against budget at once. Read from the provider and never
+entered, which is ISS-210. Payer wide per ADR-0025, which is ISS-212. The
+adapter has never made a real call, which is ISS-211, the same footing as
+ISS-200, ISS-202 and ISS-209.
 
 **P1's cost surface is 13 of 13 done.** Ingest to two screens, against a fake
 export. `/cost` and `/cost/allocation` read live data on a seeded estate, and

@@ -26,13 +26,13 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 20 of 24 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Screens built | 21 of 25 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 15 in 4 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 6 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 20 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 16 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 112 | test_*.py under tests/ |
-| Test functions | 1547 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 21 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 17 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 114 | test_*.py under tests/ |
+| Test functions | 1568 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -396,6 +396,21 @@ meter/
 │   │                          one has a scale and a labelled peak. Bars start at
 │   │                          zero, because a non zero baseline makes a normal
 │   │                          week look like a crisis
+│   ├── components/BudgetBar.tsx  spend against a limit with the calendar drawn on
+│   │                          top of it. The tick is the point: ninety five
+│   │                          percent spent is healthy on the twenty eighth and
+│   │                          alarming on the fourth, so the fill alone carries no
+│   │                          finding. Shared by the home tile and the budgets
+│   │                          screen, because a fill computed one way in one place
+│   │                          and another way in the other is two pictures of one
+│   │                          fact. The fill is clamped, so an overspent budget
+│   │                          draws full and says OVER beside it rather than
+│   │                          running past its own track
+│   ├── screens/BudgetsScreen.tsx  FEAT-060. Budgets with a number, then the ones
+│   │                          without, counted, with the reason on each card. Two
+│   │                          reasons kept apart because they need different
+│   │                          actions: an unsupported scope is never fixed by
+│   │                          waiting and an uncollected period is
 │   ├── src/tokens.css         the palette, and the only file that decides what a
 │   │                          colour means. Three surface depths because a card
 │   │                          needs to differ from the page without a shadow,
@@ -802,6 +817,15 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0017_budget.py     what somebody said this should cost, collected and
+│       │                      never entered, so it carries a run id and both
+│       │                      timestamps like every other fact here. Nothing
+│       │                      derived is stored: the status depends on where today
+│       │                      falls in the period, so a stored one is wrong by the
+│       │                      next morning. limit_amount rather than limit,
+│       │                      because LIMIT is reserved and a column called that
+│       │                      is quoted in every statement forever. Payer wide per
+│       │                      ADR-0025, and ISS-212 is what that costs
 │       └── 0003_p2_tables.py  the six P2 tables. Three of its constraints are
 │                              the feature: a deny cannot be written without an
 │                              expiry, a modelled row cannot claim a measured

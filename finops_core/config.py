@@ -150,6 +150,12 @@ class Settings(BaseSettings):
     #: only the second is a refusal.
     blast_radius_depth: int = Field(ge=1, le=10)
 
+    # Budgets, FEAT-060. How far ahead of pace counts as at risk, as a fraction. At 0.1,
+    # eighty percent spent sixty percent of the way through is at risk. A number in code
+    # deciding when to warn somebody about their own money is a number nobody can argue
+    # with, which is ADR-0012's argument applied to a threshold.
+    budget_at_risk_margin: Decimal
+
     # Topology
     max_graph_nodes: int = Field(ge=1)
 
