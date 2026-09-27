@@ -42,6 +42,14 @@ Reports principal identifiers, which the measured overlay already reads under th
 
 ## Interface
 
+The screen states what these queries cost in total, added 2026-09-27. It is the finding the screen
+exists for and it was being said one row at a time, so a reader had to add the cost column up to
+learn the thing the page is about.
+
+The sentence under it keeps the judgement the total cannot make: an ad hoc query is not waste by
+itself, and one running on a schedule nobody remembers setting usually is. A bare total with no
+sentence would read as an accusation against every row in the table.
+
 A new table, one row per distinct normalised query per account, region and window, and a read route beside the other query routes. See [P2 spec](../specs/2026-08-23-p2-query-cost-governance-design.md) sections 5 and 8.2.
 
 ## Not doing
