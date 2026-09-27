@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { useRealizedSavings } from '../api/queries';
 import { DataTable } from '../components/DataTable';
+import { RankedBars } from '../components/RankedBars';
 import { Figure } from '../components/Figure';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
@@ -155,6 +156,29 @@ export function WasteSavingsScreen() {
             ))}
           </dl>
         )}
+
+        {/* The same three figures, drawn, and scaled to the largest of them rather than to
+            their total. The total is the number this screen exists to refuse: one realized
+            figure would be added to the estimate on the recommendations screen within a week
+            of anybody seeing both. So the bars compare the verdicts with each other, which is
+            a comparison that is true, and no share is printed, because a percentage with no
+            whole behind it is a number nobody can check. Measured, not hatched: this is the
+            one place in the product where a saving has actually been observed. */}
+        {totals.length > 1 ? (
+          <RankedBars
+            points={totals.map(([verdict, total]) => ({
+              label: `${verdict}, ${String(total.count)} ${
+                total.count === 1 ? 'change' : 'changes'
+              }`,
+              value: money(total.realized_monthly),
+            }))}
+            provenance="measured"
+            basis="largest"
+            format={(value) =>
+              `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`
+            }
+          />
+        ) : null}
       </section>
 
       <StateBoundary state={state}>

@@ -76,6 +76,46 @@ describe('rankedRows', () => {
   });
 });
 
+describe('rankedRows on the largest basis', () => {
+  it('scales to the largest and never sums', () => {
+    // The realized savings case. Three verdicts whose figures are not parts of a whole: the
+    // largest fills its track, the others are drawn against it, and no total is computed
+    // anywhere, because the total is the number that screen exists to refuse.
+    const rows = rankedRows(
+      [
+        { label: 'CONFIRMED', value: 400 },
+        { label: 'PARTIAL', value: 100 },
+        { label: 'REGRESSED', value: 200 },
+      ],
+      8,
+      'rest',
+      'largest',
+    );
+    expect(rows.map((row) => row.label)).toEqual(['CONFIRMED', 'REGRESSED', 'PARTIAL']);
+    expect(rows[0]?.share).toBe(1);
+    expect(rows[1]?.share).toBeCloseTo(0.5);
+    // And the shares do not add to one, which is the point: they are not shares of anything.
+    expect(rows.reduce((sum, row) => sum + row.share, 0)).toBeGreaterThan(1);
+  });
+
+  it('collapses nothing on that basis, because a remainder row is a sum', () => {
+    // The rule that is easy to lose. Summing anything here, even into a row labelled as the
+    // rest, is the addition the basis exists to avoid.
+    const many = Array.from({ length: 12 }, (_, index) => ({
+      label: `row-${String(index)}`,
+      value: index + 1,
+    }));
+    const rows = rankedRows(many, 8, 'rest', 'largest');
+    expect(rows).toHaveLength(12);
+    expect(rows.some((row) => row.label.includes('rest'))).toBe(false);
+  });
+
+  it('gives every row a zero share when the largest is zero', () => {
+    const rows = rankedRows([{ label: 'a', value: 0 }], 8, 'rest', 'largest');
+    expect(rows[0]?.share).toBe(0);
+  });
+});
+
 describe('RankedBars', () => {
   it('writes every value as text, so the bars are never the only carrier', () => {
     // The bars are aria-hidden decoration. That is only honest if the number is written down.

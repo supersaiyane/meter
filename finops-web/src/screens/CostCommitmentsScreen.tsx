@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { useCostCommitments } from '../api/queries';
 import { DataTable } from '../components/DataTable';
+import { PercentCell } from '../components/PercentCell';
 import { Figure } from '../components/Figure';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
@@ -40,12 +41,16 @@ function money(amount: string): number {
   return Number(amount);
 }
 
-/** A fraction as a percentage, or the sentence that belongs where there is none. */
-function share(value: string | null, absent: string): string {
-  if (value === null) {
-    return absent;
-  }
-  return `${(Number(value) * 100).toFixed(1)}%`;
+/**
+ * A fraction, or null where the row has none.
+ *
+ * It used to format the percentage itself and return the absent sentence as a string, which made
+ * the two indistinguishable to everything downstream: a caller could not draw a bar without
+ * parsing its own output back, and a sentence and a measurement rendered identically. The null
+ * now travels, and `PercentCell` decides what an absence looks like.
+ */
+function share(value: string | null): number | null {
+  return value === null ? null : Number(value);
 }
 
 /** Every commitment. Nothing stops to buy one, which is exactly why it reads as safe, and
@@ -94,7 +99,14 @@ export function CostCommitmentsScreen() {
       numeric: true,
       render: (row) => (
         <span data-testid={`utilization-${row.commitment_id}`}>
-          {share(row.utilization, 'not started')}
+          {/* Measured off the bill, not modelled. A commitment that has not started reads
+              as those words and never as nought percent, which would say the money was
+              wasted rather than that nothing has happened yet. */}
+          <PercentCell
+            fraction={share(row.utilization)}
+            absent="not started"
+            provenance="measured"
+          />
         </span>
       ),
     },
@@ -130,7 +142,14 @@ export function CostCommitmentsScreen() {
       numeric: true,
       render: (row) => (
         <span data-testid={`coverage-${row.dimension_value}`}>
-          {share(row.coverage, 'nothing eligible')}
+          {/* A fraction of what could be committed, so it is a bar against a hundred and
+              never a share of a total. Two services at eighty percent are both at eighty
+              percent and neither is half of anything. */}
+          <PercentCell
+            fraction={share(row.coverage)}
+            absent="nothing eligible"
+            provenance="measured"
+          />
         </span>
       ),
     },

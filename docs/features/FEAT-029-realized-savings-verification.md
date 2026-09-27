@@ -55,6 +55,17 @@ Reads the cost tables under their existing guard. Adds no new access.
 where a number is allowed to be disappointing. Realized against estimated, and the
 gap is the point.
 
+The verdict totals are drawn as well as listed, added 2026-09-27, and the chart is scaled to the
+largest of them rather than to their sum. The sum is the number this screen exists to refuse: one
+realized total would be added to the estimate on the recommendations screen within a week of
+anybody seeing both. So the bars compare the verdicts with each other, which is a comparison that
+is true, and no share is printed, because a percentage with no whole behind it is a number nobody
+can check. `RankedBars` takes a `basis` for this, and on the largest basis it also collapses
+nothing, since a remainder row is that same forbidden sum.
+
+It is the only chart in the product drawn without the hatch. Everywhere else a saving is modelled.
+Here it has been observed.
+
 ## Not doing
 
 **Adding realized and estimated savings together, ever.** They are different kinds

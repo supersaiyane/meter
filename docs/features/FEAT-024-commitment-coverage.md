@@ -104,6 +104,18 @@ each heading naming what its percentage is a percentage of, and deliberately nev
 two percentages in adjacent columns of one table where the eye would compare them.
 The unused money is shown above both.
 
+Each percentage carries a bar under it, added 2026-09-27. A bar against a hundred and never a
+share of a total, because coverage answers a question about one row: two services at eighty
+percent coverage are both at eighty percent and neither is half of anything. That is why this uses
+`PercentCell` and not the ranked bar the allocation screen draws.
+
+The absence stayed an absence. A commitment that has not started and a service with nothing
+eligible both render those words and draw no bar, because an empty track reads as a measurement
+that came back zero, and for a commitment nought percent used says the money was wasted. The
+change made that stronger rather than weaker: the helper used to format the percentage and return
+the absent sentence as a string, so a sentence and a measurement were indistinguishable to
+everything downstream. The null now travels and the component decides what an absence looks like.
+
 ## Not doing
 
 **Purchase recommendations are not in this task.** AWS's recommendation API returns
