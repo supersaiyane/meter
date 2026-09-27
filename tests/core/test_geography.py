@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from finops_core.domain.geography import GEOGRAPHIES, geography_of, is_global
+from finops_core.domain.geography import GEOGRAPHIES, PREFIXES, geography_of, is_global
 
 
 @pytest.mark.parametrize(
@@ -30,12 +30,38 @@ from finops_core.domain.geography import GEOGRAPHIES, geography_of, is_global
         ("af-south-1", "af"),
         ("cn-north-1", "cn"),
         ("ca-central-1", "ca"),
+        # Live since 2024 and missing from the first version of the table, which was written
+        # from memory. Checked against the AWS region list on 2026-09-27.
+        ("mx-central-1", "mx"),
+        ("ap-east-2", "ap"),
+        ("ap-southeast-7", "ap"),
     ],
 )
 def test_reads_the_geography_from_the_prefix(region: str, expected: str) -> None:
     geography = geography_of(region)
     assert geography is not None
     assert geography.key == expected
+
+
+def test_a_partition_prefix_resolves_to_the_place_it_is_in() -> None:
+    """`eusc-de-east-1` is the AWS European Sovereign Cloud, and it is in Europe.
+
+    The case that broke the first design. That version keyed the places by their prefix, which
+    assumed one prefix per place, and this is four letters reaching a place another prefix already
+    names. A table keyed by prefix cannot express it without inventing a second Europe, which the
+    drawing would then have to position twice.
+    """
+    geography = geography_of("eusc-de-east-1")
+    assert geography is not None
+    assert geography.key == "eu"
+    assert geography.name == "Europe"
+
+
+def test_every_place_is_named_once_however_many_prefixes_reach_it() -> None:
+    # Europe has two prefixes and must still be one row on a screen and one marker on a map.
+    reached = {geography.key for geography in PREFIXES.values()}
+    assert reached == {geography.key for geography in GEOGRAPHIES}
+    assert len(GEOGRAPHIES) < len(PREFIXES)
 
 
 def test_is_case_and_whitespace_insensitive() -> None:
@@ -69,13 +95,14 @@ def test_no_region_is_global_and_an_unreadable_one_is_not() -> None:
     assert is_global("us-east-1") is False
 
 
-def test_every_geography_key_is_the_prefix_it_matches() -> None:
-    # The table is the index. A row whose key is not the prefix its regions carry would be a row
-    # that never matches anything, and nothing else here would notice.
-    for geography in GEOGRAPHIES:
-        resolved = geography_of(f"{geography.key}-central-1")
+def test_every_prefix_resolves_to_a_place_that_exists() -> None:
+    # A prefix pointing at a place the list does not hold would be a prefix that matches and then
+    # names something no screen can draw, and nothing else here would notice.
+    for prefix, geography in PREFIXES.items():
+        resolved = geography_of(f"{prefix}-central-1")
         assert resolved is not None
         assert resolved.key == geography.key
+        assert geography in GEOGRAPHIES
 
 
 def test_keys_are_unique() -> None:

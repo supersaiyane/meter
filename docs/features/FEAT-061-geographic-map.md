@@ -25,6 +25,17 @@ where it is. That question has a compliance edge as well as a curiosity one.
 `finops_core/domain/geography.py` holds the rule and is pure. A region's geography is the part of
 its name before the first hyphen, so `eu-west-1` and `eu-central-1` are both Europe.
 
+**The table was checked against the AWS region list on 2026-09-27 rather than written from
+memory**, which found two things memory had missed. Mexico is a live region, `mx-central-1`, and
+had no entry. And the AWS European Sovereign Cloud is `eusc-de-east-1`, a four letter prefix that
+no pair of letters would ever match.
+
+The sovereign cloud forced a design change. The first version keyed the places by their prefix,
+which assumed one prefix per place, and `eusc` is a second prefix reaching a place `eu` already
+names. A table keyed by prefix cannot express that without inventing a second Europe, which the
+drawing would then position twice. Prefix and place are separate tables now, and a test asserts
+every prefix resolves to a place the list holds.
+
 **The prefix, not a coordinate table, and this is the decision the feature turns on.** A table of
 coordinates has to name every region. `eu-west-1`, `eu-west-2`, `eu-west-3`, and then the next
 region a provider opens is invisible until somebody notices, which is exactly the failure
@@ -109,7 +120,14 @@ The regions inside each continent are listed rather than counted, which is the h
 what the name cannot say.
 ISS-213.
 
-Markers are sized by **area**, so four times the resources is four times the ink. Sizing by radius
+A marker is two marks, changed 2026-09-27 against the AWS global infrastructure page as the
+reference. A fixed core dot says where, and a halo sized by the count says how much. One disc
+sized by the count did both badly: at forty pixels across it says the place is somewhere inside
+it, which is a precision claim in the wrong direction from the one the caption is careful about.
+Every infrastructure map draws a point of presence this way, and it is right for the same reason:
+position and quantity are different questions and one mark cannot answer both.
+
+The halo is sized by **area**, so four times the resources is four times the ink. Sizing by radius
 would claim four times again for twice the resources, which is the oldest lie in data drawing and
 looks entirely correct.
 

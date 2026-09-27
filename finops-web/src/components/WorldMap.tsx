@@ -29,6 +29,13 @@ import { LAND, WORLD } from './worldPaths';
  * marker with four times the area, so doubling the radius would claim four times again. That is
  * the oldest lie in data drawing and it is one square root away from being honest.
  *
+ * **A marker is two marks.** A fixed core dot says where, and a halo sized by the count says how
+ * much. One disc sized by the count did both badly: at forty pixels across it says the place is
+ * somewhere inside it, which is a precision claim in the wrong direction from the one the caption
+ * is careful about. This is how every infrastructure map draws a point of presence, AWS's own
+ * included, and it is right for the same reason: position and quantity are different questions
+ * and a single mark cannot answer both.
+ *
  * **The drawing is decoration and the legend is the content.** The SVG carries `aria-hidden` and
  * every figure in it is written out as text underneath, which is the same choice `RankedBars`
  * makes and for the same reason: a reader who cannot see the picture loses a faster way to
@@ -118,7 +125,17 @@ export function WorldMap({ geographies, selected, onSelect }: WorldMapProps) {
                 onSelect(one.key);
               }}
             >
-              <circle cx={x} cy={y} r={radiusFor(one.resources, peak)} />
+              {/* Two marks, because they answer two questions. The halo is sized by the
+                  count and answers how much; the core is a fixed small dot and answers
+                  where. One blob sized by count does the first badly and the second not at
+                  all: a forty pixel disc says the place is somewhere inside it. */}
+              <circle
+                data-testid="world-map-halo"
+                cx={x}
+                cy={y}
+                r={radiusFor(one.resources, peak)}
+              />
+              <circle data-testid="world-map-point" cx={x} cy={y} r={3.5} />
               <text x={x} y={y - radiusFor(one.resources, peak) - 12}>
                 {one.name}
               </text>
