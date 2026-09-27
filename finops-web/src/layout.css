@@ -748,7 +748,9 @@ a,
 button,
 [data-testid='coverage'],
 [data-testid='fixture-band'] {
-  transition: opacity 120ms ease, background-color 120ms ease;
+  transition:
+    opacity 120ms ease,
+    background-color 120ms ease;
 }
 
 /* --------------------------------------------------------------- responsive */
@@ -789,4 +791,244 @@ button,
   [data-testid='graph'] {
     display: none;
   }
+}
+
+/* ---------------------------------------------------------------------------
+ * The vocabulary a screen writes for itself.
+ *
+ * Everything above this line styles the shell and the tables. Everything a
+ * screen writes with its own hands, headings, prose, definition lists, selects,
+ * buttons, was never styled and fell back to the browser's defaults, which is
+ * why twenty screens of careful tokens read as an unstyled document. `<p>` was
+ * used twenty two times and had no selector at all.
+ *
+ * Dense and instrumental: this is read by somebody scanning for the one row that
+ * is wrong, not by somebody browsing. So the section headers are small and
+ * tracked rather than large and bold, the prose is narrow and quiet so it never
+ * competes with a figure, and nothing grows to fill space it does not need.
+ * ------------------------------------------------------------------------- */
+
+/* Section headers as instrument labels, not as document headings. A 20px bold
+   heading every 200px makes a page of six sections read as six documents. The
+   rule under it is what actually separates them, and it costs no height. */
+main h3 {
+  margin: var(--space-4) 0 var(--space-2);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* The first one does not need the gap: the screen title is directly above it. */
+main section > h3:first-child,
+main article > h3:first-child {
+  margin-top: 0;
+}
+
+main h2 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-4);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+/* Inside a panel, not the page. Weight rather than size, because a fourth size
+   in a column of cards is a hierarchy nobody can hold in their head. */
+main h4 {
+  margin: var(--space-3) 0 var(--space-1);
+  font-size: var(--font-size-2);
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Prose is explanation, and explanation must never compete with a figure. Quiet
+   colour, narrow measure, tight leading. The measure is in ch so it tracks the
+   font rather than a pixel width that is right at one size only. */
+main p {
+  margin: 0 0 var(--space-2);
+  max-width: 78ch;
+  font-size: var(--font-size-2);
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+/* A paragraph that is the answer rather than the commentary on it. */
+main p:has(> [data-testid='figure']),
+main p > strong:first-child {
+  color: var(--text);
+}
+
+/* Identity blocks. Two columns, label and value, aligned so the values form a
+   column the eye runs down rather than a list it reads. */
+main dl {
+  display: grid;
+  grid-template-columns: minmax(7rem, max-content) 1fr;
+  gap: var(--space-1) var(--space-3);
+  margin: 0 0 var(--space-3);
+  align-items: baseline;
+}
+
+main dt {
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+main dd {
+  margin: 0;
+  font-size: var(--font-size-2);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+/* An identifier is read character by character when somebody is checking it
+   against a console, so it gets the numeral face and its tabular figures. */
+main dd[data-testid$='-arn'],
+main code {
+  font-family: var(--font-numeral);
+  font-size: var(--font-size-1);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-numeral);
+}
+
+main code {
+  padding: 1px 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+}
+
+/* Filters sit on one line and stay out of the way. A stack of full width
+   selects above a table pushes the data below the fold, which on an estate of
+   three hundred accounts is the only thing anybody came for. */
+main [role='group'][aria-label='Narrow the list'] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: baseline;
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+main [role='group'][aria-label='Narrow the list'] p {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  margin: 0;
+  max-width: none;
+}
+
+main [role='group'] label {
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+main select {
+  min-width: 9rem;
+  padding: 2px var(--space-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-2);
+  line-height: 1.6;
+}
+
+main select:focus-visible,
+main button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Controls, not calls to action. Nothing here is a primary button, because
+   nothing in a read only product is a commitment. */
+main button {
+  padding: 2px var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-2);
+  line-height: 1.6;
+  cursor: pointer;
+}
+
+main button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Disabled says "there is no next page", which is information. So it stays
+   legible rather than fading to a grey nobody can read. */
+main button:disabled {
+  border-color: var(--border);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+main a {
+  color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+/* A list inside a notice is data, not prose. No bullets, one fact per line, in
+   the numeral face where the fact is an identifier or a state. */
+main [role='status'] ul,
+main [data-testid$='-coverage'] ul {
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+main [role='status'] li,
+main [data-testid$='-coverage'] li {
+  padding: 1px 0;
+  font-family: var(--font-numeral);
+  font-size: var(--font-size-1);
+  color: var(--text);
+}
+
+/* The notices are the product's argument, so the pass makes them louder rather
+   than tidier. A left rule in the meaning's own colour, and a fill quiet enough
+   that the text on it keeps its contrast. */
+main [role='status'].meter-stale,
+main .meter-stale:not(table):not(tr):not(td) {
+  border-top: none;
+  border-left: 3px solid var(--stale);
+  padding: var(--space-2) var(--space-3);
+  margin: 0 0 var(--space-3);
+  background: var(--stale-quiet);
+  color: var(--text);
+}
+
+main .meter-stale p {
+  margin: 0;
+  color: var(--text);
+}
+
+/* Vertical rhythm. One value, so two sections are never a different distance
+   apart than two others for a reason nobody chose. */
+main section > * + * {
+  margin-top: var(--space-2);
+}
+
+main article > table,
+main section > table {
+  margin-bottom: var(--space-3);
 }
