@@ -388,6 +388,16 @@ meter/
 │   │                          finally. v1 writes nothing, constraint 6
 ├── finops-web/                IN BUILD  Vite, React and TypeScript
 │   ├── README.md              why the versions are pinned where they are
+│   ├── src/tokens.css         the palette, and the only file that decides what a
+│   │                          colour means. Three surface depths because a card
+│   │                          needs to differ from the page without a shadow,
+│   │                          three inks because a dense screen needs a value, a
+│   │                          label and a thing worth skipping, and an accent
+│   │                          reserved for interactive alone. The severity ramp
+│   │                          and the hatch fills predate the 2026-09-27
+│   │                          direction and survived it, because provenance
+│   │                          carried by fill rather than by colour is the
+│   │                          product rather than the styling
 │   ├── src/layout.css         the shell, the tables, and since 2026-09-27 the
 │   │                          vocabulary a screen writes for itself. That last
 │   │                          section exists because nothing styled it: p was
