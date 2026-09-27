@@ -1720,9 +1720,19 @@ main > section > [role='group'] {
   background: var(--surface-2);
 }
 
+/* The grid has to be visible or the drawing reads as an empty panel with two dots
+   in it. Faint but present, with the middle parallel and meridian picked out, which
+   is what makes an eye see a projection rather than a box with lines in it. */
 [data-testid='world-map-grid'] line {
-  stroke: var(--line);
+  stroke: var(--text-faint);
+  stroke-opacity: 0.35;
   stroke-width: 1;
+  stroke-dasharray: 3 5;
+}
+
+[data-testid='world-map-grid'] line[data-major='true'] {
+  stroke-opacity: 0.6;
+  stroke-dasharray: none;
 }
 
 [data-testid='world-map-marker'] circle {
@@ -1741,11 +1751,21 @@ main > section > [role='group'] {
 }
 
 [data-testid='world-map-marker'] text {
-  fill: var(--text-muted);
+  fill: var(--text);
   font-family: var(--font-ui);
-  font-size: 15px;
+  font-size: 17px;
+  font-weight: 600;
   text-anchor: middle;
   pointer-events: none;
+}
+
+/* The count on the marker itself, so the drawing can be read without running the
+   eye down to the legend for every continent. */
+[data-testid='world-map-marker-count'] {
+  fill: var(--text-muted) !important;
+  font-family: var(--font-numeral) !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
 }
 
 [data-testid='world-map-caption'] {

@@ -441,3 +441,27 @@ automated, and `scripts/docs/check_map_counts.py` now covers those seven figures
 This one is the version that cannot be: a count in a sentence in a checkpoint row
 has no schema, so the only defence is computing it in the command that writes it.
 That is why the rule above is about the command and not about being careful.
+
+## 2026-09-27: a route tested on its data and never on its envelope
+
+**Mistake:** The FEAT-061 geography route returned counts and no timestamps. Eleven
+tests passed, including one asserting the parts add up to the whole estate and one
+asserting a narrowed reader sees less. Every one of them read `body["data"]`. None
+read `body["meta"]`. `build_meta` derives freshness from the rows it is handed, a
+grouped row is not a fact row, so `as_of` came back null, and the screen reads
+exactly that field to decide whether anything has been collected. A correct estate
+of ninety two resources rendered as "not yet collected by topology".
+
+**Correction:** Found by opening the screen, not by the suite. The docstring on
+`build_meta` already says a route whose rows are not facts passes its timestamps
+explicitly, so the warning existed and the tests did not enforce it.
+
+**Rule:** A route test asserts on the envelope as well as on the payload. At minimum
+one case per route asserts `meta["as_of"]` is not null when the route returned rows,
+and asserts the coverage unit. A grouped or derived read aggregates `min(as_of)` and
+`min(collected_at)` into columns of those names, so the envelope picks them up the
+way it does for any fact.
+
+**Triggers:** Adding a route. Writing a repository method with `group_by`,
+`with_only_columns` or any aggregate. Any read whose rows are not whole table rows.
+Seeing `build_meta(..., rows=rows)` where `rows` came from an aggregate.

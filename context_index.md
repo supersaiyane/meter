@@ -456,15 +456,15 @@ a duplicate.
 | `TopologyRepository.slice_count` | method | `finops_api/db/repositories/topology.py:211` | How many slices the caller can see at all, which is the banner's denominator. | `finops_api/routes/inventory.py` |
 | `TopologyRepository.accounts_seen` | method | `finops_api/db/repositories/topology.py:229` | How many accounts this scope holds any graph for, for the ordinary banner. | `finops_api/routes/inventory.py`, `finops_api/routes/waste.py` |
 | `TopologyRepository.by_region` | method | `finops_api/db/repositories/topology.py:237` | How many resources and how many accounts sit in each region this scope can see. | `finops_api/routes/inventory.py` |
-| `TopologyRepository.roots` | method | `finops_api/db/repositories/topology.py:265` | Nodes a reader can start a map from, containers first. | `finops_api/routes/inventory.py` |
-| `TopologyRepository.page` | method | `finops_api/db/repositories/topology.py:282` | One page of resources, and how many match the filter in total. | `finops_api/routes/inventory.py` |
-| `TopologyRepository.vocabularies` | method | `finops_api/db/repositories/topology.py:343` | The filter values that actually occur in this scope. | `finops_api/routes/inventory.py` |
-| `TopologyRepository.one` | method | `finops_api/db/repositories/topology.py:370` | One node, or None where the scope cannot see it. | `finops_api/routes/inventory.py`, `finops_api/routes/query.py`, `finops_api/routes/waste.py`, `finops_ingest/collectors/query_audit.py`, and 1 more |
-| `TopologyRepository.management_of` | method | `finops_api/db/repositories/topology.py:379` | What manages this resource, as the three valued answer plus the address. | `finops_api/routes/inventory.py` |
-| `TopologyRepository.slice_coverage` | method | `finops_api/db/repositories/topology.py:440` | The coverage of the one slice this node came from. | `finops_api/routes/inventory.py` |
-| `TopologyRepository.findings_for` | method | `finops_api/db/repositories/topology.py:451` | Recommendations about this resource, and how many in the account did not match. | `finops_api/routes/inventory.py` |
-| `as_node` | function | `finops_api/db/repositories/topology.py:565` | One row as a domain node. | `finops_api/routes/inventory.py` |
-| `slices_of` | function | `finops_api/db/repositories/topology.py:611` | The distinct slices a set of nodes came from, sorted for a stable banner. | nothing in this tree |
+| `TopologyRepository.roots` | method | `finops_api/db/repositories/topology.py:275` | Nodes a reader can start a map from, containers first. | `finops_api/routes/inventory.py` |
+| `TopologyRepository.page` | method | `finops_api/db/repositories/topology.py:292` | One page of resources, and how many match the filter in total. | `finops_api/routes/inventory.py` |
+| `TopologyRepository.vocabularies` | method | `finops_api/db/repositories/topology.py:353` | The filter values that actually occur in this scope. | `finops_api/routes/inventory.py` |
+| `TopologyRepository.one` | method | `finops_api/db/repositories/topology.py:380` | One node, or None where the scope cannot see it. | `finops_api/routes/inventory.py`, `finops_api/routes/query.py`, `finops_api/routes/waste.py`, `finops_ingest/collectors/query_audit.py`, and 1 more |
+| `TopologyRepository.management_of` | method | `finops_api/db/repositories/topology.py:389` | What manages this resource, as the three valued answer plus the address. | `finops_api/routes/inventory.py` |
+| `TopologyRepository.slice_coverage` | method | `finops_api/db/repositories/topology.py:450` | The coverage of the one slice this node came from. | `finops_api/routes/inventory.py` |
+| `TopologyRepository.findings_for` | method | `finops_api/db/repositories/topology.py:461` | Recommendations about this resource, and how many in the account did not match. | `finops_api/routes/inventory.py` |
+| `as_node` | function | `finops_api/db/repositories/topology.py:575` | One row as a domain node. | `finops_api/routes/inventory.py` |
+| `slices_of` | function | `finops_api/db/repositories/topology.py:621` | The distinct slices a set of nodes came from, sorted for a stable banner. | nothing in this tree |
 | `RecommendationRepository` | class | `finops_api/db/repositories/waste.py:33` | What is worth changing, ranked by money. FEAT-028. | `finops_api/routes/waste.py` |
 | `RecommendationRepository.worst_first` | method | `finops_api/db/repositories/waste.py:39` | Biggest money first, filterable. | `finops_api/routes/cost.py`, `finops_api/routes/waste.py` |
 | `RecommendationRepository.one` | method | `finops_api/db/repositories/waste.py:67` |  | `finops_api/routes/inventory.py`, `finops_api/routes/query.py`, `finops_api/routes/waste.py`, `finops_ingest/collectors/query_audit.py`, and 1 more |
