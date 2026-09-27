@@ -44,6 +44,18 @@ entitled to and the coverage of what they asked for.
 
 ## Interface
 
+Two changes on 2026-09-27, both found by opening the screen.
+
+The coverage notice is a count and its typed causes with the slices one click behind a disclosure,
+the same shape the resource list uses. Nine lines of slice identifiers above a graph is the
+honesty machinery being the first thing a reader sees instead of the picture they came for.
+Collapsed and never dropped: nothing is fetched to open it and the slices stay in the document.
+
+The root picker was a bulleted list of every node in the estate, which on a real one is a page of
+bullets before the graph, and bullets on a set of controls say "read this" where the shape needed
+is "choose one of these". It is a grid of chips now, capped in height and scrolled, so the picture
+and the picker are on the screen together.
+
 `/inventory/topology`. Keyboard reachable, as the organization map already proves
 is possible at three hundred accounts.
 
