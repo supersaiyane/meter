@@ -372,6 +372,13 @@ meter/
 │   │                          finally. v1 writes nothing, constraint 6
 ├── finops-web/                IN BUILD  Vite, React and TypeScript
 │   ├── README.md              why the versions are pinned where they are
+│   ├── src/layout.css         the shell, the tables, and since 2026-09-27 the
+│   │                          vocabulary a screen writes for itself. That last
+│   │                          section exists because nothing styled it: p was
+│   │                          used twenty two times with no selector, so every
+│   │                          heading, list and control fell back to the
+│   │                          browser and twenty screens of careful tokens read
+│   │                          as an unstyled document
 │   ├── e2e/                   the Playwright journeys, counted in the table above,
 │   │                          against the built bundle rather than the test
 │   │                          renderer. They are what proves the honesty rules
