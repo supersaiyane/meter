@@ -7,7 +7,12 @@ that fails one run in fifty and is then marked flaky rather than fixed.
 The account identifiers are deliberately not twelve digit numbers. A twelve
 digit literal in a repository is either a real account or a fixture that will
 one day be mistaken for one, and `scripts/ci/check_hardcoded.py` refuses both.
-The region is fictional for the same reason.
+The region is fictional for the same reason, and its name is shaped like a real one on
+purpose. It used to be `fake-region-a`, which carries no geography prefix, and FEAT-061 reads
+a resource's continent from exactly that prefix. A fixture estate whose region names no
+provider would ever produce cannot exercise a feature that reads provider region names, so
+the fixture was unrepresentative of production in a dimension that had started to matter. No
+real region contains the word fake, so the name is still unmistakably synthetic.
 """
 
 from __future__ import annotations
@@ -38,7 +43,7 @@ PERIOD_END = date(2026, 9, 1)
 TENANT_ID = UUID("00000000-0000-4000-8000-000000000001")
 INGEST_RUN_ID = UUID("00000000-0000-4000-8000-000000000002")
 
-REGION = "fake-region-a"
+REGION = "us-fake-1"
 NAMESPACE = "Fake/Logs"
 METRIC_NAME = "FakeIncomingBytes"
 

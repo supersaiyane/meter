@@ -173,7 +173,7 @@ built.
 - `fake-platform-a` in `fake-region-c` is **PARTIAL**, cause `NotOptedIn`. A read happened
   and fell short. Every account's `fake-region-c` slice is partial, because that region
   refuses in the fake estate.
-- `fake-product-b` in `fake-region-b` is **UNREAD**, cause `NotYetAttempted`. No read has
+- `fake-product-b` in `eu-fake-1` is **UNREAD**, cause `NotYetAttempted`. No read has
   been attempted. `make seed` deliberately runs the inventory collector over nineteen of
   the twenty slices it enrols, so the twentieth keeps the row enrolment gave it.
 

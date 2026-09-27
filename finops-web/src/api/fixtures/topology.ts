@@ -2,6 +2,7 @@ import type {
   ApiBlastRadius,
   ApiEntity,
   ApiEnvelope,
+  ApiGeographies,
   ApiGraphCoverage,
   ApiInventoryRoots,
   ApiRecommendation,
@@ -59,22 +60,22 @@ export function inventoryRootsFixture(): ApiEnvelope<ApiInventoryRoots> {
       roots: [
         {
           node_id: ROOT,
-          provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:vpc/vpc-platform',
+          provider_id: 'arn:aws:ec2:us-fake-1:fake-platform-a:vpc/vpc-platform',
           account_id: 'fake-platform-a',
           node_kind: 'VPC',
           resource_type: 'AWS::EC2::VPC',
-          region_id: 'fake-region-a',
+          region_id: 'us-fake-1',
           name: 'platform',
         },
         {
           // OTHER, with its real type beside it. Ten of the estate's twenty four types
           // land here, so a screen showing only the kind is a field of blank boxes.
           node_id: '6cbf4d5e-7081-4293-9da4-2e5f60718293',
-          provider_id: 'arn:aws:eks:fake-region-a:fake-platform-a:cluster/platform-eks',
+          provider_id: 'arn:aws:eks:us-fake-1:fake-platform-a:cluster/platform-eks',
           account_id: 'fake-platform-a',
           node_kind: 'OTHER',
           resource_type: 'AWS::EKS::Cluster',
-          region_id: 'fake-region-a',
+          region_id: 'us-fake-1',
           name: 'platform-eks',
         },
       ],
@@ -99,7 +100,7 @@ export function graphCoverageFixture(): ApiEnvelope<ApiGraphCoverage> {
         },
         {
           account_id: 'fake-product-b',
-          region_id: 'fake-region-b',
+          region_id: 'eu-fake-1',
           state: 'UNREAD',
           cause: 'NotYetAttempted',
           node_count: 0,
@@ -120,11 +121,11 @@ export function subgraphFixture(rootId: string): ApiEnvelope<ApiSubgraph> {
       nodes: [
         {
           node_id: rootId || ROOT,
-          provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:vpc/vpc-platform',
+          provider_id: 'arn:aws:ec2:us-fake-1:fake-platform-a:vpc/vpc-platform',
           account_id: 'fake-platform-a',
           node_kind: 'VPC',
           resource_type: 'AWS::EC2::VPC',
-          region_id: 'fake-region-a',
+          region_id: 'us-fake-1',
           availability_zone: null,
           name: 'platform',
           as_of: AS_OF,
@@ -132,12 +133,12 @@ export function subgraphFixture(rootId: string): ApiEnvelope<ApiSubgraph> {
         },
         {
           node_id: SUBNET,
-          provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:subnet/subnet-a',
+          provider_id: 'arn:aws:ec2:us-fake-1:fake-platform-a:subnet/subnet-a',
           account_id: 'fake-platform-a',
           node_kind: 'SUBNET',
           resource_type: 'AWS::EC2::Subnet',
-          region_id: 'fake-region-a',
-          availability_zone: 'fake-region-a-a',
+          region_id: 'us-fake-1',
+          availability_zone: 'us-fake-1-a',
           name: 'private-a',
           as_of: AS_OF,
           collected_at: COLLECTED_AT,
@@ -166,7 +167,7 @@ export function subgraphFixture(rootId: string): ApiEnvelope<ApiSubgraph> {
       coverage: [
         {
           account_id: 'fake-platform-a',
-          region_id: 'fake-region-a',
+          region_id: 'us-fake-1',
           state: 'COMPLETE',
           cause: null,
           node_count: 27,
@@ -176,7 +177,7 @@ export function subgraphFixture(rootId: string): ApiEnvelope<ApiSubgraph> {
         },
         {
           account_id: 'fake-product-denied',
-          region_id: 'fake-region-a',
+          region_id: 'us-fake-1',
           state: 'PARTIAL',
           cause: 'AccessDenied',
           node_count: 0,
@@ -211,8 +212,8 @@ export function entityFixture(nodeId: string): ApiEnvelope<ApiEntity> {
     account_id: 'fake-platform-a',
     source: 'METER',
     waste_class: 'EBS_GP2_TO_GP3',
-    resource_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:vpc/vpc-platform',
-    region_id: 'fake-region-a',
+    resource_id: 'arn:aws:ec2:us-fake-1:fake-platform-a:vpc/vpc-platform',
+    region_id: 'us-fake-1',
     estimated_monthly_saving: '18.4000',
     confidence: 'HIGH',
     severity: 'LOW',
@@ -235,11 +236,11 @@ export function entityFixture(nodeId: string): ApiEnvelope<ApiEntity> {
     data: {
       node: {
         node_id: nodeId || ROOT,
-        provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:vpc/vpc-platform',
+        provider_id: 'arn:aws:ec2:us-fake-1:fake-platform-a:vpc/vpc-platform',
         account_id: 'fake-platform-a',
         node_kind: 'VPC',
         resource_type: 'AWS::EC2::VPC',
-        region_id: 'fake-region-a',
+        region_id: 'us-fake-1',
         availability_zone: null,
         name: 'platform',
         as_of: AS_OF,
@@ -248,7 +249,7 @@ export function entityFixture(nodeId: string): ApiEnvelope<ApiEntity> {
       // PARTIAL, so the page has to say the neighbour list may be short.
       coverage: {
         account_id: 'fake-platform-a',
-        region_id: 'fake-region-a',
+        region_id: 'us-fake-1',
         state: 'PARTIAL',
         cause: 'Throttled',
         node_count: 27,
@@ -259,12 +260,12 @@ export function entityFixture(nodeId: string): ApiEnvelope<ApiEntity> {
       neighbours: [
         {
           node_id: SUBNET,
-          provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:subnet/subnet-a',
+          provider_id: 'arn:aws:ec2:us-fake-1:fake-platform-a:subnet/subnet-a',
           account_id: 'fake-platform-a',
           node_kind: 'SUBNET',
           resource_type: 'AWS::EC2::Subnet',
-          region_id: 'fake-region-a',
-          availability_zone: 'fake-region-a-a',
+          region_id: 'us-fake-1',
+          availability_zone: 'us-fake-1-a',
           name: 'private-a',
           as_of: AS_OF,
           collected_at: COLLECTED_AT,
@@ -319,11 +320,11 @@ export function resourceListFixture(): ApiEnvelope<ApiResourceList> {
       resources: [
         {
           node_id: ROOT,
-          provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:vpc/vpc-platform',
+          provider_id: 'arn:aws:ec2:us-fake-1:fake-platform-a:vpc/vpc-platform',
           account_id: 'fake-platform-a',
           node_kind: 'VPC',
           resource_type: 'AWS::EC2::VPC',
-          region_id: 'fake-region-a',
+          region_id: 'us-fake-1',
           availability_zone: null,
           name: 'platform',
           as_of: AS_OF,
@@ -331,12 +332,12 @@ export function resourceListFixture(): ApiEnvelope<ApiResourceList> {
         },
         {
           node_id: SUBNET,
-          provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:subnet/subnet-a',
+          provider_id: 'arn:aws:ec2:us-fake-1:fake-platform-a:subnet/subnet-a',
           account_id: 'fake-platform-a',
           node_kind: 'SUBNET',
           resource_type: 'AWS::EC2::Subnet',
-          region_id: 'fake-region-a',
-          availability_zone: 'fake-region-a-a',
+          region_id: 'us-fake-1',
+          availability_zone: 'us-fake-1-a',
           name: 'private-a',
           as_of: AS_OF,
           collected_at: COLLECTED_AT,
@@ -362,7 +363,7 @@ export function resourceListFixture(): ApiEnvelope<ApiResourceList> {
       offset: 0,
       filters: {
         account_id: ['fake-platform-a', 'fake-product-denied'],
-        region_id: ['fake-region-a', 'fake-region-b'],
+        region_id: ['us-fake-1', 'eu-fake-1'],
         node_kind: ['IAM_ROLE', 'SUBNET', 'VPC'],
         resource_type: ['AWS::EC2::Subnet', 'AWS::EC2::VPC', 'AWS::IAM::Role'],
       },
@@ -389,11 +390,51 @@ export function blastRadiusFixture(): ApiEnvelope<ApiBlastRadius> {
       boundary_edges: null,
       depth_bound_reached: false,
       is_lower_bound: true,
-      refused_because: [
-        'fake-product-denied in fake-region-a is PARTIAL because of AccessDenied',
-      ],
+      refused_because: ['fake-product-denied in us-fake-1 is PARTIAL because of AccessDenied'],
       max_depth: 4,
     },
     meta: metaWith(18, 20),
+  };
+}
+
+/**
+ * The estate by continent, with all three leftovers present. FEAT-061.
+ *
+ * Built to exercise the parts of the screen that a tidy estate never reaches. Two geographies
+ * with different region counts, a region whose prefix no table knows, resources belonging to no
+ * region at all, and a region a collection refused. A fixture where everything places is a
+ * fixture that only ever draws the easy half of this screen.
+ */
+export function geographyFixture(): ApiEnvelope<ApiGeographies> {
+  return {
+    data: {
+      geographies: [
+        {
+          key: 'us',
+          name: 'United States',
+          regions: ['us-fake-1'],
+          resources: 41,
+          accounts: 4,
+        },
+        {
+          key: 'eu',
+          name: 'Europe',
+          regions: ['eu-fake-1'],
+          resources: 12,
+          accounts: 2,
+        },
+      ],
+      global_resources: 6,
+      unplaceable: ['fake-region-c'],
+      unplaceable_resources: 2,
+      refused: ['fake-region-c'],
+    },
+    meta: {
+      as_of: '2026-09-26T06:00:00Z',
+      collected_at: '2026-09-26T06:05:00Z',
+      scope_coverage: { visible: 4, total: 5, is_partial: true, unit: 'slices' },
+      degraded: false,
+      failures: [],
+    },
   };
 }

@@ -83,7 +83,7 @@ describe('ResourceListScreen', () => {
     expect(banner).toHaveTextContent(/missing from this list rather than absent/);
     expect(banner).toHaveTextContent('fake-region-c is PARTIAL (NotOptedIn)');
     // Unread is not a synonym for partial, and the screen keeps them apart.
-    expect(banner).toHaveTextContent('fake-region-b is UNREAD (NotYetAttempted)');
+    expect(banner).toHaveTextContent('eu-fake-1 is UNREAD (NotYetAttempted)');
     const bannerTop = banner.compareDocumentPosition(await screen.findByTestId('resources'));
     // DOCUMENT_POSITION_FOLLOWING, so the table comes after the notice.
     expect(bannerTop & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -105,7 +105,7 @@ describe('ResourceListScreen', () => {
     const table = await screen.findByTestId('resources');
     expect(within(table).getByRole('cell', { name: 'global' })).toBeInTheDocument();
     // And a zonal resource shows its zone, which is the more specific of the two.
-    expect(within(table).getByRole('cell', { name: 'fake-region-a-a' })).toBeInTheDocument();
+    expect(within(table).getByRole('cell', { name: 'us-fake-1-a' })).toBeInTheDocument();
   });
 
   it('offers only the filter values the estate actually holds', async () => {

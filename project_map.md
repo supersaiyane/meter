@@ -26,13 +26,13 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 21 of 25 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Screens built | 22 of 26 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 15 in 4 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
-| Inventory routes | 6 | `@router.` in finops_api/routes/inventory.py |
+| Inventory routes | 7 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 21 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 17 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 114 | test_*.py under tests/ |
-| Test functions | 1568 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 116 | test_*.py under tests/ |
+| Test functions | 1586 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -406,6 +406,25 @@ meter/
 │   │                          fact. The fill is clamped, so an overspent budget
 │   │                          draws full and says OVER beside it rather than
 │   │                          running past its own track
+│   ├── components/WorldMap.tsx  the estate on a schematic world. A graticule and
+│   │                          one marker per continent, and no coastline, because
+│   │                          the geography comes from a region name prefix which
+│   │                          knows Europe and cannot know Dublin, and a coastline
+│   │                          would claim otherwise. Markers are sized by area, so
+│   │                          four times the resources is four times the ink:
+│   │                          sizing by radius would claim four times again. The
+│   │                          positions live here rather than in the domain because
+│   │                          where a continent sits in a picture is a fact about
+│   │                          the picture, and a geography with no position is
+│   │                          still in the legend and counted in a sentence. The
+│   │                          SVG is aria-hidden and the legend is the content and
+│   │                          the control, since markers are not reachable from a
+│   │                          keyboard
+│   ├── screens/GeographyScreen.tsx  FEAT-061. The map, three leftovers that are
+│   │                          never added together, and the resources of whichever
+│   │                          continent was clicked. Nothing loads until one is
+│   │                          chosen, because a screen that loads the first has
+│   │                          decided which continent matters
 │   ├── components/PercentCell.tsx  a percentage in a table cell with a rule
 │   │                          under it. A fraction of a hundred and never a share
 │   │                          of a total, which is why it is not RankedBars: two
@@ -884,6 +903,18 @@ meter/
 │   │                          throttles, a low memory request kills. Every
 │   │                          series is hourly, which is what keeps p99 from
 │   │                          quietly becoming the max rule
+│   ├── geography.py           FEAT-061. Where a region is, from its name and from
+│   │                          nothing else. The prefix rather than a coordinate table,
+│   │                          and that is the whole argument: a coordinate table has to
+│   │                          name every region, so the next region a provider opens is
+│   │                          invisible until somebody notices, which is exactly what
+│   │                          check_hardcoded.py exists to prevent. A prefix is not a
+│   │                          region, and eu-south-3 resolves on the day it opens. The
+│   │                          cost is that it is continental and can never say Dublin,
+│   │                          which is ISS-213. Three absences kept apart: no region at
+│   │                          all is global and is not a gap, a name with no prefix
+│   │                          tells us nothing, and an unknown prefix means the table
+│   │                          needs a row
 │   ├── iac.py                 FEAT-057, in finops_core/domain/. Three answers to what
 │   │                          manages a resource, and the default is the honest one.
 │   │                          Reading state tells you what is managed and never what is

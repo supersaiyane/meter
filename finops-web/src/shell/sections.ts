@@ -70,6 +70,7 @@ export const GROUPS: readonly GroupDef[] = [
       { path: '/inventory/organization', label: 'Organization', arrives: null },
       { path: '/inventory/resources', label: 'Resources', arrives: null },
       { path: '/inventory/topology', label: 'Topology', arrives: null },
+      { path: '/inventory/geography', label: 'Geography', arrives: null },
     ],
   },
   {

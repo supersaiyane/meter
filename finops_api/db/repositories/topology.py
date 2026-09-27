@@ -234,6 +234,34 @@ class TopologyRepository(ScopedRepository):
         rows = _fetch(self, scope, statement)
         return int(rows[0][0] or 0) if rows else 0
 
+    def by_region(self, scope: Scope) -> Sequence[Row[Any]]:
+        """How many resources and how many accounts sit in each region this scope can see.
+
+        FEAT-061. Grouped in the database rather than by paging the estate into the process: an
+        estate of three hundred accounts is millions of nodes, and the question here is nine
+        numbers.
+
+        A region of null is returned as a row rather than filtered out. Those are the global
+        resources, IAM and Route 53 and the organization itself, and they are a real part of the
+        estate that belongs to no region. Dropping them would make the totals on this screen
+        disagree with the totals on the resource list for a reason no reader could find.
+
+        Counted through `scoped_select`, so the numbers are this reader's numbers. A narrowed
+        reader sees a smaller estate, which is correct, and the coverage in the envelope is what
+        says so.
+        """
+        statement = (
+            self.scoped_select(scope)
+            .with_only_columns(
+                self.table.c.region_id,
+                func.count().label("resources"),
+                func.count(func.distinct(self.table.c.sub_account_id)).label("accounts"),
+            )
+            .group_by(self.table.c.region_id)
+            .order_by(func.count().desc())
+        )
+        return _fetch(self, scope, statement)
+
     def roots(
         self, scope: Scope, *, node_kind: str | None = None, limit: int = 200
     ) -> Sequence[Row[Any]]:
@@ -257,6 +285,7 @@ class TopologyRepository(ScopedRepository):
         *,
         account_id: str | None = None,
         region_id: str | None = None,
+        region_ids: Sequence[str] | None = None,
         node_kind: str | None = None,
         resource_type: str | None = None,
         limit: int,
@@ -276,8 +305,15 @@ class TopologyRepository(ScopedRepository):
         looking for something they recognise, and the identifier order is a random one to
         them. Deterministic to the identifier at the end, because a page boundary in a
         non deterministic order silently repeats and skips rows.
+
+        `region_ids` is the set form, for FEAT-061's one click from a continent to its
+        resources. An empty sequence means no region matched and returns nothing, which is
+        different from `None` meaning no filter: a continent this reader can see nothing in
+        must show an empty list rather than the whole estate.
         """
         statement = self.scoped_select(scope)
+        if region_ids is not None:
+            statement = statement.where(self.table.c.region_id.in_(tuple(region_ids)))
         for column, wanted in (
             (self.table.c.sub_account_id, account_id),
             (self.table.c.region_id, region_id),

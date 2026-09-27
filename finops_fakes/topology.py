@@ -5,7 +5,7 @@ this is that estate. Of fifteen account and region slices:
 
 - every slice in `fake-region-c` is `PARTIAL`, because the region refuses
 - both readable slices of the denied account are `PARTIAL`, with `AccessDenied`
-- one slice, `fake-product-b` in `fake-region-b`, is `UNREAD`: enrolled, and never
+- one slice, `fake-product-b` in `eu-fake-1`, is `UNREAD`: enrolled, and never
   attempted, which TASK-P4-005 says is created at enrolment and not at failure
 - the rest are `COMPLETE`
 

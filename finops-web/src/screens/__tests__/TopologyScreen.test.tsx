@@ -55,7 +55,7 @@ describe('TopologyScreen', () => {
     const banner = screen.getByTestId('estate-coverage');
     expect(banner).toHaveTextContent('fake-region-c is PARTIAL (NotOptedIn)');
     // Unread is not a synonym for partial, and the screen says which is which.
-    expect(banner).toHaveTextContent('fake-region-b is UNREAD (NotYetAttempted)');
+    expect(banner).toHaveTextContent('eu-fake-1 is UNREAD (NotYetAttempted)');
   });
 
   it('opens on a list of roots rather than on an empty canvas', async () => {

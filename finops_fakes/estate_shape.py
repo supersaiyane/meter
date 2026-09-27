@@ -180,12 +180,19 @@ def dec(value: float, places: int = 4) -> Decimal:
 
 
 #: Three regions, per the fourth rule of the P4 plan: one of them refuses.
-#: `fake-region-a` is the fixture region every account lives in, `fake-region-b`
+#: `us-fake-1` is the fixture region every account lives in, `eu-fake-1`
 #: holds the platform accounts' disaster recovery copies, and `fake-region-c`
 #: is enabled in no account, so every read of it is refused as `NotOptedIn`.
 #: Fictional for the reason `fixtures.py` gives.
+#:
+#: Two of the three carry a geography prefix and the third deliberately does not. FEAT-061
+#: reads a continent from that prefix, so the estate exercises both paths: two geographies
+#: that place, and one region name that no prefix table will ever match. `fake-region-c` is
+#: also the region every read of which is refused, so the screen has to say two different
+#: things about it, that it cannot be placed and that it could not be read, and those are
+#: different facts with different remedies.
 REGION_A = fixtures.REGION
-REGION_B = "fake-region-b"
+REGION_B = "eu-fake-1"
 REGION_C = "fake-region-c"
 REGIONS = (REGION_A, REGION_B, REGION_C)
 REFUSING_REGION = REGION_C

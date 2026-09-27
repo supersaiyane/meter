@@ -422,6 +422,14 @@ features:
   detail: '[competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-27, adopted from the FinOpsForge dashboard checklist'
   doc: docs/features/FEAT-060-budgets.md
 
+- id: FEAT-061
+  name: The estate by continent, from region name prefixes
+  subproject: P4
+  status: Delivered
+  detail: 'Requested 2026-09-27. The prefix rule in `finops_core/domain/geography.py` is why this
+    needed no coordinate table'
+  doc: docs/features/FEAT-061-geographic-map.md
+
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -3017,6 +3025,38 @@ issues:
     ADR-0025 already refused once because two implementations of an authorization rule is how an
     authorization bug is created. It is a scoping decision with a real security surface, so it is
     the owner call rather than mine'
+
+- id: ISS-213
+  severity: LOW
+  status: OPEN
+  summary: A region name prefix is continental, so FEAT-061 places a resource in Europe and can
+    never place it in Dublin, and a reader who takes a marker for a datacentre has been misled
+    about where their data is
+  detail: 'Named on 2026-09-27 while building FEAT-061 as the cost of the design rather than
+    found afterwards. The alternative was a coordinate per region, which has to name every region
+    and makes the next region a provider opens invisible until somebody notices, which is the
+    failure scripts/ci/check_hardcoded.py exists to prevent. So the prefix is the right trade and
+    it is a trade. Three mitigations are in place rather than one: the caption says a marker is a
+    continent and not a datacentre, the regions inside each continent are listed rather than
+    counted so a reader sees whether Europe means Dublin or Frankfurt or both, and the drawing is
+    a graticule with no coastline, because a coastline implies a precision the data does not have.
+    Closing it properly means a coordinate source that is not a hardcoded table, which is either a
+    published dataset admitted through make dep-check or a provider API that returns a location,
+    and neither exists in a form this product can read today'
+- id: ISS-214
+  severity: LOW
+  status: OPEN
+  summary: The account count on a geography is summed across the regions inside it, so an account
+    present in two regions of one continent is counted twice
+  detail: 'Found on 2026-09-27 building FEAT-061 and left visible rather than quietly wrong. The
+    grouped read counts distinct accounts per region, and the route adds those counts up per
+    geography, which double counts any account spanning two regions of the same continent. That is
+    common: a platform account with a disaster recovery copy is exactly it. The honest figure needs
+    a second grouped read keyed on the geography rather than the region, which means resolving the
+    prefix in SQL and therefore a second implementation of the rule, or a distinct count over a
+    derived column. Until then the field is named account slices on the screen rather than
+    accounts, so the number is not presented as something it is not. The resource count is
+    unaffected, since a resource is in exactly one region'
 
 open_questions:
 - id: OPEN-07

@@ -63,11 +63,11 @@ async function withSession(page: Page): Promise<void> {
           roots: [
             {
               node_id: ROOT,
-              provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:vpc/vpc-platform',
+              provider_id: 'arn:aws:ec2:us-fake-1:fake-platform-a:vpc/vpc-platform',
               account_id: 'fake-platform-a',
               node_kind: 'VPC',
               resource_type: 'AWS::EC2::VPC',
-              region_id: 'fake-region-a',
+              region_id: 'us-fake-1',
               name: 'platform',
             },
           ],
@@ -88,7 +88,7 @@ async function withSession(page: Page): Promise<void> {
             // A read happened and fell short.
             slice('fake-platform-a', 'fake-region-c', 'PARTIAL', 'NotOptedIn'),
             // No read has been attempted. A different state, and the screen says which.
-            slice('fake-product-b', 'fake-region-b', 'UNREAD', 'NotYetAttempted'),
+            slice('fake-product-b', 'eu-fake-1', 'UNREAD', 'NotYetAttempted'),
           ],
         },
         meta: META,
@@ -103,11 +103,11 @@ async function withSession(page: Page): Promise<void> {
     const every = [
       {
         node_id: ROOT,
-        provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:vpc/vpc-platform',
+        provider_id: 'arn:aws:ec2:us-fake-1:fake-platform-a:vpc/vpc-platform',
         account_id: 'fake-platform-a',
         node_kind: 'VPC',
         resource_type: 'AWS::EC2::VPC',
-        region_id: 'fake-region-a',
+        region_id: 'us-fake-1',
         availability_zone: null,
         name: 'platform',
         as_of: AS_OF,
@@ -115,12 +115,12 @@ async function withSession(page: Page): Promise<void> {
       },
       {
         node_id: SUBNET,
-        provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:subnet/subnet-a',
+        provider_id: 'arn:aws:ec2:us-fake-1:fake-platform-a:subnet/subnet-a',
         account_id: 'fake-platform-a',
         node_kind: 'SUBNET',
         resource_type: 'AWS::EC2::Subnet',
-        region_id: 'fake-region-a',
-        availability_zone: 'fake-region-a-a',
+        region_id: 'us-fake-1',
+        availability_zone: 'us-fake-1-a',
         name: 'private-a',
         as_of: AS_OF,
         collected_at: COLLECTED_AT,
@@ -137,7 +137,7 @@ async function withSession(page: Page): Promise<void> {
           offset: 0,
           filters: {
             account_id: ['fake-platform-a'],
-            region_id: ['fake-region-a'],
+            region_id: ['us-fake-1'],
             node_kind: ['SUBNET', 'VPC'],
             resource_type: ['AWS::EC2::Subnet', 'AWS::EC2::VPC'],
           },
@@ -159,27 +159,27 @@ async function withSession(page: Page): Promise<void> {
         data: {
           node: {
             node_id: ROOT,
-            provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:vpc/vpc-platform',
+            provider_id: 'arn:aws:ec2:us-fake-1:fake-platform-a:vpc/vpc-platform',
             account_id: 'fake-platform-a',
             node_kind: 'VPC',
             resource_type: 'AWS::EC2::VPC',
-            region_id: 'fake-region-a',
+            region_id: 'us-fake-1',
             availability_zone: null,
             name: 'platform',
             as_of: AS_OF,
             collected_at: COLLECTED_AT,
           },
           // PARTIAL, so the page has to warn before it lists a single neighbour.
-          coverage: slice('fake-platform-a', 'fake-region-a', 'PARTIAL', 'Throttled'),
+          coverage: slice('fake-platform-a', 'us-fake-1', 'PARTIAL', 'Throttled'),
           neighbours: [
             {
               node_id: SUBNET,
-              provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:subnet/subnet-a',
+              provider_id: 'arn:aws:ec2:us-fake-1:fake-platform-a:subnet/subnet-a',
               account_id: 'fake-platform-a',
               node_kind: 'SUBNET',
               resource_type: 'AWS::EC2::Subnet',
-              region_id: 'fake-region-a',
-              availability_zone: 'fake-region-a-a',
+              region_id: 'us-fake-1',
+              availability_zone: 'us-fake-1-a',
               name: 'private-a',
               as_of: AS_OF,
               collected_at: COLLECTED_AT,
@@ -226,11 +226,11 @@ async function withSession(page: Page): Promise<void> {
           nodes: [
             {
               node_id: ROOT,
-              provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:vpc/vpc-platform',
+              provider_id: 'arn:aws:ec2:us-fake-1:fake-platform-a:vpc/vpc-platform',
               account_id: 'fake-platform-a',
               node_kind: 'VPC',
               resource_type: 'AWS::EC2::VPC',
-              region_id: 'fake-region-a',
+              region_id: 'us-fake-1',
               availability_zone: null,
               name: 'platform',
               as_of: AS_OF,
@@ -238,12 +238,12 @@ async function withSession(page: Page): Promise<void> {
             },
             {
               node_id: SUBNET,
-              provider_id: 'arn:aws:ec2:fake-region-a:fake-platform-a:subnet/subnet-a',
+              provider_id: 'arn:aws:ec2:us-fake-1:fake-platform-a:subnet/subnet-a',
               account_id: 'fake-platform-a',
               node_kind: 'SUBNET',
               resource_type: 'AWS::EC2::Subnet',
-              region_id: 'fake-region-a',
-              availability_zone: 'fake-region-a-a',
+              region_id: 'us-fake-1',
+              availability_zone: 'us-fake-1-a',
               name: 'private-a',
               as_of: AS_OF,
               collected_at: COLLECTED_AT,
@@ -268,8 +268,8 @@ async function withSession(page: Page): Promise<void> {
             },
           ],
           coverage: [
-            slice('fake-platform-a', 'fake-region-a', 'COMPLETE', null),
-            slice('fake-product-denied', 'fake-region-a', 'PARTIAL', 'AccessDenied'),
+            slice('fake-platform-a', 'us-fake-1', 'COMPLETE', null),
+            slice('fake-product-denied', 'us-fake-1', 'PARTIAL', 'AccessDenied'),
           ],
           depth_reached: 1,
           max_depth: 4,
@@ -303,7 +303,7 @@ async function withSession(page: Page): Promise<void> {
           depth_bound_reached: false,
           is_lower_bound: true,
           refused_because: [
-            'fake-product-denied in fake-region-a is PARTIAL because of AccessDenied',
+            'fake-product-denied in us-fake-1 is PARTIAL because of AccessDenied',
           ],
           max_depth: 4,
         },
@@ -325,7 +325,7 @@ test.describe('the topology map', () => {
     await expect(estate).toContainText('2 slices of the estate could not be read');
     // Partial and unread are different states and the screen keeps them apart.
     await expect(estate).toContainText('fake-region-c is PARTIAL (NotOptedIn)');
-    await expect(estate).toContainText('fake-region-b is UNREAD (NotYetAttempted)');
+    await expect(estate).toContainText('eu-fake-1 is UNREAD (NotYetAttempted)');
     // And no canvas yet, because nothing has been chosen.
     await expect(page.getByTestId('topology-canvas')).toHaveCount(0);
   });
@@ -405,12 +405,12 @@ test.describe('the topology map', () => {
     // would look more contained than it is in the one direction nobody checks.
     const refused = page.getByTestId('blast-refused');
     await expect(refused).toContainText('No score');
-    await expect(refused).toContainText('fake-product-denied in fake-region-a is PARTIAL');
+    await expect(refused).toContainText('fake-product-denied in us-fake-1 is PARTIAL');
 
     // One, the neighbour list may be short, said above the list rather than under it.
     const warning = page.getByTestId('entity-coverage');
     await expect(warning).toContainText(
-      'fake-platform-a in fake-region-a is PARTIAL (Throttled)',
+      'fake-platform-a in us-fake-1 is PARTIAL (Throttled)',
     );
     const neighbours = page.getByTestId('entity-neighbours');
     const warningBox = await warning.boundingBox();

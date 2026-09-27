@@ -33,13 +33,13 @@ MINE = "fake-platform-a"
 #: as one. That is ISS-202's second paragraph and is why the fake state follows the estate: a
 #: fake using ARNs here would join to nothing and the feature would look broken for a reason
 #: that has nothing to do with it.
-VPC = "amazonvpc/fake-platform-a/fake-region-a/vpc"
-SUBNET = "amazonvpc/fake-platform-a/fake-region-a/subnet-a"
+VPC = "amazonvpc/fake-platform-a/us-fake-1/vpc"
+SUBNET = "amazonvpc/fake-platform-a/us-fake-1/subnet-a"
 INSTANCE = "amazonec2/fake-platform-a/0001"
 #: Owned only by the state location that refuses, so its row is the one the removal rule
 #: has to protect. A resource the readable locations also own would be rewritten by them on
 #: every run and would survive for the wrong reason, which is what the first draft asserted.
-QUEUE = "arn:aws:sqs:fake-region-a:fake-platform-a:orders"
+QUEUE = "arn:aws:sqs:us-fake-1:fake-platform-a:orders"
 
 INSERT_ACCOUNT = text(
     "INSERT INTO cloud_account (account_pk, tenant_id, provider, account_id, name, status, "
@@ -55,7 +55,7 @@ INSERT_NODE = text(
     "INSERT INTO topology_node (node_id, tenant_id, ingest_run_id, sub_account_id, "
     "provider_id, node_kind, resource_type, region_id, availability_zone, name, as_of, "
     "collected_at) VALUES (:node, :t, :run, :a, :p, 'OTHER', 'AWS::EC2::VPC', "
-    "'fake-region-a', NULL, :n, :at, :at)"
+    "'us-fake-1', NULL, :n, :at, :at)"
 )
 
 

@@ -58,7 +58,7 @@ describe('EntityScreen', () => {
     // The ARN whole, because a truncated identifier is not an identifier and a reader has to
     // be able to paste it into their own console.
     const arn = await screen.findByTestId('entity-arn');
-    expect(arn).toHaveTextContent('arn:aws:ec2:fake-region-a:fake-platform-a:vpc/vpc-platform');
+    expect(arn).toHaveTextContent('arn:aws:ec2:us-fake-1:fake-platform-a:vpc/vpc-platform');
     expect(screen.getByTestId('entity-identity')).toHaveTextContent('fake-platform-a');
   });
 
@@ -68,14 +68,14 @@ describe('EntityScreen', () => {
     renderEntity();
     const banner = await screen.findByTestId('entity-coverage');
     expect(banner).toHaveTextContent(/may be attached to things that are not listed/);
-    expect(banner).toHaveTextContent('fake-platform-a in fake-region-a is PARTIAL (Throttled)');
+    expect(banner).toHaveTextContent('fake-platform-a in us-fake-1 is PARTIAL (Throttled)');
   });
 
   it('shows no coverage warning when the slice was read whole', async () => {
     const complete = withEntity({
       coverage: {
         account_id: 'fake-platform-a',
-        region_id: 'fake-region-a',
+        region_id: 'us-fake-1',
         state: 'COMPLETE',
         cause: null,
         node_count: 27,
@@ -245,7 +245,7 @@ describe('EntityScreen', () => {
       const refused = await screen.findByTestId('blast-refused');
       expect(refused).toHaveTextContent(/No score/);
       expect(refused).toHaveTextContent(/would look more contained than it is/);
-      expect(refused).toHaveTextContent('fake-product-denied in fake-region-a is PARTIAL');
+      expect(refused).toHaveTextContent('fake-product-denied in us-fake-1 is PARTIAL');
       expect(screen.queryByTestId('blast-radius')).toBeNull();
     });
 
