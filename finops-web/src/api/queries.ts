@@ -29,6 +29,7 @@ import {
   blastRadiusFixture,
   entityFixture,
   graphCoverageFixture,
+  geographyFixture,
   resourceListFixture,
   inventoryRootsFixture,
   subgraphFixture,
@@ -40,6 +41,7 @@ import type {
   ApiEntity,
   ApiGraphCoverage,
   ApiInventoryRoots,
+  ApiGeographies,
   ApiResourceList,
   ApiSubgraph,
   ApiBudgets,
@@ -412,12 +414,23 @@ export function useEntity(nodeId: string | null) {
  * The query key carries every filter, so two different filters are two cached answers rather
  * than one answer served for both.
  */
+export function useGeography() {
+  return useQuerySurface<ApiGeographies>(
+    ['inventory-geography'],
+    '/api/v1/inventory/geography',
+    '/api/v1/inventory/geography',
+    geographyFixture,
+  );
+}
+
 export function useResources(query: {
   // `| undefined` explicitly, because `exactOptionalPropertyTypes` is on: an optional property
   // and a property that may hold undefined are different types under it, and the caller builds
   // this object with undefined for the filters it is not applying.
   readonly accountId?: string | undefined;
   readonly regionId?: string | undefined;
+  /** Every region in one geography, by prefix. FEAT-061's click from the map. */
+  readonly geography?: string | undefined;
   readonly nodeKind?: string | undefined;
   readonly resourceType?: string | undefined;
   readonly limit: number;
@@ -429,6 +442,7 @@ export function useResources(query: {
   });
   if (query.accountId !== undefined) search.set('account_id', query.accountId);
   if (query.regionId !== undefined) search.set('region_id', query.regionId);
+  if (query.geography !== undefined) search.set('geography', query.geography);
   if (query.nodeKind !== undefined) search.set('node_kind', query.nodeKind);
   if (query.resourceType !== undefined) search.set('resource_type', query.resourceType);
   return useQuerySurface<ApiResourceList>(
@@ -436,6 +450,7 @@ export function useResources(query: {
       'inventory-resources',
       query.accountId ?? 'all',
       query.regionId ?? 'all',
+      query.geography ?? 'all',
       query.nodeKind ?? 'all',
       query.resourceType ?? 'all',
       query.limit,

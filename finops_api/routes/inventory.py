@@ -21,6 +21,7 @@ and a ceiling in only one of them is a ceiling somebody routes around.
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -44,6 +45,8 @@ from finops_api.schemas import (
     EdgeOut,
     EntityOut,
     Envelope,
+    GeographiesOut,
+    GeographyOut,
     InventoryRootOut,
     InventoryRootsOut,
     NodeOut,
@@ -53,6 +56,7 @@ from finops_api.schemas import (
     SubgraphOut,
 )
 from finops_core.config import Settings
+from finops_core.domain.geography import GEOGRAPHIES, geography_of, is_global
 from finops_core.domain.tenant import Scope
 from finops_core.domain.topology import CoverageState, Edge, GraphCoverage, Node
 from finops_query.blast_radius import assess
@@ -346,6 +350,13 @@ def resources(
     region_id: str | None = Query(
         default=None, description="Narrow to one region. Omit for every region."
     ),
+    geography: str | None = Query(
+        default=None,
+        description=(
+            "Narrow to every region in one geography, by its region name prefix, for example "
+            "eu. Resolved against the regions this reader can see."
+        ),
+    ),
     node_kind: str | None = Query(default=None, description="Narrow to one kind of resource."),
     resource_type: str | None = Query(
         default=None, description="Narrow to one provider resource type."
@@ -372,10 +383,23 @@ def resources(
     number of slices behind the list and not the number of rows in it.
     """
     repository = TopologyRepository(connection, context)
+    # A geography becomes the set of regions inside it that this reader can see, resolved
+    # through the one rule in `finops_core` rather than with a prefix match written again here.
+    # Two implementations of the rule would eventually disagree, and the map and the list
+    # disagreeing about what is in Europe is the kind of fault a reader finds before we do.
+    region_ids: tuple[str, ...] | None = None
+    if geography is not None:
+        seen = repository.vocabularies(scope)["region_id"]
+        region_ids = tuple(
+            found
+            for found in seen
+            if (placed := geography_of(found)) is not None and placed.key == geography
+        )
     rows, total = repository.page(
         scope,
         account_id=account_id,
         region_id=region_id,
+        region_ids=region_ids,
         node_kind=node_kind,
         resource_type=resource_type,
         limit=limit,
@@ -399,6 +423,125 @@ def resources(
         # Slices, like the map's, because the honest question about a list of resources is how
         # much of the estate it was drawn from. Counting the rows would report a full page as
         # complete coverage of an estate half of which was never read.
+        visible=slices - len(unread),
+        rows=rows,
+        coverage=(slices - len(unread), slices),
+        coverage_unit="slices",
+    )
+    return Envelope(data=found, meta=meta)
+
+
+@dataclass
+class _Tally:
+    """One geography while it is still being added up. FEAT-061.
+
+    A mutable accumulator rather than a dictionary of objects, because the dictionary version
+    needed a cast on every read and a cast is a place a type error hides.
+    """
+
+    name: str
+    regions: set[str] = field(default_factory=set)
+    resources: int = 0
+    account_slices: int = 0
+
+
+@router.get("/inventory/geography", response_model=Envelope[GeographiesOut])
+def geography(
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[GeographiesOut]:
+    """The estate by continent, worked out from region names. FEAT-061.
+
+    **Nine numbers, grouped in the database.** An estate of three hundred accounts is millions
+    of nodes and the question here is how many are on each continent, so the aggregate happens
+    in SQL and this function does arithmetic on at most a few dozen rows.
+
+    **The geography comes from the region name prefix and from nothing else.** `finops_core`
+    holds the rule and the argument: a table of coordinates per region has to name every region,
+    which means the next region a provider opens is invisible until somebody notices, and that
+    is exactly the failure `scripts/ci/check_hardcoded.py` exists to prevent. A prefix is not a
+    region, it is stable across every region inside it, and a new one resolves on the day it
+    opens.
+
+    **The cost of that is real and is stated rather than hidden.** A prefix is continental, so
+    this places a resource in Europe and never in Dublin. The regions inside each geography are
+    therefore listed rather than counted, which is the honest way to admit what the name cannot
+    tell us. ISS-213.
+
+    **Three kinds of leftover and they are never added together.** A resource with no region is
+    global, which is a fact about the service and not a gap. A region whose prefix is unknown is
+    unplaceable, which is the one somebody can act on. A region a collection could not read is
+    refused, and its resources are unknown rather than zero, which is constraint 5.
+    """
+    repository = TopologyRepository(connection, context)
+    rows = repository.by_region(scope)
+
+    grouped: dict[str, _Tally] = {}
+    global_resources = 0
+    unplaceable: dict[str, int] = {}
+    for row in rows:
+        region_id = row.region_id
+        resources = int(row.resources or 0)
+        if is_global(region_id):
+            # Not unplaceable. Nobody is being asked to fix IAM having no region.
+            global_resources += resources
+            continue
+        placed = geography_of(region_id)
+        if placed is None:
+            unplaceable[str(region_id)] = resources
+            continue
+        tally = grouped.setdefault(placed.key, _Tally(name=placed.name))
+        tally.regions.add(str(region_id))
+        tally.resources += resources
+        # Summed across the regions inside the geography, which counts an account twice when it
+        # is present in two of them. Named rather than quietly corrected: the honest figure needs
+        # a distinct count per geography, which is a second grouped read, and until there is one
+        # the screen says account slices rather than accounts. ISS-214.
+        tally.account_slices += int(row.accounts or 0)
+
+    # Ordered by the table rather than by size, so the drawing does not reshuffle itself every
+    # time a region grows. GEOGRAPHIES is west to east.
+    ordered = tuple(
+        GeographyOut(
+            key=key,
+            name=grouped[key].name,
+            regions=tuple(sorted(grouped[key].regions)),
+            resources=grouped[key].resources,
+            accounts=grouped[key].account_slices,
+        )
+        for key in (item.key for item in GEOGRAPHIES)
+        if key in grouped
+    )
+
+    # The regions a collection could not read, from the same coverage the map and the list use.
+    # A refused region is not an empty one, and this is the only place on the screen that can
+    # say so.
+    refused = tuple(
+        sorted(
+            {
+                entry.region_id
+                for entry in repository.incomplete(scope)
+                if entry.region_id is not None
+            }
+        )
+    )
+
+    found = GeographiesOut(
+        geographies=ordered,
+        global_resources=global_resources,
+        unplaceable=tuple(sorted(unplaceable)),
+        unplaceable_resources=sum(unplaceable.values()),
+        refused=refused,
+    )
+    slices = repository.slice_count(scope)
+    unread = repository.incomplete(scope)
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        # Slices, like the map's and the list's. A continent drawn from a region that refused us
+        # is a continent whose count is a floor rather than a total.
         visible=slices - len(unread),
         rows=rows,
         coverage=(slices - len(unread), slices),

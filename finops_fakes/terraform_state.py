@@ -43,12 +43,12 @@ LOCATIONS = (NETWORK, PLATFORM, PRODUCT)
 #: closed by normalising identifiers at ingest, these three move with it.
 _OWNED: tuple[tuple[str, str, str], ...] = (
     (
-        "amazonvpc/fake-platform-a/fake-region-a/vpc",
+        "amazonvpc/fake-platform-a/us-fake-1/vpc",
         "module.network.aws_vpc.main",
         NETWORK,
     ),
     (
-        "amazonvpc/fake-platform-a/fake-region-a/subnet-a",
+        "amazonvpc/fake-platform-a/us-fake-1/subnet-a",
         'module.network.aws_subnet.private["a"]',
         NETWORK,
     ),

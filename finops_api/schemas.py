@@ -1025,6 +1025,58 @@ class ResourceFiltersOut(BaseModel):
     resource_type: tuple[str, ...]
 
 
+class GeographyOut(BaseModel):
+    """One continent's worth of the estate. FEAT-061.
+
+    `regions` is listed rather than counted, because the geography is continental and a reader
+    who sees Europe wants to know whether that means Dublin, Frankfurt or both. It is the
+    honest way to admit what the prefix cannot tell us.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    #: The region name prefix, which is also the stable key the drawing positions by.
+    key: str
+    name: str
+    #: Every region inside it that this reader can see, alphabetical.
+    regions: tuple[str, ...]
+    resources: int
+    accounts: int
+
+
+class GeographiesOut(BaseModel):
+    """The estate by continent, with everything the continent view cannot hold. FEAT-061.
+
+    **Three kinds of leftover, kept apart on purpose.** Collapsing them would be the easy thing
+    and each needs a different sentence and a different remedy.
+
+    `global_resources` have no region at all. IAM, Route 53, CloudFront and the organization
+    itself, and that is a fact about the service rather than a hole in the inventory. Nobody
+    should be asked to fix it.
+
+    `unplaceable` are regions whose name carries a prefix the geography table does not know.
+    That is the one a reader can act on: a provider has opened a geography we have not heard of,
+    and the table needs one more row.
+
+    `refused` are regions a collection could not read. Their resources are not zero, they are
+    unknown, and constraint 5 is that a failure is never rendered as the number zero.
+
+    Every count here is measured, and the total of every geography plus the three leftovers is
+    the estate this reader can see. A screen that shows the geographies alone is reporting a
+    smaller estate than exists.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    geographies: tuple[GeographyOut, ...]
+    global_resources: int
+    #: Regions whose prefix is unknown, named so somebody can widen the table, with their count.
+    unplaceable: tuple[str, ...]
+    unplaceable_resources: int
+    #: Regions a collection could not read, from the same slice coverage the map uses.
+    refused: tuple[str, ...]
+
+
 class ResourceListOut(BaseModel):
     """A page of resources, and the denominator. FEAT-056, closing ISS-204.
 

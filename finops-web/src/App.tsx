@@ -13,6 +13,7 @@ import { FreshnessScreen } from './screens/FreshnessScreen';
 import { IngestScreen } from './screens/IngestScreen';
 import { OrganizationScreen } from './screens/OrganizationScreen';
 import { BudgetsScreen } from './screens/BudgetsScreen';
+import { GeographyScreen } from './screens/GeographyScreen';
 import { EntityScreen } from './screens/EntityScreen';
 import { ResourceListScreen } from './screens/ResourceListScreen';
 import { TopologyScreen } from './screens/TopologyScreen';
@@ -102,6 +103,7 @@ export function App({
                 {/* FEAT-056, closing ISS-204. Declared before the detail route so the
                     literal path is not eaten by the parameter. */}
                 <Route path="/inventory/resources" element={<ResourceListScreen />} />
+                <Route path="/inventory/geography" element={<GeographyScreen />} />
                 <Route path="/inventory/resources/:nodeId" element={<EntityScreen />} />
                 <Route path="/governance/queries" element={<QueryFindingsScreen />} />
                 <Route path="/governance/queries/:id" element={<QueryFindingDetailScreen />} />

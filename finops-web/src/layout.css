@@ -1700,3 +1700,114 @@ main > section > [role='group'] {
   margin-left: -1px;
   background: var(--text);
 }
+
+/* ------------------------------------------------------------- world map */
+
+/* A schematic, so it is drawn like an instrument rather than like an atlas: a
+   graticule, markers, and no coastline, because the data knows a continent and
+   not a city and a coastline would claim otherwise. */
+
+[data-testid='world-map'] {
+  margin: 0;
+}
+
+[data-testid='world-map'] svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface-2);
+}
+
+[data-testid='world-map-grid'] line {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+[data-testid='world-map-marker'] circle {
+  fill: var(--chart-bar);
+  fill-opacity: 0.45;
+  stroke: var(--chart-bar);
+  stroke-width: 1.5;
+  cursor: pointer;
+}
+
+[data-testid='world-map-marker'][data-selected='true'] circle {
+  fill: var(--chart-bar-peak);
+  fill-opacity: 0.75;
+  stroke: var(--chart-bar-peak);
+  stroke-width: 2.5;
+}
+
+[data-testid='world-map-marker'] text {
+  fill: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+[data-testid='world-map-caption'] {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-1);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+[data-testid='world-map-unplaced'] {
+  color: var(--severity-5);
+}
+
+/* The legend is the content and the control. Every figure in the drawing is here
+   as text, and these are real buttons, because the markers are not reachable from
+   a keyboard and a picture must never be the only way to operate a screen. */
+[data-testid='world-map-legend'] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-testid='world-map-choice'] {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+}
+
+[data-testid='world-map-choice'][aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-quiet);
+}
+
+[data-testid='world-map-name'] {
+  font-weight: 600;
+}
+
+[data-testid='world-map-count'] {
+  font-family: var(--font-numeral);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-1);
+  color: var(--text);
+}
+
+[data-testid='world-map-regions'] {
+  font-family: var(--font-numeral);
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+/* The three leftovers. A definition list, because each is a named thing with a
+   sentence, and the sentences are the point: a count with no explanation is a
+   number somebody guesses at. */
+[data-testid='geography-leftovers'] {
+  margin-top: var(--space-5);
+}
+
+[data-testid='geography-prompt'] {
+  margin-top: var(--space-4);
+}

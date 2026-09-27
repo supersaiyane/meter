@@ -689,6 +689,39 @@ export interface ApiResourceFilters {
   readonly resource_type: readonly string[];
 }
 
+/** One continent's worth of the estate. FEAT-061. */
+export interface ApiGeography {
+  /** The region name prefix, which is the stable key the drawing positions by. */
+  readonly key: string;
+  readonly name: string;
+  /**
+   * Listed rather than counted. The prefix is continental and cannot tell Dublin from
+   * Frankfurt, so naming the regions is the honest way to admit what it does not know.
+   */
+  readonly regions: readonly string[];
+  readonly resources: number;
+  /**
+   * Account slices, summed across the regions in the geography, so an account present in two
+   * of them is counted twice. ISS-214, and the screen says account slices for that reason.
+   */
+  readonly accounts: number;
+}
+
+/**
+ * The estate by continent, with three kinds of leftover that are never added together.
+ *
+ * `global_resources` belong to no region, which is a fact about the service. `unplaceable` are
+ * regions whose prefix the table does not know, which is the one somebody can act on. `refused`
+ * are regions a collection could not read, so the counts above them are a floor and not a total.
+ */
+export interface ApiGeographies {
+  readonly geographies: readonly ApiGeography[];
+  readonly global_resources: number;
+  readonly unplaceable: readonly string[];
+  readonly unplaceable_resources: number;
+  readonly refused: readonly string[];
+}
+
 export interface ApiResourceList {
   readonly resources: readonly ApiTopologyNode[];
   /** Matching rows in scope. Not the size of the estate and not the size of the page. */
