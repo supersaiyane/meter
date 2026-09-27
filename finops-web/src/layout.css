@@ -23,13 +23,13 @@
 
 body {
   margin: 0;
-  background: var(--surface-sunken);
+  background: var(--surface);
   color: var(--text);
   font-family: var(--font-ui);
   font-size: var(--font-size-2);
-  line-height: 1.45;
-  /* An instrument, not a dashboard. Nothing here is centred in a hero. */
+  line-height: 1.5;
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ------------------------------------------------------------------ shell */
@@ -44,47 +44,53 @@ body {
   min-height: 100vh;
 }
 
-/* Full width, above everything, and not dismissible. A banner that can be
-   dismissed gets dismissed and the condition does not go away with it. */
+/* The header row: what screen this is, and what it is safe to believe about it,
+   on one line. Sticky, because the coverage and the freshness are qualifications
+   on every figure below and a qualification that scrolls away stops qualifying.
+   Not dismissible for the same reason: a banner that can be dismissed gets
+   dismissed and the condition does not go with it. */
 [data-testid='trust-strip'] {
   grid-area: trust;
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-2) var(--space-4);
-  padding: var(--space-2) var(--space-4);
-  background: var(--surface);
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-6);
+  background: var(--surface-raised);
   border-bottom: 1px solid var(--border);
   font-size: var(--font-size-1);
+  position: sticky;
+  top: 0;
+  z-index: 5;
 }
 
 [data-testid='trust-strip'] > * {
   margin: 0;
 }
 
-/* The failures list is the one element that needs the whole row to itself. */
+/* The failure count is pushed to the far end, because it is the one thing here a
+   reader may need to act on and the eye finishes a row at its end. */
 [data-testid='shell-failures'] {
-  flex-basis: 100%;
+  margin-left: auto;
 }
 
 [data-testid='shell'] > header {
   grid-area: nav;
   grid-row: 1 / 3;
-  background: var(--surface);
+  background: var(--surface-raised);
   border-right: 1px solid var(--border);
-  padding: var(--space-3);
-  /* Compact. It is chrome, not content. */
-  font-size: var(--font-size-1);
+  padding: var(--space-4) 0;
+  font-size: var(--font-size-2);
   overflow-y: auto;
   max-height: 100vh;
   position: sticky;
   top: 0;
 }
 
-/* Collapsed. The column narrows rather than the navigation being covered, so
-   the content actually gains the width. No transition: the motion rule permits
-   a 120 ms opacity change and nothing else, and a sliding panel is exactly the
-   decoration it rules out. */
+/* Collapsed. The column narrows rather than the navigation being covered, so the
+   content actually gains the width. No transition: the motion rule permits a
+   120 ms opacity change and nothing else, and a sliding panel is the decoration
+   it rules out. */
 [data-testid='shell'][data-nav='collapsed'] {
   grid-template-columns: 56px minmax(0, 1fr);
 }
@@ -95,10 +101,10 @@ body {
 
 [data-testid='nav-toggle'] {
   display: block;
-  width: 100%;
-  margin: 0 0 var(--space-3);
+  width: calc(100% - var(--space-4) * 2);
+  margin: 0 var(--space-4) var(--space-3);
   padding: var(--space-1) var(--space-2);
-  background: var(--surface-sunken);
+  background: var(--surface-raised-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text-muted);
@@ -112,55 +118,66 @@ body {
   border-color: var(--border-strong);
 }
 
+/* The mark is drawn, not an image: one gradient, no request, and it survives a
+   theme switch because both stops are fixed hues rather than tokens. */
 [data-testid='shell'] > header [data-testid='brand'] {
-  font-size: var(--font-size-4);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  margin: 0 0 var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-3);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 var(--space-4) var(--space-5);
+}
+
+[data-testid='shell'] > header [data-testid='brand']::before {
+  content: '';
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, #4da3ff, #9b6cff);
+  flex: none;
 }
 
 [data-testid='screen-title'] {
   font-size: var(--font-size-4);
   font-weight: 600;
-  margin: 0 0 var(--space-3);
-  letter-spacing: -0.01em;
+  margin: 0 var(--space-2) 0 0;
+  letter-spacing: -0.015em;
 }
 
 [data-testid='shell'] > main {
   grid-area: main;
-  padding: var(--space-4);
+  padding: var(--space-6);
   min-width: 0;
+  background: var(--surface);
 }
 
 /* ------------------------------------------------------------- navigation */
 
-/* Each group is a details element, so the disclosure state, the keyboard
-   handling and the expanded semantics come from the browser rather than from a
-   div pretending to be a button. Only the group holding the current screen
-   starts open, which is what keeps the menu short. */
+/* Each group is a details element, so the disclosure state, the keyboard handling
+   and the expanded semantics come from the browser rather than from a div
+   pretending to be a button. Only the group holding the current screen starts
+   open, which is what keeps the menu short. */
 nav[aria-label='Sections'] summary {
-  font-size: var(--font-size-1);
+  font-size: 10.5px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-  margin: var(--space-3) 0 var(--space-1);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius);
+  letter-spacing: 0.11em;
+  color: var(--text-faint);
+  margin: var(--space-4) 0 var(--space-1);
+  padding: var(--space-1) var(--space-4);
   cursor: pointer;
   list-style-position: inside;
 }
 
 nav[aria-label='Sections'] summary:hover {
-  color: var(--text);
-  background: var(--surface-sunken);
+  color: var(--text-muted);
 }
 
-/* The one group that is only itself. It sits at the top as a plain link and is
-   spaced to match a summary, so the list does not start with a jolt. */
 nav[aria-label='Sections'] > [data-testid='nav-self-link'] {
   margin-bottom: var(--space-2);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 nav[aria-label='Sections'] ul {
@@ -169,89 +186,135 @@ nav[aria-label='Sections'] ul {
   padding: 0;
 }
 
+/* A left rail rather than a filled block. The rail marks the current screen
+   without changing the row's shape, so the list does not jump as it changes. */
 nav[aria-label='Sections'] a {
-  display: block;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius);
-  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-4);
+  border-left: 2px solid transparent;
+  color: var(--text-muted);
   text-decoration: none;
+  font-size: 13.5px;
 }
 
 nav[aria-label='Sections'] a:hover {
-  background: var(--accent-quiet);
+  color: var(--text);
+  background: var(--surface-raised-2);
 }
 
 nav[aria-label='Sections'] a[aria-current='page'] {
   background: var(--accent-quiet);
-  color: var(--accent);
-  font-weight: 600;
+  border-left-color: var(--accent);
+  color: var(--text);
+  font-weight: 500;
 }
 
-/* An unbuilt screen is listed and reachable. It is quieter, never hidden:
-   hiding it would make the product look smaller than it is. */
+/* An unbuilt screen is listed and reachable. Quieter, never hidden: hiding it
+   would make the product look smaller than it is. */
 .meter-arrives {
   display: block;
-  color: var(--text-muted);
+  color: var(--text-faint);
   font-size: var(--font-size-1);
 }
 
 nav[aria-label='Sections'] a[data-arrives] {
-  color: var(--text-muted);
+  color: var(--text-faint);
 }
 
 /* ------------------------------------------------------------ trust strip */
 
-[data-testid='coverage'] {
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius);
-  background: var(--surface-raised);
+/* Chips. Everything in this row is one shape, so a reader learns it once: a
+   pill, a small mono figure, and a dot where there is a state to carry. */
+[data-testid='coverage'],
+[data-testid='global-freshness'],
+[data-testid='shell-failures'] summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--border);
-  margin-bottom: var(--space-2);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-numeral);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+[data-testid='coverage']::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--good);
+  flex: none;
 }
 
 [data-testid='coverage'][data-partial='true'] {
   background: var(--stale-quiet);
-  border-color: var(--stale);
+  border-color: transparent;
+  color: var(--stale);
 }
 
-[data-testid='global-freshness'] {
-  color: var(--text-muted);
-  margin: 0 0 var(--space-2);
+[data-testid='coverage'][data-partial='true']::before {
+  background: var(--stale);
 }
 
 [data-testid='global-freshness'][data-state='never-collected'] {
   color: var(--stale);
+  border-color: var(--stale);
 }
 
-[data-testid='shell-failures'] {
-  border-top: 1px solid var(--border);
-  padding-top: var(--space-2);
-}
-
-/* A count on one line, the list one click behind it. The summary is a row, not a heading:
-   it sits in the trust strip beside the coverage and the freshness, and a reader who does not
-   need it should be able to pass over it in one glance. */
+/* The count, and the list one click behind it. It used to render every failure
+   verbatim, which on a real estate is fifteen lines above the fold on every
+   screen: the honesty machinery working, and also the first thing a reader sees
+   instead of their own data. */
 [data-testid='shell-failures'] summary {
   cursor: pointer;
-  padding: 2px 0;
-  font-size: var(--font-size-1);
-  list-style-position: outside;
+  list-style: none;
+  background: var(--failure-quiet);
+  border-color: transparent;
+  color: var(--failure);
+}
+
+[data-testid='shell-failures'] summary::-webkit-details-marker {
+  display: none;
+}
+
+[data-testid='shell-failures'] summary::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--failure);
+  flex: none;
 }
 
 [data-testid='shell-failures'] summary:hover {
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  border-color: var(--failure);
 }
 
 [data-testid='shell-failures'] summary > span:last-child {
-  color: var(--text-muted);
-  font-family: var(--font-numeral);
+  color: inherit;
+  opacity: 0.75;
 }
 
+/* Opened, the list drops out of the row rather than pushing it apart. */
 [data-testid='shell-failures'] ul {
   list-style: none;
-  margin: 0;
-  padding: 0;
+  margin: var(--space-2) 0 0;
+  padding: var(--space-3);
+  max-width: 62ch;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised-2);
+  font-size: var(--font-size-1);
+}
+
+[data-testid='shell-failures'] li + li {
+  margin-top: var(--space-2);
 }
 
 /* Invented numbers say so, in the same place a coverage warning goes. */
@@ -1042,7 +1105,10 @@ main [data-testid$='-coverage'] li {
    than tidier. A left rule in the meaning's own colour, and a fill quiet enough
    that the text on it keeps its contrast. */
 main [role='status'].meter-stale,
-main .meter-stale:not(table):not(tr):not(td) {
+main
+  .meter-stale:not(table):not(tr):not(td):not([data-testid='freshness']):not(
+    [data-testid='home-tile'] *
+  ) {
   border-top: none;
   border-left: 3px solid var(--stale);
   padding: var(--space-2) var(--space-3);
@@ -1065,4 +1131,242 @@ main section > * + * {
 main article > table,
 main section > table {
   margin-bottom: var(--space-3);
+}
+
+/* ---------------------------------------------------------------------------
+ * Cards, figures and rows: the direction approved on 2026-09-27.
+ *
+ * Everything here is targeted by testid rather than by class, because a class
+ * would be one a screen has to remember to add and the visual layer would become
+ * a caller's concern. That is the property ADR-0021 was decided on and
+ * surface.test.ts holds it.
+ * ------------------------------------------------------------------------- */
+
+/* A card is a border, one step of lightness and a radius. No shadow: shadows in a
+   dense interface stack into mud, and the border does the same job for nothing. */
+[data-testid='home-tile'],
+[data-testid='top-actions'],
+[data-testid='home-rail'],
+main > section > article {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: var(--space-5);
+}
+
+/* The summary is a grid that reflows rather than a fixed row, so the estate
+   figure keeps its width on a laptop and the small cards wrap under it. */
+[data-testid='home-summary'] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+/* The spend card is the one thing on this screen somebody came for, so it takes
+   two columns and the headline size. Every other card is the same shape as every
+   other card, which is what makes this one read as the answer. */
+[data-testid='home-tile'][aria-label='Total spend'] {
+  grid-column: span 2;
+}
+
+[data-testid='home-tile'] h3,
+[data-testid='top-actions'] > h3,
+[data-testid='home-rail'] h3 {
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  border: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+[data-testid='home-tile'] h3 a,
+[data-testid='top-actions'] > h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+[data-testid='home-tile'] h3 a:hover,
+[data-testid='top-actions'] > h3 a:hover {
+  color: var(--accent);
+}
+
+/* The figure. Tabular, tight, and large enough that a reader ten feet from the
+   screen can still read the number they came for. */
+[data-testid='home-spend'] .meter-numeral,
+[data-testid='home-count'] {
+  font-family: var(--font-numeral);
+  font-size: var(--font-size-6);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--text-numeral);
+  font-variant-numeric: tabular-nums;
+  margin: var(--space-2) 0 0;
+  display: block;
+}
+
+/* The provenance word and the timestamps stay small and sit under the figure. They
+   are qualifications on the number, so they belong below it: inline at the headline
+   size they would be as loud as the thing they qualify. */
+[data-testid='home-spend'] [data-testid='figure'] {
+  display: block;
+}
+
+[data-testid='home-spend'] [data-testid='figure'] > span:not(.meter-numeral) {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+[data-testid='home-spend'] [data-testid='freshness'] {
+  display: block;
+  margin-top: var(--space-1);
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--font-numeral);
+}
+
+[data-testid='home-tile'] p {
+  margin: 0;
+  max-width: none;
+}
+
+[data-testid='home-tile'] p + p {
+  margin-top: var(--space-2);
+}
+
+/* The change against last period, as a chip rather than a sentence. Green where
+   spend fell, and deliberately not red where it rose: a rise is not a failure,
+   and red in this product means one thing. */
+[data-testid='home-spend-change'] {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius);
+  background: var(--good-quiet);
+  color: var(--good);
+  font-family: var(--font-numeral);
+  font-size: var(--font-size-2);
+}
+
+[data-testid='home-spend-note'],
+[data-testid='home-tile-note'] {
+  color: var(--text-faint);
+  font-size: 12.5px;
+}
+
+/* The action list. A severity rail on the left of each row, because rank is the
+   thing a reader is scanning for and a coloured word inside a cell is not
+   scannable at the speed they are moving. */
+[data-testid='top-actions'] table {
+  border: 0;
+  margin: 0;
+}
+
+[data-testid='top-actions'] caption {
+  color: var(--text-faint);
+  font-size: 12px;
+  text-align: left;
+  padding: 0 0 var(--space-2);
+}
+
+[data-testid='top-actions'] thead {
+  display: none;
+}
+
+[data-testid='top-actions'] tbody tr {
+  border-bottom: 1px solid var(--border-soft);
+}
+
+[data-testid='top-actions'] tbody tr:last-child {
+  border-bottom: 0;
+}
+
+[data-testid='top-actions'] th[scope='row'] {
+  border-left: 3px solid var(--severity-4);
+  padding-left: var(--space-3);
+  white-space: normal;
+  font-weight: 500;
+}
+
+[data-testid='top-actions'] th[scope='row'] span {
+  display: block;
+  color: var(--text-faint);
+  font-family: var(--font-numeral);
+  font-size: 11.5px;
+  font-weight: 400;
+}
+
+/* The arriving rail is a card of promises, so it is quieter than a card of
+   facts. Same shape, less ink, which is the honest way to show something that is
+   not there yet. */
+[data-testid='home-rail'] {
+  background: var(--surface-raised-2);
+  border-style: dashed;
+}
+
+[data-testid='home-rail'] li {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  padding: var(--space-1) 0;
+  font-size: 12.5px;
+}
+
+[data-testid='home-rail-arrives'] {
+  margin-left: auto;
+  color: var(--text-faint);
+  font-family: var(--font-numeral);
+  font-size: 11.5px;
+}
+
+/* Content sections on the inner screens get the card treatment too, so the
+   entity page and the resource list read as the same product as the home screen
+   rather than as the documents they were. */
+main > section > article {
+  margin-bottom: var(--space-4);
+}
+
+main > section > table,
+main > section > [data-testid$='-coverage'],
+main > section > [role='group'] {
+  margin-bottom: var(--space-4);
+}
+
+/* A degraded or partial notice inside a card is a chip, not a paragraph. It names
+   the collectors that are behind, which is worth saying on every card depending on
+   them, and at paragraph weight it was the first thing read on a card whose whole
+   point is the figure underneath. The wording is unchanged: this moves it, it does
+   not soften it.
+
+   The chip is the notice, never the wrapper. `StateBoundary` renders its children
+   inside the state element, so styling the wrapper as an inline chip collapses the
+   card's own content into it, which is what the first draft did: the figure on the
+   surfaces card disappeared into the amber pill.
+
+   And it is `p[role='status']`, not `> p`. The notice and the card's own paragraphs
+   are siblings inside that wrapper, so the second draft painted the spend figure
+   amber as well. The role is what distinguishes the notice from the content, and it
+   is already there because the notice is announced. */
+[data-testid='home-tile'] [data-testid='state'] > p[role='status'] {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius);
+  background: var(--stale-quiet);
+  color: var(--stale);
+  font-size: 11px;
+  line-height: 1.35;
+  margin: 0 0 var(--space-2);
+}
+
+[data-testid='home-tile'] [data-testid='state'][data-state='degraded'],
+[data-testid='home-tile'] [data-testid='state'][data-state='partial'] {
+  border-left: 0;
 }

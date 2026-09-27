@@ -17,20 +17,40 @@
 :root {
   color-scheme: light dark;
 
-  --surface: light-dark(#ffffff, #14181d);
-  --surface-sunken: light-dark(#f6f7f9, #0e1116);
-  --surface-raised: light-dark(#ffffff, #1b2027);
-  --border: light-dark(#d8dce2, #2c333c);
-  --border-strong: light-dark(#aeb5be, #47505c);
+  /* Surfaces. Three depths rather than two, because a card on a page has to be
+     distinguishable from the page without a shadow: shadows in a dense interface
+     stack into mud, and a border plus one step of lightness does the same job for
+     nothing. `raised` is a card, `raised-2` is a row inside a card that needs
+     separating from it. */
+  --surface: light-dark(#f7f9fc, #0b0f14);
+  --surface-sunken: light-dark(#eef2f7, #090d12);
+  --surface-raised: light-dark(#ffffff, #121820);
+  --surface-raised-2: light-dark(#f4f7fb, #171f29);
+  --border: light-dark(#dde4ed, #212c39);
+  --border-soft: light-dark(#e9eef4, #1a232e);
+  --border-strong: light-dark(#b9c4d2, #354356);
 
-  --text: light-dark(#14181d, #e6eaef);
-  --text-muted: light-dark(#5a636e, #9aa4b1);
+  /* Three inks, which is what a dense screen needs: the value, the label, and the
+     thing a reader is allowed to skip. A fourth is a hierarchy nobody can hold,
+     and two makes every label shout. */
+  --text: light-dark(#101722, #e8eef6);
+  --text-muted: light-dark(#56657a, #93a3b8);
+  --text-faint: light-dark(#7b8ba1, #61728a);
   /* Numerals get the highest contrast available. Misreading a digit is the
      failure mode that matters here, so this is AAA rather than AA. */
-  --text-numeral: light-dark(#0a0d10, #f4f7fa);
+  --text-numeral: light-dark(#070c14, #f4f8ff);
 
-  --accent: light-dark(#1f4f8f, #7fa9e8);
-  --accent-quiet: light-dark(#e7eefa, #17253a);
+  /* Interactive, and interactive only. Nothing merely important is this colour,
+     because the moment a heading is accent coloured a reader starts clicking
+     headings. */
+  --accent: light-dark(#1a6fd4, #4da3ff);
+  --accent-quiet: light-dark(#e8f1fd, rgba(77, 163, 255, 0.14));
+
+  /* A good outcome, and the only green in the product. A saving verified against
+     the bill is green; a saving we modelled is not, because the difference between
+     those two is the thing this product sells. */
+  --good: light-dark(#0f7554, #31c48d);
+  --good-quiet: light-dark(#e3f5ee, rgba(49, 196, 141, 0.14));
 
   /* Failure is the only thing that is ever red, so that when red appears it
      means exactly one thing. A large cost is not a failure. */
@@ -65,11 +85,22 @@
 
   --hatch-line: light-dark(rgba(20, 24, 29, 0.32), rgba(230, 234, 239, 0.34));
 
+  /* Six steps. A card needs twenty pixels of inside padding and a table row needs
+     four, and a scale that cannot express both ends with one of them wrong
+     everywhere. */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
-  --radius: 3px;
+  --space-5: 20px;
+  --space-6: 28px;
+
+  /* Three radii and each has one job. A card is a soft object, a chip is a pill,
+     everything else takes the small one. A fourth would be a decision nobody could
+     reproduce. */
+  --radius: 6px;
+  --radius-card: 10px;
+  --radius-pill: 999px;
 
   /* Named faces, not the machine's own. A system stack renders a different
      font per operating system, so column widths and density differ between two
