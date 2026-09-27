@@ -206,4 +206,22 @@ describe('ResourceListScreen', () => {
     await screen.findByTestId('resources');
     expect(await violationsIn(container)).toEqual([]);
   });
+
+  it('names the causes without spilling every slice above the table', async () => {
+    // Nine slices is nine lines of identifiers above the fold on a screen whose purpose is the
+    // table under them, so the honesty machinery became the first thing a reader saw instead of
+    // their own data. The count and the typed causes stay visible; the slices are one click
+    // behind. The same treatment the shell's failure wall got, so a reader learns one shape.
+    renderScreen();
+    const causes = await screen.findByTestId('estate-coverage-causes');
+    expect(causes.tagName).toBe('SUMMARY');
+    // Collapsed, never dropped. The slices are still in the document, which is what makes this
+    // different from hiding them, and the disclosure fetches nothing to open.
+    const detail = screen.getByTestId('estate-coverage-detail');
+    // The attribute rather than the `open` property, because reading the property needs a cast
+    // that eslint removes as unnecessary and tsc then requires, and the attribute is what the
+    // markup actually says.
+    expect(detail.hasAttribute('open')).toBe(false);
+    expect(detail.querySelectorAll('li').length).toBeGreaterThan(0);
+  });
 });

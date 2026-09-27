@@ -94,6 +94,10 @@ export function RankedBars({
   if (rows.length === 0) {
     return null;
   }
+  // On the largest basis nothing is summed, so what is past the limit is stated rather than
+  // folded into a row. Saying the count is what keeps a truncated chart from being a chart that
+  // lies by omission, which is the same rule the collapsed remainder follows on the other basis.
+  const undrawn = basis === 'largest' ? points.length - rows.length : 0;
   return (
     <ol data-testid="ranked-bars" data-provenance={provenance}>
       {rows.map((row) => (
@@ -114,6 +118,14 @@ export function RankedBars({
           ) : null}
         </li>
       ))}
+      {undrawn > 0 ? (
+        <li data-testid="ranked-undrawn">
+          <span>
+            {undrawn === 1 ? '1 more is not drawn' : `${String(undrawn)} more are not drawn`},
+            because they are not parts of a whole and cannot be added into one row
+          </span>
+        </li>
+      ) : null}
     </ol>
   );
 }

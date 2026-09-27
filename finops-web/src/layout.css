@@ -1331,15 +1331,55 @@ main > section > article {
 
 /* Content sections on the inner screens get the card treatment too, so the
    entity page and the resource list read as the same product as the home screen
-   rather than as the documents they were. */
+   rather than as the documents they were.
+
+   This was margin and nothing else for a while, which is why the inner screens
+   stayed flat while the home screen had panels: spacing separates blocks, it does
+   not make them objects. The home screen's own tiles are already cards, so the
+   selector below is anchored at `main > section >` to leave them alone. Nesting a
+   card inside a card is the one thing that makes a panelled layout look worse than
+   no panels at all.
+
+   `StateBoundary` is the handle because every screen wraps its content in one, so
+   one rule reaches every inner screen rather than twenty screens each needing a
+   class the visual layer would then depend on. ADR-0021. */
 main > section > article {
   margin-bottom: var(--space-4);
 }
 
+main > section > [data-testid='state'] > div[data-testid],
+main > section > [data-testid='state'] > ol[data-testid],
+main > section > [data-testid='state'] > figure[data-testid],
+main > section > [data-testid='state'] > dl[data-testid],
+main > section > [data-testid='state'] > table,
 main > section > table,
 main > section > [data-testid$='-coverage'],
 main > section > [role='group'] {
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface-raised);
   margin-bottom: var(--space-4);
+}
+
+/* A table inside a panel already has the panel's edge, so its own border would draw
+   a second line a pixel away from the first. */
+main > section > [data-testid='state'] > [data-testid='table-scroll'] {
+  padding: 0;
+  overflow-x: auto;
+}
+
+main > section > [data-testid='state'] > [data-testid='table-scroll'] > table {
+  margin: 0;
+  border: 0;
+}
+
+/* The notice is not a panel. It is the sentence about why the panels below it may be
+   short, and boxing it would make it look like another block of content. */
+main > section > [data-testid='state'] > p[role='status'] {
+  padding: 0;
+  border: 0;
+  background: none;
 }
 
 /* A degraded or partial notice inside a card is a chip, not a paragraph. It names
@@ -1947,4 +1987,115 @@ main > section > [role='group'] {
    work the screen should have done. */
 [data-testid='freshness-summary'] {
   margin-bottom: var(--space-3);
+}
+
+/* ------------------------------------------------- inner screen panel type */
+
+/* A panel says what it is. Most inner screens rendered a figure, then a chart, then
+   a table, with nothing naming any of them, which is readable to whoever built it
+   and is a guessing game for everybody else. The label is small and tracked like the
+   home tiles' so a reader learns one shape for "this is what this block is". */
+main > section > [data-testid='state'] > div[data-testid] > h2,
+main > section > [data-testid='state'] > div[data-testid] > h3:first-child {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* The figure this screen exists for, at the size the home screen gives the same
+   number. It was rendering at body size, so the most opened screen in the product
+   showed its headline as a line of prose while the summary of it on the front page
+   showed it at forty pixels. */
+[data-testid='cost-total'] .meter-numeral {
+  font-family: var(--font-numeral);
+  font-size: var(--font-size-6);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--text-numeral);
+  font-variant-numeric: tabular-nums;
+  display: block;
+  margin: var(--space-1) 0 0;
+}
+
+[data-testid='cost-total'] [data-testid='figure'] > span:not(.meter-numeral) {
+  display: inline-block;
+  margin-top: var(--space-1);
+}
+
+/* The period, above the figure, as the label it is. */
+[data-testid='cost-period'] {
+  margin: 0;
+  font-size: var(--font-size-2);
+  color: var(--text-muted);
+}
+
+/* The change against the period before, as a chip rather than a sentence, which is
+   what the home screen does with the same number. */
+[data-testid='cost-change'] {
+  margin: var(--space-3) 0 0;
+  font-size: var(--font-size-2);
+  color: var(--text-muted);
+}
+
+/* The trend's own range line ran on: two dates, two figures and two freshness
+   phrases in one paragraph with no breaks, which is six facts and no structure.
+   Split to the ends of the chart it describes, like the bar chart's own axis. */
+[data-testid='cost-trend-range'] {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-1);
+  color: var(--text-faint);
+}
+
+/* Room above the chart so the tallest bar is not against the panel's edge. */
+[data-testid='cost-trend'] {
+  margin-top: var(--space-5);
+}
+
+/* The estate coverage notice on the resource list. A count and its causes, with the
+   slices one click behind, the same shape the shell's failure wall uses so a reader
+   learns it once. */
+[data-testid='estate-coverage'] > p {
+  margin: 0;
+}
+
+[data-testid='estate-coverage-causes'] {
+  cursor: pointer;
+  margin-top: var(--space-2);
+  font-family: var(--font-numeral);
+  font-size: var(--font-size-1);
+}
+
+[data-testid='estate-coverage-detail'] ul {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-4);
+  font-family: var(--font-numeral);
+  font-size: var(--font-size-1);
+  line-height: 1.7;
+}
+
+/* The filter row is a panel like everything else, but a quiet one: it is a control
+   strip rather than content, so it takes the sunken surface instead of the raised. */
+main > section > [role='group'] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  align-items: end;
+  background: var(--surface-raised-2);
+}
+
+/* What a truncated chart left out. It spans the whole grid rather than sitting in the
+   label column, because it is a sentence about the chart and not another row in it. */
+[data-testid='ranked-undrawn'] {
+  grid-column: 1 / -1;
+  margin-top: var(--space-1);
+  font-size: var(--font-size-1);
+  color: var(--text-faint);
 }

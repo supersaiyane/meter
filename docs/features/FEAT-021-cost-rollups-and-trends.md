@@ -65,6 +65,18 @@ period's total, so the first few bars add up by eye to most of the bill.
 The chart and the table are the same rows and are held to the same order by a test. A reader who
 catches those two disagreeing about which service is largest stops trusting both.
 
+The screen was given a hierarchy on 2026-09-27. Its headline figure was rendering at body size,
+so the most opened screen in the product showed the number it exists for as a line of prose while
+the summary of it on the front page showed the same number at forty pixels. The figure and the
+chart of that figure are now one panel rather than two, because two panels say they are two
+things, and each panel says what it is: a block that renders a figure, then a chart, then a table
+with nothing naming any of them is readable to whoever built it and a guessing game for everybody
+else.
+
+The trend's range line ran on: two dates, two figures and two freshness phrases in one paragraph,
+six facts and no structure. It is split to the ends of the chart it describes, like the chart's
+own axis.
+
 ## Not doing
 
 Per resource attribution has a column and no screen. The rows are stored and who
