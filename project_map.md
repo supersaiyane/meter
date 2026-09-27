@@ -425,14 +425,24 @@ meter/
 │   │                          absences with two sentences: no age is never
 │   │                          collected, no cadence is not scheduled, and they
 │   │                          need different actions
-│   ├── components/worldLand.ts  a coarse world as longitude and latitude, about
-│   │                          thirty points a continent. Coordinates are safe here
-│   │                          when a region coordinate table is not, and that is
-│   │                          the whole distinction: a region table is a fact about
-│   │                          somebody else's estate and goes stale the day they
-│   │                          open another region, while a coastline is a fact
-│   │                          about the world and is written once and never
-│   │                          maintained
+│   ├── scripts/build_world.mjs  generates the coastline from Natural Earth 110m,
+│   │                          run by `make world`. Its two dependencies are dev
+│   │                          only and never reach a browser: what ships is a
+│   │                          committed string of path data, so the page draws a
+│   │                          real coastline with no mapping library and no fetch
+│   ├── components/worldPaths.ts  GENERATED, never edited by hand. The projection
+│   │                          it was made with travels in the same file, because a
+│   │                          second copy that drifted would put every marker in
+│   │                          the wrong sea
+│   ├── components/worldLand.ts  where each continent's marker sits, and nothing
+│   │                          else now. It held hand written coastlines for one
+│   │                          revision and they drew shapes nobody recognised.
+│   │                          Coordinates may be written down here when a region
+│   │                          coordinate table may not, and that is the whole
+│   │                          distinction: a region table is a fact about somebody
+│   │                          else's estate and goes stale the day they open
+│   │                          another region, while a coastline is a fact about
+│   │                          the world
 │   ├── components/WorldMap.tsx  the estate on a world map, equirectangular and
 │   │                          cropped to the latitudes people run things in. It
 │   │                          shipped first as a graticule and two dots, on the

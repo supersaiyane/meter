@@ -1739,7 +1739,7 @@ main > section > [role='group'] {
    a backdrop and never competes with the markers, which are the data. Coarse
    outlines, which is deliberate: a precise coastline would invite the reading that a
    marker is a datacentre. */
-[data-testid='world-map-land'] polygon {
+[data-testid='world-map-land'] path {
   /* A neutral a clear step from the ocean. The sunken surface was the first choice and is
      four hex points away from the raised one behind it, so the continents were there and
      nobody could see them. A landmass wants the value a divider has, not the value a

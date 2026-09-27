@@ -1,16 +1,18 @@
 import type { ApiGeography } from '../api/types';
-import { ANCHORS, LAND, type Ring } from './worldLand';
+import { ANCHORS } from './worldLand';
+import { LAND, WORLD } from './worldPaths';
 
 /**
  * The estate on a schematic world. FEAT-061.
  *
- * **A real coastline, coarsely drawn.** The first version was a graticule and two dots, on the
- * argument that a coastline implies a precision the prefix does not have. That argument was wrong
- * about where the claim lives: a coastline says "this is the world", and it is the marker's
- * position that would claim a datacentre. Without land a reader cannot tell which dot is North
- * America without reading the label, which makes the picture decorative rather than informative.
- * The outlines in `worldLand.ts` are deliberately coarse, so they read as a schematic, and the
- * caption still says a marker is a continent and not a datacentre.
+ * **A real coastline, from the outline every mapping library uses.** The first version was a
+ * graticule and two dots, on the argument that a coastline implies a precision the prefix does
+ * not have. That argument was wrong about where the claim lives: a coastline says "this is the
+ * world", and it is the marker's position that would claim a datacentre. The second version drew
+ * continents written out from memory and produced shapes nobody recognised, which was the wrong
+ * approach rather than a poor attempt at the right one. The outlines are now generated from the
+ * Natural Earth 110m land polygons into `worldPaths.ts` by `make world`, whose dependencies are
+ * dev only, so the page renders a real coastline with no runtime library and no fetch.
  *
  * **Equirectangular, and cropped north and south.** The simplest projection there is, one
  * multiplication per axis, because the drawing's job is recognition and not measurement. Cropped
@@ -33,16 +35,9 @@ import { ANCHORS, LAND, type Ring } from './worldLand';
  * compare numbers that are all written down.
  */
 
-//: The latitudes the drawing keeps. Antarctica is out, which costs nothing because no provider
-//: has a region there, and the far north is trimmed to where Greenland ends. The full range spends
-//: half its height on empty ocean.
-const NORTH = 83;
-const SOUTH = -56;
-
-const WIDTH = 1000;
-//: Set by the projection rather than chosen: at this crop the degrees per pixel are equal on both
-//: axes, so the continents are the shape people recognise instead of squashed or stretched.
-const HEIGHT = Math.round((WIDTH * (NORTH - SOUTH)) / 360);
+//: Taken from the generated file rather than declared here, because the coastline was projected
+//: with these numbers and a second copy that drifted would put every marker in the wrong sea.
+const { width: WIDTH, height: HEIGHT, north: NORTH, south: SOUTH } = WORLD;
 
 //: Every thirty degrees, with the equator and the prime meridian picked out. A graticule at real
 //: intervals is what tells a reader this is a projection rather than a decorative grid.
@@ -54,14 +49,6 @@ function project(lon: number, lat: number): readonly [number, number] {
   return [((lon + 180) / 360) * WIDTH, ((NORTH - lat) / (NORTH - SOUTH)) * HEIGHT];
 }
 
-function pointsOf(ring: Ring): string {
-  return ring
-    .map(([lon, lat]) => {
-      const [x, y] = project(lon, lat);
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(' ');
-}
 const SMALLEST = 7;
 const LARGEST = 34;
 
@@ -111,11 +98,11 @@ export function WorldMap({ geographies, selected, onSelect }: WorldMapProps) {
             />
           ))}
         </g>
-        {/* The land, under the graticule's lines and over its background. Coarse on purpose:
-            recognisable enough to place a marker, plainly not cartography. */}
+        {/* The land, over the graticule. One path per landmass, generated, so what a reader
+            sees is the coastline and not an approximation of one. */}
         <g data-testid="world-map-land">
-          {LAND.map((ring) => (
-            <polygon key={pointsOf(ring).slice(0, 24)} points={pointsOf(ring)} />
+          {LAND.map((outline) => (
+            <path key={outline.slice(0, 32)} d={outline} />
           ))}
         </g>
         {placed.map((one) => {
