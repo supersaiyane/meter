@@ -494,6 +494,7 @@
     "migrations/versions/0015_commitment_action.py",
     "migrations/versions/0016_resource_management.py",
     "scripts/ci/check_dashboards.py",
+    "scripts/ci/check_env_keys.py",
     "scripts/ci/check_flags.py",
     "scripts/ci/check_forbidden_imports.py",
     "scripts/ci/check_hardcoded.py",

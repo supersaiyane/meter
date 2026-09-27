@@ -38,7 +38,7 @@ make token
 
 `make seed` prints the tenant id it wrote to. `make token` prints a
 `localStorage.setItem(...)` line: paste it into the browser console at
-<http://localhost:5173> and reload. There is no login screen, which is worth knowing
+<http://localhost:9735> and reload. There is no login screen, which is worth knowing
 before an audience is watching rather than during.
 
 **Use the default subject.** `make token` signs in as `auditor@example.local`, who sees

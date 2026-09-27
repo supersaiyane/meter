@@ -17,7 +17,7 @@ export default defineConfig({
   // when a port was assigned, so a plain npm run dev still steps aside when
   // the compose stack already holds 5173.
   server: {
-    port: process.env.PORT ? Number(process.env.PORT) : 5173,
+    port: process.env.PORT ? Number(process.env.PORT) : 9735,
     strictPort: Boolean(process.env.PORT),
     // Without this the dev server answers /api itself, and the SPA fallback
     // returns index.html with status 200. Every screen then fails on
@@ -26,7 +26,7 @@ export default defineConfig({
     // already, so nothing is rewritten.
     proxy: {
       '/api': {
-        target: process.env.METER_API_ORIGIN ?? 'http://localhost:8000',
+        target: process.env.METER_API_ORIGIN ?? 'http://localhost:9731',
         changeOrigin: true,
       },
     },

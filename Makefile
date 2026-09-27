@@ -290,10 +290,12 @@ stats-json: ## The same numbers as JSON, for anything that wants to consume them
 
 .PHONY: up
 up: local-auth.yaml .env ## Start the full local stack, then run migrations
+	@$(DOCPY) scripts/ci/check_env_keys.py
 	$(COMPOSE) up -d --build
 	$(MAKE) migrate
-	@echo "API  http://localhost:8000/docs"
-	@echo "Web  http://localhost:5173"
+	@echo "API  http://localhost:9731/docs"
+	@echo "Web  http://localhost:9732        the built bundle, which is what this target starts"
+	@echo "     http://localhost:9735        the development server, if npm run dev is running"
 
 # Docker creates a directory when a bind mount source is missing, so without
 # this the API starts with a directory where its config should be and fails
