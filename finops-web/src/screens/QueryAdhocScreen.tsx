@@ -85,9 +85,28 @@ export function QueryAdhocScreen() {
     },
   ];
 
+  // The finding, rather than a number to be reached by adding the cost column up. This screen
+  // exists to say how much is being spent by queries nobody owns, and it was saying it one row
+  // at a time. Measured, because every row's cost is measured off the bill.
+  const spent = useMemo(() => rows.reduce((sum, row) => sum + Number(row.cost_usd), 0), [rows]);
+
   return (
     <section aria-label="Ad hoc queries">
       <StateBoundary state={state}>
+        {rows.length === 0 ? null : (
+          <div data-testid="adhoc-total">
+            <h2>Spent by queries nobody owns</h2>
+            <p data-testid="adhoc-total-figure">
+              <Figure value={{ kind: 'measured', amount: spent }} freshness={freshness} />
+            </p>
+            <p data-testid="adhoc-total-note">
+              Across {rows.length} {rows.length === 1 ? 'query' : 'queries'} that belong to no
+              panel and no alert rule. An ad hoc query is not waste by itself, and one running
+              on a schedule nobody remembers setting usually is
+            </p>
+          </div>
+        )}
+
         <DataTable
           rows={rows}
           columns={columns}

@@ -463,6 +463,26 @@ td .meter-failure {
   max-width: 34ch;
 }
 
+/* A failure in a numeric column is a sentence in a column shaped for digits. The
+   cell is right aligned so the cause and its remediation ragged themselves against
+   the right edge in three narrow lines, which is the hardest thing on the screen to
+   read sitting in the column a reader most needs to read. A sentence is read from
+   its left edge whatever the column around it counts. */
+td.meter-numeral .meter-failure {
+  text-align: left;
+}
+
+td.meter-numeral:has(.meter-failure) {
+  text-align: left;
+  white-space: normal;
+  /* And room to be a sentence. Left aligning it stopped the ragged right edge, but a
+     column sized for a three digit count still wrapped the remediation into four
+     lines, so the cause a reader has to act on was the least legible thing in the
+     table. The minimum only applies to rows that carry a failure, so a table of
+     counts keeps its narrow column. */
+  min-width: 26ch;
+}
+
 /* The provenance word under its numeral, so a column is as wide as the wider of
    the two rather than as wide as both. */
 .meter-provenance {
@@ -2262,6 +2282,31 @@ main > section > [data-testid='state'] > article > h3:first-of-type {
 }
 
 [data-testid='platform-total-note'] {
+  margin: var(--space-3) 0 0;
+  font-size: var(--font-size-2);
+  color: var(--text-muted);
+}
+
+/* The ad hoc total, at headline size. The screen exists to say how much is being spent
+   by queries nobody owns and it was saying it one row at a time. */
+[data-testid='adhoc-total-figure'] .meter-numeral,
+[data-testid='platform-total-figure'] .meter-numeral {
+  font-size: var(--font-size-6);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  text-align: left;
+  display: block;
+  margin: var(--space-1) 0 0;
+}
+
+[data-testid='adhoc-total-figure'] [data-testid='figure'] > span:not(.meter-numeral) {
+  display: inline-block;
+  margin-right: 0.35em;
+  margin-top: var(--space-1);
+}
+
+[data-testid='adhoc-total-note'] {
   margin: var(--space-3) 0 0;
   font-size: var(--font-size-2);
   color: var(--text-muted);
