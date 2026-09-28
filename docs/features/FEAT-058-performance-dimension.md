@@ -41,3 +41,33 @@ Three things would have to be decided before a task could honestly be written.
 The competitive review records this as the thing worth arguing about before P5 starts. This
 document exists so that the argument has somewhere to happen, and so that the gap is not
 invisible in the register.
+
+## The argument, held on 2026-09-28
+
+[ADR-0027](../adr/ADR-0027-no-performance-dimension-in-p5.md) is the record. The decision
+is no performance dimension in P5, and the reason that settled it is not on the list of
+three above.
+
+**The product cannot verify a performance finding, and verification is its whole claim.**
+Realized savings is the north star precisely because identified savings is a vanity metric,
+which is what ISS-029 was about, and FEAT-041 judges a change against the bill sixty days
+later. A performance recommendation's success is an outage that did not happen, which is
+unfalsifiable in exactly the shape ISS-029 objected to. It would put a class of finding
+that can only be asserted beside a class that is measured, and the first would borrow the
+credibility of the second.
+
+Turbonomic can make the claim because it acts and then observes. Meter does not act, by
+decision, so it would be left asserting.
+
+The third question above, the service level input, turns out to be the blocking one rather
+than one of three. It is undecided because the input does not exist, not because nobody
+has thought about it.
+
+**This is deferred, not rejected, and it is blocked on an input rather than an opinion.**
+The argument reopens when Meter can read a service level objective: an APM signal, an SLO
+recorded against a service, or a latency series it can read the way it reads CPU.
+
+**What the argument produced** is [FEAT-062](FEAT-062-refusal-evidence.md). The complaint
+the review actually makes is about trust, and the remedy for a tool that only recommends
+shrinking is not to recommend growth: it is to show that the tool looked. Meter already
+computes that judgement and discards it on one line of `waste_compute.py`.

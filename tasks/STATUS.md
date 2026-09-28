@@ -22,8 +22,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 61 total, 19 specified, 10 in build, 23 delivered |
-| Decisions | 26 architecture decision records |
+| Features | 62 total, 19 specified, 10 in build, 23 delivered |
+| Decisions | 27 architecture decision records |
 | Changes | 99 recorded |
 | Issues | 136 fixed, 75 open, 0 parked |
 | Open questions | 9 awaiting a decision |
