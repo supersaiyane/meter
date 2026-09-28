@@ -27,7 +27,7 @@ from finops_core.domain.cost import CostRecord, source_fingerprint
 from finops_core.domain.identity import Principal
 from finops_core.domain.metrics import MetricPoint
 from finops_core.domain.org import OrgNode, OrgNodeType
-from finops_core.domain.quota import QuotaUsage
+from finops_core.domain.quota import QuotaUsage, UsageSource
 from finops_core.domain.resource import ResourceRef
 from finops_core.errors import AccessDenied, CollectionError
 
@@ -224,6 +224,7 @@ QUOTAS: tuple[QuotaUsage, ...] = (
         quota_name="Concurrent queries",
         quota_limit=Decimal("30"),
         used=Decimal("4"),
+        usage_source=UsageSource.AWS_USAGE_METRIC,
         as_of=AS_OF,
         collected_at=COLLECTED_AT,
     ),
@@ -234,8 +235,10 @@ QUOTAS: tuple[QuotaUsage, ...] = (
         quota_code="FAKE-2",
         quota_name="Retained log groups",
         quota_limit=Decimal("100"),
-        # The provider publishes no usage for this one. None, never zero.
+        # The provider publishes no usage for this one. None, never zero, and the
+        # source says so rather than being left to a default that happens to agree.
         used=None,
+        usage_source=UsageSource.NONE,
         as_of=AS_OF,
         collected_at=COLLECTED_AT,
     ),

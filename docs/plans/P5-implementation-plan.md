@@ -42,7 +42,7 @@ Same contract as P0 through P4. One task, one commit.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-28 |
 | Implements | P5 spec section 4, FEAT-033 |
 | Delivers | Part of FEAT-033 |
 | Depends on | P0 delivered |
