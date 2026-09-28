@@ -488,3 +488,27 @@ gains no honesty. A backdrop is not a claim.
 **Triggers:** Deciding to leave something out of a visualisation "because it would
 imply" something. Any sentence of the form "drawing X would suggest Y" where X is a
 reference frame, an axis, a label or a background rather than the data mark itself.
+
+## 2026-09-28: the resume vector proposed work that was already finished
+
+**Mistake:** The "Next action" section of `docs/checkpoint.md` went stale twice in two
+days, the same way both times. It named issues as the next thing to do, the work was
+done that afternoon, and the section was not rewritten. On 2026-09-27 it proposed
+ISS-213 and ISS-214 after both had been closed. On 2026-09-28 it proposed the four
+unproven adapters after they had been taken as far as an offline check can go.
+
+**Correction:** Noticed only because the owner asked for the checkpoint twice and I
+read the section both times. Nothing in `make verify` looked at it, and it is the one
+part of the file a cold session reads first, so a wrong candidate list sends a fresh
+start at a task that finished.
+
+**Rule:** Rewrite the "Next action" section on every pass over the checkpoint, not
+only when it is obviously old. It is the output of the file, not a record in it, and
+a row being added is exactly when the section it summarises becomes wrong.
+`scripts/ci/check_memory.py` now refuses a numbered candidate naming an issue the
+registry says is FIXED, so the specific failure cannot recur silently, but the check
+covers only issues: a candidate phrased as prose is still mine to keep honest.
+
+**Triggers:** Adding a row to `docs/checkpoint.md`. Closing an issue. Being asked to
+"do the checkpoint". Any moment the phrase "nothing is in flight" is about to be
+written.

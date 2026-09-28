@@ -222,12 +222,53 @@ def check_lessons() -> tuple[list[str], int, str]:
     return problems, len(blocks), max(dates) if dates else "never"
 
 
+def check_next_action(text: str) -> list[str]:
+    """The "Next action" section must not propose work that is already done.
+
+    Added 2026-09-28 after that section went stale twice in two days, both times the same way:
+    it named issues as the next thing to do, the work was done, and nobody rewrote the section.
+    It is the one part of the checkpoint a cold session reads first, so a wrong candidate list
+    sends a fresh start at a task that finished.
+
+    Checkable because the registry knows. Every `ISS-nnn` the section names is looked up, and a
+    FIXED one is a proposal to redo finished work. Naming a fixed issue to say it is finished is
+    the legitimate case, so the line has to be read: the check only objects when the mention sits
+    in a numbered candidate.
+    """
+    import re
+
+    import yaml
+
+    start = text.find("## Next action")
+    if start == -1:
+        return ["docs/checkpoint.md has no 'Next action' section for a cold session to read"]
+    end = text.find("### Where the project is", start)
+    section = text[start : end if end != -1 else len(text)]
+
+    registry = yaml.safe_load((ROOT / "docs" / "registry.yaml").read_text(encoding="utf-8"))
+    status = {one["id"]: one.get("status") for one in registry.get("issues", [])}
+
+    problems: list[str] = []
+    for line in section.splitlines():
+        if not re.match(r"^\s*\d+\.", line):
+            continue
+        for named in re.findall(r"ISS-\d+", line):
+            if status.get(named) == "FIXED":
+                problems.append(
+                    f"'Next action' proposes {named} as a candidate and it is FIXED. "
+                    f"Rewrite the section: a cold session reads it first and would start "
+                    f"work that is finished."
+                )
+    return problems
+
+
 def main() -> int:
     if not CHECKPOINT.exists():
         print(f"FAIL: {CHECKPOINT} is missing")
         return 1
 
-    rows = table_rows(CHECKPOINT.read_text(encoding="utf-8"))
+    checkpoint_text = CHECKPOINT.read_text(encoding="utf-8")
+    rows = table_rows(checkpoint_text)
     haystack = known_identifiers()
     live = rows[-LIVE_WINDOW:]
     stale = rows[:-LIVE_WINDOW]
@@ -241,6 +282,7 @@ def main() -> int:
 
     lesson_problems, lesson_count, last_lesson = check_lessons()
     problems.extend(lesson_problems)
+    problems.extend(check_next_action(checkpoint_text))
 
     if len(rows) and lesson_count * HARVEST_RATIO < len(rows):
         warnings.append(
