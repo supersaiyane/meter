@@ -813,3 +813,124 @@ export interface ApiEntity {
   /** The state location, so a reader can find the file. */
   readonly iac_state_reference: string | null;
 }
+
+/**
+ * One quota with a usage figure, and what measured it. FEAT-033.
+ *
+ * Every quota in this shape has a `used` and a `source`. The ones that do not are
+ * `ApiUnmeasurableQuota`, and the two are separate types rather than one type with nullable
+ * fields, for the reason the screen shows two lists: a single list has to sort the nulls
+ * somewhere and wherever they sort is a claim nobody has earned.
+ */
+export interface ApiQuota {
+  readonly account_id: string;
+  /** Null where the quota is global rather than regional, and never a placeholder. */
+  readonly region_id: string | null;
+  readonly service_code: string;
+  readonly quota_code: string;
+  readonly quota_name: string;
+  /** Null where the provider publishes no limit. Zero is a real and different value. */
+  readonly limit: string | null;
+  readonly used: string;
+  /** AWS_USAGE_METRIC, TRUSTED_ADVISOR or SERVICE_API. Never NONE in this shape. */
+  readonly source: string;
+  /** The fraction still free, nought to one, or null where the limit is absent or zero. */
+  readonly headroom: string | null;
+  readonly is_adjustable: boolean;
+}
+
+/**
+ * One quota nothing measured, and why. FEAT-033, and the point of the sub project.
+ *
+ * It carries no `used` field at all rather than a null one, which is the difference this
+ * type exists to make: a null would invite a bar at zero, and a zero says an account has
+ * headroom nobody has measured.
+ */
+export interface ApiUnmeasurableQuota {
+  readonly account_id: string;
+  readonly region_id: string | null;
+  readonly service_code: string;
+  readonly quota_code: string;
+  readonly quota_name: string;
+  readonly limit: string | null;
+  /** Which of the sources declined, and why. Required, and the database refuses a blank. */
+  readonly reason: string;
+  readonly is_adjustable: boolean;
+}
+
+export interface ApiQuotas {
+  readonly measurable: readonly ApiQuota[];
+  readonly unmeasurable: readonly ApiUnmeasurableQuota[];
+  /** Stated rather than counted off the lists, because both lists are truncated. */
+  readonly measured_count: number;
+  readonly found_count: number;
+}
+
+export interface ApiRequestTransition {
+  readonly status: string;
+  readonly changed_at: string;
+}
+
+/** An increase somebody asked AWS for. Read, never written. Spec section 6. */
+export interface ApiQuotaRequest {
+  readonly request_id: string;
+  readonly account_id: string;
+  readonly region_id: string | null;
+  readonly service_code: string;
+  readonly quota_code: string;
+  readonly quota_name: string;
+  readonly desired_value: string;
+  /** AWS's own vocabulary, all seven values. DENIED and NOT_APPROVED stay distinct. */
+  readonly status: string;
+  /** Whether anything is still going to happen. INVALID_REQUEST is not open. */
+  readonly is_open: boolean;
+  readonly requested_at: string;
+  readonly last_updated_at: string;
+  /** Always false. A field rather than a sentence, so nothing can delete the claim. */
+  readonly submitted_by_meter: boolean;
+}
+
+export interface ApiQuotaRequests {
+  readonly requests: readonly ApiQuotaRequest[];
+  readonly open_count: number;
+}
+
+/** The increase Meter would ask for on one slice, with its working. FEAT-034. */
+export interface ApiQuotaDraft {
+  readonly account_id: string;
+  readonly region_id: string | null;
+  readonly current_limit: string;
+  readonly observed_usage: string;
+  readonly suggested_value: string;
+  /** How the number was reached, so a reader disputes the target rather than the figure. */
+  readonly working: string;
+  readonly console_url: string;
+  readonly cli_command: string;
+}
+
+/**
+ * Why no draft was offered for a slice. FEAT-034.
+ *
+ * Separate from `ApiQuotaDraft` rather than a nullable field on it, because an empty draft
+ * reads as a feature that failed rather than a decision somebody made.
+ */
+export interface ApiDraftRefusal {
+  readonly account_id: string;
+  readonly region_id: string | null;
+  readonly reason: string;
+}
+
+/** One quota everywhere it applies, with every request against it. FEAT-033, FEAT-034. */
+export interface ApiQuotaDetail {
+  readonly service_code: string;
+  readonly quota_code: string;
+  readonly quota_name: string;
+  readonly is_adjustable: boolean;
+  readonly measurable: readonly ApiQuota[];
+  readonly unmeasurable: readonly ApiUnmeasurableQuota[];
+  readonly requests: readonly ApiQuotaRequest[];
+  /** Keyed by request id. A request with no recorded transitions is absent, not empty. */
+  readonly history: Readonly<Record<string, readonly ApiRequestTransition[]>>;
+  readonly drafts: readonly ApiQuotaDraft[];
+  readonly draft_refusals: readonly ApiDraftRefusal[];
+}

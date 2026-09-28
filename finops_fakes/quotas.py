@@ -45,17 +45,26 @@ from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 
 from finops_core.domain.account import AccountKey, Provider
-from finops_core.domain.quota import QuotaUsage
+from finops_core.domain.quota import (
+    QuotaIncreaseRequest,
+    QuotaUsage,
+    RequestStatus,
+    UsageSource,
+)
 from finops_core.errors import AccessDenied, NotOptedIn
 from finops_fakes import containers, fixtures, utilization
 from finops_fakes import estate_shape as shape
 
 COLLECTOR = "quotas"
 
-AWS_USAGE = "AWS_USAGE"
-TRUSTED_ADVISOR = "TRUSTED_ADVISOR"
-SERVICE_API = "SERVICE_API"
-NONE = "NONE"
+#: Short names for the four members of `UsageSource`, so a quota fits on one line in
+#: the table below. They are bound to the enum members rather than being a second set
+#: of strings, so renaming a member breaks this import instead of leaving a fake that
+#: writes a vocabulary nothing else understands. That drift is what ADR-0026 records.
+AWS_USAGE = UsageSource.AWS_USAGE_METRIC
+TRUSTED_ADVISOR = UsageSource.TRUSTED_ADVISOR
+SERVICE_API = UsageSource.SERVICE_API
+NONE = UsageSource.NONE
 
 #: Accounts with a support tier that includes Trusted Advisor limit checks.
 BUSINESS_SUPPORT = frozenset({"fake-platform-a", "fake-platform-b"})
@@ -184,7 +193,7 @@ class QuotaDef:
     quota_code: str
     quota_name: str
     #: The source where the account can publish one, before support tier applies.
-    source: str
+    source: UsageSource
     adjustable: bool
     #: A fixed limit, or None where the limit is sized from usage.
     limit: int | None
@@ -351,7 +360,7 @@ def _applies(q: QuotaDef, account: str, region: str) -> bool:
     return True
 
 
-def source_for(q: QuotaDef, account: str, region: str, ts: datetime, at: datetime) -> str:
+def source_for(q: QuotaDef, account: str, region: str, ts: datetime, at: datetime) -> UsageSource:
     """The source that actually produced a figure, or `NONE`."""
     if q.usage is None:
         return NONE
@@ -481,23 +490,47 @@ def current(
             detail="the region is not enabled in this account",
         )
     return tuple(
-        QuotaUsage(
-            account_key=AccountKey(provider=Provider.AWS, account_id=account_id),
-            region_id=None if q.is_global else region_id,
-            service_code=q.service_code,
-            quota_code=q.quota_code,
-            quota_name=q.quota_name,
-            quota_limit=Decimal(_LIMITS.get(q, account_id, region_id, at.date(), at)),
-            used=(
-                None
-                if source_for(q, account_id, region_id, at - timedelta(hours=1), at) == NONE
-                else _decimal_or_none(trailing_peak(q, account_id, region_id, at))
-            ),
-            as_of=at,
-            collected_at=fixtures.COLLECTED_AT,
-        )
-        for q in QUOTAS
-        if _applies(q, account_id, region_id)
+        _quota(q, account_id, region_id, at) for q in QUOTAS if _applies(q, account_id, region_id)
+    )
+
+
+def _pair(used: Decimal | None, source: UsageSource) -> tuple[Decimal | None, UsageSource]:
+    """A usage figure and its source, held equal, or neither.
+
+    `QuotaUsage` refuses a figure with no source and a source with no figure, and this
+    estate can reach both halves. A Trusted Advisor quota in an account with no Business
+    support has a usage function that answers and a source that is unavailable, which is
+    the second. A metric that stopped publishing part way through the window answers at
+    the probe instant and not across the peak, which is the first. One function decides
+    it for both callers, because two would eventually decide it differently.
+    """
+    if source is NONE or used is None:
+        return None, NONE
+    return used, source
+
+
+def _quota(q: QuotaDef, account_id: str, region_id: str, at: datetime) -> QuotaUsage:
+    """One quota as the port returns it, with its usage source."""
+    probe = at - timedelta(hours=1)
+    used, source = _pair(
+        _decimal_or_none(trailing_peak(q, account_id, region_id, at)),
+        source_for(q, account_id, region_id, probe, at),
+    )
+    return QuotaUsage(
+        account_key=AccountKey(provider=Provider.AWS, account_id=account_id),
+        region_id=None if q.is_global else region_id,
+        service_code=q.service_code,
+        quota_code=q.quota_code,
+        quota_name=q.quota_name,
+        quota_limit=Decimal(_LIMITS.get(q, account_id, region_id, at.date(), at)),
+        used=used,
+        usage_source=source,
+        is_adjustable=q.adjustable,
+        unmeasurable_reason=None
+        if used is not None
+        else reason_for(q, account_id, region_id, probe, at),
+        as_of=at,
+        collected_at=fixtures.COLLECTED_AT,
     )
 
 
@@ -546,14 +579,12 @@ def _row(
         if current
         else min(datetime(d.year, d.month, d.day, 12, tzinfo=UTC), at)
     )
-    source = source_for(q, account, region, probe, at)
-    if source == NONE:
-        used = None
-    elif current:
+    if current:
         peak = trailing_peak(q, account, region, at)
-        used = None if peak is None else shape.dec(peak, 0)
+        measured = None if peak is None else shape.dec(peak, 0)
     else:
-        used = _used(q, account, region, d, at)
+        measured = _used(q, account, region, d, at)
+    used, source = _pair(measured, source_for(q, account, region, probe, at))
     return {
         "tenant_id": str(fixtures.TENANT_ID),
         "sub_account_id": account,
@@ -563,7 +594,7 @@ def _row(
         "quota_name": q.quota_name,
         "limit_value": _LIMITS.get(q, account, region, d, at),
         "used_value": used,
-        "usage_source": source if used is not None else NONE,
+        "usage_source": source,
         "unmeasurable_reason": reason_for(q, account, region, probe, at),
         "is_adjustable": q.adjustable,
         "as_of": as_of.isoformat(),
@@ -692,3 +723,67 @@ def request_history_rows(*, at: datetime = fixtures.AS_OF) -> Iterator[Mapping[s
                 "status": status,
                 "changed_at": (end - timedelta(days=days_before)).isoformat(),
             }
+
+
+def current_requests(
+    account_id: str, region_id: str, *, at: datetime = fixtures.AS_OF
+) -> tuple[QuotaIncreaseRequest, ...]:
+    """Every increase request in one slice, as the quota port returns it.
+
+    The estate's five requests carry a status history rather than a status, because the
+    point of FEAT-034 is when a request was approved and not only that it is. The last
+    entry is the current one and its day is `last_updated_at`.
+
+    No refusal branch here, unlike `current`. A request history is read by the same call
+    the quotas are, so an account that cannot be read has already raised by the time
+    anything asks for its requests.
+    """
+    _, end = shape.window(at)
+    return tuple(
+        QuotaIncreaseRequest(
+            account_key=AccountKey(provider=Provider.AWS, account_id=account_id),
+            request_id=r.request_id,
+            region_id=r.region_id,
+            service_code=r.service_code,
+            quota_code=r.quota_code,
+            quota_name=_name_of(r),
+            desired_value=Decimal(r.desired_value),
+            status=RequestStatus(r.history[-1][0]),
+            requested_at=end - timedelta(days=r.history[0][1]),
+            last_updated_at=end - timedelta(days=r.history[-1][1]),
+            as_of=at,
+            collected_at=fixtures.COLLECTED_AT,
+        )
+        for r in requests(at=at)
+        if r.account_id == account_id and r.region_id == region_id
+    )
+
+
+def _name_of(r: Request) -> str:
+    """The quota's display name, or its code where the request names one we do not carry.
+
+    `fake-request-0005` is deliberately for a quota outside `QUOTAS`: tracking and
+    measuring are independent, and a request for a quota this estate cannot measure is the
+    case TASK-P5-008 exists to keep working.
+    """
+    for q in QUOTAS:
+        if q.service_code == r.service_code and q.quota_code == r.quota_code:
+            return q.quota_name
+    return r.quota_code
+
+
+class FakeQuotaSource:
+    """The estate behind the `QuotaSource` port, so a collector reads it through the port.
+
+    Constraint 6 in miniature: there is no method here that could submit a request, and
+    the five in the estate were made outside Meter.
+    """
+
+    def __init__(self, *, at: datetime = fixtures.AS_OF) -> None:
+        self._at = at
+
+    def list_quotas(self, account: AccountKey, region: str) -> tuple[QuotaUsage, ...]:
+        return current(account.account_id, region, at=self._at)
+
+    def requests(self, account: AccountKey, region: str) -> tuple[QuotaIncreaseRequest, ...]:
+        return current_requests(account.account_id, region, at=self._at)

@@ -237,13 +237,54 @@ def unlisted_collectors(text: str) -> list[str]:
     That sweep also found `recommendations.py` had lost its name line in an edit, so its
     description sat under `query_audit.py` and read as part of it. A check on the names catches
     that too: the file stops being named the moment its line is lost.
+
+    Searched inside the collectors block rather than the whole map, and that matters as of
+    2026-09-28. Three files in this project are called `quotas.py`: the port, the fake estate
+    and the collector. A whole file search was satisfied by any one of them, so P5's collector
+    was described nowhere and this check passed anyway. A name is evidence only where it is
+    claimed, which is the same mistake the count made before the listing existed, one level
+    down.
     """
     names = sorted(
         path.name
         for path in (ROOT / "finops_ingest" / "collectors").glob("*.py")
         if path.name != "__init__.py"
     )
-    return [name for name in names if name not in text]
+    section = collectors_section(text)
+    return [name for name in names if name not in section]
+
+
+def collectors_section(text: str) -> str:
+    """The part of the map's tree that describes `finops_ingest/collectors`.
+
+    From the line naming the directory to the first tree entry drawn shallower than the entries
+    inside it, which is how the map itself marks the end of a directory. Depth is read from
+    where the entry marker sits rather than counted from a fixed column, so a section reflowed
+    by a space or two still reads correctly, which is the mistake three separate anchors made
+    while this was being written.
+    """
+    lines = text.split("\n")
+    start = next((i for i, line in enumerate(lines) if line.rstrip().endswith("collectors/")), None)
+    if start is None:
+        raise SystemExit(
+            f"{MAP.name} names no collectors directory, so the listing cannot be checked. "
+            f"A check that cannot find what it examines has to fail rather than pass."
+        )
+    body: list[str] = []
+    inner: int | None = None
+    for line in lines[start + 1 :]:
+        marker = line.find("── ")
+        if marker == -1:
+            body.append(line)
+            continue
+        if inner is None:
+            inner = marker
+        elif marker < inner:
+            break
+        body.append(line)
+    if inner is None:
+        raise SystemExit(f"{MAP.name} names the collectors directory and lists nothing under it")
+    return "\n".join(body)
 
 
 def replaced(text: str, block: str) -> str:

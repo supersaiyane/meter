@@ -16,7 +16,7 @@ import json
 import re
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -37,6 +37,7 @@ CREDENTIAL_BROKER = "CredentialBroker"
 COST_EXPORT = "CostExport"
 COMMITMENT_REPORT = "CommitmentReport"
 TOPOLOGY_SOURCE = "TopologySource"
+QUOTA_SOURCE = "QuotaSource"
 
 
 class ProviderPorts(Protocol):
@@ -83,6 +84,7 @@ def build_fake(_monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
                 COST_EXPORT,
                 COMMITMENT_REPORT,
                 TOPOLOGY_SOURCE,
+                QUOTA_SOURCE,
             }
         ),
     )
@@ -423,17 +425,206 @@ class ContractConfig:
         }
 
 
+#: The quota the contract measures, the one nothing measures, and the one Trusted Advisor
+#: reports. Three, because with a single measured quota an adapter that omitted the
+#: unmeasurable ones entirely would pass every sentence in the contract.
+CONTRACT_MEASURED_QUOTA = "L-1216C47A"
+CONTRACT_UNMEASURED_QUOTA = "L-0EA8095F"
+CONTRACT_ADVISOR_QUOTA = "L-53DA6B97"
+
+
+class _Pages:
+    """A paginator over a fixed list of pages, which is all these stubs need."""
+
+    def __init__(self, pages: list[dict[str, Any]]) -> None:
+        self._pages = pages
+
+    def paginate(self, **_kwargs: Any) -> list[dict[str, Any]]:
+        return self._pages
+
+
+class ContractServiceQuotas:
+    """Service Quotas for one account, holding the three quotas above.
+
+    The shapes are the ones `tests/providers/aws/test_response_shapes.py` checks against
+    the botocore model, so a key here that AWS would never send fails there.
+    """
+
+    def __init__(self, *, refuse: bool = False) -> None:
+        self._refuse = refuse
+
+    def get_paginator(self, name: str) -> Any:
+        if self._refuse:
+            raise ClientError({"Error": {"Code": "AccessDenied", "Message": "refused"}}, name)
+        if name == "list_services":
+            return _Pages([{"Services": [{"ServiceCode": "ec2", "ServiceName": "Amazon EC2"}]}])
+        if name == "list_service_quotas":
+            return _Pages([{"Quotas": _CONTRACT_QUOTAS}])
+        if name == "list_requested_service_quota_change_history":
+            return _Pages([{"RequestedQuotas": _CONTRACT_REQUESTS}])
+        raise AssertionError(f"the contract does not stub {name}")
+
+
+_CONTRACT_QUOTAS: list[dict[str, Any]] = [
+    {
+        "ServiceCode": "ec2",
+        "ServiceName": "Amazon EC2",
+        "QuotaCode": CONTRACT_MEASURED_QUOTA,
+        "QuotaName": "Running On-Demand Standard instances",
+        "Value": 320.0,
+        "Adjustable": True,
+        "GlobalQuota": False,
+        "UsageMetric": {
+            "MetricNamespace": "AWS/Usage",
+            "MetricName": "ResourceCount",
+            "MetricDimensions": {
+                "Service": "EC2",
+                "Resource": "vCPU",
+                "Type": "Resource",
+                "Class": "Standard/OnDemand",
+            },
+            "MetricStatisticRecommendation": "Maximum",
+        },
+    },
+    {
+        # No usage metric and not adjustable, which is the common shape in a real estate.
+        "ServiceCode": "ec2",
+        "ServiceName": "Amazon EC2",
+        "QuotaCode": CONTRACT_UNMEASURED_QUOTA,
+        "QuotaName": "AMI sharing quota",
+        "Value": 500.0,
+        "Adjustable": False,
+        "GlobalQuota": True,
+    },
+    {
+        "ServiceCode": "ec2",
+        "ServiceName": "Amazon EC2",
+        "QuotaCode": CONTRACT_ADVISOR_QUOTA,
+        "QuotaName": "Application Load Balancers",
+        "Value": 50.0,
+        "Adjustable": True,
+        "GlobalQuota": False,
+    },
+]
+
+_CONTRACT_REQUESTS: list[dict[str, Any]] = [
+    {
+        "Id": "contract-request-0001",
+        "ServiceCode": "ec2",
+        "QuotaCode": CONTRACT_MEASURED_QUOTA,
+        "QuotaName": "Running On-Demand Standard instances",
+        "DesiredValue": 640.0,
+        "Status": "PENDING",
+        "Created": datetime(2026, 9, 20, 9, 0, tzinfo=UTC),
+        "LastUpdated": datetime(2026, 9, 22, 9, 0, tzinfo=UTC),
+        "GlobalQuota": False,
+    },
+    {
+        # A request for a quota nothing can measure, and a refusal. Tracking and measuring
+        # are independent, and DENIED is the status a product is tempted to hide.
+        "Id": "contract-request-0002",
+        "ServiceCode": "ec2",
+        "QuotaCode": CONTRACT_UNMEASURED_QUOTA,
+        "QuotaName": "AMI sharing quota",
+        "DesiredValue": 1000.0,
+        "Status": "DENIED",
+        "Created": datetime(2026, 8, 1, 9, 0, tzinfo=UTC),
+        "LastUpdated": datetime(2026, 8, 9, 9, 0, tzinfo=UTC),
+        "GlobalQuota": True,
+    },
+]
+
+
+class ContractCloudWatch:
+    """One measured series, and nothing for the other two quotas.
+
+    The queries that come back with no result are the point: a quota whose metric
+    published nothing is unmeasured, and it must not arrive as a zero.
+    """
+
+    def get_paginator(self, name: str) -> Any:
+        assert name == "get_metric_data"
+        return _Pages(
+            [
+                {
+                    "MetricDataResults": [
+                        {"Id": "q0", "Values": [180.0, 212.0, 196.0], "StatusCode": "Complete"}
+                    ]
+                }
+            ]
+        )
+
+
+class ContractSupport:
+    """Trusted Advisor with the service limits check, or without the support tier."""
+
+    def __init__(self, *, subscribed: bool = True) -> None:
+        self._subscribed = subscribed
+
+    def describe_trusted_advisor_checks(self, **_kwargs: Any) -> Any:
+        if not self._subscribed:
+            raise ClientError(
+                {"Error": {"Code": "SubscriptionRequiredException", "Message": "no plan"}},
+                "DescribeTrustedAdvisorChecks",
+            )
+        return {"checks": [{"id": "contract-check", "name": "Service Limits"}]}
+
+    def describe_trusted_advisor_check_result(self, **_kwargs: Any) -> Any:
+        return {
+            "result": {
+                "checkId": "contract-check",
+                "flaggedResources": [
+                    {
+                        "status": "warning",
+                        "region": AWS_REGION,
+                        # region, service, limit name, limit, usage, status. A bare
+                        # positional list, which is why the adapter names its indices.
+                        "metadata": [
+                            AWS_REGION,
+                            "Amazon EC2",
+                            "Application Load Balancers",
+                            "50",
+                            "43",
+                            "Yellow",
+                        ],
+                    }
+                ],
+            }
+        }
+
+
+#: One instance per service, so a test can reason about how many calls were made.
+_CONTRACT_QUOTA_CLIENTS: dict[str, Any] = {
+    "service-quotas": ContractServiceQuotas(),
+    "cloudwatch": ContractCloudWatch(),
+    "support": ContractSupport(),
+}
+
+
 class AwsUnderContract:
     """The AWS adapters presented as the one object the contract talks to."""
 
     def __init__(
-        self, broker: Any, discovery: Any, cost: Any, commitment: Any, topology: Any
+        self,
+        broker: Any,
+        discovery: Any,
+        cost: Any,
+        commitment: Any,
+        topology: Any,
+        quotas: Any,
     ) -> None:
         self._broker = broker
         self._discovery = discovery
         self._cost = cost
         self._commitment = commitment
         self._topology = topology
+        self._quotas = quotas
+
+    def list_quotas(self, account: AccountKey, region: str) -> Any:
+        return self._quotas.list_quotas(account, region)
+
+    def requests(self, account: AccountKey, region: str) -> Any:
+        return self._quotas.requests(account, region)
 
     @property
     def enrolled_slices(self) -> Any:
@@ -481,6 +672,7 @@ def build_aws(monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
     from finops_providers.aws.config_inventory import ConfigAggregatorInventory
     from finops_providers.aws.credentials import AwsCredentialBroker
     from finops_providers.aws.cur import AthenaCostExport
+    from finops_providers.aws.quotas import AwsQuotas
 
     settings = settings_from_example(monkeypatch)
     refused = {AWS_DENIED.account_id, AWS_UNKNOWN.account_id}
@@ -542,6 +734,10 @@ def build_aws(monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
                     ),
                     sleeper=lambda _seconds: None,
                 ),
+                quotas=AwsQuotas(
+                    client_factory=lambda service, _region: _CONTRACT_QUOTA_CLIENTS[service],
+                    clock=lambda: datetime(2026, 9, 28, 9, 0, tzinfo=UTC),
+                ),
             ),
             region=AWS_REGION,
             known_account=AWS_KNOWN,
@@ -554,6 +750,7 @@ def build_aws(monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
                     COST_EXPORT,
                     COMMITMENT_REPORT,
                     TOPOLOGY_SOURCE,
+                    QUOTA_SOURCE,
                 }
             ),
         )

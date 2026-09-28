@@ -35,7 +35,15 @@ import {
   inventoryRootsFixture,
   subgraphFixture,
 } from './fixtures/topology';
+import {
+  quotaDetailFixture,
+  quotaRequestsFixture,
+  quotasFixture,
+} from './fixtures/quotas';
 import type {
+  ApiQuotaDetail,
+  ApiQuotaRequests,
+  ApiQuotas,
   ApiAdhocQuery,
   Account,
   ApiBlastRadius,
@@ -501,6 +509,48 @@ export function useBlastRadius(nodeId: string | null) {
  * query key rather than asking for its own slice, per docs/13-UI-ARCHITECTURE.md: a panel with
  * its own query will one day disagree with the screen it summarises.
  */
+/**
+ * The two quota lists and the counts behind them. FEAT-033.
+ *
+ * One hook for both lists, unlike the estimate and the realization in `useWaste`, and the
+ * reason is the opposite: those two must never be added together, while these two are halves
+ * of one answer and the ratio between them is the finding. A screen holding one without the
+ * other would report an estate with excellent headroom everywhere.
+ */
+export function useQuotas() {
+  return useQuerySurface<ApiQuotas>(
+    ['governance-quotas'],
+    '/api/v1/governance/quotas',
+    '/api/v1/governance/quotas',
+    quotasFixture,
+  );
+}
+
+/**
+ * One quota, everywhere it applies, with the draft and the requests. FEAT-033 and FEAT-034.
+ *
+ * Reached from the list rather than from the navigation, like the query finding detail and the
+ * entity page: a quota code is not something anybody types.
+ */
+export function useQuotaDetail(serviceCode: string, quotaCode: string) {
+  return useQuerySurface<ApiQuotaDetail>(
+    ['governance-quota', serviceCode, quotaCode],
+    '/api/v1/governance/quotas/{service_code}/{quota_code}',
+    `/api/v1/governance/quotas/${serviceCode}/${quotaCode}`,
+    quotaDetailFixture,
+  );
+}
+
+/** Increase requests and what became of them, refusals included. FEAT-034. */
+export function useQuotaRequests() {
+  return useQuerySurface<ApiQuotaRequests>(
+    ['governance-quota-requests'],
+    '/api/v1/governance/quotas/requests',
+    '/api/v1/governance/quotas/requests',
+    quotaRequestsFixture,
+  );
+}
+
 export function useBudgets() {
   return useQuerySurface<ApiBudgets>(
     ['cost-budgets'],

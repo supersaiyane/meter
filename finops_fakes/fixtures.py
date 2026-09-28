@@ -17,7 +17,7 @@ real region contains the word fake, so the name is still unmistakably synthetic.
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from types import MappingProxyType
 from uuid import UUID
@@ -27,7 +27,12 @@ from finops_core.domain.cost import CostRecord, source_fingerprint
 from finops_core.domain.identity import Principal
 from finops_core.domain.metrics import MetricPoint
 from finops_core.domain.org import OrgNode, OrgNodeType
-from finops_core.domain.quota import QuotaUsage
+from finops_core.domain.quota import (
+    QuotaIncreaseRequest,
+    QuotaUsage,
+    RequestStatus,
+    UsageSource,
+)
 from finops_core.domain.resource import ResourceRef
 from finops_core.errors import AccessDenied, CollectionError
 
@@ -224,6 +229,7 @@ QUOTAS: tuple[QuotaUsage, ...] = (
         quota_name="Concurrent queries",
         quota_limit=Decimal("30"),
         used=Decimal("4"),
+        usage_source=UsageSource.AWS_USAGE_METRIC,
         as_of=AS_OF,
         collected_at=COLLECTED_AT,
     ),
@@ -234,8 +240,49 @@ QUOTAS: tuple[QuotaUsage, ...] = (
         quota_code="FAKE-2",
         quota_name="Retained log groups",
         quota_limit=Decimal("100"),
-        # The provider publishes no usage for this one. None, never zero.
+        # The provider publishes no usage for this one. None, never zero, and the
+        # source says so rather than being left to a default that happens to agree.
         used=None,
+        usage_source=UsageSource.NONE,
+        unmeasurable_reason="CloudWatch publishes no usage metric for this quota",
+        as_of=AS_OF,
+        collected_at=COLLECTED_AT,
+    ),
+)
+
+#: Two increase requests, one still going somewhere and one refused. The refusal is the
+#: one worth having: DENIED is the status a product is tempted to hide, and a fake where
+#: every request was approved makes the path a reader most needs the one nobody exercises.
+#: Neither was submitted by Meter, which cannot submit one. Constraint 6.
+QUOTA_REQUESTS: tuple[QuotaIncreaseRequest, ...] = (
+    QuotaIncreaseRequest(
+        account_key=ACCOUNT_KEYS[0],
+        request_id="fake-request-0001",
+        region_id=REGION,
+        service_code="fake-logs",
+        quota_code="FAKE-1",
+        quota_name="Concurrent queries",
+        desired_value=Decimal("60"),
+        status=RequestStatus.PENDING,
+        requested_at=AS_OF - timedelta(days=4),
+        last_updated_at=AS_OF - timedelta(days=2),
+        as_of=AS_OF,
+        collected_at=COLLECTED_AT,
+    ),
+    QuotaIncreaseRequest(
+        account_key=ACCOUNT_KEYS[0],
+        request_id="fake-request-0002",
+        # A request for the quota nothing can measure. Tracking and measuring are
+        # independent, and a product that only tracked what it could measure would lose
+        # exactly the requests somebody made because they had no figure to look at.
+        region_id=REGION,
+        service_code="fake-logs",
+        quota_code="FAKE-2",
+        quota_name="Retained log groups",
+        desired_value=Decimal("250"),
+        status=RequestStatus.DENIED,
+        requested_at=AS_OF - timedelta(days=30),
+        last_updated_at=AS_OF - timedelta(days=21),
         as_of=AS_OF,
         collected_at=COLLECTED_AT,
     ),

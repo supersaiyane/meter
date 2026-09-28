@@ -408,6 +408,9 @@ def test_unpublished_quota_usage_is_none_and_never_zero() -> None:
         quota_name="Concurrent queries",
         quota_limit=Decimal("30"),
         used=None,
+        # P5 added the pair this has to satisfy: a quota nothing measures says why, and
+        # `tests/core/test_quota.py` is where that rule is exercised properly.
+        unmeasurable_reason="CloudWatch publishes no usage metric for this quota",
         as_of=NOW,
         collected_at=NOW,
     )

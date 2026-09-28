@@ -353,3 +353,79 @@ def test_a_p4_table_cannot_be_read_without_a_scope_at_all(table_name: str) -> No
     table = models.metadata.tables[table_name]
     with pytest.raises(ScopeViolationError, match="needs a Scope"):
         scoped_select(table, None)  # type: ignore[arg-type]
+
+
+# --- P5, before any route reads these tables --------------------------------
+#
+# Same order and same reason as the P4 block above. TASK-P5-005's criterion is that
+# each table is read out of scope and refused before a route exists, because a guard
+# entry arriving after its route leaves a window in which the route is the only thing
+# confining the read, and routes are added by people who have never read the guard.
+
+P5_TABLES = ("quota_usage", "quota_request", "quota_request_history")
+
+
+@pytest.mark.parametrize("table_name", P5_TABLES)
+def test_a_p5_table_has_a_scope_rule(table_name: str) -> None:
+    """A table nobody has decided how to scope must not be readable through this path."""
+    from finops_api.guards import SCOPED_TABLES
+
+    assert table_name in SCOPED_TABLES
+
+
+@pytest.mark.parametrize("table_name", P5_TABLES)
+def test_a_hand_rolled_select_on_a_p5_table_is_refused(table_name: str) -> None:
+    """The backstop, for the first route that writes its own select."""
+    table = models.metadata.tables[table_name]
+    with pytest.raises(ScopeViolationError, match="not built by scoped_select"):
+        assert_scoped(select(table), table)
+
+
+@pytest.mark.parametrize("table_name", P5_TABLES)
+def test_a_p5_table_read_with_an_empty_scope_admits_nothing(table_name: str) -> None:
+    """Empty means nothing, not everything.
+
+    Asserted on the rendered predicate because an empty scope folds to `false` and the
+    string is the only thing left to look at.
+    """
+    table = models.metadata.tables[table_name]
+    scope = Scope(tenant_id=uuid4(), is_global=False, accounts=frozenset())
+    assert "false" in str(scope_predicate(table, scope)).lower()
+
+
+@pytest.mark.parametrize("table_name", P5_TABLES)
+def test_a_p5_table_cannot_be_read_without_a_scope_at_all(table_name: str) -> None:
+    table = models.metadata.tables[table_name]
+    with pytest.raises(ScopeViolationError, match="needs a Scope"):
+        scoped_select(table, None)  # type: ignore[arg-type]
+
+
+def test_a_quota_read_with_a_narrow_scope_names_the_account() -> None:
+    """`ByAccount` rather than `PayerWide`, and the distinction is deliberate.
+
+    A quota is not bought at the payer and shared out the way a commitment or a budget
+    is. It applies to the account it belongs to, so it genuinely narrows: a reader
+    granted one account may know what that account is allowed to run.
+    """
+    for table_name in ("quota_usage", "quota_request"):
+        table = models.metadata.tables[table_name]
+        scope = Scope(tenant_id=uuid4(), is_global=False, accounts=keys("111122223333"))
+        rendered = str(scope_predicate(table, scope))
+        assert "sub_account_id" in rendered, table_name
+        assert "tenant_id" in rendered, table_name
+
+
+def test_the_request_history_is_scoped_through_the_request_it_belongs_to() -> None:
+    """It has no account of its own, and a denormalised copy would be a second answer.
+
+    The predicate therefore names the request table rather than an account column, which
+    is what makes this test worth writing: a `ByAccount("sub_account_id")` entry here
+    would raise on a column that does not exist, and a `None` entry would leave the
+    tenant filter as the whole of its scoping and disclose every account's request
+    history to a reader granted one account.
+    """
+    table = models.metadata.tables["quota_request_history"]
+    scope = Scope(tenant_id=uuid4(), is_global=False, accounts=keys("111122223333"))
+    rendered = str(scope_predicate(table, scope))
+    assert "quota_request" in rendered
+    assert "request_id" in rendered

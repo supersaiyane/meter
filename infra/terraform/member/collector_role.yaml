@@ -106,11 +106,22 @@ Resources:
                   - tag:GetResources
                   - tag:GetTagKeys
                   - config:SelectResourceConfig
-                  # P5 quotas.
+                  # P5 quotas. Every entry is a read, and the absence is deliberate:
+                  # servicequotas:RequestServiceQuotaIncrease is NOT granted. Constraint 6
+                  # and P5 spec section 6, Meter drafts a quota increase and hands it to a
+                  # person. The permission is not here to be misused later, and a test
+                  # asserts that it is still missing.
+                  - servicequotas:ListServices
                   - servicequotas:ListServiceQuotas
                   - servicequotas:GetServiceQuota
+                  # The tracking half of FEAT-034. Reading what somebody else submitted.
+                  - servicequotas:ListRequestedServiceQuotaChangeHistory
                   - support:DescribeTrustedAdvisorChecks
                   - support:DescribeTrustedAdvisorCheckResult
+                  # The two quotas whose usage is counted directly, because nothing else
+                  # publishes it. See COUNTERS in finops_providers/aws/quotas.py.
+                  - ec2:DescribeVpcs
+                  - ec2:DescribeAddresses
                 Resource: "*"
 
 Outputs:

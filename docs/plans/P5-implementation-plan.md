@@ -42,7 +42,7 @@ Same contract as P0 through P4. One task, one commit.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-28 |
 | Implements | P5 spec section 4, FEAT-033 |
 | Delivers | Part of FEAT-033 |
 | Depends on | P0 delivered |
@@ -70,7 +70,7 @@ decision already made.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-28 |
 | Implements | P5 spec sections 5.1 and 5.3 |
 | Delivers | Part of FEAT-033 |
 | Depends on | TASK-P5-001 |
@@ -98,7 +98,7 @@ cannot be audited later, and it renders identically to one that was measured.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-28 |
 | Implements | P5 spec section 5.2, FEAT-033 |
 | Delivers | Part of FEAT-033 |
 | Depends on | TASK-P5-002 |
@@ -125,7 +125,7 @@ allows, service specific calls for the few that have them.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-28 |
 | Implements | P5 spec sections 7 and 11, FEAT-033 |
 | Delivers | FEAT-033 |
 | Depends on | TASK-P5-003 |
@@ -150,7 +150,7 @@ estate where several quotas cannot be measured.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-28 |
 | Implements | P5 spec section 8, constraint 3 |
 | Delivers | Part of FEAT-033 |
 | Depends on | TASK-P5-004 |
@@ -175,7 +175,7 @@ routes.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-28 |
 | Implements | P5 spec section 9, FEAT-033 |
 | Delivers | FEAT-033 |
 | Depends on | TASK-P5-005 |
@@ -206,7 +206,7 @@ has earned.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-28 |
 | Implements | P5 spec section 6, FEAT-034 |
 | Delivers | Part of FEAT-034 |
 | Depends on | TASK-P5-006 |
@@ -236,7 +236,7 @@ which is worth more than one paste. Spec section 6 argues it properly.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-28 |
 | Implements | P5 spec section 5.3, FEAT-034 |
 | Delivers | FEAT-034 |
 | Depends on | TASK-P5-007 |

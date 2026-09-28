@@ -58,3 +58,11 @@ MAX_DELIVERY_ATTEMPTS = 3
 # a multiple of the collector's own cadence rather than a fixed age, so a daily
 # collector and an hourly one are judged by their own standard.
 STALE_AFTER_CADENCE_MULTIPLE = 2
+
+# The length below which an explanation is not a sentence. A decision rather than a
+# deployment: it is the floor that stops a reason reading "not measured", which would
+# teach a reader the explanations in this product are empty so they stop reading the
+# ones that are not. Shared by the quota rule and by the database check that backs it,
+# so the entity and the column cannot disagree about what counts as an explanation. A
+# check constraint cannot read this, so the migration carries the same figure literally.
+REASON_MIN_LENGTH = 12

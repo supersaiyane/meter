@@ -26,13 +26,13 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 22 of 26 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 15 in 4 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Screens built | 23 of 26 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 19 in 5 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 7 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 21 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 19 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 120 | test_*.py under tests/ |
-| Test functions | 1620 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 22 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 20 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 128 | test_*.py under tests/ |
+| Test functions | 1774 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -378,6 +378,17 @@ meter/
 │   │   ├── query_evidence.py  runs from CloudTrail, bytes from query history.
 │   │   │                      A window that saw nothing returns an absent key,
 │   │   │                      never a zero: absent means unobserved
+│   │   ├── quotas.py         FEAT-033. Service Quotas for every limit, and it names
+│   │   │                     its own usage metric, so there is no hand written map from
+│   │   │                     quota code to metric name here: a quota with no UsageMetric
+│   │   │                     is unmeasurable by AWS's own account, which is a stronger
+│   │   │                     statement than our table not having an entry. Three usage
+│   │   │                     sources and the honest gaps between them. **Never yet run**,
+│   │   │                     ISS-122. The weakest mapping in the package is the Trusted
+│   │   │                     Advisor join: its check returns a positional list of strings
+│   │   │                     with no quota code in it, so a figure is matched on service
+│   │   │                     and quota name, and names are somebody else's display
+│   │   │                     strings. Said in the docstring rather than buried
 │   │   └── cur.py             the billing export through Athena. **Never yet
 │   │                          run**, ISS-122, and COLUMNS is the part only a
 │   │                          real export can settle. A period comes back
@@ -509,6 +520,21 @@ meter/
 │   │                          of the things being ranked, one device each, because
 │   │                          a mark with two meanings cannot be read. Used by the
 │   │                          allocation screen and the waste queue
+│   ├── screens/QuotasScreen.tsx  FEAT-033. Two tables, because one would have to sort
+│   │                          the nulls and wherever they sort is a claim: at the top
+│   │                          urgent, at the bottom safe, and neither is known. The
+│   │                          first caller of PercentCell's inverted flag, which shipped
+│   │                          with nothing passing it because coverage and utilization
+│   │                          are both better high and a quota is the opposite. An
+│   │                          unmeasured row has no usage cell at all rather than an
+│   │                          empty one, because an empty cell in a column of numbers
+│   │                          reads as a measurement that came back zero
+│   ├── screens/QuotaDetailScreen.tsx  FEAT-034. The draft, its working, the console
+│   │                          link and the command, with the sentence saying Meter will
+│   │                          not submit it beside the command rather than in a
+│   │                          footnote: that is the moment a reader forms an expectation
+│   │                          about what happens next. Reached from the list, like the
+│   │                          query finding detail and the entity page
 │   ├── screens/BudgetsScreen.tsx  FEAT-060. Budgets with a number, then the ones
 │   │                          without, counted, with the reason on each card. Two
 │   │                          reasons kept apart because they need different
@@ -818,6 +844,14 @@ meter/
 │       │                      of a fortnight straddles three Monday weeks
 │       ├── commitment_actions.py  FEAT-055. An uncovered baseline as a finding with
 │       │                      an owner, in its own table per ADR-0025
+│       ├── recommendations.py  FEAT-028. Compute Optimizer and Trusted Advisor, read
+│       │                      and normalised into one table. Its name line went missing
+│       │                      in an edit before 2026-09-27, so its description sat under
+│       │                      the collector above it and read as part of it. The listing
+│       │                      check written that day was meant to catch exactly this and
+│       │                      did not, because it searched the whole map and two other
+│       │                      packages hold a file of the same name. Found on 2026-09-28
+│       │                      the moment that check was scoped to this section
 │       ├── realized_savings.py  FEAT-041. The only thing in the product allowed to
 │       │                      say a saving happened, sixty days after a finding is
 │       │                      marked done
@@ -825,10 +859,23 @@ meter/
 │       ├── iac_state.py       FEAT-057. Presence and never absence: a row means we
 │       │                      found a resource in state, no row means we did not look
 │       │                      or did not find it, and those are different facts
-│       └── budgets.py         FEAT-060. What somebody said this should cost, read from
-│                              the provider. Stores nothing derived, retracts nothing,
-│                              and counts the budgets whose scope it cannot reproduce
-│                              on sync_error rather than dropping them
+│       ├── budgets.py         FEAT-060. What somebody said this should cost, read from
+│       │                       the provider. Stores nothing derived, retracts nothing,
+│       │                       and counts the budgets whose scope it cannot reproduce
+│       │                       on sync_error rather than dropping them
+│       └── quotas.py          FEAT-033 and FEAT-034. Every quota in a slice, including
+│                              the ones nothing can measure, which are most of them. A
+│                              quota that stops publishing usage loses its figure rather
+│                              than keeping it, because a stale number is
+│                              indistinguishable from a current one and it is the one
+│                              somebody acts on. Its retraction removes global quota rows
+│                              only when the run actually saw a global quota: the fake
+│                              estate reports those in one region only, so an
+│                              unconditional rule had the second region deleting what the
+│                              first had just written. A missing Trusted Advisor support
+│                              tier is recorded as a NotOptedIn sync_error because that
+│                              gap has a fix, and a quota AWS publishes no metric for is
+│                              not, because that one does not
 │   └── metrics.py             only SLO 1 needs a custom metric. The other three are AWS's
 │   ├── tests/contract/test_cause_vocabulary.py  the only test that crosses the
 │   │                          language boundary. The seven causes are mirrored in
@@ -840,6 +887,16 @@ meter/
 │   │                          this and the five tests beside it rather than
 │   │                          counting the places, because the count was written
 │   │                          by looking and was wrong twice
+│   ├── tests/contract/test_no_quota_writes.py  the only test that asserts an API is
+│   │                          absent. RequestServiceQuotaIncrease appears nowhere in
+│   │                          production source, and the org reader role does not grant
+│   │                          it, and the two fail separately because the code not making
+│   │                          a call and the role not permitting it are independent facts.
+│   │                          It strips comments and docstrings before searching, because
+│   │                          every module in P5 explains in its own docstring that it
+│   │                          does not call the API: a plain grep fails on the
+│   │                          documentation of the decision it protects, and the obvious
+│   │                          way to make that pass would be deleting the explanation
 │   └── tests/providers/aws/test_response_shapes.py  not a module, but the one
 │                              place that says what the four unproven adapters
 │                              depend on. Every response field they read, every
@@ -879,6 +936,13 @@ meter/
 │   │   │                      only exists after a success, so listing those
 │   │   │                      omitted the row a reader comes for, ISS-163
 │   │   ├── platform.py        Meter's own cost, unallocated included
+│   │   ├── quotas.py          P5's three, and none of them writes. The absence has no
+│   │   │                      counterpart to P2's two writing routes and is spec section
+│   │   │                      6 rather than an omission. Coverage counts quotas measured
+│   │   │                      against quotas found rather than accounts, because an
+│   │   │                      accounts denominator would tell a reader with full
+│   │   │                      visibility that coverage was complete while nine tenths of
+│   │   │                      their quotas had no usage figure
 │   │   └── query.py           five of the eight P2 routes, including the two
 │   │                          that write. Every write refuses first: the level,
 │   │                          then whether the finding is an actual violation,
@@ -962,6 +1026,24 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0020_quotas.py     FEAT-033 and FEAT-034. Every quota, including the
+│       │                      ones nothing can measure, which are the majority in
+│       │                      a real estate. One check constraint carries the sub
+│       │                      project: a usage figure exists if and only if a
+│       │                      source is named, refused in both directions, because
+│       │                      a figure with no provenance cannot be audited later
+│       │                      and renders identically to a measured one, while a
+│       │                      source with no figure claims a measurement nobody
+│       │                      made. limit_value is nullable too and is a different
+│       │                      absence: a few quotas publish no ceiling, and zero is
+│       │                      a real value meaning switched off here. The identity
+│       │                      index is NULLS NOT DISTINCT, because a global quota
+│       │                      carries no region and two nulls never conflict, so
+│       │                      every run would add another copy of it.
+│       │                      submitted_by_meter is a column that can only be
+│       │                      false: constraint 6 in the schema rather than in a
+│       │                      comment, so reversing it takes a migration somebody
+│       │                      has to write and defend
 │       ├── 0019_sizing_refusal.py  FEAT-062, ADR-0027. What a sizing rule
 │       │                      examined and declined, with the sentence that
 │       │                      decided it. Its own table because a refusal has no
@@ -1000,6 +1082,16 @@ meter/
 │                              expiry, a modelled row cannot claim a measured
 │                              count, and a change cannot exist without its undo
 ├── finops_query/              IN BUILD  P2 query cost governance, P3 waste, P4 graph
+│   ├── quota.py               FEAT-034's draft: the increase Meter would ask for, its
+│   │                          working, a console link and a CLI command, plus four
+│   │                          refusals to draft at all. It emits the CLI spelling
+│   │                          request-service-quota-increase, deliberately a different
+│   │                          string from the API name, so
+│   │                          tests/contract/test_no_quota_writes.py can hold the call
+│   │                          absent without forbidding the command. The target headroom
+│   │                          is named with its argument rather than tuned, because a
+│   │                          reader who thinks forty percent is generous should see
+│   │                          which number to dispute
 │   ├── blast_radius.py        FEAT-044. What a change can reach, and the refusal that
 │   │                          is the feature: a score that is sometimes absent beats one
 │   │                          always present, because an absent score reads as we do not

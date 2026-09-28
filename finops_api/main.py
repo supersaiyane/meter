@@ -241,6 +241,18 @@ def p4_routers() -> tuple[APIRouter, ...]:
     return (inventory.router,)
 
 
+def p5_routers() -> tuple[APIRouter, ...]:
+    """The quota routes, from the P5 spec's section 8 table.
+
+    All three, and none of them writes. The set has no counterpart to the two P2 routes
+    that write, and that absence is spec section 6 rather than an omission: a quota
+    increase is a write into a member account, so Meter drafts it and hands it over.
+    """
+    from finops_api.routes import quotas
+
+    return (quotas.router,)
+
+
 def create_app(
     engine: Engine,
     entitlements: Any,
@@ -280,6 +292,7 @@ def create_app(
         *(p3_routers() if include_p0_routes else ()),
         *(p2_routers() if include_p0_routes else ()),
         *(p4_routers() if include_p0_routes else ()),
+        *(p5_routers() if include_p0_routes else ()),
         *extra_routers,
     )
     # Checked before anything is registered, so a broken contract fails at

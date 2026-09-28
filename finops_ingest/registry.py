@@ -105,6 +105,8 @@ HOURLY = 3600
 #: Six hours. The interval the P2 specification asks for, named rather than
 #: written as a multiplication at the call site.
 SIX_HOURLY = 21600
+#: Twelve hours, the interval the P5 specification's section 7 asks for.
+TWELVE_HOURLY = 43200
 DAILY = 86400
 #: Thirty days. The cost roll up is not calendar aware and does not need to be:
 #: it aggregates everything past a cutoff, so running a day early or a day late
@@ -396,6 +398,25 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
             "nothing here is urgent. Daily means a recommendation is judged on the "
             "first day its after window is complete rather than up to a week later, "
             "and it reads rows already in the database, so that costs nothing."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="quotas",
+        cadence_seconds=TWELVE_HOURLY,
+        reason=(
+            "Twelve hours, per P5 specification section 7. A quota moves when somebody "
+            "raises it, which is rare, and usage against it is read as a peak over the "
+            "preceding day, so a faster cadence would re read the same window and report "
+            "the same number. The reason to go no slower is the opposite of cost: this is "
+            "the one signal in the product that is not about money but about the wall an "
+            "estate hits at three in the morning, and a day old reading of a quota filling "
+            "up is a fortnight of warning turned into an afternoon of it. The call count is "
+            "the real constraint: one ListServices, then one ListServiceQuotas per service, "
+            "per account, per region, and Service Quotas is rate limited per account, so an "
+            "hourly cadence across a large organization would spend the account's whole "
+            "allowance reading quotas. All of it is free of charge, so the cost below is a "
+            "true zero rather than a rounding. ADR-0012 and constraint 9."
         ),
         est_cost_per_run="0",
     ),

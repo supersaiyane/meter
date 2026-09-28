@@ -214,6 +214,57 @@ applied, ISS-203, so the 1,440 USD a month in `infra/terraform/config/COST.md` i
 modelled and not measured. If somebody asks what Config would cost, that file has the
 working and says which assumption is least certain.
 
+## P5, the quotas, and the half of them nobody can measure
+
+`/governance/quotas`. Read the sentence above the two tables before scrolling.
+
+**75 of 130 seeded quotas have a usage figure. The other 55 have a
+limit and nothing measuring it.** That ratio is the sub project, not a gap in the seed. There
+is no single API for used against limit across AWS: Service Quotas gives every limit, the
+`AWS/Usage` CloudWatch namespace covers a subset, Trusted Advisor covers more and needs
+Business or Enterprise support, and the rest needs service specific calls that do not all
+exist. Say that out loud, because the alternative is a reader concluding the tool is broken.
+
+**The two lists are two lists on purpose, and this is the question to invite.** A quota nothing
+measured has no headroom, and that is not zero headroom. One list would have to sort those rows
+somewhere and wherever they sort is a claim: at the top they read as urgent, at the bottom as
+safe, and neither is known. Most tools show one list with a blank column, which is the same
+decision taken without noticing it.
+
+**Every unmeasured row says why, and the reasons are not interchangeable.** 2 of them in
+the seeded estate say Trusted Advisor could have measured them and the account has no Business
+support, which is a gap with a fix. The rest say AWS publishes no usage metric, which is a gap
+with none. `fake-product-a` and `fake-product-b` carry no Business support and the platform
+accounts do, so the same quota is measurable in one account and not in another. That is OPEN-03
+as data rather than as a paragraph.
+
+**Then click the fullest quota.** On Meter's own page for it: the current limit, the observed
+peak, the value Meter would ask for, and the working behind that value. A reader who thinks
+forty percent headroom is too generous can see which number to argue with rather than
+dismissing the whole suggestion.
+
+**Meter will not submit the request, and the screen says so beside the command.** This is the
+part worth slowing down for. `RequestServiceQuotaIncrease` is a write into a member account and
+constraint 6 forbids one in v1, so the product renders the console link and the exact CLI
+command and hands them over. The cost is one paste. What it buys is the sentence "this product
+has never written into your accounts", and every security review after that is shorter.
+
+Three things enforce that and they fail separately, which is the answer to give if somebody
+asks how they would know:
+
+- The org reader role does not grant `servicequotas:RequestServiceQuotaIncrease`.
+- `tests/contract/test_no_quota_writes.py` fails if the API name appears in production source
+  at all, and separately if the IAM policy grants it.
+- `quota_request.submitted_by_meter` is a column with a check constraint that admits only
+  false, so reversing the decision takes a migration somebody has to write and defend.
+
+**Finally, the requests.** 5 in the seeded estate, across 4 statuses
+including a refusal, and one of them is for a quota this product cannot measure. That last one
+is the point of the tracking half: nobody loses a quota increase because they could not find
+the button, they lose it because nobody checked whether it was ever approved, and the request
+somebody makes blind is exactly the one for a quota with no figure to look at. Open it and the
+page says when the status changed, not only what it is now.
+
 ## Questions that will be asked
 
 **"Is this our data?"** No. See the first section.
