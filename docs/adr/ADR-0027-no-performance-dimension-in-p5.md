@@ -40,7 +40,7 @@ This is the argument that decided it.
 
 `docs/00-GOAL.md` names realized savings as the north star: not identified, not
 potential. ISS-029 existed because identified savings is a vanity metric every tool
-inflates, and FEAT-041 answers it by judging a change sixty days later against the
+inflates, and FEAT-029 answers it by judging a change sixty days later against the
 bill. That measurement is the reason a reader should believe anything this product
 says.
 

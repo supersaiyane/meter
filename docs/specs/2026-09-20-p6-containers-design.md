@@ -206,18 +206,43 @@ lifecycle nobody maintains, which is the mistake P3 section 5.1 already refuses.
 
 ## 8. Interface
 
-| Route | Answers |
-| --- | --- |
-| `GET /containers/cost` | Cost by cluster, namespace and workload |
-| `GET /containers/usage` | Requested against used, and what could not be measured |
-| `GET /containers/clusters` | Clusters, their node fleets, Spot ratio and bin packing |
+**Corrected on 2026-09-28.** This section named `/containers/cost`,
+`/containers/usage` and `/containers/clusters`, and all three break ADR-0020, which
+is dated 2026-09-06 and fixes seven top level groups for the life of the product:
+every route carries its group as its first segment, a sub project adds screens inside
+an existing group, and `containers` is not one of the seven. This spec was written
+two weeks after that decision and did not apply it. Caught during the planning pass
+on 2026-09-28, before any route existed, which is the cheapest moment it could have
+been caught and the only reason this is a correction rather than a migration of every
+URL, link and pasted bookmark.
+
+The three questions land in three different groups, and that is what ADR-0020's own
+table dictates rather than a compromise forced by it. A reader asking what their
+clusters cost is asking where the money is going. A reader asking which namespaces
+over request is asking what is being spent badly. A reader asking what clusters exist
+is asking what they have and how it is connected. A single Containers group would
+have been an eighth group organised by audience, which is the thing ADR-0020 chose
+against.
+
+| Route | Group | Answers |
+| --- | --- | --- |
+| `GET /cost/containers` | Cost | Cost by cluster, namespace and workload |
+| `GET /waste/containers` | Waste | Requested against used, and what could not be measured |
+| `GET /inventory/clusters` | Inventory | Clusters, their node fleets, Spot ratio and bin packing |
 
 Container recommendations are served by P3's existing `/waste/recommendations`,
 filtered by waste class.
 
 ## 9. User interface
 
-`/containers` and its children, currently unbuilt and named for this sub project.
+Three screens inside three existing groups, per section 8.
+
+None of them exists and none has a navigation row. Unlike every sub project since P2,
+P6 has to **add** its `sections.ts` entries rather than clear an `arrives` marker on
+rows placed in advance, because those rows were never placed: a grep for a container
+path in `sections.ts` returns nothing. A task whose acceptance criterion is to clear a
+marker that does not exist is a task that passes by doing nothing, so the plan says
+add rather than clear.
 
 The screen that matters is requested against used, because it tells a platform
 team what its tenants are actually costing it. Two things it must do:

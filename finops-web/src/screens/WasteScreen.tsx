@@ -45,7 +45,7 @@ function money(amount: string): number {
  * Open only, because a finding that is DONE has had its saving taken and one that is DISMISSED
  * was judged not to be waste. Charting the whole queue would draw money that is not available and
  * would grow the picture every time somebody fixed something, which is the wrong direction.
- * FEAT-041 is the only thing in the product allowed to say a saving happened.
+ * FEAT-029 is the only thing in the product allowed to say a saving happened.
  */
 function savingByClass(rows: readonly ApiRecommendation[]): readonly RankedPoint[] {
   const totals = new Map<string, number>();
@@ -171,7 +171,7 @@ export function WasteScreen() {
             saving answers which single finding is largest; this answers which kind of waste
             the estate has, which is the question that changes what somebody builds next.
             Hatched, because every figure in it is modelled: no saving here has been
-            measured, and FEAT-041 is the only thing allowed to say one happened. */}
+            measured, and FEAT-029 is the only thing allowed to say one happened. */}
         <RankedBars
           points={byClass}
           provenance="modelled"

@@ -23,10 +23,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | Register | Counts |
 | --- | --- |
 | Features | 62 total, 17 specified, 10 in build, 26 delivered |
-| Decisions | 27 architecture decision records |
-| Changes | 99 recorded |
-| Issues | 136 fixed, 76 open, 0 parked |
-| Open questions | 9 awaiting a decision |
+| Decisions | 28 architecture decision records |
+| Changes | 104 recorded |
+| Issues | 136 fixed, 79 open, 0 parked |
+| Open questions | 12 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
 
@@ -188,7 +188,8 @@ ISS-003.
 | P3 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
-| P6 | 0 | 0 | 0 | 0 | 12 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
+| P6 | 1 | 0 | 0 | 0 | 11 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
+| P7 | 0 | 0 | 0 | 0 | 14 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -348,6 +349,12 @@ ISS-003.
 | `TASK-P5-007` | Done, 2026-09-28 | the draft, and the test that keeps the write out |
 | `TASK-P5-008` | Done, 2026-09-28 | tracking what somebody else submitted |
 
+**P6, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P6-005` | Done, before P6 started | a fake cluster with a namespace nobody can measure |
+
 <!-- generated:task-status end -->
 
 Read from the plan files, not maintained here. This section used to be a hand
@@ -428,16 +435,27 @@ tasks and TASK-P0-029 as not started after it was finished. See ADR-0014.
 See `docs/01-ROADMAP.md` for scope. This table was stale until 2026-09-20: it
 said no sub project had a specification, on a day when three were delivered.
 
-| Sub project | Status |
+**The counts are in the generated table above, not here.** This table carried its own
+per sub project totals until 2026-09-28 and six of its eight rows were wrong: P1 said 21
+of 21 and it is 22, P3 said 19 of 20 and it is 21 of 21, P4 said 11 of 11 and it is 13,
+P5 said specified and not started on a day it was delivered, and P7 said no
+specification on a day it had one. It already carried a warning about having been stale
+once before, which is the clearest possible sign that a hand maintained copy of a derived
+figure does not survive contact with the project.
+
+What is left here is the part the generated table cannot carry, which is the
+qualifications.
+
+| Sub project | Qualification on its status |
 | --- | --- |
-| P0 Foundation | **Delivered**, 39 of 39. Not signed off: ISS-111 and ISS-122 |
-| P1 Cost Intelligence | **Delivered**, 21 of 21, including the second cut |
-| P2 Query Cost Governance | **Delivered**, 21 of 25. Two descoped, two parked on ISS-122 |
-| P3 Utilization and Rightsizing | **Delivered**, 19 of 20. TASK-P3-020 was blocked on P4 and is now unblocked: `topology_edge` exists and `finops_query.graph` carries the coverage FEAT-044 has to refuse on |
-| P4 Inventory and Topology | **Delivered**, 11 of 11, 2026-09-26. Neither adapter has run, ISS-200 and ISS-202, and the Config stack has never been applied, ISS-203 |
-| P5 Quotas and Limits | **Specified and planned** 2026-09-20, 8 tasks. Not started |
-| P6 Containers, EKS and ECS | **Specified and planned** 2026-09-20, 12 tasks, first cut. Not started |
-| P7 Insight and LLM layer | No specification |
+| P0 Foundation | Every task done and not signed off: ISS-111 and ISS-122 |
+| P1 Cost Intelligence | Includes the second cut |
+| P2 Query Cost Governance | Two tasks descoped on OPEN-04, two parked on ISS-122, one waiting on ISS-002 |
+| P3 Utilization and Rightsizing | Complete. TASK-P3-020 was blocked on P4 and is done |
+| P4 Inventory and Topology | Neither adapter has run, ISS-200 and ISS-202, and the Config stack has never been applied |
+| P5 Quotas and Limits | Delivered 2026-09-28. Neither adapter has run, ISS-122. ISS-218 records the one definition of done line refused rather than faked |
+| P6 Containers, EKS and ECS | Specified and planned, revised 2026-09-28. TASK-P6-005 is already done. FEAT-035 is blocked on ISS-003 and nothing else is. FEAT-059 needs a spec section before it can be planned |
+| P7 Insight and LLM layer | Specified and planned 2026-09-28, 14 tasks. ADR-0028 fixes where the model runs. OPEN-10 to OPEN-12 are open and none of them blocks a task |
 
 P3's last task waited on P4 and no longer does. FEAT-044 scores blast radius by
 walking the topology graph, and both halves it needs now exist: `topology_edge`,

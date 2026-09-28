@@ -135,7 +135,9 @@ meter/
 │   │                          and correcting it would stop it being evidence
 │   ├── templates/             spec, task, ADR, change and issue templates
 │   ├── checkpoint.md          session continuity log with resume vectors
-│   ├── adr/                   architecture decision records, 0001 to 0008
+│   ├── adr/                   architecture decision records. How many is in INDEX.md,
+│   │                          which is generated from docs/registry.yaml: this line said
+│   │                          0001 to 0008 until 2026-09-28 and there were twenty eight
 │   ├── specs/                 design specs, one per sub project. P1's section 3
 │   │                          named what it deferred, and its section 16
 │   │                          records what changed when that came back
@@ -154,10 +156,24 @@ meter/
 │   │   │                      Section 6 is a refusal: a quota increase is a
 │   │   │                      write, so Meter drafts and tracks it and never
 │   │   │                      submits it. The IAM permission is absent
-│   │   └── 2026-09-20-p6-containers-design.md
-│   │                          Section 5.4 is the cost of having no agent in the
-│   │                          cluster, stated per signal so the trade can be
-│   │                          revisited with evidence rather than memory
+│   │   ├── 2026-09-20-p6-containers-design.md
+│   │   │                      Section 5.4 is the cost of having no agent in the
+│   │   │                      cluster, stated per signal so the trade can be
+│   │   │                      revisited with evidence rather than memory.
+│   │   │                      Sections 8 and 9 were corrected on 2026-09-28: they
+│   │   │                      named routes under a containers prefix and ADR-0020
+│   │   │                      fixes seven top level groups, two weeks before this
+│   │   │                      spec was written
+│   │   └── 2026-09-28-p7-insight-and-llm-layer-design.md
+│   │                          Section 5.2 is the whole sub project: the model
+│   │                          cites figures rather than emitting them, so prose
+│   │                          carries placeholders and there is nowhere in a
+│   │                          sentence for a hallucinated number to live. Section
+│   │                          5.1 is why it needs no new data path, since its
+│   │                          tools are the MCP tools which are the HTTP API, and
+│   │                          section 11 is how an LLM feature is held to this
+│   │                          project's standard: three sets, and the refusal set
+│   │                          is written before the thing that must pass it
 │   └── plans/                 implementation plans, written per sub project.
 │                              `sync.py` reads task status out of these, so the
 │                              Status row in each task is data, not prose. It
@@ -166,10 +182,25 @@ meter/
 │       ├── P0-implementation-plan.md
 │       ├── P1-implementation-plan.md
 │       ├── P2-implementation-plan.md
-│       ├── P3-implementation-plan.md    20 tasks, not started
-│       ├── P4-implementation-plan.md    11 tasks, not started
-│       ├── P5-implementation-plan.md     8 tasks, not started
-│       └── P6-implementation-plan.md    12 tasks, first cut, not started
+│       ├── P3-implementation-plan.md
+│       ├── P4-implementation-plan.md
+│       ├── P5-implementation-plan.md
+│       ├── P6-implementation-plan.md   revised 2026-09-28 against what P4 and P5
+│       │                          actually built. Six details had gone stale and
+│       │                          none of the reasoning had, which is the useful
+│       │                          half: every route, migration number and file
+│       │                          path had moved and every argument held
+│       └── P7-implementation-plan.md   14 tasks. TASK-P7-005 writes the three
+│                                  evaluation sets before TASK-P7-006 builds the
+│                                  orchestration they judge, because a refusal set
+│                                  written afterwards describes what the
+│                                  implementation happens to do
+│
+│                              No task count per plan in this listing. It said 20,
+│                              11 and 8 for P3, P4 and P5 while all three were
+│                              done, and `tasks/STATUS.md` derives those figures
+│                              from the plans themselves. A number restated here
+│                              is a number with nothing checking it
 │
 ├── audits/                    point in time reviews, one file per audit
 │   ├── README.md              naming convention, finding ids, cadence
@@ -852,7 +883,7 @@ meter/
 │       │                      did not, because it searched the whole map and two other
 │       │                      packages hold a file of the same name. Found on 2026-09-28
 │       │                      the moment that check was scoped to this section
-│       ├── realized_savings.py  FEAT-041. The only thing in the product allowed to
+│       ├── realized_savings.py  FEAT-029. The only thing in the product allowed to
 │       │                      say a saving happened, sixty days after a finding is
 │       │                      marked done
 │       ├── score.py           the posture score, which is never a bare number

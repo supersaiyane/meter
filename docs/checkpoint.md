@@ -49,57 +49,87 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-09-28 | The FEAT-058 argument, and the reason that settled it was not on the list | Done | The competitive review named one large thing worth arguing about before P5 starts: Meter has no performance dimension and every judgement it makes runs in one direction. FEAT-058 framed three questions, where a headroom rule comes from, what the service level input is, and whether ADR-0016 survives, and scheduled nothing so the argument had somewhere to happen. ADR-0027 is the record and the decision is no, not in P5. The reason that decided it is a fourth one none of the three named: the product cannot verify a performance finding, and verification is its whole claim. Realized savings is the north star precisely because identified savings is a vanity metric, which is what ISS-029 was about and what FEAT-041 answers by judging a change against the bill sixty days later. A performance recommendation's success is an outage that did not happen, which is unfalsifiable in exactly the shape ISS-029 objected to, and it would put a class of finding that can only be asserted beside a class that is measured, where the first borrows the credibility of the second. Turbonomic can make that claim because it acts and then observes; Meter does not act by decision, so it would be left asserting. Two supporting reasons. It inverts the risk model: today a wrong answer costs money and the whole architecture is shaped around that being the worst case, and a performance finding's wrong answer is an incident. And the service level input does not exist, which makes the third of FEAT-058's questions the blocking one rather than one of three: Turbonomic has Instana, and Meter reads CloudWatch, Config and Cost Explorer, so starved inferred from saturation alone would be asserting an opinion about somebody else's latency budget. The useful part was reading the complaint precisely. The review says a tool that only ever recommends making things smaller is one engineers learn to discount, which is a statement about trust rather than capability, and the remedy for it is not to start recommending growth. It is to show that the tool looked. Meter already computes exactly that, in `_refused`, with reasons already written for a reader, and `waste_compute.py` discards them on the last line of `_judge`. FEAT-062 is the work the argument produced: it needs no new data source, answers none of the three open questions first, costs nothing when wrong because the worst case is declining to recommend something, and leaves ADR-0016 untouched, since a refusal has no money and therefore no severity and is not ranked. `make verify` green: 1,976 backend tests passed and 1 skipped at 95.72 percent coverage, 440 frontend tests, 15 journeys, zero unresolved security findings. | `docs/adr/ADR-0027-no-performance-dimension-in-p5.md` for the argument, `docs/features/FEAT-062-refusal-evidence.md` for what it produced, `finops_ingest/collectors/waste_compute.py:277` for the line that throws the reasoning away. Nothing is in flight. FEAT-058 stays Planned and is blocked on an input rather than an opinion: the argument reopens when Meter can read a service level objective |
 | 2026-09-28 | FEAT-062, the judgement the collector was computing and throwing away | Done | ADR-0027 concluded that Meter cannot honestly gain a performance dimension, and named what to build instead: show that the tool looked. The whole feature turned out to be keeping something that already existed. `finops_query/waste.py` computes a refusal in `_refused`, with the sentence already written for a reader, and `_judge` ended with `return smaller if smaller.is_worth_acting_on else None`. A resource examined and cleared and a resource nobody looked at produced the same thing, which is nothing, and those are different facts rendered identically: the same defect as showing a collection failure as the number zero. `Estimate` was always shaped for this and its docstring says so, which means the design anticipated the surface and the collector dropped it on the last line. Its own table and not a row in recommendation, for a reason worth keeping: a refusal has no saving, every consumer of that table ranks by money per ADR-0016, and a zero there reads as the least valuable action rather than as the absence of one. The load bearing constraint is a length on the reason rather than a NOT NULL, because an empty string satisfies NOT NULL and a refusal reading did not qualify would be worse than no feature: it teaches a reader the explanations are empty and they stop reading the ones that are not. The tests assert the stronger version of that, that each reason names a measurement rather than giving a verdict. Ordered by observation days rather than anything resembling severity, because a refusal cannot be ranked by money: a rule that declined after four days is the one to question first and one that declined after ninety is the one to rely on. Two checks fired and both were right. The hardcoded value check refused the length in the declarative mirror, correctly, and it is marked with the reason a CHECK cannot read settings and has to match the migration character for character. And the waste screen tests failed until the harness stubbed the second request, which is the honest failure: a screen whose request has no stub renders without that section rather than erroring, so every assertion about it would have passed vacuously. The roadmap statuses were corrected at the same time: P1, P2 and P3 all said things written before the work and never revisited, and P3 in particular said Not started with nine features Delivered. `make verify` green: 1,988 backend tests passed and 1 skipped at 95.73 percent coverage, 444 frontend tests, 15 journeys, zero unresolved security findings. | `finops_ingest/collectors/waste_compute.py` at `_judge` for the line that used to drop it, `migrations/versions/0019_sizing_refusal.py` for why it is its own table, `finops-web/src/screens/WasteScreen.tsx` for the surface beside the list. Nothing is in flight |
 | 2026-09-28 | P5 complete, and the sub project whose central decision is what the product refuses to do | Done | Eight tasks, 9 commits, and the plan was right that TASK-P5-001 would add almost nothing: P0 had already decided that unpublished quota usage is an absence rather than a number, and everything else is downstream of that. What P5 added is provenance, a schema that refuses the lies, and a screen that shows two lists because one would have to sort the nulls somewhere and wherever they sort is a claim nobody has earned. Five real defects, all found by checks rather than by luck, and the order they arrived in is the argument for writing the check first. The response shape test found that the P5 specification names five request statuses and the botocore service model has seven: NOT_APPROVED and INVALID_REQUEST would have been read successfully, refused by my own check constraint, and surfaced as an IntegrityError from the collector, on a real account only, so a customer would have found it. An unused argument warning found that unmeasurable_reason had nowhere to travel from the adapter to the collector, which means the column the constraint requires could never have been filled: a design gap arriving as a style complaint. A 500 on the requests route found that quota_request had no quota_name, so a tracking list would have shown bare codes like L-1216C47A. The fake estate found a retraction bug: mine deleted global quota rows on any regional run, and the fake reports globals in one region only, so the second region wiped what the first had written. And two were in my own first draft of the adapter, a truth test that dropped a genuine Decimal zero and a min over two timestamps that silently reordered a contradictory pair. The load bearing deliverable is not the draft, it is the test that keeps the write out. RequestServiceQuotaIncrease appears nowhere in production source, and the check strips comments and docstrings before searching, because every module in this sub project explains in its own docstring that it does not call the API: a plain grep fails on the documentation of the decision it protects, and the obvious way to make it pass would be deleting the explanation. The CLI spelling is allowed and is deliberately a different string. Four falsifications, and the one that matters most asserts the capability exists, because a check that only forbids can be satisfied by shipping nothing. One line of the definition of done was refused rather than faked: it asks for a quota finding with a severity ranked beside the rest, and ADR-0016 derives severity from money while a quota has none, so ranking it beside dollar ordered findings needs a money equivalent nobody can compute. That is the fabrication ADR-0025 refused for a payer wide finding and ADR-0027 for a refusal with no saving. ISS-218 records it and names what is genuinely lost, which is the home screen. `make verify` green: 2208 backend tests passed at 95.69 percent coverage, 469 frontend tests, 19 journeys, zero unresolved security findings. 167 of those tests are P5's. | `finops_core/domain/quota.py` for the four combinations the entity refuses, `migrations/versions/0020_quotas.py` for the biconditional and why NULLS NOT DISTINCT is load bearing, `tests/contract/test_no_quota_writes.py` for the absence asserted in two independent places, `finops_query/quota.py` for the draft and its working. Nothing is in flight. P5 is done and the branch is ready to merge |
+| 2026-09-28 | P6 replanned and P7 planned, and four records defects found by trying to cite them | Done | Asked to plan the two remaining sub projects. P6 had a specification and a 12 task plan from 2026-09-20 and P7 had neither, so the work was a revision and a pair of new documents. The revision is the more interesting half, because none of the P6 plan's reasoning had rotted and almost every concrete detail had: the argument for measuring pod cost rather than apportioning it, for writing container findings into P3's table, and for naming the OOMKilled gap in the rationale all stand, while every file path, migration number and route in it had moved underneath. The largest is that spec section 8 named three routes under a containers prefix and ADR-0020, dated two weeks earlier, fixes seven top level groups for the life of the product and containers is not one of them. A specification written after an accepted decision and not applying it, caught before any route existed, which is the only reason it is a correction rather than a migration of every URL, link and pasted bookmark. The three questions now land in Cost, Waste and Inventory, which is what ADR-0020's own table dictates rather than a compromise it forced. TASK-P6-005 also turned out already done: `finops_fakes/containers.py` is 759 lines and its docstring answers all four of that task's criteria by name. P7's specification rests on two decisions. Its tools are the MCP tools, which are the HTTP API, so the governed semantic layer FEAT-038 asks for already exists and scope is not reimplemented, per constraint 8 and ADR-0009. And the model never emits a figure, it cites one: prose carries placeholders and the interface substitutes cited values, so there is nowhere in a sentence for a hallucinated number to live, and the failure mode is a wrong sentence beside right numbers rather than the reverse. The plan's 14 tasks put the three evaluation sets before the orchestration they judge, because a refusal set written afterwards describes what the implementation happens to do. ADR-0028 settles where the model runs, in the hub account on Bedrock, which buys no seventh trust boundary, token spend on the bill self metering already reads, and FEAT-046 as defence in depth rather than a prerequisite, at the price of a model choice capped by somebody else's regional rollout. Four records defects surfaced from trying to cite things. FEAT-041 named two features: the registry and its own document say P7 per team digests, and ten places in the code, the map, two ADRs and an issue used it for realized savings, which is FEAT-029. ISS-002, ISS-003 and ISS-004 were cited as issue ids by ten documents since 2026-08-23 and existed in no register, so a reader chasing ISS-003 from the P6 plan, which names it as that sub project's blocker, found nothing. The registry said P6 had no specification and no plan when both existed. And the hand written sub project table in tasks/STATUS.md was wrong in six of its eight rows while carrying a warning about having been stale once before, which is the clearest argument available for deleting a hand maintained copy of a derived figure rather than correcting it: it now carries only the qualifications the generated table cannot. The P7 open questions were nearly numbered OPEN-08 to OPEN-10, which are live P1 questions, so the collision was caught in the same pass that fixed the FEAT-041 one. `make verify` green, and worth one caveat: the first full run exited 2 with its output truncated by the command proxy, every stage then passed individually, and a re run passed, so there is evidence of green and no explanation of the first failure. 28 decisions, 217 issues, 12 open questions, 104 changes, 8 specifications. | `docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md` sections 5.1 and 5.2 for what P7 rests on and section 11 for how an LLM feature is held to this project's standard, `docs/adr/ADR-0028-the-model-runs-in-the-hub-account.md` for the hosting decision and its price, `docs/plans/P6-implementation-plan.md` at the revision note for the six stale details. Nothing is in flight. Both plans are provisional pending approval, and P7 needs OPEN-10 answered before its adapter can name a model |
 
 ## Next action
 
-**Nothing is in flight. P5 is complete and merged to its branch, ready for main.**
+**Nothing is in flight. P6 and P7 are now planned and neither is started. Both plans are
+provisional pending approval.**
 
-P5 was this section's work and all eight tasks are done. The sub project whose central
-decision is what the product refuses to do turned out to refuse three separate things, and
-only one of them was in the plan: the quota increase it will not submit, the severity it
-cannot honestly derive because a quota has no money, and the draft it declines to offer
-against a quota nothing measures.
+Planning the two remaining sub projects was this section's work. The half worth reading is
+the P6 revision rather than the new P7 documents: none of the P6 plan's reasoning had
+rotted and almost every concrete detail had. The argument for measuring pod cost rather
+than apportioning it still stands, and so does the case for writing container findings into
+P3's existing table instead of a new one. What had moved underneath it was every file path,
+every migration number and every route, including one that broke ADR-0020, a decision two
+weeks older than the specification that ignored it.
 
 The candidates now, in the order they would pay:
 
-1. **P6, containers.** The next unstarted sub project, with a plan of twelve tasks and a
-   fake estate already built in `finops_fakes/containers.py`. Its specification's section
-   5.4 is the part to read first: what it costs to have no agent in the cluster, stated per
-   signal so the trade can be revisited with evidence rather than memory.
-2. **A real account**, ISS-002, waiting since 2026-08-23. The only thing that can close
-   ISS-200, ISS-202, ISS-209, ISS-211 and now ISS-122's P5 half. Names are verified against
-   the botocore service models, and P5 added six operations to that check. What is not
-   verified is whether a field is populated in practice, whether an empty list means none or
-   not permitted, how throttling arrives under load, and whether the Trusted Advisor
-   metadata positions this product indexes by name are the positions AWS actually sends.
-   That last one is the weakest assumption in `finops_providers/aws/quotas.py` and it says so.
-3. **OPEN-05**, Jira or ServiceNow for the recommendation lifecycle. The lifecycle itself is
-   delivered and a TicketSink port and fake exist; nobody has decided which system, so no
+1. **P6, containers.** Twelve tasks of which one is already done: TASK-P6-005 asks for a
+   fake container estate and `finops_fakes/containers.py` is 759 lines whose docstring
+   answers all four of that task's criteria by name. Read the specification's section 5.4
+   first, which states per signal what it costs to have no agent in the cluster, then the
+   plan's revision note, which lists the six details that had gone stale. FEAT-035 is
+   blocked on ISS-003 and nothing else in the sub project is.
+2. **P7, insight and the language model layer.** Fourteen tasks. ADR-0028 has settled the
+   question that would otherwise have been decided by accident: the model runs on Bedrock
+   in the hub account, so there is no seventh trust boundary and the token spend lands on
+   the bill self metering already reads. Two things to read before starting: section 5.2 of
+   the specification, because the model never emits a figure and only cites one, which is
+   what keeps a hallucinated number out of a sentence; and OPEN-10, which must be answered
+   before the adapter can name a model.
+3. **A real account**, ISS-002, waiting since 2026-08-23. Still the only thing that can
+   close ISS-200, ISS-202, ISS-209, ISS-211 and ISS-122's P5 half, and P7 adds Bedrock to
+   the list of adapters that have never made a real call.
+4. **OPEN-05**, Jira or ServiceNow for the recommendation lifecycle. The lifecycle is
+   delivered and a TicketSink port and fake exist; nobody has chosen the system, so no
    adapter can be written. A person rather than a task.
 
 Three small ones are worth picking up inside whatever comes next rather than on their own:
 ISS-218, a quota finding reaching no home screen because it cannot be ranked against money;
-ISS-217, two components sitting in the screens directory; and ISS-208, a commitment action
-having no resource to join on so no purchase can be verified against the bill.
+ISS-217, two components sitting in the screens directory, which is also why the screens
+directory holds 28 files for 26 routes; and ISS-208, a commitment action having no resource
+to join on, so no purchase can be verified against the bill.
+
+One thing is deliberately not done. FEAT-059, an application layer on the topology graph,
+is named in the P6 plan as a third cut that needs its own specification section, and it has
+not been written.
+
+### One discrepancy, left alone on purpose
+
+`docs/registry.yaml` gives P0 the status `Spec approved, in build` while P1 through P5 are
+delivered, which cannot all be true at once: P1 was not built on top of an unbuilt P0. The
+same staleness affects some P0, P1 and P2 feature statuses. This was raised with a standing
+offer to correct it and no answer has been given, so nothing has been changed. Until it is,
+the generated task table in `tasks/STATUS.md` is the trustworthy view, because `sync.py`
+derives it from the plans; the sub project status prose is hand maintained and is the part
+that drifts.
 
 ### Where the project is, as of 2026-09-28
 
-Every figure here is computed by the command that wrote this section. None of it is
+Every figure here was computed by the command that wrote this section. None of it is
 remembered, which is the 2026-09-27 lesson in `tasks/lessons.md`.
 
 | What | Where it stands |
 | --- | --- |
-| Git | `p5-quotas-and-limits`, 399 commits, working tree dirty |
-| Gate | `make verify` green: lint, writing, docs, docstrings, memory, backend, frontend, web build, journeys, security scan |
-| Tests | 2,208 backend passed and 1 skipped at 95.69 percent coverage, 469 frontend, 19 journeys |
-| Features | 62 documented, 26 Delivered |
-| Decisions | 27 records in `docs/adr/` |
-| Issues | 214 recorded, 76 open |
+| Git | `p6-p7-planning`, 401 commits, working tree dirty |
+| Gate | `make verify` green twice in succession: lint, writing, docs, docstrings, memory, backend, frontend, web build, journeys, security scan |
+| Backend tests | 2,208 passed and 1 skipped, measured on this branch |
+| Backend coverage | 95.69 percent, unchanged: no file under the six measured packages or under `tests/` differs from main |
+| Frontend tests | 469 passed, 0 failed |
+| Journeys | 19 tests in 5 files |
+| Features | 62 documented: 26 Delivered, 10 In build, 17 Specified, 9 Planned |
+| Decisions | 28, and `docs/adr/` holds 28 files, so the register and the directory agree |
+| Issues | 217 recorded, 79 open, 136 fixed, 2 by design |
+| Changes | 104 recorded |
+| Open questions | 12, of which OPEN-10 blocks P7's adapter |
 | Schema | 20 migration revisions, every one named in `project_map.md` |
-| Collectors | 22 modules, every one named in `project_map.md` |
-| Screens | 23 of 26 built |
+| Collectors | 22 modules, every one named in `project_map.md`, which is checked rather than asserted since 2026-09-28 |
+| Screens | 23 built of 26 routes |
+| Specifications | 8 design documents in `docs/specs/` |
 | Lessons | 22 in `tasks/lessons.md` |
-| Sub projects | P0 to P5 delivered, P6 and P7 not started |
+| Sub projects | P1 to P5 delivered, P6 and P7 specified and planned and not started, P0 recorded as in build, which is the discrepancy above |
 
 ### Reading in, in order
 
