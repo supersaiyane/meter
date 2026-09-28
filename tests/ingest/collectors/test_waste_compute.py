@@ -82,6 +82,66 @@ def found(engine: Engine, tenant: UUID) -> dict[str, tuple[str, Decimal, str]]:
         }
 
 
+def refusals(engine: Engine, tenant: UUID) -> dict[str, tuple[str, str, int]]:
+    with engine.connect() as connection:
+        return {
+            row[0]: (row[1], row[2], row[3])
+            for row in connection.execute(
+                text(
+                    "SELECT resource_id, waste_class, reason, observation_days "
+                    "FROM sizing_refusal WHERE tenant_id = :t"
+                ),
+                {"t": tenant},
+            )
+        }
+
+
+class TestWhatItRecordsAboutRefusing:
+    """FEAT-062. The four false positives above are now visible rather than only absent.
+
+    Until 2026-09-28 the collector ended `_judge` with
+    `return smaller if smaller.is_worth_acting_on else None`, so a resource examined and
+    cleared and a resource nobody looked at produced the same thing: nothing. Those are
+    different facts, and rendering them identically is the same defect as rendering a
+    collection failure as the number zero. ADR-0027.
+    """
+
+    def test_a_resource_it_declines_is_recorded_with_its_reason(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        collect(engine, tenant_id, settings)
+        written = refusals(engine, tenant_id)
+        assert written, "the collector examined the estate and recorded nothing it declined"
+        for resource, (waste_class, reason, days) in written.items():
+            assert waste_class, resource
+            # The sentence is the feature, and the database refuses a short one. This asserts
+            # the stronger property: it names a measurement rather than giving a verdict.
+            assert any(char.isdigit() for char in reason), f"{resource}: {reason!r}"
+            assert days >= 0
+
+    def test_nothing_it_recommends_is_also_recorded_as_refused(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """A resource cannot be both. One appearing in each list would make the two disagree,
+        and a reader who spots that stops trusting whichever is less convenient."""
+        collect(engine, tenant_id, settings)
+        assert set(found(engine, tenant_id)) & set(refusals(engine, tenant_id)) == set()
+
+    def test_a_second_run_replaces_a_refusal_rather_than_repeating_it(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """A refusal is a statement about the current measurement.
+
+        Keyed on the resource and the rule, so a collector running every six hours leaves one
+        row rather than a history nobody asked for, and last week's p99 is not a fact about
+        today.
+        """
+        collect(engine, tenant_id, settings)
+        first = refusals(engine, tenant_id)
+        collect(engine, tenant_id, settings)
+        assert refusals(engine, tenant_id) == first
+
+
 class TestWhatItRefusesToFlag:
     """The four false positives, each with its own name."""
 

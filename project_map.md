@@ -30,9 +30,9 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Playwright journeys | 15 in 4 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 7 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 21 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 18 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 119 | test_*.py under tests/ |
-| Test functions | 1611 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 19 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 120 | test_*.py under tests/ |
+| Test functions | 1620 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -962,6 +962,16 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0019_sizing_refusal.py  FEAT-062, ADR-0027. What a sizing rule
+│       │                      examined and declined, with the sentence that
+│       │                      decided it. Its own table because a refusal has no
+│       │                      saving, and every consumer of recommendation ranks
+│       │                      by money: a zero there reads as the least valuable
+│       │                      action rather than as the absence of one. The load
+│       │                      bearing constraint is a length on the reason, not a
+│       │                      NOT NULL, because an empty string satisfies NOT NULL
+│       │                      and a refusal reading did not qualify teaches a
+│       │                      reader the explanations are empty
 │       ├── 0018_misconfigured_cause.py  the seventh cause, ADR-0026. A value this
 │       │                      deployment set that does not exist at the provider,
 │       │                      which SchemaDrift used to absorb under a word that

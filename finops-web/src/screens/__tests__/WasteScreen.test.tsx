@@ -1,17 +1,25 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { WasteScreen } from '../WasteScreen';
 import { Harness } from './Harness';
 import { clientReturning } from './fixtures';
-import { recommendationsFixture } from '../../api/fixtures/waste';
+import { recommendationsFixture, refusalsFixture } from '../../api/fixtures/waste';
 import { violationsIn } from '../../components/__tests__/axe';
 
 const PATH = '/api/v1/waste/recommendations';
 
 function renderWaste(fixture = recommendationsFixture()) {
   return render(
-    <Harness client={clientReturning({ [PATH]: fixture })}>
+    <Harness
+      client={clientReturning({
+        [PATH]: fixture,
+        // FEAT-062. The screen asks for two things now, and a screen whose second request has
+        // no stub renders without that section rather than failing, which is correct behaviour
+        // and would make every assertion about it pass vacuously.
+        '/api/v1/waste/refusals': refusalsFixture(),
+      })}
+    >
       <WasteScreen />
     </Harness>,
   );
@@ -122,5 +130,39 @@ describe('WasteScreen', () => {
     const { container } = renderWaste();
     await screen.findByText(/i-0a1b2c3d4e5f6a7b8/);
     expect(await violationsIn(container)).toEqual([]);
+  });
+
+  it('shows what the rules looked at and left alone, beside the list and not in it', async () => {
+    // FEAT-062, ADR-0027. A service that never appears in the waste list is otherwise
+    // indistinguishable from one nobody examined, and those are different facts.
+    renderWaste();
+    expect(await screen.findByTestId('refusals')).toBeInTheDocument();
+    expect(screen.getByTestId('refusals-count')).toHaveTextContent('4 resources were examined');
+  });
+
+  it('gives a refusal no money and no severity', async () => {
+    // The property that kept this out of the recommendation table. ADR-0016 ranks that list by
+    // money, so a zero there reads as the least valuable action rather than the absence of one.
+    renderWaste();
+    const table = await screen.findByTestId('refusals-table');
+    expect(table).not.toHaveTextContent('$');
+    expect(within(table).queryAllByTestId('severity')).toEqual([]);
+  });
+
+  it('orders a refusal by what the judgement rests on', async () => {
+    // It cannot be ranked by money, so the useful order is observation: four days is worth
+    // questioning and ninety is worth relying on.
+    renderWaste();
+    const table = await screen.findByTestId('refusals-table');
+    const first = within(table).getAllByRole('row')[1];
+    expect(first).toHaveTextContent('4 days');
+  });
+
+  it('keeps the reason whole, because a shortened one cannot be argued with', async () => {
+    renderWaste();
+    const table = await screen.findByTestId('refusals-table');
+    expect(table).toHaveTextContent(
+      '94 percent memory ceiling, so this is memory bound and a CPU rule must not shrink it',
+    );
   });
 });

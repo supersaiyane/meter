@@ -22,6 +22,7 @@ import {
 } from './fixtures/cost';
 import {
   recommendationsFixture,
+  refusalsFixture,
   realizedSavingsFixture,
   scoresFixture,
 } from './fixtures/waste';
@@ -57,6 +58,7 @@ import type {
   ApiQueryFindingDetail,
   ApiRealizedSavings,
   ApiRecommendations,
+  ApiRefusals,
   ApiScores,
   ApiEnforcementAction,
   ApiSurfaceInstance,
@@ -284,6 +286,15 @@ export function useCostCommitments() {
  * is the feature: a single hook returning the estimate and the realization would
  * be the one place a screen could add them together.
  */
+export function useRefusals() {
+  return useQuerySurface<ApiRefusals>(
+    ['waste-refusals'],
+    '/api/v1/waste/refusals',
+    '/api/v1/waste/refusals',
+    refusalsFixture,
+  );
+}
+
 export function useRecommendations() {
   return useQuerySurface<ApiRecommendations>(
     ['waste-recommendations'],

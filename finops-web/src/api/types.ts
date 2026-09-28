@@ -449,6 +449,34 @@ export interface ApiCostAnomalies {
 
 /* ---------------------------------------------------------------- P3, waste */
 
+/**
+ * One resource a sizing rule examined and declined to recommend. FEAT-062, ADR-0027.
+ *
+ * There is deliberately no saving and no severity here. A refusal has no money, ADR-0016 ranks
+ * every finding by money, and a zero would read as the least valuable action rather than as the
+ * absence of one.
+ */
+export interface ApiRefusal {
+  readonly resource_id: string;
+  readonly account_id: string;
+  readonly region_id: string;
+  /** Which rule declined, so a reader knows what question was asked. */
+  readonly waste_class: string;
+  /** The sentence that decided it, whole. A shortened reason is one nobody can argue with. */
+  readonly reason: string;
+  /**
+   * What the judgement rests on. A refusal after four days is worth questioning and one after
+   * ninety is worth relying on, and a reader cannot tell them apart without this.
+   */
+  readonly observation_days: number;
+}
+
+export interface ApiRefusals {
+  readonly refusals: readonly ApiRefusal[];
+  /** Distinct resources, not rows: one resource declined by two rules was looked at once. */
+  readonly examined: number;
+}
+
 export interface ApiRecommendation {
   readonly recommendation_id: string;
   readonly account_id: string;

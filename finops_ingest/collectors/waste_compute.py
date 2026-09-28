@@ -108,6 +108,20 @@ FIRST_EVENT = text(
 )
 
 
+#: One row per resource per rule, overwritten each run. FEAT-062. A refusal is a statement
+#: about the current measurement, so last week's p99 is not a fact about today and the row is
+#: replaced rather than accumulated.
+WRITE_REFUSAL = text(
+    "INSERT INTO sizing_refusal (refusal_id, tenant_id, ingest_run_id, sub_account_id, "
+    "region_id, resource_id, waste_class, reason, observation_days, as_of, collected_at) "
+    "VALUES (:id, :tenant, :run, :account, :region, :resource, :waste_class, :reason, "
+    ":days, :now, :now) "
+    "ON CONFLICT (tenant_id, resource_id, waste_class) DO UPDATE SET "
+    "ingest_run_id = EXCLUDED.ingest_run_id, reason = EXCLUDED.reason, "
+    "observation_days = EXCLUDED.observation_days, as_of = EXCLUDED.as_of, "
+    "collected_at = EXCLUDED.collected_at"
+)
+
 #: Recorded rather than silent. An estate where half the instances publish nothing
 #: is a configuration problem, and a run reporting "no waste found" would hide it.
 #: Upserted on the scope, like every other sync error, so a persistent gap shows as
@@ -217,6 +231,12 @@ class WasteComputeCollector:
             estimate = self._judge(candidate, values, peak)
             if estimate is None:
                 continue
+            if not estimate.is_worth_acting_on:
+                # Examined and cleared. Recorded so a reader can see the rule looked, and
+                # never as a recommendation: it has no saving, and a zero in a list ranked by
+                # money reads as the least valuable action rather than the absence of one.
+                self._write_refusal(context, candidate, estimate, now)
+                continue
             self._write(context, candidate, estimate, thresholds, now)
             written += 1
 
@@ -240,6 +260,8 @@ class WasteComputeCollector:
                 },
             )
 
+        # Recommendations only. A refusal is not an item this collector produced for the
+        # queue, and counting it here would inflate a number a reader takes as findings.
         return CollectorOutcome(items_written=written)
 
     def _judge(
@@ -274,7 +296,42 @@ class WasteComputeCollector:
             credit_balance=candidate.credit_balance,
             memory_peak_percent=memory_peak_percent,
         )
-        return smaller if smaller.is_worth_acting_on else None
+        # The refusal is returned rather than dropped. FEAT-062: a resource examined and
+        # cleared is a different fact from one nobody looked at, and this line used to render
+        # them identically by producing nothing in both cases. `Estimate` was always shaped for
+        # this, and its docstring says so.
+        return smaller
+
+    def _write_refusal(
+        self,
+        context: CollectorContext,
+        candidate: Candidate,
+        estimate: Estimate,
+        now: datetime,
+    ) -> None:
+        """Record that a rule looked at this and declined, with the sentence that decided it.
+
+        Keyed on the resource and the rule rather than on the run, so a resource declined for
+        the same reason every six hours has one row rather than a history nobody asked for. The
+        reason is overwritten on each run on purpose: a refusal is a statement about the
+        current measurement, and last week's p99 is not a fact about today.
+        """
+        target = candidate.scaling_group or candidate.resource_id
+        context.connection.execute(
+            WRITE_REFUSAL,
+            {
+                "id": uuid4(),
+                "tenant": context.unit.tenant_id,
+                "run": context.run_id,
+                "account": candidate.account_id,
+                "region": candidate.region_id,
+                "resource": target,
+                "waste_class": estimate.waste_class.value,
+                "reason": estimate.reason,
+                "days": candidate.observation_days,
+                "now": now,
+            },
+        )
 
     def _write(
         self,

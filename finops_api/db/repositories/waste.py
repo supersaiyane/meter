@@ -30,6 +30,40 @@ def _fetch(
     return repository.fetch(scope, statement)
 
 
+class RefusalRepository(ScopedRepository):
+    """What a sizing rule examined and declined to recommend. FEAT-062, ADR-0027."""
+
+    table: ClassVar[Table] = models.sizing_refusal
+    resource: ClassVar[str] = "sizing_refusal"
+
+    def latest(self, scope: Scope, limit: int = 200) -> Sequence[Row[tuple[Any, ...]]]:
+        """Every refusal this reader can see, the least observed first.
+
+        Ordered by observation days ascending rather than by anything resembling severity,
+        because a refusal has no money and ADR-0016 orders by money. The useful order is by how
+        much the judgement rests on: a rule that declined after four days of history is the one
+        a reader should question first, and one that declined after ninety is the one they can
+        rely on.
+        """
+        statement = (
+            self.scoped_select(scope)
+            .order_by(
+                self.table.c.observation_days.asc(),
+                self.table.c.resource_id,
+            )
+            .limit(limit)
+        )
+        return _fetch(self, scope, statement)
+
+    def counted(self, scope: Scope) -> int:
+        """How many resources were examined and cleared, for the sentence above the list."""
+        statement = self.scoped_select(scope).with_only_columns(
+            func.count(func.distinct(self.table.c.resource_id))
+        )
+        rows = _fetch(self, scope, statement)
+        return int(rows[0][0] or 0) if rows else 0
+
+
 class RecommendationRepository(ScopedRepository):
     """What is worth changing, ranked by money. FEAT-028."""
 

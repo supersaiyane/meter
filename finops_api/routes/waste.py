@@ -21,6 +21,7 @@ from finops_api.db.repositories.waste import (
     RealizedSavingRepository,
     RecommendationEventRepository,
     RecommendationRepository,
+    RefusalRepository,
     ScoreComponentRepository,
     ScoreRepository,
 )
@@ -35,6 +36,8 @@ from finops_api.schemas import (
     RecommendationEventOut,
     RecommendationOut,
     RecommendationsOut,
+    RefusalOut,
+    RefusalsOut,
     ScoreComponentOut,
     ScoreOut,
     ScoresOut,
@@ -254,6 +257,56 @@ def dismiss(
     return _transition(
         connection, scope, context, recommendation_id, Lifecycle.DISMISSED, reason=reason
     )
+
+
+@router.get("/waste/refusals", response_model=Envelope[RefusalsOut])
+def refusals(
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[RefusalsOut]:
+    """What a sizing rule examined and declined to recommend. FEAT-062, ADR-0027.
+
+    **Returns no saving and no severity, and that is the point.** A refusal has no money.
+    ADR-0016 orders every finding by money, so a zero here would rank as the least valuable
+    action rather than as the absence of one, which is the defect that put this in its own
+    table rather than in `recommendation`.
+
+    The question it answers is the one the competitive review said Meter could not answer: an
+    engineer whose service never appears in a waste list cannot tell whether it was examined
+    and found correctly sized or never examined at all. Those are different facts and the
+    product rendered them identically.
+
+    Nothing here is new arithmetic. `finops_query/waste.py` computed these all along and the
+    collector discarded them on one line.
+    """
+    repository = RefusalRepository(connection, context)
+    rows = repository.latest(scope)
+    found = RefusalsOut(
+        refusals=tuple(
+            RefusalOut(
+                resource_id=row.resource_id,
+                account_id=row.sub_account_id,
+                region_id=row.region_id,
+                waste_class=row.waste_class,
+                reason=row.reason,
+                observation_days=row.observation_days,
+            )
+            for row in rows
+        ),
+        examined=repository.counted(scope),
+    )
+    # The denominator is accounts, like the recommendations list, and it comes from the
+    # recommendation repository because that is where the estate wide count lives. A refusal
+    # list drawn from two accounts of five is two fifths of an answer.
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        visible=RecommendationRepository(connection, context).accounts_seen(scope),
+        rows=rows,
+    )
+    return Envelope(data=found, meta=meta)
 
 
 @router.get("/waste/savings", response_model=Envelope[RealizedSavingsOut])

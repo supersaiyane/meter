@@ -383,6 +383,41 @@ class RecommendationDetailOut(BaseModel):
     history: list[RecommendationEventOut]
 
 
+class RefusalOut(BaseModel):
+    """One resource a sizing rule examined and declined to recommend. FEAT-062.
+
+    There is deliberately no saving and no severity on this. A refusal has no money, ADR-0016
+    orders every finding by money, and a zero here would rank as the least valuable action
+    rather than as the absence of one.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    resource_id: str
+    account_id: str
+    region_id: str
+    #: Which rule declined, so a reader knows what question was asked.
+    waste_class: str
+    #: The sentence that decided it, whole. A shortened reason is one nobody can argue with.
+    reason: str
+    #: What the judgement rests on. A refusal after four days is worth questioning; one after
+    #: ninety is worth relying on, and a reader cannot tell them apart without this.
+    observation_days: int
+
+
+class RefusalsOut(BaseModel):
+    """What Meter looked at and decided not to recommend. FEAT-062, ADR-0027.
+
+    `examined` counts distinct resources rather than rows, because one resource declined by two
+    rules is one resource that was looked at.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    refusals: tuple[RefusalOut, ...]
+    examined: int
+
+
 class RecommendationsOut(BaseModel):
     """The list, and the one number that is about the list rather than in it."""
 
