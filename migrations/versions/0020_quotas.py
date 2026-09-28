@@ -139,6 +139,12 @@ _UP = (
         region_id TEXT,
         service_code TEXT NOT NULL,
         quota_code TEXT NOT NULL,
+        -- AWS returns the name on the request, and a tracking list of bare quota codes is
+        -- unreadable: `L-1216C47A` tells a person nothing about what they asked for. Stored
+        -- rather than joined to `quota_usage`, because a request survives for a quota that
+        -- was never collected, or that stopped being returned, and a join would lose exactly
+        -- the rows somebody is chasing.
+        quota_name TEXT NOT NULL,
         desired_value NUMERIC(20, 10) NOT NULL,
         status TEXT NOT NULL,
         requested_at TIMESTAMPTZ NOT NULL,

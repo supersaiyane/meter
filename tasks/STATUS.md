@@ -187,7 +187,7 @@ ISS-003.
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 | P3 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
-| P5 | 4 | 0 | 0 | 0 | 4 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
+| P5 | 5 | 0 | 0 | 0 | 3 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 0 | 0 | 0 | 0 | 12 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -343,6 +343,7 @@ ISS-003.
 | `TASK-P5-002` | Done, 2026-09-28 | the constraint that does the work |
 | `TASK-P5-003` | Done, 2026-09-28 | four sources and the gaps between them |
 | `TASK-P5-004` | Done, 2026-09-28 | the collector, and a fake with holes in it |
+| `TASK-P5-005` | Done, 2026-09-28 | the guard, then the routes |
 
 <!-- generated:task-status end -->
 

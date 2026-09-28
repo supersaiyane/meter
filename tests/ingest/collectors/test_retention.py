@@ -544,6 +544,11 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         "iac_state",
         # FEAT-060, added with the collector.
         "budgets",
+        # FEAT-033 and FEAT-034, added with the collector in TASK-P5-004. Twelve hourly, so it
+        # is due at `AT` like everything else here. Declared for the same reason as the four
+        # above: the list is exhaustive, so a collector with a schedule row and no declaration
+        # fails here rather than reaching a dispatcher nobody was watching.
+        "quotas",
     }
 
 

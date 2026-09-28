@@ -85,13 +85,14 @@ RETRACT_QUOTAS = text(
 #: place, because a second row would let a screen show one increase as two.
 WRITE_REQUEST = text(
     "INSERT INTO quota_request (request_pk, tenant_id, ingest_run_id, request_id, "
-    "sub_account_id, region_id, service_code, quota_code, desired_value, status, "
+    "sub_account_id, region_id, service_code, quota_code, quota_name, desired_value, status, "
     "requested_at, last_updated_at, submitted_by_meter, as_of, collected_at) "
-    "VALUES (:pk, :tenant, :run, :request, :account, :region, :service, :quota, :desired, "
-    ":status, :requested, :updated, FALSE, :as_of, :collected) "
+    "VALUES (:pk, :tenant, :run, :request, :account, :region, :service, :quota, :name, "
+    ":desired, :status, :requested, :updated, FALSE, :as_of, :collected) "
     "ON CONFLICT (tenant_id, request_id) DO UPDATE SET "
     "ingest_run_id = EXCLUDED.ingest_run_id, status = EXCLUDED.status, "
-    "desired_value = EXCLUDED.desired_value, last_updated_at = EXCLUDED.last_updated_at, "
+    "quota_name = EXCLUDED.quota_name, desired_value = EXCLUDED.desired_value, "
+    "last_updated_at = EXCLUDED.last_updated_at, "
     "as_of = EXCLUDED.as_of, collected_at = EXCLUDED.collected_at"
 )
 
@@ -216,6 +217,7 @@ class QuotaCollector:
                 "region": request.region_id,
                 "service": request.service_code,
                 "quota": request.quota_code,
+                "name": request.quota_name,
                 "desired": request.desired_value,
                 "status": request.status.value,
                 "requested": request.requested_at,

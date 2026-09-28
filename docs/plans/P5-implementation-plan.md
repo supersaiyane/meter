@@ -150,7 +150,7 @@ estate where several quotas cannot be measured.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-28 |
 | Implements | P5 spec section 8, constraint 3 |
 | Delivers | Part of FEAT-033 |
 | Depends on | TASK-P5-004 |

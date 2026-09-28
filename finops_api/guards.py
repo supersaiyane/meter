@@ -190,6 +190,25 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | None] = {
     # it can read and nothing about the ones it cannot. A global scope sees all of it,
     # which is what makes the operations view of the estate possible.
     "graph_coverage": ByAccount("sub_account_id"),
+    # P5, FEAT-033. A quota is per account per region, so a caller narrowed to two accounts
+    # reads two accounts' limits. Not PayerWide, unlike a budget or a commitment: a quota is
+    # not bought at the payer and shared out, it applies to the account it belongs to, and a
+    # reader granted one account may know what that account is allowed to run. In before the
+    # route, per the rule at the top of every plan since ISS-184.
+    #
+    # What a quota discloses is worth naming, because it is not money. A limit and a usage
+    # figure together say how much of a service an account is running and how close it is to
+    # not being able to run more, which is capacity and shape rather than spend. A narrowed
+    # reader given the payer's whole quota position would learn the scale of the organization
+    # by a different route than the bill.
+    "quota_usage": ByAccount("sub_account_id"),
+    # FEAT-034. A request names the account it was made for, and it discloses more than the
+    # quota does: that somebody asked for more, how much more, and whether they were refused.
+    "quota_request": ByAccount("sub_account_id"),
+    # The history has no account of its own and inherits the request's, which is the same
+    # reasoning `recommendation_event` uses. A denormalised account column here would be a
+    # second copy of a fact and therefore a second chance to disagree with the first.
+    "quota_request_history": Through("quota_request", "request_id", "request_id"),
     # folder_team_map, enforcement_action and remediation_change are absent on
     # purpose. Nobody has decided how they scope, and the fail closed branch
     # below is a better answer than a guess: the first route to read one gets a

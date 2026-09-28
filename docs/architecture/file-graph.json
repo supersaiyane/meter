@@ -339,6 +339,7 @@
     "finops_api/db/repositories/ingest.py",
     "finops_api/db/repositories/org.py",
     "finops_api/db/repositories/query.py",
+    "finops_api/db/repositories/quotas.py",
     "finops_api/db/repositories/topology.py",
     "finops_api/db/repositories/waste.py",
     "finops_api/deps.py",
@@ -360,6 +361,7 @@
     "finops_api/routes/org.py",
     "finops_api/routes/platform.py",
     "finops_api/routes/query.py",
+    "finops_api/routes/quotas.py",
     "finops_api/routes/waste.py",
     "finops_api/schemas.py",
     "finops_core/__init__.py",
@@ -579,6 +581,7 @@
     "tests/api/test_inventory_routes.py",
     "tests/api/test_lifecycle.py",
     "tests/api/test_query_routes.py",
+    "tests/api/test_quota_routes.py",
     "tests/api/test_routes.py",
     "tests/api/test_scope_enforcement.py",
     "tests/api/test_the_two_savings_figures.py",
@@ -4041,6 +4044,21 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/quotas.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/quotas.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/quotas.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/topology.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -4578,6 +4596,36 @@
     {
       "s": "finops_api/routes/query.py",
       "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/quotas.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/quotas.py",
+      "t": "finops_api/db/repositories/quotas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/quotas.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/quotas.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/quotas.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/quotas.py",
+      "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
     {
@@ -6562,6 +6610,16 @@
     },
     {
       "s": "tests/api/test_query_routes.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_quota_routes.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_quota_routes.py",
       "t": "finops_core/domain/tenant.py",
       "k": "python"
     },

@@ -1205,3 +1205,153 @@ class EntityOut(BaseModel):
     #: Which state it was read from, so a reader can find the file rather than being told
     #: something unnamed manages their resource.
     iac_state_reference: str | None
+
+
+class QuotaOut(BaseModel):
+    """One quota with a usage figure, and what measured it. FEAT-033.
+
+    Every quota in this shape has a `used` and a `source`. The ones that do not are
+    `UnmeasurableQuotaOut`, and the two are separate types rather than one type with
+    nullable fields, because a single list has to sort the nulls somewhere and wherever
+    they sort is a claim nobody has earned. P5 spec section 9.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    account_id: str
+    #: None where the quota is global rather than regional. A screen showing a placeholder
+    #: here would display one account level limit once per region and add them up.
+    region_id: str | None
+    service_code: str
+    quota_code: str
+    quota_name: str
+    #: None where the provider publishes no limit. Zero is a real and different value and
+    #: means the thing is switched off here.
+    limit: Decimal | None
+    used: Decimal
+    #: AWS_USAGE_METRIC, TRUSTED_ADVISOR or SERVICE_API. Never NONE in this shape: a
+    #: measured figure names what measured it, so a reader can weigh the two differently.
+    source: str
+    #: The fraction still free, or None where the limit is absent or zero. Not a percentage
+    #: and not rounded, so the interface decides how to render it and nothing is lost here.
+    headroom: Decimal | None
+    #: Whether an increase can be requested at all. FEAT-034 has to know before it drafts
+    #: one, because a hard limit cannot be raised and a draft against it wastes an afternoon.
+    is_adjustable: bool
+
+
+class UnmeasurableQuotaOut(BaseModel):
+    """One quota nothing measured, and why. FEAT-033, and the point of the sub project.
+
+    It carries no `used` field at all rather than a null one. A null would invite a screen
+    to render it as zero and a caller to treat it as a number, and the honest statement is
+    that the figure does not exist rather than that it is empty.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    account_id: str
+    region_id: str | None
+    service_code: str
+    quota_code: str
+    quota_name: str
+    limit: Decimal | None
+    #: The sentence saying which of the three sources declined and why. Required, and the
+    #: database refuses a row without one: a blank here teaches a reader the explanations in
+    #: this product are empty, and they stop reading the ones that are not.
+    reason: str
+    is_adjustable: bool
+
+
+class QuotasOut(BaseModel):
+    """Two lists, because one would have to sort the nulls. P5 spec section 9.
+
+    `measured_count` and `found_count` are stated rather than left to be counted off the
+    two lists, because both are truncated: a reader given eight of forty cannot derive the
+    ratio, and the ratio is the honest summary of how much of this problem AWS lets anybody
+    solve. They are also what the envelope's coverage figure is built from.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    measurable: tuple[QuotaOut, ...]
+    unmeasurable: tuple[UnmeasurableQuotaOut, ...]
+    measured_count: int
+    found_count: int
+
+
+class RequestTransitionOut(BaseModel):
+    """One status an increase request passed through, and when. FEAT-034."""
+
+    model_config = ConfigDict(frozen=True)
+
+    status: str
+    changed_at: datetime
+
+
+class QuotaRequestOut(BaseModel):
+    """An increase somebody asked AWS for. Read, never written. Spec section 6.
+
+    `submitted_by_meter` travels on the wire although it is always false, and that is the
+    point: the screen says Meter did not submit this, and a field it reads is better than a
+    sentence somebody could delete without failing a test.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    request_id: str
+    account_id: str
+    region_id: str | None
+    service_code: str
+    quota_code: str
+    quota_name: str
+    desired_value: Decimal
+    #: AWS's own vocabulary, all seven values. DENIED and NOT_APPROVED are both here and are
+    #: kept apart, because collapsing two of somebody else's values into one of ours makes
+    #: the vocabulary a guess.
+    status: str
+    #: Whether anything is still going to happen to it. INVALID_REQUEST is not open: the
+    #: action there is to ask again, which is a different thing to tell somebody than to wait.
+    is_open: bool
+    requested_at: datetime
+    last_updated_at: datetime
+    submitted_by_meter: bool = False
+
+
+class QuotaRequestsOut(BaseModel):
+    """Outstanding increase requests and what became of them. FEAT-034.
+
+    Settled requests are included, refusals especially. A list showing only what is open
+    answers the question it exists for with silence: somebody waiting on an increase wants
+    to know it was denied three weeks ago more than they want a shorter list.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    requests: tuple[QuotaRequestOut, ...]
+    open_count: int
+
+
+class QuotaDetailOut(BaseModel):
+    """One quota, everywhere it applies, with every request against it. FEAT-033, FEAT-034.
+
+    `measurable` and `unmeasurable` are both lists here, for one quota code, and that is not
+    redundancy. A quota code is per region, so the same limit can be measured in one region
+    and unmeasured in another: one field would have to choose, and choosing means answering
+    a question about a region nobody named.
+
+    `history` is keyed by request id rather than being a field on each request, because a
+    request with no recorded transitions is a real state, and an empty tuple hanging off
+    every request reads as a history nobody found rather than one nobody has yet.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    service_code: str
+    quota_code: str
+    quota_name: str
+    is_adjustable: bool
+    measurable: tuple[QuotaOut, ...]
+    unmeasurable: tuple[UnmeasurableQuotaOut, ...]
+    requests: tuple[QuotaRequestOut, ...]
+    history: dict[str, tuple[RequestTransitionOut, ...]]

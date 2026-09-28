@@ -45,9 +45,9 @@ INSERT_QUOTA = text(
 
 INSERT_REQUEST = text(
     "INSERT INTO quota_request (request_pk, tenant_id, ingest_run_id, request_id, "
-    "sub_account_id, region_id, service_code, quota_code, desired_value, status, "
+    "sub_account_id, region_id, service_code, quota_code, quota_name, desired_value, status, "
     "requested_at, last_updated_at, submitted_by_meter, as_of, collected_at) "
-    "VALUES (:pk, :t, :run, :request, :account, :region, :service, :quota, :desired, "
+    "VALUES (:pk, :t, :run, :request, :account, :region, :service, :quota, :name, :desired, "
     ":status, :requested, :updated, :submitted, :as_of, :collected)"
 )
 
@@ -103,6 +103,7 @@ def a_request(connection: Connection, tenant: UUID, run: UUID, **overrides: obje
         "region": REGION,
         "service": "ec2",
         "quota": "L-1216C47A",
+        "name": "Running On-Demand Standard instances",
         "desired": 500,
         "status": "PENDING",
         "requested": NOW - timedelta(days=3),

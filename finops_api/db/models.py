@@ -1227,6 +1227,10 @@ quota_request = Table(
     Column("region_id", Text),
     Column("service_code", Text, nullable=False),
     Column("quota_code", Text, nullable=False),
+    #: Stored rather than joined to `quota_usage`. A request outlives the quota it names, so a
+    #: join would drop exactly the rows somebody is chasing, and a list of bare codes is
+    #: unreadable: `L-1216C47A` says nothing about what was asked for.
+    Column("quota_name", Text, nullable=False),
     Column("desired_value", Numeric(20, 10), nullable=False),
     Column("status", Text, nullable=False),
     Column("requested_at", DateTime(timezone=True), nullable=False),
