@@ -2,7 +2,9 @@
 name = "meter"
 version = "0.1.0"
 description = "FinOps platform for AWS, built so other providers are connectors rather than rewrites"
-requires-python = ">=3.12"
+# 3.13 rather than 3.12, chosen by measurement at TASK-P0-029: the 3.12 base
+# image carries 3 High findings and 3.13 carries none. See ADR-0018.
+requires-python = ">=3.13"
 
 dependencies = [
     "fastapi>=0.115",
@@ -45,7 +47,7 @@ packages = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py312"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "ARG", "PTH", "RUF"]
@@ -59,7 +61,7 @@ markers = [
 ]
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.13"
 strict = true
 warn_unreachable = true
 

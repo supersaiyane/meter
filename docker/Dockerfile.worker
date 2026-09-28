@@ -32,11 +32,12 @@
 # --custom-platform to Kaniko for the same reason.
 #
 
-ARG PYTHON_VERSION=3.12
+ARG PYTHON_VERSION=3.13
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
-FROM --platform=${BUILDPLATFORM} reg.mini.dev/python:${PYTHON_VERSION}-dev AS builder
+# reg.mini.dev/python:3.13-dev, pinned per ADR-0010. See docker/base-images.lock
+FROM --platform=${BUILDPLATFORM} reg.mini.dev/python@sha256:4253ed59c60f7c926330ee548b5c014b5ad7551f60d5feaa10a4a98f6d951a15 AS builder
 
 ENV PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -61,7 +62,8 @@ COPY migrations/       ./migrations/
 
 RUN /opt/venv/bin/pip install --no-compile --no-deps .
 
-FROM --platform=${TARGETPLATFORM} reg.mini.dev/python:${PYTHON_VERSION}
+# reg.mini.dev/python:3.13, pinned per ADR-0010
+FROM --platform=${TARGETPLATFORM} reg.mini.dev/python@sha256:06b604b79e52ed1e7c2bd73b007c6e4e2ceb5504030aa6c34b00aa9c7a92f41d
 
 ARG TARGETPLATFORM
 

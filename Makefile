@@ -4,7 +4,11 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
-PY            ?= python3
+# Matches the runtime image, reg.mini.dev/python:3.13. A venv on a newer
+# interpreter passes tests locally that can fail in the container, and the
+# difference is invisible until CI. Verified present on this machine at
+# TASK-P0-029.
+PY            ?= python3.13
 VENV          ?= .venv
 BIN           := $(VENV)/bin
 COMPOSE       ?= docker compose
@@ -20,7 +24,13 @@ ECR_REGISTRY  ?= $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 # Override only if you genuinely need a different target.
 PLATFORM      ?= linux/amd64
 
-PY_SRC := finops_core finops_providers finops_ingest finops_api tests
+PY_SRC := finops_core finops_providers finops_ingest finops_api finops_mcp tests
+
+# The documentation and policy scripts need pyyaml, which a system interpreter
+# will not have and PEP 668 will not let us add. So they run from the venv when
+# it exists. Before `make setup`, they fall back and fail with a clear message
+# rather than a ModuleNotFoundError.
+DOCPY := $(shell test -x $(BIN)/python && echo $(BIN)/python || echo $(PY))
 
 .PHONY: help
 help: ## Show this help
@@ -75,25 +85,26 @@ check-writing: ## Fail if an em dash or en dash appears anywhere. See CLAUDE.md
 
 .PHONY: check-docs
 check-docs: ## Fail if any generated document is out of step with the registry
-	@$(PY) scripts/docs/sync.py --check
-	@$(PY) scripts/docs/check_index.py
-	@$(PY) scripts/docs/check_feature_docs.py
-	@$(PY) scripts/docs/build_file_graph.py --check
-	@$(PY) scripts/docs/build_context_index.py --check
-	@$(PY) scripts/ci/check_flags.py
-	@$(PY) scripts/ci/check_hardcoded.py
+	@$(DOCPY) scripts/docs/sync.py --check
+	@$(DOCPY) scripts/docs/check_index.py
+	@$(DOCPY) scripts/docs/check_feature_docs.py
+	@$(DOCPY) scripts/docs/build_file_graph.py --check
+	@$(DOCPY) scripts/docs/build_context_index.py --check
+	@$(DOCPY) scripts/ci/check_flags.py
+	@$(DOCPY) scripts/ci/check_hardcoded.py
+	@$(DOCPY) scripts/ci/check_forbidden_imports.py
 
 .PHONY: doc-sync
 doc-sync: ## Regenerate every derived document from docs/registry.yaml and the source
-	@$(PY) scripts/docs/sync.py
-	@$(PY) scripts/docs/build_file_graph.py
-	@$(PY) scripts/docs/build_context_index.py
+	@$(DOCPY) scripts/docs/sync.py
+	@$(DOCPY) scripts/docs/build_file_graph.py
+	@$(DOCPY) scripts/docs/build_context_index.py
 	@echo "Derived documents regenerated. Review the diff before committing."
 
 .PHONY: session-end
 session-end: doc-sync ## Run at the end of every work session
-	@$(PY) scripts/docs/check_index.py
-	@$(PY) scripts/docs/check_feature_docs.py
+	@$(DOCPY) scripts/docs/check_index.py
+	@$(DOCPY) scripts/docs/check_feature_docs.py
 	@$(MAKE) check-writing
 	@echo
 	@echo "Remaining, by hand:"
@@ -104,12 +115,12 @@ session-end: doc-sync ## Run at the end of every work session
 
 .PHONY: graph
 graph: ## Rebuild the file dependency graph and check the layering
-	@$(PY) scripts/docs/build_file_graph.py
+	@$(DOCPY) scripts/docs/build_file_graph.py
 	@echo "docs/architecture/file-graph.md and file-graph.json"
 
 .PHONY: review
 review: ## Automated code review of the working tree. See ADR-0011
-	@$(PY) scripts/ci/code_review.py --output security/reviews
+	@$(DOCPY) scripts/ci/code_review.py --output security/reviews
 
 # ---------------------------------------------------------------- tests
 
@@ -266,7 +277,7 @@ security-scan-deployed: ## Scan a running digest. What the nightly job uses
 
 .PHONY: security-report
 security-report: ## Rebuild the HTML report from the latest scan
-	@$(PY) scripts/security/report.py \
+	@$(DOCPY) scripts/security/report.py \
 	  --input security/reports/latest \
 	  --allowlist security/policy/allowlist.yaml \
 	  --output security/reports/latest/index.html \
@@ -276,11 +287,11 @@ security-report: ## Rebuild the HTML report from the latest scan
 
 .PHONY: security-fix
 security-fix: ## Apply available fixes on a branch, run tests, re scan. Never merges
-	@$(PY) scripts/security/autofix.py --summary security/reports/latest/summary.json --apply
+	@$(DOCPY) scripts/security/autofix.py --summary security/reports/latest/summary.json --apply
 
 .PHONY: security-fix-dry
 security-fix-dry: ## Show what security-fix would change
-	@$(PY) scripts/security/autofix.py --summary security/reports/latest/summary.json
+	@$(DOCPY) scripts/security/autofix.py --summary security/reports/latest/summary.json
 
 .PHONY: dep-check
 dep-check: ## Admission gate before adding a dependency. Usage: make dep-check pkg=name
@@ -298,6 +309,14 @@ sbom: ## Generate an SBOM for each image
 	    > "security/sbom/$$svc-$(IMAGE_TAG).spdx.json"; \
 	  echo "security/sbom/$$svc-$(IMAGE_TAG).spdx.json"; \
 	done
+
+.PHONY: security-tools
+base-images: ## Re resolve the Minimus base image digests and rewrite the lock
+	@$(DOCPY) scripts/ci/refresh_base_images.py
+
+.PHONY: base-images-check
+base-images-check: ## Fail if a pinned base image digest has drifted upstream
+	@$(DOCPY) scripts/ci/refresh_base_images.py --check
 
 .PHONY: security-tools
 security-tools: ## Install the scanners. Runs as part of make setup

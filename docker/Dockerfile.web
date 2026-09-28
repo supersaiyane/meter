@@ -30,9 +30,10 @@
 ARG NODE_VERSION=22
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
-ARG NGINX_VERSION=1.27
+ARG NGINX_VERSION=1.30
 
-FROM --platform=${BUILDPLATFORM} reg.mini.dev/node:${NODE_VERSION}-dev AS builder
+# reg.mini.dev/node:22-dev, pinned per ADR-0010. See docker/base-images.lock
+FROM --platform=${BUILDPLATFORM} reg.mini.dev/node@sha256:bec08ecc878a1735f8b0ac2e49ea31c4b8a5f1b1bca9fd226d17991d0626bc3e AS builder
 
 WORKDIR /build
 
@@ -42,7 +43,8 @@ RUN npm ci --no-audit --no-fund
 COPY finops-web/ ./
 RUN npm run build
 
-FROM --platform=${TARGETPLATFORM} reg.mini.dev/nginx:${NGINX_VERSION}
+# reg.mini.dev/nginx:1.30, pinned per ADR-0010
+FROM --platform=${TARGETPLATFORM} reg.mini.dev/nginx@sha256:5ccdbdfe81fce440c26275b21448e70997c819633aefc04fe1fbf7516b81b81c
 
 ARG TARGETPLATFORM
 

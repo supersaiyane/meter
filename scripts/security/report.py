@@ -215,6 +215,20 @@ def dedupe(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
     )
 
 
+def load_accepted(path: Path) -> dict[tuple[str, str], dict[str, Any]]:
+    """Unfixable findings accepted with a reachability argument. See ADR-0018.
+
+    Distinct from the allowlist. The allowlist covers findings that HAVE a fix
+    we are temporarily not taking, and every entry expires. This covers
+    findings with no published fix, where no rebuild makes them go away, and
+    each carries an argument that the vulnerable code path does not exist here.
+    """
+    if not path.exists():
+        return {}
+    data = yaml.safe_load(path.read_text()) or {}
+    return {(e.get("id"), e.get("package")): e for e in data.get("accepted") or []}
+
+
 def load_allowlist(path: Path, today: date) -> dict[str, dict[str, Any]]:
     if not path.exists():
         return {}
@@ -307,7 +321,9 @@ def render_html(
     allowed: list[dict[str, Any]],
     generated: str,
     label: str,
+    unfixable: list[dict[str, Any]] | None = None,
 ) -> str:
+    unfixable = unfixable or []
     counts = Counter(f["severity"] for f in findings)
     passing = not findings
     out = [HTML_HEAD]
@@ -321,7 +337,7 @@ def render_html(
             "PASS. Zero unresolved findings."
             if passing
             else f"FAIL. {len(findings)} unresolved finding(s). "
-            "The policy is zero at any severity, see ADR-0010."
+            "The policy is zero findings that have a published fix, see ADR-0018."
         )
         + "</div>"
     )
@@ -334,7 +350,9 @@ def render_html(
         )
     out.append(
         f'<div class="card"><div class="n">{len(allowed)}</div>'
-        f'<div class="l">Allowlisted</div></div></div>'
+        f'<div class="l">Allowlisted</div></div>'
+        f'<div class="card"><div class="n">{len(unfixable)}</div>'
+        f'<div class="l">Unfixable, accepted</div></div></div>'
     )
 
     out.append("<h2>Unresolved findings and their fixes</h2>")
@@ -387,9 +405,33 @@ def render_html(
             )
         out.append("</tbody></table></div>")
 
+    out.append("<h2>Accepted as unfixable, with a reachability argument</h2>")
+    if not unfixable:
+        out.append('<p class="empty">None.</p>')
+    else:
+        out.append('<div class="scroll"><table><thead><tr>')
+        for header in ("Advisory", "Package", "Owner", "Review",
+                       "Why it is not reachable"):
+            out.append(f"<th>{header}</th>")
+        out.append("</tr></thead><tbody>")
+        for f in unfixable:
+            e = f["accepted"]
+            out.append(
+                "<tr>"
+                f'<td>{html.escape(f["id"])}</td>'
+                f'<td><code>{html.escape(f["package"])}</code></td>'
+                f'<td>{html.escape(str(e.get("owner", "")))}</td>'
+                f'<td>{html.escape(str(e.get("review", "")))}</td>'
+                f'<td>{html.escape(str(e.get("reachability", "")))}</td>'
+                "</tr>"
+            )
+        out.append("</tbody></table></div>")
+
     out.append(
-        "<footer>Policy is zero vulnerabilities at any severity. An accepted "
-        "finding carries a named owner and an expiry no more than 90 days out. "
+        "<footer>Policy is zero findings that have a published fix. An accepted "
+        "finding with a fix carries a named owner and an expiry no more than 90 "
+        "days out. A finding with no published fix carries a reachability "
+        "argument instead, reviewed rather than expired. "
         "A posture is only as current as its last scan against the running "
         "digest, not the last build. See <code>docs/05-SECURITY.md</code> and "
         "<code>ADR-0010</code>.</footer></div>"
@@ -398,10 +440,13 @@ def render_html(
 
 
 def render_posture(
-    findings: list[dict[str, Any]], allowed: list[dict[str, Any]], generated: str, label: str
+    findings: list[dict[str, Any]], allowed: list[dict[str, Any]], generated: str,
+    label: str, unfixable: list[dict[str, Any]] | None = None
 ) -> str:
+    unfixable = unfixable or []
     counts = Counter(f["severity"] for f in findings)
-    status = "**ZERO VULNERABILITIES**" if not findings else f"**{len(findings)} UNRESOLVED**"
+    status = ("**ZERO FIXABLE FINDINGS**" if not findings
+              else f"**{len(findings)} UNRESOLVED**")
     lines = [
         "# Security posture",
         "",
@@ -417,6 +462,7 @@ def render_posture(
     lines += [f"| {sev} | {counts.get(sev, 0)} |" for sev in SEVERITY_ORDER]
     lines += [
         f"| Allowlisted | {len(allowed)} |",
+        f"| Unfixable, accepted under ADR-0018 | {len(unfixable)} |",
         "",
         "## Allowlist",
         "",
@@ -440,6 +486,10 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--allowlist", type=Path, required=True)
+    parser.add_argument(
+        "--accepted", type=Path,
+        default=Path(__file__).resolve().parent.parent.parent
+        / "security" / "policy" / "accepted.yaml")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--summary", type=Path)
     parser.add_argument("--posture", type=Path)
@@ -456,38 +506,61 @@ def main() -> int:
     findings = dedupe(raw)
 
     allowlist = load_allowlist(args.allowlist, date.today())
-    unresolved, allowed = [], []
+    accepted = load_accepted(args.accepted)
+
+    # ADR-0018. The threshold is zero findings that have a published fix. A
+    # finding with no fix is not a build failure, but it does need an
+    # acceptance record carrying a reachability argument, or it fails too.
+    unresolved, allowed, unfixable = [], [], []
     for finding in findings:
         entry = allowlist.get((finding["id"], finding["package"]))
+        accept = accepted.get((finding["id"], finding["package"]))
+        has_fix = bool(finding.get("fixed_in"))
+
         if entry:
             finding["allowlist"] = entry
             allowed.append(finding)
+        elif not has_fix and accept:
+            finding["accepted"] = accept
+            unfixable.append(finding)
         else:
-            finding["fix_html"] = html.escape(suggest_fix(finding)).replace(
-                "`", ""
-            )
+            finding["fix_html"] = html.escape(suggest_fix(finding)).replace("`", "")
+            if not has_fix:
+                finding["fix_html"] = (
+                    "No published fix and no acceptance record. Add one to "
+                    "security/policy/accepted.yaml with a reachability argument, "
+                    "or change the version. See ADR-0018."
+                )
             unresolved.append(finding)
 
     if args.gate_only:
+        if unfixable:
+            print(f"{len(unfixable)} unfixable finding(s) accepted under ADR-0018")
         if unresolved:
             print(f"FAIL: {len(unresolved)} finding(s) in {args.label}\n")
             for f in unresolved[:25]:
                 fixed = f["fixed_in"] or "no fix published"
                 print(f'  [{f["severity"]:<10}] {f["id"]:<20} {f["package"]} '
                       f'{f["installed"]} -> {fixed}')
-            print("\nPolicy is zero. Replace the dependency, or add a time boxed")
-            print("allowlist entry with an owner in security/policy/allowlist.yaml.")
+            print("\nPolicy is zero findings that have a published fix, ADR-0018.")
+            print("  With a fix:    take the fix, or add a time boxed allowlist")
+            print("                 entry with an owner in policy/allowlist.yaml.")
+            print("  Without a fix: change the version, or add an acceptance record")
+            print("                 with a reachability argument in policy/accepted.yaml.")
             return 1
-        print(f"PASS: {args.label} has zero vulnerabilities in its transitive tree.")
+        print(f"PASS: {args.label} has zero fixable findings"
+              + (f", {len(unfixable)} accepted as unfixable." if unfixable else "."))
         return 0
 
     if args.output:
         args.output.write_text(
-            render_html(unresolved, allowed, generated, args.label), encoding="utf-8"
+            render_html(unresolved, allowed, generated, args.label, unfixable),
+            encoding="utf-8"
         )
     if args.posture:
         args.posture.write_text(
-            render_posture(unresolved, allowed, generated, args.label), encoding="utf-8"
+            render_posture(unresolved, allowed, generated, args.label, unfixable),
+            encoding="utf-8"
         )
     if args.summary:
         args.summary.write_text(
@@ -497,6 +570,7 @@ def main() -> int:
                     "label": args.label,
                     "unresolved_total": len(unresolved),
                     "allowlisted_total": len(allowed),
+                    "unfixable_accepted_total": len(unfixable),
                     "by_severity": dict(Counter(f["severity"] for f in unresolved)),
                     "findings": unresolved,
                 },
@@ -504,7 +578,8 @@ def main() -> int:
                 default=str,
             )
         )
-    print(f"{len(unresolved)} unresolved, {len(allowed)} allowlisted")
+    print(f"{len(unresolved)} unresolved, {len(allowed)} allowlisted, "
+          f"{len(unfixable)} accepted as unfixable")
     return 0
 
 

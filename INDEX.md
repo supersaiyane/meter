@@ -35,6 +35,8 @@ block is caught by `make check-docs`. See
 | Every feature flag, its owner and its expiry | [docs/feature-flags.yaml](docs/feature-flags.yaml) |
 | How code reaches production | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | Security policy, scanners, gates | [docs/05-SECURITY.md](docs/05-SECURITY.md) |
+| Pinned base images and their digests | `docker/base-images.lock` |
+| Findings accepted as unfixable, and why | `security/policy/accepted.yaml` |
 | Who attacks this, and what stops them | [docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md) |
 | What data we hold, retention, erasure | [docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md) |
 | SLOs, alerts, and what pages someone | [docs/10-OBSERVABILITY.md](docs/10-OBSERVABILITY.md) |
@@ -174,7 +176,7 @@ block is caught by `make check-docs`. See
 | ADR-0007 | The language model never computes a number | Accepted | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
 | ADR-0008 | Identity adapter deferred, isolated behind two ports | Accepted | [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md) |
 | ADR-0009 | An MCP server alongside the HTTP API, not instead of it | Accepted | [ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md) |
-| ADR-0010 | Minimus base images and a continuously maintained zero CVE posture | Accepted | [ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md) |
+| ADR-0010 | Minimus base images and a continuously maintained zero CVE posture | Accepted, threshold amended by ADR-0018 | [ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md) |
 | ADR-0011 | A decision ladder before any new code, and token economy | Superseded by ADR-0013 | [ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md) |
 | ADR-0012 | Collection cadence is data, not code, and is bounded by the source | Accepted | [ADR-0012](docs/adr/ADR-0012-collector-cadence-registry.md) |
 | ADR-0013 | Seven rung ladder with a Rung Disqualification Record and a security sign off gate | Accepted | [ADR-0013](docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md) |
@@ -182,6 +184,7 @@ block is caught by `make check-docs`. See
 | ADR-0015 | Deterministic forecasting is permitted where a language model number is not | Accepted | [ADR-0015](docs/adr/ADR-0015-deterministic-forecasting-is-permitted.md) |
 | ADR-0016 | Severity on a cost finding is derived from the money, never chosen | Accepted | [ADR-0016](docs/adr/ADR-0016-dollar-based-severity.md) |
 | ADR-0017 | Nothing is hardcoded, and every feature flag has an owner and an expiry | Accepted | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
+| ADR-0018 | The threshold is zero fixable findings, not zero findings | Accepted | [ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md) |
 
 Index of records: [docs/adr/README.md](docs/adr/README.md)
 
@@ -224,6 +227,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0026 | 2026-08-23 | Design | Configuration and feature flags: one typed settings object, a documented .env.example, a flag register with owners and expiries, and two checks that fail the build. Regions confirmed as Ireland and London. Management account taken off the critical path via LocalStack | `5a78798` | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
 | CHG-0027 | 2026-08-23 | Design | P2 query cost governance specification written. All three Grafana surfaces in scope, three enforcement levels and three write levels behind per tenant flags, both defaulting safe | `ee3ea68` | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
 | CHG-0028 | 2026-08-23 | Design | P2 implementation plan written, 22 tasks in ten waves. The prototype is pinned by golden files before anything touches it | `80a0ac3` | [P2 plan](docs/plans/P2-implementation-plan.md) |
+| CHG-0029 | 2026-08-23 | Correction | TASK-P0-029 complete. Base images verified by measurement, moved to python 3.13 and nginx 1.30, digests pinned. The zero vulnerabilities policy corrected to zero fixable findings, because no Python image can meet the original | `pending` | [ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md) |
 
 <!-- generated:changes end -->
 
@@ -234,7 +238,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**60 FIXED, 33 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**64 FIXED, 34 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -245,6 +249,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-033 | CRITICAL | The official Python base image ships with more than 400 known vulnerabilities before any application code is added | FIXED | [ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md) |
 | ISS-034 | CRITICAL | Scanning only at build time reports zero forever while the deployed image degrades silently | FIXED | [docs/05-SECURITY.md](docs/05-SECURITY.md), nightly posture scan |
 | ISS-055 | CRITICAL | No threat model exists for a platform holding organization wide financial data and cross account credentials in a financial services environment | FIXED | [A001-F11](audits/AUDIT-001-2026-08-23-full-project.md) -> [docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md) |
+| ISS-097 | CRITICAL | The stated policy of zero vulnerabilities at any severity is unachievable: every Python base image carries unfixable CPython findings, so the rule would have been routed around rather than met | FIXED | [ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md). Threshold is now zero findings that have a published fix |
 | ISS-005 | HIGH | A bespoke cost schema forces a migration per cloud provider | FIXED | [ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md) |
 | ISS-006 | HIGH | Serving dashboards from Athena recreates the runaway query cost problem inside Meter | FIXED | [ADR-0003](docs/adr/ADR-0003-postgres-only-serving-layer.md) |
 | ISS-007 | HIGH | Unblended per resource cost is meaningless with commitments in play | FIXED | [architecture](docs/02-ARCHITECTURE.md) |
@@ -274,6 +279,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-090 | HIGH | A self hosted Grafana in a private subnet is not reachable from the hub VPC, so its queries cannot be scanned | OPEN | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 12. Instance marked unreachable and excluded with a stated note. Agent based collection is a later sub project |
 | ISS-092 | HIGH | A deny action can cut an engineer off from Logs Insights during an incident, when it is exactly the tool they need | OPEN | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 12. Auto expiry, a never deny list, a revoke route and an enforcement screen |
 | ISS-093 | HIGH | The modelled query cost has no published accuracy, so every figure is a projection presented alongside measured ones | OPEN | FEAT-018. Until it lands, every modelled figure carries a visible caveat |
+| ISS-098 | HIGH | The chosen base image versions were picked by habit, not measurement. python 3.12 carried 3 High findings and nginx 1.27 carried 93 including 6 Critical | FIXED | Moved to python 3.13 and nginx 1.30, both measured at TASK-P0-029. node:22-dev was already clean |
 | ISS-011 | MEDIUM | A model producing sizing numbers destroys trust on the first hallucination | FIXED | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
 | ISS-012 | MEDIUM | Organization wide AWS Config recording is a five figure monthly cost | OPEN | [tasks/ISSUES.md](tasks/ISSUES.md), resolved in P4 |
 | ISS-013 | MEDIUM | Hundreds of describe loops for inventory is a year of work | FIXED | [roadmap](docs/01-ROADMAP.md) P4 |
@@ -322,6 +328,8 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-091 | MEDIUM | Scanning Grafana Cloud puts a third party API key inside Meter, which the threat model does not currently cover | OPEN | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 12. Needs a new row in threat model boundary 5 |
 | ISS-094 | MEDIUM | A change to the Grafana dashboard JSON shape could cause silent under reporting | OPEN | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 6. SchemaDrift is loud by design and an unrecognised panel raises rather than being skipped |
 | ISS-095 | MEDIUM | Nobody owns the never deny list, and enabling deny without one risks cutting off incident response | OPEN | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 13. Blocks enabling deny, not building it |
+| ISS-099 | MEDIUM | Base image tags were floating, so a build was not reproducible and a tag could be repointed after it was scanned | FIXED | `docker/base-images.lock` with resolved digests, `make base-images-check` fails on drift |
+| ISS-100 | MEDIUM | Three unfixable CPython findings are accepted on a reachability argument that depends on nobody importing stringprep, poplib or urllib.request | OPEN | Enforced by `scripts/ci/check_forbidden_imports.py`, which fails the build. Review 2026-11-21 |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
@@ -333,6 +341,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-072 | LOW | No performance budget for ingestion throughput, full organization sweep time, or API latency under load | FIXED | [A001-F18](audits/AUDIT-001-2026-08-23-full-project.md) -> [P0 spec section 11b](docs/specs/2026-08-23-p0-foundation-design.md) |
 | ISS-081 | LOW | The pxpipe proxy currently compresses nothing, every request skipped as unsupported_model, so it provides accounting rather than savings. Its log is also machine global rather than scoped to this project | OPEN | Documented in [README.md](README.md). Re check with make stats after a session on the current model |
 | ISS-096 | LOW | Unknown whether any dashboards are managed as code today, which determines the value of the CI policy gate | OPEN | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 13. Affects FEAT-014 scope |
+| ISS-101 | LOW | The doc and policy scripts claimed to run before make setup, but pyyaml is absent from a system interpreter and PEP 668 blocks adding it | FIXED | They now run from the project venv, and `scripts/README.md` states this rather than the previous claim |
 
 <!-- generated:issues end -->
 

@@ -9,14 +9,40 @@ because everything else follows from it.
 
 ## The rule
 
-**Zero vulnerabilities, at any severity, at all times.**
+**Zero findings that have a published fix.** Amended 2026-08-23 by ADR-0018,
+after TASK-P0-029 measured the base images and found the previous wording,
+zero at any severity, could not be met by any Python image that exists.
 
-Not zero critical. Not zero high. Zero.
+Two registers, and the difference between them matters.
 
-A finding that genuinely cannot be fixed goes in
-`security/policy/allowlist.yaml` with a named owner, a reason, and an expiry no
-more than 90 days out. It never goes in by lowering a threshold, because a
-lowered threshold is invisible and an expiring allowlist entry is not.
+| Register | For | Expires |
+| --- | --- | --- |
+| `policy/allowlist.yaml` | A finding that **has** a fix we are temporarily not taking | Yes, 90 days maximum |
+| `policy/accepted.yaml` | A finding with **no published fix**, where no rebuild helps | No. It carries a review date instead |
+
+An acceptance requires a **reachability argument**: why the vulnerable code
+path does not exist in Meter. "We accept the risk" is not one. Where the
+argument can be enforced it must be, and
+`scripts/ci/check_forbidden_imports.py` fails the build if anyone imports a
+module an acceptance depends on not importing.
+
+A threshold is never lowered. A lowered threshold is invisible, and both an
+expiring allowlist entry and a reviewable acceptance record are not.
+
+### What measurement showed, and why version choice matters more than policy
+
+| Image | Total | Critical | High | Fixable |
+| --- | --- | --- | --- | --- |
+| `python:3.12` | 13 | 0 | 3 | 0 |
+| **`python:3.13`** | **3** | 0 | **0** | 0 |
+| **`node:22-dev`** | **0** | 0 | 0 | 0 |
+| `nginx:1.27` | 93 | 6 | 26 | 76 |
+| **`nginx:1.30`** | **0** | 0 | 0 | 0 |
+| official `python:3.12-slim` | 204 | 7 | 26 | 80 |
+
+Two moves nobody had suggested, found only by scanning, removed 3 High and 93
+findings. **Choose the version by measurement.** No policy wording achieves
+that, and it achieved more here than any wording would have.
 
 ## The point that shapes every control below
 

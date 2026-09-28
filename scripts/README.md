@@ -26,12 +26,16 @@ executable lives outside this directory.
 | `ci/code_review.py` | `make review` | Deterministic checks first, then the review checklist |
 | `ci/check_flags.py` | `make check-docs` | Fails on an expired feature flag, or one missing an owner, reason or removal plan |
 | `ci/check_hardcoded.py` | `make check-docs` | Fails on a region, account id, ARN, URL, role name or bare threshold written into application code |
+| `ci/check_forbidden_imports.py` | `make check-docs` | Enforces the reachability claims in `security/policy/accepted.yaml`. Importing a module an acceptance depends on not importing fails the build |
+| `ci/refresh_base_images.py` | `make base-images` | Re resolves the Minimus tags to digests and rewrites `docker/base-images.lock` |
 | `deploy/run_migration_task.sh` | GitLab pipeline | Runs migrations as a one off ECS task before rollout |
 
 ## Conventions
 
-- Python scripts use only the standard library plus `pyyaml`, so they run
-  before `make setup` has been done.
+- Python scripts use only the standard library plus `pyyaml`. `pyyaml` is not
+  in a system interpreter and PEP 668 prevents adding it there, so these run
+  from the project virtualenv. `make setup` creates it. The Makefile picks the
+  venv interpreter when it exists and falls back otherwise.
 - Every script exits non zero on failure. A check that only warns is ignored
   within two weeks.
 - Every script explains, in its own docstring, the reasoning behind any choice

@@ -1,0 +1,64 @@
+# Unfixable findings, accepted with a reachability argument. See ADR-0018.
+#
+# This is NOT the allowlist. The allowlist, in allowlist.yaml, is for findings
+# that HAVE a fix which we are temporarily not taking, and every entry expires
+# within 90 days.
+#
+# This file is for findings with no published fix, where no rebuild and no
+# version bump makes them go away. Six fields, all mandatory:
+#
+#   id            the advisory
+#   package       the affected package
+#   target        which image or component
+#   unfixable     must be true, and is verified against the scanner output
+#   reachability  WHY the vulnerable code path does not exist in Meter.
+#                 "We accept the risk" is not a reachability argument.
+#   owner         a person
+#   added         when accepted
+#   review        when to re-examine. NOT an expiry: an unfixable finding does
+#                 not become fixable on a date. The review asks one question,
+#                 has a fix been published yet
+#
+# Where a reachability claim can be enforced, it must be. All three entries
+# below are stdlib modules Meter does not import, and
+# scripts/ci/check_forbidden_imports.py fails the build if anyone imports one.
+# That turns "we do not use it" from a claim into a fact.
+
+accepted:
+  - id: CVE-2026-17084
+    package: python-3.13
+    target: base-image
+    unfixable: true
+    reachability: >
+      Affects the stringprep module, which processes RFC 3454 tables B.2 and
+      B.3. Meter never imports stringprep. It is reachable in CPython only via
+      encodings.idna, and Meter performs no internationalised domain name
+      handling. Enforced by check_forbidden_imports.py.
+    owner: PLACEHOLDER-security
+    added: 2026-08-23
+    review: 2026-11-21
+
+  - id: CVE-2026-15806
+    package: python-3.13
+    target: base-image
+    unfixable: true
+    reachability: >
+      Affects urllib.request.HTTPPasswordMgr and its subclasses. Meter never
+      constructs an HTTPPasswordMgr and never uses urllib basic auth handling.
+      Outbound HTTP uses httpx with bearer tokens. Enforced by
+      check_forbidden_imports.py, which forbids importing urllib.request.
+    owner: PLACEHOLDER-security
+    added: 2026-08-23
+    review: 2026-11-21
+
+  - id: CVE-2025-15367
+    package: python-3.13
+    target: base-image
+    unfixable: true
+    reachability: >
+      Command injection in the poplib module via newlines in a user controlled
+      command. Meter never imports poplib and speaks no mail protocol.
+      Enforced by check_forbidden_imports.py.
+    owner: PLACEHOLDER-security
+    added: 2026-08-23
+    review: 2026-11-21

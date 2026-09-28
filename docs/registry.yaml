@@ -5,7 +5,7 @@ meta:
 subprojects:
 - id: P0
   name: Foundation
-  status: Design approved, spec in review
+  status: Spec approved, in build
   spec: docs/specs/2026-08-23-p0-foundation-design.md
   plan: docs/plans/P0-implementation-plan.md
   depends_on: none
@@ -385,7 +385,7 @@ adrs:
   doc: docs/adr/ADR-0009-mcp-alongside-http-api.md
 - id: ADR-0010
   decision: Minimus base images and a continuously maintained zero CVE posture
-  status: Accepted
+  status: Accepted, threshold amended by ADR-0018
   doc: docs/adr/ADR-0010-minimus-zero-cve-base-images.md
 - id: ADR-0011
   decision: A decision ladder before any new code, and token economy
@@ -415,6 +415,10 @@ adrs:
   decision: Nothing is hardcoded, and every feature flag has an owner and an expiry
   status: Accepted
   doc: docs/adr/ADR-0017-configuration-and-feature-flags.md
+- id: ADR-0018
+  decision: The threshold is zero fixable findings, not zero findings
+  status: Accepted
+  doc: docs/adr/ADR-0018-zero-fixable-not-zero-findings.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'
@@ -608,6 +612,14 @@ changes:
     before anything touches it
   commit: 80a0ac3
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+- id: CHG-0029
+  date: '2026-08-23'
+  type: Correction
+  what: TASK-P0-029 complete. Base images verified by measurement, moved to python 3.13 and nginx 1.30,
+    digests pinned. The zero vulnerabilities policy corrected to zero fixable findings, because no Python
+    image can meet the original
+  commit: pending
+  detail: '[ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1137,6 +1149,38 @@ issues:
     CI policy gate
   detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 13. Affects FEAT-014
     scope'
+- id: ISS-097
+  severity: CRITICAL
+  status: FIXED
+  summary: 'The stated policy of zero vulnerabilities at any severity is unachievable: every Python base
+    image carries unfixable CPython findings, so the rule would have been routed around rather than met'
+  detail: '[ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md). Threshold is now zero findings
+    that have a published fix'
+- id: ISS-098
+  severity: HIGH
+  status: FIXED
+  summary: The chosen base image versions were picked by habit, not measurement. python 3.12 carried 3
+    High findings and nginx 1.27 carried 93 including 6 Critical
+  detail: Moved to python 3.13 and nginx 1.30, both measured at TASK-P0-029. node:22-dev was already clean
+- id: ISS-099
+  severity: MEDIUM
+  status: FIXED
+  summary: Base image tags were floating, so a build was not reproducible and a tag could be repointed
+    after it was scanned
+  detail: '`docker/base-images.lock` with resolved digests, `make base-images-check` fails on drift'
+- id: ISS-100
+  severity: MEDIUM
+  status: OPEN
+  summary: Three unfixable CPython findings are accepted on a reachability argument that depends on nobody
+    importing stringprep, poplib or urllib.request
+  detail: Enforced by `scripts/ci/check_forbidden_imports.py`, which fails the build. Review 2026-11-21
+- id: ISS-101
+  severity: LOW
+  status: FIXED
+  summary: The doc and policy scripts claimed to run before make setup, but pyyaml is absent from a system
+    interpreter and PEP 668 blocks adding it
+  detail: They now run from the project venv, and `scripts/README.md` states this rather than the previous
+    claim
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS
