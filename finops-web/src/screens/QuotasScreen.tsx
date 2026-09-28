@@ -1,10 +1,10 @@
 import { Link } from 'react-router';
 
-import { useQuotas } from '../api/queries';
+import { useQuotaRequests, useQuotas } from '../api/queries';
 import { FixtureBand } from '../components/FixtureBand';
 import { PercentCell } from '../components/PercentCell';
 import { StateBoundary } from '../components/StateBoundary';
-import type { ApiQuota, ApiUnmeasurableQuota } from '../api/types';
+import type { ApiQuota, ApiQuotaRequest, ApiUnmeasurableQuota } from '../api/types';
 import { useReportMeta } from '../shell/metaRegistry';
 import { surfaceStateFor } from './surfaceStateFor';
 
@@ -125,10 +125,36 @@ function Unmeasured({ quota }: { readonly quota: ApiUnmeasurableQuota }) {
   );
 }
 
+function Request({ request }: { readonly request: ApiQuotaRequest }) {
+  return (
+    <tr data-testid="quota-request-row" data-status={request.status}>
+      <td>
+        <Link
+          data-testid="request-quota-link"
+          to={`/governance/quotas/${request.service_code}/${request.quota_code}`}
+        >
+          {request.quota_name}
+        </Link>
+      </td>
+      <td>{request.account_id}</td>
+      <td>{request.desired_value}</td>
+      <td data-testid="request-status">{request.status.replace('_', ' ').toLowerCase()}</td>
+      <td>{request.requested_at.slice(0, 10)}</td>
+    </tr>
+  );
+}
+
 export function QuotasScreen() {
   const query = useQuotas();
   const envelope = query.data?.data;
   useReportMeta('governance-quotas', envelope?.meta);
+
+  // A second read rather than a field on the first, because a request is not a sample of
+  // quotas: most are for quotas nothing can measure, so folding them into the quota payload
+  // would invite a join that drops exactly the rows somebody is chasing.
+  const requestQuery = useQuotaRequests();
+  const requests = requestQuery.data?.data.data.requests ?? [];
+  const open = requestQuery.data?.data.data.open_count ?? 0;
 
   const found = envelope?.data;
   const measurable = found?.measurable ?? [];
@@ -188,8 +214,7 @@ export function QuotasScreen() {
               <table data-testid="quotas-unmeasured">
                 <caption>
                   Quotas with a limit and no usage, by name. Nothing here is at zero: nothing
-                  here has been measured, and the reason on each row says which source
-                  declined.
+                  here has been measured, and the reason on each row says which source declined.
                 </caption>
                 <thead>
                   <tr>
@@ -203,6 +228,38 @@ export function QuotasScreen() {
                 <tbody>
                   {unmeasurable.map((one) => (
                     <Unmeasured key={keyFor(one)} quota={one} />
+                  ))}
+                </tbody>
+              </table>
+            </>
+          ) : null}
+
+          {requests.length > 0 ? (
+            <>
+              <h3 data-testid="quota-requests-heading">
+                {open === 1
+                  ? 'One increase request still open'
+                  : `${String(open)} increase requests still open`}
+              </h3>
+              <table data-testid="quota-requests">
+                <caption>
+                  Increases somebody asked AWS for, the open ones first. Settled requests stay,
+                  refusals included: somebody waiting on an increase wants to know it was denied
+                  three weeks ago more than they want a shorter list. Meter reads this history
+                  and never adds to it.
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Quota</th>
+                    <th scope="col">Account</th>
+                    <th scope="col">Asked for</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Requested</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {requests.map((one) => (
+                    <Request key={one.request_id} request={one} />
                   ))}
                 </tbody>
               </table>

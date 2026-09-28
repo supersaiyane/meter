@@ -27,7 +27,7 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Counted | Now | Derived from |
 | --- | --- | --- |
 | Screens built | 23 of 26 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 15 in 4 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Playwright journeys | 19 in 5 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 7 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 22 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 20 | files in migrations/versions, all of which are listed below in this file |

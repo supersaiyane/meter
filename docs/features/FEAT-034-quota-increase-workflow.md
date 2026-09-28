@@ -3,10 +3,17 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P5 |
-| Status | Specified |
+| Status | Delivered |
 | Specification | [P5 spec](../specs/2026-09-20-p5-quotas-and-limits-design.md), section 6 |
 | Tasks | TASK-P5-007, TASK-P5-008 |
-| Refresh cadence | On demand |
+| Refresh cadence | On demand for the draft, 12 hours for the request history |
+
+Two cadences, because the two halves are different kinds of thing. The draft is
+arithmetic over rows already collected, so it is computed per request and cannot be
+stale on its own. The request history is read from AWS by the quotas collector, so it
+is as fresh as that collector's twelve hourly run and no fresher: a request approved
+an hour ago can take until the next run to appear. Stated here because a tracking
+feature that looked live and was not would be worse than one that says so.
 
 The title said "Quota increase workflow" until 2026-09-20, which promised something
 constraint 6 forbids. A feature document promising what the product will not do is

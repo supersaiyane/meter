@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 62 total, 18 specified, 10 in build, 25 delivered |
+| Features | 62 total, 17 specified, 10 in build, 26 delivered |
 | Decisions | 27 architecture decision records |
 | Changes | 99 recorded |
-| Issues | 136 fixed, 75 open, 0 parked |
+| Issues | 136 fixed, 76 open, 0 parked |
 | Open questions | 9 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -187,7 +187,7 @@ ISS-003.
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 | P3 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
-| P5 | 7 | 0 | 0 | 0 | 1 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
+| P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 0 | 0 | 0 | 0 | 12 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -346,6 +346,7 @@ ISS-003.
 | `TASK-P5-005` | Done, 2026-09-28 | the guard, then the routes |
 | `TASK-P5-006` | Done, 2026-09-28 | two lists, because one would lie |
 | `TASK-P5-007` | Done, 2026-09-28 | the draft, and the test that keeps the write out |
+| `TASK-P5-008` | Done, 2026-09-28 | tracking what somebody else submitted |
 
 <!-- generated:task-status end -->
 

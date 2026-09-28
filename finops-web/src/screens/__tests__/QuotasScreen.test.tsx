@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { QuotasScreen } from '../QuotasScreen';
 import { Harness } from './Harness';
 import { clientReturning } from './fixtures';
-import { quotasFixture } from '../../api/fixtures/quotas';
+import { quotaRequestsFixture, quotasFixture } from '../../api/fixtures/quotas';
 import type { ApiEnvelope, ApiQuota, ApiQuotas } from '../../api/types';
 import { violationsIn } from '../../components/__tests__/axe';
 
@@ -19,10 +19,16 @@ import { violationsIn } from '../../components/__tests__/axe';
  */
 
 const PATH = '/api/v1/governance/quotas';
+const REQUESTS_PATH = '/api/v1/governance/quotas/requests';
 
 function renderQuotas(fixture: ApiEnvelope<ApiQuotas> = quotasFixture()) {
   return render(
-    <Harness client={clientReturning({ [PATH]: fixture })}>
+    <Harness
+      client={clientReturning({
+        [PATH]: fixture,
+        [REQUESTS_PATH]: quotaRequestsFixture(),
+      })}
+    >
       <QuotasScreen />
     </Harness>,
   );
@@ -162,5 +168,40 @@ describe('accessibility', () => {
     const { container } = renderQuotas();
     await screen.findByTestId('quotas-measured');
     expect(await violationsIn(container)).toEqual([]);
+  });
+});
+
+describe('the requests beside the lists', () => {
+  it('keeps a refused request rather than showing only the open ones', async () => {
+    // A list of open requests answers its own question with silence. Somebody waiting on an
+    // increase wants to know it was denied three weeks ago more than they want a short list.
+    renderQuotas();
+    const rows = await screen.findAllByTestId('quota-request-row');
+    const statuses = rows.map((row) => row.getAttribute('data-status'));
+    expect(statuses).toContain('DENIED');
+    expect(statuses).toContain('PENDING');
+  });
+
+  it('counts the open ones rather than the total', async () => {
+    renderQuotas();
+    const heading = await screen.findByTestId('quota-requests-heading');
+    expect(heading.textContent).toContain('One increase request still open');
+  });
+
+  it('says Meter reads the history and never adds to it', async () => {
+    renderQuotas();
+    const table = await screen.findByTestId('quota-requests');
+    expect(table.textContent).toContain('never adds to it');
+  });
+
+  it('tracks a request for a quota that appears in the unmeasured list', async () => {
+    // Tracking and measuring are independent, which is the whole of TASK-P5-008. Asserted
+    // against the other list on the same screen, so the two cannot drift apart unnoticed.
+    renderQuotas();
+    await screen.findAllByTestId('quota-request-row');
+    const tracked = screen.getAllByTestId('request-quota-link').map((link) => link.textContent);
+    const unmeasured = screen.getAllByTestId('quota-unmeasured').map((row) => row.textContent);
+    expect(tracked).toContain('Brokers per account');
+    expect(unmeasured.some((text) => text.includes('Brokers per account'))).toBe(true);
   });
 });

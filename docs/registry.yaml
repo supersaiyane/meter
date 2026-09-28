@@ -262,7 +262,7 @@ features:
 - id: FEAT-034
   name: Quota increase request drafting and tracking, never submission
   subproject: P5
-  status: Specified
+  status: Delivered
   detail: '[P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 6, [P5 plan](docs/plans/P5-implementation-plan.md)'
   doc: docs/features/FEAT-034-quota-increase-workflow.md
 - id: FEAT-035
@@ -3159,6 +3159,26 @@ issues:
     has to explain why two files in screens are out of scope. Moving them to components/ is a
     rename, an import change in two files and a test path, and the reason it is not done here is
     that it would sit inside an unrelated change'
+
+- id: ISS-218
+  severity: LOW
+  status: OPEN
+  summary: A quota finding has no severity and is not ranked beside the cost findings, which the
+    P5 definition of done asks for and no task delivers
+  detail: 'Found on 2026-09-28 while finishing P5. The specification section 2 says a quota
+    approaching its limit is a finding with a severity, ranked beside the rest. Neither half was
+    built and the reason is the same reason two ADRs already give. ADR-0016 derives severity from
+    monthly impact, and a quota has no money: it is the one signal in the product that is not
+    about spend, so ranking it beside findings ordered by dollars needs a money equivalent
+    nobody can compute, which is the fabrication ADR-0025 refused for a payer wide finding and
+    ADR-0027 refused for a refusal with no saving. What was built instead is the quota list
+    ordered by how full each quota is, which is exact rather than banded, and an inverted bar
+    so ninety percent is visually distinct from ten. A severity band over an exact fraction is
+    strictly less information than the fraction. What is genuinely lost is the home screen: a
+    quota about to be hit does not appear there, so somebody who only reads the front page will
+    not see it. Closing this properly means either a non money severity vocabulary with
+    argued thresholds, which is an ADR, or a home screen tile that links to the quota list
+    without pretending to rank against money, which is the cheaper of the two'
 
 open_questions:
 - id: OPEN-07

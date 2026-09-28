@@ -32,6 +32,7 @@
     "finops-web/dist-types/src/api/fixtureSeam.d.ts",
     "finops-web/dist-types/src/api/fixtures/cost.d.ts",
     "finops-web/dist-types/src/api/fixtures/query.d.ts",
+    "finops-web/dist-types/src/api/fixtures/quotas.d.ts",
     "finops-web/dist-types/src/api/fixtures/topology.d.ts",
     "finops-web/dist-types/src/api/fixtures/waste.d.ts",
     "finops-web/dist-types/src/api/queries.d.ts",
@@ -122,6 +123,8 @@
     "finops-web/dist-types/src/screens/QueryFindingsScreen.d.ts",
     "finops-web/dist-types/src/screens/QueryGroups.d.ts",
     "finops-web/dist-types/src/screens/QuerySurfacesScreen.d.ts",
+    "finops-web/dist-types/src/screens/QuotaDetailScreen.d.ts",
+    "finops-web/dist-types/src/screens/QuotasScreen.d.ts",
     "finops-web/dist-types/src/screens/RemediationControls.d.ts",
     "finops-web/dist-types/src/screens/ResourceListScreen.d.ts",
     "finops-web/dist-types/src/screens/TopologyScreen.d.ts",
@@ -148,6 +151,8 @@
     "finops-web/dist-types/src/screens/__tests__/QueryFindingDetailScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/QueryFindingsScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/QuerySurfacesScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/QuotaDetailScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/QuotasScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/RemediationControls.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/ResourceListScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/TopologyScreen.test.d.ts",
@@ -181,6 +186,7 @@
     "finops-web/e2e/cost.spec.ts",
     "finops-web/e2e/demo.spec.ts",
     "finops-web/e2e/journey.spec.ts",
+    "finops-web/e2e/quotas.spec.ts",
     "finops-web/e2e/topology.spec.ts",
     "finops-web/playwright.config.ts",
     "finops-web/src/App.test.tsx",
@@ -873,6 +879,11 @@
     },
     {
       "s": "finops-web/dist-types/src/api/fixtures/query.d.ts",
+      "t": "finops-web/dist-types/src/api/types",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/api/fixtures/quotas.d.ts",
       "t": "finops-web/dist-types/src/api/types",
       "k": "typescript"
     },

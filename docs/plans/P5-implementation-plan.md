@@ -236,7 +236,7 @@ which is worth more than one paste. Spec section 6 argues it properly.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-28 |
 | Implements | P5 spec section 5.3, FEAT-034 |
 | Delivers | FEAT-034 |
 | Depends on | TASK-P5-007 |

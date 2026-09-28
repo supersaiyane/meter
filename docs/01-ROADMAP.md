@@ -43,7 +43,7 @@ P0 Foundation
 | P2 | Query Cost Governance | 10 | 9 | 1 |
 | P3 | Utilization and Rightsizing | 10 | 0 | 0 |
 | P4 | Inventory and Topology | 7 | 0 | 0 |
-| P5 | Quotas and Limits | 3 | 1 | 1 |
+| P5 | Quotas and Limits | 3 | 0 | 1 |
 | P6 | Containers | 6 | 5 | 1 |
 | P7 | Insight and LLM layer | 6 | 0 | 6 |
 
@@ -105,7 +105,7 @@ rather than that one saving happened.
 | P2 | Query Cost Governance | Delivered. Findings, surfaces, ad hoc queries and enforcement all have screens | 10 (9 specified) | [spec](specs/2026-08-23-p2-query-cost-governance-design.md) | [plan](plans/P2-implementation-plan.md) | P0 |
 | P3 | Utilization and Rightsizing | Delivered, 19 of 20 tasks. TASK-P3-020 was unblocked by P4 and is done | 10 (0 specified) | not written | not written | P0, P1 |
 | P4 | Inventory and Topology | Delivered | 7 (0 specified) | [spec](specs/2026-09-20-p4-inventory-and-topology-design.md) | [plan](plans/P4-implementation-plan.md) | P0 |
-| P5 | Quotas and Limits | Not started | 3 (1 specified) | not written | not written | P0, P4 |
+| P5 | Quotas and Limits | Not started | 3 (0 specified) | not written | not written | P0, P4 |
 | P6 | Containers | Not started | 6 (5 specified) | not written | not written | P0, P1 |
 | P7 | Insight and LLM layer | Not started | 6 (0 specified) | not written | not written | P1, P2, P3 |
 
