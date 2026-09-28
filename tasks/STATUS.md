@@ -24,7 +24,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 62 total, 17 specified, 10 in build, 26 delivered |
 | Decisions | 28 architecture decision records |
-| Changes | 104 recorded |
+| Changes | 105 recorded |
 | Issues | 136 fixed, 79 open, 0 parked |
 | Open questions | 12 awaiting a decision |
 
@@ -37,7 +37,7 @@ Generated from `docs/registry.yaml`. Change a status there, then run `make doc-s
 **P0 is code complete and is NOT signed off.**
 
 All 39 tasks are written, tested and committed. `make verify` passes: lint, the
-writing rules, the eight documentation checks, the docstring gate, the memory
+writing rules, the documentation checks, the docstring gate, the memory
 gate, 898 backend tests, 249 frontend tests, a typed web build, 6 Playwright
 journeys, and a security scan with zero unresolved findings and five accepted
 as unfixable.

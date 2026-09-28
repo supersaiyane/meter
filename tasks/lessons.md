@@ -632,7 +632,9 @@ being edited, because that document may cover only one sub project's range.
 comment or a commit message. Copying a citation from surrounding prose. Numbering a new
 set of open questions or issues. Any sentence of the form "see ISS-nnn".
 
-**Not yet enforced:** nothing checks that an identifier cited anywhere in the repository
-resolves to a register entry. Such a check would have caught ISS-002, ISS-003 and ISS-004
-on the day they were first cited, and would not have caught FEAT-041, which resolved
-correctly and meant something else.
+**Enforced since 2026-09-28:** `scripts/docs/check_identifiers.py`, the seventh check in
+`make check-docs`, fails the build when a cited identifier resolves to nothing. Falsified by
+dropping ISS-002, ISS-003 and ISS-004 from the register, which surfaced 65 citations across
+25 files, so it would have caught them on the day they were first cited. It does not catch
+FEAT-041, which resolved correctly and meant something else, and the script says so rather
+than implying the whole lesson is now mechanical. That half is still a habit, not a gate.

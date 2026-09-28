@@ -31,8 +31,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 7 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 22 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 20 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 128 | test_*.py under tests/ |
-| Test functions | 1774 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 129 | test_*.py under tests/ |
+| Test functions | 1791 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -259,12 +259,20 @@ meter/
 │   ├── security/              scan, admission gate, pre commit deps, report,
 │   │                          auto fix, allowlist validation
 │   ├── docs/                  sync.py, check_index.py, check_feature_docs.py,
+│   │                          check_map_counts.py, check_identifiers.py,
 │   │                          build_file_graph.py, build_context_index.py,
 │   │                          rotate_checkpoint.py, add_lesson.py.
 │   │                          sync.py derives the sub projects in the task
 │   │                          table from the plan files present. It used to
 │   │                          iterate a literal, and P1 was absent from the
-│   │                          table rather than shown as 13 not started
+│   │                          table rather than shown as 13 not started.
+│   │                          check_identifiers.py fails the build when a FEAT,
+│   │                          ISS, ADR, OPEN or CHG id is cited and no register
+│   │                          defines it. ISS-002, ISS-003 and ISS-004 were
+│   │                          cited by ten documents and registered in none.
+│   │                          check_map_counts.py owns this file's generated
+│   │                          counts, and was itself missing from this listing
+│   │                          until 2026-09-28
 │   ├── ci/                    code_review.py, check_flags.py, check_hardcoded.py,
 │   │                          check_forbidden_imports.py, check_memory.py,
 │   │                          check_env_keys.py, refresh_base_images.py. Flag and
