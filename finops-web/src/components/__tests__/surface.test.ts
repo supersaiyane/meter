@@ -33,10 +33,14 @@ describe('the component surface', () => {
   });
 
   it('keeps the cause vocabulary closed and matching the backend', () => {
-    // The six in finops_core.errors, minus NoData which renders as a number and
-    // therefore has no label.
+    // The seven in finops_core.errors, minus NoData which renders as a number and
+    // therefore has no label. Misconfigured arrived with ADR-0026 on 2026-09-28, and this
+    // assertion refusing it until it was written here is the point of the list being
+    // literal rather than derived: the backend half is checked against Python in
+    // tests/contract/test_cause_vocabulary.py, and this half is what a reader sees.
     expect(Object.keys(components.CAUSE_LABEL).sort()).toEqual([
       'AccessDenied',
+      'Misconfigured',
       'NotOptedIn',
       'SchemaDrift',
       'Throttled',

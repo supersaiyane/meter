@@ -106,13 +106,19 @@ class CoverageState(StrEnum):
 
 
 class CoverageCause(StrEnum):
-    """Why a slice is not COMPLETE. The taxonomy's six, plus never attempted.
+    """Why a slice is not COMPLETE. The taxonomy's seven, plus never attempted.
 
     The values are the `CollectionError` subclass names verbatim, because a
     caught error's `cause` attribute is written straight into this column and a
-    translation table between the two would be a second place for the six names
+    translation table between the two would be a second place for the names
     to live. `NOT_YET_ATTEMPTED` is the only member with no counterpart in
     `finops_core.errors`, and the module docstring says why.
+
+    `MISCONFIGURED` arrived with ADR-0026 on 2026-09-28. Two tests refused the
+    addition until it was made here, `test_every_taxonomy_cause_is_a_coverage_cause`
+    and `test_the_coverage_causes_in_the_schema_match_the_domain_enum`, which is
+    what they are for: a cause a collector can raise and a coverage row cannot
+    record is a slice that fails with no reason attached to it.
     """
 
     ACCESS_DENIED = "AccessDenied"
@@ -121,6 +127,7 @@ class CoverageCause(StrEnum):
     NO_DATA = "NoData"
     UNREACHABLE = "Unreachable"
     SCHEMA_DRIFT = "SchemaDrift"
+    MISCONFIGURED = "Misconfigured"
     NOT_YET_ATTEMPTED = "NotYetAttempted"
 
 

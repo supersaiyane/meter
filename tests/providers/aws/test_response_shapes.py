@@ -234,16 +234,18 @@ def test_the_request_carries_every_parameter_the_service_requires(
 #: quietly joining the fall through.
 FALLS_THROUGH: dict[tuple[str, str], set[str]] = {
     ("config", "SelectAggregateResourceConfig"): {
+        # Our own request being wrong, which is SchemaDrift on purpose: it says we are wrong,
+        # and Misconfigured says the operator is. ADR-0026.
         "InvalidExpressionException",
         "InvalidLimitException",
         "InvalidNextTokenException",
-        "NoSuchConfigurationAggregatorException",
     },
     ("ec2", "DescribeTransitGatewayAttachments"): set(),
     ("ec2", "DescribeVpcPeeringConnections"): set(),
     ("ec2", "DescribeVpcEndpointConnections"): set(),
     ("iam", "ListRoles"): {"ServiceFailure"},
-    ("s3", "GetObject"): {"InvalidObjectState", "NoSuchKey"},
+    # NoSuchKey left on 2026-09-28: it is Misconfigured now, under ADR-0026.
+    ("s3", "GetObject"): {"InvalidObjectState"},
     ("budgets", "DescribeBudgets"): {
         "ExpiredNextTokenException",
         "InternalErrorException",
@@ -269,11 +271,17 @@ def test_the_errors_that_fall_through_are_the_ones_we_have_accepted(
     """
     from finops_providers.aws.client import (
         ACCESS_DENIED_CODES,
+        MISCONFIGURED_CODES,
         NOT_OPTED_IN_CODES,
         THROTTLE_CODES,
     )
 
-    mapped = set(ACCESS_DENIED_CODES) | set(THROTTLE_CODES) | set(NOT_OPTED_IN_CODES)
+    mapped = (
+        set(ACCESS_DENIED_CODES)
+        | set(THROTTLE_CODES)
+        | set(NOT_OPTED_IN_CODES)
+        | set(MISCONFIGURED_CODES)
+    )
     model = loader.get_service_model(service).operation_model(operation)
     declared = {
         shape.metadata.get("error", {}).get("code", shape.name) for shape in model.error_shapes

@@ -531,6 +531,11 @@ adrs:
   decision: A payer wide finding gets its own table, not a row in recommendation
   status: Accepted
   doc: docs/adr/ADR-0025-a-payer-wide-finding-is-its-own-table.md
+- id: ADR-0026
+  decision: A seventh cause, for a value this deployment set that does not exist
+  status: Accepted
+  doc: docs/adr/ADR-0026-a-seventh-cause-for-misconfiguration.md
+
 changes:
 - id: CHG-0001
   date: '2026-08-23'
@@ -3060,7 +3065,7 @@ issues:
 
 - id: ISS-215
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: A misconfiguration reaches the screen as SchemaDrift, which names the wrong remedy. A
     wrong aggregator name or a state file path that does not exist tells an operator their schema
     has drifted, when the fix is one setting
@@ -3080,7 +3085,7 @@ issues:
     changes nothing structural and gives an operator the right sentence, at the cost of the cause
     itself still reading as drift in every count and filter. Pinned meanwhile by
     tests/providers/aws/test_response_shapes.py, which asserts the fall through set exactly, so a
-    code a future SDK adds is a failure rather than a silent join'
+    code a future SDK adds is a failure rather than a silent join. FIXED on 2026-09-28 by the seventh cause, ADR-0026. Misconfigured maps the three codes where a person fixes it by editing configuration: the Config aggregator named in settings, and a Terraform state bucket or key named in settings. The remaining codes stay SchemaDrift and stay named in the pin, and one group of them is a different problem worth stating: ServiceFailure, InternalErrorException, ExpiredNextTokenException and InvalidNextTokenException are transient and want a retry, not a diagnosis, and mapping them to Throttled would be wrong because Throttled means over a quota and would inflate a number somebody reads. That group has no cause and is not urgent: it is loud today and recovers on the next cadence'
 - id: ISS-216
   severity: LOW
   status: OPEN
