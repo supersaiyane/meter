@@ -602,3 +602,37 @@ by naming the thing only outside its section and watching the check still fail.
 **Triggers:** Writing a check that a name appears in a document. Any use of `name in text`
 where `text` is a whole file. Adding a module whose basename already exists elsewhere in
 the project.
+
+## 2026-09-28: an identifier copied from nearby prose instead of resolved in the register
+
+**Mistake:** While writing P7's plan I needed to cite the feature that reports realized
+savings and reached for FEAT-041, which is what ten places already called it: the waste
+screen's code and its comments, `project_map.md`, two ADRs and an issue. The registry and
+FEAT-041's own document both say FEAT-041 is team digests. Realized savings is FEAT-029. I
+wrote most of those ten citations myself across earlier sessions, each time taking the id
+from whatever was nearby rather than looking it up, so one wrong reading propagated into
+the code and then into the documents that describe the code. The same pass found the
+mirror image: ISS-002, ISS-003 and ISS-004 had been cited by ten documents since
+2026-08-23 and existed in no register at all, so a reader chasing ISS-003 out of the P6
+plan, which names it as that sub project's only blocker, found nothing. And I nearly
+numbered P7's three open questions OPEN-08 to OPEN-10, which are live P1 questions, by
+continuing from the highest number visible in the document I was editing.
+
+**Correction:** Nobody corrected me. All three surfaced from trying to cite an identifier
+while writing something new, not from auditing the register. That is the only reason they
+were found, and it means the register was never the thing being checked.
+
+**Rule:** An identifier is resolved in `docs/registry.yaml` before it is written down,
+every time, including when it is being copied from the line above. Confirm the entry says
+what the sentence assumes rather than that the entry merely exists. A new identifier takes
+the next number from the register, never from the highest one visible in the document
+being edited, because that document may cover only one sub project's range.
+
+**Triggers:** Writing any FEAT, ISS, ADR, OPEN or CHG identifier into a document, a
+comment or a commit message. Copying a citation from surrounding prose. Numbering a new
+set of open questions or issues. Any sentence of the form "see ISS-nnn".
+
+**Not yet enforced:** nothing checks that an identifier cited anywhere in the repository
+resolves to a register entry. Such a check would have caught ISS-002, ISS-003 and ISS-004
+on the day they were first cited, and would not have caught FEAT-041, which resolved
+correctly and meant something else.
