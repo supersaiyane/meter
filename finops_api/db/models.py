@@ -1132,7 +1132,22 @@ USAGE_SOURCES = ("AWS_USAGE_METRIC", "TRUSTED_ADVISOR", "SERVICE_API", "NONE")
 
 #: AWS's own vocabulary for an increase request, not ours to improve. DENIED is in it
 #: because that is the one a product is tempted to hide.
-REQUEST_STATUSES = ("PENDING", "CASE_OPENED", "APPROVED", "DENIED", "CASE_CLOSED")
+#:
+#: A literal rather than a comprehension over `RequestStatus`, for the reason
+#: `ERROR_TYPES` is one: deriving it would let a member added to the enum widen this
+#: silently, and the friction is the feature. The mirror test in
+#: `tests/db/test_models.py` fails instead, naming the vocabulary, and the fix is a
+#: migration. Seven values where the P5 spec named five, which is how that test earned
+#: its keep the day it was written.
+REQUEST_STATUSES = (
+    "PENDING",
+    "CASE_OPENED",
+    "APPROVED",
+    "DENIED",
+    "CASE_CLOSED",
+    "NOT_APPROVED",
+    "INVALID_REQUEST",
+)
 
 #: The length below which a reason is not a sentence. The same figure 0019 uses for a
 #: sizing refusal and for the same argument: an explanation reading "not measured" would
@@ -1229,7 +1244,8 @@ quota_request = Table(
     Column("collected_at", DateTime(timezone=True), nullable=False),
     UniqueConstraint("tenant_id", "request_id", name="uq_quota_request__request_id"),
     CheckConstraint(
-        "status IN ('PENDING', 'CASE_OPENED', 'APPROVED', 'DENIED', 'CASE_CLOSED')",
+        "status IN ('PENDING', 'CASE_OPENED', 'APPROVED', 'DENIED', "
+        "'CASE_CLOSED', 'NOT_APPROVED', 'INVALID_REQUEST')",
         name="ck_quota_request__status",
     ),
     CheckConstraint("desired_value > 0", name="ck_quota_request__desired_is_positive"),
@@ -1256,7 +1272,8 @@ quota_request_history = Table(
     Column("changed_at", DateTime(timezone=True), nullable=False),
     UniqueConstraint("tenant_id", "request_id", "status", name="uq_quota_request_history__status"),
     CheckConstraint(
-        "status IN ('PENDING', 'CASE_OPENED', 'APPROVED', 'DENIED', 'CASE_CLOSED')",
+        "status IN ('PENDING', 'CASE_OPENED', 'APPROVED', 'DENIED', "
+        "'CASE_CLOSED', 'NOT_APPROVED', 'INVALID_REQUEST')",
         name="ck_quota_request_history__status",
     ),
     Index("ix_quota_request_history__request", "tenant_id", "request_id", "changed_at"),

@@ -15,14 +15,19 @@ caused it. The same rules are database constraints in 0020, per constraint 11, a
 from __future__ import annotations
 
 import dataclasses
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 import pytest
 
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.fact import Fact
-from finops_core.domain.quota import QuotaUsage, UsageSource
+from finops_core.domain.quota import (
+    QuotaIncreaseRequest,
+    QuotaUsage,
+    RequestStatus,
+    UsageSource,
+)
 
 NOW = datetime(2026, 9, 28, 9, 0, tzinfo=UTC)
 KEY = AccountKey(provider=Provider.AWS, account_id="111111111111")
@@ -177,3 +182,91 @@ def test_a_quota_is_frozen() -> None:
     """A fact that can be edited after the fact is not one."""
     with pytest.raises(dataclasses.FrozenInstanceError):
         quota().used = Decimal("1")  # type: ignore[misc]
+
+
+# --- the increase request, which Meter reads and never writes -----------------
+
+
+def a_request(
+    *,
+    desired: Decimal = Decimal("500"),
+    status: RequestStatus = RequestStatus.PENDING,
+    requested: datetime = NOW - timedelta(days=3),
+    updated: datetime = NOW,
+) -> QuotaIncreaseRequest:
+    return QuotaIncreaseRequest(
+        account_key=KEY,
+        request_id="request-0001",
+        region_id="eu-west-1",
+        service_code="ec2",
+        quota_code="L-1216C47A",
+        quota_name="Running On-Demand Standard instances",
+        desired_value=desired,
+        status=status,
+        requested_at=requested,
+        last_updated_at=updated,
+        as_of=NOW,
+        collected_at=NOW,
+    )
+
+
+def test_the_request_status_vocabulary_is_the_seven_aws_returns() -> None:
+    """The P5 spec named five. `RequestStatus` in the service model has seven.
+
+    `NOT_APPROVED` and `INVALID_REQUEST` are both real, and a narrower vocabulary would
+    have read such a request successfully and then had the row refused by a check
+    constraint, which reports as a fault in the collector rather than as the schema
+    being wrong. `tests/providers/aws/test_response_shapes.py` holds this equal to the
+    botocore shape, so an eighth value AWS adds fails there rather than in production.
+    """
+    assert {status.value for status in RequestStatus} == {
+        "PENDING",
+        "CASE_OPENED",
+        "APPROVED",
+        "DENIED",
+        "CASE_CLOSED",
+        "NOT_APPROVED",
+        "INVALID_REQUEST",
+    }
+
+
+def test_only_pending_and_case_opened_are_still_going_somewhere() -> None:
+    """The predicate the tracking list is built on.
+
+    `INVALID_REQUEST` is deliberately not open. Nothing is going to happen to it: the
+    action is to ask again, which is a different thing to tell somebody than to wait.
+    """
+    open_states = {status for status in RequestStatus if status.is_open}
+    assert open_states == {RequestStatus.PENDING, RequestStatus.CASE_OPENED}
+
+
+def test_denied_and_not_approved_stay_separate() -> None:
+    """Collapsing two of AWS's values into one of ours makes the vocabulary a guess.
+
+    Written as a lookup of each string rather than as a comparison of the two members,
+    because comparing the members is true however the enum is defined: aliasing one to
+    the other's value makes them the same member, and only the lookup notices.
+    """
+    assert RequestStatus("DENIED") is not RequestStatus("NOT_APPROVED")
+    assert not RequestStatus.DENIED.is_open
+    assert not RequestStatus.NOT_APPROVED.is_open
+
+
+def test_a_request_asking_for_nothing_cannot_be_constructed() -> None:
+    """A draft against it would suggest lowering a limit, which nobody asked for."""
+    with pytest.raises(ValueError, match="not an increase"):
+        a_request(desired=Decimal("0"))
+
+
+def test_a_request_updated_before_it_was_made_cannot_be_constructed() -> None:
+    with pytest.raises(ValueError, match="before it"):
+        a_request(requested=NOW, updated=NOW - timedelta(days=1))
+
+
+def test_a_request_carries_aws_timestamps_and_ours_separately() -> None:
+    """Four timestamps, two of them the subject and two of them the read. Constraint 10."""
+    request = a_request()
+    assert issubclass(QuotaIncreaseRequest, Fact)
+    assert request.requested_at < request.last_updated_at
+    assert request.as_of == NOW
+    assert request.collected_at == NOW

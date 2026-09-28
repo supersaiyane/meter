@@ -18,7 +18,7 @@ from sqlalchemy import CheckConstraint, UniqueConstraint
 
 from finops_api.db import models
 from finops_core import errors
-from finops_core.domain.quota import UsageSource
+from finops_core.domain.quota import RequestStatus, UsageSource
 
 SPECIFIED_TABLES = {
     "tenant",
@@ -122,7 +122,18 @@ def test_the_usage_source_column_admits_exactly_those_four() -> None:
         assert f"'{source}'" in admitted, f"quota_usage does not admit {source}"
 
 
-def test_both_request_status_columns_admit_the_same_five() -> None:
+def test_the_stored_request_statuses_mirror_the_domain_enum() -> None:
+    """Seven, and the P5 spec named five.
+
+    `RequestStatus` was read out of the botocore service model rather than out of the
+    documentation, and `NOT_APPROVED` and `INVALID_REQUEST` are both real. A narrower
+    column would have read such a request successfully, refused the row, and reported it
+    as a fault in the collector.
+    """
+    assert set(models.REQUEST_STATUSES) == {status.value for status in RequestStatus}
+
+
+def test_both_request_status_columns_admit_every_one_of_them() -> None:
     """A history row whose status the request row could not hold is unreachable by read."""
     for table, constraint in (
         ("quota_request", "ck_quota_request__status"),

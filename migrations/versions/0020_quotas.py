@@ -158,7 +158,7 @@ _UP = (
     """
     ALTER TABLE quota_request
         ADD CONSTRAINT ck_quota_request__status
-        CHECK (status IN ('PENDING', 'CASE_OPENED', 'APPROVED', 'DENIED', 'CASE_CLOSED'))
+        CHECK (status IN ('PENDING', 'CASE_OPENED', 'APPROVED', 'DENIED', 'CASE_CLOSED', 'NOT_APPROVED', 'INVALID_REQUEST'))
     """,
     # Asking for nothing is not a request, and asking for a negative is a misread.
     """
@@ -202,7 +202,7 @@ _UP = (
     """
     ALTER TABLE quota_request_history
         ADD CONSTRAINT ck_quota_request_history__status
-        CHECK (status IN ('PENDING', 'CASE_OPENED', 'APPROVED', 'DENIED', 'CASE_CLOSED'))
+        CHECK (status IN ('PENDING', 'CASE_OPENED', 'APPROVED', 'DENIED', 'CASE_CLOSED', 'NOT_APPROVED', 'INVALID_REQUEST'))
     """,
     """
     CREATE INDEX IF NOT EXISTS ix_quota_request_history__request
