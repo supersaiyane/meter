@@ -20,6 +20,7 @@ from decimal import Decimal
 
 import pytest
 
+from finops_core.constants import REASON_MIN_LENGTH
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.fact import Fact
 from finops_core.domain.quota import (
@@ -31,6 +32,14 @@ from finops_core.domain.quota import (
 
 NOW = datetime(2026, 9, 28, 9, 0, tzinfo=UTC)
 KEY = AccountKey(provider=Provider.AWS, account_id="111111111111")
+REASON = "AWS publishes no usage metric for this quota"
+
+
+class _Unset:
+    """Distinguishes "not passed" from an explicitly passed None."""
+
+
+UNSET = _Unset()
 
 
 def quota(
@@ -40,8 +49,17 @@ def quota(
     source: UsageSource = UsageSource.AWS_USAGE_METRIC,
     region: str | None = "eu-west-1",
     adjustable: bool = True,
+    reason: str | _Unset | None = UNSET,
 ) -> QuotaUsage:
-    """A measurable quota at 40 of 100, which every test here varies one field of."""
+    """A measurable quota at 40 of 100, which every test here varies one field of.
+
+    `reason` defaults to a sentinel rather than to None, so that an unmeasurable quota gets
+    a sentence without every caller writing one, and a caller can still pass an explicit
+    None. The first draft defaulted to None and filled it in, which made the one test that
+    matters, the one asserting a blank reason is refused, unable to fail.
+    """
+    if isinstance(reason, _Unset):
+        reason = REASON if source is UsageSource.NONE else None
     return QuotaUsage(
         account_key=KEY,
         region_id=region,
@@ -52,6 +70,7 @@ def quota(
         used=used,
         usage_source=source,
         is_adjustable=adjustable,
+        unmeasurable_reason=reason,
         as_of=NOW,
         collected_at=NOW,
     )
@@ -182,6 +201,57 @@ def test_a_quota_is_frozen() -> None:
     """A fact that can be edited after the fact is not one."""
     with pytest.raises(dataclasses.FrozenInstanceError):
         quota().used = Decimal("1")  # type: ignore[misc]
+
+
+# --- the reason, which travels with the quota rather than being reconstructed --
+
+
+def test_an_unmeasurable_quota_without_a_reason_cannot_be_constructed() -> None:
+    """The blank row in the second list, refused at the point it would be created.
+
+    The reason lives on the entity because only the adapter knows which of the three
+    sources declined and why. A screen working it out from the source alone would produce
+    something plausible, stable and wrong.
+    """
+    with pytest.raises(ValueError, match="needs a sentence"):
+        quota(used=None, source=UsageSource.NONE, reason=None)
+
+
+def test_a_reason_shorter_than_a_sentence_cannot_be_constructed() -> None:
+    """A reason reading "no data" is worse than none: it teaches a reader to skip them."""
+    with pytest.raises(ValueError, match="needs a sentence"):
+        quota(used=None, source=UsageSource.NONE, reason="no data")
+
+
+def test_a_reason_of_only_whitespace_cannot_be_constructed() -> None:
+    """Which is why the rule trims before measuring, as the database check does."""
+    with pytest.raises(ValueError, match="needs a sentence"):
+        quota(used=None, source=UsageSource.NONE, reason=" " * 40)
+
+
+def test_a_measured_quota_carrying_a_reason_cannot_be_constructed() -> None:
+    """The other direction, and the one that rots rather than being obviously wrong.
+
+    A quota that starts publishing usage keeps whatever sentence it had, and the screen
+    then shows a measured figure beside an explanation of why there is none.
+    """
+    with pytest.raises(ValueError, match="must carry none"):
+        quota(reason=REASON)
+
+
+def test_the_reason_floor_is_the_one_the_database_enforces() -> None:
+    """Two enforcement points, one figure, or one of them is decoration.
+
+    A domain that allowed an eight character reason would hand the repository a row the
+    check constraint refuses, and that failure arrives as an IntegrityError from the
+    collector rather than as the sentence being too short.
+    """
+    assert len(REASON.strip()) >= REASON_MIN_LENGTH
+    just_short = "x" * (REASON_MIN_LENGTH - 1)
+    with pytest.raises(ValueError, match="needs a sentence"):
+        quota(used=None, source=UsageSource.NONE, reason=just_short)
+    at_the_floor = "x" * REASON_MIN_LENGTH
+    assert quota(used=None, source=UsageSource.NONE, reason=at_the_floor).is_measurable is False
 
 
 # --- the increase request, which Meter reads and never writes -----------------

@@ -89,6 +89,56 @@ READS: dict[tuple[str, str], set[str]] = {
         "End",
         "NextToken",
     },
+    # FEAT-033, ISS-122. Service Quotas for limits, and it names its own usage metric, which
+    # is why `UsageMetric` and its four members are read rather than a metric table being
+    # kept in the adapter.
+    ("service-quotas", "ListServices"): {"Services", "ServiceCode", "ServiceName", "NextToken"},
+    ("service-quotas", "ListServiceQuotas"): {
+        "Quotas",
+        "ServiceCode",
+        "ServiceName",
+        "QuotaCode",
+        "QuotaName",
+        "Value",
+        "Adjustable",
+        "GlobalQuota",
+        "QuotaAppliedAtLevel",
+        "ErrorReason",
+        "UsageMetric",
+        "MetricNamespace",
+        "MetricName",
+        "MetricDimensions",
+        "MetricStatisticRecommendation",
+        "NextToken",
+    },
+    # FEAT-034. The tracking half, which is the half actually missing today.
+    ("service-quotas", "ListRequestedServiceQuotaChangeHistory"): {
+        "RequestedQuotas",
+        "Id",
+        "ServiceCode",
+        "QuotaCode",
+        "QuotaName",
+        "DesiredValue",
+        "Status",
+        "Created",
+        "LastUpdated",
+        "GlobalQuota",
+        "NextToken",
+    },
+    ("cloudwatch", "GetMetricData"): {"MetricDataResults", "Id", "Values", "NextToken"},
+    ("support", "DescribeTrustedAdvisorChecks"): {"checks", "id", "name"},
+    # `metadata` is a bare list of strings with no keys, so a shape check can confirm the
+    # field exists and nothing more. What each position means is the weakest assumption in
+    # `finops_providers/aws/quotas.py` and is stated there rather than here.
+    ("support", "DescribeTrustedAdvisorCheckResult"): {
+        "result",
+        "flaggedResources",
+        "metadata",
+        "region",
+    },
+    # The two service API counters, for quotas nothing else publishes usage for.
+    ("ec2", "DescribeVpcs"): {"Vpcs", "NextToken"},
+    ("ec2", "DescribeAddresses"): {"Addresses"},
 }
 
 #: Which key carries the continuation token, per operation. Separate from the reads because this
@@ -102,6 +152,11 @@ TOKENS: dict[tuple[str, str], str] = {
     ("ec2", "DescribeVpcEndpointConnections"): "NextToken",
     ("iam", "ListRoles"): "Marker",
     ("budgets", "DescribeBudgets"): "NextToken",
+    ("service-quotas", "ListServices"): "NextToken",
+    ("service-quotas", "ListServiceQuotas"): "NextToken",
+    ("service-quotas", "ListRequestedServiceQuotaChangeHistory"): "NextToken",
+    ("cloudwatch", "GetMetricData"): "NextToken",
+    ("ec2", "DescribeVpcs"): "NextToken",
 }
 
 
@@ -198,6 +253,15 @@ SENDS: dict[tuple[str, str], set[str]] = {
     ("iam", "ListRoles"): set(),
     ("s3", "GetObject"): {"Bucket", "Key"},
     ("budgets", "DescribeBudgets"): {"AccountId"},
+    ("service-quotas", "ListServices"): set(),
+    ("service-quotas", "ListServiceQuotas"): {"ServiceCode"},
+    ("service-quotas", "ListRequestedServiceQuotaChangeHistory"): set(),
+    # All three required, and a window that is missing one is refused rather than defaulted.
+    ("cloudwatch", "GetMetricData"): {"MetricDataQueries", "StartTime", "EndTime"},
+    ("support", "DescribeTrustedAdvisorChecks"): {"language"},
+    ("support", "DescribeTrustedAdvisorCheckResult"): {"checkId", "language"},
+    ("ec2", "DescribeVpcs"): set(),
+    ("ec2", "DescribeAddresses"): set(),
 }
 
 
@@ -253,6 +317,41 @@ FALLS_THROUGH: dict[tuple[str, str], set[str]] = {
         "InvalidParameterException",
         "NotFoundException",
     },
+    # Service Quotas throttles as TooManyRequestsException and refuses as
+    # AccessDeniedException, both of which translate maps. What is left is our own request
+    # being wrong, a page token that expired, and the service failing: SchemaDrift for the
+    # first, and the transient group ISS-215 names for the other two.
+    ("service-quotas", "ListServices"): {
+        "IllegalArgumentException",
+        "InvalidPaginationTokenException",
+        "ServiceException",
+    },
+    ("service-quotas", "ListServiceQuotas"): {
+        "IllegalArgumentException",
+        "InvalidPaginationTokenException",
+        # A service code that does not exist. It comes from ListServices, so this can only
+        # mean we sent something wrong, which is what SchemaDrift is for.
+        "NoSuchResourceException",
+        "ServiceException",
+    },
+    ("service-quotas", "ListRequestedServiceQuotaChangeHistory"): {
+        "IllegalArgumentException",
+        "InvalidPaginationTokenException",
+        "NoSuchResourceException",
+        "ServiceException",
+    },
+    ("cloudwatch", "GetMetricData"): {"InvalidNextToken"},
+    # Support declares only these two. Notably it does NOT declare
+    # SubscriptionRequiredException, which is what an account without Business or Enterprise
+    # support actually receives and which NOT_OPTED_IN_CODES maps. OPEN-03 depends on that
+    # code, so the pin cannot prove it and only a real account can: the adapter absorbs the
+    # NotOptedIn either way, so the worst case is a plan without Trusted Advisor arriving as
+    # SchemaDrift in the reason sentence rather than as NotOptedIn.
+    ("support", "DescribeTrustedAdvisorChecks"): {"InternalServerError"},
+    ("support", "DescribeTrustedAdvisorCheckResult"): {"InternalServerError"},
+    # EC2 declares no modelled errors at all for either counter.
+    ("ec2", "DescribeVpcs"): set(),
+    ("ec2", "DescribeAddresses"): set(),
 }
 
 
@@ -290,4 +389,34 @@ def test_the_errors_that_fall_through_are_the_ones_we_have_accepted(
         f"{service}.{operation}: the set of errors falling through to SchemaDrift has changed. "
         f"Either one was mapped, which is good and should be recorded here, or the SDK declares "
         f"a new one, which is the case this test exists to surface. ISS-215."
+    )
+
+
+def test_the_request_status_vocabulary_is_the_one_the_service_model_declares(
+    loader: botocore.session.Session,
+) -> None:
+    """The check that found a real defect on the day it was written.
+
+    The P5 spec's section 5.3 lists five request statuses. `RequestStatus` in the service
+    model has seven: `NOT_APPROVED` and `INVALID_REQUEST` as well. The spec was written from
+    the documentation and those two were missed, and the narrow vocabulary had already
+    reached a check constraint in migration 0020 before this test was added.
+
+    What it would have cost: the adapter reads such a request successfully, the database
+    refuses the row, and the failure presents as an IntegrityError from the quotas collector.
+    That reads as a fault in the write path, so the first person to see it looks there rather
+    than at a constraint written from a document. And it only happens on a real account,
+    which is ISS-122, so a customer finds it rather than us.
+
+    An eighth value AWS adds now fails here, which is the point: this is an enum somebody
+    else owns, mirrored into a StrEnum, a check constraint and a screen's labels.
+    """
+    from finops_core.domain.quota import RequestStatus
+
+    declared = set(loader.get_service_model("service-quotas").shape_for("RequestStatus").enum)
+    assert {status.value for status in RequestStatus} == declared, (
+        f"RequestStatus and the service model disagree. Declared but not in the enum: "
+        f"{sorted(declared - {s.value for s in RequestStatus})}. In the enum but not "
+        f"declared: {sorted({s.value for s in RequestStatus} - declared)}. Widening this "
+        f"needs a migration: the vocabulary is a check constraint in 0020 as well."
     )

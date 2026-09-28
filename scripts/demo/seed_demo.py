@@ -124,6 +124,12 @@ DEMO_TABLES = (
     "topology_edge",
     "topology_node",
     "graph_coverage",
+    # P5, FEAT-033 and FEAT-034, above `ingest_run` for the same reason the three P4
+    # tables are: both quota tables carry the run that wrote them. The history table has
+    # no run of its own and is ordered beside the requests it belongs to.
+    "quota_request_history",
+    "quota_request",
+    "quota_usage",
     "ingest_run",
     "platform_cost",
     "org_node",

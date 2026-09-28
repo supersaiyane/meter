@@ -187,7 +187,7 @@ ISS-003.
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 | P3 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
-| P5 | 2 | 0 | 0 | 0 | 6 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
+| P5 | 3 | 0 | 0 | 0 | 5 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 0 | 0 | 0 | 0 | 12 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -341,6 +341,7 @@ ISS-003.
 | --- | --- | --- |
 | `TASK-P5-001` | Done, 2026-09-28 | the entity that already knew |
 | `TASK-P5-002` | Done, 2026-09-28 | the constraint that does the work |
+| `TASK-P5-003` | Done, 2026-09-28 | four sources and the gaps between them |
 
 <!-- generated:task-status end -->
 

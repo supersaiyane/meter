@@ -39,6 +39,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 
+from finops_core.constants import REASON_MIN_LENGTH
+
 metadata = MetaData()
 
 #: The closed error taxonomy, mirrored from `finops_core.errors`. A new cause
@@ -1149,13 +1151,6 @@ REQUEST_STATUSES = (
     "INVALID_REQUEST",
 )
 
-#: The length below which a reason is not a sentence. The same figure 0019 uses for a
-#: sizing refusal and for the same argument: an explanation reading "not measured" would
-#: be worse than none, because it teaches a reader the reasons here are empty and they
-#: stop reading the ones that are not. A literal rather than a setting because a CHECK
-#: constraint cannot read one, and it has to match 0020 character for character.
-REASON_FLOOR = 12  # allow-hardcoded: a database check constraint cannot read settings
-
 
 quota_usage = Table(
     "quota_usage",
@@ -1210,7 +1205,7 @@ quota_usage = Table(
     ),
     CheckConstraint(
         "(usage_source = 'NONE') = "
-        f"(length(trim(coalesce(unmeasurable_reason, ''))) >= {REASON_FLOOR})",
+        f"(length(trim(coalesce(unmeasurable_reason, ''))) >= {REASON_MIN_LENGTH})",
         name="ck_quota_usage__reason_iff_unmeasurable",
     ),
     Index("ix_quota_usage__account", "tenant_id", "sub_account_id"),

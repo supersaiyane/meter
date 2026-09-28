@@ -30,6 +30,7 @@ from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
 
+from finops_core.constants import REASON_MIN_LENGTH
 from finops_core.domain.account import AccountKey
 from finops_core.domain.fact import Fact
 
@@ -86,9 +87,15 @@ class QuotaUsage(Fact):
     #: and drafting a request against one wastes somebody's afternoon: FEAT-034 has
     #: to know which it is before it offers a draft.
     is_adjustable: bool = True
+    #: Why nothing measured this quota, and only where nothing did. It travels on the
+    #: entity rather than being worked out by whoever renders it, because only the
+    #: adapter knows which of the reasons applies: it is the thing that asked all three
+    #: sources and watched each of them decline. A screen reconstructing it would be
+    #: guessing, and the guess would be stable and plausible and wrong.
+    unmeasurable_reason: str | None = None
 
     def __post_init__(self) -> None:
-        """Refuse the three combinations that would be lies.
+        """Refuse the four combinations that would be lies.
 
         All three are also database constraints, and the duplication is deliberate:
         constraint 11 says application code is not what should prevent a bad row, and
@@ -112,6 +119,15 @@ class QuotaUsage(Fact):
                 f"used {self.used} exceeds the limit {self.quota_limit} for "
                 f"{self.quota_code}. A quota is the ceiling, so this is a misread rather "
                 f"than an estate in trouble, and rendering it would show headroom below zero."
+            )
+        stated = (self.unmeasurable_reason or "").strip()
+        if (self.usage_source is UsageSource.NONE) != (len(stated) >= REASON_MIN_LENGTH):
+            raise ValueError(
+                f"{self.quota_code} has usage_source={self.usage_source!r} and reason "
+                f"{self.unmeasurable_reason!r}. An unmeasurable quota needs a sentence saying "
+                f"why, or its row in the second list is a blank that teaches a reader the "
+                f"explanations here are empty. A measured one must carry none, or the sentence "
+                f"outlives the day the quota started publishing usage."
             )
 
     @property

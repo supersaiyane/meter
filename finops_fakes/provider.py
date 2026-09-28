@@ -21,7 +21,7 @@ from finops_core.domain.cost import CommitmentCoverage, CommitmentUse, CostRecor
 from finops_core.domain.identity import Entitlement, Principal
 from finops_core.domain.metrics import MetricPoint
 from finops_core.domain.org import OrgNode
-from finops_core.domain.quota import QuotaUsage
+from finops_core.domain.quota import QuotaIncreaseRequest, QuotaUsage
 from finops_core.domain.resource import ResourceRef
 from finops_core.domain.tenant import Scope
 from finops_core.domain.topology import CoverageCause, Shortfall, SliceRead
@@ -274,6 +274,10 @@ class FakeProvider:
     def list_quotas(self, account: AccountKey, region: str) -> Iterable[QuotaUsage]:
         self._require_known(account)
         return tuple(fixtures.QUOTAS)
+
+    def requests(self, account: AccountKey, region: str) -> Iterable[QuotaIncreaseRequest]:
+        self._require_known(account)
+        return tuple(fixtures.QUOTA_REQUESTS)
 
     # -- IdentityProvider --------------------------------------------------
 

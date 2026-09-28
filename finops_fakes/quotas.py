@@ -506,9 +506,10 @@ def _pair(used: Decimal | None, source: UsageSource) -> tuple[Decimal | None, Us
 
 def _quota(q: QuotaDef, account_id: str, region_id: str, at: datetime) -> QuotaUsage:
     """One quota as the port returns it, with its usage source."""
+    probe = at - timedelta(hours=1)
     used, source = _pair(
         _decimal_or_none(trailing_peak(q, account_id, region_id, at)),
-        source_for(q, account_id, region_id, at - timedelta(hours=1), at),
+        source_for(q, account_id, region_id, probe, at),
     )
     return QuotaUsage(
         account_key=AccountKey(provider=Provider.AWS, account_id=account_id),
@@ -520,6 +521,9 @@ def _quota(q: QuotaDef, account_id: str, region_id: str, at: datetime) -> QuotaU
         used=used,
         usage_source=source,
         is_adjustable=q.adjustable,
+        unmeasurable_reason=None
+        if used is not None
+        else reason_for(q, account_id, region_id, probe, at),
         as_of=at,
         collected_at=fixtures.COLLECTED_AT,
     )

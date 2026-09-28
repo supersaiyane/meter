@@ -469,6 +469,7 @@
     "finops_providers/aws/health.py",
     "finops_providers/aws/platform_cost.py",
     "finops_providers/aws/query_evidence.py",
+    "finops_providers/aws/quotas.py",
     "finops_providers/aws/recommendations.py",
     "finops_providers/aws/terraform_state.py",
     "finops_providers/aws/topology.py",
@@ -593,6 +594,7 @@
     "tests/contract/test_cost_export.py",
     "tests/contract/test_credential_broker.py",
     "tests/contract/test_partial_graph_consumers.py",
+    "tests/contract/test_quota_source.py",
     "tests/contract/test_topology_source.py",
     "tests/core/__init__.py",
     "tests/core/test_budget.py",
@@ -659,6 +661,7 @@
     "tests/providers/aws/test_cur.py",
     "tests/providers/aws/test_health.py",
     "tests/providers/aws/test_query_evidence.py",
+    "tests/providers/aws/test_quotas.py",
     "tests/providers/aws/test_recommendations.py",
     "tests/providers/aws/test_response_shapes.py",
     "tests/providers/aws/test_terraform_state.py",
@@ -3861,6 +3864,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops_api/db/models.py",
+      "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/__init__.py",
       "t": "finops_api/db/repositories/accounts.py",
       "k": "python"
@@ -4743,6 +4751,11 @@
     {
       "s": "finops_core/domain/query.py",
       "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/quota.py",
+      "t": "finops_core/constants.py",
       "k": "python"
     },
     {
@@ -5851,6 +5864,26 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/quotas.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/quotas.py",
+      "t": "finops_core/domain/quota.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/quotas.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/quotas.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/recommendations.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -6736,6 +6769,11 @@
       "k": "python"
     },
     {
+      "s": "tests/contract/conftest.py",
+      "t": "finops_providers/aws/quotas.py",
+      "k": "python"
+    },
+    {
       "s": "tests/contract/test_account_discovery.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -6798,6 +6836,16 @@
     {
       "s": "tests/contract/test_partial_graph_consumers.py",
       "t": "finops_query/graph.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_quota_source.py",
+      "t": "finops_core/domain/quota.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_quota_source.py",
+      "t": "finops_core/ports/quotas.py",
       "k": "python"
     },
     {
@@ -6908,6 +6956,11 @@
     {
       "s": "tests/core/test_ports.py",
       "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_quota.py",
+      "t": "finops_core/constants.py",
       "k": "python"
     },
     {
@@ -7901,6 +7954,26 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/aws/test_quotas.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_quotas.py",
+      "t": "finops_core/domain/quota.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_quotas.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_quotas.py",
+      "t": "finops_providers/aws/quotas.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/aws/test_recommendations.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -7923,6 +7996,11 @@
     {
       "s": "tests/providers/aws/test_recommendations.py",
       "t": "finops_providers/aws/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_response_shapes.py",
+      "t": "finops_core/domain/quota.py",
       "k": "python"
     },
     {
