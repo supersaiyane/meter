@@ -246,7 +246,12 @@ meter/
 │   │                          Field required from inside a container. It reports
 │   │                          and never writes, because the one thing worse than a
 │   │                          missing key is a credential quietly replaced with an
-│   │                          example value
+│   │                          example value. check_memory also reads the Next
+│   │                          action section and refuses a numbered candidate
+│   │                          naming an issue the registry says is FIXED: that
+│   │                          section went stale twice in two days by proposing
+│   │                          work that had just been finished, and it is the part
+│   │                          of the checkpoint a cold session reads first
 │   ├── ops/                   run by a person against a live database, which is
 │   │                          why the api image carries this directory and only
 │   │                          this one. erase_principal.py, deliberately not an
@@ -825,6 +830,16 @@ meter/
 │                              and counts the budgets whose scope it cannot reproduce
 │                              on sync_error rather than dropping them
 │   └── metrics.py             only SLO 1 needs a custom metric. The other three are AWS's
+│   ├── tests/contract/test_cause_vocabulary.py  the only test that crosses the
+│   │                          language boundary. The seven causes are mirrored in
+│   │                          six places and the two halves are different
+│   │                          languages, so nothing in a type checker or a
+│   │                          migration catches a divergence: the collector
+│   │                          succeeds, the database accepts the row, and a screen
+│   │                          renders a cause it has no label for. ADR-0026 names
+│   │                          this and the five tests beside it rather than
+│   │                          counting the places, because the count was written
+│   │                          by looking and was wrong twice
 │   └── tests/providers/aws/test_response_shapes.py  not a module, but the one
 │                              place that says what the four unproven adapters
 │                              depend on. Every response field they read, every
