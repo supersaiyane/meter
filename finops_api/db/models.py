@@ -44,7 +44,18 @@ metadata = MetaData()
 #: The closed error taxonomy, mirrored from `finops_core.errors`. A new cause
 #: cannot reach the database without a migration, which is the point: the
 #: taxonomy staying closed is what stops every future failure becoming generic.
-ERROR_TYPES = ("AccessDenied", "Throttled", "NotOptedIn", "NoData", "Unreachable", "SchemaDrift")
+ERROR_TYPES = (
+    "AccessDenied",
+    "Throttled",
+    "NotOptedIn",
+    "NoData",
+    "Unreachable",
+    "SchemaDrift",
+    # The seventh, 0018 and ADR-0026. A value this deployment set that does not exist at the
+    # provider, which no retry changes and which SchemaDrift used to absorb under a word that
+    # sent an operator looking for an API change.
+    "Misconfigured",
+)
 
 RUN_STATUSES = ("CLAIMED", "RUNNING", "SUCCEEDED", "FAILED", "PARTIAL")
 ACCOUNT_STATUSES = ("ACTIVE", "SUSPENDED", "PENDING", "DEPARTED", "UNKNOWN")

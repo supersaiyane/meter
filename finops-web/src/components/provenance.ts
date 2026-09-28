@@ -11,9 +11,22 @@
  * all. There is deliberately no shape here that pairs a failure with a number.
  */
 
-/** The six causes from `finops_core.errors`. Closed, and mirrored deliberately. */
+/** The seven causes from `finops_core.errors`. Closed, and mirrored deliberately. */
 export type Cause =
-  'AccessDenied' | 'Throttled' | 'NotOptedIn' | 'NoData' | 'Unreachable' | 'SchemaDrift';
+  | 'AccessDenied'
+  | 'Throttled'
+  | 'NotOptedIn'
+  | 'NoData'
+  | 'Unreachable'
+  | 'SchemaDrift'
+  /**
+   * A value this deployment set that does not exist at the provider. ADR-0026, ISS-215.
+   *
+   * It exists because SchemaDrift was absorbing it and saying the wrong thing: an aggregator
+   * name with a typo in it told an operator their schema had drifted and sent them to look for
+   * an API change, when the fix was one line of their own settings.
+   */
+  | 'Misconfigured';
 
 export type Provenance = 'measured' | 'modelled' | 'forecast';
 
@@ -47,6 +60,9 @@ export const CAUSE_LABEL: Readonly<Record<Exclude<Cause, 'NoData'>, string>> = {
   NotOptedIn: 'NOT ENABLED',
   Unreachable: 'UNREACHABLE',
   SchemaDrift: 'UNRECOGNISED',
+  /* Not "INVALID" and not "ERROR". The word has to say whose problem it is, which is the
+     whole reason this cause was separated from UNRECOGNISED. */
+  Misconfigured: 'MISCONFIGURED',
 };
 
 /**

@@ -105,6 +105,34 @@ class Unreachable(CollectionError):
     )
 
 
+class Misconfigured(CollectionError):
+    """A value this deployment set is wrong, and no retry will change that.
+
+    The seventh cause, added 2026-09-28 under ADR-0026 and recorded as ISS-215. Before it, a
+    configuration aggregator name that does not exist and a state file path that does not exist
+    both arrived as `SchemaDrift`, which is loud and is never a zero, so nothing was hidden. It
+    was still the wrong word: it told an operator their schema had drifted and sent them to look
+    for an API change, when the fix was one line of their own settings.
+
+    **The test for this cause is whether a person can fix it by editing configuration.** Not
+    whether the provider said "not found": a bucket we were told to read and cannot is
+    misconfigured, and an account that genuinely holds no budgets is `NoData`. Not whether the
+    call failed for a reason we did not expect either, because that is what `SchemaDrift` is for
+    and the two must not blur: one says the operator is wrong and the other says we are.
+
+    It is deliberately not retried. Every other non fatal cause here is worth another attempt on
+    the next cadence; this one produces the identical failure forever until somebody changes a
+    setting, so retrying it only fills the error table.
+    """
+
+    remediation_text = (
+        "A value this deployment is configured with does not exist at the provider, so the "
+        "collector could not read anything. This is not a transient failure and will not "
+        "recover on its own. Read the detail for the name that was rejected, correct it in "
+        "configuration, then re run the collector."
+    )
+
+
 class SchemaDrift(CollectionError):
     """The response did not match the shape this adapter expects."""
 

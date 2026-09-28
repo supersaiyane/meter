@@ -18,6 +18,10 @@ EXPECTED = {
     "NoData",
     "Unreachable",
     "SchemaDrift",
+    # The seventh, added 2026-09-28 under ADR-0026 for ISS-215. This set refusing the addition
+    # until it was written down here is the gate working: a cause reaching the code without
+    # reaching this line is the generic catch all arriving by increments, which is ISS-015.
+    "Misconfigured",
 }
 
 
@@ -88,3 +92,24 @@ def test_arguments_are_keyword_only() -> None:
         # Deliberately wrong, which is the assertion. The ignore is what lets
         # the type checker agree that it is wrong.
         errors.NoData("acct:666666666666", "org_tree")  # type: ignore[call-arg]
+
+
+def test_misconfiguration_is_not_absence_and_not_drift() -> None:
+    """The two boundaries ADR-0026 turns on, asserted through the remediation each one gives.
+
+    `Misconfigured` earns its place only if it says something the other two do not. A reader
+    who is told their schema has drifted looks for an API change; a reader who is told a number
+    is absent looks for data. Neither sends them to the setting that is actually wrong, and a
+    cause naming the wrong remedy is worse than a vague one, because a vague one makes somebody
+    look and a wrong one makes them look in the wrong place.
+    """
+    misconfigured = errors.Misconfigured(scope_key="iac", collector="iac_state")
+    drift = errors.SchemaDrift(scope_key="iac", collector="iac_state")
+    absent = errors.NoData(scope_key="iac", collector="iac_state")
+
+    assert misconfigured.remediation != drift.remediation
+    assert misconfigured.remediation != absent.remediation
+    # It has to say the word that sends somebody to the right place.
+    assert "configur" in misconfigured.remediation.lower()
+    # And it has to say the retry will not help, because every other cause here implies one.
+    assert "not recover" in misconfigured.remediation.lower()

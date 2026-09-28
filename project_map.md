@@ -30,9 +30,9 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Playwright journeys | 15 in 4 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 7 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 21 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 17 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 117 | test_*.py under tests/ |
-| Test functions | 1601 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 18 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 119 | test_*.py under tests/ |
+| Test functions | 1611 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -947,6 +947,20 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0018_misconfigured_cause.py  the seventh cause, ADR-0026. A value this
+│       │                      deployment set that does not exist at the provider,
+│       │                      which SchemaDrift used to absorb under a word that
+│       │                      sent an operator looking for an API change when the
+│       │                      fix was one line of their own settings. Widening a
+│       │                      check constraint is the backward compatible
+│       │                      direction, so this is one migration rather than
+│       │                      three. Nothing is backfilled: rows already written
+│       │                      as SchemaDrift were correct under the vocabulary of
+│       │                      the day, and rewriting them would invent a judgement
+│       │                      nobody made. The downgrade refuses rather than
+│       │                      deletes, because dropping rows to satisfy a narrower
+│       │                      constraint destroys the record of why a collection
+│       │                      failed in order to make a schema change succeed
 │       ├── 0017_budget.py     what somebody said this should cost, collected and
 │       │                      never entered, so it carries a run id and both
 │       │                      timestamps like every other fact here. Nothing

@@ -34,6 +34,7 @@ from finops_core.config import Settings
 from finops_core.errors import (
     AccessDenied,
     CollectionError,
+    Misconfigured,
     NotOptedIn,
     SchemaDrift,
     Throttled,
@@ -120,6 +121,28 @@ def error_code(error: ClientError) -> str:
     return str(error.response.get("Error", {}).get("Code", ""))
 
 
+#: Codes that mean a value this deployment set does not exist at the provider. ISS-215,
+#: ADR-0026.
+#:
+#: The test for membership is whether a person fixes it by editing configuration, and it is
+#: deliberately narrow. A bucket we were told to read and cannot is here. An account that
+#: genuinely holds no budgets is `NoData`, because we looked and there was nothing. A request we
+#: built wrongly, an expression the service rejected or a parameter it did not accept, stays
+#: `SchemaDrift`: that one says we are wrong, and this one says the operator is, and blurring
+#: them sends somebody to change a setting that was correct.
+MISCONFIGURED_CODES = frozenset(
+    {
+        # The Config aggregator named in settings. The most likely first call failure in the
+        # whole product, because the name is free text and nothing validates it until a read.
+        "NoSuchConfigurationAggregatorException",
+        # A Terraform state location named in settings. FEAT-057 reads what it is told to read,
+        # and a path with a typo in it is indistinguishable from one that was never created.
+        "NoSuchKey",
+        "NoSuchBucket",
+    }
+)
+
+
 def translate(error: Exception, scope_key: str, collector: str) -> CollectionError:
     """Turn a provider exception into exactly one of the six causes."""
     if isinstance(error, UNREACHABLE_EXCEPTIONS):
@@ -133,6 +156,8 @@ def translate(error: Exception, scope_key: str, collector: str) -> CollectionErr
             return Throttled(scope_key=scope_key, collector=collector, detail=detail)
         if code in NOT_OPTED_IN_CODES:
             return NotOptedIn(scope_key=scope_key, collector=collector, detail=detail)
+        if code in MISCONFIGURED_CODES:
+            return Misconfigured(scope_key=scope_key, collector=collector, detail=detail)
         # Deliberately not NoData. An unknown failure rendered as a zero is the
         # defect the whole taxonomy exists to prevent.
         return SchemaDrift(scope_key=scope_key, collector=collector, detail=detail)

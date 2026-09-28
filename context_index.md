@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-602 public symbols across 5 packages.
+603 public symbols across 5 packages.
 
 ## finops_core
 
@@ -101,18 +101,18 @@ a duplicate.
 | `NodeKind` | class | `finops_core/domain/topology.py:43` | The kinds of thing the graph can hold, as a closed set. | `finops_api/db/repositories/topology.py` |
 | `EdgeKind` | class | `finops_core/domain/topology.py:70` | How two nodes are related, in the direction the relationship runs. | `finops_api/db/repositories/topology.py` |
 | `CoverageState` | class | `finops_core/domain/topology.py:93` | How much of one account's one region the graph is built from. | `finops_api/db/repositories/topology.py` |
-| `CoverageCause` | class | `finops_core/domain/topology.py:108` | Why a slice is not COMPLETE. The taxonomy's six, plus never attempted. | `finops_api/db/repositories/topology.py`, `finops_ingest/collectors/inventory.py`, `finops_providers/aws/config_inventory.py`, `finops_providers/aws/topology.py` |
-| `node_id_for` | function | `finops_core/domain/topology.py:133` | The identity of a node, derived rather than allocated. | `finops_providers/aws/config_inventory.py`, `finops_providers/aws/topology.py` |
-| `Node` | class | `finops_core/domain/topology.py:171` | One resource, as a vertex. Identified by the provider's own identifier. | `finops_api/db/repositories/topology.py`, `finops_providers/aws/config_inventory.py`, `finops_providers/aws/topology.py` |
-| `Edge` | class | `finops_core/domain/topology.py:209` | One directed relationship between two nodes. | `finops_api/db/repositories/topology.py`, `finops_providers/aws/config_inventory.py`, `finops_providers/aws/topology.py` |
-| `Shortfall` | class | `finops_core/domain/topology.py:262` | One API that did not answer, and what that costs the slice. | `finops_providers/aws/config_inventory.py`, `finops_providers/aws/topology.py` |
-| `SliceRead` | class | `finops_core/domain/topology.py:289` | Everything one account and region yielded, and everything it did not. | `finops_ingest/collectors/topology.py`, `finops_providers/aws/config_inventory.py`, `finops_providers/aws/topology.py` |
-| `SliceRead.is_whole` | method | `finops_core/domain/topology.py:322` | True only when every API this read depends on answered. | nothing in this tree |
-| `SliceRead.cause` | method | `finops_core/domain/topology.py:327` | The one cause the coverage row carries, or None for a whole read. | `finops_providers/aws/cur.py`, `finops_providers/grafana/client.py` |
-| `SliceRead.state` | method | `finops_core/domain/topology.py:332` | COMPLETE or PARTIAL. Never UNREAD: this read was attempted. | nothing in this tree |
-| `dominant_cause` | function | `finops_core/domain/topology.py:337` | The cause a slice's coverage row carries when several APIs fell short. | nothing in this tree |
-| `GraphCoverage` | class | `finops_core/domain/topology.py:359` | How much of one account's one region the graph was built from. | `finops_api/db/repositories/topology.py` |
-| `GraphCoverage.is_whole` | method | `finops_core/domain/topology.py:405` | True only for a slice the graph can be trusted to be complete over. | nothing in this tree |
+| `CoverageCause` | class | `finops_core/domain/topology.py:108` | Why a slice is not COMPLETE. The taxonomy's seven, plus never attempted. | `finops_api/db/repositories/topology.py`, `finops_ingest/collectors/inventory.py`, `finops_providers/aws/config_inventory.py`, `finops_providers/aws/topology.py` |
+| `node_id_for` | function | `finops_core/domain/topology.py:140` | The identity of a node, derived rather than allocated. | `finops_providers/aws/config_inventory.py`, `finops_providers/aws/topology.py` |
+| `Node` | class | `finops_core/domain/topology.py:178` | One resource, as a vertex. Identified by the provider's own identifier. | `finops_api/db/repositories/topology.py`, `finops_providers/aws/config_inventory.py`, `finops_providers/aws/topology.py` |
+| `Edge` | class | `finops_core/domain/topology.py:216` | One directed relationship between two nodes. | `finops_api/db/repositories/topology.py`, `finops_providers/aws/config_inventory.py`, `finops_providers/aws/topology.py` |
+| `Shortfall` | class | `finops_core/domain/topology.py:269` | One API that did not answer, and what that costs the slice. | `finops_providers/aws/config_inventory.py`, `finops_providers/aws/topology.py` |
+| `SliceRead` | class | `finops_core/domain/topology.py:296` | Everything one account and region yielded, and everything it did not. | `finops_ingest/collectors/topology.py`, `finops_providers/aws/config_inventory.py`, `finops_providers/aws/topology.py` |
+| `SliceRead.is_whole` | method | `finops_core/domain/topology.py:329` | True only when every API this read depends on answered. | nothing in this tree |
+| `SliceRead.cause` | method | `finops_core/domain/topology.py:334` | The one cause the coverage row carries, or None for a whole read. | `finops_providers/aws/cur.py`, `finops_providers/grafana/client.py` |
+| `SliceRead.state` | method | `finops_core/domain/topology.py:339` | COMPLETE or PARTIAL. Never UNREAD: this read was attempted. | nothing in this tree |
+| `dominant_cause` | function | `finops_core/domain/topology.py:344` | The cause a slice's coverage row carries when several APIs fell short. | nothing in this tree |
+| `GraphCoverage` | class | `finops_core/domain/topology.py:366` | How much of one account's one region the graph was built from. | `finops_api/db/repositories/topology.py` |
+| `GraphCoverage.is_whole` | method | `finops_core/domain/topology.py:412` | True only for a slice the graph can be trusted to be complete over. | nothing in this tree |
 | `Confidence` | class | `finops_core/domain/waste.py:31` | How much data the estimate rests on. Never derived from the money. | nothing in this tree |
 | `Lifecycle` | class | `finops_core/domain/waste.py:39` | Where a recommendation is. The event log is what says how it got there. | `finops_api/lifecycle.py`, `finops_ingest/collectors/score.py` |
 | `Source` | class | `finops_core/domain/waste.py:68` | Who found it. One table holds all of them. | nothing in this tree |
@@ -130,7 +130,8 @@ a duplicate.
 | `NotOptedIn` | class | `finops_core/errors.py:80` | The service exists but this organization has never enabled it. | `finops_providers/aws/client.py`, `finops_providers/aws/recommendations.py`, `finops_providers/grafana/amg.py` |
 | `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | `finops_ingest/collectors/cost_focus.py`, `finops_ingest/collectors/org_tree.py`, `finops_providers/aws/commitment.py`, `finops_providers/aws/cur.py` |
 | `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | `finops_providers/aws/client.py`, `finops_providers/aws/cur.py`, `finops_providers/aws/terraform_state.py`, `finops_providers/grafana/client.py` |
-| `SchemaDrift` | class | `finops_core/errors.py:108` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py`, `finops_ingest/collectors/account_health.py`, `finops_ingest/worker.py`, `finops_providers/aws/client.py`, and 6 more |
+| `Misconfigured` | class | `finops_core/errors.py:108` | A value this deployment set is wrong, and no retry will change that. | `finops_providers/aws/client.py` |
+| `SchemaDrift` | class | `finops_core/errors.py:136` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py`, `finops_ingest/collectors/account_health.py`, `finops_ingest/worker.py`, `finops_providers/aws/client.py`, and 6 more |
 | `AccountDiscovery` | class | `finops_core/ports/accounts.py:19` | Reads which accounts exist and how they are arranged. | nothing in this tree |
 | `AccountDiscovery.list_accounts` | method | `finops_core/ports/accounts.py:22` | Every account this organization contains. | `finops_ingest/collectors/org_tree.py` |
 | `AccountDiscovery.describe_organization` | method | `finops_core/ports/accounts.py:35` | Every node of the organization tree, roots and units included. | `finops_ingest/collectors/org_tree.py` |
@@ -215,11 +216,11 @@ a duplicate.
 | `scope_of` | function | `finops_providers/aws/budgets.py:51` | What a budget is drawn around, and what it names. | nothing in this tree |
 | `AwsBudgets` | class | `finops_providers/aws/budgets.py:76` | The payer's budgets, read and never written. | nothing in this tree |
 | `AwsBudgets.budgets` | method | `finops_providers/aws/budgets.py:85` |  | `finops_ingest/collectors/budgets.py` |
-| `botocore_config` | function | `finops_providers/aws/client.py:87` | Bounded timeouts and a bounded retry policy, both from configuration. | `finops_providers/aws/accounts.py`, `finops_providers/aws/commitment.py`, `finops_providers/aws/credentials.py`, `finops_providers/aws/cur.py`, and 2 more |
-| `partition_for` | function | `finops_providers/aws/client.py:96` | The partition a region belongs to. | `finops_providers/aws/topology.py` |
-| `role_arn` | function | `finops_providers/aws/client.py:114` | The collector role in a member account. Built, never stored. | `finops_providers/aws/credentials.py` |
-| `error_code` | function | `finops_providers/aws/client.py:119` |  | nothing in this tree |
-| `translate` | function | `finops_providers/aws/client.py:123` | Turn a provider exception into exactly one of the six causes. | `finops_providers/aws/accounts.py`, `finops_providers/aws/budgets.py`, `finops_providers/aws/commitment.py`, `finops_providers/aws/config_inventory.py`, and 9 more |
+| `botocore_config` | function | `finops_providers/aws/client.py:88` | Bounded timeouts and a bounded retry policy, both from configuration. | `finops_providers/aws/accounts.py`, `finops_providers/aws/commitment.py`, `finops_providers/aws/credentials.py`, `finops_providers/aws/cur.py`, and 2 more |
+| `partition_for` | function | `finops_providers/aws/client.py:97` | The partition a region belongs to. | `finops_providers/aws/topology.py` |
+| `role_arn` | function | `finops_providers/aws/client.py:115` | The collector role in a member account. Built, never stored. | `finops_providers/aws/credentials.py` |
+| `error_code` | function | `finops_providers/aws/client.py:120` |  | nothing in this tree |
+| `translate` | function | `finops_providers/aws/client.py:146` | Turn a provider exception into exactly one of the six causes. | `finops_providers/aws/accounts.py`, `finops_providers/aws/budgets.py`, `finops_providers/aws/commitment.py`, `finops_providers/aws/config_inventory.py`, and 9 more |
 | `CostExplorerCommitmentReport` | class | `finops_providers/aws/commitment.py:144` | `CommitmentReport` over Cost Explorer. Unproved, ISS-122. | nothing in this tree |
 | `CostExplorerCommitmentReport.utilization` | method | `finops_providers/aws/commitment.py:191` |  | `finops_ingest/collectors/commitment.py` |
 | `CostExplorerCommitmentReport.coverage` | method | `finops_providers/aws/commitment.py:204` |  | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_ingest/collectors/commitment.py` |
@@ -689,10 +690,10 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `QuotaUsage` in `finops_core/domain/quota.py:18`
 - `ResourceRef` in `finops_core/domain/resource.py:19`
 - `Tenant` in `finops_core/domain/tenant.py:23`
-- `SliceRead.is_whole` in `finops_core/domain/topology.py:322`
-- `SliceRead.state` in `finops_core/domain/topology.py:332`
-- `dominant_cause` in `finops_core/domain/topology.py:337`
-- `GraphCoverage.is_whole` in `finops_core/domain/topology.py:405`
+- `SliceRead.is_whole` in `finops_core/domain/topology.py:329`
+- `SliceRead.state` in `finops_core/domain/topology.py:339`
+- `dominant_cause` in `finops_core/domain/topology.py:344`
+- `GraphCoverage.is_whole` in `finops_core/domain/topology.py:412`
 - `Confidence` in `finops_core/domain/waste.py:31`
 - `Source` in `finops_core/domain/waste.py:68`
 - `Recommendation.confidence` in `finops_core/domain/waste.py:169`

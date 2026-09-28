@@ -537,6 +537,7 @@
     "migrations/versions/0015_commitment_action.py",
     "migrations/versions/0016_resource_management.py",
     "migrations/versions/0017_budget.py",
+    "migrations/versions/0018_misconfigured_cause.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_env_keys.py",
     "scripts/ci/check_flags.py",
@@ -581,6 +582,7 @@
     "tests/contract/__init__.py",
     "tests/contract/conftest.py",
     "tests/contract/test_account_discovery.py",
+    "tests/contract/test_cause_vocabulary.py",
     "tests/contract/test_commitment.py",
     "tests/contract/test_cost_export.py",
     "tests/contract/test_credential_broker.py",
@@ -652,6 +654,7 @@
     "tests/providers/aws/test_recommendations.py",
     "tests/providers/aws/test_response_shapes.py",
     "tests/providers/aws/test_terraform_state.py",
+    "tests/providers/aws/test_translate.py",
     "tests/providers/aws/test_waste_metrics.py",
     "tests/providers/fake/__init__.py",
     "tests/providers/fake/test_commitment.py",
@@ -6725,6 +6728,16 @@
       "k": "python"
     },
     {
+      "s": "tests/contract/test_cause_vocabulary.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_cause_vocabulary.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
       "s": "tests/contract/test_commitment.py",
       "t": "finops_core/domain/cost.py",
       "k": "python"
@@ -7887,6 +7900,16 @@
     {
       "s": "tests/providers/aws/test_terraform_state.py",
       "t": "finops_providers/aws/terraform_state.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_translate.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_translate.py",
+      "t": "finops_providers/aws/client.py",
       "k": "python"
     },
     {
