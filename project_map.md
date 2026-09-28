@@ -261,9 +261,15 @@ meter/
 │       ├── components/        built once, used by every sub project. All ten of
 │       │                      12-UI-DESIGN section 11 exist, plus FixtureBand,
 │       │                      which that inventory predates
-│       │   ├── Figure.tsx     the load bearing one. Nothing else renders a number
+│       │   ├── Figure.tsx     the load bearing one. Nothing else renders a number.
+│       │   │                 Dense inside a table, and its accuracy clause keeps
+│       │   │                 its comma on the word before, so a wrap in a narrow
+│       │   │                 surface never starts a line with punctuation
 │       │   ├── provenance.ts  the union that makes a point forecast unsayable
-│       │   ├── StateBoundary.tsx  all seven states from design section 8
+│       │   ├── StateBoundary.tsx  all seven states from design section 8, plus
+│       │   │                 coverageShownElsewhere, which drops the coverage
+│       │   │                 sentence and never the rows, for tiles that sit
+│       │   │                 under a shell already making the claim
 │       │   ├── surfaceState.ts    which of the seven a query is in, one decision
 │       │   ├── DataTable.tsx  virtualised past 200 rows, headless
 │       │   ├── tableConfig.ts column widths and alignment. Numerals right, always
