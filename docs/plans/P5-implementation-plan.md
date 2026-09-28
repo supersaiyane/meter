@@ -175,7 +175,7 @@ routes.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-28 |
 | Implements | P5 spec section 9, FEAT-033 |
 | Delivers | FEAT-033 |
 | Depends on | TASK-P5-005 |

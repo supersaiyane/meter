@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-62 features across 8 sub projects. 19 specified, 9 planned, 10 in build, 24 delivered.
+62 features across 8 sub projects. 18 specified, 9 planned, 10 in build, 25 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -167,7 +167,7 @@ block is caught by `make check-docs`. See
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-033](docs/features/FEAT-033-quota-utilization.md) | Quota utilization per service per region, with stated coverage gaps | Specified | [P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 5.2, [P5 plan](docs/plans/P5-implementation-plan.md) |
+| [FEAT-033](docs/features/FEAT-033-quota-utilization.md) | Quota utilization per service per region, with stated coverage gaps | Delivered | [P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 5.2, [P5 plan](docs/plans/P5-implementation-plan.md) |
 | [FEAT-034](docs/features/FEAT-034-quota-increase-workflow.md) | Quota increase request drafting and tracking, never submission | Specified | [P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 6, [P5 plan](docs/plans/P5-implementation-plan.md) |
 | [FEAT-058](docs/features/FEAT-058-performance-dimension.md) | A performance dimension, underprovisioned as well as oversized | Planned | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 

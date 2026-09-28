@@ -195,6 +195,7 @@
     "finops-web/src/api/fixtureSeam.ts",
     "finops-web/src/api/fixtures/cost.ts",
     "finops-web/src/api/fixtures/query.ts",
+    "finops-web/src/api/fixtures/quotas.ts",
     "finops-web/src/api/fixtures/topology.ts",
     "finops-web/src/api/fixtures/waste.ts",
     "finops-web/src/api/queries.ts",
@@ -271,6 +272,7 @@
     "finops-web/src/screens/QueryFindingsScreen.tsx",
     "finops-web/src/screens/QueryGroups.tsx",
     "finops-web/src/screens/QuerySurfacesScreen.tsx",
+    "finops-web/src/screens/QuotasScreen.tsx",
     "finops-web/src/screens/RemediationControls.tsx",
     "finops-web/src/screens/ResourceListScreen.tsx",
     "finops-web/src/screens/TopologyScreen.tsx",
@@ -297,6 +299,7 @@
     "finops-web/src/screens/__tests__/QueryFindingDetailScreen.test.tsx",
     "finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx",
     "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
+    "finops-web/src/screens/__tests__/QuotasScreen.test.tsx",
     "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
     "finops-web/src/screens/__tests__/ResourceListScreen.test.tsx",
     "finops-web/src/screens/__tests__/TopologyScreen.test.tsx",
@@ -1275,6 +1278,11 @@
     },
     {
       "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/QuotasScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/ResourceListScreen.tsx",
       "k": "typescript"
     },
@@ -1359,6 +1367,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/api/fixtures/quotas.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/api/fixtures/topology.ts",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -1391,6 +1404,11 @@
     {
       "s": "finops-web/src/api/queries.ts",
       "t": "finops-web/src/api/fixtures/query.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/queries.ts",
+      "t": "finops-web/src/api/fixtures/quotas.ts",
       "k": "typescript"
     },
     {
@@ -2849,6 +2867,41 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/QuotasScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuotasScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuotasScreen.tsx",
+      "t": "finops-web/src/components/FixtureBand.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuotasScreen.tsx",
+      "t": "finops-web/src/components/PercentCell.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuotasScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuotasScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuotasScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/RemediationControls.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
@@ -3535,6 +3588,36 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuotasScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/quotas.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuotasScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuotasScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuotasScreen.test.tsx",
+      "t": "finops-web/src/screens/QuotasScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuotasScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuotasScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
       "k": "typescript"
     },

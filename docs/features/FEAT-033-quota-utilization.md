@@ -3,10 +3,19 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P5 |
-| Status | Specified |
+| Status | Delivered |
 | Specification | [P5 spec](../specs/2026-09-20-p5-quotas-and-limits-design.md), section 5.2 |
 | Tasks | TASK-P5-001 to TASK-P5-006 |
-| Refresh cadence | 6 hours |
+| Refresh cadence | 12 hours |
+
+This document said 6 hours until 2026-09-28 and the specification's section 7 said
+12. The 12 is right and is the figure in `collector_schedule`: a quota moves when
+somebody raises it, which is rare, and usage against it is read as a peak over the
+preceding day, so a faster cadence re reads the same window and reports the same
+number. The real constraint is the call count, because Service Quotas is rate
+limited per account and the collector makes one call per service per account per
+region. Corrected here rather than in the schedule, because cadence is data and the
+row was already right.
 
 ## What it does
 

@@ -59,7 +59,7 @@ export const GROUPS: readonly GroupDef[] = [
       { path: '/governance/instances', label: 'Query surfaces', arrives: null },
       { path: '/governance/adhoc', label: 'Ad hoc queries', arrives: null },
       { path: '/governance/enforcement', label: 'Enforcement', arrives: null },
-      { path: '/governance/quotas', label: 'Quotas', arrives: 'P5 Quotas and Limits' },
+      { path: '/governance/quotas', label: 'Quotas', arrives: null },
     ],
   },
   {
