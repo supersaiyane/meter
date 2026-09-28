@@ -45,32 +45,37 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-09-28 | The four unproven adapters, verified as far as an offline check can go | Done | ISS-200, ISS-202, ISS-209 and ISS-211 all say the same thing about four different adapters: the response shapes were read from the AWS documentation and the tests answer from a literal, so a field name that does not exist passes every gate this project has and fails on the first real call. There is no account to call, which is ISS-002 and has been waiting since 2026-08-23, so the question was what can honestly be checked without one. The answer was better than expected. botocore ships the JSON service models that boto3 builds every client from, they ship with the SDK version in use, and they are what the documentation is generated from, so a key absent from an output shape is a key AWS will never send and that is knowable offline. Three things are now checked across seven operations: every response field each adapter reads exists in the model, every continuation token is the one the service actually pages on, and every required request parameter is sent. All of it passed first time, so no name was wrong, and the check was falsified by claiming a field S3 does not have and watching the assertion name it. The pagination check is the one worth keeping for its own sake: IAM pages on Marker and everything else here pages on NextToken, and an adapter sending the wrong key reads page one forever on an estate large enough to have a second page and looks perfect on one that does not. Comparing declared error codes against the three sets translate maps then found the real thing, ISS-215: eleven codes across four operations fall through to SchemaDrift, which is loud and is deliberately never a zero, so nothing is hidden, and is the wrong word for most of them. A wrong aggregator name, a state file path that does not exist and an expired page token are configuration, absence and a retry, and telling an operator their schema has drifted sends them to look for an API change when the fix is one setting. Not fixed here, because the fix is either a seventh cause, which is an ADR that changes a check constraint and every screen that renders a cause, or a per adapter remediation string, and that is the owner's choice. Pinned instead, so a code a future SDK adds is a failure rather than a silent join. ISS-216 records what the four issues still mean, because a verification this narrow is easy to mistake for closing them. `make verify` green: 1,953 backend tests passed and 1 skipped at 95.72 percent coverage, 438 frontend tests, 15 journeys, zero unresolved security findings. | `tests/providers/aws/test_response_shapes.py` is the whole of it and is also the only written record of what the four adapters depend on. Nothing is in flight. The four issues stay open and what they need is an account |
 | 2026-09-28 | The seventh cause, and six guards that were right when the decision was not | Done | ISS-215 said a misconfiguration reached the screen as SchemaDrift, which named the wrong remedy: it told an operator their schema had drifted and sent them to look for an API change when the fix was one line of their own settings. The owner chose the taxonomy change over the cheaper remediation string, so `Misconfigured` is the seventh cause, ADR-0026. The test for membership is whether a person fixes it by editing configuration, and it is deliberately narrow: three codes, the Config aggregator named in settings and a Terraform state bucket or key named in settings. Two boundaries matter more than the cause itself and both are asserted. It is not NoData, because a bucket we were told to read and cannot is misconfigured while an account that genuinely holds no budgets is absence, and collapsing them puts a configuration error behind a number. It is not SchemaDrift, because that one says we are wrong and this one says the operator is, and blurring them sends somebody to change a setting that was correct. Our own bad requests, InvalidExpressionException and InvalidParameterException, therefore stay where they were. The interesting part was how wrong I was about the size of the change. The ADR said the vocabulary lives in five places. A test found a sixth, the CoverageCause enum, because a cause a collector can raise and a coverage row cannot record is a slice that fails with no reason attached. The ADR then said six and another test found a seventh, the labels a reader sees. Each draft was written by looking and looking kept being wrong, so the ADR now names the tests instead of counting places: every one of them failed while this was being written and every one was right, which is the closed taxonomy doing exactly what ISS-015 asked. Two gaps closed on the way. `translate` had no direct test at all, which is worth saying plainly about the single function that turns every provider failure into one of the words the product renders, counts and filters on. And nothing crossed the language boundary, so `tests/contract/test_cause_vocabulary.py` now asserts the Python and TypeScript vocabularies name the same causes and that every cause except NoData has a label, falsified by deleting the new one from the frontend and watching it name the divergence. `make verify` green: 1,976 backend tests passed and 1 skipped at 95.72 percent coverage, 438 frontend tests, 15 journeys, zero unresolved security findings. | `docs/adr/ADR-0026-a-seventh-cause-for-misconfiguration.md` for the decision and the list of tests that hold it, `migrations/versions/0018_misconfigured_cause.py` for why widening is one migration and why the downgrade refuses rather than deletes, `tests/providers/aws/test_translate.py` for the boundaries. Nothing is in flight. Four transient codes still fall through and have no cause: they are loud today and recover on the next cadence, and mapping them to Throttled would inflate a quota number |
 | 2026-09-28 | The resume vector went stale the same way twice, so it is a check now | Done | The map needed one line, for the cross language cause contract, and its counts and its collector listing both passed. The checkpoint's rows were current and its Next action section was wrong again, in exactly the way it was wrong the previous pass: it proposed the four unproven adapters as the third candidate, and they had been taken that afternoon as far as an offline check can go. The pass before that it had proposed ISS-213 and ISS-214 after both were closed. Twice is a pattern rather than an oversight, and the pattern has a shape worth naming: that section is the output of the file rather than a record in it, so the moment a row is added is the moment the section summarising it becomes wrong. Both times it was caught only because the owner asked for the checkpoint and I read it. Nothing in `make verify` looked at the one part of the file a cold session reads first, which is the worst place in the project for an unchecked claim to live. It is checked now: `scripts/ci/check_memory.py` reads the section and refuses a numbered candidate naming an issue the registry says is FIXED, falsified by proposing ISS-215 and watching it name it. The check is deliberately narrow and the lesson says so: it covers issues, and a candidate phrased as prose is still mine to keep honest. `make verify` green: 1,976 backend tests passed and 1 skipped at 95.72 percent coverage, 438 frontend tests, 15 journeys, zero unresolved security findings. | `scripts/ci/check_memory.py` at `check_next_action`, `tasks/lessons.md` at the 2026-09-28 entry for the rule the check only half covers. 24 live rows, 18 lessons. Nothing is in flight |
+| 2026-09-28 | Three issues flagged stale three times, read at last, and one of them was held by nothing | Done | ISS-028, ISS-029 and ISS-030 had been carried as possibly stale across three sweeps because their closing features are all Delivered, and nobody had checked. The point of reading them was to verify rather than to close: a feature saying Delivered is the claim, not the evidence. All three turned out genuinely done, and the reading was still worth it for what it found. ISS-028 asked for a recommendation lifecycle and there is one: seven states held by a check constraint, a move that refuses rather than half applies, an owner and a ticket reference, and a screen that names how many findings nobody owns, which is the number the issue was actually about. Its detail also mentioned a ticketing integration, which does not exist: there is a port and a fake and no adapter. Closing this hides nothing, because that is OPEN-05 and it is a decision nobody has made, and a lifecycle with no ticket system is still a lifecycle. ISS-029 asked for realized savings rather than a vanity metric, and the goal document names it as the north star in the same words, the query judges three verdicts with the working attached, and the screen groups the totals and refuses to sum them, which is the specific defence against the defect the issue named. ISS-030 was the one worth the trip. Two of its three requirements were held by tests, `as_of` on every fact table and a dedicated freshness screen. The third, freshness on every screen, was true and held by nothing at all: it was one new screen away from being false, and a screen showing a number with no freshness is exactly what constraint 10 exists to prevent, since a stale figure looks identical to a current one. It is a contract test now that reads the route table in App.tsx rather than a list, because a list is a second place to forget. Falsifying it caught a weakness in itself: the first attempt renamed the call to useReportMetaXX and the test passed, because a substring check matches a renamed identifier and would match a comment too, so it checks for a call. And the check written an hour earlier for the resume vector fired on its first real opportunity, naming all three issues the section still proposed. ISS-217 records the one structural smell found on the way: two components live in the screens directory and are not screens, so every rule about what a screen must do has to carry an exception naming them. `make verify` green: 1,976 backend tests passed and 1 skipped at 95.72 percent coverage, 440 frontend tests, 15 journeys, zero unresolved security findings. | `finops-web/src/screens/__tests__/freshnessContract.test.ts` for the contract and why it reads the route table, `docs/registry.yaml` at the three issues for what each was checked against. Nothing is in flight. What is left needs a person: ISS-002 an account, OPEN-05 a ticketing decision, and the FEAT-058 argument |
 
 ## Next action
 
 **Nothing is in flight.**
 
-This section named the adapters that have never made a real call as its third candidate.
-They were taken on 2026-09-28 and taken as far as an offline check can go: every
-response field, every pagination token and every required request parameter is now
-verified against the botocore service model, and none of them was wrong. ISS-215 came
-out of that work and is closed, and ISS-216 records what the four issues still mean.
+ISS-028, ISS-029 and ISS-030 were this section's first candidate and are closed. They had
+been flagged as possibly stale three times and read by nobody, and reading them found
+that all three were genuinely done and one of them was held by nothing: freshness on
+every screen was true and one new screen away from being false, so it is a contract test
+now.
 
 The candidates now, in the order they would pay:
 
-1. **The three possibly stale issues**, ISS-028, ISS-029 and ISS-030, whose closing
-   features are all Delivered. Flagged as worth re reading three times now and never
-   read, which is itself the argument for doing them next: an issue nobody will close
-   and nobody will re read is one the register is carrying for nothing.
-2. **The FEAT-058 performance dimension argument**, which the competitive review says
+1. **The FEAT-058 performance dimension argument**, which the competitive review says
    belongs before P5 starts. Meter judges what is oversized and never what is starved,
    and the home screen says so out loud, which is the honest version of a gap and not a
-   substitute for closing it.
-3. **A real account**, ISS-002, waiting since 2026-08-23. It is the only thing that can
-   close ISS-200, ISS-202, ISS-209 and ISS-211, and no amount of work here substitutes
-   for it: what is checked is names, and what is not is whether a field is populated in
-   practice, whether an empty list means none or means not permitted, and how throttling
-   arrives under load. This one needs a person rather than a task.
+   substitute for closing it. It is an argument to have rather than code to write, and
+   it is the last thing on the list that can be done without waiting for anybody.
+2. **A real account**, ISS-002, waiting since 2026-08-23. The only thing that can close
+   ISS-200, ISS-202, ISS-209 and ISS-211. Names are verified against the botocore service
+   models; what is not is whether a field is populated in practice, whether an empty list
+   means none or means not permitted, and how throttling arrives under load. This needs a
+   person, not a task.
+3. **OPEN-05**, Jira or ServiceNow for the recommendation lifecycle. The lifecycle
+   itself is delivered and a TicketSink port and fake exist; nobody has decided which
+   system, so no adapter can be written. Also a person rather than a task.
+
+Two small ones are worth picking up inside whatever comes next rather than on their own:
+ISS-217, two components sitting in the screens directory, and ISS-208, a commitment
+action having no resource to join on so no purchase can be verified against the bill.
 
 ### Where the project is, as of 2026-09-28
 
@@ -79,15 +84,15 @@ remembered, which is the 2026-09-27 lesson in `tasks/lessons.md`.
 
 | What | Where it stands |
 | --- | --- |
-| Git | `main`, 382 commits, working tree clean |
+| Git | `main`, 384 commits, working tree clean |
 | Gate | `make verify` green: lint, writing, docs, docstrings, memory, backend, frontend, web build, journeys, security scan |
 | Features | 61 documented, 23 Delivered |
 | Decisions | 26 records in `docs/adr/` |
-| Issues | 212 recorded, 77 open |
+| Issues | 213 recorded, 75 open |
 | Schema | 18 migration revisions, every one named in `project_map.md` |
 | Collectors | 21 modules, every one named in `project_map.md` |
 | Screens | 26 built, 14 of them drawing a chart |
-| Lessons | 17 in `tasks/lessons.md` |
+| Lessons | 18 in `tasks/lessons.md` |
 
 ### Reading in, in order
 
