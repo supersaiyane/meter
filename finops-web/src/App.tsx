@@ -27,6 +27,7 @@ import { QueryAdhocScreen } from './screens/QueryAdhocScreen';
 import { QueryFindingsScreen } from './screens/QueryFindingsScreen';
 import { EnforcementScreen } from './screens/EnforcementScreen';
 import { QuerySurfacesScreen } from './screens/QuerySurfacesScreen';
+import { QuotaDetailScreen } from './screens/QuotaDetailScreen';
 import { QuotasScreen } from './screens/QuotasScreen';
 import { WasteScreen } from './screens/WasteScreen';
 import { WasteSavingsScreen } from './screens/WasteSavingsScreen';
@@ -112,6 +113,10 @@ export function App({
                 <Route path="/governance/adhoc" element={<QueryAdhocScreen />} />
                 <Route path="/governance/enforcement" element={<EnforcementScreen />} />
           <Route path="/governance/quotas" element={<QuotasScreen />} />
+          <Route
+            path="/governance/quotas/:serviceCode/:quotaCode"
+            element={<QuotaDetailScreen />}
+          />
                 <Route path="/platform/ingest" element={<IngestScreen />} />
                 <Route path="/platform/freshness" element={<FreshnessScreen />} />
                 <Route path="/platform/cost" element={<PlatformScreen />} />

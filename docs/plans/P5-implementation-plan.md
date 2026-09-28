@@ -206,7 +206,7 @@ has earned.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-28 |
 | Implements | P5 spec section 6, FEAT-034 |
 | Delivers | Part of FEAT-034 |
 | Depends on | TASK-P5-006 |

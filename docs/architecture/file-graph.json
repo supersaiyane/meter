@@ -272,6 +272,7 @@
     "finops-web/src/screens/QueryFindingsScreen.tsx",
     "finops-web/src/screens/QueryGroups.tsx",
     "finops-web/src/screens/QuerySurfacesScreen.tsx",
+    "finops-web/src/screens/QuotaDetailScreen.tsx",
     "finops-web/src/screens/QuotasScreen.tsx",
     "finops-web/src/screens/RemediationControls.tsx",
     "finops-web/src/screens/ResourceListScreen.tsx",
@@ -299,6 +300,7 @@
     "finops-web/src/screens/__tests__/QueryFindingDetailScreen.test.tsx",
     "finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx",
     "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
+    "finops-web/src/screens/__tests__/QuotaDetailScreen.test.tsx",
     "finops-web/src/screens/__tests__/QuotasScreen.test.tsx",
     "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
     "finops-web/src/screens/__tests__/ResourceListScreen.test.tsx",
@@ -496,6 +498,7 @@
     "finops_query/parking.py",
     "finops_query/parser.py",
     "finops_query/policy.py",
+    "finops_query/quota.py",
     "finops_query/realized.py",
     "finops_query/score.py",
     "finops_query/severity.py",
@@ -600,6 +603,7 @@
     "tests/contract/test_commitment.py",
     "tests/contract/test_cost_export.py",
     "tests/contract/test_credential_broker.py",
+    "tests/contract/test_no_quota_writes.py",
     "tests/contract/test_partial_graph_consumers.py",
     "tests/contract/test_quota_source.py",
     "tests/contract/test_topology_source.py",
@@ -699,6 +703,7 @@
     "tests/query/test_parking.py",
     "tests/query/test_policy.py",
     "tests/query/test_ports.py",
+    "tests/query/test_quota_draft.py",
     "tests/query/test_realized.py",
     "tests/query/test_score.py",
     "tests/query/test_severity.py",
@@ -1274,6 +1279,11 @@
     {
       "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/QuerySurfacesScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/QuotaDetailScreen.tsx",
       "k": "typescript"
     },
     {
@@ -2867,6 +2877,36 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/QuotaDetailScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuotaDetailScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuotaDetailScreen.tsx",
+      "t": "finops-web/src/components/FixtureBand.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuotaDetailScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuotaDetailScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuotaDetailScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/QuotasScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
@@ -3588,6 +3628,36 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuotaDetailScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/quotas.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuotaDetailScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuotaDetailScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuotaDetailScreen.test.tsx",
+      "t": "finops-web/src/screens/QuotaDetailScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuotaDetailScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/QuotaDetailScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
       "k": "typescript"
     },
@@ -4709,6 +4779,11 @@
     {
       "s": "finops_api/routes/quotas.py",
       "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/quotas.py",
+      "t": "finops_query/quota.py",
       "k": "python"
     },
     {
@@ -6977,6 +7052,11 @@
       "k": "python"
     },
     {
+      "s": "tests/contract/test_no_quota_writes.py",
+      "t": "finops_query/quota.py",
+      "k": "python"
+    },
+    {
       "s": "tests/contract/test_partial_graph_consumers.py",
       "t": "finops_api/routes/__init__.py",
       "k": "python"
@@ -8459,6 +8539,11 @@
     {
       "s": "tests/query/test_ports.py",
       "t": "finops_core/ports/query.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_quota_draft.py",
+      "t": "finops_query/quota.py",
       "k": "python"
     },
     {

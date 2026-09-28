@@ -1,3 +1,5 @@
+import { Link } from 'react-router';
+
 import { useQuotas } from '../api/queries';
 import { FixtureBand } from '../components/FixtureBand';
 import { PercentCell } from '../components/PercentCell';
@@ -61,6 +63,17 @@ function where(quota: ApiQuota | ApiUnmeasurableQuota): string {
   return quota.region_id ?? 'all regions';
 }
 
+/**
+ * Where the detail page for this quota lives.
+ *
+ * Every row links, including the unmeasured ones. Otherwise the longer of the two lists is a
+ * list of dead ends, and it is the list where a reader most wants to know whether anybody has
+ * asked for an increase: a quota with no figure is exactly the one somebody requests blind.
+ */
+function pathFor(quota: ApiQuota | ApiUnmeasurableQuota): string {
+  return `/governance/quotas/${quota.service_code}/${quota.quota_code}`;
+}
+
 function keyFor(quota: ApiQuota | ApiUnmeasurableQuota): string {
   return `${quota.account_id}:${quota.region_id ?? 'global'}:${quota.quota_code}`;
 }
@@ -69,7 +82,9 @@ function Measured({ quota }: { readonly quota: ApiQuota }) {
   return (
     <tr data-testid="quota-measured">
       <td>
-        <strong>{quota.quota_name}</strong>
+        <Link data-testid="quota-link" to={pathFor(quota)}>
+          <strong>{quota.quota_name}</strong>
+        </Link>
         <span data-testid="quota-code"> {quota.quota_code}</span>
       </td>
       <td>{quota.account_id}</td>
@@ -95,7 +110,9 @@ function Unmeasured({ quota }: { readonly quota: ApiUnmeasurableQuota }) {
   return (
     <tr data-testid="quota-unmeasured">
       <td>
-        <strong>{quota.quota_name}</strong>
+        <Link data-testid="quota-link" to={pathFor(quota)}>
+          <strong>{quota.quota_name}</strong>
+        </Link>
         <span data-testid="quota-code"> {quota.quota_code}</span>
       </td>
       <td>{quota.account_id}</td>

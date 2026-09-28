@@ -1,4 +1,10 @@
-import type { ApiEnvelope, ApiMeta, ApiQuotaRequests, ApiQuotas } from '../types';
+import type {
+  ApiEnvelope,
+  ApiMeta,
+  ApiQuotaDetail,
+  ApiQuotaRequests,
+  ApiQuotas,
+} from '../types';
 
 /**
  * The P5 surfaces, offline. FEAT-033 and FEAT-034.
@@ -173,5 +179,69 @@ export function quotaRequestsFixture(): ApiEnvelope<ApiQuotaRequests> {
       open_count: 1,
     },
     meta: metaWith(1, 1, 'accounts'),
+  };
+}
+
+export function quotaDetailFixture(): ApiEnvelope<ApiQuotaDetail> {
+  const quotas = quotasFixture().data;
+  const requests = quotaRequestsFixture().data;
+  const [tightest] = quotas.measurable;
+  if (tightest === undefined) {
+    throw new Error('the quotas fixture has no measured rows, so a detail cannot be built');
+  }
+  return {
+    data: {
+      service_code: tightest.service_code,
+      quota_code: tightest.quota_code,
+      quota_name: tightest.quota_name,
+      is_adjustable: tightest.is_adjustable,
+      // The same quota in two accounts, because a quota code is per slice: nearly full in one
+      // and comfortable in the other is the case a single row would answer wrongly.
+      measurable: [
+        tightest,
+        { ...tightest, account_id: THEIRS, limit: '64', used: '20', headroom: '0.6875' },
+      ],
+      unmeasurable: [],
+      requests: requests.requests.filter((one) => one.quota_code === tightest.quota_code),
+      history: {
+        'request-0001': [
+          { status: 'PENDING', changed_at: '2026-09-18T09:00:00Z' },
+          { status: 'CASE_OPENED', changed_at: '2026-09-20T09:00:00Z' },
+        ],
+      },
+      // One draft and one refusal, so the screen has to render both paths. The refusal is the
+      // comfortable slice: asking for more of something an account is not short of wastes a
+      // reviewer's time, and a screen that drafted it anyway would look more capable and be
+      // less useful.
+      drafts: [
+        {
+          account_id: MINE,
+          region_id: REGION,
+          current_limit: '320',
+          observed_usage: '307',
+          suggested_value: '520',
+          working:
+            'The observed peak is 307 against a limit of 320. Leaving 40 percent headroom ' +
+            'above that peak needs 520, rounded up to the nearest 10. Meter does not submit ' +
+            'this.',
+          console_url:
+            'https://eu-west-1.console.aws.amazon.com/servicequotas/home/services/ec2/quotas/' +
+            'L-1216C47A',
+          cli_command:
+            'aws service-quotas request-service-quota-increase --service-code ec2 ' +
+            '--quota-code L-1216C47A --desired-value 520 --region eu-west-1',
+        },
+      ],
+      draft_refusals: [
+        {
+          account_id: THEIRS,
+          region_id: REGION,
+          reason:
+            'The observed peak already leaves more headroom than a request would ask for, so ' +
+            'an increase would be asking for something this account is not short of.',
+        },
+      ],
+    },
+    meta: metaWith(2, 2, 'accounts'),
   };
 }

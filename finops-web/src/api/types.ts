@@ -894,3 +894,43 @@ export interface ApiQuotaRequests {
   readonly requests: readonly ApiQuotaRequest[];
   readonly open_count: number;
 }
+
+/** The increase Meter would ask for on one slice, with its working. FEAT-034. */
+export interface ApiQuotaDraft {
+  readonly account_id: string;
+  readonly region_id: string | null;
+  readonly current_limit: string;
+  readonly observed_usage: string;
+  readonly suggested_value: string;
+  /** How the number was reached, so a reader disputes the target rather than the figure. */
+  readonly working: string;
+  readonly console_url: string;
+  readonly cli_command: string;
+}
+
+/**
+ * Why no draft was offered for a slice. FEAT-034.
+ *
+ * Separate from `ApiQuotaDraft` rather than a nullable field on it, because an empty draft
+ * reads as a feature that failed rather than a decision somebody made.
+ */
+export interface ApiDraftRefusal {
+  readonly account_id: string;
+  readonly region_id: string | null;
+  readonly reason: string;
+}
+
+/** One quota everywhere it applies, with every request against it. FEAT-033, FEAT-034. */
+export interface ApiQuotaDetail {
+  readonly service_code: string;
+  readonly quota_code: string;
+  readonly quota_name: string;
+  readonly is_adjustable: boolean;
+  readonly measurable: readonly ApiQuota[];
+  readonly unmeasurable: readonly ApiUnmeasurableQuota[];
+  readonly requests: readonly ApiQuotaRequest[];
+  /** Keyed by request id. A request with no recorded transitions is absent, not empty. */
+  readonly history: Readonly<Record<string, readonly ApiRequestTransition[]>>;
+  readonly drafts: readonly ApiQuotaDraft[];
+  readonly draft_refusals: readonly ApiDraftRefusal[];
+}

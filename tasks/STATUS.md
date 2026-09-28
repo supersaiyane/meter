@@ -187,7 +187,7 @@ ISS-003.
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 | P3 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
-| P5 | 6 | 0 | 0 | 0 | 2 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
+| P5 | 7 | 0 | 0 | 0 | 1 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 0 | 0 | 0 | 0 | 12 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -345,6 +345,7 @@ ISS-003.
 | `TASK-P5-004` | Done, 2026-09-28 | the collector, and a fake with holes in it |
 | `TASK-P5-005` | Done, 2026-09-28 | the guard, then the routes |
 | `TASK-P5-006` | Done, 2026-09-28 | two lists, because one would lie |
+| `TASK-P5-007` | Done, 2026-09-28 | the draft, and the test that keeps the write out |
 
 <!-- generated:task-status end -->
 

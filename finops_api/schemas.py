@@ -1355,3 +1355,52 @@ class QuotaDetailOut(BaseModel):
     unmeasurable: tuple[UnmeasurableQuotaOut, ...]
     requests: tuple[QuotaRequestOut, ...]
     history: dict[str, tuple[RequestTransitionOut, ...]]
+    #: The increase Meter would ask for, per slice, and the slices it would not ask for.
+    #: Two fields rather than one nullable one, for the reason the two quota lists are two
+    #: lists: an empty draft reads as a feature that failed rather than a decision.
+    drafts: tuple[QuotaDraftOut, ...] = ()
+    draft_refusals: tuple[DraftRefusalOut, ...] = ()
+
+
+class QuotaDraftOut(BaseModel):
+    """An increase Meter would ask for, with its working. FEAT-034.
+
+    One per slice, because each region has its own limit and its own observed peak: a single
+    draft for a quota code would be sized from whichever row the query returned first.
+
+    `submits` is not a field here, and that is deliberate. There is no endpoint to submit
+    this, no method on the port and no IAM permission, so a flag saying Meter will not do it
+    would be describing a capability that does not exist. The sentence on the screen and the
+    `submitted_by_meter` column on a request are where the claim lives.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    account_id: str
+    region_id: str | None
+    current_limit: Decimal
+    observed_usage: Decimal
+    suggested_value: Decimal
+    #: How the suggestion was reached, so a reader can disagree with the target rather than
+    #: with the number. A figure with no derivation is one a reader accepts or ignores, and
+    #: both are bad.
+    working: str
+    #: Exact, and copyable. The human step is a paste rather than a piece of research.
+    console_url: str
+    cli_command: str
+
+
+class DraftRefusalOut(BaseModel):
+    """Why no draft was offered for a slice. FEAT-034.
+
+    Separate from `QuotaDraftOut` rather than a nullable field on it, for the reason the two
+    quota lists are separate: a draft with a null suggestion invites a screen to render an
+    empty one, and an empty draft is worse than a stated refusal because it looks like a
+    feature that failed rather than a decision somebody made.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    account_id: str
+    region_id: str | None
+    reason: str

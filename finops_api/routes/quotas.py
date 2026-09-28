@@ -39,8 +39,10 @@ from finops_api.db.repositories.quotas import (
 from finops_api.deps import get_access_context, get_connection, get_scope
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
+    DraftRefusalOut,
     Envelope,
     QuotaDetailOut,
+    QuotaDraftOut,
     QuotaOut,
     QuotaRequestOut,
     QuotaRequestsOut,
@@ -49,6 +51,7 @@ from finops_api.schemas import (
     UnmeasurableQuotaOut,
 )
 from finops_core.domain.tenant import Scope
+from finops_query.quota import DraftRefused, draft_for
 
 router = APIRouter(prefix=API_PREFIX, tags=["quotas"])
 
@@ -97,6 +100,39 @@ def _unmeasured(row: Any) -> UnmeasurableQuotaOut:
         limit=_figure(row.limit_value),
         reason=row.unmeasurable_reason,
         is_adjustable=row.is_adjustable,
+    )
+
+
+def _draft(row: Any) -> QuotaDraftOut | DraftRefusalOut:
+    """The increase Meter would ask for on this slice, or the reason it would not.
+
+    Per slice, because each region carries its own limit and its own observed peak. A single
+    draft for a quota code would be sized from whichever row the query returned first, which
+    is a number about a region nobody named.
+    """
+    outcome = draft_for(
+        service_code=row.service_code,
+        quota_code=row.quota_code,
+        region_id=row.region_id,
+        current_limit=_figure(row.limit_value),
+        observed_usage=_figure(row.used_value),
+        is_adjustable=row.is_adjustable,
+    )
+    if isinstance(outcome, DraftRefused):
+        return DraftRefusalOut(
+            account_id=row.sub_account_id,
+            region_id=row.region_id,
+            reason=outcome.reason,
+        )
+    return QuotaDraftOut(
+        account_id=row.sub_account_id,
+        region_id=row.region_id,
+        current_limit=outcome.current_limit,
+        observed_usage=outcome.observed_usage,
+        suggested_value=outcome.suggested_value,
+        working=outcome.working,
+        console_url=outcome.console_url,
+        cli_command=outcome.cli_command,
     )
 
 
@@ -227,6 +263,7 @@ def quota_detail(
         for row in request_rows
     }
 
+    drafted = [_draft(row) for row in quota_rows]
     first = quota_rows[0]
     found = QuotaDetailOut(
         service_code=first.service_code,
@@ -237,6 +274,8 @@ def quota_detail(
         unmeasurable=tuple(_unmeasured(row) for row in quota_rows if row.usage_source == "NONE"),
         requests=tuple(_request(row) for row in request_rows),
         history={key: value for key, value in transitions.items() if value},
+        drafts=tuple(one for one in drafted if isinstance(one, QuotaDraftOut)),
+        draft_refusals=tuple(one for one in drafted if isinstance(one, DraftRefusalOut)),
     )
     meta = build_meta(
         connection,

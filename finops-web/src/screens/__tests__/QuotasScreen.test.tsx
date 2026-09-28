@@ -75,7 +75,7 @@ describe('the two lists', () => {
   it('gives every unmeasured quota a reason a reader can act on', async () => {
     renderQuotas();
     await screen.findByTestId('quotas-unmeasured');
-    const reasons = screen.getAllByTestId('quota-reason').map((cell) => cell.textContent ?? '');
+    const reasons = screen.getAllByTestId('quota-reason').map((cell) => cell.textContent);
     expect(reasons).toHaveLength(4);
     expect(reasons.every((reason) => reason.trim().length > 0)).toBe(true);
     // More than one distinct reason, because the estate has more than one cause. A single
@@ -92,7 +92,7 @@ describe('the two lists', () => {
   it('says the gap belongs to the provider rather than to the product', async () => {
     renderQuotas();
     const ratio = await screen.findByTestId('quotas-ratio');
-    expect(ratio.textContent ?? '').toContain('AWS publishes');
+    expect(ratio.textContent).toContain('AWS publishes');
   });
 });
 
@@ -107,8 +107,8 @@ describe('the fullness bar', () => {
     if (tightest === undefined || loosest === undefined) {
       throw new Error('the fixture needs at least two measured quotas for this comparison');
     }
-    const tight = within(tightest).getByTestId('percent-figure').textContent ?? '';
-    const loose = within(loosest).getByTestId('percent-figure').textContent ?? '';
+    const tight = within(tightest).getByTestId('percent-figure').textContent;
+    const loose = within(loosest).getByTestId('percent-figure').textContent;
     expect(Number.parseFloat(tight)).toBeGreaterThan(90);
     expect(Number.parseFloat(loose)).toBeLessThan(30);
   });
@@ -140,7 +140,7 @@ describe('what each row says about itself', () => {
     // trustworthy, and a reader cannot weigh them without being told which is which.
     renderQuotas();
     const sources = (await screen.findAllByTestId('quota-source')).map(
-      (cell) => cell.textContent ?? '',
+      (cell) => cell.textContent,
     );
     expect(sources).toContain('CloudWatch usage metric');
     expect(sources).toContain('Trusted Advisor');
@@ -151,7 +151,7 @@ describe('what each row says about itself', () => {
     // screen to show one account level limit once per region and add them up.
     renderQuotas();
     const global = (await screen.findAllByTestId('quota-measured')).filter((row) =>
-      (row.textContent ?? '').includes('all regions'),
+      row.textContent.includes('all regions'),
     );
     expect(global).toHaveLength(1);
   });

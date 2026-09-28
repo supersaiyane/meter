@@ -35,8 +35,13 @@ import {
   inventoryRootsFixture,
   subgraphFixture,
 } from './fixtures/topology';
-import { quotaRequestsFixture, quotasFixture } from './fixtures/quotas';
+import {
+  quotaDetailFixture,
+  quotaRequestsFixture,
+  quotasFixture,
+} from './fixtures/quotas';
 import type {
+  ApiQuotaDetail,
   ApiQuotaRequests,
   ApiQuotas,
   ApiAdhocQuery,
@@ -518,6 +523,21 @@ export function useQuotas() {
     '/api/v1/governance/quotas',
     '/api/v1/governance/quotas',
     quotasFixture,
+  );
+}
+
+/**
+ * One quota, everywhere it applies, with the draft and the requests. FEAT-033 and FEAT-034.
+ *
+ * Reached from the list rather than from the navigation, like the query finding detail and the
+ * entity page: a quota code is not something anybody types.
+ */
+export function useQuotaDetail(serviceCode: string, quotaCode: string) {
+  return useQuerySurface<ApiQuotaDetail>(
+    ['governance-quota', serviceCode, quotaCode],
+    '/api/v1/governance/quotas/{service_code}/{quota_code}',
+    `/api/v1/governance/quotas/${serviceCode}/${quotaCode}`,
+    quotaDetailFixture,
   );
 }
 

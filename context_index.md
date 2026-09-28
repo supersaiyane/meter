@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-642 public symbols across 5 packages.
+644 public symbols across 5 packages.
 
 ## finops_core
 
@@ -593,9 +593,9 @@ a duplicate.
 | `undo_remediation` | function | `finops_api/routes/query.py:407` | Put back what the last remediation replaced. | nothing in this tree |
 | `query_adhoc` | function | `finops_api/routes/query.py:480` | Queries that ran and belong to no panel and no alert rule. FEAT-051. | nothing in this tree |
 | `query_instances` | function | `finops_api/routes/query.py:528` |  | nothing in this tree |
-| `quotas` | function | `finops_api/routes/quotas.py:121` | Every quota this reader can see, in two lists. FEAT-033. | nothing in this tree |
-| `requests` | function | `finops_api/routes/quotas.py:161` | Increase requests and what became of them. FEAT-034. | `finops_ingest/collectors/quotas.py` |
-| `quota_detail` | function | `finops_api/routes/quotas.py:196` | One quota, everywhere it applies, with every request against it. FEAT-033, FEAT-034. | nothing in this tree |
+| `quotas` | function | `finops_api/routes/quotas.py:157` | Every quota this reader can see, in two lists. FEAT-033. | nothing in this tree |
+| `requests` | function | `finops_api/routes/quotas.py:197` | Increase requests and what became of them. FEAT-034. | `finops_ingest/collectors/quotas.py` |
+| `quota_detail` | function | `finops_api/routes/quotas.py:232` | One quota, everywhere it applies, with every request against it. FEAT-033, FEAT-034. | nothing in this tree |
 | `recommendation_out` | function | `finops_api/routes/waste.py:68` | One recommendation row on the wire, risk included. | `finops_api/routes/inventory.py` |
 | `recommendations` | function | `finops_api/routes/waste.py:103` | Worst money first, filterable. | nothing in this tree |
 | `recommendation_detail` | function | `finops_api/routes/waste.py:142` | One recommendation, with how it got where it is. | nothing in this tree |
@@ -673,6 +673,8 @@ a duplicate.
 | `QuotaRequestOut` | class | `finops_api/schemas.py:1292` | An increase somebody asked AWS for. Read, never written. Spec section 6. | `finops_api/routes/quotas.py` |
 | `QuotaRequestsOut` | class | `finops_api/schemas.py:1321` | Outstanding increase requests and what became of them. FEAT-034. | `finops_api/routes/quotas.py` |
 | `QuotaDetailOut` | class | `finops_api/schemas.py:1335` | One quota, everywhere it applies, with every request against it. FEAT-033, FEAT-034. | `finops_api/routes/quotas.py` |
+| `QuotaDraftOut` | class | `finops_api/schemas.py:1365` | An increase Meter would ask for, with its working. FEAT-034. | `finops_api/routes/quotas.py` |
+| `DraftRefusalOut` | class | `finops_api/schemas.py:1393` | Why no draft was offered for a slice. FEAT-034. | `finops_api/routes/quotas.py` |
 
 ## finops_mcp
 
