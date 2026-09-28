@@ -125,7 +125,7 @@ allows, service specific calls for the few that have them.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-28 |
 | Implements | P5 spec sections 7 and 11, FEAT-033 |
 | Delivers | FEAT-033 |
 | Depends on | TASK-P5-003 |

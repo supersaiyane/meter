@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-620 public symbols across 5 packages.
+621 public symbols across 5 packages.
 
 ## finops_core
 
@@ -137,7 +137,7 @@ a duplicate.
 | `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | `finops_ingest/collectors/cost_focus.py`, `finops_ingest/collectors/org_tree.py`, `finops_providers/aws/commitment.py`, `finops_providers/aws/cur.py` |
 | `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | `finops_providers/aws/client.py`, `finops_providers/aws/cur.py`, `finops_providers/aws/terraform_state.py`, `finops_providers/grafana/client.py` |
 | `Misconfigured` | class | `finops_core/errors.py:108` | A value this deployment set is wrong, and no retry will change that. | `finops_providers/aws/client.py` |
-| `SchemaDrift` | class | `finops_core/errors.py:136` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py`, `finops_ingest/collectors/account_health.py`, `finops_ingest/worker.py`, `finops_providers/aws/client.py`, and 6 more |
+| `SchemaDrift` | class | `finops_core/errors.py:136` | The response did not match the shape this adapter expects. | `finops_api/identity/local_config.py`, `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/quotas.py`, `finops_ingest/worker.py`, and 7 more |
 | `AccountDiscovery` | class | `finops_core/ports/accounts.py:19` | Reads which accounts exist and how they are arranged. | nothing in this tree |
 | `AccountDiscovery.list_accounts` | method | `finops_core/ports/accounts.py:22` | Every account this organization contains. | `finops_ingest/collectors/org_tree.py` |
 | `AccountDiscovery.describe_organization` | method | `finops_core/ports/accounts.py:35` | Every node of the organization tree, roots and units included. | `finops_ingest/collectors/org_tree.py` |
@@ -202,8 +202,8 @@ a duplicate.
 | `QueryEvidence` | class | `finops_core/ports/query.py:289` | What an account actually executed, as opposed to what it has defined. | nothing in this tree |
 | `QueryEvidence.observations` | method | `finops_core/ports/query.py:304` | Executions seen in the window, in the shape `finops_query.ownership` reads. | `finops_ingest/collectors/query_audit.py` |
 | `QuotaSource` | class | `finops_core/ports/quotas.py:28` | Reads the quotas that apply to an account and region. | nothing in this tree |
-| `QuotaSource.list_quotas` | method | `finops_core/ports/quotas.py:31` | Every quota for the account and region, with usage where published. | nothing in this tree |
-| `QuotaSource.requests` | method | `finops_core/ports/quotas.py:47` | Every increase request the provider has a record of, whatever became of it. | nothing in this tree |
+| `QuotaSource.list_quotas` | method | `finops_core/ports/quotas.py:31` | Every quota for the account and region, with usage where published. | `finops_ingest/collectors/quotas.py` |
+| `QuotaSource.requests` | method | `finops_core/ports/quotas.py:47` | Every increase request the provider has a record of, whatever became of it. | `finops_ingest/collectors/quotas.py` |
 | `RecommendationSource` | class | `finops_core/ports/recommendations.py:29` | What the provider already knows is wasteful. | nothing in this tree |
 | `RecommendationSource.compute_optimizer` | method | `finops_core/ports/recommendations.py:32` | Rightsizing and idle findings for compute, from Compute Optimizer. | nothing in this tree |
 | `RecommendationSource.cost_optimization_hub` | method | `finops_core/ports/recommendations.py:44` | Consolidated findings across the organization, already deduplicated. | nothing in this tree |
@@ -250,8 +250,8 @@ a duplicate.
 | `CloudTrailQueryEvidence.observations` | method | `finops_providers/aws/query_evidence.py:120` |  | `finops_ingest/collectors/query_audit.py` |
 | `normalise` | function | `finops_providers/aws/quotas.py:131` | A display name reduced to something two providers might agree on. | `finops_ingest/collectors/query_audit.py`, `finops_providers/aws/query_evidence.py` |
 | `AwsQuotas` | class | `finops_providers/aws/quotas.py:197` | Every quota in one account and region, with usage where anything publishes it. | nothing in this tree |
-| `AwsQuotas.list_quotas` | method | `finops_providers/aws/quotas.py:216` | Every quota for the account and region, with usage where published. | nothing in this tree |
-| `AwsQuotas.requests` | method | `finops_providers/aws/quotas.py:239` | Every increase request AWS has a record of, whatever became of it. | nothing in this tree |
+| `AwsQuotas.list_quotas` | method | `finops_providers/aws/quotas.py:216` | Every quota for the account and region, with usage where published. | `finops_ingest/collectors/quotas.py` |
+| `AwsQuotas.requests` | method | `finops_providers/aws/quotas.py:239` | Every increase request AWS has a record of, whatever became of it. | `finops_ingest/collectors/quotas.py` |
 | `CostRecommendationSource` | class | `finops_providers/aws/recommendations.py:99` | `RecommendationSource` over three AWS services. Unproved, ISS-122. | nothing in this tree |
 | `CostRecommendationSource.compute_optimizer` | method | `finops_providers/aws/recommendations.py:175` |  | nothing in this tree |
 | `CostRecommendationSource.cost_optimization_hub` | method | `finops_providers/aws/recommendations.py:222` |  | nothing in this tree |
@@ -316,6 +316,7 @@ a duplicate.
 | `rates_from` | function | `finops_ingest/collectors/query_audit.py:78` | Build the model's rates from configuration. | nothing in this tree |
 | `default_ingest_rate` | function | `finops_ingest/collectors/query_audit.py:113` | The fallback used when ingestion cannot be measured for a log group. | nothing in this tree |
 | `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:136` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
+| `QuotaCollector` | class | `finops_ingest/collectors/quotas.py:133` | Quotas and increase requests for one account in one region. | nothing in this tree |
 | `RealizedSavingsCollector` | class | `finops_ingest/collectors/realized_savings.py:174` | The north star metric, measured rather than modelled. | nothing in this tree |
 | `RecommendationCollector` | class | `finops_ingest/collectors/recommendations.py:113` | Reads three services and writes one table. | nothing in this tree |
 | `hashed_subject` | function | `finops_ingest/collectors/retention.py:66` | A stable, non reversible stand in, so a duplicate sign in is still one row. | nothing in this tree |
@@ -369,17 +370,17 @@ a duplicate.
 | `publish` | function | `finops_ingest/metrics.py:146` | Send the measurements. Returns how many were sent. | `finops_ingest/dispatcher.py` |
 | `screen_and_alert_thresholds` | function | `finops_ingest/metrics.py:175` | The two multiples, returned together so a test can hold them apart. | nothing in this tree |
 | `CollectorScope` | class | `finops_ingest/registry.py:25` | What one unit of this collector's work covers. | nothing in this tree |
-| `CollectorOutcome` | class | `finops_ingest/registry.py:35` | What a collector did, for the run ledger to record. | `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/budgets.py`, `finops_ingest/collectors/commitment.py`, `finops_ingest/collectors/commitment_actions.py`, and 15 more |
+| `CollectorOutcome` | class | `finops_ingest/registry.py:35` | What a collector did, for the run ledger to record. | `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/budgets.py`, `finops_ingest/collectors/commitment.py`, `finops_ingest/collectors/commitment_actions.py`, and 16 more |
 | `CollectorContext` | class | `finops_ingest/registry.py:48` | Everything a collector is given, and nothing it is not. | `finops_ingest/worker.py` |
 | `Collector` | class | `finops_ingest/registry.py:82` |  | `finops_ingest/collectors/retention.py` |
 | `ScheduleEntry` | class | `finops_ingest/registry.py:89` | One collector's cadence, with the reason it is that number. | nothing in this tree |
-| `governed_by_retention_flag` | function | `finops_ingest/registry.py:417` |  | nothing in this tree |
-| `due_collectors` | function | `finops_ingest/registry.py:421` | Which of a tenant's collectors are due, honouring the kill switch. | nothing in this tree |
-| `install_default_schedule` | function | `finops_ingest/registry.py:468` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
-| `CollectorRegistry` | class | `finops_ingest/registry.py:496` | The collectors this process knows how to run. | nothing in this tree |
-| `CollectorRegistry.register` | method | `finops_ingest/registry.py:502` |  | `finops_ingest/collectors/retention.py` |
-| `CollectorRegistry.get` | method | `finops_ingest/registry.py:510` |  | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 42 more |
-| `CollectorRegistry.names` | method | `finops_ingest/registry.py:519` |  | nothing in this tree |
+| `governed_by_retention_flag` | function | `finops_ingest/registry.py:438` |  | nothing in this tree |
+| `due_collectors` | function | `finops_ingest/registry.py:442` | Which of a tenant's collectors are due, honouring the kill switch. | nothing in this tree |
+| `install_default_schedule` | function | `finops_ingest/registry.py:489` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
+| `CollectorRegistry` | class | `finops_ingest/registry.py:517` | The collectors this process knows how to run. | nothing in this tree |
+| `CollectorRegistry.register` | method | `finops_ingest/registry.py:523` |  | `finops_ingest/collectors/retention.py` |
+| `CollectorRegistry.get` | method | `finops_ingest/registry.py:531` |  | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 42 more |
+| `CollectorRegistry.names` | method | `finops_ingest/registry.py:540` |  | nothing in this tree |
 | `FloorOutcome` | class | `finops_ingest/remediation.py:43` | What happened, in enough detail to explain a refusal. | nothing in this tree |
 | `apply_refresh_floor` | function | `finops_ingest/remediation.py:59` | Raise one workspace's floor, if this deployment is permitted to. | nothing in this tree |
 | `RewriteOutcome` | class | `finops_ingest/remediation.py:143` | What a panel rewrite did, including the case where it undid itself. | nothing in this tree |

@@ -45,7 +45,12 @@ from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 
 from finops_core.domain.account import AccountKey, Provider
-from finops_core.domain.quota import QuotaUsage, UsageSource
+from finops_core.domain.quota import (
+    QuotaIncreaseRequest,
+    QuotaUsage,
+    RequestStatus,
+    UsageSource,
+)
 from finops_core.errors import AccessDenied, NotOptedIn
 from finops_fakes import containers, fixtures, utilization
 from finops_fakes import estate_shape as shape
@@ -718,3 +723,67 @@ def request_history_rows(*, at: datetime = fixtures.AS_OF) -> Iterator[Mapping[s
                 "status": status,
                 "changed_at": (end - timedelta(days=days_before)).isoformat(),
             }
+
+
+def current_requests(
+    account_id: str, region_id: str, *, at: datetime = fixtures.AS_OF
+) -> tuple[QuotaIncreaseRequest, ...]:
+    """Every increase request in one slice, as the quota port returns it.
+
+    The estate's five requests carry a status history rather than a status, because the
+    point of FEAT-034 is when a request was approved and not only that it is. The last
+    entry is the current one and its day is `last_updated_at`.
+
+    No refusal branch here, unlike `current`. A request history is read by the same call
+    the quotas are, so an account that cannot be read has already raised by the time
+    anything asks for its requests.
+    """
+    _, end = shape.window(at)
+    return tuple(
+        QuotaIncreaseRequest(
+            account_key=AccountKey(provider=Provider.AWS, account_id=account_id),
+            request_id=r.request_id,
+            region_id=r.region_id,
+            service_code=r.service_code,
+            quota_code=r.quota_code,
+            quota_name=_name_of(r),
+            desired_value=Decimal(r.desired_value),
+            status=RequestStatus(r.history[-1][0]),
+            requested_at=end - timedelta(days=r.history[0][1]),
+            last_updated_at=end - timedelta(days=r.history[-1][1]),
+            as_of=at,
+            collected_at=fixtures.COLLECTED_AT,
+        )
+        for r in requests(at=at)
+        if r.account_id == account_id and r.region_id == region_id
+    )
+
+
+def _name_of(r: Request) -> str:
+    """The quota's display name, or its code where the request names one we do not carry.
+
+    `fake-request-0005` is deliberately for a quota outside `QUOTAS`: tracking and
+    measuring are independent, and a request for a quota this estate cannot measure is the
+    case TASK-P5-008 exists to keep working.
+    """
+    for q in QUOTAS:
+        if q.service_code == r.service_code and q.quota_code == r.quota_code:
+            return q.quota_name
+    return r.quota_code
+
+
+class FakeQuotaSource:
+    """The estate behind the `QuotaSource` port, so a collector reads it through the port.
+
+    Constraint 6 in miniature: there is no method here that could submit a request, and
+    the five in the estate were made outside Meter.
+    """
+
+    def __init__(self, *, at: datetime = fixtures.AS_OF) -> None:
+        self._at = at
+
+    def list_quotas(self, account: AccountKey, region: str) -> tuple[QuotaUsage, ...]:
+        return current(account.account_id, region, at=self._at)
+
+    def requests(self, account: AccountKey, region: str) -> tuple[QuotaIncreaseRequest, ...]:
+        return current_requests(account.account_id, region, at=self._at)

@@ -47,6 +47,7 @@ from finops_core.domain.account import AccountKey, Provider
 from finops_core.errors import CollectionError
 from finops_fakes import cur, fixtures, prices, utilization
 from finops_fakes import estate_shape as shape
+from finops_fakes import quotas as quota_estate
 from finops_fakes.budgets import FakeBudgets
 from finops_fakes.cloudwatch_estate import FakeCloudWatchEstate
 from finops_fakes.commitment import FakeCommitmentReport
@@ -77,6 +78,7 @@ from finops_ingest.collectors.query_audit import (
     default_ingest_rate,
     rates_from,
 )
+from finops_ingest.collectors.quotas import QuotaCollector
 from finops_ingest.collectors.realized_savings import (
     RealizedSavingsCollector,
 )
@@ -748,6 +750,26 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
                 update={"iac_state_locations": ",".join(FAKE_STATE_LOCATIONS)}
             ),
         )
+
+        # FEAT-033 and FEAT-034, per slice because a quota is per account per region. The
+        # estate carries 130 quotas of which roughly half can be measured, and that ratio is
+        # the feature: a seed where every quota had a usage figure would leave the second
+        # list, the one the whole sub project exists for, rendered by nothing anybody runs.
+        # `fake-product-a` and `fake-product-b` carry no Business support, so the same quota
+        # is measurable in one account and not in another, which is OPEN-03 as data.
+        for account_id, region_id in quota_estate.SLICES:
+            account_key = AccountKey(provider=Provider.AWS, account_id=account_id)
+            written += _through_the_ledger(
+                ledger,
+                QuotaCollector(quota_estate.FakeQuotaSource(at=now), clock=lambda: now),
+                connection,
+                unit(
+                    scope_key=f"{account_key}:{region_id}",
+                    account=account_key,
+                    region=region_id,
+                ),
+                "quotas",
+            )
 
         counts = {
             name: connection.execute(

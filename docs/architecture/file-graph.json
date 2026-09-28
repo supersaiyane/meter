@@ -438,6 +438,7 @@
     "finops_ingest/collectors/partitions.py",
     "finops_ingest/collectors/platform_cost.py",
     "finops_ingest/collectors/query_audit.py",
+    "finops_ingest/collectors/quotas.py",
     "finops_ingest/collectors/realized_savings.py",
     "finops_ingest/collectors/recommendations.py",
     "finops_ingest/collectors/retention.py",
@@ -630,6 +631,7 @@
     "tests/ingest/collectors/test_org_tree.py",
     "tests/ingest/collectors/test_partitions.py",
     "tests/ingest/collectors/test_platform_cost.py",
+    "tests/ingest/collectors/test_quotas.py",
     "tests/ingest/collectors/test_realized_savings.py",
     "tests/ingest/collectors/test_recommendations.py",
     "tests/ingest/collectors/test_retention.py",
@@ -5419,6 +5421,21 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/quotas.py",
+      "t": "finops_core/domain/quota.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/quotas.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/quotas.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/realized_savings.py",
       "t": "finops_core/domain/waste.py",
       "k": "python"
@@ -6186,6 +6203,11 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/query_audit.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/quotas.py",
       "k": "python"
     },
     {
@@ -7366,6 +7388,31 @@
     {
       "s": "tests/ingest/collectors/test_platform_cost.py",
       "t": "finops_providers/aws/platform_cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_quotas.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_quotas.py",
+      "t": "finops_core/domain/quota.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_quotas.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_quotas.py",
+      "t": "finops_ingest/collectors/quotas.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_quotas.py",
+      "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {
