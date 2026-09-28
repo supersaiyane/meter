@@ -1388,6 +1388,19 @@ changes:
     FEAT-058 and ISS-208. The two features are one digit apart in a project that also has an
     ISS-029 about the same subject, which is how it survived. Found while planning P7, whose
     own features include the number being misused'
+- id: CHG-0105
+  date: 2026-09-28
+  type: Process
+  what: A check that every FEAT, ISS, ADR, OPEN and CHG identifier cited anywhere resolves
+    to a register entry, wired into make check-docs
+  commit: pending
+  detail: 'scripts/docs/check_identifiers.py. Falsified by dropping ISS-002, ISS-003 and
+    ISS-004 from the register, which surfaced 65 citations across 25 files in markdown,
+    Python, Terraform and YAML, the state the repository was actually in before 2026-09-28.
+    It catches an identifier that resolves to nothing and cannot catch one that resolves
+    correctly and means something else, which was the FEAT-041 half of CHG-0104, and the
+    docstring says so. Its own test file is the single exemption, because it has to cite
+    unresolvable ids to watch the check fail'
 issues:
 - id: ISS-189
   severity: LOW

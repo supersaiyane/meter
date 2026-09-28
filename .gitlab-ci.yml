@@ -129,7 +129,7 @@ test-frontend:
     - npm run lint
     - npm run test -- --run
 
-# `make check-docs` rather than three of its eight checks, which is what this
+# `make check-docs` rather than three of its checks, which is what this
 # job used to run. The five it was missing were the registry sync check, the
 # context index check, the feature flag check, the hardcoded value check and the
 # forbidden import check, all of which ran locally in `make verify` and nowhere

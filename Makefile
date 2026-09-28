@@ -151,6 +151,7 @@ check-docs: ## Fail if any generated document is out of step with the registry
 	@$(DOCPY) scripts/docs/build_file_graph.py --check
 	@$(DOCPY) scripts/docs/build_context_index.py --check
 	@$(DOCPY) scripts/docs/check_map_counts.py --check
+	@$(DOCPY) scripts/docs/check_identifiers.py
 	@$(DOCPY) scripts/ci/check_flags.py
 	@$(DOCPY) scripts/ci/check_hardcoded.py
 	@$(DOCPY) scripts/ci/check_forbidden_imports.py

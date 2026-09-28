@@ -76,8 +76,12 @@ def test_every_job_that_calls_make_installs_it_first() -> None:
 
 
 def test_the_documentation_gate_runs_the_whole_target() -> None:
-    """It used to run three of the eight checks in `make check-docs`, and the
-    other five ran only on the machine of whoever remembered."""
+    """It used to run three of the checks in `make check-docs`, and the other
+    five ran only on the machine of whoever remembered.
+
+    The number of checks in the target is deliberately not written down here. It
+    was, as eight, until a ninth was added on 2026-09-28.
+    """
     pipeline = loaded()
     steps = " ".join(str(s) for s in pipeline["docs-consistency"]["script"])
 
