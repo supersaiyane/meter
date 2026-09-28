@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P3 |
-| Status | Planned |
+| Status | Delivered |
 | Specification | [ADR-0027](../adr/ADR-0027-no-performance-dimension-in-p5.md) |
 | Tasks | None yet |
 | Source | The argument FEAT-058 asked for, held on 2026-09-28 |

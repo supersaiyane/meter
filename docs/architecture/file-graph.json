@@ -541,6 +541,7 @@
     "migrations/versions/0016_resource_management.py",
     "migrations/versions/0017_budget.py",
     "migrations/versions/0018_misconfigured_cause.py",
+    "migrations/versions/0019_sizing_refusal.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_env_keys.py",
     "scripts/ci/check_flags.py",
@@ -580,6 +581,7 @@
     "tests/api/test_the_two_savings_figures.py",
     "tests/api/test_topology_repository.py",
     "tests/api/test_waste_guard.py",
+    "tests/api/test_waste_refusals.py",
     "tests/api/test_waste_routes.py",
     "tests/conftest.py",
     "tests/contract/__init__.py",
@@ -6643,6 +6645,11 @@
     {
       "s": "tests/api/test_waste_guard.py",
       "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_waste_refusals.py",
+      "t": "finops_core/config.py",
       "k": "python"
     },
     {

@@ -134,6 +134,11 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | None] = {
     # account and not PayerWide, because unlike a commitment this genuinely narrows: a reader
     # granted one account may know what manages the resources in it.
     "resource_management": ByAccount("sub_account_id"),
+    # FEAT-062. A refusal names a resource, so it is scoped exactly like the
+    # recommendation it is the absence of. A reader who may not see a finding about a
+    # resource may not see that we declined to make one either: the second discloses the
+    # resource just as surely as the first.
+    "sizing_refusal": ByAccount("sub_account_id"),
     # An event has no account of its own. It inherits the one belonging to the
     # recommendation it hangs off, which is the same reasoning `query_finding`
     # uses: a denormalised account column here would be a second copy of a fact

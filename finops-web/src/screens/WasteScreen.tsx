@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { useRecommendations } from '../api/queries';
+import { useRecommendations, useRefusals } from '../api/queries';
 import { DataTable } from '../components/DataTable';
 import { RankedBars, type RankedPoint } from '../components/RankedBars';
 import { Figure } from '../components/Figure';
@@ -59,11 +59,16 @@ function savingByClass(rows: readonly ApiRecommendation[]): readonly RankedPoint
 
 export function WasteScreen() {
   const query = useRecommendations();
+  // FEAT-062. Beside the list and never in it: a refusal has no money, ADR-0016 ranks
+  // this list by money, and a zero would sit at the bottom reading as the least valuable
+  // action rather than as the absence of one.
+  const declined = useRefusals();
   const envelope = query.data?.data;
   const found = envelope?.data;
   const rows = useMemo(() => found?.recommendations ?? [], [found]);
 
   const byClass = useMemo(() => savingByClass(rows), [rows]);
+  const examined = declined.data?.data.data.refusals ?? [];
   useReportMeta('waste-recommendations', envelope?.meta);
   const state = surfaceStateFor(query, envelope?.meta, rows.length, 'none', 'recommendation');
 
@@ -183,6 +188,52 @@ export function WasteScreen() {
           }, biggest saving first`}
         />
       </StateBoundary>
+
+      {/* What the rules looked at and declined. ADR-0027: Meter cannot honestly say a
+          workload is starved, because it cannot verify a performance finding and verification
+          is its whole claim. It can say it looked, which is what the complaint behind that gap
+          was actually about. A service that never appears above is otherwise indistinguishable
+          from one nobody examined. */}
+      {examined.length === 0 ? null : (
+        <section aria-label="Examined and not flagged" data-testid="refusals">
+          <h2>Looked at and left alone</h2>
+          <p data-testid="refusals-count">
+            {declined.data?.data.data.examined ?? 0} resources were examined and nothing was
+            recommended. Each line says which rule asked and what it measured, so a reader can
+            disagree with it
+          </p>
+          <table data-testid="refusals-table">
+            <caption data-testid="refusals-caption">
+              Least observed first. A refusal has no money, so it cannot be ranked by money: the
+              useful order is how much the judgement rests on
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Resource</th>
+                <th scope="col">Rule</th>
+                <th scope="col">Why it was left alone</th>
+                <th scope="col">Account</th>
+                <th scope="col">Observed</th>
+              </tr>
+            </thead>
+            <tbody>
+              {examined.map((one) => (
+                <tr key={`${one.resource_id}:${one.waste_class}`}>
+                  <th scope="row">{one.resource_id}</th>
+                  <td>{one.waste_class}</td>
+                  {/* Whole, never shortened. A judgement a reader cannot argue with is one
+                      they have to take on trust. */}
+                  <td className="meter-prose">{one.reason}</td>
+                  <td>{one.account_id}</td>
+                  <td>
+                    {one.observation_days} {one.observation_days === 1 ? 'day' : 'days'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
     </section>
   );
 }

@@ -155,6 +155,7 @@ DEMO_TABLES = (
     # P4, FEAT-057. References only the tenant, so its place here is reverse dependency
     # order for its own sake rather than for a key.
     "resource_management",
+    "sizing_refusal",
     # P1, FEAT-060. References only the tenant.
     "budget",
     "commitment_action",

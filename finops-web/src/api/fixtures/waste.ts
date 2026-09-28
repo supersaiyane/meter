@@ -1,4 +1,10 @@
-import type { ApiEnvelope, ApiRealizedSavings, ApiRecommendations, ApiScores } from '../types';
+import type {
+  ApiEnvelope,
+  ApiRealizedSavings,
+  ApiRecommendations,
+  ApiRefusals,
+  ApiScores,
+} from '../types';
 import { meta } from './cost';
 
 /**
@@ -296,5 +302,63 @@ export function scoresFixture(): ApiEnvelope<ApiScores> {
       unscored: ['fake-sandbox-c'],
     },
     meta: meta(8),
+  };
+}
+
+/**
+ * What Meter looked at and declined to recommend. FEAT-062, ADR-0027.
+ *
+ * Four refusals across two rules, because the point of the surface is that a reader can see
+ * which question was asked. Two of them rest on ninety days and one on four, so the ordering
+ * the screen uses has something to order: a judgement made over four days is the one worth
+ * questioning first, and it cannot be ranked by money because a refusal has none.
+ */
+export function refusalsFixture(): ApiEnvelope<ApiRefusals> {
+  return {
+    data: {
+      refusals: [
+        {
+          resource_id: 'i-young',
+          account_id: 'fake-platform-a',
+          region_id: 'us-fake-1',
+          waste_class: 'IDLE_INSTANCE',
+          reason: '4 days is under the 14 day floor',
+          observation_days: 4,
+        },
+        {
+          resource_id: 'i-theirs',
+          account_id: 'fake-product-b',
+          region_id: 'eu-fake-1',
+          waste_class: 'RIGHTSIZE_INSTANCE',
+          reason: 'p99 of 91.0 percent leaves no room to shrink',
+          observation_days: 60,
+        },
+        {
+          resource_id: 'i-busy',
+          account_id: 'fake-platform-a',
+          region_id: 'us-fake-1',
+          waste_class: 'RIGHTSIZE_INSTANCE',
+          reason: 'p99 of 87.3 percent leaves no room to shrink',
+          observation_days: 90,
+        },
+        {
+          resource_id: 'i-memory-bound',
+          account_id: 'fake-platform-a',
+          region_id: 'us-fake-1',
+          waste_class: 'RIGHTSIZE_INSTANCE',
+          reason:
+            '94 percent memory ceiling, so this is memory bound and a CPU rule must not shrink it',
+          observation_days: 90,
+        },
+      ],
+      examined: 4,
+    },
+    meta: {
+      as_of: '2026-09-21T06:00:00Z',
+      collected_at: '2026-09-21T06:05:00Z',
+      scope_coverage: { visible: 4, total: 5, is_partial: true, unit: 'accounts' },
+      degraded: false,
+      failures: [],
+    },
   };
 }

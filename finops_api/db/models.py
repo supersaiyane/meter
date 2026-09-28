@@ -744,6 +744,45 @@ commitment_action = Table(
 #: found. Presence and never absence: NOT_DETERMINED is the absence of a row and UNMANAGED is
 #: derived at read time from a declaration about our own configuration, never stored, because a
 #: stored judgement outlives the configuration it was made under.
+sizing_refusal = Table(
+    "sizing_refusal",
+    metadata,
+    #: FEAT-062, 0019. What a sizing rule examined and declined to recommend, with the
+    #: sentence that decided it. Its own table and not a row in `recommendation`, because a
+    #: refusal has no saving and every consumer of that table ranks by money: a zero there
+    #: reads as the least valuable action rather than as the absence of one. ADR-0027.
+    Column("refusal_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column("region_id", Text, nullable=False),
+    #: The resource, or the scaling group where one owns it, which is the same target the
+    #: recommendation would have named. A reader comparing the two lists has to see one name.
+    Column("resource_id", Text, nullable=False),
+    #: Which rule declined. A resource the sizing rule and the idle rule both looked at was
+    #: declined by each for its own reason, and one row would lose the half somebody came for.
+    Column("waste_class", Text, nullable=False),
+    #: The sentence, and the whole feature. A refusal reading "did not qualify" would be worse
+    #: than no feature: it teaches a reader the explanations are empty and they stop reading
+    #: the ones that are not. The constraint is a length, because an empty string is NOT NULL.
+    Column("reason", Text, nullable=False),
+    Column("observation_days", Integer, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint(
+        "tenant_id", "resource_id", "waste_class", name="uq_sizing_refusal__resource_and_rule"
+    ),
+    CheckConstraint(
+        "length(trim(reason)) >= 12",  # allow-hardcoded: the text of a database check
+        # constraint, which has to match 0019 character for character or the mirror test
+        # fails. A CHECK cannot read settings, and this is not a policy knob: it is the
+        # floor below which a reason is not a sentence.
+        name="ck_sizing_refusal__reason_is_a_sentence",
+    ),
+    CheckConstraint("observation_days >= 0", name="ck_sizing_refusal__observed_something"),
+)
+
+
 resource_management = Table(
     "resource_management",
     metadata,

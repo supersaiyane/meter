@@ -20,19 +20,19 @@ subprojects:
   depends_on: none
 - id: P1
   name: Cost Intelligence
-  status: Cost surface delivered, 13 of 13 tasks. Anomalies, commitments and the export are a second cut and are not started
+  status: Cost surface delivered. Anomalies, commitments, budgets and the export all built
   spec: docs/specs/2026-09-18-p1-cost-intelligence-design.md
   plan: docs/plans/P1-implementation-plan.md
   depends_on: P0
 - id: P2
   name: Query Cost Governance
-  status: Spec approved, plan in review
+  status: Delivered. Findings, surfaces, ad hoc queries and enforcement all have screens
   spec: docs/specs/2026-08-23-p2-query-cost-governance-design.md
   plan: docs/plans/P2-implementation-plan.md
   depends_on: P0
 - id: P3
   name: Utilization and Rightsizing
-  status: Not started
+  status: Delivered, 19 of 20 tasks. TASK-P3-020 was unblocked by P4 and is done
   spec: ''
   plan: ''
   depends_on: P0, P1
@@ -433,7 +433,7 @@ features:
 - id: FEAT-062
   name: What Meter looked at and decided not to recommend
   subproject: P3
-  status: Planned
+  status: Delivered
   detail: '[ADR-0027](docs/adr/ADR-0027-no-performance-dimension-in-p5.md), the argument FEAT-058
     asked for'
   doc: docs/features/FEAT-062-refusal-evidence.md
