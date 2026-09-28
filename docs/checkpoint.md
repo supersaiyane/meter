@@ -128,7 +128,7 @@ remembered, which is the 2026-09-27 lesson in `tasks/lessons.md`.
 | Collectors | 22 modules, every one named in `project_map.md`, which is checked rather than asserted since 2026-09-28 |
 | Screens | 23 built of 26 routes |
 | Specifications | 8 design documents in `docs/specs/` |
-| Lessons | 22 in `tasks/lessons.md` |
+| Lessons | 23 in `tasks/lessons.md` |
 | Sub projects | P1 to P5 delivered, P6 and P7 specified and planned and not started, P0 recorded as in build, which is the discrepancy above |
 
 ### Reading in, in order
