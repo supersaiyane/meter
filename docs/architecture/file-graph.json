@@ -155,6 +155,7 @@
     "finops-web/dist-types/src/screens/__tests__/WasteScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/enforcementTime.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/fixtures.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/freshnessContract.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/surfaceStateFor.test.d.ts",
     "finops-web/dist-types/src/screens/enforcementTime.d.ts",
     "finops-web/dist-types/src/screens/findingFigure.d.ts",
@@ -184,6 +185,7 @@
     "finops-web/playwright.config.ts",
     "finops-web/src/App.test.tsx",
     "finops-web/src/App.tsx",
+    "finops-web/src/App.tsx?raw",
     "finops-web/src/api/ApiProvider.tsx",
     "finops-web/src/api/__tests__/client.test.ts",
     "finops-web/src/api/__tests__/fixtureSeam.test.ts",
@@ -302,6 +304,7 @@
     "finops-web/src/screens/__tests__/WasteScreen.test.tsx",
     "finops-web/src/screens/__tests__/enforcementTime.test.ts",
     "finops-web/src/screens/__tests__/fixtures.ts",
+    "finops-web/src/screens/__tests__/freshnessContract.test.ts",
     "finops-web/src/screens/__tests__/surfaceStateFor.test.ts",
     "finops-web/src/screens/enforcementTime.ts",
     "finops-web/src/screens/findingFigure.ts",
@@ -3675,6 +3678,11 @@
     {
       "s": "finops-web/src/screens/__tests__/fixtures.ts",
       "t": "finops-web/src/components/orgNodes.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/freshnessContract.test.ts",
+      "t": "finops-web/src/App.tsx?raw",
       "k": "typescript"
     },
     {

@@ -2294,18 +2294,46 @@ issues:
 - id: ISS-028
   severity: HIGH
   summary: No recommendation lifecycle, so recommendations are ignored
-  status: OPEN
-  detail: FEAT-028
+  status: FIXED
+  detail: 'FEAT-028. FIXED on 2026-09-28, verified against the code rather than against the feature
+    status. The lifecycle exists and is enforced where it has to be: seven states held by a
+    check constraint in 0010, finops_api/lifecycle.py moving one recommendation or refusing and
+    changing nothing, an owner and a ticket reference on the row, and the waste screen naming
+    how many findings nobody owns, which is the number this issue was really about. Nineteen
+    lifecycle tests pass. The ticketing integration the detail also mentioned is not built:
+    there is a TicketSink port and a fake and no adapter. Closing this does not hide that,
+    because it is OPEN-05, which asks whether it is Jira or ServiceNow and is a decision nobody
+    has made. A lifecycle with no owner was the defect; a lifecycle with no ticket system is
+    still a lifecycle'
 - id: ISS-029
   severity: HIGH
   summary: No realized savings verification
-  status: OPEN
-  detail: FEAT-029
+  status: FIXED
+  detail: 'FEAT-029. FIXED on 2026-09-28, verified rather than assumed. docs/00-GOAL.md names realized
+    savings as the north star in the same words this issue used, not identified and not
+    potential. finops_query/realized.py judges two windows into VERIFIED, REGRESSED or
+    INCONCLUSIVE and carries the working, finops_ingest/collectors/realized_savings.py is the
+    only writer that moves a recommendation out of DONE, and the screen groups the totals by
+    verdict and refuses to sum them, which is the specific defence against the vanity metric
+    named here: one realized figure would be added to the estimate on the recommendations screen
+    within a week of anybody seeing both. Fifteen tests pass. One gap stays open elsewhere and
+    is not this issue: ISS-208, a commitment action has no resource to join on, so no commitment
+    purchase can be verified against the bill yet'
 - id: ISS-030
   severity: MEDIUM
   summary: No data freshness contract
-  status: OPEN
-  detail: FEAT-006
+  status: FIXED
+  detail: 'FEAT-006. FIXED on 2026-09-28, and the second of its three requirements was the one worth
+    checking. as_of and collected_at are non nullable on every fact table, held by two tests
+    that read the metadata rather than a list, and a dedicated freshness screen exists and draws
+    each collector against its own cadence. Freshness on every screen was true and was held by
+    nothing at all: it was one new screen away from being false, and a screen rendering a number
+    with no freshness is the exact defect constraint 10 exists to prevent, because a stale
+    figure looks identical to a current one. finops-
+    web/src/screens/__tests__/freshnessContract.test.ts now reads the route table in App.tsx and
+    asserts every routed screen calls useReportMeta. Falsified by removing the call from the
+    budgets screen and watching it be named, and it checks for a call rather than a mention
+    because the first attempt at falsifying it did not fail'
 - id: ISS-031
   severity: MEDIUM
   summary: No audit log for scope evaluation
@@ -3103,6 +3131,21 @@ issues:
     list means none or means not permitted, how throttling actually arrives under load, and
     whether the semantics match what each adapter assumes about them. Those need a real account,
     which is ISS-002 and has been waiting since 2026-08-23'
+
+- id: ISS-217
+  severity: LOW
+  status: OPEN
+  summary: Two components live in finops-web/src/screens and are not screens, so any rule about
+    what a screen must do has to carry an exception naming them
+  detail: 'Found on 2026-09-28 while closing ISS-030. QueryGroups and RemediationControls sit in
+    the screens directory, are not routed, and take props: QueryGroups is rendered inside
+    QueryFindingsScreen and RemediationControls takes a detail prop from its parent. Neither
+    reports freshness and neither should, because their parent screens report it for them. The
+    cost is small and is entirely in comprehension: the freshness contract reads the route table
+    rather than the directory precisely so it does not have to name them, and its docstring still
+    has to explain why two files in screens are out of scope. Moving them to components/ is a
+    rename, an import change in two files and a test path, and the reason it is not done here is
+    that it would sit inside an unrelated change'
 
 open_questions:
 - id: OPEN-07
