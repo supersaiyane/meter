@@ -70,7 +70,7 @@ decision already made.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done, 2026-09-28 |
 | Implements | P5 spec sections 5.1 and 5.3 |
 | Delivers | Part of FEAT-033 |
 | Depends on | TASK-P5-001 |

@@ -1124,17 +1124,167 @@ graph_coverage = Table(
     ),
 )
 
+#: The four sources a usage figure can come from, and the absence. Mirrored from
+#: `finops_core.domain.quota.UsageSource`, and `tests/db/test_models.py` holds the two
+#: equal. NONE is the common case rather than the error path: AWS publishes usage for a
+#: minority of its quotas, which is why the screen shows two lists instead of one.
+USAGE_SOURCES = ("AWS_USAGE_METRIC", "TRUSTED_ADVISOR", "SERVICE_API", "NONE")
+
+#: AWS's own vocabulary for an increase request, not ours to improve. DENIED is in it
+#: because that is the one a product is tempted to hide.
+REQUEST_STATUSES = ("PENDING", "CASE_OPENED", "APPROVED", "DENIED", "CASE_CLOSED")
+
+#: The length below which a reason is not a sentence. The same figure 0019 uses for a
+#: sizing refusal and for the same argument: an explanation reading "not measured" would
+#: be worse than none, because it teaches a reader the reasons here are empty and they
+#: stop reading the ones that are not. A literal rather than a setting because a CHECK
+#: constraint cannot read one, and it has to match 0020 character for character.
+REASON_FLOOR = 12  # allow-hardcoded: a database check constraint cannot read settings
+
+
+quota_usage = Table(
+    "quota_usage",
+    metadata,
+    #: FEAT-033, 0020. One quota for one account in one region, every run, including the
+    #: ones nothing can measure. Those are the majority in a real estate, and rendering
+    #: one as zero used tells somebody they have headroom nobody has measured.
+    Column("quota_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    #: Null where the quota is global rather than regional. IAM roles per account are
+    #: counted once, and a placeholder region would let a screen show one limit five
+    #: times and add them up. The unique index is NULLS NOT DISTINCT for that reason.
+    Column("region_id", Text),
+    Column("service_code", Text, nullable=False),
+    Column("quota_code", Text, nullable=False),
+    Column("quota_name", Text, nullable=False),
+    #: Nullable, because a few quotas publish no limit. Zero is a real and different
+    #: value meaning the thing is switched off here.
+    Column("limit_value", Numeric(20, 10)),
+    #: Nullable, and the null is the point. Never zero as a stand in.
+    Column("used_value", Numeric(20, 10)),
+    #: Where the figure came from, or NONE. Held equal to `used_value` by a check, so a
+    #: figure can never be recorded without its provenance.
+    Column("usage_source", Text, nullable=False),
+    #: Why nothing could measure it, required where nothing did. A quota in the
+    #: unmeasurable list with a blank reason teaches a reader the explanations there are
+    #: empty, and they stop reading the ones that are not.
+    Column("unmeasurable_reason", Text),
+    Column("is_adjustable", Boolean, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint(
+        "usage_source IN ('AWS_USAGE_METRIC', 'TRUSTED_ADVISOR', 'SERVICE_API', 'NONE')",
+        name="ck_quota_usage__usage_source",
+    ),
+    #: The constraint the sub project exists for, both directions in one expression. A
+    #: figure with no source cannot be audited later and renders identically to a
+    #: measured one; a source with no figure claims a measurement nobody made.
+    CheckConstraint(
+        "(used_value IS NULL) = (usage_source = 'NONE')",
+        name="ck_quota_usage__source_iff_usage",
+    ),
+    CheckConstraint(
+        "limit_value IS NULL OR used_value IS NULL OR used_value <= limit_value",
+        name="ck_quota_usage__used_within_limit",
+    ),
+    CheckConstraint(
+        "limit_value IS NULL OR limit_value >= 0",
+        name="ck_quota_usage__limit_not_negative",
+    ),
+    CheckConstraint(
+        "(usage_source = 'NONE') = "
+        f"(length(trim(coalesce(unmeasurable_reason, ''))) >= {REASON_FLOOR})",
+        name="ck_quota_usage__reason_iff_unmeasurable",
+    ),
+    Index("ix_quota_usage__account", "tenant_id", "sub_account_id"),
+)
+
+
+quota_request = Table(
+    "quota_request",
+    metadata,
+    #: FEAT-034, 0020. An increase request Meter reads and never writes. Spec section 6:
+    #: `RequestServiceQuotaIncrease` is a write into a member account and constraint 6
+    #: says there are none in v1, so this is the tracking half only.
+    Column("request_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    #: AWS's own request id, which is what lets a re read update rather than accumulate.
+    Column("request_id", Text, nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column("region_id", Text),
+    Column("service_code", Text, nullable=False),
+    Column("quota_code", Text, nullable=False),
+    Column("desired_value", Numeric(20, 10), nullable=False),
+    Column("status", Text, nullable=False),
+    Column("requested_at", DateTime(timezone=True), nullable=False),
+    Column("last_updated_at", DateTime(timezone=True), nullable=False),
+    #: Always false, and that is the column's whole job: spec section 6 written into the
+    #: schema rather than into a comment. Reversing the decision takes a migration
+    #: somebody has to write and defend.
+    Column("submitted_by_meter", Boolean, nullable=False, server_default=text("FALSE")),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint("tenant_id", "request_id", name="uq_quota_request__request_id"),
+    CheckConstraint(
+        "status IN ('PENDING', 'CASE_OPENED', 'APPROVED', 'DENIED', 'CASE_CLOSED')",
+        name="ck_quota_request__status",
+    ),
+    CheckConstraint("desired_value > 0", name="ck_quota_request__desired_is_positive"),
+    CheckConstraint(
+        "last_updated_at >= requested_at",
+        name="ck_quota_request__updated_after_requested",
+    ),
+    CheckConstraint("submitted_by_meter = FALSE", name="ck_quota_request__meter_never_submits"),
+    Index("ix_quota_request__account", "tenant_id", "sub_account_id"),
+)
+
+
+quota_request_history = Table(
+    "quota_request_history",
+    metadata,
+    #: Every status a request has been in. The current status cannot say when it was
+    #: approved, and FEAT-034 exists for the increase nobody checked on. It carries no
+    #: `as_of`: `changed_at` is AWS's timestamp for the transition, and the request row
+    #: beside it holds the pair of timestamps for the read that found it.
+    Column("history_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("request_id", Text, nullable=False),
+    Column("status", Text, nullable=False),
+    Column("changed_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint("tenant_id", "request_id", "status", name="uq_quota_request_history__status"),
+    CheckConstraint(
+        "status IN ('PENDING', 'CASE_OPENED', 'APPROVED', 'DENIED', 'CASE_CLOSED')",
+        name="ck_quota_request_history__status",
+    ),
+    Index("ix_quota_request_history__request", "tenant_id", "request_id", "changed_at"),
+)
+
+
 #: Every table in the schema. Used by the drift test and by the repository layer.
 ALL_TABLES = tuple(metadata.sorted_tables)
 
+#: Tables recording our own work rather than a cloud's. They carry an `as_of` and are
+#: deliberately not facts, for the reason `finops_core.domain.fact` gives for `IngestRun`
+#: not inheriting from `Fact`: a watermark's `as_of` is how far this collector has read,
+#: which is a statement about Meter, so there is nothing for a `collected_at` to mean.
+#: Listed by name because each is an argued exception, and a list of exceptions that has
+#: to be defended one at a time does not rot the way an inventory of the rule does.
+NOT_FACT_TABLES = ("ingest_watermark",)
+
 #: Tables holding a fact about a cloud, which must carry both timestamps.
-FACT_TABLES = (
-    "cloud_account",
-    "org_node",
-    "cost_focus_daily",
-    "cost_focus_monthly",
-    "platform_cost",
-    "topology_node",
-    "topology_edge",
-    "graph_coverage",
+#:
+#: Derived rather than listed. It was a hand written tuple of eight names until
+#: 2026-09-28, and the schema had grown well past it: `budget`, `sizing_refusal`,
+#: `resource_management` and others carry `as_of` and were outside the two tests that
+#: read this, so constraint 10 was being asserted of a shrinking fraction of the schema
+#: while both tests stayed green. A table with an `as_of` about somebody else's estate is
+#: a table claiming when something was true, and that is the whole membership rule, so it
+#: is asked of the schema instead of remembered.
+FACT_TABLES = tuple(
+    table.name
+    for table in metadata.sorted_tables
+    if "as_of" in table.c and table.name not in NOT_FACT_TABLES
 )

@@ -30,9 +30,9 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Playwright journeys | 15 in 4 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 7 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 21 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 19 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 120 | test_*.py under tests/ |
-| Test functions | 1620 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 20 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 122 | test_*.py under tests/ |
+| Test functions | 1663 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -962,6 +962,24 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0020_quotas.py     FEAT-033 and FEAT-034. Every quota, including the
+│       │                      ones nothing can measure, which are the majority in
+│       │                      a real estate. One check constraint carries the sub
+│       │                      project: a usage figure exists if and only if a
+│       │                      source is named, refused in both directions, because
+│       │                      a figure with no provenance cannot be audited later
+│       │                      and renders identically to a measured one, while a
+│       │                      source with no figure claims a measurement nobody
+│       │                      made. limit_value is nullable too and is a different
+│       │                      absence: a few quotas publish no ceiling, and zero is
+│       │                      a real value meaning switched off here. The identity
+│       │                      index is NULLS NOT DISTINCT, because a global quota
+│       │                      carries no region and two nulls never conflict, so
+│       │                      every run would add another copy of it.
+│       │                      submitted_by_meter is a column that can only be
+│       │                      false: constraint 6 in the schema rather than in a
+│       │                      comment, so reversing it takes a migration somebody
+│       │                      has to write and defend
 │       ├── 0019_sizing_refusal.py  FEAT-062, ADR-0027. What a sizing rule
 │       │                      examined and declined, with the sentence that
 │       │                      decided it. Its own table because a refusal has no

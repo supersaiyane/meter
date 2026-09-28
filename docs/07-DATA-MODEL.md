@@ -534,6 +534,98 @@ not be audited.
 rather than null, because a null is easy to filter out accidentally and a self
 metering report that quietly under counts is worse than none.
 
+### Quotas and limits, P5
+
+Three tables added 2026-09-28 by migration 0020. The interesting one is a single
+check constraint.
+
+```sql
+CREATE TABLE quota_usage (
+    quota_pk            UUID PRIMARY KEY,
+    tenant_id           UUID            NOT NULL REFERENCES tenant (tenant_id),
+    ingest_run_id       UUID            NOT NULL,
+    sub_account_id      TEXT            NOT NULL,
+    region_id           TEXT,                    -- null when the quota is global
+    service_code        TEXT            NOT NULL,
+    quota_code          TEXT            NOT NULL,
+    quota_name          TEXT            NOT NULL,
+    limit_value         NUMERIC(20, 10),         -- null when none is published
+    used_value          NUMERIC(20, 10),         -- null when nothing measures it
+    usage_source        TEXT            NOT NULL,
+    unmeasurable_reason TEXT,                    -- required when, and only when,
+                                                 -- usage_source is NONE
+    is_adjustable       BOOLEAN         NOT NULL,
+    as_of               TIMESTAMPTZ     NOT NULL,
+    collected_at        TIMESTAMPTZ     NOT NULL
+);
+CREATE UNIQUE INDEX uq_quota_usage__identity
+    ON quota_usage (tenant_id, sub_account_id, region_id, service_code, quota_code)
+    NULLS NOT DISTINCT;
+```
+
+`ck_quota_usage__source_iff_usage` requires `(used_value IS NULL) = (usage_source
+= 'NONE')`. It is the whole of P5 in one expression. A usage figure with no named
+source cannot be audited a year later and renders identically to one that was
+measured, and a named source with no figure claims a measurement nobody made and
+would put the quota in the measurable list with nothing to show.
+
+`usage_source` is one of `AWS_USAGE_METRIC`, `TRUSTED_ADVISOR`, `SERVICE_API` or
+`NONE`. `NONE` is the common case rather than the error path: AWS publishes usage
+for a minority of its quotas, so most rows in a real estate have a limit and no
+usage, and a product rendering that as zero percent used is telling somebody they
+have headroom nobody has measured. That is why the screen shows two lists.
+
+`limit_value` is a second and different absence. A few quotas publish no limit at
+all, and the adapter has to write a row for every quota Service Quotas returns,
+so the alternatives would be dropping those rows or inventing a zero. Zero is a
+real and different value meaning the thing is switched off here, which is why
+`ck_quota_usage__limit_not_negative` allows it.
+
+`NULLS NOT DISTINCT` on the identity index is load bearing. A global quota, IAM
+roles per account and the like, carries no region, and under PostgreSQL's default
+two nulls never conflict, so every collection would insert another copy of it and
+the screen would show one account level limit once per region.
+
+```sql
+CREATE TABLE quota_request (
+    request_pk         UUID PRIMARY KEY,
+    tenant_id          UUID            NOT NULL REFERENCES tenant (tenant_id),
+    ingest_run_id      UUID            NOT NULL,
+    request_id         TEXT            NOT NULL,   -- AWS's own
+    sub_account_id     TEXT            NOT NULL,
+    region_id          TEXT,
+    service_code       TEXT            NOT NULL,
+    quota_code         TEXT            NOT NULL,
+    desired_value      NUMERIC(20, 10) NOT NULL,
+    status             TEXT            NOT NULL,   -- PENDING, CASE_OPENED,
+                                                   -- APPROVED, DENIED, CASE_CLOSED
+    requested_at       TIMESTAMPTZ     NOT NULL,
+    last_updated_at    TIMESTAMPTZ     NOT NULL,
+    submitted_by_meter BOOLEAN         NOT NULL DEFAULT FALSE,
+    as_of              TIMESTAMPTZ     NOT NULL,
+    collected_at       TIMESTAMPTZ     NOT NULL
+);
+
+CREATE TABLE quota_request_history (
+    history_pk UUID PRIMARY KEY,
+    tenant_id  UUID        NOT NULL REFERENCES tenant (tenant_id),
+    request_id TEXT        NOT NULL,
+    status     TEXT        NOT NULL,
+    changed_at TIMESTAMPTZ NOT NULL
+);
+```
+
+`submitted_by_meter` is a column that can only ever be false, enforced by
+`ck_quota_request__meter_never_submits`. It is constraint 6 and P5 spec section 6
+written into the schema rather than into a comment: `RequestServiceQuotaIncrease`
+is a write into a member account, Meter drafts the request and hands it to a
+person, and reversing that takes a migration somebody has to write and defend.
+
+`quota_request_history` exists because the current status cannot say when a
+request was approved, and FEAT-034 is about the increase nobody checked on. It
+carries no `as_of`: `changed_at` is AWS's timestamp for the transition, and the
+request row beside it holds the pair of timestamps for the read that found it.
+
 ## Migration workflow, Alembic
 
 Alembic is the only way the schema changes. A manual `ALTER TABLE` against any
@@ -614,12 +706,17 @@ than an oversight.
 
 | Table | Sub project | Feature |
 | --- | --- | --- |
-| `resource`, `resource_edge` | P4 | FEAT-030, FEAT-031 |
-| `recommendation`, `recommendation_event` | P3 | FEAT-028 |
-| `realized_saving` | P3 | FEAT-029 |
-| `query_finding`, `query_snapshot` | P2 | FEAT-011 to FEAT-013 |
-| `quota_usage` | P5 | FEAT-033 |
+| `query_snapshot` | P2 | FEAT-011 to FEAT-013 |
 | `k8s_workload_cost` | P6 | FEAT-035, FEAT-036 |
+
+This list was six rows until 2026-09-28 and five of them had stopped being true,
+which is worth recording rather than quietly deleting. `recommendation`,
+`recommendation_event`, `realized_saving` and `query_finding` were built in P2
+and P3 and are in the schema. `resource` and `resource_edge` were built in P4
+under the names `topology_node` and `topology_edge`, so that row was wrong twice
+over. `quota_usage` arrived with migration 0020 and is documented above. A list
+of what does not exist is exactly the kind of document that rots without anybody
+noticing, because nothing fails when an absence becomes a presence.
 
 ## Classification and retention
 

@@ -18,6 +18,7 @@ from sqlalchemy import CheckConstraint, UniqueConstraint
 
 from finops_api.db import models
 from finops_core import errors
+from finops_core.domain.quota import UsageSource
 
 SPECIFIED_TABLES = {
     "tenant",
@@ -102,6 +103,48 @@ def test_both_error_columns_are_constrained_to_that_set() -> None:
         text = constraint_text(table, constraint)
         for cause in models.ERROR_TYPES:
             assert cause in text, f"{table} does not admit {cause}"
+
+
+def test_the_stored_usage_sources_mirror_the_domain_enum() -> None:
+    """Four spellings of one vocabulary, held equal in the only place that can.
+
+    `UsageSource`, this tuple, the check constraint in 0020 and the fake estate all name
+    the same four values, and nothing in a type checker or a migration notices when one
+    of them drifts: the collector succeeds, the database refuses the row, and the cause
+    reads as a bug in the collector. Same shape as the cause vocabulary, ADR-0026.
+    """
+    assert set(models.USAGE_SOURCES) == {source.value for source in UsageSource}
+
+
+def test_the_usage_source_column_admits_exactly_those_four() -> None:
+    admitted = constraint_text("quota_usage", "ck_quota_usage__usage_source")
+    for source in models.USAGE_SOURCES:
+        assert f"'{source}'" in admitted, f"quota_usage does not admit {source}"
+
+
+def test_both_request_status_columns_admit_the_same_five() -> None:
+    """A history row whose status the request row could not hold is unreachable by read."""
+    for table, constraint in (
+        ("quota_request", "ck_quota_request__status"),
+        ("quota_request_history", "ck_quota_request_history__status"),
+    ):
+        admitted = constraint_text(table, constraint)
+        for status in models.REQUEST_STATUSES:
+            assert f"'{status}'" in admitted, f"{table} does not admit {status}"
+
+
+def test_every_fact_table_is_found_rather_than_remembered() -> None:
+    """The list was eight names and the schema had grown past it. See `FACT_TABLES`.
+
+    Asserting a floor rather than an exact set, because the point is that the tuple
+    tracks the schema: an exact set here would be the hand written list again, one file
+    further away.
+    """
+    assert len(models.FACT_TABLES) > len(models.NOT_FACT_TABLES)
+    assert "budget" in models.FACT_TABLES
+    assert "quota_usage" in models.FACT_TABLES
+    #: Meter's own record of how far it has read, not a claim about a cloud.
+    assert "ingest_watermark" not in models.FACT_TABLES
 
 
 def test_org_node_parent_is_a_self_referencing_foreign_key() -> None:

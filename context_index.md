@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-609 public symbols across 5 packages.
+612 public symbols across 5 packages.
 
 ## finops_core
 
@@ -93,7 +93,10 @@ a duplicate.
 | `QueryDefinition` | class | `finops_core/domain/query.py:146` | One saved query, as it was defined when it was read. | `finops_providers/grafana/amg.py` |
 | `ControlOutcome` | class | `finops_core/domain/query.py:189` | What a control actually did, which is not always what was asked. | `finops_providers/grafana/amg.py` |
 | `ControlRequest` | class | `finops_core/domain/query.py:208` | An instruction to change one query's behaviour. | nothing in this tree |
-| `QuotaUsage` | class | `finops_core/domain/quota.py:18` | One quota for one account, in one region or across all of them. | nothing in this tree |
+| `UsageSource` | class | `finops_core/domain/quota.py:33` | Where a usage figure came from, or that there is none. | nothing in this tree |
+| `QuotaUsage` | class | `finops_core/domain/quota.py:58` | One quota for one account, in one region or across all of them. | nothing in this tree |
+| `QuotaUsage.headroom` | method | `finops_core/domain/quota.py:114` | The fraction of the quota still free, or None where it is not a number. | nothing in this tree |
+| `QuotaUsage.is_measurable` | method | `finops_core/domain/quota.py:132` | Whether anything at all reports consumption for this quota. | nothing in this tree |
 | `ResourceRef` | class | `finops_core/domain/resource.py:19` | One resource as the provider described it at `as_of`. | nothing in this tree |
 | `Tenant` | class | `finops_core/domain/tenant.py:23` |  | nothing in this tree |
 | `Scope` | class | `finops_core/domain/tenant.py:29` | What one principal may read, held as data rather than as a query fragment. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py` |
@@ -693,7 +696,10 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `QueryOrigin` in `finops_core/domain/query.py:45`
 - `ControlAction` in `finops_core/domain/query.py:62`
 - `ControlRequest` in `finops_core/domain/query.py:208`
-- `QuotaUsage` in `finops_core/domain/quota.py:18`
+- `UsageSource` in `finops_core/domain/quota.py:33`
+- `QuotaUsage` in `finops_core/domain/quota.py:58`
+- `QuotaUsage.headroom` in `finops_core/domain/quota.py:114`
+- `QuotaUsage.is_measurable` in `finops_core/domain/quota.py:132`
 - `ResourceRef` in `finops_core/domain/resource.py:19`
 - `Tenant` in `finops_core/domain/tenant.py:23`
 - `SliceRead.is_whole` in `finops_core/domain/topology.py:329`
@@ -721,6 +727,3 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `StateSource` in `finops_core/ports/iac.py:25`
 - `StateSource.locations` in `finops_core/ports/iac.py:47`
 - `IdentityProvider` in `finops_core/ports/identity.py:19`
-- `IdentityProvider.authenticate` in `finops_core/ports/identity.py:22`
-- `EntitlementResolver` in `finops_core/ports/identity.py:36`
-- `ResourceInventory` in `finops_core/ports/inventory.py:28`

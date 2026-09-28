@@ -542,6 +542,7 @@
     "migrations/versions/0017_budget.py",
     "migrations/versions/0018_misconfigured_cause.py",
     "migrations/versions/0019_sizing_refusal.py",
+    "migrations/versions/0020_quotas.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_env_keys.py",
     "scripts/ci/check_flags.py",
@@ -602,6 +603,7 @@
     "tests/core/test_geography.py",
     "tests/core/test_iac.py",
     "tests/core/test_ports.py",
+    "tests/core/test_quota.py",
     "tests/core/test_topology.py",
     "tests/core/test_waste_domain.py",
     "tests/db/__init__.py",
@@ -609,6 +611,7 @@
     "tests/db/test_p2_constraints.py",
     "tests/db/test_p3_constraints.py",
     "tests/db/test_p4_constraints.py",
+    "tests/db/test_p5_constraints.py",
     "tests/db/test_schema.py",
     "tests/db/test_scope_guard.py",
     "tests/ingest/__init__.py",
@@ -6908,6 +6911,21 @@
       "k": "python"
     },
     {
+      "s": "tests/core/test_quota.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_quota.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_quota.py",
+      "t": "finops_core/domain/quota.py",
+      "k": "python"
+    },
+    {
       "s": "tests/core/test_topology.py",
       "t": "finops_core/domain/__init__.py",
       "k": "python"
@@ -6950,6 +6968,11 @@
     {
       "s": "tests/db/test_models.py",
       "t": "finops_core/domain/org.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/db/test_models.py",
+      "t": "finops_core/domain/quota.py",
       "k": "python"
     },
     {

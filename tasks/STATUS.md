@@ -187,7 +187,7 @@ ISS-003.
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 | P3 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
-| P5 | 0 | 0 | 0 | 0 | 8 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
+| P5 | 2 | 0 | 0 | 0 | 6 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 0 | 0 | 0 | 0 | 12 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -334,6 +334,13 @@ ISS-003.
 | `TASK-P4-011` | Done, 2026-09-26 | the test every consumer has to pass |
 | `TASK-P4-012` | Done, 2026-09-26 | the resource list, which the navigation has promised since P4 began |
 | `TASK-P4-013` | Done, 2026-09-26 | which file manages this resource |
+
+**P5, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P5-001` | Done, 2026-09-28 | the entity that already knew |
+| `TASK-P5-002` | Done, 2026-09-28 | the constraint that does the work |
 
 <!-- generated:task-status end -->
 

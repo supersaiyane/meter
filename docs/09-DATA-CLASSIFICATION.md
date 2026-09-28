@@ -39,6 +39,9 @@ that before there is data in it, which is the only cheap moment to do it.
 | `folder_team_map` | **P** | `owner_email`, `team` and `updated_by`, all entered by a person | Life of the mapping | **Yes** |
 | `enforcement_action` | **P** | `principal_arn`, which identifies a role and often a person, and what was done to them | **13 months**, immutable within that window. It is the record of a control applied to somebody | **No.** Same argument as `audit_event` |
 | `remediation_change` | O and **P** | The before and after of a change, and `applied_by` | 13 months. `before` is the undo and outlives the change it reverses | `applied_by` on request |
+| `quota_usage` | C | Service limits and how much of each an account uses, which is the shape and the scale of somebody's estate. No personal data: a quota belongs to an account, never to a person | Current state only. Each run replaces the row, because a limit nobody raised is the same fact today as it was yesterday | Not applicable |
+| `quota_request` | C | An increase somebody asked AWS for, what they asked for, and whether it was granted. `submitted_by_meter` is always false | Life of the request. A denial is the part worth keeping | Not applicable |
+| `quota_request_history` | C | Every status a request passed through, and when | Life of the request | Not applicable |
 
 ### The account root email address
 
