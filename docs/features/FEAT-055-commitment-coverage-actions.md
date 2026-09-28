@@ -50,7 +50,7 @@ capacity plan against.
 
 Usage below the observation minimum produces no finding, on the same principle as FEAT-054.
 
-The saving is modelled and never measured. Realized saving is measured afterwards by FEAT-041,
+The saving is modelled and never measured. Realized saving is measured afterwards by FEAT-029,
 which is the only thing in the product allowed to say a saving happened.
 
 ## Security considerations

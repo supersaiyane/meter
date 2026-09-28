@@ -50,7 +50,7 @@ three above.
 
 **The product cannot verify a performance finding, and verification is its whole claim.**
 Realized savings is the north star precisely because identified savings is a vanity metric,
-which is what ISS-029 was about, and FEAT-041 judges a change against the bill sixty days
+which is what ISS-029 was about, and FEAT-029 judges a change against the bill sixty days
 later. A performance recommendation's success is an outage that did not happen, which is
 unfalsifiable in exactly the shape ISS-029 objected to. It would put a class of finding
 that can only be asserted beside a class that is measured, and the first would borrow the

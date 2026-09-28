@@ -1172,7 +1172,7 @@ was computed from, and that the saving is modelled and labelled.
 - [ ] Usage below the observation minimum produces no finding, on the same
       principle as TASK-P3-021
 - [ ] The saving is modelled, never measured, and the screen labels it. Realized
-      saving is measured later by the existing FEAT-041 machinery
+      saving is measured later by the existing FEAT-029 machinery
 - [ ] Existing commitment reporting is not changed. This adds a consumer
 
 **Deliberately not in this task.** Buying anything, and recommending a specific

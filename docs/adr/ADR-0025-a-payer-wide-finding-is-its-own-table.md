@@ -8,7 +8,7 @@ Status: Accepted
 FEAT-055 turns commitment coverage into findings somebody owns. The value of doing so
 is entirely in the machinery `recommendation` already carries: a lifecycle, an owner, a
 ticket reference, a severity from money per ADR-0016, and a realized saving measured
-afterwards by FEAT-041. A coverage percentage on a chart is a fact nobody owns; a
+afterwards by FEAT-029. A coverage percentage on a chart is a fact nobody owns; a
 finding gets worked.
 
 So the obvious implementation is rows in `recommendation`, and TASK-P1-022 was written
@@ -62,7 +62,7 @@ they cannot drift into meaning different things by DONE. If a third payer wide f
 class appears, the vocabulary should move to a lookup table both reference rather than
 being copied a third time.
 
-**FEAT-041's realized saving does not reach these findings yet.** Measuring whether a
+**FEAT-029's realized saving does not reach these findings yet.** Measuring whether a
 commitment purchase delivered needs a second path, because the existing one joins
 `recommendation` to cost by resource and a commitment has no resource. Recorded as an
 issue rather than built, because the measurement is only meaningful after a term has run

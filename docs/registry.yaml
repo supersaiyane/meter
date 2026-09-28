@@ -51,15 +51,17 @@ subprojects:
   depends_on: P0, P4
 - id: P6
   name: Containers
-  status: Not started
-  spec: ''
-  plan: ''
+  status: Not started. Specified and planned as a first cut of 12 tasks, revised 2026-09-28
+    against what P4 and P5 actually built. Blocked on ISS-003 for FEAT-035 only
+  spec: specs/2026-09-20-p6-containers-design.md
+  plan: plans/P6-implementation-plan.md
   depends_on: P0, P1
 - id: P7
   name: Insight and LLM layer
-  status: Not started
-  spec: ''
-  plan: ''
+  status: Not started. Specified and planned 2026-09-28, 14 tasks. The first sub project that
+    sends anything anywhere, and ADR-0028 decided it goes no further than the hub account
+  spec: specs/2026-09-28-p7-insight-and-llm-layer-design.md
+  plan: plans/P7-implementation-plan.md
   depends_on: P1, P2, P3
 features:
 - id: FEAT-001
@@ -549,6 +551,10 @@ adrs:
   decision: No performance dimension in P5, and what to build instead
   status: Accepted
   doc: docs/adr/ADR-0027-no-performance-dimension-in-p5.md
+- id: ADR-0028
+  decision: The language model runs in the hub account, on Bedrock
+  status: Accepted
+  doc: docs/adr/ADR-0028-the-model-runs-in-the-hub-account.md
 
 changes:
 - id: CHG-0001
@@ -1333,6 +1339,55 @@ changes:
     promising what the product will not do is one that will be quoted back
   commit: pending
   detail: '[P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 6'
+- id: CHG-0100
+  date: 2026-09-28
+  type: Design
+  what: P7 specification and implementation plan written, 14 tasks. The sub project had neither
+    and tasks/STATUS.md recorded it as No specification
+  commit: pending
+  detail: '[P7 spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md), [P7
+    plan](docs/plans/P7-implementation-plan.md). Its two load bearing decisions are that the
+    model cites figures rather than emitting them, so there is nowhere in a sentence for a
+    hallucinated number to live, and that its tools are the MCP tools which are the HTTP API,
+    so scope is not reimplemented'
+- id: CHG-0101
+  date: 2026-09-28
+  type: Decision
+  what: The language model runs on Bedrock in the hub account, so P7 adds no outbound data path
+  commit: pending
+  detail: '[ADR-0028](docs/adr/ADR-0028-the-model-runs-in-the-hub-account.md). Three
+    consequences bought with a narrower model choice. No seventh trust boundary, token spend on
+    the bill self metering already reads, and FEAT-046 as defence in depth rather than a
+    prerequisite of every other P7 feature'
+- id: CHG-0102
+  date: 2026-09-28
+  type: Correction
+  what: The P6 plan and its specification revised against what P4 and P5 actually built. Six
+    details had gone stale and none of the reasoning had
+  commit: pending
+  detail: '[P6 plan](docs/plans/P6-implementation-plan.md). The largest is that spec section 8
+    named three routes under a containers prefix, which breaks ADR-0020 of 2026-09-06: that
+    decision fixes seven top level groups and containers is not one of them. Caught before any
+    route existed, so it is a correction rather than a migration of every URL and bookmark'
+- id: CHG-0103
+  date: 2026-09-28
+  type: Correction
+  what: ISS-002, ISS-003 and ISS-004 registered, having been cited as issue ids by ten documents
+    since 2026-08-23 while existing in no register
+  commit: pending
+  detail: 'The External dependencies table in tasks/STATUS.md says its rows are tracked in
+    tasks/ISSUES.md and these three were not, so a reader chasing ISS-003 from the P6 plan,
+    which names it as that sub project blocker, found nothing'
+- id: CHG-0104
+  date: 2026-09-28
+  type: Correction
+  what: Ten citations of FEAT-041 corrected to FEAT-029. Realized savings verification is
+    FEAT-029, and FEAT-041 is P7 per team digests, which is not built
+  commit: pending
+  detail: 'Across project_map.md, WasteScreen.tsx, ADR-0025, ADR-0027, the P1 plan, FEAT-055,
+    FEAT-058 and ISS-208. The two features are one digit apart in a project that also has an
+    ISS-029 about the same subject, which is how it survived. Found while planning P7, whose
+    own features include the number being misused'
 issues:
 - id: ISS-189
   severity: LOW
@@ -2124,6 +2179,45 @@ issues:
   summary: Nine requirement areas as one project would produce a shallow scaffold of everything
   status: FIXED
   detail: '[ADR-0001](docs/adr/ADR-0001-decompose-into-sub-projects.md)'
+- id: ISS-002
+  severity: HIGH
+  status: OPEN
+  summary: No AWS account has been connected, so no adapter in the product has ever made a real
+    call and nothing it reports has been read from a cloud
+  detail: 'Registered on 2026-09-28, having been cited as an issue id since 2026-08-23 by the
+    P0 specification, the P0 plan, the deploy runbook, tasks/STATUS.md and
+    tests/providers/aws/test_response_shapes.py while existing nowhere in this register. The
+    checklist under External dependencies in tasks/STATUS.md says the dependencies there are
+    tracked in tasks/ISSUES.md, and these three were not, so a reader chasing the citation
+    found nothing. Two things are needed and neither is engineering work: trusted access
+    between Organizations and CloudFormation in the management account, and the organization
+    reader role deployed. Until then every AWS adapter is unproven in the way ISS-216 sets out,
+    which is that field names are verified offline against the botocore service models and
+    nothing else is. It is the only thing that can close ISS-200, ISS-202, ISS-209, ISS-211 and
+    the provider half of ISS-122'
+- id: ISS-003
+  severity: HIGH
+  status: OPEN
+  summary: Data Exports CUR 2.0 has never been enabled with resource identifiers and split cost
+    allocation data, so FEAT-035 has no data to read
+  detail: 'Registered on 2026-09-28 for the reason given on ISS-002. Cited by the P6
+    specification, the P6 plan and FEAT-035 as the prerequisite that sub project cannot proceed
+    without, and absent from this register. Split cost allocation data is what makes pod level
+    cost a measured figure rather than an apportioned one: without it a product wanting to show
+    container cost has to divide a cluster total itself, which is a modelled number on every
+    screen that shows it. TASK-P6-002 is written so its absence is a named gap rather than
+    clusters costing nothing, so the rest of the P6 first cut is unaffected'
+- id: ISS-004
+  severity: MEDIUM
+  status: OPEN
+  summary: Compute Optimizer has never been opted into at organization level, so an estate
+    reports zero AWS native recommendations and cannot tell that from having none
+  detail: 'Registered on 2026-09-28 for the reason given on ISS-002. Cited by the P3
+    specification, FEAT-025, finops_providers/aws/recommendations.py and
+    finops_core/ports/recommendations.py, and absent from this register. The adapter already
+    handles it correctly: the absence arrives as NotOptedIn and renders as a named gap rather
+    than as an empty list, which is the distinction constraint 5 exists for. What is lost is
+    the recommendations themselves, not the honesty of the screen'
 - id: ISS-005
   severity: HIGH
   summary: A bespoke cost schema forces a migration per cloud provider
@@ -3024,7 +3118,7 @@ issues:
 - id: ISS-208
   severity: LOW
   status: OPEN
-  summary: FEAT-041 measures whether a recommendation delivered by joining it to cost on the resource, and a commitment action has no resource, so no commitment purchase can be verified against the bill yet
+  summary: FEAT-029 measures whether a recommendation delivered by joining it to cost on the resource, and a commitment action has no resource, so no commitment purchase can be verified against the bill yet
   detail: 'Named in ADR-0025 as a consequence rather than found later. The existing path joins recommendation to cost_focus_daily on resource_id over two windows, and a commitment covers a class of usage rather than one thing, so there is nothing to join on. The honest verification is different arithmetic as well as a different join: the question is not whether a resource got cheaper but whether the commitment was used, which is already measured in commitment_use as utilization. So the work is to relate a closed commitment_action to the commitment_use rows that appeared after it, and that relation does not exist because nothing tells us which purchase answered which finding. Deliberately not built: the measurement is only meaningful after a term has run, no term has started, and a verification path written now would be tested against nothing'
 - id: ISS-209
   severity: MEDIUM
@@ -3234,6 +3328,29 @@ open_questions:
   status: OPEN
   blocks: P3 design
   detail: '[tasks/ISSUES.md](tasks/ISSUES.md)'
+- id: OPEN-10
+  question: Which Bedrock model does P7 use, and is it available in Ireland and London
+  status: OPEN
+  blocks: 'Nothing structural. The port and the adapter are written either way and a model
+    identifier is configuration. If the needed model is absent from those regions, ADR-0028 says
+    to reopen that decision rather than add an egress path'
+  detail: '[P7 spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) section 13. The
+    price of ADR-0028 is that P7 quality is capped by somebody else''s regional rollout, which
+    is worth stating rather than minimising'
+- id: OPEN-11
+  question: Where does a per team digest go, email or Slack or both
+  status: OPEN
+  blocks: 'Nothing. TASK-P7-012 composes and stores a digest regardless, and sent_at stays null,
+    which is a real state the screen states rather than an absence it hides'
+  detail: '[P7 spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) section 13. A
+    sender is an adapter behind a port and one task once this is answered'
+- id: OPEN-12
+  question: Is there a per person or per question limit on the assistant, separate from the per
+    tenant token budget
+  status: OPEN
+  blocks: 'Nothing. TASK-P7-007 builds the per tenant budget, which is the one that stops a
+    runaway. A per person limit is a policy decision nobody has made'
+  detail: '[P7 spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) section 13'
 - id: OPEN-06
   question: 'Which regions beyond Ireland and London. ANSWERED 2026-08-23: those two only, eu-west-1 and
     eu-west-2'
