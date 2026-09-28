@@ -512,3 +512,93 @@ covers only issues: a candidate phrased as prose is still mine to keep honest.
 **Triggers:** Adding a row to `docs/checkpoint.md`. Closing an issue. Being asked to
 "do the checkpoint". Any moment the phrase "nothing is in flight" is about to be
 written.
+
+## 2026-09-28: reversing a falsification with git checkout destroys uncommitted work
+
+**Mistake:** Twice in one session I broke something deliberately to prove a check could
+fail, then reversed the break with `git checkout -- <file>`. Both files had uncommitted
+work in them, so the checkout took the falsification and the work together. The first
+time it silently removed the three `SCOPED_TABLES` entries I had just written, and the
+tests went green again for the wrong reason: the guard entries were gone, so the tests
+asserting them were gone too. The second time it removed seven blocks of hand written
+prose from `project_map.md`, which had to be reconstructed from scratch. The second
+happened after I had already decided to write this lesson and before I had written it.
+
+**Correction:** Nobody corrected me. Both times I noticed because the next command
+disagreed with what I believed the file said, which is luck rather than method.
+
+**Rule:** Reverse a falsification by inverting the same edit that made it, in the same
+command, never with `git checkout` or `git restore`. Those commands discard everything
+uncommitted in the file and a falsification is by definition performed on a file being
+worked on. Where the falsification is a one line substitution, do the reverse
+substitution and assert the replaced text was present, so a failed reversal is loud. If
+the change is too large to invert, commit the work first and then falsify, in that order.
+
+**Triggers:** About to run `git checkout --`, `git restore` or `git stash` on a file
+edited in this session. The phrase "let me put that back". Any falsification of a check
+whose subject is a file also carrying new work.
+
+## 2026-09-28: a falsification the same length as the original can appear not to revert
+
+**Mistake:** Falsified a botocore shape check by replacing `ServiceName` with
+`ServiceTier`, ran it, watched it fail correctly, restored the file, and the test kept
+failing with the old message. Read the file three separate ways and it was correct.
+Imported the module and printed the value and it was correct. Spent several minutes
+concluding the test framework was caching results, then that a proxy was replaying
+output, both wrong. The real cause is that pytest's assertion rewriting caches compiled
+bytecode keyed on the file's size and modification time, the two strings are both eleven
+characters, and the restore produced a byte identical size. The stale `.pyc` was trusted.
+
+**Correction:** Nobody corrected me.
+
+**Rule:** When a check keeps reporting a value the source does not contain, delete the
+`__pycache__` entry for that test module before doubting anything else. And prefer a
+falsification that changes the file's length, which makes the cache key move: deleting a
+line or adding a word is as good a break as swapping one identifier for another of the
+same width, and it cannot produce this failure.
+
+**Triggers:** A test failing with a message that names a value `grep` cannot find in the
+file. Any reversal of a falsification that appears not to have taken.
+
+## 2026-09-28: a test helper that fills in a default makes the default's own test unable to fail
+
+**Mistake:** Wrote a `quota()` helper for the entity tests that substituted a valid reason
+whenever a caller passed none and the usage source was NONE. Convenient for the fifteen
+tests that were about something else, and fatal for the one test that mattered: the case
+asserting an unmeasurable quota without a reason is refused could not fail, because the
+helper supplied the reason the test was trying to omit. It reported success against a
+constructor that would have accepted the bad value.
+
+**Correction:** Nobody corrected me. The test passed, which is how I found it: it passed
+before the rule it tested had been written.
+
+**Rule:** A test helper may default a field, but it must distinguish "not passed" from
+"passed as absent". Use a sentinel rather than None as the default, so an explicit None
+reaches the code under test. Before trusting any test that asserts an absence is refused,
+check that the absence actually reaches the constructor.
+
+**Triggers:** Writing a factory or builder for tests. A test asserting that something
+cannot be constructed. Any helper with a line of the form "if x is None: x = something".
+
+## 2026-09-28: a name is evidence only where it is claimed
+
+**Mistake:** On 2026-09-27 I added a check that every collector is named in
+`project_map.md`, after finding seven described nowhere. The check searched the whole map
+for the filename. On 2026-09-28 P5 added `finops_ingest/collectors/quotas.py` and the
+check passed while the collector was described nowhere, because two other files in the
+project are also called `quotas.py`: the port and the fake estate. Scoping the search to
+the collectors block then immediately found a second one, `recommendations.py`, which the
+2026-09-27 sweep had specifically set out to fix and had not: its whole file match was
+satisfied by the adapter and the fake of the same name.
+
+**Correction:** Nobody corrected me. It surfaced because I checked by hand whether my own
+collector was listed, having no reason to expect it was missing.
+
+**Rule:** When a check asks whether a thing is documented, scope the search to the place
+the documentation is claimed to be, not to the whole document. A filename found anywhere
+in a file proves only that some file of that name is mentioned. Falsify the scoped version
+by naming the thing only outside its section and watching the check still fail.
+
+**Triggers:** Writing a check that a name appears in a document. Any use of `name in text`
+where `text` is a whole file. Adding a module whose basename already exists elsewhere in
+the project.

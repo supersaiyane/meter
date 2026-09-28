@@ -44,9 +44,10 @@ subprojects:
   depends_on: P0
 - id: P5
   name: Quotas and Limits
-  status: Not started
-  spec: ''
-  plan: ''
+  status: Delivered, 8 of 8 tasks. The sub project whose central decision is what the product
+    refuses to do
+  spec: specs/2026-09-20-p5-quotas-and-limits-design.md
+  plan: plans/P5-implementation-plan.md
   depends_on: P0, P4
 - id: P6
   name: Containers
