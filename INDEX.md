@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-61 features across 8 sub projects. 19 specified, 9 planned, 10 in build, 23 delivered.
+62 features across 8 sub projects. 19 specified, 10 planned, 10 in build, 23 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -149,6 +149,7 @@ block is caught by `make check-docs`. See
 | [FEAT-044](docs/features/FEAT-044-blast-radius-scoring.md) | Blast radius scoring from the dependency graph, gating auto apply | Delivered | [P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 12, [P3 plan](docs/plans/P3-implementation-plan.md) |
 | [FEAT-052](docs/features/FEAT-052-top-actions-and-change-risk.md) | Top actions, ranked, with what each change costs if it is wrong | Delivered | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 | [FEAT-054](docs/features/FEAT-054-workload-parking.md) | The hours nothing runs, as a finding | Delivered | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
+| [FEAT-062](docs/features/FEAT-062-refusal-evidence.md) | What Meter looked at and decided not to recommend | Planned | [ADR-0027](docs/adr/ADR-0027-no-performance-dimension-in-p5.md), the argument FEAT-058 asked for |
 
 ### P4 Inventory and Topology
 
@@ -229,6 +230,7 @@ block is caught by `make check-docs`. See
 | ADR-0024 | One collector owns a slice's graph, with a composite source rather than two schedules | Accepted | [ADR-0024](docs/adr/ADR-0024-one-collector-owns-a-slice.md) |
 | ADR-0025 | A payer wide finding gets its own table, not a row in recommendation | Accepted | [ADR-0025](docs/adr/ADR-0025-a-payer-wide-finding-is-its-own-table.md) |
 | ADR-0026 | A seventh cause, for a value this deployment set that does not exist | Accepted | [ADR-0026](docs/adr/ADR-0026-a-seventh-cause-for-misconfiguration.md) |
+| ADR-0027 | No performance dimension in P5, and what to build instead | Accepted | [ADR-0027](docs/adr/ADR-0027-no-performance-dimension-in-p5.md) |
 
 Index of records: [docs/adr/README.md](docs/adr/README.md)
 

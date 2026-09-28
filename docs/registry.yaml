@@ -430,6 +430,14 @@ features:
     needed no coordinate table'
   doc: docs/features/FEAT-061-geographic-map.md
 
+- id: FEAT-062
+  name: What Meter looked at and decided not to recommend
+  subproject: P3
+  status: Planned
+  detail: '[ADR-0027](docs/adr/ADR-0027-no-performance-dimension-in-p5.md), the argument FEAT-058
+    asked for'
+  doc: docs/features/FEAT-062-refusal-evidence.md
+
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -535,6 +543,11 @@ adrs:
   decision: A seventh cause, for a value this deployment set that does not exist
   status: Accepted
   doc: docs/adr/ADR-0026-a-seventh-cause-for-misconfiguration.md
+
+- id: ADR-0027
+  decision: No performance dimension in P5, and what to build instead
+  status: Accepted
+  doc: docs/adr/ADR-0027-no-performance-dimension-in-p5.md
 
 changes:
 - id: CHG-0001
