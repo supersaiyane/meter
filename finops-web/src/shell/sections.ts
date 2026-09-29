@@ -110,3 +110,30 @@ export function allScreens(): readonly ScreenDef[] {
 export function screenFor(path: string): ScreenDef | undefined {
   return allScreens().find((screen) => screen.path === path);
 }
+
+/**
+ * What to call the page at this path. The navigation is the only list of screen
+ * names, so the heading is taken from it rather than restated: two lists of
+ * names is how a page ends up titled one thing in the menu and another at the
+ * top of itself.
+ *
+ * A detail path resolves to the screen it was reached from, by longest matching
+ * prefix, because a finding detail is not in the navigation and the screen
+ * itself names the finding underneath.
+ */
+export function screenTitleFor(pathname: string): string {
+  let best: ScreenDef | null = null;
+  for (const group of GROUPS) {
+    for (const screen of group.screens) {
+      const exact = screen.path === pathname;
+      const child = screen.path !== '/' && pathname.startsWith(`${screen.path}/`);
+      if (!exact && !child) continue;
+      if (best === null || screen.path.length > best.path.length) {
+        best = screen;
+      }
+    }
+  }
+  // An unrouted path is still a page and still needs naming. Saying it is not
+  // built is truer than leaving the heading empty.
+  return best?.label ?? 'Not built yet';
+}

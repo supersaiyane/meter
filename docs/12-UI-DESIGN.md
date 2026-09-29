@@ -170,6 +170,24 @@ A user seeing 42 of 310 accounts must never be able to forget it.
   already carries the claim. A surface that sets it and shows coverage nowhere
   is a defect, which is what the test beside it exists to catch.
 
+## 6a. Every screen names itself
+
+A screen with no heading is a screen a reader cannot orient on and a screen
+reader user cannot find. Until 2026-09-29 the only first level heading in the
+product was the word `Meter` in the shell header, so six of the ten built
+screens had no heading at all, and every browser tab, bookmark and history entry
+read `Meter` regardless of where it pointed.
+
+- **The page heading is an `h1` in `main`**, and the product name in the header
+  is not a heading at all.
+- **The name comes from `sections.ts`**, which is also what builds the
+  navigation. Two lists of screen names is how a page ends up called one thing
+  in the menu and another at the top of itself.
+- **A detail path takes the name of the screen it was reached from**, by longest
+  matching prefix, and names the specific record in an `h2` beneath.
+- **The document title is the screen name**, and only appends the product where
+  the name does not already carry it.
+
 ## 7. Visual system
 
 ### Typography

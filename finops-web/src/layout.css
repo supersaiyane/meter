@@ -81,11 +81,18 @@ body {
   top: 0;
 }
 
-[data-testid='shell'] > header h1 {
+[data-testid='shell'] > header [data-testid='brand'] {
   font-size: var(--font-size-4);
   font-weight: 600;
   letter-spacing: 0.01em;
   margin: 0 0 var(--space-4);
+}
+
+[data-testid='screen-title'] {
+  font-size: var(--font-size-4);
+  font-weight: 600;
+  margin: 0 0 var(--space-3);
+  letter-spacing: -0.01em;
 }
 
 [data-testid='shell'] > main {

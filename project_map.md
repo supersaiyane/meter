@@ -254,6 +254,9 @@ meter/
 │       │                      the accent, and the faces are IBM Plex, self
 │       │                      hosted, so a column of figures is the same width
 │       │                      on every machine
+│       ├── shell/sections.ts  the seven navigation groups, and screenTitleFor,
+│       │                      the one place a screen's name is decided, so the
+│       │                      heading and the menu cannot disagree
 │       ├── layout.css         where things sit. Element selectors, because
 │       │                      DataTable is the only table and Figure the only
 │       │                      numeral. Needs no component to accept a className,

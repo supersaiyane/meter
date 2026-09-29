@@ -1,12 +1,12 @@
-import type { ReactNode } from 'react';
-import { NavLink } from 'react-router';
+import { useEffect, type ReactNode } from 'react';
+import { NavLink, useLocation } from 'react-router';
 
 import { CoverageBanner } from '../components/CoverageBanner';
 import { FreshnessIndicator } from '../components/FreshnessIndicator';
 import { TypedError } from '../components/TypedError';
 import type { Cause } from '../components/provenance';
 import { useAggregateMeta } from './metaRegistry';
-import { GROUPS } from './sections';
+import { GROUPS, screenTitleFor } from './sections';
 
 /**
  * The shell. Coverage and freshness live here rather than on each screen,
@@ -20,6 +20,11 @@ import { GROUPS } from './sections';
  * The navigation is seven fixed groups, per ADR-0020. Which screen is current is
  * the router's business, not this component's, which is why there is no section
  * prop: two places deciding what is selected is two places to disagree.
+ *
+ * The page heading and the document title are taken from the same navigation
+ * list, for the same reason. Before this the only h1 was the product name, so
+ * six of the ten screens had no heading at all, every browser tab said "Meter",
+ * and a reader navigating by heading landed on a page that named nothing.
  */
 
 export interface AppShellProps {
@@ -37,11 +42,23 @@ const KNOWN_CAUSES = new Set<string>([
 
 export function AppShell({ children, now }: AppShellProps) {
   const meta = useAggregateMeta();
+  const { pathname } = useLocation();
+  const title = screenTitleFor(pathname);
+
+  useEffect(() => {
+    // Every tab, bookmark and history entry said "Meter", so a reader with four
+    // Meter tabs open could not tell them apart. A screen already named after
+    // the product does not get told twice: "Meter cost, Meter" reads as a bug.
+    document.title = title.startsWith('Meter') ? title : `${title}, Meter`;
+  }, [title]);
 
   return (
     <div data-testid="shell" data-degraded={meta.degraded ? 'true' : 'false'}>
       <header>
-        <h1>Meter</h1>
+        {/* The product name, not the page heading. It was an h1, which meant the
+            only first level heading on every screen named the product and no
+            page named itself. */}
+        <p data-testid="brand">Meter</p>
         <nav aria-label="Sections">
           {GROUPS.map((group) => (
             <div key={group.label} data-testid={`group-${group.label}`}>
@@ -121,7 +138,10 @@ export function AppShell({ children, now }: AppShellProps) {
         ) : null}
       </div>
 
-      <main>{children}</main>
+      <main>
+        <h1 data-testid="screen-title">{title}</h1>
+        {children}
+      </main>
     </div>
   );
 }
