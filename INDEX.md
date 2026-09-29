@@ -227,7 +227,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0026 | 2026-08-23 | Design | Configuration and feature flags: one typed settings object, a documented .env.example, a flag register with owners and expiries, and two checks that fail the build. Regions confirmed as Ireland and London. Management account taken off the critical path via LocalStack | `5a78798` | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
 | CHG-0027 | 2026-08-23 | Design | P2 query cost governance specification written. All three Grafana surfaces in scope, three enforcement levels and three write levels behind per tenant flags, both defaulting safe | `ee3ea68` | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
 | CHG-0028 | 2026-08-23 | Design | P2 implementation plan written, 22 tasks in ten waves. The prototype is pinned by golden files before anything touches it | `80a0ac3` | [P2 plan](docs/plans/P2-implementation-plan.md) |
-| CHG-0029 | 2026-08-23 | Correction | TASK-P0-029 complete. Base images verified by measurement, moved to python 3.13 and nginx 1.30, digests pinned. The zero vulnerabilities policy corrected to zero fixable findings, because no Python image can meet the original | `pending` | [ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md) |
+| CHG-0029 | 2026-08-23 | Correction | TASK-P0-029 complete. Base images verified by measurement, moved to python 3.13 and nginx 1.30, digests pinned. The zero vulnerabilities policy corrected to zero fixable findings, because no Python image can meet the original | `9754a59` | [ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md) |
 
 <!-- generated:changes end -->
 

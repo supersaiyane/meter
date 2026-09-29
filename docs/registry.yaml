@@ -618,7 +618,7 @@ changes:
   what: TASK-P0-029 complete. Base images verified by measurement, moved to python 3.13 and nginx 1.30,
     digests pinned. The zero vulnerabilities policy corrected to zero fixable findings, because no Python
     image can meet the original
-  commit: pending
+  commit: 9754a59
   detail: '[ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md)'
 issues:
 - id: ISS-001
