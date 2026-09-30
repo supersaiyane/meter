@@ -425,20 +425,19 @@ th.meter-prose {
   border-left: 3px solid var(--failure);
 }
 
+/* A mark on a surface, never the surface itself. These states wrap everything
+   they qualify, so a fill behind them covers a whole tile on Home and a whole
+   page on any screen with one panel, at which point the reader is not being
+   told that one thing is stale, they are being shown an amber product. The rule
+   down the left edge says the same thing and stays a mark at any size. Nothing
+   is lost: partial still carries its sentence where the shell is not already
+   making the claim, and every figure inside still carries its two timestamps.
+
+   Failed keeps its fill deliberately. It renders instead of the data rather
+   than beside it, so the block is small and the colour is the point. */
 [data-testid='state'][data-state='partial'],
 [data-testid='state'][data-state='degraded'] {
-  background: var(--stale-quiet);
   border-left: 3px solid var(--stale);
-}
-
-/* Not inside a summary tile. The state wraps the tile's whole content, so the
-   wash becomes the tile rather than a mark on it, and three stale tiles of four
-   read as a page of warnings with no ranking left between them. The encoding
-   survives: the rule down the left edge stays, and the figure carries its two
-   timestamps either way. */
-[data-testid='home-tile'] [data-testid='state'][data-state='partial'],
-[data-testid='home-tile'] [data-testid='state'][data-state='degraded'] {
-  background: none;
 }
 
 /* ----------------------------------------------------------------- screens */

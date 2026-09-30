@@ -248,6 +248,17 @@ also held to 4.5 to 1.
 **Red is never used for "expensive".** A large number is not an error. Red is
 reserved for a failure, so that when it appears it means one thing.
 
+**A state is a mark on a surface, never the surface itself.** `partial` and
+`degraded` wrap everything they qualify, so a fill behind them covers a whole
+tile on the front page and a whole page on any screen with one panel. At that
+size the reader is no longer being told that one thing is stale, they are being
+shown an amber product, and the ranking between a stale panel and a current one
+is gone. Both states are marked with the rule down the left edge only. Nothing
+is lost: `partial` still carries its sentence where the shell is not already
+making the claim, and every figure inside still carries its two timestamps.
+`failed` keeps its fill, because it renders instead of the data rather than
+beside it, so the block is small and the colour is the point.
+
 Light and dark are both first class. The instrument reads in a bright office
 and in a dark incident bridge.
 
