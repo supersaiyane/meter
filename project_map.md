@@ -10,10 +10,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 ## Current reality
 
-The repository contains documentation, the build layer and the deployment
-pipeline. No application code has been written. The tree below marks planned
-modules as `PLANNED` so the map is never mistaken for a description of what
-exists.
+P0 is in build. The Python packages now exist as empty namespaces, created at
+TASK-P0-029 so the policy checks have something to scan. They carry no
+application code yet. Modules still marked `PLANNED` have no directory at all,
+so the map is never mistaken for a description of what exists.
 
 ```
 meter/
@@ -72,12 +72,14 @@ meter/
 │   └── lessons.md             corrections converted into rules
 │
 ├── docker/                    three Dockerfiles on Minimus, plus nginx.conf
+│   └── base-images.lock       pinned digests, resolved by measurement at TASK-P0-029
 ├── docker-compose.yml         local stack, plus a `security` profile of one shot
 │                              scanners that does NOT start with `make up`
 │
 ├── security/                  everything a scan produces, and the policy
 │   ├── POSTURE.md             current posture, generated, never hand edited
-│   ├── policy/                grype.yaml, trivy.yaml, allowlist.yaml
+│   ├── policy/                grype.yaml, trivy.yaml, allowlist.yaml,
+│   │                          accepted.yaml for unfixable findings, ADR-0018
 │   ├── reports/               one directory per scan, committed
 │   ├── sbom/                  one SBOM per image per build
 │   └── reviews/               automated code review reports
@@ -87,7 +89,8 @@ meter/
 │   ├── security/              scan, admission gate, pre commit deps, report,
 │   │                          auto fix, allowlist validation
 │   ├── docs/                  sync, index check, feature doc check, file graph
-│   ├── ci/                    code review
+│   ├── ci/                    code review, flag and hardcoding checks,
+│   │                          forbidden imports, base image resolver
 │   └── deploy/                migration task runner
 │
 ├── finops-core/               PLANNED  domain and ports. No boto3, no framework
@@ -135,6 +138,8 @@ continuous integration, not by good intentions.
 | What breaks and how to fix it | `README.md` section 5, ten worked examples |
 | What an audit found, and when | `audits/`, newest last by filename |
 | Is the posture currently clean | `security/POSTURE.md` |
+| Which base image digest are we on | `docker/base-images.lock` |
+| Why is a vulnerability accepted | `security/policy/accepted.yaml`, and ADR-0018 |
 | How often does this data refresh | `docs/06-DATA-FRESHNESS.md` |
 | What does this script do | `scripts/README.md` |
 | How do I record what a session cost | `make dev` to start, `make stats` to report. See `README.md` |

@@ -45,6 +45,10 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-08-23 | Fix a red gate I had committed through | Done | The previous commit marked eight features Specified while their documents carried only the Planned section set, and `make check-docs` was red when it landed. A process failure on my part, not a tooling one. All eight expanded from the specification | `docs/features/FEAT-011` to `FEAT-018`, commit `63329e6` |
 | 2026-08-23 | Write the P2 implementation plan | Done | 22 tasks in ten waves. The prototype is pinned by golden files before anything touches it, and TASK-P2-001 forbids fixing even obvious bugs, because a baseline that already includes your fixes is not a baseline. Waves F and G do not depend on the audit path, which is the fastest route to the control that stops the bleed | `docs/plans/P2-implementation-plan.md`. CHG-0028, commit `80a0ac3` |
 | 2026-08-23 | Correct another stale count found by the checkpoint gate | Done | `project_map.md` said the P0 plan had 28 tasks in 8 waves when it has 34 in eleven groups. Second occurrence of this defect class. Fixed the same way as the first: the map no longer names a number, and points at the command that counts them | `project_map.md` lines 57 to 62 |
+| 2026-08-23 | P0 specification approved, execution begins | Done | Status moved to `Spec approved, in build` in the registry | `docs/registry.yaml` subprojects |
+| 2026-08-23 | TASK-P0-029, verify the base images | Done | All four Minimus tags exist and pull anonymously. Scanning them changed two version choices and one policy. python 3.12 to 3.13 removed 3 High. nginx 1.27 to 1.30 removed 93 findings including 6 Critical. Neither move was suggested by any document, both found only by scanning. Digests pinned in `docker/base-images.lock`. Verified rather than assumed: no `/bin/sh` in the runtime, builder has python and pip, runtime is 93.9 MB | `docker/base-images.lock`, `scripts/ci/refresh_base_images.py`, `make base-images-check`. CHG-0029, commit `9754a59` |
+| 2026-08-23 | Correct the security threshold | Done | Zero vulnerabilities at any severity is undeliverable: python 3.13 carries 3 unfixable CPython findings and no rebuild helps. ADR-0018 amends it to zero findings that have a published fix. Unfixable findings need an acceptance record with a reachability argument, and where the argument can be enforced it is: `check_forbidden_imports.py` fails the build if anyone imports stringprep, poplib or urllib.request | `docs/adr/ADR-0018-zero-fixable-not-zero-findings.md`, `security/policy/accepted.yaml`, `docs/05-SECURITY.md`. ISS-097 to ISS-101 |
+| 2026-08-23 | First real security posture generated | Done | Zero fixable findings, three accepted as unfixable, gitleaks found no leaks. `security/POSTURE.md` is now generated from a scan rather than a placeholder | `security/POSTURE.md`, `security/reports/latest/` |
 
 ## Next action
 
@@ -68,7 +72,23 @@ P0.
 | Where a change gets recorded | `docs/03-CHANGE-CONTROL.md` |
 | Rules binding every change | `CLAUDE.md` |
 
-### Resume vector, as of 2026-09-26
+### Resume vector, as of 2026-09-29
+
+| What | Where |
+| --- | --- |
+| Git position | branch `main`, 61 commits, working tree clean |
+| **P0 spec** | **APPROVED.** Status `Spec approved, in build` |
+| **Done** | TASK-P0-029 only. 1 of 34 |
+| **Next** | TASK-P0-001, and it is **partly done**: packages and `.venv` exist, the editable install, `tests/conftest.py` and the pytest harness do not. Then 002, 003, 034, 031, 004 |
+| Interpreter | python3.13, pinned in the Makefile to match the runtime image |
+| Doc scripts | Run from `.venv`, not a system interpreter. PEP 668 blocks pyyaml there |
+| Security posture | Zero fixable findings, 3 accepted unfixable, reviewed 2026-11-21 |
+| Base images | Pinned by digest. `make base-images-check` fails on drift |
+| Needs a person | ISS-087 flag and CODEOWNERS owners, and the placeholder owners in `security/policy/accepted.yaml`. ISS-078 retention floor, before TASK-P0-010 builds the schema |
+| Check everything | `make check-docs && make check-writing` |
+| Next audit due | P0 boundary, scope `code` |
+
+### Earlier resume vector, as of 2026-09-26
 
 | What | Where |
 | --- | --- |
