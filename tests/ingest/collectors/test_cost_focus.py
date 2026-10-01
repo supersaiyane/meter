@@ -11,6 +11,7 @@ and it is why these tests ingest twice rather than once.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from decimal import Decimal
@@ -19,6 +20,7 @@ from uuid import UUID, uuid4
 import pytest
 from sqlalchemy import Engine, text
 
+from finops_api.db import models
 from finops_core import errors
 from finops_fakes import containers
 from finops_fakes.cur import (
@@ -316,6 +318,28 @@ class TestTheCadenceIsData:
         assert after == 86400
 
 
+@pytest.fixture
+def _clear_split_gap(engine: Engine) -> Iterator[None]:
+    """Remove the Misconfigured gap rows this class writes, after each test.
+
+    Not tidiness. Migration 0018's downgrade deliberately refuses while any
+    sync_error row records `Misconfigured`, because it will not delete a record of a
+    failure to make a schema change succeed. Leaving one behind makes
+    `test_downgrade_removes_every_table_and_upgrade_restores_them` fail, and the
+    partially downgraded schema it leaves then collides on re-upgrade, which is how
+    one uncleaned row turned into eleven unrelated failures.
+
+    The delete is built as a Core construct so the scope key cannot be widened by
+    punctuation, the way the ledger builds its own.
+    """
+    yield
+    with engine.begin() as connection:
+        connection.execute(
+            models.sync_error.delete().where(models.sync_error.c.collector == "cost_focus")
+        )
+
+
+@pytest.mark.usefixtures("_clear_split_gap")
 class TestSplitCostAllocation:
     """TASK-P6-002. Pod cost is measured, and it is money already on the bill.
 
@@ -327,7 +351,7 @@ class TestSplitCostAllocation:
     """
 
     def test_the_container_grain_reaches_the_table(self, engine: Engine, tenant_id: UUID) -> None:
-        ingest(engine, tenant_id)
+        ingest(engine, tenant_id, export=FakeCostExport(split=True))
         with engine.connect() as connection:
             clusters = {
                 row[0]
@@ -349,7 +373,7 @@ class TestSplitCostAllocation:
         self, engine: Engine, tenant_id: UUID
     ) -> None:
         """The whole reason split cost is a breakdown rather than a charge."""
-        ingest(engine, tenant_id)
+        ingest(engine, tenant_id, export=FakeCostExport(split=True))
         with engine.connect() as connection:
             total, split_money = connection.execute(
                 text(
@@ -370,7 +394,7 @@ class TestSplitCostAllocation:
         self, engine: Engine, tenant_id: UUID
     ) -> None:
         """A split that does not reconcile is a split that invented money."""
-        ingest(engine, tenant_id)
+        ingest(engine, tenant_id, export=FakeCostExport(split=True))
         groups = {
             cluster.name: [group.resource_id for group in cluster.node_groups]
             for cluster in containers.CLUSTERS
@@ -434,7 +458,7 @@ class TestSplitCostAllocation:
     def test_enabling_split_data_clears_the_gap(self, engine: Engine, tenant_id: UUID) -> None:
         """A corrected setting stops complaining without anybody tidying a row."""
         ingest(engine, tenant_id, export=FakeCostExport(split=False))
-        ingest(engine, tenant_id)
+        ingest(engine, tenant_id, export=FakeCostExport(split=True))
         with engine.connect() as connection:
             remaining = connection.execute(
                 text(

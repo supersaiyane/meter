@@ -102,16 +102,6 @@ AWS_ROOT = "r-contract"
 AWS_UNIT = "ou-contract"
 
 
-class _Pages:
-    """A paginator over a fixed list of pages."""
-
-    def __init__(self, pages: list[dict[str, Any]]) -> None:
-        self._pages = pages
-
-    def paginate(self, **_kwargs: Any) -> list[dict[str, Any]]:
-        return self._pages
-
-
 class ContractContainerInsights:
     """Container Insights as two clusters: one that publishes requests, one that does not.
 

@@ -14,6 +14,7 @@ spend.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -24,6 +25,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine
 
+from finops_api.db import models
 from finops_core.config import Settings
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.platform import UNALLOCATED
@@ -71,11 +73,18 @@ def _partitions(partition_sandbox: None) -> None:
     """This module creates partitions, so it gives them back. See conftest."""
 
 
-def seed(engine: Engine, tenant: UUID, rows: tuple[Any, ...] = CLOSED) -> None:
+def seed(
+    engine: Engine, tenant: UUID, rows: tuple[Any, ...] = CLOSED, *, split: bool = False
+) -> None:
+    """`split` asks for the container grain, which is off by default.
+
+    Off, so that nothing predating P6 moves: the split lines carry no money but a
+    thousand extra rows on a shared series changed a realized savings verdict once.
+    """
     with engine.begin() as connection:
         for month in {row.billing_period_start for row in (*ESTATE, *CURRENT)}:
             ensure_partition(connection, "cost_focus_daily", month)
-        collector = CostFocusCollector(FakeCostExport(rows=rows), clock=lambda: NOW)
+        collector = CostFocusCollector(FakeCostExport(rows=rows, split=split), clock=lambda: NOW)
         collector(
             CollectorContext(unit=Unit(tenant_id=tenant), connection=connection, run_id=uuid4())
         )
@@ -367,6 +376,23 @@ class TestTheAnomalyBannerCountsAccounts:
         assert anomalies == summary
 
 
+@pytest.fixture
+def _clear_split_gap(engine: Engine) -> Iterator[None]:
+    """Remove the Misconfigured gap row the ISS-003 test writes.
+
+    Migration 0018's downgrade refuses while any sync_error row records
+    `Misconfigured`, so a row left behind here fails the schema downgrade test and
+    the partially downgraded schema then collides on re-upgrade. One uncleaned row
+    cost eleven unrelated failures the first time.
+    """
+    yield
+    with engine.begin() as connection:
+        connection.execute(
+            models.sync_error.delete().where(models.sync_error.c.collector == "cost_focus")
+        )
+
+
+@pytest.mark.usefixtures("_clear_split_gap")
 class TestContainerCost:
     """TASK-P6-003, FEAT-035. Cost by cluster, namespace and workload.
 
@@ -378,7 +404,7 @@ class TestContainerCost:
     def test_the_clusters_come_back_with_their_breakdown(
         self, engine: Engine, tenant_id: UUID, settings: Settings
     ) -> None:
-        seed(engine, tenant_id)
+        seed(engine, tenant_id, split=True)
         client, token = client_for(engine, everything(tenant_id), settings)
         found = get(client, token, "/api/v1/cost/containers")["data"]
 
@@ -397,7 +423,7 @@ class TestContainerCost:
         It is capacity the cluster paid for and no pod asked for, which is the
         whole argument for showing bin packing on the cluster screen.
         """
-        seed(engine, tenant_id)
+        seed(engine, tenant_id, split=True)
         client, token = client_for(engine, everything(tenant_id), settings)
         found = get(client, token, "/api/v1/cost/containers")["data"]
 
@@ -415,7 +441,7 @@ class TestContainerCost:
         self, engine: Engine, tenant_id: UUID, settings: Settings
     ) -> None:
         """A breakdown that does not sum to its own subtotal has lost money."""
-        seed(engine, tenant_id)
+        seed(engine, tenant_id, split=True)
         client, token = client_for(engine, everything(tenant_id), settings)
         found = get(client, token, "/api/v1/cost/containers")["data"]
 
@@ -433,7 +459,7 @@ class TestContainerCost:
         than against a literal, so the claim is about the scope and not about how
         many clusters the fixture happens to have.
         """
-        seed(engine, tenant_id)
+        seed(engine, tenant_id, split=True)
         wide_client, wide_token = client_for(engine, everything(tenant_id), settings)
         wide = get(wide_client, wide_token, "/api/v1/cost/containers")["data"]
 
@@ -448,7 +474,7 @@ class TestContainerCost:
         self, engine: Engine, tenant_id: UUID, settings: Settings
     ) -> None:
         """Accounts in that slot would call coverage complete while clusters were missing."""
-        seed(engine, tenant_id)
+        seed(engine, tenant_id, split=True)
         client, token = client_for(engine, everything(tenant_id), settings)
         envelope = get(client, token, "/api/v1/cost/containers")
 

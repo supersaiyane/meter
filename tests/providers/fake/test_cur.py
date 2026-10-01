@@ -250,9 +250,14 @@ class TestTheBillAndTheEstateJoin:
         # Workloads are modelled too, since split cost allocation bills a pod. The
         # union matches the one `test_utilization_estates.py` already uses for the
         # same reason: the estate models two kinds of resource, not one.
-        modelled = {spec.resource_id for spec in utilization.SPECS} | {
-            workload.key for workload in containers.WORKLOADS
-        }
+        modelled = (
+            {spec.resource_id for spec in utilization.SPECS}
+            | {workload.key for workload in containers.WORKLOADS}
+            # The cluster level remainder: capacity paid for and not requested. It
+            # gets an identity of its own rather than borrowing a node's, so these
+            # rows never land inside a real resource's cost series.
+            | {f"container/{cluster.name}/unallocated" for cluster in containers.CLUSTERS}
+        )
         invented = billed - modelled
         assert not invented, f"billed and not modelled: {sorted(invented)}"
 

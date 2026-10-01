@@ -140,8 +140,9 @@ def _period_query(athena: object) -> str:
     cost allocation columns exist. Selecting by content keeps the assertion about
     the query it is actually about.
     """
-    found = [q for q in athena.queries if "billing_period" in q]  # type: ignore[attr-defined]
-    assert found, f"no period query was issued: {athena.queries}"  # type: ignore[attr-defined]
+    queries: list[str] = list(athena.queries)  # type: ignore[attr-defined]
+    found = [q for q in queries if "billing_period" in q]
+    assert found, f"no period query was issued: {queries}"
     return found[0]
 
 

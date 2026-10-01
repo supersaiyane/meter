@@ -575,15 +575,6 @@ def split_rows(base: Iterable[CostRecord]) -> tuple[CostRecord, ...]:
     return tuple(out)
 
 
-def _largest_group(cluster: containers.Cluster) -> containers.NodeGroup:
-    """The node group carrying most of the cluster, named deterministically.
-
-    Sorted by share and then by identifier, so a tie does not make the bill depend
-    on declaration order.
-    """
-    return sorted(cluster.node_groups, key=lambda g: (-g.share, g.resource_id))[0]
-
-
 def _split_line(
     *,
     cluster: containers.Cluster,
@@ -597,11 +588,15 @@ def _split_line(
     charge_end = charge_start + timedelta(days=1)
     period = date(day.year, day.month, 1)
     # A pod's share joins to the workload the container estate models. The
-    # remainder joins to the node, because that is what it is: capacity the cluster
-    # paid for and no pod asked for. Attributing it to a pod would overstate that
-    # pod, and leaving it without a resource would invent a service that bills in
-    # aggregate, which this bill reserves for services that genuinely do.
-    resource = workload.key if workload else _largest_group(cluster).resource_id
+    # remainder gets a cluster level identity of its own.
+    #
+    # It used to carry the largest node group's resource id, which was wrong in a way
+    # that took a whole test suite to surface: these rows then sat inside that
+    # instance's cost series, and the realized savings collector reads that series to
+    # decide whether a change moved the bill. One recommendation flipped from
+    # REGRESSED to VERIFIED because of it. A split line is a breakdown of a charge and
+    # must never appear inside the series of the resource it is breaking down.
+    resource = workload.key if workload else f"container/{cluster.name}/unallocated"
     return CostRecord(
         tenant_id=fixtures.TENANT_ID,
         ingest_run_id=fixtures.INGEST_RUN_ID,
@@ -660,19 +655,26 @@ def _split_line(
     )
 
 
-_BASE: tuple[CostRecord, ...] = estate()
+ESTATE: tuple[CostRecord, ...] = estate()
 
-#: The split cost allocation half of the bill, kept separate so a test can read an
-#: export without it. That is the ISS-003 case: an export where split cost
-#: allocation was never switched on carries none of these columns.
-SPLIT_LINES: tuple[CostRecord, ...] = split_rows(_BASE)
-
-ESTATE: tuple[CostRecord, ...] = (*_BASE, *SPLIT_LINES)
+#: The split cost allocation half of the bill, and **not** part of `ESTATE`.
+#:
+#: Opt in, which is the opposite of the first attempt and the right way round. Folded
+#: into `ESTATE` these thousand extra rows changed a realized savings verdict from
+#: REGRESSED to VERIFIED in the seeded estate: they carry no money, but a collector
+#: comparing two windows over a shared series does not only read sums. Every P1 and
+#: P3 fixture predates containers and none of them should move because P6 exists, so
+#: a caller that wants the container grain asks for it.
+#:
+#: `FakeCostExport(split=True)` is that ask. Without it an export carries none of
+#: these columns, which is also the ISS-003 case: split cost allocation was never
+#: switched on.
+SPLIT_LINES: tuple[CostRecord, ...] = split_rows(ESTATE)
 
 #: The line item AWS retracts when the closed period is restated, and the one
 #: it corrects. Named so a test can assert on them rather than on a position in
 #: a list that changes the moment a service is added.
-_CLOSED = tuple(row for row in _BASE if row.billing_period_start == CLOSED_PERIOD)
+_CLOSED = tuple(row for row in ESTATE if row.billing_period_start == CLOSED_PERIOD)
 RETRACTED_FINGERPRINT = _CLOSED[0].source_fingerprint
 CORRECTED_FINGERPRINT = _CLOSED[-1].source_fingerprint
 
@@ -712,13 +714,19 @@ class FakeCostExport:
         rows: tuple[CostRecord, ...] | None = None,
         failure: type[CollectionError] | None = None,
         restated: bool = False,
-        split: bool = True,
+        split: bool = False,
     ) -> None:
         base = ESTATE if rows is None else rows
-        if not split:
-            # ISS-003 as data: an export where split cost allocation was never
-            # enabled. The rows are there and the container grain is not.
-            base = tuple(row for row in base if row.eks_cluster_name is None)
+        if split:
+            # Added rather than filtered out, so an export without the container
+            # grain is the default and nothing that predates P6 moves. The rows are
+            # scoped to the periods the caller asked for, so a caller passing one
+            # month does not silently acquire three.
+            periods = {row.billing_period_start for row in base}
+            base = (
+                *base,
+                *(line for line in SPLIT_LINES if line.billing_period_start in periods),
+            )
         self._rows = restate(base) if restated else base
         self._failure = failure
         self._split = split
