@@ -28,14 +28,18 @@ quota estate counts is the vCPU these pods caused.
 from __future__ import annotations
 
 import math
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from enum import StrEnum
 
 from finops_core.domain.account import AccountKey, Provider
+from finops_core.domain.containers import ClusterSlice, OomStatus, ReservationVsUse
+from finops_core.domain.containers import LaunchType as DomainLaunchType
+from finops_core.domain.containers import Workload as DomainWorkload
 from finops_core.domain.metrics import MetricPoint
+from finops_core.errors import CollectionError
 from finops_fakes import estate_shape as shape
 from finops_fakes import fixtures
 
@@ -756,3 +760,175 @@ def cluster_rows() -> Iterator[Mapping[str, object]]:
             "as_of": fixtures.AS_OF.isoformat(),
             "collected_at": fixtures.COLLECTED_AT.isoformat(),
         }
+
+
+# --- the port, over the estate above -------------------------------------------
+
+
+def _percentile(values: Sequence[Decimal], p: int) -> Decimal:
+    """Nearest rank, matching how the sizing rules read a series.
+
+    Not an interpolating percentile. A request is a number somebody sets, so the
+    answer should be a value that was actually observed rather than one between two
+    of them.
+    """
+    if not values:
+        raise ValueError("a percentile of nothing")
+    ordered = sorted(values)
+    rank = max(0, min(len(ordered) - 1, (p * len(ordered)) // 100))
+    return ordered[rank]
+
+
+def _oom_over(readings: Sequence[bool | None]) -> OomStatus:
+    """One status for a window of daily readings.
+
+    Killed if any day shows a kill. Otherwise unobserved unless **every** day was
+    actually observed, which is the conservative direction and the one the memory
+    rule needs: a window with one unreadable day cannot be called not killed, and
+    calling it so would apply the smaller margin to a workload nobody checked.
+    """
+    if any(reading is True for reading in readings):
+        return OomStatus.KILLED
+    if readings and all(reading is False for reading in readings):
+        return OomStatus.NOT_KILLED
+    return OomStatus.UNOBSERVED
+
+
+class FakeContainerSource:
+    """`ContainerSource` in memory. Every failure is asked for, never incidental."""
+
+    def __init__(
+        self,
+        at: datetime = fixtures.AS_OF,
+        failure: type[CollectionError] | None = None,
+    ) -> None:
+        self._at = at
+        self._failure = failure
+
+    def _fail_if_planned(self, account: AccountKey, region: str) -> None:
+        if self._failure is not None:
+            raise self._failure(
+                scope_key=f"{account}:{region}",
+                collector=COLLECTOR,
+                detail="planned by the fake container source",
+            )
+
+    def _clusters_for(self, account: AccountKey, region: str) -> tuple[Cluster, ...]:
+        return tuple(
+            c for c in CLUSTERS if c.account_id == account.account_id and c.region_id == region
+        )
+
+    def list_clusters(self, account: AccountKey, region: str) -> tuple[ClusterSlice, ...]:
+        """Every cluster in the slice, measurable or not."""
+        self._fail_if_planned(account, region)
+        rows = [
+            row
+            for row in node_group_rows(at=self._at)
+            if row["sub_account_id"] == account.account_id and row["region_id"] == region
+        ]
+        latest = max((str(row["usage_date"]) for row in rows), default=None)
+
+        out: list[ClusterSlice] = []
+        for cluster in self._clusters_for(account, region):
+            today = [
+                row
+                for row in rows
+                if row["cluster_name"] == cluster.name and str(row["usage_date"]) == latest
+            ]
+            node_count: int | None = None
+            spot: Decimal | None = None
+            packing: Decimal | None = None
+            if today:
+                counts = {
+                    str(row["capacity_type"]): Decimal(str(row["node_count_avg"])) for row in today
+                }
+                total = sum(counts.values(), Decimal(0))
+                if total > 0:
+                    node_count = int(total)
+                    spot = counts.get("SPOT", Decimal(0)) / total
+                allocatable = Decimal(0)
+                requested = Decimal(0)
+                for row in today:
+                    allocatable += Decimal(str(row["allocatable_cpu_millicores"]))
+                    requested += Decimal(str(row["requested_cpu_millicores"]))
+                if allocatable > 0:
+                    # Capped at one. A cluster cannot be more than fully packed, and a
+                    # ratio above one means requests were summed over a window the
+                    # allocatable figure does not cover.
+                    packing = min(Decimal(1), requested / allocatable)
+            out.append(
+                ClusterSlice(
+                    cluster_name=cluster.name,
+                    account_id=cluster.account_id,
+                    region_id=cluster.region_id,
+                    platform=cluster.platform,
+                    enhanced_observability=cluster.enhanced_observability,
+                    # Cost comes from the bill, never from here. A metrics source
+                    # inventing a cost would be a modelled figure on a screen that
+                    # says measured.
+                    cost=None,
+                    node_count=node_count,
+                    spot_ratio=spot,
+                    packing_efficiency=packing,
+                    unmeasurable_reason=(
+                        None
+                        if cluster.enhanced_observability
+                        else "Enhanced observability is not enabled, so pod requests "
+                        "are not published"
+                    ),
+                    as_of=self._at,
+                    collected_at=fixtures.COLLECTED_AT,
+                )
+            )
+        return tuple(out)
+
+    def reservations(self, account: AccountKey, region: str) -> tuple[ReservationVsUse, ...]:
+        """One entry per workload, aggregated over the window the estate holds."""
+        self._fail_if_planned(account, region)
+        grouped: dict[tuple[str, str, str], list[Mapping[str, object]]] = {}
+        for row in usage_rows(at=self._at):
+            if row["sub_account_id"] != account.account_id or row["region_id"] != region:
+                continue
+            key = (str(row["cluster_name"]), str(row["namespace"]), str(row["workload"]))
+            grouped.setdefault(key, []).append(row)
+
+        out: list[ReservationVsUse] = []
+        for (cluster_name, namespace, name), days in sorted(grouped.items()):
+            first = days[0]
+            cpu_max = [Decimal(str(d["cpu_used_max_millicores"])) for d in days]
+            mem_peak = [Decimal(str(d["memory_used_peak_mib"])) for d in days]
+            requested_cpu = first["cpu_request_millicores"]
+            requested_mem = first["memory_request_mib"]
+            out.append(
+                ReservationVsUse(
+                    workload=DomainWorkload(
+                        cluster_name=cluster_name,
+                        namespace=namespace,
+                        name=name,
+                        kind=str(first["workload_kind"]),
+                        launch_type=DomainLaunchType(str(first["launch_type"])),
+                    ),
+                    # None where the cluster cannot publish a request at all.
+                    cpu_requested_millicores=(
+                        None if requested_cpu is None else Decimal(str(requested_cpu))
+                    ),
+                    memory_requested_mib=(
+                        None if requested_mem is None else Decimal(str(requested_mem))
+                    ),
+                    # The 99th percentile of the daily max, and the observed peak.
+                    # Spec section 5.3: a percentile is right for CPU and reckless
+                    # for memory.
+                    cpu_used_p99_millicores=_percentile(cpu_max, 99),
+                    memory_used_peak_mib=max(mem_peak),
+                    oom_status=_oom_over(
+                        [
+                            None if d["was_oom_killed"] is None else bool(d["was_oom_killed"])
+                            for d in days
+                        ]
+                    ),
+                    observation_days=len({str(d["usage_date"]) for d in days}),
+                    as_of=self._at,
+                    collected_at=fixtures.COLLECTED_AT,
+                )
+            )
+        return tuple(out)

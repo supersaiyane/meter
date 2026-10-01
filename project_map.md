@@ -31,8 +31,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 7 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 22 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 21 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 130 | test_*.py under tests/ |
-| Test functions | 1828 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 131 | test_*.py under tests/ |
+| Test functions | 1835 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -377,6 +377,12 @@ meter/
 │       │                      apart, and BillingPeriod and source_fingerprint
 │       ├── metrics.py         MetricPoint. `at` is the instant, `as_of` the freshness
 │       ├── resource.py        ResourceRef. Opaque identifier, never parsed
+│       ├── containers.py      Workload, ClusterSlice, ReservationVsUse. OOM status
+│       │                      is a three member enum and not a nullable boolean,
+│       │                      because bool | None fails open: a truth test treats
+│       │                      unobserved as not killed, which sends the smaller
+│       │                      memory margin to the workloads that were killed.
+│       │                      Workload is not a Fact, it is an identity
 │       └── quota.py           QuotaUsage. Unpublished usage is None, never zero
 │   └── ports/                 protocols only. No implementation, no cloud import.
 │                              query.py also declares QueryParser and
@@ -398,6 +404,8 @@ meter/
 │       │                      Savings Plan is not a line item
 │       ├── metrics.py         MetricSource
 │       ├── inventory.py       ResourceInventory
+│       ├── containers.py      ContainerSource. Two methods, because a cluster and
+│       │                      a reservation fail independently
 │       ├── quotas.py          QuotaSource
 │       └── identity.py        IdentityProvider and EntitlementResolver
 ├── finops_providers/          IN BUILD  aws/, grafana/, gcp/, azure/. The fakes
@@ -417,6 +425,12 @@ meter/
 │   │   ├── query_evidence.py  runs from CloudTrail, bytes from query history.
 │   │   │                      A window that saw nothing returns an absent key,
 │   │   │                      never a zero: absent means unobserved
+│   │   ├── container_insights.py  FEAT-036. Container Insights only, no agent in
+│   │   │                     the cluster, and the docstring carries the four line
+│   │   │                     cost of that decision. Requests need enhanced
+│   │   │                     observability, so a cluster without it yields usage
+│   │   │                     and no request. OOM status is always UNOBSERVED here
+│   │   │                     and never NOT_KILLED. Never run against AWS, ISS-002
 │   │   ├── quotas.py         FEAT-033. Service Quotas for every limit, and it names
 │   │   │                     its own usage metric, so there is no hand written map from
 │   │   │                     quota code to metric name here: a quota with no UsageMetric

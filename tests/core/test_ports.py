@@ -29,6 +29,10 @@ EXPECTED_PORTS = {
     "AccountDiscovery",
     "CredentialBroker",
     "CostExport",
+    # P6, TASK-P6-004. A cluster and a reservation are read from different places
+    # and fail independently, so both live behind one port with two methods rather
+    # than two ports: a caller that can read one can always read the other.
+    "ContainerSource",
     "MetricSource",
     "ResourceInventory",
     "QuotaSource",
@@ -64,8 +68,8 @@ def port_methods(port: type) -> list[tuple[str, object]]:
 # --- shape -------------------------------------------------------------------
 
 
-def test_there_are_exactly_eleven_ports() -> None:
-    """Eight provider ports, plus the three P2 surface ports.
+def test_there_are_exactly_twelve_ports() -> None:
+    """The provider ports, plus the three P2 surface ports.
 
     `__all__` also carries the two grouping tuples, so the comparison is against
     the protocols rather than against every name the package exports. Adding a
@@ -84,7 +88,7 @@ def test_the_two_groups_together_are_every_port() -> None:
     grouped = {port.__name__ for port in (*ports.PROVIDER_PORTS, *ports.SURFACE_PORTS)}
 
     assert grouped == EXPECTED_PORTS
-    assert len(ports.PROVIDER_PORTS) == 8
+    assert len(ports.PROVIDER_PORTS) == 9
     assert len(ports.SURFACE_PORTS) == 3
 
 

@@ -341,6 +341,21 @@ CREATE TABLE cost_focus_daily (
     as_of                       TIMESTAMPTZ    NOT NULL,
     collected_at                TIMESTAMPTZ    NOT NULL,
 
+    -- Split cost allocation, FEAT-035. Meter columns and not FOCUS ones: FOCUS 1.1
+    -- has no column for a pod, so these are the vendor extension that carries one.
+    -- Every one nullable, because a charge that is not a pod's carries none of them,
+    -- which is most rows. The measures are a breakdown of money already counted in
+    -- billed_cost and are never added to it.
+    eks_cluster_name            TEXT,
+    eks_namespace               TEXT,
+    eks_workload_name           TEXT,
+    eks_workload_type           TEXT,
+    eks_pod_name                TEXT,
+    split_cost                  NUMERIC(20, 10),
+    split_usage                 NUMERIC(30, 10),
+    split_usage_ratio           NUMERIC(20, 10),
+    unused_cost                 NUMERIC(20, 10),
+
     -- FOCUS 1.1
     billing_account_id          TEXT           NOT NULL,
     sub_account_id              TEXT,
