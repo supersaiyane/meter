@@ -30,9 +30,9 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Playwright journeys | 19 in 5 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 7 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 22 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 20 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 129 | test_*.py under tests/ |
-| Test functions | 1791 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 21 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 130 | test_*.py under tests/ |
+| Test functions | 1828 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1065,6 +1065,16 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0021_split_cost_allocation.py  FEAT-035, TASK-P6-002. Nine
+│       │                      nullable columns on cost_focus_daily: the EKS
+│       │                      grain and the split measures. A split line
+│       │                      carries no money of its own, so nothing here
+│       │                      touches billed_cost: the charge is already on
+│       │                      the node's line and these say who was using
+│       │                      it. No constraint ties a measure to a
+│       │                      dimension, which is the obvious one to add and
+│       │                      would refuse the unallocated remainder, the
+│       │                      row that makes a cluster reconcile
 │       ├── 0020_quotas.py     FEAT-033 and FEAT-034. Every quota, including the
 │       │                      ones nothing can measure, which are the majority in
 │       │                      a real estate. One check constraint carries the sub

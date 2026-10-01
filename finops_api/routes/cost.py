@@ -43,10 +43,13 @@ from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
     BudgetOut,
     BudgetsOut,
+    ClusterCostOut,
     CommitmentActionOut,
     CommitmentCoverageOut,
     CommitmentsOut,
     CommitmentUseOut,
+    ContainerCostOut,
+    ContainerCostRowOut,
     CostAnomaliesOut,
     CostAnomalyOut,
     CostDayOut,
@@ -153,6 +156,89 @@ def _grouped(
         collected_at=totals[0][4],
     )
     return Envelope(data=_slices(rows), meta=meta)
+
+
+@router.get("/cost/containers", response_model=Envelope[ContainerCostOut])
+def cost_containers(
+    period: date | None = None,
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[ContainerCostOut]:
+    """Cost by cluster, namespace and workload. FEAT-035, under Cost per ADR-0020.
+
+    Measured, not apportioned. The figures come from split cost allocation columns
+    on the billing export, so a pod's cost carries the same `as_of` as every other
+    charge and reconciles to the same period total. A product dividing a cluster's
+    cost itself would be publishing a modelled number on every screen that showed
+    it, and would have to say so.
+
+    A cluster with a cost and no breakdown is listed with its total and without its
+    workloads, saying which. Dropping it would report a smaller estate than the one
+    that exists, and the cluster nobody can break down is the one worth asking
+    about. Where the export carries no split cost allocation data at all, ISS-003,
+    the configuration gap arrives in `meta.failures` from the collector that found
+    it, so the screen explains itself without this route guessing why.
+    """
+    repository = CostRepository(connection, context)
+    resolved = _resolve(repository, scope, period)
+
+    workloads: dict[str, list[ContainerCostRowOut]] = {}
+    for row in repository.containers(scope, resolved):
+        workloads.setdefault(row[0], []).append(
+            ContainerCostRowOut(
+                namespace=row[1],
+                workload_name=row[2],
+                workload_type=row[3],
+                cost=row[4],
+                line_items=row[5],
+            )
+        )
+
+    clusters: list[ClusterCostOut] = []
+    as_of: datetime | None = None
+    collected_at: datetime | None = None
+    for row in repository.cluster_totals(scope, resolved):
+        name, allocated, unallocated, split_rows = row[0], row[1], row[2], row[3]
+        as_of = row[4] if as_of is None else min(as_of, row[4])
+        collected_at = row[5] if collected_at is None else max(collected_at, row[5])
+        has_breakdown = bool(split_rows)
+        clusters.append(
+            ClusterCostOut(
+                cluster_name=name,
+                total=allocated + unallocated,
+                allocated=allocated,
+                unallocated=unallocated,
+                workloads=tuple(workloads.get(name, ())),
+                breakdown_available=has_breakdown,
+                unmeasurable_reason=None
+                if has_breakdown
+                else (
+                    "this cluster has a cost and no split cost allocation rows, so the "
+                    "charge cannot be attributed to a namespace or a workload"
+                ),
+            )
+        )
+
+    measured = sum(1 for cluster in clusters if cluster.breakdown_available)
+    found = repository.clusters_in(scope, resolved)
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        # Clusters with a breakdown against clusters found, not accounts. A reader
+        # whose whole organization is visible would otherwise be told coverage is
+        # complete while half their clusters had no breakdown at all.
+        visible=measured,
+        as_of=as_of,
+        collected_at=collected_at,
+        coverage=(measured, found),
+        coverage_unit="clusters",
+    )
+    return Envelope(
+        data=ContainerCostOut(clusters=tuple(clusters), measured_count=measured, found_count=found),
+        meta=meta,
+    )
 
 
 @router.get("/cost/summary", response_model=Envelope[CostSummaryOut])

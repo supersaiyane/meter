@@ -681,6 +681,52 @@ class CostSliceOut(BaseModel):
     line_items: int
 
 
+class ContainerCostRowOut(BaseModel):
+    """One workload's share of a cluster's cost."""
+
+    model_config = ConfigDict(frozen=True)
+
+    namespace: str
+    workload_name: str
+    #: Empty where the export did not carry a workload type. Never guessed.
+    workload_type: str
+    cost: Decimal
+    line_items: int
+
+
+class ClusterCostOut(BaseModel):
+    """One cluster's cost, with its breakdown where there is one."""
+
+    model_config = ConfigDict(frozen=True)
+
+    cluster_name: str
+    #: Attributed to workloads plus the remainder nothing asked for. This is the
+    #: figure that reconciles to the cluster's node charge.
+    total: Decimal
+    allocated: Decimal
+    #: Capacity the cluster paid for and no pod requested. A real figure, not a
+    #: rounding error, and the reason bin packing is worth a screen.
+    unallocated: Decimal
+    workloads: tuple[ContainerCostRowOut, ...] = ()
+    #: False where the cluster has a cost and no per workload breakdown. The cluster
+    #: is still listed, per spec section 5.4.
+    breakdown_available: bool = True
+    #: Why the breakdown is missing, in words, where it is missing.
+    unmeasurable_reason: str | None = None
+
+
+class ContainerCostOut(BaseModel):
+    """Cost by cluster, namespace and workload, measured rather than apportioned."""
+
+    model_config = ConfigDict(frozen=True)
+
+    clusters: tuple[ClusterCostOut, ...]
+    #: Clusters with a breakdown, against clusters found. The screen states the
+    #: ratio so nobody counts rows to discover the gap.
+    measured_count: int
+    found_count: int
+
+
 class CostDayOut(BaseModel):
     """Effective cost on one day, for the chart on the cost screen."""
 

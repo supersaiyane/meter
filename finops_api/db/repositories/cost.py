@@ -159,6 +159,85 @@ class CostRepository(ScopedRepository):
         )
         return _fetch(self, scope, statement)
 
+    def containers(self, scope: Scope, period: date) -> Sequence[Row[tuple[Any, ...]]]:
+        """Cost at the container grain: cluster, namespace and workload.
+
+        The same table, the same scope predicate and the same repository as every
+        other cost read, because split cost allocation is columns on rows this
+        already returns. A second read path over the same money is how two screens
+        come to disagree about a total.
+
+        `split_cost` and not `effective_cost`. The money on these rows lives in the
+        split column; their `effective_cost` is zero because the charge is already
+        counted on the node line. Summing the wrong one would report every cluster
+        as free.
+        """
+        table = self.table
+        namespace = func.coalesce(table.c.eks_namespace, UNALLOCATED)
+        workload = func.coalesce(table.c.eks_workload_name, UNALLOCATED)
+        statement = (
+            self.scoped_select(scope)
+            .with_only_columns(
+                table.c.eks_cluster_name,
+                namespace,
+                workload,
+                func.coalesce(func.max(table.c.eks_workload_type), ""),
+                func.coalesce(func.sum(table.c.split_cost), 0),
+                func.count(),
+            )
+            .where(table.c.billing_period_start == period)
+            .where(table.c.eks_cluster_name.isnot(None))
+            .where(table.c.split_cost.isnot(None))
+            .group_by(table.c.eks_cluster_name, namespace, workload)
+            .order_by(func.sum(table.c.split_cost).desc())
+        )
+        return _fetch(self, scope, statement)
+
+    def cluster_totals(self, scope: Scope, period: date) -> Sequence[Row[tuple[Any, ...]]]:
+        """Per cluster: what was attributed, what was not, and how many rows.
+
+        Separate from `containers` rather than derived from it, because a cluster
+        whose breakdown is absent still has a total and still has to be listed. A
+        reader seeing nine clusters where they have ten learns nothing about the
+        tenth, and the tenth is the one worth asking about.
+        """
+        table = self.table
+        statement = (
+            self.scoped_select(scope)
+            .with_only_columns(
+                table.c.eks_cluster_name,
+                func.coalesce(func.sum(table.c.split_cost), 0),
+                func.coalesce(func.sum(table.c.unused_cost), 0),
+                func.count(table.c.split_cost),
+                func.min(table.c.as_of),
+                func.max(table.c.collected_at),
+            )
+            .where(table.c.billing_period_start == period)
+            .where(table.c.eks_cluster_name.isnot(None))
+            .group_by(table.c.eks_cluster_name)
+            .order_by(func.coalesce(func.sum(table.c.split_cost), 0).desc())
+        )
+        return _fetch(self, scope, statement)
+
+    def clusters_in(self, scope: Scope, period: date) -> int:
+        """How many clusters this caller can see any charge for.
+
+        The denominator of the coverage figure on the container cost screen, and a
+        repository method rather than `len(rows)` because a row count in that slot
+        has been the defect three times. See tasks/lessons.md.
+        """
+        statement = self.scoped_select(scope).with_only_columns(
+            func.count(func.distinct(self.table.c.eks_cluster_name))
+        )
+        rows = _fetch(
+            self,
+            scope,
+            statement.where(self.table.c.billing_period_start == period).where(
+                self.table.c.eks_cluster_name.isnot(None)
+            ),
+        )
+        return int(rows[0][0]) if rows else 0
+
     def for_export(self, scope: Scope, period: date, key: str) -> Sequence[Row[tuple[Any, ...]]]:
         """One row per account, service and tag value, for the file finance opens.
 

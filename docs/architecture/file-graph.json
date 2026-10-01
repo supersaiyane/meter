@@ -381,6 +381,7 @@
     "finops_core/domain/__init__.py",
     "finops_core/domain/account.py",
     "finops_core/domain/budget.py",
+    "finops_core/domain/containers.py",
     "finops_core/domain/cost.py",
     "finops_core/domain/fact.py",
     "finops_core/domain/geography.py",
@@ -559,6 +560,7 @@
     "migrations/versions/0018_misconfigured_cause.py",
     "migrations/versions/0019_sizing_refusal.py",
     "migrations/versions/0020_quotas.py",
+    "migrations/versions/0021_split_cost_allocation.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_env_keys.py",
     "scripts/ci/check_flags.py",
@@ -617,6 +619,7 @@
     "tests/core/__init__.py",
     "tests/core/test_budget.py",
     "tests/core/test_config.py",
+    "tests/core/test_containers_domain.py",
     "tests/core/test_cost_domain.py",
     "tests/core/test_domain.py",
     "tests/core/test_errors.py",
@@ -4915,6 +4918,16 @@
       "k": "python"
     },
     {
+      "s": "finops_core/domain/containers.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/containers.py",
+      "t": "finops_core/domain/observation.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/domain/cost.py",
       "t": "finops_core/domain/fact.py",
       "k": "python"
@@ -7132,6 +7145,21 @@
     {
       "s": "tests/core/test_config.py",
       "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_containers_domain.py",
+      "t": "finops_core/domain/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_containers_domain.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_containers_domain.py",
+      "t": "finops_core/domain/observation.py",
       "k": "python"
     },
     {
