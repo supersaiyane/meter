@@ -3298,6 +3298,29 @@ issues:
     touched. It would have fired on any first of month run since the fixture was written. The
     estate for those tests is now built at a clock nudged past the first, so the period the
     tests call open is one that is actually open'
+- id: ISS-220
+  severity: MEDIUM
+  status: FIXED
+  summary: A schema test created a cost partition by hand under a name no production code
+    writes, so CREATE TABLE IF NOT EXISTS could not stop it overlapping the real one
+  detail: 'It wrote cost_focus_daily_p2026_08 and the helper writes cost_focus_daily_p202608.
+    IF NOT EXISTS matches on the name, not the range, so the test passed only while nothing
+    else had created that month first and Postgres refused the overlap once something did.
+    Found on 2026-10-01 when a new P6 test module changed which suite ran first. It goes
+    through ensure_partition now'
+- id: ISS-221
+  severity: MEDIUM
+  status: OPEN
+  summary: On the first of a month the fake estate's newest period holds no days, so the seed
+    produces an estate a month thinner than the collectors need
+  detail: 'A period has billed up to yesterday, so on the first the open month is empty and
+    the newest period with data is the previous one. The realized savings collector compares a
+    window ending sixty days after a change to one ending before it, and the commitment
+    collector needs a usage floor across the window, so on the first of a month both find
+    nothing: tests/scripts/test_seed_demo.py fails two assertions against empty lists. Confirmed
+    pre-existing by running it against main in a separate worktree, and the same family as
+    ISS-219. `make seed` has the same thin estate on that day, which is the half worth deciding
+    about rather than papering over, because that is the product''s own clock'
 
 open_questions:
 - id: OPEN-07

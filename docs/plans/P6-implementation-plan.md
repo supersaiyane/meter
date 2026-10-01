@@ -88,7 +88,7 @@ Same contract as P0 through P5. One task, one commit.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec section 4 |
 | Delivers | Part of FEAT-036 |
 | Depends on | P1 delivered |
@@ -113,7 +113,7 @@ Same contract as P0 through P5. One task, one commit.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec section 5.1, FEAT-035 |
 | Delivers | Part of FEAT-035 |
 | Depends on | TASK-P6-001 |
@@ -144,7 +144,7 @@ ISS-003 is a prerequisite P1 never needed.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec section 8, FEAT-035 |
 | Delivers | FEAT-035 |
 | Depends on | TASK-P6-002 |
@@ -169,7 +169,7 @@ section 8.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec sections 4 and 5.4, FEAT-036 |
 | Delivers | Part of FEAT-036 |
 | Depends on | TASK-P6-001 |
@@ -233,7 +233,7 @@ TASK-P6-006 can start as soon as TASK-P6-004 lands.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec sections 5.2 and 7, FEAT-036 |
 | Delivers | Part of FEAT-036 |
 | Depends on | TASK-P6-005 |

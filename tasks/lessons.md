@@ -638,3 +638,34 @@ dropping ISS-002, ISS-003 and ISS-004 from the register, which surfaced 65 citat
 25 files, so it would have caught them on the day they were first cited. It does not catch
 FEAT-041, which resolved correctly and meant something else, and the script says so rather
 than implying the whole lesson is now mechanical. That half is still a habit, not a gate.
+
+## 2026-10-01: a fixture widened in place, carrying no money and changing a verdict
+
+**Mistake:** P6 needed split cost allocation rows in the fake bill, so I added them to
+`ESTATE`, the shared cost fixture every P1 and P3 test reads. They carry no money by
+construction: a split line re-attributes a charge already on the bill, so
+`billed_cost` and `effective_cost` are zero and a test asserts the period total is
+identical with and without them. I took that as proof they could not affect anything
+else, and ran the suites I had touched, which passed. The full gate then failed
+eleven tests across four modules. One was a realized savings verdict flipping from
+REGRESSED to VERIFIED in the seeded estate: a collector comparing two windows over a
+shared series does not only read sums, and a thousand extra rows on that series was
+enough. Another was an uncleaned `Misconfigured` row, which migration 0018 rightly
+refuses to downgrade past, failing the schema test and leaving a half downgraded
+schema that then collided on re-upgrade.
+
+**Correction:** Nobody corrected me. It surfaced because `make verify` runs every
+backend test in one process and I ran it before merging rather than after.
+
+**Rule:** Widen a shared fixture by opt in, never in place. A new slice goes behind a
+flag that defaults to off, and the tests that want it ask for it, so nothing that
+predates the slice moves. "It carries no money" is not an argument that it cannot
+change a result: a consumer may read counts, averages, windows or series membership
+rather than sums, and which consumers do is not knowable from the fixture. And a test
+that writes a row some migration's downgrade refuses to pass must delete that row,
+because the next module's failure will not look related to the row.
+
+**Triggers:** Adding rows to a fixture more than one module reads. Any edit to
+`finops_fakes/cur.py`'s `ESTATE` or a similar shared estate. Writing a `sync_error`
+row in a test. Reasoning that a zero valued addition is inert. Running only the
+suites whose files changed, and concluding from that the change is safe.

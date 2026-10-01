@@ -6710,6 +6710,11 @@
     },
     {
       "s": "tests/api/test_cost_routes.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
       "t": "finops_core/config.py",
       "k": "python"
     },
@@ -7419,6 +7424,11 @@
       "k": "python"
     },
     {
+      "s": "tests/db/test_schema.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
       "s": "tests/db/test_scope_guard.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -7546,6 +7556,11 @@
     {
       "s": "tests/ingest/collectors/test_cost_anomaly.py",
       "t": "finops_query/anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus.py",
+      "t": "finops_api/db/__init__.py",
       "k": "python"
     },
     {

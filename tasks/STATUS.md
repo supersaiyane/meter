@@ -25,7 +25,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | Features | 62 total, 17 specified, 10 in build, 26 delivered |
 | Decisions | 28 architecture decision records |
 | Changes | 105 recorded |
-| Issues | 137 fixed, 79 open, 0 parked |
+| Issues | 138 fixed, 80 open, 0 parked |
 | Open questions | 12 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -188,7 +188,7 @@ ISS-003.
 | P3 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
-| P6 | 1 | 0 | 0 | 0 | 11 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
+| P6 | 6 | 0 | 0 | 0 | 6 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 0 | 0 | 0 | 0 | 14 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -353,7 +353,12 @@ ISS-003.
 
 | Task | Status | Title |
 | --- | --- | --- |
+| `TASK-P6-001` | Done | the entities, and a cluster slice that can be unknown |
+| `TASK-P6-002` | Done | pod cost, which is already in the bill |
+| `TASK-P6-003` | Done | the cluster cost read and its screen slice |
+| `TASK-P6-004` | Done | Container Insights, and the four things it will not tell us |
 | `TASK-P6-005` | Done, before P6 started | a fake cluster with a namespace nobody can measure |
+| `TASK-P6-006` | Done | the usage collector |
 
 <!-- generated:task-status end -->
 

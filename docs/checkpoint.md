@@ -51,91 +51,61 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-09-28 | P5 complete, and the sub project whose central decision is what the product refuses to do | Done | Eight tasks, 9 commits, and the plan was right that TASK-P5-001 would add almost nothing: P0 had already decided that unpublished quota usage is an absence rather than a number, and everything else is downstream of that. What P5 added is provenance, a schema that refuses the lies, and a screen that shows two lists because one would have to sort the nulls somewhere and wherever they sort is a claim nobody has earned. Five real defects, all found by checks rather than by luck, and the order they arrived in is the argument for writing the check first. The response shape test found that the P5 specification names five request statuses and the botocore service model has seven: NOT_APPROVED and INVALID_REQUEST would have been read successfully, refused by my own check constraint, and surfaced as an IntegrityError from the collector, on a real account only, so a customer would have found it. An unused argument warning found that unmeasurable_reason had nowhere to travel from the adapter to the collector, which means the column the constraint requires could never have been filled: a design gap arriving as a style complaint. A 500 on the requests route found that quota_request had no quota_name, so a tracking list would have shown bare codes like L-1216C47A. The fake estate found a retraction bug: mine deleted global quota rows on any regional run, and the fake reports globals in one region only, so the second region wiped what the first had written. And two were in my own first draft of the adapter, a truth test that dropped a genuine Decimal zero and a min over two timestamps that silently reordered a contradictory pair. The load bearing deliverable is not the draft, it is the test that keeps the write out. RequestServiceQuotaIncrease appears nowhere in production source, and the check strips comments and docstrings before searching, because every module in this sub project explains in its own docstring that it does not call the API: a plain grep fails on the documentation of the decision it protects, and the obvious way to make it pass would be deleting the explanation. The CLI spelling is allowed and is deliberately a different string. Four falsifications, and the one that matters most asserts the capability exists, because a check that only forbids can be satisfied by shipping nothing. One line of the definition of done was refused rather than faked: it asks for a quota finding with a severity ranked beside the rest, and ADR-0016 derives severity from money while a quota has none, so ranking it beside dollar ordered findings needs a money equivalent nobody can compute. That is the fabrication ADR-0025 refused for a payer wide finding and ADR-0027 for a refusal with no saving. ISS-218 records it and names what is genuinely lost, which is the home screen. `make verify` green: 2208 backend tests passed at 95.69 percent coverage, 469 frontend tests, 19 journeys, zero unresolved security findings. 167 of those tests are P5's. | `finops_core/domain/quota.py` for the four combinations the entity refuses, `migrations/versions/0020_quotas.py` for the biconditional and why NULLS NOT DISTINCT is load bearing, `tests/contract/test_no_quota_writes.py` for the absence asserted in two independent places, `finops_query/quota.py` for the draft and its working. Nothing is in flight. P5 is done and the branch is ready to merge |
 | 2026-09-28 | P6 replanned and P7 planned, and four records defects found by trying to cite them | Done | Asked to plan the two remaining sub projects. P6 had a specification and a 12 task plan from 2026-09-20 and P7 had neither, so the work was a revision and a pair of new documents. The revision is the more interesting half, because none of the P6 plan's reasoning had rotted and almost every concrete detail had: the argument for measuring pod cost rather than apportioning it, for writing container findings into P3's table, and for naming the OOMKilled gap in the rationale all stand, while every file path, migration number and route in it had moved underneath. The largest is that spec section 8 named three routes under a containers prefix and ADR-0020, dated two weeks earlier, fixes seven top level groups for the life of the product and containers is not one of them. A specification written after an accepted decision and not applying it, caught before any route existed, which is the only reason it is a correction rather than a migration of every URL, link and pasted bookmark. The three questions now land in Cost, Waste and Inventory, which is what ADR-0020's own table dictates rather than a compromise it forced. TASK-P6-005 also turned out already done: `finops_fakes/containers.py` is 759 lines and its docstring answers all four of that task's criteria by name. P7's specification rests on two decisions. Its tools are the MCP tools, which are the HTTP API, so the governed semantic layer FEAT-038 asks for already exists and scope is not reimplemented, per constraint 8 and ADR-0009. And the model never emits a figure, it cites one: prose carries placeholders and the interface substitutes cited values, so there is nowhere in a sentence for a hallucinated number to live, and the failure mode is a wrong sentence beside right numbers rather than the reverse. The plan's 14 tasks put the three evaluation sets before the orchestration they judge, because a refusal set written afterwards describes what the implementation happens to do. ADR-0028 settles where the model runs, in the hub account on Bedrock, which buys no seventh trust boundary, token spend on the bill self metering already reads, and FEAT-046 as defence in depth rather than a prerequisite, at the price of a model choice capped by somebody else's regional rollout. Four records defects surfaced from trying to cite things. FEAT-041 named two features: the registry and its own document say P7 per team digests, and ten places in the code, the map, two ADRs and an issue used it for realized savings, which is FEAT-029. ISS-002, ISS-003 and ISS-004 were cited as issue ids by ten documents since 2026-08-23 and existed in no register, so a reader chasing ISS-003 from the P6 plan, which names it as that sub project's blocker, found nothing. The registry said P6 had no specification and no plan when both existed. And the hand written sub project table in tasks/STATUS.md was wrong in six of its eight rows while carrying a warning about having been stale once before, which is the clearest argument available for deleting a hand maintained copy of a derived figure rather than correcting it: it now carries only the qualifications the generated table cannot. The P7 open questions were nearly numbered OPEN-08 to OPEN-10, which are live P1 questions, so the collision was caught in the same pass that fixed the FEAT-041 one. `make verify` green, and worth one caveat: the first full run exited 2 with its output truncated by the command proxy, every stage then passed individually, and a re run passed, so there is evidence of green and no explanation of the first failure. 28 decisions, 217 issues, 12 open questions, 104 changes, 8 specifications. | `docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md` sections 5.1 and 5.2 for what P7 rests on and section 11 for how an LLM feature is held to this project's standard, `docs/adr/ADR-0028-the-model-runs-in-the-hub-account.md` for the hosting decision and its price, `docs/plans/P6-implementation-plan.md` at the revision note for the six stale details. Nothing is in flight. Both plans are provisional pending approval, and P7 needs OPEN-10 answered before its adapter can name a model |
 | 2026-09-28 | A check that an identifier cited anywhere resolves to a register entry | Done | The guard named as not yet built by the morning's lesson. `scripts/docs/check_identifiers.py` reads every FEAT, ISS, ADR, OPEN and CHG identifier in the file types `make check-writing` already scans, and fails when one resolves to nothing. It is the seventh of the ten checks in `make check-docs`. Two scoping decisions carry the weight. `docs/registry.yaml` is scanned rather than skipped, because an issue's `detail` or an open question's `blocks` can cite another identifier and that is the exact case that started this; skipping the register would have lost it. Generated blocks are skipped, because `sync.py` writes them from the register, so a complaint there would send the reader to fix a file they must not edit, while the same text is caught in the register where they can. The falsification is the part worth keeping: dropping ISS-002, ISS-003 and ISS-004 from the register reproduced the state the repository was actually in before this morning, and the check surfaced 65 citations across 25 files in markdown, Python, Terraform and YAML, which is also how four of the seven scanned file types were shown to be reached rather than assumed. The register was restored and the restore verified by SHA-256 rather than by eye. A first attempt at that falsification removed nothing, because the regex assumed two space indentation the file does not use, and it was only visible because the success line prints the number of registered identifiers and the number had not moved: a check that passes is not evidence the thing it checks was ever varied. Three defects of its own surfaced while building it. The check failed on its own test file, which has to cite unresolvable identifiers to watch the check fail, so that file is the single exemption and the test asserting the exemption list was empty was deleted, having been written before the fact. The success line counted every scanned file including the exempt one, overstating in the single line anybody reads what had actually been checked. And `check_map_counts.py` turned out to be absent from the listing in `project_map.md` that it is itself the checker for. A count of the checks in `make check-docs` was written down by hand in three places, the CI comment, a pipeline test docstring and `tasks/STATUS.md`, all saying eight, and all three were already wrong before this change: the target held nine. The number was removed from all three rather than corrected to ten, because a hand written copy of a derived count had already proved it rots unnoticed, and the six historical records that say eight were left alone because they describe a moment when it was true. What it cannot do is in the docstring: it catches an identifier that resolves to nothing and never one that resolves correctly and means something else, which was the FEAT-041 half of the same defect and is only caught by reading the entry. 17 tests, 2,225 backend passed and 1 skipped, coverage 95.69 percent and unchanged because `scripts/` is outside the six measured packages, so these tests are the evidence rather than a coverage figure. OK: 4192 citations across 1082 files, all resolving to 424 registered identifiers | `scripts/docs/check_identifiers.py`, docstring first for the two scoping decisions and the stated limit, then `tests/scripts/test_check_identifiers.py` for the two tests whose reasons are not obvious: the historical counterfactual and the one proving the generated block skip exits its own state. Nothing is in flight. The exemption list has one entry and every future entry needs an argument. 46 of 105 change records still carry `commit: pending`, unchanged by this and not this task's to fix |
-
+| 2026-10-01 | P6 containers, six of twelve tasks, paused mid sub project | Partial | Asked to complete P6 in one run and stopped at the weekly limit with six of 12 tasks done and committed: 001 the entities, 002 pod cost, 003 the cluster cost read, 004 Container Insights, 005 verified rather than assumed, 006 the usage collector. 7 commits on `p6-containers`, unmerged, and `make verify` is **not** green: two tests in `tests/scripts/test_seed_demo.py` fail, both confirmed pre-existing by running them against main in a separate worktree, both the same date boundary family as ISS-219 and now ISS-221. Nothing else fails. Four things are worth carrying forward. The OOM representation was the first real decision: the plan says a three state value, `bool | None` carries three values and fails open because a truth test reads unobserved as not killed, and that is the exact substitution spec 5.4 forbids, so the domain holds a three member enum and the column stays nullable with the mapping in one function. Second, a split cost line carries no money of its own: it re-attributes a charge already on the bill, so folding it into billed_cost would double count every clustered charge, and a test asserts the period total is identical with and without the container grain. Third, 0022's first draft took the fake's daily CSV shape and that was wrong, because the port returns a window aggregate and a fortnight's percentile stored in a row stamped with one date is a figure labelled with a day it does not describe; spec 5.2 had the right shape and the table now holds one row per workload with observation_days saying what it covers. Fourth, the full gate earned its keep: four defects passed in their own suites and failed together, including one uncleaned Misconfigured row that produced eleven unrelated failures because migration 0018 rightly refuses to downgrade while such a row exists, and ISS-220 where a hand written partition name no production code writes meant IF NOT EXISTS could not prevent an overlap. 22 migration revisions now. 220 issues recorded. | Resume at TASK-P6-007 in `docs/plans/P6-implementation-plan.md`, the two sizing rules. Its arithmetic goes in a new pure module `finops_query/containers.py` and its database write in a collector, because `finops_query` imports no database and an import contract holds that. `CONTAINER_RIGHTSIZE` is already a member of `WasteClass` so no enum widening is needed, and `recommendation.waste_class` has no check constraint so no migration is needed either. The rule is CPU at the 99th percentile of the max rate and memory at peak plus 15 percent, plus 25 percent only where OOM status is KILLED, and where it is UNOBSERVED the 15 percent rule applies and the rationale must say in words that the check could not be made, with a test that reads the rationale rather than the number. Then 008 Fargate snapping, 009 the remaining two routes, 010 and 011 the three screens and the journey, 012 the forecast provenance, where the frontend half already exists and the gaps are `layout.css` selectors and `PROVENANCES` in `finops_api/db/models.py`. ISS-221 must be answered before `make verify` can be green |
 ## Next action
 
-**Nothing is in flight. P6 and P7 are now planned and neither is started. Both plans are
-provisional pending approval.**
+**P6 is in flight on `p6-containers`, six of twelve tasks done, and `make verify` is
+not green.** Two tests fail and neither is P6's: see ISS-221.
 
-Planning the two remaining sub projects was this section's work. The half worth reading is
-the P6 revision rather than the new P7 documents: none of the P6 plan's reasoning had
-rotted and almost every concrete detail had. The argument for measuring pod cost rather
-than apportioning it still stands, and so does the case for writing container findings into
-P3's existing table instead of a new one. What had moved underneath it was every file path,
-every migration number and every route, including one that broke ADR-0020, a decision two
-weeks older than the specification that ignored it.
+Resume at **TASK-P6-007**, the two sizing rules. The things to know before starting
+are in the plan, but three of them are decisions already made and easy to undo by
+accident:
 
-The candidates now, in the order they would pay:
+1. **The arithmetic goes in `finops_query/containers.py` and the write goes in a
+   collector.** `finops_query` imports no database at all, by contract, and the plan's
+   own wording ("writing into P3's table") reads as though one module does both. It
+   cannot.
+2. **No migration and no enum change.** `CONTAINER_RIGHTSIZE` is already a member of
+   `WasteClass`, and `recommendation.waste_class` carries no check constraint, so
+   container recommendations go into P3's existing table as they stand.
+3. **Where OOM status is UNOBSERVED the 15 percent rule applies and the rationale says
+   the check could not be made.** In words, and a test reads the rationale rather than
+   the number. That sentence is what makes the no agent decision reversible: when
+   somebody decides the gap matters more than an agent costs, the recommendations that
+   were affected are the ones that say so.
 
-1. **P6, containers.** Twelve tasks of which one is already done: TASK-P6-005 asks for a
-   fake container estate and `finops_fakes/containers.py` is 759 lines whose docstring
-   answers all four of that task's criteria by name. Read the specification's section 5.4
-   first, which states per signal what it costs to have no agent in the cluster, then the
-   plan's revision note, which lists the six details that had gone stale. FEAT-035 is
-   blocked on ISS-003 and nothing else in the sub project is.
-2. **P7, insight and the language model layer.** Fourteen tasks. ADR-0028 has settled the
-   question that would otherwise have been decided by accident: the model runs on Bedrock
-   in the hub account, so there is no seventh trust boundary and the token spend lands on
-   the bill self metering already reads. Two things to read before starting: section 5.2 of
-   the specification, because the model never emits a figure and only cites one, which is
-   what keeps a hallucinated number out of a sentence; and OPEN-10, which must be answered
-   before the adapter can name a model.
-3. **A real account**, ISS-002, waiting since 2026-08-23. Still the only thing that can
-   close ISS-200, ISS-202, ISS-209, ISS-211 and ISS-122's P5 half, and P7 adds Bedrock to
-   the list of adapters that have never made a real call.
-4. **OPEN-05**, Jira or ServiceNow for the recommendation lifecycle. The lifecycle is
-   delivered and a TicketSink port and fake exist; nobody has chosen the system, so no
-   adapter can be written. A person rather than a task.
+Then 008 Fargate snapping up to the orderable matrix, 009 the remaining two routes,
+010 and 011 the three screens and the journey, 012 the forecast provenance.
 
-Three small ones are worth picking up inside whatever comes next rather than on their own:
-ISS-218, a quota finding reaching no home screen because it cannot be ranked against money;
-ISS-217, two components sitting in the screens directory, which is also why the screens
-directory holds 28 files for 26 routes; and ISS-208, a commitment action having no resource
-to join on, so no purchase can be verified against the bill.
+### The one thing blocking the gate
 
-One thing is deliberately not done. FEAT-059, an application layer on the topology graph,
-is named in the P6 plan as a third cut that needs its own specification section, and it has
-not been written.
+**ISS-221.** On the first of a month the fake estate's newest period holds no days,
+because a period has billed up to yesterday. The realized savings and commitment
+collectors then find nothing, and two assertions in `tests/scripts/test_seed_demo.py`
+run against empty lists. Confirmed pre-existing against main in a separate worktree,
+and the same family as ISS-219, which was the same defect in the cost route tests and
+was fixed there by nudging the fixture clock past the first.
 
-The guard the 2026-09-28 lesson named as missing is now built:
-`scripts/docs/check_identifiers.py` fails the build when a cited identifier resolves to
-nothing. The half it cannot mechanise, an identifier that resolves correctly and means
-something else, is still a reading habit rather than a gate, and the script says so.
+The half worth deciding rather than patching is that `make seed` has the same thin
+estate on that day, and that is the product's own clock. Nudging a test fixture is
+cheap; deciding what `make seed` should do on the first of a month is a judgement
+somebody should make on purpose.
 
-### One discrepancy, left alone on purpose
+### Where the project is, as of 2026-10-01
 
-`docs/registry.yaml` gives P0 the status `Spec approved, in build` while P1 through P5 are
-delivered, which cannot all be true at once: P1 was not built on top of an unbuilt P0. The
-same staleness affects some P0, P1 and P2 feature statuses. This was raised with a standing
-offer to correct it and no answer has been given, so nothing has been changed. Until it is,
-the generated task table in `tasks/STATUS.md` is the trustworthy view, because `sync.py`
-derives it from the plans; the sub project status prose is hand maintained and is the part
-that drifts.
-
-### Where the project is, as of 2026-09-28
-
-Every figure here was computed by the command that wrote this section. None of it is
-remembered, which is the 2026-09-27 lesson in `tasks/lessons.md`.
+Every figure here was computed by the command that wrote this section.
 
 | What | Where it stands |
 | --- | --- |
-| Git | `check-identifier-citations`, 406 commits, working tree dirty |
-| Gate | `make verify` green: lint, writing, the documentation checks, docstrings, memory, backend, frontend, web build, journeys, security scan |
-| Backend tests | 2,225 passed and 1 skipped, measured on this branch |
-| Backend coverage | 95.69 percent, unchanged: no file under the six measured packages or under `tests/` differs from main |
-| Frontend tests | 469 passed, 0 failed |
-| Journeys | 19 tests in 5 files |
-| Features | 62 documented: 26 Delivered, 10 In build, 17 Specified, 9 Planned |
-| Decisions | 28, and `docs/adr/` holds 28 files, so the register and the directory agree |
-| Issues | 217 recorded, 79 open, 136 fixed, 2 by design |
-| Changes | 105 recorded |
-| Open questions | 12, of which OPEN-10 blocks P7's adapter |
-| Schema | 20 migration revisions, every one named in `project_map.md` |
-| Collectors | 22 modules, every one named in `project_map.md`, which is checked rather than asserted since 2026-09-28 |
-| Screens | 23 built of 26 routes |
-| Specifications | 8 design documents in `docs/specs/` |
-| Lessons | 23 in `tasks/lessons.md` |
-| Sub projects | P1 to P5 delivered, P6 and P7 specified and planned and not started, P0 recorded as in build, which is the discrepancy above |
+| Git | `p6-containers`, 415 commits, 7 of them this sub project, unmerged |
+| Gate | `make verify` **not green**: two pre-existing failures, ISS-221. mypy clean across 367 files, lint clean, all ten documentation checks pass |
+| P6 | 6 of 12 tasks done: 001, 002, 003, 004, 005, 006 |
+| Features | 62 documented |
+| Decisions | 28 |
+| Issues | 220 recorded, 80 open |
+| Schema | 22 migration revisions, every one named in `project_map.md` |
+| Collectors | 23 modules, every one named in `project_map.md` |
+| Lessons | 24 in `tasks/lessons.md` |
 
 ### Reading in, in order
 
