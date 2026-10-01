@@ -348,6 +348,54 @@ cost_focus_daily = Table(
     postgresql_partition_by="RANGE (billing_period_start)",
 )
 
+#: P6, FEAT-036. One row per cluster, so a cluster whose workloads could not be read
+#: is listed as unmeasurable rather than being absent from the product.
+container_cluster = Table(
+    "container_cluster",
+    metadata,
+    Column("cluster_row_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column("region_id", Text, nullable=False),
+    Column("cluster_name", Text, nullable=False),
+    Column("platform", Text, nullable=False),
+    Column("enhanced_observability", Boolean, nullable=False),
+    Column("request_unavailable_reason", Text),
+    Column("node_count", Integer),
+    Column("spot_ratio", Numeric(20, 10)),
+    Column("packing_efficiency", Numeric(20, 10)),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+#: One row per workload, carrying the window aggregate the port returns rather than
+#: a daily row. `observation_days` says what the figures cover, and `was_oom_killed`
+#: is nullable with a null meaning unobserved, never false. See 0022.
+container_usage = Table(
+    "container_usage",
+    metadata,
+    Column("usage_row_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column("region_id", Text, nullable=False),
+    Column("cluster_name", Text, nullable=False),
+    Column("namespace", Text, nullable=False),
+    Column("workload", Text, nullable=False),
+    Column("workload_kind", Text, nullable=False),
+    Column("launch_type", Text, nullable=False),
+    Column("cpu_requested_millicores", Numeric(20, 10)),
+    Column("cpu_used_p99_millicores", Numeric(20, 10)),
+    Column("memory_requested_mib", Numeric(20, 10)),
+    Column("memory_used_peak_mib", Numeric(20, 10)),
+    Column("was_oom_killed", Boolean),
+    Column("observation_days", Integer, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
 # Where retention puts cost data before it drops the line items. See
 # docs/09-DATA-CLASSIFICATION.md: 37 months of line items, then a monthly
 # aggregate that keeps the trend a year on year comparison needs.

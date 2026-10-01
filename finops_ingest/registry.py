@@ -402,6 +402,23 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0",
     ),
     ScheduleEntry(
+        collector="container_usage",
+        cadence_seconds=TWELVE_HOURLY,
+        reason=(
+            "A request is a number somebody sets in a manifest, so it changes when "
+            "somebody deploys rather than continuously. Use moves all day, but the "
+            "figures this reads are a 99th percentile and a peak over a fortnight, "
+            "and neither moves much between one reading and the next. Twice a day "
+            "keeps the comparison current without paying for precision nobody can "
+            "act on: below fourteen days of history there is no recommendation at "
+            "all, so reading faster cannot produce one sooner. The cost is call "
+            "count rather than dollars, GetMetricData being charged per metric "
+            "requested, and a cluster of four hundred pods is four hundred metrics "
+            "a run even batched at five hundred a call. ADR-0012 and constraint 9."
+        ),
+        est_cost_per_run="0.01",
+    ),
+    ScheduleEntry(
         collector="quotas",
         cadence_seconds=TWELVE_HOURLY,
         reason=(

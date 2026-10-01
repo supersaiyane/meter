@@ -404,6 +404,7 @@
     "finops_core/ports/budget.py",
     "finops_core/ports/cloudwatch_estate.py",
     "finops_core/ports/commitment.py",
+    "finops_core/ports/containers.py",
     "finops_core/ports/cost.py",
     "finops_core/ports/credentials.py",
     "finops_core/ports/iac.py",
@@ -443,6 +444,7 @@
     "finops_ingest/collectors/budgets.py",
     "finops_ingest/collectors/commitment.py",
     "finops_ingest/collectors/commitment_actions.py",
+    "finops_ingest/collectors/container_usage.py",
     "finops_ingest/collectors/cost_anomaly.py",
     "finops_ingest/collectors/cost_focus.py",
     "finops_ingest/collectors/cost_rollup.py",
@@ -479,6 +481,7 @@
     "finops_providers/aws/client.py",
     "finops_providers/aws/commitment.py",
     "finops_providers/aws/config_inventory.py",
+    "finops_providers/aws/container_insights.py",
     "finops_providers/aws/credentials.py",
     "finops_providers/aws/cur.py",
     "finops_providers/aws/health.py",
@@ -561,6 +564,7 @@
     "migrations/versions/0019_sizing_refusal.py",
     "migrations/versions/0020_quotas.py",
     "migrations/versions/0021_split_cost_allocation.py",
+    "migrations/versions/0022_container_usage.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_env_keys.py",
     "scripts/ci/check_flags.py",
@@ -610,6 +614,7 @@
     "tests/contract/test_account_discovery.py",
     "tests/contract/test_cause_vocabulary.py",
     "tests/contract/test_commitment.py",
+    "tests/contract/test_container_source.py",
     "tests/contract/test_cost_export.py",
     "tests/contract/test_credential_broker.py",
     "tests/contract/test_no_quota_writes.py",
@@ -642,6 +647,7 @@
     "tests/ingest/collectors/test_account_health.py",
     "tests/ingest/collectors/test_commitment.py",
     "tests/ingest/collectors/test_commitment_actions.py",
+    "tests/ingest/collectors/test_container_usage.py",
     "tests/ingest/collectors/test_cost_anomaly.py",
     "tests/ingest/collectors/test_cost_focus.py",
     "tests/ingest/collectors/test_cost_focus_restatement.py",
@@ -5044,6 +5050,11 @@
     },
     {
       "s": "finops_core/ports/__init__.py",
+      "t": "finops_core/ports/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/__init__.py",
       "t": "finops_core/ports/cost.py",
       "k": "python"
     },
@@ -5095,6 +5106,16 @@
     {
       "s": "finops_core/ports/commitment.py",
       "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/containers.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/containers.py",
+      "t": "finops_core/domain/containers.py",
       "k": "python"
     },
     {
@@ -5194,7 +5215,17 @@
     },
     {
       "s": "finops_fakes/containers.py",
+      "t": "finops_core/domain/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/containers.py",
       "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/containers.py",
+      "t": "finops_core/errors.py",
       "k": "python"
     },
     {
@@ -5295,6 +5326,11 @@
     {
       "s": "finops_fakes/provider.py",
       "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/provider.py",
+      "t": "finops_core/domain/containers.py",
       "k": "python"
     },
     {
@@ -5490,6 +5526,21 @@
     {
       "s": "finops_ingest/collectors/commitment_actions.py",
       "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/container_usage.py",
+      "t": "finops_core/domain/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/container_usage.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/container_usage.py",
+      "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {
@@ -6029,6 +6080,31 @@
     },
     {
       "s": "finops_providers/aws/config_inventory.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/container_insights.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/container_insights.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/container_insights.py",
+      "t": "finops_core/domain/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/container_insights.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/container_insights.py",
       "t": "finops_providers/aws/client.py",
       "k": "python"
     },
@@ -7024,6 +7100,11 @@
     },
     {
       "s": "tests/contract/conftest.py",
+      "t": "finops_providers/aws/container_insights.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/conftest.py",
       "t": "finops_providers/aws/credentials.py",
       "k": "python"
     },
@@ -7060,6 +7141,16 @@
     {
       "s": "tests/contract/test_commitment.py",
       "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_container_source.py",
+      "t": "finops_core/domain/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_container_source.py",
+      "t": "finops_core/ports/containers.py",
       "k": "python"
     },
     {
@@ -7404,6 +7495,26 @@
     },
     {
       "s": "tests/ingest/collectors/test_commitment_actions.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_container_usage.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_container_usage.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_container_usage.py",
+      "t": "finops_ingest/collectors/container_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_container_usage.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },

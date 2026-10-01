@@ -29,10 +29,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 23 of 26 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 19 in 5 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 7 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 22 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 21 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 131 | test_*.py under tests/ |
-| Test functions | 1835 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 23 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 22 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 132 | test_*.py under tests/ |
+| Test functions | 1845 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -850,6 +850,15 @@ meter/
 │   │                          changed and stayed changed
 │   ├── worker.py              one transaction per unit. Only the six are caught
 │   └── collectors/
+│       ├── container_usage.py  FEAT-036, account scoped so one cluster that
+│       │                      cannot be read records a typed failure against
+│       │                      its own slice. Writes container_cluster whatever
+│       │                      the reservation read produced, because a cluster
+│       │                      with no readable workloads has no usage rows and
+│       │                      skipping it would leave it out of the product
+│       │                      rather than listed as unmeasurable. Retraction is
+│       │                      scoped to the unit's own account and region, the
+│       │                      defect the quota collector had to be fixed for
 │       ├── org_tree.py        whole tree replaced in one transaction, never emptied
 │       ├── account_health.py  role_health written every run, including failed ones
 │       ├── platform_cost.py   one grouped request a day. Untagged cost is named
@@ -1079,6 +1088,16 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0022_container_usage.py  FEAT-036. Two tables, and the second is
+│       │                      the point: container_cluster exists so a cluster
+│       │                      nothing could measure is listed rather than
+│       │                      absent. container_usage holds one row per
+│       │                      workload carrying the window aggregate the port
+│       │                      returns, not a daily row: the first draft took
+│       │                      the fake's daily CSV shape, which would have put
+│       │                      a fortnight's percentile in a row stamped with
+│       │                      one date. was_oom_killed is nullable and null
+│       │                      means unobserved, never false
 │       ├── 0021_split_cost_allocation.py  FEAT-035, TASK-P6-002. Nine
 │       │                      nullable columns on cost_focus_daily: the EKS
 │       │                      grain and the split measures. A split line

@@ -846,12 +846,21 @@ class FakeContainerSource:
                 if total > 0:
                     node_count = int(total)
                     spot = counts.get("SPOT", Decimal(0)) / total
+                # A cluster that cannot publish pod requests cannot have its bin
+                # packing computed either: packing is requests over allocatable, and
+                # the numerator is the thing that is missing. None rather than zero,
+                # which would read as a cluster packed at nought percent.
                 allocatable = Decimal(0)
                 requested = Decimal(0)
+                readable = True
                 for row in today:
+                    asked = row["requested_cpu_millicores"]
+                    if asked is None:
+                        readable = False
+                        continue
                     allocatable += Decimal(str(row["allocatable_cpu_millicores"]))
-                    requested += Decimal(str(row["requested_cpu_millicores"]))
-                if allocatable > 0:
+                    requested += Decimal(str(asked))
+                if readable and allocatable > 0:
                     # Capped at one. A cluster cannot be more than fully packed, and a
                     # ratio above one means requests were summed over a window the
                     # allocatable figure does not cover.
