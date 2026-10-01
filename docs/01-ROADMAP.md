@@ -38,7 +38,7 @@ P0 Foundation
 
 | ID | Name | Features | Specified | Planned |
 | --- | --- | --- | --- | --- |
-| P0 | Foundation | 11 | 11 | 0 |
+| P0 | Foundation | 12 | 12 | 0 |
 | P1 | Cost Intelligence | 6 | 0 | 6 |
 | P2 | Query Cost Governance | 9 | 8 | 1 |
 | P3 | Utilization and Rightsizing | 7 | 0 | 7 |
@@ -100,7 +100,7 @@ rather than that one saving happened.
 
 | ID | Name | Status | Features | Spec | Plan | Depends on |
 | --- | --- | --- | --- | --- | --- | --- |
-| P0 | Foundation | Spec approved, in build | 11 (11 specified) | [spec](specs/2026-08-23-p0-foundation-design.md) | [plan](plans/P0-implementation-plan.md) | none |
+| P0 | Foundation | Spec approved, in build | 12 (12 specified) | [spec](specs/2026-08-23-p0-foundation-design.md) | [plan](plans/P0-implementation-plan.md) | none |
 | P1 | Cost Intelligence | Not started | 6 (0 specified) | not written | not written | P0 |
 | P2 | Query Cost Governance | Spec approved, plan in review | 9 (8 specified) | [spec](specs/2026-08-23-p2-query-cost-governance-design.md) | [plan](plans/P2-implementation-plan.md) | P0 |
 | P3 | Utilization and Rightsizing | Not started | 7 (0 specified) | not written | not written | P0, P1 |

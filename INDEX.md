@@ -40,6 +40,7 @@ block is caught by `make check-docs`. See
 | Who attacks this, and what stops them | [docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md) |
 | What data we hold, retention, erasure | [docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md) |
 | SLOs, alerts, and what pages someone | [docs/10-OBSERVABILITY.md](docs/10-OBSERVABILITY.md) |
+| How a number is shown, and how failure is shown | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) |
 | Runbooks for the paging alerts | [docs/runbooks/](docs/runbooks/README.md) |
 | How often data refreshes, and its limits | [docs/06-DATA-FRESHNESS.md](docs/06-DATA-FRESHNESS.md) |
 | What Meter costs to run | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
@@ -63,7 +64,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-49 features across 8 sub projects. 19 specified, 30 planned, 0 in build, 0 delivered.
+50 features across 8 sub projects. 20 specified, 30 planned, 0 in build, 0 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -82,6 +83,7 @@ block is caught by `make check-docs`. See
 | [FEAT-009](docs/features/FEAT-009-organization-map.md) | Organization map, tree and graph views | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
 | [FEAT-010](docs/features/FEAT-010-ingest-and-freshness-surface.md) | Ingest and freshness surface | Specified | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 9 |
 | [FEAT-049](docs/features/FEAT-049-configuration-and-feature-flags.md) | Configuration and feature flags, everything switchable, nothing hardcoded | Specified | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
+| [FEAT-050](docs/features/FEAT-050-visual-honesty-system.md) | Provenance, freshness and failure rendering, the visual honesty system | Specified | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) |
 
 ### P2 Query Cost Governance
 
@@ -185,6 +187,7 @@ block is caught by `make check-docs`. See
 | ADR-0016 | Severity on a cost finding is derived from the money, never chosen | Accepted | [ADR-0016](docs/adr/ADR-0016-dollar-based-severity.md) |
 | ADR-0017 | Nothing is hardcoded, and every feature flag has an owner and an expiry | Accepted | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
 | ADR-0018 | The threshold is zero fixable findings, not zero findings | Accepted | [ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md) |
+| ADR-0019 | Headless component behaviour, our own visual layer | Accepted | [ADR-0019](docs/adr/ADR-0019-headless-components-own-visual-layer.md) |
 
 Index of records: [docs/adr/README.md](docs/adr/README.md)
 
@@ -228,6 +231,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0027 | 2026-08-23 | Design | P2 query cost governance specification written. All three Grafana surfaces in scope, three enforcement levels and three write levels behind per tenant flags, both defaulting safe | `ee3ea68` | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) |
 | CHG-0028 | 2026-08-23 | Design | P2 implementation plan written, 22 tasks in ten waves. The prototype is pinned by golden files before anything touches it | `80a0ac3` | [P2 plan](docs/plans/P2-implementation-plan.md) |
 | CHG-0029 | 2026-08-23 | Correction | TASK-P0-029 complete. Base images verified by measurement, moved to python 3.13 and nginx 1.30, digests pinned. The zero vulnerabilities policy corrected to zero fixable findings, because no Python image can meet the original | `9754a59` | [ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md) |
+| CHG-0030 | 2026-08-23 | Design | UI design specification written, closing the gap where the product honesty guarantees were enforced in the database and undesigned at the pixel. Component library decided against written requirements as ADR-0019 | `pending` | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) |
 
 <!-- generated:changes end -->
 
@@ -238,7 +242,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**64 FIXED, 34 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**69 FIXED, 34 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -280,6 +284,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-092 | HIGH | A deny action can cut an engineer off from Logs Insights during an incident, when it is exactly the tool they need | OPEN | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 12. Auto expiry, a never deny list, a revoke route and an enforcement screen |
 | ISS-093 | HIGH | The modelled query cost has no published accuracy, so every figure is a projection presented alongside measured ones | OPEN | FEAT-018. Until it lands, every modelled figure carries a visible caveat |
 | ISS-098 | HIGH | The chosen base image versions were picked by habit, not measurement. python 3.12 carried 3 High findings and nginx 1.27 carried 93 including 6 Critical | FIXED | Moved to python 3.13 and nginx 1.30, both measured at TASK-P0-029. node:22-dev was already clean |
+| ISS-102 | HIGH | Every honesty guarantee in the product is enforced by a database constraint and then delivered by an undesigned pixel, so the constraint work could be thrown away in the last six inches | FIXED | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md). The Figure component makes a number unrenderable without its provenance |
 | ISS-011 | MEDIUM | A model producing sizing numbers destroys trust on the first hallucination | FIXED | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
 | ISS-012 | MEDIUM | Organization wide AWS Config recording is a five figure monthly cost | OPEN | [tasks/ISSUES.md](tasks/ISSUES.md), resolved in P4 |
 | ISS-013 | MEDIUM | Hundreds of describe loops for inventory is a year of work | FIXED | [roadmap](docs/01-ROADMAP.md) P4 |
@@ -330,6 +335,10 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-095 | MEDIUM | Nobody owns the never deny list, and enabling deny without one risks cutting off incident response | OPEN | [P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) section 13. Blocks enabling deny, not building it |
 | ISS-099 | MEDIUM | Base image tags were floating, so a build was not reproducible and a tag could be repointed after it was scanned | FIXED | `docker/base-images.lock` with resolved digests, `make base-images-check` fails on drift |
 | ISS-100 | MEDIUM | Three unfixable CPython findings are accepted on a reachability argument that depends on nobody importing stringprep, poplib or urllib.request | OPEN | Enforced by `scripts/ci/check_forbidden_imports.py`, which fails the build. Review 2026-11-21 |
+| ISS-103 | MEDIUM | No component inventory existed, so each sub project would have invented its own table and the product would acquire several visual languages | FIXED | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) section 11, built once in P0 |
+| ISS-104 | MEDIUM | No accessibility position, when provenance encoded by colour alone would fail for roughly 8 percent of men, in print, and in a screenshot pasted into a ticket | FIXED | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) section 9. Provenance carried redundantly by fill, prefix and label |
+| ISS-105 | MEDIUM | No state matrix, so loading, empty, partial, stale, degraded and failed would each be improvised per screen and several would be missed | FIXED | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) section 8. Seven states, enforced by StateBoundary |
+| ISS-106 | MEDIUM | TASK-P0-029 was completed without its Status, evidence or deviation being recorded in the plan, so the plan read as though no work had been done | FIXED | Plan corrected. The deviation, that 029 created package namespaces belonging to TASK-P0-001, is now recorded rather than absorbed |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |

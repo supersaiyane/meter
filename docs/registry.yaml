@@ -346,6 +346,12 @@ features:
   status: Specified
   detail: '[ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md)'
   doc: docs/features/FEAT-049-configuration-and-feature-flags.md
+- id: FEAT-050
+  name: Provenance, freshness and failure rendering, the visual honesty system
+  subproject: P0
+  status: Specified
+  detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md)'
+  doc: docs/features/FEAT-050-visual-honesty-system.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -419,6 +425,10 @@ adrs:
   decision: The threshold is zero fixable findings, not zero findings
   status: Accepted
   doc: docs/adr/ADR-0018-zero-fixable-not-zero-findings.md
+- id: ADR-0019
+  decision: Headless component behaviour, our own visual layer
+  status: Accepted
+  doc: docs/adr/ADR-0019-headless-components-own-visual-layer.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'
@@ -620,6 +630,14 @@ changes:
     image can meet the original
   commit: 9754a59
   detail: '[ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md)'
+- id: CHG-0030
+  date: '2026-08-23'
+  type: Design
+  what: UI design specification written, closing the gap where the product honesty guarantees were enforced
+    in the database and undesigned at the pixel. Component library decided against written requirements
+    as ADR-0019
+  commit: pending
+  detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1181,6 +1199,39 @@ issues:
     interpreter and PEP 668 blocks adding it
   detail: They now run from the project venv, and `scripts/README.md` states this rather than the previous
     claim
+- id: ISS-102
+  severity: HIGH
+  status: FIXED
+  summary: Every honesty guarantee in the product is enforced by a database constraint and then delivered
+    by an undesigned pixel, so the constraint work could be thrown away in the last six inches
+  detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md). The Figure component makes a number unrenderable
+    without its provenance'
+- id: ISS-103
+  severity: MEDIUM
+  status: FIXED
+  summary: No component inventory existed, so each sub project would have invented its own table and the
+    product would acquire several visual languages
+  detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) section 11, built once in P0'
+- id: ISS-104
+  severity: MEDIUM
+  status: FIXED
+  summary: No accessibility position, when provenance encoded by colour alone would fail for roughly 8
+    percent of men, in print, and in a screenshot pasted into a ticket
+  detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) section 9. Provenance carried redundantly by fill,
+    prefix and label'
+- id: ISS-105
+  severity: MEDIUM
+  status: FIXED
+  summary: No state matrix, so loading, empty, partial, stale, degraded and failed would each be improvised
+    per screen and several would be missed
+  detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) section 8. Seven states, enforced by StateBoundary'
+- id: ISS-106
+  severity: MEDIUM
+  status: FIXED
+  summary: TASK-P0-029 was completed without its Status, evidence or deviation being recorded in the plan,
+    so the plan read as though no work had been done
+  detail: Plan corrected. The deviation, that 029 created package namespaces belonging to TASK-P0-001,
+    is now recorded rather than absorbed
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS

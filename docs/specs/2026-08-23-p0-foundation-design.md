@@ -271,6 +271,19 @@ dependency still cannot return out of scope rows.
 
 ## 9. Frontend
 
+**The design system is `docs/12-UI-DESIGN.md`**, and it is not optional
+reading before building any of these. It carries the provenance language, the
+seven state matrix, the accessibility position, the component inventory, and
+the reason the component library was chosen the way it was, ADR-0019.
+
+The section below lists the screens. It does not describe how they look,
+because that is a system level decision and inventing it per screen is how a
+product acquires four visual languages.
+
+**The rule that governs every screen here:** no screen formats a number. Every
+figure goes through the `Figure` component, which requires provenance and
+freshness. A screen that forgets provenance cannot be built.
+
 Five screens. No charting library beyond a sparkline in P0.
 
 1. **Shell.** Navigation, principal menu, a persistent scope coverage banner
@@ -285,6 +298,11 @@ Five screens. No charting library beyond a sparkline in P0.
    errors and their remediation text. This is the operational screen that
    proves the platform is honest about what it does not know.
 5. **Platform cost.** Meter's own spend by module, with a 30 day sparkline.
+
+Every screen implements all seven states from the design system section 8, not
+the three that are easy. A screen implementing loading, success and error is
+not finished: partial, stale, degraded and never collected are the states this
+product exists to distinguish.
 
 ## 10. Infrastructure
 

@@ -46,6 +46,7 @@ meter/
 │   ├── 09-DATA-CLASSIFICATION.md  classes, retention, erasure
 │   ├── 10-OBSERVABILITY.md    four SLOs, ten alerts, two of which page
 │   ├── 11-COMPETITIVE-REVIEW.md  what we took, rejected, and why
+│   ├── 12-UI-DESIGN.md        provenance language, state matrix, components
 │   ├── runbooks/              one per paging alert, written with the alert
 │   ├── registry.yaml          SOURCE OF TRUTH for the generated documents
 │   ├── feature-flags.yaml     every flag, its owner, reason, expiry, removal

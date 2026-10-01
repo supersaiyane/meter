@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Status: Provisional, pending approval of `docs/specs/2026-08-23-p0-foundation-design.md`
 Spec: `docs/specs/2026-08-23-p0-foundation-design.md`
-Tasks: 34
+Tasks: 35
 
 ## How to work this plan
 
@@ -30,7 +30,7 @@ before starting. In short:
 | E. AWS adapters | 017 to 019 | Credential broker and account discovery, against moto and LocalStack | B complete. **D is not required to start** |
 | F. Ingestion | 020 to 023 | Dispatcher, worker, ledger, and the three P0 collectors | C and E complete |
 | G. API | 024 to 025 | Routes with scope enforcement and freshness metadata | C complete, F for real data |
-| H. Frontend | 026 to 028 | Five screens and the end to end journey | G complete |
+| H. Frontend | 035, 026 to 028 | The component layer, then five screens and the end to end journey | 035 needs only 002. Screens need G |
 | I. Security and MCP | 029 to 031 | Zero vulnerability posture, and the four P0 MCP tools | 029 first of all, 030 and 031 after G |
 
 **TASK-P0-029 runs before everything else**, out of numeric order. It verifies
@@ -48,7 +48,7 @@ Waves B and D are independent. Run them in parallel if two people are working.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | **Partly done.** Packages and `.venv` exist, from TASK-P0-029. The editable install, `tests/conftest.py` and the pytest harness do not |
 | Implements | P0 spec section 4 |
 | Delivers | Nothing user facing. Enables everything |
 | Depends on | none |
@@ -1387,18 +1387,97 @@ pytest tests/api/test_routes.py -v
 
 ## Wave H: frontend
 
+### TASK-P0-035: the component layer and the visual honesty system
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | `docs/12-UI-DESIGN.md`, ADR-0019 |
+| Delivers | FEAT-050 |
+| Depends on | TASK-P0-002 |
+| Estimate | L |
+
+**Goal.** The components every screen in every sub project will use, and the
+one that makes a dishonest number impossible to render.
+
+**Files.**
+
+| Path | Action |
+| --- | --- |
+| `finops-web/src/tokens.css` | create |
+| `finops-web/src/components/Figure.tsx` | create |
+| `finops-web/src/components/StateBoundary.tsx` | create |
+| `finops-web/src/components/DataTable.tsx` | create |
+| `finops-web/src/components/CoverageBanner.tsx` | create |
+| `finops-web/src/components/FreshnessIndicator.tsx` | create |
+| `finops-web/src/components/TypedError.tsx` | create |
+| `finops-web/src/components/SeverityBadge.tsx` | create |
+| `finops-web/src/components/Sparkline.tsx` | create |
+| `finops-web/src/components/__tests__/*.test.tsx` | create |
+
+**Acceptance criteria.**
+
+- [ ] **`Figure` cannot render without provenance and freshness.** They are
+      required props, and the type system rejects a call without them
+- [ ] Provenance is encoded three times: fill, `~` prefix, and text label.
+      A test asserts the label is present with colour disabled
+- [ ] `measured` renders solid, `modelled` renders hatched, `forecast` renders
+      hatched with an interval and **never as a single number**
+- [ ] `Figure` given a typed error renders the cause and its remediation, and
+      **renders no numeral at all**
+- [ ] `NoData` is the only cause that renders as `0`
+- [ ] `StateBoundary` implements all seven states from design system section 8
+- [ ] All numerals tabular, right aligned, fixed decimal places including
+      trailing zeros
+- [ ] `DataTable` virtualises past 200 rows
+- [ ] Tokens defined for light and dark, both first class
+- [ ] Axe reports zero violations on every component
+- [ ] Reduced motion respected
+
+**Tests.**
+
+| Test | Asserts |
+| --- | --- |
+| `Figure.test.tsx::renders_no_numeral_for_a_failure` | The rule the whole design exists to protect |
+| `Figure.test.tsx::nodata_renders_zero` | And that the one legitimate zero still works |
+| `Figure.test.tsx::provenance_survives_without_colour` | Fill and label carry it independently |
+| `Figure.test.tsx::forecast_renders_an_interval` | ADR-0015 condition 2 as a rendering rule |
+| `StateBoundary.test.tsx::implements_seven_states` | Not three |
+
+**Do not.**
+
+- Do not export a way to render a raw number. The moment one exists, a screen
+  will use it under time pressure and the guarantee is gone. This is the same
+  technique as the repository scope guard: make the wrong thing impossible,
+  not discouraged.
+- Do not animate a number changing value. A number counting up from zero is
+  lying for 400 milliseconds, and this product's entire claim is that its
+  numbers are trustworthy.
+- Do not use red for a large cost. Red means a failure, so that when it appears
+  it means one thing.
+- Do not adopt a component library's table. ADR-0019 rejected it on evidence:
+  the components a library gives you are exactly the ones we must control.
+
+**Evidence.**
+
+```bash
+cd finops-web && npm run test -- --run && npx axe-core-cli
+```
+
+---
+
 ### TASK-P0-026: application shell, coverage banner and freshness indicator
 
 | Field | Value |
 | --- | --- |
 | Status | Not started |
 | Implements | P0 spec section 9, screen 1 |
-| Delivers | FEAT-006, FEAT-009 |
-| Depends on | TASK-P0-025 |
+| Delivers | FEAT-006, FEAT-009, FEAT-050 |
+| Depends on | TASK-P0-025, TASK-P0-035 |
 | Estimate | M |
 
 **Files.** `finops-web/src/` shell, layout, navigation, API client, and the
-`meta` envelope handling.
+`meta` envelope handling. Uses the components from TASK-P0-035, and adds none.
 
 **Acceptance criteria.**
 
@@ -1412,6 +1491,10 @@ pytest tests/api/test_routes.py -v
 - Do not hide the coverage banner when coverage is complete without saying so.
   Show "showing all M accounts". Absence of a warning is not the same as
   confirmation, and users need the confirmation.
+- Do not make the coverage banner dismissible. A banner gets dismissed and the
+  condition does not go away.
+- Do not build a component here. If a screen needs something the inventory
+  lacks, add it to the inventory in TASK-P0-035 and use it from there.
 
 **Evidence.** `npm run test -- --run` and a screenshot of the partial coverage
 state.
@@ -1540,7 +1623,7 @@ pytest tests/ingest/collectors/test_retention.py -v
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | **Done 2026-08-23**, commit `9754a59` |
 | Implements | P0 spec section 11a, ADR-0010 |
 | Depends on | none |
 | Order | **First. Before everything, including 001** |
@@ -1586,6 +1669,31 @@ environment, so neither needs the project virtualenv to exist yet.
 ```bash
 make security-tools && make security-scan && cat security/POSTURE.md
 ```
+
+**Result, 2026-08-23.** All four tags exist and pull anonymously. Scanning them
+changed two version choices and one policy.
+
+| Image | Total | Critical | High | Fixable |
+| --- | --- | --- | --- | --- |
+| `python:3.12` | 13 | 0 | 3 | 0 |
+| `python:3.13` | 3 | 0 | 0 | 0 |
+| `node:22-dev` | 0 | 0 | 0 | 0 |
+| `nginx:1.27` | 93 | 6 | 26 | 76 |
+| `nginx:1.30` | 0 | 0 | 0 | 0 |
+| official `python:3.12-slim` | 204 | 7 | 26 | 80 |
+
+Moved to python 3.13 and nginx 1.30. Digests pinned in
+`docker/base-images.lock`. The policy of zero at any severity proved
+undeliverable and was amended by ADR-0018 to zero findings that have a
+published fix, with three unfixable CPython findings accepted under a
+reachability argument that `check_forbidden_imports.py` enforces.
+
+Posture: **zero fixable findings**, three accepted unfixable, no secrets found.
+
+**Deviation.** The task also created the Python package namespaces and the
+virtualenv, which belong to TASK-P0-001, because the policy checks needed
+something to scan and the documentation scripts needed pyyaml. TASK-P0-001 is
+therefore partly done. Recorded rather than absorbed.
 
 ---
 
@@ -1761,6 +1869,7 @@ worked.
 | FEAT-008 Platform self metering | 015, 023, 025, 028 |
 | FEAT-009 Organization map | 026, 027 |
 | FEAT-010 Ingest and freshness surface | 028 |
+| FEAT-050 Visual honesty system | 035, 026 |
 | FEAT-042 Assistant bot, groundwork | 030 |
 | Security posture, ADR-0010 | 029 |
 | Documentation and graph gates, ADR-0011 | 031 |
