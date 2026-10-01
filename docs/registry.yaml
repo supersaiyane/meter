@@ -3287,6 +3287,17 @@ issues:
     not see it. Closing this properly means either a non money severity vocabulary with
     argued thresholds, which is an ADR, or a home screen tile that links to the quota list
     without pretending to rank against money, which is the cheaper of the two'
+- id: ISS-219
+  severity: MEDIUM
+  status: FIXED
+  summary: The cost route tests called the newest billing period still running and asserted
+    it was open, which was false on the first of every month
+  detail: 'A period has billed up to yesterday, so on the first of a month the open month
+    holds no days and the newest period in the fake estate is the previous, closed one. Found
+    on 2026-10-01 while building TASK-P6-003, by a failure in a test nothing in that task
+    touched. It would have fired on any first of month run since the fixture was written. The
+    estate for those tests is now built at a clock nudged past the first, so the period the
+    tests call open is one that is actually open'
 
 open_questions:
 - id: OPEN-07

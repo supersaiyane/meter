@@ -45,7 +45,14 @@ ONE_ACCOUNT = "fake-platform-a"
 #: 2026-08, so its open month stopped being open the day that month ended, and
 #: a test asserting otherwise against it would be asserting the date.
 TODAY = datetime.now(UTC)
-CURRENT = estate(at=TODAY)
+
+#: The real clock, nudged past the first of the month. A period has billed up to
+#: yesterday, so on the first the open month holds no days at all, the newest period
+#: in the estate is last month, and last month is closed. Every test below that calls
+#: the newest period "still running" then asserts the opposite of what it means, one
+#: day in thirty. ISS-219.
+OPEN_ENOUGH = max(TODAY, datetime(TODAY.year, TODAY.month, 2, tzinfo=UTC))
+CURRENT = estate(at=OPEN_ENOUGH)
 CURRENT_PERIOD = max(row.billing_period_start for row in CURRENT)
 STILL_RUNNING = tuple(row for row in CURRENT if row.billing_period_start == CURRENT_PERIOD)
 FINISHED_PERIOD = max(
