@@ -18,7 +18,7 @@ import pytest
 
 from finops_core import errors
 from finops_core.domain.cost import CostRecord
-from finops_fakes import cur, fixtures, prices, utilization
+from finops_fakes import containers, cur, fixtures, prices, utilization
 from finops_fakes.cur import (
     CLOSED_PERIOD,
     OPEN_PERIOD,
@@ -247,7 +247,13 @@ class TestTheBillAndTheEstateJoin:
         # estate does not model is spend a screen shows and nothing explains, which is
         # worse than a gap because it looks like data.
         billed = {row.resource_id for row in cur.ESTATE if row.resource_id}
-        invented = billed - {spec.resource_id for spec in utilization.SPECS}
+        # Workloads are modelled too, since split cost allocation bills a pod. The
+        # union matches the one `test_utilization_estates.py` already uses for the
+        # same reason: the estate models two kinds of resource, not one.
+        modelled = {spec.resource_id for spec in utilization.SPECS} | {
+            workload.key for workload in containers.WORKLOADS
+        }
+        invented = billed - modelled
         assert not invented, f"billed and not modelled: {sorted(invented)}"
 
     def test_a_resource_is_priced_from_its_own_configuration(self) -> None:

@@ -20,6 +20,7 @@ import pytest
 from sqlalchemy import Engine, text
 
 from finops_core import errors
+from finops_fakes import containers
 from finops_fakes.cur import (
     CLOSED_PERIOD,
     CORRECTED_FINGERPRINT,
@@ -313,3 +314,161 @@ class TestTheCadenceIsData:
             ).scalar_one()
 
         assert after == 86400
+
+
+class TestSplitCostAllocation:
+    """TASK-P6-002. Pod cost is measured, and it is money already on the bill.
+
+    The defect these guard against is the one a cost product cannot ship: counting
+    a clustered charge twice, once on the node and again on the pod. A split line
+    carries no money of its own, so the period total has to be identical whether
+    the container grain is present or absent, and the first test asserts exactly
+    that rather than trusting the fake to have been built correctly.
+    """
+
+    def test_the_container_grain_reaches_the_table(self, engine: Engine, tenant_id: UUID) -> None:
+        ingest(engine, tenant_id)
+        with engine.connect() as connection:
+            clusters = {
+                row[0]
+                for row in connection.execute(
+                    text(
+                        "SELECT DISTINCT eks_cluster_name FROM cost_focus_daily "
+                        "WHERE tenant_id = :t AND eks_cluster_name IS NOT NULL"
+                    ),
+                    {"t": tenant_id},
+                )
+            }
+        assert clusters, "no charge was attributed to a cluster"
+        # Both EKS clusters, including the one without enhanced observability: that
+        # cluster's cost is readable even though its requests are not, and conflating
+        # the two gaps would hide a cluster that does have a cost.
+        assert clusters == {"platform-eks", "batch-eks"}
+
+    def test_a_split_line_adds_no_money_to_the_period(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        """The whole reason split cost is a breakdown rather than a charge."""
+        ingest(engine, tenant_id)
+        with engine.connect() as connection:
+            total, split_money = connection.execute(
+                text(
+                    "SELECT COALESCE(SUM(effective_cost), 0), "
+                    "COALESCE(SUM(effective_cost) FILTER "
+                    "(WHERE eks_cluster_name IS NOT NULL), 0) "
+                    "FROM cost_focus_daily WHERE tenant_id = :t"
+                ),
+                {"t": tenant_id},
+            ).one()
+        assert total > 0, "the fixture wrote no money at all, so this proves nothing"
+        assert split_money == 0, (
+            "split lines carry money of their own, which double counts every "
+            "clustered charge against the node line that already holds it"
+        )
+
+    def test_a_cluster_reconciles_to_the_charge_it_is_splitting(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        """A split that does not reconcile is a split that invented money."""
+        ingest(engine, tenant_id)
+        groups = {
+            cluster.name: [group.resource_id for group in cluster.node_groups]
+            for cluster in containers.CLUSTERS
+            if cluster.platform == "EKS"
+        }
+        with engine.connect() as connection:
+            for name, resources in groups.items():
+                parent = connection.execute(
+                    text(
+                        "SELECT COALESCE(SUM(effective_cost), 0) FROM cost_focus_daily "
+                        "WHERE tenant_id = :t AND resource_id = ANY(:r)"
+                    ),
+                    {"t": tenant_id, "r": resources},
+                ).scalar_one()
+                attributed = connection.execute(
+                    text(
+                        "SELECT COALESCE(SUM(split_cost), 0) + COALESCE(SUM(unused_cost), 0) "
+                        "FROM cost_focus_daily WHERE tenant_id = :t AND eks_cluster_name = :c"
+                    ),
+                    {"t": tenant_id, "c": name},
+                ).scalar_one()
+                assert parent > 0, f"{name} has no node charge to split"
+                assert attributed == parent, (
+                    f"{name} attributes {attributed} of a {parent} node charge. The "
+                    f"difference is money the breakdown either invented or lost."
+                )
+
+    def test_an_export_without_split_data_names_the_gap(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        """ISS-003. A configuration fault, never a cluster costing nothing."""
+        ingest(engine, tenant_id, export=FakeCostExport(split=False))
+        with engine.connect() as connection:
+            clusters = connection.execute(
+                text(
+                    "SELECT COUNT(*) FROM cost_focus_daily "
+                    "WHERE tenant_id = :t AND eks_cluster_name IS NOT NULL"
+                ),
+                {"t": tenant_id},
+            ).scalar_one()
+            gaps = [
+                (row[0], row[1], row[2])
+                for row in connection.execute(
+                    text(
+                        "SELECT error_type, detail, remediation FROM sync_error "
+                        "WHERE tenant_id = :t AND collector = 'cost_focus'"
+                    ),
+                    {"t": tenant_id},
+                )
+            ]
+        # No cluster rows at all, which is the honest state: nothing was measured.
+        assert clusters == 0
+        assert len(gaps) == 1, f"expected one named gap, got {gaps}"
+        error_type, detail, remediation = gaps[0]
+        # Misconfigured, per ADR-0026: somebody fixes this by editing a setting.
+        # NoData is the one cause that renders as zero and would be exactly wrong.
+        assert error_type == "Misconfigured"
+        assert "split cost allocation" in detail
+        assert "ISS-003" in remediation
+
+    def test_enabling_split_data_clears_the_gap(self, engine: Engine, tenant_id: UUID) -> None:
+        """A corrected setting stops complaining without anybody tidying a row."""
+        ingest(engine, tenant_id, export=FakeCostExport(split=False))
+        ingest(engine, tenant_id)
+        with engine.connect() as connection:
+            remaining = connection.execute(
+                text(
+                    "SELECT COUNT(*) FROM sync_error WHERE tenant_id = :t "
+                    "AND collector = 'cost_focus'"
+                ),
+                {"t": tenant_id},
+            ).scalar_one()
+        assert remaining == 0
+
+    def test_a_successful_run_does_not_wipe_its_own_gap(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        """The gap is reported by a run that succeeded, which is the trap here.
+
+        The worker clears every error row for a collector and scope when a unit
+        succeeds. Written under the unit's own scope key this gap would be deleted a
+        moment after it was written, by the very thing proving the read worked, and
+        the screen would show clusters costing nothing with nothing explaining why.
+        """
+        from finops_fakes.fixtures import ORGANIZATION_SCOPE
+        from finops_ingest.collectors.cost_focus import SCOPE, SPLIT_GAP_SCOPE
+
+        ingest(engine, tenant_id, export=FakeCostExport(split=False))
+        with engine.connect() as connection:
+            scope = connection.execute(
+                text(
+                    "SELECT scope_key FROM sync_error WHERE tenant_id = :t "
+                    "AND collector = 'cost_focus'"
+                ),
+                {"t": tenant_id},
+            ).scalar_one()
+        # The row is still there after the run that wrote it, and it is under a key
+        # that is neither the collector's own scope nor the organization scope the
+        # worker would clear for an organization scoped unit.
+        assert scope == SPLIT_GAP_SCOPE
+        assert scope not in {SCOPE, ORGANIZATION_SCOPE}

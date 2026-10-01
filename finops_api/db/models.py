@@ -333,6 +333,18 @@ cost_focus_daily = Table(
     Column("commitment_discount_type", Text),
     Column("commitment_discount_status", Text),
     Column("tags", JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+    # Split cost allocation, 0021. Nullable because a charge that is not a pod's
+    # charge carries none of them, which is most rows. The measures are a breakdown
+    # of money already counted in `billed_cost`, never an addition to it.
+    Column("eks_cluster_name", Text),
+    Column("eks_namespace", Text),
+    Column("eks_workload_name", Text),
+    Column("eks_workload_type", Text),
+    Column("eks_pod_name", Text),
+    Column("split_cost", Numeric(20, 10)),
+    Column("split_usage", Numeric(30, 10)),
+    Column("split_usage_ratio", Numeric(20, 10)),
+    Column("unused_cost", Numeric(20, 10)),
     postgresql_partition_by="RANGE (billing_period_start)",
 )
 

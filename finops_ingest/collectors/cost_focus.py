@@ -31,8 +31,9 @@ import json
 from collections.abc import Callable, Iterable
 from datetime import UTC, datetime
 from typing import Any
+from uuid import uuid4
 
-from sqlalchemy import text
+from sqlalchemy import column, table, text
 
 from finops_core.domain.cost import CostRecord
 from finops_core.errors import NoData
@@ -88,6 +89,17 @@ COLUMNS = (
     "commitment_discount_id",
     "commitment_discount_type",
     "commitment_discount_status",
+    # Split cost allocation, TASK-P6-002. Written as nulls where the export does
+    # not carry them, which is every export until ISS-003 is done.
+    "eks_cluster_name",
+    "eks_namespace",
+    "eks_workload_name",
+    "eks_workload_type",
+    "eks_pod_name",
+    "split_cost",
+    "split_usage",
+    "split_usage_ratio",
+    "unused_cost",
 )
 
 #: Everything except the key. A restated row changes any of these, including
@@ -110,6 +122,37 @@ UPSERT = text(
     + ", tags = EXCLUDED.tags"
 )
 
+
+#: Where the ISS-003 gap is recorded. Deliberately not the work unit's own scope
+#: key: the worker clears every error row for a collector and scope when a unit
+#: succeeds, and this gap is reported *by* a successful run, so written under the
+#: unit's key it would be deleted a moment later by the thing that proves the read
+#: worked. It is also a different subject, the export's configuration rather than
+#: this period's read, so it belongs under a key of its own.
+SPLIT_GAP_SCOPE = f"{SCOPE}:split-cost-allocation"
+
+#: `Misconfigured` rather than `NoData` or `NotOptedIn`, per ADR-0026's test: a
+#: person fixes this by editing the export's configuration, so the cause says the
+#: setting is wrong rather than that we could not read. `NoData` is the one cause
+#: that renders as zero, which is exactly what a cluster must never do.
+SPLIT_GAP = text(
+    "INSERT INTO sync_error (error_id, tenant_id, collector, scope_key, error_type, "
+    "detail, remediation, first_seen_at, last_seen_at, occurrences) "
+    "VALUES (:id, :t, :c, :s, 'Misconfigured', :d, :r, :now, :now, 1) "
+    "ON CONFLICT (tenant_id, collector, scope_key, error_type) DO UPDATE SET "
+    "detail = EXCLUDED.detail, last_seen_at = EXCLUDED.last_seen_at, "
+    "occurrences = sync_error.occurrences + 1"
+)
+
+#: Built as a Core construct rather than literal SQL, the way the ledger builds its
+#: own clear, so the values are bound parameters and the statement cannot be widened
+#: by a scope key containing punctuation.
+_SYNC_ERROR = table(
+    "sync_error",
+    column("tenant_id"),
+    column("collector"),
+    column("scope_key"),
+)
 
 RETRACT = text(
     "DELETE FROM cost_focus_daily WHERE tenant_id = :tenant "
@@ -164,6 +207,7 @@ class CostFocusCollector:
         # that fails if these are swapped.
         written = self._write(context, rows)
         removed = self._retract(context, period)
+        self._record_split_gap(context)
         # In the same transaction as the rows it aggregates, so there is no
         # instant at which the daily table and the monthly one disagree.
         roll_up_period(
@@ -188,6 +232,52 @@ class CostFocusCollector:
             context.connection.execute(UPSERT, batch)
             written += len(batch)
         return written
+
+    def _record_split_gap(self, context: CollectorContext) -> None:
+        """Say so when the export carries no container grain, ISS-003.
+
+        A named gap and not an empty result. Without this, a deployment whose export
+        never had split cost allocation switched on shows clusters costing nothing,
+        which is the one thing constraint 5 forbids: a configuration fault rendered
+        as the number zero.
+
+        An export that does report the grain clears the row, so turning the setting
+        on stops the complaint without anybody tidying a table by hand.
+        """
+        # Default True, so an export that does not report its capability produces no
+        # gap. A missing answer is not evidence of a missing setting, and guessing
+        # here would put a configuration warning in front of every other provider.
+        available = bool(getattr(self._export, "split_cost_available", True))
+        now = self._clock()
+        if available:
+            context.connection.execute(
+                _SYNC_ERROR.delete().where(
+                    _SYNC_ERROR.c.tenant_id == context.unit.tenant_id,
+                    _SYNC_ERROR.c.collector == COLLECTOR,
+                    _SYNC_ERROR.c.scope_key == SPLIT_GAP_SCOPE,
+                )
+            )
+            return
+        context.connection.execute(
+            SPLIT_GAP,
+            {
+                "id": uuid4(),
+                "t": context.unit.tenant_id,
+                "c": COLLECTOR,
+                "s": SPLIT_GAP_SCOPE,
+                "d": (
+                    "the billing export carries no split cost allocation columns, so no "
+                    "charge can be attributed to a cluster, a namespace or a workload"
+                ),
+                "r": (
+                    "Enable split cost allocation data on the Data Export, then wait for "
+                    "the next billing period to publish. Until then container cost is "
+                    "unavailable rather than zero, and the container screens say so per "
+                    "cluster. ISS-003."
+                ),
+                "now": now,
+            },
+        )
 
     def _retract(self, context: CollectorContext, period: Any) -> int:
         """Remove what the provider withdrew, and nothing else.
