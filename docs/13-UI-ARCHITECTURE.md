@@ -92,6 +92,26 @@ A screen that answers none of them is a screen whose purpose has not been
 decided yet, and the navigation refusing to place it is the correct outcome
 rather than a limitation.
 
+### Collapsing it
+
+The seven groups are fixed, and the column holding them is not. Collapsing
+narrows the grid column from 232 px to 56 px, which gives the content the width
+rather than covering the navigation with it: at 1440 px the findings table goes
+from 1208 px to 1384 px and its explanation column wraps in two lines instead of
+four. On the dense screens that is the difference between reading a sentence and
+scanning a paragraph.
+
+Three properties make it correct rather than merely present.
+
+- **The navigation is `hidden`, not painted over**, so it leaves the
+  accessibility tree and the tab order together. A keyboard user never tabs
+  through links that are not on screen.
+- **There is no transition.** The motion rule permits a 120 ms opacity change
+  and nothing else, and a sliding panel is exactly the decoration it rules out.
+- **The choice is remembered per browser**, and a browser that refuses to answer
+  about stored data opens the navigation rather than rendering a shell with no
+  menu in it.
+
 ### Migration from the five flat sections
 
 `finops-web/src/shell/sections.ts` is a flat array of five strings today. Five

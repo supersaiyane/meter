@@ -81,6 +81,37 @@ body {
   top: 0;
 }
 
+/* Collapsed. The column narrows rather than the navigation being covered, so
+   the content actually gains the width. No transition: the motion rule permits
+   a 120 ms opacity change and nothing else, and a sliding panel is exactly the
+   decoration it rules out. */
+[data-testid='shell'][data-nav='collapsed'] {
+  grid-template-columns: 56px minmax(0, 1fr);
+}
+
+[data-testid='shell'][data-nav='collapsed'] > header {
+  padding: var(--space-2);
+}
+
+[data-testid='nav-toggle'] {
+  display: block;
+  width: 100%;
+  margin: 0 0 var(--space-3);
+  padding: var(--space-1) var(--space-2);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-1);
+  cursor: pointer;
+}
+
+[data-testid='nav-toggle']:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
 [data-testid='shell'] > header [data-testid='brand'] {
   font-size: var(--font-size-4);
   font-weight: 600;

@@ -254,6 +254,9 @@ meter/
 │       │                      the accent, and the faces are IBM Plex, self
 │       │                      hosted, so a column of figures is the same width
 │       │                      on every machine
+│       ├── shell/AppShell.tsx the frame. Trust strip, the page heading, and a
+│       │                      navigation column that collapses to 56 px, hidden
+│       │                      rather than covered, remembered per browser
 │       ├── shell/sections.ts  the seven navigation groups, and screenTitleFor,
 │       │                      the one place a screen's name is decided, so the
 │       │                      heading and the menu cannot disagree

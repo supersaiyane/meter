@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router';
 
 import { CoverageBanner } from '../components/CoverageBanner';
@@ -32,6 +32,19 @@ export interface AppShellProps {
   readonly now?: Date;
 }
 
+/** Which state the navigation was left in, per browser. */
+const NAV_KEY = 'meter.nav';
+
+function navWasCollapsed(): boolean {
+  try {
+    return window.localStorage.getItem(NAV_KEY) === 'collapsed';
+  } catch {
+    // Private windows and blocked site data throw on access rather than
+    // returning null. A shell that cannot read a preference still opens.
+    return false;
+  }
+}
+
 const KNOWN_CAUSES = new Set<string>([
   'AccessDenied',
   'Throttled',
@@ -44,6 +57,15 @@ export function AppShell({ children, now }: AppShellProps) {
   const meta = useAggregateMeta();
   const { pathname } = useLocation();
   const title = screenTitleFor(pathname);
+  const [navOpen, setNavOpen] = useState(() => !navWasCollapsed());
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(NAV_KEY, navOpen ? 'expanded' : 'collapsed');
+    } catch {
+      // The preference is a convenience. Losing it costs one click.
+    }
+  }, [navOpen]);
 
   useEffect(() => {
     // Every tab, bookmark and history entry said "Meter", so a reader with four
@@ -53,13 +75,36 @@ export function AppShell({ children, now }: AppShellProps) {
   }, [title]);
 
   return (
-    <div data-testid="shell" data-degraded={meta.degraded ? 'true' : 'false'}>
+    <div
+      data-testid="shell"
+      data-nav={navOpen ? 'expanded' : 'collapsed'}
+      data-degraded={meta.degraded ? 'true' : 'false'}
+    >
       <header>
+        {/* Collapsing narrows the grid column rather than painting over the
+            navigation, and the navigation is hidden rather than merely made
+            invisible, so it leaves the accessibility tree and the tab order
+            with it. There is no width transition: the motion rule permits a
+            120 ms opacity change and nothing else. */}
+        <button
+          type="button"
+          data-testid="nav-toggle"
+          aria-expanded={navOpen}
+          aria-controls="sections"
+          aria-label={navOpen ? 'Hide navigation' : 'Show navigation'}
+          onClick={() => {
+            setNavOpen((open) => !open);
+          }}
+        >
+          {navOpen ? 'Hide' : 'Menu'}
+        </button>
         {/* The product name, not the page heading. It was an h1, which meant the
             only first level heading on every screen named the product and no
             page named itself. */}
-        <p data-testid="brand">Meter</p>
-        <nav aria-label="Sections">
+        <p data-testid="brand" hidden={!navOpen}>
+          Meter
+        </p>
+        <nav id="sections" aria-label="Sections" hidden={!navOpen}>
           {GROUPS.map((group) => (
             <div key={group.label} data-testid={`group-${group.label}`}>
               <h2>{group.label}</h2>

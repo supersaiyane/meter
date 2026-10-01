@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { App } from './App';
@@ -12,6 +12,21 @@ const NEVER_ANSWERS: ApiClient = {
 function open(path: string) {
   window.history.pushState({}, '', path);
   return render(<App client={NEVER_ANSWERS} />);
+}
+
+function withStorage(
+  stub: Pick<Storage, 'getItem' | 'setItem'>,
+  run: () => void,
+): void {
+  const original = Object.getOwnPropertyDescriptor(window, 'localStorage');
+  Object.defineProperty(window, 'localStorage', { value: stub, configurable: true });
+  try {
+    run();
+  } finally {
+    if (original) {
+      Object.defineProperty(window, 'localStorage', original);
+    }
+  }
 }
 
 describe('App', () => {
@@ -56,6 +71,66 @@ describe('App', () => {
     // finding itself underneath.
     open('/governance/queries/abc-123');
     expect(screen.getByRole('heading', { level: 1, name: 'Query findings' })).toBeInTheDocument();
+  });
+
+  it('collapses the navigation, and takes it out of the tab order with it', () => {
+    open('/');
+    const toggle = screen.getByTestId('nav-toggle');
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('navigation', { name: 'Sections' })).toBeInTheDocument();
+
+    fireEvent.click(toggle);
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    // Hidden rather than painted over, so a keyboard user does not tab through
+    // links they cannot see.
+    expect(screen.queryByRole('navigation', { name: 'Sections' })).toBeNull();
+    expect(screen.getByTestId('shell')).toHaveAttribute('data-nav', 'collapsed');
+  });
+
+  it('remembers the navigation state between visits', () => {
+    // This environment supplies a localStorage with no methods on it, so a real
+    // store has to be installed to exercise the path at all. Without one the
+    // component takes its catch branch and the persistence is never tested.
+    const store = new Map<string, string>();
+    withStorage(
+      {
+        getItem: (key: string) => store.get(key) ?? null,
+        setItem: (key: string, value: string) => {
+          store.set(key, value);
+        },
+      },
+      () => {
+        open('/');
+        fireEvent.click(screen.getByTestId('nav-toggle'));
+        expect(store.get('meter.nav')).toBe('collapsed');
+
+        cleanup();
+        open('/');
+        expect(screen.getByTestId('shell')).toHaveAttribute('data-nav', 'collapsed');
+      },
+    );
+  });
+
+  it('opens the navigation anyway when storage refuses to answer', () => {
+    // Private windows and blocked site data throw on access rather than
+    // returning null. A preference that cannot be read is not a reason to
+    // render a shell with no menu in it.
+    withStorage(
+      {
+        getItem: () => {
+          throw new Error('site data is blocked');
+        },
+        setItem: () => {
+          throw new Error('site data is blocked');
+        },
+      },
+      () => {
+        open('/');
+        expect(screen.getByTestId('shell')).toHaveAttribute('data-nav', 'expanded');
+        expect(screen.getByRole('navigation', { name: 'Sections' })).toBeInTheDocument();
+      },
+    );
   });
 
   it('lands on Home, which names what each unfilled slot is waiting for', () => {
