@@ -636,7 +636,7 @@ changes:
   what: UI design specification written, closing the gap where the product honesty guarantees were enforced
     in the database and undesigned at the pixel. Component library decided against written requirements
     as ADR-0019
-  commit: pending
+  commit: d904e7d
   detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md)'
 issues:
 - id: ISS-001
