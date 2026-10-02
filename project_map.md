@@ -254,6 +254,10 @@ meter/
 │       │                      the accent, and the faces are IBM Plex, self
 │       │                      hosted, so a column of figures is the same width
 │       │                      on every machine
+│       ├── storage.ts         the one place that knows browser storage is
+│       │                      allowed to refuse. A blocked browser throws on
+│       │                      the property access, and reading the token
+│       │                      without this stopped the application starting
 │       ├── shell/AppShell.tsx the frame. Trust strip, the page heading, and a
 │       │                      navigation column that collapses to 56 px, hidden
 │       │                      rather than covered, remembered per browser

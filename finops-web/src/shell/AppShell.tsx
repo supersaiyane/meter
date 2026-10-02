@@ -6,6 +6,7 @@ import { FreshnessIndicator } from '../components/FreshnessIndicator';
 import { TypedError } from '../components/TypedError';
 import type { Cause } from '../components/provenance';
 import { useAggregateMeta } from './metaRegistry';
+import { readStored, writeStored } from '../storage';
 import { GROUPS, screenTitleFor } from './sections';
 
 /**
@@ -36,13 +37,9 @@ export interface AppShellProps {
 const NAV_KEY = 'meter.nav';
 
 function navWasCollapsed(): boolean {
-  try {
-    return window.localStorage.getItem(NAV_KEY) === 'collapsed';
-  } catch {
-    // Private windows and blocked site data throw on access rather than
-    // returning null. A shell that cannot read a preference still opens.
-    return false;
-  }
+  // Absent and unreadable are the same answer here: a shell that cannot read a
+  // preference still opens with its menu.
+  return readStored(NAV_KEY) === 'collapsed';
 }
 
 const KNOWN_CAUSES = new Set<string>([
@@ -60,11 +57,7 @@ export function AppShell({ children, now }: AppShellProps) {
   const [navOpen, setNavOpen] = useState(() => !navWasCollapsed());
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(NAV_KEY, navOpen ? 'expanded' : 'collapsed');
-    } catch {
-      // The preference is a convenience. Losing it costs one click.
-    }
+    writeStored(NAV_KEY, navOpen ? 'expanded' : 'collapsed');
   }, [navOpen]);
 
   useEffect(() => {
