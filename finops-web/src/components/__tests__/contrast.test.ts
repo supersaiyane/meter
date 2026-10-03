@@ -89,7 +89,34 @@ describe('contrast, in light and in dark', () => {
     }
   });
 
-  it('gives a failure AA against the ground it is drawn on', () => {
+  it('gives a failure AA on every ground it is actually drawn on', () => {
+    // It was only ever checked against failure-quiet, which is the one ground
+    // the trust strip does not use: the shell failures list sits on --surface,
+    // and a table cell failure sits on --surface-raised. Both were ungated.
+    for (const value of [
+      ...bothModes('--failure', '--surface'),
+      ...bothModes('--failure', '--surface-sunken'),
+      ...bothModes('--failure', '--surface-raised'),
+    ]) {
+      expect(value).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('keeps a failure separable from the body text beside it', () => {
+    // The defect this catches is not legibility, it is hierarchy, which is why
+    // every contrast check passed while the dark failure read as quieter than
+    // the sentences around it. The old dark value sat at 2.00 against body
+    // text and fails this; light is 2.26 and the current dark is 2.55.
+    //
+    // A failure that does not out shout ordinary prose is a failure a reader
+    // scrolls past, and this product's whole claim is that it says when a
+    // number is missing.
+    for (const value of bothModes('--failure', '--text')) {
+      expect(value).toBeGreaterThanOrEqual(2.2);
+    }
+  });
+
+  it('gives a failure AA against its own quiet ground', () => {
     for (const value of bothModes('--failure', '--failure-quiet')) {
       expect(value).toBeGreaterThanOrEqual(4.5);
     }

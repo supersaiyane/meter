@@ -248,6 +248,13 @@ also held to 4.5 to 1.
 **Red is never used for "expensive".** A large number is not an error. Red is
 reserved for a failure, so that when it appears it means one thing.
 
+**In dark, a failure is saturated rather than merely light.** The first dark
+value was a pale pink, and it passed every contrast check while reading as
+quieter than the near white prose beside it, which is the opposite of its job.
+Contrast against the background is legibility; contrast against the body text is
+hierarchy, and only the first was being checked. Both are now gated, the second
+at 2.2 to 1, which the old value failed at 2.00.
+
 **A state is a mark on a surface, never the surface itself.** `partial` and
 `degraded` wrap everything they qualify, so a fill behind them covers a whole
 tile on the front page and a whole page on any screen with one panel. At that

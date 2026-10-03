@@ -251,9 +251,10 @@ meter/
 │       ├── tokens.css         light and dark in one declaration, via light-dark().
 │       │                      Tokens, and the classes that carry meaning. The
 │       │                      severity ramp is warm because a blue one ended on
-│       │                      the accent, and the faces are IBM Plex, self
-│       │                      hosted, so a column of figures is the same width
-│       │                      on every machine
+│       │                      the accent, the dark failure red is saturated
+│       │                      rather than light so it outranks the prose beside
+│       │                      it, and the faces are IBM Plex, self hosted, so a
+│       │                      column of figures is the same width everywhere
 │       ├── storage.ts         the one place that knows browser storage is
 │       │                      allowed to refuse. A blocked browser throws on
 │       │                      the property access, and reading the token

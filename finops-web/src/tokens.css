@@ -34,7 +34,13 @@
 
   /* Failure is the only thing that is ever red, so that when red appears it
      means exactly one thing. A large cost is not a failure. */
-  --failure: light-dark(#a01b1b, #f08a8a);
+  /* The dark value is saturated rather than merely light. The old #f08a8a was
+     a pale pink at 43 percent saturation sitting next to near white body text,
+     so it cleared every contrast check while reading as quieter than the
+     sentences around it, which is the opposite of its job. This is the same
+     hue as the light value and carries 62 percent saturation, which separates
+     it from body text by 2.55 to 1 rather than 2.00. */
+  --failure: light-dark(#a01b1b, #fa5e5e);
   --failure-quiet: light-dark(#fbeaea, #2a1416);
   --stale: light-dark(#8a5a00, #e0b25c);
   --stale-quiet: light-dark(#fdf3e0, #2a2113);
