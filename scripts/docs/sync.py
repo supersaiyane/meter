@@ -29,11 +29,15 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent.parent
 REGISTRY = ROOT / "docs" / "registry.yaml"
 
-WARNING = (
-    "<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. "
-    "Edit the registry, then run make doc-sync. Hand edits here are overwritten "
+# Most blocks come from the registry. The task status block comes from the plan
+# files, so the warning names its own source rather than asserting a wrong one.
+WARNING_TEMPLATE = (
+    "<!-- This block is GENERATED from {source} by scripts/docs/sync.py. "
+    "Edit {source}, then run make doc-sync. Hand edits here are overwritten "
     "and make check-docs will fail. See ADR-0014. -->"
 )
+SOURCES = {"task-status": "docs/plans/"}
+DEFAULT_SOURCE = "docs/registry.yaml"
 
 
 def load() -> dict:
@@ -45,7 +49,8 @@ def replace_block(text: str, name: str, body: str) -> str:
     pattern = re.compile(
         re.escape(start) + r".*?" + re.escape(end), re.DOTALL
     )
-    block = f"{start}\n{WARNING}\n\n{body.rstrip()}\n\n{end}"
+    warning = WARNING_TEMPLATE.format(source=SOURCES.get(name, DEFAULT_SOURCE))
+    block = f"{start}\n{warning}\n\n{body.rstrip()}\n\n{end}"
     if not pattern.search(text):
         raise SystemExit(
             f"FAIL: marker '{name}' not found. Add these two lines where the "
@@ -215,6 +220,58 @@ def render_subprojects(reg: dict) -> str:
     return "\n".join(lines)
 
 
+def render_task_status(reg: dict) -> str:
+    """Task state, read from the plan files rather than copied into STATUS.md.
+
+    STATUS.md used to hand-maintain a second copy of the plan's task list. That
+    is the drift ADR-0014 exists to prevent, and it had already drifted: the
+    list still showed 31 tasks and TASK-P0-029 as not started after it was
+    done. The plan is the source, this is a view of it.
+    """
+    import re
+
+    lines = ["| Sub project | Done | Partly | Not started | Total | Plan |",
+             "| --- | --- | --- | --- | --- | --- |"]
+    detail: list[str] = []
+
+    for sub in ("P0", "P2"):
+        path = ROOT / "docs" / "plans" / f"{sub}-implementation-plan.md"
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        blocks = re.split(rf"\n### (TASK-{sub}-\d{{3}}): ", text)
+        done = partly = notstarted = 0
+        rows = []
+        for i in range(1, len(blocks), 2):
+            tid, body = blocks[i], blocks[i + 1]
+            title = body.split("\n", 1)[0].strip()
+            match = re.search(r"\| Status \| (.+?) \|", body)
+            status = match.group(1).strip() if match else "?"
+            if "Done" in status:
+                done += 1
+                rows.append((tid, title, status))
+            elif "Partly" in status:
+                partly += 1
+                rows.append((tid, title, status))
+            else:
+                notstarted += 1
+        total = done + partly + notstarted
+        lines.append(
+            f"| {sub} | {done} | {partly} | {notstarted} | {total} | "
+            f"[plan](../docs/plans/{sub}-implementation-plan.md) |"
+        )
+        if rows:
+            detail.append(f"\n**{sub}, not in the default state**\n")
+            detail.append("| Task | Status | Title |")
+            detail.append("| --- | --- | --- |")
+            for tid, title, status in rows:
+                detail.append(f"| `{tid}` | {status} | {title} |")
+
+    if not detail:
+        detail = ["", "No task has started."]
+    return "\n".join(lines + detail)
+
+
 def render_status_summary(reg: dict) -> str:
     fc = Counter(f["status"] for f in reg["features"])
     ic = Counter(i["status"] for i in reg["issues"])
@@ -274,6 +331,7 @@ TARGETS = [
     ("docs/01-ROADMAP.md", "roadmap-status", render_roadmap_status),
     ("docs/01-ROADMAP.md", "subprojects", render_subprojects),
     ("tasks/STATUS.md", "status-summary", render_status_summary),
+    ("tasks/STATUS.md", "task-status", render_task_status),
     ("tasks/ISSUES.md", "issue-register", render_issue_register),
 ]
 

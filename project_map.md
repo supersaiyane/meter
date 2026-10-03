@@ -141,6 +141,8 @@ continuous integration, not by good intentions.
 | Is the posture currently clean | `security/POSTURE.md` |
 | Which base image digest are we on | `docker/base-images.lock` |
 | Why is a vulnerability accepted | `security/policy/accepted.yaml`, and ADR-0018 |
+| How a number is rendered, and how a failure is | `docs/12-UI-DESIGN.md` |
+| Which tasks are done | `tasks/STATUS.md`, generated from the plan files |
 | How often does this data refresh | `docs/06-DATA-FRESHNESS.md` |
 | What does this script do | `scripts/README.md` |
 | How do I record what a session cost | `make dev` to start, `make stats` to report. See `README.md` |

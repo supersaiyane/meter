@@ -62,7 +62,7 @@ block is caught by `make check-docs`. See
 ## 2. Features
 
 <!-- generated:features start -->
-<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
+<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
 50 features across 8 sub projects. 20 specified, 30 planned, 0 in build, 0 delivered.
 
@@ -165,7 +165,7 @@ block is caught by `make check-docs`. See
 ## 3. Architecture decision records
 
 <!-- generated:adrs start -->
-<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
+<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
 | ID | Decision | Status | Detail |
 | --- | --- | --- | --- |
@@ -198,7 +198,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 ## 4. Change log
 
 <!-- generated:changes start -->
-<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
+<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
 | ID | Date | Type | What changed | Commit | Detail |
 | --- | --- | --- | --- | --- | --- |
@@ -232,6 +232,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0028 | 2026-08-23 | Design | P2 implementation plan written, 22 tasks in ten waves. The prototype is pinned by golden files before anything touches it | `80a0ac3` | [P2 plan](docs/plans/P2-implementation-plan.md) |
 | CHG-0029 | 2026-08-23 | Correction | TASK-P0-029 complete. Base images verified by measurement, moved to python 3.13 and nginx 1.30, digests pinned. The zero vulnerabilities policy corrected to zero fixable findings, because no Python image can meet the original | `9754a59` | [ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md) |
 | CHG-0030 | 2026-08-23 | Design | UI design specification written, closing the gap where the product honesty guarantees were enforced in the database and undesigned at the pixel. Component library decided against written requirements as ADR-0019 | `d904e7d` | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) |
+| CHG-0031 | 2026-08-23 | Process | Task status generated from the plan files rather than copied into STATUS.md, and generated blocks name their own source | `pending` | [tasks/STATUS.md](tasks/STATUS.md) |
 
 <!-- generated:changes end -->
 
@@ -240,9 +241,9 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 ## 5. Issues
 
 <!-- generated:issues start -->
-<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
+<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**69 FIXED, 34 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**70 FIXED, 34 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -339,6 +340,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-104 | MEDIUM | No accessibility position, when provenance encoded by colour alone would fail for roughly 8 percent of men, in print, and in a screenshot pasted into a ticket | FIXED | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) section 9. Provenance carried redundantly by fill, prefix and label |
 | ISS-105 | MEDIUM | No state matrix, so loading, empty, partial, stale, degraded and failed would each be improvised per screen and several would be missed | FIXED | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) section 8. Seven states, enforced by StateBoundary |
 | ISS-106 | MEDIUM | TASK-P0-029 was completed without its Status, evidence or deviation being recorded in the plan, so the plan read as though no work had been done | FIXED | Plan corrected. The deviation, that 029 created package namespaces belonging to TASK-P0-001, is now recorded rather than absorbed |
+| ISS-107 | MEDIUM | tasks/STATUS.md hand maintained a second copy of the plan task list and had drifted, showing 31 tasks and a finished task as not started | FIXED | Generated from the plan files by `scripts/docs/sync.py`. Each generated block now names its own source rather than all claiming the registry |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
@@ -359,7 +361,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 ## 6. Open questions
 
 <!-- generated:open-questions start -->
-<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
+<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
 | ID | Question | Status | Blocks | Detail |
 | --- | --- | --- | --- | --- |

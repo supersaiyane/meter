@@ -9,14 +9,14 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 ## Registers at a glance
 
 <!-- generated:status-summary start -->
-<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
+<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
 | Register | Counts |
 | --- | --- |
 | Features | 50 total, 20 specified, 0 in build, 0 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 30 recorded |
-| Issues | 69 fixed, 34 open, 0 parked |
+| Changes | 31 recorded |
+| Issues | 70 fixed, 34 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -25,8 +25,38 @@ Generated from `docs/registry.yaml`. Change a status there, then run `make doc-s
 
 ## Where the project stands right now
 
-Design phase. No application code has been written. The current gate is the
-user reviewing the P0 foundation specification.
+**P0 specification approved. P0 is in build.**
+
+No application code exists yet. What exists is a verified toolchain, base
+images pinned by digest and chosen by measurement, a corrected security policy
+with a real posture, and a designed interface.
+
+The next task is TASK-P0-001, which is partly done: the Python packages and the
+virtualenv exist because TASK-P0-029 needed them, and the editable install, the
+pytest harness and `conftest.py` do not.
+
+## Tasks
+
+<!-- generated:task-status start -->
+<!-- This block is GENERATED from docs/plans/ by scripts/docs/sync.py. Edit docs/plans/, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
+
+| Sub project | Done | Partly | Not started | Total | Plan |
+| --- | --- | --- | --- | --- | --- |
+| P0 | 1 | 1 | 33 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P2 | 0 | 0 | 22 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
+
+**P0, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P0-001` | **Partly done.** Packages and `.venv` exist, from TASK-P0-029. The editable install, `tests/conftest.py` and the pytest harness do not | create the Python workspace and quality gates |
+| `TASK-P0-029` | **Done 2026-08-23**, commit `9754a59` | establish the security tool chain and the first posture |
+
+<!-- generated:task-status end -->
+
+Read from the plan files, not maintained here. This section used to be a hand
+kept second copy of the task list, and it had already drifted: it showed 31
+tasks and TASK-P0-029 as not started after it was finished. See ADR-0014.
 
 ## Phase 0: project setup and design
 
@@ -66,45 +96,10 @@ user reviewing the P0 foundation specification.
 | `[x]` | Document the database schema and the Alembic rules | `docs/07-DATA-MODEL.md` |
 | `[x]` | Import the seven rung ladder and disqualification protocol | ADR-0013, supersedes the ladder in ADR-0011 |
 | `[x]` | Make derived documentation generated from a registry | ADR-0014, `make doc-sync`, `make session-end` |
-| `[~]` | User review of the P0 specification | Current gate. The plan is provisional until it passes |
-
-## Phase 1: P0 foundation build
-
-Not started. Every item is blocked on the specification review.
-
-The authoritative task list is `docs/plans/P0-implementation-plan.md`, which
-carries acceptance criteria, named tests, and a "do not" list per task. The
-table below is the summary view only.
-
-| | Item | Task |
-| --- | --- |
-| `[ ]` | Repository scaffold, Python packaging, linting, import linter rule, continuous integration | TASK-P0-001, 004 |
-| `[ ]` | `finops-core` domain entities and the eight ports | TASK-P0-006, 007 |
-| `[ ]` | Typed error taxonomy | TASK-P0-005 |
-| `[ ]` | `FakeProvider` implementing every port | TASK-P0-008 |
-| `[ ]` | Port contract test suite | TASK-P0-009 |
-| `[ ]` | PostgreSQL schema and migrations | TASK-P0-010 |
-| `[ ]` | Terraform: management account organization reader role | TASK-P0-013 |
-| `[ ]` | Terraform: member account StackSet for the collector role | TASK-P0-014 |
-| `[ ]` | Terraform: hub stack | TASK-P0-015, 016 |
-| `[ ]` | AWS `CredentialBroker` adapter | TASK-P0-017 |
-| `[ ]` | AWS `AccountDiscovery` adapter | TASK-P0-018, 019 |
-| `[ ]` | Ingestion framework: dispatcher, worker, run ledger, watermarks | TASK-P0-020, 021 |
-| `[ ]` | Collector: organization tree | TASK-P0-022 |
-| `[ ]` | Collector: account role health | TASK-P0-022 |
-| `[ ]` | Collector: platform self cost | TASK-P0-023 |
-| `[ ]` | Identity and entitlement ports with the local configuration provider | TASK-P0-012 |
-| `[ ]` | Scope dependency and repository guard, with the adversarial test | TASK-P0-011, 024 |
-| `[ ]` | FastAPI routes | TASK-P0-025 |
-| `[ ]` | Frontend shell and navigation | TASK-P0-002, 026 |
-| `[ ]` | Frontend: accounts screen | TASK-P0-027 |
-| `[ ]` | Frontend: organization map, tree and graph views | TASK-P0-027 |
-| `[ ]` | Frontend: ingest and freshness screen | TASK-P0-028 |
-| `[ ]` | Frontend: platform cost screen | TASK-P0-028 |
-| `[ ]` | End to end test, login through to the organization map | TASK-P0-028 |
-| `[ ]` | Security tool chain, Minimus tag verification, first zero posture | TASK-P0-029 |
-| `[ ]` | MCP server and the four P0 tools | TASK-P0-030 |
-| `[ ]` | Documentation and graph gates in the pipeline | TASK-P0-031 |
+| `[x]` | User review of the P0 specification | **Approved 2026-08-23** |
+| `[x]` | Write the P2 specification and plan | 22 tasks in ten waves |
+| `[x]` | Design the interface | `docs/12-UI-DESIGN.md`, ADR-0019. The honesty guarantees were enforced in the database and undesigned at the pixel |
+| `[x]` | TASK-P0-029, verify the base images and establish the posture | Moved to python 3.13 and nginx 1.30 by measurement. ADR-0018 corrected the threshold |
 
 ## Remaining sub projects
 
@@ -112,7 +107,7 @@ See `docs/01-ROADMAP.md` for scope. None have a specification yet.
 
 | Sub project | Status |
 | --- | --- |
-| P2 Query Cost Governance | Not started, next after P0 |
+| P2 Query Cost Governance | **Specified and planned.** Built after P0 |
 | P1 Cost Intelligence | Not started |
 | P3 Utilization and Rightsizing | Not started |
 | P4 Inventory and Topology | Not started |

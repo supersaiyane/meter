@@ -49,6 +49,9 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-08-23 | TASK-P0-029, verify the base images | Done | All four Minimus tags exist and pull anonymously. Scanning them changed two version choices and one policy. python 3.12 to 3.13 removed 3 High. nginx 1.27 to 1.30 removed 93 findings including 6 Critical. Neither move was suggested by any document, both found only by scanning. Digests pinned in `docker/base-images.lock`. Verified rather than assumed: no `/bin/sh` in the runtime, builder has python and pip, runtime is 93.9 MB | `docker/base-images.lock`, `scripts/ci/refresh_base_images.py`, `make base-images-check`. CHG-0029, commit `9754a59` |
 | 2026-08-23 | Correct the security threshold | Done | Zero vulnerabilities at any severity is undeliverable: python 3.13 carries 3 unfixable CPython findings and no rebuild helps. ADR-0018 amends it to zero findings that have a published fix. Unfixable findings need an acceptance record with a reachability argument, and where the argument can be enforced it is: `check_forbidden_imports.py` fails the build if anyone imports stringprep, poplib or urllib.request | `docs/adr/ADR-0018-zero-fixable-not-zero-findings.md`, `security/policy/accepted.yaml`, `docs/05-SECURITY.md`. ISS-097 to ISS-101 |
 | 2026-08-23 | First real security posture generated | Done | Zero fixable findings, three accepted as unfixable, gitleaks found no leaks. `security/POSTURE.md` is now generated from a scan rather than a placeholder | `security/POSTURE.md`, `security/reports/latest/` |
+| 2026-08-23 | Correct the plan bookkeeping | Done | TASK-P0-029 was finished and the plan still read `Not started` for every task including that one. Status, evidence and the deviation now recorded. The deviation: 029 created the Python packages and the virtualenv, which belong to TASK-P0-001, so 001 is partly done | `docs/plans/P0-implementation-plan.md`. ISS-106 |
+| 2026-08-23 | Design the interface | Done | The data model had 90 lines of constraints and the interface had 18 lines naming screens. Every honesty guarantee is enforced by a constraint and delivered by a pixel, so the constraint work was one careless screen away from worthless. `docs/12-UI-DESIGN.md`, 352 lines. The mechanism is the `Figure` component: provenance and freshness are required props, nothing else formats a number, so a screen that forgets provenance cannot be built | `docs/12-UI-DESIGN.md`, ADR-0019, FEAT-050, TASK-P0-035. ISS-102 to ISS-105. CHG-0030, commit `d904e7d` |
+| 2026-08-23 | Stop STATUS.md keeping a second copy of the task list | Done | It hand maintained a copy of the plan's tasks and had already drifted, still showing 31 tasks and TASK-P0-029 as not started after it was finished. The task table is now generated from the plan files, and each generated block names its own source rather than all of them claiming the registry | `tasks/STATUS.md`, `scripts/docs/sync.py` |
 
 ## Next action
 
@@ -72,7 +75,25 @@ P0.
 | Where a change gets recorded | `docs/03-CHANGE-CONTROL.md` |
 | Rules binding every change | `CLAUDE.md` |
 
-### Resume vector, as of 2026-09-29
+### Resume vector, as of 2026-10-02
+
+| What | Where |
+| --- | --- |
+| Git position | branch `main`, 64 commits, working tree clean |
+| **P0 spec** | **APPROVED.** In build |
+| **Tasks done** | TASK-P0-029. TASK-P0-001 partly. **1 of 35** |
+| **Next** | Finish TASK-P0-001: editable install, `tests/conftest.py`, pytest harness. Packages and `.venv` already exist |
+| Then | 002 frontend workspace, 003 index checker, 034 settings and flags, 031 doc gates, 004 CI |
+| Runs in parallel | TASK-P0-035, the component layer, needs only 002. Not queued behind the backend |
+| Plan sizes | P0 35 tasks, P2 22 tasks. Both plans written |
+| Interpreter | python3.13, pinned to match the runtime image. Doc scripts run from `.venv` |
+| Security posture | Zero fixable findings. 3 accepted unfixable, review 2026-11-21 |
+| Design system | `docs/12-UI-DESIGN.md`. No screen formats a number, everything goes through `Figure` |
+| Needs a person | ISS-087 owners for flags, CODEOWNERS and `accepted.yaml`. ISS-078 retention floor, before TASK-P0-010 |
+| Check everything | `make check-docs && make check-writing` |
+| Next audit due | P0 boundary, scope `code` |
+
+### Earlier resume vector, as of 2026-09-29
 
 | What | Where |
 | --- | --- |

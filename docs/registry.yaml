@@ -638,6 +638,13 @@ changes:
     as ADR-0019
   commit: d904e7d
   detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md)'
+- id: CHG-0031
+  date: '2026-08-23'
+  type: Process
+  what: Task status generated from the plan files rather than copied into STATUS.md, and generated blocks
+    name their own source
+  commit: pending
+  detail: '[tasks/STATUS.md](tasks/STATUS.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1232,6 +1239,13 @@ issues:
     so the plan read as though no work had been done
   detail: Plan corrected. The deviation, that 029 created package namespaces belonging to TASK-P0-001,
     is now recorded rather than absorbed
+- id: ISS-107
+  severity: MEDIUM
+  status: FIXED
+  summary: tasks/STATUS.md hand maintained a second copy of the plan task list and had drifted, showing
+    31 tasks and a finished task as not started
+  detail: Generated from the plan files by `scripts/docs/sync.py`. Each generated block now names its
+    own source rather than all claiming the registry
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS

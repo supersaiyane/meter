@@ -34,7 +34,7 @@ P0 Foundation
 ## Sub project status
 
 <!-- generated:roadmap-status start -->
-<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
+<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
 | ID | Name | Features | Specified | Planned |
 | --- | --- | --- | --- | --- |
@@ -96,7 +96,7 @@ rather than that one saving happened.
 ## Sub projects
 
 <!-- generated:subprojects start -->
-<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit the registry, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
+<!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
 | ID | Name | Status | Features | Spec | Plan | Depends on |
 | --- | --- | --- | --- | --- | --- | --- |
