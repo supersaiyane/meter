@@ -52,22 +52,22 @@ export const REMEDIATION = {
   AccessDenied:
     'The hub role may not invoke this model. Add it to assistant_model_ids in the hub stack, ' +
     'then ask again.',
-  Throttled: 'Bedrock throttled the request. Ask again in a minute.',
+  Throttled: 'The model service throttled the request. Ask again in a minute.',
   NotOptedIn:
-    'Name a model in METER_ASSISTANT_MODEL_ID, enable access to it in Bedrock for the hub ' +
-    'account, and grant it through assistant_model_ids in the hub stack.',
+    'Name a model in METER_ASSISTANT_MODEL_ID, enable access to it for the hub account, ' +
+    'and grant it through assistant_model_ids in the hub stack.',
   NoData:
     'The tools returned nothing to answer from. Ask about a period or a scope that has been ' +
     'collected.',
   Unreachable:
-    "Bedrock did not answer. Ask again, and if it keeps failing, check Bedrock's health in the " +
-    "hub account's region.",
+    "The model service did not answer. Ask again, and if it keeps failing, check the " +
+    "service's health in the hub account's region.",
   SchemaDrift:
     'The answer could not be checked against the tool results, so it is not shown. Ask again, ' +
     'or ask a narrower question.',
   Misconfigured:
-    'METER_ASSISTANT_MODEL_ID names a model Bedrock does not offer to the hub account. Correct ' +
-    'the setting.',
+    'METER_ASSISTANT_MODEL_ID names a model the hub account is not offered. Correct the ' +
+    'setting.',
 } as const;
 
 /**
