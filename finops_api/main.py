@@ -253,6 +253,43 @@ def p5_routers() -> tuple[APIRouter, ...]:
     return (quotas.router,)
 
 
+def p7_routers() -> tuple[APIRouter, ...]:
+    """The assistant routes, from the P7 spec's section 8 table.
+
+    Two of the four. The digests and the redactions each arrive with the table they read,
+    TASK-P7-012 and TASK-P7-013, so no route here answers over a table that does not exist.
+    """
+    from finops_api.routes import assistant
+
+    return (assistant.router,)
+
+
+def _assistant(app: FastAPI, settings: Settings, model: Any) -> Any:
+    """The assistant this application answers with, or None where no model was given.
+
+    The toolbox is built here, around this application, so a tool call goes back through
+    the same routes, dependency and guard as the screens, as the asker. ADR-0009.
+    """
+    if model is None:
+        return None
+    if not settings.assistant_model_id.strip():
+        raise RuntimeError(
+            "a model was given with no METER_ASSISTANT_MODEL_ID, so no exchange could record "
+            "what it was sent to"
+        )
+    from finops_api.assistant import Assistant
+    from finops_api.toolbox import ApiToolbox, InProcessTransport
+
+    return Assistant(
+        model=model,
+        model_id=settings.assistant_model_id,
+        toolbox_for=lambda token: ApiToolbox(InProcessTransport(app), token),
+        input_per_million=settings.assistant_input_usd_per_million_tokens,
+        output_per_million=settings.assistant_output_usd_per_million_tokens,
+        monthly_token_budget=settings.assistant_monthly_token_budget,
+    )
+
+
 def create_app(
     engine: Engine,
     entitlements: Any,
@@ -264,6 +301,9 @@ def create_app(
     #: is not a failure: OPEN-05 is unanswered and the lifecycle works without
     #: one, carrying no ticket reference.
     tickets: Any = None,
+    #: The model behind the assistant. None is the default and is not a failure: no model
+    #: has been chosen, OPEN-10, and every question then says the assistant is not enabled.
+    language_model: Any = None,
     extra_routers: tuple[APIRouter, ...] = (),
     include_p0_routes: bool = True,
 ) -> FastAPI:
@@ -284,6 +324,7 @@ def create_app(
     # No surface adapter can write today anyway, ISS-166, so a default that
     # silently reported success would be the worst of both.
     app.state.remediation_control = remediation_control
+    app.state.assistant = _assistant(app, resolved, language_model)
     app.add_middleware(RequestIdMiddleware)
     routers = (
         build_router(),
@@ -293,6 +334,7 @@ def create_app(
         *(p2_routers() if include_p0_routes else ()),
         *(p4_routers() if include_p0_routes else ()),
         *(p5_routers() if include_p0_routes else ()),
+        *(p7_routers() if include_p0_routes else ()),
         *extra_routers,
     )
     # Checked before anything is registered, so a broken contract fails at
@@ -331,6 +373,7 @@ def bootstrap() -> FastAPI:
     from finops_api.identity.local_config import LocalConfigIdentityProvider
     from finops_api.identity.session import SessionSigner
     from finops_core.constants import LOCAL_IDENTITY_PROVIDER
+    from finops_providers.aws.language_model import language_model
 
     settings = load_settings()
     if settings.identity_provider != LOCAL_IDENTITY_PROVIDER:
@@ -349,4 +392,5 @@ def bootstrap() -> FastAPI:
         entitlements=provider,
         signer=SessionSigner(settings.session_signing_key, ttl_hours=settings.session_ttl_hours),
         settings=settings,
+        language_model=language_model(settings),
     )

@@ -336,7 +336,7 @@ it lives.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec sections 6, 8 and 9, constraint 3 |
 | Delivers | Part of FEAT-042 |
 | Depends on | TASK-P7-007 |
@@ -346,14 +346,21 @@ it lives.
 
 **Acceptance criteria.**
 
-- [ ] A test reads each table out of scope and is refused, before a route exists
-- [ ] `assistant_exchange` is scoped by principal as well as by tenant, and a test asserts
+- [x] A test reads each table out of scope and is refused, before a route exists
+- [x] `assistant_exchange` is scoped by principal as well as by tenant, and a test asserts
       one person cannot read another's questions. This is the first table in the product
       whose row belongs to a person rather than to an account, so it needs a decision
       recorded rather than an existing shape reused
-- [ ] Answer, refusal and failure render as three visibly different things
-- [ ] Every route returns the envelope
-- [ ] `POST /assistant/ask` is the only write, and it writes one row
+- [x] Answer, refusal and failure render as three visibly different things
+- [x] Every route returns the envelope
+- [x] `POST /assistant/ask` is the only write, and it writes one row
+
+**As built, 2026-10-04.** `assistant_exchange` is in `SCOPED_TABLES` under a new rule,
+`ByPrincipal`, ADR-0029, and its two routes, ask and the exchange list, are here. The
+other two tables do not exist until TASK-P7-012 and TASK-P7-013 create them, so each of
+those tasks adds its own table's guard entry, its out of scope test and its route, in
+that order. The tool calls go back through the application in process, as the asker,
+and ISS-225 records the bound that puts on questions running at once.
 
 ---
 

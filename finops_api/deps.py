@@ -16,6 +16,7 @@ least visible afterwards.
 from __future__ import annotations
 
 from collections.abc import Iterator
+from dataclasses import replace
 from functools import lru_cache
 from typing import Any
 from uuid import uuid4
@@ -100,9 +101,13 @@ def get_principal(
 
 
 def get_scope(request: Request, principal: Principal = Depends(get_principal)) -> Scope:
-    """The scope this request may read. Resolved, never supplied by the caller."""
+    """The scope this request may read. Resolved, never supplied by the caller.
+
+    Stamped with the authenticated principal, ADR-0029, so a row that belongs to a person
+    is confined to that person by the guard rather than by every route remembering to.
+    """
     entitlement: Entitlement = request.app.state.entitlements.resolve(principal)
-    return entitlement.scope
+    return replace(entitlement.scope, principal_id=principal.principal_id)
 
 
 def get_access_context(request_id: str = Depends(get_request_id)) -> AccessContext:

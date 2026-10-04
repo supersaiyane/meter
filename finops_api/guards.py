@@ -81,10 +81,24 @@ class PayerWide:
     """
 
 
+@dataclass(frozen=True)
+class ByPrincipal:
+    """The row belongs to a person, and only that person reads it. ADR-0029.
+
+    The first rule about a person rather than an account. A global scope does not widen
+    it, because reading the whole estate's bill is not permission to read a colleague's
+    questions, and a scope carrying no principal reads nothing, the fail closed case.
+    """
+
+    principal_column: str
+
+
 #: Tables holding tenant data, and how the account a row belongs to is found.
 #: `None` means the table carries no account identifier and none can be reached
 #: from it, so the tenant filter is the whole of its scoping.
-SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | None] = {
+SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | None] = {
+    # P7, ADR-0029. A question is its asker's own words, readable by nobody else.
+    "assistant_exchange": ByPrincipal("principal_id"),
     "cloud_account": ByAccount("account_id", "provider"),
     "org_node": None,
     "ingest_run": None,
@@ -257,6 +271,14 @@ def scope_predicate(table: Table, scope: Scope) -> ColumnElement[bool]:
         # to a narrowed caller.
         if not scope.is_global:
             clauses.append(false())
+        return and_(*clauses)
+    if isinstance(rule, ByPrincipal):
+        # Before the global check, ADR-0029. An organization wide reader is still one
+        # person, and reads that person's rows and nobody else's.
+        if scope.principal_id is None:
+            clauses.append(false())
+        else:
+            clauses.append(table.c[rule.principal_column] == scope.principal_id)
         return and_(*clauses)
     if rule is None or scope.is_global:
         return and_(*clauses)

@@ -21,6 +21,9 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any, Protocol
 
+import anyio.from_thread
+import httpx
+
 from finops_api.deps import AUTHORIZATION, BEARER
 from finops_api.tools import TOOLS, ToolSpec
 from finops_core.ports.llm import ToolSchema
@@ -77,3 +80,34 @@ class ApiToolbox:
             provenance=spec.provenance,
             screen=spec.screen,
         )
+
+
+#: The host an in process request is addressed to. Never resolved: the request goes to
+#: the application object directly and no network is involved.
+IN_PROCESS_HOST = "http://meter.in-process"
+
+
+class InProcessTransport:
+    """The API calling its own routes as the asker, without a network.
+
+    The assistant runs inside the API process, so its tool calls go back through the same
+    application object, and get the same middleware, the same scope dependency, the same
+    guard and the same audit row a call over the network would. There is no URL to
+    configure and no hop out to a load balancer and back in.
+
+    Called from a synchronous route, which runs in a worker thread, so the request is handed
+    to that thread's event loop and waited for. Each tool call therefore holds a second
+    worker thread while the question holds the first, which bounds how many questions can
+    run at once. ISS-225 records the bound and when it starts to matter.
+    """
+
+    def __init__(self, app: Any) -> None:
+        self._app = app
+
+    def get(self, url: str, *, headers: dict[str, str], params: dict[str, Any]) -> httpx.Response:
+        async def fetch() -> httpx.Response:
+            transport = httpx.ASGITransport(app=self._app)
+            async with httpx.AsyncClient(transport=transport, base_url=IN_PROCESS_HOST) as client:
+                return await client.get(url, headers=headers, params=params)
+
+        return anyio.from_thread.run(fetch)

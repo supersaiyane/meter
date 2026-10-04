@@ -1,7 +1,7 @@
 """The assistant's exchanges: the one row a question writes, and what a month spent.
 
-FEAT-038, TASK-P7-007 and P7 spec section 6.1. Neither operation here reads anybody's
-rows back.
+FEAT-038, TASK-P7-007, TASK-P7-010 and P7 spec section 6.1. Three operations, and only one
+reads rows back: a person's own, through the guard.
 
 **Recording** writes one `assistant_exchange` row per question, whatever came back. The
 three outcomes go to the three sets of columns 0023 holds apart, and the citations and the
@@ -10,24 +10,59 @@ it traced to the call behind it.
 
 **What a month spent** is a tenant wide sum, read for the budget, and it is the one read of
 this table that crosses people. It returns a number and never a row. The budget is per
-tenant, so it has to count everybody's spend, and a count is all it needs. Reading one
-person's own questions is scoped by principal and arrives with the routes, TASK-P7-010.
+tenant, so it has to count everybody's spend, and a count is all it needs.
+
+**Reading** is `ExchangeRepository`, and it reads one person's own questions and nobody
+else's, by the `ByPrincipal` rule in the guard, ADR-0029.
 """
 
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from datetime import datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, ClassVar, cast
 from uuid import UUID, uuid4
 
-from sqlalchemy import func, select
+from sqlalchemy import Row, Select, Table, func, select
 from sqlalchemy.engine import Connection
 
 from finops_api.db import models
+from finops_api.db.repositories.base import ScopedRepository
 from finops_core.domain.insight import Answer, Citation, Outcome, Refusal
+from finops_core.domain.tenant import Scope
 from finops_query.insight import Exchange, ToolCallRecord
+
+
+class ExchangeRepository(ScopedRepository):
+    """One person's own exchanges, read through the guard. ADR-0029.
+
+    The guard confines every read here to the principal the scope was resolved for, so a
+    route that forgot to filter by person still could not show anyone else's questions.
+    """
+
+    table: ClassVar[Table] = models.assistant_exchange
+    resource: ClassVar[str] = "assistant_exchange"
+
+    def exchanges(self, scope: Scope, limit: int) -> Sequence[Row[tuple[object, ...]]]:
+        """The asker's exchanges, newest first."""
+        statement = self.scoped_select(scope).order_by(self.table.c.asked_at.desc()).limit(limit)
+        return self.fetch(scope, statement)
+
+    def count(self, scope: Scope) -> int:
+        """How many the asker has, so a list cut at its limit says it was cut."""
+        # The projection narrows the select's type and `fetch` is declared for the general
+        # one, so it is cast here, as the cost repository's `_fetch` does for its counts.
+        projected = self.scoped_select(scope).with_only_columns(func.count())
+        statement = cast("Select[tuple[object, ...]]", projected)
+        return int(self.fetch(scope, statement)[0][0])
+
+    def exchange(self, scope: Scope, exchange_id: UUID) -> Row[tuple[object, ...]] | None:
+        """One of the asker's exchanges, or None, which is also what another person's is."""
+        statement = self.scoped_select(scope).where(self.table.c.exchange_id == exchange_id)
+        rows = self.fetch(scope, statement)
+        return rows[0] if rows else None
 
 
 def tokens_spent(connection: Connection, tenant_id: UUID, since: datetime) -> int:
