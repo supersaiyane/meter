@@ -643,7 +643,7 @@ changes:
   type: Process
   what: Task status generated from the plan files rather than copied into STATUS.md, and generated blocks
     name their own source
-  commit: pending
+  commit: d20d35c
   detail: '[tasks/STATUS.md](tasks/STATUS.md)'
 issues:
 - id: ISS-001
