@@ -15,7 +15,7 @@ import pytest
 
 from finops_api.toolbox import ApiToolbox
 from finops_api.tools import TOOLS_BY_NAME
-from finops_core.domain.insight import Provenance
+from finops_core.domain.insight import SCREEN_PATH, Provenance
 from finops_query.insight import ToolUnavailableError
 
 TOKEN = "a-session-token"
@@ -100,3 +100,11 @@ def test_every_tool_is_offered_with_no_arguments() -> None:
     schemas = tools.schemas()
     assert {schema.name for schema in schemas} == set(TOOLS_BY_NAME)
     assert all(schema.parameters == {"type": "object", "properties": {}} for schema in schemas)
+
+
+def test_every_screen_a_tool_names_is_one_a_refusal_will_link_to() -> None:
+    """A refusal carries its tool's screen, and `Refusal` refuses anything looser than a plain
+    path. A tool naming one that does not match fails here, not when somebody is refused."""
+    named = {spec.name: spec.screen for spec in TOOLS_BY_NAME.values() if spec.screen}
+    assert named, "no tool names a screen, so this proves nothing"
+    assert {name: path for name, path in named.items() if not SCREEN_PATH.fullmatch(path)} == {}

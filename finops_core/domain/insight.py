@@ -42,6 +42,12 @@ from finops_core.errors import CollectionError
 PLACEHOLDER = re.compile(r"\{\{([a-z][a-z0-9_]{0,31})\}\}")
 PLACEHOLDER_NAME = re.compile(r"[a-z][a-z0-9_]{0,31}")
 
+#: A screen a refusal may point to: one or more lowercase segments of letters, digits and
+#: hyphens. Strict on purpose, because the screen becomes a link. The check it replaced,
+#: a leading slash and no space, admitted `/\host` and a slash followed by a tab, and a
+#: browser resolves both to another site.
+SCREEN_PATH = re.compile(r"(?:/[a-z0-9][a-z0-9-]*)+")
+
 #: Figures written as words. Plurals are caught by stripping one trailing "s".
 SPELLED_FIGURES = frozenset(
     {
@@ -269,7 +275,7 @@ class Refusal:
                 f"a refusal's reason is a sentence of at least {REASON_MIN_LENGTH} characters, "
                 f"because one that says only 'cannot answer' teaches the reader nothing"
             )
-        if self.screen is not None and (not self.screen.startswith("/") or " " in self.screen):
+        if self.screen is not None and not SCREEN_PATH.fullmatch(self.screen):
             raise ValueError(f"{self.screen!r} is not a screen path")
 
 

@@ -193,6 +193,30 @@ def test_a_refusal_names_the_kind_of_thing_missing_and_where_it_would_show() -> 
     assert refusal.screen == "/cost/containers"
 
 
+@pytest.mark.parametrize(
+    "screen",
+    [
+        "//evil.example",
+        "/\\evil.example",
+        "/\t/evil.example",
+        "/\n/evil.example",
+        "javascript:alert(1)",
+        "https://evil.example/cost",
+        "",
+        "/",
+        "/cost/",
+        "/Cost",
+        "/cost?next=//evil.example",
+        "/cost#top",
+    ],
+)
+def test_a_refusal_links_only_to_a_plain_screen_path(screen: str) -> None:
+    """The screen becomes a link, and every one of these reaches another site or no screen.
+    Found by review on 2026-10-04: the earlier check admitted the first four."""
+    with pytest.raises(ValueError, match="screen path"):
+        Refusal(gap=Gap.FIGURE, reason="Split cost allocation is off.", screen=screen)
+
+
 def test_answer_and_refusal_are_two_types_and_neither_holds_the_other() -> None:
     """Not one type with a nullable field. The plan's fifth criterion."""
     answer_fields = {item.name for item in fields(Answer)}
