@@ -271,7 +271,7 @@ exhausted.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 2, FEAT-039 |
 | Delivers | FEAT-039 |
 | Depends on | TASK-P7-006, P4 delivered |
@@ -289,13 +289,13 @@ caused.
 
 **Acceptance criteria.**
 
-- [ ] The anomaly, its severity and its figures come from `cost_anomaly` unchanged. The
+- [x] The anomaly, its severity and its figures come from `cost_anomaly` unchanged. The
       model narrates and computes nothing
-- [ ] Every correlated event carries its source, Config or CloudTrail or a deploy
+- [x] Every correlated event carries its source, Config or CloudTrail or a deploy
       timestamp, and its distance in time from the change
-- [ ] The prose says correlated, never caused, asserted by a test reading the text
-- [ ] An anomaly with no correlating event gets a narration saying so, not a speculation
-- [ ] A slice whose Config history could not be read says that, rather than reporting no
+- [x] The prose says correlated, never caused, asserted by a test reading the text
+- [x] An anomaly with no correlating event gets a narration saying so, not a speculation
+- [x] A slice whose Config history could not be read says that, rather than reporting no
       events, which is the same distinction the topology coverage makes
 
 ---
