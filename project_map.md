@@ -31,8 +31,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 23 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 22 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 135 | test_*.py under tests/ |
-| Test functions | 1899 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 136 | test_*.py under tests/ |
+| Test functions | 1902 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.

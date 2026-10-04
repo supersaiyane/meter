@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-62 features across 8 sub projects. 17 specified, 9 planned, 10 in build, 26 delivered.
+62 features across 8 sub projects. 14 specified, 9 planned, 11 in build, 28 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -175,9 +175,9 @@ block is caught by `make check-docs`. See
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-035](docs/features/FEAT-035-eks-split-cost-allocation.md) | EKS pod level cost from split cost allocation data | Specified | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.1, [P6 plan](docs/plans/P6-implementation-plan.md) |
-| [FEAT-036](docs/features/FEAT-036-k8s-in-cluster-telemetry.md) | In cluster telemetry, requested versus used | Specified | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.4, [P6 plan](docs/plans/P6-implementation-plan.md) |
-| [FEAT-037](docs/features/FEAT-037-ecs-task-utilization.md) | ECS task and Fargate utilization, snapped to valid sizes | Specified | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.5, [P6 plan](docs/plans/P6-implementation-plan.md) |
+| [FEAT-035](docs/features/FEAT-035-eks-split-cost-allocation.md) | EKS pod level cost from split cost allocation data | Delivered | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.1, [P6 plan](docs/plans/P6-implementation-plan.md) |
+| [FEAT-036](docs/features/FEAT-036-k8s-in-cluster-telemetry.md) | In cluster telemetry, requested versus used | Delivered | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.4, [P6 plan](docs/plans/P6-implementation-plan.md) |
+| [FEAT-037](docs/features/FEAT-037-ecs-task-utilization.md) | ECS task and Fargate utilization, snapped to valid sizes | In build | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.5, [P6 plan](docs/plans/P6-implementation-plan.md) |
 | [FEAT-047](docs/features/FEAT-047-node-fleet-optimisation.md) | Cluster node fleet optimisation as an integer linear program | Specified | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 3, [P6 plan](docs/plans/P6-implementation-plan.md) |
 | [FEAT-048](docs/features/FEAT-048-predictive-replica-forecasting.md) | Predictive replica forecasting, under the four ADR-0015 conditions | Specified | [P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 14, [P6 plan](docs/plans/P6-implementation-plan.md) |
 | [FEAT-059](docs/features/FEAT-059-application-layer.md) | An application layer on the topology graph | Planned | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
@@ -351,6 +351,8 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0103 | 2026-09-28 | Correction | ISS-002, ISS-003 and ISS-004 registered, having been cited as issue ids by ten documents since 2026-08-23 while existing in no register | `pending` | The External dependencies table in tasks/STATUS.md says its rows are tracked in tasks/ISSUES.md and these three were not, so a reader chasing ISS-003 from the P6 plan, which names it as that sub project blocker, found nothing |
 | CHG-0104 | 2026-09-28 | Correction | Ten citations of FEAT-041 corrected to FEAT-029. Realized savings verification is FEAT-029, and FEAT-041 is P7 per team digests, which is not built | `pending` | Across project_map.md, WasteScreen.tsx, ADR-0025, ADR-0027, the P1 plan, FEAT-055, FEAT-058 and ISS-208. The two features are one digit apart in a project that also has an ISS-029 about the same subject, which is how it survived. Found while planning P7, whose own features include the number being misused |
 | CHG-0105 | 2026-09-28 | Process | A check that every FEAT, ISS, ADR, OPEN and CHG identifier cited anywhere resolves to a register entry, wired into make check-docs | `pending` | scripts/docs/check_identifiers.py. Falsified by dropping ISS-002, ISS-003 and ISS-004 from the register, which surfaced 65 citations across 25 files in markdown, Python, Terraform and YAML, the state the repository was actually in before 2026-09-28. It catches an identifier that resolves to nothing and cannot catch one that resolves correctly and means something else, which was the FEAT-041 half of CHG-0104, and the docstring says so. Its own test file is the single exemption, because it has to cite unresolvable ids to watch the check fail |
+| CHG-0106 | 2026-10-04 | Feature | P6 containers delivered in its first cut, twelve tasks, three screens in three existing groups | `pending` | Pod cost from split cost allocation lines that carry no money of their own, request against use as two figures, container sizing composed onto P3's memory rule and written into P3's table, Fargate snapped up to the orderable matrix with the saving taken from the snapped size, and forecast as a third provenance with guards that nothing produces one. FEAT-035 and FEAT-036 Delivered, FEAT-037 In build because the adapter reads no ECS, ISS-224 |
+| CHG-0107 | 2026-10-04 | Correction | The fake bill's drift was a per month sawtooth, and a cause given for it on 2026-10-01 was wrong | `pending` | ISS-222. The realized savings flip blamed on P6 split cost lines reproduces on main without them; the date had rolled into October the same day. Drift is now monotonic and anchored to the estate clock, the misattribution is corrected in two code comments and the lesson, and the first of month emptiness it was confused with is ISS-221, separate and still open for the make seed half |
 
 <!-- generated:changes end -->
 

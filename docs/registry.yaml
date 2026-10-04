@@ -51,8 +51,10 @@ subprojects:
   depends_on: P0, P4
 - id: P6
   name: Containers
-  status: Not started. Specified and planned as a first cut of 12 tasks, revised 2026-09-28
-    against what P4 and P5 actually built. Blocked on ISS-003 for FEAT-035 only
+  status: Delivered, 12 of 12 tasks in its first cut. Cost by cluster, namespace and
+    workload, request against use, sizing into P3's table, Fargate snapped to sizes that
+    can be ordered, and forecast as a third provenance before anything forecasts. FEAT-037
+    is In build because the AWS adapter reads EKS and never ECS, ISS-224
   spec: specs/2026-09-20-p6-containers-design.md
   plan: plans/P6-implementation-plan.md
   depends_on: P0, P1
@@ -271,19 +273,19 @@ features:
 - id: FEAT-035
   name: EKS pod level cost from split cost allocation data
   subproject: P6
-  status: Specified
+  status: Delivered
   detail: '[P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.1, [P6 plan](docs/plans/P6-implementation-plan.md)'
   doc: docs/features/FEAT-035-eks-split-cost-allocation.md
 - id: FEAT-036
   name: In cluster telemetry, requested versus used
   subproject: P6
-  status: Specified
+  status: Delivered
   detail: '[P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.4, [P6 plan](docs/plans/P6-implementation-plan.md)'
   doc: docs/features/FEAT-036-k8s-in-cluster-telemetry.md
 - id: FEAT-037
   name: ECS task and Fargate utilization, snapped to valid sizes
   subproject: P6
-  status: Specified
+  status: In build
   detail: '[P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.5, [P6 plan](docs/plans/P6-implementation-plan.md)'
   doc: docs/features/FEAT-037-ecs-task-utilization.md
 - id: FEAT-038
@@ -1401,6 +1403,28 @@ changes:
     correctly and means something else, which was the FEAT-041 half of CHG-0104, and the
     docstring says so. Its own test file is the single exemption, because it has to cite
     unresolvable ids to watch the check fail'
+- id: CHG-0106
+  date: 2026-10-04
+  type: Feature
+  what: P6 containers delivered in its first cut, twelve tasks, three screens in three
+    existing groups
+  commit: pending
+  detail: 'Pod cost from split cost allocation lines that carry no money of their own, request
+    against use as two figures, container sizing composed onto P3''s memory rule and written
+    into P3''s table, Fargate snapped up to the orderable matrix with the saving taken from the
+    snapped size, and forecast as a third provenance with guards that nothing produces one. FEAT-035
+    and FEAT-036 Delivered, FEAT-037 In build because the adapter reads no ECS, ISS-224'
+- id: CHG-0107
+  date: 2026-10-04
+  type: Correction
+  what: The fake bill's drift was a per month sawtooth, and a cause given for it on 2026-10-01
+    was wrong
+  commit: pending
+  detail: 'ISS-222. The realized savings flip blamed on P6 split cost lines reproduces on main
+    without them; the date had rolled into October the same day. Drift is now monotonic and
+    anchored to the estate clock, the misattribution is corrected in two code comments and the
+    lesson, and the first of month emptiness it was confused with is ISS-221, separate and
+    still open for the make seed half'
 issues:
 - id: ISS-189
   severity: LOW

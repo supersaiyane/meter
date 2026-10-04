@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P6 |
-| Status | Specified |
+| Status | In build |
 | Specification | [P6 spec](../specs/2026-09-20-p6-containers-design.md), section 5.5 |
 | Tasks | TASK-P6-008 |
 | Refresh cadence | 24 hours |
@@ -21,6 +21,15 @@ Fargate sizing is discrete. A recommendation that names an impossible size will 
 Container Insights supplies the metrics.
 
 ## How it works
+
+**As built, 2026-10-04, TASK-P6-008, and why the status is In build.** The task
+size matrix is a table in `finops_query/containers.py`, every recommendation is one of its
+combinations, snapping is always up, and the saving is computed from the snapped size at
+Fargate's published rate, per task. All of that is built and tested against the fake
+estate. It produces nothing against a real account yet, because the AWS adapter reads EKS
+through Container Insights and has no ECS path at all, ISS-224. That is a missing reader
+rather than an unverified one, which is why this feature is In build while FEAT-035 and
+FEAT-036 are Delivered with the usual ISS-002 caveat.
 
 Container Insights supplies task level reservation against utilization. The sizing
 uses the same two rules as FEAT-036, and then does one thing more.

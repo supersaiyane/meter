@@ -398,7 +398,7 @@ different people. The two figures stay two figures.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec section 14, ADR-0015 condition 4 |
 | Delivers | Nothing visible. It makes the second cut possible |
 | Depends on | TASK-P6-011 |

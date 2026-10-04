@@ -83,6 +83,7 @@
     "finops-web/dist-types/src/components/__tests__/WorldMap.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/axe.d.ts",
     "finops-web/dist-types/src/components/__tests__/contrast.test.d.ts",
+    "finops-web/dist-types/src/components/__tests__/forecastUnproduced.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/orgNodes.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/shell.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/surface.test.d.ts",
@@ -250,6 +251,7 @@
     "finops-web/src/components/__tests__/WorldMap.test.tsx",
     "finops-web/src/components/__tests__/axe.ts",
     "finops-web/src/components/__tests__/contrast.test.ts",
+    "finops-web/src/components/__tests__/forecastUnproduced.test.ts",
     "finops-web/src/components/__tests__/orgNodes.test.ts",
     "finops-web/src/components/__tests__/shell.test.tsx",
     "finops-web/src/components/__tests__/surface.test.ts",
@@ -614,6 +616,7 @@
     "tests/api/test_cost_repository.py",
     "tests/api/test_cost_routes.py",
     "tests/api/test_fixture_surfaces.py",
+    "tests/api/test_forecast_unproduced.py",
     "tests/api/test_identity_local.py",
     "tests/api/test_inventory_geography.py",
     "tests/api/test_inventory_routes.py",
@@ -1842,6 +1845,11 @@
     {
       "s": "finops-web/src/components/__tests__/contrast.test.ts",
       "t": "finops-web/src/tokens.css?raw",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/forecastUnproduced.test.ts",
+      "t": "finops-web/src/layout.css?raw",
       "k": "typescript"
     },
     {
@@ -7107,6 +7115,11 @@
     {
       "s": "tests/api/test_fixture_surfaces.py",
       "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_forecast_unproduced.py",
+      "t": "finops_api/db/__init__.py",
       "k": "python"
     },
     {
