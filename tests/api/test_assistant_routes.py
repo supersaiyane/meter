@@ -11,9 +11,11 @@ toolbox, so every tool call in these tests goes back through the API as the aske
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from fastapi.routing import APIRoute
@@ -22,8 +24,12 @@ from sqlalchemy import Engine, text
 
 from finops_api.db import models
 from finops_api.db.repositories import AccessContext
-from finops_api.db.repositories.assistant import ExchangeRepository, record_exchange
-from finops_api.guards import SCOPED_TABLES, ByPrincipal
+from finops_api.db.repositories.assistant import (
+    DigestRepository,
+    ExchangeRepository,
+    record_exchange,
+)
+from finops_api.guards import SCOPED_TABLES, ByPrincipal, PayerWide
 from finops_api.identity.session import SessionSigner
 from finops_api.main import create_app, returns_envelope
 from finops_api.routes import assistant as assistant_routes
@@ -32,6 +38,8 @@ from finops_core.domain.insight import Gap, Refusal
 from finops_core.domain.tenant import Scope
 from finops_core.ports.llm import Message, TokenUsage
 from finops_fakes.llm import ScriptedModel
+from finops_ingest.collectors.digests import DigestCollector
+from finops_ingest.registry import CollectorContext
 from finops_query.insight import Exchange
 from tests.api.test_query_routes import NOW, SIGNING_KEY, StubEntitlements, another_tenant, auth
 from tests.query.insight.harness import (
@@ -44,7 +52,7 @@ from tests.query.insight.harness import (
     seed_bill,
 )
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.usefixtures("clear_split_gap")]
 
 ASK = "/api/v1/assistant/ask"
 LIST = "/api/v1/assistant/exchanges"
@@ -295,8 +303,78 @@ class TestTheRoutes:
 
 def test_ask_is_the_only_write_and_every_route_returns_the_envelope() -> None:
     routes = [r for r in assistant_routes.router.routes if isinstance(r, APIRoute)]
-    assert {r.path: r.methods for r in routes} == {ASK: {"POST"}, LIST: {"GET"}}
+    assert {r.path: r.methods for r in routes} == {
+        ASK: {"POST"},
+        LIST: {"GET"},
+        DIGESTS: {"GET"},
+    }
     assert all(returns_envelope(r.response_model) for r in routes)
+
+
+# --- the digests, TASK-P7-012 --------------------------------------------------------------
+
+DIGESTS = "/api/v1/assistant/digests"
+#: A Monday in the fake bill's closed month, so a whole billed week lies behind it.
+DIGEST_CLOCK = datetime(2026, 7, 20, 6, 0, tzinfo=UTC)
+
+
+@dataclass(frozen=True)
+class _Unit:
+    tenant_id: UUID
+
+
+def digests_for(engine: Engine, tenant: UUID) -> None:
+    seed_bill(engine, tenant, split=False)
+    with engine.begin() as connection:
+        DigestCollector(clock=lambda: DIGEST_CLOCK)(
+            CollectorContext(unit=_Unit(tenant_id=tenant), connection=connection, run_id=uuid4())
+        )
+
+
+class TestTheDigests:
+    def test_the_digest_table_is_payer_wide(self) -> None:
+        """A digest sums every account, so it belongs to none of them."""
+        assert SCOPED_TABLES["team_digest"] == PayerWide()
+
+    def test_a_narrowed_reader_reads_no_digest_before_any_route(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        digests_for(engine, tenant_id)
+        with engine.connect() as connection:
+            repository = DigestRepository(connection, CONTEXT)
+            assert repository.digests(only(tenant_id, IN_SCOPE), 50) == []
+            assert repository.digests(everything(tenant_id), 50)
+
+    def test_the_route_lists_digests_composed_and_not_sent_saying_why(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        digests_for(engine, tenant_id)
+        scope = everything(tenant_id)
+        client, signer = application(engine, settings, scope)
+
+        body = client.get(DIGESTS, headers=as_person(signer, "p2", scope)).json()
+
+        assert set(body) == {"data", "meta"}
+        assert body["data"][0]["audience"] == "executive", "the organization's comes first"
+        assert all(d["sent_at"] is None and "OPEN-11" in d["unsent_reason"] for d in body["data"])
+        assert body["meta"]["scope_coverage"] == {
+            "visible": 1,
+            "total": 1,
+            "unit": "payer",
+            "is_partial": False,
+        }
+
+    def test_a_narrowed_reader_is_shown_that_digests_need_the_whole_payer(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        digests_for(engine, tenant_id)
+        scope = only(tenant_id, IN_SCOPE)
+        client, signer = application(engine, settings, scope)
+
+        body = client.get(DIGESTS, headers=as_person(signer, "p2", scope)).json()
+
+        assert body["data"] == []
+        assert body["meta"]["scope_coverage"]["is_partial"] is True
 
 
 def test_a_question_is_never_a_query_parameter() -> None:

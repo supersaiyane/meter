@@ -1627,3 +1627,22 @@ class ExchangeOut(BaseModel):
         if [name for name, shape in present.items() if shape is not None] != [self.outcome]:
             raise ValueError("an exchange carries exactly the shape its outcome names")
         return self
+
+
+class DigestOut(BaseModel):
+    """One week's digest, its citations, and whether it went anywhere. FEAT-041."""
+
+    model_config = ConfigDict(frozen=True)
+
+    digest_id: UUID
+    audience: Literal["team", "executive"]
+    #: The bill's team tag, and None on the organization's digest.
+    team: str | None
+    period_start: date
+    period_end: date
+    prose: str
+    citations: tuple[CitationOut, ...]
+    composed_at: datetime
+    #: None means composed and not sent, which is a real state and is said, with the reason.
+    sent_at: datetime | None
+    unsent_reason: str | None

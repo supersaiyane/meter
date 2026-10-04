@@ -1,8 +1,7 @@
 """The assistant's routes, in the Assistant group. TASK-P7-010, FEAT-038 and ADR-0020.
 
-Two of the four the spec names. The digests arrive with their table in TASK-P7-012, and the
-redactions with theirs in TASK-P7-013, so no route here answers over a table that does not
-exist yet.
+Three of the four the spec names. The redactions arrive with their table in TASK-P7-013, so
+no route here answers over a table that does not exist yet.
 
 **`POST /assistant/ask` is the only write, and it writes one row,** into Meter's own
 database. Constraint 6 forbids a write into a member account, which this is not: it records
@@ -29,7 +28,7 @@ from sqlalchemy.engine import Connection
 
 from finops_api import assistant
 from finops_api.db.repositories import AccessContext
-from finops_api.db.repositories.assistant import ExchangeRepository
+from finops_api.db.repositories.assistant import DigestRepository, ExchangeRepository
 from finops_api.deps import (
     AUTHORIZATION,
     BEARER,
@@ -44,6 +43,7 @@ from finops_api.schemas import (
     AskIn,
     AssistantRefusalOut,
     CitationOut,
+    DigestOut,
     Envelope,
     ExchangeFailureOut,
     ExchangeOut,
@@ -60,6 +60,13 @@ router = APIRouter(prefix=API_PREFIX, tags=["assistant"])
 EXCHANGE_LIMIT = 50
 
 EXCHANGES = "exchanges"
+
+#: How many digests the list returns: a quarter of weekly digests for a dozen teams.
+DIGEST_LIMIT = 200
+
+#: What a digest's coverage counts. It sums the whole payer, so a scope sees all of it or
+#: none of it, and the unit says so rather than counting digests against accounts.
+PAYER = "payer"
 
 #: What to do about each typed cause, by the name the row stores it under.
 REMEDIATION = {cause.__name__: cause.remediation_text for cause in CollectionError.__subclasses__()}
@@ -112,6 +119,52 @@ def exchanges(
         coverage_unit=EXCHANGES,
     )
     return Envelope(data=[exchange_out(row) for row in rows], meta=meta)
+
+
+@router.get("/assistant/digests", response_model=Envelope[list[DigestOut]])
+def digests(
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[list[DigestOut]]:
+    """The weekly digests, newest first, each saying whether it was sent. FEAT-041.
+
+    Payer wide, so a narrowed reader is shown none and the coverage says the digests need
+    organization wide scope, rather than a list that looks empty for no reason.
+    """
+    out = [
+        digest_out(row)
+        for row in DigestRepository(connection, context).digests(scope, DIGEST_LIMIT)
+    ]
+    stamps = [citation.as_of for digest in out for citation in digest.citations]
+    whole = 1 if scope.is_global else 0
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        visible=whole,
+        as_of=min(stamps) if stamps else None,
+        collected_at=min(digest.composed_at for digest in out) if stamps else None,
+        coverage=(whole, 1),
+        coverage_unit=PAYER,
+    )
+    return Envelope(data=out, meta=meta)
+
+
+def digest_out(row: Any) -> DigestOut:
+    """One stored digest, with its citations and whether it went anywhere."""
+    return DigestOut(
+        digest_id=row.digest_id,
+        audience=row.audience,
+        team=row.team,
+        period_start=row.period_start,
+        period_end=row.period_end,
+        prose=row.prose,
+        citations=tuple(CitationOut(**citation) for citation in row.citations),
+        composed_at=row.composed_at,
+        sent_at=row.sent_at,
+        unsent_reason=row.unsent_reason,
+    )
 
 
 def _meta(connection: Connection, scope: Scope, context: AccessContext, out: ExchangeOut) -> Meta:

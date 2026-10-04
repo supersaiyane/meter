@@ -160,6 +160,20 @@ class Citation:
     def is_figure(self) -> bool:
         return isinstance(self.value, Decimal)
 
+    def as_record(self) -> dict[str, str]:
+        """The citation as it is stored and sent. A figure travels as text, so a Decimal
+        comes back out of JSON as the figure that was cited rather than a float's idea of it."""
+        return {
+            "placeholder": self.placeholder,
+            "tool": self.tool,
+            "call_id": self.call_id,
+            "field": self.field,
+            "value": str(self.value),
+            "kind": "figure" if self.is_figure else "label",
+            "provenance": self.provenance.value,
+            "as_of": self.as_of.isoformat(),
+        }
+
 
 def _check_value(placeholder: str, value: object) -> None:
     if isinstance(value, Decimal):

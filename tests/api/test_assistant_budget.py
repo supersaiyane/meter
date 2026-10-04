@@ -26,7 +26,7 @@ from finops_query.insight import estimated_cost, month_start
 from tests.api.test_query_routes import another_tenant
 from tests.query.insight.harness import answer, asker, call, everything, seed_bill
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.usefixtures("clear_split_gap")]
 
 AT = datetime(2026, 10, 4, 9, 0, tzinfo=UTC)
 QUESTION = "Which service cost the most last month?"

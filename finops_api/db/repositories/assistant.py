@@ -30,7 +30,7 @@ from sqlalchemy.engine import Connection
 
 from finops_api.db import models
 from finops_api.db.repositories.base import ScopedRepository
-from finops_core.domain.insight import Answer, Citation, Outcome, Refusal
+from finops_core.domain.insight import Answer, Outcome, Refusal
 from finops_core.domain.tenant import Scope
 from finops_query.insight import Exchange, ToolCallRecord
 
@@ -63,6 +63,32 @@ class ExchangeRepository(ScopedRepository):
         statement = self.scoped_select(scope).where(self.table.c.exchange_id == exchange_id)
         rows = self.fetch(scope, statement)
         return rows[0] if rows else None
+
+
+class DigestRepository(ScopedRepository):
+    """The weekly digests, read through the guard. FEAT-041.
+
+    Payer wide: a digest sums spend across accounts, so only a scope that sees the whole
+    organization reads one, and a narrowed scope reads nothing rather than another
+    reader's totals.
+    """
+
+    table: ClassVar[Table] = models.team_digest
+    resource: ClassVar[str] = "team_digest"
+
+    def digests(self, scope: Scope, limit: int) -> Sequence[Row[tuple[object, ...]]]:
+        """The newest week first, the organization's digest before the teams'."""
+        statement = (
+            self.scoped_select(scope)
+            .order_by(
+                self.table.c.period_start.desc(),
+                # `executive` sorts before `team`, which puts the organization's first.
+                self.table.c.audience,
+                self.table.c.team,
+            )
+            .limit(limit)
+        )
+        return self.fetch(scope, statement)
 
 
 def tokens_spent(connection: Connection, tenant_id: UUID, since: datetime) -> int:
@@ -109,7 +135,7 @@ def record_exchange(
         values.update(
             outcome=Outcome.ANSWERED.value,
             answer=outcome.prose,
-            citations=[_citation(citation) for citation in outcome.citations],
+            citations=[citation.as_record() for citation in outcome.citations],
         )
     elif isinstance(outcome, Refusal):
         values.update(
@@ -126,20 +152,6 @@ def record_exchange(
         )
     connection.execute(models.assistant_exchange.insert().values(**values))
     return exchange_id
-
-
-def _citation(citation: Citation) -> dict[str, Any]:
-    """A figure as text, so a Decimal survives the trip through JSON unrounded."""
-    return {
-        "placeholder": citation.placeholder,
-        "tool": citation.tool,
-        "call_id": citation.call_id,
-        "field": citation.field,
-        "value": str(citation.value),
-        "kind": "figure" if citation.is_figure else "label",
-        "provenance": citation.provenance.value,
-        "as_of": citation.as_of.isoformat(),
-    }
 
 
 def _call(record: ToolCallRecord) -> dict[str, Any]:

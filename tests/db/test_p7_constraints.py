@@ -15,7 +15,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import re
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
@@ -27,6 +27,7 @@ from sqlalchemy.exc import IntegrityError
 from finops_api.db import models
 from finops_core.constants import REASON_MIN_LENGTH
 from finops_core.domain.insight import Gap, Outcome
+from finops_query.digest import Audience
 
 pytestmark = pytest.mark.integration
 
@@ -300,3 +301,91 @@ def test_the_migration_touches_nothing_but_its_own_table() -> None:
     }
     assert touched == {"assistant_exchange"}
     assert not any("DROP TABLE" in statement.upper() for statement in module._UP)
+
+
+# --- team_digest, 0024 ------------------------------------------------------------------
+
+INSERT_DIGEST = text(
+    "INSERT INTO team_digest (digest_id, tenant_id, ingest_run_id, audience, team, "
+    "period_start, period_end, prose, citations, composed_at, sent_at, unsent_reason) "
+    "VALUES (:id, :t, :run, :audience, :team, :start, :end, :prose, "
+    "CAST(:citations AS JSONB), :at, :sent, :reason)"
+)
+UNSENT = "No sender is configured, so it was kept. OPEN-11."
+
+
+def a_digest(connection: Connection, tenant: UUID, **overrides: Any) -> None:
+    """One team digest, composed and not sent, with any field overridden."""
+    values: dict[str, Any] = {
+        "id": uuid4(),
+        "t": tenant,
+        "run": uuid4(),
+        "audience": "team",
+        "team": "payments",
+        "start": date(2026, 7, 13),
+        "end": date(2026, 7, 19),
+        "prose": "In the week to {{week_end}}, {{team}} spent {{spend}}.",
+        "citations": "[]",
+        "at": ASKED,
+        "sent": None,
+        "reason": UNSENT,
+    }
+    values.update(overrides)
+    connection.execute(INSERT_DIGEST, values)
+
+
+def digest_refused_as(engine: Engine, tenant: UUID, constraint: str, **overrides: Any) -> None:
+    with engine.begin() as connection, pytest.raises(IntegrityError, match=constraint):
+        a_digest(connection, tenant, **overrides)
+
+
+def test_a_team_digest_and_the_organizations_are_accepted(engine: Engine, tenant_id: UUID) -> None:
+    with engine.begin() as connection:
+        a_digest(connection, tenant_id)
+        a_digest(connection, tenant_id, audience="executive", team=None)
+
+
+def test_a_digest_is_for_a_team_or_the_executive_and_nobody_else(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    digest_refused_as(engine, tenant_id, "ck_team_digest__audience", audience="board")
+
+
+def test_a_team_digest_names_its_team_and_an_executive_one_names_none(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    digest_refused_as(engine, tenant_id, "team_iff_team_audience", team=None)
+    digest_refused_as(engine, tenant_id, "team_iff_team_audience", team="  ")
+    digest_refused_as(engine, tenant_id, "team_iff_team_audience", audience="executive")
+
+
+def test_an_unsent_digest_says_why_and_a_sent_one_does_not(engine: Engine, tenant_id: UUID) -> None:
+    digest_refused_as(engine, tenant_id, "reason_iff_unsent", reason=None)
+    digest_refused_as(engine, tenant_id, "reason_iff_unsent", reason="x" * (REASON_MIN_LENGTH - 1))
+    digest_refused_as(engine, tenant_id, "reason_iff_unsent", sent=ASKED)
+    with engine.begin() as connection:
+        a_digest(connection, tenant_id, team="sent", sent=ANSWERED, reason=None)
+
+
+def test_a_digest_cannot_be_sent_before_it_was_composed(engine: Engine, tenant_id: UUID) -> None:
+    digest_refused_as(
+        engine, tenant_id, "sent_after_composed", sent=ASKED - timedelta(minutes=1), reason=None
+    )
+
+
+def test_a_digest_covers_a_week_and_says_something(engine: Engine, tenant_id: UUID) -> None:
+    digest_refused_as(engine, tenant_id, "a_week_with_prose", end=date(2026, 7, 13))
+    digest_refused_as(engine, tenant_id, "a_week_with_prose", prose="   ")
+    digest_refused_as(engine, tenant_id, "a_week_with_prose", citations='{"not": "a list"}')
+
+
+def test_one_digest_per_audience_team_and_week(engine: Engine, tenant_id: UUID) -> None:
+    with engine.begin() as connection:
+        a_digest(connection, tenant_id, audience="executive", team=None)
+    digest_refused_as(
+        engine, tenant_id, "uq_team_digest__identity", audience="executive", team=None
+    )
+
+
+def test_the_stored_audiences_mirror_the_domain() -> None:
+    assert set(models.DIGEST_AUDIENCES) == {member.value for member in Audience}

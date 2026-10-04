@@ -99,6 +99,10 @@ class ByPrincipal:
 SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | None] = {
     # P7, ADR-0029. A question is its asker's own words, readable by nobody else.
     "assistant_exchange": ByPrincipal("principal_id"),
+    # P7, FEAT-041. A digest sums spend across every account in a team or the whole
+    # organization, so it belongs to no account, and a reader narrowed to two accounts
+    # reading one would learn the totals their scope was meant to withhold.
+    "team_digest": PayerWide(),
     "cloud_account": ByAccount("account_id", "provider"),
     "org_node": None,
     "ingest_run": None,

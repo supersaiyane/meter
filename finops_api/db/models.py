@@ -1428,6 +1428,57 @@ assistant_exchange = Table(
 )
 
 
+#: P7, 0024. Who a digest is for.
+DIGEST_AUDIENCES = ("team", "executive")
+
+team_digest = Table(
+    "team_digest",
+    metadata,
+    #: FEAT-041, 0024. One digest per audience, team and week, composed whether or not
+    #: anything can send it. Where it goes is OPEN-11.
+    Column("digest_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("audience", Text, nullable=False),
+    #: The bill's `team` tag value for a team digest, and null for the executive one.
+    Column("team", Text),
+    Column("period_start", Date, nullable=False),
+    Column("period_end", Date, nullable=False),
+    Column("prose", Text, nullable=False),
+    Column("citations", JSONB, nullable=False),
+    Column("composed_at", DateTime(timezone=True), nullable=False),
+    #: Null means composed and not sent, which is a real state, with the reason beside it.
+    Column("sent_at", DateTime(timezone=True)),
+    Column("unsent_reason", Text),
+    CheckConstraint(_in_list("audience", DIGEST_AUDIENCES), name="ck_team_digest__audience"),
+    CheckConstraint(
+        "(audience = 'team') = (length(trim(coalesce(team, ''))) > 0)",
+        name="ck_team_digest__team_iff_team_audience",
+    ),
+    CheckConstraint(
+        f"(sent_at IS NULL) = (length(trim(coalesce(unsent_reason, ''))) >= {REASON_MIN_LENGTH})",
+        name="ck_team_digest__reason_iff_unsent",
+    ),
+    CheckConstraint(
+        "sent_at IS NULL OR sent_at >= composed_at", name="ck_team_digest__sent_after_composed"
+    ),
+    CheckConstraint(
+        "period_end > period_start AND length(trim(prose)) > 0 "
+        "AND jsonb_typeof(citations) = 'array'",
+        name="ck_team_digest__a_week_with_prose",
+    ),
+    Index("ix_team_digest__period", "tenant_id", "period_start"),
+)
+Index(
+    "uq_team_digest__identity",
+    team_digest.c.tenant_id,
+    team_digest.c.audience,
+    text("coalesce(team, '')"),
+    team_digest.c.period_start,
+    unique=True,
+)
+
+
 #: Every table in the schema. Used by the drift test and by the repository layer.
 ALL_TABLES = tuple(metadata.sorted_tables)
 
