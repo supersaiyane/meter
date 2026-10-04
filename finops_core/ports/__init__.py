@@ -21,6 +21,7 @@ from finops_core.ports.cost import CostExport
 from finops_core.ports.credentials import CredentialBroker
 from finops_core.ports.identity import EntitlementResolver, IdentityProvider
 from finops_core.ports.inventory import ResourceInventory
+from finops_core.ports.llm import LlmProvider
 from finops_core.ports.metrics import MetricSource
 from finops_core.ports.query import PanelRewrite, QuerySurface, RefreshFloor
 from finops_core.ports.quotas import QuotaSource
@@ -48,7 +49,14 @@ PROVIDER_PORTS = (
 #: when `QuerySurface` was added.
 SURFACE_PORTS = (QuerySurface, RefreshFloor, PanelRewrite)
 
+#: The model behind the assistant, P7 and ADR-0028. Its own group, because the cloud
+#: fake does not implement it and a model is not a query surface: the fake model is a
+#: separate scripted class, and a group shared with either would have a test asking
+#: one fake to be both.
+MODEL_PORTS = (LlmProvider,)
+
 __all__ = [
+    "MODEL_PORTS",
     "PROVIDER_PORTS",
     "SURFACE_PORTS",
     "AccountDiscovery",
@@ -57,6 +65,7 @@ __all__ = [
     "CredentialBroker",
     "EntitlementResolver",
     "IdentityProvider",
+    "LlmProvider",
     "MetricSource",
     "PanelRewrite",
     "QuerySurface",

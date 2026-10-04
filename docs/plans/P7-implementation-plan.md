@@ -57,7 +57,7 @@ Same contract as P0 through P6. One task, one commit.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 4, ADR-0028 |
 | Delivers | Part of FEAT-038 |
 | Depends on | ADR-0028 accepted |
@@ -76,14 +76,14 @@ those tests can talk to.
 
 **Acceptance criteria.**
 
-- [ ] The protocol names completion, tool schemas and a token count, and nothing about
+- [x] The protocol names completion, tool schemas and a token count, and nothing about
       Bedrock, a model identifier or a region
-- [ ] The fake is deterministic: the same question returns the same response, asserted by
+- [x] The fake is deterministic: the same question returns the same response, asserted by
       calling it twice
-- [ ] A provider refusal is one of the seven typed causes, and an unavailable model is
+- [x] A provider refusal is one of the seven typed causes, and an unavailable model is
       `NotOptedIn` rather than `Unreachable`, because a deployment without Bedrock access
       has not failed, it has not been enabled
-- [ ] `finops_core` imports no SDK, constraint 1, held by the existing import contract
+- [x] `finops_core` imports no SDK, constraint 1, held by the existing import contract
 
 ---
 

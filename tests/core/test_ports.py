@@ -46,6 +46,9 @@ EXPECTED_PORTS = {
     # P2, TASK-P2-019. The largest write, and its own port for the same reason:
     # a surface may let Meter read queries and never let it replace one.
     "PanelRewrite",
+    # P7, TASK-P7-001. The model behind the assistant, ADR-0028. Its own group,
+    # because neither the cloud fake nor a query surface implements it.
+    "LlmProvider",
 }
 
 FORBIDDEN_IMPORTS = {"boto3", "botocore", "fastapi", "sqlalchemy", "httpx", "requests"}
@@ -68,8 +71,8 @@ def port_methods(port: type) -> list[tuple[str, object]]:
 # --- shape -------------------------------------------------------------------
 
 
-def test_there_are_exactly_twelve_ports() -> None:
-    """The provider ports, plus the three P2 surface ports.
+def test_there_are_exactly_thirteen_ports() -> None:
+    """The provider ports, the three P2 surface ports, and the P7 model port.
 
     `__all__` also carries the two grouping tuples, so the comparison is against
     the protocols rather than against every name the package exports. Adding a
@@ -81,15 +84,19 @@ def test_there_are_exactly_twelve_ports() -> None:
     assert exported == EXPECTED_PORTS
 
 
-def test_the_two_groups_together_are_every_port() -> None:
+def test_the_three_groups_together_are_every_port() -> None:
     """The groups exist so a test can ask for provider ports without filtering
-    by hand, and a port left out of both would be invisible to every caller
-    that uses them."""
-    grouped = {port.__name__ for port in (*ports.PROVIDER_PORTS, *ports.SURFACE_PORTS)}
+    by hand, and a port left out of all of them would be invisible to every
+    caller that uses them."""
+    grouped = {
+        port.__name__
+        for port in (*ports.PROVIDER_PORTS, *ports.SURFACE_PORTS, *ports.MODEL_PORTS)
+    }
 
     assert grouped == EXPECTED_PORTS
     assert len(ports.PROVIDER_PORTS) == 9
     assert len(ports.SURFACE_PORTS) == 3
+    assert len(ports.MODEL_PORTS) == 1
 
 
 def test_all_ports_are_protocols() -> None:
