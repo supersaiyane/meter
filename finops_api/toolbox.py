@@ -84,7 +84,7 @@ class ApiToolbox:
 
 #: The host an in process request is addressed to. Never resolved: the request goes to
 #: the application object directly and no network is involved.
-IN_PROCESS_HOST = "http://meter.in-process"
+IN_PROCESS_HOST = "http://meter.in-process"  # allow-hardcoded: never resolved, no network
 
 
 class InProcessTransport:
