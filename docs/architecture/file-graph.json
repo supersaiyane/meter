@@ -345,6 +345,7 @@
     "finops_api/db/repositories/__init__.py",
     "finops_api/db/repositories/accounts.py",
     "finops_api/db/repositories/base.py",
+    "finops_api/db/repositories/containers.py",
     "finops_api/db/repositories/cost.py",
     "finops_api/db/repositories/freshness.py",
     "finops_api/db/repositories/ingest.py",
@@ -590,6 +591,7 @@
     "scripts/ops/restore_drill.py",
     "tests/__init__.py",
     "tests/api/__init__.py",
+    "tests/api/test_container_routes.py",
     "tests/api/test_cost_budgets.py",
     "tests/api/test_cost_commitments.py",
     "tests/api/test_cost_export_route.py",
@@ -4122,6 +4124,21 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/containers.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/containers.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/containers.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/cost.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -4573,6 +4590,11 @@
     },
     {
       "s": "finops_api/routes/inventory.py",
+      "t": "finops_api/db/repositories/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/inventory.py",
       "t": "finops_api/db/repositories/cost.py",
       "k": "python"
     },
@@ -4823,6 +4845,11 @@
     },
     {
       "s": "finops_api/routes/waste.py",
+      "t": "finops_api/db/repositories/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/waste.py",
       "t": "finops_api/db/repositories/waste.py",
       "k": "python"
     },
@@ -4844,6 +4871,11 @@
     {
       "s": "finops_api/routes/waste.py",
       "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/waste.py",
+      "t": "finops_core/domain/containers.py",
       "k": "python"
     },
     {
@@ -6644,6 +6676,51 @@
     {
       "s": "scripts/ops/restore_drill.py",
       "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_api/db/repositories/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_ingest/collectors/container_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {

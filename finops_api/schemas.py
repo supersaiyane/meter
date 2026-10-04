@@ -727,6 +727,78 @@ class ContainerCostOut(BaseModel):
     found_count: int
 
 
+class ContainerUsageRowOut(BaseModel):
+    """One workload's requests against its use. Two figures each, never a percentage."""
+
+    model_config = ConfigDict(frozen=True)
+
+    namespace: str
+    workload: str
+    workload_kind: str
+    launch_type: str
+    #: None where the cluster cannot publish requests. Never zero.
+    cpu_requested_millicores: Decimal | None
+    cpu_used_p99_millicores: Decimal | None
+    memory_requested_mib: Decimal | None
+    memory_used_peak_mib: Decimal | None
+    #: KILLED, NOT_KILLED or UNOBSERVED. UNOBSERVED is not a synonym for NOT_KILLED.
+    oom_status: str
+    observation_days: int
+
+
+class ClusterUsageOut(BaseModel):
+    """A cluster and its workloads, listed whether or not its requests are readable."""
+
+    model_config = ConfigDict(frozen=True)
+
+    cluster_name: str
+    account_id: str
+    region_id: str
+    platform: str
+    enhanced_observability: bool
+    #: Why requests cannot be stated, in words, where they cannot.
+    request_unavailable_reason: str | None
+    workloads: tuple[ContainerUsageRowOut, ...]
+
+
+class ContainerWasteOut(BaseModel):
+    """Requested against used, and the clusters where that cannot be said."""
+
+    model_config = ConfigDict(frozen=True)
+
+    clusters: tuple[ClusterUsageOut, ...]
+    measured_count: int
+    found_count: int
+
+
+class ClusterInventoryOut(BaseModel):
+    """One cluster: its fleet, its Spot ratio and its bin packing, where readable."""
+
+    model_config = ConfigDict(frozen=True)
+
+    cluster_name: str
+    account_id: str
+    region_id: str
+    platform: str
+    enhanced_observability: bool
+    node_count: int | None
+    #: Fractions of one. None where the fleet could not be read or does not exist.
+    spot_ratio: Decimal | None
+    packing_efficiency: Decimal | None
+    #: Why a fleet figure is missing, where one is.
+    unmeasurable_reason: str | None
+
+
+class ClustersOut(BaseModel):
+    """Every cluster, and how many of those with nodes could be measured."""
+
+    model_config = ConfigDict(frozen=True)
+
+    clusters: tuple[ClusterInventoryOut, ...]
+    measured_count: int
+    found_count: int
+
+
 class CostDayOut(BaseModel):
     """Effective cost on one day, for the chart on the cost screen."""
 

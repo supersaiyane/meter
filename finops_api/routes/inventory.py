@@ -22,12 +22,14 @@ and a ceiling in only one of them is a ceiling somebody routes around.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import Connection
 
 from finops_api.db.repositories import AccessContext
+from finops_api.db.repositories.containers import ContainerClusterRepository
 from finops_api.db.repositories.cost import CostRepository
 from finops_api.db.repositories.topology import TopologyRepository, as_node
 from finops_api.deps import (
@@ -41,6 +43,8 @@ from finops_api.routes.waste import recommendation_out
 from finops_api.schemas import (
     BlastPartOut,
     BlastRadiusOut,
+    ClusterInventoryOut,
+    ClustersOut,
     CoverageOutList,
     EdgeOut,
     EntityOut,
@@ -647,3 +651,66 @@ def entity(
         coverage_unit="slices",
     )
     return Envelope(data=found, meta=meta)
+
+
+#: Why a fleet figure is missing, by cause. A Fargate cluster has no fleet by design,
+#: which is a different sentence from a fleet nobody could read.
+NO_NODES = (
+    "Fargate runs tasks without nodes, so there is no fleet to pack and none to price on Spot"
+)
+NO_REQUESTS = "pod requests are not published, so bin packing cannot be computed"
+NO_FLEET = "the node fleet could not be read"
+
+
+def _fleet_reason(row: Any) -> str | None:
+    if row.packing_efficiency is not None:
+        return None
+    if row.platform == "ECS":
+        return NO_NODES
+    if not row.enhanced_observability:
+        return row.request_unavailable_reason or NO_REQUESTS
+    return NO_FLEET
+
+
+@router.get("/inventory/clusters", response_model=Envelope[ClustersOut])
+def inventory_clusters(
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[ClustersOut]:
+    """Clusters, their node fleets, Spot ratio and bin packing. Under Inventory, ADR-0020.
+
+    Every cluster is listed, including the ones whose fleet cannot be read and the ones
+    that have no fleet at all, each with a reason in words. Coverage counts clusters
+    with nodes, because a Fargate cluster's missing packing figure is not a gap.
+    """
+    repository = ContainerClusterRepository(connection, context)
+    rows = repository.clusters(scope)
+    clusters = tuple(
+        ClusterInventoryOut(
+            cluster_name=row.cluster_name,
+            account_id=row.sub_account_id,
+            region_id=row.region_id,
+            platform=row.platform,
+            enhanced_observability=row.enhanced_observability,
+            node_count=row.node_count,
+            spot_ratio=row.spot_ratio,
+            packing_efficiency=row.packing_efficiency,
+            unmeasurable_reason=_fleet_reason(row),
+        )
+        for row in rows
+    )
+    measured, found = repository.packing_coverage(scope)
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        visible=measured,
+        rows=rows,
+        coverage=(measured, found),
+        coverage_unit="clusters",
+    )
+    return Envelope(
+        data=ClustersOut(clusters=clusters, measured_count=measured, found_count=found),
+        meta=meta,
+    )

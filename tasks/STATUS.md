@@ -188,7 +188,7 @@ ISS-003.
 | P3 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
-| P6 | 8 | 0 | 0 | 0 | 4 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
+| P6 | 9 | 0 | 0 | 0 | 3 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 0 | 0 | 0 | 0 | 14 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -361,6 +361,7 @@ ISS-003.
 | `TASK-P6-006` | Done | the usage collector |
 | `TASK-P6-007` | Done | two sizing rules, and the one that admits it could not check |
 | `TASK-P6-008` | Done | Fargate sizes somebody can actually order |
+| `TASK-P6-009` | Done | the guard, then the routes |
 
 <!-- generated:task-status end -->
 

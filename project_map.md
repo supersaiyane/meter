@@ -28,11 +28,11 @@ Update trigger: any new module, moved module, or changed responsibility.
 | --- | --- | --- |
 | Screens built | 23 of 26 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 19 in 5 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
-| Inventory routes | 7 | `@router.` in finops_api/routes/inventory.py |
+| Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 23 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 22 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 134 | test_*.py under tests/ |
-| Test functions | 1885 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 135 | test_*.py under tests/ |
+| Test functions | 1898 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1030,7 +1030,12 @@ meter/
 │                              audit of each thing, per table, because every
 │                              audit table is keyed on the day and a list that
 │                              ignores that sums a week of them. ISS-175,
-│                              ISS-177
+│                              ISS-177. containers.py holds two repositories,
+│                              one per container table, each scoped by account
+│                              rather than one through the other: a usage row
+│                              can exist for a cluster whose own read failed.
+│                              Inventory coverage counts clusters with nodes,
+│                              because a Fargate cluster has no fleet to pack
 │
 ├── alembic.ini                no database URL in it, env.py reads the settings
 ├── migrations/                the only way the schema changes

@@ -17,6 +17,10 @@ from sqlalchemy import Connection
 
 from finops_api.db.repositories import AccessContext
 from finops_api.db.repositories.accounts import AccountRepository
+from finops_api.db.repositories.containers import (
+    ContainerClusterRepository,
+    ContainerUsageRepository,
+)
 from finops_api.db.repositories.waste import (
     RealizedSavingRepository,
     RecommendationEventRepository,
@@ -29,6 +33,9 @@ from finops_api.deps import get_access_context, get_connection, get_scope, get_t
 from finops_api.lifecycle import TransitionRefusedError, move
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
+    ClusterUsageOut,
+    ContainerUsageRowOut,
+    ContainerWasteOut,
     Envelope,
     RealizedSavingOut,
     RealizedSavingsOut,
@@ -43,6 +50,7 @@ from finops_api.schemas import (
     ScoresOut,
     VerdictTotalOut,
 )
+from finops_core.domain.containers import OomStatus
 from finops_core.domain.tenant import Scope
 from finops_core.domain.waste import Lifecycle, WasteClass
 from finops_query.actions import risk_of
@@ -411,3 +419,77 @@ def posture_score(
     )
     meta = build_meta(connection, scope, context, visible=len(rows), rows=rows)
     return Envelope(data=found, meta=meta)
+
+
+@router.get("/waste/containers", response_model=Envelope[ContainerWasteOut])
+def waste_containers(
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[ContainerWasteOut]:
+    """Requested against used, per workload, under Waste per ADR-0020. FEAT-036.
+
+    Two figures for each resource and never one efficiency percentage. A namespace at
+    twenty percent could be over requesting by a factor of five or could be idle, and
+    those are different conversations with different people, spec section 9.
+
+    A cluster that cannot publish requests is listed with its workloads' use and no
+    request, and says why. Absent from this list it would report a tidier estate than
+    the one that exists, and the cluster nobody can measure is the one worth asking
+    about. Container recommendations themselves are P3's, served by
+    `/waste/recommendations` filtered to the container class: there is no second list.
+    """
+    clusters_repository = ContainerClusterRepository(connection, context)
+    usage_repository = ContainerUsageRepository(connection, context)
+    clusters = clusters_repository.clusters(scope)
+    usage = usage_repository.reservations(scope)
+
+    by_cluster: dict[tuple[str, str, str], list[ContainerUsageRowOut]] = {}
+    for row in usage:
+        by_cluster.setdefault((row.sub_account_id, row.region_id, row.cluster_name), []).append(
+            ContainerUsageRowOut(
+                namespace=row.namespace,
+                workload=row.workload,
+                workload_kind=row.workload_kind,
+                launch_type=row.launch_type,
+                cpu_requested_millicores=row.cpu_requested_millicores,
+                cpu_used_p99_millicores=row.cpu_used_p99_millicores,
+                memory_requested_mib=row.memory_requested_mib,
+                memory_used_peak_mib=row.memory_used_peak_mib,
+                # The column is a nullable boolean and the wire carries the three words,
+                # so a client can never read null as not killed.
+                oom_status=OomStatus.from_observation(row.was_oom_killed).value,
+                observation_days=row.observation_days,
+            )
+        )
+
+    found_clusters = tuple(
+        ClusterUsageOut(
+            cluster_name=row.cluster_name,
+            account_id=row.sub_account_id,
+            region_id=row.region_id,
+            platform=row.platform,
+            enhanced_observability=row.enhanced_observability,
+            request_unavailable_reason=row.request_unavailable_reason,
+            workloads=tuple(
+                by_cluster.get((row.sub_account_id, row.region_id, row.cluster_name), ())
+            ),
+        )
+        for row in clusters
+    )
+    measured, found = clusters_repository.request_coverage(scope)
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        # Clusters whose requests are readable, against clusters found. Accounts in
+        # this slot would call coverage complete while half the clusters had no request.
+        visible=measured,
+        rows=[*clusters, *usage],
+        coverage=(measured, found),
+        coverage_unit="clusters",
+    )
+    return Envelope(
+        data=ContainerWasteOut(clusters=found_clusters, measured_count=measured, found_count=found),
+        meta=meta,
+    )
