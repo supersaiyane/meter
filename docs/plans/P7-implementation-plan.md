@@ -304,7 +304,7 @@ caused.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 3, FEAT-040 |
 | Delivers | FEAT-040 |
 | Depends on | TASK-P7-006 |
@@ -322,13 +322,13 @@ it lives.
 
 **Acceptance criteria.**
 
-- [ ] The diff is authored and opened as a pull request. Nothing applies, merges or
+- [x] The diff is authored and opened as a pull request. Nothing applies, merges or
       approves
-- [ ] A resource with no known infrastructure as code address is refused, naming that.
+- [x] A resource with no known infrastructure as code address is refused, naming that.
       FEAT-057 supplies the address and its absence is a real state rather than a gap
-- [ ] The pull request body carries the recommendation, its saving, its provenance and the
+- [x] The pull request body carries the recommendation, its saving, its provenance and the
       blast radius band from FEAT-044
-- [ ] A test asserts no code path calls an apply, a merge or an approve
+- [x] A test asserts no code path calls an apply, a merge or an approve
 
 ---
 
