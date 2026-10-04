@@ -934,3 +934,87 @@ export interface ApiQuotaDetail {
   readonly drafts: readonly ApiQuotaDraft[];
   readonly draft_refusals: readonly ApiDraftRefusal[];
 }
+
+// --- P6, containers -----------------------------------------------------------------
+
+/** One workload's share of a cluster's cost. FEAT-035. */
+export interface ApiContainerCostRow {
+  readonly namespace: string;
+  readonly workload_name: string;
+  /** Empty where the export carried no workload type. Never guessed. */
+  readonly workload_type: string;
+  readonly cost: string;
+  readonly line_items: number;
+}
+
+/** One cluster's cost, with its breakdown where there is one. */
+export interface ApiClusterCost {
+  readonly cluster_name: string;
+  /** Attributed plus unattributed. The figure that reconciles to the node charge. */
+  readonly total: string;
+  readonly allocated: string;
+  /** Capacity paid for and requested by no pod. A real figure, not a rounding error. */
+  readonly unallocated: string;
+  readonly workloads: readonly ApiContainerCostRow[];
+  readonly breakdown_available: boolean;
+  readonly unmeasurable_reason: string | null;
+}
+
+export interface ApiContainerCost {
+  readonly clusters: readonly ApiClusterCost[];
+  readonly measured_count: number;
+  readonly found_count: number;
+}
+
+/** Requests against use for one workload. Two figures each, never a percentage. FEAT-036. */
+export interface ApiContainerUsageRow {
+  readonly namespace: string;
+  readonly workload: string;
+  readonly workload_kind: string;
+  readonly launch_type: string;
+  /** Null where the cluster cannot publish requests. Never zero. */
+  readonly cpu_requested_millicores: string | null;
+  readonly cpu_used_p99_millicores: string | null;
+  readonly memory_requested_mib: string | null;
+  readonly memory_used_peak_mib: string | null;
+  /** UNOBSERVED is not a synonym for NOT_KILLED. */
+  readonly oom_status: 'KILLED' | 'NOT_KILLED' | 'UNOBSERVED';
+  readonly observation_days: number;
+}
+
+export interface ApiClusterUsage {
+  readonly cluster_name: string;
+  readonly account_id: string;
+  readonly region_id: string;
+  readonly platform: string;
+  readonly enhanced_observability: boolean;
+  readonly request_unavailable_reason: string | null;
+  readonly workloads: readonly ApiContainerUsageRow[];
+}
+
+export interface ApiContainerWaste {
+  readonly clusters: readonly ApiClusterUsage[];
+  readonly measured_count: number;
+  readonly found_count: number;
+}
+
+/** One cluster's fleet, Spot ratio and bin packing, where readable. */
+export interface ApiClusterInventory {
+  readonly cluster_name: string;
+  readonly account_id: string;
+  readonly region_id: string;
+  readonly platform: string;
+  readonly enhanced_observability: boolean;
+  readonly node_count: number | null;
+  /** Fractions of one, as decimal strings. Null where unreadable or where there is no fleet. */
+  readonly spot_ratio: string | null;
+  readonly packing_efficiency: string | null;
+  readonly unmeasurable_reason: string | null;
+}
+
+export interface ApiClusters {
+  readonly clusters: readonly ApiClusterInventory[];
+  /** Clusters with nodes whose packing could be computed, against clusters with nodes. */
+  readonly measured_count: number;
+  readonly found_count: number;
+}

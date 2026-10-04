@@ -199,6 +199,7 @@
     "finops-web/src/api/apiContext.ts",
     "finops-web/src/api/client.ts",
     "finops-web/src/api/fixtureSeam.ts",
+    "finops-web/src/api/fixtures/containers.ts",
     "finops-web/src/api/fixtures/cost.ts",
     "finops-web/src/api/fixtures/query.ts",
     "finops-web/src/api/fixtures/quotas.ts",
@@ -206,6 +207,7 @@
     "finops-web/src/api/fixtures/waste.ts",
     "finops-web/src/api/queries.ts",
     "finops-web/src/api/types.ts",
+    "finops-web/src/components",
     "finops-web/src/components/BarChart.tsx",
     "finops-web/src/components/BudgetBar.tsx",
     "finops-web/src/components/CadenceBar.tsx",
@@ -260,6 +262,7 @@
     "finops-web/src/queryClient.ts",
     "finops-web/src/screens/AccountsScreen.tsx",
     "finops-web/src/screens/BudgetsScreen.tsx",
+    "finops-web/src/screens/ContainerWasteScreen.tsx",
     "finops-web/src/screens/CostAllocationScreen.tsx",
     "finops-web/src/screens/CostAnomaliesScreen.tsx",
     "finops-web/src/screens/CostCommitmentsScreen.tsx",
@@ -288,6 +291,7 @@
     "finops-web/src/screens/WasteScreen.tsx",
     "finops-web/src/screens/__tests__/AccountsScreen.test.tsx",
     "finops-web/src/screens/__tests__/BudgetsScreen.test.tsx",
+    "finops-web/src/screens/__tests__/ContainerWasteScreen.test.tsx",
     "finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx",
     "finops-web/src/screens/__tests__/CostAnomaliesScreen.test.tsx",
     "finops-web/src/screens/__tests__/CostCommitmentsScreen.test.tsx",
@@ -1225,6 +1229,11 @@
     },
     {
       "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/CostAllocationScreen.tsx",
       "k": "typescript"
     },
@@ -1394,6 +1403,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/api/fixtures/containers.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/api/fixtures/cost.ts",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -1431,6 +1445,11 @@
     {
       "s": "finops-web/src/api/queries.ts",
       "t": "finops-web/src/api/fixtureSeam.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/queries.ts",
+      "t": "finops-web/src/api/fixtures/containers.ts",
       "k": "typescript"
     },
     {
@@ -2010,6 +2029,41 @@
     },
     {
       "s": "finops-web/src/screens/BudgetsScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "t": "finops-web/src/components",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "t": "finops-web/src/components/FixtureBand.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
       "k": "typescript"
     },
@@ -3225,6 +3279,31 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/BudgetsScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ContainerWasteScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/containers.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ContainerWasteScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ContainerWasteScreen.test.tsx",
+      "t": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ContainerWasteScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ContainerWasteScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
       "k": "typescript"
     },

@@ -49,6 +49,7 @@ export const GROUPS: readonly GroupDef[] = [
       { path: '/waste', label: 'Recommendations', arrives: null },
       { path: '/waste/savings', label: 'Realized savings', arrives: null },
       { path: '/waste/score', label: 'FinOps Score', arrives: null },
+      { path: '/waste/containers', label: 'Containers', arrives: null },
     ],
   },
   {

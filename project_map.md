@@ -26,7 +26,7 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 23 of 26 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Screens built | 24 of 27 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 19 in 5 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 23 | modules in finops_ingest/collectors, excluding __init__ |
@@ -573,6 +573,12 @@ meter/
 │   │                          of the things being ranked, one device each, because
 │   │                          a mark with two meanings cannot be read. Used by the
 │   │                          allocation screen and the waste queue
+│   ├── screens/ContainerWasteScreen.tsx  FEAT-036. Request beside use, two
+│   │                          figures and never one percentage, because twenty
+│   │                          percent can mean over requesting or idle. A cluster
+│   │                          that cannot publish requests is listed with its cost
+│   │                          and its reason, and its rows carry no request column
+│   │                          at all rather than an empty one a reader takes for zero
 │   ├── screens/QuotasScreen.tsx  FEAT-033. Two tables, because one would have to sort
 │   │                          the nulls and wherever they sort is a claim: at the top
 │   │                          urgent, at the bottom safe, and neither is known. The

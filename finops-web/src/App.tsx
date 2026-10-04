@@ -32,6 +32,7 @@ import { QuotasScreen } from './screens/QuotasScreen';
 import { WasteScreen } from './screens/WasteScreen';
 import { WasteSavingsScreen } from './screens/WasteSavingsScreen';
 import { WasteScoreScreen } from './screens/WasteScoreScreen';
+import { ContainerWasteScreen } from './screens/ContainerWasteScreen';
 import { PlatformScreen } from './screens/PlatformScreen';
 
 /**
@@ -96,6 +97,7 @@ export function App({
                 <Route path="/waste" element={<WasteScreen />} />
                 <Route path="/waste/savings" element={<WasteSavingsScreen />} />
                 <Route path="/waste/score" element={<WasteScoreScreen />} />
+            <Route path="/waste/containers" element={<ContainerWasteScreen />} />
                 <Route path="/inventory/accounts" element={<AccountsScreen />} />
                 <Route path="/inventory/organization" element={<OrganizationScreen />} />
                 <Route path="/inventory/topology" element={<TopologyScreen />} />

@@ -339,7 +339,7 @@ the screen.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec section 9, FEAT-036 |
 | Delivers | Part of FEAT-036 |
 | Depends on | TASK-P6-009 |
