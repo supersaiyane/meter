@@ -451,7 +451,7 @@ the day somebody reopens ADR-0028 this is the thing that has to already exist.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 15, constraint 6 |
 | Delivers | Part of FEAT-040 |
 | Depends on | TASK-P7-013 |
@@ -467,14 +467,14 @@ at all but a `terraform apply` in a subprocess.
 
 **Acceptance criteria.**
 
-- [ ] No production module names an apply, a merge or an approve for a pull request, with
+- [x] No production module names an apply, a merge or an approve for a pull request, with
       comments and docstrings stripped before searching, for the reason
       `test_no_quota_writes.py` gives
-- [ ] No production module invokes a subprocess whose first argument is `terraform`, `aws`
+- [x] No production module invokes a subprocess whose first argument is `terraform`, `aws`
       or `kubectl`
-- [ ] The hub role grants no write action in a member account, asserted against the
+- [x] The hub role grants no write action in a member account, asserted against the
       Terraform
-- [ ] The capability tests beside it assert the authoring still works, because a check
+- [x] The capability tests beside it assert the authoring still works, because a check
       that only forbids can be satisfied by shipping nothing
 
 ---
