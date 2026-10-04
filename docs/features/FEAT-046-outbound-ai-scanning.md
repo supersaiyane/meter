@@ -3,9 +3,9 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P7 |
-| Status | Planned |
-| Specification | Not written. This document expands when P7 is specified |
-| Tasks | Not planned |
+| Status | Delivered |
+| Specification | [P7 spec](../specs/2026-09-28-p7-insight-and-llm-layer-design.md), section 6.3 |
+| Tasks | TASK-P7-013 |
 | Refresh cadence | Every request, inline |
 | Source | Adopted from a competitive review on 2026-08-23 |
 
@@ -23,11 +23,49 @@ The same pattern set `gitleaks` uses, applied inline to the request body rather 
 
 Every blocked or redacted request writes an `audit_event`. A control nobody can report on does not survive its first audit.
 
-## Status of this document
+## How it works
 
-Planned. The remaining sections are written when P7 is specified. Recording
-only what is decided is deliberate: a document that invents detail ahead of the
-decision is worse than a short one, because it will be believed.
+**As built, 2026-10-04, TASK-P7-013.** `finops_query/redaction.py` scans every question
+before anything else happens to it, ahead of the budget check and before any prompt is
+built, with seven rules copied from gitleaks 8.30.1, the version `make security-scan` runs.
+`private-key`, `aws-access-token`, `github-pat`, `gitlab-pat` and `stripe-access-token`
+block, and `slack-webhook-url` and `jwt` redact. Each rule keeps gitleaks' entropy floor,
+so a run of one repeated character is a pattern rather than a credential. A match is
+replaced by `[redacted: rule-id]`, naming its own rule, and the question is stored and sent
+in that form. A blocked question is refused with the gap SECRET, names the rule, and
+reaches no model.
 
-See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P7, and
-[docs/11-COMPETITIVE-REVIEW.md](../11-COMPETITIVE-REVIEW.md).
+One deliberate difference from gitleaks: its allowlist for AWS's documented example key is
+not applied, because a question is not documentation. A test runs the real gitleaks binary
+over the same samples and asserts it reports each one under the same rule.
+
+This differs from what was known before the spec in two ways. The action is set per rule
+rather than by a per tenant policy: a credential that grants access blocks, and a pasted
+token is redacted. And the record is a `redaction_event` row rather than an `audit_event`,
+because the event belongs to the exchange it was found in and to the person who typed it,
+ADR-0029.
+
+## Failure behaviour
+
+A secret in a format none of the seven rules knows passes through. That is the residual
+risk of any pattern scanner, stated rather than hidden. A match below a rule's entropy
+floor is not treated as a secret, as in gitleaks.
+
+## Security considerations
+
+No column can hold the secret: not the text, a hash, its position or its length. The stored
+question is the screened text. An error about figures in an answer reports how many rather
+than which, because the digits may be part of a secret. Redaction finds credentials, not
+personal data, ISS-226.
+
+## Interface
+
+`GET /assistant/redactions`, the asker's own events only, listed on the `/assistant`
+screen.
+
+## Not doing
+
+**Scanning what the tools return.** It is Meter's own data under the asker's scope. **The
+rest of gitleaks' rules**, which are written for repositories rather than for questions.
+
+See [docs/11-COMPETITIVE-REVIEW.md](../11-COMPETITIVE-REVIEW.md) for where this came from.

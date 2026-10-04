@@ -26,13 +26,13 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 26 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 22 in 6 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Screens built | 28 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 23 in 7 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 23 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 22 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 136 | test_*.py under tests/ |
-| Test functions | 1902 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 25 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 158 | test_*.py under tests/ |
+| Test functions | 2135 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -354,7 +354,11 @@ meter/
 │
 ├── finops_core/               IN BUILD  domain and ports. No boto3, no framework
 │   ├── errors.py              the six typed failure causes, closed set, no catch all
-│   ├── config.py              every METER_ variable, typed. No defaults except flags
+│   ├── config.py              every METER_ variable, typed. No defaults except flags.
+│   │                          Four are the assistant's: the model id, empty until
+│   │                          OPEN-10 names one, the input and output prices per
+│   │                          million tokens, which are modelled, and the monthly
+│   │                          token budget per tenant
 │   ├── constants.py           the values that are decisions rather than deployments
 │   └── domain/                frozen entities, no persistence and no cloud concern.
 │                              cost.py holds CostRecord in FOCUS 1.1, plus
@@ -367,7 +371,10 @@ meter/
 │                              same way. It takes no cost, on purpose
 │       ├── fact.py            the as_of and collected_at pair, inherited not repeated
 │       ├── account.py         Provider, AccountKey, CloudAccount. Never a bare id
-│       ├── tenant.py          Tenant and Scope. No wildcard, empty means nothing
+│       ├── tenant.py          Tenant and Scope. No wildcard, empty means nothing.
+│       │                      Scope also carries principal_id, stamped by the
+│       │                      request dependency, ADR-0029. Only a row that
+│       │                      belongs to a person reads it, and None reads nothing
 │       ├── org.py             OrgNode and the closed ROOT, OU, ACCOUNT set
 │       ├── identity.py        Principal and Entitlement
 │       ├── ingest.py          IngestRun, CollectionFailure, Watermark
@@ -383,6 +390,12 @@ meter/
 │       │                      unobserved as not killed, which sends the smaller
 │       │                      memory margin to the workloads that were killed.
 │       │                      Workload is not a Fact, it is an identity
+│       ├── insight.py         Answer, Refusal, Failure, Citation, Gap and
+│       │                      Provenance. An answer, a refusal and a failure are
+│       │                      separate types, not one with a nullable field. Prose
+│       │                      holds placeholders and no figures, and an Answer
+│       │                      cannot be built holding a figure it did not cite.
+│       │                      TASK-P7-002
 │       └── quota.py           QuotaUsage. Unpublished usage is None, never zero
 │   └── ports/                 protocols only. No implementation, no cloud import.
 │                              query.py also declares QueryParser and
@@ -407,6 +420,12 @@ meter/
 │       ├── containers.py      ContainerSource. Two methods, because a cluster and
 │       │                      a reservation fail independently
 │       ├── quotas.py          QuotaSource
+│       ├── llm.py             LlmProvider, one method, complete, over messages,
+│       │                      tool schemas and tool calls. It names no vendor, no
+│       │                      model and no region. ADR-0028, TASK-P7-001
+│       ├── pull_requests.py   PullRequestSink. Opens a pull request, and has no
+│       │                      method to merge, approve or apply one. A fake and no
+│       │                      adapter, since the code host is OPEN-13. TASK-P7-009
 │       └── identity.py        IdentityProvider and EntitlementResolver
 ├── finops_providers/          IN BUILD  aws/, grafana/, gcp/, azure/. The fakes
 │                              left this package on 2026-09-21, ADR-0022
@@ -442,6 +461,14 @@ meter/
 │   │   │                     with no quota code in it, so a figure is matched on service
 │   │   │                     and quota name, and names are somebody else's display
 │   │   │                     strings. Said in the docstring rather than buried
+│   │   ├── bedrock.py         BedrockModel, the Converse API in the hub account
+│   │   │                      with the model id from configuration, OPEN-10. Every
+│   │   │                      error becomes a typed cause, and a guardrail that
+│   │   │                      intervenes is SchemaDrift. Never run against AWS,
+│   │   │                      ISS-002. TASK-P7-004
+│   │   ├── language_model.py  language_model(settings), the one composition point
+│   │   │                      that names the vendor. None when no model is set,
+│   │   │                      and the assistant then says it is not enabled
 │   │   └── cur.py             the billing export through Athena. **Never yet
 │   │                          run**, ISS-122, and COLUMNS is the part only a
 │   │                          real export can settle. A period comes back
@@ -829,6 +856,13 @@ meter/
 │   ├── quotas.py          130 quotas including the ones nothing can measure,
 │   │                     and five increase requests with their status
 │   │                     history. P5's estate
+│   ├── llm.py             ScriptedModel, scripted by question and turn, so the
+│   │                     same request always gets the same completion, and
+│   │                     ForbiddenModel, which fails a test if it is asked
+│   │                     anything. The evaluation sets run on it in make verify
+│   ├── pull_requests.py   RecordingPullRequests, idempotent by reference, so a
+│   │                     recommendation never gets a second pull request. It
+│   │                     stands in for the adapter OPEN-13 has not chosen
 │   ├── fixtures.py        one root, two units, five accounts, one denied
 │   ├── provider.py        the failure plan. Any of the six, for any scope.
 │   │                     Takes the time it is observed at, because the
@@ -854,7 +888,9 @@ meter/
 │                             the gap match_observed exists to cross
 ├── finops_ingest/             IN BUILD  dispatcher, worker, ledger, collectors
 │   ├── ledger.py              idempotent claims, watermarks that only advance
-│   ├── registry.py            what a collector is. Cadence lives in the database
+│   ├── registry.py            what a collector is. Cadence lives in the database,
+│   │                          seeded from DEFAULT_SCHEDULE, every row with a
+│   │                          reason and a cost. team_digests is weekly, FEAT-041
 │   ├── dispatcher.py          one message per unit, keyed like the ledger claim
 │   ├── remediation.py         the only two writes Meter makes, both gated on
 │   │                          query_write_level and both recording what they
@@ -939,6 +975,14 @@ meter/
 │       │                       the provider. Stores nothing derived, retracts nothing,
 │       │                       and counts the budgets whose scope it cannot reproduce
 │       │                       on sync_error rather than dropping them
+│       ├── digests.py         FEAT-041, TASK-P7-012. DigestCollector, weekly: one
+│       │                      digest per team the bill's team tag names and one for
+│       │                      the organization. One team failing is a sync_error
+│       │                      for that team and the run continues. Nothing sends a
+│       │                      digest until OPEN-11 is answered, so every row is
+│       │                      kept unsent with that reason. A week with no billed
+│       │                      spend has no digest, because nothing collected is not
+│       │                      a quiet week
 │       └── quotas.py          FEAT-033 and FEAT-034. Every quota in a slice, including
 │                              the ones nothing can measure, which are most of them. A
 │                              quota that stops publishing usage loses its figure rather
@@ -973,6 +1017,14 @@ meter/
 │   │                          does not call the API: a plain grep fails on the
 │   │                          documentation of the decision it protects, and the obvious
 │   │                          way to make that pass would be deleting the explanation
+│   ├── tests/contract/test_no_llm_writes.py  the assistant merges, approves
+│   │                          and applies nothing. No production module names a
+│   │                          merge, an approve or an apply, with comments and
+│   │                          docstrings stripped as the quota test does, or
+│   │                          starts terraform, aws or kubectl as a process, and
+│   │                          the member role grants reads only. Authoring is
+│   │                          asserted beside them, because a check that only
+│   │                          forbids is passed by shipping nothing. TASK-P7-014
 │   └── tests/providers/aws/test_response_shapes.py  not a module, but the one
 │                              place that says what the four unproven adapters
 │                              depend on. Every response field they read, every
@@ -1019,6 +1071,12 @@ meter/
 │   │   │                      accounts denominator would tell a reader with full
 │   │   │                      visibility that coverage was complete while nine tenths of
 │   │   │                      their quotas had no usage figure
+│   │   ├── assistant.py       ask, exchanges, digests and redactions. Ask is the
+│   │   │                      only write, one row in Meter's own database, and the
+│   │   │                      question travels in the body, never in the URL. An
+│   │   │                      answer, a refusal and a failure each come back in a
+│   │   │                      shape of its own. Exchanges and redactions are the
+│   │   │                      asker's own, ADR-0029
 │   │   └── query.py           five of the eight P2 routes, including the two
 │   │                          that write. Every write refuses first: the level,
 │   │                          then whether the finding is an actual violation,
@@ -1026,11 +1084,34 @@ meter/
 │   │                          data that does not exist yet, ISS-148. Coverage
 │   │                          here counts workspaces, not findings
 │   ├── guards.py              the scope guard. No default, empty means nothing.
-│   │                          Three shapes: tenant only, ByAccount for a row
-│   │                          that names its account, and Through for one that
-│   │                          does not and inherits from the row it hangs off.
+│   │                          Five shapes: tenant only, ByAccount for a row
+│   │                          that names its account, Through for one that
+│   │                          does not and inherits from the row it hangs off,
+│   │                          PayerWide for a row about the whole payer, which a
+│   │                          narrowed scope reads none of, and ByPrincipal for a
+│   │                          row that belongs to a person, which only that person
+│   │                          reads and a global scope does not widen, ADR-0029.
 │   │                          Through recurses, so a finding is scoped through
 │   │                          its definition through its instance
+│   ├── tools.py               the tool table, eleven rows, each a name, a route and
+│   │                          the envelope model its schema is generated from. No
+│   │                          tool writes and none runs free form SQL. Moved here
+│   │                          from finops_mcp/tools.py on 2026-10-04, CHG-0110, so
+│   │                          the API can compose the assistant without importing
+│   │                          the facade, which imports it from here instead
+│   ├── toolbox.py             ApiToolbox calls a tool as the asker, over a
+│   │                          Transport: a GET of a route a screen reads, with the
+│   │                          asker's own token, so the scope is the screen's. The
+│   │                          envelope is validated before a model reads it.
+│   │                          InProcessTransport sends the call back through the
+│   │                          same application, holding a second worker thread
+│   │                          while it does, ISS-225
+│   ├── assistant.py           the service, in the order it runs: screens the
+│   │                          question for secrets and refuses a blocked one, says
+│   │                          not enabled when no model is configured, refuses
+│   │                          past the monthly budget, runs the loop with no
+│   │                          transaction open, then records the exchange and its
+│   │                          redactions in one transaction
 │   ├── identity/              behind the two ports ADR-0008 parked
 │   │   ├── local_config.py    users from a file. Refused in prod by config.py
 │   │   ├── session.py         signed, carries the scope, always expires
@@ -1049,7 +1130,11 @@ meter/
 │                              rather than one through the other: a usage row
 │                              can exist for a cluster whose own read failed.
 │                              Inventory coverage counts clusters with nodes,
-│                              because a Fargate cluster has no fleet to pack
+│                              because a Fargate cluster has no fleet to pack.
+│                              assistant.py holds the exchange, digest and
+│                              redaction repositories, and tokens_spent, the one
+│                              read across people: a tenant wide sum for the
+│                              budget, which returns a number and never a row
 │
 ├── alembic.ini                no database URL in it, env.py reads the settings
 ├── migrations/                the only way the schema changes
@@ -1107,6 +1192,18 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0025_redaction_event.py  FEAT-046. The rule and the action, one row
+│       │                      per rule per question, and no column the secret could
+│       │                      go in: not its text, a hash, its position or its
+│       │                      length. Scoped to the asker, ADR-0029
+│       ├── 0024_team_digest.py  FEAT-041. A digest kept whether or not it was
+│       │                      sent, with the reason when it was not, and no reason
+│       │                      when it was. One per audience, team and week
+│       ├── 0023_assistant_exchange.py  FEAT-038 and FEAT-042. Three outcomes
+│       │                      in one row, held apart by twelve check constraints:
+│       │                      an answer, a refusal's reason and a failure's cause
+│       │                      are each present if and only if theirs is the
+│       │                      outcome. Spend above zero needs a model id
 │       ├── 0022_container_usage.py  FEAT-036. Two tables, and the second is
 │       │                      the point: container_cluster exists so a cluster
 │       │                      nothing could measure is listed rather than
@@ -1183,6 +1280,33 @@ meter/
 │                              expiry, a modelled row cannot claim a measured
 │                              count, and a change cannot exist without its undo
 ├── finops_query/              IN BUILD  P2 query cost governance, P3 waste, P4 graph
+│   ├── insight.py             FEAT-038, TASK-P7-006 and TASK-P7-007. The loop: a
+│   │                          question, tool calls through a Toolbox, and an answer
+│   │                          whose values are read from the tool results by call
+│   │                          id and path, never from the prose. Refusals that the
+│   │                          tool results decide are made here, not by the model,
+│   │                          and a bare figure or a citation to nothing is a typed
+│   │                          SchemaDrift failure. Also the cap on tool rounds, the
+│   │                          budget refusal and the modelled cost of an exchange
+│   ├── narration.py           FEAT-039, TASK-P7-008. An anomaly narrated from its
+│   │                          own row and the change events it is given, each one
+│   │                          correlated and never caused. A source that was not
+│   │                          read is said to be unread, never reported as a quiet
+│   │                          week. Nothing calls it yet, ISS-227
+│   ├── remediation.py         FEAT-040, TASK-P7-009. A Terraform removed block for
+│   │                          the removal classes, as a pull request draft through
+│   │                          PullRequestSink. Everything else is refused with its
+│   │                          reason, never guessed. Nothing calls it yet, ISS-228
+│   ├── digest.py              FEAT-041, TASK-P7-012. A week of spend, Monday to
+│   │                          Sunday in UTC, composed into an Answer for a team or
+│   │                          for the whole organization. No model writes it, and a
+│   │                          week with no spend before it draws no comparison
+│   ├── redaction.py           FEAT-046, TASK-P7-013. Rules copied from gitleaks
+│   │                          8.30.1 with their entropy floors, each BLOCKED or
+│   │                          REDACTED. The documented example key is deliberately
+│   │                          not allowlisted, because a question is not
+│   │                          documentation. A hit keeps the rule and the action,
+│   │                          never the secret
 │   ├── containers.py          FEAT-036, TASK-P6-007. Container sizing, composed
 │   │                          onto waste.py rather than beside it: the memory
 │   │                          margins, the fourteen day floor and the saving floor
@@ -1301,7 +1425,7 @@ meter/
 │
 ├── finops_mcp/                IN BUILD  MCP server, a facade over the HTTP API
 │   ├── api.py                the only way out of this package, and it is HTTP
-│   ├── tools.py              six rows. Schemas generated from the API's own models
+│   ├── tools.py              moved to finops_api/tools.py on 2026-10-04, CHG-0110
 │   └── server.py             binds the table to the SDK. No credential of its own
 │                              Directory exists, __init__.py only. Ships as a
 │                              second process on the api image, ADR-0009
@@ -1332,7 +1456,7 @@ meter/
 | `finops_ingest` | Dispatcher, worker, run ledger, watermarks, collectors | `finops_core`, a provider | `finops-web` |
 | `finops_api` | HTTP surface, scope dependency, repository guard | `finops_core`, a provider | boto3 directly |
 | `finops-web` | User interface | `finops_api` over HTTP | anything Python |
-| `finops_mcp` | MCP tools for any model client | `finops_api` over HTTP | the service layer, repositories, boto3 |
+| `finops_mcp` | MCP tools for any model client | `finops_api` over HTTP, and `finops_api.tools` for the table it publishes, CHG-0110 | the service layer, repositories, boto3 |
 | `infra/terraform` | Hub stack, member StackSet, management role, Config aggregator and recorders | nothing | nothing |
 
 The rule that keeps multi cloud cheap: `finops_core` never imports a cloud

@@ -60,8 +60,13 @@ subprojects:
   depends_on: P0, P1
 - id: P7
   name: Insight and LLM layer
-  status: Not started. Specified and planned 2026-09-28, 14 tasks. The first sub project that
-    sends anything anywhere, and ADR-0028 decided it goes no further than the hub account
+  status: Delivered, 14 of 14 tasks in its first cut. A question answered from the routes the
+    screens read, every figure cited from a tool result and never written by the model,
+    refusals and failures as shapes of their own, a monthly token budget, secrets redacted or
+    blocked before any prompt is built, and weekly digests composed whether or not anything can
+    send them. FEAT-039 and FEAT-040 are In build because nothing reads change history or opens
+    a pull request yet, ISS-227 and ISS-228, and Bedrock spend does not yet reach the platform
+    cost screen, ISS-230
   spec: specs/2026-09-28-p7-insight-and-llm-layer-design.md
   plan: plans/P7-implementation-plan.md
   depends_on: P1, P2, P3
@@ -291,32 +296,32 @@ features:
 - id: FEAT-038
   name: Natural language cost query over a governed semantic layer
   subproject: P7
-  status: Planned
-  detail: '[ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md)'
+  status: Delivered
+  detail: '[P7 spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) sections 5 and 7, [P7 plan](docs/plans/P7-implementation-plan.md), [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md)'
   doc: docs/features/FEAT-038-natural-language-cost-query.md
 - id: FEAT-039
   name: Anomaly narration correlating cost, Config and CloudTrail
   subproject: P7
-  status: Planned
-  detail: '[ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md)'
+  status: In build
+  detail: '[P7 spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) section 2, [P7 plan](docs/plans/P7-implementation-plan.md), ISS-227'
   doc: docs/features/FEAT-039-anomaly-narration.md
 - id: FEAT-040
   name: Remediation authoring as an infrastructure as code pull request
   subproject: P7
-  status: Planned
-  detail: '[ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md)'
+  status: In build
+  detail: '[P7 spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) section 3, [P7 plan](docs/plans/P7-implementation-plan.md), ISS-228, OPEN-13'
   doc: docs/features/FEAT-040-remediation-authoring.md
 - id: FEAT-041
   name: Per team digests and executive summaries
   subproject: P7
-  status: Planned
-  detail: '[roadmap](docs/01-ROADMAP.md) P7'
+  status: Delivered
+  detail: '[P7 spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) sections 6.2 and 9, [P7 plan](docs/plans/P7-implementation-plan.md). Composed and stored, and not sent until OPEN-11 names a destination'
   doc: docs/features/FEAT-041-digests-and-summaries.md
 - id: FEAT-042
   name: Assistant bot, chat and find anything in the tool
   subproject: P7
-  status: Planned
-  detail: '[ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md)'
+  status: Delivered
+  detail: '[P7 spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) section 9, [P7 plan](docs/plans/P7-implementation-plan.md), [ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md)'
   doc: docs/features/FEAT-042-assistant-bot.md
 - id: FEAT-043
   name: FinOps Score, decomposable to the findings that moved it
@@ -339,8 +344,8 @@ features:
 - id: FEAT-046
   name: Outbound AI request scanning, redact or block secrets
   subproject: P7
-  status: Planned
-  detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md), [docs/05-SECURITY.md](docs/05-SECURITY.md)'
+  status: Delivered
+  detail: '[P7 spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) section 6.3, [P7 plan](docs/plans/P7-implementation-plan.md), [docs/05-SECURITY.md](docs/05-SECURITY.md)'
   doc: docs/features/FEAT-046-outbound-ai-scanning.md
 - id: FEAT-047
   name: Cluster node fleet optimisation as an integer linear program
@@ -557,6 +562,10 @@ adrs:
   decision: The language model runs in the hub account, on Bedrock
   status: Accepted
   doc: docs/adr/ADR-0028-the-model-runs-in-the-hub-account.md
+- id: ADR-0029
+  decision: A row that belongs to a person is scoped by that person
+  status: Accepted
+  doc: docs/adr/ADR-0029-a-row-that-belongs-to-a-person.md
 
 changes:
 - id: CHG-0001
@@ -1425,6 +1434,49 @@ changes:
     anchored to the estate clock, the misattribution is corrected in two code comments and the
     lesson, and the first of month emptiness it was confused with is ISS-221, separate and
     still open for the make seed half'
+- id: CHG-0108
+  date: 2026-10-04
+  type: Feature
+  what: P7 insight and LLM layer delivered in its first cut, fourteen tasks, two screens
+  commit: pending
+  detail: 'A question goes through a loop that calls the routes the screens read, in process
+    and under the asker''s own scope. The model cites by call and path and the loop reads every
+    value from the tool results, so no figure in an answer was written by the model. Refusals
+    name their gap and failures their cause, each a shape of its own down to the database. A
+    monthly token budget refuses before a model is reached, and a question holding a secret is
+    redacted or blocked before anything else. Digests are composed weekly and kept unsent until
+    OPEN-11. FEAT-038, FEAT-041, FEAT-042 and FEAT-046 Delivered, FEAT-039 and FEAT-040 In
+    build, ISS-227 and ISS-228. The Bedrock adapter has never run against AWS, ISS-002'
+- id: CHG-0109
+  date: 2026-10-04
+  type: Design
+  what: A guard rule for a row that belongs to a person rather than to an account
+  commit: pending
+  detail: '[ADR-0029](docs/adr/ADR-0029-a-row-that-belongs-to-a-person.md). Scope carries the
+    principal, stamped by get_scope, and ByPrincipal confines assistant_exchange and
+    redaction_event to the person who asked. It is checked ahead of the global case, so a payer
+    wide entitlement does not widen it. The month''s token sum is the one read across people,
+    and it returns a number'
+- id: CHG-0110
+  date: 2026-10-04
+  type: Refactor
+  what: The tool table moved from finops_mcp to finops_api
+  commit: pending
+  detail: 'finops_api/tools.py. The assistant runs inside the API and needs the tool specs the
+    MCP server publishes, and the API may not import the facade in front of it. The MCP server
+    now imports the table from the API, its drift gate covers every router from P0 to P5, and
+    ISS-148 names the new path'
+- id: CHG-0111
+  date: 2026-10-04
+  type: Design
+  what: Three tables for the assistant, migrations 0023 to 0025
+  commit: pending
+  detail: 'assistant_exchange, team_digest and redaction_event, documented in
+    [docs/07-DATA-MODEL.md](docs/07-DATA-MODEL.md) and classified in
+    [docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md). Both documents arrived in
+    the documentation commit after the migrations rather than with them, as the routing rule
+    asks. None of the three has a retention job yet and erasure does not reach them, ISS-226
+    and OPEN-14'
 issues:
 - id: ISS-189
   severity: LOW
@@ -2008,7 +2060,8 @@ issues:
     real CUR data. Two of the three MCP tools are still missing for the same reason, because each
     would be a facade over a route that does not exist
   status: OPEN
-  detail: '`finops_api/routes/query.py`, `finops_mcp/tools.py`'
+  detail: '`finops_api/routes/query.py`, `finops_api/tools.py`, where the tool table moved
+    from `finops_mcp/tools.py` on 2026-10-04, CHG-0110'
 - id: ISS-149
   severity: HIGH
   summary: The local stack could never show the data it ships with. docker-compose pinned
@@ -3387,6 +3440,86 @@ issues:
     modelled from the published rate, because a task cost is a pure function of its size and
     the bill carries no Fargate grain, and it is per task, because how many tasks a service
     runs is not read'
+- id: ISS-225
+  severity: MEDIUM
+  status: OPEN
+  summary: Each assistant question holds two API worker threads while the model works, so
+    enough concurrent questions stop every synchronous route
+  detail: 'finops_api/toolbox.py InProcessTransport. The ask route is synchronous and holds a
+    worker thread for the whole question, and each tool call it makes is a synchronous route
+    that needs a second. Modelled, not measured, from anyio''s default limit of forty threads:
+    twenty questions in the middle of a tool call take the whole pool, and at forty every
+    thread is held by a question waiting on a tool call that cannot get one, so nothing
+    progresses and no timeout here ends it. No load test has run. The cheapest fix is a limiter
+    on the ask route set below half the pool, answering the excess as Throttled'
+- id: ISS-226
+  severity: MEDIUM
+  status: OPEN
+  summary: A person's questions to the assistant survive an erasure request, and no P7 table
+    has a retention job
+  detail: 'scripts/ops/erase_principal.py tombstones the principal and deletes its
+    principal_scope rows, and reaches neither assistant_exchange, which holds the question a
+    person typed, nor redaction_event, which names whose question a rule fired on. Redaction
+    removes secrets, not personal data, so a question can still hold a name. team_digest holds
+    no personal data and has no retention job either. Two decisions come first and are
+    OPEN-14'
+- id: ISS-227
+  severity: MEDIUM
+  status: OPEN
+  summary: Anomaly narration is built and nothing calls it, and nothing reads Config,
+    CloudTrail or deploy history for it
+  detail: 'finops_query/narration.py composes a narration from a cost_anomaly row and the change
+    events it is given, labels every correlation with its source and its distance in time, and
+    says correlated, never caused. No collector reads Config history, CloudTrail or deploy
+    timestamps, and no route or screen calls narrate, so FEAT-039 is In build. Against a real
+    account every source would be reported as not read, which is honest and not useful. Needs
+    a read only change history collector and a place on the anomaly screen'
+- id: ISS-228
+  severity: MEDIUM
+  status: OPEN
+  summary: Remediation pull requests are authored and only a fake receives them
+  detail: 'finops_query/remediation.py authors a Terraform removed block with destroy for the
+    eight removal classes, and refuses any other class and any address with an instance key,
+    naming why. PullRequestSink has RecordingPullRequests and no adapter, because the code host
+    is OPEN-13, and no route or screen calls propose, so FEAT-040 is In build. Only removals
+    are authored: a resize needs the target value and the file that sets it, and nothing reads
+    either'
+- id: ISS-229
+  severity: LOW
+  status: OPEN
+  summary: The figure check on an answer lets the word one through, so a count of one could
+    be stated uncited
+  detail: 'finops_core/domain/insight.py SPELLED_FIGURES rejects every numeral and the spelled
+    figures from zero to trillion except one, which is also a pronoun and a determiner, as in
+    which one, and rejecting it would refuse ordinary answers. The exposure is a single uncited
+    count of one. Recorded so the exclusion is a decision rather than an oversight'
+- id: ISS-230
+  severity: MEDIUM
+  status: OPEN
+  summary: Bedrock spend will not carry finops:module, so the platform cost screen will not
+    show what the assistant costs
+  detail: 'P7 spec section 15, exit criterion 7, which no task in the P7 plan took. An on demand
+    call to a foundation model is not a resource, so the hub stack''s default_tags cannot tag
+    it, and its cost line arrives with no module. Constraint 7 puts the platform''s own cost on
+    the front page, and this would leave the newest feature off it. The per exchange estimate
+    in assistant_exchange is modelled and is not the bill. The likely fix is an application
+    inference profile in the hub stack, tagged, with its ARN as the configured model id and the
+    IAM grant moved to it, and nothing here has checked that against a real account, ISS-002'
+- id: ISS-231
+  severity: MEDIUM
+  status: OPEN
+  summary: A citation carries a value and its as_of and nothing else, so the assistant screen
+    infers from a field's name whether a figure is money
+  detail: 'finops_core/domain/insight.py Citation has no unit, no collected_at and no envelope
+    behind it. finops-web/src/components/citations.ts draws a figure as dollars when the last
+    word list of its field holds cost, spend, saving, total, change or a similar word, and as a
+    count otherwise or under meta. Measured on 2026-10-04 against all 33 numeric fields the 11
+    tools return, it classifies every one correctly, and a future tool returning money under a
+    name without such a word, or a percentage named change, would be drawn wrongly with no test
+    failing. Constraint 10 asks for both timestamps and only as_of reaches a citation. P7 spec
+    section 9 asks for a citation to expand to its call and envelope, and the exchange stores
+    the call without the envelope. A unit and collected_at belong on the tool spec, which knows
+    what its fields mean'
 
 open_questions:
 - id: OPEN-07
@@ -3464,6 +3597,22 @@ open_questions:
   blocks: 'Nothing. TASK-P7-007 builds the per tenant budget, which is the one that stops a
     runaway. A per person limit is a policy decision nobody has made'
   detail: '[P7 spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) section 13'
+- id: OPEN-13
+  question: Which code host receives a remediation pull request, and with what credential
+  status: OPEN
+  blocks: 'FEAT-040 opening anything, ISS-228. The authoring is built and tested against the
+    PullRequestSink port, so the answer costs one adapter'
+  detail: '[P7 plan](docs/plans/P7-implementation-plan.md) TASK-P7-009. The credential would be
+    the first write Meter holds anywhere, into a repository rather than a member account, and
+    it needs to open a pull request and nothing more'
+- id: OPEN-14
+  question: How long are a person's questions to the assistant kept, and does erasing a person
+    delete their exchanges or tombstone them
+  status: OPEN
+  blocks: 'ISS-226, a retention job and erasure for assistant_exchange and redaction_event'
+  detail: '[docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md). Deleting takes
+    the person''s spend out of the month''s token budget sum. Tombstoning the question and the
+    identifier keeps the spend counted'
 - id: OPEN-06
   question: 'Which regions beyond Ireland and London. ANSWERED 2026-08-23: those two only, eu-west-1 and
     eu-west-2'

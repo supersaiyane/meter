@@ -22,11 +22,11 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 62 total, 14 specified, 11 in build, 28 delivered |
-| Decisions | 28 architecture decision records |
-| Changes | 107 recorded |
-| Issues | 139 fixed, 82 open, 0 parked |
-| Open questions | 12 awaiting a decision |
+| Features | 62 total, 14 specified, 13 in build, 32 delivered |
+| Decisions | 29 architecture decision records |
+| Changes | 111 recorded |
+| Issues | 139 fixed, 89 open, 0 parked |
+| Open questions | 14 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
 
@@ -144,6 +144,14 @@ making on its own initiative about somebody's production estate. The refusal is 
 the answer rests on, not about any incomplete slice anywhere, because the second would make every
 score unavailable forever on an estate with one unread region.
 
+**P7 landed on 2026-10-04 in its first cut, and it is off by default.** A deployment with no
+model configured answers every question as not enabled and spends nothing, and the first real
+answer needs OPEN-10 answered and ISS-002 closed. Two of its six features are In build, narration
+and remediation, because nothing reads change history or opens a pull request, ISS-227 and
+ISS-228. Bedrock spend does not yet reach the platform cost screen, ISS-230, and the assistant's
+tables have no retention job or erasure, ISS-226 and OPEN-14. ISS-076 stays open: the answer set
+holds a partial scope case, and nothing yet forces a real model to cite the coverage.
+
 **Nothing has ever run in CI either.** The repository has no git remote, so
 `.gitlab-ci.yml` has never executed, and every statement anywhere in this
 repository about what the pipeline does is a reading of the file rather than a
@@ -189,7 +197,7 @@ ISS-003.
 | P4 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
-| P7 | 0 | 0 | 0 | 0 | 14 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
+| P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -365,6 +373,25 @@ ISS-003.
 | `TASK-P6-010` | Done | request and use as two figures |
 | `TASK-P6-011` | Done | the cost and cluster screens, and the journey |
 | `TASK-P6-012` | Done | a third word for a number |
+
+**P7, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P7-001` | Done | a port over a model, and nothing about a vendor |
+| `TASK-P7-002` | Done | an answer that cannot hold a figure it did not cite |
+| `TASK-P7-003` | Done | three outcomes, held apart by the database |
+| `TASK-P7-004` | Done | the adapter, and the permission it needs |
+| `TASK-P7-005` | Done | the three sets, written before the thing they judge |
+| `TASK-P7-006` | Done | question, tools, cited answer |
+| `TASK-P7-007` | Done | the budget that stops it |
+| `TASK-P7-008` | Done | narration, and which correlations are guesses |
+| `TASK-P7-009` | Done | remediation as a pull request, and nothing applied |
+| `TASK-P7-010` | Done | the guard, the routes, and three renderings |
+| `TASK-P7-011` | Done | the screen where the citations matter more than the prose |
+| `TASK-P7-012` | Done | digests, composed whether or not anybody can send them |
+| `TASK-P7-013` | Done | what must not reach a prompt |
+| `TASK-P7-014` | Done | the test that keeps the write out |
 
 <!-- generated:task-status end -->
 

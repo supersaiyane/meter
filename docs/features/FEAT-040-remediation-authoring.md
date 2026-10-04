@@ -3,9 +3,9 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P7 |
-| Status | Planned |
-| Specification | Not written. This document expands when P7 is specified |
-| Tasks | Not planned |
+| Status | In build |
+| Specification | [P7 spec](../specs/2026-09-28-p7-insight-and-llm-layer-design.md), section 3 |
+| Tasks | TASK-P7-009, TASK-P7-014 |
 | Refresh cadence | On demand |
 
 ## What it does
@@ -20,13 +20,49 @@ Meter is read only in v1. Remediation as a reviewable code change is how it acts
 
 Never merged automatically. The same constraint as the security autofix, and for the same reason.
 
-## Status of this document
+## How it works
 
-Planned. The sections a specified feature carries, how it works in detail, its
-data sources, its measured versus modelled figures, its failure behaviour, its
-security considerations and its interface, are written when P7 is specified.
-Recording only what is actually decided is deliberate: a document that invents
-detail ahead of the decision is worse than a short one, because it will be
-believed.
+**As built, 2026-10-04, TASK-P7-009 and TASK-P7-014.** `finops_query/remediation.py`
+authors a removal for the eight waste classes whose fix is deleting the resource: an idle
+instance, an unattached volume, an aged snapshot, an idle NAT gateway, an idle load
+balancer, an unassociated Elastic IP, an alarm stuck in insufficient data, and a log group
+nobody queries. The resource's Terraform address comes from FEAT-057's
+`resource_management`. The change is one new file under `meter/remediation/`, named for the
+recommendation, holding a `removed` block with `destroy = true`, on a branch named the same
+way. The file and the body both tell the reviewer to delete the resource's own block in the
+same change, because Meter does not know which file holds it.
 
-See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P7.
+The body carries the recommendation, its saving marked **modelled**, and the blast radius
+band from FEAT-044, and ends with the sentence that Meter opened the pull request and will
+never merge, approve or apply it. `propose` hands the draft to a `PullRequestSink`, and the
+port has one method, which opens.
+
+This differs from what was known before the spec, which expected CloudFormation and Grafana
+panel patches as well. Only Terraform removals are authored.
+
+**Why In build.** The sink has a fake and no adapter, because the code host is OPEN-13, and
+nothing in the product calls `propose`, ISS-228.
+
+## Failure behaviour
+
+A recommendation that cannot be authored is refused with its reason, never guessed at: a
+class whose fix is not a removal, a resource with no `resource_management` row, and an
+address with an instance key, which a `removed` block cannot target.
+
+## Security considerations
+
+Constraint 6. Nothing applies, merges or approves, and `tests/contract/test_no_llm_writes.py`
+holds three absences: no production module names a merge, an approval or an apply, none
+starts terraform, aws or kubectl as a process, and the member role grants reads only. The
+credential an adapter will need is a repository write, the first write Meter would hold
+anywhere, and it needs to open a pull request and nothing more, OPEN-13.
+
+## Interface
+
+None yet, ISS-228. `author` and `propose` in `finops_query/remediation.py`, and a refusal
+is a `NotAuthored` carrying its reason.
+
+## Not doing
+
+**A resize.** It needs the target value and the file that sets it, and nothing reads
+either. **Applying anything**, in any account, in v1.

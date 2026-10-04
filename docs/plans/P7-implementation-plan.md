@@ -368,7 +368,7 @@ and ISS-225 records the bound that puts on questions running at once.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 9, FEAT-042 |
 | Delivers | FEAT-042 |
 | Depends on | TASK-P7-010 |
@@ -378,13 +378,13 @@ and ISS-225 records the bound that puts on questions running at once.
 
 **Acceptance criteria.**
 
-- [ ] Every figure is a `Figure` with its provenance treatment, and each is traceable on
+- [x] Every figure is a `Figure` with its provenance treatment, and each is traceable on
       screen to the tool call behind it
-- [ ] A refusal names what is missing and links to the screen that would show it, where
+- [x] A refusal names what is missing and links to the screen that would show it, where
       one exists
-- [ ] Tokens and estimated cost are shown per exchange
-- [ ] `arrives` cleared in `sections.ts` for `/assistant`
-- [ ] No accessibility violations
+- [x] Tokens and estimated cost are shown per exchange
+- [x] `arrives` cleared in `sections.ts` for `/assistant`
+- [x] No accessibility violations
 
 ---
 
@@ -392,7 +392,7 @@ and ISS-225 records the bound that puts on questions running at once.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec sections 6.2 and 9, FEAT-041 |
 | Delivers | FEAT-041 |
 | Depends on | TASK-P7-010 |
@@ -409,11 +409,11 @@ already used for a budget with no collected period.
 
 **Acceptance criteria.**
 
-- [ ] A digest is composed from the same rows the screens show, with citations
-- [ ] `sent_at` nullable, and null renders as composed and not sent, with the reason
-- [ ] Weekly, in `collector_schedule` with its reason and its cost, ADR-0012
-- [ ] One team failing does not fail the run
-- [ ] `arrives` cleared in `sections.ts` for `/assistant/digests`
+- [x] A digest is composed from the same rows the screens show, with citations
+- [x] `sent_at` nullable, and null renders as composed and not sent, with the reason
+- [x] Weekly, in `collector_schedule` with its reason and its cost, ADR-0012
+- [x] One team failing does not fail the run
+- [x] `arrives` cleared in `sections.ts` for `/assistant/digests`
 
 ---
 
