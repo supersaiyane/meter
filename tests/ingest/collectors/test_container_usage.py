@@ -17,12 +17,17 @@ from uuid import UUID, uuid4
 import pytest
 from sqlalchemy import Engine, text
 
+from finops_api.db import models
 from finops_core import errors
 from finops_core.domain.account import AccountKey, Provider
 from finops_fakes import fixtures
 from finops_fakes.containers import FakeContainerSource
+from finops_fakes.cur import ESTATE, FakeCostExport
 from finops_ingest.collectors.container_usage import ContainerUsageCollector
+from finops_ingest.collectors.cost_focus import CostFocusCollector
+from finops_ingest.collectors.partitions import ensure_partition
 from finops_ingest.registry import CollectorContext
+from finops_query.containers import KIND, NO_COST, NO_REQUEST
 
 pytestmark = pytest.mark.integration
 
@@ -238,3 +243,127 @@ class TestFailuresAreTypedAndNeverZero:
                         unit=Unit(tenant_id=tenant_id), connection=connection, run_id=uuid4()
                     )
                 )
+
+
+# --- TASK-P6-007: sizing into P3's table ----------------------------------------
+
+
+@pytest.fixture(autouse=True, scope="module")
+def _partitions(partition_sandbox: None) -> None:
+    """This module creates cost partitions for the bill, so it gives them back."""
+
+
+def bill(engine: Engine, tenant: UUID) -> None:
+    """The fake bill with its container grain, so workloads have a measured cost."""
+    with engine.begin() as connection:
+        for month in {row.billing_period_start for row in ESTATE}:
+            ensure_partition(connection, "cost_focus_daily", month)
+        CostFocusCollector(FakeCostExport(split=True), clock=lambda: NOW)(
+            CollectorContext(unit=Unit(tenant_id=tenant), connection=connection, run_id=uuid4())
+        )
+
+
+def recommendations(engine: Engine, tenant: UUID) -> list[Any]:
+    with engine.connect() as connection:
+        return list(
+            connection.execute(
+                text(
+                    "SELECT resource_id, waste_class, lifecycle, source, severity, "
+                    "estimated_monthly_saving, rationale FROM recommendation "
+                    "WHERE tenant_id = :t ORDER BY resource_id"
+                ),
+                {"t": tenant},
+            )
+        )
+
+
+def refusals(engine: Engine, tenant: UUID) -> list[Any]:
+    with engine.connect() as connection:
+        return list(
+            connection.execute(
+                text(
+                    "SELECT resource_id, reason FROM sizing_refusal "
+                    "WHERE tenant_id = :t ORDER BY resource_id"
+                ),
+                {"t": tenant},
+            )
+        )
+
+
+class TestSizingIntoP3sTable:
+    def test_the_over_requested_namespace_gets_a_recommendation(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        """The finding the waste screen exists for, written where P3's are."""
+        bill(engine, tenant_id)
+        run(engine, tenant_id)
+        ledger = [row for row in recommendations(engine, tenant_id) if "/ledger/" in row[0]]
+        assert ledger, "the namespace requesting five times its use produced nothing"
+        for resource, waste_class, lifecycle, source, severity, saving, rationale in ledger:
+            assert waste_class == KIND.value, resource
+            # P3's lifecycle and P3's severity, inherited rather than restated.
+            assert lifecycle == "OPEN", resource
+            assert source == "METER", resource
+            assert severity in {"CRITICAL", "HIGH", "MEDIUM", "LOW"}, resource
+            assert saving > 0, resource
+            assert "modelled" in rationale, resource
+
+    def test_a_correctly_sized_namespace_is_not_recommended(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        """A detector that flags everything would pass the test above and fail this."""
+        bill(engine, tenant_id)
+        run(engine, tenant_id)
+        flagged = {row[0] for row in recommendations(engine, tenant_id)}
+        assert not any("/channels/" in resource for resource in flagged), flagged
+
+    def test_a_cluster_without_requests_is_refused_rather_than_recommended(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        bill(engine, tenant_id)
+        run(engine, tenant_id, account=PLAIN)
+        assert recommendations(engine, tenant_id) == []
+        reasons = {row[1] for row in refusals(engine, tenant_id)}
+        assert reasons == {NO_REQUEST}, reasons
+
+    def test_without_a_bill_every_workload_is_refused_for_want_of_a_cost(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        """No split cost, so no saving can be stated: a refusal naming ISS-003.
+
+        Not a recommendation with a saving of zero, which would rank as the least
+        valuable action rather than as the absence of one.
+        """
+        run(engine, tenant_id)
+        assert recommendations(engine, tenant_id) == []
+        reasons = {row[1] for row in refusals(engine, tenant_id)}
+        assert reasons == {NO_COST}, reasons
+
+    def test_running_twice_leaves_one_recommendation_and_one_birth(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        bill(engine, tenant_id)
+        run(engine, tenant_id)
+        first = recommendations(engine, tenant_id)
+        run(engine, tenant_id)
+        assert recommendations(engine, tenant_id) == first
+        with engine.connect() as connection:
+            births = connection.execute(
+                text(
+                    "SELECT COUNT(*) FROM recommendation_event e JOIN recommendation r "
+                    "ON r.recommendation_id = e.recommendation_id "
+                    "WHERE r.tenant_id = :t AND e.from_lifecycle IS NULL"
+                ),
+                {"t": tenant_id},
+            ).scalar_one()
+        assert births == len(first)
+
+
+def test_there_is_no_second_recommendation_table() -> None:
+    """The plan's own criterion. Container recommendations are P3 recommendations.
+
+    Counted rather than described: a task that found itself creating a second list
+    would have found a disagreement with the spec, and this is where it would show.
+    """
+    names = {name for name in models.metadata.tables if "recommendation" in name}
+    assert names == {"recommendation", "recommendation_event"}, names

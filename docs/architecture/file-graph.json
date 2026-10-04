@@ -501,6 +501,7 @@
     "finops_query/blast_radius.py",
     "finops_query/classify.py",
     "finops_query/commitment.py",
+    "finops_query/containers.py",
     "finops_query/cost_model.py",
     "finops_query/gate.py",
     "finops_query/graph.py",
@@ -685,6 +686,7 @@
     "tests/providers/aws/test_aws_topology.py",
     "tests/providers/aws/test_commitment.py",
     "tests/providers/aws/test_config_inventory.py",
+    "tests/providers/aws/test_container_insights.py",
     "tests/providers/aws/test_credentials.py",
     "tests/providers/aws/test_cur.py",
     "tests/providers/aws/test_health.py",
@@ -712,6 +714,7 @@
     "tests/query/test_blast_radius.py",
     "tests/query/test_classify.py",
     "tests/query/test_commitment.py",
+    "tests/query/test_containers.py",
     "tests/query/test_cost_model.py",
     "tests/query/test_gate.py",
     "tests/query/test_graph.py",
@@ -5535,12 +5538,27 @@
     },
     {
       "s": "finops_ingest/collectors/container_usage.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/container_usage.py",
       "t": "finops_core/errors.py",
       "k": "python"
     },
     {
       "s": "finops_ingest/collectors/container_usage.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/container_usage.py",
+      "t": "finops_query/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/container_usage.py",
+      "t": "finops_query/severity.py",
       "k": "python"
     },
     {
@@ -6341,6 +6359,26 @@
     {
       "s": "finops_query/blast_radius.py",
       "t": "finops_query/graph.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/containers.py",
+      "t": "finops_core/domain/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/containers.py",
+      "t": "finops_core/domain/observation.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/containers.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/containers.py",
+      "t": "finops_query/waste.py",
       "k": "python"
     },
     {
@@ -7510,6 +7548,11 @@
     },
     {
       "s": "tests/ingest/collectors/test_container_usage.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_container_usage.py",
       "t": "finops_core/__init__.py",
       "k": "python"
     },
@@ -7525,7 +7568,22 @@
     },
     {
       "s": "tests/ingest/collectors/test_container_usage.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_container_usage.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_container_usage.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_container_usage.py",
+      "t": "finops_query/containers.py",
       "k": "python"
     },
     {
@@ -8304,6 +8362,11 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/aws/test_container_insights.py",
+      "t": "finops_providers/aws/container_insights.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/aws/test_credentials.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -8631,6 +8694,31 @@
     {
       "s": "tests/query/test_commitment.py",
       "t": "finops_query/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_containers.py",
+      "t": "finops_core/domain/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_containers.py",
+      "t": "finops_core/domain/observation.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_containers.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_containers.py",
+      "t": "finops_query/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_containers.py",
+      "t": "finops_query/containers.py",
       "k": "python"
     },
     {

@@ -136,7 +136,7 @@ a duplicate.
 | `Lifecycle` | class | `finops_core/domain/waste.py:39` | Where a recommendation is. The event log is what says how it got there. | `finops_api/lifecycle.py`, `finops_ingest/collectors/score.py` |
 | `Source` | class | `finops_core/domain/waste.py:68` | Who found it. One table holds all of them. | nothing in this tree |
 | `WasteClass` | class | `finops_core/domain/waste.py:77` | The closed list. A free text class is one no screen can label and no score | `finops_api/routes/waste.py` |
-| `confidence_of` | function | `finops_core/domain/waste.py:108` | How sure the estimate is, from how long it watched. | `finops_ingest/collectors/commitment_actions.py`, `finops_ingest/collectors/waste_cloudwatch.py`, `finops_ingest/collectors/waste_compute.py`, `finops_ingest/collectors/waste_parking.py` |
+| `confidence_of` | function | `finops_core/domain/waste.py:108` | How sure the estimate is, from how long it watched. | `finops_ingest/collectors/commitment_actions.py`, `finops_ingest/collectors/container_usage.py`, `finops_ingest/collectors/waste_cloudwatch.py`, `finops_ingest/collectors/waste_compute.py`, and 1 more |
 | `Recommendation` | class | `finops_core/domain/waste.py:123` | One thing worth changing, whatever found it. | `finops_providers/aws/recommendations.py` |
 | `Recommendation.confidence` | method | `finops_core/domain/waste.py:169` |  | nothing in this tree |
 | `Recommendation.may_move_to` | method | `finops_core/domain/waste.py:172` |  | nothing in this tree |
@@ -250,9 +250,9 @@ a duplicate.
 | `ConfigAggregatorInventory` | class | `finops_providers/aws/config_inventory.py:236` | One aggregator query per slice, paginated, with a bounded retry. | nothing in this tree |
 | `ConfigAggregatorInventory.enrolled_slices` | method | `finops_providers/aws/config_inventory.py:272` | Every slice this source is expected to read, from configuration. | nothing in this tree |
 | `ConfigAggregatorInventory.read_slice` | method | `finops_providers/aws/config_inventory.py:281` | One account and region of the graph, with what was missed named. | `finops_ingest/collectors/inventory.py`, `finops_ingest/collectors/topology.py` |
-| `ContainerInsightsSource` | class | `finops_providers/aws/container_insights.py:124` | `ContainerSource` over CloudWatch. Reads only, per constraint 6. | nothing in this tree |
-| `ContainerInsightsSource.list_clusters` | method | `finops_providers/aws/container_insights.py:168` | Every cluster publishing container metrics in this account and region. | `finops_ingest/collectors/container_usage.py` |
-| `ContainerInsightsSource.reservations` | method | `finops_providers/aws/container_insights.py:239` | Requested against used per workload, with requests where published. | `finops_ingest/collectors/container_usage.py` |
+| `ContainerInsightsSource` | class | `finops_providers/aws/container_insights.py:135` | `ContainerSource` over CloudWatch. Reads only, per constraint 6. | nothing in this tree |
+| `ContainerInsightsSource.list_clusters` | method | `finops_providers/aws/container_insights.py:179` | Every cluster publishing container metrics in this account and region. | `finops_ingest/collectors/container_usage.py` |
+| `ContainerInsightsSource.reservations` | method | `finops_providers/aws/container_insights.py:250` | Requested against used per workload, with requests where published. | `finops_ingest/collectors/container_usage.py` |
 | `AwsSession` | class | `finops_providers/aws/credentials.py:44` | An assumed role session. Satisfies `ProviderSession`, opaque to the domain. | nothing in this tree |
 | `AwsCredentialBroker` | class | `finops_providers/aws/credentials.py:53` | Produces a scoped session for a target account, and caches it sensibly. | nothing in this tree |
 | `AwsCredentialBroker.external_id` | method | `finops_providers/aws/credentials.py:72` | Read the ExternalId once. Never logged, never put in an error detail. | nothing in this tree |
@@ -312,7 +312,7 @@ a duplicate.
 | `BudgetCollector` | class | `finops_ingest/collectors/budgets.py:70` | The payer's budgets, stored as read. | nothing in this tree |
 | `CommitmentCollector` | class | `finops_ingest/collectors/commitment.py:84` | Reads a month of commitment utilization and coverage, and writes both. | nothing in this tree |
 | `CommitmentActionsCollector` | class | `finops_ingest/collectors/commitment_actions.py:90` | A coverage gap, as something somebody is accountable for closing. | nothing in this tree |
-| `ContainerUsageCollector` | class | `finops_ingest/collectors/container_usage.py:107` | Clusters and reservations for one account in one region. | nothing in this tree |
+| `ContainerUsageCollector` | class | `finops_ingest/collectors/container_usage.py:171` | Clusters and reservations for one account in one region. | nothing in this tree |
 | `CostAnomalyCollector` | class | `finops_ingest/collectors/cost_anomaly.py:92` | Judges the most recent day of each account and service pair. | nothing in this tree |
 | `CostFocusCollector` | class | `finops_ingest/collectors/cost_focus.py:163` | Reads one billing period, writes it, and removes what was withdrawn. | nothing in this tree |
 | `roll_up_period` | function | `finops_ingest/collectors/cost_rollup.py:66` | Recompute one month from its line items, and drop what is no longer there. | `finops_ingest/collectors/cost_focus.py` |

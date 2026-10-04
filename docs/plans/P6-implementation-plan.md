@@ -257,7 +257,7 @@ schedule row with its reason and its cost, per ADR-0012. Migration
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec sections 5.3 and 5.4, FEAT-036 |
 | Delivers | FEAT-036 |
 | Depends on | TASK-P6-006, P3 delivered |

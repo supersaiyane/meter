@@ -31,8 +31,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 7 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 23 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 22 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 132 | test_*.py under tests/ |
-| Test functions | 1845 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 134 | test_*.py under tests/ |
+| Test functions | 1875 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1164,6 +1164,14 @@ meter/
 │                              expiry, a modelled row cannot claim a measured
 │                              count, and a change cannot exist without its undo
 ├── finops_query/              IN BUILD  P2 query cost governance, P3 waste, P4 graph
+│   ├── containers.py          FEAT-036, TASK-P6-007. Container sizing, composed
+│   │                          onto waste.py rather than beside it: the memory
+│   │                          margins, the fourteen day floor and the saving floor
+│   │                          are P3's, imported. CPU at the 99th percentile of the
+│   │                          daily peak, memory at peak plus 15 or 25 percent. An
+│   │                          unobserved OOM status gets the smaller margin and a
+│   │                          sentence saying the check could not be made, which a
+│   │                          test reads. Fargate is left to the matrix
 │   ├── quota.py               FEAT-034's draft: the increase Meter would ask for, its
 │   │                          working, a console link and a CLI command, plus four
 │   │                          refusals to draft at all. It emits the CLI spelling

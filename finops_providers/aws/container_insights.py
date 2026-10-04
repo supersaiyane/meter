@@ -101,7 +101,15 @@ def _decimal(raw: Any) -> Decimal | None:
 class _Query:
     """One metric to ask for, and what it is about."""
 
-    __slots__ = ("cluster", "dimensions", "metric", "namespace", "statistic", "workload")
+    __slots__ = (
+        "cluster",
+        "dimensions",
+        "metric",
+        "namespace",
+        "reduce",
+        "statistic",
+        "workload",
+    )
 
     def __init__(
         self,
@@ -110,11 +118,14 @@ class _Query:
         statistic: str,
         dimensions: Sequence[tuple[str, str]],
         cluster: str,
+        reduce: str,
         namespace: str = "",
         workload: str = "",
     ) -> None:
         self.metric = metric
         self.statistic = statistic
+        #: How the hourly series becomes one figure. See `_reduce`.
+        self.reduce = reduce
         self.dimensions = tuple(dimensions)
         self.cluster = cluster
         self.namespace = namespace
@@ -261,6 +272,7 @@ class ContainerInsightsSource:
                 _Query(
                     metric="pod_cpu_usage_total",
                     statistic="Maximum",
+                    reduce="p99",
                     dimensions=dimensions,
                     cluster=cluster,
                     namespace=namespace,
@@ -271,6 +283,7 @@ class ContainerInsightsSource:
                 _Query(
                     metric="pod_memory_working_set",
                     statistic="Maximum",
+                    reduce="max",
                     dimensions=dimensions,
                     cluster=cluster,
                     namespace=namespace,
@@ -282,6 +295,7 @@ class ContainerInsightsSource:
                     _Query(
                         metric="pod_cpu_request",
                         statistic="Average",
+                        reduce="latest",
                         dimensions=dimensions,
                         cluster=cluster,
                         namespace=namespace,
@@ -292,6 +306,7 @@ class ContainerInsightsSource:
                     _Query(
                         metric="pod_memory_request",
                         statistic="Average",
+                        reduce="latest",
                         dimensions=dimensions,
                         cluster=cluster,
                         namespace=namespace,
@@ -373,10 +388,12 @@ class ContainerInsightsSource:
     def _metric_data(
         client: Any, batch: Sequence[_Query], start: datetime, end: datetime
     ) -> dict[int, Decimal]:
-        """The peak of each query in the batch, keyed by its position in it.
+        """One figure per query in the batch, keyed by its position in it.
 
-        A query with no values is absent from the result rather than zero, which is
-        what keeps an unpublished request out of the request column.
+        The whole series is gathered first, across pages, and only then reduced: a
+        percentile of the values on one page is not a percentile of the series. A
+        query with no values is absent from the result rather than zero, which is what
+        keeps an unpublished request out of the request column.
         """
         queries = [
             {
@@ -396,25 +413,54 @@ class ContainerInsightsSource:
             }
             for index, one in enumerate(batch)
         ]
-        peaks: dict[int, Decimal] = {}
+        series: dict[int, list[tuple[datetime | None, Decimal]]] = {}
         pages = client.get_paginator("get_metric_data").paginate(
             MetricDataQueries=queries, StartTime=start, EndTime=end
         )
         for page in pages:
             for result in page.get("MetricDataResults") or ():
-                parsed = (_decimal(value) for value in result.get("Values") or ())
-                present = [value for value in parsed if value is not None]
-                if not present:
-                    continue
                 index = _index_of(str(result.get("Id") or ""))
                 if index is None or index >= len(batch):
                     continue
-                peak = max(present)
-                # A paginated series arrives across pages, so a later page can carry
-                # more of the same query's values. The peak of the peaks is the peak.
-                seen = peaks.get(index)
-                peaks[index] = peak if seen is None else max(seen, peak)
-        return peaks
+                stamps = list(result.get("Timestamps") or ())
+                for position, raw in enumerate(result.get("Values") or ()):
+                    value = _decimal(raw)
+                    if value is None:
+                        continue
+                    stamp = stamps[position] if position < len(stamps) else None
+                    series.setdefault(index, []).append((stamp, value))
+        return {index: _reduce(points, batch[index].reduce) for index, points in series.items()}
+
+
+def _reduce(points: Sequence[tuple[datetime | None, Decimal]], how: str) -> Decimal:
+    """One figure from an hourly series, by the rule the figure is used under.
+
+    `p99` for CPU use, because spec section 5.3 sizes CPU at the 99th percentile of the
+    peak rate. This adapter used to keep the maximum instead, while storing it in a
+    field named for the percentile. A maximum is the safe direction, it never
+    undersizes, but it is not the rule the rationale states, so a real deployment would
+    have quietly applied a different rule from the one it described.
+
+    `max` for memory, because memory is sized at its peak and a percentile of memory is
+    a number that kills a workload on the day it is exceeded.
+
+    `latest` for a request, because the current request is what a recommendation is
+    measured against. The largest request in the window would overstate one that was
+    lowered last week, and so overstate the saving.
+    """
+    values = [value for _, value in points]
+    if how == "max":
+        return max(values)
+    if how == "latest":
+        stamped = [(stamp, value) for stamp, value in points if stamp is not None]
+        if stamped:
+            return max(stamped, key=lambda pair: pair[0])[1]
+        return values[0]
+    if how == "p99":
+        ordered = sorted(values)
+        rank = max(0, min(len(ordered) - 1, (99 * len(ordered)) // 100))
+        return ordered[rank]
+    raise ValueError(f"no reduction called {how}")
 
 
 def _utc() -> Any:

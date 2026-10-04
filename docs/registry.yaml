@@ -3336,6 +3336,20 @@ issues:
     October the same day they were added. Drift is now anchored to the estate clock and
     monotonic, over the same one to one point one five range, and the seed tests pass with the
     clock frozen to the 1st, 2nd, 4th, 15th and 28th. The rest of the backend suite did not move'
+- id: ISS-223
+  severity: MEDIUM
+  status: OPEN
+  summary: The fake container estate reports OOM status for clusters with enhanced
+    observability, and the AWS adapter never does
+  detail: 'finops_fakes/containers.py observes kills on an enhanced cluster, so the larger
+    25 percent memory margin is reachable in every test. finops_providers/aws/container_insights.py
+    always reports UNOBSERVED, following spec section 5.4, which says Container Insights does not
+    reliably report OOM events. Enhanced observability may publish an OOM termination metric, but
+    no metric name here has been checked against a real account, so the adapter was not changed
+    on a belief. The consequence today is that against a real account every EC2 workload gets
+    the 15 percent margin and the sentence saying the check could not be made. The contract
+    suite constrains only clusters that cannot report requests, so both implementations pass
+    while disagreeing. Resolve with ISS-002'
 
 open_questions:
 - id: OPEN-07
