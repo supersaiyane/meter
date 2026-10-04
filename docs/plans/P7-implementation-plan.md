@@ -149,7 +149,7 @@ exists.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 10, ADR-0028 |
 | Delivers | Part of FEAT-038 |
 | Depends on | TASK-P7-001 |
@@ -159,16 +159,16 @@ exists.
 
 **Acceptance criteria.**
 
-- [ ] Never run against AWS, stated in the first line, ISS-002
-- [ ] Held to a contract suite alongside the fake
-- [ ] Every response field it reads exists in the botocore service model, added to
+- [x] Never run against AWS, stated in the first line, ISS-002
+- [x] Held to a contract suite alongside the fake
+- [x] Every response field it reads exists in the botocore service model, added to
       `tests/providers/aws/test_response_shapes.py` **before** the adapter is written.
       That order caught the request status defect in P5 and is the only reason it was
       caught before a real account rather than by a customer
-- [ ] The hub role grants `bedrock:InvokeModel` and
+- [x] The hub role grants `bedrock:InvokeModel` and
       `bedrock:InvokeModelWithResponseStream` scoped to named model identifiers, never a
       wildcard, asserted against the Terraform
-- [ ] No member account role gains anything, asserted
+- [x] No member account role gains anything, asserted
 
 ---
 

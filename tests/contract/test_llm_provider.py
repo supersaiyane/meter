@@ -1,4 +1,4 @@
-"""The `LlmProvider` sentences, held to the fake now and to the adapter from TASK-P7-004.
+"""The `LlmProvider` sentences, held to the fake and to the Bedrock adapter alike.
 
 Four sentences, and the last is the one the plan names:
 
@@ -24,6 +24,7 @@ from dataclasses import dataclass
 
 import pytest
 
+from finops_core.config import Settings
 from finops_core.errors import CollectionError, NotOptedIn, Unreachable
 from finops_core.ports.llm import (
     CompletionRequest,
@@ -35,7 +36,16 @@ from finops_core.ports.llm import (
     ToolResult,
     ToolSchema,
 )
-from finops_fakes.llm import UNSCRIPTED, ScriptedModel
+from finops_fakes.llm import UNSCRIPTED, Script, ScriptedModel
+from finops_providers.aws.bedrock import BedrockModel
+from tests.providers.aws.converse import (
+    NOT_ENABLED,
+    ConverseDouble,
+    client_error,
+    reply,
+    text,
+    tool_use,
+)
 
 COST_TOOL = ToolSchema(name="get_cost_by_service", description="Cost by service, this month.")
 
@@ -60,8 +70,8 @@ class ModelUnderTest:
     answer_request: CompletionRequest
 
 
-def _fake() -> ModelUnderTest:
-    script = {
+def _script() -> Script:
+    return {
         ASKS_FOR_A_TOOL: (
             Message(
                 role=Role.ASSISTANT,
@@ -70,22 +80,43 @@ def _fake() -> ModelUnderTest:
         ),
         ANSWERS_IN_PROSE: (Message(role=Role.ASSISTANT, text="One tool reads cost by service."),),
     }
+
+
+def _fake(_settings: Settings) -> ModelUnderTest:
     return ModelUnderTest(
-        available=ScriptedModel(script),
+        available=ScriptedModel(_script()),
         unavailable=ScriptedModel.unavailable(),
         tool_request=_request(ASKS_FOR_A_TOOL),
         answer_request=_request(ANSWERS_IN_PROSE),
     )
 
 
-#: TASK-P7-004 adds the adapter here, over a stubbed client, so the same sentences
-#: hold it and the fake.
-SUBJECTS: dict[str, Callable[[], ModelUnderTest]] = {"fake": _fake}
+def _bedrock(settings: Settings) -> ModelUnderTest:
+    """TASK-P7-004. The adapter over a double that validates every request it is sent
+    against the Converse input shape, and answers by question."""
+    configured = settings.model_copy(update={"assistant_model_id": "a-configured-model"})
+    answering = ConverseDouble(
+        replies={
+            ASKS_FOR_A_TOOL: reply(tool_use("tooluse_a", "get_cost_by_service"), stop="tool_use"),
+            ANSWERS_IN_PROSE: reply(text("One tool reads cost by service.")),
+        }
+    )
+    refusing = ConverseDouble(error=client_error("AccessDeniedException", NOT_ENABLED))
+    return ModelUnderTest(
+        available=BedrockModel(configured, client_factory=lambda: answering),
+        unavailable=BedrockModel(configured, client_factory=lambda: refusing),
+        tool_request=_request(ASKS_FOR_A_TOOL),
+        answer_request=_request(ANSWERS_IN_PROSE),
+    )
+
+
+#: The same sentences hold the adapter and the fake.
+SUBJECTS: dict[str, Callable[[Settings], ModelUnderTest]] = {"fake": _fake, "bedrock": _bedrock}
 
 
 @pytest.fixture(params=sorted(SUBJECTS))
-def subject(request: pytest.FixtureRequest) -> ModelUnderTest:
-    return SUBJECTS[request.param]()
+def subject(request: pytest.FixtureRequest, settings: Settings) -> ModelUnderTest:
+    return SUBJECTS[request.param](settings)
 
 
 def test_the_model_satisfies_the_port(subject: ModelUnderTest) -> None:
@@ -135,7 +166,7 @@ def test_every_failure_is_one_of_the_typed_causes(subject: ModelUnderTest) -> No
 
 def test_the_fake_answers_the_same_request_the_same_way_twice() -> None:
     """The plan's acceptance criterion, asserted by calling it twice."""
-    model = _fake().available
+    model = ScriptedModel(_script())
 
     first = model.complete(_request(ASKS_FOR_A_TOOL))
     second = model.complete(_request(ASKS_FOR_A_TOOL))

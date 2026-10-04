@@ -147,6 +147,27 @@ variable "org_reader_role_arn" {
   default     = ""
 }
 
+variable "assistant_model_ids" {
+  description = <<-EOT
+    Bedrock foundation model identifiers the task role may invoke, ADR-0028.
+
+    Empty is valid and is the default: no model has been chosen, OPEN-10, the role
+    grants nothing, and the assistant says it is not enabled. Each identifier is
+    named exactly, because a wildcard would grant every model the service ever adds.
+    The application's METER_ASSISTANT_MODEL_ID must be one of these.
+  EOT
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition = alltrue([
+      for model_id in var.assistant_model_ids :
+      length(trimspace(model_id)) > 0 && !strcontains(model_id, "*")
+    ])
+    error_message = "A model identifier is named exactly. A wildcard grants every model the service adds."
+  }
+}
+
 variable "metric_namespace" {
   description = "The CloudWatch namespace Meter publishes its own metrics to."
   type        = string
