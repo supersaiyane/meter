@@ -123,7 +123,7 @@ exists.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 6.1, constraint 11 |
 | Delivers | Part of FEAT-038 |
 | Depends on | TASK-P7-002 |
@@ -133,15 +133,15 @@ exists.
 
 **Acceptance criteria.**
 
-- [ ] `answer` present if and only if `outcome` is `ANSWERED`, `refusal_reason` if and
+- [x] `answer` present if and only if `outcome` is `ANSWERED`, `refusal_reason` if and
       only if `REFUSED`, `failure_cause` if and only if `FAILED`. All three watched
       refusing, in both directions
-- [ ] `failure_cause` constrained to the seven typed causes, mirrored from
+- [x] `failure_cause` constrained to the seven typed causes, mirrored from
       `finops_core.errors` the way `ERROR_TYPES` already is
-- [ ] `est_cost >= 0` and `answered_at >= asked_at`
-- [ ] `question` stored as typed, with no normalisation, because the wording is the
+- [x] `est_cost >= 0` and `answered_at >= asked_at`
+- [x] `question` stored as typed, with no normalisation, because the wording is the
       evidence when an answer turns out wrong
-- [ ] Backward compatible, constraint 12
+- [x] Backward compatible, constraint 12
 
 ---
 

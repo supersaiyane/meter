@@ -1339,6 +1339,95 @@ quota_request_history = Table(
 )
 
 
+#: P7, 0023. The two closed vocabularies `assistant_exchange` is checked against, mirrored
+#: from `finops_core.domain.insight` the way `ERROR_TYPES` mirrors the error taxonomy, and
+#: held equal to the enums by `tests/db/test_p7_constraints.py`.
+EXCHANGE_OUTCOMES = ("ANSWERED", "REFUSED", "FAILED")
+REFUSAL_GAPS = ("tool", "figure", "scope", "budget", "secret")
+
+assistant_exchange = Table(
+    "assistant_exchange",
+    metadata,
+    #: FEAT-038, 0023. One question, and which of three things came back. Our own work, so
+    #: `asked_at` and `answered_at` rather than `as_of`: the `as_of` of every cited figure is
+    #: inside `citations`, beside the figure it dates.
+    Column("exchange_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    #: The session's identifier and not a foreign key: principals are not persisted yet,
+    #: see `finops_api.deps.get_access_context`.
+    Column("principal_id", Text, nullable=False),
+    #: As typed. Never normalised, because the wording is the evidence when an answer
+    #: turns out wrong.
+    Column("question", Text, nullable=False),
+    Column("outcome", Text, nullable=False),
+    Column("answer", Text),
+    Column("refusal_gap", Text),
+    Column("refusal_reason", Text),
+    Column("refusal_screen", Text),
+    Column("failure_cause", Text),
+    Column("failure_detail", Text),
+    Column("citations", JSONB, nullable=False),
+    #: In the order they were made, so an answer can be replayed.
+    Column("tool_calls", JSONB, nullable=False),
+    Column("model_id", Text),
+    #: No default on any of the three spend columns. A writer that forgot them would
+    #: otherwise record a confident zero.
+    Column("input_tokens", Integer, nullable=False),
+    Column("output_tokens", Integer, nullable=False),
+    Column("est_cost", Numeric(20, 10), nullable=False),
+    Column("asked_at", DateTime(timezone=True), nullable=False),
+    Column("answered_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint(_in_list("outcome", EXCHANGE_OUTCOMES), name="ck_assistant_exchange__outcome"),
+    CheckConstraint(
+        "(outcome = 'ANSWERED') = (length(trim(coalesce(answer, ''))) > 0)",
+        name="ck_assistant_exchange__answer_iff_answered",
+    ),
+    CheckConstraint(
+        "(outcome = 'REFUSED') = "
+        f"(length(trim(coalesce(refusal_reason, ''))) >= {REASON_MIN_LENGTH})",
+        name="ck_assistant_exchange__reason_iff_refused",
+    ),
+    CheckConstraint(
+        "(outcome = 'REFUSED') = (refusal_gap IS NOT NULL) AND "
+        f"(refusal_gap IS NULL OR {_in_list('refusal_gap', REFUSAL_GAPS)})",
+        name="ck_assistant_exchange__gap_iff_refused",
+    ),
+    CheckConstraint(
+        "refusal_screen IS NULL OR outcome = 'REFUSED'",
+        name="ck_assistant_exchange__screen_only_on_refusal",
+    ),
+    CheckConstraint(
+        "(outcome = 'FAILED') = (failure_cause IS NOT NULL) AND "
+        f"(failure_cause IS NULL OR {_in_list('failure_cause', ERROR_TYPES)})",
+        name="ck_assistant_exchange__cause_iff_failed",
+    ),
+    CheckConstraint(
+        "failure_detail IS NULL OR outcome = 'FAILED'",
+        name="ck_assistant_exchange__detail_only_on_failure",
+    ),
+    CheckConstraint(
+        "jsonb_typeof(citations) = 'array' AND jsonb_typeof(tool_calls) = 'array' "
+        "AND (outcome = 'ANSWERED' OR citations = '[]'::jsonb)",
+        name="ck_assistant_exchange__citations_only_on_answer",
+    ),
+    CheckConstraint(
+        "input_tokens >= 0 AND output_tokens >= 0 AND est_cost >= 0",
+        name="ck_assistant_exchange__spend_not_negative",
+    ),
+    CheckConstraint(
+        "model_id IS NOT NULL OR (input_tokens = 0 AND output_tokens = 0 AND est_cost = 0)",
+        name="ck_assistant_exchange__spend_needs_a_model",
+    ),
+    CheckConstraint("answered_at >= asked_at", name="ck_assistant_exchange__answered_after_asked"),
+    CheckConstraint(
+        "length(trim(principal_id)) > 0 AND length(trim(question)) > 0",
+        name="ck_assistant_exchange__who_and_what_not_blank",
+    ),
+    Index("ix_assistant_exchange__principal", "tenant_id", "principal_id", "asked_at"),
+    Index("ix_assistant_exchange__tenant_month", "tenant_id", "asked_at"),
+)
+
+
 #: Every table in the schema. Used by the drift test and by the repository layer.
 ALL_TABLES = tuple(metadata.sorted_tables)
 
