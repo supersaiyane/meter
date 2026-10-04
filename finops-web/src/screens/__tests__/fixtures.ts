@@ -66,6 +66,13 @@ export const TREE: FlatNode[] = [
  */
 export const posted: string[] = [];
 
+/**
+ * What each write carried, in the order of `posted`, and undefined for one that carried no
+ * body. A question to the assistant travels in the body, and a test asserting it never reached
+ * the URL needs to see both halves.
+ */
+export const postedBodies: unknown[] = [];
+
 export function clientReturning(
   answers: Readonly<Record<string, ApiEnvelope<unknown>>>,
   failure?: Error,
@@ -85,8 +92,9 @@ export function clientReturning(
       }
       return Promise.resolve(answer);
     },
-    post: <T>(path: string): Promise<ApiEnvelope<T>> => {
+    post: <T>(path: string, body?: unknown): Promise<ApiEnvelope<T>> => {
       posted.push(path);
+      postedBodies.push(body);
       if (failure) return Promise.reject(failure);
       const answer = answers[path];
       if (answer === undefined) {

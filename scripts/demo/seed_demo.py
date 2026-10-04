@@ -139,10 +139,18 @@ DEMO_TABLES = (
     "quota_request_history",
     "quota_request",
     "quota_usage",
+    # P7, FEAT-041. Above `ingest_run` like the P4 to P6 tables, because each digest
+    # carries the run that composed it.
+    "team_digest",
     "ingest_run",
     "platform_cost",
     "org_node",
     "cloud_account",
+    # P7, FEAT-038, FEAT-042 and FEAT-046. The seed writes neither, and a person asking a
+    # question on the demo writes both, so unseed removes them. The event references its
+    # exchange and has no cascade, so the event goes first.
+    "redaction_event",
+    "assistant_exchange",
     # FEAT-051. Added with the table in TASK-P2-026 and missed here, so unseed
     # failed on the foreign key rather than removing the estate. A table that
     # references the tenant and is not in this list makes the teardown a lie.

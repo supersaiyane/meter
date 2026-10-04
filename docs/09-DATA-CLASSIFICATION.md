@@ -42,6 +42,9 @@ that before there is data in it, which is the only cheap moment to do it.
 | `quota_usage` | C | Service limits and how much of each an account uses, which is the shape and the scale of somebody's estate. No personal data: a quota belongs to an account, never to a person | Current state only. Each run replaces the row, because a limit nobody raised is the same fact today as it was yesterday | Not applicable |
 | `quota_request` | C | An increase somebody asked AWS for, what they asked for, and whether it was granted. `submitted_by_meter` is always false | Life of the request. A denial is the part worth keeping | Not applicable |
 | `quota_request_history` | C | Every status a request passed through, and when | Life of the request | Not applicable |
+| `assistant_exchange` | **P** and C | The question a named person typed, with any secret already replaced by the name of the rule that found it, and the answer, refusal or failure, the tool calls, the tokens and the modelled cost | **Not decided**, OPEN-14. No retention job reads it | **Not yet.** `erase_principal` does not reach it, ISS-226 |
+| `redaction_event` | **P** | Which rule fired on whose question and what was done. Never the secret, its hash, its position or its length | **Not decided**, OPEN-14 | **Not yet**, ISS-226 |
+| `team_digest` | C | A week of spend for one team or the whole payer, as prose and citations. No personal data: the team is a cost allocation label | **Not decided**, OPEN-14 | Not applicable |
 
 ### The account root email address
 

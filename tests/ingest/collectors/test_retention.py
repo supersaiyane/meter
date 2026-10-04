@@ -551,6 +551,9 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         # above: the list is exhaustive, so a collector with a schedule row and no declaration
         # fails here rather than reaching a dispatcher nobody was watching.
         "quotas",
+        # FEAT-041, added with the collector in TASK-P7-012. Weekly, and never run, so it is
+        # due at `AT`. Missed when the collector landed and caught here by the full suite.
+        "team_digests",
     }
 
 

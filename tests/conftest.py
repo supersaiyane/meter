@@ -178,6 +178,29 @@ def partition_sandbox(engine: Engine) -> Iterator[None]:
 
 
 @pytest.fixture
+def clear_split_gap(engine: Engine) -> Iterator[None]:
+    """Remove the split gap a test leaves when it seeds a bill with no split data.
+
+    Promoted here when the P7 suites became the third, fourth and fifth to need it; the
+    two P6 modules that wrote it first keep their own copies. Migration 0018's downgrade
+    refuses while any sync_error row records `Misconfigured`, because it will not delete a
+    record of a failure to make a schema change succeed, so one row left behind turns the
+    round trip test red, and on 2026-10-04 it did. Built as a Core construct so the
+    predicate is bound parameters rather than text.
+    """
+    from finops_api.db import models
+
+    yield
+    with engine.begin() as connection:
+        connection.execute(
+            models.sync_error.delete().where(
+                models.sync_error.c.collector == "cost_focus",
+                models.sync_error.c.error_type == "Misconfigured",
+            )
+        )
+
+
+@pytest.fixture
 def tenant_id(engine: Engine) -> UUID:
     """A tenant of its own per test, so no test can see another's rows."""
     new_id = uuid4()

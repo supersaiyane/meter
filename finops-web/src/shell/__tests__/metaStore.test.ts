@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { ApiMeta } from '../../api/types';
-import { aggregate, EMPTY_AGGREGATE } from '../metaStore';
+import { aggregate, aggregateReports, EMPTY_AGGREGATE } from '../metaStore';
 
 function meta(partial: Partial<ApiMeta> = {}): ApiMeta {
   return {
@@ -105,5 +105,34 @@ describe('aggregate', () => {
 
   it('returns the empty aggregate when no surface has reported', () => {
     expect(aggregate([])).toEqual(EMPTY_AGGREGATE);
+  });
+});
+
+describe('freshness stated beside each figure', () => {
+  const own = meta({ as_of: null, collected_at: null });
+
+  it('holds when every surface on the page says its figures carry their own', () => {
+    const page = aggregateReports([
+      { meta: own, freshness: 'per-figure' },
+      { meta: own, freshness: 'per-figure' },
+    ]);
+    expect(page.freshnessPerFigure).toBe(true);
+    // Nothing is made up for the page. The envelopes had no as_of, and neither does this.
+    expect(page.asOf).toBeNull();
+    expect(page.collectedAt).toBeNull();
+  });
+
+  it('does not hold beside a surface that states one freshness for its whole response', () => {
+    // Its claim, oldest in view or not yet collected, is true of it and must stay on the strip.
+    const page = aggregateReports([
+      { meta: own, freshness: 'per-figure' },
+      { meta: own, freshness: 'envelope' },
+    ]);
+    expect(page.freshnessPerFigure).toBe(false);
+  });
+
+  it('never holds for plain envelopes, which is every surface before P7', () => {
+    expect(aggregate([own]).freshnessPerFigure).toBe(false);
+    expect(aggregateReports([]).freshnessPerFigure).toBe(false);
   });
 });

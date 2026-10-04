@@ -85,17 +85,26 @@ export function createApiClient({ baseUrl = '', token, fetchImpl = fetch }: ApiC
     },
 
     /**
-     * The only writing method, and it sends no body.
+     * The only writing method. It sends a body only when given one.
      *
-     * Every write this product makes is an instruction rather than a document:
+     * Most writes this product makes are instructions rather than documents:
      * remediate this finding, undo that change. What to write is decided by the
      * server from the finding it already holds, so a body would be a second
-     * description of the same thing and a chance for the two to disagree.
+     * description of the same thing and a chance for the two to disagree. Those
+     * calls pass no body and send none, not even an empty one.
+     *
+     * A question to the assistant is the exception, because the question is the
+     * document. It travels as JSON in the body and never in the URL, where it
+     * would be written into every access log on the way.
      */
-    async post<T>(path: string): Promise<ApiEnvelope<T>> {
+    async post<T>(path: string, body?: unknown): Promise<ApiEnvelope<T>> {
       const response = await fetchImpl(`${baseUrl}${path}`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers:
+          body === undefined
+            ? { Authorization: `Bearer ${token}` }
+            : { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       });
       if (!response.ok) {
         const detail = await response.text();

@@ -18,9 +18,10 @@ from __future__ import annotations
 from collections.abc import Sequence
 from datetime import date, datetime
 from decimal import Decimal
+from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, computed_field
+from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
 
 class CoverageOut(BaseModel):
@@ -1522,3 +1523,143 @@ class DraftRefusalOut(BaseModel):
     account_id: str
     region_id: str | None
     reason: str
+
+
+# --- the assistant, P7 ---------------------------------------------------------
+
+#: The longest question accepted. An unbounded question is an unbounded prompt, and an
+#: unbounded prompt is unbounded spend on the first paste of a log file.
+QUESTION_MAX_LENGTH = 2000
+
+
+class AskIn(BaseModel):
+    """A question, carried in the body and never in the URL, where it would be logged."""
+
+    model_config = ConfigDict(frozen=True)
+
+    question: str = Field(min_length=1, max_length=QUESTION_MAX_LENGTH)
+
+
+class CitationOut(BaseModel):
+    """Where one figure in an answer came from, so a reader can check it on the page."""
+
+    model_config = ConfigDict(frozen=True)
+
+    placeholder: str
+    tool: str
+    call_id: str
+    field: str
+    #: As text, so a figure is the figure that was cited and never a float's idea of it.
+    value: str
+    kind: Literal["figure", "label"]
+    provenance: Literal["measured", "modelled"]
+    as_of: datetime
+
+
+class AnswerOut(BaseModel):
+    """Prose with placeholders, and the citation behind each one."""
+
+    model_config = ConfigDict(frozen=True)
+
+    prose: str
+    citations: tuple[CitationOut, ...]
+
+
+class AssistantRefusalOut(BaseModel):
+    """What is missing, and the screen that would show it once it is not."""
+
+    model_config = ConfigDict(frozen=True)
+
+    gap: str
+    reason: str
+    screen: str | None
+
+
+class ExchangeFailureOut(BaseModel):
+    """One of the seven typed causes, with what to do about it."""
+
+    model_config = ConfigDict(frozen=True)
+
+    cause: str
+    detail: str | None
+    remediation: str
+
+
+class ToolCallOut(BaseModel):
+    """One call the model asked for, in order."""
+
+    model_config = ConfigDict(frozen=True)
+
+    call_id: str
+    tool: str
+    returned: bool
+
+
+class ExchangeOut(BaseModel):
+    """One question and which of three things came back, as three different shapes.
+
+    Exactly one of `answer`, `refusal` and `failure` is present and it is the one the
+    outcome names, so a screen cannot render a refusal as an answer with nothing in it.
+    Spec section 5.3: the three are three, and a product that blurs two of them is one a
+    reader learns to distrust.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    exchange_id: UUID
+    question: str
+    outcome: Literal["ANSWERED", "REFUSED", "FAILED"]
+    answer: AnswerOut | None
+    refusal: AssistantRefusalOut | None
+    failure: ExchangeFailureOut | None
+    tool_calls: tuple[ToolCallOut, ...]
+    model_id: str | None
+    input_tokens: int
+    output_tokens: int
+    #: Modelled, at list prices. The bill is the measurement.
+    est_cost: Decimal
+    asked_at: datetime
+    answered_at: datetime
+
+    @model_validator(mode="after")
+    def _exactly_the_shape_the_outcome_names(self) -> ExchangeOut:
+        present = {"ANSWERED": self.answer, "REFUSED": self.refusal, "FAILED": self.failure}
+        if [name for name, shape in present.items() if shape is not None] != [self.outcome]:
+            raise ValueError("an exchange carries exactly the shape its outcome names")
+        return self
+
+
+class DigestOut(BaseModel):
+    """One week's digest, its citations, and whether it went anywhere. FEAT-041."""
+
+    model_config = ConfigDict(frozen=True)
+
+    digest_id: UUID
+    audience: Literal["team", "executive"]
+    #: The bill's team tag, and None on the organization's digest.
+    team: str | None
+    period_start: date
+    period_end: date
+    prose: str
+    citations: tuple[CitationOut, ...]
+    composed_at: datetime
+    #: None means composed and not sent, which is a real state and is said, with the reason.
+    sent_at: datetime | None
+    unsent_reason: str | None
+
+
+class RedactionOut(BaseModel):
+    """What redaction did to one question: the rule and the action. FEAT-046.
+
+    There is no field for the secret, its position or its length, and no route could add
+    one, because the table holds none of them.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    event_id: UUID
+    exchange_id: UUID
+    #: A gitleaks rule identifier, such as `aws-access-token`.
+    rule_id: str
+    action: Literal["BLOCKED", "REDACTED"]
+    occurred_at: datetime

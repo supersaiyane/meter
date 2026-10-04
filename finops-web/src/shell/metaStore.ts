@@ -15,6 +15,25 @@ export interface CoverageLine {
   readonly total: number;
 }
 
+/**
+ * Where a surface's figures say how fresh they are.
+ *
+ * `envelope` is every surface built before P7: one `as_of` for the whole response, and the
+ * strip states the oldest. `per-figure` is a surface whose rows are Meter's own work, so its
+ * envelope carries no `as_of`, P7 spec section 6.1, and whose figures each state their own
+ * beside them: an answer's citation carries the `as_of` of the figure it cites.
+ *
+ * Reported by the surface and never inferred from a null `as_of`, because a null is also what a
+ * collector that has never run sends, and the strip must keep saying so for that one.
+ */
+export type FreshnessSource = 'envelope' | 'per-figure';
+
+/** One surface's report: its envelope, and where its figures say how fresh they are. */
+export interface SurfaceReport {
+  readonly meta: ApiMeta;
+  readonly freshness: FreshnessSource;
+}
+
 export interface AggregateMeta {
   readonly asOf: string | null;
   readonly collectedAt: string | null;
@@ -38,6 +57,13 @@ export interface AggregateMeta {
   readonly coverage: readonly CoverageLine[];
   readonly degraded: boolean;
   readonly failures: readonly ApiFailure[];
+  /**
+   * True only when every surface on the page states its freshness beside each figure, so the
+   * strip says that rather than a date it does not have. False the moment any surface states
+   * one for its whole response, so that surface's claim is kept, the oldest in view or not yet
+   * collected, exactly as it reads everywhere else.
+   */
+  readonly freshnessPerFigure: boolean;
 }
 
 /** What a coverage line says when the response did not name what it counted. */
@@ -53,6 +79,7 @@ export const EMPTY_AGGREGATE: AggregateMeta = {
   coverage: [],
   degraded: false,
   failures: [],
+  freshnessPerFigure: false,
 };
 
 function oldest(left: string | null, right: string | null): string | null {
@@ -122,5 +149,23 @@ export function aggregate(metas: readonly ApiMeta[]): AggregateMeta {
     coverage: [...byUnit.values()].filter((line) => line.total > 0),
     degraded,
     failures: dedupe(failures),
+    // Plain envelopes say nothing about where their figures state freshness, so each is read
+    // as stating it once for the whole response, which is what every surface before P7 does.
+    freshnessPerFigure: false,
+  };
+}
+
+/**
+ * The page's aggregate from each surface's report.
+ *
+ * The figures are `aggregate`'s, unchanged. What a report adds is where its freshness is
+ * stated, and the page is per figure only when every surface on it is: one surface with an
+ * envelope of its own keeps the strip saying what is true of that envelope.
+ */
+export function aggregateReports(reports: readonly SurfaceReport[]): AggregateMeta {
+  return {
+    ...aggregate(reports.map((report) => report.meta)),
+    freshnessPerFigure:
+      reports.length > 0 && reports.every((report) => report.freshness === 'per-figure'),
   };
 }

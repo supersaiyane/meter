@@ -57,7 +57,7 @@ Same contract as P0 through P6. One task, one commit.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 4, ADR-0028 |
 | Delivers | Part of FEAT-038 |
 | Depends on | ADR-0028 accepted |
@@ -76,14 +76,14 @@ those tests can talk to.
 
 **Acceptance criteria.**
 
-- [ ] The protocol names completion, tool schemas and a token count, and nothing about
+- [x] The protocol names completion, tool schemas and a token count, and nothing about
       Bedrock, a model identifier or a region
-- [ ] The fake is deterministic: the same question returns the same response, asserted by
+- [x] The fake is deterministic: the same question returns the same response, asserted by
       calling it twice
-- [ ] A provider refusal is one of the seven typed causes, and an unavailable model is
+- [x] A provider refusal is one of the seven typed causes, and an unavailable model is
       `NotOptedIn` rather than `Unreachable`, because a deployment without Bedrock access
       has not failed, it has not been enabled
-- [ ] `finops_core` imports no SDK, constraint 1, held by the existing import contract
+- [x] `finops_core` imports no SDK, constraint 1, held by the existing import contract
 
 ---
 
@@ -91,7 +91,7 @@ those tests can talk to.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 5.2 |
 | Delivers | Part of FEAT-038 |
 | Depends on | TASK-P7-001 |
@@ -108,14 +108,14 @@ exists.
 
 **Acceptance criteria.**
 
-- [ ] An `Answer` whose prose contains a digit outside a placeholder cannot be constructed
-- [ ] An `Answer` with a placeholder and no matching `Citation` cannot be constructed, and
+- [x] An `Answer` whose prose contains a digit outside a placeholder cannot be constructed
+- [x] An `Answer` with a placeholder and no matching `Citation` cannot be constructed, and
       neither can one carrying a `Citation` no placeholder uses
-- [ ] Every `Citation` carries the tool, the field, the value, the `measured` or `modelled`
+- [x] Every `Citation` carries the tool, the field, the value, the `measured` or `modelled`
       flag and the `as_of`. One missing its provenance flag cannot be constructed
-- [ ] A `Refusal` carries a reason of at least `REASON_MIN_LENGTH`, reusing the constant
+- [x] A `Refusal` carries a reason of at least `REASON_MIN_LENGTH`, reusing the constant
       rather than a second literal
-- [ ] `Answer` and `Refusal` are different types, not one type with a nullable field
+- [x] `Answer` and `Refusal` are different types, not one type with a nullable field
 
 ---
 
@@ -123,7 +123,7 @@ exists.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 6.1, constraint 11 |
 | Delivers | Part of FEAT-038 |
 | Depends on | TASK-P7-002 |
@@ -133,15 +133,15 @@ exists.
 
 **Acceptance criteria.**
 
-- [ ] `answer` present if and only if `outcome` is `ANSWERED`, `refusal_reason` if and
+- [x] `answer` present if and only if `outcome` is `ANSWERED`, `refusal_reason` if and
       only if `REFUSED`, `failure_cause` if and only if `FAILED`. All three watched
       refusing, in both directions
-- [ ] `failure_cause` constrained to the seven typed causes, mirrored from
+- [x] `failure_cause` constrained to the seven typed causes, mirrored from
       `finops_core.errors` the way `ERROR_TYPES` already is
-- [ ] `est_cost >= 0` and `answered_at >= asked_at`
-- [ ] `question` stored as typed, with no normalisation, because the wording is the
+- [x] `est_cost >= 0` and `answered_at >= asked_at`
+- [x] `question` stored as typed, with no normalisation, because the wording is the
       evidence when an answer turns out wrong
-- [ ] Backward compatible, constraint 12
+- [x] Backward compatible, constraint 12
 
 ---
 
@@ -149,7 +149,7 @@ exists.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 10, ADR-0028 |
 | Delivers | Part of FEAT-038 |
 | Depends on | TASK-P7-001 |
@@ -159,16 +159,16 @@ exists.
 
 **Acceptance criteria.**
 
-- [ ] Never run against AWS, stated in the first line, ISS-002
-- [ ] Held to a contract suite alongside the fake
-- [ ] Every response field it reads exists in the botocore service model, added to
+- [x] Never run against AWS, stated in the first line, ISS-002
+- [x] Held to a contract suite alongside the fake
+- [x] Every response field it reads exists in the botocore service model, added to
       `tests/providers/aws/test_response_shapes.py` **before** the adapter is written.
       That order caught the request status defect in P5 and is the only reason it was
       caught before a real account rather than by a customer
-- [ ] The hub role grants `bedrock:InvokeModel` and
+- [x] The hub role grants `bedrock:InvokeModel` and
       `bedrock:InvokeModelWithResponseStream` scoped to named model identifiers, never a
       wildcard, asserted against the Terraform
-- [ ] No member account role gains anything, asserted
+- [x] No member account role gains anything, asserted
 
 ---
 
@@ -176,7 +176,7 @@ exists.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 11 |
 | Delivers | Nothing visible. It is what makes the rest checkable |
 | Depends on | TASK-P7-004 |
@@ -195,17 +195,17 @@ reasonable.
 
 **Acceptance criteria.**
 
-- [ ] The answer set asserts each figure equals what `finops_query` computes for the same
+- [x] The answer set asserts each figure equals what `finops_query` computes for the same
       question. Never that the prose is right, which is not testable
-- [ ] The refusal set covers at least a cluster with no split cost allocation data, an
+- [x] The refusal set covers at least a cluster with no split cost allocation data, an
       account outside the asker's scope, a question needing a tool that does not exist,
       and a request for next month's cost
-- [ ] The injection set covers at least a prompt trying to reach another account's data,
+- [x] The injection set covers at least a prompt trying to reach another account's data,
       one trying to make the model emit a bare numeral, and one trying to make it repeat a
       secret from the question
-- [ ] Every set asserts the reason, not only the outcome. A refusal for the wrong reason
+- [x] Every set asserts the reason, not only the outcome. A refusal for the wrong reason
       is a wrong answer
-- [ ] The sets run inside `make verify` with no model and no network
+- [x] The sets run inside `make verify` with no model and no network
 
 ---
 
@@ -213,7 +213,7 @@ reasonable.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec sections 5.1, 5.2 and 7, FEAT-038 |
 | Delivers | FEAT-038 |
 | Depends on | TASK-P7-005 |
@@ -223,13 +223,22 @@ reasonable.
 
 **Acceptance criteria.**
 
-- [ ] Tool calls go through `finops_mcp` with the caller's token, never to a repository
+- [x] Tool calls go through `finops_mcp` with the caller's token, never to a repository
       directly. A test asserts this module imports nothing from `finops_api.db`
-- [ ] An answer whose prose contains a numeral the check did not place is `FAILED` with a
+- [x] An answer whose prose contains a numeral the check did not place is `FAILED` with a
       typed cause, neither stripped nor passed through
-- [ ] A question with no tool to answer it is `REFUSED`, naming the missing tool
-- [ ] The three sets from TASK-P7-005 pass, unedited except for the interface they call
-- [ ] Every exchange records its tool calls in order, so an answer can be replayed
+- [x] A question with no tool to answer it is `REFUSED`, naming the missing tool
+- [x] The three sets from TASK-P7-005 pass, unedited except for the interface they call
+- [x] Every exchange records its tool calls in order, so an answer can be replayed
+
+**As built, 2026-10-04.** The first criterion is met in substance and not in its
+letter. Tool calls go through the API's routes with the caller's token, from the one tool
+table the MCP server also reads, rather than through `finops_mcp` itself. The layer
+contract forbids `finops_api` from importing `finops_mcp`, and the facade contract forbids
+`finops_mcp` from importing the Bedrock adapter, so no package could have composed both.
+The table moved to `finops_api/tools.py`, which describes the API's own routes, and the
+MCP server imports it from there and stays a facade over the network. `finops_query/insight.py`
+imports nothing from `finops_api`, asserted by name.
 
 ---
 
@@ -237,7 +246,7 @@ reasonable.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 10 |
 | Delivers | Part of FEAT-038 |
 | Depends on | TASK-P7-006 |
@@ -248,13 +257,13 @@ exhausted.
 
 **Acceptance criteria.**
 
-- [ ] The budget is configuration rather than a constant. It is a deployment decision, not
+- [x] The budget is configuration rather than a constant. It is a deployment decision, not
       a design one
-- [ ] Exhaustion is a `REFUSED` naming the budget and when it resets, not a `FAILED`:
+- [x] Exhaustion is a `REFUSED` naming the budget and when it resets, not a `FAILED`:
       nothing is broken
-- [ ] The figure counted is tokens actually spent, read from `assistant_exchange`, not an
+- [x] The figure counted is tokens actually spent, read from `assistant_exchange`, not an
       estimate maintained separately
-- [ ] A test exhausts the budget and asserts the next question is refused
+- [x] A test exhausts the budget and asserts the next question is refused
 
 ---
 
@@ -262,7 +271,7 @@ exhausted.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 2, FEAT-039 |
 | Delivers | FEAT-039 |
 | Depends on | TASK-P7-006, P4 delivered |
@@ -280,13 +289,13 @@ caused.
 
 **Acceptance criteria.**
 
-- [ ] The anomaly, its severity and its figures come from `cost_anomaly` unchanged. The
+- [x] The anomaly, its severity and its figures come from `cost_anomaly` unchanged. The
       model narrates and computes nothing
-- [ ] Every correlated event carries its source, Config or CloudTrail or a deploy
+- [x] Every correlated event carries its source, Config or CloudTrail or a deploy
       timestamp, and its distance in time from the change
-- [ ] The prose says correlated, never caused, asserted by a test reading the text
-- [ ] An anomaly with no correlating event gets a narration saying so, not a speculation
-- [ ] A slice whose Config history could not be read says that, rather than reporting no
+- [x] The prose says correlated, never caused, asserted by a test reading the text
+- [x] An anomaly with no correlating event gets a narration saying so, not a speculation
+- [x] A slice whose Config history could not be read says that, rather than reporting no
       events, which is the same distinction the topology coverage makes
 
 ---
@@ -295,7 +304,7 @@ caused.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 3, FEAT-040 |
 | Delivers | FEAT-040 |
 | Depends on | TASK-P7-006 |
@@ -313,13 +322,13 @@ it lives.
 
 **Acceptance criteria.**
 
-- [ ] The diff is authored and opened as a pull request. Nothing applies, merges or
+- [x] The diff is authored and opened as a pull request. Nothing applies, merges or
       approves
-- [ ] A resource with no known infrastructure as code address is refused, naming that.
+- [x] A resource with no known infrastructure as code address is refused, naming that.
       FEAT-057 supplies the address and its absence is a real state rather than a gap
-- [ ] The pull request body carries the recommendation, its saving, its provenance and the
+- [x] The pull request body carries the recommendation, its saving, its provenance and the
       blast radius band from FEAT-044
-- [ ] A test asserts no code path calls an apply, a merge or an approve
+- [x] A test asserts no code path calls an apply, a merge or an approve
 
 ---
 
@@ -327,7 +336,7 @@ it lives.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec sections 6, 8 and 9, constraint 3 |
 | Delivers | Part of FEAT-042 |
 | Depends on | TASK-P7-007 |
@@ -337,14 +346,21 @@ it lives.
 
 **Acceptance criteria.**
 
-- [ ] A test reads each table out of scope and is refused, before a route exists
-- [ ] `assistant_exchange` is scoped by principal as well as by tenant, and a test asserts
+- [x] A test reads each table out of scope and is refused, before a route exists
+- [x] `assistant_exchange` is scoped by principal as well as by tenant, and a test asserts
       one person cannot read another's questions. This is the first table in the product
       whose row belongs to a person rather than to an account, so it needs a decision
       recorded rather than an existing shape reused
-- [ ] Answer, refusal and failure render as three visibly different things
-- [ ] Every route returns the envelope
-- [ ] `POST /assistant/ask` is the only write, and it writes one row
+- [x] Answer, refusal and failure render as three visibly different things
+- [x] Every route returns the envelope
+- [x] `POST /assistant/ask` is the only write, and it writes one row
+
+**As built, 2026-10-04.** `assistant_exchange` is in `SCOPED_TABLES` under a new rule,
+`ByPrincipal`, ADR-0029, and its two routes, ask and the exchange list, are here. The
+other two tables do not exist until TASK-P7-012 and TASK-P7-013 create them, so each of
+those tasks adds its own table's guard entry, its out of scope test and its route, in
+that order. The tool calls go back through the application in process, as the asker,
+and ISS-225 records the bound that puts on questions running at once.
 
 ---
 
@@ -352,7 +368,7 @@ it lives.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 9, FEAT-042 |
 | Delivers | FEAT-042 |
 | Depends on | TASK-P7-010 |
@@ -362,13 +378,13 @@ it lives.
 
 **Acceptance criteria.**
 
-- [ ] Every figure is a `Figure` with its provenance treatment, and each is traceable on
+- [x] Every figure is a `Figure` with its provenance treatment, and each is traceable on
       screen to the tool call behind it
-- [ ] A refusal names what is missing and links to the screen that would show it, where
+- [x] A refusal names what is missing and links to the screen that would show it, where
       one exists
-- [ ] Tokens and estimated cost are shown per exchange
-- [ ] `arrives` cleared in `sections.ts` for `/assistant`
-- [ ] No accessibility violations
+- [x] Tokens and estimated cost are shown per exchange
+- [x] `arrives` cleared in `sections.ts` for `/assistant`
+- [x] No accessibility violations
 
 ---
 
@@ -376,7 +392,7 @@ it lives.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec sections 6.2 and 9, FEAT-041 |
 | Delivers | FEAT-041 |
 | Depends on | TASK-P7-010 |
@@ -393,11 +409,11 @@ already used for a budget with no collected period.
 
 **Acceptance criteria.**
 
-- [ ] A digest is composed from the same rows the screens show, with citations
-- [ ] `sent_at` nullable, and null renders as composed and not sent, with the reason
-- [ ] Weekly, in `collector_schedule` with its reason and its cost, ADR-0012
-- [ ] One team failing does not fail the run
-- [ ] `arrives` cleared in `sections.ts` for `/assistant/digests`
+- [x] A digest is composed from the same rows the screens show, with citations
+- [x] `sent_at` nullable, and null renders as composed and not sent, with the reason
+- [x] Weekly, in `collector_schedule` with its reason and its cost, ADR-0012
+- [x] One team failing does not fail the run
+- [x] `arrives` cleared in `sections.ts` for `/assistant/digests`
 
 ---
 
@@ -405,7 +421,7 @@ already used for a budget with no collected period.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 6.3, FEAT-046 |
 | Delivers | FEAT-046 |
 | Depends on | TASK-P7-011 |
@@ -421,12 +437,12 @@ the day somebody reopens ADR-0028 this is the thing that has to already exist.
 
 **Acceptance criteria.**
 
-- [ ] The event records which rule matched and never the secret, nor enough of it to
+- [x] The event records which rule matched and never the secret, nor enough of it to
       reconstruct one. A test asserts the stored row does not contain the planted secret
-- [ ] Blocked and redacted are two outcomes, and which applies is per rule rather than
+- [x] Blocked and redacted are two outcomes, and which applies is per rule rather than
       global
-- [ ] A blocked request sends nothing, asserted by a fake provider that fails if called
-- [ ] The rules are the ones `gitleaks` already uses where possible, rather than a second
+- [x] A blocked request sends nothing, asserted by a fake provider that fails if called
+- [x] The rules are the ones `gitleaks` already uses where possible, rather than a second
       list that drifts from it
 
 ---
@@ -435,7 +451,7 @@ the day somebody reopens ADR-0028 this is the thing that has to already exist.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 15, constraint 6 |
 | Delivers | Part of FEAT-040 |
 | Depends on | TASK-P7-013 |
@@ -451,14 +467,14 @@ at all but a `terraform apply` in a subprocess.
 
 **Acceptance criteria.**
 
-- [ ] No production module names an apply, a merge or an approve for a pull request, with
+- [x] No production module names an apply, a merge or an approve for a pull request, with
       comments and docstrings stripped before searching, for the reason
       `test_no_quota_writes.py` gives
-- [ ] No production module invokes a subprocess whose first argument is `terraform`, `aws`
+- [x] No production module invokes a subprocess whose first argument is `terraform`, `aws`
       or `kubectl`
-- [ ] The hub role grants no write action in a member account, asserted against the
+- [x] The hub role grants no write action in a member account, asserted against the
       Terraform
-- [ ] The capability tests beside it assert the authoring still works, because a check
+- [x] The capability tests beside it assert the authoring still works, because a check
       that only forbids can be satisfied by shipping nothing
 
 ---

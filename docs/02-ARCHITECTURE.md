@@ -131,6 +131,12 @@ Enforcement happens in two places, a request dependency and a repository
 guard, so a route that forgets the dependency still cannot read out of scope
 data.
 
+A row that belongs to a person rather than to an account, a question asked of
+the assistant or what redaction found in it, is confined to that person by the
+guard's `ByPrincipal` rule. It is checked before the global case, so a payer
+wide scope does not widen it, and the scope carries the principal for that
+reason. ADR-0029.
+
 ## Ingestion framework
 
 ```

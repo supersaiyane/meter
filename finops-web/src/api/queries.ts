@@ -35,17 +35,17 @@ import {
   inventoryRootsFixture,
   subgraphFixture,
 } from './fixtures/topology';
-import {
-  quotaDetailFixture,
-  quotaRequestsFixture,
-  quotasFixture,
-} from './fixtures/quotas';
+import { quotaDetailFixture, quotaRequestsFixture, quotasFixture } from './fixtures/quotas';
 import {
   clustersFixture,
   containerCostFixture,
   containerWasteFixture,
 } from './fixtures/containers';
+import { digestsFixture, exchangesFixture, redactionsFixture } from './fixtures/assistant';
 import type {
+  ApiDigest,
+  ApiExchange,
+  ApiRedaction,
   ApiClusters,
   ApiContainerCost,
   ApiContainerWaste,
@@ -568,7 +568,6 @@ export function useBudgets() {
   );
 }
 
-
 /**
  * Cost by cluster, namespace and workload. FEAT-035, under Cost per ADR-0020.
  *
@@ -607,4 +606,65 @@ export function useClusters() {
     '/api/v1/inventory/clusters',
     clustersFixture,
   );
+}
+
+/**
+ * The P7 surfaces. FEAT-038, FEAT-041, FEAT-042 and FEAT-046, under Assistant.
+ *
+ * The asker's own exchanges and their own redaction events, ADR-0029: a person reads what
+ * they asked and nobody else's, whatever else their scope reaches. The digests are payer
+ * wide, and a narrowed reader is told so by the coverage rather than by an empty list.
+ */
+const EXCHANGES_KEY = ['assistant-exchanges'] as const;
+const REDACTIONS_KEY = ['assistant-redactions'] as const;
+
+export function useExchanges() {
+  return useQuerySurface<ApiExchange[]>(
+    EXCHANGES_KEY,
+    '/api/v1/assistant/exchanges',
+    '/api/v1/assistant/exchanges',
+    exchangesFixture,
+  );
+}
+
+export function useRedactions() {
+  return useQuerySurface<ApiRedaction[]>(
+    REDACTIONS_KEY,
+    '/api/v1/assistant/redactions',
+    '/api/v1/assistant/redactions',
+    redactionsFixture,
+  );
+}
+
+export function useDigests() {
+  return useQuerySurface<ApiDigest[]>(
+    ['assistant-digests'],
+    '/api/v1/assistant/digests',
+    '/api/v1/assistant/digests',
+    digestsFixture,
+  );
+}
+
+/**
+ * Ask one question. The only write P7 makes, and it writes into Meter's own database.
+ *
+ * The question goes in the body, never the URL, where it would be written into every access
+ * log on the way. Both lists are read again afterwards rather than patched here, because the
+ * server wrote the exchange whatever came back, and a question holding a secret also wrote a
+ * redaction event: a screen that assumed what was stored would show a history that exists
+ * nowhere.
+ */
+export function useAsk() {
+  const client = useApi();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: (question: string) =>
+      client.post<ApiExchange>('/api/v1/assistant/ask', { question }),
+    // Not returned. A returned promise is awaited before the mutation settles, so the answer
+    // would wait on both lists being read again, and the lists are not what was asked for.
+    onSettled: () => {
+      void queries.invalidateQueries({ queryKey: EXCHANGES_KEY });
+      void queries.invalidateQueries({ queryKey: REDACTIONS_KEY });
+    },
+  });
 }

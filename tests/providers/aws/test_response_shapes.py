@@ -139,6 +139,23 @@ READS: dict[tuple[str, str], set[str]] = {
     # The two service API counters, for quotas nothing else publishes usage for.
     ("ec2", "DescribeVpcs"): {"Vpcs", "NextToken"},
     ("ec2", "DescribeAddresses"): {"Addresses"},
+    # FEAT-038, TASK-P7-004. Declared before the adapter existed, which is the order that caught
+    # the request status defect in P5. Converse rather than InvokeModel, because its tool use
+    # shape is the same for every model Bedrock carries, so OPEN-10's answer is a setting.
+    ("bedrock-runtime", "Converse"): {
+        "output",
+        "message",
+        "content",
+        "text",
+        "toolUse",
+        "toolUseId",
+        "name",
+        "input",
+        "stopReason",
+        "usage",
+        "inputTokens",
+        "outputTokens",
+    },
 }
 
 #: Which key carries the continuation token, per operation. Separate from the reads because this

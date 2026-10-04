@@ -34,6 +34,9 @@ class Scope:
     is_global: bool
     #: Explicit membership. Empty means nothing, not everything.
     accounts: frozenset[AccountKey]
+    #: Who the scope was resolved for, stamped by the request dependency. Only a row that
+    #: belongs to a person reads it, ADR-0029, and None there reads nothing.
+    principal_id: str | None = None
 
     def __post_init__(self) -> None:
         if self.is_global and self.accounts:

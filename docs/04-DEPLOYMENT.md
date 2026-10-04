@@ -244,6 +244,25 @@ plus health check for 300 accounts is minutes of Fargate time.
 | **Subtotal** | **around 85** | **around 380** |
 | **Running total** | **around 505** | **around 800** |
 
+### Adding P7
+
+| Item | Assumption | USD per month |
+| --- | --- | --- |
+| Bedrock, the assistant | The monthly token budget in `.env.example`, 2,000,000 tokens, spent in full at its placeholder prices of 3 per million input tokens and 15 per million output tokens | 6 if every token is input, 30 if every token is output |
+| Digests | A weekly template over a handful of queries, no model | negligible |
+
+Modelled, like the rest of this section. The budget is the ceiling: once the
+month's tokens reach `METER_ASSISTANT_MONTHLY_TOKEN_BUDGET`, every question is
+refused before a model is called, so a month overshoots only by the questions
+already running when it is reached. The prices are placeholders until OPEN-10
+names a model, and the spend does not yet reach the platform cost screen,
+ISS-230.
+
+The assistant is off until `METER_ASSISTANT_MODEL_ID` names a model and the hub
+stack's `assistant_model_ids` grants it. Until then every question is answered
+as not enabled and spends nothing. The variable refuses a wildcard, so the hub
+can invoke the named models and no others.
+
 ### The number that dominates everything else
 
 | Item | At 300 accounts |

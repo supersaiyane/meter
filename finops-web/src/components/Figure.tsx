@@ -28,17 +28,26 @@ export interface FigureProps {
   readonly value: FigureValue;
   readonly freshness: Freshness;
   readonly unit?: 'usd' | 'count';
+  /**
+   * The most decimal places a count is drawn to. Zero when left out, which is right for a count
+   * of whole things. A count that need not be whole, runs per day as the assistant cites it,
+   * passes the precision its value arrived with, so 0.4 is never drawn as 0 and 2.5 never as 3.
+   * Money ignores it and is always drawn to the cent.
+   */
+  readonly fractionDigits?: number;
   readonly label?: string;
   readonly now?: Date;
   readonly onAction?: () => void;
   readonly actionLabel?: string;
 }
 
-function formatAmount(amount: number, unit: 'usd' | 'count'): string {
+function formatAmount(amount: number, unit: 'usd' | 'count', fractionDigits = 0): string {
   // Fixed decimal places including trailing zeros, so a column aligns and a
   // value that happens to be round does not read as less precise.
   if (unit === 'count') {
-    return new Intl.NumberFormat('en-GB', { maximumFractionDigits: 0 }).format(amount);
+    return new Intl.NumberFormat('en-GB', { maximumFractionDigits: fractionDigits }).format(
+      amount,
+    );
   }
   return new Intl.NumberFormat('en-GB', {
     style: 'currency',
@@ -57,6 +66,7 @@ export function Figure({
   value,
   freshness,
   unit = 'usd',
+  fractionDigits = 0,
   label,
   now,
   onAction,
@@ -72,7 +82,9 @@ export function Figure({
       // The one legitimate zero. It reads as a zero because it is one.
       return (
         <span data-testid="figure" data-provenance="measured" data-cause="NoData">
-          <span className="meter-numeral meter-fill-measured">{formatAmount(0, unit)}</span>
+          <span className="meter-numeral meter-fill-measured">
+            {formatAmount(0, unit, fractionDigits)}
+          </span>
           <span> measured</span>
           {when}
         </span>
@@ -94,8 +106,8 @@ export function Figure({
   const prefix = value.kind === 'measured' ? '' : '~ ';
   const text =
     value.kind === 'forecast'
-      ? `${formatAmount(value.low, unit)} to ${formatAmount(value.high, unit)}`
-      : formatAmount(value.amount, unit);
+      ? `${formatAmount(value.low, unit, fractionDigits)} to ${formatAmount(value.high, unit, fractionDigits)}`
+      : formatAmount(value.amount, unit, fractionDigits);
 
   const accuracy =
     value.kind === 'modelled'

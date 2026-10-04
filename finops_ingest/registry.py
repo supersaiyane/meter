@@ -108,6 +108,8 @@ SIX_HOURLY = 21600
 #: Twelve hours, the interval the P5 specification's section 7 asks for.
 TWELVE_HOURLY = 43200
 DAILY = 86400
+#: Seven days, the interval a weekly digest is composed at, P7 spec section 7.
+WEEKLY = 604800
 #: Thirty days. The cost roll up is not calendar aware and does not need to be:
 #: it aggregates everything past a cutoff, so running a day early or a day late
 #: changes nothing except how many line items are left over until next time.
@@ -434,6 +436,18 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
             "hourly cadence across a large organization would spend the account's whole "
             "allowance reading quotas. All of it is free of charge, so the cost below is a "
             "true zero rather than a rounding. ADR-0012 and constraint 9."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="team_digests",
+        cadence_seconds=WEEKLY,
+        reason=(
+            "A digest summarises one complete week, so composing it more often than "
+            "weekly would write the same week again and change nothing a reader sees. "
+            "It reads cost rows already in the database and calls no provider and no "
+            "model, so a run costs a query and the figure below is a true zero. FEAT-041, "
+            "P7 spec section 7, ADR-0012 and constraint 9."
         ),
         est_cost_per_run="0",
     ),

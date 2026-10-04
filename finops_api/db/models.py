@@ -1339,6 +1339,177 @@ quota_request_history = Table(
 )
 
 
+#: P7, 0023. The two closed vocabularies `assistant_exchange` is checked against, mirrored
+#: from `finops_core.domain.insight` the way `ERROR_TYPES` mirrors the error taxonomy, and
+#: held equal to the enums by `tests/db/test_p7_constraints.py`.
+EXCHANGE_OUTCOMES = ("ANSWERED", "REFUSED", "FAILED")
+REFUSAL_GAPS = ("tool", "figure", "scope", "budget", "secret")
+
+assistant_exchange = Table(
+    "assistant_exchange",
+    metadata,
+    #: FEAT-038, 0023. One question, and which of three things came back. Our own work, so
+    #: `asked_at` and `answered_at` rather than `as_of`: the `as_of` of every cited figure is
+    #: inside `citations`, beside the figure it dates.
+    Column("exchange_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    #: The session's identifier and not a foreign key: principals are not persisted yet,
+    #: see `finops_api.deps.get_access_context`.
+    Column("principal_id", Text, nullable=False),
+    #: As typed. Never normalised, because the wording is the evidence when an answer
+    #: turns out wrong.
+    Column("question", Text, nullable=False),
+    Column("outcome", Text, nullable=False),
+    Column("answer", Text),
+    Column("refusal_gap", Text),
+    Column("refusal_reason", Text),
+    Column("refusal_screen", Text),
+    Column("failure_cause", Text),
+    Column("failure_detail", Text),
+    Column("citations", JSONB, nullable=False),
+    #: In the order they were made, so an answer can be replayed.
+    Column("tool_calls", JSONB, nullable=False),
+    Column("model_id", Text),
+    #: No default on any of the three spend columns. A writer that forgot them would
+    #: otherwise record a confident zero.
+    Column("input_tokens", Integer, nullable=False),
+    Column("output_tokens", Integer, nullable=False),
+    Column("est_cost", Numeric(20, 10), nullable=False),
+    Column("asked_at", DateTime(timezone=True), nullable=False),
+    Column("answered_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint(_in_list("outcome", EXCHANGE_OUTCOMES), name="ck_assistant_exchange__outcome"),
+    CheckConstraint(
+        "(outcome = 'ANSWERED') = (length(trim(coalesce(answer, ''))) > 0)",
+        name="ck_assistant_exchange__answer_iff_answered",
+    ),
+    CheckConstraint(
+        "(outcome = 'REFUSED') = "
+        f"(length(trim(coalesce(refusal_reason, ''))) >= {REASON_MIN_LENGTH})",
+        name="ck_assistant_exchange__reason_iff_refused",
+    ),
+    CheckConstraint(
+        "(outcome = 'REFUSED') = (refusal_gap IS NOT NULL) AND "
+        f"(refusal_gap IS NULL OR {_in_list('refusal_gap', REFUSAL_GAPS)})",
+        name="ck_assistant_exchange__gap_iff_refused",
+    ),
+    CheckConstraint(
+        "refusal_screen IS NULL OR outcome = 'REFUSED'",
+        name="ck_assistant_exchange__screen_only_on_refusal",
+    ),
+    CheckConstraint(
+        "(outcome = 'FAILED') = (failure_cause IS NOT NULL) AND "
+        f"(failure_cause IS NULL OR {_in_list('failure_cause', ERROR_TYPES)})",
+        name="ck_assistant_exchange__cause_iff_failed",
+    ),
+    CheckConstraint(
+        "failure_detail IS NULL OR outcome = 'FAILED'",
+        name="ck_assistant_exchange__detail_only_on_failure",
+    ),
+    CheckConstraint(
+        "jsonb_typeof(citations) = 'array' AND jsonb_typeof(tool_calls) = 'array' "
+        "AND (outcome = 'ANSWERED' OR citations = '[]'::jsonb)",
+        name="ck_assistant_exchange__citations_only_on_answer",
+    ),
+    CheckConstraint(
+        "input_tokens >= 0 AND output_tokens >= 0 AND est_cost >= 0",
+        name="ck_assistant_exchange__spend_not_negative",
+    ),
+    CheckConstraint(
+        "model_id IS NOT NULL OR (input_tokens = 0 AND output_tokens = 0 AND est_cost = 0)",
+        name="ck_assistant_exchange__spend_needs_a_model",
+    ),
+    CheckConstraint("answered_at >= asked_at", name="ck_assistant_exchange__answered_after_asked"),
+    CheckConstraint(
+        "length(trim(principal_id)) > 0 AND length(trim(question)) > 0",
+        name="ck_assistant_exchange__who_and_what_not_blank",
+    ),
+    Index("ix_assistant_exchange__principal", "tenant_id", "principal_id", "asked_at"),
+    Index("ix_assistant_exchange__tenant_month", "tenant_id", "asked_at"),
+)
+
+
+#: P7, 0024. Who a digest is for.
+DIGEST_AUDIENCES = ("team", "executive")
+
+team_digest = Table(
+    "team_digest",
+    metadata,
+    #: FEAT-041, 0024. One digest per audience, team and week, composed whether or not
+    #: anything can send it. Where it goes is OPEN-11.
+    Column("digest_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("audience", Text, nullable=False),
+    #: The bill's `team` tag value for a team digest, and null for the executive one.
+    Column("team", Text),
+    Column("period_start", Date, nullable=False),
+    Column("period_end", Date, nullable=False),
+    Column("prose", Text, nullable=False),
+    Column("citations", JSONB, nullable=False),
+    Column("composed_at", DateTime(timezone=True), nullable=False),
+    #: Null means composed and not sent, which is a real state, with the reason beside it.
+    Column("sent_at", DateTime(timezone=True)),
+    Column("unsent_reason", Text),
+    CheckConstraint(_in_list("audience", DIGEST_AUDIENCES), name="ck_team_digest__audience"),
+    CheckConstraint(
+        "(audience = 'team') = (length(trim(coalesce(team, ''))) > 0)",
+        name="ck_team_digest__team_iff_team_audience",
+    ),
+    CheckConstraint(
+        f"(sent_at IS NULL) = (length(trim(coalesce(unsent_reason, ''))) >= {REASON_MIN_LENGTH})",
+        name="ck_team_digest__reason_iff_unsent",
+    ),
+    CheckConstraint(
+        "sent_at IS NULL OR sent_at >= composed_at", name="ck_team_digest__sent_after_composed"
+    ),
+    CheckConstraint(
+        "period_end > period_start AND length(trim(prose)) > 0 "
+        "AND jsonb_typeof(citations) = 'array'",
+        name="ck_team_digest__a_week_with_prose",
+    ),
+    Index("ix_team_digest__period", "tenant_id", "period_start"),
+)
+Index(
+    "uq_team_digest__identity",
+    team_digest.c.tenant_id,
+    team_digest.c.audience,
+    text("coalesce(team, '')"),
+    team_digest.c.period_start,
+    unique=True,
+)
+
+
+#: P7, 0025. What redaction did on finding a secret, mirrored from `finops_query.redaction`.
+REDACTION_ACTIONS = ("BLOCKED", "REDACTED")
+
+redaction_event = Table(
+    "redaction_event",
+    metadata,
+    #: FEAT-046, 0025. The rule that fired and what it did. There is no column the secret
+    #: could go in, deliberately: not the text, a hash, a position or a length.
+    Column("event_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column(
+        "exchange_id",
+        UUID(as_uuid=True),
+        ForeignKey("assistant_exchange.exchange_id"),
+        nullable=False,
+    ),
+    #: The asker, so the guard can confine the rows to them, ADR-0029.
+    Column("principal_id", Text, nullable=False),
+    #: A gitleaks rule identifier, such as `aws-access-token`.
+    Column("rule_id", Text, nullable=False),
+    Column("action", Text, nullable=False),
+    Column("occurred_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint(_in_list("action", REDACTION_ACTIONS), name="ck_redaction_event__action"),
+    CheckConstraint(
+        "length(trim(rule_id)) > 0 AND length(trim(principal_id)) > 0",
+        name="ck_redaction_event__named",
+    ),
+    Index("ix_redaction_event__principal", "tenant_id", "principal_id", "occurred_at"),
+)
+
+
 #: Every table in the schema. Used by the drift test and by the repository layer.
 ALL_TABLES = tuple(metadata.sorted_tables)
 

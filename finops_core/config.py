@@ -197,6 +197,20 @@ class Settings(BaseSettings):
     query_quota_logs_concurrent: int = Field(ge=1)
     query_quota_getmetricdata_tps: int = Field(ge=1)
 
+    # The assistant, P7 and ADR-0028. Which model is configuration, so changing it is a
+    # setting and nothing above the providers names one. Empty means none has been chosen,
+    # OPEN-10, and the assistant then says it is not enabled rather than answering with
+    # silence. The prices are list prices per million tokens and they are modelled: the bill
+    # is the measurement, and the platform cost screen reads it by tag. Above zero, because a
+    # model that costs nothing does not exist and would report every exchange as free.
+    assistant_model_id: str = ""
+    assistant_input_usd_per_million_tokens: Decimal = Field(gt=0)
+    assistant_output_usd_per_million_tokens: Decimal = Field(gt=0)
+    #: Tokens one tenant may spend in a calendar month, TASK-P7-007. A deployment decision
+    #: rather than a design one, so it is here and not a constant. Exhausted, the assistant
+    #: refuses and says when it resets rather than continuing to spend.
+    assistant_monthly_token_budget: int = Field(ge=1)
+
     # Retention, in days. docs/09-DATA-CLASSIFICATION.md.
     retention_principal_days: int = Field(ge=1)
     retention_operational_days: int = Field(ge=1)

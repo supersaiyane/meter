@@ -45,7 +45,7 @@ P0 Foundation
 | P4 | Inventory and Topology | 7 | 0 | 0 |
 | P5 | Quotas and Limits | 3 | 0 | 1 |
 | P6 | Containers | 6 | 2 | 1 |
-| P7 | Insight and LLM layer | 6 | 0 | 6 |
+| P7 | Insight and LLM layer | 6 | 0 | 0 |
 
 <!-- generated:roadmap-status end -->
 
@@ -107,7 +107,7 @@ rather than that one saving happened.
 | P4 | Inventory and Topology | Delivered | 7 (0 specified) | [spec](specs/2026-09-20-p4-inventory-and-topology-design.md) | [plan](plans/P4-implementation-plan.md) | P0 |
 | P5 | Quotas and Limits | Delivered, 8 of 8 tasks. The sub project whose central decision is what the product refuses to do | 3 (0 specified) | [spec](specs/2026-09-20-p5-quotas-and-limits-design.md) | [plan](plans/P5-implementation-plan.md) | P0, P4 |
 | P6 | Containers | Delivered, 12 of 12 tasks in its first cut. Cost by cluster, namespace and workload, request against use, sizing into P3's table, Fargate snapped to sizes that can be ordered, and forecast as a third provenance before anything forecasts. FEAT-037 is In build because the AWS adapter reads EKS and never ECS, ISS-224 | 6 (2 specified) | [spec](specs/2026-09-20-p6-containers-design.md) | [plan](plans/P6-implementation-plan.md) | P0, P1 |
-| P7 | Insight and LLM layer | Not started. Specified and planned 2026-09-28, 14 tasks. The first sub project that sends anything anywhere, and ADR-0028 decided it goes no further than the hub account | 6 (0 specified) | [spec](specs/2026-09-28-p7-insight-and-llm-layer-design.md) | [plan](plans/P7-implementation-plan.md) | P1, P2, P3 |
+| P7 | Insight and LLM layer | Delivered, 14 of 14 tasks in its first cut. A question answered from the routes the screens read, every figure cited from a tool result and never written by the model, refusals and failures as shapes of their own, a monthly token budget, secrets redacted or blocked before any prompt is built, and weekly digests composed whether or not anything can send them. FEAT-039 and FEAT-040 are In build because nothing reads change history or opens a pull request yet, ISS-227 and ISS-228, and Bedrock spend does not yet reach the platform cost screen, ISS-230 | 6 (0 specified) | [spec](specs/2026-09-28-p7-insight-and-llm-layer-design.md) | [plan](plans/P7-implementation-plan.md) | P1, P2, P3 |
 
 <!-- generated:subprojects end -->
 

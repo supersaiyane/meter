@@ -2315,3 +2315,177 @@ main > section > [data-testid='state'] > article > h3:first-of-type {
   font-size: var(--font-size-2);
   color: var(--text-muted);
 }
+
+/* ---------------------------------------------------------------- assistant */
+
+/* The one control in the product a reader types into at length, so it is as wide as the
+   prose under it and as tall as a short paragraph. */
+[data-testid='ask-form'] {
+  margin-bottom: var(--space-5);
+}
+
+[data-testid='ask-form'] label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-2);
+  font-weight: 600;
+  color: var(--text);
+}
+
+[data-testid='ask-question'] {
+  display: block;
+  width: 100%;
+  max-width: 78ch;
+  min-height: 5rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-3);
+  line-height: 1.45;
+  resize: vertical;
+}
+
+[data-testid='ask-question']:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* A question and a team name are sentences somebody wrote, so they are set as text rather
+   than in the small tracked capitals the section labels use. */
+[data-testid='exchange-question'],
+[data-testid='digest-audience'] {
+  margin: 0 0 var(--space-1);
+  padding: 0;
+  border: 0;
+  font-size: var(--font-size-3);
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text);
+}
+
+/* One panel holds the list, and each entry is divided by a rule rather than drawn as a card
+   inside a card. */
+[data-testid='assistant-history'] > article,
+[data-testid='digests'] > article {
+  max-width: none;
+  padding: var(--space-4) 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+/* Of type rather than child, because the digests panel opens with its heading. */
+[data-testid='assistant-history'] > article:first-of-type,
+[data-testid='digests'] > article:first-of-type {
+  padding-top: 0;
+}
+
+[data-testid='assistant-history'] > article + article,
+[data-testid='digests'] > article + article {
+  border-top: 1px solid var(--border-soft);
+}
+
+/* The answer is what was asked for, so it is at reading size and in the text colour, and the
+   line breaks it was written with are kept. */
+[data-testid='cited-prose'] {
+  max-width: 78ch;
+  font-size: var(--font-size-3);
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-line;
+}
+
+/* In a sentence the provenance word stays on its line, as a word does. Under the numeral is
+   for a table column, where it saves width. */
+[data-testid='cited-answer'] .meter-provenance,
+[data-testid='exchange-usage'] .meter-provenance {
+  display: inline;
+}
+
+[data-testid='citation-marker'] {
+  margin-left: 1px;
+  font-size: var(--font-size-1);
+  text-decoration: none;
+}
+
+[data-testid='citations'],
+[data-testid='tool-calls'] {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-5);
+  font-size: var(--font-size-2);
+  color: var(--text-muted);
+}
+
+[data-testid='citations'] li,
+[data-testid='tool-calls'] li {
+  padding: 2px 0;
+}
+
+/* Where a marker lands, so the eye finds the entry it was sent to. */
+[data-testid='citation']:target,
+[data-testid='tool-call']:target {
+  background: var(--accent-quiet);
+}
+
+/* Clear of the sticky trust strip. Without it the entry a link lands on is scrolled to the top
+   of the window, which is underneath the strip, and the first entry in view is the next one. */
+[data-testid='citation'],
+[data-testid='tool-call'],
+[data-testid='exchange'] {
+  scroll-margin-top: 6rem;
+}
+
+[data-testid='tool-call'][data-returned='false'] {
+  color: var(--stale);
+}
+
+/* A refusal is the product being careful, and not enabled is a setting. Neither is drawn in
+   the failure colour, and neither looks like an answer: a rule down the side and a sunken
+   fill, something understood and declined. */
+[data-testid='refusal'],
+[data-testid='exchange-failure'][data-state='not-enabled'] {
+  margin: var(--space-2) 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--border-strong);
+  background: var(--surface-sunken);
+}
+
+/* A failure is drawn as one, in the colour kept for nothing else. */
+[data-testid='exchange-failure'][data-state='failed'] {
+  margin: var(--space-2) 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--failure);
+  background: var(--failure-quiet);
+}
+
+[data-testid='refusal'] p,
+[data-testid='exchange-failure'] p {
+  margin-bottom: var(--space-1);
+}
+
+/* What each exchange cost, on one line under it rather than as a block above the answer. */
+[data-testid='exchange-usage'] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-soft);
+}
+
+[data-testid='exchange-usage'] dd {
+  margin-right: var(--space-3);
+}
+
+/* Composed and kept is a state a reader has to notice, so it is a notice. */
+[data-testid='digest-unsent'] {
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--stale);
+  background: var(--stale-quiet);
+  color: var(--text);
+}

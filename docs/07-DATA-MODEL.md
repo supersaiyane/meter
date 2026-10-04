@@ -641,6 +641,96 @@ request was approved, and FEAT-034 is about the increase nobody checked on. It
 carries no `as_of`: `changed_at` is AWS's timestamp for the transition, and the
 request row beside it holds the pair of timestamps for the read that found it.
 
+### Insight and the assistant, P7
+
+Three tables added 2026-10-04 by migrations 0023, 0024 and 0025. This section
+was owed with those migrations under the routing rule and arrived in the
+documentation commit after them.
+
+```sql
+CREATE TABLE assistant_exchange (
+    exchange_id     UUID            PRIMARY KEY,
+    tenant_id       UUID            NOT NULL REFERENCES tenant (tenant_id),
+    principal_id    TEXT            NOT NULL,   -- who asked, ADR-0029
+    question        TEXT            NOT NULL,   -- as screened, a secret already
+                                                -- replaced by the rule that found it
+    outcome         TEXT            NOT NULL,   -- ANSWERED, REFUSED or FAILED
+    answer          TEXT,                       -- placeholders, never a numeral
+    refusal_gap     TEXT,
+    refusal_reason  TEXT,
+    refusal_screen  TEXT,
+    failure_cause   TEXT,                       -- one of the seven causes
+    failure_detail  TEXT,
+    citations       JSONB           NOT NULL,   -- an array, empty unless answered
+    tool_calls      JSONB           NOT NULL,   -- an array
+    model_id        TEXT,                       -- null when no model was reached
+    input_tokens    INTEGER         NOT NULL,
+    output_tokens   INTEGER         NOT NULL,
+    est_cost        NUMERIC(20, 10) NOT NULL,   -- modelled, from configured prices
+    asked_at        TIMESTAMPTZ     NOT NULL,
+    answered_at     TIMESTAMPTZ     NOT NULL
+);
+
+CREATE TABLE team_digest (
+    digest_id       UUID         PRIMARY KEY,
+    tenant_id       UUID         NOT NULL REFERENCES tenant (tenant_id),
+    ingest_run_id   UUID         NOT NULL,
+    audience        TEXT         NOT NULL,      -- team or executive
+    team            TEXT,                       -- required when, and only when,
+                                                -- the audience is a team
+    period_start    DATE         NOT NULL,
+    period_end      DATE         NOT NULL,
+    prose           TEXT         NOT NULL,
+    citations       JSONB        NOT NULL,
+    composed_at     TIMESTAMPTZ  NOT NULL,
+    sent_at         TIMESTAMPTZ,                -- null until a sender exists, OPEN-11
+    unsent_reason   TEXT                        -- required when, and only when,
+                                                -- sent_at is null
+);
+CREATE UNIQUE INDEX uq_team_digest__identity
+    ON team_digest (tenant_id, audience, coalesce(team, ''), period_start);
+
+CREATE TABLE redaction_event (
+    event_id        UUID         PRIMARY KEY,
+    tenant_id       UUID         NOT NULL REFERENCES tenant (tenant_id),
+    exchange_id     UUID         NOT NULL REFERENCES assistant_exchange (exchange_id),
+    principal_id    TEXT         NOT NULL,
+    rule_id         TEXT         NOT NULL,      -- the gitleaks rule identifier
+    action          TEXT         NOT NULL,      -- BLOCKED or REDACTED
+    occurred_at     TIMESTAMPTZ  NOT NULL
+);
+```
+
+`assistant_exchange` holds three outcomes in one row, and twelve check
+constraints keep them apart. An answer exists when, and only when, the outcome
+is ANSWERED, a gap and a reason of at least twelve characters when, and only
+when, it is REFUSED, and a cause from the seven when, and only when, it is
+FAILED. A citation is only ever attached to an answer. `GET
+/assistant/exchanges` returns all three outcomes as one list, and the response
+model refuses a row that carries a shape its outcome does not name.
+
+`ck_assistant_exchange__spend_needs_a_model` requires a model identifier on any
+row with tokens or cost. A question refused before it reached a model, by the
+budget or by redaction, records zero spend and no model, and that zero is true.
+A row claiming spend against no model would be a cost nobody can attribute.
+
+`team_digest` stores a digest whether or not anything can send it. `sent_at`
+null is a real state with a required reason, the shape FEAT-060 used for a
+budget with no collected period, and the screen says composed and not sent
+rather than hiding the row. The identity index uses `coalesce(team, '')`
+because the executive digest has no team, and under PostgreSQL's default two
+executive digests for one week would not collide.
+
+`redaction_event` has no column the secret could go in: not the matched text,
+not a hash, not its position and not its length. A table of redacted secrets is
+a worse leak than the prompt would have been. Its foreign key to the exchange
+has no cascade, so the question cannot be deleted from under the record of what
+was found in it.
+
+Two of the three tables hold a person's identifier, and the guard confines them
+to that person through the `ByPrincipal` rule, ADR-0029. None of the three has
+a retention job yet, and `erase_principal` does not reach them, ISS-226.
+
 ## Migration workflow, Alembic
 
 Alembic is the only way the schema changes. A manual `ALTER TABLE` against any

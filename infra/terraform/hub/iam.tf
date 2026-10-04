@@ -190,6 +190,33 @@ data "aws_iam_policy_document" "task" {
       values   = [var.metric_namespace]
     }
   }
+
+  # The model behind the assistant, ADR-0028. Named foundation models in this region
+  # only, never a wildcard: adding a model is a change to assistant_model_ids that
+  # somebody reviews, and a wildcard would grant every model the service ever adds.
+  # Absent until a model is named, which is OPEN-10, so a deployment that has not
+  # chosen one grants nothing and the assistant says it is not enabled.
+  #
+  # Invocation only. Neither action creates, changes or deletes anything, here or in a
+  # member account, and no member account role gains anything for the assistant.
+  dynamic "statement" {
+    for_each = length(var.assistant_model_ids) == 0 ? [] : [var.assistant_model_ids]
+
+    content {
+      sid    = "InvokeTheNamedModels"
+      effect = "Allow"
+
+      actions = [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream",
+      ]
+
+      resources = [
+        for model_id in statement.value :
+        "arn:${data.aws_partition.current.partition}:bedrock:${var.region}::foundation-model/${model_id}"
+      ]
+    }
+  }
 }
 
 resource "aws_iam_role_policy" "task" {

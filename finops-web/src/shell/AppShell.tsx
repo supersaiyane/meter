@@ -169,7 +169,16 @@ export function AppShell({ children, now }: AppShellProps) {
       <div data-testid="trust-strip">
         <CoverageBanner coverage={meta.coverage} />
 
-        {meta.asOf === null || meta.collectedAt === null ? (
+        {meta.freshnessPerFigure ? (
+          // Every surface on the page carries its freshness with each figure, because its own
+          // envelope has none to give: an exchange records Meter's own work, and each citation
+          // carries the as_of of the row it was read from. Said of the citations, because that
+          // is where the date is drawn. Not yet collected would be false here, and one date
+          // made up for the whole page would be worse.
+          <p data-testid="global-freshness" data-state="per-figure">
+            Each citation carries its own as of date
+          </p>
+        ) : meta.asOf === null || meta.collectedAt === null ? (
           // Never collected is not an empty success and must not read as one.
           <p data-testid="global-freshness" data-state="never-collected">
             Not yet collected

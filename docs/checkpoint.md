@@ -53,48 +53,53 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-09-28 | A check that an identifier cited anywhere resolves to a register entry | Done | The guard named as not yet built by the morning's lesson. `scripts/docs/check_identifiers.py` reads every FEAT, ISS, ADR, OPEN and CHG identifier in the file types `make check-writing` already scans, and fails when one resolves to nothing. It is the seventh of the ten checks in `make check-docs`. Two scoping decisions carry the weight. `docs/registry.yaml` is scanned rather than skipped, because an issue's `detail` or an open question's `blocks` can cite another identifier and that is the exact case that started this; skipping the register would have lost it. Generated blocks are skipped, because `sync.py` writes them from the register, so a complaint there would send the reader to fix a file they must not edit, while the same text is caught in the register where they can. The falsification is the part worth keeping: dropping ISS-002, ISS-003 and ISS-004 from the register reproduced the state the repository was actually in before this morning, and the check surfaced 65 citations across 25 files in markdown, Python, Terraform and YAML, which is also how four of the seven scanned file types were shown to be reached rather than assumed. The register was restored and the restore verified by SHA-256 rather than by eye. A first attempt at that falsification removed nothing, because the regex assumed two space indentation the file does not use, and it was only visible because the success line prints the number of registered identifiers and the number had not moved: a check that passes is not evidence the thing it checks was ever varied. Three defects of its own surfaced while building it. The check failed on its own test file, which has to cite unresolvable identifiers to watch the check fail, so that file is the single exemption and the test asserting the exemption list was empty was deleted, having been written before the fact. The success line counted every scanned file including the exempt one, overstating in the single line anybody reads what had actually been checked. And `check_map_counts.py` turned out to be absent from the listing in `project_map.md` that it is itself the checker for. A count of the checks in `make check-docs` was written down by hand in three places, the CI comment, a pipeline test docstring and `tasks/STATUS.md`, all saying eight, and all three were already wrong before this change: the target held nine. The number was removed from all three rather than corrected to ten, because a hand written copy of a derived count had already proved it rots unnoticed, and the six historical records that say eight were left alone because they describe a moment when it was true. What it cannot do is in the docstring: it catches an identifier that resolves to nothing and never one that resolves correctly and means something else, which was the FEAT-041 half of the same defect and is only caught by reading the entry. 17 tests, 2,225 backend passed and 1 skipped, coverage 95.69 percent and unchanged because `scripts/` is outside the six measured packages, so these tests are the evidence rather than a coverage figure. OK: 4192 citations across 1082 files, all resolving to 424 registered identifiers | `scripts/docs/check_identifiers.py`, docstring first for the two scoping decisions and the stated limit, then `tests/scripts/test_check_identifiers.py` for the two tests whose reasons are not obvious: the historical counterfactual and the one proving the generated block skip exits its own state. Nothing is in flight. The exemption list has one entry and every future entry needs an argument. 46 of 105 change records still carry `commit: pending`, unchanged by this and not this task's to fix |
 | 2026-10-01 | P6 containers, six of twelve tasks, paused mid sub project | Partial | Asked to complete P6 in one run and stopped at the weekly limit with six of 12 tasks done and committed: 001 the entities, 002 pod cost, 003 the cluster cost read, 004 Container Insights, 005 verified rather than assumed, 006 the usage collector. 7 commits on `p6-containers`, unmerged, and `make verify` is **not** green: two tests in `tests/scripts/test_seed_demo.py` fail, both confirmed pre-existing by running them against main in a separate worktree, both the same date boundary family as ISS-219 and now ISS-221. Nothing else fails. Four things are worth carrying forward. The OOM representation was the first real decision: the plan says a three state value, `bool | None` carries three values and fails open because a truth test reads unobserved as not killed, and that is the exact substitution spec 5.4 forbids, so the domain holds a three member enum and the column stays nullable with the mapping in one function. Second, a split cost line carries no money of its own: it re-attributes a charge already on the bill, so folding it into billed_cost would double count every clustered charge, and a test asserts the period total is identical with and without the container grain. Third, 0022's first draft took the fake's daily CSV shape and that was wrong, because the port returns a window aggregate and a fortnight's percentile stored in a row stamped with one date is a figure labelled with a day it does not describe; spec 5.2 had the right shape and the table now holds one row per workload with observation_days saying what it covers. Fourth, the full gate earned its keep: four defects passed in their own suites and failed together, including one uncleaned Misconfigured row that produced eleven unrelated failures because migration 0018 rightly refuses to downgrade while such a row exists, and ISS-220 where a hand written partition name no production code writes meant IF NOT EXISTS could not prevent an overlap. 22 migration revisions now. 220 issues recorded. | Resume at TASK-P6-007 in `docs/plans/P6-implementation-plan.md`, the two sizing rules. Its arithmetic goes in a new pure module `finops_query/containers.py` and its database write in a collector, because `finops_query` imports no database and an import contract holds that. `CONTAINER_RIGHTSIZE` is already a member of `WasteClass` so no enum widening is needed, and `recommendation.waste_class` has no check constraint so no migration is needed either. The rule is CPU at the 99th percentile of the max rate and memory at peak plus 15 percent, plus 25 percent only where OOM status is KILLED, and where it is UNOBSERVED the 15 percent rule applies and the rationale must say in words that the check could not be made, with a test that reads the rationale rather than the number. Then 008 Fargate snapping, 009 the remaining two routes, 010 and 011 the three screens and the journey, 012 the forecast provenance, where the frontend half already exists and the gaps are `layout.css` selectors and `PROVENANCES` in `finops_api/db/models.py`. ISS-221 must be answered before `make verify` can be green |
 | 2026-10-04 | P6 containers delivered, twelve of twelve, and the cause I gave on 2026-10-01 corrected | Done | Resumed at TASK-P6-007 and finished the sub project: sizing composed onto P3's memory rule and written into P3's table, Fargate snapped up to the orderable matrix with the saving from the snapped size, the guard and two routes, three screens in three existing groups, the journey, the seed and a runbook section written by a script, and forecast as a third provenance before anything forecasts. FEAT-035 and FEAT-036 Delivered; FEAT-037 In build, because the AWS adapter reads EKS and never ECS, so it produces nothing against a real account, ISS-224. The most important thing in this session is a correction. On 2026-10-01 I blamed a realized savings verdict flip on P6's split cost lines and wrote that into a commit, two comments and a lesson. It was the fake bill's drift, indexed by day of month so it reset every first: a sawtooth. It flips on main with no P6 code at all, and I had compared my branch to main on two different days, one of which returns nothing on main for an unrelated reason. Fixed as ISS-222 and every place the wrong cause was written now says so. The first of month emptiness it was confused with is ISS-221, whose test half is fixed and falsified on the 1st both ways and whose make seed half is still a decision. Five more defects the work surfaced: the AWS container adapter stored the maximum in a field named for the 99th percentile; the fake held Fargate CPU in Fargate's units inside a millicores field, putting a task's current size off the matrix; the seed would have shown every cluster with no cost, because split lines were filtered from a bill pinned to August; `npx tsc -p tsconfig.json` checks zero files and cannot fail, which I used twice before the build caught it, recorded against the existing 2026-09-26 lesson; and the gate's last stage failed on two npm advisories published this week against test tool dependencies, fixed by upgrading both within their parents' ranges because ADR-0018's threshold is findings with a published fix. The background task reported that gate as exit 0, which was the trailing ls; make itself had exited 2, the 2026-09-06 lesson exactly. Measured on the merge commit's tree: 2360 backend passed and 2 skipped at 95.67 percent coverage, 488 frontend, 22 journeys, 0 unresolved security findings. | Nothing is in flight and P6 is merged. Read `docs/runbooks/demo.md` P6 section for what the seeded estate shows, `finops_query/containers.py` for the two rules and the sentence that admits it could not check, and ISS-221, ISS-223 and ISS-224 for the three gaps left open on purpose |
+| 2026-10-04 | P7 insight delivered, fourteen of fourteen, and the full suite caught what the task by task runs had not | Done | Resumed at TASK-P7-014 and finished the sub project. The model cites and the loop reads: every figure in an answer is a placeholder filled from a tool result by call id and path, with its provenance and its as_of, and a numeral the model writes is a typed failure. Refusals name their gap and failures their cause, each a shape of its own from the database to the screen. A monthly token budget refuses before a model is reached, a question holding a credential is blocked or redacted before anything else, and weekly digests are composed whether or not anything can send them. Two screens: the assistant, with three outcome shapes, citations traceable to their calls and a third trust strip state, and the digests. FEAT-038, FEAT-041, FEAT-042 and FEAT-046 Delivered; FEAT-039 and FEAT-040 In build because nothing calls them yet, ISS-227 and ISS-228. A review of the screens found that a refusal's screen path written with a backslash passed both the frontend and the domain check, and a browser resolves it to another site: fixed on both sides in `540e8f8` and `1e7de73`, and fifteen safety branches now each fail a test when removed. The assistant's failure advice had been the collectors' and is now its own, `dbf6970`. The full suite then failed three tests the task runs never reached: Bedrock named inside `finops_api`, against ADR-0028, and the retention kill switch list and the demo teardown, both exhaustive and both missing P7's additions, `d6954f9` and `d375d07`. Seven gaps registered rather than fixed, because each needs a decision or an account: ISS-225, ISS-226 with OPEN-14, ISS-229, ISS-230, where spec exit criterion 7 had no task, ISS-231, and OPEN-13. Measured at the gate: 2705 backend passed and 2 skipped at 95.95 percent coverage, 551 frontend, 23 journeys, 0 unresolved security findings, and make's own exit status 0. | Nothing is in flight and P7 is merged. Read `docs/features/FEAT-038-natural-language-cost-query.md` for how an answer is built, `finops_query/insight.py` for the loop, `finops_api/assistant.py` for the order of the guards, and ISS-226, ISS-230 and OPEN-14 for the decisions waiting on the owner |
 
 ## Next action
 
-**Nothing is in flight. P6 is merged to main, and every sub project through P6 is delivered
-in its first cut. P7 is specified and planned and not started.**
+**Nothing is in flight. P7 is merged to main, and every sub project through P7 is delivered
+in its first cut.**
 
 The candidates, in the order they would pay:
 
 1. **ISS-002, a real account.** Still the single thing that would close the most. Every adapter
-   here, the two P6 added included, has been checked against published names and never against
-   a call. ISS-223 is the sharpest example: the fake reports OOM status on clusters with enhanced
-   observability and the adapter never does, and which is right is checkable only there.
-2. **P7, insight and the language model layer.** Fourteen tasks. OPEN-10 has to be answered
-   before its adapter can name a model, and ADR-0028 has already settled that it runs on Bedrock
-   in the hub account.
-3. **ISS-224, reading ECS.** FEAT-037 is built and produces nothing against AWS, because the
-   container adapter discovers clusters through EKS's Container Insights metrics only. The second
-   cut in the P6 plan is the natural home.
-4. **ISS-221, the make seed half.** On the first of a month the seeded estate is a month thinner
-   than the collectors need. The tests are fixed; what `make seed` should do on that day is a
-   decision about the product's own clock, not a patch.
+   here, P7's Bedrock adapter included, has been checked against published shapes and never
+   against a call, and OPEN-10 has to name a model before the assistant answers anything.
+2. **The P7 decisions waiting on the owner.** OPEN-14, how long a person's questions are kept
+   and whether erasure deletes or tombstones them, after which ISS-226 is a small change.
+   ISS-230, putting Bedrock spend on the platform cost screen, likely through a tagged
+   application inference profile in the hub stack. OPEN-13, the code host, after which FEAT-040
+   is one adapter, and a change history collector for FEAT-039, ISS-227.
+3. **ISS-225, a limiter on the ask route,** before more than a handful of people use the
+   assistant at once.
+4. **ISS-224, reading ECS.** FEAT-037 is built and produces nothing against AWS, because the
+   container adapter discovers clusters through EKS's Container Insights metrics only.
+5. **ISS-221, the make seed half.** On the first of a month the seeded estate is a month thinner
+   than the collectors need, and what `make seed` should do that day is a decision.
 
 ### Where the project is, as of 2026-10-04
 
-Every figure here was computed by the command that wrote this section.
+Every figure here was computed by the command that wrote this section. The gate ran on
+`p7-insight` at `d375d07` with the formatter's one quote change, and the merge adds only this
+checkpoint and the security report that gate wrote.
 
 | What | Where it stands |
 | --- | --- |
-| Git | `main`, P6 merged, working tree clean |
-| Gate | `make verify` green on the merged tree |
-| Backend tests | 2360 passed and 2 skipped, 95.67 percent coverage |
-| Frontend tests | 488 passed |
-| Journeys | 22 passed |
-| Security | 0 unresolved findings |
-| Features | 62 documented, 28 Delivered |
-| Decisions | 28 |
-| Issues | 223 recorded, 82 open |
-| Schema | 22 migration revisions, every one named in `project_map.md` |
-| Collectors | 23 modules, every one named in `project_map.md` |
-| Screens | 26 of 29 built |
+| Git | `main`, P7 merged, working tree clean |
+| Gate | `make verify` exit 0, make's own status |
+| Backend tests | 2705 passed and 2 skipped, 95.95 percent coverage |
+| Frontend tests | 551 passed in 62 files |
+| Journeys | 23 passed |
+| Security | 0 unresolved findings, 5 accepted as unfixable |
+| Features | 62 documented, 32 Delivered |
+| Decisions | 29 |
+| Issues | 230 recorded, 89 open |
+| Open questions | 14 recorded, 11 open |
+| Schema | 25 migration revisions, every one named in `project_map.md` |
+| Collectors | 24 modules, every one named in `project_map.md` |
+| Screens | 28 of 29 built |
 | Lessons | 24 in `tasks/lessons.md` |
-| Sub projects | P1 to P6 delivered, P7 planned, P0 recorded as in build, the discrepancy noted earlier |
+| Sub projects | P1 to P7 delivered, P0 recorded as in build, the discrepancy noted earlier |
 
 ### Reading in, in order
 
