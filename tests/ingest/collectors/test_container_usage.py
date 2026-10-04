@@ -367,3 +367,20 @@ def test_there_is_no_second_recommendation_table() -> None:
     """
     names = {name for name in models.metadata.tables if "recommendation" in name}
     assert names == {"recommendation", "recommendation_event"}, names
+
+
+def test_fargate_tasks_are_sized_by_the_matrix_without_a_measured_cost(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    """TASK-P6-008 through the collector. No bill: a Fargate size is priced by its rate.
+
+    The two oversized tasks are recommended and the right sized one is not, so the rule
+    discriminates rather than flagging every task it is shown.
+    """
+    run(engine, tenant_id, account=AccountKey(provider=Provider.AWS, account_id="fake-product-a"))
+    flagged = {row[0] for row in recommendations(engine, tenant_id)}
+    assert any("statements-renderer" in resource for resource in flagged), flagged
+    assert any("webhook-relay" in resource for resource in flagged), flagged
+    assert not any("kyc-document-ocr" in resource for resource in flagged), flagged
+    for resource, *_rest, rationale in recommendations(engine, tenant_id):
+        assert "never down" in rationale, resource

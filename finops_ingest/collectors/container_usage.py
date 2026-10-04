@@ -33,7 +33,7 @@ from finops_core.domain.containers import ClusterSlice, OomStatus, ReservationVs
 from finops_core.domain.waste import Source, confidence_of
 from finops_core.errors import SchemaDrift
 from finops_ingest.registry import CollectorContext, CollectorOutcome
-from finops_query.containers import KIND, ContainerSizing, is_sized_here, size_workload
+from finops_query.containers import KIND, ContainerSizing, size
 from finops_query.severity import DEFAULT_THRESHOLDS, Thresholds, severity_for, thresholds_from
 
 COLLECTOR = "container_usage"
@@ -206,9 +206,9 @@ class ContainerUsageCollector:
             self._write_usage(context, reservation, account.account_id, region)
             written += 1
 
-        # Sized after the slice is written, from the reservations already in hand. EC2
-        # backed workloads only: a Fargate task is sized by the matrix in TASK-P6-008,
-        # because only certain task sizes can be ordered.
+        # Sized after the slice is written, from the reservations already in hand. An
+        # EC2 backed workload by its measured cost, a Fargate task by the sizes Fargate
+        # sells, so `size` picks the rule from the launch type.
         thresholds = (
             thresholds_from(context.settings)
             if context.settings is not None
@@ -216,10 +216,8 @@ class ContainerUsageCollector:
         )
         now = self._clock()
         for reservation in reservations:
-            if not is_sized_here(reservation):
-                continue
             cost = self._monthly_cost(context, reservation, account.account_id, now)
-            sizing = size_workload(reservation=reservation, monthly_cost=cost)
+            sizing = size(reservation=reservation, monthly_cost=cost)
             if sizing.estimate.is_worth_acting_on:
                 self._write_recommendation(
                     context, reservation, sizing, account.account_id, region, thresholds, now

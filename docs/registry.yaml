@@ -3350,6 +3350,19 @@ issues:
     the 15 percent margin and the sentence saying the check could not be made. The contract
     suite constrains only clusters that cannot report requests, so both implementations pass
     while disagreeing. Resolve with ISS-002'
+- id: ISS-224
+  severity: MEDIUM
+  status: OPEN
+  summary: Fargate sizing runs only against the fake, because the AWS container adapter
+    reads EKS and never ECS
+  detail: 'finops_providers/aws/container_insights.py discovers clusters through the
+    ContainerInsights node metrics and reports every one as EKS, so no ECS service and no
+    Fargate task ever reaches the sizing rule from a real account. FEAT-037 is built and
+    tested against the matrix, and it produces nothing against AWS until ECS is read. Two
+    further limits are stated in every Fargate rationale rather than hidden: the saving is
+    modelled from the published rate, because a task cost is a pure function of its size and
+    the bill carries no Fargate grain, and it is per task, because how many tasks a service
+    runs is not read'
 
 open_questions:
 - id: OPEN-07

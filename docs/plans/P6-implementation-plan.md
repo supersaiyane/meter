@@ -288,7 +288,7 @@ rule is unchanged; the rationale says the check could not be made.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec section 5.5, FEAT-037 |
 | Delivers | FEAT-037 |
 | Depends on | TASK-P6-007 |

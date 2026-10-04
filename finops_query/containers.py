@@ -214,6 +214,145 @@ def size_workload(
     )
 
 
-def is_sized_here(reservation: ReservationVsUse) -> bool:
-    """Whether this module sizes the workload, or the Fargate matrix does."""
-    return reservation.workload.launch_type is LaunchType.EC2
+# --- Fargate, TASK-P6-008 ------------------------------------------------------
+
+#: The task sizes Fargate sells, Linux, as the ECS developer guide's task size table
+#: publishes them: each CPU size with the memory sizes it may be paired with. CPU in
+#: millicores, so one vCPU is 1000, and memory in MiB. A table rather than a rule,
+#: because the increments differ by row and a formula would have to encode every
+#: exception to stay true.
+FARGATE_SIZES: tuple[tuple[int, tuple[int, ...]], ...] = (
+    (250, (512, 1024, 2048)),
+    (500, tuple(range(1024, 4096 + 1, 1024))),
+    (1000, tuple(range(2048, 8192 + 1, 1024))),
+    (2000, tuple(range(4096, 16384 + 1, 1024))),
+    (4000, tuple(range(8192, 30720 + 1, 1024))),
+    (8000, tuple(range(16384, 61440 + 1, 4096))),
+    (16000, tuple(range(32768, 122880 + 1, 8192))),
+)
+
+#: Fargate's published Linux x86 on demand rates, per vCPU hour and per GB hour, in the
+#: least expensive regions. Every other region charges more, so a saving computed here
+#: is a floor rather than a ceiling, which is the safe direction for a waste screen.
+FARGATE_VCPU_HOUR_USD = Decimal("0.04048")
+FARGATE_GB_HOUR_USD = Decimal("0.004445")
+
+#: The hours AWS bills a month as.
+HOURS_PER_MONTH = Decimal("730")
+
+_MIB_PER_GB = Decimal("1024")
+_MILLICORES_PER_VCPU = Decimal("1000")
+
+
+def fargate_sizes() -> tuple[tuple[Decimal, Decimal], ...]:
+    """Every orderable combination, as (CPU millicores, memory MiB)."""
+    return tuple(
+        (Decimal(cpu), Decimal(memory)) for cpu, memories in FARGATE_SIZES for memory in memories
+    )
+
+
+def fargate_monthly_usd(cpu_millicores: Decimal, memory_mib: Decimal) -> Decimal:
+    """What one task of this size costs a month at the published rate."""
+    vcpu = cpu_millicores / _MILLICORES_PER_VCPU
+    gb = memory_mib / _MIB_PER_GB
+    return (vcpu * FARGATE_VCPU_HOUR_USD + gb * FARGATE_GB_HOUR_USD) * HOURS_PER_MONTH
+
+
+def snap_up(cpu_millicores: Decimal, memory_mib: Decimal) -> tuple[Decimal, Decimal]:
+    """The cheapest orderable size that holds at least this much of both.
+
+    Always up, never to the nearest. A task needing 1100 millicores is nearer 1000 than
+    2000, and 1000 is the size that throttles it. Snapping down would report a larger
+    saving and deliver a task too small to run.
+
+    Raises when nothing is large enough, rather than returning the largest size: a
+    recommendation to order a task smaller than its need is the defect this exists to
+    prevent, and the largest size would be exactly that.
+    """
+    fits = [size for size in fargate_sizes() if size[0] >= cpu_millicores and size[1] >= memory_mib]
+    if not fits:
+        raise ValueError(f"no Fargate size holds {cpu_millicores} millicores and {memory_mib} MiB")
+    return min(fits, key=lambda size: (fargate_monthly_usd(*size), size))
+
+
+def is_orderable(cpu_millicores: Decimal, memory_mib: Decimal) -> bool:
+    return (cpu_millicores, memory_mib) in set(fargate_sizes())
+
+
+def size_fargate_task(*, reservation: ReservationVsUse) -> ContainerSizing:
+    """The smallest size somebody can actually order, and what it saves per task.
+
+    The saving is computed from the snapped size and never from the ideal one. Reporting
+    the ideal would look better and be a number nobody can realise: the first person to
+    order the recommendation would find the saving smaller than promised and stop
+    believing the rest of the screen.
+
+    Modelled from the published rate rather than measured, because a Fargate task's cost
+    is a pure function of its size, and per task, because how many tasks a service runs
+    is not read. Both are said in the rationale.
+    """
+    days = reservation.observation_days
+    if too_short(days):
+        return _refused(
+            f"{days} days is under the {MINIMUM_HISTORY} day floor. There is no "
+            "recommendation, not a low confidence one"
+        )
+    cpu_requested = reservation.cpu_requested_millicores
+    memory_requested = reservation.memory_requested_mib
+    if cpu_requested is None or memory_requested is None:
+        return _refused(NO_REQUEST)
+    cpu_used = reservation.cpu_used_p99_millicores
+    memory_peak = reservation.memory_used_peak_mib
+    if cpu_used is None or memory_peak is None:
+        return _refused(NO_USE)
+
+    cpu_needed = _up(cpu_used)
+    memory_needed = _up(needed_memory_mib(memory_peak, reservation.oom_status))
+    try:
+        cpu_snapped, memory_snapped = snap_up(cpu_needed, memory_needed)
+    except ValueError as error:
+        return _refused(str(error))
+
+    if cpu_snapped >= cpu_requested and memory_snapped >= memory_requested:
+        return _refused(ALREADY_FITS)
+
+    current = fargate_monthly_usd(cpu_requested, memory_requested)
+    snapped = fargate_monthly_usd(cpu_snapped, memory_snapped)
+    saving = (current - snapped).quantize(Decimal("0.01"))
+    if saving < FLOOR_USD:
+        return _refused(f"{saving} per task is under the {FLOOR_USD} floor")
+
+    reason = (
+        f"The task is sized {cpu_requested} millicores and {memory_requested} MiB. It needs "
+        f"{cpu_needed} millicores, the 99th percentile of its daily peak, and "
+        f"{memory_needed} MiB, its peak plus margin. "
+        f"{_oom_sentence(reservation.oom_status)} The smallest size Fargate sells that "
+        f"holds both is {cpu_snapped} millicores and {memory_snapped} MiB, rounded up and "
+        f"never down, and the saving is computed from that size rather than from the "
+        f"ideal one. Over {days} days. Modelled from Fargate's published rate, per task: "
+        "how many tasks the service runs is not read, so a service running several saves "
+        "more than this."
+    )
+    return ContainerSizing(
+        estimate=Estimate(
+            is_worth_acting_on=True,
+            waste_class=KIND,
+            monthly_saving=saving,
+            reason=reason,
+        ),
+        cpu_request_millicores=cpu_snapped,
+        memory_request_mib=memory_snapped,
+    )
+
+
+def size(*, reservation: ReservationVsUse, monthly_cost: Decimal | None) -> ContainerSizing:
+    """The right rule for the workload's launch type.
+
+    An EC2 backed workload is resized by changing its request to any value, and its
+    saving is a share of its measured cost. A Fargate task is resized by ordering a
+    different size from a fixed list, and its saving is the difference between two
+    sizes' published rates.
+    """
+    if reservation.workload.launch_type is LaunchType.FARGATE:
+        return size_fargate_task(reservation=reservation)
+    return size_workload(reservation=reservation, monthly_cost=monthly_cost)

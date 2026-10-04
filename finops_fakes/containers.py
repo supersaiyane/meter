@@ -320,13 +320,19 @@ WORKLOADS: tuple[Workload, ...] = (
         380,
     ),
     # Fargate: sizes are the task definition, and a request is always known.
+    #
+    # CPU here is millicores like every other workload, so four vCPU is 4000.
+    # These were written as 4096, 2048 and 1024, which are Fargate's own CPU units
+    # (1024 per vCPU) sitting in a field that means millicores, and read as
+    # millicores 4096 is 4.096 vCPU: not a size anybody can order, so the task's
+    # current size was itself off the matrix TASK-P6-008 snaps to.
     Workload(
         "product-ecs",
         "default",
         "statements-renderer",
         "Service",
         LaunchType.FARGATE,
-        4096,
+        4000,
         16384,
         None,
         None,
@@ -342,7 +348,7 @@ WORKLOADS: tuple[Workload, ...] = (
         "kyc-document-ocr",
         "Service",
         LaunchType.FARGATE,
-        2048,
+        2000,
         4096,
         None,
         None,
@@ -358,7 +364,7 @@ WORKLOADS: tuple[Workload, ...] = (
         "webhook-relay",
         "Service",
         LaunchType.FARGATE,
-        1024,
+        1000,
         8192,
         None,
         None,

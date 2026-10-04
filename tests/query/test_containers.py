@@ -28,15 +28,21 @@ from finops_query import waste
 from finops_query.containers import (
     ALREADY_FITS,
     CPU_SHARE_OF_COST,
+    FARGATE_SIZES,
     KILLED,
     NO_COST,
     NO_REQUEST,
     NO_USE,
     NOT_KILLED,
     UNOBSERVED,
-    is_sized_here,
+    fargate_monthly_usd,
+    fargate_sizes,
+    is_orderable,
     needed_memory_mib,
+    size,
+    size_fargate_task,
     size_workload,
+    snap_up,
 )
 
 NOW = datetime(2026, 10, 4, 9, 0, tzinfo=UTC)
@@ -225,15 +231,116 @@ def test_a_refusal_recommends_no_requests_at_all() -> None:
     assert sized.memory_request_mib is None
 
 
-def test_fargate_is_left_to_the_matrix() -> None:
-    fargate = reservation(
-        workload=Workload(
+# --- Fargate, TASK-P6-008 -------------------------------------------------------
+
+
+def fargate(**overrides: Any) -> ReservationVsUse:
+    fields: dict[str, Any] = {
+        "workload": Workload(
             cluster_name="product-ecs",
             namespace="default",
-            name="checkout",
+            name="statements-renderer",
             kind="Service",
             launch_type=LaunchType.FARGATE,
+        ),
+        "cpu_requested_millicores": Decimal(4000),
+        "memory_requested_mib": Decimal(16384),
+        "cpu_used_p99_millicores": Decimal(600),
+        "memory_used_peak_mib": Decimal(1700),
+        "oom_status": OomStatus.UNOBSERVED,
+        "observation_days": 30,
+        "as_of": NOW,
+        "collected_at": NOW,
+    }
+    fields.update(overrides)
+    return ReservationVsUse(**fields)
+
+
+def test_the_matrix_is_a_table_with_the_documented_rows() -> None:
+    """Spot checked against the published table rather than restated as a rule."""
+    rows = dict(FARGATE_SIZES)
+    assert rows[250] == (512, 1024, 2048)
+    assert rows[500] == (1024, 2048, 3072, 4096)
+    assert rows[4000][0] == 8192 and rows[4000][-1] == 30720
+    assert rows[16000][0] == 32768 and rows[16000][-1] == 122880
+    for memories in rows.values():
+        assert list(memories) == sorted(set(memories))
+
+
+def test_snapping_is_always_up_and_never_to_the_nearer_size_below() -> None:
+    """The criterion's own test: a size that would snap down if it snapped to nearest.
+
+    1100 millicores is nearer 1000 than 2000. 1000 is the size that throttles it.
+    """
+    cpu, memory = snap_up(Decimal(1100), Decimal(2048))
+    assert cpu == Decimal(2000), "snapped to the nearer, smaller size"
+    assert cpu >= Decimal(1100) and memory >= Decimal(2048)
+
+
+def test_every_need_snaps_to_a_size_that_holds_it() -> None:
+    for cpu_need in range(1, 16001, 397):
+        for memory_need in range(1, 122881, 6151):
+            try:
+                cpu, memory = snap_up(Decimal(cpu_need), Decimal(memory_need))
+            except ValueError:
+                continue
+            assert cpu >= cpu_need and memory >= memory_need
+            assert is_orderable(cpu, memory)
+
+
+def test_a_need_larger_than_anything_sold_is_refused_not_shrunk() -> None:
+    with pytest.raises(ValueError, match="no Fargate size"):
+        snap_up(Decimal(16001), Decimal(1024))
+
+
+def test_every_recommendation_is_an_orderable_combination() -> None:
+    sized = size_fargate_task(reservation=fargate())
+    assert sized.estimate.is_worth_acting_on
+    assert sized.cpu_request_millicores is not None
+    assert sized.memory_request_mib is not None
+    assert is_orderable(sized.cpu_request_millicores, sized.memory_request_mib)
+
+
+def test_the_saving_is_from_the_snapped_size_not_the_ideal_one() -> None:
+    """The ideal size would show a larger saving that nobody can order."""
+    sized = size_fargate_task(reservation=fargate())
+    assert sized.cpu_request_millicores is not None
+    assert sized.memory_request_mib is not None
+    current = fargate_monthly_usd(Decimal(4000), Decimal(16384))
+    snapped = fargate_monthly_usd(sized.cpu_request_millicores, sized.memory_request_mib)
+    ideal = fargate_monthly_usd(
+        Decimal(600), needed_memory_mib(Decimal(1700), OomStatus.UNOBSERVED)
+    )
+    assert sized.estimate.monthly_saving == (current - snapped).quantize(Decimal("0.01"))
+    assert sized.estimate.monthly_saving < (current - ideal).quantize(Decimal("0.01"))
+    assert "rather than from the ideal one" in sized.estimate.reason
+
+
+def test_a_task_already_at_the_smallest_size_that_holds_it_is_refused() -> None:
+    sized = size_fargate_task(
+        reservation=fargate(
+            cpu_requested_millicores=Decimal(2000),
+            memory_requested_mib=Decimal(4096),
+            cpu_used_p99_millicores=Decimal(1900),
+            memory_used_peak_mib=Decimal(3400),
         )
     )
-    assert is_sized_here(reservation()) is True
-    assert is_sized_here(fargate) is False
+    assert sized.estimate.reason == ALREADY_FITS
+
+
+def test_the_fargate_rationale_says_it_is_modelled_and_per_task() -> None:
+    reason = size_fargate_task(reservation=fargate()).estimate.reason
+    assert "Modelled from Fargate's published rate" in reason
+    assert "per task" in reason
+    assert UNOBSERVED in reason
+
+
+def test_the_dispatcher_picks_the_rule_from_the_launch_type() -> None:
+    """A Fargate task needs no measured cost, and an EC2 workload refuses without one."""
+    assert size(reservation=fargate(), monthly_cost=None).estimate.is_worth_acting_on
+    assert size(reservation=reservation(), monthly_cost=None).estimate.reason == NO_COST
+
+
+def test_every_orderable_size_is_priced_by_the_published_rates() -> None:
+    assert len(fargate_sizes()) == sum(len(memories) for _, memories in FARGATE_SIZES)
+    assert fargate_monthly_usd(Decimal(1000), Decimal(1024)) > 0
