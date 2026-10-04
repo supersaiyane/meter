@@ -57,7 +57,6 @@ from finops_api.schemas import (
 )
 from finops_core.domain.identity import Principal
 from finops_core.domain.tenant import Scope
-from finops_core.errors import CollectionError
 
 router = APIRouter(prefix=API_PREFIX, tags=["assistant"])
 
@@ -73,8 +72,37 @@ DIGEST_LIMIT = 200
 #: none of it, and the unit says so rather than counting digests against accounts.
 PAYER = "payer"
 
-#: What to do about each typed cause, by the name the row stores it under.
-REMEDIATION = {cause.__name__: cause.remediation_text for cause in CollectionError.__subclasses__()}
+#: What a person who asked can do about each typed cause, by the name the row stores it
+#: under. Written for the assistant rather than taken from each cause's own remediation
+#: text, which says to re run a collector, and somebody who asked a question has none to
+#: re run. `tests/api/test_assistant_remediation.py` holds that every cause has one.
+REMEDIATION = {
+    "AccessDenied": (
+        "The hub role may not invoke this model. Add it to assistant_model_ids in the hub "
+        "stack, then ask again."
+    ),
+    "Throttled": "Bedrock throttled the request. Ask again in a minute.",
+    "NotOptedIn": (
+        "Name a model in METER_ASSISTANT_MODEL_ID, enable access to it in Bedrock for the hub "
+        "account, and grant it through assistant_model_ids in the hub stack."
+    ),
+    "NoData": (
+        "The tools returned nothing to answer from. Ask about a period or a scope that has "
+        "been collected."
+    ),
+    "Unreachable": (
+        "Bedrock did not answer. Ask again, and if it keeps failing, check Bedrock's health "
+        "in the hub account's region."
+    ),
+    "SchemaDrift": (
+        "The answer could not be checked against the tool results, so it is not shown. Ask "
+        "again, or ask a narrower question."
+    ),
+    "Misconfigured": (
+        "METER_ASSISTANT_MODEL_ID names a model Bedrock does not offer to the hub account. "
+        "Correct the setting."
+    ),
+}
 
 
 @router.post("/assistant/ask", response_model=Envelope[ExchangeOut])
