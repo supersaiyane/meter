@@ -206,6 +206,10 @@ class Settings(BaseSettings):
     assistant_model_id: str = ""
     assistant_input_usd_per_million_tokens: Decimal = Field(gt=0)
     assistant_output_usd_per_million_tokens: Decimal = Field(gt=0)
+    #: Tokens one tenant may spend in a calendar month, TASK-P7-007. A deployment decision
+    #: rather than a design one, so it is here and not a constant. Exhausted, the assistant
+    #: refuses and says when it resets rather than continuing to spend.
+    assistant_monthly_token_budget: int = Field(ge=1)
 
     # Retention, in days. docs/09-DATA-CLASSIFICATION.md.
     retention_principal_days: int = Field(ge=1)

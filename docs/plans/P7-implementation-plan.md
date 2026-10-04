@@ -246,7 +246,7 @@ imports nothing from `finops_api`, asserted by name.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 10 |
 | Delivers | Part of FEAT-038 |
 | Depends on | TASK-P7-006 |
@@ -257,13 +257,13 @@ exhausted.
 
 **Acceptance criteria.**
 
-- [ ] The budget is configuration rather than a constant. It is a deployment decision, not
+- [x] The budget is configuration rather than a constant. It is a deployment decision, not
       a design one
-- [ ] Exhaustion is a `REFUSED` naming the budget and when it resets, not a `FAILED`:
+- [x] Exhaustion is a `REFUSED` naming the budget and when it resets, not a `FAILED`:
       nothing is broken
-- [ ] The figure counted is tokens actually spent, read from `assistant_exchange`, not an
+- [x] The figure counted is tokens actually spent, read from `assistant_exchange`, not an
       estimate maintained separately
-- [ ] A test exhausts the budget and asserts the next question is refused
+- [x] A test exhausts the budget and asserts the next question is refused
 
 ---
 

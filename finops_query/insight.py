@@ -40,7 +40,7 @@ from __future__ import annotations
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from typing import Any, Protocol
 from uuid import UUID
@@ -551,3 +551,53 @@ def _as_of(rows: list[Mapping[str, Any]]) -> datetime | None:
     meta = rows[0].get("meta")
     stamp = meta.get("as_of") if isinstance(meta, Mapping) else None
     return stamp if isinstance(stamp, datetime) else None
+
+
+# --- what it may spend, and what it spent -----------------------------------------
+
+#: List prices are quoted per million tokens.
+PER_MILLION = Decimal(1_000_000)
+
+
+def month_start(at: datetime) -> datetime:
+    """The first instant of `at`'s calendar month in UTC, which is when a budget starts."""
+    return at.astimezone(UTC).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+
+def next_month_start(at: datetime) -> datetime:
+    """When the budget for `at`'s month resets."""
+    start = month_start(at)
+    if start.month == 12:
+        return start.replace(year=start.year + 1, month=1)
+    return start.replace(month=start.month + 1)
+
+
+def budget_refusal(*, spent: int, budget: int, at: datetime) -> Refusal | None:
+    """None while the month has budget left, and otherwise the refusal naming it.
+
+    A refusal rather than a failure, TASK-P7-007: nothing is broken, the deployment chose a
+    ceiling and it has been reached. Checked before a question rather than during one, so a
+    question already running finishes, and two asked at the same instant can each overrun
+    by one exchange. The figure is what exchanges recorded, never an estimate kept beside
+    them, because two counts of one thing come to disagree.
+    """
+    if spent < budget:
+        return None
+    month = at.astimezone(UTC)
+    return Refusal(
+        gap=Gap.BUDGET,
+        reason=(
+            f"This tenant's assistant budget of {budget} tokens for {month:%B %Y} is spent, "
+            f"with {spent} used. It resets on {next_month_start(at):%Y-%m-%d}, and the "
+            f"ceiling is the setting METER_ASSISTANT_MONTHLY_TOKEN_BUDGET."
+        ),
+    )
+
+
+def estimated_cost(
+    usage: TokenUsage, *, input_per_million: Decimal, output_per_million: Decimal
+) -> Decimal:
+    """What an exchange cost at list prices. Modelled: the bill is the measurement."""
+    spend = Decimal(usage.input_tokens) * input_per_million
+    spend += Decimal(usage.output_tokens) * output_per_million
+    return spend / PER_MILLION
