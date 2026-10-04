@@ -19,13 +19,13 @@ from sqlalchemy import Engine, text
 
 from finops_api.identity import SessionSigner
 from finops_api.main import create_app
+from finops_api.tools import TOOLS_BY_NAME
 from finops_core.config import Settings
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.identity import Entitlement, Principal
 from finops_core.domain.tenant import Scope
 from finops_mcp.api import ApiError, MeterApi
 from finops_mcp.server import MissingTokenError, make_handler
-from finops_mcp.tools import TOOLS_BY_NAME
 
 NOW = datetime(2026, 8, 27, 6, 0, tzinfo=UTC)
 SIGNING_KEY = "a-test-signing-key"

@@ -189,6 +189,26 @@ def bare_figures(prose: str) -> tuple[str, ...]:
     return (*numerals, *spelled)
 
 
+def check_prose(prose: str) -> None:
+    """Refuse prose holding a figure no placeholder put there.
+
+    One check for every sentence a model writes that a reader will see: an answer's
+    prose, and a refusal in the model's own words, which could otherwise carry the
+    estimate it was declining to give.
+
+    Raises:
+        ProvenanceError: Counting the figures, never repeating them. The message becomes
+            a stored failure detail, and a figure the model wrote may be the digits of a
+            secret it was asked to echo.
+    """
+    uncited = bare_figures(prose)
+    if uncited:
+        raise ProvenanceError(
+            f"the prose holds figures no citation placed, {len(uncited)} of them, not "
+            f"repeated here because one may be part of a secret"
+        )
+
+
 @dataclass(frozen=True)
 class Answer:
     """Prose with placeholders, and the citation behind every one."""
@@ -199,14 +219,7 @@ class Answer:
     def __post_init__(self) -> None:
         if not self.prose.strip():
             raise ProvenanceError("an answer with no prose answers nothing")
-        uncited = bare_figures(self.prose)
-        if uncited:
-            # Counted, never repeated. This message becomes a stored failure detail, and a
-            # figure the model wrote may be the digits of a secret it was asked to echo.
-            raise ProvenanceError(
-                f"the prose holds figures no citation placed, {len(uncited)} of them, not "
-                f"repeated here because one may be part of a secret"
-            )
+        check_prose(self.prose)
         outside = PLACEHOLDER.sub("", self.prose)
         if "{" in outside or "}" in outside:
             raise ProvenanceError(

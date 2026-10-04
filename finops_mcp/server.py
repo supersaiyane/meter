@@ -24,8 +24,8 @@ from typing import Any
 
 from mcp.server.mcpserver import Context, MCPServer
 
+from finops_api.tools import TOOLS, ToolSpec
 from finops_mcp.api import BEARER, MeterApi
-from finops_mcp.tools import TOOLS, ToolSpec
 
 SERVER_NAME = "meter"
 

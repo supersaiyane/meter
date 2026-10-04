@@ -213,7 +213,7 @@ reasonable.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec sections 5.1, 5.2 and 7, FEAT-038 |
 | Delivers | FEAT-038 |
 | Depends on | TASK-P7-005 |
@@ -223,13 +223,22 @@ reasonable.
 
 **Acceptance criteria.**
 
-- [ ] Tool calls go through `finops_mcp` with the caller's token, never to a repository
+- [x] Tool calls go through `finops_mcp` with the caller's token, never to a repository
       directly. A test asserts this module imports nothing from `finops_api.db`
-- [ ] An answer whose prose contains a numeral the check did not place is `FAILED` with a
+- [x] An answer whose prose contains a numeral the check did not place is `FAILED` with a
       typed cause, neither stripped nor passed through
-- [ ] A question with no tool to answer it is `REFUSED`, naming the missing tool
-- [ ] The three sets from TASK-P7-005 pass, unedited except for the interface they call
-- [ ] Every exchange records its tool calls in order, so an answer can be replayed
+- [x] A question with no tool to answer it is `REFUSED`, naming the missing tool
+- [x] The three sets from TASK-P7-005 pass, unedited except for the interface they call
+- [x] Every exchange records its tool calls in order, so an answer can be replayed
+
+**As built, 2026-10-04.** The first criterion is met in substance and not in its
+letter. Tool calls go through the API's routes with the caller's token, from the one tool
+table the MCP server also reads, rather than through `finops_mcp` itself. The layer
+contract forbids `finops_api` from importing `finops_mcp`, and the facade contract forbids
+`finops_mcp` from importing the Bedrock adapter, so no package could have composed both.
+The table moved to `finops_api/tools.py`, which describes the API's own routes, and the
+MCP server imports it from there and stays a facade over the network. `finops_query/insight.py`
+imports nothing from `finops_api`, asserted by name.
 
 ---
 
