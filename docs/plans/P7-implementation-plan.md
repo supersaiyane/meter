@@ -91,7 +91,7 @@ those tests can talk to.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 5.2 |
 | Delivers | Part of FEAT-038 |
 | Depends on | TASK-P7-001 |
@@ -108,14 +108,14 @@ exists.
 
 **Acceptance criteria.**
 
-- [ ] An `Answer` whose prose contains a digit outside a placeholder cannot be constructed
-- [ ] An `Answer` with a placeholder and no matching `Citation` cannot be constructed, and
+- [x] An `Answer` whose prose contains a digit outside a placeholder cannot be constructed
+- [x] An `Answer` with a placeholder and no matching `Citation` cannot be constructed, and
       neither can one carrying a `Citation` no placeholder uses
-- [ ] Every `Citation` carries the tool, the field, the value, the `measured` or `modelled`
+- [x] Every `Citation` carries the tool, the field, the value, the `measured` or `modelled`
       flag and the `as_of`. One missing its provenance flag cannot be constructed
-- [ ] A `Refusal` carries a reason of at least `REASON_MIN_LENGTH`, reusing the constant
+- [x] A `Refusal` carries a reason of at least `REASON_MIN_LENGTH`, reusing the constant
       rather than a second literal
-- [ ] `Answer` and `Refusal` are different types, not one type with a nullable field
+- [x] `Answer` and `Refusal` are different types, not one type with a nullable field
 
 ---
 
