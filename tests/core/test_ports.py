@@ -89,8 +89,7 @@ def test_the_three_groups_together_are_every_port() -> None:
     by hand, and a port left out of all of them would be invisible to every
     caller that uses them."""
     grouped = {
-        port.__name__
-        for port in (*ports.PROVIDER_PORTS, *ports.SURFACE_PORTS, *ports.MODEL_PORTS)
+        port.__name__ for port in (*ports.PROVIDER_PORTS, *ports.SURFACE_PORTS, *ports.MODEL_PORTS)
     }
 
     assert grouped == EXPECTED_PORTS
