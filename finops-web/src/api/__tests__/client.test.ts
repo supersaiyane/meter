@@ -58,4 +58,33 @@ describe('the api client', () => {
     await client.get('/api/v1/me');
     expect((seen?.headers as Record<string, string>)['Authorization']).toBe('Bearer abc');
   });
+
+  it('sends a question as a JSON body and never in the URL', async () => {
+    // A URL is written into every access log on the way, so the question goes in the body.
+    let url = '';
+    let seen: RequestInit | undefined;
+    const spy = ((target: string, init?: RequestInit) => {
+      url = target;
+      seen = init;
+      return Promise.resolve(fakeResponse(ENVELOPE, 200));
+    }) as unknown as typeof fetch;
+    const client = createApiClient({ token: 'abc', fetchImpl: spy });
+    await client.post('/api/v1/assistant/ask', { question: 'What did we spend?' });
+    expect(url).toBe('/api/v1/assistant/ask');
+    expect(seen?.method).toBe('POST');
+    expect(seen?.body).toBe(JSON.stringify({ question: 'What did we spend?' }));
+    expect((seen?.headers as Record<string, string>)['Content-Type']).toBe('application/json');
+  });
+
+  it('sends no body at all on an instruction that carries none', async () => {
+    let seen: RequestInit | undefined;
+    const spy = ((_url: string, init?: RequestInit) => {
+      seen = init;
+      return Promise.resolve(fakeResponse(ENVELOPE, 200));
+    }) as unknown as typeof fetch;
+    const client = createApiClient({ token: 'abc', fetchImpl: spy });
+    await client.post('/api/v1/query/remediate/abc');
+    expect(seen !== undefined && 'body' in seen).toBe(false);
+    expect((seen?.headers as Record<string, string>)['Content-Type']).toBeUndefined();
+  });
 });

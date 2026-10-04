@@ -90,8 +90,8 @@ export const GROUPS: readonly GroupDef[] = [
     label: 'Assistant',
     path: '/assistant',
     screens: [
-      { path: '/assistant', label: 'Ask', arrives: 'P7 Insight and LLM layer' },
-      { path: '/assistant/digests', label: 'Digests', arrives: 'P7 Insight and LLM layer' },
+      { path: '/assistant', label: 'Ask', arrives: null },
+      { path: '/assistant/digests', label: 'Digests', arrives: null },
     ],
   },
 ];

@@ -36,6 +36,8 @@ import { ContainerWasteScreen } from './screens/ContainerWasteScreen';
 import { ContainerCostScreen } from './screens/ContainerCostScreen';
 import { ClustersScreen } from './screens/ClustersScreen';
 import { PlatformScreen } from './screens/PlatformScreen';
+import { AssistantScreen } from './screens/AssistantScreen';
+import { DigestsScreen } from './screens/DigestsScreen';
 
 /**
  * A route the navigation lists and no sub project has built yet.
@@ -96,15 +98,15 @@ export function App({
                 <Route path="/cost/commitments" element={<CostCommitmentsScreen />} />
                 <Route path="/cost/budgets" element={<BudgetsScreen />} />
                 <Route path="/cost/export" element={<CostExportScreen />} />
-            <Route path="/cost/containers" element={<ContainerCostScreen />} />
+                <Route path="/cost/containers" element={<ContainerCostScreen />} />
                 <Route path="/waste" element={<WasteScreen />} />
                 <Route path="/waste/savings" element={<WasteSavingsScreen />} />
                 <Route path="/waste/score" element={<WasteScoreScreen />} />
-            <Route path="/waste/containers" element={<ContainerWasteScreen />} />
+                <Route path="/waste/containers" element={<ContainerWasteScreen />} />
                 <Route path="/inventory/accounts" element={<AccountsScreen />} />
                 <Route path="/inventory/organization" element={<OrganizationScreen />} />
                 <Route path="/inventory/topology" element={<TopologyScreen />} />
-            <Route path="/inventory/clusters" element={<ClustersScreen />} />
+                <Route path="/inventory/clusters" element={<ClustersScreen />} />
                 {/* FEAT-053. The detail page, reached from the map, the waste list and
                     the anomaly list. Not the resource inventory list ISS-204 tracks,
                     which is a different screen at the parent path. */}
@@ -118,14 +120,16 @@ export function App({
                 <Route path="/governance/instances" element={<QuerySurfacesScreen />} />
                 <Route path="/governance/adhoc" element={<QueryAdhocScreen />} />
                 <Route path="/governance/enforcement" element={<EnforcementScreen />} />
-          <Route path="/governance/quotas" element={<QuotasScreen />} />
-          <Route
-            path="/governance/quotas/:serviceCode/:quotaCode"
-            element={<QuotaDetailScreen />}
-          />
+                <Route path="/governance/quotas" element={<QuotasScreen />} />
+                <Route
+                  path="/governance/quotas/:serviceCode/:quotaCode"
+                  element={<QuotaDetailScreen />}
+                />
                 <Route path="/platform/ingest" element={<IngestScreen />} />
                 <Route path="/platform/freshness" element={<FreshnessScreen />} />
                 <Route path="/platform/cost" element={<PlatformScreen />} />
+                <Route path="/assistant" element={<AssistantScreen />} />
+                <Route path="/assistant/digests" element={<DigestsScreen />} />
                 <Route path="*" element={<NotBuiltYet />} />
               </Routes>
             </AppShell>

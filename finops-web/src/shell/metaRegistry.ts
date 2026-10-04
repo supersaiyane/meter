@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect } from 'react';
 
 import type { ApiMeta } from '../api/types';
-import type { AggregateMeta } from './metaStore';
+import type { AggregateMeta, FreshnessSource } from './metaStore';
 
 /**
  * The registry every surface reports its meta into, and the hooks that read it.
@@ -12,7 +12,7 @@ import type { AggregateMeta } from './metaStore';
  */
 
 export interface MetaRegistry {
-  readonly report: (id: string, meta: ApiMeta | undefined) => void;
+  readonly report: (id: string, meta: ApiMeta | undefined, freshness?: FreshnessSource) => void;
   readonly aggregate: AggregateMeta;
 }
 
@@ -28,15 +28,25 @@ function useRegistry(): MetaRegistry {
   return registry;
 }
 
-/** Report this surface's meta for as long as it is on screen, and withdraw it after. */
-export function useReportMeta(id: string, meta: ApiMeta | undefined): void {
+/**
+ * Report this surface's meta for as long as it is on screen, and withdraw it after.
+ *
+ * `freshness` says where the surface's figures say how fresh they are. Left out, it is the
+ * envelope, which is what every surface before P7 means. A surface passes `per-figure` only
+ * when each figure it draws carries its own `as_of` beside it, see `FreshnessSource`.
+ */
+export function useReportMeta(
+  id: string,
+  meta: ApiMeta | undefined,
+  freshness: FreshnessSource = 'envelope',
+): void {
   const { report } = useRegistry();
   useEffect(() => {
-    report(id, meta);
+    report(id, meta, freshness);
     return () => {
       report(id, undefined);
     };
-  }, [id, meta, report]);
+  }, [id, meta, freshness, report]);
 }
 
 export function useAggregateMeta(): AggregateMeta {

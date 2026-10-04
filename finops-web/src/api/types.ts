@@ -1018,3 +1018,110 @@ export interface ApiClusters {
   readonly measured_count: number;
   readonly found_count: number;
 }
+
+// --- P7, the assistant ----------------------------------------------------------------
+
+/**
+ * Where one value in an answer or a digest came from. `CitationOut`, P7 spec section 5.2.
+ *
+ * The prose holds `{{placeholder}}` and never the value, and the screen puts the value in.
+ * So every value a reader sees is one the deterministic layer read, and this record is how
+ * they check it without leaving the page.
+ */
+export interface ApiCitation {
+  readonly placeholder: string;
+  readonly tool: string;
+  /** The tool call it was read from, as named in the exchange's `tool_calls`. */
+  readonly call_id: string;
+  /** The path into the tool's envelope, such as `data[name=AmazonEC2].effective_cost`. */
+  readonly field: string;
+  /** As text, so a figure is the figure that was cited and never a float's idea of it. */
+  readonly value: string;
+  /** A figure renders through Figure. A label is a name, a date or an identifier. */
+  readonly kind: 'figure' | 'label';
+  readonly provenance: 'measured' | 'modelled';
+  readonly as_of: string;
+}
+
+/** Prose with placeholders, and the citation behind each one. */
+export interface ApiAnswer {
+  readonly prose: string;
+  readonly citations: readonly ApiCitation[];
+}
+
+/** What is missing, and the screen that would show it once it is not. */
+export interface ApiAssistantRefusal {
+  /** `tool`, `figure`, `scope`, `budget` or `secret`. A string, so a new one is shown. */
+  readonly gap: string;
+  readonly reason: string;
+  /** A screen path such as `/cost/containers`, or null where no screen would show it. */
+  readonly screen: string | null;
+}
+
+/** One of the seven typed causes, with what to do about it. */
+export interface ApiExchangeFailure {
+  readonly cause: string;
+  readonly detail: string | null;
+  readonly remediation: string;
+}
+
+/** One call the model asked for, in order. */
+export interface ApiToolCall {
+  readonly call_id: string;
+  readonly tool: string;
+  readonly returned: boolean;
+}
+
+/**
+ * One question and which of three things came back. `ExchangeOut`.
+ *
+ * Exactly one of `answer`, `refusal` and `failure` is present, the one `outcome` names. The
+ * API validates that before it sends, and the screen still checks, because a refusal drawn as
+ * an empty answer is the failure spec section 5.3 exists to prevent.
+ */
+export interface ApiExchange {
+  readonly exchange_id: string;
+  /** As typed, with any secret replaced by the name of the rule that found it. */
+  readonly question: string;
+  readonly outcome: 'ANSWERED' | 'REFUSED' | 'FAILED';
+  readonly answer: ApiAnswer | null;
+  readonly refusal: ApiAssistantRefusal | null;
+  readonly failure: ApiExchangeFailure | null;
+  readonly tool_calls: readonly ApiToolCall[];
+  /** Null where the question reached no model at all. */
+  readonly model_id: string | null;
+  readonly input_tokens: number;
+  readonly output_tokens: number;
+  /** Modelled at list prices, as a decimal string. The bill is the measurement. */
+  readonly est_cost: string;
+  /** Meter's own work, not a fact about the estate, so there is no `as_of` here. */
+  readonly asked_at: string;
+  readonly answered_at: string;
+}
+
+/** One week's digest, its citations, and whether it went anywhere. `DigestOut`, FEAT-041. */
+export interface ApiDigest {
+  readonly digest_id: string;
+  readonly audience: 'team' | 'executive';
+  /** The bill's team tag, `unallocated` for spend no tag claims, null on the executive one. */
+  readonly team: string | null;
+  readonly period_start: string;
+  /** The week's last day, inclusive. */
+  readonly period_end: string;
+  readonly prose: string;
+  readonly citations: readonly ApiCitation[];
+  readonly composed_at: string;
+  /** Null means composed and not sent, a real state with its reason beside it. */
+  readonly sent_at: string | null;
+  readonly unsent_reason: string | null;
+}
+
+/** What redaction did to one question: the rule and the action, never the secret. FEAT-046. */
+export interface ApiRedaction {
+  readonly event_id: string;
+  readonly exchange_id: string;
+  /** A gitleaks rule identifier, such as `aws-access-token`. */
+  readonly rule_id: string;
+  readonly action: 'BLOCKED' | 'REDACTED';
+  readonly occurred_at: string;
+}

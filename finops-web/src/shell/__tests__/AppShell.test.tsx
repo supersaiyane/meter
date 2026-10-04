@@ -8,6 +8,7 @@ import { AppShell } from '../AppShell';
 import { allScreens } from '../sections';
 import { MetaProvider } from '../MetaProvider';
 import { useReportMeta } from '../metaRegistry';
+import type { FreshnessSource } from '../metaStore';
 
 const NOW = new Date('2026-08-27T10:00:00Z');
 
@@ -33,6 +34,32 @@ function renderShell(meta?: ApiMeta, initialPath = '/inventory/accounts') {
     <MemoryRouter initialEntries={[initialPath]}>
       <MetaProvider>
         <AppShell now={NOW}>{meta ? <Surface meta={meta} /> : <p>rows</p>}</AppShell>
+      </MetaProvider>
+    </MemoryRouter>,
+  );
+}
+
+interface Reported {
+  readonly id: string;
+  readonly meta: ApiMeta;
+  readonly freshness: FreshnessSource;
+}
+
+/** One surface that reports where its figures say how fresh they are, as a P7 screen will. */
+function Reporting({ id, meta, freshness }: Reported) {
+  useReportMeta(id, meta, freshness);
+  return null;
+}
+
+function renderShellWith(surfaces: readonly Reported[]) {
+  return render(
+    <MemoryRouter initialEntries={['/assistant']}>
+      <MetaProvider>
+        <AppShell now={NOW}>
+          {surfaces.map((surface) => (
+            <Reporting key={surface.id} {...surface} />
+          ))}
+        </AppShell>
       </MetaProvider>
     </MemoryRouter>,
   );
@@ -79,6 +106,56 @@ describe('AppShell', () => {
     renderShell(metaOf({ as_of: null, collected_at: null }));
     expect(screen.getByTestId('global-freshness').dataset['state']).toBe('never-collected');
     expect(screen.getByText('Not yet collected')).toBeInTheDocument();
+  });
+
+  it('says freshness is beside each figure when every surface says its figures carry their own', () => {
+    // The assistant's case: the envelopes hold Meter's own work and no as_of, and every cited
+    // figure carries the as_of of its row. Not yet collected would be false, and a date for
+    // the page would be made up.
+    renderShellWith([
+      {
+        id: 'exchanges',
+        meta: metaOf({ as_of: null, collected_at: null }),
+        freshness: 'per-figure',
+      },
+      {
+        id: 'redactions',
+        meta: metaOf({ as_of: null, collected_at: null }),
+        freshness: 'per-figure',
+      },
+    ]);
+    const freshness = screen.getByTestId('global-freshness');
+    expect(freshness.dataset['state']).toBe('per-figure');
+    expect(freshness).toHaveTextContent('Each citation carries its own as of date');
+    expect(screen.queryByText('Not yet collected')).toBeNull();
+  });
+
+  it('keeps not yet collected for an envelope with none, even beside a per figure surface', () => {
+    // The envelope's claim is true of it, so the strip keeps saying it.
+    renderShellWith([
+      {
+        id: 'exchanges',
+        meta: metaOf({ as_of: null, collected_at: null }),
+        freshness: 'per-figure',
+      },
+      { id: 'cost', meta: metaOf({ as_of: null, collected_at: null }), freshness: 'envelope' },
+    ]);
+    expect(screen.getByTestId('global-freshness').dataset['state']).toBe('never-collected');
+    expect(screen.getByText('Not yet collected')).toBeInTheDocument();
+  });
+
+  it('keeps the oldest in view for an envelope with one, beside a per figure surface', () => {
+    renderShellWith([
+      {
+        id: 'exchanges',
+        meta: metaOf({ as_of: null, collected_at: null }),
+        freshness: 'per-figure',
+      },
+      { id: 'cost', meta: metaOf({ as_of: '2026-08-27T04:00:00Z' }), freshness: 'envelope' },
+    ]);
+    const freshness = screen.getByTestId('global-freshness');
+    expect(freshness.dataset['state']).toBe('collected');
+    expect(freshness).toHaveTextContent('as of 2026-08-27 04:00');
   });
 
   it('makes a degraded response visually distinct from a healthy one', () => {
