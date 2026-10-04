@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 
@@ -142,6 +143,24 @@ class TestItRefusesAnythingNotLocalError:
         require_local("postgresql+psycopg:///meter")
 
 
+def _now() -> datetime:
+    """The real clock, nudged past the first of the month. ISS-221.
+
+    A period has billed up to yesterday, so on the first the newest month holds no
+    days and the fake estate is a month shorter than it looks. The realized savings
+    collector compares a window ending sixty days after a change to one ending before
+    it, and the commitment collector needs a usage floor across the window, so on the
+    first both find nothing and the assertions below run against empty lists. The
+    same defect as ISS-219, which was fixed the same way in the cost route tests.
+
+    Written with `tz=` so the call site rewrite below does not match its own body.
+    """
+    # Read through the seed module's own clock, typed here because the module is
+    # loaded by path and everything read through it is otherwise Any.
+    now: datetime = seed_demo.datetime.now(tz=seed_demo.UTC)
+    return max(now, datetime(now.year, now.month, 2, tzinfo=UTC))
+
+
 def test_the_guard_runs_before_anything_connects(monkeypatch: pytest.MonkeyPatch) -> None:
     """A refusal must happen before an engine exists, not after.
 
@@ -176,7 +195,7 @@ def test_seed_then_remove_leaves_nothing_behind(engine: object) -> None:
     """
     from sqlalchemy import text as sql
 
-    seeded = seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
+    seeded = seed_demo.seed(engine, Settings(), _now())
     assert seeded.instances == 3
     assert seeded.accounts > 0
     assert seeded.rows > 0
@@ -258,7 +277,7 @@ def test_a_seeded_history_rises_rather_than_repeating(engine: object) -> None:
     """
     from sqlalchemy import text as sql
 
-    latest = seed_demo.datetime.now(seed_demo.UTC)
+    latest = _now()
     for offset in (5, 4, 3, 2, 1, 0):
         seed_demo.seed(engine, Settings(), latest - seed_demo.timedelta(days=offset), latest=latest)
 
@@ -360,7 +379,7 @@ def test_the_seed_produces_all_three_verdicts(engine: object) -> None:
     """
     from sqlalchemy import text as sql
 
-    seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
+    seed_demo.seed(engine, Settings(), _now())
     try:
         with engine.connect() as connection:  # type: ignore[attr-defined]
             verdicts = dict(
@@ -407,7 +426,7 @@ def test_the_seeded_estate_has_exactly_one_unread_slice(engine: object) -> None:
     demo about the gap rather than about the product."""
     from sqlalchemy import text as sql
 
-    seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
+    seed_demo.seed(engine, Settings(), _now())
     with engine.connect() as connection:  # type: ignore[attr-defined]
         rows = connection.execute(
             sql(
@@ -438,7 +457,7 @@ def test_the_seeded_graph_has_an_edge_leaving_it(engine: object) -> None:
     seeded estate without one cannot exercise it."""
     from sqlalchemy import text as sql
 
-    seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
+    seed_demo.seed(engine, Settings(), _now())
     with engine.connect() as connection:  # type: ignore[attr-defined]
         dangling = connection.execute(
             sql(
@@ -468,7 +487,7 @@ def test_the_seeded_estate_holds_a_parking_finding(engine: object) -> None:
     """
     from sqlalchemy import text as sql
 
-    seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
+    seed_demo.seed(engine, Settings(), _now())
     with engine.connect() as connection:  # type: ignore[attr-defined]
         rows = connection.execute(
             sql(
@@ -496,7 +515,7 @@ def test_the_seeded_estate_holds_a_commitment_action(engine: object) -> None:
     """
     from sqlalchemy import text as sql
 
-    seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
+    seed_demo.seed(engine, Settings(), _now())
     with engine.connect() as connection:  # type: ignore[attr-defined]
         rows = connection.execute(
             sql(
@@ -525,7 +544,7 @@ def test_the_seeded_estate_records_what_manages_a_resource(engine: object) -> No
     """
     from sqlalchemy import text as sql
 
-    seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
+    seed_demo.seed(engine, Settings(), _now())
     with engine.connect() as connection:  # type: ignore[attr-defined]
         rows = connection.execute(
             sql(
@@ -559,7 +578,7 @@ def test_the_seeded_estate_holds_budgets_including_ones_it_cannot_join(engine: o
     """
     from sqlalchemy import text as sql
 
-    seed_demo.seed(engine, Settings(), seed_demo.datetime.now(seed_demo.UTC))
+    seed_demo.seed(engine, Settings(), _now())
     with engine.connect() as connection:  # type: ignore[attr-defined]
         rows = connection.execute(
             sql("SELECT scope, limit_amount FROM budget WHERE tenant_id = :t"),

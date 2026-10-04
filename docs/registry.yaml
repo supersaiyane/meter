@@ -3312,15 +3312,30 @@ issues:
   severity: MEDIUM
   status: OPEN
   summary: On the first of a month the fake estate's newest period holds no days, so the seed
-    produces an estate a month thinner than the collectors need
-  detail: 'A period has billed up to yesterday, so on the first the open month is empty and
-    the newest period with data is the previous one. The realized savings collector compares a
-    window ending sixty days after a change to one ending before it, and the commitment
-    collector needs a usage floor across the window, so on the first of a month both find
-    nothing: tests/scripts/test_seed_demo.py fails two assertions against empty lists. Confirmed
-    pre-existing by running it against main in a separate worktree, and the same family as
-    ISS-219. `make seed` has the same thin estate on that day, which is the half worth deciding
-    about rather than papering over, because that is the product''s own clock'
+    produces an estate a month thinner than the commitment collector needs
+  detail: 'A period has billed up to yesterday, so on the first the open month is empty. The
+    commitment collector needs a usage floor across its window and finds nothing, so
+    tests/scripts/test_seed_demo.py asserted against an empty list. The test half is fixed: those
+    tests now take a clock nudged past the first, the fix ISS-219 used, and a run with the
+    clock frozen to 2026-10-01 passes while the same run on the raw clock fails. Left open for
+    the other half, which is a decision rather than a patch: make seed has the same thin estate
+    on that day, and that is the product''s own clock. Distinct from ISS-222, which looked like
+    the same defect and was not'
+- id: ISS-222
+  severity: HIGH
+  status: FIXED
+  summary: The fake bill's drift was a per month sawtooth, so an untouched resource looked
+    cheaper on some dates and the planted REGRESSED saving was VERIFIED instead
+  detail: 'drift was indexed by the day of the month, enumerate over one period''s days, so it
+    reset to its lowest value every first rather than rising as its comment said. A resource
+    whose bill is meant never to move then had a thirty day cost that depended on where in the
+    month its windows fell, and the realized savings collector read the planted load balancer as
+    a saving whenever the after window landed on cheaper early month days. Green on 2026-09-28,
+    flipped on 2026-10-02 and 2026-10-04, reproduced on main with no P6 code at all. On
+    2026-10-01 the flip was wrongly blamed on P6 split cost lines, because the date rolled into
+    October the same day they were added. Drift is now anchored to the estate clock and
+    monotonic, over the same one to one point one five range, and the seed tests pass with the
+    clock frozen to the 1st, 2nd, 4th, 15th and 28th. The rest of the backend suite did not move'
 
 open_questions:
 - id: OPEN-07

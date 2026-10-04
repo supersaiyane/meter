@@ -382,6 +382,14 @@ def spike_day(at: datetime = fixtures.AS_OF) -> date:
     return at.date() - timedelta(days=SPIKE_DAYS_BACK + 1)
 
 
+#: The drift the newest day carries, and how fast it falls going back in time. One
+#: point one five at the clock, one at ninety days before it: the same range the old
+#: per month sawtooth covered, so the level of every figure stays where it was while the
+#: shape becomes a rise rather than thirty little ones.
+DRIFT_CEILING = Decimal("1.15")
+DRIFT_DIVISOR = Decimal("600")
+
+
 def estate(
     *, at: datetime = fixtures.AS_OF, spike: bool = True, periods: int = 3
 ) -> tuple[CostRecord, ...]:
@@ -406,10 +414,20 @@ def estate(
     wrong_day = spike_day(at)
     rows: list[CostRecord] = []
     for period in periods_ending_at(at, periods):
-        for index, day in enumerate(_days_in(period, at=at)):
+        for day in _days_in(period, at=at):
             # A slow rise, so a trend is a trend rather than one number drawn thirty
             # times. Deterministic, so it is the same rise every run.
-            drift = Decimal(1) + (Decimal(index) / Decimal(200))
+            #
+            # Anchored to the estate's own clock and monotonic across months. It used
+            # to be indexed by the day of the month, so it reset to the bottom on every
+            # first: a sawtooth rather than a rise. An untouched resource's thirty day
+            # cost then depended on where in the month its windows fell, and the planted
+            # load balancer, whose bill is meant never to move, read as a saving and was
+            # VERIFIED instead of REGRESSED on any date where the after window landed on
+            # cheaper early month days. ISS-222. The range is the old one, one to one
+            # point one five across the ninety days before the clock, so no figure moves
+            # by more than the old sawtooth already moved it.
+            drift = DRIFT_CEILING + (Decimal((day - at.date()).days) / DRIFT_DIVISOR)
             for account in fixtures.ACCOUNT_IDS:
                 for service in SERVICES:
                     # One pair, one day, several times the usual. Applied to the
@@ -588,14 +606,15 @@ def _split_line(
     charge_end = charge_start + timedelta(days=1)
     period = date(day.year, day.month, 1)
     # A pod's share joins to the workload the container estate models. The
-    # remainder gets a cluster level identity of its own.
+    # remainder gets a cluster level identity of its own rather than borrowing a
+    # node's: a split line is a breakdown of a charge, and inside the cost series of
+    # the instance it breaks down it would be read as part of that instance's bill by
+    # anything that reads per resource.
     #
-    # It used to carry the largest node group's resource id, which was wrong in a way
-    # that took a whole test suite to surface: these rows then sat inside that
-    # instance's cost series, and the realized savings collector reads that series to
-    # decide whether a change moved the bill. One recommendation flipped from
-    # REGRESSED to VERIFIED because of it. A split line is a breakdown of a charge and
-    # must never appear inside the series of the resource it is breaking down.
+    # On 2026-10-01 this comment claimed the borrowed identity had flipped a realized
+    # savings verdict. It had not. The flip reproduces on main, which has no split
+    # lines at all, and its cause was the per month drift sawtooth, ISS-222. The
+    # reason above stands on its own; the evidence once offered for it was wrong.
     resource = workload.key if workload else f"container/{cluster.name}/unallocated"
     return CostRecord(
         tenant_id=fixtures.TENANT_ID,
@@ -659,16 +678,16 @@ ESTATE: tuple[CostRecord, ...] = estate()
 
 #: The split cost allocation half of the bill, and **not** part of `ESTATE`.
 #:
-#: Opt in, which is the opposite of the first attempt and the right way round. Folded
-#: into `ESTATE` these thousand extra rows changed a realized savings verdict from
-#: REGRESSED to VERIFIED in the seeded estate: they carry no money, but a collector
-#: comparing two windows over a shared series does not only read sums. Every P1 and
-#: P3 fixture predates containers and none of them should move because P6 exists, so
-#: a caller that wants the container grain asks for it.
+#: Opt in, so every P1 and P3 fixture reads exactly the bill it read before P6 existed
+#: and a caller that wants the container grain asks for it with
+#: `FakeCostExport(split=True)`. Without it an export carries none of these columns,
+#: which is also the ISS-003 case: split cost allocation was never switched on.
 #:
-#: `FakeCostExport(split=True)` is that ask. Without it an export carries none of
-#: these columns, which is also the ISS-003 case: split cost allocation was never
-#: switched on.
+#: Corrected on 2026-10-04. This comment used to say that folding these rows into
+#: `ESTATE` had flipped a realized savings verdict from REGRESSED to VERIFIED. That
+#: was a misattribution: the flip reproduces on main without a single split line, and
+#: was the drift sawtooth recorded as ISS-222. Opt in is still the better default for
+#: the reason above, but nothing was ever shown to break when these rows were in.
 SPLIT_LINES: tuple[CostRecord, ...] = split_rows(ESTATE)
 
 #: The line item AWS retracts when the closed period is restated, and the one

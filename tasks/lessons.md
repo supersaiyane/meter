@@ -639,33 +639,38 @@ dropping ISS-002, ISS-003 and ISS-004 from the register, which surfaced 65 citat
 FEAT-041, which resolved correctly and meant something else, and the script says so rather
 than implying the whole lesson is now mechanical. That half is still a habit, not a gate.
 
-## 2026-10-01: a fixture widened in place, carrying no money and changing a verdict
+## 2026-10-01: a failure blamed on my change that the calendar had caused
 
-**Mistake:** P6 needed split cost allocation rows in the fake bill, so I added them to
-`ESTATE`, the shared cost fixture every P1 and P3 test reads. They carry no money by
-construction: a split line re-attributes a charge already on the bill, so
-`billed_cost` and `effective_cost` are zero and a test asserts the period total is
-identical with and without them. I took that as proof they could not affect anything
-else, and ran the suites I had touched, which passed. The full gate then failed
-eleven tests across four modules. One was a realized savings verdict flipping from
-REGRESSED to VERIFIED in the seeded estate: a collector comparing two windows over a
-shared series does not only read sums, and a thousand extra rows on that series was
-enough. Another was an uncleaned `Misconfigured` row, which migration 0018 rightly
-refuses to downgrade past, failing the schema test and leaving a half downgraded
-schema that then collided on re-upgrade.
+Rewritten on 2026-10-04. The version first written here drew the wrong conclusion,
+and it is replaced rather than left beside a correction, because a lesson somebody
+follows has to be true.
 
-**Correction:** Nobody corrected me. It surfaced because `make verify` runs every
-backend test in one process and I ran it before merging rather than after.
+**Mistake:** On 2026-10-01 I added split cost lines to the shared fake bill and the
+full gate failed, including a realized savings verdict flipping from REGRESSED to
+VERIFIED in the seeded estate. I attributed the flip to my rows, wrote that into a
+commit message, two code comments and the first version of this lesson, and moved the
+rows behind a flag. The rows were not the cause. The flip reproduces on main, which has
+no split lines, and its cause was a fake bill whose drift was a per month sawtooth:
+ISS-222. The date had rolled into October the same day I added the rows. I did run the
+same tests against main that day, but on the first of the month, where main returns
+nothing at all for an unrelated reason, ISS-221. So "main differs from my branch" was
+true and proved nothing: I compared my branch on one condition to main on another.
 
-**Rule:** Widen a shared fixture by opt in, never in place. A new slice goes behind a
-flag that defaults to off, and the tests that want it ask for it, so nothing that
-predates the slice moves. "It carries no money" is not an argument that it cannot
-change a result: a consumer may read counts, averages, windows or series membership
-rather than sums, and which consumers do is not knowable from the fixture. And a test
-that writes a row some migration's downgrade refuses to pass must delete that row,
-because the next module's failure will not look related to the row.
+**Correction:** Nobody corrected me. It surfaced on 2026-10-04, when freezing the clock
+to a single day and running main and the branch side by side gave the same flip on
+both.
 
-**Triggers:** Adding rows to a fixture more than one module reads. Any edit to
-`finops_fakes/cur.py`'s `ESTATE` or a similar shared estate. Writing a `sync_error`
-row in a test. Reasoning that a zero valued addition is inert. Running only the
-suites whose files changed, and concluding from that the change is safe.
+**Rule:** Before attributing a failure to a change, reproduce it on the baseline under
+the same conditions with only the code different: same date, same data, same suite.
+When the failure involves anything that reads a clock, freeze the clock and run both
+sides at the same instant, and run more than one instant, because a fixture can be
+right on one day of the month and wrong on another. A comparison across two different
+days is not a comparison. And when an attribution turns out wrong, correct every place
+it was written, including code comments, because a false reason in a comment is worse
+than none: the next person keeps the code for a reason that never existed.
+
+**Triggers:** A test failing the day after it passed. Any failure appearing alongside
+both a code change and a change of date, month or data. A fixture built from the real
+clock. Writing "because of" in a commit message about something not yet reproduced in
+isolation.
+
