@@ -345,6 +345,19 @@ for a frontend change, indexing an array whose element type is then spread, and 
 commit whose verification was a set of targeted test commands rather than
 `make verify`.
 
+**Repeated on 2026-10-04, and why the rule was not enough on its own.** During P6 I
+typechecked the new screens with `npx tsc --noEmit -p tsconfig.json`, got exit 0 twice,
+and wrote "typecheck clean" both times. That command checks nothing at all: the root
+`tsconfig.json` is a solution file whose `files` is empty and whose real configs are only
+references, so `-p` against it compiles zero sources and cannot fail. `--listFilesOnly`
+confirms zero. The build caught the error the next time it ran, because `npm run build`
+runs `tsc --build`, so nothing wrong shipped, but two commits were described as checked
+on the strength of a check with no inputs. The rule above already named the right
+command. What it lacked was the reason the wrong one is worse than it looks: not a weaker
+check, an empty one. So the rule is sharpened, not replaced: `npx tsc -p tsconfig.json`
+is never evidence in this repository, because it passes for every possible state of the
+code, and a check that cannot fail is the thing every other lesson here is about.
+
 ## 2026-09-26: a collector wired into the seed that produced nothing
 
 **Mistake:** built FEAT-054's parking collector, wired it into `scripts/demo/seed_demo.py`,
