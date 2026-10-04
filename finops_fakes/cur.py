@@ -737,15 +737,12 @@ class FakeCostExport:
     ) -> None:
         base = ESTATE if rows is None else rows
         if split:
-            # Added rather than filtered out, so an export without the container
-            # grain is the default and nothing that predates P6 moves. The rows are
-            # scoped to the periods the caller asked for, so a caller passing one
-            # month does not silently acquire three.
-            periods = {row.billing_period_start for row in base}
-            base = (
-                *base,
-                *(line for line in SPLIT_LINES if line.billing_period_start in periods),
-            )
+            # Derived from the rows actually being exported, so the split lines always
+            # re-attribute charges this bill really carries, whatever clock it was built
+            # at. Filtering the module's pinned `SPLIT_LINES` instead found nothing for
+            # a bill built at the real clock, which is every bill `make seed` builds, so
+            # the demo would have shown clusters with no cost at all.
+            base = (*base, *split_rows(base))
         self._rows = restate(base) if restated else base
         self._failure = failure
         self._split = split

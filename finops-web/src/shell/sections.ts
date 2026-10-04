@@ -40,6 +40,7 @@ export const GROUPS: readonly GroupDef[] = [
       { path: '/cost/commitments', label: 'Commitments', arrives: null },
       { path: '/cost/budgets', label: 'Budgets', arrives: null },
       { path: '/cost/export', label: 'Export', arrives: null },
+      { path: '/cost/containers', label: 'Containers', arrives: null },
     ],
   },
   {
@@ -72,6 +73,7 @@ export const GROUPS: readonly GroupDef[] = [
       { path: '/inventory/resources', label: 'Resources', arrives: null },
       { path: '/inventory/topology', label: 'Topology', arrives: null },
       { path: '/inventory/geography', label: 'Geography', arrives: null },
+      { path: '/inventory/clusters', label: 'Clusters', arrives: null },
     ],
   },
   {

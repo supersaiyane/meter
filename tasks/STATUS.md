@@ -188,7 +188,7 @@ ISS-003.
 | P3 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
-| P6 | 10 | 0 | 0 | 0 | 2 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
+| P6 | 11 | 0 | 0 | 0 | 1 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 0 | 0 | 0 | 0 | 14 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -363,6 +363,7 @@ ISS-003.
 | `TASK-P6-008` | Done | Fargate sizes somebody can actually order |
 | `TASK-P6-009` | Done | the guard, then the routes |
 | `TASK-P6-010` | Done | request and use as two figures |
+| `TASK-P6-011` | Done | the cost and cluster screens, and the journey |
 
 <!-- generated:task-status end -->
 

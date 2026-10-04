@@ -370,7 +370,7 @@ different people. The two figures stay two figures.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec section 9, FEAT-035, FEAT-037 |
 | Delivers | FEAT-035, FEAT-037 |
 | Depends on | TASK-P6-010 |

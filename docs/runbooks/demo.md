@@ -265,6 +265,58 @@ the button, they lose it because nobody checked whether it was ever approved, an
 somebody makes blind is exactly the one for a quota with no figure to look at. Open it and the
 page says when the status changed, not only what it is now.
 
+## P6, the containers, and the cluster that cannot say what it asked for
+
+Three screens in three groups, because ADR-0020 fixes the groups and containers is not one of
+them: `/cost/containers` under Cost, `/waste/containers` under Waste, `/inventory/clusters`
+under Inventory. Every figure in this section was computed from the fake estate by the same
+functions the collector runs, on the day this section was written, rather than typed.
+
+**3 clusters are seeded, and 2 of them publish pod requests.**
+`batch-eks` is the one that does not, on purpose. It has no enhanced observability, so
+Container Insights reports what its pods used and never what they asked for, and requested
+against used cannot be stated for any of its 3 workloads. Open
+`/waste/containers` and find it: it is listed, with its measured cost and the sentence saying
+why, and its rows carry no request column at all. Say why that matters, because it is the
+design: an empty request cell reads as a request of zero, and a workload using something it
+asked zero of looks infinitely wasteful.
+
+**Every one of its workloads reads "could not be observed" for out of memory, and that is
+the honest answer.** Across the seeded estate 1 workload has been killed for
+running out of memory (`payments/payments-worker` in `platform-eks`),
+9 were observed and were not, and 3 could not be
+observed. Unobserved is not a synonym for not killed. Against a real account the adapter reports
+unobserved for every EC2 workload, ISS-223, and the sizing rationale then says in words that the
+check could not be made.
+
+**Request and use are two columns and never one percentage.** A namespace at twenty percent
+could be over requesting fivefold or could be idle. Point at `ledger` in `platform-eks`, which
+requests five times what it uses, and then at `channels` beside it, which is sized correctly
+and is not flagged. A detector that flagged everything would have flagged both.
+
+**5 container recommendations are seeded into P3's list, not a second one.**
+3 for EC2 backed workloads, sized against their measured split cost, and
+2 for Fargate tasks, sized against the orderable task matrix and always rounded
+up, never to the nearer size below. Open `/waste` and filter to the container class to show them
+among the rest, ranked by money like every other finding. The Fargate saving is modelled from
+Fargate's published rate and stated per task, and its rationale says both.
+
+**`/cost/containers` reconciles in plain sight.** Each cluster states its workloads' share and
+the capacity no pod requested, and the two make its total. That remainder is real money: the
+cluster paid for it and nothing asked for it.
+
+**`/inventory/clusters` measures bin packing for 1 of the 2 clusters
+with nodes.** `batch-eks` cannot be packed because packing is requests over allocatable
+and the requests are the missing thing. `product-ecs` is Fargate and has no nodes at all, so it
+is listed with a different sentence and not counted, because a cluster with no fleet is not a
+gap in the measurement.
+
+**What is not real here, and should be said if asked.** The container adapter has never run
+against AWS, ISS-002. It reads EKS and never ECS, so Fargate sizing produces nothing against a
+real account until it does, ISS-224. And the bill's container grain needs split cost allocation
+switched on in the Data Export, ISS-003; without it the cost screen says so rather than showing
+clusters that cost nothing.
+
 ## Questions that will be asked
 
 **"Is this our data?"** No. See the first section.

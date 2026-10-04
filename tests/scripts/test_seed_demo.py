@@ -593,3 +593,57 @@ def test_the_seeded_estate_holds_budgets_including_ones_it_cannot_join(engine: o
     )
     for row in rows:
         assert row.limit_amount > 0
+
+
+@pytest.mark.integration
+def test_the_seed_produces_the_container_estate(engine: object) -> None:
+    """TASK-P6-011. The clusters, all three OOM states, and a recommendation in P3's list.
+
+    Every assertion is about something a demo would otherwise show as missing. A seed
+    without the container grain in the bill would render clusters with no cost at all,
+    which is what it did before the fake derived split lines from the bill it exports: it
+    filtered lines pinned to 2026-08 by the seed's own months and found nothing. A seed
+    where every workload was observed would leave UNOBSERVED, the state most real
+    workloads are in, rendered by nothing anybody runs.
+    """
+    from sqlalchemy import text as sql
+
+    from finops_fakes import containers
+
+    seed_demo.seed(engine, Settings(), _now())
+    try:
+        with engine.connect() as connection:  # type: ignore[attr-defined]
+            tenant = {"t": seed_demo.DEMO_TENANT}
+            clusters = {
+                row[0]
+                for row in connection.execute(
+                    sql("SELECT cluster_name FROM container_cluster WHERE tenant_id = :t"), tenant
+                )
+            }
+            states = {
+                row[0]
+                for row in connection.execute(
+                    sql("SELECT was_oom_killed FROM container_usage WHERE tenant_id = :t"), tenant
+                )
+            }
+            recommended = connection.execute(
+                sql(
+                    "SELECT count(*) FROM recommendation WHERE tenant_id = :t "
+                    "AND waste_class = 'CONTAINER_RIGHTSIZE'"
+                ),
+                tenant,
+            ).scalar_one()
+            costed = connection.execute(
+                sql(
+                    "SELECT count(DISTINCT eks_cluster_name) FROM cost_focus_daily "
+                    "WHERE tenant_id = :t AND eks_cluster_name IS NOT NULL"
+                ),
+                tenant,
+            ).scalar_one()
+        assert clusters == {cluster.name for cluster in containers.CLUSTERS}
+        # Killed, not killed, and unobserved: three facts, so three values.
+        assert states == {True, False, None}, states
+        assert recommended >= 1, "no container recommendation reached P3's list"
+        assert costed >= 1, "the seeded bill carries no container grain"
+    finally:
+        seed_demo.remove(engine)

@@ -33,6 +33,8 @@ import { WasteScreen } from './screens/WasteScreen';
 import { WasteSavingsScreen } from './screens/WasteSavingsScreen';
 import { WasteScoreScreen } from './screens/WasteScoreScreen';
 import { ContainerWasteScreen } from './screens/ContainerWasteScreen';
+import { ContainerCostScreen } from './screens/ContainerCostScreen';
+import { ClustersScreen } from './screens/ClustersScreen';
 import { PlatformScreen } from './screens/PlatformScreen';
 
 /**
@@ -94,6 +96,7 @@ export function App({
                 <Route path="/cost/commitments" element={<CostCommitmentsScreen />} />
                 <Route path="/cost/budgets" element={<BudgetsScreen />} />
                 <Route path="/cost/export" element={<CostExportScreen />} />
+            <Route path="/cost/containers" element={<ContainerCostScreen />} />
                 <Route path="/waste" element={<WasteScreen />} />
                 <Route path="/waste/savings" element={<WasteSavingsScreen />} />
                 <Route path="/waste/score" element={<WasteScoreScreen />} />
@@ -101,6 +104,7 @@ export function App({
                 <Route path="/inventory/accounts" element={<AccountsScreen />} />
                 <Route path="/inventory/organization" element={<OrganizationScreen />} />
                 <Route path="/inventory/topology" element={<TopologyScreen />} />
+            <Route path="/inventory/clusters" element={<ClustersScreen />} />
                 {/* FEAT-053. The detail page, reached from the map, the waste list and
                     the anomaly list. Not the resource inventory list ISS-204 tracks,
                     which is a different screen at the parent path. */}

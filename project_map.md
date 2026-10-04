@@ -26,13 +26,13 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 24 of 27 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 19 in 5 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Screens built | 26 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 22 in 6 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 23 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 22 | files in migrations/versions, all of which are listed below in this file |
 | Test files | 135 | test_*.py under tests/ |
-| Test functions | 1898 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test functions | 1899 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -573,6 +573,14 @@ meter/
 │   │                          of the things being ranked, one device each, because
 │   │                          a mark with two meanings cannot be read. Used by the
 │   │                          allocation screen and the waste queue
+│   ├── screens/ContainerCostScreen.tsx  FEAT-035, under Cost. Each cluster states its
+│   │                          workloads' share and the capacity no pod requested,
+│   │                          and the two make its total in plain sight, so a
+│   │                          reader can check the sum rather than trust it
+│   ├── screens/ClustersScreen.tsx  Under Inventory. Spot ratio and bin packing per
+│   │                          cluster, both better high so neither ramp inverts.
+│   │                          A missing figure says why, and an unreadable fleet and
+│   │                          a Fargate cluster with none are different sentences
 │   ├── screens/ContainerWasteScreen.tsx  FEAT-036. Request beside use, two
 │   │                          figures and never one percentage, because twenty
 │   │                          percent can mean over requesting or idle. A cluster
