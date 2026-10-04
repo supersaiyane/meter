@@ -176,7 +176,7 @@ exists.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 11 |
 | Delivers | Nothing visible. It is what makes the rest checkable |
 | Depends on | TASK-P7-004 |
@@ -195,17 +195,17 @@ reasonable.
 
 **Acceptance criteria.**
 
-- [ ] The answer set asserts each figure equals what `finops_query` computes for the same
+- [x] The answer set asserts each figure equals what `finops_query` computes for the same
       question. Never that the prose is right, which is not testable
-- [ ] The refusal set covers at least a cluster with no split cost allocation data, an
+- [x] The refusal set covers at least a cluster with no split cost allocation data, an
       account outside the asker's scope, a question needing a tool that does not exist,
       and a request for next month's cost
-- [ ] The injection set covers at least a prompt trying to reach another account's data,
+- [x] The injection set covers at least a prompt trying to reach another account's data,
       one trying to make the model emit a bare numeral, and one trying to make it repeat a
       secret from the question
-- [ ] Every set asserts the reason, not only the outcome. A refusal for the wrong reason
+- [x] Every set asserts the reason, not only the outcome. A refusal for the wrong reason
       is a wrong answer
-- [ ] The sets run inside `make verify` with no model and no network
+- [x] The sets run inside `make verify` with no model and no network
 
 ---
 
