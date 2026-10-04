@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P6 |
-| Status | Specified |
+| Status | Delivered |
 | Specification | [P6 spec](../specs/2026-09-20-p6-containers-design.md), section 5.4 |
 | Tasks | TASK-P6-004 to TASK-P6-007 |
 | Refresh cadence | 15 minutes, pushed |
@@ -43,6 +43,19 @@ OpenCost or an ADOT collector pushes to the warehouse. Meter does not poll into 
 
 ## How it works
 
+**As built, 2026-10-04, TASK-P6-001, 004, 006, 007 and 009.** The entities in
+`finops_core/domain/containers.py`, with OOM status as a three member enum because
+`bool | None` fails open on a truth test. Container Insights through
+`finops_providers/aws/container_insights.py`, each hourly series reduced by the rule its
+figure is used under: the 99th percentile for CPU, the peak for memory, the latest value
+for a request. `container_cluster` and `container_usage`, migration 0022, written by the
+account scoped `container_usage` collector, which also sizes each workload with
+`finops_query/containers.py` and writes the result into P3's `recommendation` table or a
+refusal into `sizing_refusal`. The memory margins are P3's, imported. Where OOM status is
+unobserved the rationale says the check could not be made. Never run against AWS,
+ISS-002, and the adapter reports every kill status unobserved where the fake does not,
+ISS-223.
+
 CloudWatch Container Insights, read with the same cross account role as everything
 else. No agent in the cluster: see P6 spec section 6 for why, and section 5.4 for
 what that costs.
@@ -81,9 +94,13 @@ threat model section that does not exist.
 
 ## Interface
 
-`GET /containers/usage` and `/containers/usage`. Request and use are two columns,
-never one efficiency percentage: a namespace at 20 percent could be over requesting
-fivefold or could be idle, and those are different conversations.
+`GET /waste/containers` and the `/waste/containers` screen, under Waste per ADR-0020,
+and `GET /inventory/clusters` with its screen under Inventory for Spot ratio and bin
+packing. Request and use are two columns, never one efficiency percentage: a namespace at
+20 percent could be over requesting fivefold or could be idle, and those are different
+conversations. Recommendations are P3's, in `/waste/recommendations` filtered to
+`CONTAINER_RIGHTSIZE`. Corrected on 2026-10-04: this section named `/containers/usage`,
+which broke ADR-0020.
 
 ## Not doing
 

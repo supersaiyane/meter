@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 62 total, 17 specified, 10 in build, 26 delivered |
+| Features | 62 total, 14 specified, 11 in build, 28 delivered |
 | Decisions | 28 architecture decision records |
-| Changes | 105 recorded |
-| Issues | 136 fixed, 79 open, 0 parked |
+| Changes | 107 recorded |
+| Issues | 139 fixed, 82 open, 0 parked |
 | Open questions | 12 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -188,7 +188,7 @@ ISS-003.
 | P3 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
-| P6 | 1 | 0 | 0 | 0 | 11 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
+| P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 0 | 0 | 0 | 0 | 14 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -353,7 +353,18 @@ ISS-003.
 
 | Task | Status | Title |
 | --- | --- | --- |
+| `TASK-P6-001` | Done | the entities, and a cluster slice that can be unknown |
+| `TASK-P6-002` | Done | pod cost, which is already in the bill |
+| `TASK-P6-003` | Done | the cluster cost read and its screen slice |
+| `TASK-P6-004` | Done | Container Insights, and the four things it will not tell us |
 | `TASK-P6-005` | Done, before P6 started | a fake cluster with a namespace nobody can measure |
+| `TASK-P6-006` | Done | the usage collector |
+| `TASK-P6-007` | Done | two sizing rules, and the one that admits it could not check |
+| `TASK-P6-008` | Done | Fargate sizes somebody can actually order |
+| `TASK-P6-009` | Done | the guard, then the routes |
+| `TASK-P6-010` | Done | request and use as two figures |
+| `TASK-P6-011` | Done | the cost and cluster screens, and the journey |
+| `TASK-P6-012` | Done | a third word for a number |
 
 <!-- generated:task-status end -->
 

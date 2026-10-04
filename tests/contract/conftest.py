@@ -38,6 +38,7 @@ COST_EXPORT = "CostExport"
 COMMITMENT_REPORT = "CommitmentReport"
 TOPOLOGY_SOURCE = "TopologySource"
 QUOTA_SOURCE = "QuotaSource"
+CONTAINER_SOURCE = "ContainerSource"
 
 
 class ProviderPorts(Protocol):
@@ -85,6 +86,7 @@ def build_fake(_monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
                 COMMITMENT_REPORT,
                 TOPOLOGY_SOURCE,
                 QUOTA_SOURCE,
+                CONTAINER_SOURCE,
             }
         ),
     )
@@ -98,6 +100,95 @@ AWS_UNKNOWN = AccountKey(provider=Provider.AWS, account_id="777788889999")
 
 AWS_ROOT = "r-contract"
 AWS_UNIT = "ou-contract"
+
+
+class ContractContainerInsights:
+    """Container Insights as two clusters: one that publishes requests, one that does not.
+
+    `contract-enhanced` has enhanced observability so `pod_cpu_request` exists for
+    it. `contract-plain` does not, which is the case the whole port exists to keep
+    honest: usage and no request, never a request of zero.
+    """
+
+    ENHANCED = "contract-enhanced"
+    PLAIN = "contract-plain"
+
+    def get_paginator(self, operation: str) -> Any:
+        if operation == "list_metrics":
+            return _ContractMetricList()
+        if operation == "get_metric_data":
+            return _ContractMetricData()
+        raise AssertionError(f"the contract stub was asked for {operation}")
+
+
+class _ContractMetricList:
+    def paginate(self, **kwargs: Any) -> list[dict[str, Any]]:
+        metric = kwargs.get("MetricName")
+        wanted = {d["Name"] for d in kwargs.get("Dimensions") or ()}
+        if metric == "pod_cpu_request":
+            # Only the enhanced cluster, which is how the adapter learns which
+            # clusters can report a request at all.
+            return [
+                {
+                    "Metrics": [
+                        {
+                            "Dimensions": [
+                                {"Name": "ClusterName", "Value": ContractContainerInsights.ENHANCED}
+                            ]
+                        }
+                    ]
+                }
+            ]
+        if wanted == {"ClusterName"}:
+            return [
+                {
+                    "Metrics": [
+                        {"Dimensions": [{"Name": "ClusterName", "Value": name}]}
+                        for name in (
+                            ContractContainerInsights.ENHANCED,
+                            ContractContainerInsights.PLAIN,
+                        )
+                    ]
+                }
+            ]
+        return [
+            {
+                "Metrics": [
+                    {
+                        "Dimensions": [
+                            {"Name": "ClusterName", "Value": name},
+                            {"Name": "Namespace", "Value": "payments"},
+                            {"Name": "Service", "Value": "api"},
+                        ]
+                    }
+                    for name in (
+                        ContractContainerInsights.ENHANCED,
+                        ContractContainerInsights.PLAIN,
+                    )
+                ]
+            }
+        ]
+
+
+class _ContractMetricData:
+    def paginate(self, **kwargs: Any) -> list[dict[str, Any]]:
+        results = []
+        for query in kwargs.get("MetricDataQueries") or ():
+            metric = query["MetricStat"]["Metric"]["MetricName"]
+            # Every query the adapter asks for gets a value, including the request
+            # queries, which it only asks for on the enhanced cluster. The plain
+            # cluster therefore comes back with usage and no request, without this
+            # stub having to special case anything.
+            value = {
+                "pod_cpu_usage_total": 240.0,
+                "pod_memory_working_set": 512.0,
+                "pod_cpu_request": 1000.0,
+                "pod_memory_request": 2048.0,
+            }.get(metric)
+            if value is None:
+                continue
+            results.append({"Id": query["Id"], "Values": [value]})
+        return [{"MetricDataResults": results}]
 
 
 class ContractOrganizations:
@@ -612,6 +703,7 @@ class AwsUnderContract:
         commitment: Any,
         topology: Any,
         quotas: Any,
+        containers: Any,
     ) -> None:
         self._broker = broker
         self._discovery = discovery
@@ -619,6 +711,13 @@ class AwsUnderContract:
         self._commitment = commitment
         self._topology = topology
         self._quotas = quotas
+        self._containers = containers
+
+    def list_clusters(self, account: AccountKey, region: str) -> Any:
+        return self._containers.list_clusters(account, region)
+
+    def reservations(self, account: AccountKey, region: str) -> Any:
+        return self._containers.reservations(account, region)
 
     def list_quotas(self, account: AccountKey, region: str) -> Any:
         return self._quotas.list_quotas(account, region)
@@ -670,6 +769,7 @@ def build_aws(monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
     from finops_providers.aws.accounts import AwsAccountDiscovery
     from finops_providers.aws.commitment import CostExplorerCommitmentReport
     from finops_providers.aws.config_inventory import ConfigAggregatorInventory
+    from finops_providers.aws.container_insights import ContainerInsightsSource
     from finops_providers.aws.credentials import AwsCredentialBroker
     from finops_providers.aws.cur import AthenaCostExport
     from finops_providers.aws.quotas import AwsQuotas
@@ -738,6 +838,11 @@ def build_aws(monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
                     client_factory=lambda service, _region: _CONTRACT_QUOTA_CLIENTS[service],
                     clock=lambda: datetime(2026, 9, 28, 9, 0, tzinfo=UTC),
                 ),
+                containers=ContainerInsightsSource(
+                    settings,
+                    client_factory=lambda _service, _region: ContractContainerInsights(),
+                    clock=lambda: datetime(2026, 9, 28, 9, 0, tzinfo=UTC),
+                ),
             ),
             region=AWS_REGION,
             known_account=AWS_KNOWN,
@@ -751,6 +856,7 @@ def build_aws(monkeypatch: pytest.MonkeyPatch) -> Iterator[ProviderUnderTest]:
                     COMMITMENT_REPORT,
                     TOPOLOGY_SOURCE,
                     QUOTA_SOURCE,
+                    CONTAINER_SOURCE,
                 }
             ),
         )

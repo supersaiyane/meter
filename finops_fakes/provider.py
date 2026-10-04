@@ -17,6 +17,7 @@ from datetime import date, datetime
 from typing import Any
 
 from finops_core.domain.account import AccountKey, CloudAccount
+from finops_core.domain.containers import ClusterSlice, ReservationVsUse
 from finops_core.domain.cost import CommitmentCoverage, CommitmentUse, CostRecord
 from finops_core.domain.identity import Entitlement, Principal
 from finops_core.domain.metrics import MetricPoint
@@ -29,6 +30,7 @@ from finops_core.errors import AccessDenied, CollectionError
 from finops_core.ports.metrics import MetricRequest
 from finops_fakes import fixtures
 from finops_fakes.commitment import FakeCommitmentReport
+from finops_fakes.containers import FakeContainerSource
 from finops_fakes.cur import FakeCostExport
 from finops_fakes.topology import AGGREGATOR, FakeTopologySource
 
@@ -52,7 +54,11 @@ def _restamp(facts: tuple[Any, ...], at: datetime | None) -> tuple[Any, ...]:
 
 
 class FakeProvider:
-    """One object satisfying all eight provider ports, with a configurable failure plan."""
+    """One object satisfying every provider port, with a configurable failure plan.
+
+    The count is deliberately not in this sentence. It said eight until P6 added a
+    ninth, and `tests/core/test_ports.py` is where the number belongs.
+    """
 
     def __init__(
         self,
@@ -65,6 +71,9 @@ class FakeProvider:
         # carry a date from 2026-08-24, which is right for a test asserting a
         # value and wrong for a demo estate, where it made two screens read as
         # five days stale beside four that read as current. ISS-161.
+        # Kept, so the container source can be built at the same instant. It is the
+        # only port here whose data is generated per call rather than restamped.
+        self._at = at or fixtures.AS_OF
         self._accounts = _restamp(fixtures.ACCOUNTS if accounts is None else accounts, at)
         self._nodes = _restamp(fixtures.ORG_NODES if nodes is None else nodes, at)
         self._failures: Mapping[str, type[CollectionError]] = (
@@ -278,6 +287,16 @@ class FakeProvider:
     def requests(self, account: AccountKey, region: str) -> Iterable[QuotaIncreaseRequest]:
         self._require_known(account)
         return tuple(fixtures.QUOTA_REQUESTS)
+
+    # -- ContainerSource ---------------------------------------------------
+
+    def list_clusters(self, account: AccountKey, region: str) -> Iterable[ClusterSlice]:
+        self._require_known(account)
+        return FakeContainerSource(at=self._at).list_clusters(account, region)
+
+    def reservations(self, account: AccountKey, region: str) -> Iterable[ReservationVsUse]:
+        self._require_known(account)
+        return FakeContainerSource(at=self._at).reservations(account, region)
 
     # -- IdentityProvider --------------------------------------------------
 

@@ -88,7 +88,7 @@ Same contract as P0 through P5. One task, one commit.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec section 4 |
 | Delivers | Part of FEAT-036 |
 | Depends on | P1 delivered |
@@ -113,7 +113,7 @@ Same contract as P0 through P5. One task, one commit.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec section 5.1, FEAT-035 |
 | Delivers | Part of FEAT-035 |
 | Depends on | TASK-P6-001 |
@@ -144,7 +144,7 @@ ISS-003 is a prerequisite P1 never needed.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec section 8, FEAT-035 |
 | Delivers | FEAT-035 |
 | Depends on | TASK-P6-002 |
@@ -169,7 +169,7 @@ section 8.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec sections 4 and 5.4, FEAT-036 |
 | Delivers | Part of FEAT-036 |
 | Depends on | TASK-P6-001 |
@@ -233,7 +233,7 @@ TASK-P6-006 can start as soon as TASK-P6-004 lands.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec sections 5.2 and 7, FEAT-036 |
 | Delivers | Part of FEAT-036 |
 | Depends on | TASK-P6-005 |
@@ -257,7 +257,7 @@ schedule row with its reason and its cost, per ADR-0012. Migration
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec sections 5.3 and 5.4, FEAT-036 |
 | Delivers | FEAT-036 |
 | Depends on | TASK-P6-006, P3 delivered |
@@ -288,7 +288,7 @@ rule is unchanged; the rationale says the check could not be made.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec section 5.5, FEAT-037 |
 | Delivers | FEAT-037 |
 | Depends on | TASK-P6-007 |
@@ -316,7 +316,7 @@ the screen.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec section 8, constraint 3 |
 | Delivers | Part of FEAT-036 |
 | Depends on | TASK-P6-008 |
@@ -339,7 +339,7 @@ the screen.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec section 9, FEAT-036 |
 | Delivers | Part of FEAT-036 |
 | Depends on | TASK-P6-009 |
@@ -370,7 +370,7 @@ different people. The two figures stay two figures.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec section 9, FEAT-035, FEAT-037 |
 | Delivers | FEAT-035, FEAT-037 |
 | Depends on | TASK-P6-010 |
@@ -398,7 +398,7 @@ different people. The two figures stay two figures.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P6 spec section 14, ADR-0015 condition 4 |
 | Delivers | Nothing visible. It makes the second cut possible |
 | Depends on | TASK-P6-011 |

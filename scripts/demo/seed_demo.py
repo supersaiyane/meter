@@ -45,6 +45,7 @@ from sqlalchemy import create_engine, text
 from finops_core.config import load_settings
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.errors import CollectionError
+from finops_fakes import containers as container_estate
 from finops_fakes import cur, fixtures, prices, utilization
 from finops_fakes import estate_shape as shape
 from finops_fakes import quotas as quota_estate
@@ -66,6 +67,7 @@ from finops_ingest.collectors.account_health import AccountHealthCollector
 from finops_ingest.collectors.budgets import BudgetCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
 from finops_ingest.collectors.commitment_actions import CommitmentActionsCollector
+from finops_ingest.collectors.container_usage import ContainerUsageCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
 from finops_ingest.collectors.iac_state import IacStateCollector
@@ -126,6 +128,11 @@ DEMO_TABLES = (
     "topology_edge",
     "topology_node",
     "graph_coverage",
+    # P6, FEAT-035 and FEAT-036. Above `ingest_run` like the P4 and P5 tables,
+    # because both carry the run that wrote them. Neither references the other, so
+    # the order between the two is only convention.
+    "container_usage",
+    "container_cluster",
     # P5, FEAT-033 and FEAT-034, above `ingest_run` for the same reason the three P4
     # tables are: both quota tables carry the run that wrote them. The history table has
     # no run of its own and is ordered beside the requests it belongs to.
@@ -516,7 +523,7 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
             month = tuple(row for row in bill if row.billing_period_start == period)
             written += _through_the_ledger(
                 ledger,
-                CostFocusCollector(FakeCostExport(rows=month), clock=lambda: now),
+                CostFocusCollector(FakeCostExport(rows=month, split=True), clock=lambda: now),
                 connection,
                 unit(scope_key=f"billing:{period:%Y-%m}"),
                 "cost_focus",
@@ -769,6 +776,30 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
                     region=region_id,
                 ),
                 "quotas",
+            )
+
+        # FEAT-035, FEAT-036 and FEAT-037, per account because a cluster lives in one.
+        # After the bill and not before: the collector sizes each EC2 workload against
+        # its measured split cost, and a workload with no cost yet is refused rather than
+        # recommended. The estate is shaped to be unflattering. `batch-eks` publishes no
+        # requests, so it is listed with its use, its cost and its reason and every one of
+        # its workloads reads UNOBSERVED; `platform-eks` carries a workload that has been
+        # killed for running out of memory and a namespace requesting five times its use;
+        # `product-ecs` is Fargate, sized against the orderable matrix.
+        for account_id in sorted({cluster.account_id for cluster in container_estate.CLUSTERS}):
+            account_key = AccountKey(provider=Provider.AWS, account_id=account_id)
+            written += _through_the_ledger(
+                ledger,
+                ContainerUsageCollector(
+                    container_estate.FakeContainerSource(at=now), clock=lambda: now
+                ),
+                connection,
+                unit(
+                    scope_key=f"{account_key}:{fixtures.REGION}",
+                    account=account_key,
+                    region=fixtures.REGION,
+                ),
+                "container_usage",
             )
 
         counts = {

@@ -34,7 +34,7 @@ from botocore.exceptions import BotoCoreError, ClientError
 
 from finops_core.config import Settings
 from finops_core.domain.cost import CostRecord, source_fingerprint
-from finops_core.errors import NoData, SchemaDrift, Throttled, Unreachable
+from finops_core.errors import CollectionError, NoData, SchemaDrift, Throttled, Unreachable
 from finops_providers.aws.client import botocore_config, translate
 
 COLLECTOR = "cost_focus"
@@ -93,6 +93,37 @@ COLUMNS: dict[str, str] = {
     "commitmentdiscountstatus": "commitment_discount_status",
 }
 
+#: Split cost allocation columns, FEAT-035, mapped to `CostRecord` like the rest.
+#:
+#: **Separate from `COLUMNS` because they are optional at the source.** Split cost
+#: allocation is switched on per export, ISS-003, and until it is these columns do
+#: not exist in the table at all. Putting them in `COLUMNS` would make every read of
+#: an ordinary export fail in Athena on a column that does not exist, which is the
+#: opposite of tolerating their absence. `_present_split_columns` asks the catalog
+#: what is actually there instead of assuming either way.
+#:
+#: These are AWS's published CUR 2.0 names rather than FOCUS ones, because FOCUS 1.1
+#: has no column for a pod and a vendor extension is what carries one. Like
+#: `COLUMNS`, the mapping is checkable only against a real export, ISS-002.
+SPLIT_COLUMNS: dict[str, str] = {
+    "resource_tags_aws_eks_cluster_name": "eks_cluster_name",
+    "resource_tags_aws_eks_namespace": "eks_namespace",
+    "resource_tags_aws_eks_workload_name": "eks_workload_name",
+    "resource_tags_aws_eks_workload_type": "eks_workload_type",
+    "resource_tags_aws_eks_pod_name": "eks_pod_name",
+    "split_line_item_split_cost": "split_cost",
+    "split_line_item_split_usage": "split_usage",
+    "split_line_item_split_usage_ratio": "split_usage_ratio",
+    "split_line_item_unused_cost": "unused_cost",
+}
+
+#: What the catalog is asked, to learn which of the above exist. It reads metadata,
+#: so it scans no data and costs nothing against the bytes Athena bills for.
+CATALOG_SQL = (
+    "SELECT column_name FROM information_schema.columns "
+    "WHERE table_schema = '{database}' AND table_name = '{table}'"
+)
+
 #: Columns the table cannot accept a null in. A missing one is `SchemaDrift`
 #: and never a zero, per constraint 5.
 REQUIRED = (
@@ -108,8 +139,10 @@ REQUIRED = (
     "effective_cost",
 )
 
-MONEY = frozenset({"billed_cost", "effective_cost", "list_cost", "contracted_cost"})
-QUANTITY = frozenset({"pricing_quantity", "consumed_quantity"})
+MONEY = frozenset(
+    {"billed_cost", "effective_cost", "list_cost", "contracted_cost", "split_cost", "unused_cost"}
+)
+QUANTITY = frozenset({"pricing_quantity", "consumed_quantity", "split_usage", "split_usage_ratio"})
 DAYS = frozenset({"billing_period_start", "billing_period_end"})
 MOMENTS = frozenset({"charge_period_start", "charge_period_end"})
 
@@ -133,6 +166,10 @@ class AthenaCostExport:
         self._factory = client_factory or self._default_client
         self._sleeper = sleeper
         self._monotonic = monotonic
+
+    #: Filled on first use by `_present_split_columns`. None means not yet asked,
+    #: which is different from an empty mapping meaning asked and absent.
+    _split_columns: dict[str, str] | None = None
 
     def _default_client(self, service: str) -> Any:
         return boto3.client(service, config=self._config)
@@ -216,14 +253,80 @@ class AthenaCostExport:
                     continue
                 yield self._record(dict(zip(columns, values, strict=False)))
 
+    def _present_split_columns(self) -> dict[str, str]:
+        """The split cost allocation columns this export actually has.
+
+        Asked of the catalog rather than assumed, and cached for the life of the
+        adapter because the answer changes only when somebody reconfigures the
+        export. An empty result is the normal state of an export where split cost
+        allocation has never been switched on, ISS-003, and it is not a failure: the
+        collector turns it into a named gap so a cluster reads as unmeasured rather
+        than as costing nothing.
+
+        A catalog that cannot be read at all is also not a failure here. It yields
+        no split columns, which degrades to exactly the behaviour of an export
+        without them, and the alternative would be failing a whole cost read over an
+        optional extra.
+        """
+        if self._split_columns is not None:
+            return self._split_columns
+
+        found: set[str] = set()
+        try:
+            # Deliberately not through `self._retrying`. This is an optional extra,
+            # and spending a read's retry budget on it would make a throttled
+            # catalog look like a throttled bill.
+            client = self._factory("athena")
+            execution = client.start_query_execution(
+                QueryString=CATALOG_SQL.format(
+                    database=self._settings.cur_athena_database,
+                    table=self._settings.cur_athena_table,
+                ),
+                QueryExecutionContext={"Database": self._settings.cur_athena_database},
+                WorkGroup=self._settings.cur_athena_workgroup,
+            )["QueryExecutionId"]
+            self._await(client, execution)
+            paginator = client.get_paginator("get_query_results")
+            for page in paginator.paginate(QueryExecutionId=execution):
+                for row in page["ResultSet"]["Rows"]:
+                    for cell in row["Data"]:
+                        name = (cell.get("VarCharValue") or "").lower()
+                        if name in SPLIT_COLUMNS:
+                            found.add(name)
+        except (CollectionError, BotoCoreError, ClientError, KeyError):
+            # An unreadable catalog leaves the export looking like one without split
+            # data, which is a state the product already handles. Aborting a whole
+            # cost read over an optional breakdown would be the worse trade.
+            #
+            # Not cached, on purpose. Caching a transient failure would disable the
+            # container grain for the life of the adapter, so the next read asks
+            # again and a blip costs one period rather than a run.
+            return {}
+
+        self._split_columns = {name: SPLIT_COLUMNS[name] for name in sorted(found)}
+        return self._split_columns
+
+    @property
+    def split_cost_available(self) -> bool:
+        """Whether this export carries the container grain at all.
+
+        Read by the collector to decide whether to record the gap. A property rather
+        than a flag set during a read, so asking does not depend on having read.
+        """
+        return bool(self._present_split_columns())
+
     def _sql(self, period_start: date, period_end: date) -> str:
         """One partition pruned query.
 
         The predicate is on the partition column, not on a date extracted from
         a timestamp, because a function applied to a partition key stops Athena
         pruning and the query scans the whole table.
+
+        The projection is the required columns plus whichever split cost allocation
+        columns this export actually has, so an export without them is read with the
+        same SQL it was always read with.
         """
-        columns = ", ".join(sorted(COLUMNS))
+        columns = ", ".join(sorted([*COLUMNS, *self._present_split_columns()]))
         return (
             f"SELECT {columns} "
             f'FROM "{self._settings.cur_athena_database}"."{self._settings.cur_athena_table}" '
@@ -277,7 +380,10 @@ class AthenaCostExport:
 
     def _record(self, row: dict[str, str | None]) -> CostRecord:
         fields: dict[str, Any] = {}
-        for column, field in COLUMNS.items():
+        for column, field in (*COLUMNS.items(), *SPLIT_COLUMNS.items()):
+            # Every split column is read through `row.get`, so one absent from the
+            # projection lands as None rather than raising. That is the whole of
+            # "reads them where present and does not fail where absent".
             fields[field] = _coerce(field, row.get(column))
 
         missing = [name for name in REQUIRED if fields.get(name) is None]

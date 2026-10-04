@@ -27,7 +27,7 @@ from types import MappingProxyType
 
 from finops_core.domain.cost import CostRecord, source_fingerprint
 from finops_core.errors import CollectionError, NoData
-from finops_fakes import fixtures, prices, utilization
+from finops_fakes import containers, fixtures, prices, utilization
 
 COLLECTOR = "cost_focus"
 
@@ -382,6 +382,14 @@ def spike_day(at: datetime = fixtures.AS_OF) -> date:
     return at.date() - timedelta(days=SPIKE_DAYS_BACK + 1)
 
 
+#: The drift the newest day carries, and how fast it falls going back in time. One
+#: point one five at the clock, one at ninety days before it: the same range the old
+#: per month sawtooth covered, so the level of every figure stays where it was while the
+#: shape becomes a rise rather than thirty little ones.
+DRIFT_CEILING = Decimal("1.15")
+DRIFT_DIVISOR = Decimal("600")
+
+
 def estate(
     *, at: datetime = fixtures.AS_OF, spike: bool = True, periods: int = 3
 ) -> tuple[CostRecord, ...]:
@@ -406,10 +414,20 @@ def estate(
     wrong_day = spike_day(at)
     rows: list[CostRecord] = []
     for period in periods_ending_at(at, periods):
-        for index, day in enumerate(_days_in(period, at=at)):
+        for day in _days_in(period, at=at):
             # A slow rise, so a trend is a trend rather than one number drawn thirty
             # times. Deterministic, so it is the same rise every run.
-            drift = Decimal(1) + (Decimal(index) / Decimal(200))
+            #
+            # Anchored to the estate's own clock and monotonic across months. It used
+            # to be indexed by the day of the month, so it reset to the bottom on every
+            # first: a sawtooth rather than a rise. An untouched resource's thirty day
+            # cost then depended on where in the month its windows fell, and the planted
+            # load balancer, whose bill is meant never to move, read as a saving and was
+            # VERIFIED instead of REGRESSED on any date where the after window landed on
+            # cheaper early month days. ISS-222. The range is the old one, one to one
+            # point one five across the ninety days before the clock, so no figure moves
+            # by more than the old sawtooth already moved it.
+            drift = DRIFT_CEILING + (Decimal((day - at.date()).days) / DRIFT_DIVISOR)
             for account in fixtures.ACCOUNT_IDS:
                 for service in SERVICES:
                     # One pair, one day, several times the usual. Applied to the
@@ -487,7 +505,190 @@ def _lines(
     )
 
 
+#: What share of a cluster's node cost lands on pods rather than on the gap between
+#: what pods asked for and what the nodes provide. Derived per cluster from the
+#: workloads' own requests below, not written down; this is only the ceiling, so a
+#: perfectly packed cluster still leaves something in `unused_cost`.
+PACKABLE = Decimal("0.92")
+
+
+def split_rows(base: Iterable[CostRecord]) -> tuple[CostRecord, ...]:
+    """Split cost allocation lines, re-attributing node cost to the pods on it.
+
+    **These carry no money of their own.** `billed_cost` and `effective_cost` are
+    zero and the figure lives in `split_cost`, which is how AWS writes a split line
+    item and the only shape that cannot double count: the node's charge is already
+    on the bill, and these say who was using it. A fake that put the cost in both
+    places would make every container screen reconcile against a doubled total and
+    the error would look like a rounding problem.
+
+    The parent charge is not invented either. Every cluster's node groups name
+    resources the cost estate already prices, so the amount being split is the
+    amount actually on the fake bill for those instances, and the reconciliation
+    test can assert against the rows rather than against a constant.
+
+    ECS is absent on purpose: the columns are `eks_*` because split cost allocation
+    is an EKS feature, and `product-ecs` is there for Fargate task sizing instead.
+    """
+    by_day: dict[tuple[str, date], Decimal] = {}
+    for row in base:
+        if row.resource_id is None:
+            continue
+        by_day[(row.resource_id, row.charge_period_start.date())] = row.effective_cost
+
+    out: list[CostRecord] = []
+    for cluster in containers.CLUSTERS:
+        if cluster.platform != "EKS":
+            continue
+        workloads = containers.workloads_in(cluster.name)
+        if not workloads:
+            continue
+        # Weight by what each workload reserves, because that is what split cost
+        # allocation apportions by: a pod is charged for its request, not its use.
+        weights = {w: Decimal(w.cpu_request_m) * Decimal(w.replicas) for w in workloads}
+        total_weight = sum(weights.values())
+        if total_weight <= 0:
+            continue
+
+        days = sorted(
+            {
+                day
+                for group in cluster.node_groups
+                for (resource, day) in by_day
+                if resource == group.resource_id
+            }
+        )
+        for day in days:
+            parent = sum(
+                by_day.get((group.resource_id, day), Decimal(0)) for group in cluster.node_groups
+            )
+            if parent <= 0:
+                continue
+            allocatable = (parent * PACKABLE).quantize(Decimal("0.0001"))
+            spent = Decimal(0)
+            for workload in workloads:
+                share = (allocatable * weights[workload] / total_weight).quantize(Decimal("0.0001"))
+                spent += share
+                out.append(
+                    _split_line(
+                        cluster=cluster,
+                        workload=workload,
+                        day=day,
+                        split_cost=share,
+                        unused_cost=None,
+                    )
+                )
+            # The remainder, on a line with no workload at all. This is the row a
+            # constraint requiring a dimension beside a measure would have refused,
+            # and it is the row that makes the cluster add up.
+            out.append(
+                _split_line(
+                    cluster=cluster,
+                    workload=None,
+                    day=day,
+                    split_cost=None,
+                    unused_cost=parent - spent,
+                )
+            )
+    return tuple(out)
+
+
+def _split_line(
+    *,
+    cluster: containers.Cluster,
+    workload: containers.Workload | None,
+    day: date,
+    split_cost: Decimal | None,
+    unused_cost: Decimal | None,
+) -> CostRecord:
+    """One split line item: zero money of its own, and a grain the parent lacks."""
+    charge_start = datetime(day.year, day.month, day.day, tzinfo=UTC)
+    charge_end = charge_start + timedelta(days=1)
+    period = date(day.year, day.month, 1)
+    # A pod's share joins to the workload the container estate models. The
+    # remainder gets a cluster level identity of its own rather than borrowing a
+    # node's: a split line is a breakdown of a charge, and inside the cost series of
+    # the instance it breaks down it would be read as part of that instance's bill by
+    # anything that reads per resource.
+    #
+    # On 2026-10-01 this comment claimed the borrowed identity had flipped a realized
+    # savings verdict. It had not. The flip reproduces on main, which has no split
+    # lines at all, and its cause was the per month drift sawtooth, ISS-222. The
+    # reason above stands on its own; the evidence once offered for it was wrong.
+    resource = workload.key if workload else f"container/{cluster.name}/unallocated"
+    return CostRecord(
+        tenant_id=fixtures.TENANT_ID,
+        ingest_run_id=fixtures.INGEST_RUN_ID,
+        source_fingerprint=source_fingerprint(
+            billing_account_id=fixtures.ACCOUNT_IDS[0],
+            sub_account_id=cluster.account_id,
+            charge_period_start=charge_start,
+            charge_period_end=charge_end,
+            service_name="AmazonEKS",
+            resource_id=resource,
+            sku_id=None,
+            charge_category="Usage",
+            commitment_discount_id=None,
+        ),
+        as_of=charge_end,
+        collected_at=fixtures.COLLECTED_AT,
+        billing_account_id=fixtures.ACCOUNT_IDS[0],
+        sub_account_id=cluster.account_id,
+        billing_period_start=period,
+        billing_period_end=_period_end(period),
+        charge_period_start=charge_start,
+        charge_period_end=charge_end,
+        provider_name="Fake",
+        publisher_name="Fake",
+        invoice_issuer_name="Fake",
+        service_name="AmazonEKS",
+        service_category="Compute",
+        resource_id=resource,
+        resource_name=resource,
+        region_id=cluster.region_id,
+        availability_zone=None,
+        charge_category="Usage",
+        charge_description="split cost allocation",
+        sku_id=None,
+        pricing_quantity=None,
+        consumed_quantity=None,
+        consumed_unit=None,
+        # Zero, and this is the whole point. See the docstring.
+        billed_cost=Decimal("0.0000"),
+        effective_cost=Decimal("0.0000"),
+        list_cost=None,
+        contracted_cost=None,
+        commitment_discount_id=None,
+        commitment_discount_type=None,
+        commitment_discount_status=None,
+        tags={},
+        eks_cluster_name=cluster.name,
+        eks_namespace=workload.namespace if workload else None,
+        eks_workload_name=workload.name if workload else None,
+        eks_workload_type=workload.kind if workload else None,
+        eks_pod_name=f"{workload.name}-0" if workload else None,
+        split_cost=split_cost,
+        split_usage=None,
+        split_usage_ratio=None,
+        unused_cost=unused_cost,
+    )
+
+
 ESTATE: tuple[CostRecord, ...] = estate()
+
+#: The split cost allocation half of the bill, and **not** part of `ESTATE`.
+#:
+#: Opt in, so every P1 and P3 fixture reads exactly the bill it read before P6 existed
+#: and a caller that wants the container grain asks for it with
+#: `FakeCostExport(split=True)`. Without it an export carries none of these columns,
+#: which is also the ISS-003 case: split cost allocation was never switched on.
+#:
+#: Corrected on 2026-10-04. This comment used to say that folding these rows into
+#: `ESTATE` had flipped a realized savings verdict from REGRESSED to VERIFIED. That
+#: was a misattribution: the flip reproduces on main without a single split line, and
+#: was the drift sawtooth recorded as ISS-222. Opt in is still the better default for
+#: the reason above, but nothing was ever shown to break when these rows were in.
+SPLIT_LINES: tuple[CostRecord, ...] = split_rows(ESTATE)
 
 #: The line item AWS retracts when the closed period is restated, and the one
 #: it corrects. Named so a test can assert on them rather than on a position in
@@ -532,10 +733,19 @@ class FakeCostExport:
         rows: tuple[CostRecord, ...] | None = None,
         failure: type[CollectionError] | None = None,
         restated: bool = False,
+        split: bool = False,
     ) -> None:
         base = ESTATE if rows is None else rows
+        if split:
+            # Derived from the rows actually being exported, so the split lines always
+            # re-attribute charges this bill really carries, whatever clock it was built
+            # at. Filtering the module's pinned `SPLIT_LINES` instead found nothing for
+            # a bill built at the real clock, which is every bill `make seed` builds, so
+            # the demo would have shown clusters with no cost at all.
+            base = (*base, *split_rows(base))
         self._rows = restate(base) if restated else base
         self._failure = failure
+        self._split = split
 
     def _fail_if_planned(self) -> None:
         if self._failure is not None:
@@ -544,6 +754,17 @@ class FakeCostExport:
                 collector=COLLECTOR,
                 detail="planned by the fake cost export",
             )
+
+    @property
+    def split_cost_available(self) -> bool:
+        """Whether this export carries the container grain, ISS-003 as a flag.
+
+        A property on the export rather than something derived from the rows,
+        because an estate with split cost allocation enabled and no clusters in it
+        looks identical from the rows alone, and reporting that as a configuration
+        gap would send somebody to fix a setting that is already right.
+        """
+        return self._split and any(row.eks_cluster_name for row in self._rows)
 
     def latest_available_period(self) -> date | None:
         self._fail_if_planned()

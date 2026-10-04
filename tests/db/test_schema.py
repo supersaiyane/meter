@@ -21,6 +21,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.exc import DBAPIError, IntegrityError
 
 from finops_api.db import models
+from finops_ingest.collectors.partitions import ensure_partition
 from tests.conftest import alembic_config
 
 pytestmark = pytest.mark.integration
@@ -246,14 +247,17 @@ def test_a_missing_partition_raises_rather_than_misfiling_the_cost(
 
 
 def test_a_row_lands_once_the_partition_exists(engine: Engine, tenant_id: UUID) -> None:
+    """ISS-220. The partition is created through the production helper, not by hand.
+
+    This used to write `cost_focus_daily_p2026_08`, which is a name no production
+    code ever creates: the helper names it `cost_focus_daily_p202608`. `IF NOT
+    EXISTS` matches on the name, so it could not protect against the real partition
+    for the same month already existing under the other name, and Postgres refused
+    the overlap. It passed only while nothing else had created that month first, and
+    it stopped passing the moment another module did.
+    """
     with engine.begin() as connection:
-        connection.execute(
-            text(
-                "CREATE TABLE IF NOT EXISTS cost_focus_daily_p2026_08 "
-                "PARTITION OF cost_focus_daily "
-                "FOR VALUES FROM ('2026-08-01') TO ('2026-09-01')"
-            )
-        )
+        ensure_partition(connection, "cost_focus_daily", date(2026, 8, 1))
         cost_row(connection, tenant_id, date(2026, 8, 1))
     with engine.connect() as connection:
         count = connection.execute(

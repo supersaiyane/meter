@@ -26,13 +26,13 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 23 of 26 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 19 in 5 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
-| Inventory routes | 7 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 22 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 20 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 129 | test_*.py under tests/ |
-| Test functions | 1791 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Screens built | 26 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 22 in 6 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
+| Collectors | 23 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 22 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 136 | test_*.py under tests/ |
+| Test functions | 1902 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -377,6 +377,12 @@ meter/
 │       │                      apart, and BillingPeriod and source_fingerprint
 │       ├── metrics.py         MetricPoint. `at` is the instant, `as_of` the freshness
 │       ├── resource.py        ResourceRef. Opaque identifier, never parsed
+│       ├── containers.py      Workload, ClusterSlice, ReservationVsUse. OOM status
+│       │                      is a three member enum and not a nullable boolean,
+│       │                      because bool | None fails open: a truth test treats
+│       │                      unobserved as not killed, which sends the smaller
+│       │                      memory margin to the workloads that were killed.
+│       │                      Workload is not a Fact, it is an identity
 │       └── quota.py           QuotaUsage. Unpublished usage is None, never zero
 │   └── ports/                 protocols only. No implementation, no cloud import.
 │                              query.py also declares QueryParser and
@@ -398,6 +404,8 @@ meter/
 │       │                      Savings Plan is not a line item
 │       ├── metrics.py         MetricSource
 │       ├── inventory.py       ResourceInventory
+│       ├── containers.py      ContainerSource. Two methods, because a cluster and
+│       │                      a reservation fail independently
 │       ├── quotas.py          QuotaSource
 │       └── identity.py        IdentityProvider and EntitlementResolver
 ├── finops_providers/          IN BUILD  aws/, grafana/, gcp/, azure/. The fakes
@@ -417,6 +425,12 @@ meter/
 │   │   ├── query_evidence.py  runs from CloudTrail, bytes from query history.
 │   │   │                      A window that saw nothing returns an absent key,
 │   │   │                      never a zero: absent means unobserved
+│   │   ├── container_insights.py  FEAT-036. Container Insights only, no agent in
+│   │   │                     the cluster, and the docstring carries the four line
+│   │   │                     cost of that decision. Requests need enhanced
+│   │   │                     observability, so a cluster without it yields usage
+│   │   │                     and no request. OOM status is always UNOBSERVED here
+│   │   │                     and never NOT_KILLED. Never run against AWS, ISS-002
 │   │   ├── quotas.py         FEAT-033. Service Quotas for every limit, and it names
 │   │   │                     its own usage metric, so there is no hand written map from
 │   │   │                     quota code to metric name here: a quota with no UsageMetric
@@ -559,6 +573,20 @@ meter/
 │   │                          of the things being ranked, one device each, because
 │   │                          a mark with two meanings cannot be read. Used by the
 │   │                          allocation screen and the waste queue
+│   ├── screens/ContainerCostScreen.tsx  FEAT-035, under Cost. Each cluster states its
+│   │                          workloads' share and the capacity no pod requested,
+│   │                          and the two make its total in plain sight, so a
+│   │                          reader can check the sum rather than trust it
+│   ├── screens/ClustersScreen.tsx  Under Inventory. Spot ratio and bin packing per
+│   │                          cluster, both better high so neither ramp inverts.
+│   │                          A missing figure says why, and an unreadable fleet and
+│   │                          a Fargate cluster with none are different sentences
+│   ├── screens/ContainerWasteScreen.tsx  FEAT-036. Request beside use, two
+│   │                          figures and never one percentage, because twenty
+│   │                          percent can mean over requesting or idle. A cluster
+│   │                          that cannot publish requests is listed with its cost
+│   │                          and its reason, and its rows carry no request column
+│   │                          at all rather than an empty one a reader takes for zero
 │   ├── screens/QuotasScreen.tsx  FEAT-033. Two tables, because one would have to sort
 │   │                          the nulls and wherever they sort is a claim: at the top
 │   │                          urgent, at the bottom safe, and neither is known. The
@@ -836,6 +864,15 @@ meter/
 │   │                          changed and stayed changed
 │   ├── worker.py              one transaction per unit. Only the six are caught
 │   └── collectors/
+│       ├── container_usage.py  FEAT-036, account scoped so one cluster that
+│       │                      cannot be read records a typed failure against
+│       │                      its own slice. Writes container_cluster whatever
+│       │                      the reservation read produced, because a cluster
+│       │                      with no readable workloads has no usage rows and
+│       │                      skipping it would leave it out of the product
+│       │                      rather than listed as unmeasurable. Retraction is
+│       │                      scoped to the unit's own account and region, the
+│       │                      defect the quota collector had to be fixed for
 │       ├── org_tree.py        whole tree replaced in one transaction, never emptied
 │       ├── account_health.py  role_health written every run, including failed ones
 │       ├── platform_cost.py   one grouped request a day. Untagged cost is named
@@ -1007,7 +1044,12 @@ meter/
 │                              audit of each thing, per table, because every
 │                              audit table is keyed on the day and a list that
 │                              ignores that sums a week of them. ISS-175,
-│                              ISS-177
+│                              ISS-177. containers.py holds two repositories,
+│                              one per container table, each scoped by account
+│                              rather than one through the other: a usage row
+│                              can exist for a cluster whose own read failed.
+│                              Inventory coverage counts clusters with nodes,
+│                              because a Fargate cluster has no fleet to pack
 │
 ├── alembic.ini                no database URL in it, env.py reads the settings
 ├── migrations/                the only way the schema changes
@@ -1065,6 +1107,26 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0022_container_usage.py  FEAT-036. Two tables, and the second is
+│       │                      the point: container_cluster exists so a cluster
+│       │                      nothing could measure is listed rather than
+│       │                      absent. container_usage holds one row per
+│       │                      workload carrying the window aggregate the port
+│       │                      returns, not a daily row: the first draft took
+│       │                      the fake's daily CSV shape, which would have put
+│       │                      a fortnight's percentile in a row stamped with
+│       │                      one date. was_oom_killed is nullable and null
+│       │                      means unobserved, never false
+│       ├── 0021_split_cost_allocation.py  FEAT-035, TASK-P6-002. Nine
+│       │                      nullable columns on cost_focus_daily: the EKS
+│       │                      grain and the split measures. A split line
+│       │                      carries no money of its own, so nothing here
+│       │                      touches billed_cost: the charge is already on
+│       │                      the node's line and these say who was using
+│       │                      it. No constraint ties a measure to a
+│       │                      dimension, which is the obvious one to add and
+│       │                      would refuse the unallocated remainder, the
+│       │                      row that makes a cluster reconcile
 │       ├── 0020_quotas.py     FEAT-033 and FEAT-034. Every quota, including the
 │       │                      ones nothing can measure, which are the majority in
 │       │                      a real estate. One check constraint carries the sub
@@ -1121,6 +1183,14 @@ meter/
 │                              expiry, a modelled row cannot claim a measured
 │                              count, and a change cannot exist without its undo
 ├── finops_query/              IN BUILD  P2 query cost governance, P3 waste, P4 graph
+│   ├── containers.py          FEAT-036, TASK-P6-007. Container sizing, composed
+│   │                          onto waste.py rather than beside it: the memory
+│   │                          margins, the fourteen day floor and the saving floor
+│   │                          are P3's, imported. CPU at the 99th percentile of the
+│   │                          daily peak, memory at peak plus 15 or 25 percent. An
+│   │                          unobserved OOM status gets the smaller margin and a
+│   │                          sentence saying the check could not be made, which a
+│   │                          test reads. Fargate is left to the matrix
 │   ├── quota.py               FEAT-034's draft: the increase Meter would ask for, its
 │   │                          working, a console link and a CLI command, plus four
 │   │                          refusals to draft at all. It emits the CLI spelling

@@ -51,8 +51,10 @@ subprojects:
   depends_on: P0, P4
 - id: P6
   name: Containers
-  status: Not started. Specified and planned as a first cut of 12 tasks, revised 2026-09-28
-    against what P4 and P5 actually built. Blocked on ISS-003 for FEAT-035 only
+  status: Delivered, 12 of 12 tasks in its first cut. Cost by cluster, namespace and
+    workload, request against use, sizing into P3's table, Fargate snapped to sizes that
+    can be ordered, and forecast as a third provenance before anything forecasts. FEAT-037
+    is In build because the AWS adapter reads EKS and never ECS, ISS-224
   spec: specs/2026-09-20-p6-containers-design.md
   plan: plans/P6-implementation-plan.md
   depends_on: P0, P1
@@ -271,19 +273,19 @@ features:
 - id: FEAT-035
   name: EKS pod level cost from split cost allocation data
   subproject: P6
-  status: Specified
+  status: Delivered
   detail: '[P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.1, [P6 plan](docs/plans/P6-implementation-plan.md)'
   doc: docs/features/FEAT-035-eks-split-cost-allocation.md
 - id: FEAT-036
   name: In cluster telemetry, requested versus used
   subproject: P6
-  status: Specified
+  status: Delivered
   detail: '[P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.4, [P6 plan](docs/plans/P6-implementation-plan.md)'
   doc: docs/features/FEAT-036-k8s-in-cluster-telemetry.md
 - id: FEAT-037
   name: ECS task and Fargate utilization, snapped to valid sizes
   subproject: P6
-  status: Specified
+  status: In build
   detail: '[P6 spec](docs/specs/2026-09-20-p6-containers-design.md) section 5.5, [P6 plan](docs/plans/P6-implementation-plan.md)'
   doc: docs/features/FEAT-037-ecs-task-utilization.md
 - id: FEAT-038
@@ -1401,6 +1403,28 @@ changes:
     correctly and means something else, which was the FEAT-041 half of CHG-0104, and the
     docstring says so. Its own test file is the single exemption, because it has to cite
     unresolvable ids to watch the check fail'
+- id: CHG-0106
+  date: 2026-10-04
+  type: Feature
+  what: P6 containers delivered in its first cut, twelve tasks, three screens in three
+    existing groups
+  commit: pending
+  detail: 'Pod cost from split cost allocation lines that carry no money of their own, request
+    against use as two figures, container sizing composed onto P3''s memory rule and written
+    into P3''s table, Fargate snapped up to the orderable matrix with the saving taken from the
+    snapped size, and forecast as a third provenance with guards that nothing produces one. FEAT-035
+    and FEAT-036 Delivered, FEAT-037 In build because the adapter reads no ECS, ISS-224'
+- id: CHG-0107
+  date: 2026-10-04
+  type: Correction
+  what: The fake bill's drift was a per month sawtooth, and a cause given for it on 2026-10-01
+    was wrong
+  commit: pending
+  detail: 'ISS-222. The realized savings flip blamed on P6 split cost lines reproduces on main
+    without them; the date had rolled into October the same day. Drift is now monotonic and
+    anchored to the estate clock, the misattribution is corrected in two code comments and the
+    lesson, and the first of month emptiness it was confused with is ISS-221, separate and
+    still open for the make seed half'
 issues:
 - id: ISS-189
   severity: LOW
@@ -3287,6 +3311,82 @@ issues:
     not see it. Closing this properly means either a non money severity vocabulary with
     argued thresholds, which is an ADR, or a home screen tile that links to the quota list
     without pretending to rank against money, which is the cheaper of the two'
+- id: ISS-219
+  severity: MEDIUM
+  status: FIXED
+  summary: The cost route tests called the newest billing period still running and asserted
+    it was open, which was false on the first of every month
+  detail: 'A period has billed up to yesterday, so on the first of a month the open month
+    holds no days and the newest period in the fake estate is the previous, closed one. Found
+    on 2026-10-01 while building TASK-P6-003, by a failure in a test nothing in that task
+    touched. It would have fired on any first of month run since the fixture was written. The
+    estate for those tests is now built at a clock nudged past the first, so the period the
+    tests call open is one that is actually open'
+- id: ISS-220
+  severity: MEDIUM
+  status: FIXED
+  summary: A schema test created a cost partition by hand under a name no production code
+    writes, so CREATE TABLE IF NOT EXISTS could not stop it overlapping the real one
+  detail: 'It wrote cost_focus_daily_p2026_08 and the helper writes cost_focus_daily_p202608.
+    IF NOT EXISTS matches on the name, not the range, so the test passed only while nothing
+    else had created that month first and Postgres refused the overlap once something did.
+    Found on 2026-10-01 when a new P6 test module changed which suite ran first. It goes
+    through ensure_partition now'
+- id: ISS-221
+  severity: MEDIUM
+  status: OPEN
+  summary: On the first of a month the fake estate's newest period holds no days, so the seed
+    produces an estate a month thinner than the commitment collector needs
+  detail: 'A period has billed up to yesterday, so on the first the open month is empty. The
+    commitment collector needs a usage floor across its window and finds nothing, so
+    tests/scripts/test_seed_demo.py asserted against an empty list. The test half is fixed: those
+    tests now take a clock nudged past the first, the fix ISS-219 used, and a run with the
+    clock frozen to 2026-10-01 passes while the same run on the raw clock fails. Left open for
+    the other half, which is a decision rather than a patch: make seed has the same thin estate
+    on that day, and that is the product''s own clock. Distinct from ISS-222, which looked like
+    the same defect and was not'
+- id: ISS-222
+  severity: HIGH
+  status: FIXED
+  summary: The fake bill's drift was a per month sawtooth, so an untouched resource looked
+    cheaper on some dates and the planted REGRESSED saving was VERIFIED instead
+  detail: 'drift was indexed by the day of the month, enumerate over one period''s days, so it
+    reset to its lowest value every first rather than rising as its comment said. A resource
+    whose bill is meant never to move then had a thirty day cost that depended on where in the
+    month its windows fell, and the realized savings collector read the planted load balancer as
+    a saving whenever the after window landed on cheaper early month days. Green on 2026-09-28,
+    flipped on 2026-10-02 and 2026-10-04, reproduced on main with no P6 code at all. On
+    2026-10-01 the flip was wrongly blamed on P6 split cost lines, because the date rolled into
+    October the same day they were added. Drift is now anchored to the estate clock and
+    monotonic, over the same one to one point one five range, and the seed tests pass with the
+    clock frozen to the 1st, 2nd, 4th, 15th and 28th. The rest of the backend suite did not move'
+- id: ISS-223
+  severity: MEDIUM
+  status: OPEN
+  summary: The fake container estate reports OOM status for clusters with enhanced
+    observability, and the AWS adapter never does
+  detail: 'finops_fakes/containers.py observes kills on an enhanced cluster, so the larger
+    25 percent memory margin is reachable in every test. finops_providers/aws/container_insights.py
+    always reports UNOBSERVED, following spec section 5.4, which says Container Insights does not
+    reliably report OOM events. Enhanced observability may publish an OOM termination metric, but
+    no metric name here has been checked against a real account, so the adapter was not changed
+    on a belief. The consequence today is that against a real account every EC2 workload gets
+    the 15 percent margin and the sentence saying the check could not be made. The contract
+    suite constrains only clusters that cannot report requests, so both implementations pass
+    while disagreeing. Resolve with ISS-002'
+- id: ISS-224
+  severity: MEDIUM
+  status: OPEN
+  summary: Fargate sizing runs only against the fake, because the AWS container adapter
+    reads EKS and never ECS
+  detail: 'finops_providers/aws/container_insights.py discovers clusters through the
+    ContainerInsights node metrics and reports every one as EKS, so no ECS service and no
+    Fargate task ever reaches the sizing rule from a real account. FEAT-037 is built and
+    tested against the matrix, and it produces nothing against AWS until ECS is read. Two
+    further limits are stated in every Fargate rationale rather than hidden: the saving is
+    modelled from the published rate, because a task cost is a pure function of its size and
+    the bill carries no Fargate grain, and it is per task, because how many tasks a service
+    runs is not read'
 
 open_questions:
 - id: OPEN-07

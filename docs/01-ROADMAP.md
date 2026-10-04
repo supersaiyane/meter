@@ -44,7 +44,7 @@ P0 Foundation
 | P3 | Utilization and Rightsizing | 10 | 0 | 0 |
 | P4 | Inventory and Topology | 7 | 0 | 0 |
 | P5 | Quotas and Limits | 3 | 0 | 1 |
-| P6 | Containers | 6 | 5 | 1 |
+| P6 | Containers | 6 | 2 | 1 |
 | P7 | Insight and LLM layer | 6 | 0 | 6 |
 
 <!-- generated:roadmap-status end -->
@@ -106,7 +106,7 @@ rather than that one saving happened.
 | P3 | Utilization and Rightsizing | Delivered, 19 of 20 tasks. TASK-P3-020 was unblocked by P4 and is done | 10 (0 specified) | not written | not written | P0, P1 |
 | P4 | Inventory and Topology | Delivered | 7 (0 specified) | [spec](specs/2026-09-20-p4-inventory-and-topology-design.md) | [plan](plans/P4-implementation-plan.md) | P0 |
 | P5 | Quotas and Limits | Delivered, 8 of 8 tasks. The sub project whose central decision is what the product refuses to do | 3 (0 specified) | [spec](specs/2026-09-20-p5-quotas-and-limits-design.md) | [plan](plans/P5-implementation-plan.md) | P0, P4 |
-| P6 | Containers | Not started. Specified and planned as a first cut of 12 tasks, revised 2026-09-28 against what P4 and P5 actually built. Blocked on ISS-003 for FEAT-035 only | 6 (5 specified) | [spec](specs/2026-09-20-p6-containers-design.md) | [plan](plans/P6-implementation-plan.md) | P0, P1 |
+| P6 | Containers | Delivered, 12 of 12 tasks in its first cut. Cost by cluster, namespace and workload, request against use, sizing into P3's table, Fargate snapped to sizes that can be ordered, and forecast as a third provenance before anything forecasts. FEAT-037 is In build because the AWS adapter reads EKS and never ECS, ISS-224 | 6 (2 specified) | [spec](specs/2026-09-20-p6-containers-design.md) | [plan](plans/P6-implementation-plan.md) | P0, P1 |
 | P7 | Insight and LLM layer | Not started. Specified and planned 2026-09-28, 14 tasks. The first sub project that sends anything anywhere, and ADR-0028 decided it goes no further than the hub account | 6 (0 specified) | [spec](specs/2026-09-28-p7-insight-and-llm-layer-design.md) | [plan](plans/P7-implementation-plan.md) | P1, P2, P3 |
 
 <!-- generated:subprojects end -->

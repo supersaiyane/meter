@@ -40,7 +40,15 @@ import {
   quotaRequestsFixture,
   quotasFixture,
 } from './fixtures/quotas';
+import {
+  clustersFixture,
+  containerCostFixture,
+  containerWasteFixture,
+} from './fixtures/containers';
 import type {
+  ApiClusters,
+  ApiContainerCost,
+  ApiContainerWaste,
   ApiQuotaDetail,
   ApiQuotaRequests,
   ApiQuotas,
@@ -557,5 +565,46 @@ export function useBudgets() {
     '/api/v1/cost/budgets',
     '/api/v1/cost/budgets',
     costBudgetsFixture,
+  );
+}
+
+
+/**
+ * Cost by cluster, namespace and workload. FEAT-035, under Cost per ADR-0020.
+ *
+ * Measured, not apportioned: the figures are split cost allocation columns on the bill
+ * already being read, so every one carries the same timestamps as any other charge.
+ */
+export function useContainerCost() {
+  return useQuerySurface<ApiContainerCost>(
+    ['cost-containers'],
+    '/api/v1/cost/containers',
+    '/api/v1/cost/containers',
+    containerCostFixture,
+  );
+}
+
+/**
+ * Requested against used, per workload. FEAT-036, under Waste.
+ *
+ * A separate read from the cost, because a cluster can have a cost and no readable
+ * requests, and folding one into the other would invite a join that drops it.
+ */
+export function useContainerWaste() {
+  return useQuerySurface<ApiContainerWaste>(
+    ['waste-containers'],
+    '/api/v1/waste/containers',
+    '/api/v1/waste/containers',
+    containerWasteFixture,
+  );
+}
+
+/** Clusters, their fleets, Spot ratio and bin packing. Under Inventory. */
+export function useClusters() {
+  return useQuerySurface<ApiClusters>(
+    ['inventory-clusters'],
+    '/api/v1/inventory/clusters',
+    '/api/v1/inventory/clusters',
+    clustersFixture,
   );
 }

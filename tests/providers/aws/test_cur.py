@@ -133,13 +133,29 @@ def one_row(settings: Settings) -> Any:
     return next(iter(export(settings, athena=athena).read_period(AUGUST, SEPTEMBER)))
 
 
+def _period_query(athena: object) -> str:
+    """The query that reads the period, not the catalog probe that precedes it.
+
+    Indexing `queries[0]` was right until the adapter learned to ask which split
+    cost allocation columns exist. Selecting by content keeps the assertion about
+    the query it is actually about.
+    """
+    queries: list[str] = list(athena.queries)  # type: ignore[attr-defined]
+    found = [q for q in queries if "billing_period" in q]
+    assert found, f"no period query was issued: {queries}"
+    return found[0]
+
+
 class TestTheQueryPrunes:
     def test_the_predicate_is_on_the_partition_column(self, settings: Settings) -> None:
         """A full scan of a CUR table is the tool that reports on cost becoming
         a line on the bill."""
         athena = StubAthena([page_for([ROW])])
         list(export(settings, athena=athena).read_period(date(2026, 8, 1), date(2026, 9, 1)))
-        sql = athena.queries[0]
+        # The period query, selected rather than indexed: the adapter asks the
+        # catalog which split cost allocation columns exist before it reads, so the
+        # read is no longer the first query. The property asserted is unchanged.
+        sql = _period_query(athena)
         assert "billing_period >= '2026-08'" in sql
         assert "billing_period < '2026-09'" in sql
 
@@ -148,7 +164,7 @@ class TestTheQueryPrunes:
         # query silently scans the whole table at full price.
         athena = StubAthena([page_for([ROW])])
         list(export(settings, athena=athena).read_period(date(2026, 8, 1), date(2026, 9, 1)))
-        sql = athena.queries[0].lower()
+        sql = _period_query(athena).lower()
         for wrapper in ("date(", "date_parse(", "substr(", "cast("):
             assert f"{wrapper}billing_period" not in sql
 

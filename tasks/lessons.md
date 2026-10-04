@@ -345,6 +345,19 @@ for a frontend change, indexing an array whose element type is then spread, and 
 commit whose verification was a set of targeted test commands rather than
 `make verify`.
 
+**Repeated on 2026-10-04, and why the rule was not enough on its own.** During P6 I
+typechecked the new screens with `npx tsc --noEmit -p tsconfig.json`, got exit 0 twice,
+and wrote "typecheck clean" both times. That command checks nothing at all: the root
+`tsconfig.json` is a solution file whose `files` is empty and whose real configs are only
+references, so `-p` against it compiles zero sources and cannot fail. `--listFilesOnly`
+confirms zero. The build caught the error the next time it ran, because `npm run build`
+runs `tsc --build`, so nothing wrong shipped, but two commits were described as checked
+on the strength of a check with no inputs. The rule above already named the right
+command. What it lacked was the reason the wrong one is worse than it looks: not a weaker
+check, an empty one. So the rule is sharpened, not replaced: `npx tsc -p tsconfig.json`
+is never evidence in this repository, because it passes for every possible state of the
+code, and a check that cannot fail is the thing every other lesson here is about.
+
 ## 2026-09-26: a collector wired into the seed that produced nothing
 
 **Mistake:** built FEAT-054's parking collector, wired it into `scripts/demo/seed_demo.py`,
@@ -638,3 +651,39 @@ dropping ISS-002, ISS-003 and ISS-004 from the register, which surfaced 65 citat
 25 files, so it would have caught them on the day they were first cited. It does not catch
 FEAT-041, which resolved correctly and meant something else, and the script says so rather
 than implying the whole lesson is now mechanical. That half is still a habit, not a gate.
+
+## 2026-10-01: a failure blamed on my change that the calendar had caused
+
+Rewritten on 2026-10-04. The version first written here drew the wrong conclusion,
+and it is replaced rather than left beside a correction, because a lesson somebody
+follows has to be true.
+
+**Mistake:** On 2026-10-01 I added split cost lines to the shared fake bill and the
+full gate failed, including a realized savings verdict flipping from REGRESSED to
+VERIFIED in the seeded estate. I attributed the flip to my rows, wrote that into a
+commit message, two code comments and the first version of this lesson, and moved the
+rows behind a flag. The rows were not the cause. The flip reproduces on main, which has
+no split lines, and its cause was a fake bill whose drift was a per month sawtooth:
+ISS-222. The date had rolled into October the same day I added the rows. I did run the
+same tests against main that day, but on the first of the month, where main returns
+nothing at all for an unrelated reason, ISS-221. So "main differs from my branch" was
+true and proved nothing: I compared my branch on one condition to main on another.
+
+**Correction:** Nobody corrected me. It surfaced on 2026-10-04, when freezing the clock
+to a single day and running main and the branch side by side gave the same flip on
+both.
+
+**Rule:** Before attributing a failure to a change, reproduce it on the baseline under
+the same conditions with only the code different: same date, same data, same suite.
+When the failure involves anything that reads a clock, freeze the clock and run both
+sides at the same instant, and run more than one instant, because a fixture can be
+right on one day of the month and wrong on another. A comparison across two different
+days is not a comparison. And when an attribution turns out wrong, correct every place
+it was written, including code comments, because a false reason in a comment is worse
+than none: the next person keeps the code for a reason that never existed.
+
+**Triggers:** A test failing the day after it passed. Any failure appearing alongside
+both a code change and a change of date, month or data. A fixture built from the real
+clock. Writing "because of" in a commit message about something not yet reproduced in
+isolation.
+

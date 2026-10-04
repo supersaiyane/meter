@@ -205,6 +205,22 @@ class CostRecord(Fact):
     commitment_discount_type: str | None
     commitment_discount_status: str | None
     tags: Mapping[str, str]
+    #: Split cost allocation, FEAT-035. Absent on every charge that is not a pod's,
+    #: and absent on every export where split cost allocation is not enabled, which
+    #: is ISS-003. None rather than zero: a cluster costing nothing is a claim.
+    eks_cluster_name: str | None = None
+    eks_namespace: str | None = None
+    eks_workload_name: str | None = None
+    eks_workload_type: str | None = None
+    eks_pod_name: str | None = None
+    #: A breakdown of money already counted in `billed_cost`, never an addition to
+    #: it. Adding these would double count every clustered charge.
+    split_cost: Decimal | None = None
+    split_usage: Decimal | None = None
+    split_usage_ratio: Decimal | None = None
+    #: The cluster's unallocated remainder. Arrives on rows with no workload at all,
+    #: which is why nothing requires a dimension beside a measure.
+    unused_cost: Decimal | None = None
 
     def __post_init__(self) -> None:
         # Frozen stops the attribute being rebound. It does not stop the dict

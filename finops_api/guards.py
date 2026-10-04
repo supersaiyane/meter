@@ -190,6 +190,14 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | None] = {
     # it can read and nothing about the ones it cannot. A global scope sees all of it,
     # which is what makes the operations view of the estate possible.
     "graph_coverage": ByAccount("sub_account_id"),
+    # P6. A cluster lives in an account, so a caller narrowed to two accounts reads
+    # two accounts' clusters. In before the routes, per the rule at the top of the P1
+    # plan and the six defects that produced it.
+    "container_cluster": ByAccount("sub_account_id"),
+    # A usage row names the account its cluster lives in, so it scopes the same way
+    # rather than through the cluster: a Through rule would need a cluster row to
+    # exist, and a usage row can arrive for a cluster whose own read failed.
+    "container_usage": ByAccount("sub_account_id"),
     # P5, FEAT-033. A quota is per account per region, so a caller narrowed to two accounts
     # reads two accounts' limits. Not PayerWide, unlike a budget or a commitment: a quota is
     # not bought at the payer and shared out, it applies to the account it belongs to, and a

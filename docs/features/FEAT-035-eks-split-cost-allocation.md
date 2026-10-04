@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P6 |
-| Status | Specified |
+| Status | Delivered |
 | Specification | [P6 spec](../specs/2026-09-20-p6-containers-design.md), section 5.1 |
 | Tasks | TASK-P6-002, TASK-P6-003 |
 | Refresh cadence | Follows FEAT-020 |
@@ -21,6 +21,15 @@ This is free, needs no agent, and is widely unknown. It should be enabled before
 Requires split cost allocation data enabled on the Data Export, which is a prerequisite tracked as ISS-003.
 
 ## How it works
+
+**As built, 2026-10-04, TASK-P6-002 and TASK-P6-003.** Nine nullable columns on
+`cost_focus_daily`, migration 0021, read by `finops_providers/aws/cur.py` only where the
+catalog says the export has them, so an export without split cost allocation is read with
+the same SQL as before. A split line carries no money of its own: `billed_cost` and
+`effective_cost` are zero and the figure is in `split_cost`, because the charge is already
+on the node's line and adding it again would double count. An export without the columns
+records a `Misconfigured` gap under its own scope key, ISS-003, so the worker's clear on
+success cannot delete it. Never run against AWS, ISS-002.
 
 Split cost allocation data arrives **in the billing export already being read**. It
 is extra columns on CUR 2.0 rows, not a separate API, so this feature widens the
@@ -43,8 +52,11 @@ None beyond the existing cost guard. These are the same rows, scoped the same wa
 
 ## Interface
 
-`GET /containers/cost` and `/containers/cost`, grouped by cluster, namespace and
-workload, with the namespace figures reconciling visibly to the cluster total.
+`GET /cost/containers` and the `/cost/containers` screen, under Cost per ADR-0020,
+grouped by cluster, namespace and workload. Each cluster states its workloads' share and
+the capacity no pod requested, and the two make its total in plain sight. Corrected on
+2026-10-04: this section named `/containers/cost`, which broke ADR-0020's seven fixed
+groups and was removed from the spec in the 2026-09-28 planning pass.
 
 ## Not doing
 

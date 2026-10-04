@@ -681,6 +681,124 @@ class CostSliceOut(BaseModel):
     line_items: int
 
 
+class ContainerCostRowOut(BaseModel):
+    """One workload's share of a cluster's cost."""
+
+    model_config = ConfigDict(frozen=True)
+
+    namespace: str
+    workload_name: str
+    #: Empty where the export did not carry a workload type. Never guessed.
+    workload_type: str
+    cost: Decimal
+    line_items: int
+
+
+class ClusterCostOut(BaseModel):
+    """One cluster's cost, with its breakdown where there is one."""
+
+    model_config = ConfigDict(frozen=True)
+
+    cluster_name: str
+    #: Attributed to workloads plus the remainder nothing asked for. This is the
+    #: figure that reconciles to the cluster's node charge.
+    total: Decimal
+    allocated: Decimal
+    #: Capacity the cluster paid for and no pod requested. A real figure, not a
+    #: rounding error, and the reason bin packing is worth a screen.
+    unallocated: Decimal
+    workloads: tuple[ContainerCostRowOut, ...] = ()
+    #: False where the cluster has a cost and no per workload breakdown. The cluster
+    #: is still listed, per spec section 5.4.
+    breakdown_available: bool = True
+    #: Why the breakdown is missing, in words, where it is missing.
+    unmeasurable_reason: str | None = None
+
+
+class ContainerCostOut(BaseModel):
+    """Cost by cluster, namespace and workload, measured rather than apportioned."""
+
+    model_config = ConfigDict(frozen=True)
+
+    clusters: tuple[ClusterCostOut, ...]
+    #: Clusters with a breakdown, against clusters found. The screen states the
+    #: ratio so nobody counts rows to discover the gap.
+    measured_count: int
+    found_count: int
+
+
+class ContainerUsageRowOut(BaseModel):
+    """One workload's requests against its use. Two figures each, never a percentage."""
+
+    model_config = ConfigDict(frozen=True)
+
+    namespace: str
+    workload: str
+    workload_kind: str
+    launch_type: str
+    #: None where the cluster cannot publish requests. Never zero.
+    cpu_requested_millicores: Decimal | None
+    cpu_used_p99_millicores: Decimal | None
+    memory_requested_mib: Decimal | None
+    memory_used_peak_mib: Decimal | None
+    #: KILLED, NOT_KILLED or UNOBSERVED. UNOBSERVED is not a synonym for NOT_KILLED.
+    oom_status: str
+    observation_days: int
+
+
+class ClusterUsageOut(BaseModel):
+    """A cluster and its workloads, listed whether or not its requests are readable."""
+
+    model_config = ConfigDict(frozen=True)
+
+    cluster_name: str
+    account_id: str
+    region_id: str
+    platform: str
+    enhanced_observability: bool
+    #: Why requests cannot be stated, in words, where they cannot.
+    request_unavailable_reason: str | None
+    workloads: tuple[ContainerUsageRowOut, ...]
+
+
+class ContainerWasteOut(BaseModel):
+    """Requested against used, and the clusters where that cannot be said."""
+
+    model_config = ConfigDict(frozen=True)
+
+    clusters: tuple[ClusterUsageOut, ...]
+    measured_count: int
+    found_count: int
+
+
+class ClusterInventoryOut(BaseModel):
+    """One cluster: its fleet, its Spot ratio and its bin packing, where readable."""
+
+    model_config = ConfigDict(frozen=True)
+
+    cluster_name: str
+    account_id: str
+    region_id: str
+    platform: str
+    enhanced_observability: bool
+    node_count: int | None
+    #: Fractions of one. None where the fleet could not be read or does not exist.
+    spot_ratio: Decimal | None
+    packing_efficiency: Decimal | None
+    #: Why a fleet figure is missing, where one is.
+    unmeasurable_reason: str | None
+
+
+class ClustersOut(BaseModel):
+    """Every cluster, and how many of those with nodes could be measured."""
+
+    model_config = ConfigDict(frozen=True)
+
+    clusters: tuple[ClusterInventoryOut, ...]
+    measured_count: int
+    found_count: int
+
+
 class CostDayOut(BaseModel):
     """Effective cost on one day, for the chart on the cost screen."""
 

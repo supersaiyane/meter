@@ -518,6 +518,8 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         "platform_cost",
         "query_audit",
         "cost_focus",
+        # P6, TASK-P6-006. In the default schedule and not a retention job.
+        "container_usage",
         # P1 and P3. All six were missing from the default schedule until
         # 2026-09-21, which meant the dispatcher never returned them and none of
         # them ever ran. ISS-190.

@@ -1,11 +1,11 @@
-"""The nine ports a provider implements. No implementation, no cloud import.
+"""The ports a provider implements. No implementation, no cloud import.
 
 Constraint 1 in CLAUDE.md. These protocols are the line that makes GCP a
 connector rather than a rewrite, and `lint-imports` plus
 `tests/core/test_ports.py` both prove that nothing behind the line has reached
 across it.
 
-Six describe a cloud, two describe identity, and `QuerySurface` describes a tool
+Most describe a cloud, two describe identity, and `QuerySurface` describes a tool
 that holds saved queries. P0 implements two, `AccountDiscovery` and
 `CredentialBroker`, and defines the rest anyway. A port is cheap to define now
 and expensive to retrofit once three consumers have grown around its absence.
@@ -16,6 +16,7 @@ adding it needed a new file and one line here, and changed nothing else.
 """
 
 from finops_core.ports.accounts import AccountDiscovery
+from finops_core.ports.containers import ContainerSource
 from finops_core.ports.cost import CostExport
 from finops_core.ports.credentials import CredentialBroker
 from finops_core.ports.identity import EntitlementResolver, IdentityProvider
@@ -24,10 +25,13 @@ from finops_core.ports.metrics import MetricSource
 from finops_core.ports.query import PanelRewrite, QuerySurface, RefreshFloor
 from finops_core.ports.quotas import QuotaSource
 
-#: The eight a cloud provider implements. `FakeProvider` satisfies all of them,
-#: which is what lets every core and API test run with no AWS account.
+#: The ones a cloud provider implements. `FakeProvider` satisfies all of them,
+#: which is what lets every core and API test run with no AWS account. The count
+#: is not written down here, because it was written down as eight and a ninth
+#: arrived; `tests/core/test_ports.py` holds the number in one place instead.
 PROVIDER_PORTS = (
     AccountDiscovery,
+    ContainerSource,
     CostExport,
     CredentialBroker,
     EntitlementResolver,
@@ -48,6 +52,7 @@ __all__ = [
     "PROVIDER_PORTS",
     "SURFACE_PORTS",
     "AccountDiscovery",
+    "ContainerSource",
     "CostExport",
     "CredentialBroker",
     "EntitlementResolver",

@@ -14,6 +14,7 @@ spend.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -24,6 +25,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine
 
+from finops_api.db import models
 from finops_core.config import Settings
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.platform import UNALLOCATED
@@ -45,7 +47,14 @@ ONE_ACCOUNT = "fake-platform-a"
 #: 2026-08, so its open month stopped being open the day that month ended, and
 #: a test asserting otherwise against it would be asserting the date.
 TODAY = datetime.now(UTC)
-CURRENT = estate(at=TODAY)
+
+#: The real clock, nudged past the first of the month. A period has billed up to
+#: yesterday, so on the first the open month holds no days at all, the newest period
+#: in the estate is last month, and last month is closed. Every test below that calls
+#: the newest period "still running" then asserts the opposite of what it means, one
+#: day in thirty. ISS-219.
+OPEN_ENOUGH = max(TODAY, datetime(TODAY.year, TODAY.month, 2, tzinfo=UTC))
+CURRENT = estate(at=OPEN_ENOUGH)
 CURRENT_PERIOD = max(row.billing_period_start for row in CURRENT)
 STILL_RUNNING = tuple(row for row in CURRENT if row.billing_period_start == CURRENT_PERIOD)
 FINISHED_PERIOD = max(
@@ -64,11 +73,18 @@ def _partitions(partition_sandbox: None) -> None:
     """This module creates partitions, so it gives them back. See conftest."""
 
 
-def seed(engine: Engine, tenant: UUID, rows: tuple[Any, ...] = CLOSED) -> None:
+def seed(
+    engine: Engine, tenant: UUID, rows: tuple[Any, ...] = CLOSED, *, split: bool = False
+) -> None:
+    """`split` asks for the container grain, which is off by default.
+
+    Off, so that nothing predating P6 moves: the split lines carry no money but a
+    thousand extra rows on a shared series changed a realized savings verdict once.
+    """
     with engine.begin() as connection:
         for month in {row.billing_period_start for row in (*ESTATE, *CURRENT)}:
             ensure_partition(connection, "cost_focus_daily", month)
-        collector = CostFocusCollector(FakeCostExport(rows=rows), clock=lambda: NOW)
+        collector = CostFocusCollector(FakeCostExport(rows=rows, split=split), clock=lambda: NOW)
         collector(
             CollectorContext(unit=Unit(tenant_id=tenant), connection=connection, run_id=uuid4())
         )
@@ -109,6 +125,7 @@ class TestEveryRouteIsReachable:
             "/api/v1/cost/by-account",
             "/api/v1/cost/trend",
             "/api/v1/cost/allocation?tag=team",
+            "/api/v1/cost/containers",
         ],
     )
     def test_it_answers_two_hundred_with_an_envelope(
@@ -357,3 +374,139 @@ class TestTheAnomalyBannerCountsAccounts:
         anomalies = get(client, token, "/api/v1/cost/anomalies")["meta"]["scope_coverage"]
         summary = get(client, token, "/api/v1/cost/summary")["meta"]["scope_coverage"]
         assert anomalies == summary
+
+
+@pytest.fixture
+def _clear_split_gap(engine: Engine) -> Iterator[None]:
+    """Remove the Misconfigured gap row the ISS-003 test writes.
+
+    Migration 0018's downgrade refuses while any sync_error row records
+    `Misconfigured`, so a row left behind here fails the schema downgrade test and
+    the partially downgraded schema then collides on re-upgrade. One uncleaned row
+    cost eleven unrelated failures the first time.
+    """
+    yield
+    with engine.begin() as connection:
+        connection.execute(
+            models.sync_error.delete().where(models.sync_error.c.collector == "cost_focus")
+        )
+
+
+@pytest.mark.usefixtures("_clear_split_gap")
+class TestContainerCost:
+    """TASK-P6-003, FEAT-035. Cost by cluster, namespace and workload.
+
+    Under the Cost group rather than a Containers one, per ADR-0020: a reader
+    asking what their clusters cost is asking where the money is going, which is
+    the question this group answers.
+    """
+
+    def test_the_clusters_come_back_with_their_breakdown(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        seed(engine, tenant_id, split=True)
+        client, token = client_for(engine, everything(tenant_id), settings)
+        found = get(client, token, "/api/v1/cost/containers")["data"]
+
+        names = {cluster["cluster_name"] for cluster in found["clusters"]}
+        assert names == {"platform-eks", "batch-eks"}
+        for cluster in found["clusters"]:
+            assert cluster["workloads"], f"{cluster['cluster_name']} has no breakdown"
+            namespaces = {row["namespace"] for row in cluster["workloads"]}
+            assert namespaces, "a cluster with a breakdown and no namespaces in it"
+
+    def test_a_cluster_total_is_what_was_attributed_plus_what_was_not(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """The unallocated remainder is a figure, not a rounding error.
+
+        It is capacity the cluster paid for and no pod asked for, which is the
+        whole argument for showing bin packing on the cluster screen.
+        """
+        seed(engine, tenant_id, split=True)
+        client, token = client_for(engine, everything(tenant_id), settings)
+        found = get(client, token, "/api/v1/cost/containers")["data"]
+
+        for cluster in found["clusters"]:
+            total = Decimal(cluster["total"])
+            allocated = Decimal(cluster["allocated"])
+            unallocated = Decimal(cluster["unallocated"])
+            assert total == allocated + unallocated
+            assert unallocated > 0, (
+                f"{cluster['cluster_name']} attributes every penny to a pod, so the "
+                f"fixture cannot exercise the unallocated case"
+            )
+
+    def test_the_workload_shares_add_up_to_what_was_allocated(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """A breakdown that does not sum to its own subtotal has lost money."""
+        seed(engine, tenant_id, split=True)
+        client, token = client_for(engine, everything(tenant_id), settings)
+        found = get(client, token, "/api/v1/cost/containers")["data"]
+
+        for cluster in found["clusters"]:
+            shares = sum(Decimal(row["cost"]) for row in cluster["workloads"])
+            assert shares == Decimal(cluster["allocated"]), cluster["cluster_name"]
+
+    def test_a_narrow_reader_sees_fewer_clusters(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """Constraint 3, and the criterion this route was written against.
+
+        The two EKS clusters live in different accounts, so a caller narrowed to
+        one account must see one cluster. Asserted against the wide read rather
+        than against a literal, so the claim is about the scope and not about how
+        many clusters the fixture happens to have.
+        """
+        seed(engine, tenant_id, split=True)
+        wide_client, wide_token = client_for(engine, everything(tenant_id), settings)
+        wide = get(wide_client, wide_token, "/api/v1/cost/containers")["data"]
+
+        narrow_client, narrow_token = client_for(engine, only(tenant_id, ONE_ACCOUNT), settings)
+        narrow = get(narrow_client, narrow_token, "/api/v1/cost/containers")["data"]
+
+        assert len(wide["clusters"]) > len(narrow["clusters"]) >= 1
+        visible = {cluster["cluster_name"] for cluster in narrow["clusters"]}
+        assert visible == {"platform-eks"}, visible
+
+    def test_coverage_counts_clusters_and_says_so(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """Accounts in that slot would call coverage complete while clusters were missing."""
+        seed(engine, tenant_id, split=True)
+        client, token = client_for(engine, everything(tenant_id), settings)
+        envelope = get(client, token, "/api/v1/cost/containers")
+
+        coverage = envelope["meta"]["scope_coverage"]
+        assert coverage["unit"] == "clusters"
+        assert coverage["total"] == envelope["data"]["found_count"]
+        assert coverage["visible"] == envelope["data"]["measured_count"]
+
+    def test_an_export_without_split_data_reports_the_gap_rather_than_free_clusters(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """ISS-003. No cluster is listed as costing nothing, and the reason travels."""
+        with engine.begin() as connection:
+            for month in {row.billing_period_start for row in (*ESTATE, *CURRENT)}:
+                ensure_partition(connection, "cost_focus_daily", month)
+            collector = CostFocusCollector(
+                FakeCostExport(rows=CLOSED, split=False), clock=lambda: NOW
+            )
+            collector(
+                CollectorContext(
+                    unit=Unit(tenant_id=tenant_id), connection=connection, run_id=uuid4()
+                )
+            )
+
+        client, token = client_for(engine, everything(tenant_id), settings)
+        envelope = get(client, token, "/api/v1/cost/containers")
+
+        # No clusters at all, rather than clusters at zero.
+        assert envelope["data"]["clusters"] == []
+        assert envelope["data"]["found_count"] == 0
+        # And the configuration fault arrives from the collector that found it, so
+        # the screen can explain itself without this route guessing why.
+        causes = {failure["cause"] for failure in envelope["meta"]["failures"]}
+        assert "Misconfigured" in causes, envelope["meta"]["failures"]
+        assert envelope["meta"]["degraded"] is True

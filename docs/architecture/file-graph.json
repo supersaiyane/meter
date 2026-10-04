@@ -30,6 +30,7 @@
     "finops-web/dist-types/src/api/client.d.ts",
     "finops-web/dist-types/src/api/fixtureSeam",
     "finops-web/dist-types/src/api/fixtureSeam.d.ts",
+    "finops-web/dist-types/src/api/fixtures/containers.d.ts",
     "finops-web/dist-types/src/api/fixtures/cost.d.ts",
     "finops-web/dist-types/src/api/fixtures/query.d.ts",
     "finops-web/dist-types/src/api/fixtures/quotas.d.ts",
@@ -82,6 +83,7 @@
     "finops-web/dist-types/src/components/__tests__/WorldMap.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/axe.d.ts",
     "finops-web/dist-types/src/components/__tests__/contrast.test.d.ts",
+    "finops-web/dist-types/src/components/__tests__/forecastUnproduced.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/orgNodes.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/shell.test.d.ts",
     "finops-web/dist-types/src/components/__tests__/surface.test.d.ts",
@@ -105,6 +107,9 @@
     "finops-web/dist-types/src/queryClient.d.ts",
     "finops-web/dist-types/src/screens/AccountsScreen.d.ts",
     "finops-web/dist-types/src/screens/BudgetsScreen.d.ts",
+    "finops-web/dist-types/src/screens/ClustersScreen.d.ts",
+    "finops-web/dist-types/src/screens/ContainerCostScreen.d.ts",
+    "finops-web/dist-types/src/screens/ContainerWasteScreen.d.ts",
     "finops-web/dist-types/src/screens/CostAllocationScreen.d.ts",
     "finops-web/dist-types/src/screens/CostAnomaliesScreen.d.ts",
     "finops-web/dist-types/src/screens/CostCommitmentsScreen.d.ts",
@@ -133,6 +138,9 @@
     "finops-web/dist-types/src/screens/WasteScreen.d.ts",
     "finops-web/dist-types/src/screens/__tests__/AccountsScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/BudgetsScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/ClustersScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/ContainerCostScreen.test.d.ts",
+    "finops-web/dist-types/src/screens/__tests__/ContainerWasteScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/CostAllocationScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/CostAnomaliesScreen.test.d.ts",
     "finops-web/dist-types/src/screens/__tests__/CostCommitmentsScreen.test.d.ts",
@@ -183,6 +191,7 @@
     "finops-web/dist-types/src/storage.test.d.ts",
     "finops-web/dist-types/src/test-setup.d.ts",
     "finops-web/dist-types/src/tokens.css",
+    "finops-web/e2e/containers.spec.ts",
     "finops-web/e2e/cost.spec.ts",
     "finops-web/e2e/demo.spec.ts",
     "finops-web/e2e/journey.spec.ts",
@@ -199,6 +208,7 @@
     "finops-web/src/api/apiContext.ts",
     "finops-web/src/api/client.ts",
     "finops-web/src/api/fixtureSeam.ts",
+    "finops-web/src/api/fixtures/containers.ts",
     "finops-web/src/api/fixtures/cost.ts",
     "finops-web/src/api/fixtures/query.ts",
     "finops-web/src/api/fixtures/quotas.ts",
@@ -206,6 +216,7 @@
     "finops-web/src/api/fixtures/waste.ts",
     "finops-web/src/api/queries.ts",
     "finops-web/src/api/types.ts",
+    "finops-web/src/components",
     "finops-web/src/components/BarChart.tsx",
     "finops-web/src/components/BudgetBar.tsx",
     "finops-web/src/components/CadenceBar.tsx",
@@ -240,6 +251,7 @@
     "finops-web/src/components/__tests__/WorldMap.test.tsx",
     "finops-web/src/components/__tests__/axe.ts",
     "finops-web/src/components/__tests__/contrast.test.ts",
+    "finops-web/src/components/__tests__/forecastUnproduced.test.ts",
     "finops-web/src/components/__tests__/orgNodes.test.ts",
     "finops-web/src/components/__tests__/shell.test.tsx",
     "finops-web/src/components/__tests__/surface.test.ts",
@@ -260,6 +272,9 @@
     "finops-web/src/queryClient.ts",
     "finops-web/src/screens/AccountsScreen.tsx",
     "finops-web/src/screens/BudgetsScreen.tsx",
+    "finops-web/src/screens/ClustersScreen.tsx",
+    "finops-web/src/screens/ContainerCostScreen.tsx",
+    "finops-web/src/screens/ContainerWasteScreen.tsx",
     "finops-web/src/screens/CostAllocationScreen.tsx",
     "finops-web/src/screens/CostAnomaliesScreen.tsx",
     "finops-web/src/screens/CostCommitmentsScreen.tsx",
@@ -288,6 +303,9 @@
     "finops-web/src/screens/WasteScreen.tsx",
     "finops-web/src/screens/__tests__/AccountsScreen.test.tsx",
     "finops-web/src/screens/__tests__/BudgetsScreen.test.tsx",
+    "finops-web/src/screens/__tests__/ClustersScreen.test.tsx",
+    "finops-web/src/screens/__tests__/ContainerCostScreen.test.tsx",
+    "finops-web/src/screens/__tests__/ContainerWasteScreen.test.tsx",
     "finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx",
     "finops-web/src/screens/__tests__/CostAnomaliesScreen.test.tsx",
     "finops-web/src/screens/__tests__/CostCommitmentsScreen.test.tsx",
@@ -345,6 +363,7 @@
     "finops_api/db/repositories/__init__.py",
     "finops_api/db/repositories/accounts.py",
     "finops_api/db/repositories/base.py",
+    "finops_api/db/repositories/containers.py",
     "finops_api/db/repositories/cost.py",
     "finops_api/db/repositories/freshness.py",
     "finops_api/db/repositories/ingest.py",
@@ -381,6 +400,7 @@
     "finops_core/domain/__init__.py",
     "finops_core/domain/account.py",
     "finops_core/domain/budget.py",
+    "finops_core/domain/containers.py",
     "finops_core/domain/cost.py",
     "finops_core/domain/fact.py",
     "finops_core/domain/geography.py",
@@ -403,6 +423,7 @@
     "finops_core/ports/budget.py",
     "finops_core/ports/cloudwatch_estate.py",
     "finops_core/ports/commitment.py",
+    "finops_core/ports/containers.py",
     "finops_core/ports/cost.py",
     "finops_core/ports/credentials.py",
     "finops_core/ports/iac.py",
@@ -442,6 +463,7 @@
     "finops_ingest/collectors/budgets.py",
     "finops_ingest/collectors/commitment.py",
     "finops_ingest/collectors/commitment_actions.py",
+    "finops_ingest/collectors/container_usage.py",
     "finops_ingest/collectors/cost_anomaly.py",
     "finops_ingest/collectors/cost_focus.py",
     "finops_ingest/collectors/cost_rollup.py",
@@ -478,6 +500,7 @@
     "finops_providers/aws/client.py",
     "finops_providers/aws/commitment.py",
     "finops_providers/aws/config_inventory.py",
+    "finops_providers/aws/container_insights.py",
     "finops_providers/aws/credentials.py",
     "finops_providers/aws/cur.py",
     "finops_providers/aws/health.py",
@@ -497,6 +520,7 @@
     "finops_query/blast_radius.py",
     "finops_query/classify.py",
     "finops_query/commitment.py",
+    "finops_query/containers.py",
     "finops_query/cost_model.py",
     "finops_query/gate.py",
     "finops_query/graph.py",
@@ -559,6 +583,8 @@
     "migrations/versions/0018_misconfigured_cause.py",
     "migrations/versions/0019_sizing_refusal.py",
     "migrations/versions/0020_quotas.py",
+    "migrations/versions/0021_split_cost_allocation.py",
+    "migrations/versions/0022_container_usage.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_env_keys.py",
     "scripts/ci/check_flags.py",
@@ -583,12 +609,14 @@
     "scripts/ops/restore_drill.py",
     "tests/__init__.py",
     "tests/api/__init__.py",
+    "tests/api/test_container_routes.py",
     "tests/api/test_cost_budgets.py",
     "tests/api/test_cost_commitments.py",
     "tests/api/test_cost_export_route.py",
     "tests/api/test_cost_repository.py",
     "tests/api/test_cost_routes.py",
     "tests/api/test_fixture_surfaces.py",
+    "tests/api/test_forecast_unproduced.py",
     "tests/api/test_identity_local.py",
     "tests/api/test_inventory_geography.py",
     "tests/api/test_inventory_routes.py",
@@ -608,6 +636,7 @@
     "tests/contract/test_account_discovery.py",
     "tests/contract/test_cause_vocabulary.py",
     "tests/contract/test_commitment.py",
+    "tests/contract/test_container_source.py",
     "tests/contract/test_cost_export.py",
     "tests/contract/test_credential_broker.py",
     "tests/contract/test_no_quota_writes.py",
@@ -617,6 +646,7 @@
     "tests/core/__init__.py",
     "tests/core/test_budget.py",
     "tests/core/test_config.py",
+    "tests/core/test_containers_domain.py",
     "tests/core/test_cost_domain.py",
     "tests/core/test_domain.py",
     "tests/core/test_errors.py",
@@ -639,6 +669,7 @@
     "tests/ingest/collectors/test_account_health.py",
     "tests/ingest/collectors/test_commitment.py",
     "tests/ingest/collectors/test_commitment_actions.py",
+    "tests/ingest/collectors/test_container_usage.py",
     "tests/ingest/collectors/test_cost_anomaly.py",
     "tests/ingest/collectors/test_cost_focus.py",
     "tests/ingest/collectors/test_cost_focus_restatement.py",
@@ -676,6 +707,7 @@
     "tests/providers/aws/test_aws_topology.py",
     "tests/providers/aws/test_commitment.py",
     "tests/providers/aws/test_config_inventory.py",
+    "tests/providers/aws/test_container_insights.py",
     "tests/providers/aws/test_credentials.py",
     "tests/providers/aws/test_cur.py",
     "tests/providers/aws/test_health.py",
@@ -703,6 +735,7 @@
     "tests/query/test_blast_radius.py",
     "tests/query/test_classify.py",
     "tests/query/test_commitment.py",
+    "tests/query/test_containers.py",
     "tests/query/test_cost_model.py",
     "tests/query/test_gate.py",
     "tests/query/test_graph.py",
@@ -871,6 +904,11 @@
     },
     {
       "s": "finops-web/dist-types/src/api/client.d.ts",
+      "t": "finops-web/dist-types/src/api/types",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/dist-types/src/api/fixtures/containers.d.ts",
       "t": "finops-web/dist-types/src/api/types",
       "k": "typescript"
     },
@@ -1211,6 +1249,21 @@
     },
     {
       "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/ClustersScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/ContainerCostScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/CostAllocationScreen.tsx",
       "k": "typescript"
     },
@@ -1380,6 +1433,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/api/fixtures/containers.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/api/fixtures/cost.ts",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -1417,6 +1475,11 @@
     {
       "s": "finops-web/src/api/queries.ts",
       "t": "finops-web/src/api/fixtureSeam.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/queries.ts",
+      "t": "finops-web/src/api/fixtures/containers.ts",
       "k": "typescript"
     },
     {
@@ -1785,6 +1848,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/__tests__/forecastUnproduced.test.ts",
+      "t": "finops-web/src/layout.css?raw",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/components/__tests__/orgNodes.test.ts",
       "t": "finops-web/src/components/orgNodes.ts",
       "k": "typescript"
@@ -1996,6 +2064,111 @@
     },
     {
       "s": "finops-web/src/screens/BudgetsScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ClustersScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ClustersScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ClustersScreen.tsx",
+      "t": "finops-web/src/components/FixtureBand.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ClustersScreen.tsx",
+      "t": "finops-web/src/components/PercentCell.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ClustersScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ClustersScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ClustersScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerCostScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerCostScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerCostScreen.tsx",
+      "t": "finops-web/src/components",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerCostScreen.tsx",
+      "t": "finops-web/src/components/FixtureBand.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerCostScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerCostScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerCostScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "t": "finops-web/src/components",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "t": "finops-web/src/components/FixtureBand.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
       "k": "typescript"
     },
@@ -3215,6 +3388,81 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/ClustersScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/containers.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ClustersScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ClustersScreen.test.tsx",
+      "t": "finops-web/src/screens/ClustersScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ClustersScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ClustersScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ContainerCostScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/containers.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ContainerCostScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ContainerCostScreen.test.tsx",
+      "t": "finops-web/src/screens/ContainerCostScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ContainerCostScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ContainerCostScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ContainerWasteScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/containers.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ContainerWasteScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ContainerWasteScreen.test.tsx",
+      "t": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ContainerWasteScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ContainerWasteScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx",
       "t": "finops-web/src/api/fixtures/cost.ts",
       "k": "typescript"
@@ -4110,6 +4358,21 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/containers.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/containers.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/containers.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/cost.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -4561,6 +4824,11 @@
     },
     {
       "s": "finops_api/routes/inventory.py",
+      "t": "finops_api/db/repositories/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/inventory.py",
       "t": "finops_api/db/repositories/cost.py",
       "k": "python"
     },
@@ -4811,6 +5079,11 @@
     },
     {
       "s": "finops_api/routes/waste.py",
+      "t": "finops_api/db/repositories/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/waste.py",
       "t": "finops_api/db/repositories/waste.py",
       "k": "python"
     },
@@ -4832,6 +5105,11 @@
     {
       "s": "finops_api/routes/waste.py",
       "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/waste.py",
+      "t": "finops_core/domain/containers.py",
       "k": "python"
     },
     {
@@ -4912,6 +5190,16 @@
     {
       "s": "finops_core/domain/budget.py",
       "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/containers.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/containers.py",
+      "t": "finops_core/domain/observation.py",
       "k": "python"
     },
     {
@@ -5031,6 +5319,11 @@
     },
     {
       "s": "finops_core/ports/__init__.py",
+      "t": "finops_core/ports/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/__init__.py",
       "t": "finops_core/ports/cost.py",
       "k": "python"
     },
@@ -5082,6 +5375,16 @@
     {
       "s": "finops_core/ports/commitment.py",
       "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/containers.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/containers.py",
+      "t": "finops_core/domain/containers.py",
       "k": "python"
     },
     {
@@ -5181,7 +5484,17 @@
     },
     {
       "s": "finops_fakes/containers.py",
+      "t": "finops_core/domain/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/containers.py",
       "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/containers.py",
+      "t": "finops_core/errors.py",
       "k": "python"
     },
     {
@@ -5282,6 +5595,11 @@
     {
       "s": "finops_fakes/provider.py",
       "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/provider.py",
+      "t": "finops_core/domain/containers.py",
       "k": "python"
     },
     {
@@ -5476,6 +5794,36 @@
     },
     {
       "s": "finops_ingest/collectors/commitment_actions.py",
+      "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/container_usage.py",
+      "t": "finops_core/domain/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/container_usage.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/container_usage.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/container_usage.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/container_usage.py",
+      "t": "finops_query/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/container_usage.py",
       "t": "finops_query/severity.py",
       "k": "python"
     },
@@ -6020,6 +6368,31 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/container_insights.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/container_insights.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/container_insights.py",
+      "t": "finops_core/domain/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/container_insights.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/container_insights.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/credentials.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -6255,6 +6628,26 @@
       "k": "python"
     },
     {
+      "s": "finops_query/containers.py",
+      "t": "finops_core/domain/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/containers.py",
+      "t": "finops_core/domain/observation.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/containers.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/containers.py",
+      "t": "finops_query/waste.py",
+      "k": "python"
+    },
+    {
       "s": "finops_query/cost_model.py",
       "t": "finops_query/__init__.py",
       "k": "python"
@@ -6382,6 +6775,11 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/commitment_actions.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/container_usage.py",
       "k": "python"
     },
     {
@@ -6520,6 +6918,51 @@
       "k": "python"
     },
     {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_api/db/repositories/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_ingest/collectors/container_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_container_routes.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/api/test_cost_budgets.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -6621,6 +7064,11 @@
     },
     {
       "s": "tests/api/test_cost_routes.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_routes.py",
       "t": "finops_core/config.py",
       "k": "python"
     },
@@ -6667,6 +7115,11 @@
     {
       "s": "tests/api/test_fixture_surfaces.py",
       "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_forecast_unproduced.py",
+      "t": "finops_api/db/__init__.py",
       "k": "python"
     },
     {
@@ -7011,6 +7464,11 @@
     },
     {
       "s": "tests/contract/conftest.py",
+      "t": "finops_providers/aws/container_insights.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/conftest.py",
       "t": "finops_providers/aws/credentials.py",
       "k": "python"
     },
@@ -7047,6 +7505,16 @@
     {
       "s": "tests/contract/test_commitment.py",
       "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_container_source.py",
+      "t": "finops_core/domain/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_container_source.py",
+      "t": "finops_core/ports/containers.py",
       "k": "python"
     },
     {
@@ -7132,6 +7600,21 @@
     {
       "s": "tests/core/test_config.py",
       "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_containers_domain.py",
+      "t": "finops_core/domain/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_containers_domain.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_containers_domain.py",
+      "t": "finops_core/domain/observation.py",
       "k": "python"
     },
     {
@@ -7300,6 +7783,11 @@
       "k": "python"
     },
     {
+      "s": "tests/db/test_schema.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
       "s": "tests/db/test_scope_guard.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -7380,6 +7868,46 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_container_usage.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_container_usage.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_container_usage.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_container_usage.py",
+      "t": "finops_ingest/collectors/container_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_container_usage.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_container_usage.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_container_usage.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_container_usage.py",
+      "t": "finops_query/containers.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_cost_anomaly.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -7407,6 +7935,11 @@
     {
       "s": "tests/ingest/collectors/test_cost_anomaly.py",
       "t": "finops_query/anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus.py",
+      "t": "finops_api/db/__init__.py",
       "k": "python"
     },
     {
@@ -8150,6 +8683,11 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/aws/test_container_insights.py",
+      "t": "finops_providers/aws/container_insights.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/aws/test_credentials.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -8477,6 +9015,31 @@
     {
       "s": "tests/query/test_commitment.py",
       "t": "finops_query/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_containers.py",
+      "t": "finops_core/domain/containers.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_containers.py",
+      "t": "finops_core/domain/observation.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_containers.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_containers.py",
+      "t": "finops_query/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_containers.py",
+      "t": "finops_query/containers.py",
       "k": "python"
     },
     {
