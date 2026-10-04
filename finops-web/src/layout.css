@@ -1655,10 +1655,13 @@ main > section > [data-testid='state'] > p[role='status'] {
   background: var(--chart-bar-peak);
 }
 
-/* The hatch means modelled, exactly as it does on a figure and on a bar chart, so a
+/* The hatch means not measured, exactly as it does on a figure and on a bar chart, so a
    reader who learned it once on the spend card reads it here without being told.
-   Reserved for provenance and used for nothing else. */
-[data-testid='ranked-bars'][data-provenance='modelled'] [data-testid='ranked-track'] i {
+   Reserved for provenance and used for nothing else. A forecast takes it too: without a
+   selector of its own it matched nothing and would have been drawn solid, which is the
+   measured style, so a forecast would have passed for a measurement. TASK-P6-012. */
+[data-testid='ranked-bars'][data-provenance='modelled'] [data-testid='ranked-track'] i,
+[data-testid='ranked-bars'][data-provenance='forecast'] [data-testid='ranked-track'] i {
   background: repeating-linear-gradient(135deg, var(--chart-bar) 0 2px, transparent 2px 5px);
   outline: 1px solid var(--chart-bar);
   outline-offset: -1px;
@@ -1731,7 +1734,8 @@ main > section > [data-testid='state'] > p[role='status'] {
 }
 
 /* The hatch means modelled here too, the same mark as everywhere else. */
-[data-testid='percent-cell'][data-provenance='modelled'] [data-testid='percent-track'] i {
+[data-testid='percent-cell'][data-provenance='modelled'] [data-testid='percent-track'] i,
+[data-testid='percent-cell'][data-provenance='forecast'] [data-testid='percent-track'] i {
   background: repeating-linear-gradient(135deg, var(--chart-bar) 0 2px, transparent 2px 5px);
   outline: 1px solid var(--chart-bar);
   outline-offset: -1px;

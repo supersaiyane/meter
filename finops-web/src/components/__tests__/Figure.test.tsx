@@ -125,6 +125,40 @@ describe('Figure', () => {
     expect(container.textContent).toContain('forecast');
   });
 
+  it('all_three_provenances_are_distinguishable', () => {
+    // TASK-P6-012. Each encoding that can carry provenance has to tell all three apart: the
+    // attribute tests and styles key off, the fill class, the word, and the numeral. A pair
+    // that agreed on every one would be a pair a reader could not tell apart either.
+    const rendered = (
+      [
+        { kind: 'measured', amount: 7 },
+        { kind: 'modelled', amount: 7 },
+        { kind: 'forecast', low: 6, high: 9 },
+      ] as const
+    ).map((value) => {
+      const { container, unmount } = render(
+        <Figure value={value} freshness={FRESH} unit="count" now={NOW} />,
+      );
+      const wrapper = container.querySelector('[data-provenance]');
+      const numeral = container.querySelector('.meter-numeral');
+      const out = {
+        attribute: wrapper?.getAttribute('data-provenance') ?? '',
+        fill:
+          Array.from(numeral?.classList ?? []).find((c) => c.startsWith('meter-fill-')) ?? '',
+        text: container.textContent,
+        numeral: numeral?.textContent ?? '',
+      };
+      unmount();
+      return out;
+    });
+    expect(new Set(rendered.map((r) => r.attribute)).size).toBe(3);
+    expect(new Set(rendered.map((r) => r.fill)).size).toBe(3);
+    expect(new Set(rendered.map((r) => r.numeral)).size).toBe(3);
+    for (const [index, word] of ['measured', 'modelled', 'forecast'].entries()) {
+      expect(rendered[index]?.text).toContain(word);
+    }
+  });
+
   it('renders a measured figure solid and with no tilde', () => {
     const { container } = render(
       <Figure value={{ kind: 'measured', amount: 4201.55 }} freshness={FRESH} now={NOW} />,

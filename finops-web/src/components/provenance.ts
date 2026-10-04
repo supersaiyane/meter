@@ -28,6 +28,17 @@ export type Cause =
    */
   | 'Misconfigured';
 
+/**
+ * Where a figure came from. Three words, and every figure carries one.
+ *
+ * `forecast` is here before anything produces one, TASK-P6-012. ADR-0015 lists four
+ * conditions a forecast must meet before it is shown, and its fourth is this third word:
+ * a forecast rendered as `modelled` would be read as an estimate of the present rather
+ * than a claim about the future. Adding the word inside the task that first forecasts
+ * would have tangled a cross cutting change to every screen with a new feature, so it
+ * lands alone. Nothing constructs a `forecast` yet, and `forecastUnproduced.test.ts`
+ * fails if a screen starts to before somebody decides it meets the other three.
+ */
 export type Provenance = 'measured' | 'modelled' | 'forecast';
 
 export type FigureValue =
