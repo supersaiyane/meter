@@ -67,6 +67,14 @@ def test_prose_holding_a_figure_outside_a_placeholder_cannot_be_constructed(pros
         Answer(prose=prose, citations=())
 
 
+def test_the_refusal_counts_the_figures_and_never_repeats_them() -> None:
+    """The message becomes a stored failure detail, and the figure may be a secret's digits."""
+    with pytest.raises(ProvenanceError) as refused:
+        Answer(prose="Your key is AKIA5521EXAMPLE.", citations=())
+    assert "5521" not in str(refused.value)
+    assert "4 of them" in str(refused.value)
+
+
 def test_the_spec_example_of_the_failure_is_refused() -> None:
     """Spec section 1. It contains no digit, which is why digits are not enough."""
     assert bare_figures("It cost about forty thousand dollars.") == ("forty", "thousand")

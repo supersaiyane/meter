@@ -201,8 +201,11 @@ class Answer:
             raise ProvenanceError("an answer with no prose answers nothing")
         uncited = bare_figures(self.prose)
         if uncited:
+            # Counted, never repeated. This message becomes a stored failure detail, and a
+            # figure the model wrote may be the digits of a secret it was asked to echo.
             raise ProvenanceError(
-                f"the prose holds figures no citation placed: {', '.join(uncited)}"
+                f"the prose holds figures no citation placed, {len(uncited)} of them, not "
+                f"repeated here because one may be part of a secret"
             )
         outside = PLACEHOLDER.sub("", self.prose)
         if "{" in outside or "}" in outside:
