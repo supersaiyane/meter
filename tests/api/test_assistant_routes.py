@@ -307,6 +307,7 @@ def test_ask_is_the_only_write_and_every_route_returns_the_envelope() -> None:
         ASK: {"POST"},
         LIST: {"GET"},
         DIGESTS: {"GET"},
+        REDACTIONS: {"GET"},
     }
     assert all(returns_envelope(r.response_model) for r in routes)
 
@@ -314,6 +315,7 @@ def test_ask_is_the_only_write_and_every_route_returns_the_envelope() -> None:
 # --- the digests, TASK-P7-012 --------------------------------------------------------------
 
 DIGESTS = "/api/v1/assistant/digests"
+REDACTIONS = "/api/v1/assistant/redactions"
 #: A Monday in the fake bill's closed month, so a whole billed week lies behind it.
 DIGEST_CLOCK = datetime(2026, 7, 20, 6, 0, tzinfo=UTC)
 

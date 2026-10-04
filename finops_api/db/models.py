@@ -1479,6 +1479,37 @@ Index(
 )
 
 
+#: P7, 0025. What redaction did on finding a secret, mirrored from `finops_query.redaction`.
+REDACTION_ACTIONS = ("BLOCKED", "REDACTED")
+
+redaction_event = Table(
+    "redaction_event",
+    metadata,
+    #: FEAT-046, 0025. The rule that fired and what it did. There is no column the secret
+    #: could go in, deliberately: not the text, a hash, a position or a length.
+    Column("event_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column(
+        "exchange_id",
+        UUID(as_uuid=True),
+        ForeignKey("assistant_exchange.exchange_id"),
+        nullable=False,
+    ),
+    #: The asker, so the guard can confine the rows to them, ADR-0029.
+    Column("principal_id", Text, nullable=False),
+    #: A gitleaks rule identifier, such as `aws-access-token`.
+    Column("rule_id", Text, nullable=False),
+    Column("action", Text, nullable=False),
+    Column("occurred_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint(_in_list("action", REDACTION_ACTIONS), name="ck_redaction_event__action"),
+    CheckConstraint(
+        "length(trim(rule_id)) > 0 AND length(trim(principal_id)) > 0",
+        name="ck_redaction_event__named",
+    ),
+    Index("ix_redaction_event__principal", "tenant_id", "principal_id", "occurred_at"),
+)
+
+
 #: Every table in the schema. Used by the drift test and by the repository layer.
 ALL_TABLES = tuple(metadata.sorted_tables)
 

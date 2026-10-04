@@ -28,6 +28,13 @@ from tests.query.insight.harness import answer, asker, call, everything, seed_bi
 
 pytestmark = [pytest.mark.integration, pytest.mark.usefixtures("clear_split_gap")]
 
+
+@pytest.fixture(autouse=True, scope="module")
+def _partitions(partition_sandbox: None) -> None:
+    """This module seeds the fake bill's month, so it gives it back. Missing until
+    2026-10-04, when `test_schema.py` ran after it and found the month left behind."""
+
+
 AT = datetime(2026, 10, 4, 9, 0, tzinfo=UTC)
 QUESTION = "Which service cost the most last month?"
 PRICES = {"input_per_million": Decimal("3.00"), "output_per_million": Decimal("15.00")}

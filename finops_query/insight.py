@@ -68,6 +68,8 @@ from finops_core.ports.llm import (
     ToolResult,
     ToolSchema,
 )
+from finops_query import redaction
+from finops_query.redaction import Hit
 
 ANSWER = "answer"
 REFUSE = "refuse"
@@ -191,17 +193,35 @@ class ToolCallRecord:
 class Exchange:
     """A question, which of three things came back, the calls behind it and what it spent."""
 
+    #: As it was sent and kept: with any secret replaced by the name of the rule that found
+    #: it, TASK-P7-013. Never as typed where it held one.
     question: str
     outcome: Answer | Refusal | Failure
     tool_calls: tuple[ToolCallRecord, ...]
     usage: TokenUsage
+    #: Which rules found a secret in the question, and what each did. Nothing of the secret.
+    redactions: tuple[Hit, ...] = ()
 
 
 # --- the loop ---------------------------------------------------------------------
 
 
 def ask(question: str, *, model: LlmProvider, toolbox: Toolbox) -> Exchange:
-    """Answer `question` from the asker's own tools, or refuse, or fail with a typed cause."""
+    """Answer `question` from the asker's own tools, or refuse, or fail with a typed cause.
+
+    The question is screened before anything else, so whoever calls this, a secret in it is
+    redacted or the question is refused, and a refused one reaches no model. TASK-P7-013.
+    """
+    screened = redaction.scan(question)
+    if screened.blocked:
+        return Exchange(
+            question=screened.text,
+            outcome=Refusal(gap=Gap.SECRET, reason=redaction.blocked_reason(screened)),
+            tool_calls=(),
+            usage=TokenUsage(input_tokens=0, output_tokens=0),
+            redactions=screened.hits,
+        )
+    question = screened.text
     data_tools = toolbox.schemas()
     known = {tool.name for tool in data_tools}
     offered = (*data_tools, ANSWER_TOOL, REFUSE_TOOL)
@@ -211,7 +231,13 @@ def ask(question: str, *, model: LlmProvider, toolbox: Toolbox) -> Exchange:
     spent = TokenUsage(input_tokens=0, output_tokens=0)
 
     def ended(outcome: Answer | Refusal | Failure) -> Exchange:
-        return Exchange(question=question, outcome=outcome, tool_calls=tuple(records), usage=spent)
+        return Exchange(
+            question=question,
+            outcome=outcome,
+            tool_calls=tuple(records),
+            usage=spent,
+            redactions=screened.hits,
+        )
 
     for _ in range(MAX_TOOL_ROUNDS):
         request = CompletionRequest(

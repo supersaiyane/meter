@@ -126,3 +126,17 @@ def _rendered_request(request: CompletionRequest) -> str:
     )
     messages = "".join(_rendered_message(message) for message in request.messages)
     return f"{request.system}{messages}{tools}"
+
+
+class ForbiddenModel:
+    """A model that fails the test if it is asked anything. TASK-P7-013.
+
+    A blocked question must be sent nowhere, and an empty `received` only shows nothing was
+    recorded. This fails at the moment of sending, with the question's rule in view, so a
+    path that sent first and recorded nothing cannot pass.
+    """
+
+    def complete(self, request: CompletionRequest) -> Completion:
+        raise AssertionError(
+            f"a model was asked {request.question!r}, which should have been blocked"
+        )

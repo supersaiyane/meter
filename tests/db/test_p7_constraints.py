@@ -28,6 +28,7 @@ from finops_api.db import models
 from finops_core.constants import REASON_MIN_LENGTH
 from finops_core.domain.insight import Gap, Outcome
 from finops_query.digest import Audience
+from finops_query.redaction import Action
 
 pytestmark = pytest.mark.integration
 
@@ -389,3 +390,50 @@ def test_one_digest_per_audience_team_and_week(engine: Engine, tenant_id: UUID) 
 
 def test_the_stored_audiences_mirror_the_domain() -> None:
     assert set(models.DIGEST_AUDIENCES) == {member.value for member in Audience}
+
+
+# --- redaction_event, 0025 -------------------------------------------------------------
+
+INSERT_EVENT = text(
+    "INSERT INTO redaction_event (event_id, tenant_id, exchange_id, principal_id, rule_id, "
+    "action, occurred_at) VALUES (:id, :t, :exchange, :who, :rule, :action, :at)"
+)
+
+
+def an_event(connection: Connection, tenant: UUID, exchange: UUID, **overrides: Any) -> None:
+    values: dict[str, Any] = {
+        "id": uuid4(),
+        "t": tenant,
+        "exchange": exchange,
+        "who": "principal-a",
+        "rule": "aws-access-token",
+        "action": "BLOCKED",
+        "at": ASKED,
+    }
+    values.update(overrides)
+    connection.execute(INSERT_EVENT, values)
+
+
+def test_an_event_names_its_rule_and_one_of_two_actions(engine: Engine, tenant_id: UUID) -> None:
+    with engine.begin() as connection:
+        exchange = an_exchange(connection, tenant_id, **REFUSED)
+        an_event(connection, tenant_id, exchange)
+        an_event(connection, tenant_id, exchange, rule="jwt", action="REDACTED")
+    for override, constraint in (
+        ({"action": "IGNORED"}, "ck_redaction_event__action"),
+        ({"rule": " "}, "ck_redaction_event__named"),
+        ({"who": ""}, "ck_redaction_event__named"),
+    ):
+        with engine.begin() as connection, pytest.raises(IntegrityError, match=constraint):
+            an_event(connection, tenant_id, exchange, **override)
+
+
+def test_an_event_cannot_name_an_exchange_that_does_not_exist(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    with engine.begin() as connection, pytest.raises(IntegrityError, match="exchange_id"):
+        an_event(connection, tenant_id, uuid4())
+
+
+def test_the_stored_actions_mirror_the_domain() -> None:
+    assert set(models.REDACTION_ACTIONS) == {member.value for member in Action}

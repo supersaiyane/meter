@@ -4,14 +4,18 @@ FEAT-038 and TASK-P7-007. What the route in TASK-P7-010 calls. Kept apart from t
 the whole of an exchange is testable without HTTP, and so the order the steps run in is
 written down in one place, because the order is most of what this module decides:
 
-1. No model configured is a failure saying so, `NotOptedIn` as ADR-0028 asks, and nothing
+1. The question is screened for secrets, TASK-P7-013. One that blocks is refused and sent
+   nowhere, and every path below keeps only the screened text, so a secret is stored by no
+   path, not even the ones that never reach a model.
+2. No model configured is a failure saying so, `NotOptedIn` as ADR-0028 asks, and nothing
    is spent or sent. A deployment without the assistant says it is not enabled rather than
    answering with silence. Naming a model is OPEN-10, and a setting.
-2. The budget is read from what exchanges recorded and checked before any model is asked,
+3. The budget is read from what exchanges recorded and checked before any model is asked,
    so a spent month refuses without spending more.
-3. The loop runs with no transaction open. A model takes seconds, and a transaction held
+4. The loop runs with no transaction open. A model takes seconds, and a transaction held
    across it holds a connection the rest of the API is waiting for.
-4. One row is written whatever came back, in a transaction of its own.
+5. One row is written whatever came back, with one redaction event per rule that fired, in
+   a transaction of its own.
 """
 
 from __future__ import annotations
@@ -24,10 +28,14 @@ from uuid import UUID
 
 from sqlalchemy import Engine
 
-from finops_api.db.repositories.assistant import record_exchange, tokens_spent
-from finops_core.domain.insight import Failure, Refusal
+from finops_api.db.repositories.assistant import (
+    record_exchange,
+    record_redactions,
+    tokens_spent,
+)
+from finops_core.domain.insight import Failure, Gap, Refusal
 from finops_core.ports.llm import LlmProvider, TokenUsage
-from finops_query import insight
+from finops_query import insight, redaction
 from finops_query.insight import (
     Exchange,
     Toolbox,
@@ -35,6 +43,7 @@ from finops_query.insight import (
     estimated_cost,
     month_start,
 )
+from finops_query.redaction import Scan
 
 NOT_ENABLED = (
     "No model is configured for the assistant in this deployment, so the question was sent "
@@ -80,10 +89,15 @@ def ask(
     question: str,
     clock: Clock,
 ) -> Asked:
-    """Answer, refuse or fail, and record which, exactly once."""
+    """Answer, refuse or fail, and record which, exactly once.
+
+    The question is screened before anything else, TASK-P7-013, so no path below, not the
+    one with no model and not a spent budget, ever stores or sends a secret it held.
+    """
     asked_at = clock()
+    screened = redaction.scan(question)
     exchange, model_id = _exchange(
-        engine, assistant, tenant_id=tenant_id, token=token, question=question, at=asked_at
+        engine, assistant, tenant_id=tenant_id, token=token, screened=screened, at=asked_at
     )
     answered_at = max(clock(), asked_at)
     est_cost = Decimal(0)
@@ -104,6 +118,14 @@ def ask(
             asked_at=asked_at,
             answered_at=answered_at,
         )
+        record_redactions(
+            connection,
+            tenant_id=tenant_id,
+            principal_id=principal_id,
+            exchange_id=exchange_id,
+            hits=screened.hits,
+            at=asked_at,
+        )
     return Asked(
         exchange_id=exchange_id,
         exchange=exchange,
@@ -120,26 +142,32 @@ def _exchange(
     *,
     tenant_id: UUID,
     token: str,
-    question: str,
+    screened: Scan,
     at: datetime,
 ) -> tuple[Exchange, str | None]:
     """The exchange, and the model it was sent to, which is None where it went nowhere."""
+    if screened.blocked:
+        refusal = Refusal(gap=Gap.SECRET, reason=redaction.blocked_reason(screened))
+        return _unsent(screened, refusal), None
     if assistant is None:
-        return _unsent(question, Failure(cause="NotOptedIn", detail=NOT_ENABLED)), None
+        return _unsent(screened, Failure(cause="NotOptedIn", detail=NOT_ENABLED)), None
     with engine.connect() as connection:
         spent = tokens_spent(connection, tenant_id, month_start(at))
-    refusal = budget_refusal(spent=spent, budget=assistant.monthly_token_budget, at=at)
-    if refusal is not None:
-        return _unsent(question, refusal), None
-    exchange = insight.ask(question, model=assistant.model, toolbox=assistant.toolbox_for(token))
+    over_budget = budget_refusal(spent=spent, budget=assistant.monthly_token_budget, at=at)
+    if over_budget is not None:
+        return _unsent(screened, over_budget), None
+    exchange = insight.ask(
+        screened.text, model=assistant.model, toolbox=assistant.toolbox_for(token)
+    )
     return exchange, assistant.model_id
 
 
-def _unsent(question: str, outcome: Failure | Refusal) -> Exchange:
+def _unsent(screened: Scan, outcome: Failure | Refusal) -> Exchange:
     """An exchange that reached no model, and spent nothing, which is the truth."""
     return Exchange(
-        question=question,
+        question=screened.text,
         outcome=outcome,
         tool_calls=(),
         usage=TokenUsage(input_tokens=0, output_tokens=0),
+        redactions=screened.hits,
     )

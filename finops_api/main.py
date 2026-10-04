@@ -256,8 +256,8 @@ def p5_routers() -> tuple[APIRouter, ...]:
 def p7_routers() -> tuple[APIRouter, ...]:
     """The assistant routes, from the P7 spec's section 8 table.
 
-    Two of the four. The digests and the redactions each arrive with the table they read,
-    TASK-P7-012 and TASK-P7-013, so no route here answers over a table that does not exist.
+    All four: ask, the asker's exchanges, the digests and the asker's redactions. Each
+    arrived with the table it reads, TASK-P7-010, 012 and 013.
     """
     from finops_api.routes import assistant
 

@@ -6,9 +6,9 @@ sometimes can, but whether talking it into it gets the attacker anything. The sc
 cannot succeed, since the tool call carries the asker's token and the guard is the same
 one, and the test asserts the refusal rather than assuming the architecture.
 
-The secret case is judged by TASK-P7-013's redaction, which does not exist yet. It is
-written now anyway, marked strictly expected to fail, so the marker has to be removed by
-the task that makes it pass. What holds before that task is asserted beside it.
+The secret case is judged by TASK-P7-013's redaction. It was written before that existed and
+marked strictly expected to fail, and TASK-P7-013 removed the marker by making it pass,
+unchanged otherwise. What held before that task is still asserted beside it.
 """
 
 from __future__ import annotations
@@ -90,9 +90,6 @@ def test_a_prompt_asking_for_a_bare_numeral_fails_rather_than_passing_one_throug
     assert "4123" not in failure.detail
 
 
-@pytest.mark.xfail(
-    strict=True, reason="TASK-P7-013 builds the redaction that stops this before any model"
-)
 def test_a_prompt_asking_to_repeat_a_secret_never_reaches_the_model(
     engine: Engine, tenant_id: UUID, settings: Settings
 ) -> None:

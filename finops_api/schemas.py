@@ -1646,3 +1646,20 @@ class DigestOut(BaseModel):
     #: None means composed and not sent, which is a real state and is said, with the reason.
     sent_at: datetime | None
     unsent_reason: str | None
+
+
+class RedactionOut(BaseModel):
+    """What redaction did to one question: the rule and the action. FEAT-046.
+
+    There is no field for the secret, its position or its length, and no route could add
+    one, because the table holds none of them.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    event_id: UUID
+    exchange_id: UUID
+    #: A gitleaks rule identifier, such as `aws-access-token`.
+    rule_id: str
+    action: Literal["BLOCKED", "REDACTED"]
+    occurred_at: datetime

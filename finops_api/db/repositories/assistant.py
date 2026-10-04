@@ -33,6 +33,7 @@ from finops_api.db.repositories.base import ScopedRepository
 from finops_core.domain.insight import Answer, Outcome, Refusal
 from finops_core.domain.tenant import Scope
 from finops_query.insight import Exchange, ToolCallRecord
+from finops_query.redaction import Hit
 
 
 class ExchangeRepository(ScopedRepository):
@@ -89,6 +90,52 @@ class DigestRepository(ScopedRepository):
             .limit(limit)
         )
         return self.fetch(scope, statement)
+
+
+class RedactionRepository(ScopedRepository):
+    """What redaction found in a person's own questions, read through the guard. FEAT-046.
+
+    Scoped by principal, ADR-0029: the events describe what somebody typed, and are theirs.
+    """
+
+    table: ClassVar[Table] = models.redaction_event
+    resource: ClassVar[str] = "redaction_event"
+
+    def redactions(self, scope: Scope, limit: int) -> Sequence[Row[tuple[object, ...]]]:
+        """The asker's events, newest first."""
+        statement = self.scoped_select(scope).order_by(self.table.c.occurred_at.desc()).limit(limit)
+        return self.fetch(scope, statement)
+
+    def count(self, scope: Scope) -> int:
+        """How many the asker has, so a list cut at its limit says it was cut."""
+        projected = self.scoped_select(scope).with_only_columns(func.count())
+        statement = cast("Select[tuple[object, ...]]", projected)
+        return int(self.fetch(scope, statement)[0][0])
+
+
+def record_redactions(
+    connection: Connection,
+    *,
+    tenant_id: UUID,
+    principal_id: str,
+    exchange_id: UUID,
+    hits: Sequence[Hit],
+    at: datetime,
+) -> int:
+    """One row per rule that fired. The rule and the action, and nothing of the secret."""
+    for hit in hits:
+        connection.execute(
+            models.redaction_event.insert().values(
+                event_id=uuid4(),
+                tenant_id=tenant_id,
+                exchange_id=exchange_id,
+                principal_id=principal_id,
+                rule_id=hit.rule_id,
+                action=hit.action.value,
+                occurred_at=at,
+            )
+        )
+    return len(hits)
 
 
 def tokens_spent(connection: Connection, tenant_id: UUID, since: datetime) -> int:

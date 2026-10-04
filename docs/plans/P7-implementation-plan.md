@@ -421,7 +421,7 @@ already used for a budget with no collected period.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | P7 spec section 6.3, FEAT-046 |
 | Delivers | FEAT-046 |
 | Depends on | TASK-P7-011 |
@@ -437,12 +437,12 @@ the day somebody reopens ADR-0028 this is the thing that has to already exist.
 
 **Acceptance criteria.**
 
-- [ ] The event records which rule matched and never the secret, nor enough of it to
+- [x] The event records which rule matched and never the secret, nor enough of it to
       reconstruct one. A test asserts the stored row does not contain the planted secret
-- [ ] Blocked and redacted are two outcomes, and which applies is per rule rather than
+- [x] Blocked and redacted are two outcomes, and which applies is per rule rather than
       global
-- [ ] A blocked request sends nothing, asserted by a fake provider that fails if called
-- [ ] The rules are the ones `gitleaks` already uses where possible, rather than a second
+- [x] A blocked request sends nothing, asserted by a fake provider that fails if called
+- [x] The rules are the ones `gitleaks` already uses where possible, rather than a second
       list that drifts from it
 
 ---

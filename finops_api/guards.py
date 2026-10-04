@@ -103,6 +103,9 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | None] =
     # organization, so it belongs to no account, and a reader narrowed to two accounts
     # reading one would learn the totals their scope was meant to withhold.
     "team_digest": PayerWide(),
+    # P7, FEAT-046 and ADR-0029. What redaction found in a question is about what that
+    # person typed, so it is theirs as the question is.
+    "redaction_event": ByPrincipal("principal_id"),
     "cloud_account": ByAccount("account_id", "provider"),
     "org_node": None,
     "ingest_run": None,

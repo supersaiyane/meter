@@ -1,7 +1,7 @@
 """The assistant's routes, in the Assistant group. TASK-P7-010, FEAT-038 and ADR-0020.
 
-Three of the four the spec names. The redactions arrive with their table in TASK-P7-013, so
-no route here answers over a table that does not exist yet.
+All four the spec names: ask, the asker's exchanges, the digests and the asker's
+redactions. Each arrived with the table it reads, TASK-P7-010, 012 and 013.
 
 **`POST /assistant/ask` is the only write, and it writes one row,** into Meter's own
 database. Constraint 6 forbids a write into a member account, which this is not: it records
@@ -28,7 +28,11 @@ from sqlalchemy.engine import Connection
 
 from finops_api import assistant
 from finops_api.db.repositories import AccessContext
-from finops_api.db.repositories.assistant import DigestRepository, ExchangeRepository
+from finops_api.db.repositories.assistant import (
+    DigestRepository,
+    ExchangeRepository,
+    RedactionRepository,
+)
 from finops_api.deps import (
     AUTHORIZATION,
     BEARER,
@@ -48,6 +52,7 @@ from finops_api.schemas import (
     ExchangeFailureOut,
     ExchangeOut,
     Meta,
+    RedactionOut,
     ToolCallOut,
 )
 from finops_core.domain.identity import Principal
@@ -149,6 +154,42 @@ def digests(
         coverage_unit=PAYER,
     )
     return Envelope(data=out, meta=meta)
+
+
+@router.get("/assistant/redactions", response_model=Envelope[list[RedactionOut]])
+def redactions(
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[list[RedactionOut]]:
+    """What was blocked or redacted in the asker's own questions, and by which rule.
+
+    The asker's own and nobody else's, ADR-0029, and never the secret, because no column
+    holds it. FEAT-046.
+    """
+    repository = RedactionRepository(connection, context)
+    rows = repository.redactions(scope, EXCHANGE_LIMIT)
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        visible=len(rows),
+        coverage=(len(rows), repository.count(scope)),
+        coverage_unit="redactions",
+    )
+    return Envelope(
+        data=[
+            RedactionOut(
+                event_id=row.event_id,
+                exchange_id=row.exchange_id,
+                rule_id=row.rule_id,
+                action=row.action,
+                occurred_at=row.occurred_at,
+            )
+            for row in rows
+        ],
+        meta=meta,
+    )
 
 
 def digest_out(row: Any) -> DigestOut:
