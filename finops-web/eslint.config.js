@@ -17,7 +17,11 @@ export default tseslint.config(
       ecmaVersion: 2022,
       globals: globals.browser,
       parserOptions: {
-        project: ['./tsconfig.app.json', './tsconfig.node.json'],
+        // Every project the package has. Leaving one out does not skip
+        // those files quietly: eslint reports a fatal parsing error for them,
+        // which the lint script then never surfaced because it only looked at
+        // src.
+        project: ['./tsconfig.app.json', './tsconfig.node.json', './tsconfig.e2e.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },

@@ -148,7 +148,7 @@ test('the organization map stays usable at three hundred accounts', async ({ pag
       reachable: true,
     },
     ...Array.from({ length: 300 }, (_, index) => ({
-      node_id: `${String(index).padStart(12, '0')}`,
+      node_id: String(index).padStart(12, '0'),
       node_type: 'ACCOUNT',
       parent_node_id: 'r-root',
       name: `account-${String(index)}`,

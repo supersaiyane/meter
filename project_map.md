@@ -246,7 +246,12 @@ meter/
 │                              the gap match_observed exists to cross
 ├── finops-web/                IN BUILD  Vite, React and TypeScript
 │   ├── README.md              why the versions are pinned where they are
-│   ├── eslint.config.js       flat config. eslintrc is not read by ESLint 9
+│   ├── eslint.config.js       flat config. eslintrc is not read by ESLint 9.
+│   │                          Names all three tsconfig projects: a file in none
+│   │                          of them is a fatal parse error, not a skip
+│   ├── tsconfig.e2e.json      the project the journeys and playwright.config.ts
+│   │                          belong to. Lint only, deliberately outside the
+│   │                          build so specs stay out of the declarations
 │   └── src/
 │       ├── tokens.css         light and dark in one declaration, via light-dark().
 │       │                      Tokens, and the classes that carry meaning. The
