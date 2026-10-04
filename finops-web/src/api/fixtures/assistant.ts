@@ -60,7 +60,7 @@ export const REMEDIATION = {
     'The tools returned nothing to answer from. Ask about a period or a scope that has been ' +
     'collected.',
   Unreachable:
-    "The model service did not answer. Ask again, and if it keeps failing, check the " +
+    'The model service did not answer. Ask again, and if it keeps failing, check the ' +
     "service's health in the hub account's region.",
   SchemaDrift:
     'The answer could not be checked against the tool results, so it is not shown. Ask again, ' +
