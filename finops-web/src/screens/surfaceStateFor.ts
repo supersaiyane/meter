@@ -1,5 +1,5 @@
 import type { ApiMeta } from '../api/types';
-import type { Cause } from '../components/provenance';
+import { FAILURE_CAUSES, isFailureCause, type Cause } from '../components/provenance';
 import type { SurfaceState } from '../components/surfaceState';
 
 /**
@@ -17,18 +17,10 @@ export interface QueryLike {
   readonly error: unknown;
 }
 
-const KNOWN_CAUSES = new Set<string>([
-  'AccessDenied',
-  'Throttled',
-  'NotOptedIn',
-  'Unreachable',
-  'SchemaDrift',
-]);
-
 function causeOf(error: unknown): Exclude<Cause, 'NoData'> {
   const name = error instanceof Error ? error.message : String(error);
-  for (const cause of KNOWN_CAUSES) {
-    if (name.includes(cause)) return cause as Exclude<Cause, 'NoData'>;
+  for (const cause of FAILURE_CAUSES) {
+    if (name.includes(cause) && isFailureCause(cause)) return cause;
   }
   // A failure the frontend cannot classify is drift, which is loud, rather than
   // something softer that would read as ordinary.

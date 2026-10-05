@@ -77,6 +77,20 @@ export const CAUSE_LABEL: Readonly<Record<Exclude<Cause, 'NoData'>, string>> = {
 };
 
 /**
+ * Every cause drawn as a failure rather than as a number: the six with a label.
+ *
+ * Derived from the labels rather than written out again. Four hand kept copies of this list
+ * each lost Misconfigured when ADR-0026 added it, so a run that failed for a setting read as
+ * UNRECOGNISED, and on the ingest screen its items written were drawn as a measured number.
+ */
+export const FAILURE_CAUSES: ReadonlySet<string> = new Set(Object.keys(CAUSE_LABEL));
+
+/** True for a cause drawn as a typed failure, narrowed to one `TypedError` takes. */
+export function isFailureCause(value: string): value is Exclude<Cause, 'NoData'> {
+  return FAILURE_CAUSES.has(value);
+}
+
+/**
  * The one cause that may be drawn as a number.
  *
  * Everything else renders its cause instead of a numeral. If a refusal could

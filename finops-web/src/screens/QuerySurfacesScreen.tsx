@@ -4,7 +4,7 @@ import { DataTable } from '../components/DataTable';
 import { Figure } from '../components/Figure';
 import { FixtureBand } from '../components/FixtureBand';
 import { StateBoundary } from '../components/StateBoundary';
-import type { Cause, Freshness } from '../components/provenance';
+import { isFailureCause, type Freshness } from '../components/provenance';
 import type { Column } from '../components/tableConfig';
 import { useReportMeta } from '../shell/metaRegistry';
 import { surfaceStateFor } from './surfaceStateFor';
@@ -21,14 +21,6 @@ import { surfaceStateFor } from './surfaceStateFor';
  * holds nothing" is the entire product, and both rows appear here so neither
  * can be mistaken for the other.
  */
-
-const KNOWN_CAUSES = new Set<string>([
-  'AccessDenied',
-  'Throttled',
-  'NotOptedIn',
-  'Unreachable',
-  'SchemaDrift',
-]);
 
 const KIND_LABEL: Readonly<Record<string, string>> = {
   AMG: 'Amazon Managed Grafana',
@@ -55,7 +47,7 @@ function countFigure(row: ApiSurfaceInstance, freshness: Freshness) {
           kind: 'failed',
           // A cause the frontend does not recognise is drift, which is loud,
           // rather than something softer that would read as ordinary.
-          cause: (KNOWN_CAUSES.has(cause) ? cause : 'SchemaDrift') as Cause,
+          cause: isFailureCause(cause) ? cause : 'SchemaDrift',
           remediation: `${row.name} could not be read. ${locationOf(row)}`,
         }}
         freshness={freshness}

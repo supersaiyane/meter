@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import * as components from '../index';
+import { FAILURE_CAUSES, isFailureCause } from '../provenance';
 // Read through the bundler rather than through node, so the application project
 // keeps no node types. A component that can reach process is a component that
 // will eventually read an environment variable in the browser.
@@ -48,6 +49,26 @@ describe('the component surface', () => {
     ]);
     expect(components.rendersAsNumeral('NoData')).toBe(true);
     expect(components.rendersAsNumeral('AccessDenied')).toBe(false);
+  });
+
+  it('draws as a failure exactly the six labelled causes, Misconfigured among them', () => {
+    // One set, derived from the labels. Four local copies each lost Misconfigured, and a run
+    // that failed for a setting read as UNRECOGNISED or, on the ingest screen, as a number.
+    expect([...FAILURE_CAUSES].sort()).toEqual([
+      'AccessDenied',
+      'Misconfigured',
+      'NotOptedIn',
+      'SchemaDrift',
+      'Throttled',
+      'Unreachable',
+    ]);
+    expect([...FAILURE_CAUSES].sort()).toEqual(Object.keys(components.CAUSE_LABEL).sort());
+    expect(FAILURE_CAUSES.has('NoData')).toBe(false);
+    expect(isFailureCause('Misconfigured')).toBe(true);
+    expect(isFailureCause('NoData')).toBe(false);
+    // Own keys only, so a prototype property is not a cause.
+    expect(isFailureCause('__proto__')).toBe(false);
+    expect(isFailureCause('toString')).toBe(false);
   });
 });
 

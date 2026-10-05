@@ -4,7 +4,7 @@ import { DataTable } from '../components/DataTable';
 import { Figure } from '../components/Figure';
 import { StateBoundary } from '../components/StateBoundary';
 import { TypedError } from '../components/TypedError';
-import type { Cause } from '../components/provenance';
+import { isFailureCause } from '../components/provenance';
 import type { Column } from '../components/tableConfig';
 import { useReportMeta } from '../shell/metaRegistry';
 import { surfaceStateFor } from './surfaceStateFor';
@@ -19,25 +19,28 @@ import { surfaceStateFor } from './surfaceStateFor';
  * would read as free.
  */
 
-const KNOWN = new Set<string>([
-  'AccessDenied',
-  'Throttled',
-  'NotOptedIn',
-  'Unreachable',
-  'SchemaDrift',
-]);
-
 function itemsCell(run: Run) {
   const freshness = {
     asOf: new Date(run.started_at),
     collectedAt: new Date(run.finished_at ?? run.started_at),
   };
-  if (run.error_type !== null && KNOWN.has(run.error_type)) {
+  if (run.error_type !== null && isFailureCause(run.error_type)) {
     // No numeral. Not zero, not a dash, not blank.
     return (
       <TypedError
-        cause={run.error_type as Exclude<Cause, 'NoData'>}
+        cause={run.error_type}
         remediation={run.error_detail ?? 'See the run detail.'}
+      />
+    );
+  }
+  if (run.error_type !== null && run.error_type !== 'NoData') {
+    // A cause this screen has no word for is still a failure, so it is drift, which is loud,
+    // and its items are not drawn: a failure never reads as a figure. NoData is the one cause
+    // whose zero is a true zero, and it falls through to the number below.
+    return (
+      <TypedError
+        cause="SchemaDrift"
+        remediation={`${run.error_type} is not a cause this screen knows. ${run.error_detail ?? 'See the run detail.'}`}
       />
     );
   }

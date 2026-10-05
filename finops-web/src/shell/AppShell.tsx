@@ -4,7 +4,7 @@ import { NavLink, useLocation } from 'react-router';
 import { CoverageBanner } from '../components/CoverageBanner';
 import { FreshnessIndicator } from '../components/FreshnessIndicator';
 import { TypedError } from '../components/TypedError';
-import type { Cause } from '../components/provenance';
+import { isFailureCause } from '../components/provenance';
 import { useAggregateMeta } from './metaRegistry';
 import { readStored, writeStored } from '../storage';
 import { GROUPS, activeGroupFor, isSelfGroup, screenTitleFor } from './sections';
@@ -41,14 +41,6 @@ function navWasCollapsed(): boolean {
   // preference still opens with its menu.
   return readStored(NAV_KEY) === 'collapsed';
 }
-
-const KNOWN_CAUSES = new Set<string>([
-  'AccessDenied',
-  'Throttled',
-  'NotOptedIn',
-  'Unreachable',
-  'SchemaDrift',
-]);
 
 export function AppShell({ children, now }: AppShellProps) {
   const meta = useAggregateMeta();
@@ -227,9 +219,9 @@ export function AppShell({ children, now }: AppShellProps) {
               <ul>
                 {meta.failures.map((failure) => (
                   <li key={`${failure.scope_key}|${failure.collector}|${failure.cause}`}>
-                    {KNOWN_CAUSES.has(failure.cause) ? (
+                    {isFailureCause(failure.cause) ? (
                       <TypedError
-                        cause={failure.cause as Exclude<Cause, 'NoData'>}
+                        cause={failure.cause}
                         remediation={`${failure.collector} on ${failure.scope_key}. ${failure.remediation}`}
                       />
                     ) : (
