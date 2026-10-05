@@ -705,3 +705,20 @@ owner said so.
 **Triggers:** "go ahead with" a build or a merge. Reaching the CRITICAL tier. Any plan that
 has the owner waiting on work they cannot see.
 
+
+## 2026-10-05: a redesign shown without what it had not reached yet
+
+**Mistake:** After TASK-P8-008 the owner asked whether the glass design was visible, and I showed
+live screenshots without saying that the drawn Overview and a chart on every screen were tasks
+not yet started, or that `docs/12-UI-DESIGN.md` forbade the motion the drawings implied. The
+owner later compared the screens with the drawings and found "the old design".
+
+**Correction:** The owner sent the drawings as a PDF and asked: "in our UI .. i still see the
+old design, jsut the options are getting added here and there ... am i missing anything ???"
+
+**Rule:** When showing a redesign in progress, put beside the screenshot a table of the drawn
+elements: which are built, which task builds each of the rest and where it sits in the order,
+and any written rule that blocks what the drawings imply.
+
+**Triggers:** A mockup, a drawing or a design direction approved. "Can I see the difference."
+Showing screenshots midway through a restyle.
