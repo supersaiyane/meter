@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
+from threading import BoundedSemaphore
 from typing import Any
 from uuid import UUID
 
@@ -57,6 +58,7 @@ def assistant(client: TestClient, model: ScriptedModel, *, budget: int) -> Assis
         model_id="a-configured-model",
         toolbox_for=lambda token: ApiToolbox(client, token),
         monthly_token_budget=budget,
+        slots=BoundedSemaphore(1),
         **PRICES,
     )
 

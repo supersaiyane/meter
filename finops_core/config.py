@@ -28,7 +28,12 @@ from uuid import UUID
 from pydantic import Field, ValidationError, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from finops_core.constants import ENV_PREFIX, LOCAL_IDENTITY_PROVIDER, PRODUCTION_ENV
+from finops_core.constants import (
+    ASSISTANT_CONCURRENCY_CEILING,
+    ENV_PREFIX,
+    LOCAL_IDENTITY_PROVIDER,
+    PRODUCTION_ENV,
+)
 from finops_core.domain.query import WriteLevel
 
 
@@ -210,6 +215,11 @@ class Settings(BaseSettings):
     #: rather than a design one, so it is here and not a constant. Exhausted, the assistant
     #: refuses and says when it resets rather than continuing to spend.
     assistant_monthly_token_budget: int = Field(ge=1)
+    #: Questions the assistant answers at once, ISS-225. Past it, a question is answered as
+    #: Throttled at once rather than queued, because a queued question would hold a worker
+    #: thread while it waited. Capped by the constant, so no deployment can set a figure
+    #: that lets questions take the whole pool.
+    assistant_max_concurrent_questions: int = Field(ge=1, le=ASSISTANT_CONCURRENCY_CEILING)
 
     # Retention, in days. docs/09-DATA-CLASSIFICATION.md.
     retention_principal_days: int = Field(ge=1)

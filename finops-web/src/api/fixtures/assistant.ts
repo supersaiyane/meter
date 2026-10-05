@@ -52,7 +52,9 @@ export const REMEDIATION = {
   AccessDenied:
     'The hub role may not invoke this model. Add it to assistant_model_ids in the hub stack, ' +
     'then ask again.',
-  Throttled: 'The model service throttled the request. Ask again in a minute.',
+  Throttled:
+    'Too many questions are being answered at once, by Meter or by the model service. ' +
+    'Ask again in a minute.',
   NotOptedIn:
     'Name a model in METER_ASSISTANT_MODEL_ID, enable access to it for the hub account, ' +
     'and grant it through assistant_model_ids in the hub stack.',
