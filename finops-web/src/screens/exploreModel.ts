@@ -35,7 +35,10 @@ export const COLUMN_NAMES: Readonly<
   region: { name: 'Region', focus: 'RegionId' },
   availability_zone: { name: 'Availability zone', focus: 'AvailabilityZone' },
   charge_category: { name: 'Charge category', focus: 'ChargeCategory' },
-  commitment_discount_type: { name: 'Commitment discount type', focus: 'CommitmentDiscountType' },
+  commitment_discount_type: {
+    name: 'Commitment discount type',
+    focus: 'CommitmentDiscountType',
+  },
   commitment_discount_status: {
     name: 'Commitment discount status',
     focus: 'CommitmentDiscountStatus',
@@ -114,7 +117,9 @@ export function groupingChange(axis: 'group_by' | 'then_by', value: string): Exp
 /** What a grouping is called: the column's name, or the tag key it reads. */
 export function groupingName(grouping: ApiExploreGrouping): string {
   if (grouping.dimension === TAG) return `Tag: ${grouping.tag_key ?? ''}`;
-  return isColumn(grouping.dimension) ? COLUMN_NAMES[grouping.dimension].name : grouping.dimension;
+  return isColumn(grouping.dimension)
+    ? COLUMN_NAMES[grouping.dimension].name
+    : grouping.dimension;
 }
 
 /** A grouping value as a reader sees it. The unallocated bucket is named, never blank. */
@@ -150,7 +155,11 @@ export function chipsOf(values: ExploreValues): readonly Chip[] {
   ];
 }
 
-function parts(iso: string): { readonly year: number; readonly month: number; readonly day: number } {
+function parts(iso: string): {
+  readonly year: number;
+  readonly month: number;
+  readonly day: number;
+} {
   const [year = 0, month = 1, day = 1] = iso.split('-').map(Number);
   return { year, month, day };
 }
@@ -248,7 +257,10 @@ export function chartOf(explore: ApiExplore): {
     // A day with no line item for a group cost that group nothing. Measured, not missing.
     values: buckets.map((bucket) => Number(costs.get(JSON.stringify([bucket, name])) ?? 0)),
   }));
-  return { categories: buckets.map((bucket) => bucketLabel(bucket, explore.granularity)), series };
+  return {
+    categories: buckets.map((bucket) => bucketLabel(bucket, explore.granularity)),
+    series,
+  };
 }
 
 /** Each day's or month's total, oldest first, for the tile's trend line. */

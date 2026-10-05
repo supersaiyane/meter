@@ -146,7 +146,9 @@ describe('what a reader has to know before trusting the totals', () => {
     const notes = notesFor(
       exploreOf({ is_open: false, collected_from: null, previous_collected: false }),
     );
-    expect(notes).toEqual(['Meter holds no line items before this period, so it is not compared.']);
+    expect(notes).toEqual([
+      'Meter holds no line items before this period, so it is not compared.',
+    ]);
   });
 });
 
@@ -209,7 +211,11 @@ describe('the table', () => {
 
   it('adds one row for what the limit left out, so the totals still reconcile', () => {
     const rows = tableRows(
-      exploreOf({ rows_omitted: 12, omitted_this_period: '40.00', omitted_previous_period: null }),
+      exploreOf({
+        rows_omitted: 12,
+        omitted_this_period: '40.00',
+        omitted_previous_period: null,
+      }),
     );
     expect(rows.at(-1)).toMatchObject({
       first: '12 more rows',
@@ -224,7 +230,9 @@ describe('the table', () => {
     const rows = tableRows(
       exploreOf({
         previous_collected: false,
-        rows: [{ first: 'AmazonEC2', second: null, this_period: '1.00', previous_period: null }],
+        rows: [
+          { first: 'AmazonEC2', second: null, this_period: '1.00', previous_period: null },
+        ],
       }),
     );
     expect(rows[0]).toMatchObject({ previousPeriod: null, change: null });

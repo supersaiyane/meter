@@ -18,7 +18,8 @@ function explorer(answer: () => ApiExplore = () => exploreOf(), failure?: Error)
   const client: ApiClient = {
     get: <T,>(path: string): Promise<ApiEnvelope<T>> => {
       const [route = '', query = ''] = path.split('?');
-      if (route !== '/api/v1/cost/explore') return Promise.reject(new Error(`no stub: ${path}`));
+      if (route !== '/api/v1/cost/explore')
+        return Promise.reject(new Error(`no stub: ${path}`));
       asked.push(query);
       if (failure) return Promise.reject(failure);
       return Promise.resolve({ data: answer(), meta: metaOf() } as unknown as ApiEnvelope<T>);
@@ -205,11 +206,11 @@ describe('CostScreen, Cost Explorer: what a reader changes', () => {
     const { asked } = renderExplorer();
     await screen.findByRole('option', { name: 'List Cost' });
     const measure = screen.getByLabelText('Measure');
-    expect(within(measure).getAllByRole('option').map((option) => option.textContent)).toEqual([
-      'Effective Cost',
-      'Billed Cost',
-      'List Cost',
-    ]);
+    expect(
+      within(measure)
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual(['Effective Cost', 'Billed Cost', 'List Cost']);
     await user.selectOptions(measure, 'billed_cost');
     expect(asked.at(-1)).toBe('metric=billed_cost');
   });

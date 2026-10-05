@@ -84,7 +84,11 @@ export function ExploreControls({ values, explore, update }: ExploreControlsProp
     // the route would refuse for want of dates.
     update(
       value === 'custom'
-        ? { period: value, start: explore?.current.start ?? '', end: explore?.current.end ?? '' }
+        ? {
+            period: value,
+            start: explore?.current.start ?? '',
+            end: explore?.current.end ?? '',
+          }
         : { period: value, start: '', end: '' },
     );
   };
