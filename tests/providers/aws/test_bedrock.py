@@ -9,6 +9,7 @@ code cannot sit unnoticed in a mapping nothing exercises.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -150,6 +151,37 @@ def test_a_whole_conversation_is_valid_converse_input(settings: Settings) -> Non
     assert [block["toolResult"]["status"] for block in results] == ["success", "error"]
     (spec,) = sent["toolConfig"]["tools"]
     assert spec["toolSpec"]["inputSchema"]["json"]["properties"] == {"limit": {"type": "integer"}}
+
+
+def test_an_inference_profile_is_called_in_place_of_the_model(settings: Settings) -> None:
+    """ISS-230. The hub stack configures the tagged profile's ARN beside the model's name,
+    and the call goes through the profile while the name stays what an exchange records.
+
+    Sent unchanged, and matched against the pattern the service model declares for the
+    identifier, because the double checks shapes and lengths and not patterns.
+    """
+    profile = "arn:aws:bedrock:eu-west-1:111122223333:application-inference-profile/a1b2c3d4e5f6"
+    double = ConverseDouble(replies={QUESTION: reply(text("Done."))})
+    model = BedrockModel(
+        configured(settings).model_copy(update={"assistant_inference_profile_arn": profile}),
+        client_factory=lambda: double,
+    )
+
+    model.complete(request())
+
+    (sent,) = double.sent
+    assert sent["modelId"] == profile
+    assert re.fullmatch(CONVERSE.input_shape.members["modelId"].metadata["pattern"], profile)
+
+
+def test_with_no_profile_the_model_is_called_by_its_identifier(settings: Settings) -> None:
+    double = ConverseDouble(replies={QUESTION: reply(text("Done."))})
+    model = BedrockModel(configured(settings), client_factory=lambda: double)
+
+    model.complete(request())
+
+    (sent,) = double.sent
+    assert sent["modelId"] == MODEL
 
 
 # --- the response --------------------------------------------------------------------

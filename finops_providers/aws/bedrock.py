@@ -111,7 +111,11 @@ class BedrockModel:
                 "no model is configured, so there is nothing to invoke. The composition "
                 "leaves the assistant unbuilt instead, and it says it is not enabled."
             )
-        self._model_id = settings.assistant_model_id
+        # What Converse is asked to run: the tagged profile where the hub stack made one,
+        # ISS-230, otherwise the model itself. An exchange records the model either way.
+        self._model_id = (
+            settings.assistant_inference_profile_arn.strip() or settings.assistant_model_id
+        )
         self._config = botocore_config(settings)
         self._factory = client_factory or self._default_client
 

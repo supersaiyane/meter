@@ -191,19 +191,46 @@ data "aws_iam_policy_document" "task" {
     }
   }
 
-  # The model behind the assistant, ADR-0028. Named foundation models in this region
-  # only, never a wildcard: adding a model is a change to assistant_model_ids that
-  # somebody reviews, and a wildcard would grant every model the service ever adds.
-  # Absent until a model is named, which is OPEN-10, so a deployment that has not
-  # chosen one grants nothing and the assistant says it is not enabled.
+  # The model behind the assistant, ADR-0028, reached only through its tagged inference
+  # profile below, ISS-230. Two statements because the service authorizes two resources
+  # for one call: the profile the request names, and the foundation model the profile
+  # routes to. The model is granted only on condition that the call came through one of
+  # these profiles, so a call naming the model directly is refused rather than billed
+  # with no module, which is the one way the assistant's spend could leave the platform
+  # cost screen.
+  #
+  # Named foundation models in this region only, never a wildcard: adding a model is a
+  # change to assistant_model_ids that somebody reviews, and a wildcard would grant every
+  # model the service ever adds. Absent until a model is named, which is OPEN-10, so a
+  # deployment that has not chosen one grants nothing and the assistant says it is not
+  # enabled.
   #
   # Invocation only. Neither action creates, changes or deletes anything, here or in a
-  # member account, and no member account role gains anything for the assistant.
+  # member account, and no member account role gains anything for the assistant. The
+  # profiles are created by whoever applies this stack, never by the task role.
   dynamic "statement" {
     for_each = length(var.assistant_model_ids) == 0 ? [] : [var.assistant_model_ids]
 
     content {
-      sid    = "InvokeTheNamedModels"
+      sid    = "InvokeThroughTheTaggedProfiles"
+      effect = "Allow"
+
+      actions = [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream",
+      ]
+
+      resources = [
+        for model_id in statement.value : aws_bedrock_inference_profile.assistant[model_id].arn
+      ]
+    }
+  }
+
+  dynamic "statement" {
+    for_each = length(var.assistant_model_ids) == 0 ? [] : [var.assistant_model_ids]
+
+    content {
+      sid    = "ReachTheModelsOnlyThroughTheProfiles"
       effect = "Allow"
 
       actions = [
@@ -215,6 +242,16 @@ data "aws_iam_policy_document" "task" {
         for model_id in statement.value :
         "arn:${data.aws_partition.current.partition}:bedrock:${var.region}::foundation-model/${model_id}"
       ]
+
+      # The key the Bedrock documentation names for this, typed as an ARN by the service
+      # reference, so an ARN operator rather than a string one.
+      condition {
+        test     = "ArnEquals"
+        variable = "bedrock:InferenceProfileArn"
+        values = [
+          for model_id in statement.value : aws_bedrock_inference_profile.assistant[model_id].arn
+        ]
+      }
     }
   }
 }
@@ -223,4 +260,37 @@ resource "aws_iam_role_policy" "task" {
   name   = "MeterHubTask"
   role   = aws_iam_role.task.id
   policy = data.aws_iam_policy_document.task.json
+}
+
+# --- the assistant's model, behind a tagged profile ---------------------------
+#
+# One application inference profile per model in assistant_model_ids, ISS-230. An on
+# demand call to a foundation model is not a resource, so default_tags cannot reach it
+# and its line on the bill arrives with no module. A call made through an application
+# inference profile carries the profile's tags onto the bill, and the platform cost
+# collector groups by finops:module, so the assistant's spend arrives as a module of its
+# own rather than in unallocated. Constraint 7.
+#
+# Each profile copies the foundation model in this region, so it routes nowhere the model
+# did not already run: it adds a tag, not a destination. It lives beside the grant that
+# names it because the two change together. Whether the tag reaches the cost line of the
+# model OPEN-10 chooses has not been seen on a real bill, ISS-002.
+resource "aws_bedrock_inference_profile" "assistant" {
+  for_each = toset(var.assistant_model_ids)
+
+  # A profile name holds letters, digits and single separators, and a model identifier
+  # carries dots and a colon, so each run of anything else becomes one hyphen. The
+  # provider refuses a name over 64 characters before anything is created.
+  name = "${local.name}-assistant-${replace(each.value, "/[^0-9A-Za-z]+/", "-")}"
+
+  model_source {
+    copy_from = "arn:${data.aws_partition.current.partition}:bedrock:${var.region}::foundation-model/${each.value}"
+  }
+
+  # Overrides the stack default of hub on purpose. The assistant's spend moves with the
+  # questions asked rather than with the hours the stack runs, and folded into hub the
+  # screen could not say what the assistant costs, which is the question ISS-230 asks.
+  tags = {
+    "finops:module" = "assistant"
+  }
 }

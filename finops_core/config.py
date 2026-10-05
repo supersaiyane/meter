@@ -209,6 +209,12 @@ class Settings(BaseSettings):
     # is the measurement, and the platform cost screen reads it by tag. Above zero, because a
     # model that costs nothing does not exist and would report every exchange as free.
     assistant_model_id: str = ""
+    #: What the adapter calls, where it is not the model itself: the ARN of the application
+    #: inference profile the hub stack makes for the model in use, so the call carries
+    #: finops:module onto the bill, ISS-230. Empty calls the model by its identifier, which
+    #: is what every test and every deployment without the hub stack does. Exchanges record
+    #: the identifier above and never this, because the ARN names an account.
+    assistant_inference_profile_arn: str = ""
     assistant_input_usd_per_million_tokens: Decimal = Field(gt=0)
     assistant_output_usd_per_million_tokens: Decimal = Field(gt=0)
     #: Tokens one tenant may spend in a calendar month, TASK-P7-007. A deployment decision

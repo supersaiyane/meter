@@ -154,7 +154,11 @@ variable "assistant_model_ids" {
     Empty is valid and is the default: no model has been chosen, OPEN-10, the role
     grants nothing, and the assistant says it is not enabled. Each identifier is
     named exactly, because a wildcard would grant every model the service ever adds.
-    The application's METER_ASSISTANT_MODEL_ID must be one of these.
+
+    Each one gets an application inference profile tagged finops:module, and the
+    task role may reach the model only through it, ISS-230. A call made to the model
+    directly is not a resource, so no tag would reach its cost line and the platform
+    cost screen could not say what the assistant costs.
   EOT
   type        = list(string)
   default     = []
@@ -165,6 +169,27 @@ variable "assistant_model_ids" {
       length(trimspace(model_id)) > 0 && !strcontains(model_id, "*")
     ])
     error_message = "A model identifier is named exactly. A wildcard grants every model the service adds."
+  }
+}
+
+variable "assistant_model_in_use" {
+  description = <<-EOT
+    The one model in assistant_model_ids the API invokes. The stack sets
+    METER_ASSISTANT_MODEL_ID on the API task to the ARN of that model's inference
+    profile, never to the model identifier, because only a call through the profile
+    carries the tag and the task role may reach the model no other way. ISS-230.
+
+    Empty is valid and is the default, and the assistant says it is not enabled. A
+    model may be named in assistant_model_ids before it is in use, which is how a
+    change of model rolls out: name the new one, apply, point this at it, and drop
+    the old one in a later release once no running task uses it. Constraint 12.
+  EOT
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.assistant_model_in_use == "" || contains(var.assistant_model_ids, var.assistant_model_in_use)
+    error_message = "assistant_model_in_use must be one of assistant_model_ids, or there is no profile for it and the task role may not invoke it."
   }
 }
 
