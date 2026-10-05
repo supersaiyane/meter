@@ -243,23 +243,17 @@ describe('contrast, in light and in dark, on glass', () => {
     }
   });
 
-  it('keeps the rail’s text AA on both of its surfaces', () => {
-    // The rail is dark in both themes and its colours are single values, not
-    // pairs. Its faint text sat below 4.5 to 1 until axe first ran in a real
-    // browser on 2026-10-05, in TASK-P8-002, and caught the menu button and the
-    // group headings.
-    const single = (name: string): Rgba => {
-      const found = new RegExp(`(?:^|\\s)${name}:\\s*(#[0-9a-f]{3,6})`, 'mi').exec(tokens)?.[1];
-      if (found === undefined) {
-        throw new Error(`${name} is not declared as a single colour`);
-      }
-      return parse(found);
-    };
-    for (const ground of ['--nav-surface', '--nav-surface-2']) {
-      for (const ink of ['--nav-text', '--nav-text-faint', '--nav-text-strong']) {
+  it('keeps the rail’s text AA, the rail being a panel like any other', () => {
+    // The rail was dark in both themes, in colours of its own, until the owner chose the drawn
+    // glass rail later on 2026-10-05, TASK-P8-018. Its ink is now the panels' ink, held by the
+    // first test here, so what is left to hold is the pill that marks the current screen.
+    expect(tokens).not.toMatch(/--nav-[a-z-]+:/);
+    for (const theme of ['light', 'dark'] as const) {
+      for (const ground of panels(theme)) {
+        const pill = over(token('--accent-quiet', theme), ground);
         expect(
-          ratio(single(ink), single(ground)),
-          `${ink} on ${ground}`,
+          ratio(token('--accent', theme), pill),
+          `the current screen, ${theme}`,
         ).toBeGreaterThanOrEqual(4.5);
       }
     }

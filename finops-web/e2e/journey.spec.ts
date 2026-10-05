@@ -236,9 +236,8 @@ test('an unbuilt screen is listed, reachable, and names what will fill it', asyn
   // unbuilt today.
   await withSession(page);
 
-  // Home, because Home's group holds nothing else. Every other group is folded
-  // here, so the first unbuilt link is necessarily inside a closed section,
-  // which is the state the next two assertions are about.
+  // Home, because Home's group holds nothing else, so the unbuilt screen found below is
+  // in another group, and the rail lists every group as drawn, TASK-P8-018.
   await page.goto('/');
 
   const unbuilt = page.locator('nav[aria-label="Sections"] a[data-arrives]').first();
@@ -249,19 +248,11 @@ test('an unbuilt screen is listed, reachable, and names what will fill it', asyn
   expect(href).toBeTruthy();
   expect(arrives).toBeTruthy();
 
-  // Listed even while its section is closed. The navigation is an accordion, so
-  // a screen in another section is in the document and not on screen. That
-  // distinction is the whole point: absent would mean the roadmap is hidden,
-  // and this is one expansion away. Located by attribute rather than by role,
-  // because a closed details element is out of the accessibility tree and
-  // getByRole would report it missing when it is merely folded.
-  await expect(unbuilt).not.toBeVisible();
-
-  const section = page.locator('nav[aria-label="Sections"] details', {
-    has: page.locator(`a[href="${href ?? ''}"]`),
-  });
-  await section.locator('summary').click();
+  // Listed, on screen and one click away, with what will fill it. Absent would mean the
+  // roadmap is hidden; folded away, as it was while the rail was an accordion, it was one
+  // expansion further.
   await expect(unbuilt).toBeVisible();
+  await expect(unbuilt).toContainText(`arrives with ${arrives ?? ''}`);
   await unbuilt.click();
   await expect(page).toHaveURL(new RegExp(`${href ?? ''}$`));
   await expect(page.getByTestId('not-built')).toContainText(`arrives with ${arrives ?? ''}`);

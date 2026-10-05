@@ -1,23 +1,27 @@
 import { readStored, writeStored } from './storage';
 
 /**
- * The theme a person chose, P8 spec section 5.1.
+ * The theme a person chose, P8 spec sections 2 and 5.1.
  *
- * The operating system decides until the person does. A choice is pinned on the
- * root element as `data-theme`, which tokens.css reads, and remembered in the
- * person's browser alongside the navigation state. Choosing the system again
- * removes the pin rather than storing a copy of what the system said, so a
- * person whose machine turns dark at night gets dark.
+ * Light, Frosted Ledger, until the person chooses otherwise, by the owner's decision
+ * later on 2026-10-05; before it the operating system decided. A choice is pinned on
+ * the root element as `data-theme`, which tokens.css reads, and remembered in the
+ * person's browser alongside the navigation state. Choosing the system removes the pin
+ * rather than storing a copy of what the system said, so a person whose machine turns
+ * dark at night gets dark.
  */
 
 export type ThemeChoice = 'system' | 'light' | 'dark';
 
 export const THEME_KEY = 'meter.theme';
 
-/** What was chosen before, and the system when nothing was or the value is unknown. */
+/** The theme for a person who has chosen nothing, or whose stored value is unknown. */
+export const DEFAULT_THEME: ThemeChoice = 'light';
+
+/** What was chosen before, and the default when nothing was. */
 export function storedTheme(): ThemeChoice {
   const value = readStored(THEME_KEY);
-  return value === 'light' || value === 'dark' ? value : 'system';
+  return value === 'light' || value === 'dark' || value === 'system' ? value : DEFAULT_THEME;
 }
 
 export function applyTheme(

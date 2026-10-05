@@ -562,7 +562,7 @@ the drawings: `docs/design/2026-10-05-overview-frosted-ledger.jpg` for the light
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec sections 2 and 5.1, FEAT-063 |
 | Delivers | The shell and the motion of the drawings |
 | Depends on | TASK-P8-001, TASK-P8-002 |
@@ -570,20 +570,30 @@ the drawings: `docs/design/2026-10-05-overview-frosted-ledger.jpg` for the light
 
 **Acceptance criteria.**
 
-- [ ] Light, Frosted Ledger, opens for a reader who has chosen nothing; Dark and System
+- [x] Light, Frosted Ledger, opens for a reader who has chosen nothing; Dark and System
       stay in the toggle, and a choice already made is kept
-- [ ] The rail a glass panel in both themes, frosted in the light, inset as drawn, with its
+- [x] The rail a glass panel in both themes, frosted in the light, inset as drawn, with its
       groups and screens listed
-- [ ] A top bar as drawn: the screen's title and its scope line, a toolbar holding the
+- [x] A top bar as drawn: the screen's title and its scope line, a toolbar holding the
       Export menu and the theme control, and the trust line beneath it
-- [ ] Motion as decided: hover, focus, menus and tabs in 150 to 200 ms; panels rising in a
+- [x] Motion as decided: hover, focus, menus and tabs in 150 to 200 ms; panels rising in a
       few at a time; a lift under the pointer with a token shadow; a cross fade between
       screens; a chart drawing in once, left to right
-- [ ] No number counts up and no bar grows from zero; reduced motion stops all of it, and
+- [x] No number counts up and no bar grows from zero; reduced motion stops all of it, and
       reduced transparency and print keep their fallbacks, each held by a test
-- [ ] The surface tests rewritten to the new rule: a shadow only through a token, a
+- [x] The surface tests rewritten to the new rule: a shadow only through a token, a
       transition never on width, height, position or `all`, keyframes from a named set
-- [ ] Axe clean and contrast held in both themes, the light rail included
+- [x] Axe clean and contrast held in both themes, the light rail included
+
+**Delivered 2026-10-05.** Light opens for a reader who has chosen nothing, pinned in
+`index.html` so a dark system never flashes a dark page. The rail is a glass panel listing every
+group and screen, and the column's top is the title and scope line, a toolbar holding Export
+and the theme control, and the sticky trust line. Motion and elevation are tokens; the
+keyframes are a named set of five, and a reduced motion block built from the same selectors
+stops all of it. The journeys now run with reduced motion, because two of them read the
+screen mid fade and failed at random, axe on a tab still fading in among them, and
+`e2e/motion.spec.ts` proves both states from the computed animation. The screens' own panels
+are still the ones they had: TASK-P8-012 and TASK-P8-013 redraw them.
 
 ---
 

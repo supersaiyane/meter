@@ -30,7 +30,7 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Counted | Now | Derived from |
 | --- | --- | --- |
 | Screens built | 25 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 30 in 11 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Playwright journeys | 32 in 12 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 26 | files in migrations/versions, all of which are listed below in this file |
@@ -738,14 +738,15 @@ meter/
 │       ├── theme.ts           the theme a person chose: the operating system
 │       │                      until they choose, then pinned as data-theme and
 │       │                      remembered in their browser
-│       ├── shell/AppShell.tsx the frame. Trust strip, the page heading, and a
-│       │                      navigation column that collapses to 56 px, hidden
-│       │                      rather than covered, remembered per browser, with
-│       │                      the theme choice at its foot
+│       ├── shell/AppShell.tsx the frame, as drawn: a glass rail listing every group
+│       │                      and screen, collapsing to 64 px, and a column topped
+│       │                      by the title and scope line, a toolbar with Export
+│       │                      and the theme, and the sticky trust line. TASK-P8-018
 │       ├── shell/ExportMenu.tsx  Export beside every screen title: each view the
 │       │                      screen reads, as a workbook or a CSV the server
 │       │                      writes and the browser saves under its name. FEAT-067
-│       ├── shell/ThemeToggle.tsx  System, Light and Dark as three radios, so the
+│       ├── shell/ThemeToggle.tsx  System, Light and Dark as three radios in the
+│       │                      toolbar, Light the default since 2026-10-05, so the
 │       │                      way back to the system never passes through the
 │       │                      other theme
 │       ├── shell/sections.ts  the nine Framework groups of ADR-0030, the tabs of

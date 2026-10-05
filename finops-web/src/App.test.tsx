@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { App } from './App';
@@ -71,27 +71,32 @@ describe('App', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Query Cost' })).toBeInTheDocument();
   });
 
-  it('opens only the section holding the current screen', () => {
-    // The point of the accordion. Nine groups fully expanded is a wall of
-    // links; one open group is a menu pointing at where the reader is.
+  it('lists every group with its screens, as drawn, rather than folding them away', () => {
+    // The rail of the drawings, TASK-P8-018. It replaced an accordion that opened only the
+    // current group, so a screen in another group is one click away rather than two.
     open('/govern/query-cost');
-    expect(screen.getByTestId('group-Govern')).toHaveAttribute('open');
     for (const label of [
       'Analyze',
       'Plan',
       'Optimize',
+      'Govern',
       'Inventory',
       'Report',
       'Assist',
       'Platform',
     ]) {
-      expect(screen.getByTestId(`group-${label}`)).not.toHaveAttribute('open');
+      const list = within(screen.getByTestId(`group-${label}`)).getByRole('list', {
+        name: label,
+      });
+      expect(within(list).getAllByRole('link').length).toBeGreaterThan(0);
     }
   });
 
-  it('opens the section a detail page was reached from', () => {
+  it('keeps the group a detail page belongs to on the rail', () => {
     open('/govern/query-cost/findings/abc-123');
-    expect(screen.getByTestId('group-Govern')).toHaveAttribute('open');
+    expect(
+      within(screen.getByTestId('group-Govern')).getByRole('list', { name: 'Govern' }),
+    ).toBeInTheDocument();
   });
 
   it('draws Overview as a link rather than a section holding only itself', () => {

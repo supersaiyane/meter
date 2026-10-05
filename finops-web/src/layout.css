@@ -38,37 +38,39 @@ body {
 
 /* ------------------------------------------------------------------ shell */
 
+/* The page is a rail of glass and a column of panels, both inset from the window's edge as
+   drawn, P8 spec section 5.1 and TASK-P8-018. The rail sticks; the column scrolls with the page,
+   and the page's glows sit behind both. */
 [data-testid='shell'] {
   display: grid;
-  grid-template-columns: 232px minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr);
-  grid-template-areas:
-    'brand trust'
-    'nav   main';
+  grid-template-columns: 248px minmax(0, 1fr);
+  grid-template-areas: 'nav main';
+  align-items: start;
+  gap: var(--space-5);
+  padding: var(--space-5);
   min-height: 100vh;
 }
 
-/* The header row: what screen this is, and what it is safe to believe about it,
-   on one line. Sticky, because the coverage and the freshness are qualifications
-   on every figure below and a qualification that scrolls away stops qualifying.
-   Not dismissible for the same reason: a banner that can be dismissed gets
-   dismissed and the condition does not go with it. */
+/* The trust line, under the toolbar as drawn: how fresh the oldest figure in view is, and what
+   is failing. Sticky, because these qualify every figure below and a qualification that scrolls
+   away stops qualifying. Not dismissible for the same reason: a banner that can be dismissed
+   gets dismissed and the condition does not go with it. Glass, so the page scrolls under it;
+   the fallbacks in tokens.css make it opaque where glass cannot be drawn. */
 [data-testid='trust-strip'] {
-  grid-area: trust;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-3);
-  padding: var(--space-3) var(--space-6);
+  margin: 0 0 var(--space-4);
+  padding: var(--space-2) var(--space-3);
   background: var(--surface-raised);
-  border-bottom: 1px solid var(--border);
-  /* Glass, so the page scrolls under the strip rather than behind a wall. The
-     fallbacks in tokens.css make the surface opaque where glass cannot be. */
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   -webkit-backdrop-filter: blur(var(--panel-blur)) saturate(var(--panel-saturate));
   backdrop-filter: blur(var(--panel-blur)) saturate(var(--panel-saturate));
   font-size: var(--font-size-1);
   position: sticky;
-  top: 0;
+  top: var(--space-2);
   z-index: 5;
 }
 
@@ -125,71 +127,96 @@ body {
   margin-left: auto;
 }
 
+/* The rail. A glass panel in both themes, frosted in the light, inset from the page's edge as
+   drawn; it replaced a dark rail in both themes by the owner's choice later on 2026-10-05. Its
+   ink is the panels' ink, so the contrast test that holds every panel holds it too. */
 [data-testid='shell'] > header {
   grid-area: nav;
-  grid-row: 1 / 3;
-  background: var(--nav-surface);
-  border-right: 1px solid var(--nav-line);
-  color: var(--nav-text);
-  padding: var(--space-4) 0;
-  font-size: var(--font-size-2);
-  overflow-y: auto;
-  max-height: 100vh;
   position: sticky;
-  top: 0;
+  top: var(--space-5);
+  max-height: calc(100vh - 2 * var(--space-5));
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-2);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: inset 0 1px 0 var(--hairline-highlight);
+  -webkit-backdrop-filter: blur(var(--panel-blur)) saturate(var(--panel-saturate));
+  backdrop-filter: blur(var(--panel-blur)) saturate(var(--panel-saturate));
+  color: var(--text-muted);
+  font-size: var(--font-size-2);
 }
 
-/* Collapsed. The column narrows rather than the navigation being covered, so the
-   content actually gains the width. No transition: the motion rule permits a
-   120 ms opacity change and nothing else, and a sliding panel is the decoration
-   it rules out. */
+/* Collapsed. The column narrows rather than the rail being covered, so the content actually
+   gains the width. The width does not animate: a transition on a size moves every figure on
+   the screen with it, which the motion rule forbids. */
 [data-testid='shell'][data-nav='collapsed'] {
-  grid-template-columns: 56px minmax(0, 1fr);
+  grid-template-columns: 64px minmax(0, 1fr);
 }
 
 [data-testid='shell'][data-nav='collapsed'] > header {
   padding: var(--space-2);
 }
 
+[data-testid='rail-top'] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: 0 var(--space-2) var(--space-3);
+}
+
 [data-testid='nav-toggle'] {
-  display: block;
-  width: calc(100% - var(--space-4) * 2);
-  margin: 0 var(--space-4) var(--space-3);
-  padding: var(--space-1) var(--space-2);
-  background: var(--nav-surface-2);
-  border: 1px solid var(--nav-line);
+  padding: 2px var(--space-2);
+  background: transparent;
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  color: var(--nav-text-faint);
+  color: var(--text-faint);
   font-family: var(--font-ui);
   font-size: var(--font-size-1);
   cursor: pointer;
 }
 
 [data-testid='nav-toggle']:hover {
-  color: var(--nav-text-strong);
-  border-color: var(--nav-accent);
+  color: var(--text);
+  border-color: var(--accent-mark);
 }
 
-/* The mark is drawn, not an image: one gradient, no request, and it survives a
-   theme switch because both stops are fixed hues rather than tokens. */
-[data-testid='shell'] > header [data-testid='brand'] {
-  color: var(--nav-text-strong);
-  display: flex;
+[data-testid='nav-toggle']:focus-visible {
+  outline: 2px solid var(--accent-mark);
+  outline-offset: 2px;
+}
+
+/* The mark is drawn, not an image: one gradient, no request, and it survives a theme switch
+   because both stops are fixed hues rather than tokens. The name and the line under it sit
+   beside it, as drawn. */
+[data-testid='brand'] {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 10px;
   align-items: center;
-  gap: var(--space-2);
+  margin: 0;
+  color: var(--text);
   font-size: var(--font-size-3);
   font-weight: 700;
   letter-spacing: -0.01em;
-  margin: 0 var(--space-4) var(--space-5);
+  line-height: 1.2;
 }
 
-[data-testid='shell'] > header [data-testid='brand']::before {
+[data-testid='brand']::before {
   content: '';
-  width: 22px;
-  height: 22px;
-  border-radius: var(--radius);
+  grid-row: 1 / 3;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
   background: linear-gradient(135deg, #4da3ff, #9b6cff);
-  flex: none;
+}
+
+[data-testid='brand-line'] {
+  color: var(--text-faint);
+  font-size: var(--font-size-1);
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
 [data-testid='screen-title'] {
@@ -199,27 +226,64 @@ body {
   letter-spacing: -0.015em;
 }
 
-/* The screen's title and what can be done with the whole screen, on one line: the Export
-   menu, FEAT-067. The title keeps its own rule above. */
+/* The top of every screen, as drawn: its title and scope line, then a toolbar of what can be
+   done with the whole screen. TASK-P8-018. The title keeps its own rule above. */
 [data-testid='screen-bar'] {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
+  display: grid;
   gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+}
+
+[data-testid='screen-heading'] {
+  display: grid;
+  gap: var(--space-1);
+}
+
+[data-testid='screen-heading'] > * {
+  margin: 0;
+}
+
+[data-testid='toolbar'] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 [data-testid='export-menu'] {
   position: relative;
-  margin-left: auto;
+}
+
+/* A toolbar control: the same border, radius and glass as every other one in the bar. */
+[data-testid='export-menu'] > summary,
+[data-testid='theme-toggle'] {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 [data-testid='export-menu'] > summary {
   cursor: pointer;
   list-style: none;
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
+  padding: 6px var(--space-4);
+  color: var(--text);
   font-size: var(--font-size-2);
+  font-weight: 500;
+}
+
+[data-testid='export-menu'] > summary:hover {
+  border-color: var(--accent-mark);
+}
+
+[data-testid='export-menu'][open] > summary {
+  border-color: var(--accent-mark);
+  background: var(--accent-quiet);
+  color: var(--accent);
+}
+
+[data-testid='export-menu'] > summary:focus-visible {
+  outline: 2px solid var(--accent-mark);
+  outline-offset: 2px;
 }
 
 [data-testid='export-menu'] > summary::-webkit-details-marker {
@@ -230,7 +294,7 @@ body {
    through is a menu nobody can read. */
 [data-testid='export-views'] {
   position: absolute;
-  right: 0;
+  left: 0;
   top: calc(100% + var(--space-1));
   z-index: 20;
   width: max-content;
@@ -241,6 +305,8 @@ body {
   background: var(--surface-raised-solid);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
+  /* It floats above the screen, so it casts the float shadow, from the tokens. */
+  box-shadow: var(--shadow-float);
 }
 
 [data-testid='export-view'] > p {
@@ -262,50 +328,55 @@ body {
 
 [data-testid='shell'] > main {
   grid-area: main;
-  padding: var(--space-6);
+  padding: 0 var(--space-1);
   min-width: 0;
   /* The page colour and its glows are the body's, so the panels on this
      column have something to be glass over. */
   background: transparent;
 }
 
-/* The theme choice, at the foot of the rail. Three radios drawn as one
-   segmented control: the input stays in the tree for the keyboard and a
-   screen reader, and only its circle is hidden. */
+/* The theme choice, in the toolbar as drawn. Three radios drawn as one segmented control: the
+   input stays in the tree for the keyboard and a screen reader, only its circle is hidden, and
+   the legend is read rather than shown. */
 [data-testid='theme-toggle'] {
-  display: flex;
-  gap: var(--space-1);
-  margin: var(--space-4) var(--space-3) var(--space-3);
-  padding: 0;
-  border: 0;
+  position: relative;
+  display: inline-flex;
+  gap: 2px;
+  margin: 0;
+  padding: 2px;
 }
 
 [data-testid='theme-toggle'] legend {
-  margin-bottom: var(--space-1);
-  color: var(--nav-text-faint);
-  font-size: var(--font-size-1);
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 [data-testid='theme-toggle'] label {
   position: relative;
-  flex: 1;
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--nav-line);
-  border-radius: var(--radius);
-  color: var(--nav-text);
+  padding: 4px var(--space-3);
+  border-radius: 8px;
+  color: var(--text-muted);
   font-size: var(--font-size-1);
-  text-align: center;
   cursor: pointer;
 }
 
+[data-testid='theme-toggle'] label:hover {
+  color: var(--text);
+}
+
 [data-testid='theme-toggle'] label:has(input:checked) {
-  border-color: var(--nav-accent);
-  background: var(--nav-active);
-  color: var(--nav-text-strong);
+  background: var(--accent-quiet);
+  color: var(--accent);
+  font-weight: 600;
 }
 
 [data-testid='theme-toggle'] label:has(input:focus-visible) {
-  outline: 2px solid var(--nav-accent);
+  outline: 2px solid var(--accent-mark);
   outline-offset: 2px;
 }
 
@@ -319,28 +390,20 @@ body {
 
 /* ------------------------------------------------------------- navigation */
 
-/* Each group is a details element, so the disclosure state, the keyboard handling
-   and the expanded semantics come from the browser rather than from a div
-   pretending to be a button. Only the group holding the current screen starts
-   open, which is what keeps the menu short. */
-nav[aria-label='Sections'] summary {
+/* Every group and its screens listed, as drawn: the label a small capitals line, its screens
+   under it. It replaced an accordion that opened only the current group, by the owner's choice
+   of the drawn rail later on 2026-10-05; the rail scrolls rather than folding. */
+[data-testid='nav-group-label'] {
+  margin: var(--space-4) var(--space-3) var(--space-1);
   font-size: 10.5px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.11em;
-  color: var(--nav-text-faint);
-  margin: var(--space-4) 0 var(--space-1);
-  padding: var(--space-1) var(--space-4);
-  cursor: pointer;
-  list-style-position: inside;
-}
-
-nav[aria-label='Sections'] summary:hover {
-  color: var(--nav-text);
+  color: var(--text-faint);
 }
 
 nav[aria-label='Sections'] > [data-testid='nav-self-link'] {
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-1);
   font-weight: 500;
 }
 
@@ -350,41 +413,46 @@ nav[aria-label='Sections'] ul {
   padding: 0;
 }
 
-/* A left rail rather than a filled block. The rail marks the current screen
-   without changing the row's shape, so the list does not jump as it changes. */
+/* A filled pill marks the current screen, as drawn. Every row keeps the same shape, so the list
+   does not jump as the current screen changes. */
 nav[aria-label='Sections'] a {
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-4);
-  border-left: 2px solid transparent;
-  color: var(--nav-text);
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-2);
+  padding: 7px var(--space-3);
+  border-radius: var(--radius);
+  color: var(--text-muted);
   text-decoration: none;
   font-size: 13.5px;
 }
 
 nav[aria-label='Sections'] a:hover {
-  color: var(--nav-text-strong);
-  background: var(--nav-surface-2);
+  color: var(--text);
+  background: var(--surface-raised-2);
 }
 
 nav[aria-label='Sections'] a[aria-current='page'] {
-  background: var(--nav-active);
-  border-left-color: var(--nav-accent);
-  color: var(--nav-text-strong);
-  font-weight: 500;
+  background: var(--accent-quiet);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+nav[aria-label='Sections'] a:focus-visible {
+  outline: 2px solid var(--accent-mark);
+  outline-offset: 1px;
 }
 
 /* An unbuilt screen is listed and reachable. Quieter, never hidden: hiding it
    would make the product look smaller than it is. */
 .meter-arrives {
   display: block;
-  color: var(--nav-text-faint);
+  color: var(--text-faint);
   font-size: var(--font-size-1);
 }
 
 nav[aria-label='Sections'] a[data-arrives] {
-  color: var(--nav-text-faint);
+  color: var(--text-faint);
 }
 
 /* ------------------------------------------------------------ trust strip */
@@ -424,6 +492,25 @@ nav[aria-label='Sections'] a[data-arrives] {
 
 [data-testid='coverage'][data-partial='true']::before {
   background: var(--stale);
+}
+
+/* The scope line under the title, as drawn: what this screen is counting, with a dot that
+   turns amber when it is part of the estate. Text, not a chip. */
+[data-testid='screen-heading'] [data-testid='coverage'],
+[data-testid='screen-heading'] [data-testid='coverage'][data-partial='true'] {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-2);
+}
+
+[data-testid='screen-heading'] [data-testid='coverage'] {
+  color: var(--text-muted);
+}
+
+[data-testid='trust-strip'] [data-testid='shell-failures'] {
+  margin-bottom: 0;
 }
 
 [data-testid='global-freshness'][data-state='never-collected'] {
@@ -1119,7 +1206,6 @@ button,
   [data-testid='shell'] {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-      'trust'
       'nav'
       'main';
   }
@@ -1128,8 +1214,6 @@ button,
     grid-column: 1;
     position: static;
     max-height: none;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
   }
 
   [data-testid='shell'] > main {
@@ -1354,12 +1438,13 @@ main [data-testid$='-coverage'] li {
 
 /* The notices are the product's argument, so the pass makes them louder rather
    than tidier. A left rule in the meaning's own colour, and a fill quiet enough
-   that the text on it keeps its contrast. */
+   that the text on it keeps its contrast. Not the shell's scope line, which sits
+   in the column since TASK-P8-018 and is drawn as text under the title. */
 main [role='status'].meter-stale,
 main
   .meter-stale:not(table):not(tr):not(td):not([data-testid='freshness']):not(
-    [data-testid='home-tile'] *
-  ) {
+    [data-testid='coverage']
+  ):not([data-testid='home-tile'] *) {
   border-top: none;
   border-left: 3px solid var(--stale);
   padding: var(--space-2) var(--space-3);
@@ -2924,4 +3009,234 @@ main > section > [data-testid='state'] > article > h3:first-of-type {
   border-left: 3px solid var(--stale);
   background: var(--stale-quiet);
   color: var(--text);
+}
+
+/* ----------------------------------------------------------------- motion */
+
+/*
+ * Rich, and never on a figure, by the owner's decision later on 2026-10-05: P8 spec section 2,
+ * docs/12-UI-DESIGN.md and TASK-P8-018. Controls answer in 160 ms; panels rise into place a few
+ * at a time; a panel lifts under the pointer; a screen fades in; a chart draws in once, left to
+ * right, so every mark it shows is a value it has. No number counts up and no bar grows from
+ * zero, and the reduced motion block at the end stops all of it.
+ */
+
+a,
+button,
+summary,
+label,
+input,
+select {
+  transition:
+    color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out),
+    opacity var(--motion-fast) var(--ease-out);
+}
+
+/* A screen fades in. The column is keyed by the screen's path, so this runs once per screen and
+   never while a reader stays on one. */
+[data-testid='shell'] > main {
+  animation: meter-fade var(--motion-base) var(--ease-out);
+}
+
+/* Panels rise into place, a few at a time. Backwards fill only, so once a panel has risen its
+   own rules govern it again and the lift below can take hold. */
+.meter-panel,
+[data-testid='home-tile'],
+[data-testid='top-actions'],
+[data-testid='home-rail'],
+main > section > article,
+main > section > [data-testid='state'] > div[data-testid],
+main > section > [data-testid='state'] > ol[data-testid],
+main > section > [data-testid='state'] > figure[data-testid],
+main > section > [data-testid='state'] > dl[data-testid],
+main > section > [data-testid='state'] > [data-testid='table-scroll'] {
+  animation: meter-rise var(--motion-slow) var(--ease-out) backwards;
+  animation-delay: calc(var(--rise-step, 0) * 55ms);
+  transition:
+    transform var(--motion-base) var(--ease-out),
+    box-shadow var(--motion-base) var(--ease-out),
+    border-color var(--motion-base) var(--ease-out);
+}
+
+/* A panel's place in its row, for the stagger. Not inherited, so a panel never takes its
+   container's place for its own. */
+@property --rise-step {
+  syntax: '<integer>';
+  inherits: false;
+  initial-value: 0;
+}
+
+:is(
+  .meter-panel,
+  [data-testid='home-tile'],
+  [data-testid='top-actions'],
+  [data-testid='home-rail'],
+  main > section > article,
+  main > section > [data-testid='state'] > *
+):nth-child(2) {
+  --rise-step: 1;
+}
+
+:is(
+  .meter-panel,
+  [data-testid='home-tile'],
+  [data-testid='top-actions'],
+  [data-testid='home-rail'],
+  main > section > article,
+  main > section > [data-testid='state'] > *
+):nth-child(3) {
+  --rise-step: 2;
+}
+
+:is(
+  .meter-panel,
+  [data-testid='home-tile'],
+  [data-testid='top-actions'],
+  [data-testid='home-rail'],
+  main > section > article,
+  main > section > [data-testid='state'] > *
+):nth-child(4) {
+  --rise-step: 3;
+}
+
+:is(
+  .meter-panel,
+  [data-testid='home-tile'],
+  [data-testid='top-actions'],
+  [data-testid='home-rail'],
+  main > section > article,
+  main > section > [data-testid='state'] > *
+):nth-child(5) {
+  --rise-step: 4;
+}
+
+:is(
+  .meter-panel,
+  [data-testid='home-tile'],
+  [data-testid='top-actions'],
+  [data-testid='home-rail'],
+  main > section > article,
+  main > section > [data-testid='state'] > *
+):nth-child(n + 6) {
+  --rise-step: 5;
+}
+
+/* A panel the pointer is over lifts, unless it holds a table: nothing moves under a row a reader
+   is reading. */
+.meter-panel:not(:has(table)):hover,
+[data-testid='home-tile']:not(:has(table)):hover,
+main > section > [data-testid='state'] > div[data-testid]:not(:has(table)):hover,
+main > section > [data-testid='state'] > figure[data-testid]:hover,
+main > section > [data-testid='state'] > dl[data-testid]:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--border-strong);
+}
+
+/* A time series draws in once, left to right: a clip opening over marks already at their
+   values, never a mark growing to one. Ranked and horizontal bars rise with their panel
+   instead, because revealed left to right they would read as bars growing from zero. */
+.meter-chart svg,
+[data-testid='bar-chart'] svg,
+[data-testid='stacked-columns'] svg {
+  animation: meter-reveal var(--motion-chart) var(--ease-out) 120ms backwards;
+}
+
+/* A menu opens rather than appearing. */
+[data-testid='export-menu'][open] > [data-testid='export-views'],
+[data-testid='shell-failures'] details[open] > ul {
+  animation: meter-pop var(--motion-fast) var(--ease-out);
+}
+
+/* A wait looks like work rather than like a frozen page. */
+[data-testid='skeleton-row'] {
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--surface-raised-2) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: meter-shimmer 1.4s linear infinite;
+}
+
+@keyframes meter-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes meter-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes meter-reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes meter-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes meter-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
+}
+
+/* Reduced motion stops all of it: nothing rises, fades, draws, pops, shimmers or lifts. Each list
+   repeats its rule's selectors inside :is(), which weighs as its most specific selector, so the
+   switch outranks every rule it switches off. A bare `> *` here lost to the rise rule's two
+   attributes, and a table kept rising for a reader who had asked it not to. */
+@media (prefers-reduced-motion: reduce) {
+  :is(
+    [data-testid='shell'] > main,
+    .meter-panel,
+    [data-testid='home-tile'],
+    [data-testid='top-actions'],
+    [data-testid='home-rail'],
+    main > section > article,
+    main > section > [data-testid='state'] > div[data-testid],
+    main > section > [data-testid='state'] > ol[data-testid],
+    main > section > [data-testid='state'] > figure[data-testid],
+    main > section > [data-testid='state'] > dl[data-testid],
+    main > section > [data-testid='state'] > [data-testid='table-scroll'],
+    .meter-chart svg,
+    [data-testid='bar-chart'] svg,
+    [data-testid='stacked-columns'] svg,
+    [data-testid='export-menu'][open] > [data-testid='export-views'],
+    [data-testid='shell-failures'] details[open] > ul,
+    [data-testid='skeleton-row']
+  ) {
+    animation: none;
+  }
+
+  :is(
+    .meter-panel:not(:has(table)):hover,
+    [data-testid='home-tile']:not(:has(table)):hover,
+    main > section > [data-testid='state'] > div[data-testid]:not(:has(table)):hover,
+    main > section > [data-testid='state'] > figure[data-testid]:hover,
+    main > section > [data-testid='state'] > dl[data-testid]:hover
+  ) {
+    transform: none;
+  }
 }

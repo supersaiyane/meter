@@ -403,6 +403,9 @@ test('the P3 walk keeps the estimate and the realization on separate screens', a
   await demoEstate(page);
 
   await page.goto('/optimize');
+  // Waited for, because the figures arrive after the page does. Reading the text the
+  // moment the page loaded raced the data, and lost once the rail listed every screen.
+  await expect(page.locator('main')).toContainText('412.64');
   // Lower cased, because the table headers render through a text transform and
   // innerText returns what is painted rather than what the source says.
   const recommendations = (await page.locator('body').innerText()).toLowerCase();
@@ -410,6 +413,7 @@ test('the P3 walk keeps the estimate and the realization on separate screens', a
   expect(recommendations).not.toContain('cost before');
 
   await page.goto('/optimize/savings');
+  await expect(page.locator('main')).toContainText('cost before', { ignoreCase: true });
   const savings = (await page.locator('body').innerText()).toLowerCase();
   expect(savings).toContain('cost before');
   expect(savings).not.toContain('412.64');

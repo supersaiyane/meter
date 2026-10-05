@@ -31,11 +31,12 @@ afterEach(() => {
 });
 
 describe('ThemeToggle', () => {
-  it('offers the system, light and dark, and starts on the system', () => {
+  it('offers the system, light and dark, and starts on light', () => {
+    // Light for a reader who has chosen nothing, P8 spec section 2.
     render(<ThemeToggle />);
     expect(screen.getByRole('group', { name: 'Theme' })).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: 'System' })).toBeChecked();
-    expect(screen.getByRole('radio', { name: 'Light' })).not.toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Light' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'System' })).not.toBeChecked();
     expect(screen.getByRole('radio', { name: 'Dark' })).not.toBeChecked();
   });
 
@@ -49,8 +50,8 @@ describe('ThemeToggle', () => {
   });
 
   it('opens on the choice a person made before', () => {
-    store.set(THEME_KEY, 'light');
+    store.set(THEME_KEY, 'system');
     render(<ThemeToggle />);
-    expect(screen.getByRole('radio', { name: 'Light' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'System' })).toBeChecked();
   });
 });

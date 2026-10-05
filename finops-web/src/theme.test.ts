@@ -28,10 +28,12 @@ afterEach(() => {
 });
 
 describe('the theme a person chose', () => {
-  it('follows the operating system until a person chooses', () => {
-    expect(storedTheme()).toBe('system');
+  it('opens light until a person chooses, whatever the operating system prefers', () => {
+    // The owner's decision later on 2026-10-05, P8 spec section 2: Frosted Ledger for
+    // every reader who has not chosen.
+    expect(storedTheme()).toBe('light');
     applyTheme(storedTheme());
-    expect(document.documentElement.dataset.theme).toBeUndefined();
+    expect(document.documentElement.dataset.theme).toBe('light');
   });
 
   it('pins a choice and remembers it', () => {
@@ -50,6 +52,11 @@ describe('the theme a person chose', () => {
 
   it('treats a stored value it does not know as no choice', () => {
     store.set(THEME_KEY, 'sepia');
+    expect(storedTheme()).toBe('light');
+  });
+
+  it('keeps a person who chose the operating system on it', () => {
+    store.set(THEME_KEY, 'system');
     expect(storedTheme()).toBe('system');
   });
 });

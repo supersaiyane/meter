@@ -32,7 +32,8 @@
      and a well set into either. A panel is translucent, so its colour is what
      it composites to over the page, which is why the contrast test composites
      before it measures. A shadow is still not how a panel separates from the
-     page; a hairline and one step of lightness do that. */
+     page at rest; a hairline and one step of lightness do that. A shadow lifts a
+     panel under the pointer and floats a menu, from the tokens below. */
   --surface: light-dark(#eef2f8, #070a12);
   --surface-sunken: light-dark(#e9edf4, #05080f);
   --surface-raised: light-dark(rgba(255, 255, 255, 0.64), rgba(15, 20, 32, 0.55));
@@ -116,25 +117,23 @@
   --severity-4: light-dark(#a4542c, #c4744c);
   --severity-5: light-dark(#68300f, #eeab86);
 
-  /* The navigation is dark in both themes, and that is a decision rather than an
-     oversight. It is chrome: it does not carry a figure, nothing in it has to be
-     read against a number, and a dark rail against a light page is what separates
-     the thing you navigate with from the thing you are reading. Every real tool in
-     this category does it, and the one that does not is the one where the sidebar
-     and the content blur into each other.
+  /* Motion, by the owner's choice of rich motion later on 2026-10-05, P8 spec section 2:
+     hover, focus, menus and tabs move fast; a panel rises and a screen fades a little slower; a
+     chart takes the longest, because it draws in left to right and the eye follows it. One
+     easing for all of it, so nothing on a screen moves to a different rhythm. Every figure is
+     still drawn at its value from the first frame. */
+  --motion-fast: 160ms;
+  --motion-base: 220ms;
+  --motion-slow: 420ms;
+  --motion-chart: 700ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
 
-     Fixed hues rather than tokens, because a value that followed the theme would
-     make this rule untrue half the time. */
-  --nav-surface: #0f1620;
-  --nav-surface-2: #17202c;
-  --nav-line: #1e2937;
-  --nav-text: #b3c0d1;
-  --nav-text-strong: #f2f6fb;
-  /* The dark theme's faint. #6b7b90 was 4.2 to 1 on the rail, and axe found
-     it on the menu button and the group headings on 2026-10-05. */
-  --nav-text-faint: #8390a6;
-  --nav-active: rgba(77, 163, 255, 0.16);
-  --nav-accent: #57a9ff;
+  /* Elevation, for the same decision: a panel lifts under the pointer and a menu floats above
+     the page. Never at rest, where the hairline and one step of lightness still separate a
+     panel from the page, and never a literal, which the surface test holds. */
+  --shadow-ink: light-dark(rgba(15, 23, 42, 0.14), rgba(0, 0, 0, 0.5));
+  --shadow-lift: 0 14px 30px -14px var(--shadow-ink), 0 3px 8px -3px var(--shadow-ink);
+  --shadow-float: 0 18px 44px -12px var(--shadow-ink), 0 4px 12px -4px var(--shadow-ink);
 
   /* Chart ink. One hue for a measured series, and the peak lifted out of it,
      because the eye finds the tallest bar anyway and then has to be told what it
@@ -314,7 +313,8 @@
 
 /* A number counting up from zero is lying for four hundred milliseconds, and
    this product's whole claim is that its numbers are trustworthy. Nothing here
-   animates a value. What little motion exists is switched off on request. */
+   animates a value. The motion the owner chose on 2026-10-05 is switched off on
+   request, here for everything and in layout.css for each thing that moves. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

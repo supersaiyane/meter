@@ -27,6 +27,7 @@
     "finops-web/e2e/filters.spec.ts",
     "finops-web/e2e/forecast.spec.ts",
     "finops-web/e2e/journey.spec.ts",
+    "finops-web/e2e/motion.spec.ts",
     "finops-web/e2e/quotas.spec.ts",
     "finops-web/e2e/topology.spec.ts",
     "finops-web/playwright.config.ts",

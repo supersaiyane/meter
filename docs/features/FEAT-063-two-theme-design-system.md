@@ -5,14 +5,16 @@
 | Sub project | P8 |
 | Status | In progress |
 | Specification | [P8 spec](../specs/2026-10-05-p8-experience-and-reporting-design.md), section 5.1 |
-| Tasks | TASK-P8-001. TASK-P8-013 carries it to every remaining screen |
+| Tasks | TASK-P8-001 and TASK-P8-018. TASK-P8-013 carries it to every remaining screen |
 
 ## What it does
 
 Gives Meter one design system with two themes: Aurora Glass for dark and Frosted Ledger for
 light, one set of components over two sets of tokens, kept as plain CSS in
-`finops-web/src/tokens.css` under ADR-0021. The theme follows the operating system, and a
-toggle overrides it and is remembered per person. With transparency reduced, or on a browser
+`finops-web/src/tokens.css` under ADR-0021. Light opens for a reader who has chosen
+nothing, by the owner's decision later on 2026-10-05; a toggle in the toolbar offers System,
+Light and Dark and is remembered per person. The rail is a glass panel in both themes, and
+motion is rich and never on a figure. With transparency reduced, or on a browser
 without `backdrop-filter`, every panel becomes an opaque panel of the same colour and the
 page glows are dropped.
 
@@ -37,22 +39,32 @@ word for word.
 ## How it works
 
 `finops-web/src/tokens.css` names every colour once, light and dark together, through
-`light-dark()`, so `color-scheme` alone chooses the theme. The operating system sets it until a
-person chooses. `src/theme.ts` pins a choice as `data-theme` on the root element and remembers
-it, and `src/shell/ThemeToggle.tsx` offers System, Light and Dark at the foot of the navigation.
+`light-dark()`, so `color-scheme` alone chooses the theme. Light holds until a person chooses:
+`index.html` pins it before any script runs, so a dark system never flashes a dark page, and
+`src/theme.ts` pins a choice as `data-theme` on the root element and remembers it.
+`src/shell/ThemeToggle.tsx` offers System, Light and Dark in the toolbar of every screen.
 The three lengths that differ by theme, a panel's radius, blur and saturation, are declared
 once for a system that prefers dark and once for a person who chose it, and a test holds the two
 equal. A panel is the `.meter-panel` class: the translucent `--surface-raised`, a hairline, a
 one pixel inner highlight and a backdrop blur, all from tokens. The page carries three radial
 glows, one per corner, and the shell's main column is transparent so the glows reach the panels.
 
+Motion is drawn from tokens too, TASK-P8-018: `--motion-fast` for controls, `--motion-base`
+for the cross fade between screens, `--motion-slow` for panels rising in a few at a time, and
+`--motion-chart` for a time series drawing in left to right, all on one easing. A panel lifts
+under the pointer with `--shadow-lift` unless it holds a table, and a menu floats with
+`--shadow-float`; at rest a panel still separates by its hairline. The keyframes are a named
+set of five and none animates a size, so no number counts up and no bar grows from zero.
+
 ## Failure behaviour
 
 With transparency reduced, or on a browser without `backdrop-filter`, `--surface-raised` and
 `--surface-raised-2` become their opaque `-solid` equivalents, the colour the glass would have
 shown over the bare page, and the glows are dropped. Print is the light theme with neither. A
-browser that refuses storage keeps the theme on the operating system's choice, because
-`src/storage.ts` treats a refusal as no value.
+browser that refuses storage keeps the light default, because `src/storage.ts` treats a
+refusal as no value. A reader who asks for reduced motion gets none: nothing fades, rises,
+draws, pops or lifts. The journeys run that way so they read the settled screen, and
+`finops-web/e2e/motion.spec.ts` proves both states from the computed animation.
 
 ## Security considerations
 
@@ -62,8 +74,9 @@ The only value stored is the word `system`, `light` or `dark`.
 
 ## Interface
 
-The tokens in `tokens.css`, the `.meter-panel` class, `storedTheme`, `applyTheme` and
-`chooseTheme` in `src/theme.ts`, and the `ThemeToggle` component.
+The tokens in `tokens.css`, motion and shadow among them, the `.meter-panel` class,
+`DEFAULT_THEME`, `storedTheme`, `applyTheme` and `chooseTheme` in `src/theme.ts`, and the
+`ThemeToggle` component.
 
 ## Not doing
 
@@ -75,7 +88,8 @@ accent mark. `docs/12-UI-DESIGN.md` section 7 gives the ratios.
 
 ## Status of this document
 
-In progress. TASK-P8-001 built the design system on 2026-10-05, and TASK-P8-013 carries it to
-every remaining screen.
+In progress. TASK-P8-001 built the design system on 2026-10-05, TASK-P8-018 made light the
+default, drew the rail and the top bar and added the motion the same day, and TASK-P8-013
+carries it to every remaining screen.
 
 See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P8.
