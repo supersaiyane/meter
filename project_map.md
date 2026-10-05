@@ -167,16 +167,25 @@ meter/
 │   │   │                      named routes under a containers prefix and ADR-0020
 │   │   │                      fixes seven top level groups, two weeks before this
 │   │   │                      spec was written
-│   │   └── 2026-09-28-p7-insight-and-llm-layer-design.md
-│   │                          Section 5.2 is the whole sub project: the model
-│   │                          cites figures rather than emitting them, so prose
-│   │                          carries placeholders and there is nowhere in a
-│   │                          sentence for a hallucinated number to live. Section
-│   │                          5.1 is why it needs no new data path, since its
-│   │                          tools are the MCP tools which are the HTTP API, and
-│   │                          section 11 is how an LLM feature is held to this
-│   │                          project's standard: three sets, and the refusal set
-│   │                          is written before the thing that must pass it
+│   │   ├── 2026-09-28-p7-insight-and-llm-layer-design.md
+│   │   │                      Section 5.2 is the whole sub project: the model
+│   │   │                      cites figures rather than emitting them, so prose
+│   │   │                      carries placeholders and there is nowhere in a
+│   │   │                      sentence for a hallucinated number to live. Section
+│   │   │                      5.1 is why it needs no new data path, since its
+│   │   │                      tools are the MCP tools which are the HTTP API, and
+│   │   │                      section 11 is how an LLM feature is held to this
+│   │   │                      project's standard: three sets, and the refusal set
+│   │   │                      is written before the thing that must pass it
+│   │   ├── 2026-10-05-p8-experience-and-reporting-design.md
+│   │   │                      What the owner approved on 2026-10-05: two themes
+│   │   │                      of one glass system, the Framework navigation,
+│   │   │                      FOCUS names, and Excel and CSV made by the server
+│   │   │                      behind the scope guard
+│   │   └── 2026-10-05-p9-price-catalog-design.md
+│   │                          Section 3 is the EC2 and EBS price research with
+│   │                          its sources; section 5.1 is the network path the
+│   │                          hub needs before any collector reaches AWS
 │   └── plans/                 implementation plans, written per sub project.
 │                              `sync.py` reads task status out of these, so the
 │                              Status row in each task is data, not prose. It
@@ -193,11 +202,17 @@ meter/
 │       │                          none of the reasoning had, which is the useful
 │       │                          half: every route, migration number and file
 │       │                          path had moved and every argument held
-│       └── P7-implementation-plan.md   14 tasks. TASK-P7-005 writes the three
-│                                  evaluation sets before TASK-P7-006 builds the
-│                                  orchestration they judge, because a refusal set
-│                                  written afterwards describes what the
-│                                  implementation happens to do
+│       ├── P7-implementation-plan.md   14 tasks. TASK-P7-005 writes the three
+│       │                          evaluation sets before TASK-P7-006 builds the
+│       │                          orchestration they judge, because a refusal set
+│       │                          written afterwards describes what the
+│       │                          implementation happens to do
+│       ├── P8-implementation-plan.md   15 tasks, approved 2026-10-05. The full
+│       │                          label table is approved before any label changes
+│       └── P9-implementation-plan.md   approved 2026-10-05. TASK-P9-001, the
+│                                  ADR and Terraform for interface endpoints plus
+│                                  two functions outside the VPC for Budgets and
+│                                  Support, gates the rest
 │
 │                              No task count per plan in this listing. It said 20,
 │                              11 and 8 for P3, P4 and P5 while all three were

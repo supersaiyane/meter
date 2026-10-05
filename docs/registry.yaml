@@ -78,6 +78,14 @@ subprojects:
   spec: specs/2026-10-05-p8-experience-and-reporting-design.md
   plan: plans/P8-implementation-plan.md
   depends_on: P1, P2, P3, P4, P5, P6, P7
+- id: P9
+  name: Price catalog and rightsizing targets
+  status: Specified, planned and approved by the owner 2026-10-05, not started, TASK-P9-001 next.
+    EC2 and EBS list prices from AWS, rightsizing down and up to a named and priced target, and gp2
+    to gp3, once the hub reaches AWS by the path chosen in OPEN-16
+  spec: specs/2026-10-05-p9-price-catalog-design.md
+  plan: plans/P9-implementation-plan.md
+  depends_on: P3
 features:
 - id: FEAT-001
   name: Account onboarding and organization topology, parent to child map
@@ -504,6 +512,30 @@ features:
   status: Planned
   detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.8, [P8 plan](docs/plans/P8-implementation-plan.md)'
   doc: docs/features/FEAT-070-persona-dashboards.md
+- id: FEAT-071
+  name: Price catalog for EC2 and EBS from the AWS Price List, versioned and FOCUS shaped
+  subproject: P9
+  status: Planned
+  detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.2, 5.3 and 7, [P9 plan](docs/plans/P9-implementation-plan.md)'
+  doc: docs/features/FEAT-071-price-catalog.md
+- id: FEAT-072
+  name: Instance capability catalog from DescribeInstanceTypes
+  subproject: P9
+  status: Planned
+  detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.4 and 7, [P9 plan](docs/plans/P9-implementation-plan.md)'
+  doc: docs/features/FEAT-072-instance-capability-catalog.md
+- id: FEAT-073
+  name: Rightsizing to a named, priced target, down and up
+  subproject: P9
+  status: Planned
+  detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.5 to 5.7, [P9 plan](docs/plans/P9-implementation-plan.md)'
+  doc: docs/features/FEAT-073-rightsizing-to-a-priced-target.md
+- id: FEAT-074
+  name: gp2 to gp3 migration, priced from measured IOPS and throughput
+  subproject: P9
+  status: Planned
+  detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) section 5.8, [P9 plan](docs/plans/P9-implementation-plan.md)'
+  doc: docs/features/FEAT-074-gp2-to-gp3-migration.md
 
 adrs:
 - id: ADR-0001
@@ -3721,6 +3753,33 @@ issues:
     not name budgets.py, config_inventory.py, recommendations.py, terraform_state.py, topology.py
     and waste.py. The P0 records that say eight ports, CHG-0039, CHG-0040, tasks/STATUS.md and docs/checkpoint_archive.md,
     describe 2026-08-24 and are right as records
+- id: ISS-242
+  severity: HIGH
+  status: OPEN
+  summary: The hub's private subnets reach six AWS services, and its collectors call about
+    fifteen more, several only in us-east-1 or in eu-west-2
+  detail: '`infra/terraform/hub/network.tf` has interface endpoints for `sts`, `sqs`,
+    `secretsmanager`, `logs`, `ecr.api` and `ecr.dkr` plus the S3 gateway, and a private route
+    table with no default route, and its comment calls that list every AWS service the tasks
+    call. The adapters in `finops_providers/aws` also call `ec2`, `cloudwatch` (endpoint
+    `monitoring`), `athena`, `config`, `ce`, `organizations`, `budgets`, `support`,
+    `service-quotas`, `cloudtrail`, `compute-optimizer`, `cost-optimization-hub`,
+    `bedrock-runtime` and `iam`, and `finops_providers/grafana/amg.py` calls `grafana`. None of
+    them has a path. Cost Explorer, Organizations, Budgets, Support and Cost Optimization Hub
+    answer only in us-east-1, calls into eu-west-2 need that Region''s endpoints, and cross
+    Region PrivateLink does not cover them. Budgets and Support have no interface endpoint at
+    all (measured 2026-10-05,
+    https://docs.aws.amazon.com/vpc/latest/privatelink/aws-services-privatelink-support.html).
+    `docs/04-DEPLOYMENT.md` names a Cost Explorer interface endpoint among the hub''s own, which
+    are made in the hub''s Region, and none can be made there: Cost Explorer answers only in
+    us-east-1, so its endpoint is in us-east-1 only (measured 2026-10-05,
+    https://docs.aws.amazon.com/general/latest/gr/billing.html). On a real account most
+    collectors would fail as Unreachable. Found on 2026-10-05 by the P9 price research. It went
+    unseen because nothing has run against AWS, ISS-002. The owner chose the path in OPEN-16 on
+    2026-10-05, A plus C: interface endpoints for every service that has one, and two functions outside the
+    VPC for Budgets and Support. It stays OPEN until TASK-P9-001 builds that path. Numbered 236
+    on branch p9-plan, in commit d85410d, and renumbered before the merge because main had
+    registered that number first'
 
 open_questions:
 - id: OPEN-07
@@ -3819,6 +3878,23 @@ open_questions:
   status: OPEN
   blocks: 'A deletion job for report files, TASK-P8-011. Files are kept until it is answered'
   detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 6'
+- id: OPEN-16
+  question: 'How does the hub reach the AWS APIs its collectors call: endpoints in every Region
+    used plus a us-east-1 endpoint VPC, a NAT gateway with an AWS-only allow list, or collectors
+    outside the VPC. ANSWERED 2026-10-05: A plus C for two. Interface endpoints for every service
+    that has one, and Budgets and Support, which have none, as two functions outside the VPC
+    that write rows to S3'
+  status: ANSWERED
+  blocks: 'Nothing now. TASK-P9-001 builds the path and writes the ADR that prices it, and
+    ISS-242 stays OPEN until it is built'
+  detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) section 5.1. The owner
+    chose on 2026-10-05: an interface endpoint for every service that has one, in an endpoint
+    VPC in us-east-1 for the services that answer only there and in each Region called for the
+    rest. Budgets and Support have no interface endpoint (measured 2026-10-05,
+    https://docs.aws.amazon.com/vpc/latest/privatelink/aws-services-privatelink-support.html),
+    so they run as two small functions outside the VPC that write rows to S3, and the hub keeps
+    no route out, which ADR-0028 relies on. About 20 endpoints at about 14.7 USD a month each,
+    roughly 290 USD a month (modelled); the ADR measures it. B, the NAT gateway, was not chosen'
 - id: OPEN-06
   question: 'Which regions beyond Ireland and London. ANSWERED 2026-08-23: those two only, eu-west-1 and
     eu-west-2'

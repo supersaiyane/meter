@@ -47,6 +47,7 @@ P0 Foundation
 | P6 | Containers | 6 | 2 | 1 |
 | P7 | Insight and LLM layer | 6 | 0 | 0 |
 | P8 | Experience and reporting | 8 | 0 | 8 |
+| P9 | Price catalog and rightsizing targets | 4 | 0 | 4 |
 
 <!-- generated:roadmap-status end -->
 
@@ -110,6 +111,7 @@ rather than that one saving happened.
 | P6 | Containers | Delivered, 12 of 12 tasks in its first cut. Cost by cluster, namespace and workload, request against use, sizing into P3's table, Fargate snapped to sizes that can be ordered, and forecast as a third provenance before anything forecasts. FEAT-037 is In build because the AWS adapter reads EKS and never ECS, ISS-224 | 6 (2 specified) | [spec](specs/2026-09-20-p6-containers-design.md) | [plan](plans/P6-implementation-plan.md) | P0, P1 |
 | P7 | Insight and LLM layer | Delivered, 14 of 14 tasks in its first cut. A question answered from the routes the screens read, every figure cited from a tool result and never written by the model, refusals and failures as shapes of their own, a monthly token budget, secrets redacted or blocked before any prompt is built, and weekly digests composed whether or not anything can send them. FEAT-039 and FEAT-040 are In build because nothing reads change history or opens a pull request yet, ISS-227 and ISS-228. Bedrock spend is tagged for the platform cost screen through an inference profile per model, unverified against an account, ISS-002 | 6 (0 specified) | [spec](specs/2026-09-28-p7-insight-and-llm-layer-design.md) | [plan](plans/P7-implementation-plan.md) | P1, P2, P3 |
 | P8 | Experience and reporting | Specified, planned and approved by the owner 2026-10-05, 15 tasks, not started. Two themes of one glass design system, navigation by the FinOps Framework, and Excel and CSV reports behind the scope guard | 8 (0 specified) | [spec](specs/2026-10-05-p8-experience-and-reporting-design.md) | [plan](plans/P8-implementation-plan.md) | P1, P2, P3, P4, P5, P6, P7 |
+| P9 | Price catalog and rightsizing targets | Specified, planned and approved by the owner 2026-10-05, not started, TASK-P9-001 next. EC2 and EBS list prices from AWS, rightsizing down and up to a named and priced target, and gp2 to gp3, once the hub reaches AWS by the path chosen in OPEN-16 | 4 (0 specified) | [spec](specs/2026-10-05-p9-price-catalog-design.md) | [plan](plans/P9-implementation-plan.md) | P3 |
 
 <!-- generated:subprojects end -->
 
@@ -364,3 +366,28 @@ scheduled reports rendered for each recipient, and persona dashboards, FEAT-063 
 
 **What it does not do.** No report sender until OPEN-11 says where reports go, no unit
 economics until a business metric source exists, no PDF, and no figure computed differently.
+
+---
+
+## P9 Price catalog and rightsizing targets
+
+**Goal.** Every rightsizing recommendation names a target offered in the Region, with both list
+prices, the price list version and the saving as their difference, labelled modelled. Growing
+an instance is an added cost, never a negative saving, and a gp2 volume's move to gp3 is priced
+from its measured IOPS and throughput, FEAT-071 to FEAT-074.
+
+**What the research found on 2026-10-05.** Today's saving is a fraction of the bill: the planted
+m5.2xlarge reports 90.9 percent of its cost (modelled) when one size down saves 50 percent at
+measured list prices. Every price comes from AWS's own Price List and instance data, never from
+scraping a third party. And the hub cannot reach those sources, nor most of what its collectors
+already call, ISS-242.
+
+**What the owner approved on 2026-10-05.** The spec and plan as written: EC2 and EBS on demand
+prices from AWS, instance specifications, downsizing and upsizing to a priced target, and gp2 to
+gp3, with prices for other services out of scope. For OPEN-16, A plus C for two: an interface
+endpoint for every service that has one, and Budgets and Support, which have none, as two small
+functions outside the VPC that write rows to S3, so the hub keeps no route out. TASK-P9-001
+builds that path and writes its ADR, and nothing else in P9 reaches AWS before it.
+
+**What it does not do.** No change applied, under constraint 6, no spot prices until FEAT-047
+needs them, no Savings Plans or reserved rate cards, and no service beyond EC2 and EBS yet.

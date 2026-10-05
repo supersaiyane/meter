@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-70 features across 9 sub projects. 14 specified, 11 planned, 13 in build, 32 delivered.
+74 features across 10 sub projects. 14 specified, 15 planned, 13 in build, 32 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -205,6 +205,15 @@ block is caught by `make check-docs`. See
 | [FEAT-068](docs/features/FEAT-068-saved-views-and-report-library.md) | Saved views and a report library, shared as configuration | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.6, [P8 plan](docs/plans/P8-implementation-plan.md), ISS-235 |
 | [FEAT-069](docs/features/FEAT-069-scheduled-reports.md) | Scheduled reports rendered for each recipient | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.7, [P8 plan](docs/plans/P8-implementation-plan.md), OPEN-11, OPEN-15 |
 | [FEAT-070](docs/features/FEAT-070-persona-dashboards.md) | Persona dashboards for executive, FinOps practitioner and engineering lead | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.8, [P8 plan](docs/plans/P8-implementation-plan.md) |
+
+### P9 Price catalog and rightsizing targets
+
+| ID | Feature | Status | Detail |
+| --- | --- | --- | --- |
+| [FEAT-071](docs/features/FEAT-071-price-catalog.md) | Price catalog for EC2 and EBS from the AWS Price List, versioned and FOCUS shaped | Planned | [P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.2, 5.3 and 7, [P9 plan](docs/plans/P9-implementation-plan.md) |
+| [FEAT-072](docs/features/FEAT-072-instance-capability-catalog.md) | Instance capability catalog from DescribeInstanceTypes | Planned | [P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.4 and 7, [P9 plan](docs/plans/P9-implementation-plan.md) |
+| [FEAT-073](docs/features/FEAT-073-rightsizing-to-a-priced-target.md) | Rightsizing to a named, priced target, down and up | Planned | [P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.5 to 5.7, [P9 plan](docs/plans/P9-implementation-plan.md) |
+| [FEAT-074](docs/features/FEAT-074-gp2-to-gp3-migration.md) | gp2 to gp3 migration, priced from measured IOPS and throughput | Planned | [P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) section 5.8, [P9 plan](docs/plans/P9-implementation-plan.md) |
 
 <!-- generated:features end -->
 
@@ -382,7 +391,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**146 FIXED, 92 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**146 FIXED, 93 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -456,6 +465,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-197 | HIGH | The fake bill and the fake utilization estate did not join. cur.py billed one EC2 and one RDS resource per account and named them {service}/{account}/0001, while the estate ran 36 resources, so only two per account appeared in both. Every consumer that joins a charge to a resource found nothing for the other 26, which meant FEAT-029 could not measure what a completed recommendation did to the bill and FEAT-035 will not be able to reconcile pod cost. TASK-P3-013 shipped a workaround, three resources seeded with hand written daily charges, so the one screen that proves this product works was reading a fixture written for it. Named as decision 6 of the fake estate data dictionary when the estate was adopted, and fixed 2026-09-21 rather than carried into P4. The bill now derives its services from the estate, emits one line per resource, and prices each from that resource's own configuration through a price module the sizing estimate reads too, so an estimated saving and the charge it is about cannot disagree. cur.LANDED moves three resources' cost and usage by different amounts from a fixed day, so the collector reaches all three verdicts from the charges rather than from a fixture, and a bill whose usage never moved could not have produced the third at all | FIXED | `finops_fakes/cur.py`, `finops_fakes/prices.py`, FEAT-029, FEAT-035 |
 | ISS-222 | HIGH | The fake bill's drift was a per month sawtooth, so an untouched resource looked cheaper on some dates and the planted REGRESSED saving was VERIFIED instead | FIXED | drift was indexed by the day of the month, enumerate over one period's days, so it reset to its lowest value every first rather than rising as its comment said. A resource whose bill is meant never to move then had a thirty day cost that depended on where in the month its windows fell, and the realized savings collector read the planted load balancer as a saving whenever the after window landed on cheaper early month days. Green on 2026-09-28, flipped on 2026-10-02 and 2026-10-04, reproduced on main with no P6 code at all. On 2026-10-01 the flip was wrongly blamed on P6 split cost lines, because the date rolled into October the same day they were added. Drift is now anchored to the estate clock and monotonic, over the same one to one point one five range, and the seed tests pass with the clock frozen to the 1st, 2nd, 4th, 15th and 28th. The rest of the backend suite did not move |
 | ISS-233 | HIGH | Four screens kept their own list of failure causes without Misconfigured, so a failed ingest run could draw its row count as a measured figure | FIXED | finops-web AppShell.tsx, surfaceStateFor.ts, IngestScreen.tsx and QuerySurfacesScreen.tsx each held the five causes known before ADR-0026. The shell labelled a Misconfigured failure UNRECOGNISED, and Ingest drew the run's items written as a measured number, which constraint 5 forbids. Found by the UI audit of 2026-10-05. FIXED the same day: provenance.ts exports FAILURE_CAUSES derived from CAUSE_LABEL, the four copies are deleted, and an unknown cause on Ingest draws as UNRECOGNISED rather than as the count |
+| ISS-242 | HIGH | The hub's private subnets reach six AWS services, and its collectors call about fifteen more, several only in us-east-1 or in eu-west-2 | OPEN | `infra/terraform/hub/network.tf` has interface endpoints for `sts`, `sqs`, `secretsmanager`, `logs`, `ecr.api` and `ecr.dkr` plus the S3 gateway, and a private route table with no default route, and its comment calls that list every AWS service the tasks call. The adapters in `finops_providers/aws` also call `ec2`, `cloudwatch` (endpoint `monitoring`), `athena`, `config`, `ce`, `organizations`, `budgets`, `support`, `service-quotas`, `cloudtrail`, `compute-optimizer`, `cost-optimization-hub`, `bedrock-runtime` and `iam`, and `finops_providers/grafana/amg.py` calls `grafana`. None of them has a path. Cost Explorer, Organizations, Budgets, Support and Cost Optimization Hub answer only in us-east-1, calls into eu-west-2 need that Region's endpoints, and cross Region PrivateLink does not cover them. Budgets and Support have no interface endpoint at all (measured 2026-10-05, https://docs.aws.amazon.com/vpc/latest/privatelink/aws-services-privatelink-support.html). `docs/04-DEPLOYMENT.md` names a Cost Explorer interface endpoint among the hub's own, which are made in the hub's Region, and none can be made there: Cost Explorer answers only in us-east-1, so its endpoint is in us-east-1 only (measured 2026-10-05, https://docs.aws.amazon.com/general/latest/gr/billing.html). On a real account most collectors would fail as Unreachable. Found on 2026-10-05 by the P9 price research. It went unseen because nothing has run against AWS, ISS-002. The owner chose the path in OPEN-16 on 2026-10-05, A plus C: interface endpoints for every service that has one, and two functions outside the VPC for Budgets and Support. It stays OPEN until TASK-P9-001 builds that path. Numbered 236 on branch p9-plan, in commit d85410d, and renumbered before the merge because main had registered that number first |
 | ISS-004 | MEDIUM | Compute Optimizer has never been opted into at organization level, so an estate reports zero AWS native recommendations and cannot tell that from having none | OPEN | Registered on 2026-09-28 for the reason given on ISS-002. Cited by the P3 specification, FEAT-025, finops_providers/aws/recommendations.py and finops_core/ports/recommendations.py, and absent from this register. The adapter already handles it correctly: the absence arrives as NotOptedIn and renders as a named gap rather than as an empty list, which is the distinction constraint 5 exists for. What is lost is the recommendations themselves, not the honesty of the screen |
 | ISS-011 | MEDIUM | A model producing sizing numbers destroys trust on the first hallucination | FIXED | [ADR-0007](docs/adr/ADR-0007-llm-never-computes-a-number.md) |
 | ISS-012 | MEDIUM | Organization wide AWS Config recording is a five figure monthly cost | OPEN | [tasks/ISSUES.md](tasks/ISSUES.md), resolved in P4 |
@@ -654,6 +664,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | OPEN-13 | Which code host receives a remediation pull request, and with what credential | OPEN | FEAT-040 opening anything, ISS-228. The authoring is built and tested against the PullRequestSink port, so the answer costs one adapter | [P7 plan](docs/plans/P7-implementation-plan.md) TASK-P7-009. The credential would be the first write Meter holds anywhere, into a repository rather than a member account, and it needs to open a pull request and nothing more |
 | OPEN-14 | How long are a person's questions to the assistant kept, and does erasing a person delete their exchanges or tombstone them | OPEN | ISS-226, a retention job and erasure for assistant_exchange and redaction_event | [docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md). Deleting takes the person's spend out of the month's token budget sum. Tombstoning the question and the identifier keeps the spend counted |
 | OPEN-15 | How long are generated report runs and their files kept | OPEN | A deletion job for report files, TASK-P8-011. Files are kept until it is answered | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 6 |
+| OPEN-16 | How does the hub reach the AWS APIs its collectors call: endpoints in every Region used plus a us-east-1 endpoint VPC, a NAT gateway with an AWS-only allow list, or collectors outside the VPC. ANSWERED 2026-10-05: A plus C for two. Interface endpoints for every service that has one, and Budgets and Support, which have none, as two functions outside the VPC that write rows to S3 | ANSWERED | Nothing now. TASK-P9-001 builds the path and writes the ADR that prices it, and ISS-242 stays OPEN until it is built | [P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) section 5.1. The owner chose on 2026-10-05: an interface endpoint for every service that has one, in an endpoint VPC in us-east-1 for the services that answer only there and in each Region called for the rest. Budgets and Support have no interface endpoint (measured 2026-10-05, https://docs.aws.amazon.com/vpc/latest/privatelink/aws-services-privatelink-support.html), so they run as two small functions outside the VPC that write rows to S3, and the hub keeps no route out, which ADR-0028 relies on. About 20 endpoints at about 14.7 USD a month each, roughly 290 USD a month (modelled); the ADR measures it. B, the NAT gateway, was not chosen |
 | OPEN-06 | Which regions beyond Ireland and London. ANSWERED 2026-08-23: those two only, eu-west-1 and eu-west-2 | ANSWERED | nothing | Set in METER_REGIONS, see .env.example section 3 |
 
 <!-- generated:open-questions end -->
@@ -662,16 +673,22 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 
 ## 7. Specifications and plans
 
-| Sub project | Specification | Implementation plan | Status |
-| --- | --- | --- | --- |
-| P0 Foundation | [design spec](docs/specs/2026-08-23-p0-foundation-design.md) | [28 tasks](docs/plans/P0-implementation-plan.md) | Spec in review, plan provisional |
-| P2 Query Cost Governance | not written | not written | Next after P0 |
-| P1 Cost Intelligence | not written | not written | Not started |
-| P3 Utilization and Rightsizing | not written | not written | Not started |
-| P4 Inventory and Topology | not written | not written | Not started |
-| P5 Quotas and Limits | not written | not written | Not started |
-| P6 Containers | not written | not written | Not started |
-| P7 Insight and LLM layer | not written | not written | Not started |
+| Sub project | Specification | Implementation plan |
+| --- | --- | --- |
+| P0 Foundation | [design spec](docs/specs/2026-08-23-p0-foundation-design.md) | [plan](docs/plans/P0-implementation-plan.md) |
+| P1 Cost Intelligence | [design spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) | [plan](docs/plans/P1-implementation-plan.md) |
+| P2 Query Cost Governance | [design spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md) | [plan](docs/plans/P2-implementation-plan.md) |
+| P3 Utilization and Rightsizing | [design spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) | [plan](docs/plans/P3-implementation-plan.md) |
+| P4 Inventory and Topology | [design spec](docs/specs/2026-09-20-p4-inventory-and-topology-design.md) | [plan](docs/plans/P4-implementation-plan.md) |
+| P5 Quotas and Limits | [design spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) | [plan](docs/plans/P5-implementation-plan.md) |
+| P6 Containers | [design spec](docs/specs/2026-09-20-p6-containers-design.md) | [plan](docs/plans/P6-implementation-plan.md) |
+| P7 Insight and LLM layer | [design spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) | [plan](docs/plans/P7-implementation-plan.md) |
+| P8 Experience and reporting | [design spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) | [plan](docs/plans/P8-implementation-plan.md) |
+| P9 Price catalog and rightsizing targets | [design spec](docs/specs/2026-10-05-p9-price-catalog-design.md) | [plan](docs/plans/P9-implementation-plan.md) |
+
+Each sub project's status is kept in one place, the generated sub project table in the
+[roadmap](docs/01-ROADMAP.md). This table carried its own status column by hand until
+2026-10-05, and on that day it still listed P1 to P7 as not written.
 
 Templates for new documents: [docs/templates/](docs/templates/README.md)
 
