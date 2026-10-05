@@ -275,7 +275,10 @@ meter/
 │   │                          cited by ten documents and registered in none.
 │   │                          check_map_counts.py owns this file's generated
 │   │                          counts, and was itself missing from this listing
-│   │                          until 2026-09-28
+│   │                          until 2026-09-28. build_file_graph.py graphs the
+│   │                          files git lists rather than the disk, and its
+│   │                          --check fails when the committed graph is stale or
+│   │                          empty, which it did not do until 2026-10-05, ISS-236
 │   ├── ci/                    code_review.py, check_flags.py, check_hardcoded.py,
 │   │                          check_forbidden_imports.py, check_memory.py,
 │   │                          check_env_keys.py, refresh_base_images.py. Flag and
