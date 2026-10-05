@@ -2119,6 +2119,11 @@
     },
     {
       "s": "finops-web/src/components/__tests__/surface.test.ts",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/surface.test.ts",
       "t": "finops-web/src/layout.css?raw",
       "k": "typescript"
     },

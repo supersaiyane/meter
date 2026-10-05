@@ -3561,6 +3561,36 @@ issues:
     without the envelope it returned, so the screen shows the call and the path and not the
     rows behind them. Storing envelopes is a size and retention decision, which OPEN-14 also
     covers'
+- id: ISS-233
+  severity: HIGH
+  status: FIXED
+  summary: Four screens kept their own list of failure causes without Misconfigured, so a
+    failed ingest run could draw its row count as a measured figure
+  detail: 'finops-web AppShell.tsx, surfaceStateFor.ts, IngestScreen.tsx and
+    QuerySurfacesScreen.tsx each held the five causes known before ADR-0026. The shell labelled
+    a Misconfigured failure UNRECOGNISED, and Ingest drew the run''s items written as a measured
+    number, which constraint 5 forbids. Found by the UI audit of 2026-10-05. FIXED the same day:
+    provenance.ts exports FAILURE_CAUSES derived from CAUSE_LABEL, the four copies are deleted,
+    and an unknown cause on Ingest draws as UNRECOGNISED rather than as the count'
+- id: ISS-234
+  severity: LOW
+  status: FIXED
+  summary: Home listed realized savings as not yet collected and arriving with P3, after P3
+    shipped
+  detail: 'finops-web HomeScreen.tsx ABSENT. The list''s own rule is that a slot leaves the day
+    its sub project lands, and this one stayed. Found by the UI audit of 2026-10-05 and FIXED the
+    same day: the slot is removed, and the rail draws nothing for an empty list instead of a
+    heading over nothing. A realized savings tile on Home belongs to the UI review'
+- id: ISS-235
+  severity: MEDIUM
+  status: OPEN
+  summary: Filters are not read from the query string, so links that carry one land on an
+    unfiltered screen
+  detail: 'docs/13-UI-ARCHITECTURE.md says filters live in the query string, and nothing in
+    finops-web reads it. A link to /waste with a finding, from the FinOps Score screen, and one
+    with a geography, from the Geography screen, both open the screen unfiltered with no word
+    that the filter was dropped. Found by the UI audit of 2026-10-05. Belongs to the UI review,
+    whose saved views and report filters need the same mechanism'
 
 open_questions:
 - id: OPEN-07
