@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { verdictName } from '../components/displayNames';
 
 import { useRealizedSavings } from '../api/queries';
 import { DataTable } from '../components/DataTable';
@@ -65,7 +66,7 @@ export function WasteSavingsScreen() {
       header: 'Verdict',
       render: (row) => (
         <span data-testid={`verdict-${row.recommendation_id}`} data-verdict={row.verdict}>
-          {row.verdict}
+          {verdictName(row.verdict)}
         </span>
       ),
     },

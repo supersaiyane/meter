@@ -104,7 +104,10 @@ describe('HomeScreen', () => {
     // the feature.
     renderHome();
     expect(screen.queryByText(/P1 Cost Intelligence/)).toBeNull();
-    expect(screen.getByRole('link', { name: /Total spend/ })).toHaveAttribute('href', '/analyze/explorer');
+    expect(screen.getByRole('link', { name: /Effective Cost/ })).toHaveAttribute(
+      'href',
+      '/analyze/explorer',
+    );
   });
 
   it('gives every slot a link to the screen that owns it', () => {

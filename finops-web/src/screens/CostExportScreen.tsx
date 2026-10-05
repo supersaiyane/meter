@@ -88,7 +88,7 @@ export function CostExportScreen() {
   }
 
   return (
-    <section aria-label="Export">
+    <section aria-label="Exports">
       <StateBoundary state={state}>
         <div>
           <p data-testid="export-claim">

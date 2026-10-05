@@ -54,7 +54,7 @@ export function CostScreen() {
     { key: 'service', header: 'Service', render: (row) => row.name },
     {
       key: 'cost',
-      header: 'Amortized',
+      header: 'Effective Cost',
       numeric: true,
       render: (row) => (
         // Measured, always. A charge is what the provider billed, and there is
@@ -67,7 +67,7 @@ export function CostScreen() {
     },
     {
       key: 'billed',
-      header: 'Billed',
+      header: 'Billed Cost',
       numeric: true,
       render: (row) => (
         <Figure
@@ -85,7 +85,7 @@ export function CostScreen() {
   ];
 
   return (
-    <section aria-label="Spend and trend">
+    <section aria-label="Cost Explorer">
       <StateBoundary state={state}>
         {/* The figure and the chart of that figure are one panel. Two would say they are two
             things, which is the reading a panelled layout exists to prevent. */}

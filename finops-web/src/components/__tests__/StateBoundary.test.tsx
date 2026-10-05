@@ -95,7 +95,7 @@ describe('StateBoundary', () => {
         <p>rows</p>
       </StateBoundary>,
     );
-    expect(screen.getByText(/Not yet collected by org_tree/)).toBeInTheDocument();
+    expect(screen.getByText(/Not yet collected by Organization/)).toBeInTheDocument();
     expect(screen.getByText(/Next run in 40 min/)).toBeInTheDocument();
   });
 

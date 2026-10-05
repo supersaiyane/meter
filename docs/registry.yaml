@@ -473,7 +473,7 @@ features:
 - id: FEAT-064
   name: Navigation by the FinOps Framework and FOCUS names on every screen
   subproject: P8
-  status: In progress
+  status: Delivered
   detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) sections 5.2 and 5.3, [P8 plan](docs/plans/P8-implementation-plan.md)'
   doc: docs/features/FEAT-064-framework-navigation-and-focus-names.md
 - id: FEAT-065

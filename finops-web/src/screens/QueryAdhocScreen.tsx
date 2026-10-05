@@ -91,7 +91,7 @@ export function QueryAdhocScreen() {
   const spent = useMemo(() => rows.reduce((sum, row) => sum + Number(row.cost_usd), 0), [rows]);
 
   return (
-    <section aria-label="Ad hoc queries">
+    <section aria-label="Ad hoc">
       <StateBoundary state={state}>
         {rows.length === 0 ? null : (
           <div data-testid="adhoc-total">

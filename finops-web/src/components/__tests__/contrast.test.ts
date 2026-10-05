@@ -76,9 +76,16 @@ function parse(colour: string): Rgba {
       1,
     ];
   }
-  const rgb = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)$/i.exec(colour);
+  const rgb = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)$/i.exec(
+    colour,
+  );
   if (rgb !== null) {
-    return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3]), rgb[4] === undefined ? 1 : Number(rgb[4])];
+    return [
+      Number(rgb[1]),
+      Number(rgb[2]),
+      Number(rgb[3]),
+      rgb[4] === undefined ? 1 : Number(rgb[4]),
+    ];
   }
   throw new Error(`${colour} is not a colour this test can read`);
 }
@@ -139,7 +146,9 @@ function wells(theme: Theme): readonly Rgba[] {
 
 function lowest(ink: string, grounds: (theme: Theme) => readonly Rgba[]): number {
   return Math.min(
-    ...THEMES.flatMap((theme) => grounds(theme).map((ground) => ratio(token(ink, theme), ground))),
+    ...THEMES.flatMap((theme) =>
+      grounds(theme).map((ground) => ratio(token(ink, theme), ground)),
+    ),
   );
 }
 
@@ -154,7 +163,9 @@ describe('contrast, in light and in dark, on glass', () => {
 
   it('gives numerals AAA, because misreading a digit is the failure that matters', () => {
     for (const tier of [page, panels, rows, wells]) {
-      expect(lowest('--text-numeral', tier), `numerals on ${tier.name}`).toBeGreaterThanOrEqual(7);
+      expect(lowest('--text-numeral', tier), `numerals on ${tier.name}`).toBeGreaterThanOrEqual(
+        7,
+      );
     }
   });
 
@@ -183,7 +194,9 @@ describe('contrast, in light and in dark, on glass', () => {
     // scrolls past, and this product's whole claim is that it says when a
     // number is missing.
     for (const theme of THEMES) {
-      expect(ratio(token('--failure', theme), token('--text', theme))).toBeGreaterThanOrEqual(2.2);
+      expect(ratio(token('--failure', theme), token('--text', theme))).toBeGreaterThanOrEqual(
+        2.2,
+      );
     }
   });
 
@@ -214,7 +227,10 @@ describe('contrast, in light and in dark, on glass', () => {
     // these. A different colour would make the setting change the design.
     for (const theme of THEMES) {
       const panel = over(token('--surface-raised', theme), token('--surface', theme));
-      const row = over(token('--surface-raised-2', theme), token('--surface-raised-solid', theme));
+      const row = over(
+        token('--surface-raised-2', theme),
+        token('--surface-raised-solid', theme),
+      );
       const pairs: readonly (readonly [Rgba, Rgba])[] = [
         [token('--surface-raised-solid', theme), panel],
         [token('--surface-raised-2-solid', theme), row],
@@ -241,7 +257,10 @@ describe('contrast, in light and in dark, on glass', () => {
     };
     for (const ground of ['--nav-surface', '--nav-surface-2']) {
       for (const ink of ['--nav-text', '--nav-text-faint', '--nav-text-strong']) {
-        expect(ratio(single(ink), single(ground)), `${ink} on ${ground}`).toBeGreaterThanOrEqual(4.5);
+        expect(
+          ratio(single(ink), single(ground)),
+          `${ink} on ${ground}`,
+        ).toBeGreaterThanOrEqual(4.5);
       }
     }
   });
@@ -249,7 +268,9 @@ describe('contrast, in light and in dark, on glass', () => {
   it('keeps the severity ramp ordered by luminance, not merely different', () => {
     // A categorical palette for an ordered quantity makes HIGH and MEDIUM look
     // like different kinds of thing rather than different amounts.
-    const light = [1, 2, 3, 4, 5].map((n) => luminance(token(`--severity-${String(n)}`, 'light')));
+    const light = [1, 2, 3, 4, 5].map((n) =>
+      luminance(token(`--severity-${String(n)}`, 'light')),
+    );
     expect([...light].sort((a, b) => b - a)).toEqual(light);
   });
 });

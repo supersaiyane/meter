@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-74 features across 10 sub projects. 14 specified, 13 planned, 13 in build, 32 delivered.
+74 features across 10 sub projects. 14 specified, 13 planned, 13 in build, 33 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -198,7 +198,7 @@ block is caught by `make check-docs`. See
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
 | [FEAT-063](docs/features/FEAT-063-two-theme-design-system.md) | Two theme design system with glass surfaces, dark and light | In progress | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.1, [P8 plan](docs/plans/P8-implementation-plan.md) |
-| [FEAT-064](docs/features/FEAT-064-framework-navigation-and-focus-names.md) | Navigation by the FinOps Framework and FOCUS names on every screen | In progress | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) sections 5.2 and 5.3, [P8 plan](docs/plans/P8-implementation-plan.md) |
+| [FEAT-064](docs/features/FEAT-064-framework-navigation-and-focus-names.md) | Navigation by the FinOps Framework and FOCUS names on every screen | Delivered | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) sections 5.2 and 5.3, [P8 plan](docs/plans/P8-implementation-plan.md) |
 | [FEAT-065](docs/features/FEAT-065-cost-explorer.md) | Cost Explorer, two group bys over FOCUS dimensions and tags | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) sections 5.3 and 7, [P8 plan](docs/plans/P8-implementation-plan.md) |
 | [FEAT-066](docs/features/FEAT-066-spend-forecast.md) | Spend forecast, month end and three months, with a published backtest | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 7, [P8 plan](docs/plans/P8-implementation-plan.md), [ADR-0015](docs/adr/ADR-0015-deterministic-forecasting-is-permitted.md) |
 | [FEAT-067](docs/features/FEAT-067-excel-and-csv-export.md) | Report export to Excel and CSV behind the scope guard, with an About sheet | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.5, [P8 plan](docs/plans/P8-implementation-plan.md). Delivers FEAT-045 rather than building it again |
@@ -684,7 +684,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | P5 Quotas and Limits | [design spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) | [plan](docs/plans/P5-implementation-plan.md) |
 | P6 Containers | [design spec](docs/specs/2026-09-20-p6-containers-design.md) | [plan](docs/plans/P6-implementation-plan.md) |
 | P7 Insight and LLM layer | [design spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) | [plan](docs/plans/P7-implementation-plan.md) |
-| P8 Experience and reporting | [design spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) | [plan](docs/plans/P8-implementation-plan.md) |
+| P8 Experience and reporting | [design spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md), and the [label table](docs/specs/2026-10-05-p8-label-table.md) the owner approved | [plan](docs/plans/P8-implementation-plan.md) |
 | P9 Price catalog and rightsizing targets | [design spec](docs/specs/2026-10-05-p9-price-catalog-design.md) | [plan](docs/plans/P9-implementation-plan.md) |
 
 Each sub project's status is kept in one place, the generated sub project table in the

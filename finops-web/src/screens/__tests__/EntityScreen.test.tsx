@@ -127,7 +127,7 @@ describe('EntityScreen', () => {
     // home screen would be right to stop trusting both.
     renderEntity();
     const findings = await screen.findByTestId('entity-findings');
-    expect(findings).toHaveTextContent('EBS_GP2_TO_GP3');
+    expect(findings).toHaveTextContent('gp2 to gp3 volume');
     expect(findings).toHaveTextContent('no regret');
     expect(findings).toHaveTextContent(/applied online and can be changed back/);
   });

@@ -99,7 +99,10 @@ function Request({
     <article data-testid="quota-request" data-status={request.status}>
       <h4>
         {request.request_id}
-        <span data-testid="request-status"> {request.status.replace('_', ' ').toLowerCase()}</span>
+        <span data-testid="request-status">
+          {' '}
+          {request.status.replace('_', ' ').toLowerCase()}
+        </span>
       </h4>
       <p data-testid="request-desired">Asked for {request.desired_value}</p>
       {/* When, not only what. The current status can say a request was approved and not when,
@@ -152,8 +155,8 @@ export function QuotaDetailScreen() {
 
           {found?.is_adjustable === false ? (
             <p data-testid="quota-hard-limit">
-              AWS does not raise this limit, so there is nothing to request. The way past it is a
-              different architecture rather than a bigger number.
+              AWS does not raise this limit, so there is nothing to request. The way past it is
+              a different architecture rather than a bigger number.
             </p>
           ) : null}
 
@@ -177,8 +180,8 @@ export function QuotaDetailScreen() {
           <h3>Requests against this quota</h3>
           {requests.length === 0 ? (
             <p data-testid="quota-no-requests" data-state="never-collected">
-              No increase has been requested for this quota, or none has been read yet. Those are
-              different facts and this screen cannot tell them apart.
+              No increase has been requested for this quota, or none has been read yet. Those
+              are different facts and this screen cannot tell them apart.
             </p>
           ) : null}
           {requests.map((request) => (

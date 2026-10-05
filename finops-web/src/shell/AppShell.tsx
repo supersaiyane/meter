@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
+import { collectorName } from '../components/displayNames';
 import { NavLink, useLocation, useSearchParams } from 'react-router';
 
 import { CoverageBanner } from '../components/CoverageBanner';
@@ -240,7 +241,7 @@ export function AppShell({ children, now }: AppShellProps) {
                     {isFailureCause(failure.cause) ? (
                       <TypedError
                         cause={failure.cause}
-                        remediation={`${failure.collector} on ${failure.scope_key}. ${failure.remediation}`}
+                        remediation={`${collectorName(failure.collector)} on ${failure.scope_key}. ${failure.remediation}`}
                       />
                     ) : (
                       // A cause the frontend does not know is still shown. Hiding it because

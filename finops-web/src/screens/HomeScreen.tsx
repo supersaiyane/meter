@@ -334,9 +334,9 @@ export function HomeScreen() {
     <>
       {/* Tier one. What the estate costs and what is open, at a glance. */}
       <section data-testid="home-summary" aria-label="Summary">
-        <div data-testid="home-tile" aria-label="Total spend">
+        <div data-testid="home-tile" aria-label="Effective Cost">
           <h3>
-            <Link to="/analyze/explorer">Total spend, this period</Link>
+            <Link to="/analyze/explorer">Effective Cost, this period</Link>
           </h3>
           <StateBoundary state={spendState} coverageShownElsewhere>
             <p data-testid="home-spend">
@@ -470,9 +470,9 @@ export function HomeScreen() {
           </StateBoundary>
         </div>
 
-        <div data-testid="home-tile" aria-label="Surfaces under audit">
+        <div data-testid="home-tile" aria-label="Sources under audit">
           <h3>
-            <Link to="/govern/query-cost/surfaces">Surfaces under audit</Link>
+            <Link to="/govern/query-cost/surfaces">Sources under audit</Link>
           </h3>
           <StateBoundary state={surfacesState} coverageShownElsewhere>
             {/* Always a ratio. A surface Meter could not read is not a surface

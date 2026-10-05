@@ -263,12 +263,12 @@ test('the demo walk reaches every screen the runbook points at', async ({ page }
   // figure the spend screen shows, because Home reads that screen's own hook.
   await page.goto('/');
   await expect(page.getByTestId('home-spend')).toContainText('3,781.93');
-  await expect(page.getByRole('link', { name: /Total spend/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Effective Cost/ })).toBeVisible();
   // P1 filled three home slots and left them saying "arrives with P1" until
   // 2026-09-20, on the front page of the demo.
   await expect(page.getByText('P1 Cost Intelligence')).toHaveCount(0);
 
-  // 2. Spend and trend. The open period says so rather than presenting a part month
+  // 2. Cost Explorer. The open period says so rather than presenting a part month
   // as a total.
   await page.goto('/analyze/explorer');
   await expect(page.getByText(/still open/i)).toBeVisible();
@@ -278,7 +278,7 @@ test('the demo walk reaches every screen the runbook points at', async ({ page }
   // rather than the API's key: an empty cell reads as a rendering fault and sends
   // somebody looking for a value that was never there.
   await page.goto('/analyze/allocation');
-  await expect(page.getByTestId('allocation-unallocated')).toHaveText('nobody tagged this');
+  await expect(page.getByTestId('allocation-unallocated')).toHaveText('Unallocated cost');
   await expect(page.getByText('814.17')).toBeVisible();
 
   // 4. Anomalies. The working is shown whole, because a verdict a reader cannot argue
@@ -366,10 +366,10 @@ test('the commitments screen never puts the two percentages side by side', async
   const row = page.locator('tr', { has: page.getByTestId('utilization-fake-sp-compute') });
   await expect(row.locator('[data-testid^="coverage-"]')).toHaveCount(0);
 
-  await expect(page.getByTestId('utilization-heading')).toContainText(
+  await expect(page.getByTestId('utilization-means')).toContainText(
     /what we paid for was used/i,
   );
-  await expect(page.getByTestId('coverage-heading')).toContainText(
+  await expect(page.getByTestId('coverage-means')).toContainText(
     /estate is on a commitment/i,
   );
 });

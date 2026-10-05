@@ -109,7 +109,7 @@ export function QuerySurfacesScreen() {
   const state = surfaceStateFor(query, envelope?.meta, rows.length, 'none', 'query_audit');
 
   return (
-    <section aria-label="Query surfaces">
+    <section aria-label="Sources">
       <FixtureBand source={query.data?.source} />
       <StateBoundary state={state}>
         <DataTable

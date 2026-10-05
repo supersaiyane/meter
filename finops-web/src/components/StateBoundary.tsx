@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { collectorName } from './displayNames';
 
 import { TypedError } from './TypedError';
 import type { SurfaceState } from './surfaceState';
@@ -49,7 +50,7 @@ export function StateBoundary({
     case 'never-collected':
       return (
         <div data-testid="state" data-state="never-collected">
-          <p>Not yet collected by {state.collector}.</p>
+          <p>Not yet collected by {collectorName(state.collector)}.</p>
           {state.nextRun ? <p>Next run {state.nextRun}.</p> : null}
         </div>
       );

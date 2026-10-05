@@ -237,7 +237,7 @@ export function AssistantScreen() {
   );
 
   return (
-    <section aria-label="Assistant">
+    <section aria-label="Ask Meter">
       <FixtureBand source={exchanges.data?.source} />
       <FixtureBand source={redactions.data?.source} />
 

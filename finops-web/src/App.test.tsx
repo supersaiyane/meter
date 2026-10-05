@@ -76,7 +76,15 @@ describe('App', () => {
     // links; one open group is a menu pointing at where the reader is.
     open('/govern/query-cost');
     expect(screen.getByTestId('group-Govern')).toHaveAttribute('open');
-    for (const label of ['Analyze', 'Plan', 'Optimize', 'Inventory', 'Report', 'Assist', 'Platform']) {
+    for (const label of [
+      'Analyze',
+      'Plan',
+      'Optimize',
+      'Inventory',
+      'Report',
+      'Assist',
+      'Platform',
+    ]) {
       expect(screen.getByTestId(`group-${label}`)).not.toHaveAttribute('open');
     }
   });
@@ -101,7 +109,12 @@ describe('App', () => {
     // and dropping them would hide the roadmap. The journey asserts the
     // browser's own behaviour, which is the part this cannot see.
     open('/');
-    for (const href of ['/analyze/explorer', '/optimize', '/inventory/accounts', '/govern/query-cost']) {
+    for (const href of [
+      '/analyze/explorer',
+      '/optimize',
+      '/inventory/accounts',
+      '/govern/query-cost',
+    ]) {
       expect(
         document.querySelector(`nav[aria-label='Sections'] a[href='${href}']`),
       ).not.toBeNull();
@@ -211,7 +224,9 @@ describe('App', () => {
     open('/waste?finding=abc');
     expect(window.location.pathname).toBe('/optimize');
     expect(window.location.search).toBe('?finding=abc');
-    expect(screen.getByRole('heading', { level: 1, name: 'Recommendations' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Recommendations' }),
+    ).toBeInTheDocument();
   });
 
   it('sends an old finding detail to the same finding under Query Cost', () => {

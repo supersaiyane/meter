@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { lifecycleName, wasteClassName } from '../components/displayNames';
 import { Link } from 'react-router';
 
 import { useRecommendations, useRefusals } from '../api/queries';
@@ -57,7 +58,7 @@ function savingByClass(rows: readonly ApiRecommendation[]): readonly RankedPoint
     const current = totals.get(row.waste_class) ?? 0;
     totals.set(row.waste_class, current + Number(row.estimated_monthly_saving));
   }
-  return [...totals].map(([label, value]) => ({ label, value }));
+  return [...totals].map(([label, value]) => ({ label: wasteClassName(label), value }));
 }
 
 export function WasteScreen() {
@@ -100,7 +101,7 @@ export function WasteScreen() {
     },
     {
       key: 'saving',
-      header: 'Monthly saving',
+      header: 'Estimated monthly savings',
       numeric: true,
       render: (row) => (
         <Figure
@@ -112,7 +113,7 @@ export function WasteScreen() {
     {
       key: 'what',
       header: 'What',
-      render: (row) => `${row.waste_class} ${row.resource_id}`,
+      render: (row) => `${wasteClassName(row.waste_class)} ${row.resource_id}`,
     },
     {
       key: 'where',
@@ -141,7 +142,9 @@ export function WasteScreen() {
       key: 'lifecycle',
       header: 'State',
       render: (row) => (
-        <span data-testid={`lifecycle-${row.recommendation_id}`}>{row.lifecycle}</span>
+        <span data-testid={`lifecycle-${row.recommendation_id}`}>
+          {lifecycleName(row.lifecycle)}
+        </span>
       ),
     },
     {
@@ -240,7 +243,7 @@ export function WasteScreen() {
               {examined.map((one) => (
                 <tr key={`${one.resource_id}:${one.waste_class}`}>
                   <th scope="row">{one.resource_id}</th>
-                  <td>{one.waste_class}</td>
+                  <td>{wasteClassName(one.waste_class)}</td>
                   {/* Whole, never shortened. A judgement a reader cannot argue with is one
                       they have to take on trust. */}
                   <td className="meter-prose">{one.reason}</td>

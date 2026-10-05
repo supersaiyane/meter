@@ -113,7 +113,10 @@ export function App({
                 <Route path="/analyze/allocation" element={<CostAllocationScreen />} />
                 <Route path="/analyze/anomalies" element={<CostAnomaliesScreen />} />
                 <Route path="/analyze/kubernetes-cost" element={<ContainerCostScreen />} />
-                <Route path="/analyze/kubernetes-rightsizing" element={<ContainerWasteScreen />} />
+                <Route
+                  path="/analyze/kubernetes-rightsizing"
+                  element={<ContainerWasteScreen />}
+                />
                 <Route path="/analyze/clusters" element={<ClustersScreen />} />
 
                 <Route path="/plan/budgets" element={<BudgetsScreen />} />
@@ -138,7 +141,10 @@ export function App({
                 <Route path="/govern/policies" element={<EnforcementScreen />} />
 
                 <Route path="/inventory/accounts" element={<AccountsScreen />} />
-                <Route path="/inventory/accounts/organization" element={<OrganizationScreen />} />
+                <Route
+                  path="/inventory/accounts/organization"
+                  element={<OrganizationScreen />}
+                />
                 {/* FEAT-056, closing ISS-204. Declared before the detail route so the
                     literal path is not eaten by the parameter. */}
                 <Route path="/inventory/resources" element={<ResourceListScreen />} />

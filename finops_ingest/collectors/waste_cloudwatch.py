@@ -171,8 +171,8 @@ class WasteCloudWatchCollector:
                 saving=Decimal("0.00"),
                 days=stale_days,
                 rationale=(
-                    f"in INSUFFICIENT_DATA for {stale_days} days. It is watching a metric "
-                    "that no longer reports, so it will never fire and the coverage it "
+                    f"in the insufficient data state for {stale_days} days. It is watching a "
+                    "metric that no longer reports, so it will never fire and the coverage it "
                     "appears to give is not there"
                 ),
                 thresholds=thresholds,

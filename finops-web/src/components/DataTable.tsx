@@ -1,4 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { COST_COLUMN_TERMS } from './displayNames';
 import { useRef } from 'react';
 
 import { DenseRegion } from './DenseRegion';
@@ -62,6 +63,7 @@ export function DataTable<Row>({ rows, columns, rowKey, caption }: DataTableProp
                 <th
                   key={column.key}
                   scope="col"
+                  title={COST_COLUMN_TERMS[column.header]}
                   className={column.prose === true ? 'meter-prose' : undefined}
                 >
                   {column.header}

@@ -108,7 +108,9 @@ function Cluster({
       </p>
       {cluster.enhanced_observability ? (
         <table data-testid="container-requests">
-          <caption>Each workload's request beside its use. Two figures, never one ratio.</caption>
+          <caption>
+            Each workload's request beside its use. Two figures, never one ratio.
+          </caption>
           <thead>
             <tr>
               <th scope="col">Namespace</th>
@@ -176,16 +178,22 @@ export function ContainerWasteScreen() {
   const clusters = found?.clusters ?? [];
   const measured = found?.measured_count ?? 0;
   const total = found?.found_count ?? 0;
-  const state = surfaceStateFor(query, envelope?.meta, clusters.length, 'none', 'container_usage');
+  const state = surfaceStateFor(
+    query,
+    envelope?.meta,
+    clusters.length,
+    'none',
+    'container_usage',
+  );
 
   return (
-    <section aria-label="Container requests">
+    <section aria-label="Kubernetes rightsizing">
       <FixtureBand source={query.data?.source} />
       <StateBoundary state={state}>
         <>
           <p data-testid="containers-ratio">
-            {measured} of {total} clusters publish pod requests. The others are listed with their
-            use and their cost, and with the reason their requests cannot be read.
+            {measured} of {total} clusters publish pod requests. The others are listed with
+            their use and their cost, and with the reason their requests cannot be read.
           </p>
           {clusters.map((cluster) => (
             <Cluster

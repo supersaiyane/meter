@@ -65,7 +65,7 @@ export function CostAnomaliesScreen() {
     },
     {
       key: 'delta',
-      header: 'More than usual',
+      header: 'Impact',
       numeric: true,
       render: (row) => (
         <Figure value={{ kind: 'measured', amount: money(row.delta) }} freshness={freshness} />
@@ -73,7 +73,7 @@ export function CostAnomaliesScreen() {
     },
     {
       key: 'observed',
-      header: 'That day',
+      header: 'Actual cost',
       numeric: true,
       render: (row) => (
         <Figure
@@ -84,7 +84,7 @@ export function CostAnomaliesScreen() {
     },
     {
       key: 'baseline',
-      header: 'Usually',
+      header: 'Expected cost',
       numeric: true,
       render: (row) => (
         <Figure

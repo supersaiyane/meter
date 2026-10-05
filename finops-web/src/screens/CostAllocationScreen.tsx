@@ -70,14 +70,14 @@ export function CostAllocationScreen() {
         row.name === UNALLOCATED ? (
           // Named, not blank. An empty cell reads as a rendering fault and
           // sends somebody looking for a value that was never there.
-          <span data-testid="allocation-unallocated">nobody tagged this</span>
+          <span data-testid="allocation-unallocated">Unallocated cost</span>
         ) : (
           row.name
         ),
     },
     {
       key: 'cost',
-      header: 'Amortized',
+      header: 'Effective Cost',
       numeric: true,
       render: (row) => (
         <Figure
@@ -95,7 +95,7 @@ export function CostAllocationScreen() {
   ];
 
   return (
-    <section aria-label="Allocation">
+    <section aria-label="Allocation and Showback">
       <StateBoundary state={state}>
         <label data-testid="allocation-key">
           <span>Group by tag</span>
@@ -127,7 +127,7 @@ export function CostAllocationScreen() {
             belongs to no owner. */}
         <RankedBars
           points={rows.map((row) => ({
-            label: row.name === UNALLOCATED ? 'nobody tagged this' : row.name,
+            label: row.name === UNALLOCATED ? 'Unallocated cost' : row.name,
             value: money(row.effective_cost),
             isGap: row.name === UNALLOCATED,
           }))}

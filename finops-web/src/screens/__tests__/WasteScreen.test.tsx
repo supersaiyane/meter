@@ -36,7 +36,7 @@ describe('WasteScreen', () => {
     renderWaste();
     await screen.findByText(/i-0a1b2c3d4e5f6a7b8/);
     const headers = [...document.querySelectorAll('thead th')].map((cell) => cell.textContent);
-    const money = headers.findIndex((header) => header.includes('Monthly saving'));
+    const money = headers.findIndex((header) => header.includes('Estimated monthly savings'));
     const confidence = headers.findIndex((header) => header.includes('Confidence'));
     expect(money).toBeGreaterThanOrEqual(0);
     expect(confidence).toBeGreaterThanOrEqual(0);
@@ -102,7 +102,7 @@ describe('WasteScreen', () => {
     renderWaste();
     expect(
       await screen.findByTestId('lifecycle-2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f'),
-    ).toHaveTextContent('OPEN');
+    ).toHaveTextContent('Open');
   });
 
   it('charts only the waste that is still open', async () => {
@@ -113,8 +113,8 @@ describe('WasteScreen', () => {
     renderWaste();
     const rows = await screen.findAllByTestId('ranked-label');
     expect(rows.map((row) => row.textContent)).toEqual([
-      'RIGHTSIZE_INSTANCE',
-      'ALARM_INSUFFICIENT_DATA',
+      'Rightsizing',
+      'Alarm with insufficient data',
     ]);
   });
 

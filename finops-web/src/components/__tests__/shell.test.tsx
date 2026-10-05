@@ -45,7 +45,9 @@ describe('CoverageBanner', () => {
 
   it('offers no way to dismiss it', () => {
     // A banner gets dismissed. The condition does not go away with it.
-    const { container } = render(<CoverageBanner coverage={[{ unit: 'accounts', visible: 1, total: 2 }]} />);
+    const { container } = render(
+      <CoverageBanner coverage={[{ unit: 'accounts', visible: 1, total: 2 }]} />,
+    );
     expect(container.querySelector('button')).toBeNull();
   });
 });

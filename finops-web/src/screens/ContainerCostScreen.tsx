@@ -122,7 +122,7 @@ export function ContainerCostScreen() {
   const state = surfaceStateFor(query, envelope?.meta, clusters.length, 'none', 'cost_focus');
 
   return (
-    <section aria-label="Container cost">
+    <section aria-label="Kubernetes cost">
       <FixtureBand source={query.data?.source} />
       <StateBoundary state={state}>
         <>

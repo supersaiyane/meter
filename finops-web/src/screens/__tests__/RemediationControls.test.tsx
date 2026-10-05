@@ -8,7 +8,9 @@ import { RemediationControls } from '../RemediationControls';
 import { Harness } from './Harness';
 import { clientReturning, metaOf, posted } from './fixtures';
 
-const BASE = QUERY_FINDING_DETAILS['11111111-1111-1111-1111-111111111111'] as ApiQueryFindingDetail;
+const BASE = QUERY_FINDING_DETAILS[
+  '11111111-1111-1111-1111-111111111111'
+] as ApiQueryFindingDetail;
 const APPLY = `/api/v1/query/remediate/${BASE.finding_id}`;
 const UNDO = `${APPLY}/undo`;
 

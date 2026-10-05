@@ -78,7 +78,9 @@ describe('navigation groups', () => {
     // Placed by the owner on 2026-10-05, because the spec named no home for them:
     // the three container screens stay separate under Analyze, Enforcement
     // becomes Policies, and Flags stays under Platform as arriving.
-    expect(Object.fromEntries(GROUPS.map((g) => [g.label, g.screens.map((s) => s.label)]))).toEqual({
+    expect(
+      Object.fromEntries(GROUPS.map((g) => [g.label, g.screens.map((s) => s.label)])),
+    ).toEqual({
       Overview: ['Overview'],
       Analyze: [
         'Cost Explorer',
@@ -107,7 +109,12 @@ describe('navigation groups', () => {
   });
 
   it('never issues the same route twice, counting tabs', () => {
-    const paths = [...allScreens().map((s) => s.path), ...Object.values(TABS).flat().map((t) => t.path)];
+    const paths = [
+      ...allScreens().map((s) => s.path),
+      ...Object.values(TABS)
+        .flat()
+        .map((t) => t.path),
+    ];
     // A screen is its own first tab, so its path appears once as a screen and
     // once as a tab, and only that repetition is allowed.
     const firstTabs = Object.keys(TABS);
@@ -155,8 +162,12 @@ describe('every old path keeps working', () => {
   });
 
   it('carries a detail address to the same detail under its new screen', () => {
-    expect(redirectFor('/governance/queries/abc-123')).toBe('/govern/query-cost/findings/abc-123');
-    expect(redirectFor('/governance/quotas/ec2/L-1216C47A')).toBe('/govern/quotas/ec2/L-1216C47A');
+    expect(redirectFor('/governance/queries/abc-123')).toBe(
+      '/govern/query-cost/findings/abc-123',
+    );
+    expect(redirectFor('/governance/quotas/ec2/L-1216C47A')).toBe(
+      '/govern/quotas/ec2/L-1216C47A',
+    );
     expect(redirectFor('/inventory/resources/node-1')).toBeNull();
   });
 
@@ -168,17 +179,21 @@ describe('every old path keeps working', () => {
 describe('screens that merged are tabs of the screen they joined', () => {
   it('draws Organization, Geography and the three query cost screens as tabs', () => {
     expect(
-      Object.fromEntries(Object.entries(TABS).map(([screen, tabs]) => [screen, tabs.map((t) => t.label)])),
+      Object.fromEntries(
+        Object.entries(TABS).map(([screen, tabs]) => [screen, tabs.map((t) => t.label)]),
+      ),
     ).toEqual({
       '/inventory/accounts': ['Accounts', 'Organization'],
       '/inventory/topology': ['Topology', 'Geography'],
-      '/govern/query-cost': ['Query findings', 'Query surfaces', 'Ad hoc queries'],
+      '/govern/query-cost': ['Findings', 'Sources', 'Ad hoc'],
     });
   });
 
   it('titles a tab by its screen and marks the tab that is open', () => {
     expect(screenTitleFor('/inventory/accounts/organization')).toBe('Accounts');
-    expect(tabsFor('/inventory/accounts/organization')?.current).toBe('/inventory/accounts/organization');
+    expect(tabsFor('/inventory/accounts/organization')?.current).toBe(
+      '/inventory/accounts/organization',
+    );
     expect(tabsFor('/govern/query-cost/findings/abc-123')?.current).toBe('/govern/query-cost');
     expect(tabsFor('/plan/budgets')).toBeNull();
   });

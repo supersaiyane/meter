@@ -66,7 +66,9 @@ export function EnforcementScreen({ now }: EnforcementScreenProps) {
     {
       key: 'reason',
       header: 'Reason',
-      render: (row) => <Link to={`/govern/query-cost/findings/${row.reason_finding_id}`}>why</Link>,
+      render: (row) => (
+        <Link to={`/govern/query-cost/findings/${row.reason_finding_id}`}>why</Link>
+      ),
     },
     {
       key: 'revoke',
@@ -94,7 +96,7 @@ export function EnforcementScreen({ now }: EnforcementScreenProps) {
   const state = surfaceStateFor(query, envelope?.meta, rows.length, 'none', 'query_control');
 
   return (
-    <section aria-label="Enforcement">
+    <section aria-label="Policies">
       <FixtureBand source={source} />
       {note === null ? null : (
         <p data-testid="revoke-note" role="status">

@@ -118,16 +118,15 @@ export function QueryFindingDetailScreen() {
                   label={`Monthly cost across ${String(costSeries.length)} days`}
                 />{' '}
                 <span data-testid="finding-trend-words">
-                  {firstOf(costSeries)} on {costSeries[0]?.run_date}, {lastOf(costSeries)}{' '}
-                  now
+                  {firstOf(costSeries)} on {costSeries[0]?.run_date}, {lastOf(costSeries)} now
                 </span>
               </p>
             ) : (
               // One observation is not a flat trend, and drawing it as one
               // would assert a stability nobody has watched.
               <p data-testid="finding-trend" data-state="never-collected">
-                Seen once, on {costSeries[0]?.run_date ?? 'no recorded day'}. There is no
-                trend until it has been audited twice.
+                Seen once, on {costSeries[0]?.run_date ?? 'no recorded day'}. There is no trend
+                until it has been audited twice.
               </p>
             )}
 

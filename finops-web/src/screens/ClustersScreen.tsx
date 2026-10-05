@@ -51,7 +51,7 @@ function Row({ cluster }: { readonly cluster: ApiClusterInventory }) {
       <td data-testid="cluster-packing">
         <PercentCell
           fraction={fraction(cluster.packing_efficiency)}
-          absent={cluster.unmeasurable_reason ?? 'Bin packing could not be computed.'}
+          absent={cluster.unmeasurable_reason ?? 'Cluster efficiency could not be computed.'}
           provenance="measured"
         />
       </td>
@@ -96,7 +96,7 @@ export function ClustersScreen() {
                 <th scope="col">Region</th>
                 <th scope="col">Nodes</th>
                 <th scope="col">On Spot</th>
-                <th scope="col">Bin packing</th>
+                <th scope="col">Cluster efficiency</th>
               </tr>
             </thead>
             <tbody>

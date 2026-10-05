@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { COST_COLUMN_TERMS, commitmentTypeName } from '../components/displayNames';
 
 import { useCostCommitments } from '../api/queries';
 import { DataTable } from '../components/DataTable';
@@ -95,7 +96,7 @@ export function CostCommitmentsScreen() {
     },
     {
       key: 'utilization',
-      header: 'Of what we paid for, used',
+      header: 'Commitment utilization',
       numeric: true,
       render: (row) => (
         <span data-testid={`utilization-${row.commitment_id}`}>
@@ -123,7 +124,7 @@ export function CostCommitmentsScreen() {
     },
     {
       key: 'wasted',
-      header: 'Paid for and unused',
+      header: 'Unused commitment',
       numeric: true,
       // In money, because that is the number somebody can act on. A percentage
       // alone does not say whether it is worth a morning.
@@ -135,10 +136,14 @@ export function CostCommitmentsScreen() {
 
   const covered: readonly Column<ApiCommitmentCoverage>[] = [
     { key: 'service', header: 'Service', render: (row) => row.dimension_value },
-    { key: 'type', header: 'Kind of commitment', render: (row) => row.commitment_type },
+    {
+      key: 'type',
+      header: 'Commitment discount type',
+      render: (row) => commitmentTypeName(row.commitment_type),
+    },
     {
       key: 'coverage',
-      header: 'Of what could be committed, is',
+      header: 'Commitment coverage',
       numeric: true,
       render: (row) => (
         <span data-testid={`coverage-${row.dimension_value}`}>
@@ -166,7 +171,7 @@ export function CostCommitmentsScreen() {
     },
     {
       key: 'uncovered',
-      header: 'On demand instead',
+      header: 'On-Demand cost',
       numeric: true,
       // The gap, in money. A reader buying against this row needs the amount, not
       // the percentage it works out to.
@@ -207,7 +212,8 @@ export function CostCommitmentsScreen() {
 
       <StateBoundary state={state}>
         <>
-          <h2 data-testid="utilization-heading">How much of what we paid for was used</h2>
+          <h2 data-testid="utilization-heading">Commitment utilization</h2>
+          <p data-testid="utilization-means">How much of what we paid for was used</p>
           <p data-testid="utilization-explains">
             Per commitment. A commitment at a hundred percent was correctly sized. It says
             nothing about how much of the estate is on a commitment
@@ -219,7 +225,8 @@ export function CostCommitmentsScreen() {
             caption={`${String(commitments.length)} commitments, most unused money first`}
           />
 
-          <h2 data-testid="coverage-heading">How much of the estate is on a commitment</h2>
+          <h2 data-testid="coverage-heading">Commitment coverage</h2>
+          <p data-testid="coverage-means">How much of the estate is on a commitment</p>
           <p data-testid="coverage-explains">
             Per service, never per commitment, because a covered dollar cannot be attributed to
             one of several overlapping plans. A low figure here says buy, whatever the
@@ -256,7 +263,9 @@ export function CostCommitmentsScreen() {
               <thead>
                 <tr>
                   <th scope="col">Gap</th>
-                  <th scope="col">Saving a month</th>
+                  <th scope="col" title={COST_COLUMN_TERMS['Estimated monthly savings']}>
+                    Estimated monthly savings
+                  </th>
                   <th scope="col">Severity</th>
                   <th scope="col">If it is wrong</th>
                 </tr>
@@ -266,7 +275,7 @@ export function CostCommitmentsScreen() {
                   <tr key={`${row.commitment_type}:${row.dimension}:${row.dimension_value}`}>
                     <th scope="row">
                       {row.dimension_value}
-                      <span> {row.commitment_type}</span>
+                      <span> {commitmentTypeName(row.commitment_type)}</span>
                     </th>
                     <td>
                       {/* Modelled, never measured, and the rationale says the discount came

@@ -182,6 +182,10 @@ meter/
 │   │   │                      of one glass system, the Framework navigation,
 │   │   │                      FOCUS names, and Excel and CSV made by the server
 │   │   │                      behind the scope guard
+│   │   ├── 2026-10-05-p8-label-table.md
+│   │   │                      Every label on every screen with its FOCUS or
+│   │   │                      Framework name, built from the code by a script and
+│   │   │                      approved by the owner as written
 │   │   └── 2026-10-05-p9-price-catalog-design.md
 │   │                          Section 3 is the EC2 and EBS price research with
 │   │                          its sources; section 5.1 is the network path the
@@ -741,6 +745,9 @@ meter/
 │       ├── shell/filters.ts   useFilters: a screen's filters live in the query
 │       │                      string, as history entries, under the keys its
 │       │                      entry in sections.ts declares
+│       ├── components/displayNames.ts  every code the API sends, in the words
+│       │                      the approved label table gives it, and the
+│       │                      provider's term for each cost column's tooltip
 │       ├── layout.css         where things sit. Element selectors, because
 │       │                      DataTable is the only table and Figure the only
 │       │                      numeral. Needs no component to accept a className,

@@ -188,9 +188,9 @@ export const TABS: Readonly<Record<string, readonly TabDef[]>> = {
     { path: '/inventory/topology/geography', label: 'Geography' },
   ],
   '/govern/query-cost': [
-    { path: '/govern/query-cost', label: 'Query findings' },
-    { path: '/govern/query-cost/surfaces', label: 'Query surfaces' },
-    { path: '/govern/query-cost/adhoc', label: 'Ad hoc queries' },
+    { path: '/govern/query-cost', label: 'Findings' },
+    { path: '/govern/query-cost/surfaces', label: 'Sources' },
+    { path: '/govern/query-cost/adhoc', label: 'Ad hoc' },
   ],
 };
 
@@ -303,9 +303,7 @@ export function filtersFor(pathname: string): readonly string[] {
 }
 
 /** The tabs of the screen at this path, and which one is open, or null for a screen without tabs. */
-export function tabsFor(
-  pathname: string,
-): {
+export function tabsFor(pathname: string): {
   readonly screen: ScreenDef;
   readonly tabs: readonly TabDef[];
   readonly current: string;

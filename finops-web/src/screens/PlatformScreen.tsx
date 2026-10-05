@@ -23,7 +23,7 @@ const COLUMNS: readonly Column<ModuleRow>[] = [
   { key: 'module', header: 'Module', render: (row) => row.module },
   {
     key: 'total',
-    header: 'Amortized cost',
+    header: 'Effective Cost',
     numeric: true,
     render: (row) => (
       <Figure
@@ -49,7 +49,7 @@ export function PlatformScreen() {
   const total = useMemo(() => grandTotal(rows), [rows]);
 
   return (
-    <section aria-label="Platform cost">
+    <section aria-label="Meter Cost">
       <StateBoundary state={state}>
         {/* Constraint 7 says the platform meters itself and its own cost is on the front
             page. It was on the front page and not on its own screen, so the one place that

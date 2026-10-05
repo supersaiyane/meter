@@ -152,7 +152,7 @@ geography, and only the screen ignored it.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec section 5.3, FEAT-064 |
 | Delivers | FEAT-064, with TASK-P8-002 |
 | Depends on | TASK-P8-002 |
@@ -163,12 +163,21 @@ its tooltip.
 
 **Acceptance criteria.**
 
-- [ ] First output: a table of every label on every screen, today, proposed and basis,
+- [x] First output: a table of every label on every screen, today, proposed and basis,
       approved by the owner before any label changes
-- [ ] Every approved label changed, and journeys updated with them
-- [ ] Every cost column carries its provider term in a tooltip
-- [ ] No raw identifier on any screen, collector names and enum codes included, held by a
+- [x] Every approved label changed, and journeys updated with them
+- [x] Every cost column carries its provider term in a tooltip
+- [x] No raw identifier on any screen, collector names and enum codes included, held by a
       test over the rendered text
+
+**Delivered 2026-10-05.** The owner approved
+`docs/specs/2026-10-05-p8-label-table.md` as written. Two things moved during the build.
+The commitment KPI headings take the approved names and keep their old sentence beneath
+them, because a test holds that two percentages side by side each name their denominator.
+The collector names the API sends are the names each collector declares, which are not
+always its module's, so the table's collector section was regenerated from the code before
+it was applied. Two shapes stay on screen on purpose: a Meter setting an operator must type,
+such as METER_ASSISTANT_MODEL_ID, and a register reference such as OPEN-10.
 
 ---
 

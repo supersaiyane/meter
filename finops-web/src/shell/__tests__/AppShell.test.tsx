@@ -198,7 +198,7 @@ describe('AppShell', () => {
       }),
     );
     expect(screen.getByText('ACCESS DENIED')).toBeInTheDocument();
-    expect(screen.getByText(/account_health on aws:111122223333/)).toBeInTheDocument();
+    expect(screen.getByText(/Account health on aws:111122223333/)).toBeInTheDocument();
   });
 
   it('still shows a cause the frontend does not recognise', () => {

@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { COST_COLUMN_TERMS, wasteClassName } from './displayNames';
 
 import type { ApiRecommendation } from '../api/types';
 import { Figure } from './Figure';
@@ -94,7 +95,9 @@ function Group({
             <tr>
               <th scope="col">Finding</th>
               <th scope="col">Account</th>
-              <th scope="col">Saving a month</th>
+              <th scope="col" title={COST_COLUMN_TERMS['Estimated monthly savings']}>
+                Estimated monthly savings
+              </th>
               <th scope="col">Severity</th>
               <th scope="col">If it is wrong</th>
             </tr>
@@ -103,7 +106,7 @@ function Group({
             {rows.map((row) => (
               <tr key={row.recommendation_id}>
                 <th scope="row">
-                  <Link to="/optimize">{row.waste_class}</Link>
+                  <Link to="/optimize">{wasteClassName(row.waste_class)}</Link>
                   {/* The resource, because a class on its own names no work. */}
                   <span> {row.resource_id}</span>
                 </th>

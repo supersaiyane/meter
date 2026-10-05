@@ -126,9 +126,7 @@ function columnsFor(freshness: Freshness): readonly Column<ApiQueryFinding>[] {
           <Sparkline
             points={series.map((point) => Number(point.cost_month_usd))}
             provenance={
-              series.every((point) => point.provenance === 'measured')
-                ? 'measured'
-                : 'modelled'
+              series.every((point) => point.provenance === 'measured') ? 'measured' : 'modelled'
             }
             label={`Monthly cost across ${String(series.length)} days`}
             width={64}
@@ -166,7 +164,7 @@ export function QueryFindingsScreen() {
   const state = surfaceStateFor(query, envelope?.meta, rows.length, 'none', 'query_audit');
 
   return (
-    <section aria-label="Query findings">
+    <section aria-label="Findings">
       {/* Groups first. The list below is what each group is made of. */}
       <QueryGroups />
       <FixtureBand source={query.data?.source} />

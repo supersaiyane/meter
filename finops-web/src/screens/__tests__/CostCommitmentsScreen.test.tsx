@@ -21,12 +21,16 @@ describe('CostCommitmentsScreen', () => {
     // opposite things, and a reader who conflates them draws the wrong conclusion
     // with confidence. Each heading has to name its own denominator.
     renderCommitments();
-    expect(await screen.findByTestId('utilization-heading')).toHaveTextContent(
+    expect(await screen.findByTestId('utilization-means')).toHaveTextContent(
       /what we paid for was used/i,
     );
-    expect(screen.getByTestId('coverage-heading')).toHaveTextContent(
+    expect(screen.getByTestId('coverage-means')).toHaveTextContent(
       /estate is on a commitment/i,
     );
+    expect(screen.getByTestId('utilization-heading')).toHaveTextContent(
+      'Commitment utilization',
+    );
+    expect(screen.getByTestId('coverage-heading')).toHaveTextContent('Commitment coverage');
   });
 
   it('warns that a low coverage says buy whatever the utilization says', async () => {
@@ -114,7 +118,7 @@ describe('CostCommitmentsScreen', () => {
       renderCommitments();
       const actions = await screen.findByTestId('actions');
       expect(actions).toHaveTextContent('AmazonEC2');
-      expect(actions).toHaveTextContent('SAVINGS_PLAN');
+      expect(actions).toHaveTextContent('Savings Plan');
     });
 
     it('publishes the usage floor, which is what being wrong looks like', async () => {

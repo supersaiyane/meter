@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router';
+import { COST_COLUMN_TERMS, lifecycleName, wasteClassName } from '../components/displayNames';
 
 import { useBlastRadius, useEntity } from '../api/queries';
 import { Figure } from '../components/Figure';
@@ -210,7 +211,9 @@ export function EntityScreen() {
                 <thead>
                   <tr>
                     <th scope="col">Finding</th>
-                    <th scope="col">Saving a month</th>
+                    <th scope="col" title={COST_COLUMN_TERMS['Estimated monthly savings']}>
+                      Estimated monthly savings
+                    </th>
                     <th scope="col">Severity</th>
                     <th scope="col">State</th>
                     <th scope="col">If it is wrong</th>
@@ -220,7 +223,7 @@ export function EntityScreen() {
                   {entity.findings.map((row) => (
                     <tr key={row.recommendation_id}>
                       <th scope="row">
-                        <Link to="/optimize">{row.waste_class}</Link>
+                        <Link to="/optimize">{wasteClassName(row.waste_class)}</Link>
                       </th>
                       <td>
                         {/* Modelled, never measured, unlike the cost above. Figure carries
@@ -237,7 +240,7 @@ export function EntityScreen() {
                       <td>
                         <SeverityBadge level={severityLevel(row.severity)} />
                       </td>
-                      <td>{row.lifecycle}</td>
+                      <td>{lifecycleName(row.lifecycle)}</td>
                       <td>
                         {/* The same two words and the same sentence the home panel shows,
                             from the same module, so a reader cannot be told a change is

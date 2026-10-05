@@ -35,9 +35,15 @@ function block(css: string, prelude: string): string {
   throw new Error(`the block after ${prelude} never closes`);
 }
 
-function declarations(body: string, names: readonly string[]): Readonly<Record<string, string>> {
+function declarations(
+  body: string,
+  names: readonly string[],
+): Readonly<Record<string, string>> {
   return Object.fromEntries(
-    names.map((name) => [name, new RegExp(`${name}:\\s*([^;]+);`).exec(body)?.[1]?.trim() ?? '']),
+    names.map((name) => [
+      name,
+      new RegExp(`${name}:\\s*([^;]+);`).exec(body)?.[1]?.trim() ?? '',
+    ]),
   );
 }
 
@@ -89,7 +95,9 @@ describe('glass that degrades', () => {
       '--panel-blur': '18px',
       '--panel-saturate': '140%',
     });
-    expect(declarations(block(tokens, ":root[data-theme='dark']"), LENGTHS)).toEqual(fromTheSystem);
+    expect(declarations(block(tokens, ":root[data-theme='dark']"), LENGTHS)).toEqual(
+      fromTheSystem,
+    );
   });
 
   it('blurs a panel by the tokens, so the fallback has one thing to switch off', () => {
