@@ -88,3 +88,37 @@ describe('the api client', () => {
     expect((seen?.headers as Record<string, string>)['Content-Type']).toBeUndefined();
   });
 });
+
+describe('the api client, for files and for writes that fail', () => {
+  it('returns a file as its text, without asking it for an envelope', async () => {
+    const csv = 'period,effective_cost\n2026-08-01,4512.7113\n';
+    const client = createApiClient({ token: 't', fetchImpl: respondWith(csv) });
+    await expect(client.getText('/api/v1/cost/export')).resolves.toBe(csv);
+  });
+
+  it('throws with the status when a file cannot be fetched', async () => {
+    const client = createApiClient({
+      token: 't',
+      fetchImpl: respondWith('not in your scope', 403),
+    });
+    await expect(client.getText('/api/v1/cost/export')).rejects.toMatchObject({
+      status: 403,
+      detail: 'not in your scope',
+    });
+  });
+
+  it('throws when a write fails, and names the status when the body says nothing', async () => {
+    const client = createApiClient({ token: 't', fetchImpl: respondWith('', 409) });
+    await expect(client.post('/api/v1/remediations/r-1/undo')).rejects.toMatchObject({
+      status: 409,
+      detail: 'x',
+    });
+  });
+
+  it('refuses a write whose answer carries no envelope', async () => {
+    const client = createApiClient({ token: 't', fetchImpl: respondWith({ accepted: true }) });
+    await expect(client.post('/api/v1/remediations/r-1/undo')).rejects.toBeInstanceOf(
+      EnvelopeError,
+    );
+  });
+});

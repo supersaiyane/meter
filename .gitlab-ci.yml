@@ -131,7 +131,8 @@ test-frontend:
     - cd finops-web
     - npm ci
     - npm run lint
-    - npm run test -- --run
+    # The same gate as `make test-web`, coverage thresholds included. ISS-243.
+    - npm run test -- --run --coverage
 
 # `make check-docs` rather than three of its checks, which is what this
 # job used to run. The five it was missing were the registry sync check, the

@@ -83,6 +83,7 @@
     "finops-web/src/components/__tests__/Sparkline.test.tsx",
     "finops-web/src/components/__tests__/StateBoundary.test.tsx",
     "finops-web/src/components/__tests__/TopActions.test.tsx",
+    "finops-web/src/components/__tests__/TopologyCanvas.test.tsx",
     "finops-web/src/components/__tests__/WorldMap.test.tsx",
     "finops-web/src/components/__tests__/axe.ts",
     "finops-web/src/components/__tests__/charts.test.tsx",
@@ -1553,6 +1554,16 @@
     {
       "s": "finops-web/src/components/__tests__/TopActions.test.tsx",
       "t": "finops-web/src/components/actionRisk.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/TopologyCanvas.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/TopologyCanvas.test.tsx",
+      "t": "finops-web/src/components/TopologyCanvas.tsx",
       "k": "typescript"
     },
     {

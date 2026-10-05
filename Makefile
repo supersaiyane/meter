@@ -227,8 +227,8 @@ test-integration: ## Integration tests only. Needs Docker for testcontainers
 	$(BIN)/pytest -m integration --no-cov
 
 .PHONY: test-web
-test-web: ## Frontend unit tests
-	cd finops-web && npm run test -- --run
+test-web: ## Frontend unit tests, held to the coverage thresholds in vite.config.ts
+	cd finops-web && npm run test -- --run --coverage
 
 .PHONY: test-all
 test-all: test test-web ## Every backend test, plus frontend unit tests

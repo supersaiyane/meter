@@ -3789,7 +3789,7 @@ issues:
     registered that number first'
 - id: ISS-243
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: The frontend's test coverage is not measured, so the definition of done's 80 percent
     rule has no number behind it for any change to `finops-web`
   detail: '`make test-web` runs `npm run test -- --run` without coverage, and
@@ -3797,7 +3797,25 @@ issues:
     dependency. Found on 2026-10-05 by the verification of TASK-P8-006, which covers each branch
     of the new table code with a named test instead of a measured percentage. Every P8 task so
     far shipped under the same gap. Closing it adds a development dependency, which goes through
-    `make dep-check` and is the owner''s decision, and then a coverage threshold in `test-web`.'
+    `make dep-check` and is the owner''s decision, and then a coverage threshold in `test-web`.
+    The owner chose to add it on 2026-10-05. `@vitest/coverage-v8` 4.1.11 passed `make dep-check`
+    with zero findings, and `make test-web` and the pipeline''s frontend job now run with
+    `--coverage` against a threshold of 80 percent of lines, statements and functions for each
+    file, in `finops-web/vite.config.ts`. A run of one test file fails that gate 317 times and
+    the full suite passes it (measured 2026-10-05). The three files under the bar,
+    `finops-web/src/api/client.ts`, `finops-web/src/components/GraphCanvas.tsx` and `finops-web/src/components/TopologyCanvas.tsx`,
+    gained tests for paths no test had run: the CSV fetch, a failed write, and the taps that
+    must not open an unreachable node or a boundary. Branches are not gated, ISS-244.'
+- id: ISS-244
+  severity: LOW
+  status: OPEN
+  summary: Branch coverage in `finops-web` is reported on every run and gated on none
+  detail: 'Vitest 4.1.11 applies `thresholds.perFile` to every threshold it is given, and skips a
+    `perFile` set on a glob, so a suite wide branch threshold cannot sit beside the per file one
+    ISS-243 added. A per file branch bar of 80 percent would fail 22 files (measured 2026-10-05),
+    among them the treemap, the heatmap and the stacked bar. The suite reaches 85.94 percent of
+    its branches (measured 2026-10-05). Closing it is either tests for those branches, file by
+    file, until a per file bar passes, or a second check over the suite total.'
 
 open_questions:
 - id: OPEN-07
