@@ -18,6 +18,7 @@
     "docker/migrations",
     "docker/pyproject.toml",
     "docker/scripts/ops",
+    "finops-web/e2e/a11y.spec.ts",
     "finops-web/e2e/assistant.spec.ts",
     "finops-web/e2e/containers.spec.ts",
     "finops-web/e2e/cost.spec.ts",
@@ -185,6 +186,7 @@
     "finops-web/src/screens/surfaceStateFor.ts",
     "finops-web/src/shell/AppShell.tsx",
     "finops-web/src/shell/MetaProvider.tsx",
+    "finops-web/src/shell/ScreenTabs.tsx",
     "finops-web/src/shell/ThemeToggle.test.tsx",
     "finops-web/src/shell/ThemeToggle.tsx",
     "finops-web/src/shell/__tests__/AppShell.test.tsx",
@@ -4102,6 +4104,11 @@
     },
     {
       "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/shell/ScreenTabs.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
       "t": "finops-web/src/shell/ThemeToggle.tsx",
       "k": "typescript"
     },
@@ -4133,6 +4140,11 @@
     {
       "s": "finops-web/src/shell/MetaProvider.tsx",
       "t": "finops-web/src/shell/metaStore.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ScreenTabs.tsx",
+      "t": "finops-web/src/shell/sections.ts",
       "k": "typescript"
     },
     {

@@ -71,7 +71,7 @@ function where(quota: ApiQuota | ApiUnmeasurableQuota): string {
  * asked for an increase: a quota with no figure is exactly the one somebody requests blind.
  */
 function pathFor(quota: ApiQuota | ApiUnmeasurableQuota): string {
-  return `/governance/quotas/${quota.service_code}/${quota.quota_code}`;
+  return `/govern/quotas/${quota.service_code}/${quota.quota_code}`;
 }
 
 function keyFor(quota: ApiQuota | ApiUnmeasurableQuota): string {
@@ -131,7 +131,7 @@ function Request({ request }: { readonly request: ApiQuotaRequest }) {
       <td>
         <Link
           data-testid="request-quota-link"
-          to={`/governance/quotas/${request.service_code}/${request.quota_code}`}
+          to={`/govern/quotas/${request.service_code}/${request.quota_code}`}
         >
           {request.quota_name}
         </Link>

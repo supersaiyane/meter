@@ -62,7 +62,7 @@ function columnsFor(freshness: Freshness): readonly Column<ApiQueryFinding>[] {
       // A link, because a finding that cannot be linked to is a finding nobody
       // hands to its owner. The id is in the URL for the same reason.
       render: (row) => (
-        <Link to={`/governance/queries/${row.finding_id}`}>
+        <Link to={`/govern/query-cost/findings/${row.finding_id}`}>
           {row.dashboard_title}
           <br />
           {row.panel_title}

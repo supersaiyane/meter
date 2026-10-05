@@ -473,7 +473,7 @@ features:
 - id: FEAT-064
   name: Navigation by the FinOps Framework and FOCUS names on every screen
   subproject: P8
-  status: Planned
+  status: In progress
   detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) sections 5.2 and 5.3, [P8 plan](docs/plans/P8-implementation-plan.md)'
   doc: docs/features/FEAT-064-framework-navigation-and-focus-names.md
 - id: FEAT-065
@@ -616,7 +616,7 @@ adrs:
   doc: docs/adr/ADR-0019-headless-components-own-visual-layer.md
 - id: ADR-0020
   decision: Seven fixed navigation groups, and the routes they fix
-  status: Accepted
+  status: Superseded by ADR-0030
   doc: docs/adr/ADR-0020-seven-fixed-navigation-groups.md
 - id: ADR-0021
   decision: Plain CSS over a utility framework, against our own tokens
@@ -655,6 +655,10 @@ adrs:
   decision: A row that belongs to a person is scoped by that person
   status: Accepted
   doc: docs/adr/ADR-0029-a-row-that-belongs-to-a-person.md
+- id: ADR-0030
+  decision: Navigation follows the FinOps Framework
+  status: Accepted
+  doc: docs/adr/ADR-0030-navigation-follows-the-finops-framework.md
 
 changes:
 - id: CHG-0001

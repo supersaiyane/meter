@@ -29,8 +29,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 28 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 23 in 7 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Screens built | 24 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 24 in 8 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 25 | files in migrations/versions, all of which are listed below in this file |
@@ -730,11 +730,14 @@ meter/
 │       ├── shell/ThemeToggle.tsx  System, Light and Dark as three radios, so the
 │       │                      way back to the system never passes through the
 │       │                      other theme
-│       ├── shell/sections.ts  the seven navigation groups, one matchFor behind
-│       │                      screenTitleFor and activeGroupFor so the heading
-│       │                      and the open accordion cannot disagree, and
-│       │                      the one place a screen's name is decided, so the
-│       │                      heading and the menu cannot disagree
+│       ├── shell/sections.ts  the nine Framework groups of ADR-0030, the tabs of
+│       │                      merged screens, and the redirect table every
+│       │                      pre P8 path resolves through. One matchFor behind
+│       │                      screenTitleFor, activeGroupFor and tabsFor, so the
+│       │                      heading, the open group and the open tab cannot
+│       │                      disagree
+│       ├── shell/ScreenTabs.tsx  a merged screen's views as links under its
+│       │                      heading, the open one marked with aria-current
 │       ├── layout.css         where things sit. Element selectors, because
 │       │                      DataTable is the only table and Figure the only
 │       │                      numeral. Needs no component to accept a className,

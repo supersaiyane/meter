@@ -307,7 +307,7 @@ export function HomeScreen() {
       key: 'finding',
       header: 'Finding',
       render: (row) => (
-        <Link to={`/governance/queries/${row.finding_id}`}>
+        <Link to={`/govern/query-cost/findings/${row.finding_id}`}>
           {row.dashboard_title}, {row.panel_title}
         </Link>
       ),
@@ -336,7 +336,7 @@ export function HomeScreen() {
       <section data-testid="home-summary" aria-label="Summary">
         <div data-testid="home-tile" aria-label="Total spend">
           <h3>
-            <Link to="/cost">Total spend, this period</Link>
+            <Link to="/analyze/explorer">Total spend, this period</Link>
           </h3>
           <StateBoundary state={spendState} coverageShownElsewhere>
             <p data-testid="home-spend">
@@ -394,7 +394,7 @@ export function HomeScreen() {
 
         <div data-testid="home-tile" aria-label="Budget">
           <h3>
-            <Link to="/cost/budgets">Budget, this period</Link>
+            <Link to="/plan/budgets">Budget, this period</Link>
           </h3>
           <StateBoundary state={budgetState} coverageShownElsewhere>
             {worstBudget === null ? null : (
@@ -428,7 +428,7 @@ export function HomeScreen() {
 
         <div data-testid="home-tile" aria-label="Open findings">
           <h3>
-            <Link to="/governance/queries">Open findings</Link>
+            <Link to="/govern/query-cost">Open findings</Link>
           </h3>
           <StateBoundary state={findingsState} coverageShownElsewhere>
             <p data-testid="home-count">{rows.length}</p>
@@ -447,7 +447,7 @@ export function HomeScreen() {
 
         <div data-testid="home-tile" aria-label="Largest cause">
           <h3>
-            <Link to="/governance/queries">Largest cause</Link>
+            <Link to="/govern/query-cost">Largest cause</Link>
           </h3>
           <StateBoundary state={groupsState} coverageShownElsewhere>
             {worst ? (
@@ -472,7 +472,7 @@ export function HomeScreen() {
 
         <div data-testid="home-tile" aria-label="Surfaces under audit">
           <h3>
-            <Link to="/governance/instances">Surfaces under audit</Link>
+            <Link to="/govern/query-cost/surfaces">Surfaces under audit</Link>
           </h3>
           <StateBoundary state={surfacesState} coverageShownElsewhere>
             {/* Always a ratio. A surface Meter could not read is not a surface
@@ -526,7 +526,7 @@ export function HomeScreen() {
 
       <section data-testid="home-attention" aria-label="Top findings by dollar">
         <h3>
-          <Link to="/governance/queries">Top findings by dollar</Link>
+          <Link to="/govern/query-cost">Top findings by dollar</Link>
         </h3>
         <StateBoundary state={findingsState}>
           <DataTable

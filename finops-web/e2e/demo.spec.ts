@@ -270,26 +270,26 @@ test('the demo walk reaches every screen the runbook points at', async ({ page }
 
   // 2. Spend and trend. The open period says so rather than presenting a part month
   // as a total.
-  await page.goto('/cost');
+  await page.goto('/analyze/explorer');
   await expect(page.getByText(/still open/i)).toBeVisible();
   await expect(page.getByText('AmazonEC2').first()).toBeVisible();
 
   // 3. Allocation. The unallocated bucket is a named row, and the name is a sentence
   // rather than the API's key: an empty cell reads as a rendering fault and sends
   // somebody looking for a value that was never there.
-  await page.goto('/cost/allocation');
+  await page.goto('/analyze/allocation');
   await expect(page.getByTestId('allocation-unallocated')).toHaveText('nobody tagged this');
   await expect(page.getByText('814.17')).toBeVisible();
 
   // 4. Anomalies. The working is shown whole, because a verdict a reader cannot argue
   // with is one they have to take on trust.
-  await page.goto('/cost/anomalies');
+  await page.goto('/analyze/anomalies');
   await expect(page.getByText(/313\.6 deviations out/)).toBeVisible();
   await expect(page.getByTestId('anomaly-judged')).toBeVisible();
 
   // 5. Commitments. The distinction the screen exists to draw, which is the thirty
   // seconds the runbook calls the best in the demo.
-  await page.goto('/cost/commitments');
+  await page.goto('/optimize/commitments');
   await expect(page.getByTestId('utilization-fake-sp-compute')).toHaveText('100.0%');
   await expect(page.getByTestId('coverage-AmazonEC2')).toHaveText('40.3%');
   await expect(page.getByTestId('commitment-waste')).toContainText('300.68');
@@ -297,13 +297,13 @@ test('the demo walk reaches every screen the runbook points at', async ({ page }
 
   // 6. Export. The screen states the total the file must sum to, which is what makes
   // the claim checkable in ten seconds.
-  await page.goto('/cost/export');
+  await page.goto('/report/exports');
   await expect(page.getByTestId('export-claim')).toContainText('3,781.93');
   await expect(page.getByTestId('export-not-excel')).toContainText(/CSV only/);
 
   // 7. Recommendations. The estimate is labelled modelled, and the finding
   // nobody owns says so in words rather than leaving a cell blank.
-  await page.goto('/waste');
+  await page.goto('/optimize');
   await expect(page.getByText('412.64')).toBeVisible();
   await expect(page.getByTestId('unowned-2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f')).toHaveText(
     'nobody yet',
@@ -314,7 +314,7 @@ test('the demo walk reaches every screen the runbook points at', async ({ page }
 
   // 8. Realized savings. The screen allowed to disappoint, and the inconclusive
   // row is the one the runbook tells the driver to stop on.
-  await page.goto('/waste/savings');
+  await page.goto('/optimize/savings');
   await expect(page.getByTestId('total-VERIFIED')).toBeVisible();
   await expect(page.getByTestId('total-INCONCLUSIVE')).toBeVisible();
   await expect(
@@ -323,7 +323,7 @@ test('the demo walk reaches every screen the runbook points at', async ({ page }
 
   // 9. The score, with its parts on the same page. A component nobody could
   // compute says so rather than scoring nought.
-  await page.goto('/waste/score');
+  await page.goto('/plan/score');
   await expect(page.getByTestId('score-fake-product-a')).toContainText(
     'out of 85 available weight',
   );
@@ -343,14 +343,14 @@ test('the P3 walk keeps the estimate and the realization on separate screens', a
    */
   await demoEstate(page);
 
-  await page.goto('/waste');
+  await page.goto('/optimize');
   // Lower cased, because the table headers render through a text transform and
   // innerText returns what is painted rather than what the source says.
   const recommendations = (await page.locator('body').innerText()).toLowerCase();
   expect(recommendations).toContain('412.64');
   expect(recommendations).not.toContain('cost before');
 
-  await page.goto('/waste/savings');
+  await page.goto('/optimize/savings');
   const savings = (await page.locator('body').innerText()).toLowerCase();
   expect(savings).toContain('cost before');
   expect(savings).not.toContain('412.64');
@@ -361,7 +361,7 @@ test('the commitments screen never puts the two percentages side by side', async
   // than against jsdom. Two percentages meaning opposite things, adjacent, would be
   // compared by any reader, and the comparison is meaningless.
   await demoEstate(page);
-  await page.goto('/cost/commitments');
+  await page.goto('/optimize/commitments');
 
   const row = page.locator('tr', { has: page.getByTestId('utilization-fake-sp-compute') });
   await expect(row.locator('[data-testid^="coverage-"]')).toHaveCount(0);

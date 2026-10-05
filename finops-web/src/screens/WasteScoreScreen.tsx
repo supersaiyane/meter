@@ -61,7 +61,7 @@ function ScoreComponent({ component }: { readonly component: ApiScoreComponent }
             <li key={finding}>
               {/* Each component links to what moved it. The ship condition, at
                   the level a reader actually uses. */}
-              <Link to={`/waste?finding=${finding}`}>{finding}</Link>
+              <Link to={`/optimize?finding=${finding}`}>{finding}</Link>
             </li>
           ))}
         </ul>

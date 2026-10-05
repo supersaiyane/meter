@@ -111,7 +111,7 @@ async function withSession(page: Page): Promise<void> {
 test('the bill is legible, and says what it cannot attribute', async ({ page }) => {
   await withSession(page);
 
-  await page.goto('/cost');
+  await page.goto('/analyze/explorer');
 
   // A figure, not a spinner and not a dash. The screen either has the number
   // or says why it does not.
@@ -126,7 +126,7 @@ test('the bill is legible, and says what it cannot attribute', async ({ page }) 
   // first, so an empty table is a screen making no claim at all.
   await expect(page.locator('tbody tr').first()).toBeVisible();
 
-  await page.goto('/cost/allocation');
+  await page.goto('/analyze/allocation');
   await expect(page.getByTestId('allocation-gap')).toBeVisible();
 
   // The row this screen exists for. An allocation view that drops what it

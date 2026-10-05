@@ -103,7 +103,7 @@ function Group({
             {rows.map((row) => (
               <tr key={row.recommendation_id}>
                 <th scope="row">
-                  <Link to="/waste">{row.waste_class}</Link>
+                  <Link to="/optimize">{row.waste_class}</Link>
                   {/* The resource, because a class on its own names no work. */}
                   <span> {row.resource_id}</span>
                 </th>
@@ -144,7 +144,7 @@ export function TopActions({ recommendations, freshness }: TopActionsProps) {
   return (
     <section data-testid="top-actions" aria-label="Top actions">
       <h3>
-        <Link to="/waste">Top actions</Link>
+        <Link to="/optimize">Top actions</Link>
       </h3>
       <Group
         id="top-actions-saving"

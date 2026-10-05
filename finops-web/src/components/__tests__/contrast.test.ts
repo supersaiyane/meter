@@ -227,6 +227,25 @@ describe('contrast, in light and in dark, on glass', () => {
     }
   });
 
+  it('keeps the rail’s text AA on both of its surfaces', () => {
+    // The rail is dark in both themes and its colours are single values, not
+    // pairs. Its faint text sat below 4.5 to 1 until axe first ran in a real
+    // browser on 2026-10-05, in TASK-P8-002, and caught the menu button and the
+    // group headings.
+    const single = (name: string): Rgba => {
+      const found = new RegExp(`(?:^|\\s)${name}:\\s*(#[0-9a-f]{3,6})`, 'mi').exec(tokens)?.[1];
+      if (found === undefined) {
+        throw new Error(`${name} is not declared as a single colour`);
+      }
+      return parse(found);
+    };
+    for (const ground of ['--nav-surface', '--nav-surface-2']) {
+      for (const ink of ['--nav-text', '--nav-text-faint', '--nav-text-strong']) {
+        expect(ratio(single(ink), single(ground)), `${ink} on ${ground}`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
   it('keeps the severity ramp ordered by luminance, not merely different', () => {
     // A categorical palette for an ordered quantity makes HIGH and MEDIUM look
     // like different kinds of thing rather than different amounts.

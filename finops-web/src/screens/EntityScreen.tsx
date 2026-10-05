@@ -220,7 +220,7 @@ export function EntityScreen() {
                   {entity.findings.map((row) => (
                     <tr key={row.recommendation_id}>
                       <th scope="row">
-                        <Link to="/waste">{row.waste_class}</Link>
+                        <Link to="/optimize">{row.waste_class}</Link>
                       </th>
                       <td>
                         {/* Modelled, never measured, unlike the cost above. Figure carries

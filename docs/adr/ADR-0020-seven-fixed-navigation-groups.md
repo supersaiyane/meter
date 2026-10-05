@@ -1,7 +1,7 @@
 # ADR-0020: Seven fixed navigation groups, and the routes they fix
 
 Date: 2026-09-06
-Status: Accepted
+Status: Superseded by ADR-0030
 
 ## Context
 

@@ -66,7 +66,7 @@ export function EnforcementScreen({ now }: EnforcementScreenProps) {
     {
       key: 'reason',
       header: 'Reason',
-      render: (row) => <Link to={`/governance/queries/${row.reason_finding_id}`}>why</Link>,
+      render: (row) => <Link to={`/govern/query-cost/findings/${row.reason_finding_id}`}>why</Link>,
     },
     {
       key: 'revoke',

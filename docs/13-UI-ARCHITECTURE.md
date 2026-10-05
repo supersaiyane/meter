@@ -57,44 +57,52 @@ decomposition to find their work.
 | Finance | What is the allocated cost, and can I export it | Cost, allocation and export |
 
 **Nobody navigates by sub project.** P2 is a delivery unit, not a user concept.
-A user looking for an expensive dashboard looks under Governance, and never
+A user looking for an expensive dashboard looks under Govern, and never
 needs to know that a sub project called P2 built it.
 
 ## 4. Information architecture
 
-### The seven groups
+### The nine groups
 
-| # | Group | Answers | Sub projects that fill it |
+**Amended 2026-10-05, ADR-0030.** The seven question groups of ADR-0020 became
+nine groups named for the domains of the FinOps Framework, approved by the
+owner with P8 (spec section 5.2), because the owner asked for the standard
+nomenclature a FinOps practitioner already uses. The screens in each group are
+listed in ADR-0030 and in `finops-web/src/shell/sections.ts`, which is the one
+list.
+
+| # | Group | Answers | Framework domain |
 | --- | --- | --- | --- |
-| 1 | **Home** | Can I trust this, and where is the money | All |
-| 2 | **Cost** | Where is the money going | P1 |
-| 3 | **Waste** | What is being spent badly, and what did we recover | P3, P6 |
-| 4 | **Governance** | What rules and limits constrain the estate | P2, P5 |
-| 5 | **Inventory** | What do we have, and how is it connected | P0, P4 |
-| 6 | **Platform** | Is Meter itself working | P0 |
-| 7 | **Assistant** | Ask, and receive an answer with its provenance | P7 |
+| 1 | **Overview** | Can I trust this, and where is the money | Understand Usage and Cost |
+| 2 | **Analyze** | Where is the money going | Understand Usage and Cost |
+| 3 | **Plan** | What will it cost, and is that within budget | Quantify Business Value |
+| 4 | **Optimize** | What is being spent badly, and what did we recover | Optimize Usage and Cost |
+| 5 | **Govern** | What rules and limits constrain the estate | Manage the FinOps Practice |
+| 6 | **Inventory** | What do we have, and how is it connected | None; ITAM and Data Ingestion are nearest |
+| 7 | **Report** | What can I take away, and who receives it | Understand Usage and Cost |
+| 8 | **Assist** | Ask, and receive an answer with its provenance | AI for FinOps |
+| 9 | **Platform** | Is Meter itself working | Manage the FinOps Practice |
 
-The group names are nouns the audience already uses, with one deliberate
-exception. **Waste** is blunt on purpose. The alternatives, Optimisation or
-Savings, describe how the team feels about the work rather than what the screen
-shows, and a product whose thesis is honesty should not soften the label on its
-most expensive findings.
+Under ADR-0020 the third group was **Waste**, blunt on purpose. The Framework's
+Optimize replaces it because the owner chose the names practitioners search
+for; the screens under it still say what was spent badly in so many words.
 
 ### Why the groups do not grow
 
 A flat navigation grows by one entry per screen, so it is five entries today and
 roughly thirty by P4, at which point finding a screen requires knowing which
 sub project built it. Grouping by the question being asked keeps the top level
-at seven while the product grows underneath it.
+fixed while the product grows underneath it, at nine groups since 2026-10-05.
 
-The test for a new screen is: **which of the seven questions does it answer?**
+The test for a new screen is: **which group's question, and so which Framework
+domain, does it answer?**
 A screen that answers none of them is a screen whose purpose has not been
 decided yet, and the navigation refusing to place it is the correct outcome
 rather than a limitation.
 
 ### Collapsing it
 
-The seven groups are fixed, and the column holding them is not. Collapsing
+The groups are fixed, and the column holding them is not. Collapsing
 narrows the grid column from 232 px to 56 px, which gives the content the width
 rather than covering the navigation with it: at 1440 px the findings table goes
 from 1208 px to 1384 px and its explanation column wraps in two lines instead of
@@ -131,7 +139,50 @@ navigation and the router keep agreeing, which is the reason that file exists.
 ## 5. Routes
 
 Every route carries its group. A URL that does not name a group is a screen
-whose purpose was never placed.
+whose purpose was never placed. Since 2026-10-05, ADR-0030:
+
+```
+/                                  Overview
+/analyze/explorer                  Cost Explorer: spend, month to date and trend
+/analyze/allocation                Allocation and showback, the unallocated bucket
+/analyze/anomalies                 Anomalies, ingested and detected
+/analyze/kubernetes-cost           Kubernetes cost by cluster, namespace and workload
+/analyze/kubernetes-rightsizing    Kubernetes rightsizing, requested against used
+/analyze/clusters                  Clusters and their fleets
+/plan/budgets                      Budgets and their burn
+/plan/forecasts                    Spend forecast, arrives with P8
+/plan/score                        FinOps Score, decomposed to the findings that moved it
+/plan/unit-economics               Unit economics, no sub project planned
+/optimize                          Every recommendation, ranked by dollar
+/optimize/commitments              Savings Plan and Reserved Instance coverage
+/optimize/savings                  Realized savings, the north star metric
+/govern/query-cost                 Query findings, ranked by monthly cost
+/govern/query-cost/findings/:id    Finding detail, the full working
+/govern/query-cost/surfaces        Query surfaces, including unreachable ones
+/govern/query-cost/adhoc           Ad hoc queries
+/govern/quotas                     Quota utilization, with coverage gaps stated
+/govern/quotas/:service/:quota     One quota, and the increase Meter would ask for
+/govern/policies                   Active controls, expiry and revoke
+/inventory/accounts                Accounts in scope, with role health
+/inventory/accounts/organization   The organization tree and graph, a tab of Accounts
+/inventory/resources               Config inventory by region and zone
+/inventory/resources/:nodeId       One resource
+/inventory/topology                The topology map
+/inventory/topology/geography      The estate on a map, a tab of Topology
+/report/library                    Report library, arrives with P8
+/report/scheduled                  Scheduled reports, arrives with P8
+/report/exports                    Chargeback and showback export
+/assist                            Ask Meter
+/assist/digests                    Per team digests and executive summaries
+/platform/freshness                Freshness per collector against its cadence
+/platform/ingest                   Runs, typed errors, per account causes
+/platform/cost                     Meter's own cost, unallocated included
+/platform/flags                    Configuration and feature flags, not yet surfaced
+```
+
+Before 2026-10-05 the routes were these, kept as the record. Each one that moved
+redirects to its new home with its query string, through `REDIRECTS` in
+`sections.ts`, and `sections.test.ts` names every one of them.
 
 ```
 /                                  Home
@@ -164,7 +215,7 @@ whose purpose was never placed.
 ### Scope and filters live in the query string
 
 ```
-/waste?scope=ou-abc123&severity=1&provenance=measured
+/optimize?scope=ou-abc123&severity=1&provenance=measured
 ```
 
 Not in the path. Three reasons, and the third is the product's own thesis.

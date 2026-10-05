@@ -130,7 +130,9 @@
   --nav-line: #1e2937;
   --nav-text: #b3c0d1;
   --nav-text-strong: #f2f6fb;
-  --nav-text-faint: #6b7b90;
+  /* The dark theme's faint. #6b7b90 was 4.2 to 1 on the rail, and axe found
+     it on the menu button and the group headings on 2026-10-05. */
+  --nav-text-faint: #8390a6;
   --nav-active: rgba(77, 163, 255, 0.16);
   --nav-accent: #57a9ff;
 

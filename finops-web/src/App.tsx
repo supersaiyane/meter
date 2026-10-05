@@ -1,12 +1,12 @@
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router';
 
 import { ApiProvider } from './api/ApiProvider';
 import type { ApiClient } from './api/client';
 import { createQueryClient } from './queryClient';
 import { AppShell } from './shell/AppShell';
 import { MetaProvider } from './shell/MetaProvider';
-import { screenFor } from './shell/sections';
+import { redirectFor, screenFor } from './shell/sections';
 import { AccountsScreen } from './screens/AccountsScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { FreshnessScreen } from './screens/FreshnessScreen';
@@ -66,6 +66,21 @@ function NotBuiltYet() {
 }
 
 /**
+ * An address that is not a route: one that moved in P8 goes where it went, with
+ * its query and fragment, and anything else is not built or not a screen.
+ * Replaced rather than pushed, so the back button does not return to an
+ * address that only forwards.
+ */
+function MovedOrNotBuilt() {
+  const { pathname, search, hash } = useLocation();
+  const moved = redirectFor(pathname);
+  if (moved !== null) {
+    return <Navigate to={`${moved}${search}${hash}`} replace />;
+  }
+  return <NotBuiltYet />;
+}
+
+/**
  * The application root.
  *
  * There is no login screen in P0 and none is faked here. Without a usable token
@@ -73,9 +88,10 @@ function NotBuiltYet() {
  * reader is told what happened. A placeholder that pretended to authenticate
  * would be the one dishonest surface in a product built on not being one.
  *
- * Routes carry their group, per ADR-0020. The five screens below moved here from
- * a five entry state machine, because a screen with no URL cannot be linked to,
- * and a finding nobody can link to is a finding nobody hands to its owner.
+ * Routes follow the navigation of ADR-0030, grouped as `sections.ts` groups
+ * them. Every path the navigation had before P8 still resolves, through
+ * `MovedOrNotBuilt`, because a link nobody can follow is a finding nobody hands
+ * to its owner.
  */
 export function App({
   client,
@@ -92,45 +108,56 @@ export function App({
             <AppShell>
               <Routes>
                 <Route path="/" element={<HomeScreen />} />
-                <Route path="/cost" element={<CostScreen />} />
-                <Route path="/cost/allocation" element={<CostAllocationScreen />} />
-                <Route path="/cost/anomalies" element={<CostAnomaliesScreen />} />
-                <Route path="/cost/commitments" element={<CostCommitmentsScreen />} />
-                <Route path="/cost/budgets" element={<BudgetsScreen />} />
-                <Route path="/cost/export" element={<CostExportScreen />} />
-                <Route path="/cost/containers" element={<ContainerCostScreen />} />
-                <Route path="/waste" element={<WasteScreen />} />
-                <Route path="/waste/savings" element={<WasteSavingsScreen />} />
-                <Route path="/waste/score" element={<WasteScoreScreen />} />
-                <Route path="/waste/containers" element={<ContainerWasteScreen />} />
+
+                <Route path="/analyze/explorer" element={<CostScreen />} />
+                <Route path="/analyze/allocation" element={<CostAllocationScreen />} />
+                <Route path="/analyze/anomalies" element={<CostAnomaliesScreen />} />
+                <Route path="/analyze/kubernetes-cost" element={<ContainerCostScreen />} />
+                <Route path="/analyze/kubernetes-rightsizing" element={<ContainerWasteScreen />} />
+                <Route path="/analyze/clusters" element={<ClustersScreen />} />
+
+                <Route path="/plan/budgets" element={<BudgetsScreen />} />
+                <Route path="/plan/score" element={<WasteScoreScreen />} />
+
+                <Route path="/optimize" element={<WasteScreen />} />
+                <Route path="/optimize/commitments" element={<CostCommitmentsScreen />} />
+                <Route path="/optimize/savings" element={<WasteSavingsScreen />} />
+
+                <Route path="/govern/query-cost" element={<QueryFindingsScreen />} />
+                <Route
+                  path="/govern/query-cost/findings/:id"
+                  element={<QueryFindingDetailScreen />}
+                />
+                <Route path="/govern/query-cost/surfaces" element={<QuerySurfacesScreen />} />
+                <Route path="/govern/query-cost/adhoc" element={<QueryAdhocScreen />} />
+                <Route path="/govern/quotas" element={<QuotasScreen />} />
+                <Route
+                  path="/govern/quotas/:serviceCode/:quotaCode"
+                  element={<QuotaDetailScreen />}
+                />
+                <Route path="/govern/policies" element={<EnforcementScreen />} />
+
                 <Route path="/inventory/accounts" element={<AccountsScreen />} />
-                <Route path="/inventory/organization" element={<OrganizationScreen />} />
-                <Route path="/inventory/topology" element={<TopologyScreen />} />
-                <Route path="/inventory/clusters" element={<ClustersScreen />} />
-                {/* FEAT-053. The detail page, reached from the map, the waste list and
-                    the anomaly list. Not the resource inventory list ISS-204 tracks,
-                    which is a different screen at the parent path. */}
+                <Route path="/inventory/accounts/organization" element={<OrganizationScreen />} />
                 {/* FEAT-056, closing ISS-204. Declared before the detail route so the
                     literal path is not eaten by the parameter. */}
                 <Route path="/inventory/resources" element={<ResourceListScreen />} />
-                <Route path="/inventory/geography" element={<GeographyScreen />} />
+                {/* FEAT-053. The detail page, reached from the map, the waste list and
+                    the anomaly list. */}
                 <Route path="/inventory/resources/:nodeId" element={<EntityScreen />} />
-                <Route path="/governance/queries" element={<QueryFindingsScreen />} />
-                <Route path="/governance/queries/:id" element={<QueryFindingDetailScreen />} />
-                <Route path="/governance/instances" element={<QuerySurfacesScreen />} />
-                <Route path="/governance/adhoc" element={<QueryAdhocScreen />} />
-                <Route path="/governance/enforcement" element={<EnforcementScreen />} />
-                <Route path="/governance/quotas" element={<QuotasScreen />} />
-                <Route
-                  path="/governance/quotas/:serviceCode/:quotaCode"
-                  element={<QuotaDetailScreen />}
-                />
-                <Route path="/platform/ingest" element={<IngestScreen />} />
+                <Route path="/inventory/topology" element={<TopologyScreen />} />
+                <Route path="/inventory/topology/geography" element={<GeographyScreen />} />
+
+                <Route path="/report/exports" element={<CostExportScreen />} />
+
+                <Route path="/assist" element={<AssistantScreen />} />
+                <Route path="/assist/digests" element={<DigestsScreen />} />
+
                 <Route path="/platform/freshness" element={<FreshnessScreen />} />
+                <Route path="/platform/ingest" element={<IngestScreen />} />
                 <Route path="/platform/cost" element={<PlatformScreen />} />
-                <Route path="/assistant" element={<AssistantScreen />} />
-                <Route path="/assistant/digests" element={<DigestsScreen />} />
-                <Route path="*" element={<NotBuiltYet />} />
+
+                <Route path="*" element={<MovedOrNotBuilt />} />
               </Routes>
             </AppShell>
           </MetaProvider>

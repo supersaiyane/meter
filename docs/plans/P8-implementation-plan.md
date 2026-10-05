@@ -89,7 +89,7 @@ as the accent mark. `docs/12-UI-DESIGN.md` section 7 gives the ratios.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec section 5.2, FEAT-064 |
 | Delivers | FEAT-064, with TASK-P8-004 |
 | Depends on | TASK-P8-001 |
@@ -100,16 +100,23 @@ the new system, and every old path redirects.
 
 **Acceptance criteria.**
 
-- [ ] Groups and screens as in spec section 5.2, each group's Framework domain named in a
+- [x] Groups and screens as in spec section 5.2, each group's Framework domain named in a
       comment beside it
-- [ ] Every path in `sections.ts` before P8 redirects to its new home, and a test
+- [x] Every path in `sections.ts` before P8 redirects to its new home, and a test
       enumerates them
-- [ ] Organization, Geography and the three query cost screens become tabs of their new
+- [x] Organization, Geography and the three query cost screens become tabs of their new
       screens
-- [ ] Unit Economics is listed as arriving, never as built
-- [ ] The trust strip keeps freshness, coverage and failing collections in the new look
-- [ ] A new ADR supersedes ADR-0020, and `docs/13-UI-ARCHITECTURE.md` follows it
-- [ ] Axe clean in both themes
+- [x] Unit Economics is listed as arriving, never as built
+- [x] The trust strip keeps freshness, coverage and failing collections in the new look
+- [x] A new ADR supersedes ADR-0020, and `docs/13-UI-ARCHITECTURE.md` follows it
+- [x] Axe clean in both themes
+
+**Delivered 2026-10-05.** The spec named no home for three screens, and the owner placed them:
+the three container screens stay separate under Analyze, Enforcement becomes Policies, and Flags
+stays under Platform as arriving. The menu took the approved names now, by the owner's choice;
+labels inside screens wait for TASK-P8-004. Axe, run on the shell in a real browser for the first
+time, found the rail's faint text at 4.2 to 1, and `--nav-text-faint` moved to the dark theme's
+faint. ADR-0030 supersedes ADR-0020.
 
 ---
 

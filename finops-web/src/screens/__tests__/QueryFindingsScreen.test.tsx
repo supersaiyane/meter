@@ -49,7 +49,7 @@ describe('QueryFindingsScreen', () => {
     const link = await screen.findByRole('link', { name: /Error rate by service/ });
     expect(link).toHaveAttribute(
       'href',
-      '/governance/queries/11111111-1111-1111-1111-111111111111',
+      '/govern/query-cost/findings/11111111-1111-1111-1111-111111111111',
     );
   });
 

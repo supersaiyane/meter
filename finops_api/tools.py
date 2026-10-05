@@ -205,7 +205,7 @@ TOOLS: tuple[ToolSpec, ...] = (
             "data.previous.effective_cost": Unit.USD,
             "data.previous.line_items": Unit.COUNT,
         },
-        screen="/cost",
+        screen="/analyze/explorer",
     ),
     ToolSpec(
         name="get_cost_by_service",
@@ -218,7 +218,7 @@ TOOLS: tuple[ToolSpec, ...] = (
             "service for, never dropped and never folded into another."
         ),
         units=COST_SLICE_UNITS,
-        screen="/cost",
+        screen="/analyze/explorer",
     ),
     ToolSpec(
         name="get_cost_by_account",
@@ -230,7 +230,7 @@ TOOLS: tuple[ToolSpec, ...] = (
             "meta.scope_coverage says how many of the organization's accounts that is."
         ),
         units=COST_SLICE_UNITS,
-        screen="/cost",
+        screen="/analyze/explorer",
     ),
     ToolSpec(
         name="get_container_cost",
@@ -252,7 +252,7 @@ TOOLS: tuple[ToolSpec, ...] = (
             "data.found_count": Unit.COUNT,
             "data.measured_count": Unit.COUNT,
         },
-        screen="/cost/containers",
+        screen="/analyze/kubernetes-cost",
     ),
 )
 

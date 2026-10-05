@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-74 features across 10 sub projects. 14 specified, 14 planned, 13 in build, 32 delivered.
+74 features across 10 sub projects. 14 specified, 13 planned, 13 in build, 32 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -198,7 +198,7 @@ block is caught by `make check-docs`. See
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
 | [FEAT-063](docs/features/FEAT-063-two-theme-design-system.md) | Two theme design system with glass surfaces, dark and light | In progress | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.1, [P8 plan](docs/plans/P8-implementation-plan.md) |
-| [FEAT-064](docs/features/FEAT-064-framework-navigation-and-focus-names.md) | Navigation by the FinOps Framework and FOCUS names on every screen | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) sections 5.2 and 5.3, [P8 plan](docs/plans/P8-implementation-plan.md) |
+| [FEAT-064](docs/features/FEAT-064-framework-navigation-and-focus-names.md) | Navigation by the FinOps Framework and FOCUS names on every screen | In progress | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) sections 5.2 and 5.3, [P8 plan](docs/plans/P8-implementation-plan.md) |
 | [FEAT-065](docs/features/FEAT-065-cost-explorer.md) | Cost Explorer, two group bys over FOCUS dimensions and tags | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) sections 5.3 and 7, [P8 plan](docs/plans/P8-implementation-plan.md) |
 | [FEAT-066](docs/features/FEAT-066-spend-forecast.md) | Spend forecast, month end and three months, with a published backtest | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 7, [P8 plan](docs/plans/P8-implementation-plan.md), [ADR-0015](docs/adr/ADR-0015-deterministic-forecasting-is-permitted.md) |
 | [FEAT-067](docs/features/FEAT-067-excel-and-csv-export.md) | Report export to Excel and CSV behind the scope guard, with an About sheet | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.5, [P8 plan](docs/plans/P8-implementation-plan.md). Delivers FEAT-045 rather than building it again |
@@ -245,7 +245,7 @@ block is caught by `make check-docs`. See
 | ADR-0017 | Nothing is hardcoded, and every feature flag has an owner and an expiry | Accepted | [ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md) |
 | ADR-0018 | The threshold is zero fixable findings, not zero findings | Accepted | [ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md) |
 | ADR-0019 | Headless component behaviour, our own visual layer | Accepted, styling row superseded by ADR-0021 | [ADR-0019](docs/adr/ADR-0019-headless-components-own-visual-layer.md) |
-| ADR-0020 | Seven fixed navigation groups, and the routes they fix | Accepted | [ADR-0020](docs/adr/ADR-0020-seven-fixed-navigation-groups.md) |
+| ADR-0020 | Seven fixed navigation groups, and the routes they fix | Superseded by ADR-0030 | [ADR-0020](docs/adr/ADR-0020-seven-fixed-navigation-groups.md) |
 | ADR-0021 | Plain CSS over a utility framework, against our own tokens | Accepted | [ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md) |
 | ADR-0022 | The fakes live outside the production packages, kept there by three mechanisms | Accepted | [ADR-0022](docs/adr/ADR-0022-fakes-outside-the-production-packages.md) |
 | ADR-0023 | A coverage cause is the error taxonomy plus one member, never attempted | Accepted | [ADR-0023](docs/adr/ADR-0023-coverage-cause-is-the-taxonomy-plus-one.md) |
@@ -255,6 +255,7 @@ block is caught by `make check-docs`. See
 | ADR-0027 | No performance dimension in P5, and what to build instead | Accepted | [ADR-0027](docs/adr/ADR-0027-no-performance-dimension-in-p5.md) |
 | ADR-0028 | The language model runs in the hub account, on Bedrock | Accepted | [ADR-0028](docs/adr/ADR-0028-the-model-runs-in-the-hub-account.md) |
 | ADR-0029 | A row that belongs to a person is scoped by that person | Accepted | [ADR-0029](docs/adr/ADR-0029-a-row-that-belongs-to-a-person.md) |
+| ADR-0030 | Navigation follows the FinOps Framework | Accepted | [ADR-0030](docs/adr/ADR-0030-navigation-follows-the-finops-framework.md) |
 
 Index of records: [docs/adr/README.md](docs/adr/README.md)
 

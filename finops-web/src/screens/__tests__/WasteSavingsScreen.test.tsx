@@ -141,7 +141,7 @@ describe('WasteScoreScreen', () => {
     const first = findings[0]?.querySelector('a');
     expect(first).toHaveAttribute(
       'href',
-      '/waste?finding=2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
+      '/optimize?finding=2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
     );
   });
 

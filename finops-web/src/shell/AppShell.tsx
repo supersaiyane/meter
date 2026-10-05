@@ -7,7 +7,8 @@ import { TypedError } from '../components/TypedError';
 import { isFailureCause } from '../components/provenance';
 import { useAggregateMeta } from './metaRegistry';
 import { readStored, writeStored } from '../storage';
-import { GROUPS, activeGroupFor, isSelfGroup, screenTitleFor } from './sections';
+import { GROUPS, activeGroupFor, isSelfGroup, screenTitleFor, tabsFor } from './sections';
+import { ScreenTabs } from './ScreenTabs';
 import { ThemeToggle } from './ThemeToggle';
 
 /**
@@ -47,6 +48,7 @@ export function AppShell({ children, now }: AppShellProps) {
   const meta = useAggregateMeta();
   const { pathname } = useLocation();
   const title = screenTitleFor(pathname);
+  const tabbed = tabsFor(pathname);
   const [navOpen, setNavOpen] = useState(() => !navWasCollapsed());
 
   // Only the section holding the current screen is open, so the menu is short
@@ -247,6 +249,9 @@ export function AppShell({ children, now }: AppShellProps) {
 
       <main>
         <h1 data-testid="screen-title">{title}</h1>
+        {tabbed ? (
+          <ScreenTabs label={tabbed.screen.label} tabs={tabbed.tabs} current={tabbed.current} />
+        ) : null}
         {children}
       </main>
     </div>

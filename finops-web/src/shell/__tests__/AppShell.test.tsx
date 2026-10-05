@@ -53,7 +53,7 @@ function Reporting({ id, meta, freshness }: Reported) {
 
 function renderShellWith(surfaces: readonly Reported[]) {
   return render(
-    <MemoryRouter initialEntries={['/assistant']}>
+    <MemoryRouter initialEntries={['/assist']}>
       <MetaProvider>
         <AppShell now={NOW}>
           {surfaces.map((surface) => (
@@ -239,10 +239,25 @@ describe('AppShell', () => {
   });
 
   it('marks the current screen for assistive technology', () => {
+    // Read inside the Sections menu, because the screen's first tab carries the
+    // same name and marks itself too.
     renderShell(metaOf());
-    expect(screen.getByRole('link', { name: 'Accounts' })).toHaveAttribute(
+    const sections = screen.getByRole('navigation', { name: 'Sections' });
+    expect(sections.querySelector("a[href='/inventory/accounts']")).toHaveAttribute(
       'aria-current',
       'page',
+    );
+  });
+
+  it('draws the views of a merged screen as tabs and marks the open one', () => {
+    renderShell(metaOf(), '/inventory/accounts/organization');
+    const views = screen.getByRole('navigation', { name: 'Accounts views' });
+    expect(views.querySelector("a[href='/inventory/accounts/organization']")).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(views.querySelector("a[href='/inventory/accounts']")).not.toHaveAttribute(
+      'aria-current',
     );
   });
 
@@ -259,7 +274,7 @@ describe('AppShell', () => {
 
   it('gives a built screen no arrival note', () => {
     renderShell(metaOf());
-    const link = screen.getByRole('link', { name: /Spend and trend/ });
+    const link = screen.getByRole('link', { name: /Cost Explorer/ });
     expect(link).not.toHaveAttribute('data-arrives');
   });
 

@@ -104,7 +104,7 @@ describe('HomeScreen', () => {
     // the feature.
     renderHome();
     expect(screen.queryByText(/P1 Cost Intelligence/)).toBeNull();
-    expect(screen.getByRole('link', { name: /Total spend/ })).toHaveAttribute('href', '/cost');
+    expect(screen.getByRole('link', { name: /Total spend/ })).toHaveAttribute('href', '/analyze/explorer');
   });
 
   it('gives every slot a link to the screen that owns it', () => {
@@ -117,7 +117,7 @@ describe('HomeScreen', () => {
     // heading rather than the name of a sub project that has not arrived.
     expect(screen.getByRole('link', { name: /Top findings by dollar/ })).toHaveAttribute(
       'href',
-      '/governance/queries',
+      '/govern/query-cost',
     );
   });
 

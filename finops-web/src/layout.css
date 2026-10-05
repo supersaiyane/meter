@@ -62,10 +62,57 @@ body {
   padding: var(--space-3) var(--space-6);
   background: var(--surface-raised);
   border-bottom: 1px solid var(--border);
+  /* Glass, so the page scrolls under the strip rather than behind a wall. The
+     fallbacks in tokens.css make the surface opaque where glass cannot be. */
+  -webkit-backdrop-filter: blur(var(--panel-blur)) saturate(var(--panel-saturate));
+  backdrop-filter: blur(var(--panel-blur)) saturate(var(--panel-saturate));
   font-size: var(--font-size-1);
   position: sticky;
   top: 0;
   z-index: 5;
+}
+
+/* ------------------------------------------------------------ screen tabs */
+
+/* The views of a merged screen, under its heading. Links drawn as one
+   segmented row; the open view carries aria-current and the accent mark. */
+[data-testid='screen-tabs'] ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  width: fit-content;
+  margin: 0 0 var(--space-5);
+  padding: var(--space-1);
+  list-style: none;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+[data-testid='screen-tabs'] a {
+  display: block;
+  padding: var(--space-1) var(--space-3);
+  /* A border, never a shadow, so the open tab can be drawn without one. */
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: var(--font-size-2);
+  text-decoration: none;
+}
+
+[data-testid='screen-tabs'] a:hover {
+  color: var(--text);
+}
+
+[data-testid='screen-tabs'] a[aria-current='page'] {
+  border-color: var(--accent-mark);
+  background: var(--accent-quiet);
+  color: var(--accent);
+}
+
+[data-testid='screen-tabs'] a:focus-visible {
+  outline: 2px solid var(--accent-mark);
+  outline-offset: 2px;
 }
 
 [data-testid='trust-strip'] > * {
