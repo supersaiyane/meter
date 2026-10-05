@@ -81,7 +81,10 @@ export function StateBoundary({
     case 'degraded':
       return (
         <div data-testid="state" data-state="degraded">
-          <p role="status">Failing: {state.failing.join(', ')}.</p>
+          {/* Named, not coded. TASK-P8-004 promised no raw identifier on any screen, and the
+              screens' own test never met a failing collector, so this list said finops_score
+              on every page of the demo until the owner saw it on 2026-10-05. */}
+          <p role="status">Failing: {state.failing.map(collectorName).join(', ')}.</p>
           {children}
         </div>
       );

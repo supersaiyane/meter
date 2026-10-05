@@ -109,6 +109,17 @@ describe('StateBoundary', () => {
     expect(screen.getByText('ACCESS DENIED')).toBeInTheDocument();
   });
 
+  it('names the failing collectors in words, never by their codes', () => {
+    render(
+      <StateBoundary state={{ kind: 'degraded', failing: ['account_health', 'finops_score'] }}>
+        <p>rows</p>
+      </StateBoundary>,
+    );
+    const said = screen.getByRole('status');
+    expect(said).toHaveTextContent('Failing: Account health, FinOps Score.');
+    expect(said.textContent).not.toMatch(/account_health|finops_score/);
+  });
+
   it('reports no accessibility violations in any state', async () => {
     for (const kind of SURFACE_STATES) {
       const { container, unmount } = render(

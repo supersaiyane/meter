@@ -3827,6 +3827,17 @@ issues:
     `finops-web/e2e/topology.spec.ts` also differs from Prettier, and `format:check` reads `src`
     only, so it would not catch that file. Closing it is `npm run format:check` in `make lint`
     and in the frontend job, widened to `e2e`.'
+- id: ISS-246
+  severity: MEDIUM
+  status: FIXED
+  summary: The degraded state listed failing collectors by their codes, finops_score and
+    account_health among them, on every screen of the demo
+  detail: '`finops-web/src/components/StateBoundary.tsx` joined the raw collector names into
+    its Failing line. TASK-P8-004 promised no raw identifier on any screen, and its rendered
+    text test never met a failing collector because no fixture carries one. The owner saw it on
+    the live demo on 2026-10-05. Fixed the same day: the line names each collector through
+    `collectorName`, and `StateBoundary.test.tsx` holds that a degraded state says Account
+    health and FinOps Score and never their codes.'
 
 open_questions:
 - id: OPEN-07
