@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { HomeScreen } from '../HomeScreen';
+import { ArrivingRail, HomeScreen, type SlotDef } from '../HomeScreen';
 import { Harness } from './Harness';
 import { clientReturning, metaOf } from './fixtures';
 import { costBudgetsFixture } from '../../api/fixtures/cost';
@@ -38,30 +38,63 @@ function renderHome(client: ApiClient = clientReturning({ '/api/v1/platform/cost
   );
 }
 
-describe('HomeScreen', () => {
+describe('the arriving rail', () => {
+  // The mechanism, tested against a synthetic slot. Home has none left to fill today, and a
+  // test that counted Home's own slots would throw on an empty page rather than test anything.
+  // The claim is about what a slot says when one exists.
+  const EXAMPLE: SlotDef = {
+    id: 'example',
+    label: 'An example figure',
+    owns: '/cost',
+    arrives: 'P9 Example',
+  };
+
+  function renderRail(slots: readonly SlotDef[]) {
+    return render(
+      <Harness client={clientReturning({})}>
+        <ArrivingRail slots={slots} />
+      </Harness>,
+    );
+  }
+
   it('names the sub project that will fill an empty slot', () => {
-    // Derived, not named. This asserted on `home-slot-spend` until 2026-09-20, when
-    // P1 filled that slot and the test failed for the one reason that is not a
-    // regression. The claim is about the mechanism, so it is made against whichever
-    // slot is empty today.
-    renderHome();
-    const slots = screen.getAllByTestId(/^home-slot-/);
-    expect(slots.length).toBeGreaterThan(0);
-    for (const slot of slots) {
-      expect(slot).toHaveTextContent(/not yet collected/i);
-      expect(slot).toHaveTextContent(/^.*P\d /);
-    }
+    renderRail([EXAMPLE]);
+    const slot = screen.getByTestId('home-slot-example');
+    expect(slot).toHaveTextContent(/not yet collected/i);
+    expect(slot).toHaveTextContent('P9 Example');
   });
 
   it('renders no figure and no currency in an empty slot', () => {
     // Rule 5 of 12-UI-DESIGN: an absence is never a number. Asserted as "no Figure
     // and no currency" rather than "no digit", because the slot names the sub project
-    // and P3 legitimately contains one.
-    renderHome();
-    for (const slot of screen.getAllByTestId(/^home-slot-/)) {
-      expect(slot.querySelector('[data-testid="figure"]')).toBeNull();
-      expect(slot).not.toHaveTextContent('$');
-    }
+    // and P9 legitimately contains one.
+    renderRail([EXAMPLE]);
+    const slot = screen.getByTestId('home-slot-example');
+    expect(slot.querySelector('[data-testid="figure"]')).toBeNull();
+    expect(slot).not.toHaveTextContent('$');
+  });
+
+  it('links a slot to the screen that will own it', () => {
+    renderRail([EXAMPLE]);
+    expect(screen.getByRole('link', { name: 'P9 Example' })).toHaveAttribute('href', '/cost');
+  });
+
+  it('draws nothing when nothing is still to arrive, not a heading over nothing', () => {
+    const { container } = renderRail([]);
+    expect(screen.queryByTestId('home-rail')).toBeNull();
+    expect(container).not.toHaveTextContent(/not yet collected/i);
+  });
+});
+
+describe('HomeScreen', () => {
+  it('promises nothing that has already shipped', () => {
+    // Realized savings said it would arrive with P3 after P3 shipped and /waste/savings was
+    // built, the same failure the P1 slots had. With it gone nothing is still to arrive, so
+    // the rail is not drawn at all.
+    const { container } = renderHome();
+    expect(screen.queryByTestId('home-rail')).toBeNull();
+    expect(container).not.toHaveTextContent(/arrives with/i);
+    expect(container).not.toHaveTextContent(/\bP3\b/);
   });
 
   it('shows the spend P1 filled rather than still promising it', () => {
@@ -86,12 +119,6 @@ describe('HomeScreen', () => {
       'href',
       '/governance/queries',
     );
-    // Every remaining slot links to the screen that will own it, rather than
-    // rendering an empty panel. Counted rather than named, for the reason above.
-    const slots = screen.getAllByTestId(/^home-slot-/);
-    for (const slot of slots) {
-      expect(slot.querySelector('a')).not.toBeNull();
-    }
   });
 
   it('shows Meter own cost as a measured figure, summed across modules', async () => {

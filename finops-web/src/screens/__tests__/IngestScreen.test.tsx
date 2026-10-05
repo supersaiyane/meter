@@ -83,6 +83,43 @@ describe('IngestScreen', () => {
     });
   });
 
+  it('draws a run failed as Misconfigured as that failure, and never its items as a number', async () => {
+    // The local list of causes this screen kept had no Misconfigured, so the run fell through
+    // to the number, and a failure read as a measured count. Distinct items, so a stray digit
+    // from anywhere else on the row cannot pass for them.
+    const misconfigured = run({
+      run_id: 'misconfigured',
+      status: 'FAILED',
+      items_written: 4217,
+      error_type: 'Misconfigured',
+      error_detail: 'The aggregator named in the settings does not exist.',
+    });
+    const { container } = renderScreen([misconfigured]);
+    await waitFor(() => {
+      expect(screen.getByText('MISCONFIGURED')).toBeInTheDocument();
+    });
+    expect(screen.getByText(/aggregator named in the settings/)).toBeInTheDocument();
+    expect(screen.queryByTestId('figure')).toBeNull();
+    expect(container.textContent).not.toMatch(/4,?217/);
+  });
+
+  it('draws a cause it does not know as drift, and never its items as a number', async () => {
+    const unknown = run({
+      run_id: 'unknown',
+      status: 'FAILED',
+      items_written: 4217,
+      error_type: 'Exploded',
+      error_detail: null,
+    });
+    const { container } = renderScreen([unknown]);
+    await waitFor(() => {
+      expect(screen.getByText('UNRECOGNISED')).toBeInTheDocument();
+    });
+    expect(screen.getByText(/Exploded is not a cause this screen knows/)).toBeInTheDocument();
+    expect(screen.queryByTestId('figure')).toBeNull();
+    expect(container.textContent).not.toMatch(/4,?217/);
+  });
+
   it('never shows a raw exception string', async () => {
     const { container } = renderScreen([REFUSED]);
     await waitFor(() => {

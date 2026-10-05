@@ -49,7 +49,10 @@ describe('why part of an estate is missing', () => {
     const state = surfaceStateFor(
       READY,
       meta({
-        failures: [failure('account_health', 'Throttled'), failure('query_audit', 'AccessDenied')],
+        failures: [
+          failure('account_health', 'Throttled'),
+          failure('query_audit', 'AccessDenied'),
+        ],
       }),
       3,
       'none',
@@ -64,5 +67,33 @@ describe('why part of an estate is missing', () => {
     // was not given the rest, and saying so is correct.
     const state = surfaceStateFor(READY, meta(), 3, 'none', 'query_audit');
     expect((state as { reason: string }).reason).toBe('outside your scope');
+  });
+});
+
+describe('a request that failed', () => {
+  it('names a Misconfigured failure as that, not as unrecognised', () => {
+    // The local list of causes here had no Misconfigured, so a failure that said whose
+    // problem it was reached the reader as UNRECOGNISED, which sent them to look for an API
+    // change when the fix was one line of their own settings.
+    const message = '409: Misconfigured: the aggregator named in the settings does not exist';
+    const state = surfaceStateFor(
+      { isPending: false, isError: true, error: new Error(message) },
+      undefined,
+      0,
+      'none',
+      'cost_focus',
+    );
+    expect(state).toEqual({ kind: 'failed', cause: 'Misconfigured', remediation: message });
+  });
+
+  it('still calls a failure it cannot classify drift', () => {
+    const state = surfaceStateFor(
+      { isPending: false, isError: true, error: new Error('500: something else') },
+      undefined,
+      0,
+      'none',
+      'cost_focus',
+    );
+    expect(state).toMatchObject({ kind: 'failed', cause: 'SchemaDrift' });
   });
 });
