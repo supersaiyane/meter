@@ -277,6 +277,8 @@ def _assistant(app: FastAPI, settings: Settings, model: Any) -> Any:
             "a model was given with no METER_ASSISTANT_MODEL_ID, so no exchange could record "
             "what it was sent to"
         )
+    from threading import BoundedSemaphore
+
     from finops_api.assistant import Assistant
     from finops_api.toolbox import ApiToolbox, InProcessTransport
 
@@ -287,6 +289,7 @@ def _assistant(app: FastAPI, settings: Settings, model: Any) -> Any:
         input_per_million=settings.assistant_input_usd_per_million_tokens,
         output_per_million=settings.assistant_output_usd_per_million_tokens,
         monthly_token_budget=settings.assistant_monthly_token_budget,
+        slots=BoundedSemaphore(settings.assistant_max_concurrent_questions),
     )
 
 

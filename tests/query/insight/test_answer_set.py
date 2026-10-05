@@ -20,7 +20,7 @@ import pytest
 from sqlalchemy import Engine
 
 from finops_core.config import Settings
-from finops_core.domain.insight import Provenance
+from finops_core.domain.insight import Provenance, Unit
 from finops_fakes.containers import PLATFORM_EKS
 from tests.query.insight.harness import (
     IN_SCOPE,
@@ -65,6 +65,8 @@ def test_the_most_expensive_service_is_the_one_the_screen_ranks_first(
     assert cited["cost"].value == Decimal(str(top["effective_cost"]))
     assert cited["cost"].provenance is Provenance.MEASURED
     assert cited["cost"].as_of == datetime.fromisoformat(shown["meta"]["as_of"])
+    # As the tool table declares them, ISS-231: dollars for the cost, nothing for the name.
+    assert (cited["cost"].unit, cited["service"].unit) == (Unit.USD, None)
     # Spec section 11's cost test, in its first place: an exchange that reached a model
     # says what it spent, in both directions, and neither is zero.
     assert exchange.usage.input_tokens > 0
@@ -116,8 +118,10 @@ def test_how_much_of_the_organization_a_figure_covers_is_the_screens_coverage(
         ),
     )
 
-    cited = {c.placeholder: c.value for c in assert_cited_from_real_results(exchange).citations}
+    citations = assert_cited_from_real_results(exchange).citations
+    cited = {c.placeholder: c.value for c in citations}
     assert cited == {"visible": Decimal(coverage["visible"]), "total": Decimal(coverage["total"])}
+    assert {c.unit for c in citations} == {Unit.COUNT}, "a coverage figure counts accounts"
 
 
 def test_a_clusters_unrequested_capacity_is_the_figure_the_cost_screen_shows(
@@ -142,3 +146,4 @@ def test_a_clusters_unrequested_capacity_is_the_figure_the_cost_screen_shows(
     (idle,) = assert_cited_from_real_results(exchange).citations
     assert idle.value == Decimal(str(cluster["unallocated"]))
     assert idle.provenance is Provenance.MEASURED
+    assert idle.unit is Unit.USD, "money under a name that does not say so, declared by its tool"

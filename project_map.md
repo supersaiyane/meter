@@ -31,8 +31,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 25 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 158 | test_*.py under tests/ |
-| Test functions | 2135 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 159 | test_*.py under tests/ |
+| Test functions | 2166 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -355,10 +355,13 @@ meter/
 ├── finops_core/               IN BUILD  domain and ports. No boto3, no framework
 │   ├── errors.py              the six typed failure causes, closed set, no catch all
 │   ├── config.py              every METER_ variable, typed. No defaults except flags.
-│   │                          Four are the assistant's: the model id, empty until
-│   │                          OPEN-10 names one, the input and output prices per
-│   │                          million tokens, which are modelled, and the monthly
-│   │                          token budget per tenant
+│   │                          Six are the assistant's: the model id, empty until
+│   │                          OPEN-10 names one, the inference profile ARN the hub
+│   │                          stack sets so a call is tagged, ISS-230, the input
+│   │                          and output prices per million tokens, which are
+│   │                          modelled, the monthly token budget per tenant, and
+│   │                          how many questions it answers at once, capped at
+│   │                          nineteen, ISS-225
 │   ├── constants.py           the values that are decisions rather than deployments
 │   └── domain/                frozen entities, no persistence and no cloud concern.
 │                              cost.py holds CostRecord in FOCUS 1.1, plus
@@ -390,8 +393,9 @@ meter/
 │       │                      unobserved as not killed, which sends the smaller
 │       │                      memory margin to the workloads that were killed.
 │       │                      Workload is not a Fact, it is an identity
-│       ├── insight.py         Answer, Refusal, Failure, Citation, Gap and
-│       │                      Provenance. An answer, a refusal and a failure are
+│       ├── insight.py         Answer, Refusal, Failure, Citation, Gap, Provenance
+│       │                      and Unit, which every cited figure carries, ISS-231.
+│       │                      An answer, a refusal and a failure are
 │       │                      separate types, not one with a nullable field. Prose
 │       │                      holds placeholders and no figures, and an Answer
 │       │                      cannot be built holding a figure it did not cite.
@@ -462,10 +466,11 @@ meter/
 │   │   │                     and quota name, and names are somebody else's display
 │   │   │                     strings. Said in the docstring rather than buried
 │   │   ├── bedrock.py         BedrockModel, the Converse API in the hub account
-│   │   │                      with the model id from configuration, OPEN-10. Every
-│   │   │                      error becomes a typed cause, and a guardrail that
-│   │   │                      intervenes is SchemaDrift. Never run against AWS,
-│   │   │                      ISS-002. TASK-P7-004
+│   │   │                      with the model id from configuration, OPEN-10, called
+│   │   │                      through its tagged inference profile where the hub
+│   │   │                      stack sets one, ISS-230. Every error becomes a typed
+│   │   │                      cause, and a guardrail that intervenes is SchemaDrift.
+│   │   │                      Never run against AWS, ISS-002. TASK-P7-004
 │   │   ├── language_model.py  language_model(settings), the one composition point
 │   │   │                      that names the vendor. None when no model is set,
 │   │   │                      and the assistant then says it is not enabled
@@ -1093,8 +1098,9 @@ meter/
 │   │                          reads and a global scope does not widen, ADR-0029.
 │   │                          Through recurses, so a finding is scoped through
 │   │                          its definition through its instance
-│   ├── tools.py               the tool table, eleven rows, each a name, a route and
-│   │                          the envelope model its schema is generated from. No
+│   ├── tools.py               the tool table, eleven rows, each a name, a route,
+│   │                          the envelope model its schema is generated from, and
+│   │                          the unit of every numeric field, ISS-231. No
 │   │                          tool writes and none runs free form SQL. Moved here
 │   │                          from finops_mcp/tools.py on 2026-10-04, CHG-0110, so
 │   │                          the API can compose the assistant without importing
@@ -1109,9 +1115,10 @@ meter/
 │   ├── assistant.py           the service, in the order it runs: screens the
 │   │                          question for secrets and refuses a blocked one, says
 │   │                          not enabled when no model is configured, refuses
-│   │                          past the monthly budget, runs the loop with no
-│   │                          transaction open, then records the exchange and its
-│   │                          redactions in one transaction
+│   │                          past the monthly budget, takes a slot without
+│   │                          waiting and throttles past the limit, ISS-225, runs
+│   │                          the loop with no transaction open, then records the
+│   │                          exchange and its redactions in one transaction
 │   ├── identity/              behind the two ports ADR-0008 parked
 │   │   ├── local_config.py    users from a file. Refused in prod by config.py
 │   │   ├── session.py         signed, carries the scope, always expires
@@ -1443,7 +1450,10 @@ meter/
                                and Athena workgroup. The workgroup carries the result
                                location and a bytes scanned cutoff, which is what
                                stops an unpruned query scanning the whole table at
-                               full price. Validated, never applied. ISS-122
+                               full price. iam.tf gives each assistant model an
+                               inference profile tagged finops:module = assistant,
+                               so its spend is a module of its own, ISS-230.
+                               Validated, never applied. ISS-122
 ```
 
 ## Planned module responsibilities

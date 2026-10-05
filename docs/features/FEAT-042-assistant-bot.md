@@ -59,7 +59,9 @@ from a tool still names the screen where the answer lives, when there is one.
 The tool table described above as it stood after P0 moved to `finops_api/tools.py` on
 2026-10-04, CHG-0110, and now also carries the cost tools the assistant asks with. The
 assistant runs inside the API process and its tool calls go back through the same
-application, ISS-225, so the API composes it without importing the MCP facade.
+application, so the API composes it without importing the MCP facade. How many questions
+run at once is bounded, so they cannot take every worker thread the tool calls need,
+ISS-225.
 
 ## Failure behaviour
 

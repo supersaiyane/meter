@@ -66,3 +66,10 @@ STALE_AFTER_CADENCE_MULTIPLE = 2
 # so the entity and the column cannot disagree about what counts as an explanation. A
 # check constraint cannot read this, so the migration carries the same figure literally.
 REASON_MIN_LENGTH = 12
+
+# The most questions the assistant may answer at once, whatever a deployment sets. Each
+# holds two of the API's worker threads while it runs, its own and the one its current tool
+# call needs, and anyio's default pool is forty, so nineteen keeps questions under half of
+# it. tests/api/test_assistant_limit.py reads the pool from the installed anyio rather than
+# trusting the forty written here. ISS-225.
+ASSISTANT_CONCURRENCY_CEILING = 19

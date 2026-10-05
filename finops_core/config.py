@@ -28,7 +28,12 @@ from uuid import UUID
 from pydantic import Field, ValidationError, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from finops_core.constants import ENV_PREFIX, LOCAL_IDENTITY_PROVIDER, PRODUCTION_ENV
+from finops_core.constants import (
+    ASSISTANT_CONCURRENCY_CEILING,
+    ENV_PREFIX,
+    LOCAL_IDENTITY_PROVIDER,
+    PRODUCTION_ENV,
+)
 from finops_core.domain.query import WriteLevel
 
 
@@ -204,12 +209,23 @@ class Settings(BaseSettings):
     # is the measurement, and the platform cost screen reads it by tag. Above zero, because a
     # model that costs nothing does not exist and would report every exchange as free.
     assistant_model_id: str = ""
+    #: What the adapter calls, where it is not the model itself: the ARN of the application
+    #: inference profile the hub stack makes for the model in use, so the call carries
+    #: finops:module onto the bill, ISS-230. Empty calls the model by its identifier, which
+    #: is what every test and every deployment without the hub stack does. Exchanges record
+    #: the identifier above and never this, because the ARN names an account.
+    assistant_inference_profile_arn: str = ""
     assistant_input_usd_per_million_tokens: Decimal = Field(gt=0)
     assistant_output_usd_per_million_tokens: Decimal = Field(gt=0)
     #: Tokens one tenant may spend in a calendar month, TASK-P7-007. A deployment decision
     #: rather than a design one, so it is here and not a constant. Exhausted, the assistant
     #: refuses and says when it resets rather than continuing to spend.
     assistant_monthly_token_budget: int = Field(ge=1)
+    #: Questions the assistant answers at once, ISS-225. Past it, a question is answered as
+    #: Throttled at once rather than queued, because a queued question would hold a worker
+    #: thread while it waited. Capped by the constant, so no deployment can set a figure
+    #: that lets questions take the whole pool.
+    assistant_max_concurrent_questions: int = Field(ge=1, le=ASSISTANT_CONCURRENCY_CEILING)
 
     # Retention, in days. docs/09-DATA-CLASSIFICATION.md.
     retention_principal_days: int = Field(ge=1)

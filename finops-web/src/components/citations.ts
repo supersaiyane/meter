@@ -75,42 +75,19 @@ export function citeProse(prose: string, citations: readonly ApiCitation[]): Cit
 }
 
 /**
- * Words that name money in a field. Everything else a tool returns is a count.
+ * The unit a figure is drawn in: the one its citation carries, as the tool that returned it
+ * declared it. ISS-231.
  *
- * A citation carries no unit, so the unit is read from the name of the field the value came
- * from. Every tool the assistant has today returns money under a name that says so:
- * `effective_cost`, `billed_cost`, `amortized_cost`, `monthly_cost`, the cost summary's
- * `change`, and a cluster's `total`, `allocated` and `unallocated`. A digest names its fields
- * in words, "effective_cost summed over the week", which the same rule reads. A unit on the
- * citation would make this a lookup instead of a rule, and its absence is reported as a gap in
- * the contract rather than hidden here.
+ * Never read from the field's name. A name happened to say money for every field the tools
+ * returned on 2026-10-04, and nothing would have caught the first one that did not. Null where
+ * the citation carries no unit, a figure stored before citations carried one, or carries one
+ * this screen does not draw, and the screen draws that as unrecognised rather than as dollars
+ * or a count it chose.
  */
-const MONEY = new Set([
-  'cost',
-  'costs',
-  'spend',
-  'spent',
-  'saving',
-  'savings',
-  'price',
-  'charge',
-  'charges',
-  'budget',
-  'amount',
-  'change',
-  'total',
-  'allocated',
-  'unallocated',
-]);
-
-export function figureUnit(citation: ApiCitation): 'usd' | 'count' {
-  // The envelope's own meta holds only counts: coverage and failure occurrences.
-  if (citation.field.startsWith('meta.')) return 'count';
-  // A selector such as `[name=m5.large]` holds dots and names of its own, and is not the field.
-  const path = citation.field.replace(/\[[^\]]*\]/g, '');
-  const field = path.split('.').at(-1) ?? path;
-  const words = field.toLowerCase().split(/[^a-z]+/);
-  return words.some((word) => MONEY.has(word)) ? 'usd' : 'count';
+export function figureUnit(citation: ApiCitation): 'usd' | 'count' | null {
+  // Read as a string, so a unit the API should never send is not drawn as one of the two.
+  const unit: string | null = citation.unit;
+  return unit === 'usd' || unit === 'count' ? unit : null;
 }
 
 /** A decimal as the API writes one, such as `3781.9335`, `-12.5` or `0E-10`. */

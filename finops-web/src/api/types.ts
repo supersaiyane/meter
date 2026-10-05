@@ -1039,6 +1039,12 @@ export interface ApiCitation {
   readonly value: string;
   /** A figure renders through Figure. A label is a name, a date or an identifier. */
   readonly kind: 'figure' | 'label';
+  /**
+   * What a figure counts, as the tool that returned it declares, ISS-231. Null on a label, and
+   * on a figure stored before citations carried a unit, which is drawn as unrecognised rather
+   * than guessed from the field's name.
+   */
+  readonly unit: 'usd' | 'count' | null;
   readonly provenance: 'measured' | 'modelled';
   readonly as_of: string;
 }

@@ -17,7 +17,7 @@ from typing import Any
 
 import pytest
 
-from finops_core.domain.insight import Answer, Failure, Gap, Provenance, Refusal
+from finops_core.domain.insight import Answer, Failure, Gap, Provenance, Refusal, Unit
 from finops_core.ports.llm import (
     Completion,
     CompletionRequest,
@@ -58,11 +58,26 @@ def envelope(
     }
 
 
-def output(data: Any, **kwargs: Any) -> ToolOutput:
+#: What the fake tools declare for their numeric fields, as `finops_api/tools.py` does for the
+#: real ones: by path, with row selectors taken out.
+UNITS = {
+    "data.effective_cost": Unit.USD,
+    "data.line_items": Unit.COUNT,
+    "data.cost": Unit.USD,
+    "data.runs": Unit.COUNT,
+    "data.change": Unit.USD,
+    "data.total": Unit.USD,
+    "data.clusters.total": Unit.USD,
+    "data.clusters.workloads.cost": Unit.USD,
+}
+
+
+def output(data: Any, *, units: Mapping[str, Unit] = UNITS, **kwargs: Any) -> ToolOutput:
     return ToolOutput(
         envelope=envelope(data, **kwargs),
         text="a result",
         provenance=Provenance.MEASURED,
+        units=units,
         screen="/cost",
     )
 
@@ -407,6 +422,87 @@ def test_a_date_and_a_count_are_cited_as_a_label_and_a_figure() -> None:
     assert isinstance(exchange.outcome, Answer)
     cited = {c.placeholder: c.value for c in exchange.outcome.citations}
     assert cited == {"when": ROW_AS_OF.isoformat(), "runs": Decimal(14)}
+
+
+# --- what a figure counts, ISS-231 ----------------------------------------------------
+
+
+def cited_units(exchange: Exchange) -> dict[str, Unit | None]:
+    assert isinstance(exchange.outcome, Answer), exchange.outcome
+    return {citation.placeholder: citation.unit for citation in exchange.outcome.citations}
+
+
+def test_a_figure_carries_the_unit_its_tool_declares_and_a_label_carries_none() -> None:
+    exchange, _ = run(
+        call("t1", "services"),
+        answer(
+            "{{service}} cost {{cost}} over {{items}} line items.",
+            service=("t1", "data[name=AmazonEC2].name"),
+            cost=("t1", "data[name=AmazonEC2].effective_cost"),
+            items=("t1", "data[name=AmazonEC2].line_items"),
+        ),
+        services=SERVICES,
+    )
+
+    assert cited_units(exchange) == {"service": None, "cost": Unit.USD, "items": Unit.COUNT}
+
+
+def test_the_unit_is_the_declared_one_whatever_the_field_is_named() -> None:
+    """Money under a name with no money word in it is still money, and a name that sounds
+    like money is still a count where the tool says so. Nothing reads the name."""
+    rows = output(
+        [{"name": "a", "overage": Decimal("12.50"), "cost_lines": 3}],
+        units={"data.overage": Unit.USD, "data.cost_lines": Unit.COUNT},
+    )
+    exchange, _ = run(
+        call("t1", "rows"),
+        answer(
+            "Owed {{owed}} over {{lines}} lines.",
+            owed=("t1", "data[name=a].overage"),
+            lines=("t1", "data[name=a].cost_lines"),
+        ),
+        rows=rows,
+    )
+
+    assert cited_units(exchange) == {"owed": Unit.USD, "lines": Unit.COUNT}
+
+
+def test_a_figure_its_tool_declares_no_unit_for_fails_rather_than_being_given_one() -> None:
+    undeclared = output([{"name": "AmazonEC2", "effective_cost": Decimal("812.40")}], units={})
+    exchange, _ = run(
+        call("t1", "services"),
+        answer("It cost {{x}}.", x=("t1", "data[name=AmazonEC2].effective_cost")),
+        services=undeclared,
+    )
+
+    failure = failed(exchange)
+    assert failure.cause == "SchemaDrift"
+    assert "declares no unit for data.effective_cost" in failure.detail
+    assert "AmazonEC2" not in failure.detail, "a selector is what a model chose, so not repeated"
+
+
+def test_a_number_in_the_envelopes_meta_is_a_count_with_nothing_declared() -> None:
+    exchange, _ = run(
+        call("t1", "services"),
+        answer(
+            "These cover {{visible}} of {{total}} accounts.",
+            visible=("t1", "meta.scope_coverage.visible"),
+            total=("t1", "meta.scope_coverage.total"),
+        ),
+        services=output([], units={}),
+    )
+
+    assert cited_units(exchange) == {"visible": Unit.COUNT, "total": Unit.COUNT}
+
+
+def test_a_label_needs_no_declared_unit() -> None:
+    exchange, _ = run(
+        call("t1", "services"),
+        answer("{{service}} is listed.", service=("t1", "data[name=AmazonEC2].name")),
+        services=output([{"name": "AmazonEC2"}], units={}),
+    )
+
+    assert cited_units(exchange) == {"service": None}
 
 
 def test_a_selector_value_may_hold_a_dot() -> None:

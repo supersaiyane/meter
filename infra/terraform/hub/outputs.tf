@@ -37,3 +37,8 @@ output "task_security_group_id" {
   description = "For the migration task."
   value       = aws_security_group.tasks.id
 }
+
+output "assistant_inference_profile_arns" {
+  description = "Each model in assistant_model_ids against the ARN of its tagged inference profile. The API task's METER_ASSISTANT_MODEL_ID is one of these ARNs, never a model identifier, ISS-230. Empty until a model is named, OPEN-10."
+  value       = { for model_id, profile in aws_bedrock_inference_profile.assistant : model_id => profile.arn }
+}

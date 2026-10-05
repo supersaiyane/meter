@@ -18,6 +18,19 @@ locals {
     { name = "METER_ORG_READER_ROLE_ARN", value = var.org_reader_role_arn },
     { name = "METER_S3_BUCKET", value = aws_s3_bucket.data.id },
   ]
+
+  # The API is the one service that calls the model, so it is the one told which, twice.
+  # The model identifier is what every exchange records and the screen shows. The profile
+  # ARN is what the adapter calls: only a call through the profile carries finops:module
+  # onto the bill, and the task role may reach the model no other way. Both are empty
+  # until a model is in use, and the assistant then says it is not enabled. ISS-230.
+  api_environment = concat(local.common_environment, [
+    { name = "METER_ASSISTANT_MODEL_ID", value = var.assistant_model_in_use },
+    {
+      name  = "METER_ASSISTANT_INFERENCE_PROFILE_ARN"
+      value = var.assistant_model_in_use == "" ? "" : aws_bedrock_inference_profile.assistant[var.assistant_model_in_use].arn
+    },
+  ])
 }
 
 resource "aws_ecs_cluster" "hub" {
@@ -68,7 +81,7 @@ resource "aws_ecs_task_definition" "api" {
       essential = true
 
       portMappings = [{ containerPort = 8000, protocol = "tcp" }]
-      environment  = local.common_environment
+      environment  = local.api_environment
       secrets = [
         {
           name      = "METER_DATABASE_URL"

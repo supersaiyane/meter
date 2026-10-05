@@ -65,8 +65,8 @@ subprojects:
     refusals and failures as shapes of their own, a monthly token budget, secrets redacted or
     blocked before any prompt is built, and weekly digests composed whether or not anything can
     send them. FEAT-039 and FEAT-040 are In build because nothing reads change history or opens
-    a pull request yet, ISS-227 and ISS-228, and Bedrock spend does not yet reach the platform
-    cost screen, ISS-230
+    a pull request yet, ISS-227 and ISS-228. Bedrock spend is tagged for the platform cost
+    screen through an inference profile per model, unverified against an account, ISS-002
   spec: specs/2026-09-28-p7-insight-and-llm-layer-design.md
   plan: plans/P7-implementation-plan.md
   depends_on: P1, P2, P3
@@ -1477,6 +1477,19 @@ changes:
     the documentation commit after the migrations rather than with them, as the routing rule
     asks. None of the three has a retention job yet and erasure does not reach them, ISS-226
     and OPEN-14'
+- id: CHG-0112
+  date: 2026-10-05
+  type: Fix
+  what: Three P7 gaps closed in code, the assistant's concurrency, the tag on its spend, and a
+    unit on every cited figure
+  commit: pending
+  detail: 'ISS-225, ISS-230 and the unit half of ISS-231. A question past
+    METER_ASSISTANT_MAX_CONCURRENT_QUESTIONS is throttled at once instead of holding a worker
+    thread. Each assistant model is reached only through an application inference profile
+    tagged finops:module = assistant, with the model identifier recorded and the profile ARN
+    called. Every cited figure carries the unit its tool declares, held by an exhaustive test
+    over the tool table. ADR-0028 is amended, because its consequence that the model would be
+    tagged with no work was wrong. Unverified against an account, ISS-002'
 issues:
 - id: ISS-189
   severity: LOW
@@ -3442,7 +3455,7 @@ issues:
     runs is not read'
 - id: ISS-225
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: Each assistant question holds two API worker threads while the model works, so
     enough concurrent questions stop every synchronous route
   detail: 'finops_api/toolbox.py InProcessTransport. The ask route is synchronous and holds a
@@ -3451,7 +3464,12 @@ issues:
     twenty questions in the middle of a tool call take the whole pool, and at forty every
     thread is held by a question waiting on a tool call that cannot get one, so nothing
     progresses and no timeout here ends it. No load test has run. The cheapest fix is a limiter
-    on the ask route set below half the pool, answering the excess as Throttled'
+    on the ask route set below half the pool, answering the excess as Throttled. FIXED on
+    2026-10-05: the service takes a slot without waiting before the loop and gives it back
+    however the loop ends, a question past METER_ASSISTANT_MAX_CONCURRENT_QUESTIONS is
+    answered at once as Throttled with nothing spent, and the setting refuses anything above
+    nineteen, a ceiling tests/api/test_assistant_limit.py holds below half the installed
+    anyio pool. Still no load test'
 - id: ISS-226
   severity: MEDIUM
   status: OPEN
@@ -3495,7 +3513,7 @@ issues:
     count of one. Recorded so the exclusion is a decision rather than an oversight'
 - id: ISS-230
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: Bedrock spend will not carry finops:module, so the platform cost screen will not
     show what the assistant costs
   detail: 'P7 spec section 15, exit criterion 7, which no task in the P7 plan took. An on demand
@@ -3504,10 +3522,17 @@ issues:
     the front page, and this would leave the newest feature off it. The per exchange estimate
     in assistant_exchange is modelled and is not the bill. The likely fix is an application
     inference profile in the hub stack, tagged, with its ARN as the configured model id and the
-    IAM grant moved to it, and nothing here has checked that against a real account, ISS-002'
+    IAM grant moved to it, and nothing here has checked that against a real account, ISS-002.
+    FIXED in code on 2026-10-05: each model named in assistant_model_ids gets an application
+    inference profile tagged finops:module = assistant, the task role may reach the model only
+    through it, and the API task is told the model identifier to record and the profile ARN to
+    call, two settings because the ARN names the hub account. Unverified against an account or
+    a bill, ISS-002. The first thing to confirm there is that bedrock:InferenceProfileArn is set
+    for an application profile, because the grant depends on it, and the pipeline deploy role
+    needs the inference profile create, get, delete and tag actions'
 - id: ISS-231
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: A citation carries a value and its as_of and nothing else, so the assistant screen
     infers from a field's name whether a figure is money
   detail: 'finops_core/domain/insight.py Citation has no unit, no collected_at and no envelope
@@ -3519,7 +3544,23 @@ issues:
     failing. Constraint 10 asks for both timestamps and only as_of reaches a citation. P7 spec
     section 9 asks for a citation to expand to its call and envelope, and the exchange stores
     the call without the envelope. A unit and collected_at belong on the tool spec, which knows
-    what its fields mean'
+    what its fields mean. FIXED for the unit on 2026-10-05: each tool declares the unit of
+    every numeric field it returns, a test walks every envelope and fails on a field without
+    one or a unit without a field, the loop fails a figure whose unit is undeclared as
+    SchemaDrift rather than defaulting, and the screen draws the unit it is sent and no longer
+    reads field names. collected_at and the envelope moved to ISS-232'
+- id: ISS-232
+  severity: MEDIUM
+  status: OPEN
+  summary: A citation carries no collected_at, and an exchange keeps no envelope behind its
+    calls
+  detail: 'Split from ISS-231 on 2026-10-05. Constraint 10 asks for both timestamps on every
+    figure, and a citation records only as_of, so where a figure needs a collected time the
+    screen uses the exchange''s answered time and shows only as_of. P7 spec section 9 asks for
+    a citation to expand to its call and envelope, and assistant_exchange stores each call
+    without the envelope it returned, so the screen shows the call and the path and not the
+    rows behind them. Storing envelopes is a size and retention decision, which OPEN-14 also
+    covers'
 
 open_questions:
 - id: OPEN-07

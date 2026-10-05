@@ -11,7 +11,7 @@ from datetime import UTC, date, datetime
 from decimal import Decimal
 from typing import Any
 
-from finops_core.domain.insight import bare_figures
+from finops_core.domain.insight import Unit, bare_figures
 from finops_core.domain.platform import UNALLOCATED
 from finops_query.digest import Audience, WeekOfSpend, compose, last_complete_week
 
@@ -51,6 +51,20 @@ def test_a_team_digest_cites_every_figure_and_names_its_team() -> None:
         "previous": Decimal("1610.75"),
         "service": "AmazonEC2",
         "service_spend": Decimal("905.10"),
+    }
+
+
+def test_every_figure_a_digest_cites_is_spend_in_dollars_and_every_label_has_no_unit() -> None:
+    """ISS-231. Each is declared where it is cited, so the screen draws it as it arrives."""
+    units = {c.placeholder: c.unit for c in compose(week()).citations}
+
+    assert units == {
+        "week_end": None,
+        "spend": Unit.USD,
+        "team": None,
+        "previous": Unit.USD,
+        "service": None,
+        "service_spend": Unit.USD,
     }
 
 

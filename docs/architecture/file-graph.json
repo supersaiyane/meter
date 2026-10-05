@@ -653,6 +653,7 @@
     "tests/__init__.py",
     "tests/api/__init__.py",
     "tests/api/test_assistant_budget.py",
+    "tests/api/test_assistant_limit.py",
     "tests/api/test_assistant_redaction.py",
     "tests/api/test_assistant_remediation.py",
     "tests/api/test_assistant_routes.py",
@@ -7647,6 +7648,31 @@
       "k": "python"
     },
     {
+      "s": "tests/api/test_assistant_limit.py",
+      "t": "finops_api/assistant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_assistant_limit.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_assistant_limit.py",
+      "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_assistant_limit.py",
+      "t": "finops_core/domain/insight.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_assistant_limit.py",
+      "t": "finops_core/ports/llm.py",
+      "k": "python"
+    },
+    {
       "s": "tests/api/test_assistant_redaction.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -9629,6 +9655,21 @@
     {
       "s": "tests/providers/aws/test_bedrock.py",
       "t": "finops_providers/aws/bedrock.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_bedrock_permissions.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_bedrock_permissions.py",
+      "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_bedrock_permissions.py",
+      "t": "finops_core/domain/platform.py",
       "k": "python"
     },
     {

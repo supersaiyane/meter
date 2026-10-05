@@ -25,6 +25,7 @@ from finops_core.domain.insight import (
     Provenance,
     ProvenanceError,
     Refusal,
+    Unit,
     bare_figures,
 )
 from finops_core.errors import CollectionError, NotOptedIn
@@ -39,6 +40,7 @@ def citation(**overrides: Any) -> Citation:
         "call_id": "t1",
         "field": "data[service=AmazonEC2].billed_cost",
         "value": Decimal("4123.50"),
+        "unit": Unit.USD,
         "provenance": Provenance.MEASURED,
         "as_of": AS_OF,
     }
@@ -99,7 +101,7 @@ def test_a_label_whose_name_holds_a_digit_goes_in_a_placeholder() -> None:
         Answer(prose="EC2 cost the most.", citations=())
     answer = Answer(
         prose="{{svc}} cost the most, at {{total}}.",
-        citations=(citation(placeholder="svc", value="AmazonEC2"), citation()),
+        citations=(citation(placeholder="svc", value="AmazonEC2", unit=None), citation()),
     )
     assert {c.placeholder: c.is_figure for c in answer.citations} == {"svc": False, "total": True}
 
@@ -168,6 +170,36 @@ def test_a_cited_value_is_a_finite_decimal_or_a_label(value: object) -> None:
 def test_there_is_no_forecast_provenance_to_cite_under() -> None:
     """Spec section 3: the assistant does not forecast, so it cannot cite one."""
     assert {member.value for member in Provenance} == {"measured", "modelled"}
+
+
+# --- what a figure counts, ISS-231 ------------------------------------------------
+
+
+def test_the_units_are_the_two_a_figure_on_the_screen_is_drawn_in() -> None:
+    """`Figure` in `finops-web` draws dollars or a count, and a third unit would reach it
+    as something it cannot draw."""
+    assert {member.value for member in Unit} == {"usd", "count"}
+
+
+@pytest.mark.parametrize("unit", [None, "usd", "dollars"])
+def test_a_figure_without_one_of_the_two_units_cannot_be_constructed(unit: object) -> None:
+    """Not defaulted to dollars and not read from the field's name. A plain string is
+    refused too, as a plain string is refused for the provenance flag."""
+    with pytest.raises(ProvenanceError, match="figure with no unit"):
+        citation(unit=unit)
+
+
+def test_a_label_carries_no_unit() -> None:
+    with pytest.raises(ProvenanceError, match="a label has no unit"):
+        citation(placeholder="svc", value="AmazonEC2", unit=Unit.COUNT)
+
+
+def test_a_figure_is_stored_with_its_unit_and_a_label_with_none() -> None:
+    figure = citation(unit=Unit.COUNT, value=Decimal("0.4000"))
+    label = citation(placeholder="svc", value="AmazonEC2", unit=None)
+
+    assert (figure.as_record()["unit"], figure.as_record()["value"]) == ("count", "0.4000")
+    assert "unit" not in label.as_record()
 
 
 # --- the refusal, and the three outcomes ------------------------------------------

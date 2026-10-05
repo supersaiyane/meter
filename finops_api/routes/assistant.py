@@ -20,6 +20,7 @@ their own questions and nobody else's, whatever else their scope reaches.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from typing import Any
 
@@ -78,13 +79,17 @@ PAYER = "payer"
 #: re run. `tests/api/test_assistant_remediation.py` holds that every cause has one.
 REMEDIATION = {
     "AccessDenied": (
-        "The hub role may not invoke this model. Add it to assistant_model_ids in the hub "
-        "stack, then ask again."
+        "The hub role may not invoke this model. Name it in assistant_model_ids and "
+        "assistant_model_in_use in the hub stack, which grants it through its tagged "
+        "profile, then ask again."
     ),
-    "Throttled": "The model service throttled the request. Ask again in a minute.",
+    "Throttled": (
+        "Too many questions are being answered at once, by Meter or by the model service. "
+        "Ask again in a minute."
+    ),
     "NotOptedIn": (
-        "Name a model in METER_ASSISTANT_MODEL_ID, enable access to it for the hub account, "
-        "and grant it through assistant_model_ids in the hub stack."
+        "Name a model in assistant_model_ids and assistant_model_in_use in the hub stack, "
+        "which sets METER_ASSISTANT_MODEL_ID, and enable access to it for the hub account."
     ),
     "NoData": (
         "The tools returned nothing to answer from. Ask about a period or a scope that has "
@@ -229,11 +234,21 @@ def digest_out(row: Any) -> DigestOut:
         period_start=row.period_start,
         period_end=row.period_end,
         prose=row.prose,
-        citations=tuple(CitationOut(**citation) for citation in row.citations),
+        citations=tuple(citation_out(citation) for citation in row.citations),
         composed_at=row.composed_at,
         sent_at=row.sent_at,
         unsent_reason=row.unsent_reason,
     )
+
+
+def citation_out(stored: Mapping[str, Any]) -> CitationOut:
+    """One stored citation, as it is sent.
+
+    A label is stored with no unit, and so is a figure cited before citations carried one,
+    ISS-231. Both are sent with none, explicitly, and the screen draws such a figure as
+    unrecognised rather than as dollars or a count it chose.
+    """
+    return CitationOut(**{**stored, "unit": stored.get("unit")})
 
 
 def _meta(connection: Connection, scope: Scope, context: AccessContext, out: ExchangeOut) -> Meta:
@@ -262,7 +277,7 @@ def exchange_out(row: Any) -> ExchangeOut:
         answer=(
             AnswerOut(
                 prose=row.answer,
-                citations=tuple(CitationOut(**citation) for citation in row.citations),
+                citations=tuple(citation_out(citation) for citation in row.citations),
             )
             if row.outcome == "ANSWERED"
             else None

@@ -47,6 +47,13 @@ else. A third party API arrives on a separate invoice no collector can see, whic
 would leave a FinOps product unable to report the cost of its own newest feature. That
 is not embarrassing so much as disqualifying.
 
+**Amended 2026-10-05, ISS-230.** "Tagged like everything else" was wrong. An on demand
+call names no resource and carries no tag, so it would have reached the bill with no
+module. Each model is now reached through an application inference profile that the hub
+stack tags `finops:module = assistant`, and the task role may invoke the model only
+through it. The reasoning above stands: the call still arrives on the bill a collector
+reads, which a third party invoice never would.
+
 **FEAT-046 becomes defence in depth rather than a prerequisite.** Outbound AI request
 scanning, to redact or block secrets, was specified as a control on data leaving the
 organization. With the model inside the account it is no longer the thing standing
@@ -88,7 +95,8 @@ a security review.
 - `finops_providers/aws/bedrock.py` is the only file importing the Bedrock client, and
   it is unproven against a real account like every other adapter here, ISS-002.
 - The platform cost screen gains Bedrock as a module with no work at all, because it
-  reads the bill by tag.
+  reads the bill by tag. Amended 2026-10-05: not with no work. It took a tagged inference
+  profile per model and a grant that reaches the model only through it, ISS-230.
 - Nothing in `finops_core`, `finops_query` or `finops_api` names a model or a vendor.
 - A deployment with no Bedrock access gets `NotOptedIn` from the adapter and a screen
   saying the assistant is unavailable, rather than an assistant that answers questions

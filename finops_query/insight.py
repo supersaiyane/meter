@@ -32,7 +32,9 @@ what the tools returned:
 be reached keeps its own cause. A model that wrote a bare figure, cited a call that never
 returned, named a path that is not there, ran out of room or never finished is
 `SchemaDrift`, spec section 7, and the detail never repeats what the model wrote, because
-what it wrote may hold a secret it was asked to echo.
+what it wrote may hold a secret it was asked to echo. So is a figure its tool declares no
+unit for, which is the tool table drifting from its envelope rather than the model's
+mistake, and which is never drawn in a unit chosen here instead. ISS-231.
 """
 
 from __future__ import annotations
@@ -54,6 +56,7 @@ from finops_core.domain.insight import (
     Provenance,
     ProvenanceError,
     Refusal,
+    Unit,
     check_prose,
 )
 from finops_core.errors import CollectionError
@@ -158,6 +161,9 @@ class ToolOutput:
     text: str
     #: How the tool's figures were arrived at, where a row does not say.
     provenance: Provenance
+    #: What each numeric field under `data` counts, by its path with row selectors taken out,
+    #: as the tool declares it. A figure under `meta` is a count and needs no entry.
+    units: Mapping[str, Unit]
     #: The screen that shows the same rows.
     screen: str | None = None
 
@@ -377,6 +383,7 @@ def _cite(
         call_id=reference["call_id"],
         field=reference["path"],
         value=resolved.value,
+        unit=resolved.unit,
         provenance=resolved.provenance,
         as_of=resolved.as_of,
     )
@@ -419,6 +426,7 @@ def parse_path(path: str) -> tuple[Step, ...] | None:
 @dataclass(frozen=True)
 class _Resolved:
     value: Decimal | str
+    unit: Unit | None
     provenance: Provenance
     as_of: datetime
 
@@ -450,6 +458,9 @@ def _resolve(tool: str, output: ToolOutput, path: str) -> _Resolved | Refusal | 
     value = _citable(node)
     if value is None:
         return _drift(f"a citation names something in {tool} that is not a figure or a label")
+    unit = _unit(tool, output, steps) if isinstance(value, Decimal) else None
+    if isinstance(unit, Failure):
+        return unit
     provenance = _provenance(rows, output.provenance)
     if provenance is None:
         return Refusal(
@@ -469,7 +480,32 @@ def _resolve(tool: str, output: ToolOutput, path: str) -> _Resolved | Refusal | 
             ),
             screen=output.screen,
         )
-    return _Resolved(value=value, provenance=provenance, as_of=as_of)
+    return _Resolved(value=value, unit=unit, provenance=provenance, as_of=as_of)
+
+
+#: The envelope's own part, whose every number is a count: the accounts in scope against
+#: the accounts that exist, and how often a collection failure was seen. A tool therefore
+#: declares no unit under it, and a test holds that nothing else numeric appears there.
+META = "meta"
+
+
+def _unit(tool: str, output: ToolOutput, steps: tuple[Step, ...]) -> Unit | Failure:
+    """The unit `tool` declares for the figure at `steps`, ISS-231.
+
+    Looked up by the path with its row selectors taken out, so every row of a list shares
+    its field's unit, and never inferred from a field's name. A figure the tool declares no
+    unit for is drift between the tool table and its envelope: it is not shown, and it is not
+    drawn as dollars or as a count by default.
+    """
+    if steps[0].field == META:
+        return Unit.COUNT
+    key = ".".join(step.field for step in steps)
+    unit = output.units.get(key)
+    if unit is None:
+        # The path may be named: every step in it resolved to a field of the tool's own
+        # envelope, and the selectors, the only part a model writes freely, are taken out.
+        return _drift(f"{tool} declares no unit for {key}, so the figure is not shown")
+    return unit
 
 
 def _selects(row: object, step: Step) -> bool:

@@ -20,6 +20,7 @@ function citation(
     field: 'data.current.effective_cost',
     value: '10.00',
     kind: 'figure',
+    unit: 'usd',
     provenance: 'measured',
     as_of: '2026-10-03T04:00:00Z',
     ...partial,
@@ -29,7 +30,12 @@ function citation(
 describe('citeProse', () => {
   it('splits on the placeholders and numbers the citations by first use', () => {
     const total = citation({ placeholder: 'total' });
-    const service = citation({ placeholder: 'service', kind: 'label', value: 'AmazonEC2' });
+    const service = citation({
+      placeholder: 'service',
+      kind: 'label',
+      value: 'AmazonEC2',
+      unit: null,
+    });
     const { parts, numbered } = citeProse('{{service}} cost {{total}}.', [total, service]);
     expect(parts).toEqual([
       { kind: 'cited', citation: service, number: 1 },
@@ -76,28 +82,31 @@ describe('citeProse', () => {
 });
 
 describe('figureUnit', () => {
-  it('reads money from the field name, through a row selector', () => {
-    for (const field of [
-      'data.current.effective_cost',
-      'data[name=AmazonEC2].effective_cost',
-      'data[finding_id=abc].monthly_cost',
-      'data.change',
-      'data.clusters[cluster_name=prod.eks].total',
-      'effective_cost summed over the week',
-    ]) {
-      expect(figureUnit(citation({ placeholder: 'x', field }))).toBe('usd');
+  it('is the unit the citation carries, and the field name says nothing about it', () => {
+    // Dollars under a name with no money word in it, as a tool may one day return.
+    const overage = citation({ placeholder: 'x', field: 'data[name=a].overage', unit: 'usd' });
+    // A count under a name full of them, as the cost summary's line items are.
+    const lines = citation({
+      placeholder: 'x',
+      field: 'data.current.cost_total_spend',
+      unit: 'count',
+    });
+    expect(figureUnit(overage)).toBe('usd');
+    expect(figureUnit(lines)).toBe('count');
+  });
+
+  it('is null for a figure with no unit, never a guess from the name', () => {
+    for (const field of ['data.current.effective_cost', 'meta.scope_coverage.total']) {
+      expect(figureUnit(citation({ placeholder: 'x', field, unit: null }))).toBeNull();
     }
   });
 
-  it('reads everything else as a count, including the envelope coverage', () => {
-    for (const field of [
-      'data.current.line_items',
-      'data.accounts_in_scope',
-      'meta.scope_coverage.total',
-      'data[instance=m5.cost].runs_per_day',
-    ]) {
-      expect(figureUnit(citation({ placeholder: 'x', field }))).toBe('count');
-    }
+  it('is null for a unit this screen does not draw, never one of the two it does', () => {
+    const euros = 'eur' as unknown as ApiCitation['unit'];
+    expect(figureUnit(citation({ placeholder: 'x', unit: euros }))).toBeNull();
+    // A response from an API older than the field has no unit key at all.
+    const missing = undefined as unknown as ApiCitation['unit'];
+    expect(figureUnit(citation({ placeholder: 'x', unit: missing }))).toBeNull();
   });
 });
 

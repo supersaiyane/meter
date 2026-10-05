@@ -78,6 +78,7 @@ class ApiToolbox:
             envelope=envelope.model_dump(mode="python"),
             text=envelope.model_dump_json(),
             provenance=spec.provenance,
+            units=spec.units,
             screen=spec.screen,
         )
 

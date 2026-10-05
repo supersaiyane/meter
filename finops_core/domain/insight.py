@@ -108,6 +108,18 @@ class Provenance(StrEnum):
     MODELLED = "modelled"
 
 
+class Unit(StrEnum):
+    """What a cited figure counts. The two units a figure on the screen is drawn in.
+
+    Declared by the tool that returned the figure, carried by the citation and drawn by the
+    screen as it arrives, so nothing reads a unit out of a field's name. ISS-231. A count may
+    be fractional: runs per day, or hours between a change and an anomaly.
+    """
+
+    USD = "usd"
+    COUNT = "count"
+
+
 class Gap(StrEnum):
     """What a refusal says is missing. Spec section 5.3."""
 
@@ -137,6 +149,9 @@ class Citation:
 
     `value` is a Decimal for a figure and a string for a label, such as a service or
     a region whose name holds digits and so could not sit in the prose either.
+
+    `unit` is what a figure counts, as the tool that returned it declares, and None for a
+    label. Required rather than defaulted, so no figure is ever dollars by omission.
     """
 
     placeholder: str
@@ -144,6 +159,7 @@ class Citation:
     call_id: str
     field: str
     value: Decimal | str
+    unit: Unit | None
     provenance: Provenance
     as_of: datetime
 
@@ -159,6 +175,7 @@ class Citation:
                 f"cannot tell what kind of number it is"
             )
         _check_value(self.placeholder, self.value)
+        _check_unit(self.placeholder, self.value, self.unit)
         if self.as_of.tzinfo is None or self.as_of.utcoffset() is None:
             raise ProvenanceError(f"{self.placeholder} has an as_of with no time zone")
 
@@ -168,8 +185,9 @@ class Citation:
 
     def as_record(self) -> dict[str, str]:
         """The citation as it is stored and sent. A figure travels as text, so a Decimal
-        comes back out of JSON as the figure that was cited rather than a float's idea of it."""
-        return {
+        comes back out of JSON as the figure that was cited rather than a float's idea of it.
+        A figure carries its unit, and a label has none to carry."""
+        record = {
             "placeholder": self.placeholder,
             "tool": self.tool,
             "call_id": self.call_id,
@@ -179,6 +197,9 @@ class Citation:
             "provenance": self.provenance.value,
             "as_of": self.as_of.isoformat(),
         }
+        if self.unit is not None:
+            record["unit"] = self.unit.value
+        return record
 
 
 def _check_value(placeholder: str, value: object) -> None:
@@ -195,6 +216,19 @@ def _check_value(placeholder: str, value: object) -> None:
         f"float is wrong in the last places and a figure that does not reconcile is not "
         f"trusted twice."
     )
+
+
+def _check_unit(placeholder: str, value: Decimal | str, unit: object) -> None:
+    """A figure carries one of the two units and a label carries none. ISS-231."""
+    if isinstance(value, Decimal):
+        if not isinstance(unit, Unit):
+            raise ProvenanceError(
+                f"{placeholder} is a figure with no unit, so a reader cannot tell dollars "
+                f"from a count"
+            )
+        return
+    if unit is not None:
+        raise ProvenanceError(f"{placeholder} is a label, and a label has no unit")
 
 
 def bare_figures(prose: str) -> tuple[str, ...]:

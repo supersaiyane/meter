@@ -1552,6 +1552,10 @@ class CitationOut(BaseModel):
     #: As text, so a figure is the figure that was cited and never a float's idea of it.
     value: str
     kind: Literal["figure", "label"]
+    #: What a figure counts, as the tool that returned it declares, ISS-231. None on a label,
+    #: and on a figure stored before citations carried a unit, which a screen draws as
+    #: unrecognised rather than guessing. Required, so a builder that forgets it fails.
+    unit: Literal["usd", "count"] | None
     provenance: Literal["measured", "modelled"]
     as_of: datetime
 

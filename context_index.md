@@ -24,18 +24,18 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-759 public symbols across 5 packages.
+761 public symbols across 5 packages.
 
 ## finops_core
 
 | Symbol | Kind | Location | Purpose | Called by |
 | --- | --- | --- | --- | --- |
-| `ConfigurationError` | class | `finops_core/config.py:35` | The process cannot start with the configuration it was given. | nothing in this tree |
-| `Settings` | class | `finops_core/config.py:39` | Every `METER_` variable in `.env.example`, typed, with no hidden defaults. | nothing in this tree |
-| `Settings.iac_locations` | method | `finops_core/config.py:244` | The configured state locations, split. | nothing in this tree |
-| `Settings.iac_exhaustive` | method | `finops_core/config.py:255` | Accounts whose infrastructure as code the configured backends wholly describe. | nothing in this tree |
-| `Settings.region_list` | method | `finops_core/config.py:302` | `regions` is held as text because a comma separated list from the | nothing in this tree |
-| `load_settings` | function | `finops_core/config.py:322` | Build the settings, or refuse to start and say which variable is at fault. | `finops_api/deps.py`, `finops_api/main.py` |
+| `ConfigurationError` | class | `finops_core/config.py:40` | The process cannot start with the configuration it was given. | nothing in this tree |
+| `Settings` | class | `finops_core/config.py:44` | Every `METER_` variable in `.env.example`, typed, with no hidden defaults. | nothing in this tree |
+| `Settings.iac_locations` | method | `finops_core/config.py:260` | The configured state locations, split. | nothing in this tree |
+| `Settings.iac_exhaustive` | method | `finops_core/config.py:271` | Accounts whose infrastructure as code the configured backends wholly describe. | nothing in this tree |
+| `Settings.region_list` | method | `finops_core/config.py:318` | `regions` is held as text because a comma separated list from the | nothing in this tree |
+| `load_settings` | function | `finops_core/config.py:338` | Build the settings, or refuse to start and say which variable is at fault. | `finops_api/deps.py`, `finops_api/main.py` |
 | `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | `finops_api/identity/session.py`, `finops_api/routes/accounts.py`, `finops_ingest/collectors/org_tree.py` |
 | `AccountStatus` | class | `finops_core/domain/account.py:26` | What the provider says about the account, not what we infer. | nothing in this tree |
 | `RoleHealth` | class | `finops_core/domain/account.py:47` | Whether the collector role in a member account is actually usable. | `finops_ingest/collectors/account_health.py` |
@@ -94,17 +94,18 @@ a duplicate.
 | `Watermark` | class | `finops_core/domain/ingest.py:64` | How far one collector has read for one account, so a rerun is idempotent. | nothing in this tree |
 | `ProvenanceError` | class | `finops_core/domain/insight.py:95` | An answer that would put an unattributed figure in front of a reader. | nothing in this tree |
 | `Provenance` | class | `finops_core/domain/insight.py:99` | Two, and only two. A cited figure was measured or it was modelled. | nothing in this tree |
-| `Gap` | class | `finops_core/domain/insight.py:111` | What a refusal says is missing. Spec section 5.3. | nothing in this tree |
-| `Outcome` | class | `finops_core/domain/insight.py:126` | The three states of spec section 5.3, as `assistant_exchange.outcome` holds them. | nothing in this tree |
-| `Citation` | class | `finops_core/domain/insight.py:135` | Where one figure in an answer came from. | nothing in this tree |
-| `Citation.is_figure` | method | `finops_core/domain/insight.py:166` |  | nothing in this tree |
-| `Citation.as_record` | method | `finops_core/domain/insight.py:169` | The citation as it is stored and sent. A figure travels as text, so a Decimal | `finops_api/db/repositories/assistant.py`, `finops_ingest/collectors/digests.py` |
-| `bare_figures` | function | `finops_core/domain/insight.py:200` | Every figure in the prose that no placeholder put there, in order. | nothing in this tree |
-| `check_prose` | function | `finops_core/domain/insight.py:212` | Refuse prose holding a figure no placeholder put there. | nothing in this tree |
-| `Answer` | class | `finops_core/domain/insight.py:233` | Prose with placeholders, and the citation behind every one. | nothing in this tree |
-| `Refusal` | class | `finops_core/domain/insight.py:262` | The question is understood and the product cannot answer it. Says what is missing. | `finops_api/assistant.py` |
-| `Failure` | class | `finops_core/domain/insight.py:287` | The exchange could not complete. One of the seven typed causes, never a generic one. | `finops_api/assistant.py` |
-| `Failure.from_error` | method | `finops_core/domain/insight.py:298` |  | nothing in this tree |
+| `Unit` | class | `finops_core/domain/insight.py:111` | What a cited figure counts. The two units a figure on the screen is drawn in. | nothing in this tree |
+| `Gap` | class | `finops_core/domain/insight.py:123` | What a refusal says is missing. Spec section 5.3. | nothing in this tree |
+| `Outcome` | class | `finops_core/domain/insight.py:138` | The three states of spec section 5.3, as `assistant_exchange.outcome` holds them. | nothing in this tree |
+| `Citation` | class | `finops_core/domain/insight.py:147` | Where one figure in an answer came from. | nothing in this tree |
+| `Citation.is_figure` | method | `finops_core/domain/insight.py:183` |  | nothing in this tree |
+| `Citation.as_record` | method | `finops_core/domain/insight.py:186` | The citation as it is stored and sent. A figure travels as text, so a Decimal | `finops_api/db/repositories/assistant.py`, `finops_ingest/collectors/digests.py` |
+| `bare_figures` | function | `finops_core/domain/insight.py:234` | Every figure in the prose that no placeholder put there, in order. | nothing in this tree |
+| `check_prose` | function | `finops_core/domain/insight.py:246` | Refuse prose holding a figure no placeholder put there. | nothing in this tree |
+| `Answer` | class | `finops_core/domain/insight.py:267` | Prose with placeholders, and the citation behind every one. | nothing in this tree |
+| `Refusal` | class | `finops_core/domain/insight.py:296` | The question is understood and the product cannot answer it. Says what is missing. | `finops_api/assistant.py` |
+| `Failure` | class | `finops_core/domain/insight.py:321` | The exchange could not complete. One of the seven typed causes, never a generic one. | `finops_api/assistant.py` |
+| `Failure.from_error` | method | `finops_core/domain/insight.py:332` |  | nothing in this tree |
 | `MetricPoint` | class | `finops_core/domain/metrics.py:20` | One statistic of one metric, at one instant, for one account. | `finops_providers/aws/waste.py` |
 | `OrgNodeType` | class | `finops_core/domain/org.py:18` |  | `finops_ingest/collectors/org_tree.py` |
 | `OrgNode` | class | `finops_core/domain/org.py:25` | One node of the organization tree at `as_of`. | `finops_providers/aws/accounts.py` |
@@ -267,7 +268,7 @@ a duplicate.
 | `AwsAccountDiscovery.list_accounts` | method | `finops_providers/aws/accounts.py:88` |  | `finops_ingest/collectors/org_tree.py` |
 | `AwsAccountDiscovery.describe_organization` | method | `finops_providers/aws/accounts.py:91` |  | `finops_ingest/collectors/org_tree.py` |
 | `BedrockModel` | class | `finops_providers/aws/bedrock.py:105` | An `LlmProvider` over Converse, for the one model this deployment names. | `finops_providers/aws/language_model.py` |
-| `BedrockModel.complete` | method | `finops_providers/aws/bedrock.py:121` | One Converse call. | `finops_ingest/worker.py` |
+| `BedrockModel.complete` | method | `finops_providers/aws/bedrock.py:125` | One Converse call. | `finops_ingest/worker.py` |
 | `scope_of` | function | `finops_providers/aws/budgets.py:51` | What a budget is drawn around, and what it names. | nothing in this tree |
 | `AwsBudgets` | class | `finops_providers/aws/budgets.py:76` | The payer's budgets, read and never written. | nothing in this tree |
 | `AwsBudgets.budgets` | method | `finops_providers/aws/budgets.py:85` |  | `finops_ingest/collectors/budgets.py` |
@@ -454,9 +455,9 @@ a duplicate.
 
 | Symbol | Kind | Location | Purpose | Called by |
 | --- | --- | --- | --- | --- |
-| `Assistant` | class | `finops_api/assistant.py:57` | Everything a deployment needs to answer a question. None where no model is set. | `finops_api/main.py` |
-| `Asked` | class | `finops_api/assistant.py:71` | One question, as it was recorded. | nothing in this tree |
-| `ask` | function | `finops_api/assistant.py:82` | Answer, refuse or fail, and record which, exactly once. | `finops_api/routes/assistant.py` |
+| `Assistant` | class | `finops_api/assistant.py:67` | Everything a deployment needs to answer a question. None where no model is set. | `finops_api/main.py` |
+| `Asked` | class | `finops_api/assistant.py:84` | One question, as it was recorded. | nothing in this tree |
+| `ask` | function | `finops_api/assistant.py:95` | Answer, refuse or fail, and record which, exactly once. | `finops_api/routes/assistant.py` |
 | `AccountRepository` | class | `finops_api/db/repositories/accounts.py:16` |  | `finops_api/routes/__init__.py`, `finops_api/routes/accounts.py`, `finops_api/routes/waste.py` |
 | `AccountRepository.list_in_scope` | method | `finops_api/db/repositories/accounts.py:20` | Every account the scope permits, and nothing else. | `finops_api/routes/accounts.py`, `finops_api/routes/waste.py` |
 | `AccountRepository.count_in_organization` | method | `finops_api/db/repositories/accounts.py:24` | How many accounts the organization holds, whatever this scope can see. | `finops_api/routes/__init__.py` |
@@ -633,8 +634,8 @@ a duplicate.
 | `p4_routers` | function | `finops_api/main.py:232` | The inventory and topology routes, from the P4 spec's section 8 table. | nothing in this tree |
 | `p5_routers` | function | `finops_api/main.py:244` | The quota routes, from the P5 spec's section 8 table. | nothing in this tree |
 | `p7_routers` | function | `finops_api/main.py:256` | The assistant routes, from the P7 spec's section 8 table. | nothing in this tree |
-| `create_app` | function | `finops_api/main.py:293` | Build the application, refusing to start on a broken envelope contract. | nothing in this tree |
-| `bootstrap` | function | `finops_api/main.py:358` | Build the application the container runs, from the environment alone. | nothing in this tree |
+| `create_app` | function | `finops_api/main.py:296` | Build the application, refusing to start on a broken envelope contract. | nothing in this tree |
+| `bootstrap` | function | `finops_api/main.py:361` | Build the application the container runs, from the environment alone. | nothing in this tree |
 | `RequestIdMiddleware` | class | `finops_api/middleware.py:27` | Give every request an id, log it, and hand it back on the response. | nothing in this tree |
 | `RequestIdMiddleware.dispatch` | method | `finops_api/middleware.py:30` |  | nothing in this tree |
 | `freshness_of` | function | `finops_api/routes/__init__.py:35` | The stalest `as_of` and `collected_at` in a set, or None when it is empty. | nothing in this tree |
@@ -643,12 +644,13 @@ a duplicate.
 | `to_out` | function | `finops_api/routes/accounts.py:26` |  | nothing in this tree |
 | `list_accounts` | function | `finops_api/routes/accounts.py:41` |  | `finops_ingest/collectors/org_tree.py` |
 | `recheck` | function | `finops_api/routes/accounts.py:54` | Force a role health recheck. A read only call, per constraint 6. | nothing in this tree |
-| `ask` | function | `finops_api/routes/assistant.py:109` | Ask a question, and get an answer, a refusal or a typed failure. Writes one row. | `finops_api/assistant.py` |
-| `exchanges` | function | `finops_api/routes/assistant.py:138` | What the asker has asked and what came back, newest first. Their own and no one else's. | nothing in this tree |
-| `digests` | function | `finops_api/routes/assistant.py:158` | The weekly digests, newest first, each saying whether it was sent. FEAT-041. | nothing in this tree |
-| `redactions` | function | `finops_api/routes/assistant.py:188` | What was blocked or redacted in the asker's own questions, and by which rule. | nothing in this tree |
-| `digest_out` | function | `finops_api/routes/assistant.py:223` | One stored digest, with its citations and whether it went anywhere. | nothing in this tree |
-| `exchange_out` | function | `finops_api/routes/assistant.py:256` | One stored exchange, in the one of three shapes its outcome names. | nothing in this tree |
+| `ask` | function | `finops_api/routes/assistant.py:114` | Ask a question, and get an answer, a refusal or a typed failure. Writes one row. | `finops_api/assistant.py` |
+| `exchanges` | function | `finops_api/routes/assistant.py:143` | What the asker has asked and what came back, newest first. Their own and no one else's. | nothing in this tree |
+| `digests` | function | `finops_api/routes/assistant.py:163` | The weekly digests, newest first, each saying whether it was sent. FEAT-041. | nothing in this tree |
+| `redactions` | function | `finops_api/routes/assistant.py:193` | What was blocked or redacted in the asker's own questions, and by which rule. | nothing in this tree |
+| `digest_out` | function | `finops_api/routes/assistant.py:228` | One stored digest, with its citations and whether it went anywhere. | nothing in this tree |
+| `citation_out` | function | `finops_api/routes/assistant.py:244` | One stored citation, as it is sent. | nothing in this tree |
+| `exchange_out` | function | `finops_api/routes/assistant.py:271` | One stored exchange, in the one of three shapes its outcome names. | nothing in this tree |
 | `cost_containers` | function | `finops_api/routes/cost.py:162` | Cost by cluster, namespace and workload. FEAT-035, under Cost per ADR-0020. | nothing in this tree |
 | `cost_summary` | function | `finops_api/routes/cost.py:245` | This period set against the one before it. | nothing in this tree |
 | `cost_by_service` | function | `finops_api/routes/cost.py:285` | Services, worst first. | nothing in this tree |
@@ -775,23 +777,23 @@ a duplicate.
 | `DraftRefusalOut` | class | `finops_api/schemas.py:1512` | Why no draft was offered for a slice. FEAT-034. | `finops_api/routes/quotas.py` |
 | `AskIn` | class | `finops_api/schemas.py:1535` | A question, carried in the body and never in the URL, where it would be logged. | nothing in this tree |
 | `CitationOut` | class | `finops_api/schemas.py:1543` | Where one figure in an answer came from, so a reader can check it on the page. | `finops_api/routes/assistant.py` |
-| `AnswerOut` | class | `finops_api/schemas.py:1559` | Prose with placeholders, and the citation behind each one. | `finops_api/routes/assistant.py` |
-| `AssistantRefusalOut` | class | `finops_api/schemas.py:1568` | What is missing, and the screen that would show it once it is not. | `finops_api/routes/assistant.py` |
-| `ExchangeFailureOut` | class | `finops_api/schemas.py:1578` | One of the seven typed causes, with what to do about it. | `finops_api/routes/assistant.py` |
-| `ToolCallOut` | class | `finops_api/schemas.py:1588` | One call the model asked for, in order. | `finops_api/routes/assistant.py` |
-| `ExchangeOut` | class | `finops_api/schemas.py:1598` | One question and which of three things came back, as three different shapes. | `finops_api/routes/assistant.py` |
-| `DigestOut` | class | `finops_api/schemas.py:1632` | One week's digest, its citations, and whether it went anywhere. FEAT-041. | `finops_api/routes/assistant.py` |
-| `RedactionOut` | class | `finops_api/schemas.py:1651` | What redaction did to one question: the rule and the action. FEAT-046. | `finops_api/routes/assistant.py` |
+| `AnswerOut` | class | `finops_api/schemas.py:1563` | Prose with placeholders, and the citation behind each one. | `finops_api/routes/assistant.py` |
+| `AssistantRefusalOut` | class | `finops_api/schemas.py:1572` | What is missing, and the screen that would show it once it is not. | `finops_api/routes/assistant.py` |
+| `ExchangeFailureOut` | class | `finops_api/schemas.py:1582` | One of the seven typed causes, with what to do about it. | `finops_api/routes/assistant.py` |
+| `ToolCallOut` | class | `finops_api/schemas.py:1592` | One call the model asked for, in order. | `finops_api/routes/assistant.py` |
+| `ExchangeOut` | class | `finops_api/schemas.py:1602` | One question and which of three things came back, as three different shapes. | `finops_api/routes/assistant.py` |
+| `DigestOut` | class | `finops_api/schemas.py:1636` | One week's digest, its citations, and whether it went anywhere. FEAT-041. | `finops_api/routes/assistant.py` |
+| `RedactionOut` | class | `finops_api/schemas.py:1655` | What redaction did to one question: the rule and the action. FEAT-046. | `finops_api/routes/assistant.py` |
 | `Transport` | class | `finops_api/toolbox.py:33` | What the toolbox needs of an HTTP client, and nothing more. | nothing in this tree |
 | `Transport.get` | method | `finops_api/toolbox.py:36` |  | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 47 more |
 | `ApiToolbox` | class | `finops_api/toolbox.py:39` | The asker's tools, each one a route called with the asker's token. | `finops_api/main.py` |
 | `ApiToolbox.schemas` | method | `finops_api/toolbox.py:49` |  | nothing in this tree |
 | `ApiToolbox.call` | method | `finops_api/toolbox.py:52` | One route, read as the asker. | `finops_providers/aws/cur.py` |
-| `InProcessTransport` | class | `finops_api/toolbox.py:90` | The API calling its own routes as the asker, without a network. | `finops_api/main.py` |
-| `InProcessTransport.get` | method | `finops_api/toolbox.py:107` |  | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 47 more |
-| `ToolSpec` | class | `finops_api/tools.py:48` | One tool. The envelope model is the single source of both schemas. | nothing in this tree |
-| `ToolSpec.output_schema` | method | `finops_api/tools.py:62` | What a caller is told to expect, taken from the API's own model. | nothing in this tree |
-| `ToolSpec.schema` | method | `finops_api/tools.py:66` | The tool as a model is offered it. Every tool here takes no arguments. | `finops_api/toolbox.py` |
+| `InProcessTransport` | class | `finops_api/toolbox.py:91` | The API calling its own routes as the asker, without a network. | `finops_api/main.py` |
+| `InProcessTransport.get` | method | `finops_api/toolbox.py:108` |  | `finops_api/db/repositories/__init__.py`, `finops_api/deps.py`, `finops_api/flags.py`, `finops_api/guards.py`, and 47 more |
+| `ToolSpec` | class | `finops_api/tools.py:51` | One tool. The envelope model is the single source of both schemas. | nothing in this tree |
+| `ToolSpec.output_schema` | method | `finops_api/tools.py:71` | What a caller is told to expect, taken from the API's own model. | nothing in this tree |
+| `ToolSpec.schema` | method | `finops_api/tools.py:75` | The tool as a model is offered it. Every tool here takes no arguments. | `finops_api/toolbox.py` |
 
 ## finops_mcp
 
@@ -814,11 +816,11 @@ a duplicate.
 
 Each is an entry point, part of a public interface, or dead. Check each one, and delete what is dead. Rung zero of ADR-0013.
 
-- `ConfigurationError` in `finops_core/config.py:35`
-- `Settings` in `finops_core/config.py:39`
-- `Settings.iac_locations` in `finops_core/config.py:244`
-- `Settings.iac_exhaustive` in `finops_core/config.py:255`
-- `Settings.region_list` in `finops_core/config.py:302`
+- `ConfigurationError` in `finops_core/config.py:40`
+- `Settings` in `finops_core/config.py:44`
+- `Settings.iac_locations` in `finops_core/config.py:260`
+- `Settings.iac_exhaustive` in `finops_core/config.py:271`
+- `Settings.region_list` in `finops_core/config.py:318`
 - `AccountStatus` in `finops_core/domain/account.py:26`
 - `CloudAccount.provider` in `finops_core/domain/account.py:90`
 - `AccountHealth.is_usable` in `finops_core/domain/account.py:105`
@@ -849,14 +851,15 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `Watermark` in `finops_core/domain/ingest.py:64`
 - `ProvenanceError` in `finops_core/domain/insight.py:95`
 - `Provenance` in `finops_core/domain/insight.py:99`
-- `Gap` in `finops_core/domain/insight.py:111`
-- `Outcome` in `finops_core/domain/insight.py:126`
-- `Citation` in `finops_core/domain/insight.py:135`
-- `Citation.is_figure` in `finops_core/domain/insight.py:166`
-- `bare_figures` in `finops_core/domain/insight.py:200`
-- `check_prose` in `finops_core/domain/insight.py:212`
-- `Answer` in `finops_core/domain/insight.py:233`
-- `Failure.from_error` in `finops_core/domain/insight.py:298`
+- `Unit` in `finops_core/domain/insight.py:111`
+- `Gap` in `finops_core/domain/insight.py:123`
+- `Outcome` in `finops_core/domain/insight.py:138`
+- `Citation` in `finops_core/domain/insight.py:147`
+- `Citation.is_figure` in `finops_core/domain/insight.py:183`
+- `bare_figures` in `finops_core/domain/insight.py:234`
+- `check_prose` in `finops_core/domain/insight.py:246`
+- `Answer` in `finops_core/domain/insight.py:267`
+- `Failure.from_error` in `finops_core/domain/insight.py:332`
 - `PlatformCost` in `finops_core/domain/platform.py:26`
 - `SurfaceKind` in `finops_core/domain/query.py:28`
 - `QueryOrigin` in `finops_core/domain/query.py:45`
@@ -873,4 +876,3 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `GraphCoverage.is_whole` in `finops_core/domain/topology.py:412`
 - `Confidence` in `finops_core/domain/waste.py:31`
 - `Source` in `finops_core/domain/waste.py:68`
-- `Recommendation.confidence` in `finops_core/domain/waste.py:169`

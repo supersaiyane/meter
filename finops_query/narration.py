@@ -34,7 +34,7 @@ from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
 from enum import StrEnum
 
-from finops_core.domain.insight import Answer, Citation, Provenance
+from finops_core.domain.insight import Answer, Citation, Provenance, Unit
 
 #: How far before the anomaly's day a change is looked for. A change late the evening
 #: before is billed the next day, and one made on a Friday is first billed in full over a
@@ -172,24 +172,26 @@ def narrate(
 
 
 def _anomaly_citations(anomaly: AnomalyFacts) -> list[Citation]:
-    def cite(placeholder: str, field: str, value: Decimal | str) -> Citation:
+    def cite(placeholder: str, field: str, value: Decimal | str, *, unit: Unit | None) -> Citation:
         return Citation(
             placeholder=placeholder,
             tool="cost_anomaly",
             call_id=anomaly.anomaly_id,
             field=field,
             value=value,
+            unit=unit,
             provenance=Provenance.MEASURED,
             as_of=anomaly.as_of,
         )
 
     return [
-        cite("day", "day", anomaly.day.isoformat()),
-        cite("service", "service_name", anomaly.service_name),
-        cite("account", "sub_account_id", anomaly.sub_account_id),
-        cite("observed", "observed", anomaly.observed),
-        cite("baseline", "baseline", anomaly.baseline),
-        cite("severity", "severity", anomaly.severity),
+        cite("day", "day", anomaly.day.isoformat(), unit=None),
+        cite("service", "service_name", anomaly.service_name, unit=None),
+        cite("account", "sub_account_id", anomaly.sub_account_id, unit=None),
+        # The day's cost and the usual day's cost, both in dollars, `finops_query/anomaly.py`.
+        cite("observed", "observed", anomaly.observed, unit=Unit.USD),
+        cite("baseline", "baseline", anomaly.baseline, unit=Unit.USD),
+        cite("severity", "severity", anomaly.severity, unit=None),
     ]
 
 
@@ -202,21 +204,31 @@ def _correlation(index: int, correlation: Correlation) -> tuple[str, list[Citati
         f"{{{{what{index}}}}} on {{{{resource{index}}}}}, {{{{hours{index}}}}} hours {when}."
     )
 
-    def cite(placeholder: str, tool: str, field: str, value: Decimal | str) -> Citation:
+    def cite(
+        placeholder: str, tool: str, field: str, value: Decimal | str, *, unit: Unit | None
+    ) -> Citation:
         return Citation(
             placeholder=placeholder,
             tool=tool,
             call_id=event.event_id,
             field=field,
             value=value,
+            unit=unit,
             provenance=Provenance.MEASURED,
             as_of=event.at,
         )
 
     return sentence, [
-        cite(f"what{index}", event.source.value, "what", event.what),
-        cite(f"resource{index}", event.source.value, "resource", event.resource),
-        cite(f"hours{index}", NARRATION, "hours between the change and the day", hours),
+        cite(f"what{index}", event.source.value, "what", event.what, unit=None),
+        cite(f"resource{index}", event.source.value, "resource", event.resource, unit=None),
+        # A count of hours, to a tenth, so a fraction is part of it.
+        cite(
+            f"hours{index}",
+            NARRATION,
+            "hours between the change and the day",
+            hours,
+            unit=Unit.COUNT,
+        ),
     ]
 
 

@@ -12,9 +12,12 @@ written down in one place, because the order is most of what this module decides
    answering with silence. Naming a model is OPEN-10, and a setting.
 3. The budget is read from what exchanges recorded and checked before any model is asked,
    so a spent month refuses without spending more.
-4. The loop runs with no transaction open. A model takes seconds, and a transaction held
+4. A slot is taken without waiting, ISS-225. Each running question holds two of the API's
+   worker threads, so past the configured number a question is throttled at once rather
+   than queued, and the slot is given back however the loop ends.
+5. The loop runs with no transaction open. A model takes seconds, and a transaction held
    across it holds a connection the rest of the API is waiting for.
-5. One row is written whatever came back, with one redaction event per rule that fired, in
+6. One row is written whatever came back, with one redaction event per rule that fired, in
    a transaction of its own.
 """
 
@@ -24,6 +27,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
+from threading import BoundedSemaphore
 from uuid import UUID
 
 from sqlalchemy import Engine
@@ -50,6 +54,12 @@ NOT_ENABLED = (
     "nowhere. Choosing one is OPEN-10, and it is the setting METER_ASSISTANT_MODEL_ID."
 )
 
+BUSY = (
+    "The assistant is already answering as many questions as it runs at once, so this one "
+    "was sent nowhere and spent nothing. Ask again in a moment. The limit is the setting "
+    "METER_ASSISTANT_MAX_CONCURRENT_QUESTIONS."
+)
+
 Clock = Callable[[], datetime]
 
 
@@ -65,6 +75,9 @@ class Assistant:
     input_per_million: Decimal
     output_per_million: Decimal
     monthly_token_budget: int
+    #: One permit per question that may run at once, ISS-225. Shared by every request this
+    #: application serves, and taken without waiting.
+    slots: BoundedSemaphore
 
 
 @dataclass(frozen=True)
@@ -156,9 +169,14 @@ def _exchange(
     over_budget = budget_refusal(spent=spent, budget=assistant.monthly_token_budget, at=at)
     if over_budget is not None:
         return _unsent(screened, over_budget), None
-    exchange = insight.ask(
-        screened.text, model=assistant.model, toolbox=assistant.toolbox_for(token)
-    )
+    if not assistant.slots.acquire(blocking=False):
+        return _unsent(screened, Failure(cause="Throttled", detail=BUSY)), None
+    try:
+        exchange = insight.ask(
+            screened.text, model=assistant.model, toolbox=assistant.toolbox_for(token)
+        )
+    finally:
+        assistant.slots.release()
     return exchange, assistant.model_id
 
 
