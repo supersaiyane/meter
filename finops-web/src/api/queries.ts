@@ -66,6 +66,7 @@ import type {
   ApiCostDay,
   ApiCostSlice,
   ApiExplore,
+  ApiForecast,
   ApiCostSummary,
   ApiEnvelope,
   ApiQueryFinding,
@@ -232,6 +233,15 @@ export function useCostSummary() {
     '/api/v1/cost/summary',
     costSummaryFixture,
   );
+}
+
+/** FEAT-066. The spend forecast: a range or the reason there is none, never a point. */
+export function useCostForecast() {
+  const client = useApi();
+  return useQuery<ApiEnvelope<ApiForecast>>({
+    queryKey: ['cost-forecast'],
+    queryFn: () => client.get<ApiForecast>('/api/v1/cost/forecast'),
+  });
 }
 
 /**

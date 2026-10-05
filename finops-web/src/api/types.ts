@@ -1184,3 +1184,53 @@ export interface ApiExplore {
   readonly omitted_this_period: string;
   readonly omitted_previous_period: string | null;
 }
+
+/** FEAT-066. A forecast is a range, never a point, ADR-0015's second condition. */
+export interface ApiForecastRange {
+  readonly low: string;
+  readonly high: string;
+}
+
+/** One month's forecast, or the sentence saying why there is none. */
+export interface ApiForecastMonth {
+  readonly month: string;
+  readonly figure: ApiForecastRange | null;
+  readonly withheld: string | null;
+  /** How far off the method was at the median, as a share, measured by backtest. */
+  readonly median_miss: string | null;
+  readonly held_out: number;
+}
+
+/** One day of this month: billed so far, cumulative, or the band. Never both. */
+export interface ApiForecastDay {
+  readonly day: string;
+  readonly billed: string | null;
+  readonly low: string | null;
+  readonly high: string | null;
+}
+
+/** One held out month. The range is null where the forecast is withheld. */
+export interface ApiForecastTest {
+  readonly month: string;
+  readonly actual: string;
+  readonly miss: string;
+  readonly low: string | null;
+  readonly high: string | null;
+  readonly within: boolean | null;
+}
+
+/** `GET /cost/forecast`. Every figure is a forecast, and every forecast is a range. */
+export interface ApiForecast {
+  readonly provenance: 'forecast';
+  readonly method: string;
+  readonly method_detail: string;
+  readonly interval_percent: number;
+  readonly max_median_miss: string;
+  readonly min_held_out: number;
+  readonly billed_through: string;
+  readonly billed_to_date: string;
+  readonly month_end: ApiForecastMonth;
+  readonly days: readonly ApiForecastDay[];
+  readonly ahead: readonly ApiForecastMonth[];
+  readonly backtest: readonly ApiForecastTest[];
+}

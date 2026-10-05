@@ -267,12 +267,12 @@ def p7_routers() -> tuple[APIRouter, ...]:
 def p8_routers() -> tuple[APIRouter, ...]:
     """The experience and reporting routes, from the P8 spec's section 7 list.
 
-    Cost Explorer's query first, TASK-P8-007. The export, saved view and schedule routes
-    arrive with the tasks that build them, TASK-P8-009 to 011.
+    Cost Explorer's query, TASK-P8-007, and the spend forecast, TASK-P8-008. The export,
+    saved view and schedule routes arrive with the tasks that build them, TASK-P8-009 to 011.
     """
-    from finops_api.routes import explore
+    from finops_api.routes import explore, forecast
 
-    return (explore.router,)
+    return (explore.router, forecast.router)
 
 
 def _assistant(app: FastAPI, settings: Settings, model: Any) -> Any:

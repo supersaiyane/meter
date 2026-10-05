@@ -286,7 +286,7 @@ old screen read were removed.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec section 7, FEAT-066 |
 | Delivers | FEAT-066 |
 | Depends on | TASK-P8-005 |
@@ -297,10 +297,21 @@ named, the first producer of forecast provenance.
 
 **Acceptance criteria.**
 
-- [ ] Meets the four conditions ADR-0015 sets before any figure carries forecast
+- [x] Meets the four conditions ADR-0015 sets before any figure carries forecast
       provenance; where one cannot be met, no figure is shown and the reason is
-- [ ] Accuracy measured by backtest over held out months and published beside the figure
-- [ ] Drawn dashed with its band, never as measured
+- [x] Accuracy measured by backtest over held out months and published beside the figure
+- [x] Drawn dashed with its band, never as measured
+
+**Delivered 2026-10-05.** The owner chose the method, the band, the gate and the screen, each the
+recommended option: a weekday profile over the eight weeks before the forecast, an 80 percent
+band from its own misses on up to 12 held out months, and withheld below 3 tests or above a 15
+percent median miss, with the reason shown where the figure would be. The arithmetic is
+`finops_query/forecast.py`, the reads `finops_api/db/repositories/forecast.py` and the route
+`finops_api/routes/forecast.py`, P8's second router. The Forecasts screen under Plan is built,
+and `forecastUnproduced.test.ts` now names it as the one producer of a forecast. On the eight
+month fake estate the month end was shown with a median miss of 5.95 percent over 5 months, and
+the months ahead were shown, withheld for their misses and withheld for want of tests (measured
+2026-10-05 on synthetic data).
 
 ---
 

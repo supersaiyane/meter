@@ -29,13 +29,13 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 24 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 26 in 9 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Screens built | 25 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 28 in 10 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 25 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 162 | test_*.py under tests/ |
-| Test functions | 2212 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 165 | test_*.py under tests/ |
+| Test functions | 2235 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -649,6 +649,10 @@ meter/
 │   │                          of the things being ranked, one device each, because
 │   │                          a mark with two meanings cannot be read. Used by the
 │   │                          allocation screen and the waste queue
+│   ├── screens/ForecastScreen.tsx  Forecasts, FEAT-066: the one screen that draws a
+│   │                          forecast, always a range beside its accuracy, or the
+│   │                          reason where the figure would be. forecastModel.ts
+│   │                          holds its rules
 │   ├── screens/CostScreen.tsx  Cost Explorer, FEAT-065. The view lives in the
 │   │                          address under the route's own names, so a link
 │   │                          lands on it. exploreModel.ts holds its rules,
@@ -1136,6 +1140,9 @@ meter/
 │   │                          An open period says so in the payload, because
 │   │                          two copies of a calendar rule is one that is
 │   │                          eventually wrong in one of them
+│   │   ├── forecast.py        FEAT-066's GET /cost/forecast: the month end and three
+│   │   │                      months ahead, each a range or the reason, the method
+│   │   │                      named and its backtest published beside it
 │   │   ├── explore.py         FEAT-065's GET /cost/explore: two groupings over
 │   │   │                      eight FOCUS columns and the period's own tag keys,
 │   │   │                      a period and the one before it. Refuses a view it
@@ -1225,7 +1232,10 @@ meter/
 │                              explore.py is Cost Explorer's: every read derived
 │                              from scoped_select, the ranking a window count and
 │                              the tag keys a function in the FROM clause, because
-│                              a wrapped query loses the mark the guard checks
+│                              a wrapped query loses the mark the guard checks.
+│                              forecast.py reads the first month and last day held
+│                              and the cost of each UTC day, a zero for a day that
+│                              billed nothing, so a gap and a quiet day differ
 │
 ├── alembic.ini                no database URL in it, env.py reads the settings
 ├── migrations/                the only way the schema changes
@@ -1371,6 +1381,10 @@ meter/
 │                              expiry, a modelled row cannot claim a measured
 │                              count, and a change cannot exist without its undo
 ├── finops_query/              IN BUILD  P2 query cost governance, P3 waste, P4 graph
+│   ├── forecast.py            FEAT-066, TASK-P8-008. A weekday profile forecast of
+│   │                          this month and the next three, each a range from its
+│   │                          own backtest or the sentence saying why it is
+│   │                          withheld. Never a point. No database and no clock
 │   ├── insight.py             FEAT-038, TASK-P7-006 and TASK-P7-007. The loop: a
 │   │                          question, tool calls through a Toolbox, and an answer
 │   │                          whose values are read from the tool results by call

@@ -1683,6 +1683,62 @@ main > section > [data-testid='state'] > p[role='status'] {
   color: var(--text-faint);
 }
 
+/* Every chart's own axis line, where it has one: where the series starts, its highest
+   point and where it ends, as the bar chart's axis. */
+.meter-chart > figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-family: var(--font-numeral);
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+/* Forecasts, FEAT-066: the month end range beside the accuracy that earns it. */
+[data-testid='forecast-headline'] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+}
+
+[data-testid='forecast-month-end'],
+[data-testid='forecast-accuracy'] {
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface-raised);
+}
+
+[data-testid='forecast-month-end'] h3,
+[data-testid='forecast-accuracy'] h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-1);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+[data-testid='forecast-month-end'] p,
+[data-testid='forecast-accuracy'] p {
+  margin: var(--space-1) 0;
+  font-size: var(--font-size-2);
+  color: var(--text-muted);
+}
+
+[data-testid='forecast-range'] .meter-numeral {
+  font-family: var(--font-numeral);
+  font-size: var(--font-size-5);
+  font-weight: 500;
+  color: var(--text-numeral);
+}
+
+[data-testid='forecast-chart'] {
+  margin: 0 0 var(--space-4);
+}
+
 /* A tile around one headline figure, and the figure at the size a headline gets. */
 .meter-kpi {
   padding: var(--space-3);

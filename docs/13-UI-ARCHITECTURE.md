@@ -150,7 +150,7 @@ whose purpose was never placed. Since 2026-10-05, ADR-0030:
 /analyze/kubernetes-rightsizing    Kubernetes rightsizing, requested against used
 /analyze/clusters                  Clusters and their fleets
 /plan/budgets                      Budgets and their burn
-/plan/forecasts                    Spend forecast, arrives with P8
+/plan/forecasts                    Spend forecast: a range or the reason, with its backtest
 /plan/score                        FinOps Score, decomposed to the findings that moved it
 /plan/unit-economics               Unit economics, no sub project planned
 /optimize                          Every recommendation, ranked by dollar

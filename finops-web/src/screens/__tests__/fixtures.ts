@@ -1,4 +1,4 @@
-import type { Account, ApiEnvelope, ApiExplore, ApiMeta } from '../../api/types';
+import type { Account, ApiEnvelope, ApiExplore, ApiForecast, ApiMeta } from '../../api/types';
 import type { ApiClient } from '../../api/client';
 import type { FlatNode } from '../../components/orgNodes';
 
@@ -153,6 +153,98 @@ export function exploreOf(partial: Partial<ApiExplore> = {}): ApiExplore {
     rows_omitted: 0,
     omitted_this_period: '0',
     omitted_previous_period: '0',
+    ...partial,
+  };
+}
+
+/**
+ * A forecast answer whose parts agree: October billed to the 4th at $2,000.00, the band opening
+ * from it and ending on the month end range, November shown, December withheld for its misses
+ * and January for want of tests, and a backtest of three months whose ranges hold two of them.
+ */
+export function forecastOf(partial: Partial<ApiForecast> = {}): ApiForecast {
+  const days = Array.from({ length: 31 }, (_, index) => {
+    const day = `2026-10-${String(index + 1).padStart(2, '0')}`;
+    if (index < 4) {
+      return { day, billed: String(500 * (index + 1)), low: null, high: null };
+    }
+    const share = (index - 3) / 27;
+    return {
+      day,
+      billed: null,
+      low: (2000 + 13000 * share).toFixed(2),
+      high: (2000 + 14000 * share).toFixed(2),
+    };
+  });
+  return {
+    provenance: 'forecast',
+    method: 'weekday profile',
+    method_detail:
+      'Each day ahead is the average of the same weekday over the eight weeks before the forecast was made.',
+    interval_percent: 80,
+    max_median_miss: '0.15',
+    min_held_out: 3,
+    billed_through: '2026-10-04',
+    billed_to_date: '2000.00',
+    month_end: {
+      month: '2026-10-01',
+      figure: { low: '15000.00', high: '16000.00' },
+      withheld: null,
+      median_miss: '0.0595',
+      held_out: 3,
+    },
+    days,
+    ahead: [
+      {
+        month: '2026-11-01',
+        figure: { low: '15700.00', high: '16100.00' },
+        withheld: null,
+        median_miss: '0.1110',
+        held_out: 4,
+      },
+      {
+        month: '2026-12-01',
+        figure: null,
+        withheld:
+          'Tested on 3 months, it missed by 15.3 percent at the median, above the 15 percent it has to stay within.',
+        median_miss: '0.1533',
+        held_out: 3,
+      },
+      {
+        month: '2027-01-01',
+        figure: null,
+        withheld:
+          'The forecast is tested on 3 complete months before it is shown, and Meter holds 2 it can be tested on.',
+        median_miss: '0.1961',
+        held_out: 2,
+      },
+    ],
+    backtest: [
+      {
+        month: '2026-09-01',
+        actual: '15200.00',
+        miss: '0.0400',
+        low: '14900.00',
+        high: '15900.00',
+        within: true,
+      },
+      {
+        month: '2026-08-01',
+        actual: '17100.00',
+        miss: '0.0790',
+        low: '15000.00',
+        high: '16000.00',
+        within: false,
+      },
+      {
+        month: '2026-07-01',
+        actual: '15400.00',
+        miss: '0.0595',
+        low: '14800.00',
+        high: '15800.00',
+        within: true,
+      },
+    ],
     ...partial,
   };
 }

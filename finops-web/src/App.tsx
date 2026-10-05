@@ -13,6 +13,7 @@ import { FreshnessScreen } from './screens/FreshnessScreen';
 import { IngestScreen } from './screens/IngestScreen';
 import { OrganizationScreen } from './screens/OrganizationScreen';
 import { BudgetsScreen } from './screens/BudgetsScreen';
+import { ForecastScreen } from './screens/ForecastScreen';
 import { GeographyScreen } from './screens/GeographyScreen';
 import { EntityScreen } from './screens/EntityScreen';
 import { ResourceListScreen } from './screens/ResourceListScreen';
@@ -120,6 +121,7 @@ export function App({
                 <Route path="/analyze/clusters" element={<ClustersScreen />} />
 
                 <Route path="/plan/budgets" element={<BudgetsScreen />} />
+                <Route path="/plan/forecasts" element={<ForecastScreen />} />
                 <Route path="/plan/score" element={<WasteScoreScreen />} />
 
                 <Route path="/optimize" element={<WasteScreen />} />

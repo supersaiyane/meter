@@ -24,6 +24,7 @@
     "finops-web/e2e/cost.spec.ts",
     "finops-web/e2e/demo.spec.ts",
     "finops-web/e2e/filters.spec.ts",
+    "finops-web/e2e/forecast.spec.ts",
     "finops-web/e2e/journey.spec.ts",
     "finops-web/e2e/quotas.spec.ts",
     "finops-web/e2e/topology.spec.ts",
@@ -140,6 +141,7 @@
     "finops-web/src/screens/EntityScreen.tsx",
     "finops-web/src/screens/ExploreControls.tsx",
     "finops-web/src/screens/ExploreResult.tsx",
+    "finops-web/src/screens/ForecastScreen.tsx",
     "finops-web/src/screens/FreshnessScreen.tsx",
     "finops-web/src/screens/GeographyScreen.tsx",
     "finops-web/src/screens/HomeScreen.tsx",
@@ -173,6 +175,7 @@
     "finops-web/src/screens/__tests__/DigestsScreen.test.tsx",
     "finops-web/src/screens/__tests__/EnforcementScreen.test.tsx",
     "finops-web/src/screens/__tests__/EntityScreen.test.tsx",
+    "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
     "finops-web/src/screens/__tests__/FreshnessScreen.test.tsx",
     "finops-web/src/screens/__tests__/GeographyScreen.test.tsx",
     "finops-web/src/screens/__tests__/Harness.tsx",
@@ -194,12 +197,14 @@
     "finops-web/src/screens/__tests__/enforcementTime.test.ts",
     "finops-web/src/screens/__tests__/exploreModel.test.ts",
     "finops-web/src/screens/__tests__/fixtures.ts",
+    "finops-web/src/screens/__tests__/forecastModel.test.ts",
     "finops-web/src/screens/__tests__/freshnessContract.test.ts",
     "finops-web/src/screens/__tests__/rawIdentifiers.test.tsx",
     "finops-web/src/screens/__tests__/surfaceStateFor.test.ts",
     "finops-web/src/screens/enforcementTime.ts",
     "finops-web/src/screens/exploreModel.ts",
     "finops-web/src/screens/findingFigure.ts",
+    "finops-web/src/screens/forecastModel.ts",
     "finops-web/src/screens/platformRollUp.ts",
     "finops-web/src/screens/querySeverity.ts",
     "finops-web/src/screens/saveFile.ts",
@@ -238,6 +243,7 @@
     "finops_api/db/repositories/containers.py",
     "finops_api/db/repositories/cost.py",
     "finops_api/db/repositories/explore.py",
+    "finops_api/db/repositories/forecast.py",
     "finops_api/db/repositories/freshness.py",
     "finops_api/db/repositories/ingest.py",
     "finops_api/db/repositories/org.py",
@@ -260,6 +266,7 @@
     "finops_api/routes/assistant.py",
     "finops_api/routes/cost.py",
     "finops_api/routes/explore.py",
+    "finops_api/routes/forecast.py",
     "finops_api/routes/ingest.py",
     "finops_api/routes/inventory.py",
     "finops_api/routes/me.py",
@@ -408,6 +415,7 @@
     "finops_query/containers.py",
     "finops_query/cost_model.py",
     "finops_query/digest.py",
+    "finops_query/forecast.py",
     "finops_query/gate.py",
     "finops_query/graph.py",
     "finops_query/insight.py",
@@ -512,9 +520,11 @@
     "tests/api/test_cost_commitments.py",
     "tests/api/test_cost_explore.py",
     "tests/api/test_cost_export_route.py",
+    "tests/api/test_cost_forecast.py",
     "tests/api/test_cost_repository.py",
     "tests/api/test_cost_routes.py",
     "tests/api/test_fixture_surfaces.py",
+    "tests/api/test_forecast_shapes.py",
     "tests/api/test_forecast_unproduced.py",
     "tests/api/test_identity_local.py",
     "tests/api/test_inventory_geography.py",
@@ -654,6 +664,7 @@
     "tests/query/test_containers.py",
     "tests/query/test_cost_model.py",
     "tests/query/test_digest.py",
+    "tests/query/test_forecast.py",
     "tests/query/test_gate.py",
     "tests/query/test_graph.py",
     "tests/query/test_insight_budget.py",
@@ -898,6 +909,11 @@
     {
       "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/EntityScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/ForecastScreen.tsx",
       "k": "typescript"
     },
     {
@@ -2671,6 +2687,66 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/screens/forecastModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/FreshnessScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
@@ -3916,6 +3992,36 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
+      "t": "finops-web/src/screens/ForecastScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/FreshnessScreen.test.tsx",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -4401,6 +4507,16 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/forecastModel.test.ts",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/forecastModel.test.ts",
+      "t": "finops-web/src/screens/forecastModel.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/freshnessContract.test.ts",
       "t": "finops-web/src/App.tsx?raw",
       "k": "typescript"
@@ -4463,6 +4579,21 @@
     {
       "s": "finops-web/src/screens/findingFigure.ts",
       "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/forecastModel.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/forecastModel.ts",
+      "t": "finops-web/src/components/charts/StackedArea.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/forecastModel.ts",
+      "t": "finops-web/src/screens/exploreModel.ts",
       "k": "typescript"
     },
     {
@@ -4872,6 +5003,21 @@
     },
     {
       "s": "finops_api/db/repositories/explore.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/forecast.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/forecast.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/forecast.py",
       "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
@@ -5363,6 +5509,51 @@
     {
       "s": "finops_api/routes/explore.py",
       "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_api/db/repositories/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_api/db/repositories/forecast.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_api/routes/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_query/forecast.py",
       "k": "python"
     },
     {
@@ -7966,6 +8157,41 @@
       "k": "python"
     },
     {
+      "s": "tests/api/test_cost_forecast.py",
+      "t": "finops_api/routes/forecast.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_forecast.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_forecast.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_forecast.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_forecast.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_forecast.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_forecast.py",
+      "t": "finops_query/forecast.py",
+      "k": "python"
+    },
+    {
       "s": "tests/api/test_cost_repository.py",
       "t": "finops_api/db/repositories/base.py",
       "k": "python"
@@ -8058,6 +8284,16 @@
     {
       "s": "tests/api/test_fixture_surfaces.py",
       "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_forecast_shapes.py",
+      "t": "finops_api/routes/forecast.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_forecast_shapes.py",
+      "t": "finops_query/forecast.py",
       "k": "python"
     },
     {
@@ -10248,6 +10484,11 @@
     {
       "s": "tests/query/test_digest.py",
       "t": "finops_query/digest.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_forecast.py",
+      "t": "finops_query/forecast.py",
       "k": "python"
     },
     {

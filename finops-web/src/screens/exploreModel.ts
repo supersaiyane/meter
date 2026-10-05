@@ -174,6 +174,12 @@ export function dayLabel(iso: string): string {
   return `${String(day)} ${monthName(month)} ${String(year)}`;
 }
 
+/** A month as a reader says it: October 2026. */
+export function monthLabel(iso: string): string {
+  const { year, month } = parts(iso);
+  return `${monthName(month)} ${String(year)}`;
+}
+
 /** A window as a reader says it, naming a month or a year once where both ends share it. */
 export function windowLabel(window: ApiExploreWindow): string {
   const start = parts(window.start);

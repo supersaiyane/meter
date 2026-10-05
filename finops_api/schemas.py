@@ -1748,3 +1748,83 @@ class ExploreOut(BaseModel):
     rows_omitted: int
     omitted_this_period: Decimal
     omitted_previous_period: Decimal | None
+
+
+class ForecastRangeOut(BaseModel):
+    """A forecast: a low and a high. Never a point, which is ADR-0015's second condition."""
+
+    model_config = ConfigDict(frozen=True)
+
+    low: Decimal
+    high: Decimal
+
+
+class ForecastMonthOut(BaseModel):
+    """One month's forecast, or the sentence saying why there is none.
+
+    `median_miss` is how far off the method was at the median over the months it was tested on,
+    as a share of what each month cost, measured by backtest. `held_out` is how many months.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    month: date
+    figure: ForecastRangeOut | None
+    withheld: str | None
+    median_miss: Decimal | None
+    held_out: int
+
+
+class ForecastDayOut(BaseModel):
+    """One day of this month: cost billed to date, cumulative, or the band. Never both."""
+
+    model_config = ConfigDict(frozen=True)
+
+    day: date
+    billed: Decimal | None
+    low: Decimal | None
+    high: Decimal | None
+
+
+class ForecastTestOut(BaseModel):
+    """One held out month of the month end backtest.
+
+    The range is the band the method draws today applied to what it forecast for that month, so
+    `within` says whether today's band would have held the month that happened. Both are null
+    where the forecast is withheld.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    month: date
+    actual: Decimal
+    miss: Decimal
+    low: Decimal | None
+    high: Decimal | None
+    within: bool | None
+
+
+class ForecastOut(BaseModel):
+    """FEAT-066. This month's total and the next three months', each a range or the reason.
+
+    Every figure here is a forecast, said once in `provenance` and again on screen, and every
+    figure is a range. The method is named, and its accuracy is published beside it.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    provenance: Literal["forecast"] = "forecast"
+    method: str
+    method_detail: str
+    interval_percent: int
+    #: The median miss above which a forecast is withheld, as a share.
+    max_median_miss: Decimal
+    #: The complete months a forecast is tested on before it is shown.
+    min_held_out: int
+    #: The last day with line items. Billed cost runs to here, and the forecast from the day after.
+    billed_through: date
+    billed_to_date: Decimal
+    month_end: ForecastMonthOut
+    days: list[ForecastDayOut]
+    ahead: list[ForecastMonthOut]
+    backtest: list[ForecastTestOut]

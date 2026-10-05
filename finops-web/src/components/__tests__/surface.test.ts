@@ -128,6 +128,8 @@ describe('the visual layer', () => {
       'meter-stacked-bars',
       // KpiTile emits this for the tile around one headline figure.
       'meter-kpi',
+      // Every chart in the set emits this on its figure, whose caption is its axis line.
+      'meter-chart',
     ]);
     const withoutComments = layout.replace(/\/\*[\s\S]*?\*\//g, '');
     const targeted = new Set(

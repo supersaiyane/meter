@@ -485,7 +485,7 @@ features:
 - id: FEAT-066
   name: Spend forecast, month end and three months, with a published backtest
   subproject: P8
-  status: Planned
+  status: Delivered
   detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 7, [P8 plan](docs/plans/P8-implementation-plan.md), [ADR-0015](docs/adr/ADR-0015-deterministic-forecasting-is-permitted.md)'
   doc: docs/features/FEAT-066-spend-forecast.md
 - id: FEAT-067

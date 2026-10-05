@@ -120,7 +120,7 @@ export const GROUPS: readonly GroupDef[] = [
     path: '/plan',
     screens: [
       { path: '/plan/budgets', label: 'Budgets', arrives: null },
-      { path: '/plan/forecasts', label: 'Forecasts', arrives: 'P8' },
+      { path: '/plan/forecasts', label: 'Forecasts', arrives: null },
       { path: '/plan/score', label: 'FinOps Score', arrives: null },
       { path: '/plan/unit-economics', label: 'Unit Economics', arrives: UNPLANNED },
     ],
