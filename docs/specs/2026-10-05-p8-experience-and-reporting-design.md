@@ -38,6 +38,18 @@ review of three directions drawn on the same Overview screen.
 | Navigation | The FinOps Framework layout shown in the mockups: Overview, Analyze, Plan, Optimize, Govern, Inventory, Report, Assist, Platform |
 | Reporting in the first build | All four: Excel and CSV export, saved views and a report library, scheduled delivery, persona dashboards |
 
+Four more, decided later on 2026-10-05, when the owner reviewed the three drawings as a PDF
+and found the built screens still in the old design. The drawings are kept as
+`docs/design/2026-10-05-overview-frosted-ledger.jpg` and
+`docs/design/2026-10-05-overview-aurora-glass.jpg`.
+
+| Decision | Choice |
+| --- | --- |
+| Theme | Light, Frosted Ledger, opens by default for every reader; Dark and System stay in the toggle |
+| Motion | Rich: hover and focus transitions, panels rising in, a hover lift, a cross fade between screens, charts drawing in. No figure ever counts up |
+| Order | The look first, TASK-P8-018, then the account picker, the Overview, every other screen and the map |
+| Overview | As drawn, the FinOps view of the PDF's second design, with the Executive and Engineering dashboards one click away |
+
 ## 3. Definition of done
 
 - Every screen uses the FOCUS display name for a cost column and the FinOps Framework name
@@ -73,7 +85,8 @@ review of three directions drawn on the same Overview screen.
 ### 5.1 One design system, two themes
 
 Direction A is the dark theme and direction B the light theme, one set of components and
-two sets of tokens. The theme follows the operating system and a toggle overrides it,
+two sets of tokens. The light theme opens for a reader who has chosen nothing, since the
+owner's decision later on 2026-10-05; a toggle offers Dark and System, and a choice is
 remembered per person. Tokens live where they live today, `finops-web/src/tokens.css`,
 and stay plain CSS under ADR-0021.
 
@@ -100,6 +113,17 @@ with tabular numerals, self hosted as IBM Plex is today. Confirmed by the owner 
 2. `prefers-reduced-transparency: reduce` and a browser without `backdrop-filter` both get
    an opaque panel of the same colour, and the page's glows are dropped.
 3. Print uses the light theme with no glass and no glows.
+
+**The rail is glass in both themes, as drawn.** A frosted panel in the light theme and a
+dark one in the dark, inset from the page's edge with its groups and screens listed. It
+replaces the dark rail of both themes, by the owner's choice later on 2026-10-05.
+
+**Motion, decided later on 2026-10-05.** Rich, and drawn at the figure rather than at
+motion. Hover, focus, menus and tabs move in 150 to 200 ms; panels rise into place as
+their data arrives, a few at a time; a panel lifts under the pointer with a shadow from
+the tokens; screens cross fade; a chart draws in once, revealed left to right so every
+mark it shows is a value it has. No number counts up, no bar grows from zero, nothing
+moves on a row being read, and a reader who asks for reduced motion gets none of it.
 
 **What changes in `docs/12-UI-DESIGN.md`.** Its rules against gradients and against a grid
 of equal weight cards were written for the instrument direction the owner has now replaced.

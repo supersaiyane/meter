@@ -4,7 +4,7 @@ Date: 2026-10-05
 Status: Approved by the owner on 2026-10-05, with its spec
 Spec: `docs/specs/2026-10-05-p8-experience-and-reporting-design.md`
 Depends on: P1 to P7 delivered
-Tasks: 15
+Tasks: counted in `tasks/STATUS.md`, which reads them from this plan
 
 The first sub project that changes how Meter looks rather than what it knows. The owner
 approved the direction on 2026-10-05: two themes of one glass design system, navigation
@@ -48,6 +48,11 @@ Same contract as P0 through P7. One task, one commit.
 | F. Dashboards and screens | 012 to 013 | Persona dashboards, every remaining screen restyled | C, D |
 | G. Proof and documents | 014 to 015 | Accessibility, journeys, performance, and the documents | All |
 | H. Added 2026-10-05 | 016 to 017 | The account picker on every screen, and the geography map redrawn | 002 and 003 for the picker, 005 for the map |
+| I. Added later on 2026-10-05 | 018 | The look as drawn: light by default, rich motion, the glass rail and the top bar | 001 and 002 |
+
+**Build order, decided by the owner later on 2026-10-05.** 018, then 016, 012, 013 and
+017, then 010, 011, 014 and 015. The look comes first because the built screens were still
+in the old design when the owner compared them with the drawings.
 
 ---
 
@@ -424,6 +429,12 @@ data).
       category, each with its table of numbers
 - [ ] Every figure and chart narrowed by the account picker, TASK-P8-016, and All accounts
       combined when the Overview opens
+- [ ] The FinOps view as drawn, decided later on 2026-10-05:
+      `docs/design/2026-10-05-overview-frosted-ledger.jpg`, KPI tiles, daily cost by
+      category with the forecast and the daily budget pace, cost by service, anomalies,
+      top recommendations, scheduled reports and showback by team, with the Executive and
+      Engineering dashboards one click away. A tile whose data is not collected says so
+      and shows no figure
 
 ---
 
@@ -500,7 +511,7 @@ one sum.
 | Status | Not started |
 | Implements | FEAT-075 |
 | Delivers | FEAT-075 |
-| Depends on | TASK-P8-002, TASK-P8-003 |
+| Depends on | TASK-P8-002, TASK-P8-003, TASK-P8-018 for the top bar |
 | Estimate | L |
 
 **Acceptance criteria.**
@@ -540,6 +551,39 @@ Added 2026-10-05 at the owner's request.
 - [ ] The two stray horizontal lines on the current map gone, and a continent still the
       finest grain, because a region name says which geography and never which city
 - [ ] Both themes, and still drawn by hand in SVG with no map library
+
+---
+
+### TASK-P8-018: the look as drawn
+
+Added later on 2026-10-05 at the owner's request, after comparing the built screens with
+the drawings: `docs/design/2026-10-05-overview-frosted-ledger.jpg` for the light theme and
+`docs/design/2026-10-05-overview-aurora-glass.jpg` for the dark.
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | P8 spec sections 2 and 5.1, FEAT-063 |
+| Delivers | The shell and the motion of the drawings |
+| Depends on | TASK-P8-001, TASK-P8-002 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [ ] Light, Frosted Ledger, opens for a reader who has chosen nothing; Dark and System
+      stay in the toggle, and a choice already made is kept
+- [ ] The rail a glass panel in both themes, frosted in the light, inset as drawn, with its
+      groups and screens listed
+- [ ] A top bar as drawn: the screen's title and its scope line, a toolbar holding the
+      Export menu and the theme control, and the trust line beneath it
+- [ ] Motion as decided: hover, focus, menus and tabs in 150 to 200 ms; panels rising in a
+      few at a time; a lift under the pointer with a token shadow; a cross fade between
+      screens; a chart drawing in once, left to right
+- [ ] No number counts up and no bar grows from zero; reduced motion stops all of it, and
+      reduced transparency and print keep their fallbacks, each held by a test
+- [ ] The surface tests rewritten to the new rule: a shadow only through a token, a
+      transition never on width, height, position or `all`, keyframes from a named set
+- [ ] Axe clean and contrast held in both themes, the light rail included
 
 ---
 

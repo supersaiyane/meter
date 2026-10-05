@@ -325,19 +325,29 @@ hairline border and a one pixel inner highlight, its radius 16 px in dark and
 18 px in light. Still no drop shadows: the hairline and one step of lightness
 separate a panel from the page.
 
+**Amended again later on 2026-10-05**, at the owner's choice of rich motion, P8 spec
+section 2. A shadow now lifts a panel under the pointer and floats a menu above the page,
+always from a `--shadow-*` token and never a literal. At rest a panel still separates by
+its hairline and one step of lightness, and "no decorative motion" above gives way to
+the motion rules below.
+
 ### Motion
 
-**Almost none, and one deliberate exception.**
+**Rich, and never on a figure.** The owner replaced "almost none" later on 2026-10-05,
+after reviewing the drawings, P8 spec section 2.
 
-Permitted: a 120 ms opacity transition on state change, and a skeleton while
-loading. That is the list.
+Permitted: transitions of 150 to 200 ms on hover, focus, menus and tabs; panels rising
+into place as their data arrives, a few at a time; a lift under the pointer with a token
+shadow; a cross fade between screens; a chart drawing in once, revealed left to right so
+every mark it shows is a value it has; a skeleton while loading.
 
-Forbidden: entrance animations, number count-ups, hover lifts, page
-transitions, anything decorative.
+Forbidden: a number that counts up, a bar that grows from zero, any mark that shows a
+value it does not have, motion on a row a reader is reading, and all of it for a reader
+who asks for reduced motion.
 
 A number that animates from 0 to 4,201 is *lying for 400 milliseconds*, and in
 a product whose entire claim is that its numbers are trustworthy, that is not a
-small thing.
+small thing. It is why the line is drawn at the figure and not at motion.
 
 The one exception: **when a figure changes because data refreshed**, the cell
 marks briefly. Not to delight. To tell a user reading a screen that the ground
