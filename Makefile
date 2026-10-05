@@ -188,12 +188,23 @@ test: ## Unit and contract tests, no external services needed
 test-integration: ## Integration tests. Needs Docker for testcontainers
 	$(BIN)/pytest -m integration
 
-.PHONY: test-all
-test-all: test test-integration ## Every backend test, plus frontend unit tests
+.PHONY: test-web
+test-web: ## Frontend unit tests
 	cd finops-web && npm run test -- --run
 
+.PHONY: test-all
+test-all: test test-integration test-web ## Every backend test, plus frontend unit tests
+
+.PHONY: build-web
+build-web: ## Build the web bundle. Type checks it, and is what the journeys run against
+	cd finops-web && npm run build
+
+# The journeys run against dist, and vite preview does not build. Without this
+# prerequisite they test whatever was last built: on 2026-10-04 that was a
+# bundle seven hours older than the source, containing none of the interface
+# work it was reporting as passing.
 .PHONY: test-e2e
-test-e2e: ## Playwright journeys against the local stack
+test-e2e: build-web ## Playwright journeys against the freshly built bundle
 	cd finops-web && npx playwright test
 
 .PHONY: coverage
@@ -495,7 +506,7 @@ tf-member: ## Apply the member account StackSet. Needs management account creden
 # ---------------------------------------------------------------- gates
 
 .PHONY: verify
-verify: lint check-writing check-docs check-docstrings check-memory test security-scan ## Everything CI runs on a merge request
+verify: lint check-writing check-docs check-docstrings check-memory test test-web test-e2e security-scan ## Everything CI runs on a merge request
 	@echo "verify passed"
 
 .PHONY: ci

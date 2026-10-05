@@ -79,6 +79,13 @@ A change is done when all of the following are true.
 Reading your own code back is not evidence. Running the test and pasting the
 output is evidence.
 
+`make verify` runs the backend tests, the frontend unit tests, a web build and
+the Playwright journeys, in that order. The journeys depend on the build
+because `vite preview` serves `dist` and does not build it: without that
+prerequisite they pass against whatever was last built, which on 2026-10-04 was
+a bundle seven hours older than the source and containing none of the interface
+work it was reporting as sound.
+
 ## Architectural constraints
 
 These are not style preferences. Breaking them costs a rewrite.
