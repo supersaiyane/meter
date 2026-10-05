@@ -682,6 +682,30 @@ class CostSliceOut(BaseModel):
     line_items: int
 
 
+class ShowbackRowOut(BaseModel):
+    """One account, service and tag value in one billing period. FEAT-045.
+
+    The period, both timestamps and the coverage are on every row rather than only in the
+    envelope, because a showback file is mailed on and pasted into a deck, and a row pasted
+    out of it has to carry what it meant. Constraint 10 and FEAT-045.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    billing_period: date
+    account_id: str
+    service_name: str
+    #: The value of the tag key the reader chose, `unallocated` where the line carries none.
+    tag_value: str
+    effective_cost: Decimal
+    billed_cost: Decimal
+    line_items: int
+    as_of: datetime
+    collected_at: datetime
+    accounts_in_file: int
+    accounts_in_organization: int
+
+
 class ContainerCostRowOut(BaseModel):
     """One workload's share of a cluster's cost."""
 

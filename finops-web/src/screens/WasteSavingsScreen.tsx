@@ -144,7 +144,9 @@ export function WasteSavingsScreen() {
             {totals.map(([verdict, total]) => (
               <div key={verdict} data-testid={`total-${verdict}`}>
                 <dt>
-                  {verdict}, {VERDICT_MEANING[verdict] ?? 'no description'}
+                  {/* The verdict in words. Its code sat here unseen by the raw identifier
+                      test only because the heading before it left no word boundary. */}
+                  {verdictName(verdict)}, {VERDICT_MEANING[verdict] ?? 'no description'}
                 </dt>
                 <dd>
                   <Figure

@@ -38,6 +38,7 @@ from finops_api.deps import (
     get_scope,
     get_settings,
 )
+from finops_api.exports import ExportSpec, exportable, rows_in
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.routes.waste import recommendation_out
 from finops_api.schemas import (
@@ -355,6 +356,17 @@ def blast_radius(
 
 
 @router.get("/inventory/resources", response_model=Envelope[ResourceListOut])
+@exportable(
+    ExportSpec(
+        title="Resources",
+        row_model=NodeOut,
+        rows=rows_in("resources"),
+        note=lambda view: (
+            f"Rows {view.data.offset + 1} to {view.data.offset + len(view.data.resources)} "
+            f"of {view.data.total}, the page the screen asked for."
+        ),
+    )
+)
 def resources(
     account_id: str | None = Query(default=None, description="Narrow to one account."),
     region_id: str | None = Query(
@@ -462,6 +474,7 @@ class _Tally:
 
 
 @router.get("/inventory/geography", response_model=Envelope[GeographiesOut])
+@exportable(ExportSpec(title="Geography", row_model=GeographyOut, rows=rows_in("geographies")))
 def geography(
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),
@@ -673,6 +686,7 @@ def _fleet_reason(row: Any) -> str | None:
 
 
 @router.get("/inventory/clusters", response_model=Envelope[ClustersOut])
+@exportable(ExportSpec(title="Clusters", row_model=ClusterInventoryOut, rows=rows_in("clusters")))
 def inventory_clusters(
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),

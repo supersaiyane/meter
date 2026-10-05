@@ -352,9 +352,9 @@ features:
   detail: '[P3 spec](docs/specs/2026-09-20-p3-utilization-and-rightsizing-design.md) section 12, [P3 plan](docs/plans/P3-implementation-plan.md)'
   doc: docs/features/FEAT-044-blast-radius-scoring.md
 - id: FEAT-045
-  name: Chargeback and showback export, CSV
+  name: Chargeback and showback export
   subproject: P1
-  status: Specified
+  status: Delivered
   detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md)'
   doc: docs/features/FEAT-045-chargeback-export.md
 - id: FEAT-046
@@ -491,7 +491,7 @@ features:
 - id: FEAT-067
   name: Report export to Excel and CSV behind the scope guard, with an About sheet
   subproject: P8
-  status: Planned
+  status: Delivered
   detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.5, [P8 plan](docs/plans/P8-implementation-plan.md). Delivers FEAT-045 rather than building it again'
   doc: docs/features/FEAT-067-excel-and-csv-export.md
 - id: FEAT-068
@@ -3844,6 +3844,52 @@ issues:
     the live demo on 2026-10-05. Fixed the same day: the line names each collector through
     `collectorName`, and `StateBoundary.test.tsx` holds that a degraded state says Account
     health and FinOps Score and never their codes.'
+- id: ISS-247
+  severity: LOW
+  status: OPEN
+  summary: A view with more than one table exports only its first, so commitment coverage and
+    actions, unmeasurable quotas, and the forecast's days and backtest are on screen and not
+    in a file
+  detail: 'TASK-P8-009 writes one table per export, because a CSV holds one table and the
+    workbook and the CSV of a view hold the same rows. `/cost/commitments` exports commitment
+    use and not coverage or purchase actions, `/governance/quotas` exports the measurable quotas
+    and not the unmeasurable ones, and `/cost/forecast` exports its months and not the daily
+    chart or the backtest. Each says so on its About sheet rather than dropping the rest
+    silently. Found 2026-10-05 while wiring the exports.'
+- id: ISS-248
+  severity: MEDIUM
+  status: FIXED
+  summary: The realized savings screen printed each verdict by its code, VERIFIED among them,
+    and the raw identifier test could not see it
+  detail: '`finops-web/src/screens/WasteSavingsScreen.tsx` headed each verdict total with the
+    code itself. `rawIdentifiers.test.tsx` reads the page text with a word boundary, and the
+    heading before the tile ended in a letter, so SavingsVERIFIED never matched. Found
+    2026-10-05 when the Export menu put a full stop before it. Fixed the same day: the tile
+    names the verdict through `verdictName`.'
+- id: ISS-249
+  severity: MEDIUM
+  status: OPEN
+  summary: An export record names the person who made it, and no retention job or erasure
+    reaches report_run
+  detail: '`report_run`, FEAT-067, holds the principal of every export file. It is classified
+    personal in `docs/09-DATA-CLASSIFICATION.md`, but `scripts/ops/erase_principal.py` does not
+    delete or tombstone its rows and no retention job reads it, the gap ISS-226 records for the
+    P7 tables. Found 2026-10-05 while classifying the table.'
+- id: ISS-250
+  severity: HIGH
+  status: OPEN
+  summary: The hub's task definitions pass 6 of the 74 settings the API requires, so a deployed
+    API refuses to start
+  detail: '`finops_core/config.py` reads every setting from the environment, with no defaults
+    and no file, and `load_settings` refuses to start without one. `infra/terraform/hub/ecs.tf`
+    passes the environment, region, queue, external id secret, collector role, org reader role,
+    data bucket and the assistant pair, and the database URL as a secret, and nothing else: no
+    environment file and no parameter store. Counted on 2026-10-05 against
+    `Settings.model_fields`: 68 required settings reach no deployed task, METER_EXPORT_ROW_LIMIT
+    from TASK-P8-009 among them. `.env.example` is the one complete description and `make up`
+    holds a local `.env` to it; nothing holds the hub to it. Found while checking where the
+    export row limit would come from in AWS. Where deployed settings live is a decision for the
+    owner.'
 
 open_questions:
 - id: OPEN-07

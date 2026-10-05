@@ -39,14 +39,14 @@ P0 Foundation
 | ID | Name | Features | Specified | Planned |
 | --- | --- | --- | --- | --- |
 | P0 | Foundation | 12 | 0 | 0 |
-| P1 | Cost Intelligence | 8 | 3 | 0 |
+| P1 | Cost Intelligence | 8 | 2 | 0 |
 | P2 | Query Cost Governance | 10 | 9 | 1 |
 | P3 | Utilization and Rightsizing | 10 | 0 | 0 |
 | P4 | Inventory and Topology | 7 | 0 | 0 |
 | P5 | Quotas and Limits | 3 | 0 | 1 |
 | P6 | Containers | 6 | 2 | 1 |
 | P7 | Insight and LLM layer | 6 | 0 | 0 |
-| P8 | Experience and reporting | 9 | 0 | 5 |
+| P8 | Experience and reporting | 9 | 0 | 4 |
 | P9 | Price catalog and rightsizing targets | 4 | 0 | 4 |
 
 <!-- generated:roadmap-status end -->
@@ -103,7 +103,7 @@ rather than that one saving happened.
 | ID | Name | Status | Features | Spec | Plan | Depends on |
 | --- | --- | --- | --- | --- | --- | --- |
 | P0 | Foundation | Spec approved, in build | 12 (0 specified) | [spec](specs/2026-08-23-p0-foundation-design.md) | [plan](plans/P0-implementation-plan.md) | none |
-| P1 | Cost Intelligence | Cost surface delivered. Anomalies, commitments, budgets and the export all built | 8 (3 specified) | [spec](specs/2026-09-18-p1-cost-intelligence-design.md) | [plan](plans/P1-implementation-plan.md) | P0 |
+| P1 | Cost Intelligence | Cost surface delivered. Anomalies, commitments, budgets and the export all built | 8 (2 specified) | [spec](specs/2026-09-18-p1-cost-intelligence-design.md) | [plan](plans/P1-implementation-plan.md) | P0 |
 | P2 | Query Cost Governance | Delivered. Findings, surfaces, ad hoc queries and enforcement all have screens | 10 (9 specified) | [spec](specs/2026-08-23-p2-query-cost-governance-design.md) | [plan](plans/P2-implementation-plan.md) | P0 |
 | P3 | Utilization and Rightsizing | Delivered, 19 of 20 tasks. TASK-P3-020 was unblocked by P4 and is done | 10 (0 specified) | not written | not written | P0, P1 |
 | P4 | Inventory and Topology | Delivered | 7 (0 specified) | [spec](specs/2026-09-20-p4-inventory-and-topology-design.md) | [plan](plans/P4-implementation-plan.md) | P0 |

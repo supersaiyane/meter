@@ -30,6 +30,7 @@ from finops_api.db.repositories.waste import (
     ScoreRepository,
 )
 from finops_api.deps import get_access_context, get_connection, get_scope, get_tickets
+from finops_api.exports import ExportSpec, exportable, rows_in
 from finops_api.lifecycle import TransitionRefusedError, move
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
@@ -108,6 +109,14 @@ def recommendation_out(row: Any) -> RecommendationOut:
 
 
 @router.get("/waste/recommendations", response_model=Envelope[RecommendationsOut])
+@exportable(
+    ExportSpec(
+        title="Recommendations",
+        row_model=RecommendationOut,
+        rows=rows_in("recommendations"),
+        metric="Estimated monthly saving",
+    )
+)
 def recommendations(
     lifecycle: str | None = None,
     waste_class: str | None = None,
@@ -268,6 +277,7 @@ def dismiss(
 
 
 @router.get("/waste/refusals", response_model=Envelope[RefusalsOut])
+@exportable(ExportSpec(title="Refusals", row_model=RefusalOut, rows=rows_in("refusals")))
 def refusals(
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),
@@ -318,6 +328,9 @@ def refusals(
 
 
 @router.get("/waste/savings", response_model=Envelope[RealizedSavingsOut])
+@exportable(
+    ExportSpec(title="Realized savings", row_model=RealizedSavingOut, rows=rows_in("savings"))
+)
 def savings(
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),
@@ -362,6 +375,7 @@ def savings(
 
 
 @router.get("/waste/score", response_model=Envelope[ScoresOut])
+@exportable(ExportSpec(title="Waste score", row_model=ScoreOut, rows=rows_in("scores")))
 def posture_score(
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),
@@ -422,6 +436,9 @@ def posture_score(
 
 
 @router.get("/waste/containers", response_model=Envelope[ContainerWasteOut])
+@exportable(
+    ExportSpec(title="Container usage", row_model=ClusterUsageOut, rows=rows_in("clusters"))
+)
 def waste_containers(
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),

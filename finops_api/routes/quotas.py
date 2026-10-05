@@ -37,6 +37,7 @@ from finops_api.db.repositories.quotas import (
     QuotaRequestRepository,
 )
 from finops_api.deps import get_access_context, get_connection, get_scope
+from finops_api.exports import ExportSpec, exportable, rows_in
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
     DraftRefusalOut,
@@ -154,6 +155,17 @@ def _request(row: Any) -> QuotaRequestOut:
 
 
 @router.get("/governance/quotas", response_model=Envelope[QuotasOut])
+@exportable(
+    ExportSpec(
+        title="Quotas",
+        row_model=QuotaOut,
+        rows=rows_in("measurable"),
+        note=lambda view: (
+            f"{len(view.data.unmeasurable)} quotas Meter cannot measure are on the screen "
+            "and not in this export, ISS-247."
+        ),
+    )
+)
 def quotas(
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),
@@ -194,6 +206,7 @@ def quotas(
 
 
 @router.get("/governance/quotas/requests", response_model=Envelope[QuotaRequestsOut])
+@exportable(ExportSpec(title="Quota requests", row_model=QuotaRequestOut, rows=rows_in("requests")))
 def requests(
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),

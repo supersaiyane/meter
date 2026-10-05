@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useApi } from './apiContext';
+import { useExportable } from './exportViews';
 import { resolveSurface, type Resolved } from './fixtureSeam';
 import {
   queryFindingDetailFixture,
@@ -65,6 +66,7 @@ import type {
   ApiCostAnomalies,
   ApiCostDay,
   ApiCostSlice,
+  ApiShowbackRow,
   ApiExplore,
   ApiForecast,
   ApiCostSummary,
@@ -96,6 +98,7 @@ import type { FlatNode } from '../components/orgNodes';
 
 export function useAccounts() {
   const client = useApi();
+  useExportable('/api/v1/accounts', '/api/v1/accounts');
   return useQuery<ApiEnvelope<Account[]>>({
     queryKey: ['accounts'],
     queryFn: () => client.get<Account[]>('/api/v1/accounts'),
@@ -104,6 +107,7 @@ export function useAccounts() {
 
 export function useOrgTree() {
   const client = useApi();
+  useExportable('/api/v1/org/tree', '/api/v1/org/tree');
   return useQuery<ApiEnvelope<FlatNode[]>>({
     queryKey: ['org-tree'],
     queryFn: () => client.get<FlatNode[]>('/api/v1/org/tree'),
@@ -112,6 +116,7 @@ export function useOrgTree() {
 
 export function useRuns() {
   const client = useApi();
+  useExportable('/api/v1/ingest/runs', '/api/v1/ingest/runs');
   return useQuery<ApiEnvelope<Run[]>>({
     queryKey: ['runs'],
     queryFn: () => client.get<Run[]>('/api/v1/ingest/runs'),
@@ -120,6 +125,7 @@ export function useRuns() {
 
 export function useFreshness() {
   const client = useApi();
+  useExportable('/api/v1/health/freshness', '/api/v1/health/freshness');
   return useQuery<ApiEnvelope<Freshness[]>>({
     queryKey: ['freshness'],
     queryFn: () => client.get<Freshness[]>('/api/v1/health/freshness'),
@@ -128,6 +134,7 @@ export function useFreshness() {
 
 export function usePlatformCost() {
   const client = useApi();
+  useExportable('/api/v1/platform/cost', '/api/v1/platform/cost');
   return useQuery<ApiEnvelope<PlatformCost[]>>({
     queryKey: ['platform-cost'],
     queryFn: () => client.get<PlatformCost[]>('/api/v1/platform/cost'),
@@ -151,6 +158,7 @@ export function useQuerySurface<T>(
   fixture: () => ApiEnvelope<T>,
 ) {
   const client = useApi();
+  useExportable(template, path);
   return useQuery<Resolved<ApiEnvelope<T>>>({
     queryKey: key,
     queryFn: resolveSurface(template, () => client.get<T>(path), fixture),
@@ -238,6 +246,7 @@ export function useCostSummary() {
 /** FEAT-066. The spend forecast: a range or the reason there is none, never a point. */
 export function useCostForecast() {
   const client = useApi();
+  useExportable('/api/v1/cost/forecast', '/api/v1/cost/forecast');
   return useQuery<ApiEnvelope<ApiForecast>>({
     queryKey: ['cost-forecast'],
     queryFn: () => client.get<ApiForecast>('/api/v1/cost/forecast'),
@@ -250,10 +259,11 @@ export function useCostForecast() {
  */
 export function useCostExplore(query: string) {
   const client = useApi();
+  const path = `/api/v1/cost/explore${query === '' ? '' : `?${query}`}`;
+  useExportable('/api/v1/cost/explore', path);
   return useQuery<ApiEnvelope<ApiExplore>>({
     queryKey: ['cost-explore', query],
-    queryFn: () =>
-      client.get<ApiExplore>(`/api/v1/cost/explore${query === '' ? '' : `?${query}`}`),
+    queryFn: () => client.get<ApiExplore>(path),
   });
 }
 
@@ -307,6 +317,20 @@ export function useCostCommitments() {
     '/api/v1/cost/commitments',
     costCommitmentsFixture,
   );
+}
+
+/**
+ * One billing period by account, service and tag value: showback, FEAT-045. The Export screen
+ * shows these rows and the Export menu writes them, FEAT-067, which replaced the CSV the screen
+ * used to fetch and save by hand.
+ */
+export function useShowback() {
+  const client = useApi();
+  useExportable('/api/v1/cost/showback', '/api/v1/cost/showback');
+  return useQuery<ApiEnvelope<ApiShowbackRow[]>>({
+    queryKey: ['cost-showback'],
+    queryFn: () => client.get<ApiShowbackRow[]>('/api/v1/cost/showback'),
+  });
 }
 
 /**

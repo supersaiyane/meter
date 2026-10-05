@@ -1509,6 +1509,41 @@ redaction_event = Table(
     Index("ix_redaction_event__principal", "tenant_id", "principal_id", "occurred_at"),
 )
 
+#: P8, 0026. The two formats an export is written in, mirrored by the migration's constraint.
+REPORT_FORMATS = ("xlsx", "csv")
+
+report_run = Table(
+    "report_run",
+    metadata,
+    #: FEAT-067, 0026. One row per export file, written in the transaction of the read it
+    #: records, so a copy of the estate's figures never leaves without a line saying who took it.
+    Column("run_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    #: Who made it, so the guard can confine the rows to them, ADR-0029.
+    Column("principal_id", Text, nullable=False),
+    #: The route the view reads, and its query without the format.
+    Column("view_path", Text, nullable=False),
+    Column("view_query", Text, nullable=False),
+    #: The scope it was made under: every account, or exactly these.
+    Column("scope_global", Boolean, nullable=False),
+    Column("scope_accounts", ARRAY(Text), nullable=False),
+    Column("format", Text, nullable=False),
+    Column("row_count", Integer, nullable=False),
+    Column("byte_count", BigInteger, nullable=False),
+    #: The workbook stopped at the row limit, which its About sheet says.
+    Column("truncated", Boolean, nullable=False),
+    Column("made_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint(_in_list("format", REPORT_FORMATS), name="ck_report_run__format"),
+    CheckConstraint("row_count >= 0 AND byte_count >= 0", name="ck_report_run__counts"),
+    CheckConstraint(
+        "length(trim(principal_id)) > 0 AND view_path LIKE '/%'", name="ck_report_run__named"
+    ),
+    CheckConstraint(
+        "NOT scope_global OR cardinality(scope_accounts) = 0", name="ck_report_run__scope"
+    ),
+    Index("ix_report_run__principal", "tenant_id", "principal_id", "made_at"),
+)
+
 
 #: Every table in the schema. Used by the drift test and by the repository layer.
 ALL_TABLES = tuple(metadata.sorted_tables)

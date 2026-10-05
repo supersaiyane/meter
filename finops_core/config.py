@@ -93,6 +93,10 @@ class Settings(BaseSettings):
     local_tenant_id: UUID
     session_ttl_hours: int = Field(ge=1)
     entitlement_cache_ttl_minutes: int = Field(ge=1)
+
+    # Exports, FEAT-067. The most rows an Excel workbook holds, below the sheet maximum of
+    # 1,048,576 with its header. The About sheet names it, and the CSV holds every row.
+    export_row_limit: int = Field(ge=1, le=1_048_575)
     session_signing_key: str = Field(min_length=1)
 
     # Severity, in dollars. ADR-0016.

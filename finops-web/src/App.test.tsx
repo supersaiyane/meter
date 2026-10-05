@@ -6,7 +6,7 @@ import type { ApiClient } from './api/client';
 
 const NEVER_ANSWERS: ApiClient = {
   get: () => new Promise(() => undefined),
-  getText: () => new Promise<string>(() => undefined),
+  getFile: () => new Promise<never>(() => undefined),
   post: () => new Promise(() => undefined),
 };
 

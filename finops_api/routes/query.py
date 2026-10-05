@@ -28,6 +28,7 @@ from finops_api.db.repositories.query import (
     SurfaceInstanceRepository,
 )
 from finops_api.deps import get_access_context, get_connection, get_scope, get_settings
+from finops_api.exports import ExportSpec, exportable, listed
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
     AdhocQueryOut,
@@ -114,6 +115,7 @@ def _finding(row: Any, history: Sequence[CostPointOut] = ()) -> QueryFindingOut:
 
 
 @router.get("/query/findings", response_model=Envelope[list[QueryFindingOut]])
+@exportable(ExportSpec(title="Query cost", row_model=QueryFindingOut, rows=listed))
 def query_findings(
     scope: Scope = Depends(get_scope),
     connection: Connection = Depends(get_connection),
@@ -154,6 +156,7 @@ def query_findings(
 
 
 @router.get("/query/groups", response_model=Envelope[list[QueryGroupOut]])
+@exportable(ExportSpec(title="Query cost by cause", row_model=QueryGroupOut, rows=listed))
 def query_groups(
     scope: Scope = Depends(get_scope),
     connection: Connection = Depends(get_connection),
@@ -477,6 +480,7 @@ def undo_remediation(
 
 
 @router.get("/query/adhoc", response_model=Envelope[list[AdhocQueryOut]])
+@exportable(ExportSpec(title="Ad hoc queries", row_model=AdhocQueryOut, rows=listed))
 def query_adhoc(
     scope: Scope = Depends(get_scope),
     connection: Connection = Depends(get_connection),
@@ -525,6 +529,7 @@ def query_adhoc(
 
 
 @router.get("/query/instances", response_model=Envelope[list[SurfaceInstanceOut]])
+@exportable(ExportSpec(title="Query surfaces", row_model=SurfaceInstanceOut, rows=listed))
 def query_instances(
     scope: Scope = Depends(get_scope),
     connection: Connection = Depends(get_connection),

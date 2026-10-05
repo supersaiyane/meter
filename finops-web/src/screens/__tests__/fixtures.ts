@@ -1,5 +1,5 @@
 import type { Account, ApiEnvelope, ApiExplore, ApiForecast, ApiMeta } from '../../api/types';
-import type { ApiClient } from '../../api/client';
+import { fileNameOf, type ApiClient, type DownloadedFile } from '../../api/client';
 import type { FlatNode } from '../../components/orgNodes';
 
 export function metaOf(partial: Partial<ApiMeta> = {}): ApiMeta {
@@ -77,20 +77,20 @@ export function clientReturning(
   answers: Readonly<Record<string, ApiEnvelope<unknown>>>,
   failure?: Error,
   /**
-   * Answers for `getText`, which serves the one route without an envelope. Its own
+   * Answers for `getFile`, which serves an export rather than an envelope. Its own
    * map rather than a union in `answers`, because a stub that guessed whether a
    * value was a file or a payload would guess wrong exactly when a test cared.
    */
   files: Readonly<Record<string, string>> = {},
 ): ApiClient {
   return {
-    getText: (path: string): Promise<string> => {
+    getFile: (path: string): Promise<DownloadedFile> => {
       if (failure) return Promise.reject(failure);
       const answer = files[path];
       if (answer === undefined) {
         return Promise.reject(new Error(`no file stub for ${path}`));
       }
-      return Promise.resolve(answer);
+      return Promise.resolve({ name: fileNameOf(null, path), body: new Blob([answer]) });
     },
     post: <T>(path: string, body?: unknown): Promise<ApiEnvelope<T>> => {
       posted.push(path);

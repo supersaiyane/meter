@@ -16,6 +16,7 @@ from sqlalchemy.engine import Connection
 
 from finops_api.db.repositories import AccessContext, PlatformCostRepository
 from finops_api.deps import get_access_context, get_connection, get_scope
+from finops_api.exports import ExportSpec, exportable, listed
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import Envelope, PlatformCostOut
 from finops_core.domain.tenant import Scope
@@ -24,6 +25,14 @@ router = APIRouter(prefix=API_PREFIX, tags=["platform"])
 
 
 @router.get("/platform/cost", response_model=Envelope[list[PlatformCostOut]])
+@exportable(
+    ExportSpec(
+        title="Platform cost",
+        row_model=PlatformCostOut,
+        rows=listed,
+        metric="Amortized cost of Meter's own resources",
+    )
+)
 def platform_cost(
     scope: Scope = Depends(get_scope),
     connection: Connection = Depends(get_connection),

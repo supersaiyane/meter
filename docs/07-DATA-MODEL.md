@@ -731,6 +731,38 @@ Two of the three tables hold a person's identifier, and the guard confines them
 to that person through the `ByPrincipal` rule, ADR-0029. None of the three has
 a retention job yet, and `erase_principal` does not reach them, ISS-226.
 
+### Export records, P8
+
+Migration `0026_report_run`, FEAT-067. One row for every file an export writes, inserted by
+`finops_api/db/repositories/reports.py` in the transaction of the read it records, so a file
+cannot leave without its record.
+
+```sql
+CREATE TABLE report_run (
+    run_id          UUID         PRIMARY KEY,
+    tenant_id       UUID         NOT NULL REFERENCES tenant (tenant_id),
+    principal_id    TEXT         NOT NULL,      -- who made the file
+    view_path       TEXT         NOT NULL,      -- the route, /api/v1/...
+    view_query      TEXT         NOT NULL,      -- its query, without the format
+    scope_global    BOOLEAN      NOT NULL,
+    scope_accounts  TEXT[]       NOT NULL,      -- the accounts a narrowed scope named,
+                                                -- empty for a global one
+    format          TEXT         NOT NULL,      -- xlsx or csv
+    row_count       INTEGER      NOT NULL,
+    byte_count      BIGINT       NOT NULL,
+    truncated       BOOLEAN      NOT NULL,      -- a workbook stopped at the row limit
+    made_at         TIMESTAMPTZ  NOT NULL
+);
+CREATE INDEX ix_report_run__principal ON report_run (tenant_id, principal_id, made_at);
+```
+
+Four check constraints hold it: the format is one of two, the counts are never negative, the
+person is named and the view is a path, and a global scope names no accounts. The accounts are
+a list rather than a count, because a count says how much was taken and the list says what,
+which is the question an audit asks. The guard confines the table to its person through
+`ByPrincipal`, ADR-0029, so the report library, TASK-P8-010, lists a reader's own exports and
+nobody else's. No retention job reads it and `erase_principal` does not reach it, ISS-249.
+
 ## Migration workflow, Alembic
 
 Alembic is the only way the schema changes. A manual `ALTER TABLE` against any

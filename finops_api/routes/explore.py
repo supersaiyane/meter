@@ -31,6 +31,8 @@ from finops_api.db.repositories.explore import (
     Grouping,
 )
 from finops_api.deps import get_access_context, get_connection, get_scope
+from finops_api.exports import ExportSpec, View, exportable, rows_in
+from finops_api.exports.cells import header
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.routes.cost import NO_COST
 from finops_api.schemas import (
@@ -101,7 +103,63 @@ def asked_filters(
     return {name: values for name, values in asked.items() if values}
 
 
+def _axis(grouping: ExploreGroupingOut | None) -> str:
+    """One axis in the words a heading uses: a FOCUS column's name, or the tag key."""
+    if grouping is None:
+        return ""
+    if grouping.tag_key is not None:
+        return f"Tag {grouping.tag_key}"
+    return header(grouping.dimension)
+
+
+def _explore_headers(view: View) -> dict[str, str]:
+    """The grouping columns by what they group, and the two periods by their dates."""
+    found: ExploreOut = view.data
+    return {
+        "first": _axis(found.group_by),
+        "second": _axis(found.then_by) or "Second grouping",
+        "this_period": f"{found.current.start} to {found.current.end}",
+        "previous_period": f"{found.previous.start} to {found.previous.end}",
+    }
+
+
+def _explore_grouping(view: View) -> str:
+    found: ExploreOut = view.data
+    return " then ".join(axis for axis in (_axis(found.group_by), _axis(found.then_by)) if axis)
+
+
+def _explore_period(view: View) -> str:
+    found: ExploreOut = view.data
+    return (
+        f"{found.current.start} to {found.current.end}, set against "
+        f"{found.previous.start} to {found.previous.end}, {found.granularity}"
+    )
+
+
+def _explore_note(view: View) -> str:
+    """The groups past the row limit, which the screen names and the rows do not hold."""
+    found: ExploreOut = view.data
+    if not found.rows_omitted:
+        return ""
+    return (
+        f"The {found.rows_omitted} smallest groups are not rows here, as on the screen. "
+        f"Together they cost {found.omitted_this_period} this period."
+    )
+
+
 @router.get("/cost/explore", response_model=Envelope[ExploreOut])
+@exportable(
+    ExportSpec(
+        title="Cost Explorer",
+        row_model=ExploreRowOut,
+        rows=rows_in("rows"),
+        headers=_explore_headers,
+        grouping=_explore_grouping,
+        period=_explore_period,
+        metric=lambda view: header(view.data.metric),
+        note=_explore_note,
+    )
+)
 def cost_explore(
     group_by: str = Query(default="service", max_length=LONGEST_NAME),
     group_by_tag: str | None = Query(default=None, min_length=1, max_length=LONGEST_NAME),

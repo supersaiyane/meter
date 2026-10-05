@@ -151,6 +151,9 @@ DEMO_TABLES = (
     # exchange and has no cascade, so the event goes first.
     "redaction_event",
     "assistant_exchange",
+    # P8, FEAT-067. The seed writes none, and every export made on the demo writes one,
+    # so unseed removes them. It references the tenant and nothing else.
+    "report_run",
     # FEAT-051. Added with the table in TASK-P2-026 and missed here, so unseed
     # failed on the foreign key rather than removing the estate. A table that
     # references the tenant and is not in this list makes the teardown a lie.

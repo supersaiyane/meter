@@ -43,14 +43,9 @@ LOGGER = logging.getLogger("meter.api")
 #: Routes that return something other than a data payload, so the envelope does not
 #: apply to them.
 #:
-#: `/api/v1/cost/export` is the only one that returns tenant data, and it is exempt
-#: because it returns a file rather than a payload: a JSON wrapper round a CSV is a
-#: wrapper somebody has to strip by hand before a spreadsheet will open it. The
-#: envelope exists so a reader can tell stale from fresh, and that requirement is met
-#: instead by `as_of` and `collected_at` columns on every row of the file, which is
-#: stronger than a header, because a spreadsheet gets mailed on and pasted into a deck
-#: and the cells are what survive that. `tests/api/test_cost_export_route.py` asserts
-#: the columns are there.
+#: No route that returns tenant data is here. The one that was, the showback CSV at
+#: `/api/v1/cost/export`, now returns its rows in the envelope at `/api/v1/cost/showback`,
+#: and its file comes through the export responder like every other screen's. FEAT-067.
 ENVELOPE_EXEMPT = frozenset(
     {
         "/healthz",
@@ -58,7 +53,6 @@ ENVELOPE_EXEMPT = frozenset(
         "/docs",
         "/docs/oauth2-redirect",
         "/redoc",
-        "/api/v1/cost/export",
     }
 )
 

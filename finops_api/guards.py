@@ -106,6 +106,8 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | None] =
     # P7, FEAT-046 and ADR-0029. What redaction found in a question is about what that
     # person typed, so it is theirs as the question is.
     "redaction_event": ByPrincipal("principal_id"),
+    # P8, FEAT-067. An export record is its maker's own, like a question is its asker's.
+    "report_run": ByPrincipal("principal_id"),
     "cloud_account": ByAccount("account_id", "provider"),
     "org_node": None,
     "ingest_run": None,

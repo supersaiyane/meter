@@ -45,6 +45,26 @@ export interface ApiClientOptions {
   readonly fetchImpl?: typeof fetch;
 }
 
+/** A file the server wrote, under the name it gave it. */
+export interface DownloadedFile {
+  readonly name: string;
+  readonly body: Blob;
+}
+
+/**
+ * The name the server gave a file, or one built from what was asked for when the header is
+ * missing, which a proxy that strips it would make the case.
+ */
+export function fileNameOf(disposition: string | null, path: string): string {
+  const named = disposition === null ? null : /filename="([^"]+)"/.exec(disposition);
+  if (named?.[1] !== undefined) {
+    return named[1];
+  }
+  const at = path.indexOf('?');
+  const format = at === -1 ? null : new URLSearchParams(path.slice(at + 1)).get('format');
+  return `meter-export.${format ?? 'csv'}`;
+}
+
 export function createApiClient({ baseUrl = '', token, fetchImpl = fetch }: ApiClientOptions) {
   return {
     async get<T>(path: string): Promise<ApiEnvelope<T>> {
@@ -63,17 +83,15 @@ export function createApiClient({ baseUrl = '', token, fetchImpl = fetch }: ApiC
     },
 
     /**
-     * A response that is a file rather than a payload.
+     * A file rather than a payload: an export, FEAT-067.
      *
-     * Separate from `get` because it deliberately does not check for the envelope.
-     * The CSV export is the one route without one, and the reason is in
-     * `ENVELOPE_EXEMPT`: a JSON wrapper round a CSV is a wrapper somebody has to
-     * strip by hand. Its freshness travels as two columns in the file instead.
-     *
-     * Kept as its own method rather than a flag on `get`, so a route that should
-     * carry an envelope cannot lose its check by passing an argument.
+     * Separate from `get` because it deliberately does not check for the envelope. An export
+     * is a view's own rows, written as a workbook or a CSV by the server behind the same scope
+     * dependency and guard as the screen, and what the envelope says travels inside the file.
+     * Kept as its own method rather than a flag on `get`, so a route that should carry an
+     * envelope cannot lose its check by passing an argument.
      */
-    async getText(path: string): Promise<string> {
+    async getFile(path: string): Promise<DownloadedFile> {
       const response = await fetchImpl(`${baseUrl}${path}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -81,7 +99,10 @@ export function createApiClient({ baseUrl = '', token, fetchImpl = fetch }: ApiC
         const detail = await response.text();
         throw new ApiError(response.status, detail || response.statusText);
       }
-      return response.text();
+      return {
+        name: fileNameOf(response.headers.get('Content-Disposition'), path),
+        body: await response.blob(),
+      };
     },
 
     /**

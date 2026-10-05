@@ -20,6 +20,7 @@ from finops_api.db.repositories import AccessContext
 from finops_api.db.repositories.cost import CostRepository
 from finops_api.db.repositories.forecast import ForecastRepository
 from finops_api.deps import get_access_context, get_connection, get_scope
+from finops_api.exports import EFFECTIVE_COST, ExportSpec, exportable
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.routes.cost import NO_COST
 from finops_api.schemas import (
@@ -53,6 +54,26 @@ HISTORY_MONTHS: Final = MAX_HELD_OUT + AHEAD_MONTHS + 3
 
 
 @router.get("/cost/forecast", response_model=Envelope[ForecastOut])
+@exportable(
+    ExportSpec(
+        title="Spend forecast",
+        row_model=ForecastMonthOut,
+        rows=lambda data: (data.month_end, *data.ahead),
+        headers={
+            "figure.low": "Low",
+            "figure.high": "High",
+            "withheld": "Withheld because",
+            "median_miss": "Median miss in backtest",
+            "held_out": "Months tested",
+        },
+        period="This month's end and the three months after it",
+        metric=EFFECTIVE_COST,
+        note=(
+            "Each month is a range from a backtested weekday profile, or the reason it is "
+            "withheld. The daily chart and the backtest are on the screen, ISS-247."
+        ),
+    )
+)
 def cost_forecast(
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),

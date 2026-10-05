@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { collectorName } from '../components/displayNames';
 import { NavLink, useLocation, useSearchParams } from 'react-router';
 
+import { ExportContext, useExportRegistry } from '../api/exportViews';
 import { CoverageBanner } from '../components/CoverageBanner';
 import { FreshnessIndicator } from '../components/FreshnessIndicator';
 import { TypedError } from '../components/TypedError';
@@ -16,6 +17,7 @@ import {
   screenTitleFor,
   tabsFor,
 } from './sections';
+import { ExportMenu } from './ExportMenu';
 import { ScreenTabs } from './ScreenTabs';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -61,6 +63,9 @@ export function AppShell({ children, now }: AppShellProps) {
   const taken = filtersFor(pathname);
   const ignored = [...new Set(params.keys())].filter((key) => !taken.includes(key));
   const [navOpen, setNavOpen] = useState(() => !navWasCollapsed());
+  // The views the screen is reading, offered by its query hooks. Provided around the screen
+  // alone, below, so what the shell reads for itself is never offered as the screen's.
+  const exports = useExportRegistry();
 
   // Only the section holding the current screen is open, so the menu is short
   // and points at where the reader already is.
@@ -259,7 +264,12 @@ export function AppShell({ children, now }: AppShellProps) {
       </div>
 
       <main>
-        <h1 data-testid="screen-title">{title}</h1>
+        <div data-testid="screen-bar">
+          <h1 data-testid="screen-title">{title}</h1>
+          {/* Keyed by the screen, so a menu left open does not follow the reader to the next
+              one holding a view that screen does not show. FEAT-067. */}
+          <ExportMenu key={pathname} views={exports.views} />
+        </div>
         {tabbed ? (
           <ScreenTabs label={tabbed.screen.label} tabs={tabbed.tabs} current={tabbed.current} />
         ) : null}
@@ -271,7 +281,7 @@ export function AppShell({ children, now }: AppShellProps) {
             Not a filter on this screen, so not applied: {ignored.join(', ')}
           </p>
         ) : null}
-        {children}
+        <ExportContext.Provider value={exports.register}>{children}</ExportContext.Provider>
       </main>
     </div>
   );

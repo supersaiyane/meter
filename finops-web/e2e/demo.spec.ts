@@ -62,6 +62,28 @@ async function demoEstate(page: Page): Promise<void> {
     meta: META,
   });
 
+  // FEAT-045 through FEAT-067: the showback rows the Export screen shows and its menu writes.
+  // They add up to the summary's Effective Cost, which is the claim the screen makes.
+  await stub(page, '/api/v1/cost/showback', {
+    data: [
+      ['fake-platform-a', 'AmazonEC2', 'platform', '3281.9335', '3602.5100', 400],
+      ['fake-product-b', 'AmazonS3', 'unallocated', '500.0000', '500.0000', 55],
+    ].map(([account, service, tag, effective, billed, items]) => ({
+      billing_period: '2026-09-01',
+      account_id: account,
+      service_name: service,
+      tag_value: tag,
+      effective_cost: effective,
+      billed_cost: billed,
+      line_items: items,
+      as_of: META.as_of,
+      collected_at: META.collected_at,
+      accounts_in_file: 2,
+      accounts_in_organization: 2,
+    })),
+    meta: META,
+  });
+
   // Cost Explorer's answer for the same month the summary above describes, so the figure
   // the runbook opens on is the figure the explorer adds up to: $3,781.93.
   await stub(page, '/api/v1/cost/explore', {
@@ -330,10 +352,13 @@ test('the demo walk reaches every screen the runbook points at', async ({ page }
   await expect(page.getByTestId('commitment-scope-note')).toContainText(/whole payer/i);
 
   // 6. Export. The screen states the total the file must sum to, which is what makes
-  // the claim checkable in ten seconds.
+  // the claim checkable in ten seconds, shows the rows, and the Export menu beside the
+  // title offers them as a workbook or a CSV. FEAT-067.
   await page.goto('/report/exports');
   await expect(page.getByTestId('export-claim')).toContainText('3,781.93');
-  await expect(page.getByTestId('export-not-excel')).toContainText(/CSV only/);
+  await expect(page.getByTestId('export-unallocated-row')).toHaveText('Unallocated cost');
+  await page.getByTestId('export-menu').getByText('Export').click();
+  await expect(page.getByRole('group', { name: 'Showback' })).toBeVisible();
 
   // 7. Recommendations. The estimate is labelled modelled, and the finding
   // nobody owns says so in words rather than leaving a cell blank.

@@ -42,6 +42,7 @@ from finops_api.deps import (
     get_principal,
     get_scope,
 )
+from finops_api.exports import ExportSpec, exportable, listed
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
     AnswerOut,
@@ -140,6 +141,14 @@ def ask(
 
 
 @router.get("/assistant/exchanges", response_model=Envelope[list[ExchangeOut]])
+@exportable(
+    ExportSpec(
+        title="Assistant questions",
+        row_model=ExchangeOut,
+        rows=listed,
+        headers={"est_cost": "Estimated cost"},
+    )
+)
 def exchanges(
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),
@@ -160,6 +169,7 @@ def exchanges(
 
 
 @router.get("/assistant/digests", response_model=Envelope[list[DigestOut]])
+@exportable(ExportSpec(title="Assistant digests", row_model=DigestOut, rows=listed))
 def digests(
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),
@@ -190,6 +200,7 @@ def digests(
 
 
 @router.get("/assistant/redactions", response_model=Envelope[list[RedactionOut]])
+@exportable(ExportSpec(title="Assistant redactions", row_model=RedactionOut, rows=listed))
 def redactions(
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),

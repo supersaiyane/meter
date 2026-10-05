@@ -30,12 +30,12 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Counted | Now | Derived from |
 | --- | --- | --- |
 | Screens built | 25 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 28 in 10 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Playwright journeys | 30 in 11 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 25 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 165 | test_*.py under tests/ |
-| Test functions | 2235 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 26 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 170 | test_*.py under tests/ |
+| Test functions | 2296 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -742,6 +742,9 @@ meter/
 │       │                      navigation column that collapses to 56 px, hidden
 │       │                      rather than covered, remembered per browser, with
 │       │                      the theme choice at its foot
+│       ├── shell/ExportMenu.tsx  Export beside every screen title: each view the
+│       │                      screen reads, as a workbook or a CSV the server
+│       │                      writes and the browser saves under its name. FEAT-067
 │       ├── shell/ThemeToggle.tsx  System, Light and Dark as three radios, so the
 │       │                      way back to the system never passes through the
 │       │                      other theme
@@ -805,6 +808,8 @@ meter/
 │       ├── api/               typed client. Refuses a response with no envelope
 │       │   ├── queries.ts     one hook per route, plus useQuerySurface for a
 │       │   │                  surface whose route does not exist yet
+│       │   ├── exportViews.ts the views a screen offers for export, registered
+│       │   │                  by the query hooks, and only from inside a screen
 │       │   ├── fixtureSeam.ts FIXTURE_SURFACES and resolveSurface. Route
 │       │   │                  templates, not urls, so a detail path matches.
 │       │   │                  A failing route raises, it never falls back
@@ -1126,6 +1131,15 @@ meter/
 │   ├── deps.py                the first scope point. Scope comes from the resolver
 │   ├── middleware.py          request id on every line and back on the response
 │   ├── schemas.py             the meta envelope. degraded is computed, never set
+│   ├── exports/               FEAT-067. One export responder: @exportable on every
+│   │                          list route a screen reads answers format=xlsx with a
+│   │                          Data sheet and an About this export sheet, and
+│   │                          format=csv with every row, from the route's own
+│   │                          envelope after the same guard. cells.py names columns
+│   │                          and collectors, writers.py writes both files with a
+│   │                          hostile cell kept as text, responder.py records each
+│   │                          file in report_run. test_export_routes.py holds every
+│   │                          GET route to it or to an exemption with its reason
 │   ├── routes/                the seven P0 routes, all returning the envelope.
 │   │                          inventory.py holds P4's routes, counted above: the subgraph,
 │   │                          the estate
@@ -1235,7 +1249,9 @@ meter/
 │                              a wrapped query loses the mark the guard checks.
 │                              forecast.py reads the first month and last day held
 │                              and the cost of each UTC day, a zero for a day that
-│                              billed nothing, so a gap and a quiet day differ
+│                              billed nothing, so a gap and a quiet day differ.
+│                              reports.py writes one report_run row per export
+│                              file, in the transaction of the read it records
 │
 ├── alembic.ini                no database URL in it, env.py reads the settings
 ├── migrations/                the only way the schema changes
@@ -1293,6 +1309,10 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0026_report_run.py  FEAT-067. One row per export file: who, which view
+│       │                      and query, which scope as its account list, the
+│       │                      format, rows and bytes, and whether a workbook
+│       │                      stopped at the row limit. Scoped to its person
 │       ├── 0025_redaction_event.py  FEAT-046. The rule and the action, one row
 │       │                      per rule per question, and no column the secret could
 │       │                      go in: not its text, a hash, its position or its

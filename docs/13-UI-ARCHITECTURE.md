@@ -171,7 +171,7 @@ whose purpose was never placed. Since 2026-10-05, ADR-0030:
 /inventory/topology/geography      The estate on a map, a tab of Topology
 /report/library                    Report library, arrives with P8
 /report/scheduled                  Scheduled reports, arrives with P8
-/report/exports                    Chargeback and showback export
+/report/exports                    Showback rows, whose file is the Export menu's
 /assist                            Ask Meter
 /assist/digests                    Per team digests and executive summaries
 /platform/freshness                Freshness per collector against its cadence
@@ -355,7 +355,7 @@ Twenty five screens. Status is the owning feature's status, not the screen's.
 | `/cost/allocation` | Allocation and showback | FEAT-022 | P1 | Planned |
 | `/cost/anomalies` | Anomalies | FEAT-023 | P1 | Planned |
 | `/cost/commitments` | Commitment coverage | FEAT-024 | P1 | Planned |
-| `/cost/export` | Export | FEAT-045 | P1 | Planned |
+| `/cost/export` | Export, showback rows and the Export menu | FEAT-045, FEAT-067 | P1, P8 | Delivered |
 
 ### Waste
 
@@ -529,7 +529,7 @@ implement it differently.
 | **Trust strip** | Coverage, freshness and degraded are shell level on every screen, worst case across that screen's collectors. Meter's own cost is Home only, per constraint 7 |
 | **Search** | One field, spanning accounts, resources, dashboards and findings. Results grouped by the seven groups, so the result list teaches the navigation. **Not yet planned**, because it wants at least three entity types to search over and P0 plus P2 supply two |
 | **Drill down** | Always into the owning group, never a modal. A finding opens its own URL, so it can be linked |
-| **Export** | Every table. **The export carries its coverage and both timestamps**, per FEAT-045 and `docs/12-UI-DESIGN.md` section 6. A spreadsheet that leaves without them becomes a number in a board pack with no way back to what it meant |
+| **Export** | Beside every screen title, for each view the screen reads, FEAT-067. The server writes the file from the screen's own query, behind the same guard. **A workbook carries its coverage, both timestamps and every failure on its About sheet**, and the showback CSV carries them on every row, per FEAT-045 and `docs/12-UI-DESIGN.md` section 6. A spreadsheet that leaves without them becomes a number in a board pack with no way back to what it meant |
 | **Fixture marker** | Any screen resolving to fixture data renders the `FIXTURE DATA` band above its own content, driven by the same resolution that chose the fixture. It is per screen rather than shell level, because the shell aggregates `meta` and a fixture is a property of one surface rather than of the view. Each such screen carries a test asserting the band renders. See section 11 |
 | **Empty groups** | A group whose sub projects have not landed shows its screens with their arrival, never a hidden or disabled entry. Hiding it makes the product look smaller than it is and makes the roadmap invisible |
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ApiError, createApiClient, EnvelopeError } from '../client';
+import { ApiError, createApiClient, EnvelopeError, fileNameOf } from '../client';
 
 /** Just enough of a Response for the client to work with. */
 function fakeResponse(body: unknown, status: number): Response {
@@ -90,10 +90,27 @@ describe('the api client', () => {
 });
 
 describe('the api client, for files and for writes that fail', () => {
-  it('returns a file as its text, without asking it for an envelope', async () => {
-    const csv = 'period,effective_cost\n2026-08-01,4512.7113\n';
-    const client = createApiClient({ token: 't', fetchImpl: respondWith(csv) });
-    await expect(client.getText('/api/v1/cost/export')).resolves.toBe(csv);
+  it('returns a file under the name the server gave it, without asking for an envelope', async () => {
+    const csv = 'Billing period,Effective Cost\n2026-08-01,4512.7113\n';
+    const named: typeof fetch = () =>
+      Promise.resolve(
+        new Response(csv, {
+          headers: { 'Content-Disposition': 'attachment; filename="meter-showback-2026-10-05.csv"' },
+        }),
+      );
+    const client = createApiClient({ token: 't', fetchImpl: named });
+    const file = await client.getFile('/api/v1/cost/showback?format=csv');
+    expect(file.name).toBe('meter-showback-2026-10-05.csv');
+    expect(file.body.size).toBe(csv.length);
+  });
+
+  it('names a file for its format when the server gave it no name', async () => {
+    const unnamed: typeof fetch = () => Promise.resolve(new Response('cells'));
+    const client = createApiClient({ token: 't', fetchImpl: unnamed });
+    await expect(client.getFile('/api/v1/cost/trend?format=xlsx')).resolves.toMatchObject({
+      name: 'meter-export.xlsx',
+    });
+    expect(fileNameOf(null, '/api/v1/cost/trend')).toBe('meter-export.csv');
   });
 
   it('throws with the status when a file cannot be fetched', async () => {
@@ -101,7 +118,7 @@ describe('the api client, for files and for writes that fail', () => {
       token: 't',
       fetchImpl: respondWith('not in your scope', 403),
     });
-    await expect(client.getText('/api/v1/cost/export')).rejects.toMatchObject({
+    await expect(client.getFile('/api/v1/cost/showback?format=csv')).rejects.toMatchObject({
       status: 403,
       detail: 'not in your scope',
     });

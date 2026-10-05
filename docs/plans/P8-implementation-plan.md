@@ -320,7 +320,7 @@ the months ahead were shown, withheld for their misses and withheld for want of 
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec section 5.5, FEAT-067 |
 | Delivers | FEAT-067 and FEAT-045 |
 | Depends on | TASK-P8-002 |
@@ -331,16 +331,31 @@ with an About sheet.
 
 **Acceptance criteria.**
 
-- [ ] XlsxWriter admitted through `make dep-check`
-- [ ] `format=xlsx` and `format=csv` on every list route a screen reads, enumerated by a
+- [x] XlsxWriter admitted through `make dep-check`
+- [x] `format=xlsx` and `format=csv` on every list route a screen reads, enumerated by a
       test over the routers as the MCP drift gate does
-- [ ] A Data sheet with FOCUS headers and typed numbers, and an About sheet with every
+- [x] A Data sheet with FOCUS headers and typed numbers, and an About sheet with every
       field in spec section 5.5 item 2
-- [ ] Every leading character in spec section 5.5 item 3 written as text, tested
-- [ ] The row limit is a setting, named in the About sheet, with CSV for the full set
-- [ ] One `report_run` row per export, migration included, every invariant a constraint
-- [ ] Parity: rows equal the screen's; scope: a narrower principal never sees more
-- [ ] An Export menu on every screen, and the old Export screen's CSV replaced by it
+- [x] Every leading character in spec section 5.5 item 3 written as text, tested
+- [x] The row limit is a setting, named in the About sheet, with CSV for the full set
+- [x] One `report_run` row per export, migration included, every invariant a constraint
+- [x] Parity: rows equal the screen's; scope: a narrower principal never sees more
+- [x] An Export menu on every screen, and the old Export screen's CSV replaced by it
+
+**Delivered 2026-10-05.** One responder, `finops_api/exports/`, applied to each list route
+as `@exportable`, so no return can answer JSON for a file: 34 routes export, and
+`tests/api/test_export_routes.py` fails for a GET route that neither exports nor states why
+not. The workbook is XlsxWriter in constant memory mode, admitted through `make dep-check`
+with zero findings. `/cost/export` became `/cost/showback`, its rows in the envelope, so
+FEAT-045 is delivered through the same responder and `ENVELOPE_EXEMPT` holds no route with
+tenant data. The Export menu sits beside every screen title, fed by the query hooks. Three
+things were found on the way: a view with more than one table exports its first, ISS-247;
+the savings screen printed a verdict code the raw identifier test could not see, ISS-248,
+fixed; `report_run` holds a person's identifier no retention job or erasure reaches,
+ISS-249; and the hub passes 6 of the 74 settings the API requires, so a deployed API
+would not start, ISS-250. Against the local stack the showback workbook held 31 rows and 14 failures on its
+About sheet, and both files wrote a `report_run` row (measured 2026-10-05 on synthetic
+data).
 
 ---
 

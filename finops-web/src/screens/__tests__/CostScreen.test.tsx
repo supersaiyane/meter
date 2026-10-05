@@ -24,7 +24,7 @@ function explorer(answer: () => ApiExplore = () => exploreOf(), failure?: Error)
       if (failure) return Promise.reject(failure);
       return Promise.resolve({ data: answer(), meta: metaOf() } as unknown as ApiEnvelope<T>);
     },
-    getText: () => Promise.reject(new Error('no file stub')),
+    getFile: () => Promise.reject(new Error('no file stub')),
     post: () => Promise.reject(new Error('no write stub')),
   };
   return { client, asked };

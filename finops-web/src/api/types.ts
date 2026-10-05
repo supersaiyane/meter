@@ -290,6 +290,27 @@ export interface ApiCostSummary {
   readonly change: string | null;
 }
 
+/**
+ * One account, service and tag value in one billing period, `GET /cost/showback`. FEAT-045.
+ *
+ * The period, both timestamps and the coverage are on every row, because a showback file is
+ * mailed on and pasted into a deck, and a row pasted out of it has to carry what it meant.
+ */
+export interface ApiShowbackRow {
+  readonly billing_period: string;
+  readonly account_id: string;
+  readonly service_name: string;
+  /** The value of the chosen tag key, `unallocated` where a charge carries none. */
+  readonly tag_value: string;
+  readonly effective_cost: string;
+  readonly billed_cost: string;
+  readonly line_items: number;
+  readonly as_of: string;
+  readonly collected_at: string;
+  readonly accounts_in_file: number;
+  readonly accounts_in_organization: number;
+}
+
 export interface ApiCostSlice {
   /**
    * `unallocated` where the row carries no value for the grouping. It is never

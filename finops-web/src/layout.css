@@ -199,6 +199,67 @@ body {
   letter-spacing: -0.015em;
 }
 
+/* The screen's title and what can be done with the whole screen, on one line: the Export
+   menu, FEAT-067. The title keeps its own rule above. */
+[data-testid='screen-bar'] {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+[data-testid='export-menu'] {
+  position: relative;
+  margin-left: auto;
+}
+
+[data-testid='export-menu'] > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-2);
+}
+
+[data-testid='export-menu'] > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Solid rather than glass: it opens over the screen's own figures, and a menu they show
+   through is a menu nobody can read. */
+[data-testid='export-views'] {
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--space-1));
+  z-index: 20;
+  width: max-content;
+  max-width: min(28rem, 90vw);
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--surface-raised-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+[data-testid='export-view'] > p {
+  margin: 0 0 var(--space-1);
+  font-weight: 600;
+}
+
+[data-testid='export-view'] > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+[data-testid='export-note'] {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-1);
+}
+
 [data-testid='shell'] > main {
   grid-area: main;
   padding: var(--space-6);
