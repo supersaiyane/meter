@@ -78,6 +78,13 @@ subprojects:
   spec: specs/2026-10-05-p8-experience-and-reporting-design.md
   plan: plans/P8-implementation-plan.md
   depends_on: P1, P2, P3, P4, P5, P6, P7
+- id: P9
+  name: Price catalog and rightsizing targets
+  status: Specified and planned 2026-10-05, 11 tasks, pending the owner's approval. Gated on
+    OPEN-16, how the hub reaches AWS APIs
+  spec: specs/2026-10-05-p9-price-catalog-design.md
+  plan: plans/P9-implementation-plan.md
+  depends_on: P3
 features:
 - id: FEAT-001
   name: Account onboarding and organization topology, parent to child map
@@ -504,6 +511,30 @@ features:
   status: Planned
   detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.8, [P8 plan](docs/plans/P8-implementation-plan.md)'
   doc: docs/features/FEAT-070-persona-dashboards.md
+- id: FEAT-071
+  name: Price catalog for EC2 and EBS from the AWS Price List, versioned and FOCUS shaped
+  subproject: P9
+  status: Planned
+  detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.2, 5.3 and 7, [P9 plan](docs/plans/P9-implementation-plan.md)'
+  doc: docs/features/FEAT-071-price-catalog.md
+- id: FEAT-072
+  name: Instance capability catalog from DescribeInstanceTypes
+  subproject: P9
+  status: Planned
+  detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.4 and 7, [P9 plan](docs/plans/P9-implementation-plan.md)'
+  doc: docs/features/FEAT-072-instance-capability-catalog.md
+- id: FEAT-073
+  name: Rightsizing to a named, priced target, down and up
+  subproject: P9
+  status: Planned
+  detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.5 to 5.7, [P9 plan](docs/plans/P9-implementation-plan.md)'
+  doc: docs/features/FEAT-073-rightsizing-to-a-priced-target.md
+- id: FEAT-074
+  name: gp2 to gp3 migration, priced from measured IOPS and throughput
+  subproject: P9
+  status: Planned
+  detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) section 5.8, [P9 plan](docs/plans/P9-implementation-plan.md)'
+  doc: docs/features/FEAT-074-gp2-to-gp3-migration.md
 
 adrs:
 - id: ADR-0001
@@ -3648,6 +3679,24 @@ issues:
     with a geography, from the Geography screen, both open the screen unfiltered with no word
     that the filter was dropped. Found by the UI audit of 2026-10-05. Belongs to the UI review,
     whose saved views and report filters need the same mechanism'
+- id: ISS-236
+  severity: HIGH
+  status: OPEN
+  summary: The hub's private subnets reach six AWS services, and its collectors call about
+    fifteen more, several only in us-east-1 or in eu-west-2
+  detail: '`infra/terraform/hub/network.tf` has interface endpoints for `sts`, `sqs`,
+    `secretsmanager`, `logs`, `ecr.api` and `ecr.dkr` plus the S3 gateway, and a private route
+    table with no default route, and its comment calls that list every AWS service the tasks
+    call. The adapters in `finops_providers/aws` also call `ec2`, `cloudwatch` (endpoint
+    `monitoring`), `athena`, `config`, `ce`, `organizations`, `budgets`, `support`,
+    `service-quotas`, `cloudtrail`, `compute-optimizer`, `cost-optimization-hub`,
+    `bedrock-runtime` and `iam`, and `finops_providers/grafana/amg.py` calls `grafana`. None of
+    them has a path. Cost Explorer, Organizations, Budgets, Support and Cost Optimization Hub
+    answer only in us-east-1, calls into eu-west-2 need that Region''s endpoints, and cross
+    Region PrivateLink does not cover them. `docs/04-DEPLOYMENT.md` names a Cost Explorer
+    endpoint that does not exist. On a real account most collectors would fail as Unreachable.
+    Found on 2026-10-05 by the P9 price research. It went unseen because nothing has run
+    against AWS, ISS-002, and it gates P9 through OPEN-16'
 
 open_questions:
 - id: OPEN-07
@@ -3746,6 +3795,16 @@ open_questions:
   status: OPEN
   blocks: 'A deletion job for report files, TASK-P8-011. Files are kept until it is answered'
   detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 6'
+- id: OPEN-16
+  question: 'How does the hub reach the AWS APIs its collectors call: endpoints in every Region
+    used plus a us-east-1 endpoint VPC, a NAT gateway with an AWS-only allow list, or collectors
+    outside the VPC'
+  status: OPEN
+  blocks: 'ISS-236 and all of P9, and every collector beyond P0 against a real account'
+  detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) section 5.1. Option A is
+    recommended, because the hub was designed to have no route out and every other control
+    assumes it. B is the fallback if A''s cost or complexity is refused, and an ADR records the
+    choice and its price'
 - id: OPEN-06
   question: 'Which regions beyond Ireland and London. ANSWERED 2026-08-23: those two only, eu-west-1 and
     eu-west-2'
