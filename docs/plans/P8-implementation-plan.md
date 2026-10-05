@@ -586,8 +586,8 @@ the drawings: `docs/design/2026-10-05-overview-frosted-ledger.jpg` for the light
 - [x] Axe clean and contrast held in both themes, the light rail included
 
 **Delivered 2026-10-05.** Light opens for a reader who has chosen nothing, pinned in
-`index.html` so a dark system never flashes a dark page. The rail is a glass panel listing every
-group and screen, and the column's top is the title and scope line, a toolbar holding Export
+`index.html` so a dark system never flashes a dark page. The rail is a glass panel whose groups open
+one at a time, a bar with a menu drawer at or below 1024 pixels, and the column's top is the title and scope line, a toolbar holding Export
 and the theme control, and the sticky trust line. Motion and elevation are tokens; the
 keyframes are a named set of five, and a reduced motion block built from the same selectors
 stops all of it. The journeys now run with reduced motion, because two of them read the

@@ -722,3 +722,21 @@ and any written rule that blocks what the drawings imply.
 
 **Triggers:** A mockup, a drawing or a design direction approved. "Can I see the difference."
 Showing screenshots midway through a restyle.
+
+## 2026-10-05: a layout called done after looking at it in one window
+
+**Mistake:** In TASK-P8-018 I replaced the working accordion with every group listed, to match a
+static drawing, and called the shell done after looking at it at 1440 pixels only. Hide left the
+name visible and cut in half, and at or below 1024 pixels the collapsed state squeezed every
+screen into a 64 pixel column.
+
+**Correction:** The owner said: "menus should be collapsable and , at a given time only one menu
+should be open ... the complete fram collapsed in a dirty way ... this is not workable any type of
+screen, pleae make it work in any screen or browser type"
+
+**Rule:** Keep a working interaction a drawing does not show unless the owner asks for it to go.
+Before calling a layout change done, sweep every built screen at 320, 375, 768, 1024, 1280 and
+1920 pixels, collapsed and expanded and in both themes, and fix anything that scrolls sideways.
+
+**Triggers:** A shell, navigation or layout change. "As drawn" applied to behaviour. A media query
+written beside a state selector that could outrank it.

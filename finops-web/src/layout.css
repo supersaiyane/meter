@@ -21,6 +21,13 @@
   box-sizing: border-box;
 }
 
+/* `hidden` always hides. A rule that sets `display` on an element otherwise beats the browser's
+   own `[hidden]` rule, and a collapsed rail showed the name it had hidden, cut in half, when the
+   owner pressed Hide on 2026-10-05. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   background-color: var(--surface);
@@ -158,23 +165,71 @@ body {
   padding: var(--space-2);
 }
 
+/* The top of the rail: the mark, the name and the button that hides the rail. Collapsed on a wide
+   screen, the mark and the button stack in the narrow rail; on a narrow screen they are the bar
+   across the top. */
 [data-testid='rail-top'] {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
+  gap: 10px;
   margin: 0 var(--space-2) var(--space-3);
 }
 
+[data-testid='shell'][data-layout='wide'][data-nav='collapsed'] [data-testid='rail-top'] {
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+/* The mark is drawn, not an image: one gradient, no request, and it survives a theme switch
+   because both stops are fixed hues rather than tokens. */
+[data-testid='brand-mark'] {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #4da3ff, #9b6cff);
+}
+
+[data-testid='brand'] {
+  display: grid;
+  min-width: 0;
+  margin: 0;
+  color: var(--text);
+  font-size: var(--font-size-3);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+[data-testid='brand-line'] {
+  color: var(--text-faint);
+  font-size: var(--font-size-1);
+  font-weight: 400;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+/* An icon with its word while there is room for both, the icon alone in a collapsed rail. */
 [data-testid='nav-toggle'] {
-  padding: 2px var(--space-2);
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 5px var(--space-2);
   background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  color: var(--text-faint);
+  color: var(--text-muted);
   font-family: var(--font-ui);
   font-size: var(--font-size-1);
   cursor: pointer;
+}
+
+[data-testid='shell'][data-layout='wide'][data-nav='collapsed'] [data-testid='nav-toggle'] {
+  margin-left: 0;
+  padding: 7px;
 }
 
 [data-testid='nav-toggle']:hover {
@@ -185,38 +240,6 @@ body {
 [data-testid='nav-toggle']:focus-visible {
   outline: 2px solid var(--accent-mark);
   outline-offset: 2px;
-}
-
-/* The mark is drawn, not an image: one gradient, no request, and it survives a theme switch
-   because both stops are fixed hues rather than tokens. The name and the line under it sit
-   beside it, as drawn. */
-[data-testid='brand'] {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  column-gap: 10px;
-  align-items: center;
-  margin: 0;
-  color: var(--text);
-  font-size: var(--font-size-3);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-}
-
-[data-testid='brand']::before {
-  content: '';
-  grid-row: 1 / 3;
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, #4da3ff, #9b6cff);
-}
-
-[data-testid='brand-line'] {
-  color: var(--text-faint);
-  font-size: var(--font-size-1);
-  font-weight: 400;
-  letter-spacing: 0;
 }
 
 [data-testid='screen-title'] {
@@ -390,16 +413,59 @@ body {
 
 /* ------------------------------------------------------------- navigation */
 
-/* Every group and its screens listed, as drawn: the label a small capitals line, its screens
-   under it. It replaced an accordion that opened only the current group, by the owner's choice
-   of the drawn rail later on 2026-10-05; the rail scrolls rather than folding. */
-[data-testid='nav-group-label'] {
-  margin: var(--space-4) var(--space-3) var(--space-1);
+/* Each group is a details element, so the disclosure state, the keyboard handling and the
+   expanded semantics come from the browser rather than from a div pretending to be a button. One
+   is open at a time, by the owner's ask later on 2026-10-05: the group holding the current screen
+   opens with it, and opening another closes it, which keeps the rail short. */
+nav[aria-label='Sections'] summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 2px;
+  padding: 6px var(--space-3);
+  border-radius: var(--radius);
+  color: var(--text-faint);
   font-size: 10.5px;
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.11em;
-  color: var(--text-faint);
+  text-transform: uppercase;
+  list-style: none;
+  cursor: pointer;
+}
+
+nav[aria-label='Sections'] summary::-webkit-details-marker {
+  display: none;
+}
+
+/* A chevron drawn with two borders, turned to point the way opening goes. */
+nav[aria-label='Sections'] summary::after {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+
+nav[aria-label='Sections'] details[open] > summary::after {
+  transform: rotate(45deg);
+}
+
+nav[aria-label='Sections'] summary:hover {
+  color: var(--text);
+  background: var(--surface-raised-2);
+}
+
+nav[aria-label='Sections'] details[open] > summary {
+  color: var(--text-muted);
+}
+
+nav[aria-label='Sections'] summary:focus-visible {
+  outline: 2px solid var(--accent-mark);
+  outline-offset: 1px;
 }
 
 nav[aria-label='Sections'] > [data-testid='nav-self-link'] {
@@ -409,7 +475,7 @@ nav[aria-label='Sections'] > [data-testid='nav-self-link'] {
 
 nav[aria-label='Sections'] ul {
   list-style: none;
-  margin: 0;
+  margin: 0 0 var(--space-1);
   padding: 0;
 }
 
@@ -1004,7 +1070,7 @@ main article {
    sensibly on a narrower window. */
 [data-testid='home-summary'] {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
   gap: var(--space-3);
   margin-bottom: var(--space-4);
 }
@@ -1190,6 +1256,22 @@ button,
 
 /* --------------------------------------------------------------- responsive */
 
+/* Every reflowing grid in this file sets its columns' minimum through min(width, 100%), so a column
+   is never wider than the space it is in. A fixed minimum held a 320 pixel phone 12 pixels too
+   wide on Forecasts on 2026-10-05, and the same shape was in four other grids. */
+
+/* A table wider than its column scrolls inside its own card rather than pushing the page
+   sideways, on any screen. DataTable's tables already sit in a scrolling wrapper; the screens that
+   draw a table themselves get the same here, from one rule rather than seventeen wrappers. A table
+   narrower than its card keeps its own width, and a wide one fills the card and wraps before it
+   scrolls. The owner found the commitments table pushing a tablet 269 pixels sideways on
+   2026-10-05. */
+main table:not([data-testid='table-scroll'] table) {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 /* Section 10. Desktop first, honestly: this is an analyst's tool used on a
    large screen. */
 @media (max-width: 1280px) {
@@ -1201,27 +1283,129 @@ button,
 }
 
 @media (max-width: 1024px) {
-  /* A phone checking a number during an incident. It needs the figure, its
-     provenance and its age. It does not need the whole instrument. */
-  [data-testid='shell'] {
+  /* A tablet, a phone, or a window pulled narrow: the rail becomes a bar across the top and its
+     menu a drawer over the screen, so the screen keeps the whole width. The collapsed state is
+     named here beside the bare one because the wide rule for it outranks a bare selector, and on
+     2026-10-05 it kept two columns inside this one column layout and squeezed the whole screen
+     into the rail's 64 pixels. */
+  [data-testid='shell'],
+  [data-testid='shell'][data-nav='collapsed'] {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
       'nav'
       'main';
+    gap: var(--space-3);
+    padding: var(--space-3);
   }
 
-  [data-testid='shell'] > header {
+  [data-testid='shell'] > header,
+  [data-testid='shell'][data-nav='collapsed'] > header {
     grid-column: 1;
-    position: static;
+    position: sticky;
+    top: var(--space-2);
+    z-index: 30;
     max-height: none;
+    overflow: visible;
+    padding: var(--space-2) var(--space-3);
+  }
+
+  [data-testid='rail-top'] {
+    margin: 0;
+  }
+
+  /* The drawer drops over the screen rather than pushing it away, and scrolls on its own. */
+  [data-testid='shell'] > header > nav {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    left: 0;
+    right: 0;
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+    padding: var(--space-2);
+    background: var(--surface-raised-solid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-float);
   }
 
   [data-testid='shell'] > main {
     grid-column: 1;
+    padding: 0;
+  }
+
+  /* The trust line sticks under the bar rather than under the window's edge. */
+  [data-testid='trust-strip'] {
+    top: 72px;
   }
 
   [data-testid='graph'] {
     display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  /* A phone checking a number during an incident. It needs the figure, its provenance and its
+     age, a column wide, and nothing pushing the page sideways. The trust line scrolls with the
+     page here, because two bars stuck to a phone's top would leave the figures half a screen. */
+  [data-testid='shell'],
+  [data-testid='shell'][data-nav='collapsed'] {
+    padding: var(--space-2);
+  }
+
+  [data-testid='trust-strip'] {
+    position: static;
+  }
+
+  [data-testid='home-summary'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-testid='home-tile'][aria-label='Total spend'] {
+    grid-column: auto;
+  }
+
+  /* Nothing may hold a line wider than a phone. The trust line's chips and the scope line wrap
+     their words, a range of two figures wraps between them while each figure stays whole, and a
+     long identifier breaks rather than pushing the page sideways. A sweep of every screen at
+     375 pixels found all of these on 2026-10-05. */
+  [data-testid='coverage'],
+  [data-testid='global-freshness'],
+  [data-testid='shell-failures'] summary {
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+
+  [data-testid='screen-bar'],
+  [data-testid='screen-heading'] {
+    min-width: 0;
+  }
+
+  [data-testid='figure'],
+  [data-testid='figure'] .meter-numeral {
+    white-space: normal;
+  }
+
+  main p,
+  main li,
+  main dd {
+    overflow-wrap: anywhere;
+  }
+
+  /* A select sizes itself to its longest option, and an AWS resource type is long: the type
+     filter on Resources was 334 pixels on its own. Controls take the width they are given, and
+     the row holding one wraps. */
+  main select,
+  main input:not([type='radio']):not([type='checkbox']) {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  main p:has(> select),
+  main label:has(> select) {
+    flex-wrap: wrap;
+    min-width: 0;
+    max-width: 100%;
   }
 }
 
@@ -1494,7 +1678,7 @@ main > section > article {
    figure keeps its width on a laptop and the small cards wrap under it. */
 [data-testid='home-summary'] {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
   gap: var(--space-4);
   margin-bottom: var(--space-4);
 }
@@ -1844,7 +2028,7 @@ main > section > [data-testid='state'] > p[role='status'] {
 /* Forecasts, FEAT-066: the month end range beside the accuracy that earns it. */
 [data-testid='forecast-headline'] {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
   gap: var(--space-3);
   margin: 0 0 var(--space-4);
 }
@@ -1911,7 +2095,7 @@ main > section > [data-testid='state'] > p[role='status'] {
 [data-testid='budgets-tracked'],
 [data-testid='budgets-untracked'] {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: var(--space-4);
   margin-top: var(--space-3);
 }
@@ -2328,7 +2512,7 @@ main > section > [data-testid='state'] > p[role='status'] {
    a keyboard and a picture must never be the only way to operate a screen. */
 [data-testid='world-map-legend'] {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
   gap: var(--space-2);
   margin: var(--space-3) 0 0;
   padding: 0;
@@ -2607,7 +2791,7 @@ main > section > [data-testid='state'] > div[data-testid] > h3:first-child {
 /* The three tiles side by side where there is room, one above another where there is not. */
 [data-testid='explore-kpis'] {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
   gap: var(--space-3);
   margin: var(--space-3) 0;
 }
@@ -3147,7 +3331,8 @@ main > section > [data-testid='state'] > dl[data-testid]:hover {
 
 /* A menu opens rather than appearing. */
 [data-testid='export-menu'][open] > [data-testid='export-views'],
-[data-testid='shell-failures'] details[open] > ul {
+[data-testid='shell-failures'] details[open] > ul,
+nav[aria-label='Sections'] details[open] > ul {
   animation: meter-pop var(--motion-fast) var(--ease-out);
 }
 
@@ -3225,6 +3410,7 @@ main > section > [data-testid='state'] > dl[data-testid]:hover {
     [data-testid='stacked-columns'] svg,
     [data-testid='export-menu'][open] > [data-testid='export-views'],
     [data-testid='shell-failures'] details[open] > ul,
+    nav[aria-label='Sections'] details[open] > ul,
     [data-testid='skeleton-row']
   ) {
     animation: none;

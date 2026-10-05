@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { App } from './App';
@@ -71,32 +71,76 @@ describe('App', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Query Cost' })).toBeInTheDocument();
   });
 
-  it('lists every group with its screens, as drawn, rather than folding them away', () => {
-    // The rail of the drawings, TASK-P8-018. It replaced an accordion that opened only the
-    // current group, so a screen in another group is one click away rather than two.
+  it('opens only the group holding the current screen', () => {
+    // One group open at a time, by the owner's ask later on 2026-10-05. Nine groups fully
+    // expanded is a wall of links; one open group is a menu pointing at where the reader is.
     open('/govern/query-cost');
+    expect(screen.getByTestId('group-Govern')).toHaveAttribute('open');
     for (const label of [
       'Analyze',
       'Plan',
       'Optimize',
-      'Govern',
       'Inventory',
       'Report',
       'Assist',
       'Platform',
     ]) {
-      const list = within(screen.getByTestId(`group-${label}`)).getByRole('list', {
-        name: label,
-      });
-      expect(within(list).getAllByRole('link').length).toBeGreaterThan(0);
+      expect(screen.getByTestId(`group-${label}`)).not.toHaveAttribute('open');
     }
   });
 
-  it('keeps the group a detail page belongs to on the rail', () => {
+  it('opens one group at a time: opening another closes the one that was open', () => {
+    open('/govern/query-cost');
+    const plan = screen.getByTestId<HTMLDetailsElement>('group-Plan');
+    plan.open = true;
+    fireEvent(plan, new Event('toggle'));
+    expect(screen.getByTestId('group-Plan')).toHaveAttribute('open');
+    expect(screen.getByTestId('group-Govern')).not.toHaveAttribute('open');
+  });
+
+  it('closes the open group when the reader closes it, and leaves every group closed', () => {
+    open('/govern/query-cost');
+    const govern = screen.getByTestId<HTMLDetailsElement>('group-Govern');
+    govern.open = false;
+    fireEvent(govern, new Event('toggle'));
+    expect(document.querySelectorAll("nav[aria-label='Sections'] details[open]")).toHaveLength(
+      0,
+    );
+  });
+
+  it('on a narrow screen opens the menu as a drawer, and Escape closes it', () => {
+    // At or below 1024 pixels the rail is a bar across the top and its menu a drawer, closed
+    // until asked for, so a phone never opens on a wall of links.
+    const original = Object.getOwnPropertyDescriptor(window, 'matchMedia');
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({
+        matches: true,
+        media: query,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      }),
+    });
+    try {
+      open('/govern/query-cost');
+      expect(screen.getByTestId('shell')).toHaveAttribute('data-layout', 'narrow');
+      expect(screen.queryByRole('navigation', { name: 'Sections' })).toBeNull();
+      fireEvent.click(screen.getByTestId('nav-toggle'));
+      expect(screen.getByRole('navigation', { name: 'Sections' })).toBeInTheDocument();
+      fireEvent.keyDown(window, { key: 'Escape' });
+      expect(screen.queryByRole('navigation', { name: 'Sections' })).toBeNull();
+    } finally {
+      if (original === undefined) {
+        Reflect.deleteProperty(window, 'matchMedia');
+      } else {
+        Object.defineProperty(window, 'matchMedia', original);
+      }
+    }
+  });
+
+  it('opens the group a detail page was reached from', () => {
     open('/govern/query-cost/findings/abc-123');
-    expect(
-      within(screen.getByTestId('group-Govern')).getByRole('list', { name: 'Govern' }),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('group-Govern')).toHaveAttribute('open');
   });
 
   it('draws Overview as a link rather than a section holding only itself', () => {

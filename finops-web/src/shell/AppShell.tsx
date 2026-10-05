@@ -10,15 +10,21 @@ import { isFailureCause } from '../components/provenance';
 import { readStored, writeStored } from '../storage';
 import { ExportMenu } from './ExportMenu';
 import { useAggregateMeta } from './metaRegistry';
-import { GROUPS, filtersFor, isSelfGroup, screenTitleFor, tabsFor } from './sections';
+import {
+  GROUPS,
+  activeGroupFor,
+  filtersFor,
+  isSelfGroup,
+  screenTitleFor,
+  tabsFor,
+} from './sections';
 import { ScreenTabs } from './ScreenTabs';
 import { ThemeToggle } from './ThemeToggle';
 
 /**
- * The shell, as drawn: a glass rail listing every group and its screens, and a column whose top
- * carries the screen's title and scope line, a toolbar of what can be done with the whole screen,
- * and the trust line. P8 spec sections 2 and 5.1, TASK-P8-018, and the drawings in
- * `docs/design/`.
+ * The shell: a glass rail with the navigation, and a column whose top carries the screen's title
+ * and scope line, a toolbar of what can be done with the whole screen, and the trust line. P8 spec
+ * sections 2 and 5.1, TASK-P8-018, and the drawings in `docs/design/`.
  *
  * Coverage and freshness live here rather than on each screen, because they are properties of
  * what the user is looking at rather than of one panel, and a per panel treatment lets a reader
@@ -26,11 +32,11 @@ import { ThemeToggle } from './ThemeToggle';
  * is dismissible: a banner that can be dismissed gets dismissed and the condition does not go
  * with it.
  *
- * The navigation is seven fixed groups, per ADR-0020, every one listed with its screens as the
- * drawing lists them. Which screen is current is the router's business, not this component's,
- * which is why there is no section prop: two places deciding what is selected is two places to
- * disagree. The page heading and the document title come from the same navigation list, for the
- * same reason.
+ * The navigation is the Framework groups, per ADR-0020, each a disclosure with one open at a
+ * time, by the owner's ask later on 2026-10-05: the group holding the current screen opens with
+ * it, and opening another closes it. On a wide screen the rail collapses to its mark; on a narrow
+ * one it is a bar across the top whose menu drops over the screen as a drawer. Which screen is
+ * current is the router's business, not this component's, which is why there is no section prop.
  *
  * The column is keyed by the screen's path, so moving to another screen cross fades it in, by the
  * owner's choice of rich motion later on 2026-10-05. The fade is the stylesheet's, and a reader
@@ -42,8 +48,11 @@ export interface AppShellProps {
   readonly now?: Date;
 }
 
-/** Which state the navigation was left in, per browser. */
+/** Which state the wide rail was left in, per browser. */
 const NAV_KEY = 'meter.nav';
+
+/** Below this width the rail is a bar across the top and its menu a drawer. */
+const NARROW = '(max-width: 1024px)';
 
 function navWasCollapsed(): boolean {
   // Absent and unreadable are the same answer here: a shell that cannot read a
@@ -51,9 +60,49 @@ function navWasCollapsed(): boolean {
   return readStored(NAV_KEY) === 'collapsed';
 }
 
-/** The id of a group's label, so the list under it is named by it. */
-function groupLabelId(label: string): string {
-  return `nav-group-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+function matchesNarrow(): boolean {
+  return typeof window.matchMedia === 'function' && window.matchMedia(NARROW).matches;
+}
+
+/** Whether the window is narrow now, following it as it is resized or turned. */
+function useNarrow(): boolean {
+  const [narrow, setNarrow] = useState(matchesNarrow);
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') {
+      return undefined;
+    }
+    const query = window.matchMedia(NARROW);
+    const follow = (): void => {
+      setNarrow(query.matches);
+    };
+    query.addEventListener('change', follow);
+    return () => {
+      query.removeEventListener('change', follow);
+    };
+  }, []);
+  return narrow;
+}
+
+/** A drawn icon for the menu button, so it reads the same in every browser and both themes. */
+function ToggleIcon({ shape }: { readonly shape: 'hide' | 'show' | 'menu' | 'close' }) {
+  const paths = {
+    hide: 'M11 4 6 9l5 5M16 4l-5 5 5 5',
+    show: 'M4 4l5 5-5 5M9 4l5 5-5 5',
+    menu: 'M3 5h14M3 10h14M3 15h14',
+    close: 'M5 5l10 10M15 5 5 15',
+  } as const;
+  return (
+    <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false">
+      <path
+        d={paths[shape]}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 }
 
 export function AppShell({ children, now }: AppShellProps) {
@@ -64,14 +113,35 @@ export function AppShell({ children, now }: AppShellProps) {
   const [params] = useSearchParams();
   const taken = filtersFor(pathname);
   const ignored = [...new Set(params.keys())].filter((key) => !taken.includes(key));
-  const [navOpen, setNavOpen] = useState(() => !navWasCollapsed());
+  const narrow = useNarrow();
   // The views the screen is reading, offered by its query hooks. Provided around the screen
   // alone, below, so what the shell reads for itself is never offered as the screen's.
   const exports = useExportRegistry();
 
+  // The wide rail's state is the reader's and is remembered. The narrow drawer's is not: it
+  // opens when asked for and closes with the screen it opened on, so a phone never opens on a
+  // wall of links and a choice made on a desk does not follow the reader onto it.
+  const [wideOpen, setWideOpen] = useState(() => !navWasCollapsed());
+  const [drawer, setDrawer] = useState<{ readonly open: boolean; readonly at: string }>({
+    open: false,
+    at: pathname,
+  });
+  const drawerOpen = drawer.open && drawer.at === pathname;
+  const navOpen = narrow ? drawerOpen : wideOpen;
+
+  // One group open at a time. The route opens the group holding the current screen; a group the
+  // reader opens or closes stays that way until they move to another screen. Derived rather than
+  // synchronised, so there is one fact and nothing to correct in an effect.
+  const [chosen, setChosen] = useState<{
+    readonly label: string | null;
+    readonly at: string;
+  } | null>(null);
+  const openGroup =
+    chosen !== null && chosen.at === pathname ? chosen.label : activeGroupFor(pathname);
+
   useEffect(() => {
-    writeStored(NAV_KEY, navOpen ? 'expanded' : 'collapsed');
-  }, [navOpen]);
+    writeStored(NAV_KEY, wideOpen ? 'expanded' : 'collapsed');
+  }, [wideOpen]);
 
   useEffect(() => {
     // Every tab, bookmark and history entry said "Meter", so a reader with four
@@ -80,18 +150,46 @@ export function AppShell({ children, now }: AppShellProps) {
     document.title = title.startsWith('Meter') ? title : `${title}, Meter`;
   }, [title]);
 
+  useEffect(() => {
+    if (!drawerOpen) {
+      return undefined;
+    }
+    // A drawer over the screen closes the way a reader expects one to.
+    const close = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') {
+        setDrawer({ open: false, at: pathname });
+      }
+    };
+    window.addEventListener('keydown', close);
+    return () => {
+      window.removeEventListener('keydown', close);
+    };
+  }, [drawerOpen, pathname]);
+
+  const toggleLabel = narrow
+    ? drawerOpen
+      ? 'Close the menu'
+      : 'Open the menu'
+    : wideOpen
+      ? 'Hide navigation'
+      : 'Show navigation';
+  const toggleShape = narrow ? (drawerOpen ? 'close' : 'menu') : wideOpen ? 'hide' : 'show';
+  const toggleText = narrow ? (drawerOpen ? 'Close' : 'Menu') : wideOpen ? 'Hide' : null;
+
   return (
     <div
       data-testid="shell"
       data-nav={navOpen ? 'expanded' : 'collapsed'}
+      data-layout={narrow ? 'narrow' : 'wide'}
       data-degraded={meta.degraded ? 'true' : 'false'}
     >
       <header>
         <div data-testid="rail-top">
+          <span data-testid="brand-mark" aria-hidden="true" />
           {/* The product name, not the page heading. It was an h1, which meant the
               only first level heading on every screen named the product and no
               page named itself. */}
-          <p data-testid="brand" hidden={!navOpen}>
+          <p data-testid="brand" hidden={!navOpen && !narrow}>
             Meter
             <span data-testid="brand-line">FinOps for AWS</span>
           </p>
@@ -104,28 +202,46 @@ export function AppShell({ children, now }: AppShellProps) {
             data-testid="nav-toggle"
             aria-expanded={navOpen}
             aria-controls="sections"
-            aria-label={navOpen ? 'Hide navigation' : 'Show navigation'}
+            aria-label={toggleLabel}
             onClick={() => {
-              setNavOpen((open) => !open);
+              if (narrow) {
+                setDrawer({ open: !drawerOpen, at: pathname });
+              } else {
+                setWideOpen((open) => !open);
+              }
             }}
           >
-            {navOpen ? 'Hide' : 'Menu'}
+            <ToggleIcon shape={toggleShape} />
+            {toggleText === null ? null : <span>{toggleText}</span>}
           </button>
         </div>
         <nav id="sections" aria-label="Sections" hidden={!navOpen}>
           {GROUPS.map((group) =>
             isSelfGroup(group) ? (
-              // Home is its own only screen. A heading here would be a group named
+              // Home is its own only screen. A disclosure here would be a group named
               // Overview containing one link named Overview.
               <NavLink key={group.path} to={group.path} end data-testid="nav-self-link">
                 {group.label}
               </NavLink>
             ) : (
-              <div key={group.label} data-testid={`group-${group.label}`}>
-                <p id={groupLabelId(group.label)} data-testid="nav-group-label">
-                  {group.label}
-                </p>
-                <ul aria-labelledby={groupLabelId(group.label)}>
+              <details
+                key={group.label}
+                data-testid={`group-${group.label}`}
+                open={openGroup === group.label}
+                onToggle={(event) => {
+                  const nowOpen = event.currentTarget.open;
+                  if (nowOpen && openGroup !== group.label) {
+                    setChosen({ label: group.label, at: pathname });
+                  } else if (!nowOpen && openGroup === group.label) {
+                    setChosen({ label: null, at: pathname });
+                  }
+                }}
+              >
+                {/* summary carries its own expanded state and keyboard handling.
+                    Reimplementing that on a div is how a menu ends up unreachable
+                    by keyboard. */}
+                <summary>{group.label}</summary>
+                <ul>
                   {group.screens.map((screen) => (
                     <li key={screen.path}>
                       {/* An unbuilt screen is listed and reachable, never hidden.
@@ -144,7 +260,7 @@ export function AppShell({ children, now }: AppShellProps) {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </details>
             ),
           )}
         </nav>

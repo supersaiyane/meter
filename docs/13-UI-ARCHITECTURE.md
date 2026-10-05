@@ -106,8 +106,8 @@ The groups are fixed, and the column holding them is not. Collapsing
 narrows the rail from 248 px to 64 px, which gives the content the width rather
 than covering the navigation with it. On the dense screens that is the difference
 between reading a sentence and scanning a paragraph. Since TASK-P8-018 the rail is
-a glass panel listing every group and its screens, as drawn, rather than an
-accordion.
+a glass panel whose groups open one at a time, and at or below 1024 px it is a bar
+across the top whose menu is a drawer that closes on navigation and on Escape.
 
 Three properties make it correct rather than merely present.
 
