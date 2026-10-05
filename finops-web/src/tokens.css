@@ -141,6 +141,15 @@
      found. */
   --chart-bar: light-dark(#7fb2f0, #2f6ca8);
   --chart-bar-peak: light-dark(#1a6fd4, #4da3ff);
+  /* Series, for a chart with more than one: six steps, each held at 3 to 1 or better on the
+     page and every panel in both themes by the contrast test, the bar WCAG sets for a mark.
+     The first two are the themes' accent and second series from the P8 spec's table. */
+  --series-1: light-dark(#0a84ff, #5eead4);
+  --series-2: light-dark(#5b45e8, #a78bfa);
+  --series-3: light-dark(#0f766e, #60a5fa);
+  --series-4: light-dark(#db2777, #f472b6);
+  --series-5: light-dark(#64748b, #94a3b8);
+  --series-6: light-dark(#9a3412, #fb923c);
 
   --hatch-line: light-dark(rgba(20, 24, 29, 0.32), rgba(230, 234, 239, 0.34));
 
@@ -325,4 +334,78 @@
 
 .meter-bar-peak {
   fill: var(--chart-bar-peak);
+}
+
+/* The chart set's marks, TASK-P8-005. A series colour fills and strokes, and provenance says
+   how: measured solid, modelled a lighter fill under the hatch, forecast a dashed outline over
+   a faint fill. Nothing here moves, so reduced motion has nothing to stop. */
+.meter-series-1 {
+  fill: var(--series-1);
+  stroke: var(--series-1);
+}
+
+.meter-series-2 {
+  fill: var(--series-2);
+  stroke: var(--series-2);
+}
+
+.meter-series-3 {
+  fill: var(--series-3);
+  stroke: var(--series-3);
+}
+
+.meter-series-4 {
+  fill: var(--series-4);
+  stroke: var(--series-4);
+}
+
+.meter-series-5 {
+  fill: var(--series-5);
+  stroke: var(--series-5);
+}
+
+.meter-series-6 {
+  fill: var(--series-6);
+  stroke: var(--series-6);
+}
+
+.meter-mark-measured {
+  stroke-width: 0;
+}
+
+.meter-mark-modelled {
+  fill-opacity: 0.45;
+  stroke-width: 0;
+}
+
+.meter-mark-forecast {
+  fill-opacity: 0.18;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
+}
+
+/* The budget pace is a reference, not a series, so it is drawn in ink, dotted. */
+.meter-pace {
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.meter-heat {
+  fill: var(--series-1);
+}
+
+.meter-heat-forecast {
+  stroke: var(--series-1);
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+
+.meter-heat-missing {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1;
 }

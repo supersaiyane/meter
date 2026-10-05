@@ -748,6 +748,11 @@ meter/
 │       ├── components/displayNames.ts  every code the API sends, in the words
 │       │                      the approved label table gives it, and the
 │       │                      provider's term for each cost column's tooltip
+│       ├── components/charts/ the chart set, hand built SVG: stacked area with
+│       │                      forecast band and budget pace, stacked bar,
+│       │                      treemap, heatmap and KPI tile, with the earlier
+│       │                      bars and sparkline, each with a table of its
+│       │                      numbers that a test holds equal to its marks
 │       ├── layout.css         where things sit. Element selectors, because
 │       │                      DataTable is the only table and Figure the only
 │       │                      numeral. Needs no component to accept a className,

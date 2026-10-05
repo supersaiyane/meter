@@ -185,7 +185,7 @@ such as METER_ASSISTANT_MODEL_ID, and a register reference such as OPEN-10.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec section 5.4 |
 | Delivers | The chart set the spec names |
 | Depends on | TASK-P8-001 |
@@ -196,12 +196,19 @@ chart dependency.
 
 **Acceptance criteria.**
 
-- [ ] Stacked area with forecast band and budget pace, stacked bar, ranked bar with a
+- [x] Stacked area with forecast band and budget pace, stacked bar, ranked bar with a
       table, KPI tile with delta and sparkline, treemap and heatmap
-- [ ] Every chart has a table alternative, and a test holds its values equal to the marks
-- [ ] Measured, modelled and forecast drawn solid, hatched and dashed, in both themes
-- [ ] No motion under `prefers-reduced-motion`
-- [ ] The existing hand built charts replaced or wrapped so one set remains
+- [x] Every chart has a table alternative, and a test holds its values equal to the marks
+- [x] Measured, modelled and forecast drawn solid, hatched and dashed, in both themes
+- [x] No motion under `prefers-reduced-motion`
+- [x] The existing hand built charts replaced or wrapped so one set remains
+
+**Delivered 2026-10-05.** The set is `finops-web/src/components/charts/`, hand built SVG with
+no chart dependency. The ranked bars already wrote every value beside its bar, which is its
+table; the bar chart gained one. Six series colours were added to the tokens, each held at 3
+to 1 on the page and every panel in both themes by the contrast test. No screen uses the new
+charts yet: Cost Explorer, the forecast and the persona dashboards do, in TASK-P8-007, 008 and
+012.
 
 ---
 

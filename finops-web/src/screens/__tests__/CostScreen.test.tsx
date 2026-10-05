@@ -68,7 +68,10 @@ describe('CostScreen', () => {
   it('puts the most expensive service first', async () => {
     renderCost();
     await screen.findByTestId('ranked-bars');
-    const rows = [...document.querySelectorAll('tbody tr')];
+    // The services table, not the numbers behind the trend chart above it.
+    const rows = [...document.querySelectorAll('tbody tr')].filter(
+      (row) => row.closest('[data-testid="chart-table"]') === null,
+    );
     expect(rows[0]?.textContent).toContain('AmazonEC2');
     expect(rows[rows.length - 1]?.textContent).toContain('AWSLambda');
   });

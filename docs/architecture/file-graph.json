@@ -85,6 +85,7 @@
     "finops-web/src/components/__tests__/TopActions.test.tsx",
     "finops-web/src/components/__tests__/WorldMap.test.tsx",
     "finops-web/src/components/__tests__/axe.ts",
+    "finops-web/src/components/__tests__/charts.test.tsx",
     "finops-web/src/components/__tests__/citations.test.ts",
     "finops-web/src/components/__tests__/contrast.test.ts",
     "finops-web/src/components/__tests__/forecastUnproduced.test.ts",
@@ -93,6 +94,17 @@
     "finops-web/src/components/__tests__/shell.test.tsx",
     "finops-web/src/components/__tests__/surface.test.ts",
     "finops-web/src/components/actionRisk.ts",
+    "finops-web/src/components/charts",
+    "finops-web/src/components/charts/ChartTable.tsx",
+    "finops-web/src/components/charts/Hatch.tsx",
+    "finops-web/src/components/charts/Heatmap.tsx",
+    "finops-web/src/components/charts/KpiTile.tsx",
+    "finops-web/src/components/charts/StackedArea.tsx",
+    "finops-web/src/components/charts/StackedBar.tsx",
+    "finops-web/src/components/charts/Treemap.tsx",
+    "finops-web/src/components/charts/index.ts",
+    "finops-web/src/components/charts/marks.ts",
+    "finops-web/src/components/charts/treemapLayout.ts",
     "finops-web/src/components/citations.ts",
     "finops-web/src/components/density.ts",
     "finops-web/src/components/displayNames.ts",
@@ -1109,6 +1121,11 @@
     },
     {
       "s": "finops-web/src/components/BarChart.tsx",
+      "t": "finops-web/src/components/charts/ChartTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/BarChart.tsx",
       "t": "finops-web/src/components/provenance.ts",
       "k": "typescript"
     },
@@ -1553,6 +1570,16 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/__tests__/charts.test.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/charts.test.tsx",
+      "t": "finops-web/src/tokens.css?raw",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/components/__tests__/citations.test.ts",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -1640,6 +1667,161 @@
     {
       "s": "finops-web/src/components/__tests__/surface.test.ts",
       "t": "finops-web/src/tokens.css?raw",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Heatmap.tsx",
+      "t": "finops-web/src/components/charts/ChartTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Heatmap.tsx",
+      "t": "finops-web/src/components/charts/Hatch.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Heatmap.tsx",
+      "t": "finops-web/src/components/charts/marks.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Heatmap.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/KpiTile.tsx",
+      "t": "finops-web/src/components/Sparkline.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/KpiTile.tsx",
+      "t": "finops-web/src/components/charts/ChartTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/KpiTile.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/StackedArea.tsx",
+      "t": "finops-web/src/components/charts/ChartTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/StackedArea.tsx",
+      "t": "finops-web/src/components/charts/Hatch.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/StackedArea.tsx",
+      "t": "finops-web/src/components/charts/marks.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/StackedArea.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/StackedBar.tsx",
+      "t": "finops-web/src/components/charts/ChartTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/StackedBar.tsx",
+      "t": "finops-web/src/components/charts/Hatch.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/StackedBar.tsx",
+      "t": "finops-web/src/components/charts/marks.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/StackedBar.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Treemap.tsx",
+      "t": "finops-web/src/components/charts/ChartTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Treemap.tsx",
+      "t": "finops-web/src/components/charts/Hatch.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Treemap.tsx",
+      "t": "finops-web/src/components/charts/marks.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Treemap.tsx",
+      "t": "finops-web/src/components/charts/treemapLayout.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Treemap.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/BarChart.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/RankedBars.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/Sparkline.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/charts/ChartTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/charts/Heatmap.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/charts/KpiTile.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/charts/StackedArea.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/charts/StackedBar.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/charts/Treemap.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/charts/marks.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/marks.ts",
+      "t": "finops-web/src/components/provenance.ts",
       "k": "typescript"
     },
     {

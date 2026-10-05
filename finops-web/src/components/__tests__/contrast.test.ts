@@ -265,6 +265,18 @@ describe('contrast, in light and in dark, on glass', () => {
     }
   });
 
+  it('keeps every chart series at 3 to 1 on the page and every panel, the bar for a mark', () => {
+    // WCAG 2.2 1.4.11. A series is never text, so it does not need 4.5.
+    for (const n of [1, 2, 3, 4, 5, 6]) {
+      for (const tier of [page, panels]) {
+        expect(
+          lowest(`--series-${String(n)}`, tier),
+          `series ${String(n)} on ${tier.name}`,
+        ).toBeGreaterThanOrEqual(3);
+      }
+    }
+  });
+
   it('keeps the severity ramp ordered by luminance, not merely different', () => {
     // A categorical palette for an ordered quantity makes HIGH and MEDIUM look
     // like different kinds of thing rather than different amounts.
