@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-62 features across 8 sub projects. 14 specified, 3 planned, 13 in build, 32 delivered.
+70 features across 9 sub projects. 14 specified, 11 planned, 13 in build, 32 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -192,6 +192,19 @@ block is caught by `make check-docs`. See
 | [FEAT-041](docs/features/FEAT-041-digests-and-summaries.md) | Per team digests and executive summaries | Delivered | [P7 spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) sections 6.2 and 9, [P7 plan](docs/plans/P7-implementation-plan.md). Composed and stored, and not sent until OPEN-11 names a destination |
 | [FEAT-042](docs/features/FEAT-042-assistant-bot.md) | Assistant bot, chat and find anything in the tool | Delivered | [P7 spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) section 9, [P7 plan](docs/plans/P7-implementation-plan.md), [ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md) |
 | [FEAT-046](docs/features/FEAT-046-outbound-ai-scanning.md) | Outbound AI request scanning, redact or block secrets | Delivered | [P7 spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) section 6.3, [P7 plan](docs/plans/P7-implementation-plan.md), [docs/05-SECURITY.md](docs/05-SECURITY.md) |
+
+### P8 Experience and reporting
+
+| ID | Feature | Status | Detail |
+| --- | --- | --- | --- |
+| [FEAT-063](docs/features/FEAT-063-two-theme-design-system.md) | Two theme design system with glass surfaces, dark and light | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.1, [P8 plan](docs/plans/P8-implementation-plan.md) |
+| [FEAT-064](docs/features/FEAT-064-framework-navigation-and-focus-names.md) | Navigation by the FinOps Framework and FOCUS names on every screen | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) sections 5.2 and 5.3, [P8 plan](docs/plans/P8-implementation-plan.md) |
+| [FEAT-065](docs/features/FEAT-065-cost-explorer.md) | Cost Explorer, two group bys over FOCUS dimensions and tags | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) sections 5.3 and 7, [P8 plan](docs/plans/P8-implementation-plan.md) |
+| [FEAT-066](docs/features/FEAT-066-spend-forecast.md) | Spend forecast, month end and three months, with a published backtest | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 7, [P8 plan](docs/plans/P8-implementation-plan.md), [ADR-0015](docs/adr/ADR-0015-deterministic-forecasting-is-permitted.md) |
+| [FEAT-067](docs/features/FEAT-067-excel-and-csv-export.md) | Report export to Excel and CSV behind the scope guard, with an About sheet | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.5, [P8 plan](docs/plans/P8-implementation-plan.md). Delivers FEAT-045 rather than building it again |
+| [FEAT-068](docs/features/FEAT-068-saved-views-and-report-library.md) | Saved views and a report library, shared as configuration | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.6, [P8 plan](docs/plans/P8-implementation-plan.md), ISS-235 |
+| [FEAT-069](docs/features/FEAT-069-scheduled-reports.md) | Scheduled reports rendered for each recipient | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.7, [P8 plan](docs/plans/P8-implementation-plan.md), OPEN-11, OPEN-15 |
+| [FEAT-070](docs/features/FEAT-070-persona-dashboards.md) | Persona dashboards for executive, FinOps practitioner and engineering lead | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.8, [P8 plan](docs/plans/P8-implementation-plan.md) |
 
 <!-- generated:features end -->
 
@@ -634,6 +647,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | OPEN-12 | Is there a per person or per question limit on the assistant, separate from the per tenant token budget | OPEN | Nothing. TASK-P7-007 builds the per tenant budget, which is the one that stops a runaway. A per person limit is a policy decision nobody has made | [P7 spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) section 13 |
 | OPEN-13 | Which code host receives a remediation pull request, and with what credential | OPEN | FEAT-040 opening anything, ISS-228. The authoring is built and tested against the PullRequestSink port, so the answer costs one adapter | [P7 plan](docs/plans/P7-implementation-plan.md) TASK-P7-009. The credential would be the first write Meter holds anywhere, into a repository rather than a member account, and it needs to open a pull request and nothing more |
 | OPEN-14 | How long are a person's questions to the assistant kept, and does erasing a person delete their exchanges or tombstone them | OPEN | ISS-226, a retention job and erasure for assistant_exchange and redaction_event | [docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md). Deleting takes the person's spend out of the month's token budget sum. Tombstoning the question and the identifier keeps the spend counted |
+| OPEN-15 | How long are generated report runs and their files kept | OPEN | A deletion job for report files, TASK-P8-011. Files are kept until it is answered | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 6 |
 | OPEN-06 | Which regions beyond Ireland and London. ANSWERED 2026-08-23: those two only, eu-west-1 and eu-west-2 | ANSWERED | nothing | Set in METER_REGIONS, see .env.example section 3 |
 
 <!-- generated:open-questions end -->

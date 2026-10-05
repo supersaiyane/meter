@@ -46,6 +46,7 @@ P0 Foundation
 | P5 | Quotas and Limits | 3 | 0 | 1 |
 | P6 | Containers | 6 | 2 | 1 |
 | P7 | Insight and LLM layer | 6 | 0 | 0 |
+| P8 | Experience and reporting | 8 | 0 | 8 |
 
 <!-- generated:roadmap-status end -->
 
@@ -108,6 +109,7 @@ rather than that one saving happened.
 | P5 | Quotas and Limits | Delivered, 8 of 8 tasks. The sub project whose central decision is what the product refuses to do | 3 (0 specified) | [spec](specs/2026-09-20-p5-quotas-and-limits-design.md) | [plan](plans/P5-implementation-plan.md) | P0, P4 |
 | P6 | Containers | Delivered, 12 of 12 tasks in its first cut. Cost by cluster, namespace and workload, request against use, sizing into P3's table, Fargate snapped to sizes that can be ordered, and forecast as a third provenance before anything forecasts. FEAT-037 is In build because the AWS adapter reads EKS and never ECS, ISS-224 | 6 (2 specified) | [spec](specs/2026-09-20-p6-containers-design.md) | [plan](plans/P6-implementation-plan.md) | P0, P1 |
 | P7 | Insight and LLM layer | Delivered, 14 of 14 tasks in its first cut. A question answered from the routes the screens read, every figure cited from a tool result and never written by the model, refusals and failures as shapes of their own, a monthly token budget, secrets redacted or blocked before any prompt is built, and weekly digests composed whether or not anything can send them. FEAT-039 and FEAT-040 are In build because nothing reads change history or opens a pull request yet, ISS-227 and ISS-228. Bedrock spend is tagged for the platform cost screen through an inference profile per model, unverified against an account, ISS-002 | 6 (0 specified) | [spec](specs/2026-09-28-p7-insight-and-llm-layer-design.md) | [plan](plans/P7-implementation-plan.md) | P1, P2, P3 |
+| P8 | Experience and reporting | Specified, planned and approved by the owner 2026-10-05, 15 tasks, not started. Two themes of one glass design system, navigation by the FinOps Framework, and Excel and CSV reports behind the scope guard | 8 (0 specified) | [spec](specs/2026-10-05-p8-experience-and-reporting-design.md) | [plan](plans/P8-implementation-plan.md) | P1, P2, P3, P4, P5, P6, P7 |
 
 <!-- generated:subprojects end -->
 
@@ -344,3 +346,21 @@ environment a secret in a prompt is an exfiltration path with no control on it.
 Optimizer, Trusted Advisor, Cost Anomaly Detection, Savings Plans
 recommendations. Bedrock provides the narrative layer under a strict tool
 contract, with provenance on every claim and a spend cap on the model itself.
+
+---
+
+## P8 Experience and reporting
+
+**Goal.** Change how Meter looks, what its screens are called and how its numbers leave it,
+without changing how any number is computed. Measured, modelled and forecast stay visibly
+different, every figure keeps `as_of` and `collected_at`, and a failure is never drawn as zero.
+
+**What the owner approved on 2026-10-05.** Direction A, Aurora Glass, as the dark theme and
+direction B, Frosted Ledger, as the light theme, one glass design system. Navigation by the
+FinOps Framework: Overview, Analyze, Plan, Optimize, Govern, Inventory, Report, Assist and
+Platform, with FOCUS names on every cost column. And all four reporting capabilities in the
+first build: Excel and CSV export behind the scope guard, saved views and a report library,
+scheduled reports rendered for each recipient, and persona dashboards, FEAT-063 to FEAT-070.
+
+**What it does not do.** No report sender until OPEN-11 says where reports go, no unit
+economics until a business metric source exists, no PDF, and no figure computed differently.

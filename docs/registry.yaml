@@ -70,6 +70,14 @@ subprojects:
   spec: specs/2026-09-28-p7-insight-and-llm-layer-design.md
   plan: plans/P7-implementation-plan.md
   depends_on: P1, P2, P3
+- id: P8
+  name: Experience and reporting
+  status: Specified, planned and approved by the owner 2026-10-05, 15 tasks, not started. Two themes
+    of one glass design system, navigation by the FinOps Framework, and Excel and CSV reports
+    behind the scope guard
+  spec: specs/2026-10-05-p8-experience-and-reporting-design.md
+  plan: plans/P8-implementation-plan.md
+  depends_on: P1, P2, P3, P4, P5, P6, P7
 features:
 - id: FEAT-001
   name: Account onboarding and organization topology, parent to child map
@@ -447,6 +455,55 @@ features:
   detail: '[ADR-0027](docs/adr/ADR-0027-no-performance-dimension-in-p5.md), the argument FEAT-058
     asked for'
   doc: docs/features/FEAT-062-refusal-evidence.md
+
+- id: FEAT-063
+  name: Two theme design system with glass surfaces, dark and light
+  subproject: P8
+  status: Planned
+  detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.1, [P8 plan](docs/plans/P8-implementation-plan.md)'
+  doc: docs/features/FEAT-063-two-theme-design-system.md
+- id: FEAT-064
+  name: Navigation by the FinOps Framework and FOCUS names on every screen
+  subproject: P8
+  status: Planned
+  detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) sections 5.2 and 5.3, [P8 plan](docs/plans/P8-implementation-plan.md)'
+  doc: docs/features/FEAT-064-framework-navigation-and-focus-names.md
+- id: FEAT-065
+  name: Cost Explorer, two group bys over FOCUS dimensions and tags
+  subproject: P8
+  status: Planned
+  detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) sections 5.3 and 7, [P8 plan](docs/plans/P8-implementation-plan.md)'
+  doc: docs/features/FEAT-065-cost-explorer.md
+- id: FEAT-066
+  name: Spend forecast, month end and three months, with a published backtest
+  subproject: P8
+  status: Planned
+  detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 7, [P8 plan](docs/plans/P8-implementation-plan.md), [ADR-0015](docs/adr/ADR-0015-deterministic-forecasting-is-permitted.md)'
+  doc: docs/features/FEAT-066-spend-forecast.md
+- id: FEAT-067
+  name: Report export to Excel and CSV behind the scope guard, with an About sheet
+  subproject: P8
+  status: Planned
+  detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.5, [P8 plan](docs/plans/P8-implementation-plan.md). Delivers FEAT-045 rather than building it again'
+  doc: docs/features/FEAT-067-excel-and-csv-export.md
+- id: FEAT-068
+  name: Saved views and a report library, shared as configuration
+  subproject: P8
+  status: Planned
+  detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.6, [P8 plan](docs/plans/P8-implementation-plan.md), ISS-235'
+  doc: docs/features/FEAT-068-saved-views-and-report-library.md
+- id: FEAT-069
+  name: Scheduled reports rendered for each recipient
+  subproject: P8
+  status: Planned
+  detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.7, [P8 plan](docs/plans/P8-implementation-plan.md), OPEN-11, OPEN-15'
+  doc: docs/features/FEAT-069-scheduled-reports.md
+- id: FEAT-070
+  name: Persona dashboards for executive, FinOps practitioner and engineering lead
+  subproject: P8
+  status: Planned
+  detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.8, [P8 plan](docs/plans/P8-implementation-plan.md)'
+  doc: docs/features/FEAT-070-persona-dashboards.md
 
 adrs:
 - id: ADR-0001
@@ -3684,6 +3741,11 @@ open_questions:
   detail: '[docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md). Deleting takes
     the person''s spend out of the month''s token budget sum. Tombstoning the question and the
     identifier keeps the spend counted'
+- id: OPEN-15
+  question: How long are generated report runs and their files kept
+  status: OPEN
+  blocks: 'A deletion job for report files, TASK-P8-011. Files are kept until it is answered'
+  detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 6'
 - id: OPEN-06
   question: 'Which regions beyond Ireland and London. ANSWERED 2026-08-23: those two only, eu-west-1 and
     eu-west-2'
