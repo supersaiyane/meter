@@ -216,7 +216,7 @@ charts yet: Cost Explorer, the forecast and the persona dashboards do, in TASK-P
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec section 5.1 |
 | Delivers | Sorting, totals and drill down in `DataTable` |
 | Depends on | TASK-P8-001 |
@@ -224,11 +224,25 @@ charts yet: Cost Explorer, the forecast and the persona dashboards do, in TASK-P
 
 **Acceptance criteria.**
 
-- [ ] Sorting by keyboard and pointer, announced with `aria-sort`
-- [ ] A sticky header and a column chooser
-- [ ] A totals row only over figures of one unit and one provenance; a mixed column says
+- [x] Sorting by keyboard and pointer, announced with `aria-sort`
+- [x] A sticky header and a column chooser
+- [x] A totals row only over figures of one unit and one provenance; a mixed column says
       why it has no total
-- [ ] A row opens its owning screen; virtualisation kept above 200 rows
+- [x] A row opens its owning screen; virtualisation kept above 200 rows
+
+**Delivered 2026-10-05.** `DataTable` sorts by a button in each header that declares a sort
+value, so the keyboard and the pointer do the same thing, and `aria-sort` says which way. A
+figure sorts largest first, and a figure that was not collected sorts last in either direction.
+The header was already sticky inside the table's scroll box. The column chooser is closed until
+opened and will not hide the last column. A column totals only where every row has a figure of
+one unit and one provenance, and otherwise says which of those failed; a figure not collected
+gives no total rather than a total that counts it as zero. A row opens its owning screen through
+the link its name cell already drew on every table that has one (query findings, quotas and
+resources), so no second link column was added. Virtualisation counts the sorted rows. Cost
+Explorer adopts all of it: every column sorts, Effective Cost and Billed Cost total to the
+headline figure above them, and the order the API sends is stated in the header by
+`initialSort` rather than claimed by the caption, where a reader's sort would make it false. The
+other tables take sort values in TASK-P8-013.
 
 ---
 
@@ -383,6 +397,8 @@ with an About sheet.
 **Acceptance criteria.**
 
 - [ ] Optimize, Govern, Inventory, Platform and Assist screens in the new system
+- [ ] Every table sorts, and totals where its figures share a unit and a provenance, through
+      `DataTable` as TASK-P8-006 built it
 - [ ] No colour outside the tokens in any component, held by a test
 - [ ] Axe clean in both themes
 

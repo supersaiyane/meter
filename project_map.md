@@ -770,8 +770,12 @@ meter/
 │       │   │                 sentence and never the rows, for tiles that sit
 │       │   │                 under a shell already making the claim
 │       │   ├── surfaceState.ts    which of the seven a query is in, one decision
-│       │   ├── DataTable.tsx  virtualised past 200 rows, headless
-│       │   ├── tableConfig.ts column widths and alignment. Numerals right, always
+│       │   ├── DataTable.tsx  virtualised past 200 rows, headless. Sorts by a
+│       │   │                  header button with aria-sort, hides the columns a
+│       │   │                  reader unticks, totals a column of one unit and
+│       │   │                  one provenance, and otherwise says why not
+│       │   ├── tableConfig.ts column widths and alignment. Numerals right, always.
+│       │   │                  columnTotal, nextSort and sortRows, all pure
 │       │   ├── TypedError.tsx cause and remediation. Never a numeral
 │       │   ├── CoverageBanner.tsx  not dismissible. The condition does not go away
 │       │   ├── FreshnessIndicator.tsx  age against cadence, not a fixed threshold

@@ -25,7 +25,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | Features | 74 total, 14 specified, 13 in build, 33 delivered |
 | Decisions | 30 architecture decision records |
 | Changes | 112 recorded |
-| Issues | 147 fixed, 92 open, 0 parked |
+| Issues | 147 fixed, 93 open, 0 parked |
 | Open questions | 16 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -199,7 +199,7 @@ ISS-003.
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
-| P8 | 5 | 0 | 0 | 0 | 10 | 15 | [plan](../docs/plans/P8-implementation-plan.md) |
+| P8 | 6 | 0 | 0 | 0 | 9 | 15 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 0 | 0 | 0 | 0 | 11 | 11 | [plan](../docs/plans/P9-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -405,6 +405,7 @@ ISS-003.
 | `TASK-P8-003` | Done 2026-10-05 | filters live in the query string |
 | `TASK-P8-004` | Done 2026-10-05 | FOCUS and Framework names on every screen |
 | `TASK-P8-005` | Done 2026-10-05 | chart primitives in Meter's own look |
+| `TASK-P8-006` | Done 2026-10-05 | tables that sort, total and drill |
 
 <!-- generated:task-status end -->
 

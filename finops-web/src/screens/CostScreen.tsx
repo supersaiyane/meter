@@ -51,11 +51,27 @@ export function CostScreen() {
   const days = useMemo(() => trend.data?.data.data ?? [], [trend.data]);
 
   const columns: readonly Column<ApiCostSlice>[] = [
-    { key: 'service', header: 'Service', render: (row) => row.name },
+    {
+      key: 'service',
+      header: 'Service',
+      render: (row) => row.name,
+      sortValue: (row) => row.name,
+    },
     {
       key: 'cost',
       header: 'Effective Cost',
       numeric: true,
+      sortValue: (row) => money(row.effective_cost),
+      // Every service in the period, so this total is the headline above it, and the two
+      // agree by construction rather than by a second query that could disagree.
+      total: {
+        value: (row) => money(row.effective_cost),
+        unit: () => 'USD',
+        provenance: () => 'measured',
+        render: (sum) => (
+          <Figure value={{ kind: 'measured', amount: sum }} freshness={freshness} />
+        ),
+      },
       render: (row) => (
         // Measured, always. A charge is what the provider billed, and there is
         // no model here for it to be a projection of.
@@ -69,6 +85,15 @@ export function CostScreen() {
       key: 'billed',
       header: 'Billed Cost',
       numeric: true,
+      sortValue: (row) => money(row.billed_cost),
+      total: {
+        value: (row) => money(row.billed_cost),
+        unit: () => 'USD',
+        provenance: () => 'measured',
+        render: (sum) => (
+          <Figure value={{ kind: 'measured', amount: sum }} freshness={freshness} />
+        ),
+      },
       render: (row) => (
         <Figure
           value={{ kind: 'measured', amount: money(row.billed_cost) }}
@@ -80,6 +105,7 @@ export function CostScreen() {
       key: 'items',
       header: 'Line items',
       numeric: true,
+      sortValue: (row) => row.line_items,
       render: (row) => row.line_items,
     },
   ];
@@ -209,7 +235,10 @@ export function CostScreen() {
           rows={rows}
           columns={columns}
           rowKey={(row) => row.name}
-          caption={`${String(rows.length)} services, most expensive first`}
+          caption={`${String(rows.length)} services`}
+          // The API sends them most expensive first. Said in the header, where it stays
+          // true, rather than in the caption, where a reader's sort would make it false.
+          initialSort={{ key: 'cost', direction: 'descending' }}
         />
       </StateBoundary>
     </section>

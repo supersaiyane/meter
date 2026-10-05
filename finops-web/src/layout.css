@@ -616,6 +616,73 @@ td.meter-prose {
   min-width: 14ch;
 }
 
+/* The sort control is the header's own text, so a header that sorts still reads as a
+   header and not as a button a reader has to find. Its focus ring shows, because a
+   control that does not look focusable is the one a keyboard user cannot locate. */
+th .meter-sort {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+th .meter-sort:hover,
+th[aria-sort='ascending'] .meter-sort,
+th[aria-sort='descending'] .meter-sort {
+  color: var(--text);
+}
+
+th .meter-sort:focus-visible {
+  outline: 2px solid var(--accent-mark);
+  outline-offset: 2px;
+}
+
+/* Closed until asked for, so a table opens looking like a table and not like a
+   settings panel. */
+[data-testid='column-chooser'] {
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-1);
+  color: var(--text-muted);
+}
+
+[data-testid='column-chooser'] summary {
+  width: max-content;
+  cursor: pointer;
+}
+
+[data-testid='column-chooser'] label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: var(--space-1) var(--space-3) 0 0;
+}
+
+[data-testid='column-chooser'] input {
+  accent-color: var(--accent-mark);
+}
+
+/* A heavier rule above the totals, so a total is not read as one more line item. */
+[data-testid='totals-row'] td {
+  border-top: 1px solid var(--border-strong);
+  font-weight: 600;
+}
+
+/* Why a column has no total is a sentence, read from its left edge like the failure
+   sentences above, even in a column shaped for digits. */
+.meter-total-none {
+  display: inline-block;
+  max-width: 26ch;
+  white-space: normal;
+  text-align: left;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
 /* ----------------------------------------------------------------- figure */
 
 [data-testid='figure'] {

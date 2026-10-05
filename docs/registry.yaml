@@ -3787,6 +3787,17 @@ issues:
     VPC for Budgets and Support. It stays OPEN until TASK-P9-001 builds that path. Numbered 236
     on branch p9-plan, in commit d85410d, and renumbered before the merge because main had
     registered that number first'
+- id: ISS-243
+  severity: MEDIUM
+  status: OPEN
+  summary: The frontend's test coverage is not measured, so the definition of done's 80 percent
+    rule has no number behind it for any change to `finops-web`
+  detail: '`make test-web` runs `npm run test -- --run` without coverage, and
+    `@vitest/coverage-v8` is not installed, so `npx vitest run --coverage` stops on a missing
+    dependency. Found on 2026-10-05 by the verification of TASK-P8-006, which covers each branch
+    of the new table code with a named test instead of a measured percentage. Every P8 task so
+    far shipped under the same gap. Closing it adds a development dependency, which goes through
+    `make dep-check` and is the owner''s decision, and then a coverage threshold in `test-web`.'
 
 open_questions:
 - id: OPEN-07

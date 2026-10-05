@@ -6,7 +6,7 @@
 | Status | In build |
 | Specification | [P1 spec](../specs/2026-09-18-p1-cost-intelligence-design.md) |
 | Tasks | [P1 plan](../plans/P1-implementation-plan.md), TASK-P1-009 and TASK-P1-011 |
-| Screen | `/cost/allocation` |
+| Screen | `/analyze/allocation` |
 
 ## What it does
 

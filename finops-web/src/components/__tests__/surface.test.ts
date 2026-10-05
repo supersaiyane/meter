@@ -118,6 +118,10 @@ describe('the visual layer', () => {
       'meter-provenance',
       // OrgTree emits this for the node kind beside a node name.
       'meter-kind',
+      // DataTable emits this for the button in a header that sorts.
+      'meter-sort',
+      // DataTable emits this for the sentence saying why a column has no total.
+      'meter-total-none',
     ]);
     const withoutComments = layout.replace(/\/\*[\s\S]*?\*\//g, '');
     const targeted = new Set(
