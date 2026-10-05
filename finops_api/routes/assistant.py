@@ -79,16 +79,17 @@ PAYER = "payer"
 #: re run. `tests/api/test_assistant_remediation.py` holds that every cause has one.
 REMEDIATION = {
     "AccessDenied": (
-        "The hub role may not invoke this model. Add it to assistant_model_ids in the hub "
-        "stack, then ask again."
+        "The hub role may not invoke this model. Name it in assistant_model_ids and "
+        "assistant_model_in_use in the hub stack, which grants it through its tagged "
+        "profile, then ask again."
     ),
     "Throttled": (
         "Too many questions are being answered at once, by Meter or by the model service. "
         "Ask again in a minute."
     ),
     "NotOptedIn": (
-        "Name a model in METER_ASSISTANT_MODEL_ID, enable access to it for the hub account, "
-        "and grant it through assistant_model_ids in the hub stack."
+        "Name a model in assistant_model_ids and assistant_model_in_use in the hub stack, "
+        "which sets METER_ASSISTANT_MODEL_ID, and enable access to it for the hub account."
     ),
     "NoData": (
         "The tools returned nothing to answer from. Ask about a period or a scope that has "
