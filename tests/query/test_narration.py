@@ -11,7 +11,7 @@ from decimal import Decimal
 
 import pytest
 
-from finops_core.domain.insight import Provenance, bare_figures
+from finops_core.domain.insight import Provenance, Unit, bare_figures
 from finops_query.narration import (
     CAUSAL,
     NOT_COLLECTED,
@@ -82,6 +82,24 @@ def test_every_correlation_carries_its_source_and_distance_nearest_first() -> No
     }
     assert hours == {"hours1": Decimal("2.5"), "hours2": Decimal("3.0"), "hours3": Decimal("30.0")}
     assert "into that day" in narration.answer.prose
+
+
+def test_the_anomalys_money_is_dollars_its_hours_a_count_and_its_labels_unitless() -> None:
+    """ISS-231. A fraction of an hour is a count drawn to its tenth, never dollars."""
+    narration = narrate(ANOMALY, (event(EventSource.DEPLOY, 2.5),), EVERYTHING_READ)
+
+    units = {c.placeholder: c.unit for c in narration.answer.citations}
+    assert units == {
+        "day": None,
+        "service": None,
+        "account": None,
+        "observed": Unit.USD,
+        "baseline": Unit.USD,
+        "severity": None,
+        "what1": None,
+        "resource1": None,
+        "hours1": Unit.COUNT,
+    }
 
 
 def test_the_prose_says_correlated_and_never_caused() -> None:

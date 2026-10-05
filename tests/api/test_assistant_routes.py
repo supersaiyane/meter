@@ -60,6 +60,16 @@ MODEL_ID = "a-configured-model"
 QUESTION = "Which service cost the most last month?"
 CONTEXT = AccessContext(request_id="test")
 
+#: A tenant's stored citations as a row written before ISS-231 held them, with no unit in any.
+STRIP_EXCHANGE_UNITS = text(
+    "UPDATE assistant_exchange SET citations = (SELECT COALESCE(jsonb_agg(c - 'unit'), "
+    "'[]'::jsonb) FROM jsonb_array_elements(citations) AS c) WHERE tenant_id = :t"
+)
+STRIP_DIGEST_UNITS = text(
+    "UPDATE team_digest SET citations = (SELECT COALESCE(jsonb_agg(c - 'unit'), "
+    "'[]'::jsonb) FROM jsonb_array_elements(citations) AS c) WHERE tenant_id = :t"
+)
+
 
 @pytest.fixture(autouse=True, scope="module")
 def _partitions(partition_sandbox: None) -> None:
@@ -198,12 +208,39 @@ class TestTheRoutes:
         assert set(body) == {"data", "meta"}
         data = body["data"]
         assert (data["outcome"], data["refusal"], data["failure"]) == ("ANSWERED", None, None)
-        assert {c["placeholder"] for c in data["answer"]["citations"]} == {"service", "cost"}
+        assert {c["placeholder"]: c["unit"] for c in data["answer"]["citations"]} == {
+            "service": None,
+            "cost": "usd",
+        }, "the unit the tool table declares, carried through the row to the screen"
         assert data["model_id"] == MODEL_ID
         assert data["input_tokens"] > 0
         assert Decimal(data["est_cost"]) > 0
         assert body["meta"]["as_of"] is not None, "an answer is as fresh as its stalest figure"
         assert rows(engine, tenant_id) == before + 1
+
+    def test_a_figure_stored_before_citations_carried_a_unit_is_read_with_none(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """ISS-231. A row written before the unit has none, and the list still reads it,
+        sending no unit rather than failing or choosing one for it."""
+        seed_bill(engine, tenant_id, split=False)
+        scope = everything(tenant_id)
+        client, signer = application(engine, settings, scope, scripted())
+        mine = as_person(signer, "p2", scope)
+        asked(client, mine)
+        with engine.begin() as connection:
+            connection.execute(STRIP_EXCHANGE_UNITS, {"t": tenant_id})
+
+        response = client.get(LIST, headers=mine)
+
+        assert response.status_code == 200, response.text
+        (exchange,) = response.json()["data"]
+        assert {
+            c["placeholder"]: (c["kind"], c["unit"]) for c in exchange["answer"]["citations"]
+        } == {
+            "service": ("label", None),
+            "cost": ("figure", None),
+        }
 
     def test_a_refusal_comes_back_as_a_refusal_and_nothing_else(
         self, engine: Engine, tenant_id: UUID, settings: Settings
@@ -365,6 +402,25 @@ class TestTheDigests:
             "unit": "payer",
             "is_partial": False,
         }
+        cited = [c for digest in body["data"] for c in digest["citations"]]
+        assert {(c["kind"], c["unit"]) for c in cited} == {("figure", "usd"), ("label", None)}
+
+    def test_a_digest_stored_before_citations_carried_a_unit_is_read_with_none(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        """ISS-231, as for an exchange: read, and sent with no unit rather than a guessed one."""
+        digests_for(engine, tenant_id)
+        with engine.begin() as connection:
+            connection.execute(STRIP_DIGEST_UNITS, {"t": tenant_id})
+        scope = everything(tenant_id)
+        client, signer = application(engine, settings, scope)
+
+        response = client.get(DIGESTS, headers=as_person(signer, "p2", scope))
+
+        assert response.status_code == 200, response.text
+        cited = [c for digest in response.json()["data"] for c in digest["citations"]]
+        assert cited, "nothing was read, so this proves nothing"
+        assert {c["unit"] for c in cited} == {None}
 
     def test_a_narrowed_reader_is_shown_that_digests_need_the_whole_payer(
         self, engine: Engine, tenant_id: UUID, settings: Settings

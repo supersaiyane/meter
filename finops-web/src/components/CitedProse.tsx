@@ -54,8 +54,9 @@ function Unrecognised({ said }: { readonly said: string }) {
 /**
  * One cited value: a Figure for a figure, the text itself for a label.
  *
- * The kind and the provenance are read as strings, so a value the API should never send, a
- * third kind or a forecast, reaches the drift branch rather than being drawn as a measurement.
+ * The kind, the provenance and the unit are read as strings, so a value the API should never
+ * send, a third kind, a forecast or a figure with no unit, reaches the drift branch rather than
+ * being drawn as a measurement in a unit nobody declared.
  */
 function CitedValue({
   citation,
@@ -93,6 +94,15 @@ function CitedValue({
     );
   }
   const unit = figureUnit(citation);
+  if (unit === null) {
+    // Neither dollars nor a count is assumed, because a figure drawn in the wrong unit is a
+    // wrong figure that looks right.
+    return (
+      <Unrecognised
+        said={`The value cited as ${name} carries no unit this screen draws, so it is not shown.`}
+      />
+    );
+  }
   return (
     <Figure
       value={value}

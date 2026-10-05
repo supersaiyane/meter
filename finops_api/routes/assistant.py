@@ -20,6 +20,7 @@ their own questions and nobody else's, whatever else their scope reaches.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from typing import Any
 
@@ -232,11 +233,21 @@ def digest_out(row: Any) -> DigestOut:
         period_start=row.period_start,
         period_end=row.period_end,
         prose=row.prose,
-        citations=tuple(CitationOut(**citation) for citation in row.citations),
+        citations=tuple(citation_out(citation) for citation in row.citations),
         composed_at=row.composed_at,
         sent_at=row.sent_at,
         unsent_reason=row.unsent_reason,
     )
+
+
+def citation_out(stored: Mapping[str, Any]) -> CitationOut:
+    """One stored citation, as it is sent.
+
+    A label is stored with no unit, and so is a figure cited before citations carried one,
+    ISS-231. Both are sent with none, explicitly, and the screen draws such a figure as
+    unrecognised rather than as dollars or a count it chose.
+    """
+    return CitationOut(**{**stored, "unit": stored.get("unit")})
 
 
 def _meta(connection: Connection, scope: Scope, context: AccessContext, out: ExchangeOut) -> Meta:
@@ -265,7 +276,7 @@ def exchange_out(row: Any) -> ExchangeOut:
         answer=(
             AnswerOut(
                 prose=row.answer,
-                citations=tuple(CitationOut(**citation) for citation in row.citations),
+                citations=tuple(citation_out(citation) for citation in row.citations),
             )
             if row.outcome == "ANSWERED"
             else None

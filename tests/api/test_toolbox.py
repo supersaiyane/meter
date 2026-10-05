@@ -2,20 +2,27 @@
 
 TASK-P7-006. The evaluation sets prove the toolbox against the real routes. These pin what
 it refuses on its own: an argument, which it does not repeat back; a status other than
-success; and a body that is not the route's envelope, which never reaches a model.
+success; and a body that is not the route's envelope, which never reaches a model. And the
+two fields of the tool table only the assistant reads, held to what they promise.
 """
 
 from __future__ import annotations
 
+import types
+import typing
 from dataclasses import dataclass, field
+from datetime import date, datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, Literal
+from uuid import UUID
 
 import pytest
+from pydantic import BaseModel
 
 from finops_api.toolbox import ApiToolbox
-from finops_api.tools import TOOLS_BY_NAME
+from finops_api.tools import TOOLS, TOOLS_BY_NAME, ToolSpec
 from finops_core.domain.insight import SCREEN_PATH, Provenance
+from finops_query.insight import META as ENVELOPE_META
 from finops_query.insight import ToolUnavailableError
 
 TOKEN = "a-session-token"
@@ -64,6 +71,7 @@ def test_a_call_reads_the_route_as_the_asker_and_types_what_it_returns() -> None
     assert output.envelope["data"][0]["effective_cost"] == Decimal("812.40")
     assert '"effective_cost":"812.40"' in output.text
     assert (output.provenance, output.screen) == (Provenance.MEASURED, "/cost")
+    assert output.units == TOOLS_BY_NAME["get_cost_by_service"].units
 
 
 def test_an_argument_is_refused_and_not_repeated_back() -> None:
@@ -108,3 +116,67 @@ def test_every_screen_a_tool_names_is_one_a_refusal_will_link_to() -> None:
     named = {spec.name: spec.screen for spec in TOOLS_BY_NAME.values() if spec.screen}
     assert named, "no tool names a screen, so this proves nothing"
     assert {name: path for name, path in named.items() if not SCREEN_PATH.fullmatch(path)} == {}
+
+
+# --- what each figure counts, ISS-231 -----------------------------------------------------
+
+#: Leaf types that hold no figure. A type outside these, the numbers and the shapes walked
+#: below fails the walk, so a new kind of field is looked at rather than skipped.
+NOT_FIGURES = (str, bool, date, datetime, UUID, type(None))
+
+#: Every number the envelope's meta holds. The loop cites each as a count with no lookup, so
+#: a number added to meta that is not a count has to change that rule before this list.
+META_COUNTS = frozenset(
+    {"meta.scope_coverage.visible", "meta.scope_coverage.total", "meta.failures.occurrences"}
+)
+
+
+def numeric_paths(annotation: Any, path: str) -> set[str]:
+    """Every path under `path` whose value is a number, written as a citation names it with
+    its row selectors taken out: `data.clusters.workloads.cost` for every workload's cost."""
+    origin = typing.get_origin(annotation)
+    if origin in (typing.Union, types.UnionType, list, tuple):
+        arguments = [arg for arg in typing.get_args(annotation) if arg is not Ellipsis]
+        return set().union(*(numeric_paths(arg, path) for arg in arguments))
+    if origin is Literal:
+        return set()
+    if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+        fields = {name: info.annotation for name, info in annotation.model_fields.items()}
+        computed = annotation.model_computed_fields.items()
+        fields |= {name: info.return_type for name, info in computed}
+        return set().union(
+            *(numeric_paths(kind, f"{path}.{name}") for name, kind in fields.items())
+        )
+    # A bool is an int to Python and never a figure, so it is decided before the numbers.
+    if annotation in NOT_FIGURES:
+        return set()
+    if annotation in (int, float, Decimal):
+        return {path}
+    pytest.fail(f"{path} is a {annotation!r}, which this walk does not know how to read")
+
+
+def data_of(spec: ToolSpec) -> Any:
+    return spec.envelope.model_fields["data"].annotation
+
+
+@pytest.mark.parametrize("spec", TOOLS, ids=[spec.name for spec in TOOLS])
+def test_every_number_a_tool_returns_has_its_unit_declared_and_nothing_else_does(
+    spec: ToolSpec,
+) -> None:
+    """Exhaustive on purpose. A numeric field added to a route's model without a unit in the
+    tool table fails here, rather than reaching the screen with no unit, and a unit left
+    behind for a field that is gone fails too."""
+    assert set(spec.units) == numeric_paths(data_of(spec), "data")
+
+
+def test_the_walk_finds_both_units_somewhere_so_the_test_above_is_not_vacuous() -> None:
+    declared = {unit for spec in TOOLS for unit in spec.units.values()}
+    found = set().union(*(numeric_paths(data_of(spec), "data") for spec in TOOLS))
+    assert declared == {"usd", "count"}
+    assert "data.clusters.workloads.cost" in found, "the walk reaches into nested lists"
+
+
+def test_every_number_in_the_envelope_meta_is_one_the_loop_may_call_a_count() -> None:
+    for spec in TOOLS:
+        meta = spec.envelope.model_fields[ENVELOPE_META].annotation
+        assert numeric_paths(meta, ENVELOPE_META) == META_COUNTS, spec.name

@@ -12,9 +12,11 @@ layer contract forbids from importing `finops_mcp`. The table describes the API'
 routes, so the API owning it is the natural direction, and `finops_mcp` still imports
 nothing but this and the schemas: it stays a facade over the network, ADR-0009.
 
-**Two fields only the assistant reads.** `provenance` is how a tool's figures were
-arrived at where a row does not say itself, so a cited figure carries its flag. `screen`
-is where a person sees the same rows, so a refusal can point there.
+**Three fields only the assistant reads.** `provenance` is how a tool's figures were
+arrived at where a row does not say itself, so a cited figure carries its flag. `units` is
+what each of its numeric fields counts, dollars or a count, so a cited figure carries that
+too and no screen reads a unit out of a field's name, ISS-231. `screen` is where a person
+sees the same rows, so a refusal can point there.
 
 There is deliberately no tool that runs free form SQL, and no tool that writes. See
 ADR-0007 and constraint 6.
@@ -22,6 +24,7 @@ ADR-0007 and constraint 6.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
@@ -38,7 +41,7 @@ from finops_api.schemas import (
     QueryFindingOut,
     RunOut,
 )
-from finops_core.domain.insight import Provenance
+from finops_core.domain.insight import Provenance, Unit
 from finops_core.ports.llm import ToolSchema
 
 API_PREFIX = "/api/v1"
@@ -52,6 +55,12 @@ class ToolSpec:
     path: str
     envelope: Any
     description: str
+    #: What every numeric field under `data` counts, keyed by its path with any row selector
+    #: taken out, such as `data.clusters.workloads.cost`. Required, and held by a test to
+    #: exactly the numeric fields of the envelope, so a figure added without its unit fails
+    #: in CI rather than reaching a screen as a guess. Nothing under `meta` is listed: every
+    #: number there is a count, and the loop says so in one place.
+    units: Mapping[str, Unit]
     #: How this tool's figures were arrived at, where a row carries no `provenance` of
     #: its own. A row that does say is believed over this.
     provenance: Provenance = Provenance.MEASURED
@@ -67,6 +76,13 @@ class ToolSpec:
         """The tool as a model is offered it. Every tool here takes no arguments."""
         return ToolSchema(name=self.name, description=self.description)
 
+
+#: One row of a cost grouping, `CostSliceOut`, which the by service and by account tools share.
+COST_SLICE_UNITS: Mapping[str, Unit] = {
+    "data.billed_cost": Unit.USD,
+    "data.effective_cost": Unit.USD,
+    "data.line_items": Unit.COUNT,
+}
 
 #: The four the P0 spec names, `whoami`, the P2 findings list, and the four cost reads P7
 #: added for the assistant. Two more that the P2 spec names are absent:
@@ -86,6 +102,7 @@ TOOLS: tuple[ToolSpec, ...] = (
             "describing this as the whole organization: it is the number in scope "
             "over the number that exist, and it is frequently not one."
         ),
+        units={},
     ),
     ToolSpec(
         name="get_org_tree",
@@ -97,6 +114,7 @@ TOOLS: tuple[ToolSpec, ...] = (
             "organization is honest. Do not report a figure against an "
             "unreachable node."
         ),
+        units={"data.depth": Unit.COUNT},
     ),
     ToolSpec(
         name="get_ingest_status",
@@ -108,6 +126,7 @@ TOOLS: tuple[ToolSpec, ...] = (
             "Timeout, Unknown. A failed run means a number is missing, which is "
             "not the same as a number being zero."
         ),
+        units={"data.items_written": Unit.COUNT},
         screen="/platform/ingest",
     ),
     ToolSpec(
@@ -119,6 +138,7 @@ TOOLS: tuple[ToolSpec, ...] = (
             "carries no module tag is reported under 'unallocated' rather than "
             "dropped, so the total reconciles with the bill."
         ),
+        units={"data.amortized_cost": Unit.USD},
         screen="/platform/cost",
     ),
     ToolSpec(
@@ -129,6 +149,7 @@ TOOLS: tuple[ToolSpec, ...] = (
             "How old each collector's data is, against the cadence it is "
             "supposed to run at. Use this before quoting any figure as current."
         ),
+        units={"data.age_seconds": Unit.COUNT, "data.cadence_seconds": Unit.COUNT},
         screen="/platform/freshness",
     ),
     ToolSpec(
@@ -144,6 +165,15 @@ TOOLS: tuple[ToolSpec, ...] = (
             "means unowned rather than owned by nobody in particular, and "
             "`why` is the sentence that says what drives the cost."
         ),
+        units={
+            "data.history.cost_month_usd": Unit.USD,
+            "data.monthly_cost": Unit.USD,
+            "data.measured_runs": Unit.COUNT,
+            "data.refresh_seconds": Unit.COUNT,
+            "data.runs_per_day": Unit.COUNT,
+            "data.scan_bytes_per_run": Unit.COUNT,
+            "data.window_seconds": Unit.COUNT,
+        },
     ),
     ToolSpec(
         name="whoami",
@@ -153,6 +183,7 @@ TOOLS: tuple[ToolSpec, ...] = (
             "The caller's identity, tier and how many accounts are in their "
             "scope. Ask this first when an answer looks smaller than expected."
         ),
+        units={"data.accounts_in_scope": Unit.COUNT},
     ),
     ToolSpec(
         name="get_cost_summary",
@@ -163,6 +194,17 @@ TOOLS: tuple[ToolSpec, ...] = (
             "between them. `change` is null when there is no previous period, which is "
             "not a change of zero."
         ),
+        units={
+            # This period's effective cost less the last one's, `finops_api/routes/cost.py`, so
+            # a difference in dollars and never a percentage.
+            "data.change": Unit.USD,
+            "data.current.billed_cost": Unit.USD,
+            "data.current.effective_cost": Unit.USD,
+            "data.current.line_items": Unit.COUNT,
+            "data.previous.billed_cost": Unit.USD,
+            "data.previous.effective_cost": Unit.USD,
+            "data.previous.line_items": Unit.COUNT,
+        },
         screen="/cost",
     ),
     ToolSpec(
@@ -175,6 +217,7 @@ TOOLS: tuple[ToolSpec, ...] = (
             "figure to quote. A row named `unallocated` is cost the bill gives no "
             "service for, never dropped and never folded into another."
         ),
+        units=COST_SLICE_UNITS,
         screen="/cost",
     ),
     ToolSpec(
@@ -186,6 +229,7 @@ TOOLS: tuple[ToolSpec, ...] = (
             "account id in `name`, and only the accounts the caller may see. "
             "meta.scope_coverage says how many of the organization's accounts that is."
         ),
+        units=COST_SLICE_UNITS,
         screen="/cost",
     ),
     ToolSpec(
@@ -199,6 +243,15 @@ TOOLS: tuple[ToolSpec, ...] = (
             "`unmeasurable_reason`, and an export without the data at all reports "
             "that in meta.failures."
         ),
+        units={
+            "data.clusters.allocated": Unit.USD,
+            "data.clusters.total": Unit.USD,
+            "data.clusters.unallocated": Unit.USD,
+            "data.clusters.workloads.cost": Unit.USD,
+            "data.clusters.workloads.line_items": Unit.COUNT,
+            "data.found_count": Unit.COUNT,
+            "data.measured_count": Unit.COUNT,
+        },
         screen="/cost/containers",
     ),
 )

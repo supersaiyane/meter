@@ -89,7 +89,10 @@ function ownWorkMeta(visible: number, total: number, unit: string): ApiMeta {
   };
 }
 
-/** A measured figure unless the case says otherwise, which is what most citations are. */
+/**
+ * A measured figure unless the case says otherwise, which is what most citations are. The unit
+ * is never filled in here: each case states its own, as the tool that returned it would.
+ */
 function cited(
   partial: Omit<ApiCitation, 'kind' | 'provenance'> & Partial<ApiCitation>,
 ): ApiCitation {
@@ -113,6 +116,7 @@ export function answeredExchange(): ApiExchange {
           call_id: 'toolu_cost_summary',
           field: 'data.current.effective_cost',
           value: '3781.9335',
+          unit: 'usd',
           as_of: COST_AS_OF,
         }),
         cited({
@@ -121,6 +125,7 @@ export function answeredExchange(): ApiExchange {
           call_id: 'toolu_cost_summary',
           field: 'data.previous.effective_cost',
           value: '6197.6500',
+          unit: 'usd',
           as_of: COST_AS_OF,
         }),
         cited({
@@ -129,6 +134,7 @@ export function answeredExchange(): ApiExchange {
           call_id: 'toolu_by_service',
           field: 'data[name=AmazonEC2].name',
           value: 'AmazonEC2',
+          unit: null,
           kind: 'label',
           as_of: COST_AS_OF,
         }),
@@ -138,6 +144,7 @@ export function answeredExchange(): ApiExchange {
           call_id: 'toolu_by_service',
           field: 'data[name=AmazonEC2].effective_cost',
           value: '2043.1120',
+          unit: 'usd',
           as_of: COST_AS_OF,
         }),
         cited({
@@ -146,6 +153,7 @@ export function answeredExchange(): ApiExchange {
           call_id: 'toolu_queries',
           field: 'data[finding_id=11111111-1111-1111-1111-111111111111].monthly_cost',
           value: '412.5000',
+          unit: 'usd',
           provenance: 'modelled',
           as_of: QUERY_AS_OF,
         }),
@@ -325,6 +333,7 @@ function weekCitations(reference: string, spend: string): ApiCitation[] {
       call_id: reference,
       field: "the week's last day",
       value: '2026-09-27',
+      unit: null,
       kind: 'label',
       as_of: WEEK_AS_OF,
     }),
@@ -334,6 +343,7 @@ function weekCitations(reference: string, spend: string): ApiCitation[] {
       call_id: reference,
       field: 'effective_cost summed over the week',
       value: spend,
+      unit: 'usd',
       as_of: WEEK_AS_OF,
     }),
   ];
@@ -358,6 +368,7 @@ export function executiveDigest(): ApiDigest {
         call_id: reference,
         field: 'effective_cost summed over the week before',
         value: '25980.1200',
+        unit: 'usd',
         as_of: WEEK_AS_OF,
       }),
       cited({
@@ -366,6 +377,7 @@ export function executiveDigest(): ApiDigest {
         call_id: reference,
         field: 'service_name',
         value: 'AmazonEC2',
+        unit: null,
         kind: 'label',
         as_of: WEEK_AS_OF,
       }),
@@ -375,6 +387,7 @@ export function executiveDigest(): ApiDigest {
         call_id: reference,
         field: 'effective_cost of that service over the week',
         value: '11240.0000',
+        unit: 'usd',
         as_of: WEEK_AS_OF,
       }),
     ],
@@ -405,6 +418,7 @@ export function teamDigest(): ApiDigest {
         call_id: reference,
         field: 'tags.team',
         value: 'payments',
+        unit: null,
         kind: 'label',
         as_of: WEEK_AS_OF,
       }),
