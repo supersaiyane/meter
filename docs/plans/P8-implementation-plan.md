@@ -249,7 +249,25 @@ other tables take sort values in TASK-P8-013.
 ### TASK-P8-007: Cost Explorer
 
 | Field | Value |
-| 
+| --- | --- |
+| Status | Done 2026-10-05 |
+| Implements | P8 spec sections 5.3 and 7, FEAT-065 |
+| Delivers | FEAT-065 |
+| Depends on | TASK-P8-003, TASK-P8-005, TASK-P8-006 |
+| Estimate | L |
+
+**Goal.** `GET /cost/explore` and its screen: the question a practitioner asks first,
+answered with the rows the product already holds.
+
+**Acceptance criteria.**
+
+- [x] Two group bys over FOCUS dimensions and tag keys from an allow list, and filters
+- [x] Daily and monthly; month to date, 3, 6 and 12 months, year to date and custom
+- [x] Comparison with the previous period
+- [x] Effective Cost by default; another cost metric offered only where the table holds it
+- [x] The same scope dependency and guard as `/cost`, coverage and failures in the
+      envelope, and unallocated shown, never hidden
+- [x] A bounded query: partition pruning on the period and a row limit the envelope names
 
 **Delivered 2026-10-05.** The owner chose the layout, the eight groupings, tag keys from the
 period's own line items and the like for like comparison, each the recommended option. The period
@@ -261,26 +279,6 @@ spend and trend screen: its view lives in the address, its table values are filt
 chart is StackedBar drawn as columns, an orientation added for time. The chart set's legend and
 rows had shipped with no styles in TASK-P8-005 and are styled now. The hook and fixture only the
 old screen read were removed.
-
---- | --- |
-| Status | Not started |
-| Implements | P8 spec sections 5.3 and 7, FEAT-065 |
-| Delivers | FEAT-065 |
-| Depends on | TASK-P8-003, TASK-P8-005, TASK-P8-006 |
-| Estimate | L |
-
-**Goal.** `GET /cost/explore` and its screen: the question a practitioner asks first,
-answered with the rows the product already holds.
-
-**Acceptance criteria.**
-
-- [ ] Two group bys over FOCUS dimensions and tag keys from an allow list, and filters
-- [ ] Daily and monthly; month to date, 3, 6 and 12 months, year to date and custom
-- [ ] Comparison with the previous period
-- [ ] Effective Cost by default; another cost metric offered only where the table holds it
-- [ ] The same scope dependency and guard as `/cost`, coverage and failures in the
-      envelope, and unallocated shown, never hidden
-- [ ] A bounded query: partition pruning on the period and a row limit the envelope names
 
 ---
 

@@ -199,7 +199,7 @@ ISS-003.
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
-| P8 | 6 | 0 | 0 | 0 | 9 | 15 | [plan](../docs/plans/P8-implementation-plan.md) |
+| P8 | 7 | 0 | 0 | 0 | 8 | 15 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 0 | 0 | 0 | 0 | 11 | 11 | [plan](../docs/plans/P9-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -406,6 +406,7 @@ ISS-003.
 | `TASK-P8-004` | Done 2026-10-05 | FOCUS and Framework names on every screen |
 | `TASK-P8-005` | Done 2026-10-05 | chart primitives in Meter's own look |
 | `TASK-P8-006` | Done 2026-10-05 | tables that sort, total and drill |
+| `TASK-P8-007` | Done 2026-10-05 | Cost Explorer |
 
 <!-- generated:task-status end -->
 
