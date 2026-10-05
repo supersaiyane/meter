@@ -171,18 +171,17 @@ describe('App', () => {
     );
   });
 
-  it('lands on Home, which names what each unfilled slot is waiting for', () => {
-    // Derived rather than named. This asserted on `home-slot-spend` until P1 filled
-    // that slot, which made it fail for the one reason that is not a regression. The
-    // claim is that an unfilled slot names its sub project, so it is made against
-    // whichever slots are unfilled today.
+  it('lands on Home, which promises nothing that has already shipped', () => {
+    // Home named the sub project behind each unfilled slot, and the last one, realized
+    // savings, still said P3 after P3 shipped. Nothing is left to arrive on Home, so it
+    // draws no rail. Read inside the screen rather than the whole page, because the
+    // navigation still lists the Flags screen as arriving, which is true.
     open('/');
     expect(screen.queryByTestId('not-built')).toBeNull();
-    const slots = screen.getAllByTestId(/^home-slot-/);
-    expect(slots.length).toBeGreaterThan(0);
-    for (const slot of slots) {
-      expect(slot).toHaveTextContent(/P\d /);
-    }
+    expect(screen.queryByTestId('home-rail')).toBeNull();
+    const page = screen.getByRole('main');
+    expect(page).not.toHaveTextContent(/arrives with/i);
+    expect(page).not.toHaveTextContent(/\bP3\b/);
   });
 
   it('tells a wrong address apart from a screen that is merely unbuilt', () => {

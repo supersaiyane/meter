@@ -56,7 +56,7 @@ import type {
  * they make is unchanged, it just no longer outweighs the facts.
  */
 
-interface SlotDef {
+export interface SlotDef {
   readonly id: string;
   readonly label: string;
   /** The screen that will own this figure. */
@@ -67,7 +67,10 @@ interface SlotDef {
 
 /**
  * Only the slots that are still empty. A slot leaves this list the day its sub
- * project lands, and becomes a tile above.
+ * project lands, and becomes a tile above or leaves the page.
+ *
+ * Empty today, and the rail draws nothing while it is, rather than a heading
+ * over nothing.
  */
 const ABSENT: readonly SlotDef[] = [
   // Spend, trend and top movers stood here until 2026-09-20, all three claiming to
@@ -79,12 +82,10 @@ const ABSENT: readonly SlotDef[] = [
   // Top movers left without becoming a tile, because nothing was built for it and no
   // feature in the registry owns it. A slot naming a sub project that has shipped is a
   // promise nobody is keeping, so it is better absent than misattributed. ISS-188.
-  {
-    id: 'savings',
-    label: 'Realized savings, trailing 60 days',
-    owns: '/waste/savings',
-    arrives: 'P3 Utilization and Rightsizing',
-  },
+  //
+  // Realized savings stood here until 2026-10-05, still saying it would arrive with
+  // P3 Utilization and Rightsizing after P3 had shipped and /waste/savings was built.
+  // The same failure as the P1 slots, and it left the same way.
 ];
 
 /** Three. A front page summary that needs scrolling is a second screen. */
@@ -140,13 +141,17 @@ function countBySeverity(rows: readonly ApiQueryFinding[]): ReadonlyMap<Severity
  * The absences, as one rail rather than a stack of panels. Each entry keeps its
  * own test id, its own wording and its own link, because what it claims has not
  * changed. Only its weight on the page has.
+ *
+ * Nothing at all when there is nothing still to arrive. A "Not yet collected"
+ * heading over an empty list is a claim about an absence that does not exist.
  */
-function ArrivingRail() {
+export function ArrivingRail({ slots }: { readonly slots: readonly SlotDef[] }) {
+  if (slots.length === 0) return null;
   return (
     <section data-testid="home-rail" aria-label="Not yet collected">
       <h3>Not yet collected</h3>
       <ul>
-        {ABSENT.map((slot) => (
+        {slots.map((slot) => (
           <li key={slot.id} data-testid={`home-slot-${slot.id}`}>
             <span data-testid="home-rail-label">{slot.label}</span>
             <span data-testid="home-rail-arrives">
@@ -534,7 +539,7 @@ export function HomeScreen() {
       </section>
 
       {/* Tier three. What has not been built, still named, no longer shouting. */}
-      <ArrivingRail />
+      <ArrivingRail slots={ABSENT} />
     </>
   );
 }
