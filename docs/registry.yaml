@@ -3648,6 +3648,34 @@ issues:
     with a geography, from the Geography screen, both open the screen unfiltered with no word
     that the filter was dropped. Found by the UI audit of 2026-10-05. Belongs to the UI review,
     whose saved views and report filters need the same mechanism'
+- id: ISS-236
+  severity: MEDIUM
+  status: FIXED
+  summary: The file graph check passed on an empty graph, never compared the committed graph with
+    the source, and graphed files git ignores
+  detail: 'Found on 2026-10-05. scripts/docs/build_file_graph.py judged SKIP_DIRS against every part
+    of the absolute path, so a checkout under a directory named tmp, build, dist, scratch or security
+    held no files: make doc-sync in a worktree under /private/tmp wrote a graph of 0 files and 0 edges,
+    and --check passed it, because --check rebuilt the graph and checked layering without comparing
+    anything. The files came from the disk, so the committed graph described whichever checkout ran
+    it last: at 52c78c0 it held 164 declaration files that tsc --build writes into finops-web/dist-types
+    and git ignores, and at c0b435e, merged the same morning, 164. Fixed on 2026-10-05: the files
+    come from git ls-files, a skip is judged inside the root, --check fails when either output differs
+    from what the source builds or is missing and names the files the two disagree about, no files
+    fails in both modes, and a tree git does not know is refused rather than read from disk. The JSON
+    ends with a newline, so the end-of-file hook in .pre-commit-config.yaml cannot make it stale.
+    Every pipeline job that runs make or the test suite on a slim image now installs git, as code-review
+    does: python:3.13-slim and alpine have none, the code-review diff came back empty without it,
+    and check_memory.py resolves commits with it. tests/scripts/test_build_file_graph.py, each case
+    watched failing, and a rule in tests/scripts/test_pipeline.py'
+- id: ISS-237
+  severity: LOW
+  status: OPEN
+  summary: The generated file graph points readers at docs/architecture/file-graph.html, which was
+    removed
+  detail: render_mermaid in scripts/docs/build_file_graph.py writes a line naming docs/architecture/file-graph.html
+    as the interactive version, and that output was removed under ISS-063. On 2026-10-05 docs/architecture
+    held no such file. Found while fixing ISS-236 and left for its own change
 
 open_questions:
 - id: OPEN-07

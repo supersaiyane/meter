@@ -35,6 +35,16 @@ NO_MAKE = ("python:3.13-slim", "python:3.12-slim", "alpine:3.20")
 #: bash` and decided the install step was itself the thing needing an install.
 MAKE_CALL = re.compile(r"(?:^|&&|;|\|)\s*make\s+[a-z]")
 
+#: Images that ship without git, the same slim images that ship without make.
+NO_GIT = NO_MAKE
+
+#: A step that can reach git. Every make target and the test suite can, through
+#: something they run: `build_file_graph.py` asks git which files the repository
+#: holds, since 2026-10-05, `check_memory.py` resolves commits with it, and the
+#: suite builds repositories with it. A list of the targets that need it today
+#: would miss the next one, which is how `make check-memory` was missed.
+GIT_CALL = re.compile(MAKE_CALL.pattern + r"|\bpytest\b|code_review\.py")
+
 
 def raw() -> str:
     return PIPELINE.read_text(encoding="utf-8")
@@ -73,6 +83,26 @@ def test_every_job_that_calls_make_installs_it_first() -> None:
             offenders.append(name)
 
     assert offenders == [], f"these call make on an image without it: {offenders}"
+
+
+def test_every_job_that_can_reach_git_installs_it_first() -> None:
+    """python:slim and alpine ship without git, and a job that reaches for it on
+    either fails, or worse, quietly does less: the code review read an empty diff
+    for as long as it ran without it."""
+    pipeline = loaded()
+    offenders = []
+    for name, job in pipeline.items():
+        if not isinstance(job, dict) or "script" not in job:
+            continue
+        script = [str(step) for step in job["script"]]
+        first_use = next((i for i, step in enumerate(script) if GIT_CALL.search(step)), None)
+        if first_use is None or str(job.get("image", "")) not in NO_GIT:
+            continue
+        setup = [str(step) for step in job.get("before_script", [])] + script[:first_use]
+        if not any(re.search(r"(apt-get install|apk add).*\bgit\b", step) for step in setup):
+            offenders.append(name)
+
+    assert offenders == [], f"these can reach git on an image without it: {offenders}"
 
 
 def test_the_documentation_gate_runs_the_whole_target() -> None:

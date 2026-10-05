@@ -21,14 +21,20 @@ Two outputs.
   docs/architecture/file-graph.md    Mermaid, readable in GitLab and in a diff
   docs/architecture/file-graph.json  the same graph, for any tool that wants it
 
+The files graphed are the ones git tracks, and new ones it does not ignore. Build
+output and anything else git ignores are never graphed, so what one machine has
+built does not change the graph, and the committed graph can be held to the
+source. A stray untracked file is graphed, and the check names it.
+
 It also enforces the layering contract. Any edge that violates the direction in
 `pyproject.toml` under `tool.importlinter` is reported and fails the run, so the
 graph is a gate and not only a picture. A drawing nobody checks goes stale in a
 fortnight.
 
 Usage:
-  scripts/docs/build_file_graph.py            build and check
-  scripts/docs/build_file_graph.py --check    check only, write nothing
+  scripts/docs/build_file_graph.py            build, check the layering, write both outputs
+  scripts/docs/build_file_graph.py --check    fail unless both outputs match the source,
+                                              and write nothing
 """
 
 from __future__ import annotations
@@ -37,10 +43,11 @@ import argparse
 import ast
 import json
 import re
+import subprocess
 import sys
 from collections import defaultdict
 from collections.abc import Iterator
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 #: One dependency: the file that depends, the file depended on, and how the
 #: dependency was found. A tuple rather than a dataclass because it is built in
@@ -96,6 +103,9 @@ SKIP_DIRS = {
     "tmp",
 }
 
+#: How many differing files a failing check names before it counts the rest.
+LISTED = 10
+
 TS_IMPORT = re.compile(
     r"""(?:import|export)\s+(?:[\w*\s{},]+\s+from\s+)?['"](\.[^'"]+)['"]"""
     r"""|import\(\s*['"](\.[^'"]+)['"]\s*\)"""
@@ -104,13 +114,40 @@ TF_MODULE = re.compile(r'source\s*=\s*"(\.[^"]+)"')
 DOCKER_COPY = re.compile(r"^\s*COPY\s+(?:--from=\S+\s+)?(.+?)\s+\S+\s*$", re.MULTILINE)
 
 
+class FileListError(RuntimeError):
+    """git could not say which files the repository holds, so nothing can be graphed."""
+
+
 def walk(root: Path) -> Iterator[Path]:
-    for path in root.rglob("*"):
-        if path.is_dir():
+    """Every file git would commit under `root`, less the skipped directories.
+
+    The list comes from git rather than from the disk. Until 2026-10-05 it came
+    from the disk, and the committed graph carried the declaration files that
+    `tsc --build` writes into finops-web/dist-types, which git ignores, so the
+    graph depended on who had last built the web bundle. An untracked file that
+    git does not ignore is included, because a new file belongs in the graph
+    before anybody has run git add. The price is that a stray one is graphed
+    too, which is why the check names every file it disagrees about.
+
+    A skip is judged on the path inside `root`. Judged on the absolute path, as it
+    was, a checkout under a directory named tmp, build or dist held no files at
+    all, and the graph written there was empty.
+    """
+    command = ["git", "-C", str(root), "ls-files", "-z"]
+    command += ["--cached", "--others", "--exclude-standard"]
+    try:
+        listed = subprocess.run(command, capture_output=True, text=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError) as failure:
+        reason = getattr(failure, "stderr", None) or str(failure)
+        raise FileListError(
+            f"git could not list the files under {root}: {reason.strip()}"
+        ) from failure
+    for rel in sorted(set(filter(None, listed.split("\0")))):
+        if any(part in SKIP_DIRS for part in PurePosixPath(rel).parts):
             continue
-        if any(part in SKIP_DIRS for part in path.parts):
-            continue
-        yield path
+        path = root / rel
+        if path.is_file():
+            yield path
 
 
 def module_to_path(module: str) -> str | None:
@@ -295,16 +332,83 @@ def render_mermaid(edges: list[Edge], nodes: list[str]) -> str:
 # the bundle into docs/architecture/vendor/ and restore this from git history.
 
 
+def render(edges: list[Edge], nodes: list[str]) -> dict[str, str]:
+    """Both outputs as text, so that writing them and checking them share one rendering."""
+    return {
+        "file-graph.md": render_mermaid(edges, nodes),
+        # The graph is also emitted as JSON, so a future tool can consume it
+        # without re parsing the repository. It ends with a newline because the
+        # end-of-file hook in .pre-commit-config.yaml adds one, and an output the
+        # hook changed on every commit could never pass the check.
+        "file-graph.json": json.dumps(
+            {"nodes": nodes, "edges": [{"s": a, "t": b, "k": k} for a, b, k in edges]},
+            indent=2,
+        )
+        + "\n",
+    }
+
+
+def stale(rendered: dict[str, str]) -> list[str]:
+    """The outputs that are missing, or whose committed text the source no longer builds."""
+    return [
+        name
+        for name, text in rendered.items()
+        if not (OUT_DIR / name).is_file() or (OUT_DIR / name).read_text(encoding="utf-8") != text
+    ]
+
+
+def differences(fresh_json: str) -> str:
+    """The files the committed graph and the source disagree about, as sentences.
+
+    Counts alone cannot say why a graph is stale. A name can: a file nobody meant to
+    commit is recognised the moment it is read.
+    """
+    path = OUT_DIR / "file-graph.json"
+    try:
+        committed = set(json.loads(path.read_text(encoding="utf-8"))["nodes"])
+    except FileNotFoundError:
+        return " Nothing is committed at docs/architecture/file-graph.json."
+    except (OSError, ValueError, KeyError, TypeError):
+        return " The committed file-graph.json could not be read as a graph."
+    fresh = set(json.loads(fresh_json)["nodes"])
+    sentences = []
+    for label, names in (
+        ("Only in the source", sorted(fresh - committed)),
+        ("Only in the committed graph", sorted(committed - fresh)),
+    ):
+        if names:
+            shown = ", ".join(names[:LISTED])
+            if len(names) > LISTED:
+                shown += f" and {len(names) - LISTED} more"
+            sentences.append(f" {label}: {shown}.")
+    return "".join(sentences)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--check", action="store_true", help="check only, write nothing")
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="fail unless both outputs match the source, and write nothing",
+    )
     args = parser.parse_args()
 
-    edges, nodes, unresolved = build()
+    try:
+        edges, nodes, unresolved = build()
+    except FileListError as failure:
+        print(f"FAIL: {failure}")
+        return 1
     violations = check_layers(edges)
 
     for message in unresolved:
         print(f"WARN: {message}", file=sys.stderr)
+
+    # An empty graph is never right for this repository, and comparing cannot
+    # catch one: on 2026-10-05 an empty graph was written, and a fresh build of
+    # the same nothing agreed with it.
+    if not nodes:
+        print(f"FAIL: no files found under {ROOT}, so there is no graph to write or check")
+        return 1
 
     if violations:
         print(f"FAIL: {len(violations)} layering violation(s)\n")
@@ -312,17 +416,21 @@ def main() -> int:
             print(f"  {violation}")
         return 1
 
-    if not args.check:
-        OUT_DIR.mkdir(parents=True, exist_ok=True)
-        (OUT_DIR / "file-graph.md").write_text(render_mermaid(edges, nodes))
-        # The graph is also emitted as JSON, so a future tool can consume it
-        # without re parsing the repository.
-        (OUT_DIR / "file-graph.json").write_text(
-            json.dumps(
-                {"nodes": nodes, "edges": [{"s": a, "t": b, "k": k} for a, b, k in edges]},
-                indent=2,
+    rendered = render(edges, nodes)
+    if args.check:
+        out_of_step = stale(rendered)
+        if out_of_step:
+            print(
+                f"FAIL: out of step with the source: {', '.join(out_of_step)}."
+                f"{differences(rendered['file-graph.json'])} The source builds {len(nodes)} "
+                f"files and {len(edges)} edges. Run `make graph` and commit both outputs, once "
+                "every file named here is one that belongs in the repository."
             )
-        )
+            return 1
+    else:
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
+        for name, text in rendered.items():
+            (OUT_DIR / name).write_text(text, encoding="utf-8")
 
     print(f"OK: {len(nodes)} files, {len(edges)} edges, 0 layering violations")
     return 0
