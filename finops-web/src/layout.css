@@ -23,7 +23,11 @@
 
 body {
   margin: 0;
-  background: var(--surface);
+  background-color: var(--surface);
+  /* The glows are fixed to the viewport, so the page scrolls under the glass
+     rather than carrying the light away with it. */
+  background-image: var(--page-glow);
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font-ui);
   font-size: var(--font-size-2);
@@ -152,7 +156,57 @@ body {
   grid-area: main;
   padding: var(--space-6);
   min-width: 0;
-  background: var(--surface);
+  /* The page colour and its glows are the body's, so the panels on this
+     column have something to be glass over. */
+  background: transparent;
+}
+
+/* The theme choice, at the foot of the rail. Three radios drawn as one
+   segmented control: the input stays in the tree for the keyboard and a
+   screen reader, and only its circle is hidden. */
+[data-testid='theme-toggle'] {
+  display: flex;
+  gap: var(--space-1);
+  margin: var(--space-4) var(--space-3) var(--space-3);
+  padding: 0;
+  border: 0;
+}
+
+[data-testid='theme-toggle'] legend {
+  margin-bottom: var(--space-1);
+  color: var(--nav-text-faint);
+  font-size: var(--font-size-1);
+}
+
+[data-testid='theme-toggle'] label {
+  position: relative;
+  flex: 1;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--nav-line);
+  border-radius: var(--radius);
+  color: var(--nav-text);
+  font-size: var(--font-size-1);
+  text-align: center;
+  cursor: pointer;
+}
+
+[data-testid='theme-toggle'] label:has(input:checked) {
+  border-color: var(--nav-accent);
+  background: var(--nav-active);
+  color: var(--nav-text-strong);
+}
+
+[data-testid='theme-toggle'] label:has(input:focus-visible) {
+  outline: 2px solid var(--nav-accent);
+  outline-offset: 2px;
+}
+
+[data-testid='theme-toggle'] input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
 }
 
 /* ------------------------------------------------------------- navigation */
@@ -845,14 +899,14 @@ button {
 
 button:hover {
   background: var(--accent-quiet);
-  border-color: var(--accent);
+  border-color: var(--accent-mark);
 }
 
 /* Focus is always visible. */
 a:focus-visible,
 button:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent-mark);
   outline-offset: 1px;
 }
 
@@ -1069,7 +1123,7 @@ main select {
 
 main select:focus-visible,
 main button:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent-mark);
   outline-offset: 1px;
 }
 
@@ -1088,7 +1142,7 @@ main button {
 }
 
 main button:hover:not(:disabled) {
-  border-color: var(--accent);
+  border-color: var(--accent-mark);
   color: var(--accent);
 }
 
@@ -1906,7 +1960,7 @@ main > section > [data-testid='state'] > p[role='status'] {
 }
 
 [data-testid='world-map-choice'][aria-pressed='true'] {
-  border-color: var(--accent);
+  border-color: var(--accent-mark);
   background: var(--accent-quiet);
 }
 
@@ -2165,7 +2219,7 @@ main > section > [role='group'] {
 }
 
 [data-testid='roots'] button[aria-pressed='true'] {
-  border-color: var(--accent);
+  border-color: var(--accent-mark);
   background: var(--accent-quiet);
   color: var(--accent);
 }
@@ -2349,7 +2403,7 @@ main > section > [data-testid='state'] > article > h3:first-of-type {
 }
 
 [data-testid='ask-question']:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent-mark);
   outline-offset: 1px;
 }
 

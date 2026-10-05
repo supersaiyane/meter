@@ -4,12 +4,17 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { createApiClient } from './api/client';
 import { readStored } from './storage';
+import { applyTheme, storedTheme } from './theme';
 // Latin only, self hosted. The file declares every weight but a browser
 // fetches only the ones the stylesheet actually uses.
-import '@fontsource/ibm-plex-sans/latin.css';
-import '@fontsource/ibm-plex-mono/latin.css';
+import '@fontsource/geist-sans/latin.css';
+import '@fontsource/geist-mono/latin.css';
 import './tokens.css';
 import './layout.css';
+
+// Before the first render, so a person who chose a theme never sees the other
+// one flash first.
+applyTheme(storedTheme());
 
 const container = document.getElementById('root');
 if (!container) {

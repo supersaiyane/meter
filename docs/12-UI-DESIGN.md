@@ -45,6 +45,16 @@ celebratory colour. No decorative motion. No illustration.
 
 A tool that reports a 100,000 USD mistake should not look pleased with itself.
 
+**Amended 2026-10-05.** The owner replaced the instrument direction with one
+glass design system in two themes, Aurora Glass in dark and Frosted Ledger in
+light ([P8 spec](specs/2026-10-05-p8-experience-and-reporting-design.md) section
+5.1). Two rules in the list above were written for the direction that was
+replaced and change with it. Gradient fields: the page may carry three soft
+radial glows, and only the page; a figure, a chart and a panel are never filled
+with a gradient, and the glows go under reduced transparency, without
+`backdrop-filter` and in print. Card grids of equal weight: panels may sit in a
+grid. The rest of the list stands, and so does the thesis.
+
 ## 3. Provenance: the primary visual axis
 
 Provenance is not metadata shown on hover. **It is the first thing the eye
@@ -212,6 +222,13 @@ numbers down a column. The faces are served from `node_modules` through the
 bundle, latin subset only, so a page showing customer spend makes no request to
 a third party font host.
 
+**Decided, 2026-10-05: Geist and Geist Mono, self hosted.** The owner approved
+one type family for both themes with the P8 directions, Geist for text and
+Geist Mono for figures, and it replaces IBM Plex on the same terms: served from
+`node_modules` through the bundle, latin subset only, admitted through
+`make dep-check`. The paragraph above stays as the record of why a named face
+is used at all. The rules on numerals are unchanged.
+
 Scale: 12, 14, 16, 20, 28, 40. Six sizes. A seventh means the hierarchy is
 unclear rather than insufficient.
 
@@ -269,6 +286,21 @@ beside it, so the block is small and the colour is the point.
 Light and dark are both first class. The instrument reads in a bright office
 and in a dark incident bridge.
 
+**Amended 2026-10-05: the glass system.** `tokens.css` holds the two approved
+themes, and a panel is glass over the page rather than a flat field. Glass is a
+surface, never a reason to lose contrast. `contrast.test.ts` composites every
+panel tier over the bare page and over each glow at its peak, and holds text,
+muted and faint at 4.5 to 1 on all of them in both themes. Reduced transparency
+and a browser without `backdrop-filter` get an opaque panel of the colour the
+glass would have shown and no glows, and print is the light theme with
+neither, which `glass.test.ts` holds. Two light values differ from the spec's
+table, for its own contrast rule. Faint is `#5a687d`, because the table's
+`#64738a` computes to 4.29 to 1 on the light page and 4.10 in a light well. The
+accent drawn as text is `#0064d2`, the table's hue darkened, because `#0a84ff`
+computes to 3.25 to 1 as text on the light page; `#0a84ff` stays as
+`--accent-mark`, the colour of a focus ring or a selected boundary, held at
+3 to 1.
+
 ### Spacing and density
 
 A 4 px rhythm. Density is a deliberate choice per surface:
@@ -287,6 +319,11 @@ doing the work padding would otherwise do.
 Borders, not shadows. Shadows imply elevation and physicality, which suits a
 consumer application and not an instrument. One `--line` value, used
 consistently, is enough to build every boundary in the product.
+
+**Amended 2026-10-05.** A panel is glass: translucent, blurred behind, with a
+hairline border and a one pixel inner highlight, its radius 16 px in dark and
+18 px in light. Still no drop shadows: the hairline and one step of lightness
+separate a panel from the page.
 
 ### Motion
 

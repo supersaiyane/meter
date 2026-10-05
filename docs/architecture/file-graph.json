@@ -86,6 +86,7 @@
     "finops-web/src/components/__tests__/citations.test.ts",
     "finops-web/src/components/__tests__/contrast.test.ts",
     "finops-web/src/components/__tests__/forecastUnproduced.test.ts",
+    "finops-web/src/components/__tests__/glass.test.ts",
     "finops-web/src/components/__tests__/orgNodes.test.ts",
     "finops-web/src/components/__tests__/shell.test.tsx",
     "finops-web/src/components/__tests__/surface.test.ts",
@@ -104,6 +105,7 @@
     "finops-web/src/layout.css",
     "finops-web/src/layout.css?raw",
     "finops-web/src/main.tsx",
+    "finops-web/src/main.tsx?raw",
     "finops-web/src/queryClient.ts",
     "finops-web/src/screens/AccountsScreen.tsx",
     "finops-web/src/screens/AssistantScreen.tsx",
@@ -183,6 +185,8 @@
     "finops-web/src/screens/surfaceStateFor.ts",
     "finops-web/src/shell/AppShell.tsx",
     "finops-web/src/shell/MetaProvider.tsx",
+    "finops-web/src/shell/ThemeToggle.test.tsx",
+    "finops-web/src/shell/ThemeToggle.tsx",
     "finops-web/src/shell/__tests__/AppShell.test.tsx",
     "finops-web/src/shell/__tests__/metaStore.test.ts",
     "finops-web/src/shell/__tests__/sections.test.ts",
@@ -192,6 +196,8 @@
     "finops-web/src/storage.test.ts",
     "finops-web/src/storage.ts",
     "finops-web/src/test-setup.ts",
+    "finops-web/src/theme.test.ts",
+    "finops-web/src/theme.ts",
     "finops-web/src/tokens.css",
     "finops-web/src/tokens.css?raw",
     "finops-web/src/vite-env.d.ts",
@@ -1545,6 +1551,21 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/__tests__/glass.test.ts",
+      "t": "finops-web/src/layout.css?raw",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/glass.test.ts",
+      "t": "finops-web/src/main.tsx?raw",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/glass.test.ts",
+      "t": "finops-web/src/tokens.css?raw",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/components/__tests__/orgNodes.test.ts",
       "t": "finops-web/src/components/orgNodes.ts",
       "k": "typescript"
@@ -1692,6 +1713,11 @@
     {
       "s": "finops-web/src/main.tsx",
       "t": "finops-web/src/storage.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/main.tsx",
+      "t": "finops-web/src/theme.ts",
       "k": "typescript"
     },
     {
@@ -4076,6 +4102,11 @@
     },
     {
       "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/shell/ThemeToggle.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
       "k": "typescript"
     },
@@ -4102,6 +4133,21 @@
     {
       "s": "finops-web/src/shell/MetaProvider.tsx",
       "t": "finops-web/src/shell/metaStore.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ThemeToggle.test.tsx",
+      "t": "finops-web/src/shell/ThemeToggle.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ThemeToggle.test.tsx",
+      "t": "finops-web/src/theme.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ThemeToggle.tsx",
+      "t": "finops-web/src/theme.ts",
       "k": "typescript"
     },
     {
@@ -4171,6 +4217,16 @@
     },
     {
       "s": "finops-web/src/storage.test.ts",
+      "t": "finops-web/src/storage.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/theme.test.ts",
+      "t": "finops-web/src/theme.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/theme.ts",
       "t": "finops-web/src/storage.ts",
       "k": "typescript"
     },

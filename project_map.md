@@ -710,17 +710,26 @@ meter/
 │       ├── tokens.css         light and dark in one declaration, via light-dark().
 │       │                      Tokens, and the classes that carry meaning. The
 │       │                      severity ramp is warm because a blue one ended on
-│       │                      the accent, the dark failure red is saturated
-│       │                      rather than light so it outranks the prose beside
-│       │                      it, and the faces are IBM Plex, self hosted, so a
-│       │                      column of figures is the same width everywhere
+│       │                      the accent, the failure red outranks the prose
+│       │                      beside it, and since 2026-10-05 the two themes are
+│       │                      one glass system, Aurora Glass and Frosted Ledger,
+│       │                      in Geist and Geist Mono, self hosted, with opaque
+│       │                      fallbacks for reduced transparency, no
+│       │                      backdrop-filter and print
 │       ├── storage.ts         the one place that knows browser storage is
 │       │                      allowed to refuse. A blocked browser throws on
 │       │                      the property access, and reading the token
 │       │                      without this stopped the application starting
+│       ├── theme.ts           the theme a person chose: the operating system
+│       │                      until they choose, then pinned as data-theme and
+│       │                      remembered in their browser
 │       ├── shell/AppShell.tsx the frame. Trust strip, the page heading, and a
 │       │                      navigation column that collapses to 56 px, hidden
-│       │                      rather than covered, remembered per browser
+│       │                      rather than covered, remembered per browser, with
+│       │                      the theme choice at its foot
+│       ├── shell/ThemeToggle.tsx  System, Light and Dark as three radios, so the
+│       │                      way back to the system never passes through the
+│       │                      other theme
 │       ├── shell/sections.ts  the seven navigation groups, one matchFor behind
 │       │                      screenTitleFor and activeGroupFor so the heading
 │       │                      and the open accordion cannot disagree, and

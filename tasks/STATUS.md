@@ -199,7 +199,7 @@ ISS-003.
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
-| P8 | 0 | 0 | 0 | 0 | 15 | 15 | [plan](../docs/plans/P8-implementation-plan.md) |
+| P8 | 1 | 0 | 0 | 0 | 14 | 15 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 0 | 0 | 0 | 0 | 11 | 11 | [plan](../docs/plans/P9-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -395,6 +395,12 @@ ISS-003.
 | `TASK-P7-012` | Done | digests, composed whether or not anybody can send them |
 | `TASK-P7-013` | Done | what must not reach a prompt |
 | `TASK-P7-014` | Done | the test that keeps the write out |
+
+**P8, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P8-001` | Done 2026-10-05 | two themes, one set of tokens, and glass that degrades |
 
 <!-- generated:task-status end -->
 

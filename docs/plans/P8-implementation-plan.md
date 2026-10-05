@@ -54,7 +54,7 @@ Same contract as P0 through P7. One task, one commit.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec section 5.1, FEAT-063 |
 | Delivers | FEAT-063 |
 | Depends on | This plan approved |
@@ -65,17 +65,23 @@ a panel surface in each, and a theme toggle over the operating system's choice.
 
 **Acceptance criteria.**
 
-- [ ] Both token sets defined, the operating system chooses by default, and a toggle
+- [x] Both token sets defined, the operating system chooses by default, and a toggle
       overrides it and is remembered per person
-- [ ] With transparency reduced, or without `backdrop-filter`, panels are opaque and the
+- [x] With transparency reduced, or without `backdrop-filter`, panels are opaque and the
       page glows are gone
-- [ ] A test over the tokens holds text, muted and faint at 4.5 to 1 or better on every
+- [x] A test over the tokens holds text, muted and faint at 4.5 to 1 or better on every
       panel tier in both themes
-- [ ] Print uses the light theme with no glass
-- [ ] Geist and Geist Mono, confirmed on 2026-10-05, self hosted and admitted through
+- [x] Print uses the light theme with no glass
+- [x] Geist and Geist Mono, confirmed on 2026-10-05, self hosted and admitted through
       `make dep-check`
-- [ ] `docs/12-UI-DESIGN.md` amended with the date and the reason; its provenance,
+- [x] `docs/12-UI-DESIGN.md` amended with the date and the reason; its provenance,
       freshness, absence and numeral rules unchanged
+
+**Delivered 2026-10-05.** The choice is remembered in the person's browser, beside the
+navigation state; remembering it across their devices waits for per person storage, which
+TASK-P8-010 brings. Two light values differ from the spec's table, for its own contrast rule:
+faint is `#5a687d`, and the accent drawn as text is `#0064d2` with the table's `#0a84ff` kept
+as the accent mark. `docs/12-UI-DESIGN.md` section 7 gives the ratios.
 
 ---
 

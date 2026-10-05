@@ -8,6 +8,7 @@ import { isFailureCause } from '../components/provenance';
 import { useAggregateMeta } from './metaRegistry';
 import { readStored, writeStored } from '../storage';
 import { GROUPS, activeGroupFor, isSelfGroup, screenTitleFor } from './sections';
+import { ThemeToggle } from './ThemeToggle';
 
 /**
  * The shell. Coverage and freshness live here rather than on each screen,
@@ -151,6 +152,11 @@ export function AppShell({ children, now }: AppShellProps) {
             ),
           )}
         </nav>
+        {/* Hidden with the navigation, for the same reason: a collapsed rail is
+            too narrow to hold it, and hidden takes it out of the tab order. */}
+        <div data-testid="theme-slot" hidden={!navOpen}>
+          <ThemeToggle />
+        </div>
       </header>
 
       {/* One band, full width, above everything. Section 8 of

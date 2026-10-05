@@ -687,3 +687,21 @@ both a code change and a change of date, month or data. A fixture built from the
 clock. Writing "because of" in a commit message about something not yet reproduced in
 isolation.
 
+## 2026-10-05: work handed to background agents while the owner waited
+
+**Mistake:** Asked to build the P8 interface first, I wrote no code. I left a background agent
+recording the P9 approvals and merging, held the P8 branch back until it finished, and started a
+second, read only agent to map P8's tasks and draft the label table. The owner saw nothing move.
+
+**Correction:** The owner asked where we were stuck and said: "i dont believe on agetns they
+jsut eat tokens and get stale".
+
+**Rule:** Do builds, merges and reviews directly in the main session, one task at a time, and
+report progress from the repository's own state: git log, test output, the process list. Start
+no background agent unless the owner asks for one. This outranks the kernel's "orchestrator
+never executes" and its advice to move to a fresh session at the CRITICAL tier, because the
+owner said so.
+
+**Triggers:** "go ahead with" a build or a merge. Reaching the CRITICAL tier. Any plan that
+has the owner waiting on work they cannot see.
+
