@@ -3816,6 +3816,17 @@ issues:
     among them the treemap, the heatmap and the stacked bar. The suite reaches 85.94 percent of
     its branches (measured 2026-10-05). Closing it is either tests for those branches, file by
     file, until a per file bar passes, or a second check over the suite total.'
+- id: ISS-245
+  severity: LOW
+  status: OPEN
+  summary: No gate checks the frontend's formatting, so code Prettier would change can be
+    committed and merged
+  detail: '`make lint` runs `npm run lint`, which is ESLint, and `npm run format:check` exists
+    but neither the Makefile nor the pipeline runs it. Found on 2026-10-05 when four Cost
+    Explorer files went into 6fac9d8 unformatted and were fixed in 3befffc.
+    `finops-web/e2e/topology.spec.ts` also differs from Prettier, and `format:check` reads `src`
+    only, so it would not catch that file. Closing it is `npm run format:check` in `make lint`
+    and in the frontend job, widened to `e2e`.'
 
 open_questions:
 - id: OPEN-07
