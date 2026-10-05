@@ -47,6 +47,7 @@ Same contract as P0 through P7. One task, one commit.
 | E. Reporting | 009 to 011 | Excel and CSV export, saved views, scheduled reports | 003, D for the explorer's export |
 | F. Dashboards and screens | 012 to 013 | Persona dashboards, every remaining screen restyled | C, D |
 | G. Proof and documents | 014 to 015 | Accessibility, journeys, performance, and the documents | All |
+| H. Added 2026-10-05 | 016 to 017 | The account picker on every screen, and the geography map redrawn | 002 and 003 for the picker, 005 for the map |
 
 ---
 
@@ -403,6 +404,11 @@ with an About sheet.
 - [ ] Every KPI shows its formula and baseline, and every figure links to its owning screen
 - [ ] A KPI the data cannot support says so and shows no figure
 - [ ] Built from existing routes only; no new number
+- [ ] The charts the owner chose on 2026-10-05: a 12 month trend by service, month to date
+      against the forecast band, the top 10 accounts, a service treemap and savings by
+      category, each with its table of numbers
+- [ ] Every figure and chart narrowed by the account picker, TASK-P8-016, and All accounts
+      combined when the Overview opens
 
 ---
 
@@ -423,6 +429,11 @@ with an About sheet.
       `DataTable` as TASK-P8-006 built it
 - [ ] No colour outside the tokens in any component, held by a test
 - [ ] Axe clean in both themes
+- [ ] A chart on every screen, as the owner chose on 2026-10-05: Allocation a team treemap and
+      a team trend; Anomalies daily spend with anomaly markers; Commitments utilization and
+      coverage over time and a day by day heatmap; Realized savings a cumulative savings area;
+      Accounts the top accounts and a health heatmap; Resources by type and by region; Query
+      cost by dashboard and its trend; Meter cost its trend by module
 
 ---
 
@@ -433,7 +444,7 @@ with an About sheet.
 | Status | Not started |
 | Implements | P8 spec sections 8 and 12 |
 | Delivers | The exit criteria, measured |
-| Depends on | TASK-P8-001 to TASK-P8-013 |
+| Depends on | TASK-P8-001 to TASK-P8-013, TASK-P8-016 and TASK-P8-017 |
 | Estimate | M |
 
 **Acceptance criteria.**
@@ -461,6 +472,59 @@ with an About sheet.
 - [ ] `docs/12-UI-DESIGN.md` and `docs/13-UI-ARCHITECTURE.md` describe what was built
 - [ ] FEAT-063 to FEAT-070 and FEAT-045 carry as built sections
 - [ ] The register, `project_map.md` and the checkpoint updated, and `make check-docs` clean
+
+---
+
+### TASK-P8-016: the account picker on every screen
+
+Added 2026-10-05 at the owner's request: an estate of 1,399 accounts cannot be read only as
+one sum.
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | FEAT-075 |
+| Delivers | FEAT-075 |
+| Depends on | TASK-P8-002, TASK-P8-003 |
+| Estimate | L |
+
+**Acceptance criteria.**
+
+- [ ] One search box with a dropdown in the top bar of every screen, matching an account's
+      number or name as it is typed, with All accounts first and the default
+- [ ] Choosing an account narrows every screen and every export to it, the Overview
+      included, and All accounts combines them again
+- [ ] The choice lives in the address, so a shared link opens the same account, and moving
+      between screens keeps it
+- [ ] Narrowing is applied at the scope dependency, so every route obeys it at once, and it
+      can only narrow what the session may already see, never widen it, held by a test
+- [ ] Usable at 1,399 accounts: the list loads once, searches without a round trip, and is
+      keyboard operable with the accessible combobox pattern
+
+---
+
+### TASK-P8-017: the geography map redrawn
+
+Added 2026-10-05 at the owner's request.
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | FEAT-061 |
+| Delivers | FEAT-061, redrawn |
+| Depends on | TASK-P8-005 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [ ] The direction the owner chose on 2026-10-05: land as fine dots on a rounded world
+      projection, each geography a glowing bubble sized by this month's Effective Cost with
+      its resource count beside it, and lines for cross region links
+- [ ] Glass tiles below the map, one per geography, each with a small trend
+- [ ] Hover or focus on a bubble shows its numbers, and every number is also in a table
+- [ ] The two stray horizontal lines on the current map gone, and a continent still the
+      finest grain, because a region name says which geography and never which city
+- [ ] Both themes, and still drawn by hand in SVG with no map library
 
 ---
 

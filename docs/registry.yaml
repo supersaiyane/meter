@@ -536,6 +536,12 @@ features:
   status: Planned
   detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) section 5.8, [P9 plan](docs/plans/P9-implementation-plan.md)'
   doc: docs/features/FEAT-074-gp2-to-gp3-migration.md
+- id: FEAT-075
+  name: An account picker on every screen, one account or all, searchable
+  subproject: P8
+  status: Planned
+  detail: 'Requested by the owner on 2026-10-05 for an estate of 1,399 accounts. [P8 plan](docs/plans/P8-implementation-plan.md), TASK-P8-016'
+  doc: docs/features/FEAT-075-account-picker.md
 
 adrs:
 - id: ADR-0001

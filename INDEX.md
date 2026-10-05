@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-74 features across 10 sub projects. 14 specified, 11 planned, 13 in build, 35 delivered.
+75 features across 10 sub projects. 14 specified, 12 planned, 13 in build, 35 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -205,6 +205,7 @@ block is caught by `make check-docs`. See
 | [FEAT-068](docs/features/FEAT-068-saved-views-and-report-library.md) | Saved views and a report library, shared as configuration | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.6, [P8 plan](docs/plans/P8-implementation-plan.md), ISS-235 |
 | [FEAT-069](docs/features/FEAT-069-scheduled-reports.md) | Scheduled reports rendered for each recipient | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.7, [P8 plan](docs/plans/P8-implementation-plan.md), OPEN-11, OPEN-15 |
 | [FEAT-070](docs/features/FEAT-070-persona-dashboards.md) | Persona dashboards for executive, FinOps practitioner and engineering lead | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.8, [P8 plan](docs/plans/P8-implementation-plan.md) |
+| [FEAT-075](docs/features/FEAT-075-account-picker.md) | An account picker on every screen, one account or all, searchable | Planned | Requested by the owner on 2026-10-05 for an estate of 1,399 accounts. [P8 plan](docs/plans/P8-implementation-plan.md), TASK-P8-016 |
 
 ### P9 Price catalog and rightsizing targets
 

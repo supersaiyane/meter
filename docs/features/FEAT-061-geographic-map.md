@@ -169,3 +169,11 @@ Placing a resource on a city, drawing coastlines, and latency between regions. T
 a coordinate per region, which is the design this feature rejected for a reason. Latency is a
 different feature and a different measurement, and inferring it from geography would be a modelled
 number presented beside measured ones.
+
+## Redrawn in P8
+
+On 2026-10-05 the owner asked for the map to be more beautiful and chose the direction: land as
+fine dots on a rounded projection, each geography a glowing bubble sized by this month's
+Effective Cost with its resource count beside it, lines for cross region links, and glass tiles
+with a small trend below. Planned as TASK-P8-017 in the
+[P8 plan](../plans/P8-implementation-plan.md). A continent stays the finest grain.

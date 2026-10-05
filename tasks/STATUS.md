@@ -22,7 +22,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 74 total, 14 specified, 13 in build, 35 delivered |
+| Features | 75 total, 14 specified, 13 in build, 35 delivered |
 | Decisions | 30 architecture decision records |
 | Changes | 112 recorded |
 | Issues | 149 fixed, 94 open, 0 parked |
@@ -199,7 +199,7 @@ ISS-003.
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
-| P8 | 8 | 0 | 0 | 0 | 7 | 15 | [plan](../docs/plans/P8-implementation-plan.md) |
+| P8 | 8 | 0 | 0 | 0 | 9 | 17 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 0 | 0 | 0 | 0 | 11 | 11 | [plan](../docs/plans/P9-implementation-plan.md) |
 
 **P0, not in the default state**
