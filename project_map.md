@@ -206,8 +206,10 @@ meter/
 │       │                          implementation happens to do
 │       ├── P8-implementation-plan.md   15 tasks, approved 2026-10-05. The full
 │       │                          label table is approved before any label changes
-│       └── P9-implementation-plan.md   11 tasks, pending approval. TASK-P9-001,
-│                                  the hub's network path, gates the rest
+│       └── P9-implementation-plan.md   approved 2026-10-05. TASK-P9-001, the
+│                                  ADR and Terraform for interface endpoints plus
+│                                  two functions outside the VPC for Budgets and
+│                                  Support, gates the rest
 │
 │                              No task count per plan in this listing. It said 20,
 │                              11 and 8 for P3, P4 and P5 while all three were

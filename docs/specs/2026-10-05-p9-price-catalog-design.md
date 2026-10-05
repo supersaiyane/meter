@@ -1,10 +1,10 @@
 # P9 Price catalog and rightsizing targets: design specification
 
 Date: 2026-10-05
-Status: Provisional, pending approval
+Status: Approved by the owner on 2026-10-05
 Sub project: P9
 Features: FEAT-071, FEAT-072, FEAT-073, FEAT-074
-Depends on: P3 delivered; the network decision in section 5.1, ISS-236
+Depends on: P3 delivered; the network path the owner chose in section 5.1, built by TASK-P9-001, ISS-242
 Supersedes: nothing
 
 ## 1. Purpose
@@ -25,7 +25,7 @@ Research the same day, section 3, found three things.
    licensed code that reads the same AWS sources Meter can read itself.
 3. **The hub cannot reach those sources, nor most of the APIs its collectors already
    call.** Its private subnets have no default route and endpoints for six services only.
-   That is ISS-236, and it gates this sub project and every collector beyond P0.
+   That is ISS-242, and it gates this sub project and every collector beyond P0.
 
 ## 2. Definition of done
 
@@ -38,7 +38,7 @@ Research the same day, section 3, found three things.
 - Compute Optimizer stays the first source of targets where it is enabled, and every ranked
   option it returns is priced and kept, not only the first.
 - Every price carries its source, version, `as_of` (the publication date) and `collected_at`.
-- The hub reaches every AWS API Meter calls, through the path the owner chooses in 5.1.
+- The hub reaches every AWS API Meter calls, through the path the owner chose in 5.1.
 
 ## 3. Research, 2026-10-05
 
@@ -142,6 +142,15 @@ contained path for those two.
 The recommendation is A, because the hub was designed to have no route out and every
 other control assumes it. B is the fallback if A's cost or complexity is refused. The owner
 decides; the ADR records the choice and its price.
+
+**The owner's decision, 2026-10-05: A, plus C for two.** An interface endpoint for every
+service that has one: the endpoint VPC in us-east-1 for the services that answer only there,
+and endpoints in each Region called for the rest. Budgets and Support have no interface
+endpoint, so those two alone take C: two small functions outside the VPC that call them and
+write rows to S3, which the hub reads through the S3 gateway endpoint it already has. The hub
+keeps no route out, which ADR-0028 relies on, and B is not built. About 20 endpoints at about
+14.7 USD a month each is roughly 290 USD a month (modelled); the ADR that TASK-P9-001 writes
+measures it. OPEN-16 is answered.
 
 ### 5.2 Prices come from AWS, never from a third party
 
@@ -248,7 +257,7 @@ Files are streamed as CSV with the standard library, filtered to the two Regions
 
 ## 10. Risks
 
-- **The network.** Nothing here reaches AWS until 5.1 is decided and built.
+- **The network.** Nothing here reaches AWS until the path chosen in 5.1 is built, TASK-P9-001.
 - **List is not what is paid.** Private pricing and commitment discounts make list savings
   overstate; 5.6 scales them and labels both.
 - **SKU matching.** One type has many price rows. The filters in section 9 decide which is
@@ -259,7 +268,7 @@ Files are streamed as CSV with the standard library, filtered to the two Regions
 
 ## 11. Open questions
 
-- OPEN-16, the network path in 5.1.
+- OPEN-16, the network path in 5.1. ANSWERED 2026-10-05: A, plus C for Budgets and Support.
 - Which services after EC2 and EBS: RDS, ElastiCache, OpenSearch or others.
 
 ## 12. Features delivered

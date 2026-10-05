@@ -32,15 +32,15 @@ in the EC2 guide, kept as data with its source, and a test fails when the API li
 type the table lacks. Positive vCPUs and memory, and a baseline for every burstable type, are
 database constraints. The collector is a `collector_schedule` row with its reason and cost,
 ADR-0012, daily because new instance types appear between releases, and one Region failing
-does not fail the run. The hub has no `ec2` endpoint today, so nothing here runs until OPEN-16
-is answered, ISS-236.
+does not fail the run. The hub has no `ec2` endpoint today, so nothing here runs until
+TASK-P9-001 builds the path the owner chose for OPEN-16 on 2026-10-05, ISS-242.
 
 ## Status of this document
 
 Planned. The feature is specified in the
 [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.4 and 7, and planned as
-TASK-P9-005 in the [P9 plan](../plans/P9-implementation-plan.md), both pending the owner's
-approval. The sections a built feature carries, how it works, its failure behaviour, its
+TASK-P9-005 in the [P9 plan](../plans/P9-implementation-plan.md), both approved by the owner on
+2026-10-05. The sections a built feature carries, how it works, its failure behaviour, its
 security considerations, its interface and what it does not do, are written when it is built.
 Recording only what is decided is deliberate: a document that invents detail ahead of the
 build is worse than a short one, because it will be believed.

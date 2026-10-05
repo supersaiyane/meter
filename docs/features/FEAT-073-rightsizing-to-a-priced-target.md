@@ -51,14 +51,14 @@ from the same version. CPU or memory p95 above 90 percent, or bandwidth at its b
 size or a family with more memory per vCPU. An Upsize is a recommendation of its own kind with
 an added monthly cost, never a negative saving, so no total of savings can be reduced by it, and
 the planted c6i.2xlarge above 90 percent comes out as one. Nothing here reaches AWS until
-OPEN-16 is answered, ISS-236.
+TASK-P9-001 builds the path the owner chose for OPEN-16 on 2026-10-05, ISS-242.
 
 ## Status of this document
 
 Planned. The feature is specified in the
 [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.5 to 5.7, and planned as
-TASK-P9-006 to TASK-P9-008 in the [P9 plan](../plans/P9-implementation-plan.md), both pending
-the owner's approval. The sections a built feature carries, how it works, its failure
+TASK-P9-006 to TASK-P9-008 in the [P9 plan](../plans/P9-implementation-plan.md), both approved
+by the owner on 2026-10-05. The sections a built feature carries, how it works, its failure
 behaviour, its security considerations, its interface and what it does not do, are written
 when it is built. Recording only what is decided is deliberate: a document that invents detail
 ahead of the build is worse than a short one, because it will be believed.

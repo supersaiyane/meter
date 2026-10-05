@@ -1,9 +1,9 @@
 # P9 Price catalog and rightsizing targets: implementation plan
 
 Date: 2026-10-05
-Status: Provisional, pending approval of `docs/specs/2026-10-05-p9-price-catalog-design.md`
+Status: Approved by the owner on 2026-10-05, with its spec
 Spec: `docs/specs/2026-10-05-p9-price-catalog-design.md`
-Depends on: P3 delivered; the owner's choice of network path, OPEN-16
+Depends on: P3 delivered; the network path the owner chose on 2026-10-05, OPEN-16, which TASK-P9-001 builds
 Tasks: 11
 
 Meter tells an engineer an instance is too big and does not say what to move to, and the
@@ -18,8 +18,9 @@ Same contract as P0 through P8. One task, one commit.
 
 **Five rules specific to P9.**
 
-1. **Nothing reaches AWS until the network decision lands.** TASK-P9-001 is the gate, and
-   it is the owner's choice of option in spec section 5.1, recorded in an ADR.
+1. **Nothing reaches AWS until the network path is built.** TASK-P9-001 is the gate. It
+   builds the path the owner chose on 2026-10-05 in spec section 5.1, interface endpoints
+   plus two functions outside the VPC for Budgets and Support, and records it in an ADR.
 2. **Every price comes from AWS.** No website is scraped and no third party data is read.
    Vantage's MIT code may be read as a reference for SKU filtering, nothing more.
 3. **A price is versioned and dated.** Every row carries the offer file's version, its
@@ -34,7 +35,7 @@ Same contract as P0 through P8. One task, one commit.
 
 | Wave | Tasks | Delivers | Can start when |
 | --- | --- | --- | --- |
-| A. A way out | 001 | The hub reaches every AWS API it calls | The owner chooses an option, OPEN-16 |
+| A. A way out | 001 | The hub reaches every AWS API it calls | This plan approved and OPEN-16 answered, both 2026-10-05 |
 | B. The catalogs | 002 to 005 | Ports, tables, the price list and the instance catalog | A |
 | C. Targets | 006 to 009 | Compute Optimizer fixed, downsizing and upsizing to a named type, gp2 to gp3 | B |
 | D. Surface | 010 | Routes and the Alternatives table | C |
@@ -48,23 +49,33 @@ Same contract as P0 through P8. One task, one commit.
 | --- | --- |
 | Status | Not started |
 | Implements | P9 spec section 5.1 |
-| Delivers | ISS-236 closed |
-| Depends on | The owner's choice, OPEN-16 |
+| Delivers | ISS-242 closed |
+| Depends on | This plan approved and OPEN-16 answered, both 2026-10-05 |
 | Estimate | L |
 
-**Goal.** The option the owner chose, built in Terraform, recorded in an ADR with its price,
-and held by a test.
+**Goal.** The path the owner chose on 2026-10-05, spec section 5.1, built in Terraform,
+recorded in an ADR with its price, and held by a test. Option A for every service that has
+an interface endpoint: an endpoint VPC in us-east-1, peered to the hub, for the services that
+answer only there, and endpoints in each Region called for the rest. Option C for the two
+that have none, Budgets and Support: two small functions outside the VPC that call them and
+write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 **Acceptance criteria.**
 
-- [ ] An ADR records the option chosen from spec section 5.1, why, and its monthly cost,
-      modelled
+- [ ] An ADR records A plus C for Budgets and Support, why, and its monthly cost: the
+      endpoint price measured from the AWS price list, the endpoints counted from the
+      Terraform, and the total labelled modelled. The estimate the owner chose on was about
+      20 endpoints at about 14.7 USD a month each, roughly 290 USD a month (modelled)
 - [ ] Terraform builds it, and `terraform validate` and `fmt` pass for every stack touched
 - [ ] A test lists every AWS service the adapters create a client for, and holds each one
-      to a path from the hub by the chosen option
+      to a path: an interface endpoint in the Region it is called in, or, for Budgets and
+      Support only, one of the two functions outside the VPC
+- [ ] No NAT gateway and no default route in the hub's private subnets: every call leaves
+      through an interface endpoint, the peered endpoint VPC or the S3 gateway endpoint
 - [ ] The comment in `infra/terraform/hub/network.tf` that calls six endpoints every
       service the tasks call is corrected, and so is `docs/04-DEPLOYMENT.md`, which names a
-      Cost Explorer endpoint that does not exist
+      Cost Explorer endpoint among the hub's own, in the hub's Region, where none can be made:
+      Cost Explorer's endpoint is in us-east-1 only
 - [ ] Every new resource tagged `finops:module`, constraint 7
 
 ---
@@ -273,6 +284,5 @@ and held by a test.
 
 ## What this plan does not answer
 
-- OPEN-16, which network option the hub takes. The plan cannot start without it.
 - Which services after EC2 and EBS go into the catalog.
 - Spot prices, which wait for FEAT-047.

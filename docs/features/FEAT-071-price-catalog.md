@@ -45,14 +45,15 @@ unchanged. Files are streamed as CSV with the standard library, so the eu-west-1
 441,439,512 bytes (measured), is never loaded. Spot prices wait for FEAT-047, Savings Plans and
 reserved rate cards are not in the first cut, and which services follow EC2 and EBS is the
 owner's call. The Price List answers only in us-east-1, eu-central-1 and ap-south-1, and the hub
-cannot reach it today, so nothing here runs until OPEN-16 is answered, ISS-236.
+cannot reach it today, so nothing here runs until TASK-P9-001 builds the path the owner chose
+for OPEN-16 on 2026-10-05, ISS-242.
 
 ## Status of this document
 
 Planned. The feature is specified in the
 [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.2, 5.3 and 7, and planned
-as TASK-P9-004 in the [P9 plan](../plans/P9-implementation-plan.md), both pending the owner's
-approval. The sections a built feature carries, how it works, its failure behaviour, its
+as TASK-P9-004 in the [P9 plan](../plans/P9-implementation-plan.md), both approved by the owner
+on 2026-10-05. The sections a built feature carries, how it works, its failure behaviour, its
 security considerations, its interface and what it does not do, are written when it is built.
 Recording only what is decided is deliberate: a document that invents detail ahead of the
 build is worse than a short one, because it will be believed.

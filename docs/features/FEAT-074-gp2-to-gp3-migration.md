@@ -28,15 +28,15 @@ for storage plus 5.80 for throughput at 0.0464 USD per MiBps month, a saving of 
 from measured eu-west-2 prices). Prices come from FEAT-071's catalog, because the `AmazonEC2`
 offer holds EBS, and each volume type's included IOPS and throughput, maxima and IOPS per GiB
 are kept with their source in `volume_type_spec`. The planted 1000 GiB gp2 volume is priced as
-gp3, and its saving is labelled modelled. Nothing here reaches AWS until OPEN-16 is answered,
-ISS-236.
+gp3, and its saving is labelled modelled. Nothing here reaches AWS until TASK-P9-001 builds the
+path the owner chose for OPEN-16 on 2026-10-05, ISS-242.
 
 ## Status of this document
 
 Planned. The feature is specified in the
 [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), section 5.8, and planned as
-TASK-P9-009 in the [P9 plan](../plans/P9-implementation-plan.md), both pending the owner's
-approval. The sections a built feature carries, how it works, its failure behaviour, its
+TASK-P9-009 in the [P9 plan](../plans/P9-implementation-plan.md), both approved by the owner on
+2026-10-05. The sections a built feature carries, how it works, its failure behaviour, its
 security considerations, its interface and what it does not do, are written when it is built.
 Recording only what is decided is deliberate: a document that invents detail ahead of the
 build is worse than a short one, because it will be believed.
