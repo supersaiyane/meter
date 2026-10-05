@@ -264,6 +264,17 @@ def p7_routers() -> tuple[APIRouter, ...]:
     return (assistant.router,)
 
 
+def p8_routers() -> tuple[APIRouter, ...]:
+    """The experience and reporting routes, from the P8 spec's section 7 list.
+
+    Cost Explorer's query first, TASK-P8-007. The export, saved view and schedule routes
+    arrive with the tasks that build them, TASK-P8-009 to 011.
+    """
+    from finops_api.routes import explore
+
+    return (explore.router,)
+
+
 def _assistant(app: FastAPI, settings: Settings, model: Any) -> Any:
     """The assistant this application answers with, or None where no model was given.
 
@@ -338,6 +349,7 @@ def create_app(
         *(p4_routers() if include_p0_routes else ()),
         *(p5_routers() if include_p0_routes else ()),
         *(p7_routers() if include_p0_routes else ()),
+        *(p8_routers() if include_p0_routes else ()),
         *extra_routers,
     )
     # Checked before anything is registered, so a broken contract fails at

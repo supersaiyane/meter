@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 25 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 160 | test_*.py under tests/ |
-| Test functions | 2180 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 162 | test_*.py under tests/ |
+| Test functions | 2212 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -410,6 +410,9 @@ meter/
 │       │                      Also CommitmentUse and CommitmentCoverage, kept
 │       │                      apart for the reason the port keeps its methods
 │       │                      apart, and BillingPeriod and source_fingerprint
+│       ├── explore.py         Cost Explorer's periods: each preset's window and
+│       │                      the like for like window before it, pure and
+│       │                      tested against fixed dates. FEAT-065
 │       ├── metrics.py         MetricPoint. `at` is the instant, `as_of` the freshness
 │       ├── resource.py        ResourceRef. Opaque identifier, never parsed
 │       ├── containers.py      Workload, ClusterSlice, ReservationVsUse. OOM status
@@ -646,6 +649,10 @@ meter/
 │   │                          of the things being ranked, one device each, because
 │   │                          a mark with two meanings cannot be read. Used by the
 │   │                          allocation screen and the waste queue
+│   ├── screens/CostScreen.tsx  Cost Explorer, FEAT-065. The view lives in the
+│   │                          address under the route's own names, so a link
+│   │                          lands on it. exploreModel.ts holds its rules,
+│   │                          ExploreControls.tsx and ExploreResult.tsx its parts
 │   ├── screens/ContainerCostScreen.tsx  FEAT-035, under Cost. Each cluster states its
 │   │                          workloads' share and the capacity no pod requested,
 │   │                          and the two make its total in plain sight, so a
@@ -749,7 +756,8 @@ meter/
 │       │                      the approved label table gives it, and the
 │       │                      provider's term for each cost column's tooltip
 │       ├── components/charts/ the chart set, hand built SVG: stacked area with
-│       │                      forecast band and budget pace, stacked bar,
+│       │                      forecast band and budget pace, stacked bar in
+│       │                      rows or, over time, columns,
 │       │                      treemap, heatmap and KPI tile, with the earlier
 │       │                      bars and sparkline, each with a table of its
 │       │                      numbers that a test holds equal to its marks
@@ -1128,6 +1136,10 @@ meter/
 │   │                          An open period says so in the payload, because
 │   │                          two copies of a calendar rule is one that is
 │   │                          eventually wrong in one of them
+│   │   ├── explore.py         FEAT-065's GET /cost/explore: two groupings over
+│   │   │                      eight FOCUS columns and the period's own tag keys,
+│   │   │                      a period and the one before it. Refuses a view it
+│   │   │                      cannot draw with the sentence that says why
 │   │   ├── me.py              principal, tier, scope summary
 │   │   ├── accounts.py        accounts in scope, plus the role health recheck
 │   │   ├── org.py             the tree. Out of scope branches marked, not hidden
@@ -1209,7 +1221,11 @@ meter/
 │                              assistant.py holds the exchange, digest and
 │                              redaction repositories, and tokens_spent, the one
 │                              read across people: a tenant wide sum for the
-│                              budget, which returns a number and never a row
+│                              budget, which returns a number and never a row.
+│                              explore.py is Cost Explorer's: every read derived
+│                              from scoped_select, the ranking a window count and
+│                              the tag keys a function in the FROM clause, because
+│                              a wrapped query loses the mark the guard checks
 │
 ├── alembic.ini                no database URL in it, env.py reads the settings
 ├── migrations/                the only way the schema changes

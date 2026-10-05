@@ -143,7 +143,7 @@ whose purpose was never placed. Since 2026-10-05, ADR-0030:
 
 ```
 /                                  Overview
-/analyze/explorer                  Cost Explorer: spend, month to date and trend
+/analyze/explorer                  Cost Explorer: two groupings, a period and the one before
 /analyze/allocation                Allocation and showback, the unallocated bucket
 /analyze/anomalies                 Anomalies, ingested and detected
 /analyze/kubernetes-cost           Kubernetes cost by cluster, namespace and workload

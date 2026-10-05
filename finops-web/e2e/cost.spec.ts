@@ -22,67 +22,71 @@ const META = {
   failures: [],
 };
 
+/**
+ * One explorer answer whose rows, points and totals agree, the way the route's do: $4,512.71
+ * this month to date against $6,197.65 for the same days of the month before.
+ */
+function explored(twoWay: boolean): unknown {
+  const region = (name: string): string | null => (twoWay ? name : null);
+  return {
+    metric: 'effective_cost',
+    metrics_available: ['effective_cost', 'billed_cost'],
+    period: 'mtd',
+    granularity: 'daily',
+    current: { start: '2026-08-01', end: '2026-08-24' },
+    previous: { start: '2026-07-01', end: '2026-07-24' },
+    is_open: true,
+    collected_from: '2026-06-01',
+    previous_collected: true,
+    group_by: { dimension: 'service', tag_key: null },
+    then_by: twoWay ? { dimension: 'region', tag_key: null } : null,
+    tag_keys: ['team'],
+    total_this_period: '4512.7113',
+    total_previous_period: '6197.6544',
+    series: ['AmazonEC2', 'AmazonRDS', 'unallocated'],
+    points: [
+      { bucket: '2026-08-01', series: 'AmazonEC2', cost: '2388.4032' },
+      { bucket: '2026-08-01', series: 'AmazonRDS', cost: '1074.7814' },
+      { bucket: '2026-08-02', series: 'unallocated', cost: '1049.5267' },
+    ],
+    rows: [
+      {
+        first: 'AmazonEC2',
+        second: region('eu-west-2'),
+        this_period: '2388.4032',
+        previous_period: '3300.0000',
+      },
+      {
+        first: 'AmazonRDS',
+        second: region('eu-west-2'),
+        this_period: '1074.7814',
+        previous_period: '1500.0000',
+      },
+      {
+        first: 'unallocated',
+        second: region('us-east-1'),
+        this_period: '1049.5267',
+        previous_period: '1397.6544',
+      },
+    ],
+    row_limit: 500,
+    rows_omitted: 0,
+    omitted_this_period: '0',
+    omitted_previous_period: '0',
+  };
+}
+
 async function withSession(page: Page): Promise<void> {
   // The session is the token. There is no login screen in P0 and none is faked.
   await page.addInitScript(() => {
     window.localStorage.setItem('meter.token', 'a-session-token');
   });
 
-  await page.route('**/api/v1/cost/summary*', async (route) => {
-    await route.fulfill({
-      json: {
-        data: {
-          // Open, so the screen has to say so. That label is the difference
-          // between a reader understanding a part month and a reader
-          // concluding that spending collapsed.
-          current: {
-            period: '2026-08-01',
-            is_open: true,
-            effective_cost: '4512.7113',
-            billed_cost: '4873.7282',
-            line_items: 575,
-          },
-          previous: {
-            period: '2026-07-01',
-            is_open: false,
-            effective_cost: '6197.6544',
-            billed_cost: '6693.4668',
-            line_items: 775,
-          },
-          change: '-1684.9431',
-        },
-        meta: META,
-      },
-    });
-  });
-  await page.route('**/api/v1/cost/by-service*', async (route) => {
-    await route.fulfill({
-      json: {
-        data: [
-          {
-            name: 'AmazonEC2',
-            effective_cost: '2388.4032',
-            billed_cost: '2579.4755',
-            line_items: 115,
-          },
-          {
-            name: 'AmazonRDS',
-            effective_cost: '1074.7814',
-            billed_cost: '1160.7639',
-            line_items: 115,
-          },
-        ],
-        meta: META,
-      },
-    });
-  });
-  await page.route('**/api/v1/cost/trend*', async (route) => {
-    await route.fulfill({
-      json: {
-        data: [{ day: '2026-08-01', effective_cost: '193.1000' }],
-        meta: META,
-      },
-    });
+  // Cost Explorer's answer. A second grouping is answered with a second column, the way the
+  // route answers it, so the journey sees the table change shape when it groups twice.
+  await page.route('**/api/v1/cost/explore*', async (route) => {
+    const twoWay = new URL(route.request().url()).searchParams.get('then_by') === 'region';
+    await route.fulfill({ json: { data: explored(twoWay), meta: META } });
   });
   await page.route('**/api/v1/cost/allocation*', async (route) => {
     await route.fulfill({
@@ -115,16 +119,29 @@ test('the bill is legible, and says what it cannot attribute', async ({ page }) 
 
   // A figure, not a spinner and not a dash. The screen either has the number
   // or says why it does not.
-  await expect(page.getByTestId('cost-total')).toContainText(/\d/);
+  await expect(page.getByTestId('kpi-value').first()).toContainText(/\d/);
 
-  // Whether the period is finished is on the page one way or the other. Absent
-  // would leave a reader needing the calendar to interpret the number, which is
-  // how a part month gets read as a collapse in spend.
-  await expect(page.getByTestId('cost-period')).toContainText(/\d{4}-\d{2}-\d{2}/);
+  // Which days the figure covers, and that the month is still open, are on the page.
+  // Absent, a reader needs the calendar to interpret the number, which is how a part
+  // month gets read as a collapse in spend.
+  await expect(page.getByTestId('cost-period')).toContainText(/\d{4}/);
+  await expect(page.getByText(/still open/)).toBeVisible();
+  // The explorer's own table. Each chart carries a table of its numbers too, closed until
+  // asked for, so the first row on the page is no longer this table's.
+  await expect(page.getByTestId('explore-table').locator('tbody tr').first()).toBeVisible();
 
-  // Services, ranked. A ranking is the claim that the top row is worth reading
-  // first, so an empty table is a screen making no claim at all.
-  await expect(page.locator('tbody tr').first()).toBeVisible();
+  // Grouped two ways, the journey the P8 spec names. The view is the address, so the
+  // link a reader copies opens this view and not the default one.
+  await page.getByLabel('Then by').selectOption('region');
+  await expect(page).toHaveURL(/then_by=region/);
+  await expect(page.getByRole('columnheader', { name: /^Region/ })).toBeVisible();
+
+  // A value in the table is a filter, and the filter is a chip that takes itself away.
+  await page.getByRole('link', { name: 'AmazonEC2' }).click();
+  await expect(page).toHaveURL(/service=AmazonEC2/);
+  await expect(
+    page.getByRole('button', { name: 'Remove the filter Service: AmazonEC2' }),
+  ).toBeVisible();
 
   await page.goto('/analyze/allocation');
   await expect(page.getByTestId('allocation-gap')).toBeVisible();

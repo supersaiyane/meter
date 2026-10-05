@@ -122,6 +122,12 @@ describe('the visual layer', () => {
       'meter-sort',
       // DataTable emits this for the sentence saying why a column has no total.
       'meter-total-none',
+      // The chart set emits this for the series named beside their swatches.
+      'meter-legend',
+      // StackedBar emits this for its rows: the category, the bar and the total.
+      'meter-stacked-bars',
+      // KpiTile emits this for the tile around one headline figure.
+      'meter-kpi',
     ]);
     const withoutComments = layout.replace(/\/\*[\s\S]*?\*\//g, '');
     const targeted = new Set(

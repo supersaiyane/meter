@@ -62,21 +62,55 @@ async function demoEstate(page: Page): Promise<void> {
     meta: META,
   });
 
-  await stub(page, '/api/v1/cost/by-service', {
-    data: [
-      {
-        name: 'AmazonEC2',
-        effective_cost: '2043.1120',
-        billed_cost: '2306.5600',
-        line_items: 95,
-      },
-      {
-        name: 'AmazonRDS',
-        effective_cost: '879.1794',
-        billed_cost: '949.1100',
-        line_items: 95,
-      },
-    ],
+  // Cost Explorer's answer for the same month the summary above describes, so the figure
+  // the runbook opens on is the figure the explorer adds up to: $3,781.93.
+  await stub(page, '/api/v1/cost/explore', {
+    data: {
+      metric: 'effective_cost',
+      metrics_available: ['effective_cost', 'billed_cost'],
+      period: 'mtd',
+      granularity: 'daily',
+      current: { start: '2026-09-01', end: '2026-09-19' },
+      previous: { start: '2026-08-01', end: '2026-08-19' },
+      is_open: true,
+      collected_from: '2026-08-01',
+      previous_collected: true,
+      group_by: { dimension: 'service', tag_key: null },
+      then_by: null,
+      tag_keys: ['team'],
+      total_this_period: '3781.9335',
+      total_previous_period: '4103.2200',
+      series: ['AmazonEC2', 'AmazonRDS', 'unallocated'],
+      points: [
+        { bucket: '2026-09-18', series: 'AmazonEC2', cost: '2043.1120' },
+        { bucket: '2026-09-18', series: 'AmazonRDS', cost: '879.1794' },
+        { bucket: '2026-09-19', series: 'unallocated', cost: '859.6421' },
+      ],
+      rows: [
+        {
+          first: 'AmazonEC2',
+          second: null,
+          this_period: '2043.1120',
+          previous_period: '2400.0000',
+        },
+        {
+          first: 'AmazonRDS',
+          second: null,
+          this_period: '879.1794',
+          previous_period: '903.2200',
+        },
+        {
+          first: 'unallocated',
+          second: null,
+          this_period: '859.6421',
+          previous_period: '800.0000',
+        },
+      ],
+      row_limit: 500,
+      rows_omitted: 0,
+      omitted_this_period: '0',
+      omitted_previous_period: '0',
+    },
     meta: META,
   });
 
@@ -369,7 +403,5 @@ test('the commitments screen never puts the two percentages side by side', async
   await expect(page.getByTestId('utilization-means')).toContainText(
     /what we paid for was used/i,
   );
-  await expect(page.getByTestId('coverage-means')).toContainText(
-    /estate is on a commitment/i,
-  );
+  await expect(page.getByTestId('coverage-means')).toContainText(/estate is on a commitment/i);
 });

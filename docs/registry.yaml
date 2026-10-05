@@ -479,7 +479,7 @@ features:
 - id: FEAT-065
   name: Cost Explorer, two group bys over FOCUS dimensions and tags
   subproject: P8
-  status: Planned
+  status: Delivered
   detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) sections 5.3 and 7, [P8 plan](docs/plans/P8-implementation-plan.md)'
   doc: docs/features/FEAT-065-cost-explorer.md
 - id: FEAT-066

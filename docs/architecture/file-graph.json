@@ -138,6 +138,8 @@
     "finops-web/src/screens/DigestsScreen.tsx",
     "finops-web/src/screens/EnforcementScreen.tsx",
     "finops-web/src/screens/EntityScreen.tsx",
+    "finops-web/src/screens/ExploreControls.tsx",
+    "finops-web/src/screens/ExploreResult.tsx",
     "finops-web/src/screens/FreshnessScreen.tsx",
     "finops-web/src/screens/GeographyScreen.tsx",
     "finops-web/src/screens/HomeScreen.tsx",
@@ -190,11 +192,13 @@
     "finops-web/src/screens/__tests__/WasteSavingsScreen.test.tsx",
     "finops-web/src/screens/__tests__/WasteScreen.test.tsx",
     "finops-web/src/screens/__tests__/enforcementTime.test.ts",
+    "finops-web/src/screens/__tests__/exploreModel.test.ts",
     "finops-web/src/screens/__tests__/fixtures.ts",
     "finops-web/src/screens/__tests__/freshnessContract.test.ts",
     "finops-web/src/screens/__tests__/rawIdentifiers.test.tsx",
     "finops-web/src/screens/__tests__/surfaceStateFor.test.ts",
     "finops-web/src/screens/enforcementTime.ts",
+    "finops-web/src/screens/exploreModel.ts",
     "finops-web/src/screens/findingFigure.ts",
     "finops-web/src/screens/platformRollUp.ts",
     "finops-web/src/screens/querySeverity.ts",
@@ -233,6 +237,7 @@
     "finops_api/db/repositories/base.py",
     "finops_api/db/repositories/containers.py",
     "finops_api/db/repositories/cost.py",
+    "finops_api/db/repositories/explore.py",
     "finops_api/db/repositories/freshness.py",
     "finops_api/db/repositories/ingest.py",
     "finops_api/db/repositories/org.py",
@@ -254,6 +259,7 @@
     "finops_api/routes/accounts.py",
     "finops_api/routes/assistant.py",
     "finops_api/routes/cost.py",
+    "finops_api/routes/explore.py",
     "finops_api/routes/ingest.py",
     "finops_api/routes/inventory.py",
     "finops_api/routes/me.py",
@@ -273,6 +279,7 @@
     "finops_core/domain/budget.py",
     "finops_core/domain/containers.py",
     "finops_core/domain/cost.py",
+    "finops_core/domain/explore.py",
     "finops_core/domain/fact.py",
     "finops_core/domain/geography.py",
     "finops_core/domain/iac.py",
@@ -503,6 +510,7 @@
     "tests/api/test_container_routes.py",
     "tests/api/test_cost_budgets.py",
     "tests/api/test_cost_commitments.py",
+    "tests/api/test_cost_explore.py",
     "tests/api/test_cost_export_route.py",
     "tests/api/test_cost_repository.py",
     "tests/api/test_cost_routes.py",
@@ -544,6 +552,7 @@
     "tests/core/test_cost_domain.py",
     "tests/core/test_domain.py",
     "tests/core/test_errors.py",
+    "tests/core/test_explore_periods.py",
     "tests/core/test_geography.py",
     "tests/core/test_iac.py",
     "tests/core/test_insight.py",
@@ -2418,37 +2427,27 @@
     },
     {
       "s": "finops-web/src/screens/CostScreen.tsx",
-      "t": "finops-web/src/api/types.ts",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/CostScreen.tsx",
-      "t": "finops-web/src/components/BarChart.tsx",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/CostScreen.tsx",
-      "t": "finops-web/src/components/DataTable.tsx",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/CostScreen.tsx",
-      "t": "finops-web/src/components/Figure.tsx",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/CostScreen.tsx",
-      "t": "finops-web/src/components/RankedBars.tsx",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/CostScreen.tsx",
       "t": "finops-web/src/components/StateBoundary.tsx",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/CostScreen.tsx",
-      "t": "finops-web/src/components/tableConfig.ts",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/screens/ExploreControls.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/screens/ExploreResult.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
       "k": "typescript"
     },
     {
@@ -2458,7 +2457,17 @@
     },
     {
       "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/shell/filters.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/shell/sections.ts",
       "k": "typescript"
     },
     {
@@ -2614,6 +2623,51 @@
     {
       "s": "finops-web/src/screens/EntityScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreControls.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreControls.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreResult.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreResult.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreResult.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreResult.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreResult.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreResult.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreResult.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
       "k": "typescript"
     },
     {
@@ -3743,7 +3797,12 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/CostScreen.test.tsx",
-      "t": "finops-web/src/api/fixtures/cost.ts",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
       "k": "typescript"
     },
     {
@@ -4312,6 +4371,21 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/exploreModel.test.ts",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/exploreModel.test.ts",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/exploreModel.test.ts",
+      "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/fixtures.ts",
       "t": "finops-web/src/api/client.ts",
       "k": "typescript"
@@ -4364,6 +4438,21 @@
     {
       "s": "finops-web/src/screens/__tests__/surfaceStateFor.test.ts",
       "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/exploreModel.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/exploreModel.ts",
+      "t": "finops-web/src/components/charts/StackedBar.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/exploreModel.ts",
+      "t": "finops-web/src/shell/sections.ts",
       "k": "typescript"
     },
     {
@@ -4753,6 +4842,36 @@
     },
     {
       "s": "finops_api/db/repositories/cost.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/explore.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/explore.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/explore.py",
+      "t": "finops_api/db/repositories/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/explore.py",
+      "t": "finops_core/domain/explore.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/explore.py",
+      "t": "finops_core/domain/platform.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/explore.py",
       "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
@@ -5199,6 +5318,51 @@
     {
       "s": "finops_api/routes/cost.py",
       "t": "finops_query/anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_api/db/repositories/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_api/db/repositories/explore.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_api/routes/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_core/domain/explore.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
     {
@@ -7762,6 +7926,36 @@
       "k": "python"
     },
     {
+      "s": "tests/api/test_cost_explore.py",
+      "t": "finops_api/db/repositories/explore.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_explore.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_explore.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_explore.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_explore.py",
+      "t": "finops_core/domain/explore.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_explore.py",
+      "t": "finops_core/domain/platform.py",
+      "k": "python"
+    },
+    {
       "s": "tests/api/test_cost_export_route.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -8484,6 +8678,11 @@
     {
       "s": "tests/core/test_errors.py",
       "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_explore_periods.py",
+      "t": "finops_core/domain/explore.py",
       "k": "python"
     },
     {

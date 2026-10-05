@@ -249,7 +249,20 @@ other tables take sort values in TASK-P8-013.
 ### TASK-P8-007: Cost Explorer
 
 | Field | Value |
-| --- | --- |
+| 
+
+**Delivered 2026-10-05.** The owner chose the layout, the eight groupings, tag keys from the
+period's own line items and the like for like comparison, each the recommended option. The period
+arithmetic is `finops_core/domain/explore.py`, the reads `finops_api/db/repositories/explore.py`,
+every one derived from `scoped_select`, and the route `finops_api/routes/explore.py`, registered
+as P8's first router. The table holds 500 rows and says what the rest add up to, and the
+unallocated rows are read apart from the limit. The screen at `/analyze/explorer` replaced the
+spend and trend screen: its view lives in the address, its table values are filter links, and its
+chart is StackedBar drawn as columns, an orientation added for time. The chart set's legend and
+rows had shipped with no styles in TASK-P8-005 and are styled now. The hook and fixture only the
+old screen read were removed.
+
+--- | --- |
 | Status | Not started |
 | Implements | P8 spec sections 5.3 and 7, FEAT-065 |
 | Delivers | FEAT-065 |

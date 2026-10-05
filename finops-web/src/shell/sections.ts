@@ -46,6 +46,32 @@ export const UNPLANNED = 'a sub project not yet planned';
  */
 export const RECOMMENDATION_FILTERS = ['finding'] as const;
 export const ALLOCATION_FILTERS = ['tag'] as const;
+/**
+ * Cost Explorer's whole view, so a link lands on the same view: both groupings, the period,
+ * the granularity, the measure, and a filter for each grouping column and for a tag. The names
+ * are the route's own, so the screen hands its query string to `GET /cost/explore` unchanged.
+ */
+export const EXPLORER_FILTERS = [
+  'group_by',
+  'group_by_tag',
+  'then_by',
+  'then_by_tag',
+  'period',
+  'start',
+  'end',
+  'granularity',
+  'metric',
+  'service',
+  'service_category',
+  'account',
+  'region',
+  'availability_zone',
+  'charge_category',
+  'commitment_discount_type',
+  'commitment_discount_status',
+  'tag_key',
+  'tag_value',
+] as const;
 export const ACCOUNT_FILTERS = ['status'] as const;
 export const RESOURCE_FILTERS = ['account', 'region', 'geography', 'kind', 'type'] as const;
 
@@ -64,7 +90,12 @@ export const GROUPS: readonly GroupDef[] = [
     label: 'Analyze',
     path: '/analyze',
     screens: [
-      { path: '/analyze/explorer', label: 'Cost Explorer', arrives: null },
+      {
+        path: '/analyze/explorer',
+        label: 'Cost Explorer',
+        arrives: null,
+        filters: EXPLORER_FILTERS,
+      },
       {
         path: '/analyze/allocation',
         label: 'Allocation and Showback',

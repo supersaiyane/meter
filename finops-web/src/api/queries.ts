@@ -12,7 +12,6 @@ import {
 } from './fixtures/query';
 import {
   costSummaryFixture,
-  costByServiceFixture,
   costByAccountFixture,
   costAllocationFixture,
   costTrendFixture,
@@ -66,6 +65,7 @@ import type {
   ApiCostAnomalies,
   ApiCostDay,
   ApiCostSlice,
+  ApiExplore,
   ApiCostSummary,
   ApiEnvelope,
   ApiQueryFinding,
@@ -234,13 +234,17 @@ export function useCostSummary() {
   );
 }
 
-export function useCostByService() {
-  return useQuerySurface<ApiCostSlice[]>(
-    ['cost-by-service'],
-    '/api/v1/cost/by-service',
-    '/api/v1/cost/by-service',
-    costByServiceFixture,
-  );
+/**
+ * FEAT-065. Cost Explorer's query. The screen's query string is the view, so it is the cache
+ * key too, and a link to a view and the view a reader built share one cached answer.
+ */
+export function useCostExplore(query: string) {
+  const client = useApi();
+  return useQuery<ApiEnvelope<ApiExplore>>({
+    queryKey: ['cost-explore', query],
+    queryFn: () =>
+      client.get<ApiExplore>(`/api/v1/cost/explore${query === '' ? '' : `?${query}`}`),
+  });
 }
 
 export function useCostByAccount() {

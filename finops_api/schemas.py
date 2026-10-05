@@ -1667,3 +1667,84 @@ class RedactionOut(BaseModel):
     rule_id: str
     action: Literal["BLOCKED", "REDACTED"]
     occurred_at: datetime
+
+
+class ExploreGroupingOut(BaseModel):
+    """What one Cost Explorer axis groups by: a FOCUS column, or `tag` and one tag key."""
+
+    model_config = ConfigDict(frozen=True)
+
+    dimension: str
+    tag_key: str | None = None
+
+
+class ExploreWindowOut(BaseModel):
+    """A run of days, inclusive at both ends."""
+
+    model_config = ConfigDict(frozen=True)
+
+    start: date
+    end: date
+
+
+class ExplorePointOut(BaseModel):
+    """What one named group cost in one day or month. A null series is everything else."""
+
+    model_config = ConfigDict(frozen=True)
+
+    bucket: date
+    series: str | None
+    cost: Decimal
+
+
+class ExploreRowOut(BaseModel):
+    """One row of the explorer's table: a value of each grouping, this period and the last.
+
+    `previous_period` is null where the period before was never collected, which is not the
+    same as a group that cost nothing then, and is never sent as zero.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    first: str
+    second: str | None
+    this_period: Decimal
+    previous_period: Decimal | None
+
+
+class ExploreOut(BaseModel):
+    """FEAT-065. Cost grouped two ways over a period, set against the period before it.
+
+    A total is null where nothing was billed in the window, rather than zero. The table holds
+    at most `row_limit` rows, and `rows_omitted` with the two omitted sums says what the rest
+    add up to, so the rows and the omissions always reconcile to the totals.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    metric: str
+    metrics_available: list[str]
+    period: str
+    granularity: str
+    current: ExploreWindowOut
+    previous: ExploreWindowOut
+    #: The window ends today, so its last day is still being billed and its total is not whole.
+    is_open: bool
+    #: The first billing month the scope holds line items for, or null for none.
+    collected_from: date | None
+    #: False where the previous window starts before `collected_from`.
+    previous_collected: bool
+    group_by: ExploreGroupingOut
+    then_by: ExploreGroupingOut | None
+    #: The allow list: the most used tag keys on this period's line items.
+    tag_keys: list[str]
+    total_this_period: Decimal | None
+    total_previous_period: Decimal | None
+    #: The groups the chart names, in stacking order. Points outside them carry a null series.
+    series: list[str]
+    points: list[ExplorePointOut]
+    rows: list[ExploreRowOut]
+    row_limit: int
+    rows_omitted: int
+    omitted_this_period: Decimal
+    omitted_previous_period: Decimal | None

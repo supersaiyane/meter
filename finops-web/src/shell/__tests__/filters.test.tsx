@@ -8,7 +8,7 @@ const KEYS = ['status', 'region'] as const;
 
 /** A screen in miniature: two filters, the address, and the browser's own buttons. */
 function Probe() {
-  const { values, set } = useFilters(KEYS);
+  const { values, set, update } = useFilters(KEYS);
   const location = useLocation();
   const navigate = useNavigate();
   return (
@@ -31,6 +31,14 @@ function Probe() {
         }}
       >
         clear
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          update({ status: 'Broken', region: '' });
+        }}
+      >
+        both
       </button>
       <button
         type="button"
@@ -90,5 +98,17 @@ describe('filters live in the query string', () => {
     fireEvent.click(screen.getByRole('button', { name: 'broken' }));
     expect(screen.getByTestId('search')).toHaveTextContent('colour=red');
     expect(screen.getByTestId('search')).toHaveTextContent('status=Broken');
+  });
+});
+
+describe('useFilters, several keys at once', () => {
+  it('changes them as one history entry, taking out the ones it empties', () => {
+    // Cost Explorer clears a custom period's dates as it sets a preset. As three entries, the
+    // back button would walk a reader through two views nobody chose.
+    open('/accounts?region=eu');
+    fireEvent.click(screen.getByText('both'));
+    expect(screen.getByTestId('search')).toHaveTextContent('?status=Broken');
+    fireEvent.click(screen.getByText('back'));
+    expect(screen.getByTestId('search')).toHaveTextContent('?region=eu');
   });
 });

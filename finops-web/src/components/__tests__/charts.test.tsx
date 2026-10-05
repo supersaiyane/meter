@@ -126,6 +126,42 @@ describe('StackedBar', () => {
     expect(container.querySelectorAll('[data-testid="hatch-over"]')).toHaveLength(2);
     expect(stated(container)).toEqual([60, 40, 100, 20, 10, 30]);
   });
+
+  it('draws time as columns, each segment as tall as its table states, the axis three labels', () => {
+    const { container } = render(
+      <StackedBar
+        categories={['1 Oct', '2 Oct', '3 Oct']}
+        series={[
+          { key: 'ec2', label: 'AmazonEC2', provenance: 'measured', values: [79, 40, 20] },
+          {
+            key: 'rest',
+            label: 'Everything else',
+            provenance: 'modelled',
+            values: [0, 39, 10],
+          },
+        ]}
+        label="Effective Cost by day, by Service"
+        format={money}
+        orientation="columns"
+      />,
+    );
+    const segments = [...container.querySelectorAll('[data-testid="bar-segment"]')];
+    expect(segments).toHaveLength(6);
+    // The tallest column is the scale: 79 here, against a drawing 158 high, so twice its value.
+    for (const segment of segments) {
+      expect(numberAttr(segment, 'height')).toBeCloseTo(
+        numberAttr(segment, 'data-value') * 2,
+        1,
+      );
+    }
+    expect(
+      screen.getByRole('img', { name: 'Effective Cost by day, by Service' }),
+    ).toBeVisible();
+    expect(screen.getByTestId('stacked-columns-axis')).toHaveTextContent(
+      /^1 Oct.*peak.*3 Oct$/,
+    );
+    expect(stated(container)).toEqual([79, 0, 79, 40, 39, 79, 20, 10, 30]);
+  });
 });
 
 describe('Treemap', () => {

@@ -1131,3 +1131,56 @@ export interface ApiRedaction {
   readonly action: 'BLOCKED' | 'REDACTED';
   readonly occurred_at: string;
 }
+
+/** FEAT-065. What one Cost Explorer axis groups by: a FOCUS column, or `tag` and a key. */
+export interface ApiExploreGrouping {
+  readonly dimension: string;
+  readonly tag_key: string | null;
+}
+
+/** A run of days, inclusive at both ends, as ISO dates. */
+export interface ApiExploreWindow {
+  readonly start: string;
+  readonly end: string;
+}
+
+/** What one named group cost in one day or month. A null series is everything else. */
+export interface ApiExplorePoint {
+  readonly bucket: string;
+  readonly series: string | null;
+  readonly cost: string;
+}
+
+/** One table row. A null previous is a period never collected, which is not zero. */
+export interface ApiExploreRow {
+  readonly first: string;
+  readonly second: string | null;
+  readonly this_period: string;
+  readonly previous_period: string | null;
+}
+
+/** `GET /cost/explore`. Rows and omissions reconcile to the totals; a null total is none billed. */
+export interface ApiExplore {
+  readonly metric: string;
+  readonly metrics_available: readonly string[];
+  readonly period: string;
+  readonly granularity: string;
+  readonly current: ApiExploreWindow;
+  readonly previous: ApiExploreWindow;
+  /** The window ends today, so its last day is still being billed. */
+  readonly is_open: boolean;
+  readonly collected_from: string | null;
+  readonly previous_collected: boolean;
+  readonly group_by: ApiExploreGrouping;
+  readonly then_by: ApiExploreGrouping | null;
+  readonly tag_keys: readonly string[];
+  readonly total_this_period: string | null;
+  readonly total_previous_period: string | null;
+  readonly series: readonly string[];
+  readonly points: readonly ApiExplorePoint[];
+  readonly rows: readonly ApiExploreRow[];
+  readonly row_limit: number;
+  readonly rows_omitted: number;
+  readonly omitted_this_period: string;
+  readonly omitted_previous_period: string | null;
+}

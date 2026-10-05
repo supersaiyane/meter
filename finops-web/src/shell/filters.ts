@@ -16,6 +16,12 @@ export interface Filters<K extends string> {
   readonly values: Readonly<Record<K, string>>;
   /** Sets one key, or takes it out for the empty string, as a new history entry. */
   readonly set: (key: K, value: string) => void;
+  /**
+   * Sets several keys as one history entry, taking out each one given the empty string.
+   * Choosing a preset after a custom period clears its dates too, and as three entries the
+   * back button would walk a reader through two views nobody chose.
+   */
+  readonly update: (changes: Partial<Record<K, string>>) => void;
 }
 
 export function useFilters<K extends string>(keys: readonly K[]): Filters<K> {
@@ -39,5 +45,21 @@ export function useFilters<K extends string>(keys: readonly K[]): Filters<K> {
     },
     [setParams],
   );
-  return { values, set };
+  const update = useCallback(
+    (changes: Partial<Record<K, string>>) => {
+      setParams((current) => {
+        const next = new URLSearchParams(current);
+        for (const [key, value] of Object.entries<string | undefined>(changes)) {
+          if (value === undefined || value === '') {
+            next.delete(key);
+          } else {
+            next.set(key, value);
+          }
+        }
+        return next;
+      });
+    },
+    [setParams],
+  );
+  return { values, set, update };
 }

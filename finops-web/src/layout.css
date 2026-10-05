@@ -1630,6 +1630,74 @@ main > section > [data-testid='state'] > p[role='status'] {
   color: var(--text-muted);
 }
 
+/* The chart set's legend, TASK-P8-005: the series in a row that wraps, each beside its
+   swatch. It shipped as a browser list, bullets and all, because no screen drew a chart from
+   the set until Cost Explorer did. */
+.meter-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-1);
+  color: var(--text-muted);
+}
+
+.meter-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* A stacked bar on its side: the category, the bar and the total, one row each. */
+.meter-stacked-bars {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.meter-stacked-bars li {
+  display: grid;
+  grid-template-columns: minmax(6rem, max-content) 1fr auto;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-1);
+}
+
+[data-testid='stacked-columns'] {
+  display: block;
+  width: 100%;
+}
+
+/* As the bar chart's axis: where the series starts, its peak, and where it ends. */
+[data-testid='stacked-columns-axis'] {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-family: var(--font-numeral);
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+/* A tile around one headline figure, and the figure at the size a headline gets. */
+.meter-kpi {
+  padding: var(--space-3);
+}
+
+.meter-kpi [data-testid='kpi-value'] {
+  margin: var(--space-2) 0 var(--space-1);
+  font-family: var(--font-numeral);
+  font-size: var(--font-size-5);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  text-align: left;
+  color: var(--text-numeral);
+}
+
 /* ---------------------------------------------------------------- budgets */
 
 /* Section 9 of docs/12-UI-DESIGN.md, applied to a comparison rather than a
@@ -2238,30 +2306,113 @@ main > section > [data-testid='state'] > div[data-testid] > h3:first-child {
   color: var(--text-muted);
 }
 
-/* The change against the period before, as a chip rather than a sentence, which is
-   what the home screen does with the same number. */
-[data-testid='cost-change'] {
-  margin: var(--space-3) 0 0;
-  font-size: var(--font-size-2);
+/* Cost Explorer's controls, FEAT-065: the view a reader builds, in one row that wraps. Each
+   label sits above its control, so a row of six controls reads as six questions. */
+[data-testid='explore-controls'] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3) var(--space-4);
+  margin: 0 0 var(--space-2);
+}
+
+[data-testid='explore-controls'] > label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--font-size-1);
   color: var(--text-muted);
 }
 
-/* The trend's own range line ran on: two dates, two figures and two freshness
-   phrases in one paragraph with no breaks, which is six facts and no structure.
-   Split to the ends of the chart it describes, like the bar chart's own axis. */
-[data-testid='cost-trend-range'] {
+[data-testid='explore-controls'] fieldset {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-  margin: var(--space-2) 0 0;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+[data-testid='explore-controls'] legend {
+  margin-bottom: var(--space-1);
   font-size: var(--font-size-1);
-  color: var(--text-faint);
+  color: var(--text-muted);
+}
+
+[data-testid='explore-controls'] fieldset label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-2);
+  color: var(--text);
+}
+
+[data-testid='explore-controls'] select,
+[data-testid='explore-controls'] input[type='date'] {
+  font: inherit;
+  font-size: var(--font-size-2);
+  color: var(--text);
+  background: var(--surface-raised-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-1) var(--space-2);
+}
+
+[data-testid='explore-controls'] input[type='radio'] {
+  accent-color: var(--accent-mark);
+}
+
+/* The filters in force, as chips that take themselves away. */
+[data-testid='explore-filters'] {
+  margin: 0 0 var(--space-3);
+}
+
+[data-testid='explore-filters'] ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-testid='explore-filters'] button {
+  font: inherit;
+  font-size: var(--font-size-1);
+  color: var(--text);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: var(--space-1) var(--space-2);
+  cursor: pointer;
+}
+
+[data-testid='explore-filters'] button:focus-visible,
+[data-testid='explore-controls'] select:focus-visible,
+[data-testid='explore-controls'] input:focus-visible {
+  outline: 2px solid var(--accent-mark);
+  outline-offset: 2px;
+}
+
+[data-testid='explore-filters'] p,
+[data-testid='explore-note'] {
+  margin: 0;
+  font-size: var(--font-size-1);
+  color: var(--text-muted);
+}
+
+/* The three tiles side by side where there is room, one above another where there is not. */
+[data-testid='explore-kpis'] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-3);
+  margin: var(--space-3) 0;
 }
 
 /* Room above the chart so the tallest bar is not against the panel's edge. */
-[data-testid='cost-trend'] {
-  margin-top: var(--space-5);
+[data-testid='explore-chart'] {
+  margin: var(--space-5) 0 var(--space-4);
 }
 
 /* The estate coverage notice on the resource list. A count and its causes, with the

@@ -1,4 +1,4 @@
-import type { Account, ApiEnvelope, ApiMeta } from '../../api/types';
+import type { Account, ApiEnvelope, ApiExplore, ApiMeta } from '../../api/types';
 import type { ApiClient } from '../../api/client';
 import type { FlatNode } from '../../components/orgNodes';
 
@@ -110,5 +110,49 @@ export function clientReturning(
       }
       return Promise.resolve(answer as ApiEnvelope<T>);
     },
+  };
+}
+
+/**
+ * A Cost Explorer answer whose parts agree: the rows, the points and the totals all add up to
+ * $4,512.71 this period and $4,203.10 before, the way the route's own answers do. The chart
+ * names two groups, unallocated among them, and folds the other two into everything else.
+ */
+export function exploreOf(partial: Partial<ApiExplore> = {}): ApiExplore {
+  return {
+    metric: 'effective_cost',
+    metrics_available: ['effective_cost', 'billed_cost', 'list_cost'],
+    period: 'mtd',
+    granularity: 'daily',
+    current: { start: '2026-10-01', end: '2026-10-05' },
+    previous: { start: '2026-09-01', end: '2026-09-05' },
+    is_open: true,
+    collected_from: '2026-08-01',
+    previous_collected: true,
+    group_by: { dimension: 'service', tag_key: null },
+    then_by: null,
+    tag_keys: ['team', 'finops:module'],
+    total_this_period: '4512.71',
+    total_previous_period: '4203.10',
+    series: ['AmazonEC2', 'unallocated'],
+    points: [
+      { bucket: '2026-10-01', series: 'AmazonEC2', cost: '1000.00' },
+      { bucket: '2026-10-01', series: 'unallocated', cost: '500.00' },
+      { bucket: '2026-10-01', series: null, cost: '600.00' },
+      { bucket: '2026-10-02', series: 'AmazonEC2', cost: '1388.40' },
+      { bucket: '2026-10-02', series: 'unallocated', cost: '524.31' },
+      { bucket: '2026-10-02', series: null, cost: '500.00' },
+    ],
+    rows: [
+      { first: 'AmazonEC2', second: null, this_period: '2388.40', previous_period: '2201.00' },
+      { first: 'unallocated', second: null, this_period: '1024.31', previous_period: '912.10' },
+      { first: 'AmazonRDS', second: null, this_period: '600.00', previous_period: '590.00' },
+      { first: 'AmazonS3', second: null, this_period: '500.00', previous_period: '500.00' },
+    ],
+    row_limit: 500,
+    rows_omitted: 0,
+    omitted_this_period: '0',
+    omitted_previous_period: '0',
+    ...partial,
   };
 }
