@@ -14,9 +14,12 @@ Module level map. Check this before reading any source file, and before
 searching. If it does not answer the question, the map is wrong and should be
 rebuilt from source rather than worked around.
 
-Last updated: 2026-08-23
+Last updated: 2026-10-05
 Master index: `INDEX.md`
-Verified against the tree: 2026-10-09
+Verified against the tree: the `finops_core/ports/` block and the port rows of the module
+responsibilities table, on 2026-10-05, by importing every module in `finops_core/ports/`
+and every class that implements one. Nothing else in this file has a verified date: the
+one written here before, 2026-10-09, had not yet happened when it was found on 2026-10-04.
 Update trigger: any new module, moved module, or changed responsibility.
 
 ## Counted, not claimed
@@ -402,16 +405,17 @@ meter/
 │       │                      TASK-P7-002
 │       └── quota.py           QuotaUsage. Unpublished usage is None, never zero
 │   └── ports/                 protocols only. No implementation, no cloud import.
-│                              query.py also declares QueryParser and
-│                              QueryEvidence, which exist so an adapter can name
-│                              what it needs without importing the layer above it
-│       └── query.py           QuerySurface, the first port not about a cloud,
-│                              plus QueryParser. An adapter may not import
-│                              finops_query, so it names the parsing it needs
-│                              here and a collector supplies it
+│                              The Ports section of docs/02-ARCHITECTURE.md says
+│                              what each one is for and which adapter implements it
+│       ├── __init__.py        PROVIDER_PORTS, SURFACE_PORTS and MODEL_PORTS, the
+│       │                      groups tests/core/test_ports.py checks. A protocol
+│       │                      in no group is imported from its own module, and
+│       │                      that test never reaches it, ISS-239
 │       ├── accounts.py        AccountDiscovery
-│       ├── credentials.py     CredentialBroker plus the opaque ProviderSession
-│       ├── cost.py            CostExport
+│       ├── budget.py          BudgetSource, the payer's budgets
+│       ├── cloudwatch_estate.py
+│       │                      CloudWatchEstate, what CloudWatch holds rather than
+│       │                      the values in it. A fake and no adapter, ISS-240
 │       ├── commitment.py      CommitmentReport, two methods on purpose.
 │       │                      Utilization is per commitment, coverage is per
 │       │                      service, because a covered dollar cannot be
@@ -419,18 +423,33 @@ meter/
 │       │                      One method returning both would invite that
 │       │                      fabrication. Not a widening of CostExport: a
 │       │                      Savings Plan is not a line item
-│       ├── metrics.py         MetricSource
-│       ├── inventory.py       ResourceInventory
 │       ├── containers.py      ContainerSource. Two methods, because a cluster and
 │       │                      a reservation fail independently
-│       ├── quotas.py          QuotaSource
+│       ├── cost.py            CostExport
+│       ├── credentials.py     CredentialBroker plus the opaque ProviderSession
+│       ├── iac.py             StateSource, the resources an infrastructure as
+│       │                      code state names
+│       ├── identity.py        IdentityProvider and EntitlementResolver
+│       ├── inventory.py       ResourceInventory, a fake and no adapter, ISS-240,
+│       │                      and TopologySource, one account and region of the
+│       │                      graph, which the AWS Config adapter implements
 │       ├── llm.py             LlmProvider, one method, complete, over messages,
 │       │                      tool schemas and tool calls. It names no vendor, no
 │       │                      model and no region. ADR-0028, TASK-P7-001
+│       ├── metrics.py         MetricSource. A fake and no adapter, ISS-240
 │       ├── pull_requests.py   PullRequestSink. Opens a pull request, and has no
 │       │                      method to merge, approve or apply one. A fake and no
 │       │                      adapter, since the code host is OPEN-13. TASK-P7-009
-│       └── identity.py        IdentityProvider and EntitlementResolver
+│       ├── query.py           QuerySurface, the first port not about a cloud, with
+│       │                      RefreshFloor and PanelRewrite beside it, and
+│       │                      QueryEvidence and QueryParser. An adapter may not
+│       │                      import finops_query, so it names the parsing it
+│       │                      needs here and a collector supplies it
+│       ├── quotas.py          QuotaSource
+│       ├── recommendations.py RecommendationSource, what Compute Optimizer, Cost
+│       │                      Optimization Hub and Trusted Advisor already know
+│       └── tickets.py         TicketSink. A fake and no adapter, since the
+│                              ticketing system is OPEN-05
 ├── finops_providers/          IN BUILD  aws/, grafana/, gcp/, azure/. The fakes
 │                              left this package on 2026-09-21, ADR-0022
 │   ├── aws/                   the only package that imports boto3
@@ -1460,8 +1479,8 @@ meter/
 
 | Module | Responsibility | Depends on | Must not depend on |
 | --- | --- | --- | --- |
-| `finops_core` | Domain entities, the nine ports, the typed error taxonomy | nothing | boto3, botocore, fastapi, sqlalchemy, requests |
-| `finops_providers/aws` | The six cloud ports implemented against boto3 | `finops_core`, boto3 | `finops_api`, `finops-web` |
+| `finops_core` | Domain entities, the ports in `finops_core/ports/`, the typed error taxonomy | nothing | boto3, botocore, fastapi, sqlalchemy, requests |
+| `finops_providers/aws` | The AWS adapters, against boto3. Which port each one implements is in the Ports section of `docs/02-ARCHITECTURE.md` | `finops_core`, boto3 | `finops_api`, `finops-web` |
 | `finops_fakes` | Every port in memory, plus the generated estate. Used by the tests and by `scripts/demo/`. Not in the wheel, ADR-0022 | `finops_core` | boto3, and every production package is forbidden from importing it |
 | `finops_ingest` | Dispatcher, worker, run ledger, watermarks, collectors | `finops_core`, a provider | `finops-web` |
 | `finops_api` | HTTP surface, scope dependency, repository guard | `finops_core`, a provider | boto3 directly |
