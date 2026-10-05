@@ -22,6 +22,8 @@ A FinOps tool that cannot show its own bill has no standing to comment on anyone
 
 Every Terraform resource carries a `finops:module` tag. A daily collector makes one Cost Explorer request grouped by that tag and writes `platform_cost`. Daily rather than hourly because Cost Explorer charges per request, and one grouped request rather than one per module for the same reason. Untagged cost lands in an explicit unallocated bucket rather than being dropped, because a self metering report that quietly under counts is worse than none, since it is believed.
 
+**Amended 2026-10-05, ISS-230.** The assistant's model calls are not resources, so no Terraform tag reaches them. The hub stack routes each model through an application inference profile tagged `finops:module = assistant`, and the task role may reach the model only through it, so its spend arrives as a module of its own. Unverified against a real bill, ISS-002.
+
 ## Failure behaviour
 
 Governed by the closed error taxonomy in [FEAT-006](FEAT-006-typed-errors-and-freshness.md).

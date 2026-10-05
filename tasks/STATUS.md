@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 62 total, 14 specified, 13 in build, 32 delivered |
 | Decisions | 29 architecture decision records |
-| Changes | 111 recorded |
-| Issues | 139 fixed, 89 open, 0 parked |
+| Changes | 112 recorded |
+| Issues | 142 fixed, 87 open, 0 parked |
 | Open questions | 14 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -148,8 +148,9 @@ score unavailable forever on an estate with one unread region.
 model configured answers every question as not enabled and spends nothing, and the first real
 answer needs OPEN-10 answered and ISS-002 closed. Two of its six features are In build, narration
 and remediation, because nothing reads change history or opens a pull request, ISS-227 and
-ISS-228. Bedrock spend does not yet reach the platform cost screen, ISS-230, and the assistant's
-tables have no retention job or erasure, ISS-226 and OPEN-14. ISS-076 stays open: the answer set
+ISS-228. Since 2026-10-05 its spend is tagged for the platform cost screen, ISS-230, its questions
+are bounded, ISS-225, and every cited figure carries its unit, ISS-231, all three unverified
+against an account. The assistant's tables have no retention job or erasure, ISS-226 and OPEN-14. ISS-076 stays open: the answer set
 holds a partial scope case, and nothing yet forces a real model to cite the coverage.
 
 **Nothing has ever run in CI either.** The repository has no git remote, so

@@ -32,7 +32,8 @@ screen. The tools are the semantic layer, and there is no SQL the model can writ
 The model never writes a figure. An answer is prose holding `{{name}}` placeholders and no
 numerals, and each placeholder is a citation naming a call id and a path into that call's
 result, such as `data[name=AmazonEC2].effective_cost`. The loop reads the value from the
-result itself, with its provenance and its `as_of`, and `Answer` refuses to exist holding a
+result itself, with its provenance, its `as_of` and the unit its tool declares for that
+field, ISS-231, and `Answer` refuses to exist holding a
 figure no citation placed. A numeral in the prose, a citation of a call that never
 returned, a path that cannot be read, a selector matching more than one row, or a model
 that stops without a terminal tool is a typed SchemaDrift failure, never a best effort
@@ -61,7 +62,9 @@ its gap, TOOL, FIGURE, SCOPE, BUDGET or SECRET, with a reason and, where one exi
 screen that would show the figure. The budget refusal names the budget, the month, the
 spend so far, the date it resets and the setting that raises it. A failure names one of the
 seven causes. A deployment with no model configured answers every question as NotOptedIn,
-not enabled, and spends nothing.
+not enabled, and spends nothing. A question past `METER_ASSISTANT_MAX_CONCURRENT_QUESTIONS`
+is answered at once as Throttled and spends nothing, ISS-225, and a figure whose unit its
+tool does not declare is SchemaDrift rather than a guess, ISS-231.
 
 Bedrock's errors are translated rather than passed through. A model not enabled for the
 account is NotOptedIn, an identifier Bedrock does not recognise is Misconfigured, a timeout
@@ -74,7 +77,8 @@ converge. The word one passes the figure check, ISS-229.
 The model sees only what the asker could read on a screen, because every tool call carries
 their token and passes the same guard. Prompts go no further than Bedrock in the hub
 account, and the hub role may invoke only the models named in `assistant_model_ids`, which
-refuses a wildcard. Prompt injection is a test set,
+refuses a wildcard, and only through each model's inference profile tagged
+`finops:module = assistant`, ISS-230. Prompt injection is a test set,
 `tests/query/insight/test_injection_set.py`. An exchange is readable only by the person who
 asked, ADR-0029, and a question holding a credential never reaches the model, FEAT-046. The
 exchanges have no retention job and no erasure yet, ISS-226.

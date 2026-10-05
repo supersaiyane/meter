@@ -254,14 +254,22 @@ plus health check for 300 accounts is minutes of Fargate time.
 Modelled, like the rest of this section. The budget is the ceiling: once the
 month's tokens reach `METER_ASSISTANT_MONTHLY_TOKEN_BUDGET`, every question is
 refused before a model is called, so a month overshoots only by the questions
-already running when it is reached. The prices are placeholders until OPEN-10
-names a model, and the spend does not yet reach the platform cost screen,
-ISS-230.
+already running when it is reached, at most
+`METER_ASSISTANT_MAX_CONCURRENT_QUESTIONS` of them. The prices are placeholders
+until OPEN-10 names a model. The spend reaches the platform cost screen as the
+module `assistant`, through an inference profile tagged for it, ISS-230, which
+no real bill has confirmed yet.
 
-The assistant is off until `METER_ASSISTANT_MODEL_ID` names a model and the hub
-stack's `assistant_model_ids` grants it. Until then every question is answered
-as not enabled and spends nothing. The variable refuses a wildcard, so the hub
-can invoke the named models and no others.
+The assistant is off until the hub stack names a model in both
+`assistant_model_ids` and `assistant_model_in_use`. That creates the model's
+tagged inference profile and sets `METER_ASSISTANT_MODEL_ID` and
+`METER_ASSISTANT_INFERENCE_PROFILE_ARN` on the API task. Until then every
+question is answered as not enabled and spends nothing. The variable refuses a
+wildcard, so the hub can invoke the named models and no others, and only
+through their profiles. The pipeline's deploy role, which this repository does
+not define, needs `bedrock:CreateInferenceProfile`, `GetInferenceProfile`,
+`DeleteInferenceProfile`, `TagResource`, `UntagResource` and
+`ListTagsForResource` to apply it.
 
 ### The number that dominates everything else
 
