@@ -225,3 +225,21 @@ describe('ResourceListScreen', () => {
     expect(detail.querySelectorAll('li').length).toBeGreaterThan(0);
   });
 });
+
+describe('ResourceListScreen, narrowed by the address', () => {
+  it('lands narrowed to the geography a map click carried, and shows it', async () => {
+    render(
+      <Harness
+        initialPath="/inventory/resources?geography=eu"
+        client={clientReturning({
+          '/api/v1/inventory/resources?limit=50&offset=0&geography=eu': pageOf({}),
+          '/api/v1/inventory/coverage': graphCoverageFixture(),
+        })}
+      >
+        <ResourceListScreen />
+      </Harness>,
+    );
+    expect(await screen.findByTestId('resources-count')).toBeInTheDocument();
+    expect(screen.getByTestId('filter-geography')).toHaveTextContent('eu');
+  });
+});

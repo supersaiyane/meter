@@ -166,3 +166,28 @@ describe('WasteScreen', () => {
     );
   });
 });
+
+describe('WasteScreen, one finding from the FinOps Score', () => {
+  const FINDING = '2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f';
+
+  it('lands on the finding a FinOps Score link names, and says so', async () => {
+    render(
+      <Harness
+        initialPath={`/optimize?finding=${FINDING}`}
+        client={clientReturning({
+          [PATH]: recommendationsFixture(),
+          '/api/v1/waste/refusals': refusalsFixture(),
+        })}
+      >
+        <WasteScreen />
+      </Harness>,
+    );
+    expect(await screen.findByTestId(`lifecycle-${FINDING}`)).toBeInTheDocument();
+    expect(screen.queryByTestId('lifecycle-3a4b5c6d-7e8f-4a0b-9c1d-2e3f4a5b6c7d')).toBeNull();
+    const note = screen.getByTestId('filtered-to-finding');
+    expect(note).toHaveTextContent(FINDING);
+    expect(
+      within(note).getByRole('link', { name: 'Show every recommendation' }),
+    ).toHaveAttribute('href', '/optimize');
+  });
+});

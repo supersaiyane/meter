@@ -23,6 +23,7 @@
     "finops-web/e2e/containers.spec.ts",
     "finops-web/e2e/cost.spec.ts",
     "finops-web/e2e/demo.spec.ts",
+    "finops-web/e2e/filters.spec.ts",
     "finops-web/e2e/journey.spec.ts",
     "finops-web/e2e/quotas.spec.ts",
     "finops-web/e2e/topology.spec.ts",
@@ -190,8 +191,10 @@
     "finops-web/src/shell/ThemeToggle.test.tsx",
     "finops-web/src/shell/ThemeToggle.tsx",
     "finops-web/src/shell/__tests__/AppShell.test.tsx",
+    "finops-web/src/shell/__tests__/filters.test.tsx",
     "finops-web/src/shell/__tests__/metaStore.test.ts",
     "finops-web/src/shell/__tests__/sections.test.ts",
+    "finops-web/src/shell/filters.ts",
     "finops-web/src/shell/metaRegistry.ts",
     "finops-web/src/shell/metaStore.ts",
     "finops-web/src/shell/sections.ts",
@@ -1759,7 +1762,17 @@
     },
     {
       "s": "finops-web/src/screens/AccountsScreen.tsx",
+      "t": "finops-web/src/shell/filters.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AccountsScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AccountsScreen.tsx",
+      "t": "finops-web/src/shell/sections.ts",
       "k": "typescript"
     },
     {
@@ -1999,7 +2012,17 @@
     },
     {
       "s": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "t": "finops-web/src/shell/filters.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAllocationScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "t": "finops-web/src/shell/sections.ts",
       "k": "typescript"
     },
     {
@@ -2999,7 +3022,17 @@
     },
     {
       "s": "finops-web/src/screens/ResourceListScreen.tsx",
+      "t": "finops-web/src/shell/filters.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ResourceListScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ResourceListScreen.tsx",
+      "t": "finops-web/src/shell/sections.ts",
       "k": "typescript"
     },
     {
@@ -3169,7 +3202,17 @@
     },
     {
       "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/shell/filters.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/shell/sections.ts",
       "k": "typescript"
     },
     {
@@ -4195,6 +4238,11 @@
     {
       "s": "finops-web/src/shell/__tests__/AppShell.test.tsx",
       "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/filters.test.tsx",
+      "t": "finops-web/src/shell/filters.ts",
       "k": "typescript"
     },
     {

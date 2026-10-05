@@ -30,7 +30,7 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Counted | Now | Derived from |
 | --- | --- | --- |
 | Screens built | 24 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 24 in 8 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Playwright journeys | 26 in 9 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 25 | files in migrations/versions, all of which are listed below in this file |
@@ -738,6 +738,9 @@ meter/
 │       │                      disagree
 │       ├── shell/ScreenTabs.tsx  a merged screen's views as links under its
 │       │                      heading, the open one marked with aria-current
+│       ├── shell/filters.ts   useFilters: a screen's filters live in the query
+│       │                      string, as history entries, under the keys its
+│       │                      entry in sections.ts declares
 │       ├── layout.css         where things sit. Element selectors, because
 │       │                      DataTable is the only table and Figure the only
 │       │                      numeral. Needs no component to accept a className,

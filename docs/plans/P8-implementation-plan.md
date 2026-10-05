@@ -124,7 +124,7 @@ faint. ADR-0030 supersedes ADR-0020.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec section 5.6 |
 | Delivers | ISS-235 closed |
 | Depends on | TASK-P8-002 |
@@ -135,10 +135,16 @@ and a saved view carry the same state.
 
 **Acceptance criteria.**
 
-- [ ] Every filter control on every screen reads and writes the query string
-- [ ] The links from FinOps Score and from Geography land filtered, tested
-- [ ] Back and forward restore the filter
-- [ ] An unknown parameter is ignored and named, never silently applied
+- [x] Every filter control on every screen reads and writes the query string
+- [x] The links from FinOps Score and from Geography land filtered, tested
+- [x] Back and forward restore the filter
+- [x] An unknown parameter is ignored and named, never silently applied
+
+**Delivered 2026-10-05.** Four screens had filter controls: Accounts, Allocation, Resources
+and, new, Recommendations, which narrows to the one finding a FinOps Score link names. Each
+declares its keys once in `sections.ts`, which is also what saved views will store in
+TASK-P8-010. The Geography link needed no change: the resource API already narrowed by
+geography, and only the screen ignored it.
 
 ---
 

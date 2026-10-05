@@ -17,6 +17,8 @@ export interface ScreenDef {
   readonly label: string;
   /** Null when built. The sub project name when it is not. */
   readonly arrives: string | null;
+  /** The query string keys this screen reads as filters, P8 spec section 5.6. */
+  readonly filters?: readonly string[];
 }
 
 export interface GroupDef {
@@ -37,6 +39,16 @@ export interface TabDef {
  */
 export const UNPLANNED = 'a sub project not yet planned';
 
+/**
+ * The filters each filtered screen reads from its address, declared once here
+ * and imported by the screen, so the navigation, the screen and the shell agree
+ * on which parameters are filters. Saved views store exactly these.
+ */
+export const RECOMMENDATION_FILTERS = ['finding'] as const;
+export const ALLOCATION_FILTERS = ['tag'] as const;
+export const ACCOUNT_FILTERS = ['status'] as const;
+export const RESOURCE_FILTERS = ['account', 'region', 'geography', 'kind', 'type'] as const;
+
 export const GROUPS: readonly GroupDef[] = [
   {
     // Understand Usage and Cost: Reporting and Analytics. The persona
@@ -53,10 +65,19 @@ export const GROUPS: readonly GroupDef[] = [
     path: '/analyze',
     screens: [
       { path: '/analyze/explorer', label: 'Cost Explorer', arrives: null },
-      { path: '/analyze/allocation', label: 'Allocation and Showback', arrives: null },
+      {
+        path: '/analyze/allocation',
+        label: 'Allocation and Showback',
+        arrives: null,
+        filters: ALLOCATION_FILTERS,
+      },
       { path: '/analyze/anomalies', label: 'Anomalies', arrives: null },
       { path: '/analyze/kubernetes-cost', label: 'Kubernetes cost', arrives: null },
-      { path: '/analyze/kubernetes-rightsizing', label: 'Kubernetes rightsizing', arrives: null },
+      {
+        path: '/analyze/kubernetes-rightsizing',
+        label: 'Kubernetes rightsizing',
+        arrives: null,
+      },
       { path: '/analyze/clusters', label: 'Clusters', arrives: null },
     ],
   },
@@ -78,7 +99,12 @@ export const GROUPS: readonly GroupDef[] = [
     label: 'Optimize',
     path: '/optimize',
     screens: [
-      { path: '/optimize', label: 'Recommendations', arrives: null },
+      {
+        path: '/optimize',
+        label: 'Recommendations',
+        arrives: null,
+        filters: RECOMMENDATION_FILTERS,
+      },
       { path: '/optimize/commitments', label: 'Commitments', arrives: null },
       { path: '/optimize/savings', label: 'Realized Savings', arrives: null },
     ],
@@ -100,8 +126,18 @@ export const GROUPS: readonly GroupDef[] = [
     label: 'Inventory',
     path: '/inventory',
     screens: [
-      { path: '/inventory/accounts', label: 'Accounts', arrives: null },
-      { path: '/inventory/resources', label: 'Resources', arrives: null },
+      {
+        path: '/inventory/accounts',
+        label: 'Accounts',
+        arrives: null,
+        filters: ACCOUNT_FILTERS,
+      },
+      {
+        path: '/inventory/resources',
+        label: 'Resources',
+        arrives: null,
+        filters: RESOURCE_FILTERS,
+      },
       { path: '/inventory/topology', label: 'Topology', arrives: null },
     ],
   },
@@ -261,10 +297,19 @@ export function activeGroupFor(pathname: string): string | null {
   return matchFor(pathname)?.group.label ?? null;
 }
 
+/** The query string keys the screen at this path reads as filters; none for most. */
+export function filtersFor(pathname: string): readonly string[] {
+  return matchFor(pathname)?.screen.filters ?? [];
+}
+
 /** The tabs of the screen at this path, and which one is open, or null for a screen without tabs. */
 export function tabsFor(
   pathname: string,
-): { readonly screen: ScreenDef; readonly tabs: readonly TabDef[]; readonly current: string } | null {
+): {
+  readonly screen: ScreenDef;
+  readonly tabs: readonly TabDef[];
+  readonly current: string;
+} | null {
   const match = matchFor(pathname);
   const tabs = match === null ? undefined : TABS[match.screen.path];
   if (match === null || tabs === undefined) {
@@ -274,7 +319,10 @@ export function tabsFor(
   // Query findings tab open.
   const current = tabs
     .filter((tab) => within(pathname, tab.path))
-    .reduce((deepest, tab) => (tab.path.length > deepest.length ? tab.path : deepest), match.screen.path);
+    .reduce(
+      (deepest, tab) => (tab.path.length > deepest.length ? tab.path : deepest),
+      match.screen.path,
+    );
   return { screen: match.screen, tabs, current };
 }
 

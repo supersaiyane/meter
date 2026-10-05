@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { NavLink, useLocation } from 'react-router';
+import { NavLink, useLocation, useSearchParams } from 'react-router';
 
 import { CoverageBanner } from '../components/CoverageBanner';
 import { FreshnessIndicator } from '../components/FreshnessIndicator';
@@ -7,7 +7,14 @@ import { TypedError } from '../components/TypedError';
 import { isFailureCause } from '../components/provenance';
 import { useAggregateMeta } from './metaRegistry';
 import { readStored, writeStored } from '../storage';
-import { GROUPS, activeGroupFor, isSelfGroup, screenTitleFor, tabsFor } from './sections';
+import {
+  GROUPS,
+  activeGroupFor,
+  filtersFor,
+  isSelfGroup,
+  screenTitleFor,
+  tabsFor,
+} from './sections';
 import { ScreenTabs } from './ScreenTabs';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -49,6 +56,9 @@ export function AppShell({ children, now }: AppShellProps) {
   const { pathname } = useLocation();
   const title = screenTitleFor(pathname);
   const tabbed = tabsFor(pathname);
+  const [params] = useSearchParams();
+  const taken = filtersFor(pathname);
+  const ignored = [...new Set(params.keys())].filter((key) => !taken.includes(key));
   const [navOpen, setNavOpen] = useState(() => !navWasCollapsed());
 
   // Only the section holding the current screen is open, so the menu is short
@@ -251,6 +261,14 @@ export function AppShell({ children, now }: AppShellProps) {
         <h1 data-testid="screen-title">{title}</h1>
         {tabbed ? (
           <ScreenTabs label={tabbed.screen.label} tabs={tabbed.tabs} current={tabbed.current} />
+        ) : null}
+        {ignored.length > 0 ? (
+          // A parameter this screen does not read stays in the address and is never applied,
+          // and is said here, so a link that meant to filter does not land on an unfiltered
+          // screen in silence. ISS-235 was exactly that.
+          <p data-testid="ignored-filters" role="status">
+            Not a filter on this screen, so not applied: {ignored.join(', ')}
+          </p>
         ) : null}
         {children}
       </main>

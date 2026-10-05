@@ -1,11 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { useAccounts } from '../api/queries';
 import type { Account } from '../api/types';
 import { DataTable } from '../components/DataTable';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
+import { useFilters } from '../shell/filters';
 import { useReportMeta } from '../shell/metaRegistry';
+import { ACCOUNT_FILTERS } from '../shell/sections';
 import { surfaceStateFor } from './surfaceStateFor';
 
 /**
@@ -27,6 +29,10 @@ const FILTERS = [
   'UNKNOWN',
 ] as const;
 type Filter = (typeof FILTERS)[number];
+
+function isFilter(value: string): value is Filter {
+  return (FILTERS as readonly string[]).includes(value);
+}
 
 function matches(account: Account, filter: Filter): boolean {
   if (filter === 'All') return true;
@@ -56,7 +62,10 @@ const COLUMNS: readonly Column<Account>[] = [
 
 export function AccountsScreen() {
   const query = useAccounts();
-  const [filter, setFilter] = useState<Filter>('All');
+  const { values, set } = useFilters(ACCOUNT_FILTERS);
+  // From the address, so a link can land on the broken accounts. A value that is not a
+  // filter here shows them all, and the pressed chip says so rather than the address.
+  const filter: Filter = isFilter(values.status) ? values.status : 'All';
   useReportMeta('accounts', query.data?.meta);
 
   const rows = useMemo(
@@ -75,7 +84,7 @@ export function AccountsScreen() {
             type="button"
             aria-pressed={filter === name}
             onClick={() => {
-              setFilter(name);
+              set('status', name === 'All' ? '' : name);
             }}
           >
             {name.replace('_', ' ').toLowerCase()}

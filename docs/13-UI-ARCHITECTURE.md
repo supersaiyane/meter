@@ -227,6 +227,12 @@ Not in the path. Three reasons, and the third is the product's own thesis.
    screen.** A figure whose filters are invisible is a figure that cannot be
    argued with, which is the failure `docs/12-UI-DESIGN.md` exists to prevent.
 
+Built on 2026-10-05, TASK-P8-003, closing ISS-235: until then nothing read the
+query string. `useFilters` in `finops-web/src/shell/filters.ts` reads and writes a
+screen's filters there, each change is a history entry so back and forward walk
+through them, each screen declares its keys in `sections.ts`, and the shell names
+any parameter the screen does not take rather than applying it.
+
 ## 6. The home screen
 
 ### Shape

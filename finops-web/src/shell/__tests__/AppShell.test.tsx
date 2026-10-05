@@ -298,3 +298,17 @@ describe('AppShell', () => {
     expect(await violationsIn(container)).toEqual([]);
   });
 });
+
+describe('AppShell, parameters a screen does not take', () => {
+  it('names a parameter the screen does not take, and applies nothing for it', () => {
+    renderShell(metaOf(), '/inventory/accounts?status=Broken&colour=red');
+    const ignored = screen.getByTestId('ignored-filters');
+    expect(ignored).toHaveTextContent('colour');
+    expect(ignored).not.toHaveTextContent('status');
+  });
+
+  it('says nothing when every parameter is one the screen takes', () => {
+    renderShell(metaOf(), '/inventory/accounts?status=Broken');
+    expect(screen.queryByTestId('ignored-filters')).toBeNull();
+  });
+});

@@ -5,7 +5,9 @@ import { useGraphCoverage, useResources } from '../api/queries';
 import { FixtureBand } from '../components/FixtureBand';
 import { StateBoundary } from '../components/StateBoundary';
 import type { ApiResourceFilters, ApiSliceCoverage, ApiTopologyNode } from '../api/types';
+import { useFilters } from '../shell/filters';
 import { useReportMeta } from '../shell/metaRegistry';
+import { RESOURCE_FILTERS } from '../shell/sections';
 import { saidOf } from './sliceCoverage';
 import { surfaceStateFor } from './surfaceStateFor';
 
@@ -76,15 +78,23 @@ function Choice({
 }
 
 export function ResourceListScreen() {
-  const [account, setAccount] = useState('');
-  const [region, setRegion] = useState('');
-  const [kind, setKind] = useState('');
-  const [type, setType] = useState('');
-  const [offset, setOffset] = useState(0);
+  const { values, set } = useFilters(RESOURCE_FILTERS);
+  const { account, region, geography, kind, type } = values;
+  // The page is the screen's own, and it starts again whenever the filters change: derived
+  // from them rather than reset in an effect, because a page held for one set of filters is
+  // not a page of another.
+  const narrowedBy = `${account}|${region}|${geography}|${kind}|${type}`;
+  const [paging, setPaging] = useState({ narrowedBy, offset: 0 });
+  const offset = paging.narrowedBy === narrowedBy ? paging.offset : 0;
+  const setOffset = (next: number) => {
+    setPaging({ narrowedBy, offset: next });
+  };
 
   const query = useResources({
     accountId: account === '' ? undefined : account,
     regionId: region === '' ? undefined : region,
+    // FEAT-061's click from the map arrives as a geography, every region in it by prefix.
+    geography: geography === '' ? undefined : geography,
     nodeKind: kind === '' ? undefined : kind,
     resourceType: type === '' ? undefined : type,
     limit: PAGE,
@@ -126,10 +136,9 @@ export function ResourceListScreen() {
   /** Any filter change returns to the first page. Staying on page four of a narrower result
    *  shows an empty table, which reads as "nothing matches" when the truth is that the reader
    *  is past the end. */
-  function narrow(set: (next: string) => void) {
+  function narrow(key: (typeof RESOURCE_FILTERS)[number]) {
     return (next: string) => {
-      set(next);
-      setOffset(0);
+      set(key, next);
     };
   }
 
@@ -181,29 +190,44 @@ export function ResourceListScreen() {
           label="Account"
           options={filters.account_id}
           value={account}
-          onChange={narrow(setAccount)}
+          onChange={narrow('account')}
         />
         <Choice
           id="filter-region"
           label="Region"
           options={filters.region_id}
           value={region}
-          onChange={narrow(setRegion)}
+          onChange={narrow('region')}
         />
         <Choice
           id="filter-kind"
           label="Kind"
           options={filters.node_kind}
           value={kind}
-          onChange={narrow(setKind)}
+          onChange={narrow('kind')}
         />
         <Choice
           id="filter-type"
           label="Type"
           options={filters.resource_type}
           value={type}
-          onChange={narrow(setType)}
+          onChange={narrow('type')}
         />
+        {geography === '' ? null : (
+          // There is no picker for a geography; it arrives from a click on the map. Shown,
+          // with a way out, because a filter a reader cannot see is one they cannot doubt.
+          <p data-testid="filter-geography">
+            Geography: {geography}{' '}
+            <button
+              type="button"
+              onClick={() => {
+                set('geography', '');
+              }}
+            >
+              Clear
+            </button>
+          </p>
+        )}
       </div>
 
       <StateBoundary state={state}>

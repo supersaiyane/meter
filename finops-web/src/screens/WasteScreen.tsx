@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router';
 
 import { useRecommendations, useRefusals } from '../api/queries';
 import { DataTable } from '../components/DataTable';
@@ -7,7 +8,9 @@ import { Figure } from '../components/Figure';
 import { SeverityBadge } from '../components/SeverityBadge';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
+import { useFilters } from '../shell/filters';
 import { useReportMeta } from '../shell/metaRegistry';
+import { RECOMMENDATION_FILTERS } from '../shell/sections';
 import { severityLevel } from './querySeverity';
 import { surfaceStateFor } from './surfaceStateFor';
 import type { ApiRecommendation } from '../api/types';
@@ -65,7 +68,17 @@ export function WasteScreen() {
   const declined = useRefusals();
   const envelope = query.data?.data;
   const found = envelope?.data;
-  const rows = useMemo(() => found?.recommendations ?? [], [found]);
+  const all = useMemo(() => found?.recommendations ?? [], [found]);
+  const { values } = useFilters(RECOMMENDATION_FILTERS);
+  // One finding when a FinOps Score link names it, ISS-235. The ownership sentence is about
+  // the whole queue, so it keeps reading the whole queue.
+  const rows = useMemo(
+    () =>
+      values.finding === ''
+        ? all
+        : all.filter((row) => row.recommendation_id === values.finding),
+    [all, values.finding],
+  );
 
   const byClass = useMemo(() => savingByClass(rows), [rows]);
   const examined = declined.data?.data.data.refusals ?? [];
@@ -160,11 +173,18 @@ export function WasteScreen() {
           <span data-testid="waste-all-owned">Every open recommendation has an owner</span>
         ) : (
           <span data-testid="waste-unowned-count">
-            {unowned} of {rows.length} recommendations have no owner. An unowned finding is one
+            {unowned} of {all.length} recommendations have no owner. An unowned finding is one
             nobody is going to fix
           </span>
         )}
       </p>
+
+      {values.finding === '' ? null : (
+        <p data-testid="filtered-to-finding">
+          Showing one finding, <code>{values.finding}</code>, from the FinOps Score.{' '}
+          <Link to="/optimize">Show every recommendation</Link>
+        </p>
+      )}
 
       <StateBoundary state={state}>
         {/* Where the money is, before the list of what to do about it. A queue sorted by

@@ -71,3 +71,19 @@ describe('CostAllocationScreen', () => {
     expect(await violationsIn(container)).toEqual([]);
   });
 });
+
+describe('CostAllocationScreen, the key in the address', () => {
+  it('groups by the tag key the address names, and asks for that one', async () => {
+    render(
+      <Harness
+        initialPath="/analyze/allocation?tag=service"
+        client={clientReturning({
+          '/api/v1/cost/allocation?tag=service': costAllocationFixture(),
+        })}
+      >
+        <CostAllocationScreen />
+      </Harness>,
+    );
+    expect(await screen.findByRole('combobox')).toHaveValue('service');
+  });
+});

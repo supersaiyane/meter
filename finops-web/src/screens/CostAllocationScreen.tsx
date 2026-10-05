@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { useCostAllocation } from '../api/queries';
 import { DataTable } from '../components/DataTable';
@@ -6,7 +6,9 @@ import { RankedBars } from '../components/RankedBars';
 import { Figure } from '../components/Figure';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
+import { useFilters } from '../shell/filters';
 import { useReportMeta } from '../shell/metaRegistry';
+import { ALLOCATION_FILTERS } from '../shell/sections';
 import { surfaceStateFor } from './surfaceStateFor';
 import type { ApiCostSlice } from '../api/types';
 
@@ -36,7 +38,14 @@ function money(amount: string): number {
 }
 
 export function CostAllocationScreen() {
-  const [tag, setTag] = useState<string>(SUGGESTED[0]);
+  const { values, set } = useFilters(ALLOCATION_FILTERS);
+  // The key in the address, so a link can land grouped by it, and the first suggestion when
+  // it names none. A key that is not a suggestion is still offered, so the control always
+  // shows the grouping in force.
+  const tag = values.tag === '' ? SUGGESTED[0] : values.tag;
+  const keys: readonly string[] = (SUGGESTED as readonly string[]).includes(tag)
+    ? SUGGESTED
+    : [...SUGGESTED, tag];
   const query = useCostAllocation(tag);
   const envelope = query.data?.data;
   const rows = useMemo(() => envelope?.data ?? [], [envelope]);
@@ -93,10 +102,10 @@ export function CostAllocationScreen() {
           <select
             value={tag}
             onChange={(event) => {
-              setTag(event.target.value);
+              set('tag', event.target.value === SUGGESTED[0] ? '' : event.target.value);
             }}
           >
-            {SUGGESTED.map((key) => (
+            {keys.map((key) => (
               <option key={key} value={key}>
                 {key}
               </option>
