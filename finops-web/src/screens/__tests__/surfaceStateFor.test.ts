@@ -49,7 +49,10 @@ describe('why part of an estate is missing', () => {
     const state = surfaceStateFor(
       READY,
       meta({
-        failures: [failure('account_health', 'Throttled'), failure('query_audit', 'AccessDenied')],
+        failures: [
+          failure('account_health', 'Throttled'),
+          failure('query_audit', 'AccessDenied'),
+        ],
       }),
       3,
       'none',
