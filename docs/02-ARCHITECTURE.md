@@ -56,21 +56,72 @@ continuous integration, not by good intentions.
 
 ## Ports
 
-Six interfaces, defined in `finops-core`, implemented per provider. A
-`FakeProvider` implements all six so that core and API tests run with no AWS
-access at all.
+A port is a runtime checkable `typing.Protocol` in `finops_core/ports/`. It holds no
+implementation and imports no cloud SDK, which is constraint 1. An adapter implements a
+port, and nothing in `finops_core` knows which adapter it was handed. Every port also has
+an in memory implementation in `finops_fakes`, which is what lets the core and API tests
+run with no AWS account. The exception is `QueryParser`, whose one implementation is pure
+code in `finops_query`.
 
-| Port | Responsibility | AWS implementation |
-| --- | --- | --- |
-| `AccountDiscovery` | Enumerate accounts and the organization tree | AWS Organizations |
-| `CredentialBroker` | Produce a scoped session for a target account | STS AssumeRole with ExternalId |
-| `CostExport` | Locate and read billing data | Data Exports CUR 2.0 in S3, read through Athena |
-| `MetricSource` | Read time series for a resource | CloudWatch GetMetricData |
-| `ResourceInventory` | Enumerate resources and their relationships | AWS Config aggregator, Resource Explorer |
-| `QuotaSource` | Read limits and current usage | Service Quotas, AWS/Usage namespace, Trusted Advisor |
+### Groups
 
-Adding a provider means implementing six interfaces. It does not mean touching
-the domain, the API, or the frontend.
+`finops_core/ports/__init__.py` exports part of the package and sorts what it exports into
+groups. `tests/core/test_ports.py` holds the membership of each group and checks every
+grouped port: that it is a runtime checkable protocol, that every method names a typed cause
+from `finops_core.errors`, and that no signature mentions an ARN or boto.
+
+| Group | What belongs in it |
+| --- | --- |
+| `PROVIDER_PORTS` | What a cloud provider implements. `FakeProvider` in `finops_fakes/provider.py` implements every one |
+| `SURFACE_PORTS` | Not about a cloud: a tool that holds saved queries which cost money when they run. `FakeQuerySurface` in `finops_fakes/surface.py` implements every one |
+| `MODEL_PORTS` | The model behind the assistant, ADR-0028. Neither the cloud fake nor a query surface implements it, so it has a group of its own |
+| No group | Every other protocol in the package. Each is imported from its own module, and the per port checks in `tests/core/test_ports.py` never reach it, ISS-239 |
+
+### Every port
+
+Modules are in `finops_core/ports/`. Implementations are in `finops_providers/` unless the
+path names another package. Fake only means nothing outside `finops_fakes` implements the
+port.
+
+| Port | Module | Group | Responsibility | AWS implementation |
+| --- | --- | --- | --- | --- |
+| `AccountDiscovery` | `accounts.py` | Provider | Read which accounts exist and how the organization arranges them | `aws/accounts.py` `AwsAccountDiscovery`, over AWS Organizations |
+| `ContainerSource` | `containers.py` | Provider | Read the clusters in an account and region and what runs on them, and what each workload asked for against what it used | `aws/container_insights.py` `ContainerInsightsSource`, over CloudWatch Container Insights |
+| `CostExport` | `cost.py` | Provider | Find the billing export and read charge rows out of it | `aws/cur.py` `AthenaCostExport`, over Data Exports CUR 2.0 in S3, read through Athena |
+| `CredentialBroker` | `credentials.py` | Provider | Produce a scoped session for a target account | `aws/credentials.py` `AwsCredentialBroker`, STS AssumeRole with the ExternalId held in Secrets Manager |
+| `EntitlementResolver` | `identity.py` | Provider | Turn a principal into the scope it may read | None. `finops_api/identity/local_config.py` `LocalConfigIdentityProvider` reads people from a file and never runs in production |
+| `IdentityProvider` | `identity.py` | Provider | Turn a credential a caller presents into a principal | None. The same `LocalConfigIdentityProvider` |
+| `MetricSource` | `metrics.py` | Provider | Read observed values for a resource over a window | Fake only. `aws/waste.py` `CloudWatchWasteMetrics` has `read_many` over CloudWatch `GetMetricData` and no `read_series`, so it does not satisfy the port, ISS-240 |
+| `QuotaSource` | `quotas.py` | Provider | Read the quotas that apply to an account and region, and every increase request on record | `aws/quotas.py` `AwsQuotas`, over Service Quotas, CloudWatch, EC2 and the Support API |
+| `ResourceInventory` | `inventory.py` | Provider | Read what exists in an account, and what depends on what | Fake only. The AWS Config aggregator adapter implements `TopologySource` instead, ISS-240 |
+| `QuerySurface` | `query.py` | Surface | Find the instances of a tool that holds saved queries, list their queries, and apply a control to one | `grafana/amg.py` `AmgQuerySurface`, over Amazon Managed Grafana |
+| `RefreshFloor` | `query.py` | Surface | Read and set the smallest refresh interval an instance accepts from anybody | The same `AmgQuerySurface` |
+| `PanelRewrite` | `query.py` | Surface | Read and replace one element's stored definition | Fake only, ISS-240 |
+| `LlmProvider` | `llm.py` | Model | Complete a conversation, asking for tools along the way | `aws/bedrock.py` `BedrockModel`, over the Bedrock Converse API |
+| `BudgetSource` | `budget.py` | None | Read the payer's budgets | `aws/budgets.py` `AwsBudgets`, over AWS Budgets |
+| `CloudWatchEstate` | `cloudwatch_estate.py` | None | Read what CloudWatch holds, its alarms, log groups and storage price, rather than the values in it | Fake only, ISS-240 |
+| `CommitmentReport` | `commitment.py` | None | Read utilization per commitment and coverage per dimension | `aws/commitment.py` `CostExplorerCommitmentReport`, over Cost Explorer |
+| `PullRequestSink` | `pull_requests.py` | None | Open a pull request on a code host, where a person reviews a change before anything happens | Fake only, OPEN-13 |
+| `QueryEvidence` | `query.py` | None | Read what an account actually executed, as opposed to what it has defined | `aws/query_evidence.py` `CloudTrailQueryEvidence`, over CloudTrail and CloudWatch Logs |
+| `QueryParser` | `query.py` | None | Read meaning out of a vendor's saved query, so that an adapter never imports `finops_query` | Not an adapter. `finops_query/parser.py` `GrafanaQueryParser`, which a collector hands to the adapter |
+| `RecommendationSource` | `recommendations.py` | None | Read what the provider already knows is wasteful | `aws/recommendations.py` `CostRecommendationSource`, over Compute Optimizer, Cost Optimization Hub and Trusted Advisor |
+| `StateSource` | `iac.py` | None | Read the resources the configured infrastructure as code state names | `aws/terraform_state.py` `S3TerraformState`, over Terraform state objects in S3 |
+| `TicketSink` | `tickets.py` | None | Open a ticket where a person will see the work, and say whether it is still open | Fake only, OPEN-05 |
+| `TopologySource` | `inventory.py` | None | Read every node and edge one account and region shows, plus what could not be read | `aws/config_inventory.py` `ConfigAggregatorInventory`, over an organization Config aggregator, with `aws/topology.py` `AwsEdgeSupplement` for the edges Config does not cover. `finops_ingest/collectors/topology.py` `CompositeTopologySource` joins them |
+
+`ProviderSession` in `credentials.py` and `Classified` in `query.py` are protocols with no
+methods. They are types an adapter passes around rather than ports, and no group holds them.
+
+This section was checked against the code on 2026-10-05. The protocols to check it against
+again are listed by:
+
+```bash
+grep -n -E "^class .*\(Protocol\)" finops_core/ports/*.py
+```
+
+Adding a provider means writing an adapter for each port in `PROVIDER_PORTS`, and for any
+other port that provider can serve. It does not mean touching the domain, the API, or the
+frontend.
 
 ## Canonical cost schema: FOCUS 1.1
 

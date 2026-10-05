@@ -3676,6 +3676,51 @@ issues:
   detail: render_mermaid in scripts/docs/build_file_graph.py writes a line naming docs/architecture/file-graph.html
     as the interactive version, and that output was removed under ISS-063. On 2026-10-05 docs/architecture
     held no such file. Found while fixing ISS-236 and left for its own change
+- id: ISS-238
+  severity: LOW
+  status: FIXED
+  summary: The architecture Ports section and project_map.md described an earlier shape of finops_core/ports
+  detail: Found on 2026-10-04 and fixed on 2026-10-05 from an import of every module in the package.
+    docs/02-ARCHITECTURE.md said six interfaces, listed six, and gave MetricSource and ResourceInventory
+    AWS implementations that neither has. project_map.md said the nine ports and the six cloud ports,
+    its ports tree left out budget.py, cloudwatch_estate.py, iac.py, recommendations.py and tickets.py,
+    and its header claimed a check of the tree on 2026-10-09, later than the day the drift was found.
+    The section now lists every protocol with its group, its responsibility and its adapter, and states
+    no count
+- id: ISS-239
+  severity: MEDIUM
+  status: OPEN
+  summary: 10 protocols in finops_core/ports are in no group, so tests/core/test_ports.py never checks
+    them
+  detail: 'The test takes its subjects from EXPECTED_PORTS, which must equal PROVIDER_PORTS, SURFACE_PORTS
+    and MODEL_PORTS together. In no group: BudgetSource, CloudWatchEstate, CommitmentReport, PullRequestSink,
+    QueryEvidence, QueryParser, RecommendationSource, StateSource, TicketSink and TopologySource.
+    None of them is checked to be a runtime checkable protocol, to name a typed cause for every method,
+    or to keep an ARN or boto out of its signatures. Measured on 2026-10-05: TopologySource.read_slice
+    and all 7 methods of QueryParser name none of the causes in finops_core.errors, which the test
+    refuses for a grouped port. Its scan for cloud imports does cover the whole package. [architecture](docs/02-ARCHITECTURE.md)
+    section Ports'
+- id: ISS-240
+  severity: LOW
+  status: OPEN
+  summary: CloudWatchEstate, MetricSource, PanelRewrite and ResourceInventory have a fake and no adapter,
+    and nothing in the registry says why
+  detail: 'Measured on 2026-10-05 by importing every first party package. MetricSource: aws/waste.py
+    CloudWatchWasteMetrics has read_many over GetMetricData and no read_series, so it does not satisfy
+    the port. ResourceInventory: the AWS Config aggregator adapter implements TopologySource instead.
+    No provider class has any method of CloudWatchEstate or PanelRewrite. Until 2026-10-05 the architecture
+    document named CloudWatch for MetricSource and the Config aggregator for ResourceInventory. PullRequestSink
+    and TicketSink are fake only too, and OPEN-13 and OPEN-05 say why'
+- id: ISS-241
+  severity: LOW
+  status: OPEN
+  summary: The documents that describe the ports are kept by hand, and no check fails when they drift
+  detail: FEAT-003 is named Provider port abstraction, eight provider ports, and PROVIDER_PORTS holds
+    9. No check script under scripts/ reads finops_core/ports, so nothing fails when a port module
+    goes unnamed in project_map.md, which is how 5 did, and on 2026-10-05 the aws/ block there did
+    not name budgets.py, config_inventory.py, recommendations.py, terraform_state.py, topology.py
+    and waste.py. The P0 records that say eight ports, CHG-0039, CHG-0040, tasks/STATUS.md and docs/checkpoint_archive.md,
+    describe 2026-08-24 and are right as records
 
 open_questions:
 - id: OPEN-07
