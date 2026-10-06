@@ -122,7 +122,13 @@ export function CostExportScreen() {
   const summary = summaryQuery.data?.data.data;
 
   useReportMeta('cost-export', envelope?.meta);
-  const state = surfaceStateFor(showback, envelope?.meta, rows.length, 'none', 'cost_focus_daily');
+  const state = surfaceStateFor(
+    showback,
+    envelope?.meta,
+    rows.length,
+    'none',
+    'cost_focus_daily',
+  );
 
   const freshness = useMemo(
     () => ({
@@ -158,9 +164,9 @@ export function CostExportScreen() {
           </p>
 
           <p data-testid="export-measures">
-            Both measures are in the file under their FOCUS names. Amortized and billed differ by
-            exactly the commitment discount, and a column headed only cost is a column somebody
-            argues about
+            Both measures are in the file under their FOCUS names. Amortized and billed differ
+            by exactly the commitment discount, and a column headed only cost is a column
+            somebody argues about
           </p>
 
           <p data-testid="export-unallocated">

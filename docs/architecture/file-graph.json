@@ -23,6 +23,7 @@
     "finops-web/e2e/containers.spec.ts",
     "finops-web/e2e/cost.spec.ts",
     "finops-web/e2e/demo.spec.ts",
+    "finops-web/e2e/estate.ts",
     "finops-web/e2e/export.spec.ts",
     "finops-web/e2e/filters.spec.ts",
     "finops-web/e2e/forecast.spec.ts",
@@ -30,6 +31,7 @@
     "finops-web/e2e/motion.spec.ts",
     "finops-web/e2e/quotas.spec.ts",
     "finops-web/e2e/topology.spec.ts",
+    "finops-web/e2e/viewports.spec.ts",
     "finops-web/playwright.config.ts",
     "finops-web/src/App.test.tsx",
     "finops-web/src/App.tsx",
@@ -835,6 +837,16 @@
       "s": "docker/Dockerfile.worker",
       "t": "docker/pyproject.toml",
       "k": "docker"
+    },
+    {
+      "s": "finops-web/e2e/demo.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/e2e/viewports.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
     },
     {
       "s": "finops-web/src/App.test.tsx",

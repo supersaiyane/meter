@@ -56,6 +56,11 @@ under the pointer with `--shadow-lift` unless it holds a table, and a menu float
 `--shadow-float`; at rest a panel still separates by its hairline. The keyframes are a named
 set of five and none animates a size, so no number counts up and no bar grows from zero.
 
+The shell holds at every width. `finops-web/e2e/viewports.spec.ts` sweeps every screen the
+rail links to at 320, 375, 768, 1024, 1280 and 1920 pixels, with the rail open and hidden, and
+fails if a screen scrolls sideways or is not given the width the shell leaves it. It reads the
+screens off the rail, so a screen added later is swept without being listed.
+
 ## Failure behaviour
 
 With transparency reduced, or on a browser without `backdrop-filter`, `--surface-raised` and

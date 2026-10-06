@@ -3890,6 +3890,17 @@ issues:
     holds a local `.env` to it; nothing holds the hub to it. Found while checking where the
     export row limit would come from in AWS. Where deployed settings live is a decision for the
     owner.'
+- id: ISS-251
+  severity: LOW
+  status: OPEN
+  summary: No gate checks the frontend's formatting, so it drifts unnoticed
+  detail: '`make lint` runs `ruff format --check` on the Python and never `npm run format:check`
+    on the TypeScript, and `make fmt` and both npm scripts cover `finops-web/src` only, so the
+    journeys under `finops-web/e2e` are formatted by nothing. Found on 2026-10-06 while writing
+    the viewport journey: `e2e/topology.spec.ts` on main and two files from TASK-P8-009 failed
+    `prettier --check`. The two P8 files were reformatted in the same change; topology was left
+    for the change that closes this, which is adding the check to `make lint` over `src` and
+    `e2e` together.'
 
 open_questions:
 - id: OPEN-07

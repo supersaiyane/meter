@@ -595,6 +595,10 @@ screen mid fade and failed at random, axe on a tab still fading in among them, a
 `e2e/motion.spec.ts` proves both states from the computed animation. The screens' own panels
 are still the ones they had: TASK-P8-012 and TASK-P8-013 redraw them.
 
+On 2026-10-06 the six width sweep that found the narrow and phone faults was kept as
+`e2e/viewports.spec.ts`. Run with the 2026-10-05 squeeze put back, it fails on every screen at
+768 pixels with "gives the screen 64px of 744px".
+
 ---
 
 ## What this plan does not answer

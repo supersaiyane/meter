@@ -95,7 +95,9 @@ describe('the api client, for files and for writes that fail', () => {
     const named: typeof fetch = () =>
       Promise.resolve(
         new Response(csv, {
-          headers: { 'Content-Disposition': 'attachment; filename="meter-showback-2026-10-05.csv"' },
+          headers: {
+            'Content-Disposition': 'attachment; filename="meter-showback-2026-10-05.csv"',
+          },
         }),
       );
     const client = createApiClient({ token: 't', fetchImpl: named });

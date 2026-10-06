@@ -44,7 +44,7 @@ Status: `OPEN`, `IN PROGRESS`, `FIXED`, `WONT FIX`, `PARKED`, `CLOSED`.
 <!-- generated:issue-register start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-249 issues. 150 fixed, 97 open, 0 parked.
+250 issues. 150 fixed, 98 open, 0 parked.
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in `tasks/STATUS.md`.
 
@@ -299,6 +299,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-244 | LOW | Branch coverage in `finops-web` is reported on every run and gated on none | OPEN | Vitest 4.1.11 applies `thresholds.perFile` to every threshold it is given, and skips a `perFile` set on a glob, so a suite wide branch threshold cannot sit beside the per file one ISS-243 added. A per file branch bar of 80 percent would fail 22 files (measured 2026-10-05), among them the treemap, the heatmap and the stacked bar. The suite reaches 85.94 percent of its branches (measured 2026-10-05). Closing it is either tests for those branches, file by file, until a per file bar passes, or a second check over the suite total. |
 | ISS-245 | LOW | No gate checks the frontend's formatting, so code Prettier would change can be committed and merged | OPEN | `make lint` runs `npm run lint`, which is ESLint, and `npm run format:check` exists but neither the Makefile nor the pipeline runs it. Found on 2026-10-05 when four Cost Explorer files went into 6fac9d8 unformatted and were fixed in 3befffc. `finops-web/e2e/topology.spec.ts` also differs from Prettier, and `format:check` reads `src` only, so it would not catch that file. Closing it is `npm run format:check` in `make lint` and in the frontend job, widened to `e2e`. |
 | ISS-247 | LOW | A view with more than one table exports only its first, so commitment coverage and actions, unmeasurable quotas, and the forecast's days and backtest are on screen and not in a file | OPEN | TASK-P8-009 writes one table per export, because a CSV holds one table and the workbook and the CSV of a view hold the same rows. `/cost/commitments` exports commitment use and not coverage or purchase actions, `/governance/quotas` exports the measurable quotas and not the unmeasurable ones, and `/cost/forecast` exports its months and not the daily chart or the backtest. Each says so on its About sheet rather than dropping the rest silently. Found 2026-10-05 while wiring the exports. |
+| ISS-251 | LOW | No gate checks the frontend's formatting, so it drifts unnoticed | OPEN | `make lint` runs `ruff format --check` on the Python and never `npm run format:check` on the TypeScript, and `make fmt` and both npm scripts cover `finops-web/src` only, so the journeys under `finops-web/e2e` are formatted by nothing. Found on 2026-10-06 while writing the viewport journey: `e2e/topology.spec.ts` on main and two files from TASK-P8-009 failed `prettier --check`. The two P8 files were reformatted in the same change; topology was left for the change that closes this, which is adding the check to `make lint` over `src` and `e2e` together. |
 
 <!-- generated:issue-register end -->
 
