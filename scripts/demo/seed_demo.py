@@ -186,7 +186,9 @@ DEMO_TABLES = (
     "budget",
     "commitment_action",
     # P1, FEAT-024. Neither references the other, and both reference only the
-    # tenant, so their order between themselves does not matter.
+    # tenant, so their order between themselves does not matter. The daily rows, TASK-P8-013,
+    # are the same commitments at another grain and reference only the tenant too.
+    "commitment_day",
     "commitment_coverage",
     "commitment_use",
     # P1. The monthly aggregate goes before the daily rows it is derived from,

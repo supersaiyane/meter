@@ -25,7 +25,7 @@ because zero would say the whole commitment was wasted.
 from __future__ import annotations
 
 from collections.abc import Iterable
-from datetime import date, datetime
+from datetime import UTC, date, datetime, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 from typing import TypedDict
 from uuid import UUID
@@ -36,6 +36,7 @@ from finops_core.domain.cost import (
     EXPIRED,
     QUEUED,
     CommitmentCoverage,
+    CommitmentDay,
     CommitmentUse,
     CostRecord,
 )
@@ -110,6 +111,19 @@ def _spend_on(services: Iterable[str], period: date, at: datetime) -> Decimal:
             row.effective_cost
             for row in _bill(at)
             if row.billing_period_start == period and row.service_name in wanted
+        ),
+        Decimal("0"),
+    )
+
+
+def _spend_on_day(services: Iterable[str], day: date, at: datetime) -> Decimal:
+    """What the fake estate billed for these services on one day, from the same rows."""
+    wanted = frozenset(services)
+    return sum(
+        (
+            row.effective_cost
+            for row in _bill(at)
+            if row.charge_period_start.date() == day and row.service_name in wanted
         ),
         Decimal("0"),
     )
@@ -257,6 +271,67 @@ def coverages(
     )
 
 
+def _month_of(day: date) -> tuple[date, date]:
+    start = date(day.year, day.month, 1)
+    return start, date(start.year + start.month // 12, start.month % 12 + 1, 1)
+
+
+def _share(use: CommitmentUse, amount: Decimal, day: date, month: tuple[date, date]) -> Decimal:
+    """One day's part of a month's figure: spread evenly over the days the plan was live."""
+    live_from = max(use.term_start, month[0])
+    live_to = min(use.term_end, month[1])
+    if live_from >= live_to:
+        # The fake's two live plans keep fixed terms but are sized for whatever month is
+        # asked, so a term that does not reach the month is read as the whole month, the way
+        # `uses` reads it. Without this a month of days stops adding up to its month.
+        live_from, live_to = month
+    if not live_from <= day < live_to:
+        return Decimal("0")
+    return amount / Decimal((live_to - live_from).days)
+
+
+def days(
+    window_start: date, window_end: date, *, at: datetime = fixtures.AS_OF
+) -> tuple[CommitmentDay, ...]:
+    """Each kind's use and coverage per day, the month's commitments spread over their days.
+
+    Derived from `uses` and from the day's own bill rather than written down, for the reason
+    the module gives: a day covering more than its bill made eligible is an inconsistency a
+    reader finds at once. A day is reported once it has ended, as the provider reports it.
+    """
+    rows: list[CommitmentDay] = []
+    day = window_start
+    while day < window_end and day < at.date():
+        month = _month_of(day)
+        live = uses(month[0], month[1], at=at)
+        ended = datetime(day.year, day.month, day.day, tzinfo=UTC) + timedelta(days=1)
+        for kind, services in (
+            (SAVINGS_PLAN, COMPUTE_SERVICES),
+            (RESERVED_INSTANCE, DATABASE_SERVICES),
+        ):
+            own = [use for use in live if use.commitment_type == kind]
+            committed = _money(sum((_share(u, u.committed, day, month) for u in own), Decimal("0")))
+            used = _money(sum((_share(u, u.used, day, month) for u in own), Decimal("0")))
+            eligible = _money(_spend_on_day(services, day, at))
+            covered = min(used, eligible)
+            if committed > 0 or covered > 0:
+                rows.append(
+                    CommitmentDay(
+                        as_of=ended,
+                        collected_at=at,
+                        tenant_id=fixtures.TENANT_ID,
+                        commitment_type=kind,
+                        day=day,
+                        committed=committed,
+                        used=used,
+                        eligible_spend=eligible,
+                        covered_spend=covered,
+                    )
+                )
+        day += timedelta(days=1)
+    return tuple(rows)
+
+
 class FakeCommitmentReport:
     """`CommitmentReport` in memory. Every failure is asked for, never incidental."""
 
@@ -300,3 +375,20 @@ class FakeCommitmentReport:
                 detail="nothing in the window was eligible for a commitment",
             )
         return coverages(window_start, window_end, at=self._at)
+
+    def daily(self, window_start: date, window_end: date) -> Iterable[CommitmentDay]:
+        self._fail_if_planned()
+        if self._holds_nothing:
+            raise NoData(
+                scope_key=fixtures.ORGANIZATION_SCOPE,
+                collector=COLLECTOR,
+                detail="this payer holds no commitments",
+            )
+        found = days(window_start, window_end, at=self._at)
+        if not found:
+            raise NoData(
+                scope_key=fixtures.ORGANIZATION_SCOPE,
+                collector=COLLECTOR,
+                detail="nothing was committed or covered on any day in the window",
+            )
+        return found

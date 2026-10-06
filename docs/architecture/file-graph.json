@@ -211,6 +211,7 @@
     "finops-web/src/screens/__tests__/WasteSavingsScreen.test.tsx",
     "finops-web/src/screens/__tests__/WasteScreen.test.tsx",
     "finops-web/src/screens/__tests__/accountHealth.test.ts",
+    "finops-web/src/screens/__tests__/commitmentDays.test.ts",
     "finops-web/src/screens/__tests__/enforcementTime.test.ts",
     "finops-web/src/screens/__tests__/exploreModel.test.ts",
     "finops-web/src/screens/__tests__/exploreSeries.test.ts",
@@ -221,6 +222,7 @@
     "finops-web/src/screens/__tests__/rawIdentifiers.test.tsx",
     "finops-web/src/screens/__tests__/surfaceStateFor.test.ts",
     "finops-web/src/screens/accountHealth.ts",
+    "finops-web/src/screens/commitmentDays.ts",
     "finops-web/src/screens/enforcementTime.ts",
     "finops-web/src/screens/exploreModel.ts",
     "finops-web/src/screens/exploreSeries.ts",
@@ -526,6 +528,7 @@
     "migrations/versions/0024_team_digest.py",
     "migrations/versions/0025_redaction_event.py",
     "migrations/versions/0026_report_run.py",
+    "migrations/versions/0027_commitment_day.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_env_keys.py",
@@ -863,6 +866,11 @@
       "s": "docker/Dockerfile.worker",
       "t": "docker/pyproject.toml",
       "k": "docker"
+    },
+    {
+      "s": "finops-web/e2e/a11y.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
     },
     {
       "s": "finops-web/e2e/account.spec.ts",
@@ -2551,6 +2559,11 @@
     },
     {
       "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/components/ChartPanel.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
       "t": "finops-web/src/components/DataTable.tsx",
       "k": "typescript"
     },
@@ -2581,12 +2594,22 @@
     },
     {
       "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
       "t": "finops-web/src/components/displayNames.ts",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
       "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/screens/commitmentDays.ts",
       "k": "typescript"
     },
     {
@@ -5195,6 +5218,16 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/commitmentDays.test.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/commitmentDays.test.ts",
+      "t": "finops-web/src/screens/commitmentDays.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/enforcementTime.test.ts",
       "t": "finops-web/src/screens/enforcementTime.ts",
       "k": "typescript"
@@ -5312,6 +5345,21 @@
     {
       "s": "finops-web/src/screens/accountHealth.ts",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/commitmentDays.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/commitmentDays.ts",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/commitmentDays.ts",
+      "t": "finops-web/src/screens/exploreSeries.ts",
       "k": "typescript"
     },
     {
@@ -11417,6 +11465,11 @@
     {
       "s": "tests/providers/fake/test_commitment.py",
       "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_commitment.py",
+      "t": "finops_core/errors.py",
       "k": "python"
     },
     {

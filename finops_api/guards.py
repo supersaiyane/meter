@@ -142,6 +142,8 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | None] =
     # organization. In before the route, per the rule at the top of the P1 plan.
     "commitment_use": PayerWide(),
     "commitment_coverage": PayerWide(),
+    # TASK-P8-013. The same commitments a day at a time, so the same rule.
+    "commitment_day": PayerWide(),
     # FEAT-060. A budget is set at the payer and the API reporting it is a payer API, so it
     # inherits that scoping the way commitment coverage does, per ADR-0025. The cost is real
     # and is ISS-212: an account scoped budget is invisible to the team that owns the account.

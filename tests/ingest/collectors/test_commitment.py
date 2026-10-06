@@ -14,7 +14,7 @@ row will eventually exist.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID, uuid4
 
@@ -23,8 +23,9 @@ from sqlalchemy import Engine, text
 from sqlalchemy.exc import IntegrityError
 
 from finops_core.errors import AccessDenied
-from finops_fakes.commitment import FakeCommitmentReport
-from finops_ingest.collectors.commitment import CommitmentCollector
+from finops_fakes import fixtures
+from finops_fakes.commitment import FakeCommitmentReport, days
+from finops_ingest.collectors.commitment import DAYS_READ, CommitmentCollector
 from finops_ingest.registry import CollectorContext
 
 pytestmark = pytest.mark.integration
@@ -81,14 +82,42 @@ def coverages(engine: Engine, tenant: UUID) -> list[tuple[str, str, Decimal, Dec
         ]
 
 
+def day_rows(engine: Engine, tenant: UUID) -> list[tuple[str, date, Decimal, Decimal]]:
+    with engine.connect() as connection:
+        return [
+            (row[0], row[1], row[2], row[3])
+            for row in connection.execute(
+                text(
+                    "SELECT commitment_type, day, committed, covered_spend FROM commitment_day "
+                    "WHERE tenant_id = :t ORDER BY day, commitment_type"
+                ),
+                {"t": tenant},
+            )
+        ]
+
+
+#: The days the fake reports for the collector's read, ending the day before `NOW`.
+EXPECTED_DAYS = days(NOW.date() - timedelta(days=DAYS_READ), NOW.date(), at=fixtures.AS_OF)
+
+
 class TestBothGrainsAreWritten:
-    def test_the_two_tables_are_filled_and_the_count_is_their_sum(
+    def test_the_three_tables_are_filled_and_the_count_is_their_sum(
         self, engine: Engine, tenant_id: UUID
     ) -> None:
         written = collect(engine, tenant_id, FakeCommitmentReport())
         assert len(uses(engine, tenant_id)) == 4
         assert len(coverages(engine, tenant_id)) == 3
-        assert written == 7
+        assert EXPECTED_DAYS
+        assert len(day_rows(engine, tenant_id)) == len(EXPECTED_DAYS)
+        assert written == 4 + 3 + len(EXPECTED_DAYS)
+
+    def test_the_days_end_the_day_before_the_run_and_never_include_it(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        collect(engine, tenant_id, FakeCommitmentReport())
+        found = [day for _, day, _, _ in day_rows(engine, tenant_id)]
+        assert max(found) < NOW.date()
+        assert min(found) >= NOW.date() - timedelta(days=DAYS_READ)
 
     def test_the_wasted_money_is_carried_rather_than_recomputed_on_read(
         self, engine: Engine, tenant_id: UUID
@@ -126,6 +155,8 @@ class TestRunningItTwice:
         collect(engine, tenant_id, FakeCommitmentReport())
         assert len(uses(engine, tenant_id)) == 4
         assert len(coverages(engine, tenant_id)) == 3
+        # A day reread is a day replaced, which is how a late bill's correction lands.
+        assert len(day_rows(engine, tenant_id)) == len(EXPECTED_DAYS)
 
     def test_the_second_run_owns_the_rows(self, engine: Engine, tenant_id: UUID) -> None:
         collect(engine, tenant_id, FakeCommitmentReport())
@@ -288,3 +319,63 @@ class TestTheDatabaseRefusesBadRows:
         # migration rather than a row.
         with pytest.raises(IntegrityError, match="dimension"):
             self._insert_coverage(engine, tenant_id, dimension="INSTANCE_FAMILY")
+
+
+class TestTheDatabaseRefusesBadDays:
+    """TASK-P8-013. The same rule for a day: written directly, refused by the database."""
+
+    def _insert_day(self, engine: Engine, tenant: UUID, **overrides: object) -> None:
+        row: dict[str, object] = {
+            "id": uuid4(),
+            "tenant": tenant,
+            "run": uuid4(),
+            "type": "SavingsPlan",
+            "day": date(2026, 8, 3),
+            "committed": Decimal("10.00"),
+            "used": Decimal("8.00"),
+            "eligible": Decimal("40.00"),
+            "covered": Decimal("8.00"),
+            "as_of": datetime(2026, 8, 4, tzinfo=UTC),
+            "collected_at": NOW,
+        }
+        row.update(overrides)
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "INSERT INTO commitment_day (day_id, tenant_id, ingest_run_id, "
+                    "commitment_type, day, committed, used, eligible_spend, covered_spend, "
+                    "as_of, collected_at) VALUES (:id, :tenant, :run, :type, :day, "
+                    ":committed, :used, :eligible, :covered, :as_of, :collected_at)"
+                ),
+                row,
+            )
+
+    def test_a_well_formed_day_is_accepted(self, engine: Engine, tenant_id: UUID) -> None:
+        self._insert_day(engine, tenant_id)
+
+    def test_a_kind_is_said_once_a_day(self, engine: Engine, tenant_id: UUID) -> None:
+        self._insert_day(engine, tenant_id)
+        with pytest.raises(IntegrityError, match="kind_day"):
+            self._insert_day(engine, tenant_id)
+
+    def test_using_more_than_was_committed_is_refused(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        with pytest.raises(IntegrityError, match="used_within_committed"):
+            self._insert_day(engine, tenant_id, used=Decimal("10.01"))
+
+    def test_covering_more_than_was_eligible_is_refused(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        with pytest.raises(IntegrityError, match="covered_within_eligible"):
+            self._insert_day(engine, tenant_id, covered=Decimal("40.01"))
+
+    def test_negative_money_is_refused(self, engine: Engine, tenant_id: UUID) -> None:
+        with pytest.raises(IntegrityError, match="money_is_not_negative"):
+            self._insert_day(engine, tenant_id, eligible=Decimal("-1"), covered=Decimal("-2"))
+
+    def test_a_day_fetched_before_it_was_true_is_refused(
+        self, engine: Engine, tenant_id: UUID
+    ) -> None:
+        with pytest.raises(IntegrityError, match="collected_after_as_of"):
+            self._insert_day(engine, tenant_id, collected_at=datetime(2026, 8, 3, tzinfo=UTC))

@@ -413,6 +413,24 @@ export interface ApiCommitmentAction {
   readonly rationale: string;
 }
 
+/**
+ * One kind of commitment on one day, TASK-P8-013. Per kind and never per plan, because the
+ * provider reports a day's Savings Plans use only as one total. A fraction is null on a day
+ * with nothing to divide by, which says something different from zero.
+ */
+export interface ApiCommitmentDay {
+  readonly commitment_type: string;
+  readonly day: string;
+  readonly committed: string;
+  readonly used: string;
+  readonly utilization: string | null;
+  readonly eligible_spend: string;
+  readonly covered_spend: string;
+  readonly coverage: string | null;
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
 export interface ApiCommitments {
   readonly window_start: string;
   readonly window_end: string;

@@ -493,6 +493,30 @@ CREATE TABLE commitment_coverage (
 );
 ```
 
+The same commitments a day at a time, since TASK-P8-013:
+
+```sql
+CREATE TABLE commitment_day (
+    day_id          UUID PRIMARY KEY,
+    tenant_id       UUID            NOT NULL REFERENCES tenant (tenant_id),
+    ingest_run_id   UUID            NOT NULL,
+    commitment_type TEXT            NOT NULL,
+    day             DATE            NOT NULL,
+    committed       NUMERIC(20, 10) NOT NULL,   -- used <= committed
+    used            NUMERIC(20, 10) NOT NULL,
+    eligible_spend  NUMERIC(20, 10) NOT NULL,   -- covered_spend <= eligible_spend
+    covered_spend   NUMERIC(20, 10) NOT NULL,
+    as_of           TIMESTAMPTZ     NOT NULL,   -- the end of the day, collected_at >= as_of
+    collected_at    TIMESTAMPTZ     NOT NULL,
+    UNIQUE (tenant_id, commitment_type, day)
+);
+```
+
+One row per kind of commitment per day, never per plan, because the provider's daily grain
+reports Savings Plans use only as one total across every plan. Coverage shares the row
+because at this grain neither figure is attributed to a plan, so the rule below, which is
+about attributing coverage to one commitment, is not broken. `PayerWide` like the other two.
+
 **Two tables and not one, and `commitment_coverage` deliberately has no
 `commitment_id`.** A provider reports utilization per commitment and coverage per
 service or region, because a dollar of covered spend cannot be attributed to one

@@ -17,14 +17,15 @@ So the questions here are all the same question at different clocks.
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 
 import pytest
 
 from finops_core.domain.cost import ACTIVE, QUEUED
+from finops_core.errors import NoData
 from finops_fakes import fixtures
-from finops_fakes.commitment import FakeCommitmentReport, coverages, uses
+from finops_fakes.commitment import FakeCommitmentReport, coverages, days, uses
 
 #: Three clocks, none of them the one the module level estate was built at, and one of
 #: them in a different year. A fake that only works at its own birthday is a fake that
@@ -102,3 +103,35 @@ class TestItStillRelatesToTheBill:
         active = [use for use in report.utilization(start, end) if use.status == ACTIVE]
         assert active
         assert all(use.committed > Decimal("0") for use in active)
+
+
+class TestTheDaysAddUpToTheirMonth:
+    """TASK-P8-013. The days are the month's commitments spread over the days each was live,
+    so a whole month of them adds back up to the month, to within a cent a day of rounding."""
+
+    @pytest.mark.parametrize("at", CLOCKS)
+    def test_a_month_of_days_commits_what_the_month_did(self, at: datetime) -> None:
+        # The month before the clock, so every one of its days has ended.
+        first_of_this = date(at.year, at.month, 1)
+        last_month_end = first_of_this
+        last_month_start = (first_of_this - timedelta(days=1)).replace(day=1)
+        spread = days(last_month_start, last_month_end, at=at)
+        month = uses(last_month_start, last_month_end, at=at)
+        slack = Decimal("0.01") * (last_month_end - last_month_start).days
+        for kind in {use.commitment_type for use in month}:
+            committed = sum(
+                (one.committed for one in spread if one.commitment_type == kind), Decimal("0")
+            )
+            expected = sum(
+                (use.committed for use in month if use.commitment_type == kind), Decimal("0")
+            )
+            assert abs(committed - expected) <= slack, kind
+
+    @pytest.mark.parametrize("at", CLOCKS)
+    def test_no_day_is_reported_before_it_has_ended(self, at: datetime) -> None:
+        start, end = window_of(at)
+        assert all(one.day < at.date() for one in days(start, end, at=at))
+
+    def test_a_payer_with_nothing_says_so_rather_than_returning_no_days(self) -> None:
+        with pytest.raises(NoData):
+            FakeCommitmentReport(holds_nothing=True).daily(date(2026, 8, 1), date(2026, 9, 1))

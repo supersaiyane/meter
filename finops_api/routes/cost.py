@@ -31,6 +31,7 @@ from finops_api.db.repositories.cost import (
     BudgetRepository,
     CommitmentActionRepository,
     CommitmentCoverageRepository,
+    CommitmentDayRepository,
     CommitmentRepository,
     CostRepository,
     previous_month,
@@ -54,6 +55,7 @@ from finops_api.schemas import (
     ClusterCostOut,
     CommitmentActionOut,
     CommitmentCoverageOut,
+    CommitmentDayOut,
     CommitmentsOut,
     CommitmentUseOut,
     ContainerCostOut,
@@ -735,6 +737,51 @@ def cost_commitments(
         rows=[*rows, *slices],
     )
     return Envelope(data=found, meta=meta)
+
+
+@router.get("/cost/commitments/daily", response_model=Envelope[list[CommitmentDayOut]])
+@exportable(ExportSpec(title="Commitments by day", row_model=CommitmentDayOut, rows=listed))
+def cost_commitments_daily(
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[list[CommitmentDayOut]]:
+    """Each kind of commitment, day by day, for the last thirty days. TASK-P8-013.
+
+    The daily grain of the windows above, read for the charts: use and coverage over time and
+    the day by day heatmap. Payer wide like the windows, so a narrowed caller reads no days,
+    and the envelope says the payer was not visible rather than that it was.
+    """
+    rows = CommitmentDayRepository(connection, context).recent(scope)
+    days = [
+        CommitmentDayOut(
+            commitment_type=str(row.commitment_type),
+            day=row.day,
+            committed=Decimal(row.committed),
+            used=Decimal(row.used),
+            utilization=_fraction(Decimal(row.used), Decimal(row.committed)),
+            eligible_spend=Decimal(row.eligible_spend),
+            covered_spend=Decimal(row.covered_spend),
+            coverage=_fraction(Decimal(row.covered_spend), Decimal(row.eligible_spend)),
+            as_of=row.as_of,
+            collected_at=row.collected_at,
+        )
+        for row in rows
+    ]
+    latest = days[-1] if days else None
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        visible=1 if scope.is_global else 0,
+        coverage=(1 if scope.is_global else 0, 1),
+        coverage_unit="payer",
+        # The newest day's timestamps rather than the stalest across the window: thirty days
+        # of history are thirty days old by design, and the series is as fresh as its last day.
+        as_of=None if latest is None else latest.as_of,
+        collected_at=None if latest is None else latest.collected_at,
+    )
+    return Envelope(data=days, meta=meta)
 
 
 def _showback_headers(view: View) -> dict[str, str]:

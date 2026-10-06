@@ -473,6 +473,31 @@ class CommitmentActionRepository(ScopedRepository):
         return _fetch(self, scope, statement)
 
 
+class CommitmentDayRepository(ScopedRepository):
+    """Each kind of commitment, a day at a time. TASK-P8-013.
+
+    `PayerWide` in the guard, like the windows it is the daily grain of, so a scope narrower
+    than the whole payer reads nothing here.
+    """
+
+    table: ClassVar[Table] = models.commitment_day
+    resource: ClassVar[str] = "commitment_day"
+
+    #: The days the screen draws. The collector keeps a few more, for the days a late bill
+    #: rewrites, and those stay out of the picture until they are inside its month.
+    DAYS_SHOWN = 30
+
+    def recent(self, scope: Scope) -> Sequence[Row[tuple[Any, ...]]]:
+        """The last `DAYS_SHOWN` days, oldest first, both kinds on each day."""
+        cutoff = func.current_date() - self.DAYS_SHOWN
+        statement = (
+            self.scoped_select(scope)
+            .where(self.table.c.day >= cutoff)
+            .order_by(self.table.c.day, self.table.c.commitment_type)
+        )
+        return _fetch(self, scope, statement)
+
+
 class CommitmentCoverageRepository(ScopedRepository):
     """How much of the eligible estate was on a commitment, per dimension."""
 

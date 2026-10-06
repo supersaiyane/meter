@@ -562,6 +562,28 @@ class CommitmentUseOut(BaseModel):
     utilization: Decimal | None
 
 
+class CommitmentDayOut(BaseModel):
+    """One kind of commitment on one day, TASK-P8-013, with its two fractions worked out.
+
+    Each fraction is null on a day with nothing to divide by: nothing committed has no
+    utilization, and nothing eligible has no coverage, which is a different sentence from
+    zero.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    commitment_type: str
+    day: date
+    committed: Decimal
+    used: Decimal
+    utilization: Decimal | None
+    eligible_spend: Decimal
+    covered_spend: Decimal
+    coverage: Decimal | None
+    as_of: datetime
+    collected_at: datetime
+
+
 class CommitmentCoverageOut(BaseModel):
     """How much of one slice of the estate was on a commitment."""
 

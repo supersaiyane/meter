@@ -30,12 +30,12 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Counted | Now | Derived from |
 | --- | --- | --- |
 | Screens built | 25 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 40 in 15 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Playwright journeys | 41 in 15 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 26 | files in migrations/versions, all of which are listed below in this file |
+| Migration revisions | 27 | files in migrations/versions, all of which are listed below in this file |
 | Test files | 171 | test_*.py under tests/ |
-| Test functions | 2319 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test functions | 2343 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -624,6 +624,8 @@ meter/
 │   ├── screens/realizedSavings.ts  Verified savings added up by the day each
 │   │                          check closed, never across verdicts
 │   ├── screens/queryByDashboard.ts  Query cost summed per dashboard
+│   ├── screens/commitmentDays.ts  The daily commitment figures as two money
+│   │                          stacks and a heatmap of the two percentages
 │   ├── screens/GeographyScreen.tsx  FEAT-061. The map, three leftovers that are
 │   │                          never added together, and the resources of whichever
 │   │                          continent was clicked. Nothing loads until one is
@@ -1329,6 +1331,9 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0027_commitment_day.py  TASK-P8-013, FEAT-024. One row per kind of
+│       │                      commitment per day: committed, used, eligible and
+│       │                      covered, each held by a constraint. Payer wide
 │       ├── 0026_report_run.py  FEAT-067. One row per export file: who, which view
 │       │                      and query, which scope as its account list, the
 │       │                      format, rows and bytes, and whether a workbook

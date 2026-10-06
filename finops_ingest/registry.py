@@ -262,9 +262,11 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         reason=(
             "AWS reports utilization and coverage per day, so an hourly read would "
             "return the same figures and pay Cost Explorer for each one. Daily is the "
-            "grain the source actually has."
+            "grain the source actually has. Each run makes eight Cost Explorer requests "
+            "at a cent each: four over the month, and four for the last month of days "
+            "at the daily grain, TASK-P8-013."
         ),
-        est_cost_per_run="0.02",
+        est_cost_per_run="0.08",
     ),
     # P3.
     ScheduleEntry(

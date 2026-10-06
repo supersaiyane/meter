@@ -762,6 +762,26 @@ commitment_coverage = Table(
 )
 
 
+#: TASK-P8-013. One kind of commitment on one day. Per kind and never per commitment, because
+#: Cost Explorer reports daily Savings Plans use only as one total across every plan; and the
+#: coverage figures share the row because at this grain neither is attributed to a plan.
+commitment_day = Table(
+    "commitment_day",
+    metadata,
+    Column("day_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("commitment_type", Text, nullable=False),
+    Column("day", Date, nullable=False),
+    Column("committed", Numeric(20, 10), nullable=False),
+    Column("used", Numeric(20, 10), nullable=False),
+    Column("eligible_spend", Numeric(20, 10), nullable=False),
+    Column("covered_spend", Numeric(20, 10), nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
 #: FEAT-055. A coverage gap as a finding somebody owns, and payer wide because the coverage
 #: it derives from is. See ADR-0025: `recommendation` is scoped by account, and stamping an
 #: account on a payer wide figure would disclose the organization's commitment position to

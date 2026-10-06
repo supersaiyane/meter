@@ -1,13 +1,16 @@
 import { useMemo } from 'react';
 import { COST_COLUMN_TERMS, commitmentTypeName } from '../components/displayNames';
 
-import { useCostCommitments } from '../api/queries';
+import { useCommitmentDays, useCostCommitments } from '../api/queries';
+import { ChartPanel } from '../components/ChartPanel';
+import { Heatmap, StackedArea } from '../components/charts';
 import { DataTable } from '../components/DataTable';
 import { PercentCell } from '../components/PercentCell';
 import { Figure } from '../components/Figure';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
 import { useReportMeta } from '../shell/metaRegistry';
+import { committedEachDay, coverageEachDay, dayByDay } from './commitmentDays';
 import { surfaceStateFor } from './surfaceStateFor';
 import { riskLabel, type RiskVerdict } from '../components/actionRisk';
 import { SeverityBadge } from '../components/SeverityBadge';
@@ -62,6 +65,11 @@ const COMMITMENT_RISK: RiskVerdict = {
   is_no_regret: false,
 };
 
+/** Whole dollars, what a chart of a month's commitments can show. */
+function dollars(value: number): string {
+  return `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
+}
+
 export function CostCommitmentsScreen() {
   const query = useCostCommitments();
   const envelope = query.data?.data;
@@ -71,6 +79,16 @@ export function CostCommitmentsScreen() {
   const actions = useMemo(() => found?.actions ?? [], [found]);
 
   useReportMeta('cost-commitments', envelope?.meta);
+
+  // TASK-P8-013. The same commitments a day at a time, read for the three charts.
+  const daily = useCommitmentDays();
+  useReportMeta('cost-commitment-days', daily.data?.meta);
+  const days = useMemo(() => daily.data?.data ?? [], [daily.data]);
+  const daysState = surfaceStateFor(daily, daily.data?.meta, days.length, 'none', 'commitment');
+  const usedByDay = useMemo(() => committedEachDay(days), [days]);
+  const coveredByDay = useMemo(() => coverageEachDay(days), [days]);
+  const grid = useMemo(() => dayByDay(days), [days]);
+
   const state = surfaceStateFor(
     query,
     envelope?.meta,
@@ -209,6 +227,60 @@ export function CostCommitmentsScreen() {
           />
         </p>
       ) : null}
+
+      {/* Over time before the window's detail. Money is stacked where its total means
+          something, what was committed and what could have been covered, and the two
+          percentages go to the heatmap, because two utilizations added together measure
+          nothing. */}
+      <StateBoundary state={daysState} coverageShownElsewhere>
+        <div data-testid="chart-row">
+          <ChartPanel
+            id="commitments-use"
+            title="Use, each day"
+            caption="What every commitment obliged each day, as used and as paid for and unused. The last thirty days"
+          >
+            <StackedArea
+              periods={usedByDay.periods}
+              series={usedByDay.series.map((one) => ({
+                ...one,
+                provenance: 'measured' as const,
+              }))}
+              label="Commitment money each day, used and unused"
+              format={dollars}
+            />
+          </ChartPanel>
+          <ChartPanel
+            id="commitments-coverage"
+            title="Coverage, each day"
+            caption="Spend a commitment could have covered each day, as covered and as left on demand"
+          >
+            <StackedArea
+              periods={coveredByDay.periods}
+              series={coveredByDay.series.map((one) => ({
+                ...one,
+                provenance: 'measured' as const,
+              }))}
+              label="Eligible spend each day, covered and on demand"
+              format={dollars}
+            />
+          </ChartPanel>
+        </div>
+        <ChartPanel
+          id="commitments-day-by-day"
+          title="Day by day"
+          caption="Each kind's utilization and coverage per day, in percent, darker for higher. An outline is a day with nothing to divide by"
+        >
+          <Heatmap
+            rows={grid.rows}
+            columns={grid.columns}
+            values={grid.values}
+            provenance="measured"
+            label="Utilization and coverage by kind and day, percent"
+            format={(value) => `${value.toFixed(0)} percent`}
+            missing="nothing to divide by"
+          />
+        </ChartPanel>
+      </StateBoundary>
 
       <StateBoundary state={state}>
         <>

@@ -482,9 +482,12 @@ never adds verdicts together.
 **Progress 2026-10-06.** Drawn, each in a `ChartPanel`: Allocation's treemap and six month trend
 by tag, Anomalies' daily spend with a rule on each day that stood out, Accounts' largest accounts
 and freshness heatmap, Realized savings' running total, Query cost by dashboard and its trend from
-`/api/v1/query/trend`, Resources by type and region, and Meter cost per day by module. Still to
-come: the daily commitments collection and its two charts, the colour test, axe in both themes,
-and the remaining screens' panels.
+`/api/v1/query/trend`, Resources by type and region, and Meter cost per day by module. Then the daily
+commitments: each run reads the last 35 days at Cost Explorer's daily grain into
+`commitment_day`, per kind and never per plan, and Commitments draws use each day, coverage
+each day and a heatmap of both per kind. Still to come: the colour test, axe in both themes,
+seventeen tables drawn outside `DataTable`, so not every table sorts and totals yet, and the
+remaining screens' panels.
 
 
 ---

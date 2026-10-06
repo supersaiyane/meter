@@ -43,6 +43,7 @@ import {
 } from './fixtures/containers';
 import { digestsFixture, exchangesFixture, redactionsFixture } from './fixtures/assistant';
 import type {
+  ApiCommitmentDay,
   ApiQueryCostDay,
   ApiDigest,
   ApiExchange,
@@ -378,6 +379,14 @@ export function useCostAnomalies() {
     '/api/v1/cost/anomalies',
     '/api/v1/cost/anomalies',
     costAnomaliesFixture,
+  );
+}
+
+export function useCommitmentDays() {
+  return useRead<ApiCommitmentDay[]>(
+    ['commitment-days'],
+    '/api/v1/cost/commitments/daily',
+    '/api/v1/cost/commitments/daily',
   );
 }
 

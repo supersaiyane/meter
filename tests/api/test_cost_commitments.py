@@ -19,14 +19,14 @@ apart and read apart, and the last place they could be collapsed into one is her
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 from uuid import UUID, uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine
+from sqlalchemy import Engine, text
 
 from finops_core.config import Settings
 from finops_core.domain.account import AccountKey, Provider
@@ -342,3 +342,107 @@ class TestCoverageGapsAsActions:
         # same payload and the same rule. A 200 with an empty action list would have said the
         # estate has no uncovered baseline, which is a different claim.
         assert refused.status_code == 404
+
+
+# --- the days, TASK-P8-013 --------------------------------------------------------
+
+DAILY = "/api/v1/cost/commitments/daily"
+
+
+def day_of(engine: Engine, tenant: UUID, kind: str, day: date, money: tuple[str, ...]) -> None:
+    """One day of one kind, written directly: committed, used, eligible and covered."""
+    committed, used, eligible, covered = (Decimal(one) for one in money)
+    ended = datetime.combine(day + timedelta(days=1), datetime.min.time(), tzinfo=UTC)
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "INSERT INTO commitment_day (day_id, tenant_id, ingest_run_id, commitment_type, "
+                "day, committed, used, eligible_spend, covered_spend, as_of, collected_at) "
+                "VALUES (:id, :t, :run, :kind, :day, :committed, :used, :eligible, :covered, "
+                ":as_of, :collected_at)"
+            ),
+            {
+                "id": uuid4(),
+                "t": tenant,
+                "run": uuid4(),
+                "kind": kind,
+                "day": day,
+                "committed": committed,
+                "used": used,
+                "eligible": eligible,
+                "covered": covered,
+                "as_of": ended,
+                "collected_at": ended + timedelta(hours=6),
+            },
+        )
+
+
+class TestTheDays:
+    def test_the_days_come_back_oldest_first_with_both_fractions(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        today = datetime.now(UTC).date()
+        for back in (2, 1):
+            day = today - timedelta(days=back)
+            day_of(engine, tenant_id, "SavingsPlan", day, ("10", "8", "40", "8"))
+            day_of(engine, tenant_id, "ReservedInstance", day, ("6", "3", "10", "3"))
+        client, token = client_for(engine, everything(tenant_id), settings)
+        payload = client.get(DAILY, headers=auth(token)).json()
+        found = [(row["day"], row["commitment_type"]) for row in payload["data"]]
+        two, one = (today - timedelta(days=2)).isoformat(), (today - timedelta(days=1)).isoformat()
+        assert found == [
+            (two, "ReservedInstance"),
+            (two, "SavingsPlan"),
+            (one, "ReservedInstance"),
+            (one, "SavingsPlan"),
+        ]
+        plan = payload["data"][1]
+        assert Decimal(plan["utilization"]) == Decimal("0.8")
+        assert Decimal(plan["coverage"]) == Decimal("0.2")
+        # As fresh as the newest day, and the payer is wholly visible to a global reader.
+        assert payload["meta"]["as_of"].startswith(today.isoformat())
+        assert payload["meta"]["scope_coverage"]["visible"] == 1
+
+    def test_a_day_with_nothing_committed_has_no_utilization_rather_than_zero(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        day_of(
+            engine,
+            tenant_id,
+            "SavingsPlan",
+            datetime.now(UTC).date() - timedelta(days=1),
+            ("0", "0", "40", "0"),
+        )
+        client, token = client_for(engine, everything(tenant_id), settings)
+        (only_day,) = client.get(DAILY, headers=auth(token)).json()["data"]
+        assert only_day["utilization"] is None
+        assert Decimal(only_day["coverage"]) == Decimal("0")
+
+    def test_a_day_older_than_the_month_shown_stays_out(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        day_of(
+            engine,
+            tenant_id,
+            "SavingsPlan",
+            datetime.now(UTC).date() - timedelta(days=40),
+            ("10", "8", "40", "8"),
+        )
+        client, token = client_for(engine, everything(tenant_id), settings)
+        assert client.get(DAILY, headers=auth(token)).json()["data"] == []
+
+    def test_a_narrowed_reader_reads_no_days_and_is_told_the_payer_was_not_visible(
+        self, engine: Engine, tenant_id: UUID, settings: Settings
+    ) -> None:
+        day_of(
+            engine,
+            tenant_id,
+            "SavingsPlan",
+            datetime.now(UTC).date() - timedelta(days=1),
+            ("10", "8", "40", "8"),
+        )
+        client, token = client_for(engine, only(tenant_id, "111122223333"), settings)
+        payload = client.get(DAILY, headers=auth(token)).json()
+        assert payload["data"] == []
+        assert payload["meta"]["scope_coverage"]["visible"] == 0
+        assert payload["meta"]["scope_coverage"]["total"] == 1
