@@ -1603,6 +1603,17 @@ changes:
     --require-hashes and then pip check. The move to the new releases came with it: 92
     annotations to SQLAlchemy 2.1, two counts read through Any, one DISTINCT ON through
     distinct_on. Measured on the lock: mypy clean over 451 files and 3,007 backend tests passed'
+- id: CHG-0114
+  date: 2026-10-07
+  type: Fix
+  what: The Python images build on the platform they run on, and verify-platform reads what is
+    inside them
+  commit: pending
+  detail: 'ISS-254. The builder stage of docker/Dockerfile.api and docker/Dockerfile.worker ran on
+    the build machine, so an amd64 image built on an Apple Silicon Mac carried arm64 extensions
+    under an amd64 label. Both builders now build for TARGETPLATFORM, and make verify-platform
+    checks every ELF file inside each image against the platform with
+    scripts/ci/check_image_arch.py, as well as the label'
 issues:
 - id: ISS-189
   severity: LOW
@@ -3940,15 +3951,16 @@ issues:
     --require-hashes everywhere, and `[tool.uv] managed = false`.'
 - id: ISS-254
   severity: HIGH
-  status: OPEN
-  summary: An amd64 image built on an arm64 machine may carry arm64 compiled extensions
-  detail: 'Found by reading on 2026-10-06, not reproduced. The builder stage of
-    `docker/Dockerfile.api` and `docker/Dockerfile.worker` runs on BUILDPLATFORM and installs the
-    wheels for that machine, compiled ones among them such as psycopg-binary, pydantic-core and
-    uvloop, then copies /opt/venv into the TARGETPLATFORM runtime. make verify-platform reads the
-    image label and not the extensions inside it. CI builds on amd64 and is not affected; make
-    build on Apple Silicon would be. The fix is a builder on the target platform, or pip told the
-    target with --platform and --only-binary, and it needs the built image run on amd64 to prove.'
+  status: FIXED
+  summary: An amd64 image built on an arm64 machine carried arm64 compiled extensions
+  detail: 'Found by reading on 2026-10-06 and reproduced on 2026-10-07, measured: the API image
+    built for linux/amd64 on an Apple Silicon Mac held 37 of its 163 compiled files as arm64,
+    every compiled extension in /opt/venv, and its own Python failed to import pydantic_core under
+    amd64. make verify-platform passed it, because it read only the image label. Fixed in both
+    Python images: the builder stage builds on the target platform, emulated where the build
+    machine differs, and verify-platform reads every compiled file in each image with
+    scripts/ci/check_image_arch.py. After the fix, measured: all 162 compiled files in the
+    amd64 API image are amd64, and the same imports succeed under amd64.'
 
 open_questions:
 - id: OPEN-07

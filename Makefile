@@ -537,7 +537,7 @@ build: ## Build all three images for $(PLATFORM), tagged with the short commit
 	@$(MAKE) verify-platform
 
 .PHONY: verify-platform
-verify-platform: ## Fail if a built image is not $(PLATFORM). Catches the arm64 mistake
+verify-platform: ## Fail if a built image, or any compiled file inside it, is not $(PLATFORM)
 	@expected="$(PLATFORM)"; \
 	for svc in api worker web; do \
 	  actual=$$(docker image inspect meter-$$svc:$(IMAGE_TAG) \
@@ -548,6 +548,12 @@ verify-platform: ## Fail if a built image is not $(PLATFORM). Catches the arm64 
 	    exit 1; \
 	  fi; \
 	  echo "OK: meter-$$svc is $$actual"; \
+	  container=$$(docker create --platform $$expected meter-$$svc:$(IMAGE_TAG)); \
+	  docker export $$container | $(PY) scripts/ci/check_image_arch.py \
+	    --expect $$expected --image meter-$$svc; \
+	  status=$$?; \
+	  docker rm $$container >/dev/null; \
+	  [ $$status -eq 0 ] || exit 1; \
 	done
 
 .PHONY: buildx-setup

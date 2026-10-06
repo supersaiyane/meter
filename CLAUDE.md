@@ -132,7 +132,8 @@ These are not style preferences. Breaking them costs a rewrite.
     that stops using the thing.
 13. **Images are built for `linux/amd64`.** A push never converts an arm64
     image, and the failure reads as `exec format error`. `make build` pins it
-    and `make verify-platform` checks it.
+    and `make verify-platform` checks it, by the label and by every compiled
+    file inside, because a label once said amd64 over arm64 code. ISS-254.
 
 ## Commit format
 

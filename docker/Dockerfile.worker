@@ -18,12 +18,17 @@
 # with "exec format error", which reads like a broken binary rather than a
 # wrong architecture.
 #
-# Two ARGs solve it, and both are needed for different reasons.
+# Both stages build for TARGETPLATFORM, the machine that will run the image.
 #
-#   BUILDPLATFORM   the machine doing the building. The builder stage runs
-#                   natively here, so compilation is fast rather than emulated.
-#   TARGETPLATFORM  the machine that will run the image. The runtime stage is
-#                   pinned to this.
+# The builder used to run on BUILDPLATFORM, the machine doing the building, so
+# that compilation would be native rather than emulated. Nothing compiles:
+# every package arrives as a wheel, and pip installs the wheel for the machine
+# it runs on. Built on an Apple Silicon Mac, an image labelled amd64 therefore
+# carried the Mac's arm64 extensions, 37 of its 163 compiled files measured on
+# 2026-10-07, and its Python could not import them. The label said amd64 all
+# along, because it describes the stage the image was assembled in and not the
+# files copied into it. ISS-254. Where the two machines differ the builder now
+# runs emulated, which installs wheels and compiles nothing.
 #
 # Build with buildx so the values are populated:
 #   docker buildx build --platform linux/amd64 -f docker/Dockerfile.api -t meter-api .
@@ -31,13 +36,17 @@
 # `make build` and `make buildx` already pass --platform. The pipeline passes
 # --custom-platform to Kaniko for the same reason.
 #
+# `make verify-platform` reads every compiled file in the image as well as its
+# label, with scripts/ci/check_image_arch.py, because the label alone passed
+# the image described above.
+#
 
 ARG PYTHON_VERSION=3.13
 ARG TARGETPLATFORM
-ARG BUILDPLATFORM
 
 # reg.mini.dev/python:3.13-dev, pinned per ADR-0010. See docker/base-images.lock
-FROM --platform=${BUILDPLATFORM} reg.mini.dev/python@sha256:4253ed59c60f7c926330ee548b5c014b5ad7551f60d5feaa10a4a98f6d951a15 AS builder
+# On the target platform, emulated where the build machine differs. ISS-254.
+FROM reg.mini.dev/python@sha256:4253ed59c60f7c926330ee548b5c014b5ad7551f60d5feaa10a4a98f6d951a15 AS builder
 
 # The base image defaults to a non root user, and this stage has to write
 # /opt/venv. Root here is safe and is not the posture ADR-0010 protects: the
