@@ -154,6 +154,7 @@ INDEX.md            master index, the entry point for the project
 Makefile            every routine task, run `make help`
 INDEX.md            master index, the entry point for the project
 docker/             three Dockerfiles plus the nginx config, Minimus based
+requirements/       hashed dependency locks, written by make lock, ADR-0031
 security/           scan reports, SBOMs, posture, policy, allowlist
 scripts/security/   scanning, admission gate, report, auto fix
 scripts/docs/       index check, feature doc check, file graph, map counts

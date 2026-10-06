@@ -17,6 +17,7 @@
     "docker/finops_query",
     "docker/migrations",
     "docker/pyproject.toml",
+    "docker/requirements/runtime.lock",
     "docker/scripts/ops",
     "finops-web/e2e/a11y.spec.ts",
     "finops-web/e2e/account.spec.ts",
@@ -797,6 +798,11 @@
     },
     {
       "s": "docker/Dockerfile.api",
+      "t": "docker/requirements/runtime.lock",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.api",
       "t": "docker/scripts/ops",
       "k": "docker"
     },
@@ -868,6 +874,11 @@
     {
       "s": "docker/Dockerfile.worker",
       "t": "docker/pyproject.toml",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.worker",
+      "t": "docker/requirements/runtime.lock",
       "k": "docker"
     },
     {

@@ -19,8 +19,8 @@ from finops_core.domain.tenant import Scope
 
 
 def _fetch(
-    repository: ScopedRepository, scope: Scope, statement: Select[tuple[Any, ...]]
-) -> Sequence[Row[tuple[Any, ...]]]:
+    repository: ScopedRepository, scope: Scope, statement: Select[*tuple[Any, ...]]
+) -> Sequence[Row[*tuple[Any, ...]]]:
     """Run a select through the scoped path, projected or not.
 
     One helper rather than a cast at every call site. `with_only_columns` narrows
@@ -36,7 +36,7 @@ class RefusalRepository(ScopedRepository):
     table: ClassVar[Table] = models.sizing_refusal
     resource: ClassVar[str] = "sizing_refusal"
 
-    def latest(self, scope: Scope, limit: int = 200) -> Sequence[Row[tuple[Any, ...]]]:
+    def latest(self, scope: Scope, limit: int = 200) -> Sequence[Row[*tuple[Any, ...]]]:
         """Every refusal this reader can see, the least observed first.
 
         Ordered by observation days ascending rather than by anything resembling severity,
@@ -78,7 +78,7 @@ class RecommendationRepository(ScopedRepository):
         waste_class: str | None = None,
         owner: str | None = None,
         limit: int = 200,
-    ) -> Sequence[Row[tuple[Any, ...]]]:
+    ) -> Sequence[Row[*tuple[Any, ...]]]:
         """Biggest money first, filterable.
 
         Ranked by the saving rather than by confidence, per ADR-0016. A list
@@ -98,7 +98,7 @@ class RecommendationRepository(ScopedRepository):
             statement.order_by(self.table.c.estimated_monthly_saving.desc()).limit(limit),
         )
 
-    def one(self, scope: Scope, recommendation_id: Any) -> Row[tuple[Any, ...]] | None:
+    def one(self, scope: Scope, recommendation_id: Any) -> Row[*tuple[Any, ...]] | None:
         rows = _fetch(
             self,
             scope,
@@ -140,7 +140,7 @@ class RecommendationEventRepository(ScopedRepository):
     table: ClassVar[Table] = models.recommendation_event
     resource: ClassVar[str] = "recommendation_event"
 
-    def history(self, scope: Scope, recommendation_id: Any) -> Sequence[Row[tuple[Any, ...]]]:
+    def history(self, scope: Scope, recommendation_id: Any) -> Sequence[Row[*tuple[Any, ...]]]:
         return _fetch(
             self,
             scope,
@@ -161,7 +161,7 @@ class RealizedSavingRepository(ScopedRepository):
     table: ClassVar[Table] = models.realized_saving
     resource: ClassVar[str] = "realized_saving"
 
-    def all_verdicts(self, scope: Scope, limit: int = 200) -> Sequence[Row[tuple[Any, ...]]]:
+    def all_verdicts(self, scope: Scope, limit: int = 200) -> Sequence[Row[*tuple[Any, ...]]]:
         """Every verdict, including the inconclusive ones.
 
         Newest first rather than largest first, because this screen is read to
@@ -173,7 +173,7 @@ class RealizedSavingRepository(ScopedRepository):
             self.scoped_select(scope).order_by(self.table.c.window_after_end.desc()).limit(limit),
         )
 
-    def totals(self, scope: Scope) -> Sequence[Row[tuple[Any, ...]]]:
+    def totals(self, scope: Scope) -> Sequence[Row[*tuple[Any, ...]]]:
         """Realized money by verdict.
 
         Grouped by verdict rather than summed, deliberately. A single realized
@@ -204,7 +204,7 @@ class ScoreRepository(ScopedRepository):
     table: ClassVar[Table] = models.finops_score
     resource: ClassVar[str] = "finops_score"
 
-    def latest(self, scope: Scope, limit: int = 200) -> Sequence[Row[tuple[Any, ...]]]:
+    def latest(self, scope: Scope, limit: int = 200) -> Sequence[Row[*tuple[Any, ...]]]:
         """The most recent score per subject.
 
         Newest first across subjects rather than one row per subject, because the
@@ -231,7 +231,7 @@ class ScoreRepository(ScopedRepository):
 
     def history(
         self, scope: Scope, *, account: str, limit: int = 60
-    ) -> Sequence[Row[tuple[Any, ...]]]:
+    ) -> Sequence[Row[*tuple[Any, ...]]]:
         """One subject's scores, newest first, for the trend."""
         statement = (
             self.scoped_select(scope)
@@ -252,7 +252,7 @@ class ScoreComponentRepository(ScopedRepository):
     table: ClassVar[Table] = models.finops_score_component
     resource: ClassVar[str] = "finops_score_component"
 
-    def of(self, scope: Scope, score_ids: Sequence[Any]) -> Sequence[Row[tuple[Any, ...]]]:
+    def of(self, scope: Scope, score_ids: Sequence[Any]) -> Sequence[Row[*tuple[Any, ...]]]:
         """Every component of the given scores, in one read.
 
         A read per score would be a fan out over a list the screen already has, and

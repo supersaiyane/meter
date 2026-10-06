@@ -17,7 +17,7 @@ class AccountRepository(ScopedRepository):
     table: ClassVar[Table] = models.cloud_account
     resource: ClassVar[str] = "cloud_account"
 
-    def list_in_scope(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+    def list_in_scope(self, scope: Scope) -> Sequence[Row[*tuple[object, ...]]]:
         """Every account the scope permits, and nothing else."""
         return self.fetch(scope)
 
@@ -40,7 +40,7 @@ class AccountRepository(ScopedRepository):
         self._audit(confirmed, action="count", outcome="ALLOWED")
         return int(total)
 
-    def get_in_scope(self, scope: Scope, account_id: str) -> Row[tuple[object, ...]] | None:
+    def get_in_scope(self, scope: Scope, account_id: str) -> Row[*tuple[object, ...]] | None:
         """One account, or None when the scope does not reach it."""
         statement = self.scoped_select(scope).where(self.table.c["account_id"] == account_id)
         rows = self.fetch(scope, statement)
@@ -62,7 +62,7 @@ class AccountRepository(ScopedRepository):
         )
         return True
 
-    def list_unhealthy(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+    def list_unhealthy(self, scope: Scope) -> Sequence[Row[*tuple[object, ...]]]:
         """Accounts whose collector role is not healthy.
 
         An account we cannot read is still listed, because omitting it hides the

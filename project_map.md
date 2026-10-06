@@ -76,6 +76,9 @@ meter/
 │                              Packages are found, not listed: an explicit list
 │                              is top level only and left subpackages out of the
 │                              built wheel
+├── requirements/              the hashed dependency locks every install reads,
+│                              dev.lock for a venv and CI, runtime.lock for the
+│                              images. Written by make lock, never by hand. ADR-0031
 ├── docker-compose.yml         local stack only, never used to deploy. Every
 │                              python service takes env_file, so a new setting
 │                              does not have to be added twice, and the postgres
@@ -1637,6 +1640,7 @@ continuous integration, not by good intentions.
 | What an audit found, and when | `audits/`, newest last by filename |
 | Is the posture currently clean | `security/POSTURE.md` |
 | Which base image digest are we on | `docker/base-images.lock` |
+| Which version of a Python dependency runs | `requirements/runtime.lock`, and `requirements/dev.lock` for tests and tools |
 | Why is a vulnerability accepted | `security/policy/accepted.yaml`, and ADR-0018 |
 | How a number is rendered, and how a failure is | `docs/12-UI-DESIGN.md` |
 | Which tasks are done | `tasks/STATUS.md`, generated from the plan files |

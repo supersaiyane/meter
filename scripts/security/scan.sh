@@ -88,7 +88,13 @@ if [[ -f "${ROOT}/pyproject.toml" ]]; then
   # written at all. Python dependencies were therefore absent from every summary
   # that claimed zero findings. Auditing `.` reads the declared dependencies,
   # keeps --strict, and produces a report.
-  pip-audit --format json --output "${OUT}/pip-audit.json" --strict . \
+  #
+  # The runtime lock since ADR-0031, not `.`: auditing the declared ranges
+  # resolved them afresh, so the report described the newest releases rather
+  # than the versions every image actually installs. --no-deps because the lock
+  # is already the whole closure, pinned.
+  pip-audit --format json --output "${OUT}/pip-audit.json" --strict \
+    --requirement "${ROOT}/requirements/runtime.lock" --require-hashes --no-deps \
     || echo "pip-audit reported findings"
 fi
 

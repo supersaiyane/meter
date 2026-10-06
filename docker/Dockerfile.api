@@ -61,17 +61,16 @@ WORKDIR /build
 # it and deleting it afterwards. Smaller image, one fewer layer. The cost is a
 # slightly slower first import, which is irrelevant for a long running process.
 COPY pyproject.toml ./
-# pyproject declares six packages, and setuptools needs every one of them to
-# exist before it can build metadata. Empty ones are enough for the dependency
-# resolve below, and the real sources land in the COPY that follows. Without
-# this the dependency layer fails on `package directory 'finops_core' does not
-# exist`, which is why this stage never built. ISS-143.
-RUN mkdir -p finops_core finops_providers finops_ingest finops_api finops_mcp finops_query \
- && touch finops_core/__init__.py finops_providers/__init__.py finops_ingest/__init__.py finops_api/__init__.py finops_mcp/__init__.py finops_query/__init__.py
+# The lock, not a resolve: every pin checked against its hash, so the image holds
+# exactly what the tests ran against and a release published after the lock was
+# written cannot reach it. The project itself goes in below with no dependencies
+# of its own to resolve, which is also why this layer no longer needs the empty
+# package directories ISS-143 added to let setuptools build metadata. ADR-0031.
+COPY requirements/runtime.lock ./requirements/
 
 RUN python -m venv /opt/venv \
  && /opt/venv/bin/pip install --upgrade pip setuptools wheel \
- && /opt/venv/bin/pip install --no-compile .
+ && /opt/venv/bin/pip install --no-compile --require-hashes -r requirements/runtime.lock
 
 COPY finops_core/       ./finops_core/
 COPY finops_providers/  ./finops_providers/
@@ -87,7 +86,8 @@ COPY scripts/ops/      ./scripts/ops/
 COPY alembic.ini       ./
 COPY migrations/       ./migrations/
 
-RUN /opt/venv/bin/pip install --no-compile --no-deps .
+RUN /opt/venv/bin/pip install --no-compile --no-deps . \
+ && /opt/venv/bin/pip check
 
 # Build tools are not runtime code. pip, setuptools and wheel are installed to
 # build the venv and are then copied into the runtime image with it, where they

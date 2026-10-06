@@ -77,6 +77,12 @@ include = [
     "finops_query*",
 ]
 
+# uv writes the lock and nothing else. Without this, `uv run` treats the repository as a uv
+# project, resolves it afresh, writes a uv.lock nobody asked for and syncs .venv to whatever PyPI
+# holds that day, which on 2026-10-06 moved 31 packages under a working tree. ADR-0031.
+[tool.uv]
+managed = false
+
 [tool.ruff]
 line-length = 100
 target-version = "py313"

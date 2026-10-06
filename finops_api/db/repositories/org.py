@@ -24,6 +24,6 @@ class OrgRepository(ScopedRepository):
     table: ClassVar[Table] = models.org_node
     resource: ClassVar[str] = "org_node"
 
-    def list_tree(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+    def list_tree(self, scope: Scope) -> Sequence[Row[*tuple[object, ...]]]:
         statement = self.scoped_select(scope).order_by(self.table.c["depth"])
         return self.fetch(scope, statement)

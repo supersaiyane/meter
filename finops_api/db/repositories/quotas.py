@@ -31,8 +31,8 @@ from finops_core.domain.tenant import Scope
 
 
 def _fetch(
-    repository: ScopedRepository, scope: Scope, statement: Select[tuple[Any, ...]]
-) -> Sequence[Row[tuple[Any, ...]]]:
+    repository: ScopedRepository, scope: Scope, statement: Select[*tuple[Any, ...]]
+) -> Sequence[Row[*tuple[Any, ...]]]:
     """Run a select through the scoped path, projected or not."""
     return repository.fetch(scope, statement)
 
@@ -63,7 +63,7 @@ class QuotaRepository(ScopedRepository):
             else_=literal(None),
         )
 
-    def measurable(self, scope: Scope, limit: int = 500) -> Sequence[Row[tuple[Any, ...]]]:
+    def measurable(self, scope: Scope, limit: int = 500) -> Sequence[Row[*tuple[Any, ...]]]:
         """Quotas with a usage figure, least headroom first.
 
         The order is the finding: the quota nearest its limit is the one somebody has to act
@@ -82,7 +82,7 @@ class QuotaRepository(ScopedRepository):
         )
         return _fetch(self, scope, statement)
 
-    def unmeasurable(self, scope: Scope, limit: int = 500) -> Sequence[Row[tuple[Any, ...]]]:
+    def unmeasurable(self, scope: Scope, limit: int = 500) -> Sequence[Row[*tuple[Any, ...]]]:
         """Quotas nothing measured, by name, each carrying its reason.
 
         By name and not by limit, because a limit on its own ranks nothing: a quota of 5
@@ -99,7 +99,7 @@ class QuotaRepository(ScopedRepository):
 
     def one(
         self, scope: Scope, service_code: str, quota_code: str
-    ) -> Sequence[Row[tuple[Any, ...]]]:
+    ) -> Sequence[Row[*tuple[Any, ...]]]:
         """One quota, in every region it applies to.
 
         Several rows rather than one, because a quota code is per region: the same limit can
@@ -142,7 +142,7 @@ class QuotaRequestRepository(ScopedRepository):
     table: ClassVar[Table] = models.quota_request
     resource: ClassVar[str] = "quota_request"
 
-    def all_requests(self, scope: Scope, limit: int = 200) -> Sequence[Row[tuple[Any, ...]]]:
+    def all_requests(self, scope: Scope, limit: int = 200) -> Sequence[Row[*tuple[Any, ...]]]:
         """Every request, the ones still going somewhere first, then oldest first.
 
         Settled requests are kept rather than filtered out, the refused ones especially. A
@@ -161,7 +161,7 @@ class QuotaRequestRepository(ScopedRepository):
 
     def for_quota(
         self, scope: Scope, service_code: str, quota_code: str
-    ) -> Sequence[Row[tuple[Any, ...]]]:
+    ) -> Sequence[Row[*tuple[Any, ...]]]:
         """Requests against one quota, newest first, for the detail page."""
         statement = (
             self.scoped_select(scope)
@@ -186,7 +186,7 @@ class QuotaRequestHistoryRepository(ScopedRepository):
     table: ClassVar[Table] = models.quota_request_history
     resource: ClassVar[str] = "quota_request_history"
 
-    def for_request(self, scope: Scope, request_id: str) -> Sequence[Row[tuple[Any, ...]]]:
+    def for_request(self, scope: Scope, request_id: str) -> Sequence[Row[*tuple[Any, ...]]]:
         statement = (
             self.scoped_select(scope)
             .where(self.table.c.request_id == request_id)

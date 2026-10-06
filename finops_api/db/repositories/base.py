@@ -46,15 +46,15 @@ class ScopedRepository:
         self._connection = connection
         self._context = context
 
-    def scoped_select(self, scope: Scope) -> Select[tuple[object, ...]]:
+    def scoped_select(self, scope: Scope) -> Select[*tuple[object, ...]]:
         """A select already confined to the scope. There is no unconfined variant."""
         return guards.scoped_select(self.table, scope)
 
     def fetch(
         self,
         scope: Scope,
-        statement: Select[tuple[object, ...]] | None = None,
-    ) -> Sequence[Row[tuple[object, ...]]]:
+        statement: Select[*tuple[object, ...]] | None = None,
+    ) -> Sequence[Row[*tuple[object, ...]]]:
         """Run a scoped read and record it.
 
         Passing a statement is allowed so a repository can add its own ordering

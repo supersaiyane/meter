@@ -478,15 +478,15 @@ a duplicate.
 | `ExchangeRepository` | class | `finops_api/db/repositories/assistant.py:39` | One person's own exchanges, read through the guard. ADR-0029. | `finops_api/routes/assistant.py` |
 | `ExchangeRepository.exchanges` | method | `finops_api/db/repositories/assistant.py:49` | The asker's exchanges, newest first. | `finops_api/routes/assistant.py` |
 | `ExchangeRepository.count` | method | `finops_api/db/repositories/assistant.py:54` | How many the asker has, so a list cut at its limit says it was cut. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/containers.py`, `finops_api/db/repositories/cost.py`, `finops_api/db/repositories/explore.py`, and 8 more |
-| `ExchangeRepository.exchange` | method | `finops_api/db/repositories/assistant.py:62` | One of the asker's exchanges, or None, which is also what another person's is. | `finops_api/routes/assistant.py` |
-| `DigestRepository` | class | `finops_api/db/repositories/assistant.py:69` | The weekly digests, read through the guard. FEAT-041. | `finops_api/routes/assistant.py` |
-| `DigestRepository.digests` | method | `finops_api/db/repositories/assistant.py:80` | The newest week first, the organization's digest before the teams'. | `finops_api/routes/assistant.py` |
-| `RedactionRepository` | class | `finops_api/db/repositories/assistant.py:95` | What redaction found in a person's own questions, read through the guard. FEAT-046. | `finops_api/routes/assistant.py` |
-| `RedactionRepository.redactions` | method | `finops_api/db/repositories/assistant.py:104` | The asker's events, newest first. | `finops_api/routes/assistant.py` |
-| `RedactionRepository.count` | method | `finops_api/db/repositories/assistant.py:109` | How many the asker has, so a list cut at its limit says it was cut. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/containers.py`, `finops_api/db/repositories/cost.py`, `finops_api/db/repositories/explore.py`, and 8 more |
-| `record_redactions` | function | `finops_api/db/repositories/assistant.py:116` | One row per rule that fired. The rule and the action, and nothing of the secret. | `finops_api/assistant.py` |
-| `tokens_spent` | function | `finops_api/db/repositories/assistant.py:141` | Every token the tenant's exchanges recorded since `since`. Zero is the truth when | `finops_api/assistant.py` |
-| `record_exchange` | function | `finops_api/db/repositories/assistant.py:153` | Write the one row a question produces, and return its id. | `finops_api/assistant.py` |
+| `ExchangeRepository.exchange` | method | `finops_api/db/repositories/assistant.py:65` | One of the asker's exchanges, or None, which is also what another person's is. | `finops_api/routes/assistant.py` |
+| `DigestRepository` | class | `finops_api/db/repositories/assistant.py:72` | The weekly digests, read through the guard. FEAT-041. | `finops_api/routes/assistant.py` |
+| `DigestRepository.digests` | method | `finops_api/db/repositories/assistant.py:83` | The newest week first, the organization's digest before the teams'. | `finops_api/routes/assistant.py` |
+| `RedactionRepository` | class | `finops_api/db/repositories/assistant.py:98` | What redaction found in a person's own questions, read through the guard. FEAT-046. | `finops_api/routes/assistant.py` |
+| `RedactionRepository.redactions` | method | `finops_api/db/repositories/assistant.py:107` | The asker's events, newest first. | `finops_api/routes/assistant.py` |
+| `RedactionRepository.count` | method | `finops_api/db/repositories/assistant.py:112` | How many the asker has, so a list cut at its limit says it was cut. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/containers.py`, `finops_api/db/repositories/cost.py`, `finops_api/db/repositories/explore.py`, and 8 more |
+| `record_redactions` | function | `finops_api/db/repositories/assistant.py:122` | One row per rule that fired. The rule and the action, and nothing of the secret. | `finops_api/assistant.py` |
+| `tokens_spent` | function | `finops_api/db/repositories/assistant.py:147` | Every token the tenant's exchanges recorded since `since`. Zero is the truth when | `finops_api/assistant.py` |
+| `record_exchange` | function | `finops_api/db/repositories/assistant.py:159` | Write the one row a question produces, and return its id. | `finops_api/assistant.py` |
 | `AccessContext` | class | `finops_api/db/repositories/base.py:31` | Who is reading, and under which request. Both land in the audit row. | `finops_api/deps.py` |
 | `ScopedRepository` | class | `finops_api/db/repositories/base.py:38` | Base for every repository that touches tenant data. | nothing in this tree |
 | `ScopedRepository.scoped_select` | method | `finops_api/db/repositories/base.py:49` | A select already confined to the scope. There is no unconfined variant. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/assistant.py`, `finops_api/db/repositories/containers.py`, `finops_api/db/repositories/cost.py`, and 9 more |
@@ -504,31 +504,31 @@ a duplicate.
 | `CostRepository.accounts_in` | method | `finops_api/db/repositories/cost.py:107` | How many accounts this scope can see spending in the period. | `finops_api/routes/cost.py`, `finops_api/routes/explore.py`, `finops_api/routes/forecast.py` |
 | `CostRepository.period_total` | method | `finops_api/db/repositories/cost.py:123` | One row: effective, billed, line items and both timestamps. | `finops_api/routes/cost.py`, `finops_api/routes/explore.py`, `finops_api/routes/forecast.py` |
 | `CostRepository.grouped` | method | `finops_api/db/repositories/cost.py:139` | Worst first, by service, account or region. | `finops_api/routes/cost.py`, `finops_api/routes/query.py` |
-| `CostRepository.containers` | method | `finops_api/db/repositories/cost.py:162` | Cost at the container grain: cluster, namespace and workload. | `finops_api/routes/cost.py` |
-| `CostRepository.cluster_totals` | method | `finops_api/db/repositories/cost.py:196` | Per cluster: what was attributed, what was not, and how many rows. | `finops_api/routes/cost.py` |
-| `CostRepository.clusters_in` | method | `finops_api/db/repositories/cost.py:222` | How many clusters this caller can see any charge for. | `finops_api/routes/cost.py` |
-| `CostRepository.for_export` | method | `finops_api/db/repositories/cost.py:241` | One row per account, service and tag value, for the file finance opens. | `finops_api/routes/cost.py` |
-| `CostRepository.by_tag` | method | `finops_api/db/repositories/cost.py:272` | Allocation: charges grouped by one tag key, with an explicit bucket | `finops_api/routes/cost.py` |
-| `CostRepository.daily` | method | `finops_api/db/repositories/cost.py:296` | Effective cost per day inside one billing period, oldest first. | `finops_api/routes/cost.py`, `finops_api/routes/forecast.py`, `finops_ingest/collectors/commitment.py` |
-| `AnomalyRepository` | class | `finops_api/db/repositories/cost.py:313` | Days that did not look like the days before them. FEAT-023. | `finops_api/routes/cost.py` |
-| `AnomalyRepository.worst_first` | method | `finops_api/db/repositories/cost.py:319` | Biggest move first, newest day breaking the tie. | `finops_api/routes/cost.py`, `finops_api/routes/waste.py` |
-| `AnomalyRepository.accounts_judged` | method | `finops_api/db/repositories/cost.py:333` | How many accounts this scope has cost for, and therefore could be judged. | `finops_api/routes/cost.py` |
-| `AnomalyRepository.judged_days` | method | `finops_api/db/repositories/cost.py:356` | How many distinct days this scope has cost for. | `finops_api/routes/cost.py` |
-| `CommitmentRepository` | class | `finops_api/db/repositories/cost.py:372` | What was committed and how much of it was consumed. FEAT-024. | `finops_api/routes/cost.py` |
-| `CommitmentRepository.latest_window` | method | `finops_api/db/repositories/cost.py:384` | The most recent window anything was reported for, or None. | `finops_api/routes/cost.py` |
-| `CommitmentRepository.worst_first` | method | `finops_api/db/repositories/cost.py:394` | Every commitment in the window, most wasted money first. | `finops_api/routes/cost.py`, `finops_api/routes/waste.py` |
-| `BudgetRepository` | class | `finops_api/db/repositories/cost.py:410` | Budgets as collected. FEAT-060. | `finops_api/routes/cost.py` |
-| `BudgetRepository.latest_period` | method | `finops_api/db/repositories/cost.py:421` | The most recent period any budget covers. | `finops_api/routes/cost.py`, `finops_api/routes/explore.py`, `finops_api/routes/forecast.py`, `finops_api/routes/inventory.py` |
-| `BudgetRepository.for_period` | method | `finops_api/db/repositories/cost.py:432` | Every budget covering a period, largest limit first. | `finops_api/routes/cost.py` |
-| `CommitmentActionRepository` | class | `finops_api/db/repositories/cost.py:449` | Coverage gaps as findings somebody owns. FEAT-055. | `finops_api/routes/cost.py` |
-| `CommitmentActionRepository.worst_first` | method | `finops_api/db/repositories/cost.py:460` | Every open action, most money first, per ADR-0016. | `finops_api/routes/cost.py`, `finops_api/routes/waste.py` |
-| `CommitmentDayRepository` | class | `finops_api/db/repositories/cost.py:476` | Each kind of commitment, a day at a time. TASK-P8-013. | `finops_api/routes/cost.py` |
-| `CommitmentDayRepository.recent` | method | `finops_api/db/repositories/cost.py:490` | The last `DAYS_SHOWN` days, oldest first, both kinds on each day. | `finops_api/routes/cost.py`, `finops_api/routes/ingest.py` |
-| `CommitmentCoverageRepository` | class | `finops_api/db/repositories/cost.py:501` | How much of the eligible estate was on a commitment, per dimension. | `finops_api/routes/cost.py` |
-| `CommitmentCoverageRepository.slices` | method | `finops_api/db/repositories/cost.py:507` | Coverage rows in the window, most uncovered money first. | `finops_api/routes/cost.py` |
-| `MonthlyCostRepository` | class | `finops_api/db/repositories/cost.py:526` | The derived monthly shape, for setting one period beside another. | nothing in this tree |
-| `MonthlyCostRepository.months` | method | `finops_api/db/repositories/cost.py:537` | Each billing month and what it cost, newest first. | nothing in this tree |
-| `previous_month` | function | `finops_api/db/repositories/cost.py:554` | The billing period before this one. | `finops_api/routes/cost.py` |
+| `CostRepository.containers` | method | `finops_api/db/repositories/cost.py:164` | Cost at the container grain: cluster, namespace and workload. | `finops_api/routes/cost.py` |
+| `CostRepository.cluster_totals` | method | `finops_api/db/repositories/cost.py:198` | Per cluster: what was attributed, what was not, and how many rows. | `finops_api/routes/cost.py` |
+| `CostRepository.clusters_in` | method | `finops_api/db/repositories/cost.py:224` | How many clusters this caller can see any charge for. | `finops_api/routes/cost.py` |
+| `CostRepository.for_export` | method | `finops_api/db/repositories/cost.py:243` | One row per account, service and tag value, for the file finance opens. | `finops_api/routes/cost.py` |
+| `CostRepository.by_tag` | method | `finops_api/db/repositories/cost.py:274` | Allocation: charges grouped by one tag key, with an explicit bucket | `finops_api/routes/cost.py` |
+| `CostRepository.daily` | method | `finops_api/db/repositories/cost.py:298` | Effective cost per day inside one billing period, oldest first. | `finops_api/routes/cost.py`, `finops_api/routes/forecast.py`, `finops_ingest/collectors/commitment.py` |
+| `AnomalyRepository` | class | `finops_api/db/repositories/cost.py:315` | Days that did not look like the days before them. FEAT-023. | `finops_api/routes/cost.py` |
+| `AnomalyRepository.worst_first` | method | `finops_api/db/repositories/cost.py:321` | Biggest move first, newest day breaking the tie. | `finops_api/routes/cost.py`, `finops_api/routes/waste.py` |
+| `AnomalyRepository.accounts_judged` | method | `finops_api/db/repositories/cost.py:335` | How many accounts this scope has cost for, and therefore could be judged. | `finops_api/routes/cost.py` |
+| `AnomalyRepository.judged_days` | method | `finops_api/db/repositories/cost.py:358` | How many distinct days this scope has cost for. | `finops_api/routes/cost.py` |
+| `CommitmentRepository` | class | `finops_api/db/repositories/cost.py:374` | What was committed and how much of it was consumed. FEAT-024. | `finops_api/routes/cost.py` |
+| `CommitmentRepository.latest_window` | method | `finops_api/db/repositories/cost.py:386` | The most recent window anything was reported for, or None. | `finops_api/routes/cost.py` |
+| `CommitmentRepository.worst_first` | method | `finops_api/db/repositories/cost.py:396` | Every commitment in the window, most wasted money first. | `finops_api/routes/cost.py`, `finops_api/routes/waste.py` |
+| `BudgetRepository` | class | `finops_api/db/repositories/cost.py:412` | Budgets as collected. FEAT-060. | `finops_api/routes/cost.py` |
+| `BudgetRepository.latest_period` | method | `finops_api/db/repositories/cost.py:423` | The most recent period any budget covers. | `finops_api/routes/cost.py`, `finops_api/routes/explore.py`, `finops_api/routes/forecast.py`, `finops_api/routes/inventory.py` |
+| `BudgetRepository.for_period` | method | `finops_api/db/repositories/cost.py:434` | Every budget covering a period, largest limit first. | `finops_api/routes/cost.py` |
+| `CommitmentActionRepository` | class | `finops_api/db/repositories/cost.py:451` | Coverage gaps as findings somebody owns. FEAT-055. | `finops_api/routes/cost.py` |
+| `CommitmentActionRepository.worst_first` | method | `finops_api/db/repositories/cost.py:462` | Every open action, most money first, per ADR-0016. | `finops_api/routes/cost.py`, `finops_api/routes/waste.py` |
+| `CommitmentDayRepository` | class | `finops_api/db/repositories/cost.py:478` | Each kind of commitment, a day at a time. TASK-P8-013. | `finops_api/routes/cost.py` |
+| `CommitmentDayRepository.recent` | method | `finops_api/db/repositories/cost.py:492` | The last `DAYS_SHOWN` days, oldest first, both kinds on each day. | `finops_api/routes/cost.py`, `finops_api/routes/ingest.py` |
+| `CommitmentCoverageRepository` | class | `finops_api/db/repositories/cost.py:503` | How much of the eligible estate was on a commitment, per dimension. | `finops_api/routes/cost.py` |
+| `CommitmentCoverageRepository.slices` | method | `finops_api/db/repositories/cost.py:509` | Coverage rows in the window, most uncovered money first. | `finops_api/routes/cost.py` |
+| `MonthlyCostRepository` | class | `finops_api/db/repositories/cost.py:528` | The derived monthly shape, for setting one period beside another. | nothing in this tree |
+| `MonthlyCostRepository.months` | method | `finops_api/db/repositories/cost.py:539` | Each billing month and what it cost, newest first. | nothing in this tree |
+| `previous_month` | function | `finops_api/db/repositories/cost.py:556` | The billing period before this one. | `finops_api/routes/cost.py` |
 | `Grouping` | class | `finops_api/db/repositories/explore.py:75` | A column from `EXPLORABLE`, or `TAG` with one tag key. | `finops_api/routes/explore.py` |
 | `Filter` | class | `finops_api/db/repositories/explore.py:83` | The values one grouping is held to. | `finops_api/routes/explore.py` |
 | `ExploreRepository` | class | `finops_api/db/repositories/explore.py:94` | Cost Explorer's reads, under the same guard as every other cost read. | `finops_api/routes/explore.py` |
@@ -549,12 +549,12 @@ a duplicate.
 | `PlatformCostRepository.by_day_and_module` | method | `finops_api/db/repositories/freshness.py:35` | Meter's own cost. Constraint 7 puts this on the front page. | `finops_api/routes/platform.py` |
 | `ScheduleRepository` | class | `finops_api/db/repositories/freshness.py:43` |  | `finops_api/routes/ingest.py` |
 | `ScheduleRepository.cadences` | method | `finops_api/db/repositories/freshness.py:47` | Each enabled collector's interval, so staleness is judged per collector. | `finops_api/routes/ingest.py` |
-| `IngestRunRepository` | class | `finops_api/db/repositories/ingest.py:21` |  | `finops_api/routes/ingest.py` |
-| `IngestRunRepository.recent` | method | `finops_api/db/repositories/ingest.py:25` |  | `finops_api/routes/cost.py`, `finops_api/routes/ingest.py` |
-| `IngestRunRepository.never_succeeded` | method | `finops_api/db/repositories/ingest.py:31` | Collector and scope pairs that have run and never once succeeded. | `finops_api/routes/ingest.py` |
-| `IngestRunRepository.coverage` | method | `finops_api/db/repositories/ingest.py:60` | Runs shown, over runs the tenant has. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_api/routes/quotas.py`, `finops_ingest/collectors/commitment.py` |
-| `SyncErrorRepository` | class | `finops_api/db/repositories/ingest.py:76` |  | `finops_api/routes/__init__.py` |
-| `SyncErrorRepository.open_errors` | method | `finops_api/db/repositories/ingest.py:80` |  | `finops_api/routes/__init__.py` |
+| `IngestRunRepository` | class | `finops_api/db/repositories/ingest.py:22` |  | `finops_api/routes/ingest.py` |
+| `IngestRunRepository.recent` | method | `finops_api/db/repositories/ingest.py:26` |  | `finops_api/routes/cost.py`, `finops_api/routes/ingest.py` |
+| `IngestRunRepository.never_succeeded` | method | `finops_api/db/repositories/ingest.py:32` | Collector and scope pairs that have run and never once succeeded. | `finops_api/routes/ingest.py` |
+| `IngestRunRepository.coverage` | method | `finops_api/db/repositories/ingest.py:63` | Runs shown, over runs the tenant has. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_api/routes/quotas.py`, `finops_ingest/collectors/commitment.py` |
+| `SyncErrorRepository` | class | `finops_api/db/repositories/ingest.py:79` |  | `finops_api/routes/__init__.py` |
+| `SyncErrorRepository.open_errors` | method | `finops_api/db/repositories/ingest.py:83` |  | `finops_api/routes/__init__.py` |
 | `OrgRepository` | class | `finops_api/db/repositories/org.py:23` |  | `finops_api/routes/org.py` |
 | `OrgRepository.list_tree` | method | `finops_api/db/repositories/org.py:27` |  | `finops_api/routes/org.py` |
 | `latest_audit_only` | function | `finops_api/db/repositories/query.py:30` | Confine a read to the most recent audit of each thing. ISS-175, ISS-177. | nothing in this tree |

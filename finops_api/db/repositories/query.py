@@ -97,7 +97,7 @@ class QueryFindingRepository(ScopedRepository):
     #: sending more would be paying for pixels nobody renders.
     TREND_DAYS = 30
 
-    def history_for_all(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+    def history_for_all(self, scope: Scope) -> Sequence[Row[*tuple[object, ...]]]:
         """Every query's cost per day, for the list. ISS-172.
 
         One statement rather than one per row. The list holds tens of findings,
@@ -129,7 +129,7 @@ class QueryFindingRepository(ScopedRepository):
         )
         return self._connection.execute(statement).all()
 
-    def daily_totals(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+    def daily_totals(self, scope: Scope) -> Sequence[Row[*tuple[object, ...]]]:
         """Every audited query's monthly cost, summed per day over the last `TREND_DAYS`.
 
         Every query audited on a day rather than today's queries only. A dashboard deleted
@@ -163,7 +163,7 @@ class QueryFindingRepository(ScopedRepository):
         """Confine a read to each query's most recent audit. ISS-175."""
         return latest_audit_only(self.table, scope, "query_id")
 
-    def ranked(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+    def ranked(self, scope: Scope) -> Sequence[Row[*tuple[object, ...]]]:
         """Every finding, most expensive first.
 
         Ordered in the database rather than in the route, because
@@ -177,7 +177,7 @@ class QueryFindingRepository(ScopedRepository):
         )
         return self.fetch(scope, statement)
 
-    def grouped(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+    def grouped(self, scope: Scope) -> Sequence[Row[*tuple[object, ...]]]:
         """Findings summed by cause, worst group first.
 
         ADR-0016: four hundred findings at 15 USD each are LOW individually and
@@ -210,7 +210,7 @@ class QueryFindingRepository(ScopedRepository):
         )
         return self.fetch(scope, statement)
 
-    def latest_change(self, scope: Scope, finding_id: UUID) -> Row[tuple[object, ...]] | None:
+    def latest_change(self, scope: Scope, finding_id: UUID) -> Row[*tuple[object, ...]] | None:
         """The most recent change on this finding that has not been reverted.
 
         Most recent, because a finding can be remediated more than once and an
@@ -232,7 +232,7 @@ class QueryFindingRepository(ScopedRepository):
         rows = self._connection.execute(statement).all()
         return rows[0] if rows else None
 
-    def history(self, scope: Scope, finding_id: UUID) -> Sequence[Row[tuple[object, ...]]]:
+    def history(self, scope: Scope, finding_id: UUID) -> Sequence[Row[*tuple[object, ...]]]:
         """What this query has cost on each day it was audited. ISS-172.
 
         The table already held this and nothing read it. The audit upserts on
@@ -272,7 +272,7 @@ class QueryFindingRepository(ScopedRepository):
         )
         return self._connection.execute(statement).all()
 
-    def one(self, scope: Scope, finding_id: UUID) -> Row[tuple[object, ...]] | None:
+    def one(self, scope: Scope, finding_id: UUID) -> Row[*tuple[object, ...]] | None:
         statement = self._joined(scope).where(self.table.c.finding_id == finding_id)
         rows = self.fetch(scope, statement)
         return rows[0] if rows else None
@@ -289,7 +289,7 @@ class AdhocQueryRepository(ScopedRepository):
     table = models.query_adhoc
     resource = "query_adhoc"
 
-    def most_expensive(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+    def most_expensive(self, scope: Scope) -> Sequence[Row[*tuple[object, ...]]]:
         """Worst first, which is the only order this list is useful in.
 
         Cost then runs, matching the prototype this was recovered from. Two
@@ -313,7 +313,7 @@ class SurfaceInstanceRepository(ScopedRepository):
     table = models.grafana_instance
     resource = "grafana_instance"
 
-    def unreachable(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+    def unreachable(self, scope: Scope) -> Sequence[Row[*tuple[object, ...]]]:
         """The workspaces that could not be read, with their typed cause.
 
         The envelope reports these as failures. Without them a page could say a
@@ -356,7 +356,7 @@ class SurfaceInstanceRepository(ScopedRepository):
         ).scalar_one()
         return int(readable), int(total)
 
-    def all_with_counts(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+    def all_with_counts(self, scope: Scope) -> Sequence[Row[*tuple[object, ...]]]:
         definition = models.query_definition
         counted = (
             select(

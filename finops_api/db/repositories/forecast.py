@@ -65,7 +65,7 @@ class ForecastRepository(ScopedRepository):
         return {day: billed.get(day, Decimal(0)) for day in days}
 
     def _read(
-        self, scope: Scope, statement: Select[tuple[Any, ...]]
-    ) -> Sequence[Row[tuple[Any, ...]]]:
+        self, scope: Scope, statement: Select[*tuple[Any, ...]]
+    ) -> Sequence[Row[*tuple[Any, ...]]]:
         """Through the audited path, which checks the mark `scoped_select` left."""
-        return self.fetch(scope, cast("Select[tuple[object, ...]]", statement))
+        return self.fetch(scope, cast("Select[*tuple[object, ...]]", statement))
