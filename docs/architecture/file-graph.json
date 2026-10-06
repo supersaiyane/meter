@@ -103,6 +103,7 @@
     "finops-web/src/components/__tests__/citations.test.ts",
     "finops-web/src/components/__tests__/contrast.test.ts",
     "finops-web/src/components/__tests__/dataTableFeatures.test.tsx",
+    "finops-web/src/components/__tests__/equalEarth.test.ts",
     "finops-web/src/components/__tests__/forecastUnproduced.test.ts",
     "finops-web/src/components/__tests__/glass.test.ts",
     "finops-web/src/components/__tests__/orgNodes.test.ts",
@@ -123,6 +124,7 @@
     "finops-web/src/components/citations.ts",
     "finops-web/src/components/density.ts",
     "finops-web/src/components/displayNames.ts",
+    "finops-web/src/components/equalEarth.ts",
     "finops-web/src/components/index.ts",
     "finops-web/src/components/lateness.ts",
     "finops-web/src/components/orgNodes.ts",
@@ -130,8 +132,8 @@
     "finops-web/src/components/rankedRows.ts",
     "finops-web/src/components/surfaceState.ts",
     "finops-web/src/components/tableConfig.ts",
+    "finops-web/src/components/worldDots.ts",
     "finops-web/src/components/worldLand.ts",
-    "finops-web/src/components/worldPaths.ts",
     "finops-web/src/layout.css",
     "finops-web/src/layout.css?raw",
     "finops-web/src/main.tsx",
@@ -156,6 +158,7 @@
     "finops-web/src/screens/ForecastScreen.tsx",
     "finops-web/src/screens/FreshnessScreen.tsx",
     "finops-web/src/screens/GeographyScreen.tsx",
+    "finops-web/src/screens/GeographyTile.tsx",
     "finops-web/src/screens/HomeScreen.tsx",
     "finops-web/src/screens/IngestScreen.tsx",
     "finops-web/src/screens/OrganizationScreen.tsx",
@@ -219,6 +222,7 @@
     "finops-web/src/screens/__tests__/fixtures.ts",
     "finops-web/src/screens/__tests__/forecastModel.test.ts",
     "finops-web/src/screens/__tests__/freshnessContract.test.ts",
+    "finops-web/src/screens/__tests__/geographyModel.test.ts",
     "finops-web/src/screens/__tests__/nodeColumns.test.ts",
     "finops-web/src/screens/__tests__/overviewKpis.test.ts",
     "finops-web/src/screens/__tests__/rawIdentifiers.test.tsx",
@@ -231,6 +235,7 @@
     "finops-web/src/screens/exploreSeries.ts",
     "finops-web/src/screens/findingFigure.ts",
     "finops-web/src/screens/forecastModel.ts",
+    "finops-web/src/screens/geographyModel.ts",
     "finops-web/src/screens/nodeColumns.tsx",
     "finops-web/src/screens/overviewKpis.ts",
     "finops-web/src/screens/personas.ts",
@@ -1565,7 +1570,27 @@
     },
     {
       "s": "finops-web/src/components/WorldMap.tsx",
-      "t": "finops-web/src/api/types.ts",
+      "t": "finops-web/src/components/DenseRegion.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/WorldMap.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/WorldMap.tsx",
+      "t": "finops-web/src/components/equalEarth.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/WorldMap.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/WorldMap.tsx",
+      "t": "finops-web/src/components/worldDots.ts",
       "k": "typescript"
     },
     {
@@ -1575,7 +1600,7 @@
     },
     {
       "s": "finops-web/src/components/WorldMap.tsx",
-      "t": "finops-web/src/components/worldPaths.ts",
+      "t": "finops-web/src/screens/geographyModel.ts",
       "k": "typescript"
     },
     {
@@ -1765,17 +1790,17 @@
     },
     {
       "s": "finops-web/src/components/__tests__/WorldMap.test.tsx",
-      "t": "finops-web/src/api/types.ts",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/components/__tests__/WorldMap.test.tsx",
       "t": "finops-web/src/components/WorldMap.tsx",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/components/__tests__/WorldMap.test.tsx",
       "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/WorldMap.test.tsx",
+      "t": "finops-web/src/screens/geographyModel.ts",
       "k": "typescript"
     },
     {
@@ -1816,6 +1841,21 @@
     {
       "s": "finops-web/src/components/__tests__/dataTableFeatures.test.tsx",
       "t": "finops-web/src/layout.css?raw",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/equalEarth.test.ts",
+      "t": "finops-web/src/components/equalEarth.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/equalEarth.test.ts",
+      "t": "finops-web/src/components/worldDots.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/equalEarth.test.ts",
+      "t": "finops-web/src/components/worldLand.ts",
       "k": "typescript"
     },
     {
@@ -2066,6 +2106,11 @@
     {
       "s": "finops-web/src/components/citations.ts",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/equalEarth.ts",
+      "t": "finops-web/src/components/worldDots.ts",
       "k": "typescript"
     },
     {
@@ -3120,7 +3165,17 @@
     },
     {
       "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
       "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
       "k": "typescript"
     },
     {
@@ -3136,6 +3191,31 @@
     {
       "s": "finops-web/src/screens/GeographyScreen.tsx",
       "t": "finops-web/src/components/WorldMap.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/screens/GeographyTile.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/screens/exploreSeries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/screens/geographyModel.ts",
       "k": "typescript"
     },
     {
@@ -3156,6 +3236,31 @@
     {
       "s": "finops-web/src/screens/GeographyScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyTile.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyTile.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyTile.tsx",
+      "t": "finops-web/src/components/surfaceState.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyTile.tsx",
+      "t": "finops-web/src/screens/geographyModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyTile.tsx",
+      "t": "finops-web/src/screens/overviewKpis.ts",
       "k": "typescript"
     },
     {
@@ -4825,6 +4930,11 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/GeographyScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/GeographyScreen.test.tsx",
       "t": "finops-web/src/components/__tests__/axe.ts",
       "k": "typescript"
     },
@@ -4841,6 +4951,16 @@
     {
       "s": "finops-web/src/screens/__tests__/GeographyScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/GeographyScreen.test.tsx",
+      "t": "finops-web/src/screens/exploreSeries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/GeographyScreen.test.tsx",
+      "t": "finops-web/src/screens/geographyModel.ts",
       "k": "typescript"
     },
     {
@@ -5414,6 +5534,21 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/geographyModel.test.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/geographyModel.test.ts",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/geographyModel.test.ts",
+      "t": "finops-web/src/screens/geographyModel.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/nodeColumns.test.ts",
       "t": "finops-web/src/api/fixtures/topology.ts",
       "k": "typescript"
@@ -5561,6 +5696,21 @@
     {
       "s": "finops-web/src/screens/forecastModel.ts",
       "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/geographyModel.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/geographyModel.ts",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/geographyModel.ts",
+      "t": "finops-web/src/screens/exploreSeries.ts",
       "k": "typescript"
     },
     {
@@ -6796,6 +6946,11 @@
     {
       "s": "finops_api/routes/explore.py",
       "t": "finops_core/domain/explore.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_core/domain/geography.py",
       "k": "python"
     },
     {
@@ -9476,6 +9631,11 @@
     {
       "s": "tests/api/test_cost_explore.py",
       "t": "finops_core/domain/explore.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_explore.py",
+      "t": "finops_core/domain/geography.py",
       "k": "python"
     },
     {

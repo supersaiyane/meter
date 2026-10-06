@@ -88,75 +88,77 @@ way, and that is asserted separately, because a filter and a grouping are two co
 
 ## Interface
 
-`/inventory/geography`, under the Inventory group.
+`/inventory/topology/geography`, the Geography tab of Topology under the Inventory group.
 
-A world map with coarse coastlines, one marker per continent, in an equirectangular projection
-cropped to the latitudes where people run things.
+**Land as dots on a rounded world, redrawn on 2026-10-06 by TASK-P8-017 to the owner's direction
+of 2026-10-05.** 4,569 dots, measured, on an Equal Earth grid cropped to 83N and 56S, sit on the
+projection's own rounded edge. Equal Earth is equal area, so a continent's dots are in proportion
+to its size, and its curved sides are what make the world read as round.
 
-It shipped first as a graticule with no coastline, on the argument that a coastline would imply a
-precision the prefix does not have. That argument was wrong about where the claim lives. A
-coastline says "this is the world"; it is the marker's position that would claim a datacentre, and
-the caption already handles that. Without land a reader cannot tell which dot is North America
-without reading the label, which makes the picture decorative rather than informative, and it
-looked like an empty panel with two dots in it.
+The map shipped first as a graticule with no land, then with continents written from memory, then
+with generated coastlines. The first looked like an empty panel, the second drew shapes nobody
+recognised, and the third drew two stray horizontal lines across the whole map, Russia's and
+Fiji's rings joined straight across where their longitudes jump from 180 to minus 180.
 
-The second attempt hand authored the continents at roughly thirty points each, and that was the
-wrong approach rather than a poor attempt at the right one: coastlines written out from memory
-produce shapes nobody recognises. They are generated now, by `make world`, from the Natural Earth
-110m land polygons that every mapping library uses.
+**Generated at build time, with nothing new at runtime.** `make world` runs
+`finops-web/scripts/build_world.mjs`, which lays a regular grid over the projection, takes each
+point back to a longitude and a latitude, and keeps it where the Natural Earth 110m land holds
+it, each ring unwrapped across the antimeridian before a point is tested against it. Only dots
+are emitted, so no line can cross the map. `world-atlas` and `topojson-client` are dev
+dependencies, admitted through `make dep-check`, and neither reaches a browser. What ships is
+`worldDots.ts`, 8 kilobytes of run lengths, measured, drawn as one SVG path of round capped
+strokes. `equalEarth.ts` projects each bubble with the same four constants, and its test projects
+the generator's own check points, so a bubble cannot drift off its continent unseen.
 
-**Generated at build time, with nothing new at runtime.** `world-atlas` and `topojson-client` are
-dev dependencies, admitted through `make dep-check`, and neither reaches a browser. What ships is
-`worldPaths.ts`, a committed string of SVG path data, so the page draws a real coastline with no
-mapping library, no projection code and no fetch. Islands under a threshold are dropped and
-anything outside the crop is left out of the file, because invisible bytes are still bytes a
-reader downloads.
-
-**Why a coastline may be written down when a region coordinate table may not.** A table naming
+**Why land may be written down when a region coordinate table may not.** A table naming
 `eu-west-1` and `eu-west-2` is a fact about somebody else's estate and goes stale the day they
-open another region, which is what `check_hardcoded.py` exists to prevent. A coastline is a fact
-about the world: nothing a provider does changes where Africa is. That is the property the region
-table lacked, and it is the whole distinction.
+open another region, which is what `check_hardcoded.py` exists to prevent. Land is a fact about
+the world: nothing a provider does changes where Africa is. That is the property the region table
+lacked, and it is the whole distinction.
 
-A marker is drawn per region rather than per continent, changed 2026-09-27 for ISS-213. A region
-name carries a second fact after its prefix, a compass word: `eu-west-1` and `eu-central-1` are
-both Europe and the name also says one is western and one is central. So the drawing offsets each
-region inside its geography by that word, which needs no table of regions and goes stale for
-nothing, the same property the prefix was chosen for.
+**One glowing bubble per geography, sized by this month's Effective Cost.** The cost is Cost
+Explorer's own view by region, month to date, and the route's answer says which geography each
+region is in, `region_geographies`, placed by the same prefix rule as the resources, so the
+application carries no copy of the rule. A bubble is sized by area, so four times the cost is four
+times the ink; a measured nought is the smallest bubble; and a cost that is loading or could not
+be read sizes nothing, which the caption says. The geography's resource count sits beside it. A
+geography with cost and no resources is drawn too, because the map must not drop one.
 
-`finops_core` returns the word and the drawing turns it into a position, so the domain still holds
-no coordinates, exactly as it holds none for the continents. A region whose name carries no
-compass word sits on the continent's own anchor, which is the honest answer to a name that did not
-say.
+**Lines for links across regions.** The geography route's `links` are pairs of regions joined by
+topology edges whose two ends this reader can read, counted as pairs of resources, so a peering
+recorded from both of its ends counts once. A line joins two geographies. A link inside one
+geography, or to a region no table places, is real, and is listed in the table under the map
+rather than drawn. The far end is read through the scope guard as well as the edge, so a reader
+narrowed away from an account learns nothing about where it runs.
 
-This reduces ISS-213 rather than closing it. A compass point is a part of a continent and still
-not a city.
+**Hover or focus shows the numbers, and every number is in a table.** Each bubble is a button a
+keyboard reaches, with its numbers in its accessible name and in a card on hover or focus:
+Effective Cost, resources, accounts, regions and links. A table of every geography and a table of
+every link hold them all, with totals where the figures add: cost and resources, and links. Not
+accounts, because one account in two geographies is one account.
+
+**Glass tiles below the map, one per geography.** Each is the figure tile the Overview uses: this
+month's Effective Cost against the same days last month, and thirty days of its shape. The shape
+is the geography's own Cost Explorer view, filtered to its regions, because the view by region
+names five series and folds the rest. The resource count and the control that lists the
+resources sit in the tile's footer, which a failed cost read does not replace.
+
+**Cost leftovers are sentences too.** Cost carrying no region is global services, support and
+fees, which no continent owns. Cost in a region whose prefix no table knows is named by region.
+And regions past Cost Explorer's row limit are counted with what they cost, so the continents
+never silently add up to less than the month.
+
+**A continent is still the finest grain.** A region name says which geography and never which
+city. The markers placed per region by compass word, ISS-213's reduction of 2026-09-27, are
+retired with this redraw, because the owner's direction draws one bubble per geography; the
+regions inside each are named in its card, its tile and the table. `direction` stays on the route
+for any reader that wants it.
 
 The account figure is a distinct count across the geography, not the sum of its regions' counts.
 That was ISS-214, and the fix is neither of the two the issue proposed: the grouped read returns
 the account identifiers rather than a count of them, and the route unions them per geography and
 counts once. No second read, and no second implementation of the prefix rule, which was the
 objection to both.
-
-The regions inside each continent are listed rather than counted, which is the honest way to admit
-what the name cannot say.
-ISS-213.
-
-A marker is two marks, changed 2026-09-27 against the AWS global infrastructure page as the
-reference. A fixed core dot says where, and a halo sized by the count says how much. One disc
-sized by the count did both badly: at forty pixels across it says the place is somewhere inside
-it, which is a precision claim in the wrong direction from the one the caption is careful about.
-Every infrastructure map draws a point of presence this way, and it is right for the same reason:
-position and quantity are different questions and one mark cannot answer both.
-
-The halo is sized by **area**, so four times the resources is four times the ink. Sizing by radius
-would claim four times again for twice the resources, which is the oldest lie in data drawing and
-looks entirely correct.
-
-The drawing carries `aria-hidden` and the legend beneath it is both the content and the control.
-Every figure in the picture is written out as text, and the legend entries are real buttons,
-because SVG markers are not reachable from a keyboard and a picture must never be the only way to
-operate a screen. Same choice as `RankedBars`.
 
 Nothing is loaded until a continent is chosen. A screen that loads the first one has decided which
 continent matters, and on an estate across nine of them that is wrong eight times out of nine.
@@ -167,8 +169,8 @@ for it to be wrong, so the screen links there instead.
 
 ## Not doing
 
-Placing a resource on a city, drawing coastlines, and latency between regions. The first two need
-a coordinate per region, which is the design this feature rejected for a reason. Latency is a
+Placing a resource on a city, and latency between regions. The first needs a coordinate per
+region, which is the design this feature rejected for a reason. Latency is a
 different feature and a different measurement, and inferring it from geography would be a modelled
 number presented beside measured ones.
 
@@ -177,5 +179,6 @@ number presented beside measured ones.
 On 2026-10-05 the owner asked for the map to be more beautiful and chose the direction: land as
 fine dots on a rounded projection, each geography a glowing bubble sized by this month's
 Effective Cost with its resource count beside it, lines for cross region links, and glass tiles
-with a small trend below. Planned as TASK-P8-017 in the
-[P8 plan](../plans/P8-implementation-plan.md). A continent stays the finest grain.
+with a small trend below. Delivered on 2026-10-06 by TASK-P8-017 in the
+[P8 plan](../plans/P8-implementation-plan.md), as the Interface section above describes. A
+continent stays the finest grain.

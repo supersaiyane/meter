@@ -593,7 +593,7 @@ Added 2026-10-05 at the owner's request.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-07 |
 | Implements | FEAT-061 |
 | Delivers | FEAT-061, redrawn |
 | Depends on | TASK-P8-005 |
@@ -601,14 +601,26 @@ Added 2026-10-05 at the owner's request.
 
 **Acceptance criteria.**
 
-- [ ] The direction the owner chose on 2026-10-05: land as fine dots on a rounded world
+- [x] The direction the owner chose on 2026-10-05: land as fine dots on a rounded world
       projection, each geography a glowing bubble sized by this month's Effective Cost with
       its resource count beside it, and lines for cross region links
-- [ ] Glass tiles below the map, one per geography, each with a small trend
-- [ ] Hover or focus on a bubble shows its numbers, and every number is also in a table
-- [ ] The two stray horizontal lines on the current map gone, and a continent still the
+- [x] Glass tiles below the map, one per geography, each with a small trend
+- [x] Hover or focus on a bubble shows its numbers, and every number is also in a table
+- [x] The two stray horizontal lines on the current map gone, and a continent still the
       finest grain, because a region name says which geography and never which city
-- [ ] Both themes, and still drawn by hand in SVG with no map library
+- [x] Both themes, and still drawn by hand in SVG with no map library
+
+**Delivered 2026-10-07.** The land is 4,569 dots, measured, on an Equal Earth grid that
+`make world` generates from the Natural Earth outline with each ring unwrapped across the
+antimeridian, and no outline is drawn, so the two stray lines are gone. Each geography is one
+glowing bubble sized by area by this month's Effective Cost, read from Cost Explorer's own view by
+region, whose answer now carries `region_geographies` placed by the server's prefix rule, with the
+resource count beside it. Lines join geographies whose resources are linked across regions, from
+`links` on the geography route, counted as pairs of resources with both ends read through the
+scope guard. A bubble is a button, and hover or focus shows its numbers in a card; a table of every
+geography and a table of every link hold them all. Below the map, a glass tile per geography
+carries thirty days of its own regions' cost. Both themes, hand drawn in SVG, no map library. A
+continent stays the finest grain, so the per region markers placed by compass word are retired.
 
 ---
 

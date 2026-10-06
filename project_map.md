@@ -35,7 +35,7 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 27 | files in migrations/versions, all of which are listed below in this file |
 | Test files | 172 | test_*.py under tests/ |
-| Test functions | 2351 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test functions | 2358 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -578,41 +578,29 @@ meter/
 │   │                          absences with two sentences: no age is never
 │   │                          collected, no cadence is not scheduled, and they
 │   │                          need different actions
-│   ├── scripts/build_world.mjs  generates the coastline from Natural Earth 110m,
-│   │                          run by `make world`. Its two dependencies are dev
-│   │                          only and never reach a browser: what ships is a
-│   │                          committed string of path data, so the page draws a
-│   │                          real coastline with no mapping library and no fetch
-│   ├── components/worldPaths.ts  GENERATED, never edited by hand. The projection
-│   │                          it was made with travels in the same file, because a
-│   │                          second copy that drifted would put every marker in
-│   │                          the wrong sea
-│   ├── components/worldLand.ts  where each continent's marker sits, and nothing
-│   │                          else now. It held hand written coastlines for one
-│   │                          revision and they drew shapes nobody recognised.
-│   │                          Coordinates may be written down here when a region
-│   │                          coordinate table may not, and that is the whole
-│   │                          distinction: a region table is a fact about somebody
-│   │                          else's estate and goes stale the day they open
-│   │                          another region, while a coastline is a fact about
-│   │                          the world
-│   ├── components/WorldMap.tsx  the estate on a world map, equirectangular and
-│   │                          cropped to the latitudes people run things in. It
-│   │                          shipped first as a graticule and two dots, on the
-│   │                          argument that a coastline implies a precision the
-│   │                          prefix lacks, and that was wrong about where the
-│   │                          claim lives: a coastline says this is the world, and
-│   │                          it is the marker position that would claim a
-│   │                          datacentre. Markers are sized by area, so
-│   │                          four times the resources is four times the ink:
-│   │                          sizing by radius would claim four times again. The
-│   │                          positions live here rather than in the domain because
-│   │                          where a continent sits in a picture is a fact about
-│   │                          the picture, and a geography with no position is
-│   │                          still in the legend and counted in a sentence. The
-│   │                          SVG is aria-hidden and the legend is the content and
-│   │                          the control, since markers are not reachable from a
-│   │                          keyboard
+│   ├── scripts/build_world.mjs  generates the land as dots from Natural Earth 110m
+│   │                          on an Equal Earth grid, run by `make world`, each ring
+│   │                          unwrapped across the antimeridian so no line can cross
+│   │                          the map. Its two dependencies are dev only and never
+│   │                          reach a browser. TASK-P8-017
+│   ├── components/worldDots.ts  GENERATED, never edited by hand: the dots as row
+│   │                          runs, the projection's constants, the rounded frame
+│   │                          and the points it projected, which equalEarth.ts is
+│   │                          tested against
+│   ├── components/equalEarth.ts  the projection each bubble is placed by, and the
+│   │                          land as one path of round capped strokes
+│   ├── components/worldLand.ts  where each continent's bubble sits, and nothing
+│   │                          else. Coordinates may be written down here when a
+│   │                          region coordinate table may not: a region table is a
+│   │                          fact about somebody else's estate and goes stale the
+│   │                          day they open another region, while land is a fact
+│   │                          about the world
+│   ├── components/WorldMap.tsx  the estate on a world of dots: a glowing bubble per
+│   │                          geography sized by area by this month's Effective
+│   │                          Cost, its resource count beside it, lines for links
+│   │                          between geographies, and its numbers on hover or
+│   │                          focus. A cost not read sizes nothing and says so.
+│   │                          TASK-P8-017
 │   ├── screens/HomeScreen.tsx  The Overview, FEAT-070. A switch between three
 │   │                          dashboards, the reader's choice kept in the browser,
 │   │                          and the slots still arriving under them
@@ -632,11 +620,19 @@ meter/
 │   ├── screens/queryByDashboard.ts  Query cost summed per dashboard
 │   ├── screens/commitmentDays.ts  The daily commitment figures as two money
 │   │                          stacks and a heatmap of the two percentages
-│   ├── screens/GeographyScreen.tsx  FEAT-061. The map, three leftovers that are
-│   │                          never added together, and the resources of whichever
-│   │                          continent was clicked. Nothing loads until one is
-│   │                          chosen, because a screen that loads the first has
-│   │                          decided which continent matters
+│   ├── screens/GeographyScreen.tsx  FEAT-061. The map, a glass tile per geography,
+│   │                          a table of every geography and of every link, the
+│   │                          leftovers of resources and of cost that are never
+│   │                          added together, and the resources of whichever
+│   │                          continent was chosen. Nothing loads until one is
+│   ├── screens/GeographyTile.tsx  one geography's tile: this month's cost, the same
+│   │                          days last month, and thirty days of its own regions'
+│   │                          shape. Its resource count and the list control sit
+│   │                          in the footer a failed cost read does not replace
+│   ├── screens/geographyModel.ts  the Geography screen's arithmetic: cost by
+│   │                          geography from the Explorer's view by region, links
+│   │                          between geographies, bubble sizes, and each tile's
+│   │                          query. Holds no copy of the prefix rule
 │   ├── components/rankedRows.ts  the collapse and the truncation, and the one
 │   │                          place a ranked chart can be quietly wrong: a total
 │   │                          taken after the remainder was folded in makes every

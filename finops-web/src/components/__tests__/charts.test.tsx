@@ -322,6 +322,26 @@ describe('KpiTile', () => {
     expect(screen.getByTestId('kpi-value')).toHaveTextContent('Not yet collected');
     expect(screen.queryByTestId('kpi-delta')).toBeNull();
   });
+
+  it('draws its footer whatever the state, so facts that do not hang on the figure stay', () => {
+    // A geography's tile, TASK-P8-017: its cost could not be read, and its resource count,
+    // which comes from another read, is still there.
+    render(
+      <KpiTile
+        label="Europe"
+        value={null}
+        previous={null}
+        points={[]}
+        provenance="measured"
+        format={money}
+        period="last month"
+        state={{ kind: 'failed', cause: 'AccessDenied', remediation: 'Grant the reader role.' }}
+        footer={<p data-testid="tile-footer">12 resources</p>}
+      />,
+    );
+    expect(screen.queryByTestId('kpi-value')).toBeNull();
+    expect(screen.getByTestId('tile-footer')).toHaveTextContent('12 resources');
+  });
 });
 
 describe('BarChart, wrapped into the set', () => {

@@ -1306,6 +1306,36 @@ class GeographyOut(BaseModel):
     accounts: int
 
 
+class GeographyLinkOut(BaseModel):
+    """Two regions joined by edges whose two ends this reader can read. FEAT-061, TASK-P8-017.
+
+    **Undirected, and counted once per pair of resources.** A peering is often recorded from
+    both of its ends, as one edge each way, and a line on a map has no direction to give either
+    of them. So `one_region` sorts before `other_region` and `links` counts distinct pairs of
+    resources, not edges.
+
+    **Both ends readable, or no link.** The far end's region is a fact about the far end, so a
+    reader narrowed away from it learns nothing about where it is, the same rule the geography
+    counts follow.
+
+    `one_geography` and `other_geography` come from the region name prefix through the same rule
+    as the geographies themselves, and are None where a prefix is not one the table knows. A
+    link inside one geography carries the same key twice: it is real, and a map at continent
+    grain cannot draw it, so the table under the map is where it is said.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    one_region: str
+    other_region: str
+    one_geography: str | None
+    other_geography: str | None
+    #: Distinct pairs of resources, measured.
+    links: int
+    #: The kinds of edge that join them, such as PEERS_WITH, so a line says what it stands for.
+    kinds: tuple[str, ...]
+
+
 class GeographiesOut(BaseModel):
     """The estate by continent, with everything the continent view cannot hold. FEAT-061.
 
@@ -1337,6 +1367,8 @@ class GeographiesOut(BaseModel):
     unplaceable_resources: int
     #: Regions a collection could not read, from the same slice coverage the map uses.
     refused: tuple[str, ...]
+    #: Pairs of regions joined across a region boundary, both ends readable. TASK-P8-017.
+    links: tuple[GeographyLinkOut, ...] = ()
 
 
 class ResourceListOut(BaseModel):
@@ -1784,6 +1816,15 @@ class ExplorePointOut(BaseModel):
     cost: Decimal
 
 
+class GeographyRefOut(BaseModel):
+    """Which geography a region is in, by the rule the geography map uses. FEAT-061."""
+
+    model_config = ConfigDict(frozen=True)
+
+    key: str
+    name: str
+
+
 class ExploreRowOut(BaseModel):
     """One row of the explorer's table: a value of each grouping, this period and the last.
 
@@ -1835,6 +1876,11 @@ class ExploreOut(BaseModel):
     rows_omitted: int
     omitted_this_period: Decimal
     omitted_previous_period: Decimal | None
+    #: Where the first grouping is region, the geography each row's region is in, by region,
+    #: resolved here by the region name prefix rule so a screen that adds cost up by continent
+    #: carries no second copy of it. A region no table knows is absent. Beside the rows rather
+    #: than on each, so the export's columns stay the screen's. TASK-P8-017.
+    region_geographies: dict[str, GeographyRefOut] = Field(default_factory=dict)
 
 
 class ForecastRangeOut(BaseModel):

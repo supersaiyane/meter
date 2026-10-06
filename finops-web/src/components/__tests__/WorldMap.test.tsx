@@ -1,173 +1,168 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
-import { WorldMap } from '../WorldMap';
-import type { ApiGeography } from '../../api/types';
+import { LARGEST, SMALLEST, UNSIZED } from '../../screens/geographyModel';
+import { WorldMap, type MapGeography } from '../WorldMap';
 import { violationsIn } from './axe';
 
 /**
- * The two cases that carry this file are the marker scale and the geography with no position.
+ * The world of dots, TASK-P8-017. The cases that carry this file are the bubble scale, the cost
+ * that could not be read, and the geography with no position.
  *
- * A marker sized by radius rather than by area claims four times the estate for twice the
- * resources, which is the oldest lie in data drawing and looks entirely correct. And a geography
- * the position table has never heard of must stay in the legend and be counted, because a drawing
- * that silently omits a continent reports a smaller estate than exists, which is the same failure
- * as rendering a collection error as the number zero.
+ * A bubble sized by radius rather than by area claims sixteen times the cost for four times the
+ * money, which is the oldest lie in data drawing and looks entirely correct. A cost that could not
+ * be read must not size anything, and must not be drawn as nought. And a geography the position
+ * table has never heard of must be counted, because a drawing that silently omits a continent
+ * reports a smaller estate than exists.
  */
 
-function place(key: string, resources: number, direction: string | null = null): ApiGeography {
+const FRESH = { asOf: new Date('2026-10-05T06:00:00Z'), collectedAt: new Date('2026-10-05T06:05:00Z') };
+
+function place(key: string, cost: number | null, resources = 10): MapGeography {
   return {
     key,
     name: `${key} place`,
-    regions: [{ region_id: `${key}-fake-1`, resources, direction }],
     resources,
     accounts: 1,
+    regions: [`${key}-fake-1`],
+    cost,
+    links: 0,
   };
 }
 
-function radiusOf(marker: Element): number {
-  return Number(marker.querySelector('circle')?.getAttribute('r'));
+function radiusOf(key: string): number {
+  const marker = screen
+    .getAllByTestId('world-map-marker')
+    .find((one) => one.getAttribute('data-key') === key);
+  return Number(marker?.querySelector('[data-testid="world-map-bubble"]')?.getAttribute('r'));
+}
+
+function draw(geographies: readonly MapGeography[], unsized: string | null = null) {
+  const onSelect = vi.fn();
+  const view = render(
+    <WorldMap
+      geographies={geographies}
+      links={[{ between: ['us', 'eu'], links: 3, kinds: ['PEERS_WITH'] }]}
+      unsized={unsized}
+      freshness={FRESH}
+      selected={null}
+      onSelect={onSelect}
+    />,
+  );
+  return { ...view, onSelect };
 }
 
 describe('WorldMap', () => {
-  it('sizes markers by area, so four times the resources is four times the ink', () => {
-    render(
-      <WorldMap
-        geographies={[place('us', 400), place('eu', 100)]}
-        selected={null}
-        onSelect={() => undefined}
-      />,
-    );
-    const markers = screen.getAllByTestId('world-map-marker');
-    const big = radiusOf(markers[0] as Element);
-    const small = radiusOf(markers[1] as Element);
-    // Four times the resources, so twice the radius and therefore four times the area. The
-    // scale runs from a floor, so the relationship is checked on the part above it.
-    const floor = 7;
-    expect((big - floor) / (small - floor)).toBeCloseTo(2, 1);
+  it('draws the land as dots on a rounded frame, and no outline that could cross the map', () => {
+    draw([place('us', 100)]);
+    expect(screen.getByTestId('world-map-land').getAttribute('d')).toMatch(/^M[\d.]+ [\d.]+h0/);
+    expect(screen.getByTestId('world-map-frame').getAttribute('d')).toMatch(/Z$/);
   });
 
-  it('keeps a geography it cannot position in the legend and says so', () => {
-    // The honesty rule, one level down from the route's. `zz` is not in the position table and
-    // never will be, and its resources are still part of the estate.
-    render(
-      <WorldMap
-        geographies={[place('eu', 10), place('zz', 3)]}
-        selected={null}
-        onSelect={() => undefined}
-      />,
-    );
-    // One marker drawn, two rows in the legend.
+  it('sizes bubbles by area, so four times the cost is four times the ink', () => {
+    draw([place('us', 400), place('eu', 100)]);
+    expect(radiusOf('us')).toBeCloseTo(LARGEST, 6);
+    // Four times the cost, so half the radius above the floor, and a quarter of the area.
+    expect((radiusOf('eu') - SMALLEST) / (radiusOf('us') - SMALLEST)).toBeCloseTo(0.5, 6);
+  });
+
+  it('draws a measured nought as the smallest bubble, a real figure', () => {
+    draw([place('us', 400), place('eu', 0)]);
+    expect(radiusOf('eu')).toBe(SMALLEST);
+  });
+
+  it('sizes nothing by a cost it could not read, and says why', () => {
+    draw([place('us', 400), place('eu', 100)], 'The cost could not be read.');
+    expect(radiusOf('us')).toBe(UNSIZED);
+    expect(radiusOf('eu')).toBe(UNSIZED);
+    expect(screen.getByTestId('world-map-caption')).toHaveTextContent('The cost could not be read.');
+  });
+
+  it('puts the resource count beside each bubble', () => {
+    draw([place('us', 400, 41)]);
+    expect(screen.getByTestId('world-map-marker-count')).toHaveTextContent('41 resources');
+  });
+
+  it('draws a line between two geographies that are linked, and none to one not drawn', () => {
+    draw([place('us', 400), place('eu', 100)]);
+    expect(screen.getByTestId('world-map-link').getAttribute('data-between')).toBe('us eu');
+    draw([place('us', 400)]);
+    // Europe is not on this second drawing, so its line has nowhere to go.
+    expect(screen.getAllByTestId('world-map-link')).toHaveLength(1);
+  });
+
+  it('counts a geography it cannot position, and draws no bubble for it', () => {
+    draw([place('eu', 10), place('zz', 3)]);
     expect(screen.getAllByTestId('world-map-marker')).toHaveLength(1);
-    expect(screen.getAllByTestId('world-map-choice')).toHaveLength(2);
     expect(screen.getByTestId('world-map-unplaced')).toHaveTextContent(
       '1 geography is not on the drawing',
     );
   });
 
   it('says nothing about unplaced geographies when every one is drawn', () => {
-    render(
-      <WorldMap geographies={[place('eu', 10)]} selected={null} onSelect={() => undefined} />,
-    );
+    draw([place('eu', 10)]);
     expect(screen.queryByTestId('world-map-unplaced')).toBeNull();
   });
 
-  it('names the regions inside a continent, because the prefix cannot', () => {
-    // The limit of the whole approach, admitted in the legend rather than in a footnote. A
-    // reader looking at Europe needs to know whether that is Dublin, Frankfurt or both.
-    render(
-      <WorldMap
-        geographies={[
-          {
-            key: 'eu',
-            name: 'Europe',
-            regions: [
-              { region_id: 'eu-west-1', resources: 3, direction: 'west' },
-              { region_id: 'eu-central-1', resources: 2, direction: 'central' },
-            ],
-            resources: 5,
-            accounts: 2,
-          },
-        ]}
-        selected={null}
-        onSelect={() => undefined}
-      />,
-    );
-    expect(screen.getByTestId('world-map-regions')).toHaveTextContent(
-      'eu-west-1, eu-central-1',
+  it('shows a bubble’s numbers on hover and on focus, and hides them after', () => {
+    draw([place('eu', 1234.5, 12)]);
+    const marker = screen.getByTestId('world-map-marker');
+    fireEvent.mouseEnter(marker);
+    const tip = screen.getByTestId('world-map-tooltip');
+    expect(tip).toHaveTextContent('eu place');
+    expect(tip).toHaveTextContent('$1,234.50');
+    expect(tip).toHaveTextContent('eu-fake-1');
+    expect(marker.getAttribute('aria-describedby')).toBe(tip.id);
+    fireEvent.mouseLeave(marker);
+    expect(screen.queryByTestId('world-map-tooltip')).toBeNull();
+    fireEvent.focus(marker);
+    expect(screen.getByTestId('world-map-tooltip')).toHaveTextContent('12');
+    fireEvent.blur(marker);
+    expect(screen.queryByTestId('world-map-tooltip')).toBeNull();
+  });
+
+  it('says a cost it could not read in words in the tooltip, never as nought', () => {
+    draw([place('eu', null)], 'Not read.');
+    fireEvent.focus(screen.getByTestId('world-map-marker'));
+    expect(screen.getByTestId('world-map-tooltip')).toHaveTextContent('Not read');
+    expect(screen.getByTestId('world-map-marker').getAttribute('aria-label')).toContain(
+      'Effective Cost not read',
     );
   });
 
-  it('marks the chosen continent on the drawing and in the legend', () => {
+  it('chooses a geography by pointer, Enter and Space, and ignores other keys', () => {
+    const { onSelect } = draw([place('eu', 10)]);
+    const marker = screen.getByTestId('world-map-marker');
+    fireEvent.click(marker);
+    fireEvent.keyDown(marker, { key: 'Enter' });
+    fireEvent.keyDown(marker, { key: ' ' });
+    fireEvent.keyDown(marker, { key: 'a' });
+    expect(onSelect).toHaveBeenCalledTimes(3);
+    expect(onSelect).toHaveBeenCalledWith('eu');
+  });
+
+  it('marks the chosen geography on the drawing', () => {
     render(
       <WorldMap
-        geographies={[place('us', 10), place('eu', 5)]}
+        geographies={[place('eu', 10), place('us', 20)]}
+        links={[]}
+        unsized={null}
+        freshness={FRESH}
         selected="eu"
         onSelect={() => undefined}
       />,
     );
-    const chosen = screen
-      .getAllByTestId('world-map-choice')
-      .find((one) => one.getAttribute('data-key') === 'eu');
-    expect(chosen).toHaveAttribute('aria-pressed', 'true');
-    const marker = screen
+    const pressed = screen
       .getAllByTestId('world-map-marker')
-      .find((one) => one.getAttribute('data-key') === 'eu');
-    expect(marker).toHaveAttribute('data-selected', 'true');
+      .map((one) => [one.getAttribute('data-key'), one.getAttribute('aria-pressed')]);
+    expect(pressed).toEqual([
+      ['eu', 'true'],
+      ['us', 'false'],
+    ]);
   });
 
-  it('puts two regions of one continent in different places, from their names', () => {
-    // ISS-213, reduced. The prefix says Europe and can never say Dublin, but the name's second
-    // fact is a compass point, so western and central Europe are different marks on the drawing
-    // with no table of regions to go stale when the next one opens.
-    render(
-      <WorldMap
-        geographies={[
-          {
-            key: 'eu',
-            name: 'Europe',
-            regions: [
-              { region_id: 'eu-west-1', resources: 3, direction: 'west' },
-              { region_id: 'eu-central-1', resources: 2, direction: 'central' },
-            ],
-            resources: 5,
-            accounts: 2,
-          },
-        ]}
-        selected={null}
-        onSelect={() => undefined}
-      />,
-    );
-    const markers = screen.getAllByTestId('world-map-marker');
-    expect(markers).toHaveLength(2);
-    const xs = markers.map((one) => Number(one.querySelector('circle')?.getAttribute('cx')));
-    expect(xs[0]).not.toBe(xs[1]);
-    // West is to the left of central, which is the direction the word means.
-    expect(xs[0]).toBeLessThan(xs[1] as number);
-  });
-
-  it('sits a region whose name says no direction on its continent anchor', () => {
-    // None and never a default, because a default puts a region somewhere the name did not say.
-    render(
-      <WorldMap
-        geographies={[place('eu', 4, null)]}
-        selected={null}
-        onSelect={() => undefined}
-      />,
-    );
-    const central = screen.getByTestId('world-map-marker');
-    // The same x as a central region would get, because a central offset is nought.
-    expect(Number(central.querySelector('circle')?.getAttribute('cx'))).toBeGreaterThan(0);
-  });
-
-  it('hides the drawing from the accessibility tree and keeps a real control', async () => {
-    // The picture is a faster way to compare numbers that are all written out beneath it, and
-    // the markers cannot be reached from a keyboard. The buttons can.
-    const { container } = render(
-      <WorldMap geographies={[place('eu', 10)]} selected={null} onSelect={() => undefined} />,
-    );
-    expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
-    expect(screen.getByTestId('world-map-choice').tagName).toBe('BUTTON');
+  it('has no accessibility violations, the bubbles being buttons a keyboard reaches', async () => {
+    const { container } = draw([place('eu', 10), place('us', 20)]);
     expect(await violationsIn(container)).toEqual([]);
   });
 });

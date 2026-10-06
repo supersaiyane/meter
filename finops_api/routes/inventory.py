@@ -53,6 +53,7 @@ from finops_api.schemas import (
     Envelope,
     FacetCountOut,
     GeographiesOut,
+    GeographyLinkOut,
     GeographyOut,
     InventoryRootOut,
     InventoryRootsOut,
@@ -480,6 +481,12 @@ def resources(
     return Envelope(data=found, meta=meta)
 
 
+def _geography_key(region_id: str | None) -> str | None:
+    """The geography a region is in, or None where no table knows its prefix. TASK-P8-017."""
+    placed = geography_of(region_id)
+    return None if placed is None else placed.key
+
+
 @dataclass
 class _Tally:
     """One geography while it is still being added up. FEAT-061.
@@ -591,12 +598,28 @@ def geography(
         )
     )
 
+    # TASK-P8-017. Regions joined across a region boundary, each end placed by the same rule as
+    # the geographies above, so a line on the map and a row in its table name the same places.
+    joined = repository.cross_region(scope)
+    links = tuple(
+        GeographyLinkOut(
+            one_region=str(row.one_region),
+            other_region=str(row.other_region),
+            one_geography=_geography_key(str(row.one_region)),
+            other_geography=_geography_key(str(row.other_region)),
+            links=int(row.links),
+            kinds=tuple(sorted(str(kind) for kind in (row.kinds or ()))),
+        )
+        for row in joined
+    )
+
     found = GeographiesOut(
         geographies=ordered,
         global_resources=global_resources,
         unplaceable=tuple(sorted(unplaceable)),
         unplaceable_resources=sum(unplaceable.values()),
         refused=refused,
+        links=links,
     )
     slices = repository.slice_count(scope)
     unread = repository.incomplete(scope)
@@ -607,7 +630,9 @@ def geography(
         # Slices, like the map's and the list's. A continent drawn from a region that refused us
         # is a continent whose count is a floor rather than a total.
         visible=slices - len(unread),
-        rows=rows,
+        # The links' edges as well as the counts' nodes, so the envelope is as stale as the
+        # stalest thing the map draws.
+        rows=(*rows, *joined),
         coverage=(slices - len(unread), slices),
         coverage_unit="slices",
     )

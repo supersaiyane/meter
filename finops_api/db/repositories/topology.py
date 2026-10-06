@@ -33,7 +33,7 @@ from collections.abc import Sequence
 from typing import Any, ClassVar
 from uuid import UUID
 
-from sqlalchemy import Select, Table, func, or_, text
+from sqlalchemy import Select, Table, func, or_, text, tuple_
 from sqlalchemy.engine import Row
 
 from finops_api.db import models
@@ -278,6 +278,53 @@ class TopologyRepository(ScopedRepository):
             )
             .group_by(self.table.c.region_id)
             .order_by(func.count().desc())
+        )
+        return _fetch(self, scope, statement)
+
+    def cross_region(self, scope: Scope) -> Sequence[Row[*tuple[Any, ...]]]:
+        """Pairs of regions joined by an edge whose two ends this scope can read. TASK-P8-017.
+
+        **The far end is read through the guard as well as the edge.** An edge belongs to the
+        slice of its origin, so scoping the edge alone would join to a node in an account the
+        reader was never granted and disclose the region it runs in. Starting from the guarded
+        select on nodes, and joining each edge to the node at its far end, confines both.
+
+        **Undirected, and counted by pairs of resources.** A peering is often recorded from
+        each end, one edge each way, so the two regions are put in order with `least` and
+        `greatest` and the count is of distinct pairs of resources rather than of edges.
+        Without that one peering would read as two.
+
+        An end with no region is global, an IAM role for one, and joins no region to another,
+        so it is left out rather than counted against a region it is not in. Both timestamps
+        are the stalest of the edges, as in `by_region`, so a link is never fresher than the
+        evidence for it.
+        """
+        edges = models.topology_edge
+        node = self.table
+        one = func.least(edges.c.region_id, node.c.region_id)
+        other = func.greatest(edges.c.region_id, node.c.region_id)
+        pair = tuple_(
+            func.least(edges.c.from_node_id, edges.c.to_node_id),
+            func.greatest(edges.c.from_node_id, edges.c.to_node_id),
+        )
+        statement = (
+            self.scoped_select(scope)
+            .with_only_columns(
+                one.label("one_region"),
+                other.label("other_region"),
+                func.count(func.distinct(pair)).label("links"),
+                func.array_agg(func.distinct(edges.c.edge_kind)).label("kinds"),
+                func.min(edges.c.as_of).label("as_of"),
+                func.min(edges.c.collected_at).label("collected_at"),
+            )
+            .join_from(node, edges, edges.c.to_node_id == node.c.node_id)
+            .where(edges.c.tenant_id == node.c.tenant_id)
+            .where(scope_predicate(edges, scope))
+            .where(edges.c.region_id.is_not(None))
+            .where(node.c.region_id.is_not(None))
+            .where(edges.c.region_id != node.c.region_id)
+            .group_by(one, other)
+            .order_by(one, other)
         )
         return _fetch(self, scope, statement)
 

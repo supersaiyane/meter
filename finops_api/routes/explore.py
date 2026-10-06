@@ -42,6 +42,7 @@ from finops_api.schemas import (
     ExplorePointOut,
     ExploreRowOut,
     ExploreWindowOut,
+    GeographyRefOut,
     Meta,
 )
 from finops_core.domain.explore import (
@@ -54,6 +55,7 @@ from finops_core.domain.explore import (
     previous,
     window_for,
 )
+from finops_core.domain.geography import geography_of
 from finops_core.domain.tenant import Scope
 
 router = APIRouter(prefix=API_PREFIX, tags=["cost"])
@@ -63,6 +65,9 @@ router = APIRouter(prefix=API_PREFIX, tags=["cost"])
 MOST_VALUES = 20
 LONGEST_VALUE = 256
 LONGEST_NAME = 128
+
+#: The grouping whose rows the geography map can place. TASK-P8-017.
+REGION = "region"
 
 SAME_TWICE = "Group by two different things, or by one."
 NOT_A_COLUMN = "That is not a column Cost Explorer groups or filters by."
@@ -229,9 +234,24 @@ def cost_explore(
         omitted_previous_period=None
         if previous_total is None
         else previous_total - _sum(row.previous_period or Decimal(0) for row in rows),
+        region_geographies=_placed(rows) if first.dimension == REGION else {},
     )
     meta = _meta(connection, scope, context, (costs, explore), current, latest)
     return Envelope(data=data, meta=meta)
+
+
+def _placed(rows: Sequence[ExploreRowOut]) -> dict[str, GeographyRefOut]:
+    """The geography of each region row, by the geography map's own rule. TASK-P8-017.
+
+    A region whose prefix no table knows is left out rather than given a geography, which is
+    how the geography map treats it too: counted, named, and never placed by a guess.
+    """
+    found: dict[str, GeographyRefOut] = {}
+    for row in rows:
+        placed = geography_of(row.first)
+        if placed is not None:
+            found[row.first] = GeographyRefOut(key=placed.key, name=placed.name)
+    return found
 
 
 def _window(period: Preset, today: date, start: date | None, end: date | None) -> Window:

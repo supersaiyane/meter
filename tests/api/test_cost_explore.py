@@ -22,6 +22,7 @@ from finops_api.routes import explore as explore_route
 from finops_core.config import Settings
 from finops_core.domain.cost import CostRecord
 from finops_core.domain.explore import Preset, Window, previous, window_for
+from finops_core.domain.geography import geography_of
 from finops_core.domain.platform import UNALLOCATED
 from tests.api.test_cost_routes import CURRENT, ONE_ACCOUNT, everything, only, seed
 from tests.api.test_query_routes import auth, client_for
@@ -262,3 +263,25 @@ class TestRefusals:
     ) -> None:
         client, token = client_for(engine, everything(tenant_id), settings)
         assert client.get(PATH, headers=auth(token)).status_code == 404
+
+
+class TestRegionGeographies:
+    """TASK-P8-017. A view by region says which geography each region is in, by the one rule."""
+
+    def test_a_view_by_region_places_each_region_by_the_prefix_rule(
+        self, seeded: tuple[TestClient, str]
+    ) -> None:
+        data = explore(*seeded, "group_by=region")
+        expected = {}
+        for row in data["rows"]:
+            placed = geography_of(row["first"])
+            if placed is not None:
+                expected[row["first"]] = {"key": placed.key, "name": placed.name}
+        assert expected, "the estate is meant to bill in a region the table places"
+        assert data["region_geographies"] == expected
+
+    def test_any_other_view_places_nothing(self, seeded: tuple[TestClient, str]) -> None:
+        # Region as the second grouping included: the placements describe `first`, and a second
+        # grouping's regions would have no row of their own to belong to.
+        assert explore(*seeded, "group_by=service")["region_geographies"] == {}
+        assert explore(*seeded, "group_by=service&then_by=region")["region_geographies"] == {}

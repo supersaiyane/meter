@@ -11,6 +11,7 @@ where every region places is a route whose interesting half never runs.
 
 from __future__ import annotations
 
+from typing import Any
 from uuid import UUID, uuid4
 
 import pytest
@@ -22,6 +23,7 @@ from tests.api.test_inventory_routes import (
     FETCHED,
     INSERT_ACCOUNT,
     INSERT_COVERAGE,
+    INSERT_EDGE,
     INSERT_NODE,
     INSERT_RUN,
     MINE,
@@ -248,6 +250,7 @@ def test_an_empty_estate_is_empty_and_not_an_error(
     assert found["global_resources"] == 0
     assert found["unplaceable"] == []
     assert found["refused"] == []
+    assert found["links"] == []
 
 
 # --- one click from a continent to its resources ----------------------------
@@ -408,3 +411,123 @@ def test_a_region_whose_name_says_no_direction_carries_none(
     europe = next(one for one in found["geographies"] if one["key"] == "eu")
     nameless = next(one for one in europe["regions"] if one["region_id"] == "eu-fake-9")
     assert nameless["direction"] is None
+
+
+# --- links across regions, TASK-P8-017 -----------------------------------------
+
+
+def seed_links(engine: Engine, tenant: UUID) -> None:
+    """The estate from `seed`, and edges across its regions.
+
+    Dublin and Virginia are peered from both ends, which is one link and not two. Dublin routes
+    to Frankfurt in the other account, a link inside one geography. Dublin peers with the region
+    no table knows, a link with one end unplaced. And two edges join no region to another: one
+    inside Dublin, and one to a global role.
+    """
+    seed(engine, tenant)
+    with engine.begin() as connection:
+        run = uuid4()
+        connection.execute(INSERT_RUN, {"run": run, "t": tenant, "key": str(run), "at": NOW})
+
+        def node(account: str, region: str | None, name: str) -> UUID:
+            return identifier(tenant, account, region, name)
+
+        def edge(
+            ends: tuple[UUID, UUID], kind: str, owner: str, region: str, *, cross: bool = False
+        ) -> None:
+            connection.execute(
+                INSERT_EDGE,
+                {
+                    "e": uuid4(),
+                    "t": tenant,
+                    "run": run,
+                    "frm": ends[0],
+                    "to": ends[1],
+                    "kind": kind,
+                    "cross": cross,
+                    "a": owner,
+                    "r": region,
+                    "at": NOW,
+                    "fetched": FETCHED,
+                },
+            )
+
+        dublin = node(MINE, DUBLIN, "vpc-dub-1")
+        virginia = node(MINE, VIRGINIA, "vpc-iad-1")
+        edge((dublin, virginia), "PEERS_WITH", MINE, DUBLIN)
+        edge((virginia, dublin), "PEERS_WITH", MINE, VIRGINIA)
+        edge(
+            (node(MINE, DUBLIN, "vpc-dub-2"), node(THEIRS, FRANKFURT, "vpc-fra-1")),
+            "ROUTES_TO",
+            MINE,
+            DUBLIN,
+            cross=True,
+        )
+        edge((dublin, node(MINE, NOWHERE, "vpc-zz-1")), "PEERS_WITH", MINE, DUBLIN)
+        edge((dublin, node(MINE, DUBLIN, "vpc-dub-2")), "ROUTES_TO", MINE, DUBLIN)
+        edge((dublin, node(MINE, None, "role-a")), "TRUSTS", MINE, DUBLIN)
+
+
+def links_by_pair(found: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
+    return {(one["one_region"], one["other_region"]): one for one in found["links"]}
+
+
+def test_counts_a_link_once_whichever_way_its_edges_point(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """A peering recorded from both ends is one link, and its pair of regions is in order."""
+    seed_links(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    pairs = links_by_pair(get(client, token, GEOGRAPHY)["data"])
+    peering = pairs[(DUBLIN, VIRGINIA)]
+    assert peering["links"] == 1
+    assert peering["kinds"] == ["PEERS_WITH"]
+    assert (peering["one_geography"], peering["other_geography"]) == ("eu", "us")
+
+
+def test_a_link_joins_two_regions_and_nothing_else_counts(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """An edge inside one region, or to a global resource, joins no region to another."""
+    seed_links(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    pairs = links_by_pair(get(client, token, GEOGRAPHY)["data"])
+    assert set(pairs) == {(FRANKFURT, DUBLIN), (DUBLIN, VIRGINIA), (DUBLIN, NOWHERE)}
+
+
+def test_places_each_end_by_the_prefix_rule_and_none_where_no_table_knows_it(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """Inside Europe names Europe twice, and the unknown region carries no geography."""
+    seed_links(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    pairs = links_by_pair(get(client, token, GEOGRAPHY)["data"])
+    inside = pairs[(FRANKFURT, DUBLIN)]
+    assert (inside["one_geography"], inside["other_geography"]) == ("eu", "eu")
+    assert inside["kinds"] == ["ROUTES_TO"]
+    unplaced = pairs[(DUBLIN, NOWHERE)]
+    assert (unplaced["one_geography"], unplaced["other_geography"]) == ("eu", None)
+
+
+def test_a_narrowed_reader_sees_no_link_to_an_account_it_cannot_read(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """Constraint 3. The far end's region is a fact about the far end.
+
+    The route from Dublin to Frankfurt is this account's edge, and its far end is the other
+    account's resource. A reader narrowed to this account must not learn that the other account
+    runs in Frankfurt, so the link is not theirs to see.
+    """
+    seed_links(engine, tenant_id)
+    client, token = client_for(engine, only(tenant_id, MINE), settings)
+    pairs = links_by_pair(get(client, token, GEOGRAPHY)["data"])
+    assert set(pairs) == {(DUBLIN, VIRGINIA), (DUBLIN, NOWHERE)}
+
+
+def test_a_reader_of_the_far_account_sees_no_edge_it_does_not_own(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The edge belongs to the slice of its origin, which this reader cannot read."""
+    seed_links(engine, tenant_id)
+    client, token = client_for(engine, only(tenant_id, THEIRS), settings)
+    assert get(client, token, GEOGRAPHY)["data"]["links"] == []

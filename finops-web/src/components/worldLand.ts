@@ -5,8 +5,8 @@
  * name prefix says Europe and cannot say Dublin.
  *
  * Longitude first, then latitude, which is the order every geographic format uses and the reverse
- * of the order people say them in. The same order `worldPaths.ts` was generated from, so a marker
- * and the coast under it cannot drift apart.
+ * of the order people say them in. The same order `worldDots.ts` was generated from, so a bubble
+ * and the land under it cannot drift apart.
  *
  * A place with no anchor here is not dropped: `WorldMap` leaves it off the drawing, keeps it in
  * the legend and counts it in a sentence. So adding a geography to the domain without adding an

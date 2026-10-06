@@ -153,6 +153,7 @@ export function exploreOf(partial: Partial<ApiExplore> = {}): ApiExplore {
     rows_omitted: 0,
     omitted_this_period: '0',
     omitted_previous_period: '0',
+    region_geographies: {},
     ...partial,
   };
 }

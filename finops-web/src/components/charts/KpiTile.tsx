@@ -47,6 +47,12 @@ export interface KpiTileProps {
    * figure that was simply not collected.
    */
   readonly state?: SurfaceState;
+  /**
+   * Drawn last, whatever the state: facts and controls that do not depend on the figure, so a
+   * failed cost read on a geography's tile still leaves its resource count and the control that
+   * lists them. TASK-P8-017.
+   */
+  readonly footer?: ReactNode;
 }
 
 /** The states that stand in for a figure rather than sit beside one. */
@@ -78,6 +84,7 @@ export function KpiTile({
   range,
   children,
   state,
+  footer,
 }: KpiTileProps) {
   const change = value !== null && previous !== null ? value - previous : null;
   const ratio =
@@ -148,6 +155,7 @@ export function KpiTile({
         <p data-testid="kpi-unsupported">{unsupported}</p>
       )}
       {formula === undefined ? null : <p data-testid="kpi-formula">{formula}</p>}
+      {footer}
     </section>
   );
 }

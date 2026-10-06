@@ -34,6 +34,11 @@ Generated from `docs/registry.yaml`. Change a status there, then run `make doc-s
 
 ## Where the project stands right now
 
+**2026-10-07.** P8 stands at 14 of 18 tasks done. TASK-P8-017, the geography map, landed on
+`p8-build` after two fixes merged ahead of it: Python dependencies installed from hashed locks,
+ADR-0031, and the Python images built on the platform they run on, ISS-254. Left: TASK-P8-010,
+TASK-P8-011, TASK-P8-014 and TASK-P8-015.
+
 **P0 is code complete and is NOT signed off.**
 
 All 39 tasks are written, tested and committed. `make verify` passes: lint, the
@@ -199,7 +204,7 @@ ISS-003.
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
-| P8 | 13 | 0 | 0 | 0 | 5 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
+| P8 | 14 | 0 | 0 | 0 | 4 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 0 | 0 | 0 | 0 | 11 | 11 | [plan](../docs/plans/P9-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -412,6 +417,7 @@ ISS-003.
 | `TASK-P8-012` | Done 2026-10-06 | persona dashboards on the Overview |
 | `TASK-P8-013` | Done 2026-10-06 | every remaining screen in the new system |
 | `TASK-P8-016` | Done | the account picker on every screen |
+| `TASK-P8-017` | Done 2026-10-07 | the geography map redrawn |
 | `TASK-P8-018` | Done 2026-10-05 | the look as drawn |
 
 <!-- generated:task-status end -->

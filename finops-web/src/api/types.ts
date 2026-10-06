@@ -827,12 +827,32 @@ export interface ApiGeography {
  * regions whose prefix the table does not know, which is the one somebody can act on. `refused`
  * are regions a collection could not read, so the counts above them are a floor and not a total.
  */
+/**
+ * Two regions joined by resources this reader can read at both ends. TASK-P8-017.
+ *
+ * Undirected: `one_region` sorts before `other_region`, and `links` counts pairs of resources
+ * rather than edges, so a peering recorded from both of its ends counts once. Each geography is
+ * placed by the server's own prefix rule, and is null where no table knows the prefix. A link
+ * inside one geography names it twice: it is real, and a map at continent grain cannot draw it.
+ */
+export interface ApiGeographyLink {
+  readonly one_region: string;
+  readonly other_region: string;
+  readonly one_geography: string | null;
+  readonly other_geography: string | null;
+  /** Measured, pairs of resources. */
+  readonly links: number;
+  /** The kinds of edge that join them, PEERS_WITH for one. */
+  readonly kinds: readonly string[];
+}
+
 export interface ApiGeographies {
   readonly geographies: readonly ApiGeography[];
   readonly global_resources: number;
   readonly unplaceable: readonly string[];
   readonly unplaceable_resources: number;
   readonly refused: readonly string[];
+  readonly links: readonly ApiGeographyLink[];
 }
 
 export interface ApiResourceList {
@@ -1253,6 +1273,18 @@ export interface ApiExplore {
   readonly rows_omitted: number;
   readonly omitted_this_period: string;
   readonly omitted_previous_period: string | null;
+  /**
+   * Where the first grouping is region, the geography each row's region is in, by region,
+   * resolved on the server by the geography map's own prefix rule so this application carries
+   * no second copy of it. A region no table knows is absent. TASK-P8-017.
+   */
+  readonly region_geographies: Readonly<Record<string, ApiGeographyRef>>;
+}
+
+/** Which geography a region is in, by key and by name. */
+export interface ApiGeographyRef {
+  readonly key: string;
+  readonly name: string;
 }
 
 /** FEAT-066. A forecast is a range, never a point, ADR-0015's second condition. */

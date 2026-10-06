@@ -2751,111 +2751,147 @@ main > section > [data-testid='state'] > div[data-testid='chart-row'] {
 
 /* ------------------------------------------------------------- world map */
 
-/* A schematic, so it is drawn like an instrument rather than like an atlas: a
-   graticule, markers, and no coastline, because the data knows a continent and
-   not a city and a coastline would claim otherwise. */
+/* TASK-P8-017, the owner's direction of 2026-10-05: land as fine dots on a rounded
+   projection, a glowing bubble per geography sized by this month's cost, and lines
+   for links across regions. Every colour is a token, so both themes draw it. */
 
 [data-testid='world-map'] {
   margin: 0;
 }
 
-/* The ocean is the raised surface rather than the one below it, so the land sitting on
-   top of it has somewhere to be darker than. With both at the tinted surface the two
-   were four hex points apart and the continents were present and invisible. */
-[data-testid='world-map'] svg {
+/* The drawing and its tooltip share one box, so the tooltip is placed in the same
+   proportions as the drawing. */
+[data-testid='world-map-canvas'] {
+  position: relative;
+}
+
+[data-testid='world-map-canvas'] svg {
   display: block;
   width: 100%;
   height: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  background: var(--surface-raised);
+  overflow: visible;
 }
 
-/* The graticule sits under the land and reads as ocean ruling: present enough to say
-   projection, quiet enough that the coastline is the thing the eye follows. The
-   equator and the prime meridian are solid. */
-[data-testid='world-map-grid'] line {
+/* The plate the world sits on: the projection's own rounded edge, a step below the
+   panel around it, so the dots have a sea to sit in. */
+[data-testid='world-map-frame'] {
+  fill: var(--surface-sunken);
+  stroke: var(--border-soft);
+  stroke-width: 1;
+}
+
+/* Land as dots: zero length strokes with round caps, one path for the whole world.
+   Quiet on purpose, because the bubbles are the data. */
+[data-testid='world-map-land'] {
+  fill: none;
   stroke: var(--text-faint);
-  stroke-opacity: 0.22;
-  stroke-width: 1;
-  stroke-dasharray: 2 6;
+  stroke-opacity: 0.55;
+  stroke-width: 2.6;
+  stroke-linecap: round;
 }
 
-[data-testid='world-map-grid'] line[data-major='true'] {
-  stroke-opacity: 0.38;
-  stroke-dasharray: none;
+/* A link between two geographies, translucent so where lines cross each still reads. */
+[data-testid='world-map-link'] {
+  fill: none;
+  stroke: var(--accent);
+  stroke-opacity: 0.55;
+  stroke-linecap: round;
 }
 
-/* The land. A flat fill a step above the ocean with a hairline coast, so it reads as
-   a backdrop and never competes with the markers, which are the data. Coarse
-   outlines, which is deliberate: a precise coastline would invite the reading that a
-   marker is a datacentre. */
-[data-testid='world-map-land'] path {
-  /* A neutral a clear step from the ocean. The sunken surface was the first choice and is
-     four hex points away from the raised one behind it, so the continents were there and
-     nobody could see them. A landmass wants the value a divider has, not the value a
-     recessed panel has. */
-  fill: var(--border);
-  stroke: var(--border-strong);
-  stroke-width: 1;
-  stroke-linejoin: round;
+/* The glow: the accent fading to nothing, which says here without a hard edge
+   claiming a boundary the region name does not know. */
+[data-testid='world-map-glow-core'] {
+  stop-color: var(--accent);
+  stop-opacity: 0.45;
 }
 
-/* The halo carries the count. Translucent so the coast under it stays readable, with
-   its own edge so a small one is still a shape rather than a smudge. */
-[data-testid='world-map-halo'] {
-  fill: var(--chart-bar);
-  fill-opacity: 0.42;
-  stroke: var(--chart-bar-peak);
+[data-testid='world-map-glow-edge'] {
+  stop-color: var(--accent);
+  stop-opacity: 0;
+}
+
+[data-testid='world-map-bubble'] {
+  fill: var(--accent);
+  fill-opacity: 0.85;
+  stroke: var(--surface);
   stroke-width: 1.5;
-  stroke-opacity: 0.7;
+}
+
+/* A bubble is a button. Focus and choice ring it in the text colour, which both themes
+   keep at full contrast against the plate. */
+[data-testid='world-map-marker'] {
   cursor: pointer;
+  outline: none;
 }
 
-/* The core says where, and it is the same size whatever the count, because position is
-   not a quantity. Solid and saturated, with a ring in the ocean colour so it reads
-   against land and sea alike. */
-[data-testid='world-map-point'] {
-  fill: var(--chart-bar-peak);
-  stroke: var(--surface-raised);
-  stroke-width: 1.5;
-  paint-order: stroke;
-  cursor: pointer;
+[data-testid='world-map-marker']:focus-visible [data-testid='world-map-bubble'],
+[data-testid='world-map-marker'][data-selected='true'] [data-testid='world-map-bubble'] {
+  stroke: var(--text);
+  stroke-width: 2.5;
 }
 
-[data-testid='world-map-marker'][data-selected='true'] [data-testid='world-map-halo'] {
-  fill-opacity: 0.55;
-  stroke-opacity: 1;
-  stroke-width: 2;
-}
-
-[data-testid='world-map-marker'][data-selected='true'] [data-testid='world-map-point'] {
-  r: 5;
-}
-
-/* Labels sit over land as often as over sea, so each one carries a halo in the ocean
-   colour: without it a name crossing a coastline is unreadable exactly where the
-   drawing is busiest. */
+/* Names over dots and sea alike, each with a halo in the plate's colour so a label
+   crossing a coast stays readable. */
 [data-testid='world-map-marker'] text {
   fill: var(--text);
   font-family: var(--font-ui);
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 600;
-  text-anchor: middle;
   pointer-events: none;
   paint-order: stroke;
-  stroke: var(--surface-raised);
+  stroke: var(--surface-sunken);
   stroke-width: 4;
   stroke-linejoin: round;
 }
 
-/* The count on the marker itself, so the drawing can be read without running the
-   eye down to the legend for every continent. */
-[data-testid='world-map-marker-count'] {
-  fill: var(--text-muted) !important;
-  font-family: var(--font-numeral) !important;
-  font-size: 15px !important;
-  font-weight: 400 !important;
+[data-testid='world-map-marker'] [data-testid='world-map-marker-count'] {
+  fill: var(--text-muted);
+  font-family: var(--font-numeral);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* The tooltip: a small solid card above its bubble, with the numbers a reader would
+   otherwise run down to the table for. */
+[data-testid='world-map-tooltip'] {
+  position: absolute;
+  z-index: 2;
+  min-width: 13rem;
+  max-width: 18rem;
+  padding: var(--space-2) var(--space-3);
+  transform: translate(-50%, calc(-100% - 1.5rem));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised-solid);
+  box-shadow: var(--shadow-float);
+  color: var(--text);
+  font-size: var(--font-size-1);
+  pointer-events: none;
+}
+
+[data-testid='world-map-tooltip'][data-side='below'] {
+  transform: translate(-50%, 1.5rem);
+}
+
+[data-testid='world-map-tooltip'] dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px var(--space-2);
+  margin: var(--space-1) 0 0;
+}
+
+[data-testid='world-map-tooltip'] dt {
+  color: var(--text-muted);
+}
+
+[data-testid='world-map-tooltip'] dd {
+  margin: 0;
+  font-family: var(--font-numeral);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-testid='world-map-tooltip-region'] {
+  white-space: nowrap;
 }
 
 [data-testid='world-map-caption'] {
@@ -2869,24 +2905,28 @@ main > section > [data-testid='state'] > div[data-testid='chart-row'] {
   color: var(--severity-5);
 }
 
-/* The legend is the content and the control. Every figure in the drawing is here
-   as text, and these are real buttons, because the markers are not reachable from
-   a keyboard and a picture must never be the only way to operate a screen. */
-[data-testid='world-map-legend'] {
+/* One glass tile per geography, in a grid that fits the width it has. */
+[data-testid='geography-tiles'] {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
-  gap: var(--space-2);
-  margin: var(--space-3) 0 0;
-  padding: 0;
-  list-style: none;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
 }
 
-[data-testid='world-map-choice'] {
+[data-testid='geography-tile-footer'] {
   display: grid;
-  gap: 2px;
-  width: 100%;
-  padding: var(--space-2) var(--space-3);
-  text-align: left;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+[data-testid='geography-tile-estate'] {
+  margin: 0;
+  font-size: var(--font-size-1);
+  color: var(--text-muted);
+}
+
+.meter-kpi:has([data-testid='world-map-choice'][aria-pressed='true']) {
+  border-color: var(--accent-mark);
 }
 
 [data-testid='world-map-choice'][aria-pressed='true'] {
@@ -2894,21 +2934,9 @@ main > section > [data-testid='state'] > div[data-testid='chart-row'] {
   background: var(--accent-quiet);
 }
 
-[data-testid='world-map-name'] {
-  font-weight: 600;
-}
-
-[data-testid='world-map-count'] {
-  font-family: var(--font-numeral);
-  font-variant-numeric: tabular-nums;
-  font-size: var(--font-size-1);
-  color: var(--text);
-}
-
-[data-testid='world-map-regions'] {
-  font-family: var(--font-numeral);
-  font-size: 11px;
-  color: var(--text-faint);
+[data-testid='geography-summary'],
+[data-testid='geography-links'] {
+  margin: var(--space-4) 0;
 }
 
 /* The three leftovers. A definition list, because each is a named thing with a
