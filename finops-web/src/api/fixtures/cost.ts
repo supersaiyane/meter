@@ -2,7 +2,6 @@ import type {
   ApiBudgets,
   ApiCommitments,
   ApiCostAnomalies,
-  ApiCostDay,
   ApiCostSlice,
   ApiCostSummary,
   ApiEnvelope,
@@ -126,20 +125,6 @@ export function costAllocationFixture(): ApiEnvelope<ApiCostSlice[]> {
     ],
     meta: meta(5),
   };
-}
-
-export function costTrendFixture(): ApiEnvelope<ApiCostDay[]> {
-  const days: ApiCostDay[] = [];
-  for (let index = 0; index < 23; index += 1) {
-    const day = String(index + 1).padStart(2, '0');
-    // A slow rise, matching what the fake estate actually produces, so a chart
-    // drawn from this looks like a chart drawn from the real thing.
-    days.push({
-      day: `2026-08-${day}`,
-      effective_cost: (193.1 + index * 0.9655).toFixed(4),
-    });
-  }
-  return { data: days, meta: meta(5) };
 }
 
 export function costCommitmentsFixture(): ApiEnvelope<ApiCommitments> {

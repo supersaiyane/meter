@@ -21,11 +21,16 @@ import { demoEstate } from './estate';
 test('the demo walk reaches every screen the runbook points at', async ({ page }) => {
   await demoEstate(page);
 
-  // 1. Home. The spend tile is the figure the runbook opens on, and it is the same
-  // figure the spend screen shows, because Home reads that screen's own hook.
+  // 1. Home. The Effective Cost tile is the figure the runbook opens on, and it is the same
+  // figure Cost Explorer shows, because the Overview reads the Explorer's own view. The bill
+  // here carries no List Cost, so the savings rate says why it has no figure. FEAT-070.
   await page.goto('/');
-  await expect(page.getByTestId('home-spend')).toContainText('3,781.93');
-  await expect(page.getByRole('link', { name: /Effective Cost/ })).toBeVisible();
+  const spend = page.getByRole('region', { name: 'Effective Cost' });
+  await expect(spend.getByTestId('kpi-value')).toHaveText('$3,782');
+  await expect(page.getByRole('link', { name: 'Effective Cost', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('region', { name: 'Effective savings rate' }).getByTestId('kpi-unsupported'),
+  ).toContainText('no List Cost');
   // P1 filled three home slots and left them saying "arrives with P1" until
   // 2026-09-20, on the front page of the demo.
   await expect(page.getByText('P1 Cost Intelligence')).toHaveCount(0);

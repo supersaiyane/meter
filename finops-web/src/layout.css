@@ -1251,15 +1251,6 @@ main article {
   color: var(--text-muted);
 }
 
-[data-testid='home-attention'] {
-  margin-bottom: var(--space-4);
-}
-
-[data-testid='home-attention'] h3 {
-  margin-top: 0;
-  font-size: var(--font-size-3);
-}
-
 /* The rail. An unfilled slot still names what will fill it and still shows no
    figure. It is one strip rather than one panel each, because a promise about
    a sub project should not outweigh a number that already exists. */
@@ -1919,6 +1910,7 @@ main > section > article {
 }
 
 [data-testid='top-actions'] th[scope='row'] {
+  text-align: start;
   border-left: 3px solid var(--severity-4);
   padding-left: var(--space-3);
   white-space: normal;
@@ -2191,6 +2183,232 @@ main > section > [data-testid='state'] > p[role='status'] {
   letter-spacing: -0.02em;
   text-align: left;
   color: var(--text-numeral);
+}
+
+/* A tile names its figure's provenance in words, as drawn, and its formula under the figure,
+   FEAT-070. Forecast and modelled badges are dashed, the same distinction the marks draw. */
+.meter-kpi > h3 {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+  font-size: var(--font-size-2);
+}
+
+[data-testid='kpi-provenance'] {
+  padding: 1px var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: var(--font-size-1);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.meter-kpi[data-provenance='forecast'] [data-testid='kpi-provenance'],
+.meter-kpi[data-provenance='modelled'] [data-testid='kpi-provenance'] {
+  border-style: dashed;
+}
+
+[data-testid='kpi-delta'],
+[data-testid='kpi-note'],
+[data-testid='kpi-formula'],
+[data-testid='overview-caption'],
+[data-testid='overview-no-pace'] {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-1);
+}
+
+[data-testid='kpi-formula'] {
+  margin-top: var(--space-2);
+}
+
+[data-testid='kpi-unsupported'] {
+  margin: var(--space-2) 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-2);
+}
+
+/* ---------------------------------------------------------------- overview */
+/* The three dashboards, FEAT-070: the switch between them, a row of figures and rows of panels
+   as drawn on 2026-10-05, each row folding to one column on a screen too narrow for it. */
+
+[data-testid='persona'] {
+  position: relative;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin: 0 0 var(--space-4);
+  padding: 2px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+[data-testid='persona'] legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+[data-testid='persona'] label {
+  position: relative;
+  padding: 6px var(--space-3);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: var(--font-size-2);
+  cursor: pointer;
+}
+
+[data-testid='persona'] label:hover {
+  color: var(--text);
+}
+
+[data-testid='persona'] label:has(input:checked) {
+  background: var(--accent-quiet);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+[data-testid='persona'] label:has(input:focus-visible) {
+  outline: 2px solid var(--accent-mark);
+  outline-offset: 2px;
+}
+
+[data-testid='persona'] input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+}
+
+/* At most four tiles to a row, so seven break four and three rather than five and two, and the
+   last of seven takes the cell that would otherwise stand empty. */
+[data-testid='overview-kpis'] {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, max(13rem, calc((100% - 3 * var(--space-3)) / 4))), 1fr)
+  );
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+@media (min-width: 40rem) {
+  [data-testid='overview-kpis'] > :nth-child(7):last-child {
+    grid-column: span 2;
+  }
+}
+
+/* The rhythm rule spaces stacked siblings. In a grid the gap does that, and a sibling margin only
+   pushes every tile after the first out of line with it. */
+[data-testid='overview-kpis'] > *,
+[data-testid='home-summary'] > * {
+  margin-top: 0;
+}
+
+[data-testid='overview-row'] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+[data-testid='overview-row'][data-columns='wide-narrow'] {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+.meter-panel[data-testid^='overview-'] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+}
+
+[data-testid='overview-row'] > .meter-panel[data-testid^='overview-'] {
+  margin-bottom: 0;
+}
+
+.meter-panel[data-testid^='overview-'] > h3 {
+  margin: 0;
+  font-size: var(--font-size-3);
+  font-weight: 600;
+}
+
+.meter-panel[data-testid^='overview-'] > h3 a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.meter-kpi > h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.meter-kpi > h3 a:hover,
+.meter-panel[data-testid^='overview-'] > h3 a:hover {
+  text-decoration: underline;
+}
+
+[data-testid='overview-anomaly-list'],
+[data-testid='overview-recommendation-list'],
+[data-testid='overview-movers'] {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-testid='overview-anomaly-list'] li,
+[data-testid='overview-recommendation-list'] li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+/* A saving names its provenance in words, wider than a third of a row leaves beside the name, so
+   a recommendation stacks: what, where, then the modelled saving. */
+[data-testid='overview-recommendation-list'] li {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+[data-testid='overview-anomaly-list'] li > span:nth-child(2),
+[data-testid='overview-recommendation-list'] li > span:nth-child(2) {
+  grid-column: 1;
+  color: var(--text-muted);
+  font-size: var(--font-size-1);
+  overflow-wrap: anywhere;
+}
+
+[data-testid='overview-anomaly-list'] li > .meter-numeral {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+[data-testid='overview-movers'] li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--font-size-2);
+}
+
+@media (max-width: 1024px) {
+  [data-testid='overview-row'][data-columns='wide-narrow'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* ---------------------------------------------------------------- budgets */

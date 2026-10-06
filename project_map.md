@@ -30,7 +30,7 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Counted | Now | Derived from |
 | --- | --- | --- |
 | Screens built | 25 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 39 in 14 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Playwright journeys | 40 in 15 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 26 | files in migrations/versions, all of which are listed below in this file |
@@ -605,6 +605,15 @@ meter/
 │   │                          SVG is aria-hidden and the legend is the content and
 │   │                          the control, since markers are not reachable from a
 │   │                          keyboard
+│   ├── screens/HomeScreen.tsx  The Overview, FEAT-070. A switch between three
+│   │                          dashboards, the reader's choice kept in the browser,
+│   │                          and the slots still arriving under them
+│   ├── screens/Overview*.tsx  The FinOps practitioner, Executive and Engineering
+│   │                          lead dashboards and the panels they share. They own
+│   │                          no data: every figure is read through the hook of
+│   │                          the screen that owns it, and links to that screen
+│   ├── screens/overviewKpis.ts  The Overview's KPI arithmetic, pure, so each
+│   │                          formula is tested without drawing a screen
 │   ├── screens/GeographyScreen.tsx  FEAT-061. The map, three leftovers that are
 │   │                          never added together, and the resources of whichever
 │   │                          continent was clicked. Nothing loads until one is

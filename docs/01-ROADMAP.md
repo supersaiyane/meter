@@ -46,7 +46,7 @@ P0 Foundation
 | P5 | Quotas and Limits | 3 | 0 | 1 |
 | P6 | Containers | 6 | 2 | 1 |
 | P7 | Insight and LLM layer | 6 | 0 | 0 |
-| P8 | Experience and reporting | 9 | 0 | 3 |
+| P8 | Experience and reporting | 9 | 0 | 2 |
 | P9 | Price catalog and rightsizing targets | 4 | 0 | 4 |
 
 <!-- generated:roadmap-status end -->

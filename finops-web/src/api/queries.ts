@@ -16,7 +16,6 @@ import {
   costSummaryFixture,
   costByAccountFixture,
   costAllocationFixture,
-  costTrendFixture,
   costAnomaliesFixture,
   costBudgetsFixture,
   costCommitmentsFixture,
@@ -65,7 +64,6 @@ import type {
   ApiBudgets,
   ApiCommitments,
   ApiCostAnomalies,
-  ApiCostDay,
   ApiCostSlice,
   ApiShowbackRow,
   ApiExplore,
@@ -111,15 +109,31 @@ function useNarrowing() {
   };
 }
 
+/** How a read is made and how it is offered to the Export menu. */
+export interface ReadOptions {
+  /** False waits, and offers nothing: a view nobody read is not one to export. */
+  readonly enabled?: boolean;
+  /** The view's name in the Export menu, where the route's own name would not tell two apart. */
+  readonly title?: string;
+  /** False reads without offering, for a figure that only feeds another one. */
+  readonly offered?: boolean;
+}
+
 /** One read of a built route, narrowed, and offered to the Export menu as it was read. */
-function useRead<T>(key: readonly unknown[], template: string, path: string) {
+function useRead<T>(
+  key: readonly unknown[],
+  template: string,
+  path: string,
+  { enabled = true, title, offered = true }: ReadOptions = {},
+) {
   const client = useApi();
   const narrowing = useNarrowing();
   const narrowed = narrowing.path(path);
-  useExportable(template, narrowed);
+  useExportable(template, enabled && offered ? narrowed : '', title);
   return useQuery<ApiEnvelope<T>>({
     queryKey: narrowing.key(key),
     queryFn: () => client.get<T>(narrowed),
+    enabled,
   });
 }
 
@@ -319,9 +333,9 @@ export function useCostForecast() {
  * FEAT-065. Cost Explorer's query. The screen's query string is the view, so it is the cache
  * key too, and a link to a view and the view a reader built share one cached answer.
  */
-export function useCostExplore(query: string) {
+export function useCostExplore(query: string, options: ReadOptions = {}) {
   const path = `/api/v1/cost/explore${query === '' ? '' : `?${query}`}`;
-  return useRead<ApiExplore>(['cost-explore', query], '/api/v1/cost/explore', path);
+  return useRead<ApiExplore>(['cost-explore', query], '/api/v1/cost/explore', path, options);
 }
 
 export function useCostByAccount() {
@@ -330,15 +344,6 @@ export function useCostByAccount() {
     '/api/v1/cost/by-account',
     '/api/v1/cost/by-account',
     costByAccountFixture,
-  );
-}
-
-export function useCostTrend() {
-  return useQuerySurface<ApiCostDay[]>(
-    ['cost-trend'],
-    '/api/v1/cost/trend',
-    '/api/v1/cost/trend',
-    costTrendFixture,
   );
 }
 

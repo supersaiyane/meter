@@ -241,7 +241,9 @@ describe('App', () => {
     expect(screen.queryByTestId('not-built')).toBeNull();
     expect(screen.queryByTestId('home-rail')).toBeNull();
     const page = screen.getByRole('main');
-    expect(page).not.toHaveTextContent(/arrives with/i);
+    // Scheduled reports arrive with P8, which is true while TASK-P8-011 is unbuilt. A promise
+    // naming a sub project that has shipped is the failure.
+    expect(page).not.toHaveTextContent(/arrives with P[1-7]\b/);
     expect(page).not.toHaveTextContent(/\bP3\b/);
   });
 

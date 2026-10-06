@@ -411,7 +411,7 @@ data).
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-06 |
 | Implements | P8 spec section 5.8, FEAT-070 |
 | Delivers | FEAT-070 |
 | Depends on | TASK-P8-005, TASK-P8-007, TASK-P8-008 |
@@ -419,22 +419,34 @@ data).
 
 **Acceptance criteria.**
 
-- [ ] Executive, FinOps practitioner and engineering lead dashboards, the reader's last
+- [x] Executive, FinOps practitioner and engineering lead dashboards, the reader's last
       choice remembered
-- [ ] Every KPI shows its formula and baseline, and every figure links to its owning screen
-- [ ] A KPI the data cannot support says so and shows no figure
-- [ ] Built from existing routes only; no new number
-- [ ] The charts the owner chose on 2026-10-05: a 12 month trend by service, month to date
+- [x] Every KPI shows its formula and baseline, and every figure links to its owning screen
+- [x] A KPI the data cannot support says so and shows no figure
+- [x] Built from existing routes only; no new number
+- [x] The charts the owner chose on 2026-10-05: a 12 month trend by service, month to date
       against the forecast band, the top 10 accounts, a service treemap and savings by
       category, each with its table of numbers
-- [ ] Every figure and chart narrowed by the account picker, TASK-P8-016, and All accounts
+- [x] Every figure and chart narrowed by the account picker, TASK-P8-016, and All accounts
       combined when the Overview opens
-- [ ] The FinOps view as drawn, decided later on 2026-10-05:
+- [x] The FinOps view as drawn, decided later on 2026-10-05:
       `docs/design/2026-10-05-overview-frosted-ledger.jpg`, KPI tiles, daily cost by
       category with the forecast and the daily budget pace, cost by service, anomalies,
       top recommendations, scheduled reports and showback by team, with the Executive and
       Engineering dashboards one click away. A tile whose data is not collected says so
       and shows no figure
+
+**Delivered 2026-10-06.** `HomeScreen` holds the switch and renders one of `OverviewFinOps`,
+`OverviewExecutive` and `OverviewEngineering`, which read through the owning screens' hooks and
+the shared `useOverviewFigures`. The KPI arithmetic is the pure module `overviewKpis.ts`, and the
+Explorer views are built in Cost Explorer's own query shape, so each shares its cache entry with
+that screen. The choice is kept in the browser under `meter.persona`. One departure from the
+drawing: the daily chart carries the budget pace and no forecast band, because the forecast
+route's figures are a running total for the month and a daily band would need a number the route
+does not produce. The forecast is the month end tile, and the Executive dashboard draws the
+running total against its band. Top actions, FEAT-052, and the query cost tiles moved to the
+Engineering lead's dashboard, and the FinOps one lists its own top recommendations, as drawn.
+
 
 ---
 

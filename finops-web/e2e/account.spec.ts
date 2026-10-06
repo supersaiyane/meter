@@ -55,6 +55,10 @@ function reads(page: Page): string[] {
 
 const narrowed = (path: string) => path.includes(`chosen_account=${CHOSEN}`);
 
+/** The Overview's Effective Cost figure: Cost Explorer's month to date total, in whole dollars. */
+const spend = (page: Page) =>
+  page.getByRole('region', { name: 'Effective Cost' }).getByTestId('kpi-value');
+
 test('a shared link opens one account, and every read and every move keeps it', async ({
   page,
 }) => {
@@ -63,7 +67,7 @@ test('a shared link opens one account, and every read and every move keeps it', 
 
   await page.goto(`/?account=${CHOSEN}`);
   await expect(page.getByTestId('chosen-account')).toHaveText(`Account Platform, ${CHOSEN}`);
-  await expect(page.getByTestId('home-spend')).toContainText('3,781.93');
+  await expect(spend(page)).toHaveText('$3,782');
   expect(seen.some(narrowed)).toBe(true);
   expect(seen.filter((path) => path !== '/api/v1/accounts' && !narrowed(path))).toEqual([]);
 
@@ -81,7 +85,7 @@ test('with no account chosen nothing is narrowed and no account is named', async
   const seen = reads(page);
 
   await page.goto('/');
-  await expect(page.getByTestId('home-spend')).toContainText('3,781.93');
+  await expect(spend(page)).toHaveText('$3,782');
   await expect(page.getByTestId('chosen-account')).toHaveCount(0);
   expect(seen.filter((path) => path.includes('chosen_account'))).toEqual([]);
 });

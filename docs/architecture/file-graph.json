@@ -30,6 +30,7 @@
     "finops-web/e2e/forecast.spec.ts",
     "finops-web/e2e/journey.spec.ts",
     "finops-web/e2e/motion.spec.ts",
+    "finops-web/e2e/overview.spec.ts",
     "finops-web/e2e/quotas.spec.ts",
     "finops-web/e2e/topology.spec.ts",
     "finops-web/e2e/viewports.spec.ts",
@@ -156,6 +157,10 @@
     "finops-web/src/screens/HomeScreen.tsx",
     "finops-web/src/screens/IngestScreen.tsx",
     "finops-web/src/screens/OrganizationScreen.tsx",
+    "finops-web/src/screens/OverviewEngineering.tsx",
+    "finops-web/src/screens/OverviewExecutive.tsx",
+    "finops-web/src/screens/OverviewFinOps.tsx",
+    "finops-web/src/screens/OverviewParts.tsx",
     "finops-web/src/screens/PlatformScreen.tsx",
     "finops-web/src/screens/QueryAdhocScreen.tsx",
     "finops-web/src/screens/QueryFindingDetailScreen.tsx",
@@ -191,6 +196,7 @@
     "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
     "finops-web/src/screens/__tests__/IngestScreen.test.tsx",
     "finops-web/src/screens/__tests__/OrganizationScreen.test.tsx",
+    "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
     "finops-web/src/screens/__tests__/PlatformScreen.test.tsx",
     "finops-web/src/screens/__tests__/QueryAdhocScreen.test.tsx",
     "finops-web/src/screens/__tests__/QueryFindingDetailScreen.test.tsx",
@@ -208,16 +214,20 @@
     "finops-web/src/screens/__tests__/fixtures.ts",
     "finops-web/src/screens/__tests__/forecastModel.test.ts",
     "finops-web/src/screens/__tests__/freshnessContract.test.ts",
+    "finops-web/src/screens/__tests__/overviewKpis.test.ts",
     "finops-web/src/screens/__tests__/rawIdentifiers.test.tsx",
     "finops-web/src/screens/__tests__/surfaceStateFor.test.ts",
     "finops-web/src/screens/enforcementTime.ts",
     "finops-web/src/screens/exploreModel.ts",
     "finops-web/src/screens/findingFigure.ts",
     "finops-web/src/screens/forecastModel.ts",
+    "finops-web/src/screens/overviewKpis.ts",
+    "finops-web/src/screens/personas.ts",
     "finops-web/src/screens/platformRollUp.ts",
     "finops-web/src/screens/querySeverity.ts",
     "finops-web/src/screens/sliceCoverage.ts",
     "finops-web/src/screens/surfaceStateFor.ts",
+    "finops-web/src/screens/useOverviewFigures.ts",
     "finops-web/src/shell/AppShell.tsx",
     "finops-web/src/shell/ExportMenu.tsx",
     "finops-web/src/shell/MetaProvider.tsx",
@@ -854,6 +864,11 @@
     },
     {
       "s": "finops-web/e2e/demo.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/e2e/overview.spec.ts",
       "t": "finops-web/e2e/estate.ts",
       "k": "typescript"
     },
@@ -1864,12 +1879,27 @@
     },
     {
       "s": "finops-web/src/components/charts/KpiTile.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/KpiTile.tsx",
       "t": "finops-web/src/components/charts/ChartTable.tsx",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/components/charts/KpiTile.tsx",
       "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/KpiTile.tsx",
+      "t": "finops-web/src/components/surfaceState.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/KpiTile.tsx",
+      "t": "finops-web/src/shell/links.tsx",
       "k": "typescript"
     },
     {
@@ -2979,57 +3009,37 @@
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/api/types.ts",
+      "t": "finops-web/src/components/charts",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/components/BarChart.tsx",
+      "t": "finops-web/src/screens/OverviewEngineering.tsx",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/components/BudgetBar.tsx",
+      "t": "finops-web/src/screens/OverviewExecutive.tsx",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/components/DataTable.tsx",
+      "t": "finops-web/src/screens/OverviewFinOps.tsx",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/components/Figure.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/components/SeverityBadge.tsx",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/components/StateBoundary.tsx",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/components/TopActions.tsx",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/components/tableConfig.ts",
+      "t": "finops-web/src/screens/personas.ts",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
       "t": "finops-web/src/screens/platformRollUp.ts",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/screens/querySeverity.ts",
       "k": "typescript"
     },
     {
@@ -3129,6 +3139,286 @@
     },
     {
       "s": "finops-web/src/screens/OrganizationScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/components/SeverityBadge.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/components/TopActions.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/screens/OverviewParts.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/screens/overviewKpis.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/screens/querySeverity.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/components/BudgetBar.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/components/RankedBars.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/screens/OverviewParts.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/screens/forecastModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/screens/overviewKpis.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/screens/useOverviewFigures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/components/BudgetBar.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/components/RankedBars.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/screens/OverviewParts.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/screens/overviewKpis.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/screens/useOverviewFigures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/components/density.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/screens/overviewKpis.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
       "k": "typescript"
     },
@@ -4284,6 +4574,11 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
       "t": "finops-web/src/components/__tests__/axe.ts",
       "k": "typescript"
     },
@@ -4300,6 +4595,11 @@
     {
       "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
+      "t": "finops-web/src/screens/personas.ts",
       "k": "typescript"
     },
     {
@@ -4335,6 +4635,56 @@
     {
       "s": "finops-web/src/screens/__tests__/OrganizationScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/api/fixtures/query.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/api/fixtures/waste.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/screens/HomeScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/screens/overviewKpis.ts",
       "k": "typescript"
     },
     {
@@ -4713,6 +5063,26 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/overviewKpis.test.ts",
+      "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/overviewKpis.test.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/overviewKpis.test.ts",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/overviewKpis.test.ts",
+      "t": "finops-web/src/screens/overviewKpis.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/rawIdentifiers.test.tsx",
       "t": "finops-web/src/App.tsx",
       "k": "typescript"
@@ -4788,6 +5158,31 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/overviewKpis.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/overviewKpis.ts",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/overviewKpis.ts",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/overviewKpis.ts",
+      "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/personas.ts",
+      "t": "finops-web/src/storage.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/platformRollUp.ts",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -4820,6 +5215,36 @@
     {
       "s": "finops-web/src/screens/surfaceStateFor.ts",
       "t": "finops-web/src/components/surfaceState.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/useOverviewFigures.ts",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/useOverviewFigures.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/useOverviewFigures.ts",
+      "t": "finops-web/src/components/surfaceState.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/useOverviewFigures.ts",
+      "t": "finops-web/src/screens/overviewKpis.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/useOverviewFigures.ts",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/useOverviewFigures.ts",
+      "t": "finops-web/src/shell/metaRegistry.ts",
       "k": "typescript"
     },
     {

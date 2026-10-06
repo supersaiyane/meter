@@ -243,6 +243,23 @@ drop it.
 
 ## 6. The home screen
 
+### Since FEAT-070, 2026-10-06
+
+The home screen is the Overview, and it opens on one of three dashboards, with a switch above
+them and the reader's last choice kept in the browser. The FinOps practitioner's is the one
+drawn in `docs/design/2026-10-05-overview-frosted-ledger.jpg` and opens for a reader who has
+chosen nothing.
+
+| Dashboard | What it holds |
+| --- | --- |
+| FinOps practitioner | KPI tiles for Effective Cost, the month end forecast, budget consumed, effective savings rate, commitment coverage, cost allocated and Meter's own cost; daily Effective Cost with the estate budget's pace; cost by service; anomalies; top recommendations; scheduled reports; showback by team |
+| Executive | KPI tiles for Effective Cost to date, the forecast, budget against time elapsed, the savings rate, cost allocated, top movers and Meter's own cost; twelve months by service; this month against the forecast band; the top 10 accounts; savings available by category |
+| Engineering lead | Meter's own cost; daily Effective Cost by service; where this month went; rightsizing; anomalies; Top actions; the query cost tiles; top findings by dollar |
+
+The two rules below hold on all three: the Overview owns no data, and a slot whose sub project
+has not landed names it. The shape and the five slots below are the design the Overview grew
+from, kept because the rules they explain still bind.
+
 ### Shape
 
 ```

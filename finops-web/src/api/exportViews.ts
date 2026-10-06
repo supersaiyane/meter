@@ -80,10 +80,15 @@ export function withFormat(path: string, format: ExportFormat): string {
 /**
  * Offer this view in the screen's Export menu for as long as it is on screen. A route the API
  * does not export, a path not yet known, and a hook outside any screen offer nothing.
+ *
+ * `named` replaces the route's own title where one screen reads a route more than once, as the
+ * Overview reads Cost Explorer, because two entries both called Cost Explorer cannot be told
+ * apart in the menu.
  */
-export function useExportable(template: string, path: string): void {
+export function useExportable(template: string, path: string, named?: string): void {
   const register = useContext(ExportContext);
-  const title = EXPORT_TITLES[template];
+  const exported = EXPORT_TITLES[template];
+  const title = exported === undefined ? undefined : (named ?? exported);
   useEffect(() => {
     if (register === undefined || title === undefined || path === '') {
       return undefined;

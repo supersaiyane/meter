@@ -509,7 +509,7 @@ features:
 - id: FEAT-070
   name: Persona dashboards for executive, FinOps practitioner and engineering lead
   subproject: P8
-  status: Planned
+  status: Delivered
   detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.8, [P8 plan](docs/plans/P8-implementation-plan.md)'
   doc: docs/features/FEAT-070-persona-dashboards.md
 - id: FEAT-071
