@@ -192,7 +192,10 @@ meter/
 │   │   └── 2026-10-05-p9-price-catalog-design.md
 │   │                          Section 3 is the EC2 and EBS price research with
 │   │                          its sources; section 5.1 is the network path the
-│   │                          hub needs before any collector reaches AWS
+│   │                          hub needs before any collector reaches AWS;
+│   │                          section 14, 2026-10-07, widens the catalog to the
+│   │                          instances.vantage.sh data: every Region, four price
+│   │                          types, five services, polled every 8 hours
 │   └── plans/                 implementation plans, written per sub project.
 │                              `sync.py` reads task status out of these, so the
 │                              Status row in each task is data, not prose. It
@@ -219,7 +222,9 @@ meter/
 │       └── P9-implementation-plan.md   approved 2026-10-05. TASK-P9-001, the
 │                                  ADR and Terraform for interface endpoints plus
 │                                  two functions outside the VPC for Budgets and
-│                                  Support, gates the rest
+│                                  Support, gates the rest. Widened 2026-10-07 by
+│                                  TASK-P9-012 and 013, Savings Plans and spot,
+│                                  which wait on OPEN-17 and OPEN-18
 │
 │                              No task count per plan in this listing. It said 20,
 │                              11 and 8 for P3, P4 and P5 while all three were
