@@ -72,7 +72,7 @@ output is evidence.
 
 These are not style preferences. Breaking them costs a rewrite.
 
-1. **`finops-core` never imports boto3.** No cloud SDK, no framework, no
+1. **`finops_core` never imports boto3.** No cloud SDK, no framework, no
    HTTP client. Domain and ports only. This is what makes GCP and Azure a
    connector instead of a rewrite.
 2. **The canonical cost schema is FOCUS 1.1.** Do not invent a cost schema.
@@ -136,14 +136,14 @@ scripts/deploy/     deployment helpers
 docs/features/      one document per feature, 42 of them
 docs/registry.yaml  single source of truth for the derived documents
 docs/architecture/  the generated file dependency graph
-finops-mcp/         MCP server, a facade over the HTTP API
+finops_mcp/         MCP server, a facade over the HTTP API
 docker-compose.yml  local stack only, never used to deploy
 .gitlab-ci.yml      verify, build, plan, deploy
 scripts/            index consistency check, migration runner
-finops-core/        domain entities and ports, no cloud SDK
-finops-providers/   aws/ adapter, gcp/ and azure/ reserved
-finops-ingest/      dispatcher, workers, run ledger, watermarks
-finops-api/         FastAPI application and scope enforcement
+finops_core/        domain entities and ports, no cloud SDK
+finops_providers/   aws/ adapter, gcp/ and azure/ reserved
+finops_ingest/      dispatcher, workers, run ledger, watermarks
+finops_api/         FastAPI application and scope enforcement
 finops-web/         React and TypeScript frontend
 infra/terraform/    hub stack, member StackSet, org reader role
 docs/               goal, roadmap, architecture, ADRs, specs, plans

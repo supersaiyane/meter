@@ -6,13 +6,16 @@ rebuilt from source rather than worked around.
 
 Last updated: 2026-08-23
 Master index: `INDEX.md`
+Verified against the tree: 2026-10-05
 Update trigger: any new module, moved module, or changed responsibility.
 
 ## Current reality
 
 P0 is in build. The Python packages now exist as empty namespaces, created at
 TASK-P0-029 so the policy checks have something to scan. They carry no
-application code yet. Modules still marked `PLANNED` have no directory at all,
+application code yet. `PLANNED` means the module has no working code. Five of
+them now have a directory and an `__init__.py`, created by TASK-P0-029 because
+the policy checks needed something to scan,
 so the map is never mistaken for a description of what exists.
 
 ```
@@ -50,7 +53,7 @@ meter/
 │   ├── runbooks/              one per paging alert, written with the alert
 │   ├── registry.yaml          SOURCE OF TRUTH for the generated documents
 │   ├── feature-flags.yaml     every flag, its owner, reason, expiry, removal
-│   ├── features/              one document per feature, 42 of them
+│   ├── features/              one document per feature, 50 of them
 │   ├── architecture/          generated file dependency graph
 │   ├── templates/             spec, task, ADR, change and issue templates
 │   ├── checkpoint.md          session continuity log with resume vectors
@@ -73,6 +76,7 @@ meter/
 │   └── lessons.md             corrections converted into rules
 │
 ├── docker/                    three Dockerfiles on Minimus, plus nginx.conf
+│   └── base-images.lock       pinned digests, chosen by measurement. ADR-0010
 │   └── base-images.lock       pinned digests, resolved by measurement at TASK-P0-029
 ├── docker-compose.yml         local stack, plus a `security` profile of one shot
 │                              scanners that does NOT start with `make up`
@@ -80,26 +84,42 @@ meter/
 ├── security/                  everything a scan produces, and the policy
 │   ├── POSTURE.md             current posture, generated, never hand edited
 │   ├── policy/                grype.yaml, trivy.yaml, allowlist.yaml,
+│   │                          accepted.yaml for unfixable findings. ADR-0018,
 │   │                          accepted.yaml for unfixable findings, ADR-0018
 │   ├── reports/               one directory per scan, committed
 │   ├── sbom/                  one SBOM per image per build
 │   └── reviews/               automated code review reports
 │
+├── .env.example               every value, what it does, which file reads it
+├── .editorconfig              formatting that is not a matter of taste
+├── .pre-commit-config.yaml    local gates: secrets, writing rules, lint, doc drift
+├── CODEOWNERS                 who approves what. ADR-0013 needs a security owner
+├── SECURITY.md                vulnerability disclosure route
+├── local-auth.example.yaml    development identity, copied to a gitignored file
+│
 ├── scripts/                   every script in the project, nothing executable elsewhere
 │   ├── README.md              what each script does and how it is run
 │   ├── security/              scan, admission gate, pre commit deps, report,
 │   │                          auto fix, allowlist validation
-│   ├── docs/                  sync, index check, feature doc check, file graph
-│   ├── ci/                    code review, flag and hardcoding checks,
+│   ├── docs/                  sync.py, check_index.py, check_feature_docs.py,
+│   │                          build_file_graph.py, build_context_index.py
+│   ├── ci/                    code_review.py, check_flags.py, check_hardcoded.py,
+│   │                          check_forbidden_imports.py, refresh_base_images.py, flag and hardcoding checks,
 │   │                          forbidden imports, base image resolver
 │   └── deploy/                migration task runner
 │
-├── finops-core/               PLANNED  domain and ports. No boto3, no framework
-├── finops-providers/          PLANNED  aws/, fake/, gcp/, azure/
-├── finops-ingest/             PLANNED  dispatcher, worker, ledger, collectors
-├── finops-api/                PLANNED  FastAPI, scope enforcement, routes
+├── finops_core/               PLANNED  domain and ports. No boto3, no framework
+│                              Directory exists, __init__.py only
+├── finops_providers/          PLANNED  aws/, fake/, gcp/, azure/
+│                              Directory exists, __init__.py only
+├── finops_ingest/             PLANNED  dispatcher, worker, ledger, collectors
+│                              Directory exists, __init__.py only
+├── finops_api/                PLANNED  FastAPI, scope enforcement, routes
+│                              Directory exists, __init__.py only
 ├── finops-web/                PLANNED  React and TypeScript
-├── finops-mcp/                PLANNED  MCP server, a facade over the HTTP API
+├── finops_mcp/                PLANNED  MCP server, a facade over the HTTP API
+│                              Directory exists, __init__.py only. Ships as a
+│                              second process on the api image, ADR-0009
 └── infra/terraform/           PLANNED  hub/, member/, management/
 ```
 
@@ -107,16 +127,16 @@ meter/
 
 | Module | Responsibility | Depends on | Must not depend on |
 | --- | --- | --- | --- |
-| `finops-core` | Domain entities, the eight ports, the typed error taxonomy | nothing | boto3, botocore, fastapi, sqlalchemy, requests |
-| `finops-providers/aws` | The six cloud ports implemented against boto3 | `finops-core`, boto3 | `finops-api`, `finops-web` |
-| `finops-providers/fake` | Every port implemented in memory, used by all core and API tests | `finops-core` | boto3 |
-| `finops-ingest` | Dispatcher, worker, run ledger, watermarks, collectors | `finops-core`, a provider | `finops-web` |
-| `finops-api` | HTTP surface, scope dependency, repository guard | `finops-core`, a provider | boto3 directly |
-| `finops-web` | User interface | `finops-api` over HTTP | anything Python |
-| `finops-mcp` | MCP tools for any model client | `finops-api` over HTTP | the service layer, repositories, boto3 |
+| `finops_core` | Domain entities, the eight ports, the typed error taxonomy | nothing | boto3, botocore, fastapi, sqlalchemy, requests |
+| `finops_providers/aws` | The six cloud ports implemented against boto3 | `finops_core`, boto3 | `finops_api`, `finops-web` |
+| `finops_providers/fake` | Every port implemented in memory, used by all core and API tests | `finops_core` | boto3 |
+| `finops_ingest` | Dispatcher, worker, run ledger, watermarks, collectors | `finops_core`, a provider | `finops-web` |
+| `finops_api` | HTTP surface, scope dependency, repository guard | `finops_core`, a provider | boto3 directly |
+| `finops-web` | User interface | `finops_api` over HTTP | anything Python |
+| `finops_mcp` | MCP tools for any model client | `finops_api` over HTTP | the service layer, repositories, boto3 |
 | `infra/terraform` | Hub stack, member StackSet, management role | nothing | nothing |
 
-The rule that keeps multi cloud cheap: `finops-core` never imports a cloud
+The rule that keeps multi cloud cheap: `finops_core` never imports a cloud
 software development kit. It is enforced by an import linter rule in
 continuous integration, not by good intentions.
 

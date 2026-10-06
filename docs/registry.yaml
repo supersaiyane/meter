@@ -645,6 +645,13 @@ changes:
     name their own source
   commit: d20d35c
   detail: '[tasks/STATUS.md](tasks/STATUS.md)'
+- id: CHG-0032
+  date: '2026-08-23'
+  type: Correction
+  what: project_map.md verified against the tree and four errors corrected, including hyphenated Python
+    package names that also appeared in CLAUDE.md
+  commit: pending
+  detail: '[project_map.md](project_map.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1246,6 +1253,15 @@ issues:
     31 tasks and a finished task as not started
   detail: Generated from the plan files by `scripts/docs/sync.py`. Each generated block now names its
     own source rather than all claiming the registry
+- id: ISS-108
+  severity: MEDIUM
+  status: FIXED
+  summary: project_map.md and CLAUDE.md named the Python packages with hyphens, finops-core rather than
+    finops_core, so a reader following either would look for a directory that cannot exist because a Python
+    package cannot contain a hyphen
+  detail: 'Both corrected and the map verified against the tree. Also fixed: the map claimed PLANNED modules
+    had no directory, which stopped being true at TASK-P0-029, the feature count said 42 against an actual
+    50, and nine files were absent from the listing'
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS

@@ -34,7 +34,7 @@ Status: `OPEN`, `IN PROGRESS`, `FIXED`, `WONT FIX`, `PARKED`, `CLOSED`.
 <!-- generated:issue-register start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-104 issues. 70 fixed, 34 open, 0 parked.
+105 issues. 71 fixed, 34 open, 0 parked.
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in `tasks/STATUS.md`.
 
@@ -132,6 +132,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-105 | MEDIUM | No state matrix, so loading, empty, partial, stale, degraded and failed would each be improvised per screen and several would be missed | FIXED | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) section 8. Seven states, enforced by StateBoundary |
 | ISS-106 | MEDIUM | TASK-P0-029 was completed without its Status, evidence or deviation being recorded in the plan, so the plan read as though no work had been done | FIXED | Plan corrected. The deviation, that 029 created package namespaces belonging to TASK-P0-001, is now recorded rather than absorbed |
 | ISS-107 | MEDIUM | tasks/STATUS.md hand maintained a second copy of the plan task list and had drifted, showing 31 tasks and a finished task as not started | FIXED | Generated from the plan files by `scripts/docs/sync.py`. Each generated block now names its own source rather than all claiming the registry |
+| ISS-108 | MEDIUM | project_map.md and CLAUDE.md named the Python packages with hyphens, finops-core rather than finops_core, so a reader following either would look for a directory that cannot exist because a Python package cannot contain a hyphen | FIXED | Both corrected and the map verified against the tree. Also fixed: the map claimed PLANNED modules had no directory, which stopped being true at TASK-P0-029, the feature count said 42 against an actual 50, and nine files were absent from the listing |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
