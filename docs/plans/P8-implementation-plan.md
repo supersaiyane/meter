@@ -485,7 +485,9 @@ and freshness heatmap, Realized savings' running total, Query cost by dashboard 
 `/api/v1/query/trend`, Resources by type and region, and Meter cost per day by module. Then the daily
 commitments: each run reads the last 35 days at Cost Explorer's daily grain into
 `commitment_day`, per kind and never per plan, and Commitments draws use each day, coverage
-each day and a heatmap of both per kind. Still to come: the colour test, axe in both themes,
+each day and a heatmap of both per kind. A test now holds that no component names a colour,
+and axe runs over every screen's own content in both themes; the one fault it found, a table
+too wide for its box that no keyboard could scroll, is fixed in `DataTable`. Still to come:
 seventeen tables drawn outside `DataTable`, so not every table sorts and totals yet, and the
 remaining screens' panels.
 

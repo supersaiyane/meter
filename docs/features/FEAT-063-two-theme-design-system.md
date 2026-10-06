@@ -61,6 +61,15 @@ rail links to at 320, 375, 768, 1024, 1280 and 1920 pixels, with the rail open a
 fails if a screen scrolls sideways or is not given the width the shell leaves it. It reads the
 screens off the rail, so a screen added later is swept without being listed.
 
+Since TASK-P8-013, 2026-10-06, no colour is named outside `tokens.css`, held by a test that
+reads the layout and every component's source: the brand mark's two stops, the one literal
+left, became `--brand-from` and `--brand-to`, with one value in either theme so the mark stays
+the same. `e2e/a11y.spec.ts` runs axe over every screen's own content, read off the rail and
+opened over the demo estate, in light and in dark, as well as over the shell. It found one
+fault on two screens, a table wider than its box that no keyboard could scroll, so a table that
+scrolls is now a keyboard stop named by its caption, and one that fits adds nothing to the tab
+order.
+
 ## Failure behaviour
 
 With transparency reduced, or on a browser without `backdrop-filter`, `--surface-raised` and

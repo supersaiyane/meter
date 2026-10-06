@@ -1,5 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import { COST_COLUMN_TERMS } from './displayNames';
 import { DenseRegion } from './DenseRegion';
@@ -48,6 +48,33 @@ export interface DataTableProps<Row> {
   readonly initialSort?: Sort;
 }
 
+/** True while the box is smaller than what it holds, watched as either changes size. */
+function useScrolls(box: { readonly current: HTMLDivElement | null }): boolean {
+  const [scrolls, setScrolls] = useState(false);
+  useEffect(() => {
+    const element = box.current;
+    if (element === null || typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+    const check = () => {
+      setScrolls(
+        element.scrollWidth > element.clientWidth ||
+          element.scrollHeight > element.clientHeight,
+      );
+    };
+    check();
+    const observer = new ResizeObserver(check);
+    observer.observe(element);
+    if (element.firstElementChild !== null) {
+      observer.observe(element.firstElementChild);
+    }
+    return () => {
+      observer.disconnect();
+    };
+  }, [box]);
+  return scrolls;
+}
+
 export function DataTable<Row>({
   rows,
   columns,
@@ -56,6 +83,8 @@ export function DataTable<Row>({
   initialSort,
 }: DataTableProps<Row>) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const captionId = useId();
+  const scrolls = useScrolls(scrollRef);
   const [sort, setSort] = useState<Sort | null>(initialSort ?? null);
   const [hidden, setHidden] = useState<ReadonlySet<string>>(() => new Set());
   const shown = columns.filter((column) => !hidden.has(column.key));
@@ -124,10 +153,14 @@ export function DataTable<Row>({
       <div
         ref={scrollRef}
         data-testid="table-scroll"
+        // A box that scrolls is a box a keyboard has to reach, or a wide table's last columns
+        // are out of reach without a mouse. Named by the caption it holds, and a stop only
+        // when it scrolls, so a table that fits adds nothing to the tab order.
+        {...(scrolls ? { tabIndex: 0, role: 'region', 'aria-labelledby': captionId } : {})}
         style={{ overflow: 'auto', maxHeight: '70vh' }}
       >
         <table data-testid="table" data-virtualised={virtualise ? 'true' : 'false'}>
-          <caption>{caption}</caption>
+          <caption id={captionId}>{caption}</caption>
           <thead>
             <tr>
               {shown.map((column) => (

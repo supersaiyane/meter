@@ -99,6 +99,13 @@ describe('the token layer', () => {
   });
 });
 
+/** Every component and screen source, raw, for the colour rule. */
+const COMPONENT_SOURCES = import.meta.glob<string>('../../**/*.{ts,tsx}', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+});
+
 describe('the visual layer', () => {
   it('introduces no class a component would have to add', () => {
     // The property ADR-0021 was decided on. If this file styled `.card`, some
@@ -209,6 +216,21 @@ describe('the visual layer', () => {
   it('carries the three breakpoints section 10 names', () => {
     expect(layout).toContain('max-width: 1280px');
     expect(layout).toContain('max-width: 1024px');
+  });
+
+  it('names no colour outside the tokens, in the layout or in any component', () => {
+    // TASK-P8-013. A colour named anywhere but tokens.css is a colour the themes cannot change,
+    // so it is right in one theme and wrong in the other, and nobody finds out until dark.
+    const inLayout = [
+      ...layout.matchAll(/^[^/*\n]*:[^;\n]*(#[0-9a-f]{3,8}\b|\brgba?\(|\bhsla?\()/gim),
+    ];
+    expect(inLayout.map((found) => found[0].trim())).toEqual([]);
+    const inComponents = Object.entries(COMPONENT_SOURCES).filter(
+      ([path, source]) =>
+        !path.includes('__tests__') &&
+        /['"`]#[0-9a-fA-F]{3,8}['"`]|\brgba?\(|\bhsla?\(/.test(source),
+    );
+    expect(inComponents.map(([path]) => path)).toEqual([]);
   });
 
   it('consumes every colour and spacing token that tokens.css declares', () => {

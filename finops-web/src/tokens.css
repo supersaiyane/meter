@@ -81,6 +81,10 @@
      focus ring or a selected boundary, so it holds the 3 that WCAG asks of
      those. */
   --accent: light-dark(#0064d2, #5eead4);
+  /* The mark's two stops, one value in both themes on purpose: a mark is recognised by staying
+     the same. Tokens all the same, so no colour is named outside this file. */
+  --brand-from: #4da3ff;
+  --brand-to: #9b6cff;
   --accent-mark: light-dark(#0a84ff, #5eead4);
   --accent-quiet: light-dark(#e6f0fd, rgba(94, 234, 212, 0.14));
 

@@ -182,13 +182,13 @@ body {
 }
 
 /* The mark is drawn, not an image: one gradient, no request, and it survives a theme switch
-   because both stops are fixed hues rather than tokens. */
+   because both stops are tokens with one value in either theme. */
 [data-testid='brand-mark'] {
   flex: none;
   width: 30px;
   height: 30px;
   border-radius: 9px;
-  background: linear-gradient(135deg, #4da3ff, #9b6cff);
+  background: linear-gradient(135deg, var(--brand-from), var(--brand-to));
 }
 
 [data-testid='brand'] {
