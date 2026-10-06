@@ -51,7 +51,7 @@ TREND_DAYS = 30
 
 def _fetch(
     repository: ScopedRepository, scope: Scope, statement: Any
-) -> Sequence[Row[tuple[Any, ...]]]:
+) -> Sequence[Row[*tuple[Any, ...]]]:
     """Run a projected read through the audited path.
 
     `with_only_columns` produces a `Select` typed to its exact columns, and
@@ -60,7 +60,7 @@ def _fetch(
     base class because loosening that signature would loosen it for the eight
     repositories that do not need it.
     """
-    return repository.fetch(scope, cast("Select[tuple[object, ...]]", statement))
+    return repository.fetch(scope, cast("Select[*tuple[object, ...]]", statement))
 
 
 class CostRepository(ScopedRepository):
@@ -120,7 +120,7 @@ class CostRepository(ScopedRepository):
         rows = _fetch(self, scope, statement)
         return int(rows[0][0] or 0) if rows else 0
 
-    def period_total(self, scope: Scope, period: date) -> Sequence[Row[tuple[Any, ...]]]:
+    def period_total(self, scope: Scope, period: date) -> Sequence[Row[*tuple[Any, ...]]]:
         """One row: effective, billed, line items and both timestamps.
 
         Both timestamps, per constraint 10. `as_of` is the oldest charge in the
@@ -136,7 +136,9 @@ class CostRepository(ScopedRepository):
         )
         return _fetch(self, scope, statement.where(self.table.c.billing_period_start == period))
 
-    def grouped(self, scope: Scope, period: date, dimension: str) -> Sequence[Row[tuple[Any, ...]]]:
+    def grouped(
+        self, scope: Scope, period: date, dimension: str
+    ) -> Sequence[Row[*tuple[Any, ...]]]:
         """Worst first, by service, account or region.
 
         The dimension is looked up rather than interpolated. A grouping column
@@ -159,7 +161,7 @@ class CostRepository(ScopedRepository):
         )
         return _fetch(self, scope, statement)
 
-    def containers(self, scope: Scope, period: date) -> Sequence[Row[tuple[Any, ...]]]:
+    def containers(self, scope: Scope, period: date) -> Sequence[Row[*tuple[Any, ...]]]:
         """Cost at the container grain: cluster, namespace and workload.
 
         The same table, the same scope predicate and the same repository as every
@@ -193,7 +195,7 @@ class CostRepository(ScopedRepository):
         )
         return _fetch(self, scope, statement)
 
-    def cluster_totals(self, scope: Scope, period: date) -> Sequence[Row[tuple[Any, ...]]]:
+    def cluster_totals(self, scope: Scope, period: date) -> Sequence[Row[*tuple[Any, ...]]]:
         """Per cluster: what was attributed, what was not, and how many rows.
 
         Separate from `containers` rather than derived from it, because a cluster
@@ -238,7 +240,7 @@ class CostRepository(ScopedRepository):
         )
         return int(rows[0][0]) if rows else 0
 
-    def for_export(self, scope: Scope, period: date, key: str) -> Sequence[Row[tuple[Any, ...]]]:
+    def for_export(self, scope: Scope, period: date, key: str) -> Sequence[Row[*tuple[Any, ...]]]:
         """One row per account, service and tag value, for the file finance opens.
 
         The same table, the same scope predicate and the same unallocated bucket as
@@ -269,7 +271,7 @@ class CostRepository(ScopedRepository):
         )
         return _fetch(self, scope, statement)
 
-    def by_tag(self, scope: Scope, period: date, key: str) -> Sequence[Row[tuple[Any, ...]]]:
+    def by_tag(self, scope: Scope, period: date, key: str) -> Sequence[Row[*tuple[Any, ...]]]:
         """Allocation: charges grouped by one tag key, with an explicit bucket
         for everything nobody tagged.
 
@@ -293,7 +295,7 @@ class CostRepository(ScopedRepository):
         )
         return _fetch(self, scope, statement)
 
-    def daily(self, scope: Scope, period: date) -> Sequence[Row[tuple[Any, ...]]]:
+    def daily(self, scope: Scope, period: date) -> Sequence[Row[*tuple[Any, ...]]]:
         """Effective cost per day inside one billing period, oldest first.
 
         The chart on `/cost`. Ordered here rather than in the browser, because
@@ -316,7 +318,7 @@ class AnomalyRepository(ScopedRepository):
     table: ClassVar[Table] = models.cost_anomaly
     resource: ClassVar[str] = "cost_anomaly"
 
-    def worst_first(self, scope: Scope, limit: int = 50) -> Sequence[Row[tuple[Any, ...]]]:
+    def worst_first(self, scope: Scope, limit: int = 50) -> Sequence[Row[*tuple[Any, ...]]]:
         """Biggest move first, newest day breaking the tie.
 
         Ranked by the money rather than by the ratio, per ADR-0016. A screen
@@ -391,7 +393,7 @@ class CommitmentRepository(ScopedRepository):
         rows = _fetch(self, scope, statement)
         return rows[0][0] if rows and rows[0][0] is not None else None
 
-    def worst_first(self, scope: Scope, window_start: date) -> Sequence[Row[tuple[Any, ...]]]:
+    def worst_first(self, scope: Scope, window_start: date) -> Sequence[Row[*tuple[Any, ...]]]:
         """Every commitment in the window, most wasted money first.
 
         Ranked by the waste rather than by utilization, per ADR-0016. A ranking by
@@ -429,7 +431,7 @@ class BudgetRepository(ScopedRepository):
         found = self._connection.execute(statement).scalar_one_or_none()
         return found
 
-    def for_period(self, scope: Scope, period: date) -> Sequence[Row[tuple[Any, ...]]]:
+    def for_period(self, scope: Scope, period: date) -> Sequence[Row[*tuple[Any, ...]]]:
         """Every budget covering a period, largest limit first.
 
         By limit rather than by status, because status is computed per request and ordering by
@@ -457,7 +459,7 @@ class CommitmentActionRepository(ScopedRepository):
     table: ClassVar[Table] = models.commitment_action
     resource: ClassVar[str] = "commitment_action"
 
-    def worst_first(self, scope: Scope) -> Sequence[Row[tuple[Any, ...]]]:
+    def worst_first(self, scope: Scope) -> Sequence[Row[*tuple[Any, ...]]]:
         """Every open action, most money first, per ADR-0016.
 
         Not filtered to a window. A coverage gap is upserted on its dimension rather than its
@@ -487,7 +489,7 @@ class CommitmentDayRepository(ScopedRepository):
     #: rewrites, and those stay out of the picture until they are inside its month.
     DAYS_SHOWN = 30
 
-    def recent(self, scope: Scope) -> Sequence[Row[tuple[Any, ...]]]:
+    def recent(self, scope: Scope) -> Sequence[Row[*tuple[Any, ...]]]:
         """The last `DAYS_SHOWN` days, oldest first, both kinds on each day."""
         cutoff = func.current_date() - self.DAYS_SHOWN
         statement = (
@@ -504,7 +506,7 @@ class CommitmentCoverageRepository(ScopedRepository):
     table: ClassVar[Table] = models.commitment_coverage
     resource: ClassVar[str] = "commitment_coverage"
 
-    def slices(self, scope: Scope, window_start: date) -> Sequence[Row[tuple[Any, ...]]]:
+    def slices(self, scope: Scope, window_start: date) -> Sequence[Row[*tuple[Any, ...]]]:
         """Coverage rows in the window, most uncovered money first.
 
         Ordered by the money left uncovered rather than by the coverage fraction.
@@ -534,7 +536,7 @@ class MonthlyCostRepository(ScopedRepository):
     table: ClassVar[Table] = models.cost_focus_monthly
     resource: ClassVar[str] = "cost_focus_monthly"
 
-    def months(self, scope: Scope, limit: int = TREND_DAYS) -> Sequence[Row[tuple[Any, ...]]]:
+    def months(self, scope: Scope, limit: int = TREND_DAYS) -> Sequence[Row[*tuple[Any, ...]]]:
         """Each billing month and what it cost, newest first."""
         statement = (
             self.scoped_select(scope)

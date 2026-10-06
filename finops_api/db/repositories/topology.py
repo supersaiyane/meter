@@ -106,8 +106,8 @@ WALK_INWARD = (
 
 
 def _fetch(
-    repository: ScopedRepository, scope: Scope, statement: Select[tuple[Any, ...]]
-) -> Sequence[Row[tuple[Any, ...]]]:
+    repository: ScopedRepository, scope: Scope, statement: Select[*tuple[Any, ...]]
+) -> Sequence[Row[*tuple[Any, ...]]]:
     """Run a projected select through the scoped path.
 
     One helper rather than a cast at every call site, the same one `waste.py` keeps for the
@@ -234,7 +234,7 @@ class TopologyRepository(ScopedRepository):
         rows = _fetch(self, scope, statement)
         return int(rows[0][0] or 0) if rows else 0
 
-    def by_region(self, scope: Scope) -> Sequence[Row[Any]]:
+    def by_region(self, scope: Scope) -> Sequence[Row[*tuple[Any, ...]]]:
         """How many resources and how many accounts sit in each region this scope can see.
 
         FEAT-061. Grouped in the database rather than by paging the estate into the process: an
@@ -283,7 +283,7 @@ class TopologyRepository(ScopedRepository):
 
     def roots(
         self, scope: Scope, *, node_kind: str | None = None, limit: int = 200
-    ) -> Sequence[Row[Any]]:
+    ) -> Sequence[Row[*tuple[Any, ...]]]:
         """Nodes a reader can start a map from, containers first.
 
         Ordered by kind and then by name rather than by identifier, because a reader
@@ -310,7 +310,7 @@ class TopologyRepository(ScopedRepository):
         search: str | None = None,
         limit: int,
         offset: int,
-    ) -> tuple[Sequence[Row[Any]], int]:
+    ) -> tuple[Sequence[Row[*tuple[Any, ...]]], int]:
         """One page of resources, and how many match the filter in total.
 
         `search` is the text typed in the search box, FEAT-075, matched as a substring of the
@@ -504,7 +504,7 @@ class TopologyRepository(ScopedRepository):
         found = self._coverage(scope, {(node.account_key.account_id, node.region_id)})
         return found[0] if found else None
 
-    def findings_for(self, scope: Scope, node: Node) -> tuple[Sequence[Row[Any]], int]:
+    def findings_for(self, scope: Scope, node: Node) -> tuple[Sequence[Row[*tuple[Any, ...]]], int]:
         """Recommendations about this resource, and how many in the account did not match.
 
         The second number is the honest part. A recommendation joins to a node on the
@@ -618,7 +618,7 @@ class TopologyRepository(ScopedRepository):
         )
 
 
-def as_node(row: Row[Any]) -> Node:
+def as_node(row: Row[*tuple[Any, ...]]) -> Node:
     """One row as a domain node.
 
     Public since FEAT-056, because the resource list route maps rows the same way the
@@ -639,7 +639,7 @@ def as_node(row: Row[Any]) -> Node:
     )
 
 
-def _as_edge(row: Row[Any]) -> Edge:
+def _as_edge(row: Row[*tuple[Any, ...]]) -> Edge:
     return Edge(
         from_node_id=row.from_node_id,
         to_node_id=row.to_node_id,
@@ -651,7 +651,7 @@ def _as_edge(row: Row[Any]) -> Edge:
     )
 
 
-def _as_coverage(row: Row[Any]) -> GraphCoverage:
+def _as_coverage(row: Row[*tuple[Any, ...]]) -> GraphCoverage:
     return GraphCoverage(
         account_key=AccountKey(provider=Provider.AWS, account_id=str(row.sub_account_id)),
         region_id=row.region_id,

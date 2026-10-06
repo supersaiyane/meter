@@ -339,7 +339,7 @@ def _inherited_predicate(table: Table, rule: Through, scope: Scope) -> ColumnEle
 SCOPE_APPLIED = "meter_scope_applied"
 
 
-def scoped_select(table: Table, scope: Scope) -> Select[tuple[object, ...]]:
+def scoped_select(table: Table, scope: Scope) -> Select[*tuple[object, ...]]:
     """The only constructor of a select against a scoped table."""
     confirmed = require_scope(scope)
     return (
@@ -349,7 +349,7 @@ def scoped_select(table: Table, scope: Scope) -> Select[tuple[object, ...]]:
     )
 
 
-def assert_scoped(statement: Select[tuple[object, ...]], table: Table) -> None:
+def assert_scoped(statement: Select[*tuple[object, ...]], table: Table) -> None:
     """Backstop. Refuse to run a select that did not come from `scoped_select`.
 
     This checks for the mark rather than reading the rendered WHERE clause. The

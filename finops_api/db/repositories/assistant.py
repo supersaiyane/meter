@@ -46,7 +46,7 @@ class ExchangeRepository(ScopedRepository):
     table: ClassVar[Table] = models.assistant_exchange
     resource: ClassVar[str] = "assistant_exchange"
 
-    def exchanges(self, scope: Scope, limit: int) -> Sequence[Row[tuple[object, ...]]]:
+    def exchanges(self, scope: Scope, limit: int) -> Sequence[Row[*tuple[object, ...]]]:
         """The asker's exchanges, newest first."""
         statement = self.scoped_select(scope).order_by(self.table.c.asked_at.desc()).limit(limit)
         return self.fetch(scope, statement)
@@ -56,10 +56,13 @@ class ExchangeRepository(ScopedRepository):
         # The projection narrows the select's type and `fetch` is declared for the general
         # one, so it is cast here, as the cost repository's `_fetch` does for its counts.
         projected = self.scoped_select(scope).with_only_columns(func.count())
-        statement = cast("Select[tuple[object, ...]]", projected)
-        return int(self.fetch(scope, statement)[0][0])
+        statement = cast("Select[*tuple[object, ...]]", projected)
+        # Read through `Any`, as the cost repository's `_fetch` reads its counts: SQLAlchemy 2.1
+        # types a row's cells, and the general select types this one as `object`.
+        rows: Sequence[Row[*tuple[Any, ...]]] = self.fetch(scope, statement)
+        return int(rows[0][0])
 
-    def exchange(self, scope: Scope, exchange_id: UUID) -> Row[tuple[object, ...]] | None:
+    def exchange(self, scope: Scope, exchange_id: UUID) -> Row[*tuple[object, ...]] | None:
         """One of the asker's exchanges, or None, which is also what another person's is."""
         statement = self.scoped_select(scope).where(self.table.c.exchange_id == exchange_id)
         rows = self.fetch(scope, statement)
@@ -77,7 +80,7 @@ class DigestRepository(ScopedRepository):
     table: ClassVar[Table] = models.team_digest
     resource: ClassVar[str] = "team_digest"
 
-    def digests(self, scope: Scope, limit: int) -> Sequence[Row[tuple[object, ...]]]:
+    def digests(self, scope: Scope, limit: int) -> Sequence[Row[*tuple[object, ...]]]:
         """The newest week first, the organization's digest before the teams'."""
         statement = (
             self.scoped_select(scope)
@@ -101,7 +104,7 @@ class RedactionRepository(ScopedRepository):
     table: ClassVar[Table] = models.redaction_event
     resource: ClassVar[str] = "redaction_event"
 
-    def redactions(self, scope: Scope, limit: int) -> Sequence[Row[tuple[object, ...]]]:
+    def redactions(self, scope: Scope, limit: int) -> Sequence[Row[*tuple[object, ...]]]:
         """The asker's events, newest first."""
         statement = self.scoped_select(scope).order_by(self.table.c.occurred_at.desc()).limit(limit)
         return self.fetch(scope, statement)
@@ -109,8 +112,11 @@ class RedactionRepository(ScopedRepository):
     def count(self, scope: Scope) -> int:
         """How many the asker has, so a list cut at its limit says it was cut."""
         projected = self.scoped_select(scope).with_only_columns(func.count())
-        statement = cast("Select[tuple[object, ...]]", projected)
-        return int(self.fetch(scope, statement)[0][0])
+        statement = cast("Select[*tuple[object, ...]]", projected)
+        # Read through `Any`, as the cost repository's `_fetch` reads its counts: SQLAlchemy 2.1
+        # types a row's cells, and the general select types this one as `object`.
+        rows: Sequence[Row[*tuple[Any, ...]]] = self.fetch(scope, statement)
+        return int(rows[0][0])
 
 
 def record_redactions(

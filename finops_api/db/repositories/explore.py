@@ -106,7 +106,7 @@ class ExploreRepository(ScopedRepository):
         found = rows[0][0] if rows else None
         return found if isinstance(found, date) else None
 
-    def window_facts(self, scope: Scope, window: Window) -> Row[tuple[Any, ...]]:
+    def window_facts(self, scope: Scope, window: Window) -> Row[*tuple[Any, ...]]:
         """Accounts spending, the oldest charge and the newest fetch in a window.
 
         Unfiltered, because these describe the estate the view draws on, and a reader's filter
@@ -149,7 +149,7 @@ class ExploreRepository(ScopedRepository):
         previous: Window,
         metric: str,
         filters: Sequence[Filter],
-    ) -> Row[tuple[Any, ...]]:
+    ) -> Row[*tuple[Any, ...]]:
         """One row: both windows' sums and line counts, and how many lack each optional measure."""
         c = self.table.c
         measure = self._measure(metric)
@@ -177,7 +177,7 @@ class ExploreRepository(ScopedRepository):
         groupings: tuple[Grouping, Grouping | None],
         filters: Sequence[Filter],
         limit: int,
-    ) -> Sequence[Row[tuple[Any, ...]]]:
+    ) -> Sequence[Row[*tuple[Any, ...]]]:
         """The table, largest this period first, at most `limit` rows.
 
         Each row carries the count of every group in its fifth column, so a caller can say how
@@ -194,7 +194,7 @@ class ExploreRepository(ScopedRepository):
         metric: str,
         groupings: tuple[Grouping, Grouping | None],
         filters: Sequence[Filter],
-    ) -> Sequence[Row[tuple[Any, ...]]]:
+    ) -> Sequence[Row[*tuple[Any, ...]]]:
         """Every row naming the unallocated bucket, whatever its rank.
 
         Read separately so the row limit can never be what hides it. Unallocated cost is the
@@ -247,7 +247,7 @@ class ExploreRepository(ScopedRepository):
         filters: Sequence[Filter],
         granularity: Granularity,
         named: Sequence[str],
-    ) -> Sequence[Row[tuple[Any, ...]]]:
+    ) -> Sequence[Row[*tuple[Any, ...]]]:
         """What each named group cost per day or month, with null for everything else."""
         c = self.table.c
         unit = "day" if granularity == "daily" else "month"
@@ -273,7 +273,7 @@ class ExploreRepository(ScopedRepository):
         metric: str,
         groupings: tuple[Grouping, Grouping | None],
         filters: Sequence[Filter],
-    ) -> Select[tuple[Any, ...]]:
+    ) -> Select[*tuple[Any, ...]]:
         first, second = groupings
         measure = self._measure(metric)
         now, before = self._within(current), self._within(previous)
@@ -323,14 +323,14 @@ class ExploreRepository(ScopedRepository):
         )
 
     def _filtered(
-        self, statement: Select[tuple[Any, ...]], filters: Sequence[Filter]
-    ) -> Select[tuple[Any, ...]]:
+        self, statement: Select[*tuple[Any, ...]], filters: Sequence[Filter]
+    ) -> Select[*tuple[Any, ...]]:
         for chosen in filters:
             statement = statement.where(self._expression(chosen.grouping).in_(list(chosen.values)))
         return statement
 
     def _read(
-        self, scope: Scope, statement: Select[tuple[Any, ...]]
-    ) -> Sequence[Row[tuple[Any, ...]]]:
+        self, scope: Scope, statement: Select[*tuple[Any, ...]]
+    ) -> Sequence[Row[*tuple[Any, ...]]]:
         """Through the audited path, which checks the mark `scoped_select` left."""
-        return self.fetch(scope, cast("Select[tuple[object, ...]]", statement))
+        return self.fetch(scope, cast("Select[*tuple[object, ...]]", statement))

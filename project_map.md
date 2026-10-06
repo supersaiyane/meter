@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 27 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 171 | test_*.py under tests/ |
-| Test functions | 2343 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 172 | test_*.py under tests/ |
+| Test functions | 2351 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -76,6 +76,9 @@ meter/
 │                              Packages are found, not listed: an explicit list
 │                              is top level only and left subpackages out of the
 │                              built wheel
+├── requirements/              the hashed dependency locks every install reads,
+│                              dev.lock for a venv and CI, runtime.lock for the
+│                              images. Written by make lock, never by hand. ADR-0031
 ├── docker-compose.yml         local stack only, never used to deploy. Every
 │                              python service takes env_file, so a new setting
 │                              does not have to be added twice, and the postgres
@@ -302,7 +305,10 @@ meter/
 │   │                          check_forbidden_imports.py, check_memory.py,
 │   │                          check_env_keys.py, refresh_base_images.py. Flag and
 │   │                          hardcoding checks, forbidden imports, the memory
-│   │                          gate, base image resolver. check_env_keys names the
+│   │                          gate, base image resolver. check_image_arch.py
+│   │                          reads every compiled file in an exported image and
+│   │                          fails on one built for another machine, which the
+│   │                          label alone cannot see, ISS-254. check_env_keys names the
 │   │                          settings .env.example has gained that a local .env
 │   │                          never did, before make up starts anything: it is
 │   │                          copied once and never again, so eleven accumulated
@@ -1637,6 +1643,7 @@ continuous integration, not by good intentions.
 | What an audit found, and when | `audits/`, newest last by filename |
 | Is the posture currently clean | `security/POSTURE.md` |
 | Which base image digest are we on | `docker/base-images.lock` |
+| Which version of a Python dependency runs | `requirements/runtime.lock`, and `requirements/dev.lock` for tests and tools |
 | Why is a vulnerability accepted | `security/policy/accepted.yaml`, and ADR-0018 |
 | How a number is rendered, and how a failure is | `docs/12-UI-DESIGN.md` |
 | Which tasks are done | `tasks/STATUS.md`, generated from the plan files |

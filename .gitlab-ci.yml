@@ -83,7 +83,9 @@ lint:
   image: python:3.13-slim
   <<: *needs_make_and_git
   script:
-    - pip install -e ".[dev]"
+    - pip install --require-hashes -r requirements/dev.lock
+    - pip install --no-deps -e .
+    - pip check
     - make lint
 
 writing-rules:
@@ -113,7 +115,9 @@ test:
     # have run an integration test. ISS-178.
     METER_TEST_DATABASE_URL: "postgresql+psycopg://meter:ci_only@postgres:5432/meter_test"
   script:
-    - pip install -e ".[dev]"
+    - pip install --require-hashes -r requirements/dev.lock
+    - pip install --no-deps -e .
+    - pip check
     - pytest --cov-report=term-missing --cov-report=xml --junitxml=report.xml
   coverage: '/^TOTAL.*\s+(\d+(?:\.\d+)?)%$/'
   artifacts:
@@ -167,7 +171,9 @@ api-reference:
   image: python:3.13-slim
   <<: *needs_make_and_git
   script:
-    - pip install -e ".[dev]"
+    - pip install --require-hashes -r requirements/dev.lock
+    - pip install --no-deps -e .
+    - pip check
     - make check-docstrings
     - make api-reference
   artifacts:
@@ -265,7 +271,9 @@ code-review:
   before_script:
     - apt-get update -qq && apt-get install -y -qq --no-install-recommends git > /dev/null
   script:
-    - pip install -e ".[dev]"
+    - pip install --require-hashes -r requirements/dev.lock
+    - pip install --no-deps -e .
+    - pip check
     - python scripts/ci/code_review.py --diff "origin/${CI_DEFAULT_BRANCH}" --output security/reviews
   artifacts:
     when: always

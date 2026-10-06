@@ -740,3 +740,23 @@ Before calling a layout change done, sweep every built screen at 320, 375, 768, 
 
 **Triggers:** A shell, navigation or layout change. "As drawn" applied to behaviour. A media query
 written beside a state selector that could outrank it.
+
+## 2026-10-06: a tool wrapper resolved the environment under a working tree
+
+**Mistake:** To format four files I ran `uv run ruff format`. The repository was not a uv
+project, so uv resolved `pyproject.toml` afresh, wrote a `uv.lock` nobody asked for and synced
+`.venv`: 31 packages moved to that day's releases, SQLAlchemy 2.0 to 2.1.3 among them, and mypy
+failed 154 checks in code nobody had changed. Nothing in the call said it would install anything.
+
+**Correction:** I found it when lint failed in files I had not touched, and asked the owner. The
+owner said: "what is your recommendation for better , not for short solution", and chose "Lock
+today's versions now".
+
+**Rule:** Run a project's tools through its own entry points, its `make` targets or
+`.venv/bin/<tool>`, never through a wrapper that manages environments: `uv run`, `poetry run`,
+`pipx run`, or `npx` for a package the lockfile does not hold. Before the first call to such a
+wrapper in a repository, find out whether it installs or resolves. ADR-0031 made `uv run`
+harmless in this one, and the rule still holds everywhere else.
+
+**Triggers:** Formatting, linting or type checking a few files quickly. A tool that prints
+"Installed N packages". Errors in files nobody changed.

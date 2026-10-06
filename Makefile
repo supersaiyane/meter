@@ -76,11 +76,33 @@ help: ## Show this help
 setup: security-tools ## Create the virtualenv and install everything, including the scanners
 	$(PY) -m venv $(VENV)
 	$(BIN)/pip install --upgrade pip setuptools wheel
-	$(BIN)/pip install -e ".[dev]"
+	$(MAKE) sync
 	cd finops-web && npm ci
 	@echo
 	@echo "Setup complete. Activate with: source $(BIN)/activate"
 	@echo "Next: make hooks-install, then make up"
+
+# Installed from the lock, never resolved. pyproject.toml says which versions would do and
+# requirements/ says which ones this repository was proven against, each checked against its
+# hash. A fresh resolve takes whatever PyPI holds that day, and on 2026-10-06 that was a
+# SQLAlchemy whose typing failed 154 checks in code nobody had touched. ADR-0031.
+.PHONY: sync
+sync: ## Bring an existing virtualenv to exactly the lock
+	$(BIN)/pip install --require-hashes -r requirements/dev.lock
+	$(BIN)/pip install --no-deps -e .
+	$(BIN)/pip check
+
+.PHONY: lock
+lock: ## Rewrite requirements/*.lock after pyproject.toml changes, keeping every pin that still fits
+	@command -v uv >/dev/null 2>&1 || (echo "make lock needs uv, which writes the lock and nothing else"; exit 1)
+	uv pip compile pyproject.toml --extra dev --universal --generate-hashes -o requirements/dev.lock
+	uv pip compile pyproject.toml --universal --generate-hashes -c requirements/dev.lock -o requirements/runtime.lock
+
+.PHONY: lock-upgrade
+lock-upgrade: ## Move every pin to the newest release pyproject.toml allows. Then make sync and make verify
+	@command -v uv >/dev/null 2>&1 || (echo "make lock-upgrade needs uv, which writes the lock and nothing else"; exit 1)
+	uv pip compile pyproject.toml --extra dev --universal --generate-hashes --upgrade -o requirements/dev.lock
+	uv pip compile pyproject.toml --universal --generate-hashes -c requirements/dev.lock -o requirements/runtime.lock
 
 .PHONY: clean
 clean: ## Remove build artefacts and caches. Does not touch the database volume
@@ -515,7 +537,7 @@ build: ## Build all three images for $(PLATFORM), tagged with the short commit
 	@$(MAKE) verify-platform
 
 .PHONY: verify-platform
-verify-platform: ## Fail if a built image is not $(PLATFORM). Catches the arm64 mistake
+verify-platform: ## Fail if a built image, or any compiled file inside it, is not $(PLATFORM)
 	@expected="$(PLATFORM)"; \
 	for svc in api worker web; do \
 	  actual=$$(docker image inspect meter-$$svc:$(IMAGE_TAG) \
@@ -526,6 +548,12 @@ verify-platform: ## Fail if a built image is not $(PLATFORM). Catches the arm64 
 	    exit 1; \
 	  fi; \
 	  echo "OK: meter-$$svc is $$actual"; \
+	  container=$$(docker create --platform $$expected meter-$$svc:$(IMAGE_TAG)); \
+	  docker export $$container | $(PY) scripts/ci/check_image_arch.py \
+	    --expect $$expected --image meter-$$svc; \
+	  status=$$?; \
+	  docker rm $$container >/dev/null; \
+	  [ $$status -eq 0 ] || exit 1; \
 	done
 
 .PHONY: buildx-setup

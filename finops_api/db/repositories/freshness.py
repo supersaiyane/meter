@@ -21,7 +21,7 @@ class WatermarkRepository(ScopedRepository):
     table: ClassVar[Table] = models.ingest_watermark
     resource: ClassVar[str] = "ingest_watermark"
 
-    def list_all(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+    def list_all(self, scope: Scope) -> Sequence[Row[*tuple[object, ...]]]:
         statement = self.scoped_select(scope).order_by(
             self.table.c["collector"], self.table.c["scope_key"]
         )
@@ -32,7 +32,7 @@ class PlatformCostRepository(ScopedRepository):
     table: ClassVar[Table] = models.platform_cost
     resource: ClassVar[str] = "platform_cost"
 
-    def by_day_and_module(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+    def by_day_and_module(self, scope: Scope) -> Sequence[Row[*tuple[object, ...]]]:
         """Meter's own cost. Constraint 7 puts this on the front page."""
         statement = self.scoped_select(scope).order_by(
             self.table.c["day"].desc(), self.table.c["module"], self.table.c["service"]

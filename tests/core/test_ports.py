@@ -105,7 +105,7 @@ def test_all_ports_are_protocols() -> None:
         # Protocol really is in the mro of a Protocol subclass at runtime, but
         # it is a typing special form and the type system does not model it as
         # a class, so the containment check cannot be expressed.
-        assert Protocol in port.__mro__ or issubclass(port, Protocol)  # type: ignore[comparison-overlap, arg-type]  # type: ignore[arg-type]
+        assert Protocol in port.__mro__ or issubclass(port, Protocol)
 
 
 def test_every_port_declares_at_least_one_method() -> None:
