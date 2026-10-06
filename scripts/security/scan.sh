@@ -97,6 +97,10 @@ if [[ -f "${ROOT}/finops-web/package-lock.json" ]]; then
   echo "==> Scanning frontend dependencies"
   (cd "${ROOT}/finops-web" && npm audit --json > "${OUT}/npm-audit.json") \
     || echo "npm audit reported findings"
+  # An npm finding accepted as development only holds while the package stays out of the
+  # production tree, so the claim is checked here, beside the audit that raised it. ADR-0018.
+  echo "==> Checking the development only acceptances"
+  python3 "${ROOT}/scripts/ci/check_dev_only.py"
 fi
 
 # ---------------------------------------------------------------- terraform

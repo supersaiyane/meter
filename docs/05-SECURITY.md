@@ -33,7 +33,11 @@ An acceptance requires a **reachability argument**: why the vulnerable code
 path does not exist in Meter. "We accept the risk" is not one. Where the
 argument can be enforced it must be, and
 `scripts/ci/check_forbidden_imports.py` fails the build if anyone imports a
-module an acceptance depends on not importing.
+module an acceptance depends on not importing. `scripts/ci/check_dev_only.py`,
+run by `scan.sh` beside the npm audit, fails it if a package accepted because it
+is only a development dependency appears in npm's production tree; the web image
+carries the built `dist` and nothing from `node_modules`. The first such package
+was `source-map-js`, GHSA-68fv-2mgg-jv7q, accepted on 2026-10-06.
 
 A threshold is never lowered. A lowered threshold is invisible, and both an
 expiring allowlist entry and a reviewable acceptance record are not.
