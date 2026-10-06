@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
 
 import { useEnforcementActions } from '../api/queries';
 import type { ApiEnforcementAction } from '../api/types';
@@ -7,6 +6,7 @@ import { DataTable } from '../components/DataTable';
 import { FixtureBand } from '../components/FixtureBand';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
+import { Link } from '../shell/links';
 import { countdown, stampUtc } from './enforcementTime';
 import { useReportMeta } from '../shell/metaRegistry';
 import { surfaceStateFor } from './surfaceStateFor';

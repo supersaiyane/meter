@@ -245,6 +245,7 @@ rather than scanning controls.
 | Curated 40 action policy, never `ReadOnlyAccess` | ADR-0004, ISS-010 |
 | ExternalId plus `aws:PrincipalOrgID` on every trust | ADR-0004 |
 | Scope enforced at two independent points | P0 spec section 8, ISS-009 |
+| A chosen account only narrows a scope, and one outside it or absent answers the same 404 | FEAT-075 |
 | Audit event on every scope evaluation | P0 spec section 5.5, ISS-031 |
 | Local identity provider refuses to start in production | P0 spec section 11, ISS-017 |
 | Secrets in Secrets Manager, never in an image layer | ADR-0010 |

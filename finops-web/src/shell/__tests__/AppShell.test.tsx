@@ -1,12 +1,12 @@
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
 import { violationsIn } from '../../components/__tests__/axe';
+import type { ApiClient } from '../../api/client';
 import type { ApiMeta } from '../../api/types';
+import { Harness } from '../../screens/__tests__/Harness';
 import { AppShell } from '../AppShell';
 import { allScreens } from '../sections';
-import { MetaProvider } from '../MetaProvider';
 import { useReportMeta } from '../metaRegistry';
 import type { FreshnessSource } from '../metaStore';
 
@@ -29,13 +29,18 @@ function Surface({ meta }: { readonly meta: ApiMeta }) {
   return <p>rows</p>;
 }
 
+/** The search box in the toolbar reads accounts through the API. Nothing here needs an answer. */
+const PENDING: ApiClient = {
+  get: () => new Promise(() => undefined),
+  getFile: () => new Promise<never>(() => undefined),
+  post: () => new Promise(() => undefined),
+};
+
 function renderShell(meta?: ApiMeta, initialPath = '/inventory/accounts') {
   return render(
-    <MemoryRouter initialEntries={[initialPath]}>
-      <MetaProvider>
-        <AppShell now={NOW}>{meta ? <Surface meta={meta} /> : <p>rows</p>}</AppShell>
-      </MetaProvider>
-    </MemoryRouter>,
+    <Harness client={PENDING} initialPath={initialPath}>
+      <AppShell now={NOW}>{meta ? <Surface meta={meta} /> : <p>rows</p>}</AppShell>
+    </Harness>,
   );
 }
 
@@ -53,15 +58,13 @@ function Reporting({ id, meta, freshness }: Reported) {
 
 function renderShellWith(surfaces: readonly Reported[]) {
   return render(
-    <MemoryRouter initialEntries={['/assist']}>
-      <MetaProvider>
-        <AppShell now={NOW}>
-          {surfaces.map((surface) => (
-            <Reporting key={surface.id} {...surface} />
-          ))}
-        </AppShell>
-      </MetaProvider>
-    </MemoryRouter>,
+    <Harness client={PENDING} initialPath="/assist">
+      <AppShell now={NOW}>
+        {surfaces.map((surface) => (
+          <Reporting key={surface.id} {...surface} />
+        ))}
+      </AppShell>
+    </Harness>,
   );
 }
 
@@ -227,13 +230,11 @@ describe('AppShell', () => {
     );
     expect(screen.getByText('Showing 2 of 9 accounts')).toBeInTheDocument();
     view.rerender(
-      <MemoryRouter initialEntries={['/inventory/accounts']}>
-        <MetaProvider>
-          <AppShell now={NOW}>
-            <p>rows</p>
-          </AppShell>
-        </MetaProvider>
-      </MemoryRouter>,
+      <Harness client={PENDING} initialPath="/inventory/accounts">
+        <AppShell now={NOW}>
+          <p>rows</p>
+        </AppShell>
+      </Harness>,
     );
     expect(screen.queryByText('Showing 2 of 9 accounts')).toBeNull();
   });

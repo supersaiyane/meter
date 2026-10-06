@@ -100,6 +100,11 @@ def build_meta(
         as_of, collected_at = freshness_of(rows)
     if coverage is not None:
         visible, total = coverage
+    elif scope.chosen is not None:
+        # The reader chose this one account, FEAT-075, so coverage is counted against the
+        # choice: stated, by the owner's decision of 2026-10-06, rather than reported as a
+        # partial view. Every view nobody narrowed keeps the organization's total, ISS-016.
+        total = 1
     else:
         total = AccountRepository(connection, context).count_in_organization(scope)
     return Meta.build(
@@ -109,4 +114,5 @@ def build_meta(
         as_of=as_of,
         collected_at=collected_at,
         failures=(*open_failures(connection, scope, context), *extra_failures),
+        chosen=None if scope.chosen is None else scope.chosen.account_id,
     )

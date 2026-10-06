@@ -539,8 +539,8 @@ features:
 - id: FEAT-075
   name: An account picker on every screen, one account or all, searchable
   subproject: P8
-  status: Planned
-  detail: 'Requested by the owner on 2026-10-05 for an estate of 1,399 accounts. [P8 plan](docs/plans/P8-implementation-plan.md), TASK-P8-016'
+  status: Delivered
+  detail: 'Requested by the owner on 2026-10-05 for an estate of 1,399 accounts, and widened on 2026-10-06 to find services and resources as well. [P8 plan](docs/plans/P8-implementation-plan.md), TASK-P8-016'
   doc: docs/features/FEAT-075-account-picker.md
 
 adrs:
@@ -3901,6 +3901,18 @@ issues:
     `prettier --check`. The two P8 files were reformatted in the same change; topology was left
     for the change that closes this, which is adding the check to `make lint` over `src` and
     `e2e` together.'
+- id: ISS-252
+  severity: MEDIUM
+  status: OPEN
+  summary: The search box finds resources by scanning the tenant's resources, with no index for
+    the text
+  detail: '`q` on `/api/v1/inventory/resources`, FEAT-075, matches a substring of the name or the
+    ARN in any letter case. `topology_node` is indexed by tenant, account and region, and by run,
+    so the match reads every resource the scope reaches and the bound of three to 200 characters
+    and eight results limits what comes back, not what is read. Nothing has measured it: the tests
+    seed five resources, and no estate of 1,399 accounts has been read. The usual answer
+    is a trigram index on the two columns, which needs the `pg_trgm` extension in the database and
+    a migration built concurrently, and is a decision about the database for the owner.'
 
 open_questions:
 - id: OPEN-07

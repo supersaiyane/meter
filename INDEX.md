@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-75 features across 10 sub projects. 13 specified, 11 planned, 13 in build, 37 delivered.
+75 features across 10 sub projects. 13 specified, 10 planned, 13 in build, 38 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -205,7 +205,7 @@ block is caught by `make check-docs`. See
 | [FEAT-068](docs/features/FEAT-068-saved-views-and-report-library.md) | Saved views and a report library, shared as configuration | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.6, [P8 plan](docs/plans/P8-implementation-plan.md), ISS-235 |
 | [FEAT-069](docs/features/FEAT-069-scheduled-reports.md) | Scheduled reports rendered for each recipient | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.7, [P8 plan](docs/plans/P8-implementation-plan.md), OPEN-11, OPEN-15 |
 | [FEAT-070](docs/features/FEAT-070-persona-dashboards.md) | Persona dashboards for executive, FinOps practitioner and engineering lead | Planned | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.8, [P8 plan](docs/plans/P8-implementation-plan.md) |
-| [FEAT-075](docs/features/FEAT-075-account-picker.md) | An account picker on every screen, one account or all, searchable | Planned | Requested by the owner on 2026-10-05 for an estate of 1,399 accounts. [P8 plan](docs/plans/P8-implementation-plan.md), TASK-P8-016 |
+| [FEAT-075](docs/features/FEAT-075-account-picker.md) | An account picker on every screen, one account or all, searchable | Delivered | Requested by the owner on 2026-10-05 for an estate of 1,399 accounts, and widened on 2026-10-06 to find services and resources as well. [P8 plan](docs/plans/P8-implementation-plan.md), TASK-P8-016 |
 
 ### P9 Price catalog and rightsizing targets
 
@@ -393,7 +393,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**150 FIXED, 98 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**150 FIXED, 99 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -600,6 +600,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-246 | MEDIUM | The degraded state listed failing collectors by their codes, finops_score and account_health among them, on every screen of the demo | FIXED | `finops-web/src/components/StateBoundary.tsx` joined the raw collector names into its Failing line. TASK-P8-004 promised no raw identifier on any screen, and its rendered text test never met a failing collector because no fixture carries one. The owner saw it on the live demo on 2026-10-05. Fixed the same day: the line names each collector through `collectorName`, and `StateBoundary.test.tsx` holds that a degraded state says Account health and FinOps Score and never their codes. |
 | ISS-248 | MEDIUM | The realized savings screen printed each verdict by its code, VERIFIED among them, and the raw identifier test could not see it | FIXED | `finops-web/src/screens/WasteSavingsScreen.tsx` headed each verdict total with the code itself. `rawIdentifiers.test.tsx` reads the page text with a word boundary, and the heading before the tile ended in a letter, so SavingsVERIFIED never matched. Found 2026-10-05 when the Export menu put a full stop before it. Fixed the same day: the tile names the verdict through `verdictName`. |
 | ISS-249 | MEDIUM | An export record names the person who made it, and no retention job or erasure reaches report_run | OPEN | `report_run`, FEAT-067, holds the principal of every export file. It is classified personal in `docs/09-DATA-CLASSIFICATION.md`, but `scripts/ops/erase_principal.py` does not delete or tombstone its rows and no retention job reads it, the gap ISS-226 records for the P7 tables. Found 2026-10-05 while classifying the table. |
+| ISS-252 | MEDIUM | The search box finds resources by scanning the tenant's resources, with no index for the text | OPEN | `q` on `/api/v1/inventory/resources`, FEAT-075, matches a substring of the name or the ARN in any letter case. `topology_node` is indexed by tenant, account and region, and by run, so the match reads every resource the scope reaches and the bound of three to 200 characters and eight results limits what comes back, not what is read. Nothing has measured it: the tests seed five resources, and no estate of 1,399 accounts has been read. The usual answer is a trigram index on the two columns, which needs the `pg_trgm` extension in the database and a migration built concurrently, and is a decision about the database for the owner. |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |

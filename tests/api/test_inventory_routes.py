@@ -446,6 +446,7 @@ def test_the_entity_route_carries_the_coverage_of_its_own_slice(
         "total": 1,
         "is_partial": False,
         "unit": "slices",
+        "chosen": None,
     }
 
 
@@ -615,6 +616,63 @@ def test_every_filter_narrows_the_list_and_the_total_with_it(
 
     by_type = get(client, token, RESOURCES, resource_type="AWS::EC2::VPC")["data"]
     assert by_type["total"] == 5
+
+
+def test_the_search_box_finds_a_resource_by_a_word_of_its_name_or_its_arn(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """FEAT-075. A person types part of a name, or the account or identifier inside an ARN, and
+    in either case and either letter case expects to find the thing."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+
+    by_name = get(client, token, RESOURCES, q="SUBNET")["data"]
+    assert by_name["total"] == 3
+    assert {one["name"] for one in by_name["resources"]} == {
+        "subnet-000",
+        "subnet-001",
+        "subnet-002",
+    }
+
+    by_arn = get(client, token, RESOURCES, q=THEIRS)["data"]
+    assert [one["name"] for one in by_arn["resources"]] == ["far"]
+
+
+def test_what_is_typed_is_matched_as_written_never_as_a_pattern(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """A percent sign or an underscore in the box is a character a person typed. Read as the
+    database's wildcards they would match resources the text does not contain."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+
+    assert get(client, token, RESOURCES, q="sub%")["data"]["total"] == 0
+    assert get(client, token, RESOURCES, q="subnet_00")["data"]["total"] == 0
+
+
+def test_a_search_too_short_to_mean_anything_is_refused(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """Two letters match most of an estate, and the scan to find them is the cost of all of it."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+
+    response = client.get(RESOURCES, headers=auth(token), params={"q": "su"})
+
+    assert response.status_code == 422
+
+
+def test_a_search_obeys_the_account_chosen_in_the_address(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """Every ARN here holds `vpc/`, so the text alone matches all five. The choice narrows it."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+
+    assert get(client, token, RESOURCES, q="vpc/")["data"]["total"] == 5
+    narrowed = get(client, token, RESOURCES, q="vpc/", chosen_account=MINE)["data"]
+    assert narrowed["total"] == 4
+    assert {one["account_id"] for one in narrowed["resources"]} == {MINE}
 
 
 def test_a_narrowed_reader_sees_a_total_of_what_they_may_see(

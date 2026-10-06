@@ -16,6 +16,11 @@ export interface ApiCoverage {
   readonly total: number;
   readonly is_partial: boolean;
   /**
+   * The account the reader chose, FEAT-075, when the view is narrowed to one. Coverage is then
+   * counted against it. Absent from an envelope a stub or an older API wrote, and null otherwise.
+   */
+  readonly chosen?: string | null;
+  /**
    * What is being counted, plural. The route knows and the shell was guessing:
    * every screen said `accounts` and the query screens count workspaces.
    */

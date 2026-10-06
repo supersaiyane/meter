@@ -1,10 +1,9 @@
-import { Link } from 'react-router';
-
 import { useQuotaRequests, useQuotas } from '../api/queries';
 import { FixtureBand } from '../components/FixtureBand';
 import { PercentCell } from '../components/PercentCell';
 import { StateBoundary } from '../components/StateBoundary';
 import type { ApiQuota, ApiQuotaRequest, ApiUnmeasurableQuota } from '../api/types';
+import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { surfaceStateFor } from './surfaceStateFor';
 

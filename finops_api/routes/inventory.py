@@ -88,6 +88,11 @@ router = APIRouter(prefix=API_PREFIX, tags=["inventory"])
 #: say the resource is connected to nothing.
 NO_SUCH_NODE = "No node with that identifier is visible in this scope."
 
+#: The bounds on the search box's text, FEAT-075. Two characters match most of an estate, and
+#: reading the estate to find them is the cost of all of it. ISS-252 records the missing index.
+SEARCH_FROM = 3
+SEARCH_UP_TO = 200
+
 
 def _node_out(node: Node) -> NodeOut:
     return NodeOut(
@@ -383,6 +388,15 @@ def resources(
     resource_type: str | None = Query(
         default=None, description="Narrow to one provider resource type."
     ),
+    q: str | None = Query(
+        default=None,
+        min_length=SEARCH_FROM,
+        max_length=SEARCH_UP_TO,
+        description=(
+            "Narrow to resources whose name or ARN holds this text, in any letter case. The "
+            "search box's resources, FEAT-075."
+        ),
+    ),
     limit: int = Query(default=50, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
     connection: Connection = Depends(get_connection),
@@ -424,6 +438,7 @@ def resources(
         region_ids=region_ids,
         node_kind=node_kind,
         resource_type=resource_type,
+        search=q,
         limit=limit,
         offset=offset,
     )

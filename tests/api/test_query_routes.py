@@ -523,7 +523,13 @@ def test_an_unreachable_workspace_makes_the_findings_list_partial(
     coverage = client.get("/api/v1/query/findings", headers=auth(token)).json()["meta"][
         "scope_coverage"
     ]
-    assert coverage == {"visible": 3, "total": 4, "is_partial": True, "unit": "workspaces"}
+    assert coverage == {
+        "visible": 3,
+        "total": 4,
+        "is_partial": True,
+        "unit": "workspaces",
+        "chosen": None,
+    }
 
 
 def test_coverage_counts_workspaces_rather_than_the_rows_on_the_page(
@@ -550,7 +556,13 @@ def test_a_narrowed_scope_is_partial_against_the_whole_tenant(
     coverage = client.get("/api/v1/query/findings", headers=auth(token)).json()["meta"][
         "scope_coverage"
     ]
-    assert coverage == {"visible": 1, "total": 4, "is_partial": True, "unit": "workspaces"}
+    assert coverage == {
+        "visible": 1,
+        "total": 4,
+        "is_partial": True,
+        "unit": "workspaces",
+        "chosen": None,
+    }
 
 
 def test_an_unreadable_workspace_is_a_named_failure_on_the_envelope(

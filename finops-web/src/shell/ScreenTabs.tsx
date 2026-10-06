@@ -1,5 +1,4 @@
-import { Link } from 'react-router';
-
+import { Link } from './links';
 import type { TabDef } from './sections';
 
 export interface ScreenTabsProps {

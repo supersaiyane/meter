@@ -39,7 +39,7 @@ from finops_api.db.repositories.reports import record_run
 from finops_api.deps import get_connection, get_scope, get_settings
 from finops_api.exports.cells import collector_name, columns_of, header
 from finops_api.exports.writers import Sheet, Written, csv_file, xlsx
-from finops_api.schemas import Envelope
+from finops_api.schemas import CoverageOut, Envelope
 from finops_core.config import Settings
 from finops_core.domain.tenant import Scope
 
@@ -218,11 +218,7 @@ class Exporter:
             ("Currency", CURRENCY),
             ("Cost metric", _describe(self.spec.metric, view) or "Not a view of cost"),
             ("Scope", _scope_words(self.scope)),
-            (
-                "Coverage",
-                f"{coverage.visible} of {coverage.total} {coverage.unit}"
-                + (", so this is part of the estate" if coverage.is_partial else ""),
-            ),
+            ("Coverage", _coverage_words(coverage)),
             ("As of", _moment(meta.as_of)),
             ("Collected at", _moment(meta.collected_at)),
             ("Rows", rows),
@@ -322,7 +318,17 @@ def _describe(describe: Describe, view: View) -> str | None:
     return describe(view)
 
 
+def _coverage_words(coverage: CoverageOut) -> str:
+    counted = f"{coverage.visible} of {coverage.total} {coverage.unit}"
+    if coverage.chosen is not None:
+        # FEAT-075: a choice is stated, not reported as part of the estate.
+        return f"{counted}, counted against the account chosen"
+    return counted + (", so this is part of the estate" if coverage.is_partial else "")
+
+
 def _scope_words(scope: Scope) -> str:
+    if scope.chosen is not None:
+        return f"One account, chosen: {scope.chosen.account_id}"
     if scope.is_global:
         return "Every account in the organisation"
     names = sorted(account.account_id for account in scope.accounts)

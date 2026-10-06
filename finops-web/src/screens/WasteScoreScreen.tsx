@@ -1,8 +1,7 @@
-import { Link } from 'react-router';
-
 import { useFinopsScore } from '../api/queries';
 import { Figure } from '../components/Figure';
 import { StateBoundary } from '../components/StateBoundary';
+import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { surfaceStateFor } from './surfaceStateFor';
 import type { ApiScore, ApiScoreComponent } from '../api/types';

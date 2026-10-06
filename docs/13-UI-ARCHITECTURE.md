@@ -234,6 +234,13 @@ screen's filters there, each change is a history entry so back and forward walk
 through them, each screen declares its keys in `sections.ts`, and the shell names
 any parameter the screen does not take rather than applying it.
 
+One key is every screen's: `account`, the account chosen in the search box, FEAT-075,
+built on 2026-10-06. It is never named as ignored, because every screen honours it at
+the scope dependency, and it reaches the API as `chosen_account` on every read and in
+every cache key. Links keep it: they come from `finops-web/src/shell/links.tsx`, and a
+test fails the build if a file uses the router's own `Link` or `NavLink`, which would
+drop it.
+
 ## 6. The home screen
 
 ### Shape

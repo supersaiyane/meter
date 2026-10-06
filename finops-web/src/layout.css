@@ -349,6 +349,109 @@ body {
   font-size: var(--font-size-1);
 }
 
+/* The search box, FEAT-075: a toolbar control like the others, wide enough for an account's
+   name and number. */
+[data-testid='search'] {
+  flex: 1 1 16rem;
+  min-width: 0;
+  max-width: 24rem;
+}
+
+[data-testid='search-input'] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px var(--space-3);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--font-size-2);
+}
+
+[data-testid='search-input']::placeholder {
+  color: var(--text-muted);
+}
+
+[data-testid='search-input']:hover {
+  border-color: var(--accent-mark);
+}
+
+[data-testid='search-input']:focus-visible {
+  outline: 2px solid var(--accent-mark);
+  outline-offset: 2px;
+  border-color: var(--accent-mark);
+}
+
+/* Solid, like the Export menu, because it opens over the screen's own figures. */
+[data-testid='search-results'] {
+  width: min(28rem, 90vw);
+  max-height: min(28rem, 70vh);
+  overflow-y: auto;
+  padding: var(--space-2);
+  background: var(--surface-raised-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-float);
+}
+
+[data-testid='search-list'] {
+  outline: none;
+}
+
+[data-testid='search-header'] {
+  padding: var(--space-2) var(--space-2) var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--font-size-1);
+  font-weight: 600;
+}
+
+[data-testid='search-option'] {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  cursor: pointer;
+  outline: none;
+}
+
+[data-testid='search-option'][data-focused],
+[data-testid='search-option'][data-hovered] {
+  background: var(--accent-quiet);
+}
+
+[data-testid='search-option'][data-focus-visible] {
+  outline: 2px solid var(--accent-mark);
+  outline-offset: -2px;
+}
+
+[data-testid='search-option-label'] {
+  color: var(--text);
+  font-size: var(--font-size-2);
+  overflow-wrap: anywhere;
+}
+
+[data-testid='search-option-detail'] {
+  color: var(--text-muted);
+  font-size: var(--font-size-1);
+  overflow-wrap: anywhere;
+}
+
+[data-testid='search-failure'],
+[data-testid='search-searching'] {
+  margin: 0 0 var(--space-2);
+  padding: 0 var(--space-2);
+  font-size: var(--font-size-1);
+}
+
+[data-testid='search-failure'] {
+  color: var(--failure);
+}
+
+[data-testid='search-searching'] {
+  color: var(--text-muted);
+}
+
 [data-testid='shell'] > main {
   grid-area: main;
   padding: 0 var(--space-1);
@@ -1354,6 +1457,12 @@ main table:not([data-testid='table-scroll'] table) {
 
   [data-testid='trust-strip'] {
     position: static;
+  }
+
+  /* The search box takes its own row, so an account's name and number fit a phone's width. */
+  [data-testid='search'] {
+    flex-basis: 100%;
+    max-width: none;
   }
 
   [data-testid='home-summary'] {

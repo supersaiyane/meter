@@ -22,9 +22,15 @@ export interface CoverageBannerProps {
    * coverage statement is a wrong claim about the estate.
    */
   readonly coverage: readonly CoverageLine[];
+  /**
+   * True when the reader chose one account, FEAT-075. The server then counts coverage against
+   * that account, so a complete line names the choice rather than reading "all 1 accounts", and
+   * a chosen account with nothing collected still reads as partial.
+   */
+  readonly chosen?: boolean;
 }
 
-export function CoverageBanner({ coverage }: CoverageBannerProps) {
+export function CoverageBanner({ coverage, chosen = false }: CoverageBannerProps) {
   const partial = coverage.some((line) => line.visible < line.total);
   const said =
     coverage.length === 0
@@ -32,11 +38,14 @@ export function CoverageBanner({ coverage }: CoverageBannerProps) {
         // an empty banner would read as.
         'Coverage not yet reported'
       : coverage
-          .map((line) =>
-            line.visible < line.total
-              ? `${String(line.visible)} of ${String(line.total)} ${line.unit}`
-              : `all ${String(line.total)} ${line.unit}`,
-          )
+          .map((line) => {
+            if (line.visible < line.total) {
+              return `${String(line.visible)} of ${String(line.total)} ${line.unit}`;
+            }
+            return chosen && line.unit === 'accounts'
+              ? 'the chosen account'
+              : `all ${String(line.total)} ${line.unit}`;
+          })
           .join(', ');
   return (
     <div

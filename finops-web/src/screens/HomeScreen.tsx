@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { Link } from 'react-router';
 
 import {
   useBudgets,
@@ -11,6 +10,7 @@ import {
   useQuerySurfaces,
   useRecommendations,
 } from '../api/queries';
+import { Link } from '../shell/links';
 import { grandTotal, rollUp } from './platformRollUp';
 import { BarChart } from '../components/BarChart';
 import { BudgetBar } from '../components/BudgetBar';

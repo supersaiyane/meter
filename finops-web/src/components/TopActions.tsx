@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link } from '../shell/links';
 import { COST_COLUMN_TERMS, wasteClassName } from './displayNames';
 
 import type { ApiRecommendation } from '../api/types';

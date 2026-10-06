@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import { COST_COLUMN_TERMS, lifecycleName, wasteClassName } from '../components/displayNames';
 
 import { useBlastRadius, useEntity } from '../api/queries';
@@ -9,6 +9,7 @@ import { StateBoundary } from '../components/StateBoundary';
 import { riskLabel } from '../components/actionRisk';
 import type { Freshness } from '../components/provenance';
 import type { ApiEntity, ApiTopologyEdge, ApiTopologyNode } from '../api/types';
+import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { severityLevel } from './querySeverity';
 import { saidOf } from './sliceCoverage';

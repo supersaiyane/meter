@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { App } from './App';
 import type { ApiClient } from './api/client';
+import type { ApiEnvelope } from './api/types';
+import { metaOf } from './screens/__tests__/fixtures';
 
 const NEVER_ANSWERS: ApiClient = {
   get: () => new Promise(() => undefined),
@@ -292,5 +294,47 @@ describe('App', () => {
       'page',
     );
     expect(screen.getByRole('heading', { level: 1, name: 'Accounts' })).toBeInTheDocument();
+  });
+});
+
+describe('the account chosen in the address, FEAT-075', () => {
+  // Answers the list the shell names accounts from. Every other read stays pending.
+  const ACCOUNTS: ApiClient = {
+    get: <T,>(path: string): Promise<ApiEnvelope<T>> =>
+      path === '/api/v1/accounts'
+        ? Promise.resolve({
+            data: [{ account_id: '444455556666', name: 'Platform' }],
+            meta: metaOf(),
+          } as unknown as ApiEnvelope<T>)
+        : new Promise<ApiEnvelope<T>>(() => undefined),
+    getFile: () => new Promise<never>(() => undefined),
+    post: () => new Promise(() => undefined),
+  };
+
+  function openWith(path: string) {
+    window.history.pushState({}, '', path);
+    return render(<App client={ACCOUNTS} />);
+  }
+
+  it('names the chosen account under the title', async () => {
+    openWith('/?account=444455556666');
+    expect(await screen.findByText('Account Platform, 444455556666')).toBeInTheDocument();
+  });
+
+  it('says so when the address names an account the session cannot see', async () => {
+    openWith('/?account=999999999999');
+    expect(
+      await screen.findByText('Account 999999999999, which this session cannot see'),
+    ).toBeInTheDocument();
+  });
+
+  it('names no account when none is chosen', () => {
+    openWith('/');
+    expect(screen.queryByTestId('chosen-account')).toBeNull();
+  });
+
+  it('never calls the choice a filter the screen ignores', () => {
+    openWith('/analyze/anomalies?account=444455556666');
+    expect(screen.queryByTestId('ignored-filters')).toBeNull();
   });
 });

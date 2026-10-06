@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
 
 import { useGeography, useResources } from '../api/queries';
 import { FixtureBand } from '../components/FixtureBand';
 import { StateBoundary } from '../components/StateBoundary';
 import { WorldMap } from '../components/WorldMap';
+import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { surfaceStateFor } from './surfaceStateFor';
 

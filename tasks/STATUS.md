@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 75 total, 13 specified, 13 in build, 37 delivered |
+| Features | 75 total, 13 specified, 13 in build, 38 delivered |
 | Decisions | 30 architecture decision records |
 | Changes | 112 recorded |
-| Issues | 150 fixed, 98 open, 0 parked |
+| Issues | 150 fixed, 99 open, 0 parked |
 | Open questions | 16 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -199,7 +199,7 @@ ISS-003.
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
-| P8 | 10 | 0 | 0 | 0 | 8 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
+| P8 | 11 | 0 | 0 | 0 | 7 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 0 | 0 | 0 | 0 | 11 | 11 | [plan](../docs/plans/P9-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -409,6 +409,7 @@ ISS-003.
 | `TASK-P8-007` | Done 2026-10-05 | Cost Explorer |
 | `TASK-P8-008` | Done 2026-10-05 | spend forecast |
 | `TASK-P8-009` | Done 2026-10-05 | Excel and CSV export behind the guard |
+| `TASK-P8-016` | Done | the account picker on every screen |
 | `TASK-P8-018` | Done 2026-10-05 | the look as drawn |
 
 <!-- generated:task-status end -->

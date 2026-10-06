@@ -30,12 +30,12 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Counted | Now | Derived from |
 | --- | --- | --- |
 | Screens built | 25 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 36 in 13 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Playwright journeys | 39 in 14 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 26 | files in migrations/versions, all of which are listed below in this file |
 | Test files | 171 | test_*.py under tests/ |
-| Test functions | 2302 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test functions | 2315 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.

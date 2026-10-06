@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useChosenAccount, withChosenAccount } from './account';
 import { useApi } from './apiContext';
 import { useExportable } from './exportViews';
 import { resolveSurface, type Resolved } from './fixtureSeam';
@@ -96,49 +97,109 @@ import type { FlatNode } from '../components/orgNodes';
  * envelope exists to prevent.
  */
 
-export function useAccounts() {
+/**
+ * The account chosen in the address, FEAT-075, applied the same way to every read: in the path,
+ * so the server narrows the scope rather than a screen filtering rows, and in the key, so one
+ * account's figures are never served from the cache under another's name. A path that is empty
+ * because its query is disabled stays empty.
+ */
+function useNarrowing() {
+  const account = useChosenAccount();
+  return {
+    key: (key: readonly unknown[]): readonly unknown[] => [...key, { account }],
+    path: (path: string): string => (path === '' ? path : withChosenAccount(path, account)),
+  };
+}
+
+/** One read of a built route, narrowed, and offered to the Export menu as it was read. */
+function useRead<T>(key: readonly unknown[], template: string, path: string) {
   const client = useApi();
-  useExportable('/api/v1/accounts', '/api/v1/accounts');
-  return useQuery<ApiEnvelope<Account[]>>({
-    queryKey: ['accounts'],
-    queryFn: () => client.get<Account[]>('/api/v1/accounts'),
+  const narrowing = useNarrowing();
+  const narrowed = narrowing.path(path);
+  useExportable(template, narrowed);
+  return useQuery<ApiEnvelope<T>>({
+    queryKey: narrowing.key(key),
+    queryFn: () => client.get<T>(narrowed),
   });
+}
+
+/** How long the accounts the search box offers stay fresh. They change when an account joins. */
+const ACCOUNT_CHOICES_FRESH_MS = 5 * 60 * 1000;
+
+/**
+ * Every account this session may see, for the search box, FEAT-075. Never narrowed: a box
+ * listing only the chosen account could not choose another. Loaded once and searched in the
+ * browser, because at 1,399 accounts a round trip per keystroke leaves the list behind the typing.
+ */
+export function useAccountChoices() {
+  const client = useApi();
+  return useQuery<ApiEnvelope<Account[]>>({
+    queryKey: ['account-choices'],
+    queryFn: () => client.get<Account[]>('/api/v1/accounts'),
+    staleTime: ACCOUNT_CHOICES_FRESH_MS,
+  });
+}
+
+/**
+ * The services with spend this period, for the search box, FEAT-075. Narrowed like every read,
+ * so a reader who chose an account finds that account's services, and never offered to the
+ * Export menu, because the box is not the screen.
+ */
+export function useServiceChoices() {
+  const client = useApi();
+  const narrowing = useNarrowing();
+  const path = narrowing.path('/api/v1/cost/by-service');
+  return useQuery<ApiEnvelope<ApiCostSlice[]>>({
+    queryKey: narrowing.key(['service-choices']),
+    queryFn: () => client.get<ApiCostSlice[]>(path),
+    staleTime: ACCOUNT_CHOICES_FRESH_MS,
+  });
+}
+
+/**
+ * Resources whose name or ARN holds the text, searched on the server and bounded, FEAT-075. An
+ * estate of 1,399 accounts holds too many resources to load into the browser. Null asks nothing.
+ */
+export function useResourceSearch(text: string | null, limit: number) {
+  const client = useApi();
+  const narrowing = useNarrowing();
+  const search = new URLSearchParams({ q: text ?? '', limit: String(limit) });
+  const path = narrowing.path(
+    text === null ? '' : `/api/v1/inventory/resources?${search.toString()}`,
+  );
+  return useQuery<ApiEnvelope<ApiResourceList>>({
+    queryKey: narrowing.key(['resource-search', text, limit]),
+    queryFn: () => client.get<ApiResourceList>(path),
+    enabled: text !== null,
+  });
+}
+
+export function useAccounts() {
+  return useRead<Account[]>(['accounts'], '/api/v1/accounts', '/api/v1/accounts');
 }
 
 export function useOrgTree() {
-  const client = useApi();
-  useExportable('/api/v1/org/tree', '/api/v1/org/tree');
-  return useQuery<ApiEnvelope<FlatNode[]>>({
-    queryKey: ['org-tree'],
-    queryFn: () => client.get<FlatNode[]>('/api/v1/org/tree'),
-  });
+  return useRead<FlatNode[]>(['org-tree'], '/api/v1/org/tree', '/api/v1/org/tree');
 }
 
 export function useRuns() {
-  const client = useApi();
-  useExportable('/api/v1/ingest/runs', '/api/v1/ingest/runs');
-  return useQuery<ApiEnvelope<Run[]>>({
-    queryKey: ['runs'],
-    queryFn: () => client.get<Run[]>('/api/v1/ingest/runs'),
-  });
+  return useRead<Run[]>(['runs'], '/api/v1/ingest/runs', '/api/v1/ingest/runs');
 }
 
 export function useFreshness() {
-  const client = useApi();
-  useExportable('/api/v1/health/freshness', '/api/v1/health/freshness');
-  return useQuery<ApiEnvelope<Freshness[]>>({
-    queryKey: ['freshness'],
-    queryFn: () => client.get<Freshness[]>('/api/v1/health/freshness'),
-  });
+  return useRead<Freshness[]>(
+    ['freshness'],
+    '/api/v1/health/freshness',
+    '/api/v1/health/freshness',
+  );
 }
 
 export function usePlatformCost() {
-  const client = useApi();
-  useExportable('/api/v1/platform/cost', '/api/v1/platform/cost');
-  return useQuery<ApiEnvelope<PlatformCost[]>>({
-    queryKey: ['platform-cost'],
-    queryFn: () => client.get<PlatformCost[]>('/api/v1/platform/cost'),
-  });
+  return useRead<PlatformCost[]>(
+    ['platform-cost'],
+    '/api/v1/platform/cost',
+    '/api/v1/platform/cost',
+  );
 }
 
 /**
@@ -158,10 +219,12 @@ export function useQuerySurface<T>(
   fixture: () => ApiEnvelope<T>,
 ) {
   const client = useApi();
-  useExportable(template, path);
+  const narrowing = useNarrowing();
+  const narrowed = narrowing.path(path);
+  useExportable(template, narrowed);
   return useQuery<Resolved<ApiEnvelope<T>>>({
-    queryKey: key,
-    queryFn: resolveSurface(template, () => client.get<T>(path), fixture),
+    queryKey: narrowing.key(key),
+    queryFn: resolveSurface(template, () => client.get<T>(narrowed), fixture),
   });
 }
 
@@ -245,12 +308,11 @@ export function useCostSummary() {
 
 /** FEAT-066. The spend forecast: a range or the reason there is none, never a point. */
 export function useCostForecast() {
-  const client = useApi();
-  useExportable('/api/v1/cost/forecast', '/api/v1/cost/forecast');
-  return useQuery<ApiEnvelope<ApiForecast>>({
-    queryKey: ['cost-forecast'],
-    queryFn: () => client.get<ApiForecast>('/api/v1/cost/forecast'),
-  });
+  return useRead<ApiForecast>(
+    ['cost-forecast'],
+    '/api/v1/cost/forecast',
+    '/api/v1/cost/forecast',
+  );
 }
 
 /**
@@ -258,13 +320,8 @@ export function useCostForecast() {
  * key too, and a link to a view and the view a reader built share one cached answer.
  */
 export function useCostExplore(query: string) {
-  const client = useApi();
   const path = `/api/v1/cost/explore${query === '' ? '' : `?${query}`}`;
-  useExportable('/api/v1/cost/explore', path);
-  return useQuery<ApiEnvelope<ApiExplore>>({
-    queryKey: ['cost-explore', query],
-    queryFn: () => client.get<ApiExplore>(path),
-  });
+  return useRead<ApiExplore>(['cost-explore', query], '/api/v1/cost/explore', path);
 }
 
 export function useCostByAccount() {
@@ -325,12 +382,11 @@ export function useCostCommitments() {
  * used to fetch and save by hand.
  */
 export function useShowback() {
-  const client = useApi();
-  useExportable('/api/v1/cost/showback', '/api/v1/cost/showback');
-  return useQuery<ApiEnvelope<ApiShowbackRow[]>>({
-    queryKey: ['cost-showback'],
-    queryFn: () => client.get<ApiShowbackRow[]>('/api/v1/cost/showback'),
-  });
+  return useRead<ApiShowbackRow[]>(
+    ['cost-showback'],
+    '/api/v1/cost/showback',
+    '/api/v1/cost/showback',
+  );
 }
 
 /**
@@ -432,13 +488,15 @@ export function useTopologySubgraph(
   bounds: { readonly depth: number; readonly nodes: number },
 ) {
   const client = useApi();
-  const path =
+  const narrowing = useNarrowing();
+  const path = narrowing.path(
     rootId === null
       ? ''
       : `/api/v1/inventory/topology/${rootId}?depth=${String(bounds.depth)}` +
-        `&nodes=${String(bounds.nodes)}`;
+          `&nodes=${String(bounds.nodes)}`,
+  );
   return useQuery<Resolved<ApiEnvelope<ApiSubgraph>>>({
-    queryKey: ['inventory-topology', rootId, bounds.depth, bounds.nodes],
+    queryKey: narrowing.key(['inventory-topology', rootId, bounds.depth, bounds.nodes]),
     queryFn: resolveSurface(
       '/api/v1/inventory/topology/{node_id}',
       () => client.get<ApiSubgraph>(path),
@@ -457,9 +515,10 @@ export function useTopologySubgraph(
  */
 export function useEntity(nodeId: string | null) {
   const client = useApi();
-  const path = nodeId === null ? '' : `/api/v1/inventory/nodes/${nodeId}`;
+  const narrowing = useNarrowing();
+  const path = narrowing.path(nodeId === null ? '' : `/api/v1/inventory/nodes/${nodeId}`);
   return useQuery<Resolved<ApiEnvelope<ApiEntity>>>({
-    queryKey: ['inventory-entity', nodeId],
+    queryKey: narrowing.key(['inventory-entity', nodeId]),
     queryFn: resolveSurface(
       '/api/v1/inventory/nodes/{node_id}',
       () => client.get<ApiEntity>(path),
@@ -536,9 +595,12 @@ export function useResources(query: {
  */
 export function useBlastRadius(nodeId: string | null) {
   const client = useApi();
-  const path = nodeId === null ? '' : `/api/v1/inventory/nodes/${nodeId}/blast-radius`;
+  const narrowing = useNarrowing();
+  const path = narrowing.path(
+    nodeId === null ? '' : `/api/v1/inventory/nodes/${nodeId}/blast-radius`,
+  );
   return useQuery<Resolved<ApiEnvelope<ApiBlastRadius>>>({
-    queryKey: ['inventory-blast-radius', nodeId],
+    queryKey: narrowing.key(['inventory-blast-radius', nodeId]),
     queryFn: resolveSurface(
       '/api/v1/inventory/nodes/{node_id}/blast-radius',
       () => client.get<ApiBlastRadius>(path),

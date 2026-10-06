@@ -96,6 +96,17 @@ def things(
     return Envelope(data=list(ITEMS[:limit]), meta=meta(FAILURE))
 
 
+@router.get("/chosen", response_model=Envelope[list[Item]])
+@exportable(ExportSpec(title="Things in one account", row_model=Item, rows=listed))
+def chosen_things() -> Envelope[list[Item]]:
+    """The same things, read while one account was chosen in the address. FEAT-075."""
+    coverage = CoverageOut(visible=1, total=1, chosen="fake-platform-a")
+    return Envelope(
+        data=list(ITEMS[1:]),
+        meta=Meta(as_of=AS_OF, collected_at=COLLECTED, scope_coverage=coverage),
+    )
+
+
 def narrow(principal: str | None = "p2") -> Scope:
     return Scope(
         tenant_id=TENANT,
@@ -199,6 +210,16 @@ class TestTheFile:
 
 
 class TestTheAboutSheet:
+    def test_a_chosen_account_is_named_as_the_choice(self) -> None:
+        """FEAT-075. A workbook made while one account was chosen says so on both rows."""
+        account = AccountKey(provider=Provider.AWS, account_id="fake-platform-a")
+        chosen = whole().narrowed_to(account)
+
+        about = pairs(cells(client(chosen).get("/chosen?format=xlsx").content, 2))
+
+        assert about["Scope"] == "One account, chosen: fake-platform-a"
+        assert about["Coverage"] == "1 of 1 accounts, counted against the account chosen"
+
     def test_it_holds_every_field_spec_section_5_5_item_2_names(self) -> None:
         about = pairs(cells(client().get("/things?format=xlsx").content, 2))
         required = {

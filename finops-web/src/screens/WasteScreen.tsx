@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { lifecycleName, wasteClassName } from '../components/displayNames';
-import { Link } from 'react-router';
 
 import { useRecommendations, useRefusals } from '../api/queries';
 import { DataTable } from '../components/DataTable';
@@ -10,6 +9,7 @@ import { SeverityBadge } from '../components/SeverityBadge';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
 import { useFilters } from '../shell/filters';
+import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { RECOMMENDATION_FILTERS } from '../shell/sections';
 import { severityLevel } from './querySeverity';

@@ -36,6 +36,10 @@ class CoverageOut(BaseModel):
     #: what it counted and the interface was guessing, so every screen said
     #: "accounts" and the query screens were counting something else.
     unit: str = "accounts"
+    #: The account the reader chose, FEAT-075, when the view is narrowed to one. Coverage is
+    #: then counted against that account, so a choice is stated rather than reported as a
+    #: partial view, by the owner's decision of 2026-10-06.
+    chosen: str | None = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -89,11 +93,12 @@ class Meta(BaseModel):
         as_of: datetime | None = None,
         collected_at: datetime | None = None,
         failures: Sequence[FailureOut] = (),
+        chosen: str | None = None,
     ) -> Meta:
         return cls(
             as_of=as_of,
             collected_at=collected_at,
-            scope_coverage=CoverageOut(visible=visible, total=total, unit=unit),
+            scope_coverage=CoverageOut(visible=visible, total=total, unit=unit, chosen=chosen),
             failures=tuple(failures),
         )
 

@@ -33,7 +33,7 @@ from collections.abc import Sequence
 from typing import Any, ClassVar
 from uuid import UUID
 
-from sqlalchemy import Select, Table, func, text
+from sqlalchemy import Select, Table, func, or_, text
 from sqlalchemy.engine import Row
 
 from finops_api.db import models
@@ -307,10 +307,15 @@ class TopologyRepository(ScopedRepository):
         region_ids: Sequence[str] | None = None,
         node_kind: str | None = None,
         resource_type: str | None = None,
+        search: str | None = None,
         limit: int,
         offset: int,
     ) -> tuple[Sequence[Row[Any]], int]:
         """One page of resources, and how many match the filter in total.
+
+        `search` is the text typed in the search box, FEAT-075, matched as a substring of the
+        name or the ARN in any letter case. Its own percent signs and underscores are escaped,
+        because a person who typed them meant the characters and not the database's wildcards.
 
         FEAT-056, TASK-P4-012. The count comes back with the page rather than from a second
         call, because a reader is told "showing 50 of 4,312" and two statements could disagree
@@ -341,6 +346,13 @@ class TopologyRepository(ScopedRepository):
         ):
             if wanted is not None:
                 statement = statement.where(column == wanted)
+        if search is not None:
+            statement = statement.where(
+                or_(
+                    self.table.c.name.icontains(search, autoescape=True),
+                    self.table.c.provider_id.icontains(search, autoescape=True),
+                )
+            )
 
         total = self._connection.execute(
             statement.with_only_columns(func.count()).order_by(None)

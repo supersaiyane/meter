@@ -156,6 +156,15 @@ def test_coverage_reports_the_organization_total_not_the_visible_one() -> None:
     assert CoverageOut(visible=5, total=5).is_partial is False
 
 
+def test_a_chosen_account_travels_on_the_coverage() -> None:
+    """FEAT-075. A view narrowed on purpose says so, and is not therefore untrustworthy."""
+    meta = Meta.build(visible=1, total=1, as_of=NOW, collected_at=NOW, chosen="444455556666")
+
+    assert meta.scope_coverage.chosen == "444455556666"
+    assert meta.degraded is False
+    assert Meta.build(visible=5, total=5).scope_coverage.chosen is None
+
+
 # --- against a real database -------------------------------------------------
 
 
@@ -205,6 +214,88 @@ def test_the_scoped_route_returns_only_what_the_scope_permits(
     response = client.get("/probe/scoped", headers=auth(token))
     assert response.status_code == 200
     assert response.json()["data"] == ["111122223333"]
+
+
+@pytest.mark.integration
+def test_a_chosen_account_narrows_a_route_that_knows_nothing_of_it(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """FEAT-075. The probe never names the choice, so the dependency is what applied it."""
+    seed(engine, tenant_id, ("111122223333", "444455556666"))
+    client, token = client_for(
+        engine, Scope(tenant_id=tenant_id, is_global=True, accounts=frozenset()), settings
+    )
+
+    response = client.get(
+        "/probe/scoped", params={"chosen_account": "444455556666"}, headers=auth(token)
+    )
+
+    assert response.status_code == 200
+    assert response.json()["data"] == ["444455556666"]
+
+
+@pytest.mark.integration
+def test_a_chosen_account_never_widens_and_an_absent_one_gets_the_same_answer(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """A link naming an account outside the session must not read it, nor confirm it exists."""
+    seed(engine, tenant_id, ("111122223333", "444455556666"))
+    scope = Scope(
+        tenant_id=tenant_id,
+        is_global=False,
+        accounts=frozenset({AccountKey(provider=Provider.AWS, account_id="111122223333")}),
+    )
+    client, token = client_for(engine, scope, settings)
+
+    outside = client.get(
+        "/probe/scoped", params={"chosen_account": "444455556666"}, headers=auth(token)
+    )
+    absent = client.get(
+        "/probe/scoped", params={"chosen_account": "000000000000"}, headers=auth(token)
+    )
+
+    assert outside.status_code == absent.status_code == 404
+    assert outside.json()["detail"] == absent.json()["detail"]
+    assert "444455556666" not in outside.text
+
+
+@pytest.mark.integration
+def test_a_malformed_choice_is_refused_before_anything_is_read(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    client, token = client_for(
+        engine, Scope(tenant_id=tenant_id, is_global=True, accounts=frozenset()), settings
+    )
+
+    response = client.get(
+        "/probe/scoped", params={"chosen_account": "1111' OR '1'='1"}, headers=auth(token)
+    )
+
+    assert response.status_code == 422
+
+
+@pytest.mark.integration
+def test_a_narrowed_view_counts_coverage_against_the_chosen_account(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The owner's decision of 2026-10-06: a choice is stated, never reported as partial."""
+    seed(engine, tenant_id, ("111122223333", "444455556666", "777788889999"))
+    client, token = client_for(
+        engine, Scope(tenant_id=tenant_id, is_global=True, accounts=frozenset()), settings
+    )
+
+    body = client.get(
+        "/api/v1/accounts", params={"chosen_account": "444455556666"}, headers=auth(token)
+    ).json()
+
+    assert [row["account_id"] for row in body["data"]] == ["444455556666"]
+    assert body["meta"]["scope_coverage"] == {
+        "visible": 1,
+        "total": 1,
+        "unit": "accounts",
+        "is_partial": False,
+        "chosen": "444455556666",
+    }
 
 
 @pytest.mark.integration

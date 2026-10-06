@@ -1,7 +1,6 @@
-import { Link } from 'react-router';
-
 import type { ApiAssistantRefusal, ApiExchange, ApiExchangeFailure } from '../api/types';
 import { stampUtc } from '../screens/enforcementTime';
+import { Link } from '../shell/links';
 import { GROUPS, REDIRECTS } from '../shell/sections';
 import { CitedProse, ToolCalls } from './CitedProse';
 import { DenseRegion } from './DenseRegion';

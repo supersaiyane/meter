@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { Link } from 'react-router';
 
 import { useQueryFindings } from '../api/queries';
 import type { ApiQueryFinding } from '../api/types';
@@ -8,6 +7,7 @@ import { Figure } from '../components/Figure';
 import { FixtureBand } from '../components/FixtureBand';
 import { Sparkline } from '../components/Sparkline';
 import { SeverityBadge } from '../components/SeverityBadge';
+import { Link } from '../shell/links';
 import { QueryGroups } from './QueryGroups';
 import { severityOf } from './querySeverity';
 import { StateBoundary } from '../components/StateBoundary';

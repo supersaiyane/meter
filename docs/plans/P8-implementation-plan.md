@@ -508,24 +508,50 @@ one sum.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done |
 | Implements | FEAT-075 |
 | Delivers | FEAT-075 |
 | Depends on | TASK-P8-002, TASK-P8-003, TASK-P8-018 for the top bar |
-| Estimate | L |
+| Estimate | XL, after the owner widened the search on 2026-10-06 |
+
+The owner decided two more things on 2026-10-06. A screen narrowed to one account states the
+choice plainly rather than warning that it is partial, and the box in the top bar searches
+services and resources as well as accounts, as the drawing's placeholder says.
+
+The address keeps the choice as `account`, the account number Cost Explorer and Resources
+already read as a filter, so those two filters become the one choice. The API takes it as its
+own parameter, `chosen_account`, because `/api/v1/cost/explore` reads `account` as a list of
+filter values, and a scope dependency reading the same name would narrow a request for two
+accounts to one of them without saying so.
 
 **Acceptance criteria.**
 
-- [ ] One search box with a dropdown in the top bar of every screen, matching an account's
-      number or name as it is typed, with All accounts first and the default
-- [ ] Choosing an account narrows every screen and every export to it, the Overview
-      included, and All accounts combines them again
-- [ ] The choice lives in the address, so a shared link opens the same account, and moving
+- [x] One search box in the top bar of every screen finds accounts, services and resources as
+      it is typed: All accounts first and the default, then accounts by number or name,
+      services by name and resources by name or ARN
+- [x] Choosing an account narrows every screen and every export to it, the Overview included,
+      and All accounts combines them again. Choosing a service opens Cost Explorer filtered to
+      it, and choosing a resource opens its page, both keeping the account
+- [x] The choice lives in the address, so a shared link opens the same account, and moving
       between screens keeps it
-- [ ] Narrowing is applied at the scope dependency, so every route obeys it at once, and it
-      can only narrow what the session may already see, never widen it, held by a test
-- [ ] Usable at 1,399 accounts: the list loads once, searches without a round trip, and is
+- [x] Narrowing is applied at the scope dependency, so every route obeys it at once, and it
+      can only narrow what the session may already see, never widen it, held by a test. An
+      account the session cannot see and one that does not exist get the same answer
+- [x] A narrowed screen names the account under its title and counts coverage against the
+      chosen account, so no partial warning appears, while a failure or missing data in that
+      account still shows
+- [x] Usable at 1,399 accounts: the accounts and the services load once and are searched
+      without a round trip, resources are searched on the server with a bound, and the box is
       keyboard operable with the accessible combobox pattern
+
+**Delivered 2026-10-06.** The choice is `account` in the address, sent to every route as
+`chosen_account`, and `get_scope` narrows the resolved scope to it through `Scope.narrowed_to`,
+which refuses an account the scope does not permit; an account outside the scope and one that
+does not exist both answer 404. Every read carries the account in its cache key, every link keeps
+it, and a test fails the build if a file uses the router's own links. A narrowed envelope carries
+`scope_coverage.chosen` and counts coverage against the chosen account. The box offers 50
+accounts at a time and searches services in the browser and resources on the server, through `q`
+on `/api/v1/inventory/resources`. ISS-252 records that the resource search has no index.
 
 ---
 

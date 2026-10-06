@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
 
 import { useGraphCoverage, useResources } from '../api/queries';
 import { FixtureBand } from '../components/FixtureBand';
 import { StateBoundary } from '../components/StateBoundary';
 import type { ApiResourceFilters, ApiSliceCoverage, ApiTopologyNode } from '../api/types';
 import { useFilters } from '../shell/filters';
+import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { RESOURCE_FILTERS } from '../shell/sections';
 import { saidOf } from './sliceCoverage';

@@ -1,11 +1,10 @@
-import { Link } from 'react-router';
-
 import type { ApiExplore, ApiExploreGrouping } from '../api/types';
 import { KpiTile, StackedBar } from '../components/charts';
 import { DataTable } from '../components/DataTable';
 import { Figure } from '../components/Figure';
 import type { Freshness, Provenance } from '../components/provenance';
 import type { Column, ColumnTotal } from '../components/tableConfig';
+import { Link } from '../shell/links';
 import {
   METRIC_NAMES,
   apiQuery,

@@ -1,9 +1,9 @@
 import { lazy, Suspense, useState } from 'react';
-import { Link } from 'react-router';
 
 import { useGraphCoverage, useInventoryRoots, useTopologySubgraph } from '../api/queries';
 import type { ApiSliceCoverage } from '../api/types';
 import { StateBoundary } from '../components/StateBoundary';
+import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { saidOf } from './sliceCoverage';
 import { surfaceStateFor } from './surfaceStateFor';

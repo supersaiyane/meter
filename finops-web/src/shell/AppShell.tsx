@@ -1,7 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { NavLink, useLocation, useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 
+import { ACCOUNT_KEY, useChosenAccount } from '../api/account';
 import { ExportContext, useExportRegistry } from '../api/exportViews';
+import { useAccountChoices } from '../api/queries';
 import { CoverageBanner } from '../components/CoverageBanner';
 import { FreshnessIndicator } from '../components/FreshnessIndicator';
 import { TypedError } from '../components/TypedError';
@@ -9,6 +11,7 @@ import { collectorName } from '../components/displayNames';
 import { isFailureCause } from '../components/provenance';
 import { readStored, writeStored } from '../storage';
 import { ExportMenu } from './ExportMenu';
+import { NavLink } from './links';
 import { useAggregateMeta } from './metaRegistry';
 import {
   GROUPS,
@@ -19,6 +22,7 @@ import {
   tabsFor,
 } from './sections';
 import { ScreenTabs } from './ScreenTabs';
+import { SearchBox } from './SearchBox';
 import { ThemeToggle } from './ThemeToggle';
 
 /**
@@ -105,6 +109,25 @@ function ToggleIcon({ shape }: { readonly shape: 'hide' | 'show' | 'menu' | 'clo
   );
 }
 
+/**
+ * The account a screen is narrowed to, named under its title, FEAT-075 and the owner's choice of
+ * 2026-10-06. Rendered only once an account is chosen, so the shell asks for the list of accounts
+ * only when it has one to name.
+ */
+function ChosenAccount({ number }: { readonly number: string }) {
+  const choices = useAccountChoices();
+  const known = choices.data?.data;
+  const account = known?.find((one) => one.account_id === number);
+  let said = `Account ${number}`;
+  if (account !== undefined && account.name !== number) {
+    said = `Account ${account.name}, ${number}`;
+  } else if (account === undefined && known !== undefined) {
+    // The screens below say the same thing as a typed failure; the title says it in words.
+    said = `Account ${number}, which this session cannot see`;
+  }
+  return <p data-testid="chosen-account">{said}</p>;
+}
+
 export function AppShell({ children, now }: AppShellProps) {
   const meta = useAggregateMeta();
   const { pathname } = useLocation();
@@ -112,7 +135,12 @@ export function AppShell({ children, now }: AppShellProps) {
   const tabbed = tabsFor(pathname);
   const [params] = useSearchParams();
   const taken = filtersFor(pathname);
-  const ignored = [...new Set(params.keys())].filter((key) => !taken.includes(key));
+  // The chosen account is honoured by every screen, at the scope dependency, FEAT-075, so it is
+  // never one a screen ignores.
+  const ignored = [...new Set(params.keys())].filter(
+    (key) => !taken.includes(key) && key !== ACCOUNT_KEY,
+  );
+  const chosenAccount = useChosenAccount();
   const narrow = useNarrow();
   // The views the screen is reading, offered by its query hooks. Provided around the screen
   // alone, below, so what the shell reads for itself is never offered as the screen's.
@@ -270,10 +298,12 @@ export function AppShell({ children, now }: AppShellProps) {
         <div data-testid="screen-bar">
           <div data-testid="screen-heading">
             <h1 data-testid="screen-title">{title}</h1>
+            {chosenAccount === null ? null : <ChosenAccount number={chosenAccount} />}
             {/* The scope line under the title, as drawn: what this screen is counting. */}
-            <CoverageBanner coverage={meta.coverage} />
+            <CoverageBanner coverage={meta.coverage} chosen={chosenAccount !== null} />
           </div>
           <div data-testid="toolbar">
+            <SearchBox />
             <ExportMenu views={exports.views} />
             <ThemeToggle />
           </div>
