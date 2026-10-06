@@ -513,16 +513,16 @@ features:
   detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.8, [P8 plan](docs/plans/P8-implementation-plan.md)'
   doc: docs/features/FEAT-070-persona-dashboards.md
 - id: FEAT-071
-  name: Price catalog for EC2 and EBS from the AWS Price List, versioned and FOCUS shaped
+  name: Price catalog from AWS for EC2, EBS, RDS, ElastiCache, Redshift and OpenSearch, every Region and price type, versioned and FOCUS shaped
   subproject: P9
   status: Planned
-  detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.2, 5.3 and 7, [P9 plan](docs/plans/P9-implementation-plan.md)'
+  detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.2, 5.3, 7 and 14, [P9 plan](docs/plans/P9-implementation-plan.md)'
   doc: docs/features/FEAT-071-price-catalog.md
 - id: FEAT-072
-  name: Instance capability catalog from DescribeInstanceTypes
+  name: Instance capability catalog for EC2, RDS, ElastiCache, Redshift and OpenSearch
   subproject: P9
   status: Planned
-  detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.4 and 7, [P9 plan](docs/plans/P9-implementation-plan.md)'
+  detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.4, 7 and 14, [P9 plan](docs/plans/P9-implementation-plan.md)'
   doc: docs/features/FEAT-072-instance-capability-catalog.md
 - id: FEAT-073
   name: Rightsizing to a named, priced target, down and up
@@ -1614,6 +1614,16 @@ changes:
     under an amd64 label. Both builders now build for TARGETPLATFORM, and make verify-platform
     checks every ELF file inside each image against the platform with
     scripts/ci/check_image_arch.py, as well as the label'
+- id: CHG-0115
+  date: 2026-10-07
+  type: Scope
+  what: The P9 catalog widened to every commercial Region, five services and four price types,
+    polled every 8 hours
+  commit: pending
+  detail: 'The owner asked on 2026-10-07 for the data instances.vantage.sh shows, in Meter''s
+    own database and kept current by polling AWS. Decided the same day: every commercial Region;
+    on demand, reserved, Savings Plans and spot; EC2 with EBS, RDS, ElastiCache, Redshift and
+    OpenSearch; every 8 hours. P9 spec section 14, two tasks added, OPEN-17 and OPEN-18 raised'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4059,6 +4069,27 @@ open_questions:
   status: OPEN
   blocks: 'A deletion job for report files, TASK-P8-011. Files are kept until it is answered'
   detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 6'
+- id: OPEN-17
+  question: 'How does the hub read spot prices and Savings Plans rates in every commercial
+    Region: a small function outside the VPC that writes rows to S3, the pattern approved for
+    Budgets and Support, or an interface endpoint for each in every Region'
+  status: OPEN
+  blocks: TASK-P9-012 and TASK-P9-013
+  detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) section 14.5. Raised
+    2026-10-07 when the owner widened the catalog to every Region and four price types. Every
+    other part of the catalog is read through the endpoint in us-east-1 already approved.
+    Recommended: the function outside the VPC, a few USD a month (modelled). The alternative is
+    about 30 Regions at about 14.7 USD a month an endpoint, roughly 440 USD a month for spot
+    alone (modelled), on top of the 290 USD a month approved for OPEN-16'
+- id: OPEN-18
+  question: 'How much spot price history does the catalog keep: the latest price per pool plus
+    each day''s low and high for 90 days, every 8 hourly reading, or the latest only'
+  status: OPEN
+  blocks: TASK-P9-013
+  detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) section 14.5. Raised
+    2026-10-07. Spot prices change far more often than list prices, so keeping every reading
+    for every pool in every Region grows without limit. Recommended: the latest per pool,
+    replaced each run, plus a daily low and high kept for 90 days'
 - id: OPEN-16
   question: 'How does the hub reach the AWS APIs its collectors call: endpoints in every Region
     used plus a us-east-1 endpoint VPC, a NAT gateway with an AWS-only allow list, or collectors

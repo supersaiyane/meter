@@ -1,12 +1,12 @@
-# FEAT-071: Price catalog for EC2 and EBS from the AWS Price List, versioned and FOCUS shaped
+# FEAT-071: Price catalog from AWS for EC2, EBS, RDS, ElastiCache, Redshift and OpenSearch, every Region and price type, versioned and FOCUS shaped
 
 | Field | Value |
 | --- | --- |
 | Sub project | P9 |
 | Status | Planned |
-| Specification | [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.2, 5.3 and 7 |
-| Tasks | TASK-P9-004. TASK-P9-010 serves it as `GET /catalog/prices` |
-| Refresh cadence | Daily, the `price_catalog` collector, which stops when the stored version is current |
+| Specification | [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.2, 5.3, 7 and 14 |
+| Tasks | TASK-P9-004, TASK-P9-012 and TASK-P9-013. TASK-P9-010 serves it as `GET /catalog/prices` |
+| Refresh cadence | Every 8 hours, the catalog collectors, each loading only what AWS has published since the last run |
 
 ## What it does
 
@@ -18,6 +18,14 @@ shaped, constraint 2: `SkuId`, `SkuPriceId` (the AWS RateCode), `ListUnitPrice`,
 `SkuPriceDetails`, which holds the operating system, tenancy, capacity status, preinstalled
 software and licence. A version is one publication of the offer file, its `publicationDate` is
 the row's `as_of`, and every row carries `collected_at` beside it.
+
+**Widened on 2026-10-07.** The owner asked for the data instances.vantage.sh shows, held in
+Meter's own database and kept current by polling AWS, and decided the same day: every
+commercial Region, taken from the price list's own codes; on demand, reserved one and three
+years, Savings Plans rates and spot; and five services, EC2 with EBS, RDS, ElastiCache, Redshift
+and OpenSearch. Reserved and Savings Plans rates are `PricingCategory` Committed and spot is
+Dynamic. Where spot prices and Savings Plans rates are read from, and how much spot history is
+kept, are OPEN-17 and OPEN-18, spec section 14.5.
 
 ## Why it exists
 
@@ -42,9 +50,8 @@ constraints, a price is unique per Region, `sku_price_id` and version, and each 
 The collector is a `collector_schedule` row with its reason and cost, ADR-0012. Offer files
 change irregularly, so each daily run compares the stored version and does no work when it is
 unchanged. Files are streamed as CSV with the standard library, so the eu-west-1 JSON,
-441,439,512 bytes (measured), is never loaded. Spot prices wait for FEAT-047, Savings Plans and
-reserved rate cards are not in the first cut, and which services follow EC2 and EBS is the
-owner's call. The Price List answers only in us-east-1, eu-central-1 and ap-south-1, and the hub
+441,439,512 bytes (measured), is never loaded. Since 2026-10-07 the collectors run every 8 hours, and spot,
+Savings Plans and reserved rates and the four further services are in scope, spec section 14. The Price List answers only in us-east-1, eu-central-1 and ap-south-1, and the hub
 cannot reach it today, so nothing here runs until TASK-P9-001 builds the path the owner chose
 for OPEN-16 on 2026-10-05, ISS-242.
 

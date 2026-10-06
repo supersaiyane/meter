@@ -1,7 +1,7 @@
 # P9 Price catalog and rightsizing targets: design specification
 
 Date: 2026-10-05
-Status: Approved by the owner on 2026-10-05
+Status: Approved by the owner on 2026-10-05, and widened by the owner on 2026-10-07, section 14
 Sub project: P9
 Features: FEAT-071, FEAT-072, FEAT-073, FEAT-074
 Depends on: P3 delivered; the network path the owner chose in section 5.1, built by TASK-P9-001, ISS-242
@@ -113,11 +113,10 @@ GitHub on 2026-10-05. Sources are listed at the end of this section.
 
 - **Scraping any website, and any third party price data.** Every price comes from AWS.
 - **Applying a change.** Constraint 6. A recommendation stays advice.
-- **Spot prices**, until FEAT-047 needs them.
-- **Savings Plans and reserved rate cards.** The first cut prices list on demand and scales
-  the saving by what the estate actually pays, 5.6.
-- **Services beyond EC2 and EBS.** The catalog is shaped for any service code; the first
-  cut loads the `AmazonEC2` offer, which holds both. The next services are the owner's call.
+- **Spot prices, Savings Plans and reserved rate cards, and services beyond EC2 and EBS**
+  were out of scope until 2026-10-07, when the owner widened the catalog to all of them,
+  section 14. A rightsizing saving is still the difference between two list on demand
+  prices, scaled to what the estate pays, 5.6.
 
 ## 5. The decisions this sub project rests on
 
@@ -156,6 +155,8 @@ measures it. OPEN-16 is answered.
 
 The Price List Query API, filtered to the two Regions in OPEN-06, for on demand EC2 and
 EBS. Vantage's MIT scraper is a reference for SKU filtering rules, never a data source.
+Widened on 2026-10-07 to every commercial Region, five services and four price types,
+section 14.
 
 ### 5.3 The catalog is FOCUS shaped and versioned
 
@@ -234,6 +235,9 @@ reason and cost.
 Files are streamed as CSV with the standard library, filtered to the two Regions, and the
 441 MB JSON is never loaded.
 
+The owner set every catalog collector to run every 8 hours on 2026-10-07, section 14. Each
+run still compares what AWS has published with what is stored and stops when nothing changed.
+
 ## 8. Interface
 
 - `GET /catalog/instance-types`, filtered by family, architecture, vCPUs and memory.
@@ -269,12 +273,16 @@ Files are streamed as CSV with the standard library, filtered to the two Regions
 ## 11. Open questions
 
 - OPEN-16, the network path in 5.1. ANSWERED 2026-10-05: A, plus C for Budgets and Support.
-- Which services after EC2 and EBS: RDS, ElastiCache, OpenSearch or others.
+- Which services after EC2 and EBS. ANSWERED 2026-10-07: RDS, ElastiCache, Redshift and
+  OpenSearch, section 14.
+- OPEN-17, how the hub reads spot prices and Savings Plans rates in every Region, 14.5.
+- OPEN-18, how much spot price history is kept, 14.5.
 
 ## 12. Features delivered
 
-FEAT-071 price catalog for EC2 and EBS; FEAT-072 instance capability catalog; FEAT-073
-rightsizing to a named, priced target, down and up; FEAT-074 gp2 to gp3 priced.
+FEAT-071 price catalog for five services, every Region and four price types; FEAT-072
+instance capability catalog for the same five services; FEAT-073 rightsizing to a named,
+priced target, down and up; FEAT-074 gp2 to gp3 priced.
 
 ## 13. Exit criteria
 
@@ -282,3 +290,67 @@ rightsizing to a named, priced target, down and up; FEAT-074 gp2 to gp3 priced.
 2. Every rightsizing recommendation names an offered target with both prices and the version.
 3. The three planted cases come out as section 9 says.
 4. Every price row carries its version, `as_of` and `collected_at`, and no zero price exists.
+5. The catalog holds every commercial Region, the five services and the four price types of
+   section 14, and a run that finds nothing newly published does no work.
+
+## 14. Scope widened, 2026-10-07
+
+### 14.1 The ask
+
+The owner asked on 2026-10-07 for the data instances.vantage.sh shows, held in Meter's own
+database and kept current by polling AWS for what it publishes. Scraping that site stays out of
+scope, section 4: every figure on it is AWS's own, so Meter reads AWS directly.
+
+### 14.2 The owner's decisions, 2026-10-07
+
+| Question | Decision |
+| --- | --- |
+| Regions | Every commercial Region, taken from the price list's own Region codes and never listed in code |
+| Price types | On demand; reserved, one and three years, every payment option and offering class; Savings Plans rates; spot |
+| Services | EC2 with EBS, RDS, ElastiCache, Redshift and OpenSearch |
+| Polling | Every 8 hours, each run loading only what AWS has published since the last |
+
+### 14.3 Where each part comes from
+
+| Part | Source | Path from the hub |
+| --- | --- | --- |
+| On demand and reserved prices, five services | The Price List Query API by service code, `AmazonEC2`, `AmazonRDS`, `AmazonElastiCache`, `AmazonRedshift` and `AmazonES`, and by Region code. Reserved rates are the same products' reserved terms | The endpoint in us-east-1 already in option A |
+| Specs of RDS, ElastiCache, Redshift and OpenSearch instances | The same products' attributes: vCPUs, memory, network and storage | The same endpoint |
+| Specs of EC2 instance types | `DescribeInstanceTypes` in the hub's own Region, with the Regions a type is sold in taken from the price list. A test compares two Regions' descriptions so the assumption that a type is described alike everywhere is held, not trusted | The hub's own `ec2` endpoint, already in option A |
+| Savings Plans rates | The Savings Plans price list, per Region | OPEN-17 |
+| Spot prices | `DescribeSpotPriceHistory`, per Region and zone | OPEN-17 |
+
+Prices for every Region come through the one endpoint in us-east-1, so spot prices and Savings
+Plans rates are the only reads that need a path into each Region.
+
+### 14.4 Volume and polling
+
+Every 8 hours each catalog collector compares the version AWS has published, per service and
+Region, with the stored one, and loads only those that changed, so a run that finds nothing is
+a few small calls. Prices are read through the Query API by service and Region, so the global
+EC2 file, 9,084,827,898 bytes (measured), is never downloaded. The whole catalog is on the order
+of ten million price rows (modelled from the instance types, Regions, operating systems and
+reserved terms each service sells), and TASK-P9-004 measures it before the tables are sized. A
+Region the account has not opted into answers spot calls with NotOptedIn, a typed failure that
+never becomes a price of nought, constraint 5.
+
+### 14.5 Open, for the owner
+
+- **OPEN-17, the path for spot prices and Savings Plans rates in every Region.** Recommended: C,
+  a small function outside the VPC that calls each Region and writes rows to S3, the pattern
+  approved for Budgets and Support on 2026-10-05, at a few USD a month (modelled). The
+  alternative is A, an interface endpoint for each in every Region: about 30 Regions at about
+  14.7 USD a month an endpoint, roughly 440 USD a month for spot alone (modelled), on top of
+  the 290 USD a month already approved.
+- **OPEN-18, how much spot price history is kept.** Recommended: the latest price per pool,
+  replaced each run, plus each day's low and high kept for 90 days. The alternatives are every
+  8 hourly reading kept, which grows without limit, or the latest only, as the Vantage site
+  shows.
+
+### 14.6 What changes in the plan
+
+TASK-P9-004 loads the five services in every Region, on demand and reserved. TASK-P9-005 covers
+the five services' specs. Two tasks are added: TASK-P9-012 for Savings Plans rates once OPEN-17
+is answered, and TASK-P9-013 for spot prices once OPEN-17 and OPEN-18 are. Every catalog
+collector runs every 8 hours.
+

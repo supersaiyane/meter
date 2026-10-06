@@ -1,12 +1,12 @@
-# FEAT-072: Instance capability catalog from DescribeInstanceTypes
+# FEAT-072: Instance capability catalog for EC2, RDS, ElastiCache, Redshift and OpenSearch
 
 | Field | Value |
 | --- | --- |
 | Sub project | P9 |
 | Status | Planned |
-| Specification | [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.4 and 7 |
+| Specification | [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.4, 7 and 14 |
 | Tasks | TASK-P9-005. TASK-P9-010 serves it as `GET /catalog/instance-types` |
-| Refresh cadence | Daily per Region, the `instance_catalog` collector |
+| Refresh cadence | Every 8 hours, the `instance_catalog` collector |
 
 ## What it does
 
@@ -16,6 +16,12 @@ Records what each instance type offers in each Region, from EC2's own descriptio
 architectures, vCPUs, memory, network baseline and peak, EBS baseline and maximum, GPU count,
 whether the type is offered in the Region, and `as_of` and `collected_at`. It holds no price;
 prices are FEAT-071's.
+
+**Widened on 2026-10-07**, spec section 14. EC2 types are read with `DescribeInstanceTypes` in
+the hub's own Region, the Regions each is sold in taken from the price list, and a test
+compares two Regions' descriptions so that a type described alike everywhere is held rather
+than assumed. RDS, ElastiCache, Redshift and OpenSearch instance specs come from their price
+list products' attributes, into the same table keyed by service.
 
 ## Why it exists
 

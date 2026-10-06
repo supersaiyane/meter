@@ -24,9 +24,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 75 total, 13 specified, 13 in build, 39 delivered |
 | Decisions | 31 architecture decision records |
-| Changes | 114 recorded |
+| Changes | 115 recorded |
 | Issues | 152 fixed, 99 open, 0 parked |
-| Open questions | 16 awaiting a decision |
+| Open questions | 18 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
 
@@ -38,6 +38,10 @@ Generated from `docs/registry.yaml`. Change a status there, then run `make doc-s
 `p8-build` after two fixes merged ahead of it: Python dependencies installed from hashed locks,
 ADR-0031, and the Python images built on the platform they run on, ISS-254. Left: TASK-P8-010,
 TASK-P8-011, TASK-P8-014 and TASK-P8-015.
+
+P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
+four price types and five services, polled every 8 hours. Spec section 14; OPEN-17 and OPEN-18
+wait on the owner.
 
 **P0 is code complete and is NOT signed off.**
 
@@ -205,7 +209,7 @@ ISS-003.
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 | P8 | 14 | 0 | 0 | 0 | 4 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
-| P9 | 0 | 0 | 0 | 0 | 11 | 11 | [plan](../docs/plans/P9-implementation-plan.md) |
+| P9 | 0 | 0 | 0 | 0 | 13 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 
 **P0, not in the default state**
 
