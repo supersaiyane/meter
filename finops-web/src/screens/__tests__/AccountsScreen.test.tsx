@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 import { AccountsScreen } from '../AccountsScreen';
+import { costByAccountFixture } from '../../api/fixtures/cost';
 import { accountOf, clientReturning, metaOf } from './fixtures';
 import { Harness } from './Harness';
 
@@ -13,13 +14,60 @@ const ACCOUNTS = [
 ];
 
 function renderScreen(envelope = { data: ACCOUNTS, meta: metaOf() }) {
-  const client = clientReturning({ '/api/v1/accounts': envelope });
+  const client = clientReturning({
+    '/api/v1/accounts': envelope,
+    '/api/v1/cost/by-account': costByAccountFixture(),
+    '/api/v1/health/freshness': { data: FRESHNESS, meta: metaOf() },
+  });
   return render(
     <Harness client={client}>
       <AccountsScreen />
     </Harness>,
   );
 }
+
+/** Each fixture account read by inventory an hour ago, against an hourly interval. */
+const FRESHNESS = ACCOUNTS.map((account) => ({
+  collector: 'inventory',
+  scope_key: `${account.provider}:${account.account_id}`,
+  as_of: '2026-08-27T08:00:00Z',
+  cadence_seconds: 3600,
+  age_seconds: 3600,
+  state: 'current',
+  cause: null,
+  is_stale: false,
+}));
+
+/** The accounts read's own state, not the state of a chart beside it. */
+function accountsState(): HTMLElement | undefined {
+  return screen
+    .getAllByTestId('state')
+    .find((one) => one.closest('[data-testid^="chart-"]') === null);
+}
+
+describe('AccountsScreen, how fresh each account is', () => {
+  it('draws each account by its collectors, the stalest first', async () => {
+    renderScreen();
+    const health = await screen.findByRole('region', { name: 'How fresh each account is' });
+    await waitFor(() => {
+      expect(health.querySelectorAll('[data-testid="heat-cell"]').length).toBeGreaterThan(0);
+    });
+    expect(health).toHaveTextContent(ACCOUNTS[0]?.name ?? 'an account');
+  });
+});
+
+describe('AccountsScreen, where the money is', () => {
+  it("ranks the accounts by this period's spend, the largest first", async () => {
+    renderScreen();
+    const largest = [...costByAccountFixture().data].sort(
+      (left, right) => Number(right.effective_cost) - Number(left.effective_cost),
+    )[0];
+    const spend = await screen.findByRole('region', { name: 'Where the money is' });
+    await waitFor(() => {
+      expect(spend).toHaveTextContent(largest?.name ?? 'an account');
+    });
+  });
+});
 
 describe('AccountsScreen', () => {
   it('lists the accounts in scope', async () => {
@@ -63,7 +111,7 @@ describe('AccountsScreen', () => {
       expect(screen.getAllByText(/the trust policy names another principal/)).toHaveLength(2);
     });
     // Scoped to the table, because the filter controls carry the same words.
-    const table = within(screen.getByRole('table'));
+    const table = within(screen.getByRole('table', { name: 'Accounts in scope' }));
     expect(table.getByText(/access denied/)).toBeInTheDocument();
     expect(table.getByText(/not deployed/)).toBeInTheDocument();
   });
@@ -71,7 +119,7 @@ describe('AccountsScreen', () => {
   it('says not yet collected rather than showing an empty success', async () => {
     renderScreen({ data: [], meta: metaOf({ as_of: null, collected_at: null }) });
     await waitFor(() => {
-      expect(screen.getByTestId('state').dataset['state']).toBe('never-collected');
+      expect(accountsState()?.dataset['state']).toBe('never-collected');
     });
   });
 
@@ -82,7 +130,7 @@ describe('AccountsScreen', () => {
       expect(screen.getByText('1')).toBeInTheDocument();
     });
     await user.click(screen.getByRole('button', { name: 'broken' }));
-    expect(screen.getByTestId('state').dataset['state']).toBe('empty');
+    expect(accountsState()?.dataset['state']).toBe('empty');
     expect(screen.getByText(/Broken/)).toBeInTheDocument();
   });
 
@@ -94,7 +142,7 @@ describe('AccountsScreen', () => {
       }),
     });
     await waitFor(() => {
-      expect(screen.getByTestId('state').dataset['state']).toBe('partial');
+      expect(accountsState()?.dataset['state']).toBe('partial');
     });
     expect(screen.getByText(/6 missing/)).toBeInTheDocument();
   });

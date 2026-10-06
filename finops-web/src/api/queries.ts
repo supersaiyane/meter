@@ -43,6 +43,7 @@ import {
 } from './fixtures/containers';
 import { digestsFixture, exchangesFixture, redactionsFixture } from './fixtures/assistant';
 import type {
+  ApiQueryCostDay,
   ApiDigest,
   ApiExchange,
   ApiRedaction,
@@ -291,6 +292,14 @@ export function useUndoRemediation(findingId: string) {
     mutationFn: () => client.post<ApiRemediation>(`/api/v1/query/remediate/${findingId}/undo`),
     onSettled: () => queries.invalidateQueries({ queryKey: ['query-finding', findingId] }),
   });
+}
+
+export function useQueryTrend() {
+  return useRead<ApiQueryCostDay[]>(
+    ['query-trend'],
+    '/api/v1/query/trend',
+    '/api/v1/query/trend',
+  );
 }
 
 export function useQueryGroups() {

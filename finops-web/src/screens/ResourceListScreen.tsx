@@ -1,7 +1,9 @@
 import { useState } from 'react';
 
 import { useGraphCoverage, useResources } from '../api/queries';
+import { ChartPanel } from '../components/ChartPanel';
 import { FixtureBand } from '../components/FixtureBand';
+import { RankedBars } from '../components/RankedBars';
 import { StateBoundary } from '../components/StateBoundary';
 import type { ApiResourceFilters, ApiSliceCoverage, ApiTopologyNode } from '../api/types';
 import { useFilters } from '../shell/filters';
@@ -77,6 +79,11 @@ function Choice({
   );
 }
 
+/** A count of resources, as a person writes one. */
+function count(value: number): string {
+  return value.toLocaleString('en-GB');
+}
+
 export function ResourceListScreen() {
   const { values, set } = useFilters(RESOURCE_FILTERS);
   const { account, region, geography, kind, type } = values;
@@ -143,6 +150,16 @@ export function ResourceListScreen() {
   }
 
   const shown = page === undefined ? 0 : page.offset + rows.length;
+  // A null type is a resource the provider gave no type, and a null region is the account's
+  // global slice, which the list already calls global.
+  const byType = (filters.type_counts ?? []).map((one) => ({
+    label: one.value ?? 'no type',
+    value: one.resources,
+  }));
+  const byRegion = (filters.region_counts ?? []).map((one) => ({
+    label: one.value ?? 'global',
+    value: one.resources,
+  }));
 
   return (
     <section aria-label="Resources">
@@ -183,6 +200,35 @@ export function ResourceListScreen() {
           </details>
         </div>
       ) : null}
+
+      {byType.length === 0 && byRegion.length === 0 ? null : (
+        <div data-testid="chart-row">
+          <ChartPanel
+            id="resources-by-type"
+            title="By type"
+            caption="Every resource in scope by the provider's own type, the largest first. The filters below narrow the list, not these counts"
+          >
+            <RankedBars
+              points={byType}
+              provenance="measured"
+              format={count}
+              restLabel="Every other type"
+            />
+          </ChartPanel>
+          <ChartPanel
+            id="resources-by-region"
+            title="By region"
+            caption="Every resource in scope by region. Global is the part of each account that belongs to no region"
+          >
+            <RankedBars
+              points={byRegion}
+              provenance="measured"
+              format={count}
+              restLabel="Every other region"
+            />
+          </ChartPanel>
+        </div>
+      )}
 
       <div role="group" aria-label="Narrow the list">
         <Choice

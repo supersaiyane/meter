@@ -15,7 +15,6 @@ import {
   openRecommendations,
   rankedRows,
   savingsByCategory,
-  stacked,
   topMovers,
 } from '../overviewKpis';
 import { exploreOf, forecastOf } from './fixtures';
@@ -212,26 +211,5 @@ describe('rankings', () => {
       { label: 'Rightsizing', value: 150 },
       { label: 'Idle instance', value: 70 },
     ]);
-  });
-});
-
-describe('stacking explore series', () => {
-  it('keeps the largest named series and folds the rest with the route own everything else', () => {
-    const shape = stacked(exploreOf(), 1, 'All other services');
-    expect(shape.periods).toEqual(['2026-10-01', '2026-10-02']);
-    expect(shape.series.map((one) => one.label)).toEqual(['AmazonEC2', 'All other services']);
-    expect(shape.series[0]?.values).toEqual([1000, 1388.4]);
-    expect(shape.series[1]?.values[0]).toBeCloseTo(1100, 2);
-    expect(shape.series[1]?.values[1]).toBeCloseTo(1024.31, 2);
-  });
-
-  it('never calls the route everything else unallocated', () => {
-    const shape = stacked(exploreOf(), 5, 'Everything else');
-    expect(shape.series.map((one) => one.label)).toEqual([
-      'AmazonEC2',
-      'unallocated',
-      'Everything else',
-    ]);
-    expect(shape.series[2]?.values).toEqual([600, 500]);
   });
 });

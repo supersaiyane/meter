@@ -1,14 +1,16 @@
 import { useMemo } from 'react';
 
-import { useCostAllocation } from '../api/queries';
+import { useCostAllocation, useCostExplore } from '../api/queries';
+import { ChartPanel } from '../components/ChartPanel';
+import { StackedArea, Treemap } from '../components/charts';
 import { DataTable } from '../components/DataTable';
-import { RankedBars } from '../components/RankedBars';
 import { Figure } from '../components/Figure';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
 import { useFilters } from '../shell/filters';
 import { useReportMeta } from '../shell/metaRegistry';
 import { ALLOCATION_FILTERS } from '../shell/sections';
+import { exploreQuery, stacked } from './exploreSeries';
 import { surfaceStateFor } from './surfaceStateFor';
 import type { ApiCostSlice } from '../api/types';
 
@@ -37,6 +39,13 @@ function money(amount: string): number {
   return Number(amount);
 }
 
+function dollars(value: number): string {
+  return `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
+}
+
+/** Owners drawn by name in the trend. Every other owner is one layer, so nothing is dropped. */
+const OWNERS_KEPT = 6;
+
 export function CostAllocationScreen() {
   const { values, set } = useFilters(ALLOCATION_FILTERS);
   // The key in the address, so a link can land grouped by it, and the first suggestion when
@@ -57,6 +66,21 @@ export function CostAllocationScreen() {
     asOf: new Date(envelope?.meta.as_of ?? 0),
     collectedAt: new Date(envelope?.meta.collected_at ?? 0),
   };
+
+  // Each month by the same tag, read the way Cost Explorer reads it. Asked only once a charge
+  // this period carries the tag, because the Explorer groups only by keys it has seen, and a
+  // tag nothing carries is a sentence rather than a failure.
+  const tagged = rows.some((row) => row.name !== UNALLOCATED);
+  const trend = useCostExplore(
+    exploreQuery({ period: '6m', granularity: 'monthly', group_by: 'tag', group_by_tag: tag }),
+    { enabled: tagged, title: `Effective Cost by ${tag}, six months` },
+  );
+  useReportMeta('cost-allocation-trend', tagged ? trend.data?.meta : undefined);
+  const trendState = surfaceStateFor(trend, trend.data?.meta, 1, 'none', 'cost_focus');
+  const months = useMemo(
+    () => stacked(trend.data?.data, OWNERS_KEPT, `Every other ${tag}`),
+    [trend.data, tag],
+  );
 
   const total = rows.reduce((sum, row) => sum + money(row.effective_cost), 0);
   const unallocated = rows.find((row) => row.name === UNALLOCATED);
@@ -119,22 +143,51 @@ export function CostAllocationScreen() {
             : `Every charge in this period carries a ${tag}`}
         </p>
 
-        {/* The shape before the detail. Which owners the money is on is a question a table
-            of twenty rows answers slowly and a ranked bar answers at once, and the row
-            nobody tagged has to be in the same picture as the ones somebody did: shown
-            separately it reads as a footnote, and it is often the largest row on the
-            screen. Hollow rather than filled, because it is real measured money that
-            belongs to no owner. */}
-        <RankedBars
-          points={rows.map((row) => ({
-            label: row.name === UNALLOCATED ? 'Unallocated cost' : row.name,
-            value: money(row.effective_cost),
-            isGap: row.name === UNALLOCATED,
-          }))}
-          format={(value) => `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`}
-          provenance="measured"
-          restLabel="smaller owners"
-        />
+        {/* The shape before the detail, and the row nobody tagged in the same picture as the ones
+            somebody did: shown separately it reads as a footnote, and it is often the largest
+            area on the screen. An outline rather than a colour, because it is real measured
+            money that belongs to no owner. */}
+        <div data-testid="chart-row">
+          <ChartPanel
+            id="allocation-share"
+            title={`Whose spend it is, by ${tag}`}
+            caption="This period's Effective Cost as areas, the untagged part outlined"
+          >
+            <Treemap
+              items={rows.map((row) => ({
+                label: row.name === UNALLOCATED ? 'Unallocated cost' : row.name,
+                value: money(row.effective_cost),
+                isGap: row.name === UNALLOCATED,
+              }))}
+              provenance="measured"
+              label={`Effective Cost this period by ${tag}`}
+              format={dollars}
+            />
+          </ChartPanel>
+          <ChartPanel
+            id="allocation-trend"
+            title={`Each month, by ${tag}`}
+            caption={`Effective Cost for the last six months by the ${tag} tag`}
+          >
+            {tagged ? (
+              <StateBoundary state={trendState} coverageShownElsewhere>
+                <StackedArea
+                  periods={months.periods}
+                  series={months.series.map((one) => ({
+                    ...one,
+                    provenance: 'measured' as const,
+                  }))}
+                  label={`Effective Cost each month by ${tag}, last six months`}
+                  format={dollars}
+                />
+              </StateBoundary>
+            ) : (
+              <p data-testid="allocation-untrended">
+                No charge this period carries a {tag} tag, so there is no trend by it yet
+              </p>
+            )}
+          </ChartPanel>
+        </div>
 
         <DataTable
           rows={rows}

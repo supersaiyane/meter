@@ -20,6 +20,11 @@ Ranking queries by cost is what turns a list of dashboards into an action.
 
 Models monthly cost per query from its refresh interval, its time window and the ingestion rate of the log groups it reads. Logs Insights is billed per gigabyte scanned, so scan per run is modelled from ingest rate times window. Metric engines are billed per metric requested per call. Panels run only while a dashboard is open, so runs per day uses a configured viewing hours assumption, while alert rules run continuously on their own schedule.
 
+Since TASK-P8-013, 2026-10-06, the findings screen draws what each dashboard's queries cost a
+month and a trend of what every audited query cost each day. The trend sums every query audited
+on a day rather than today's queries only, so a dashboard deleted after a fix leaves its earlier
+days behind and the fall shows. A day is measured only when every query that day was measured.
+
 ## What is already known
 
 Prototype models Logs Insights as gigabytes scanned, and metric engines as metrics requested per call. Panels run only while a dashboard is open, so runs per day uses an assumed viewing hours figure. Alert queries run continuously. Every figure is labelled modelled until FEAT-018 calibrates it.
@@ -39,6 +44,10 @@ Writes `query_finding` with `provenance` set to `modelled`. A database constrain
 Read over HTTP since TASK-P2-021. `GET /api/v1/query/findings` returns every finding ranked by monthly cost, ordered in the database because `ix_query_finding__cost` exists for it and sorting in the route would order the page rather than the estate. `GET /api/v1/query/findings/{finding_id}` adds the query as written, what it runs against, and `rate_usd_per_gib`, the published price, so the working on the screen has no constant a reader cannot check. `accuracy_percent` is null until FEAT-018 publishes one, and is never invented to make the screen look finished.
 
 `scope_coverage` on these routes counts workspaces read over workspaces the tenant has, not findings over accounts. A findings list drawn from two of three workspaces is missing an unknown number of rows, and the envelope says so.
+
+`GET /api/v1/query/trend`, since 2026-10-06: one row per day for the last thirty days, with
+`run_date`, `cost_month_usd`, `queries`, `provenance`, `as_of` and `collected_at`. The envelope
+is dated by the newest day, because the oldest is thirty days old by design.
 
 ## Not doing
 

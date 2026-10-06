@@ -25,12 +25,20 @@ export interface ForecastBand {
   readonly high: readonly (number | null)[];
 }
 
+/** Periods to mark on the chart, an anomaly on the day it happened. */
+export interface PeriodMarkers {
+  /** What a marker is, named in the legend and the table: Anomaly. */
+  readonly name: string;
+  readonly at: readonly { readonly period: string; readonly label: string }[];
+}
+
 export interface StackedAreaProps {
   readonly periods: readonly string[];
   readonly series: readonly TimeSeries[];
   readonly forecast?: ForecastBand;
   /** What the budget allows by each period, null where there is no budget. */
   readonly pace?: readonly (number | null)[];
+  readonly markers?: PeriodMarkers;
   readonly label: string;
   readonly format: (value: number) => string;
   readonly height?: number;
@@ -52,6 +60,7 @@ export function StackedArea({
   series,
   forecast,
   pace,
+  markers,
   label,
   format,
   height = 160,
@@ -124,6 +133,16 @@ export function StackedArea({
           .map((period) => `${at(x(period))},${at(y(pace[period] ?? 0))}`)
           .join(' ');
 
+  // Two markers on one period share one rule and one cell, so a day with two causes reads as one
+  // event with two reasons rather than as a heavier line.
+  const marked = new Map<number, readonly string[]>();
+  for (const one of markers?.at ?? []) {
+    const period = periods.indexOf(one.period);
+    if (period >= 0) {
+      marked.set(period, [...(marked.get(period) ?? []), one.label]);
+    }
+  }
+
   const rows: TableRow[] = [
     ...series.map((one) => ({ label: one.label, cells: cells(one.values, format) })),
     ...(forecast === undefined
@@ -133,6 +152,17 @@ export function StackedArea({
           { label: 'Forecast, high', cells: cells(forecast.high, format) },
         ]),
     ...(pace === undefined ? [] : [{ label: 'Budget pace', cells: cells(pace, format) }]),
+    ...(markers === undefined || marked.size === 0
+      ? []
+      : [
+          {
+            label: markers.name,
+            cells: periods.map((_, period) => ({
+              value: null,
+              text: marked.get(period)?.join('; ') ?? '',
+            })),
+          },
+        ]),
   ];
 
   return (
@@ -148,6 +178,14 @@ export function StackedArea({
         ))}
         {band === null ? null : <li>Forecast range, dashed</li>}
         {pacePoints === null || pacePoints === '' ? null : <li>Budget pace, dotted</li>}
+        {markers === undefined || marked.size === 0 ? null : (
+          <li>
+            <svg width="10" height="10">
+              <line x1="5" x2="5" y1="0" y2="10" className="meter-marker" />
+            </svg>
+            {markers.name}, a solid rule
+          </li>
+        )}
       </ul>
       <svg
         viewBox={`0 0 ${String(width)} ${String(height)}`}
@@ -158,6 +196,8 @@ export function StackedArea({
         aria-label={label}
         data-top={top}
         data-height={height}
+        // A rule on the last period sits on the right edge, and half of it would be clipped.
+        overflow="visible"
       >
         <Hatch id={id} />
         {layers.map(({ one, index, d }) => (
@@ -179,6 +219,19 @@ export function StackedArea({
         {pacePoints === null || pacePoints === '' ? null : (
           <polyline data-testid="budget-pace" points={pacePoints} className="meter-pace" />
         )}
+        {[...marked].map(([period, labels]) => (
+          <line
+            key={period}
+            data-testid="period-marker"
+            x1={at(x(period))}
+            x2={at(x(period))}
+            y1="0"
+            y2={String(height)}
+            className="meter-marker"
+          >
+            <title>{`${periods[period] ?? ''}: ${labels.join('; ')}`}</title>
+          </line>
+        ))}
       </svg>
       <figcaption>
         <span>{periods[0]}</span>

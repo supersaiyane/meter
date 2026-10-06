@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 
-import { useAccounts } from '../api/queries';
+import { useAccounts, useCostByAccount, useFreshness } from '../api/queries';
+import { Heatmap } from '../components/charts';
+import { ChartPanel } from '../components/ChartPanel';
+import { RankedBars } from '../components/RankedBars';
 import type { Account } from '../api/types';
 import { DataTable } from '../components/DataTable';
 import { StateBoundary } from '../components/StateBoundary';
@@ -8,6 +11,7 @@ import type { Column } from '../components/tableConfig';
 import { useFilters } from '../shell/filters';
 import { useReportMeta } from '../shell/metaRegistry';
 import { ACCOUNT_FILTERS } from '../shell/sections';
+import { healthGrid } from './accountHealth';
 import { surfaceStateFor } from './surfaceStateFor';
 
 /**
@@ -60,6 +64,9 @@ const COLUMNS: readonly Column<Account>[] = [
   },
 ];
 
+/** Accounts named in the spend ranking before the rest are summed into one row. */
+const TOP_ACCOUNTS = 10;
+
 export function AccountsScreen() {
   const query = useAccounts();
   const { values, set } = useFilters(ACCOUNT_FILTERS);
@@ -74,6 +81,32 @@ export function AccountsScreen() {
   );
 
   const state = surfaceStateFor(query, query.data?.meta, rows.length, filter, 'account_health');
+
+  const freshness = useFreshness();
+  useReportMeta('accounts-freshness', freshness.data?.meta);
+  const grid = useMemo(
+    () => healthGrid(query.data?.data ?? [], freshness.data?.data ?? []),
+    [query.data, freshness.data],
+  );
+  const freshnessState = surfaceStateFor(
+    freshness,
+    freshness.data?.meta,
+    grid.rows.length,
+    'none',
+    'freshness',
+  );
+
+  const spend = useCostByAccount();
+  const spendEnvelope = spend.data?.data;
+  useReportMeta('accounts-spend', spendEnvelope?.meta);
+  const slices = spendEnvelope?.data ?? [];
+  const spendState = surfaceStateFor(
+    spend,
+    spendEnvelope?.meta,
+    slices.length,
+    'none',
+    'cost_focus_daily',
+  );
 
   return (
     <section aria-label="Accounts">
@@ -90,6 +123,52 @@ export function AccountsScreen() {
             {name.replace('_', ' ').toLowerCase()}
           </button>
         ))}
+      </div>
+      <div data-testid="chart-row">
+        <ChartPanel
+          id="accounts-spend"
+          title="Where the money is"
+          caption="This period's Effective Cost by account, the ten largest and the rest together"
+        >
+          <StateBoundary state={spendState} coverageShownElsewhere>
+            <RankedBars
+              points={slices.map((row) => ({
+                label: row.name,
+                value: Number(row.effective_cost),
+              }))}
+              provenance="measured"
+              format={(value) =>
+                `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`
+              }
+              limit={TOP_ACCOUNTS}
+              restLabel="All other accounts"
+            />
+          </StateBoundary>
+        </ChartPanel>
+        <ChartPanel
+          id="accounts-health"
+          title="How fresh each account is"
+          caption="Time since each collector last read the account, in that collector's own interval: under one is on time, two is a run missed. An outline has no age to count. The stalest accounts first"
+        >
+          <StateBoundary state={freshnessState} coverageShownElsewhere>
+            <Heatmap
+              rows={grid.rows}
+              columns={grid.columns}
+              values={grid.values}
+              provenance="measured"
+              label="Intervals since each collector last read each account"
+              format={(value) => `${value.toFixed(1)} intervals`}
+              missing="no age to count"
+            />
+            {grid.more === 0 ? null : (
+              <p data-testid="accounts-health-rest">
+                {grid.restOnTime
+                  ? `The other ${String(grid.more)} accounts are on time with every collector`
+                  : `${String(grid.more)} more accounts, and some of them are late too. The Freshness screen lists every one`}
+              </p>
+            )}
+          </StateBoundary>
+        </ChartPanel>
       </div>
       <StateBoundary state={state}>
         <DataTable

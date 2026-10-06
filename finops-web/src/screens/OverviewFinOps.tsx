@@ -12,14 +12,12 @@ import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { dollars } from './exploreModel';
 import { AnomaliesPanel, DailyCostChart, Panel, RecommendationsPanel } from './OverviewParts';
+import { exploreQuery, lastDays, stacked } from './exploreSeries';
 import {
   ALLOCATION_TAG,
   commitmentCoverage,
-  exploreQuery,
-  lastDays,
   percent,
   rankedRows,
-  stacked,
   wholeDollars,
 } from './overviewKpis';
 import { surfaceStateFor } from './surfaceStateFor';

@@ -123,6 +123,20 @@ export interface ApiCostPoint {
   readonly provenance: string;
 }
 
+/**
+ * What every query audited on one day cost each month, summed: the trend on Query cost. Every
+ * query audited that day, so a dashboard deleted after a fix leaves its earlier days behind.
+ */
+export interface ApiQueryCostDay {
+  readonly run_date: string;
+  readonly cost_month_usd: string;
+  readonly queries: number;
+  /** Measured only when every query that day was measured. */
+  readonly provenance: string;
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
 export interface ApiQueryFinding {
   readonly finding_id: string;
   readonly dashboard_uid: string | null;
@@ -734,6 +748,12 @@ export interface ApiInventoryRoots {
  * the same scope guard as the page. A count over everything beside a page of the readable rows
  * is the arithmetic that tells a narrowed reader how much they are not allowed to look at.
  */
+/** One filter value and how many resources in the scope carry it. Null is counted, not dropped. */
+export interface ApiFacetCount {
+  readonly value: string | null;
+  readonly resources: number;
+}
+
 export interface ApiResourceFilters {
   readonly account_id: readonly string[];
   /** Never an empty string. A null region is the global slice and the screen names it. */
@@ -741,6 +761,12 @@ export interface ApiResourceFilters {
   readonly node_kind: readonly string[];
   /** The provider's own words. It has no enumeration, so the data is the only list. */
   readonly resource_type: readonly string[];
+  /**
+   * How many resources each region and each type holds, largest first, over the scope rather
+   * than under the list's own filters. Absent from a payload made before the counts existed.
+   */
+  readonly region_counts?: readonly ApiFacetCount[];
+  readonly type_counts?: readonly ApiFacetCount[];
 }
 
 /**

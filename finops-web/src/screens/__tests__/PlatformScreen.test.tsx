@@ -2,7 +2,7 @@ import { render, screen, within, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { PlatformScreen } from '../PlatformScreen';
-import { rollUp } from '../platformRollUp';
+import { dailyByModule, rollUp, WINDOW_DAYS } from '../platformRollUp';
 import type { PlatformCost } from '../../api/types';
 import { clientReturning, metaOf } from './fixtures';
 import { Harness } from './Harness';
@@ -38,7 +38,45 @@ describe('rollUp', () => {
   });
 });
 
+describe('dailyByModule', () => {
+  it('draws a module with no row on a collected day at zero, the largest module first', () => {
+    const shape = dailyByModule(ROWS);
+    expect(shape.periods).toEqual(['2026-08-25', '2026-08-26']);
+    expect(shape.series.map((one) => [one.label, one.values])).toEqual([
+      ['ingest', [1, 1.5]],
+      ['unallocated', [0, 0.2]],
+    ]);
+  });
+
+  it('keeps the last thirty days collected and no more', () => {
+    const day = (index: number): string =>
+      new Date(Date.UTC(2026, 6, 1 + index)).toISOString().slice(0, 10);
+    const many = Array.from({ length: 40 }, (_, index) => cost(day(index), 'ingest', '1.00'));
+    const shape = dailyByModule(many);
+    expect(shape.periods).toHaveLength(WINDOW_DAYS);
+    expect(shape.periods[0]).toBe(day(40 - WINDOW_DAYS));
+  });
+});
+
+/** The screen's own table, named by its caption, rather than a chart's table of numbers. */
+const dataTable = () => screen.getByRole('table', { name: 'What Meter costs to run' });
+
 describe('PlatformScreen', () => {
+  it('draws each day by module beside the ranking', async () => {
+    render(
+      <Harness
+        client={clientReturning({ '/api/v1/platform/cost': { data: ROWS, meta: metaOf() } })}
+      >
+        <PlatformScreen />
+      </Harness>,
+    );
+    const days = await screen.findByRole('region', { name: 'Each day, by module' });
+    expect(days.querySelector('[data-testid="stacked-area"]')).not.toBeNull();
+    expect(screen.getByRole('region', { name: 'Which module it is on' })).toHaveTextContent(
+      'ingest',
+    );
+  });
+
   it('shows spend by module with a thirty day shape', async () => {
     render(
       <Harness
@@ -48,7 +86,7 @@ describe('PlatformScreen', () => {
       </Harness>,
     );
     await waitFor(() => {
-      expect(within(screen.getByRole('table')).getByText('ingest')).toBeInTheDocument();
+      expect(within(dataTable()).getByText('ingest')).toBeInTheDocument();
     });
     expect(screen.getAllByTestId('sparkline').length).toBeGreaterThan(0);
   });
@@ -64,7 +102,7 @@ describe('PlatformScreen', () => {
       </Harness>,
     );
     await waitFor(() => {
-      expect(within(screen.getByRole('table')).getByText('unallocated')).toBeInTheDocument();
+      expect(within(dataTable()).getByText('unallocated')).toBeInTheDocument();
     });
   });
 

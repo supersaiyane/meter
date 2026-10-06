@@ -454,7 +454,7 @@ Engineering lead's dashboard, and the FinOps one lists its own top recommendatio
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Partly |
 | Implements | P8 spec section 5.1 |
 | Delivers | One look across all screens |
 | Depends on | TASK-P8-002, TASK-P8-004, TASK-P8-005, TASK-P8-006 |
@@ -472,6 +472,20 @@ Engineering lead's dashboard, and the FinOps one lists its own top recommendatio
       coverage over time and a day by day heatmap; Realized savings a cumulative savings area;
       Accounts the top accounts and a health heatmap; Resources by type and by region; Query
       cost by dashboard and its trend; Meter cost its trend by module
+
+**Decided 2026-10-06.** Three of the charts had no data behind them, and the owner chose:
+commitments are collected daily, so utilization and coverage over time and the day by day
+heatmap are drawn from measured days; `/api/v1/inventory/resources` counts resources by type and
+by region; and the realized savings area accumulates verified changes only, because the screen
+never adds verdicts together.
+
+**Progress 2026-10-06.** Drawn, each in a `ChartPanel`: Allocation's treemap and six month trend
+by tag, Anomalies' daily spend with a rule on each day that stood out, Accounts' largest accounts
+and freshness heatmap, Realized savings' running total, Query cost by dashboard and its trend from
+`/api/v1/query/trend`, Resources by type and region, and Meter cost per day by module. Still to
+come: the daily commitments collection and its two charts, the colour test, axe in both themes,
+and the remaining screens' panels.
+
 
 ---
 

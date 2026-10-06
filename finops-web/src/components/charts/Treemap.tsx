@@ -15,6 +15,11 @@ import { squarify } from './treemapLayout';
 export interface TreemapItem {
   readonly label: string;
   readonly value: number;
+  /**
+   * Real money that belongs to no group, unallocated spend. Drawn as an outline, the mark
+   * RankedBars gives it, because a colour would make it read as one more group.
+   */
+  readonly isGap?: boolean;
 }
 
 export interface TreemapProps {
@@ -25,6 +30,7 @@ export interface TreemapProps {
 }
 
 const WIDTH = 300;
+const GAP = 'meter-mark-gap';
 const HEIGHT = 180;
 
 export function Treemap({ items, provenance, label, format }: TreemapProps) {
@@ -62,8 +68,9 @@ export function Treemap({ items, provenance, label, format }: TreemapProps) {
               <rect
                 data-testid="treemap-cell"
                 data-value={((cell.item.value / total) * 100).toFixed(3)}
+                data-gap={cell.item.isGap === true}
                 {...box}
-                className={markClass(provenance, index)}
+                className={cell.item.isGap === true ? GAP : markClass(provenance, index)}
               >
                 <title>{`${cell.item.label}, ${format(cell.item.value)}`}</title>
               </rect>
@@ -78,7 +85,11 @@ export function Treemap({ items, provenance, label, format }: TreemapProps) {
         {items.map((item, index) => (
           <li key={item.label}>
             <svg width="10" height="10">
-              <rect width="10" height="10" className={markClass(provenance, index)} />
+              <rect
+                width="10"
+                height="10"
+                className={item.isGap === true ? GAP : markClass(provenance, index)}
+              />
             </svg>
             {item.label}, {((item.value / total) * 100).toFixed(1)}%
           </li>

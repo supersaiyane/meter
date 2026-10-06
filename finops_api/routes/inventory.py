@@ -21,6 +21,7 @@ and a ceiling in only one of them is a ceiling somebody routes around.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any
 from uuid import UUID
@@ -50,6 +51,7 @@ from finops_api.schemas import (
     EdgeOut,
     EntityOut,
     Envelope,
+    FacetCountOut,
     GeographiesOut,
     GeographyOut,
     InventoryRootOut,
@@ -360,6 +362,11 @@ def blast_radius(
     return Envelope(data=answer, meta=meta)
 
 
+def _facets(rows: Sequence[tuple[str | None, int]]) -> tuple[FacetCountOut, ...]:
+    """A repository's counted values, as the payload carries them."""
+    return tuple(FacetCountOut(value=value, resources=count) for value, count in rows)
+
+
 @router.get("/inventory/resources", response_model=Envelope[ResourceListOut])
 @exportable(
     ExportSpec(
@@ -446,12 +453,17 @@ def resources(
     # reason `page` returns its own total rather than leaving the caller to count again.
     slices = repository.slice_count(scope)
     unread = repository.incomplete(scope)
+    counts = repository.counts(scope)
     found = ResourceListOut(
         resources=tuple(_node_out(as_node(row)) for row in rows),
         total=total,
         limit=limit,
         offset=offset,
-        filters=ResourceFiltersOut(**repository.vocabularies(scope)),
+        filters=ResourceFiltersOut(
+            **repository.vocabularies(scope),
+            region_counts=_facets(counts["region_counts"]),
+            type_counts=_facets(counts["type_counts"]),
+        ),
     )
     meta = build_meta(
         connection,

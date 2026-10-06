@@ -95,6 +95,38 @@ describe('StackedArea', () => {
     expect(rows).toEqual(['All', 'Forecast, low', 'Forecast, high', 'Budget pace']);
   });
 
+  it('marks a period with one rule, and names what happened in the table', () => {
+    const { container } = render(
+      <StackedArea
+        periods={['Jan', 'Feb', 'Mar']}
+        series={series}
+        markers={{
+          name: 'Anomaly',
+          at: [
+            { period: 'Feb', label: 'EC2, +$90' },
+            { period: 'Feb', label: 'S3, +$4' },
+            { period: 'Dec', label: 'outside the chart' },
+          ],
+        }}
+        label="Spend"
+        format={money}
+      />,
+    );
+    const rules = container.querySelectorAll('[data-testid="period-marker"]');
+    expect(rules).toHaveLength(1);
+    expect(rules[0]).toHaveClass('meter-marker');
+    // February is the second of three periods, twenty units along a forty unit scale.
+    expect(rules[0]?.getAttribute('x1')).toBe('20.00');
+    const marked = [...container.querySelectorAll('table tbody tr')].find(
+      (row) => row.querySelector('th')?.textContent === 'Anomaly',
+    );
+    expect([...(marked?.querySelectorAll('td') ?? [])].map((cell) => cell.textContent)).toEqual(
+      ['', 'EC2, +$90; S3, +$4', ''],
+    );
+    // A rule states no number, so the numbers the table states are still the series' alone.
+    expect(stated(container)).toEqual([10, 20, 30, 5, 5, 10]);
+  });
+
   it('says nothing is collected rather than drawing an empty frame', () => {
     render(<StackedArea periods={['Jan']} series={[]} label="Spend" format={money} />);
     expect(screen.getByTestId('chart-absent')).toHaveAttribute('data-state', 'never-collected');
@@ -185,6 +217,26 @@ describe('Treemap', () => {
   });
 });
 
+describe('Treemap, money that belongs to no group', () => {
+  it('draws unallocated spend as an outline, never a colour', () => {
+    const { container } = render(
+      <Treemap
+        items={[
+          { label: 'platform', value: 70 },
+          { label: 'Unallocated cost', value: 30, isGap: true },
+        ]}
+        provenance="measured"
+        label="By team"
+        format={money}
+      />,
+    );
+    const gap = container.querySelector('[data-testid="treemap-cell"][data-gap="true"]');
+    expect(gap).toHaveClass('meter-mark-gap');
+    expect(gap?.getAttribute('class')).not.toContain('meter-series');
+    expect(stated(container)).toEqual([70, 30]);
+  });
+});
+
 describe('Heatmap', () => {
   it('shades each cell by the value its table states', () => {
     const values = [
@@ -211,6 +263,28 @@ describe('Heatmap', () => {
       );
     }
     expect(stated(container)).toEqual(values.flat());
+  });
+
+  it('makes room for long names rather than drawing them under the cells', () => {
+    const { container } = render(
+      <Heatmap
+        rows={['Platform sandbox']}
+        columns={['cost_focus', 'inventory']}
+        values={[[1, null]]}
+        provenance="measured"
+        label="Freshness"
+        format={money}
+      />,
+    );
+    // Sixteen characters of row name need more than the default gutter of 48.
+    expect(
+      numberAttr(container.querySelector('[data-testid="heat-cell"]'), 'x'),
+    ).toBeGreaterThan(48);
+    const name = [...container.querySelectorAll('text')].find(
+      (text) => text.textContent === 'cost_focus',
+    );
+    expect(name?.getAttribute('transform')).toMatch(/^rotate\(-45 /);
+    expect(name).toHaveClass('meter-axis-label');
   });
 });
 

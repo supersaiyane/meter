@@ -25,6 +25,12 @@ the key cannot name a column even though it arrives from a request. Charges with
 no value for the key fall into a literal `unallocated` bucket, which is ranked
 and rendered like any other row.
 
+Since TASK-P8-013, 2026-10-06, the screen draws whose spend it is as a treemap, with the
+unallocated part as an outline rather than a colour, and each month by the same tag for six
+months, read the way Cost Explorer reads it. The trend is asked for only once a charge this
+period carries the tag, because the Explorer groups only by keys it has seen, and a tag nothing
+carries gets a sentence instead of a failure.
+
 ## What is already known
 
 Tags first. Cost Categories are a second source and adding one before the first

@@ -10,14 +10,8 @@ import { useReportMeta } from '../shell/metaRegistry';
 import { bucketLabel, signedDollars } from './exploreModel';
 import { chartOf } from './forecastModel';
 import { Panel } from './OverviewParts';
-import {
-  exploreQuery,
-  percent,
-  savingsByCategory,
-  stacked,
-  topMovers,
-  wholeDollars,
-} from './overviewKpis';
+import { exploreQuery, stacked } from './exploreSeries';
+import { percent, savingsByCategory, topMovers, wholeDollars } from './overviewKpis';
 import { surfaceStateFor } from './surfaceStateFor';
 import { useOverviewFigures } from './useOverviewFigures';
 

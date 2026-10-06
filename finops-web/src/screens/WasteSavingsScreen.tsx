@@ -1,5 +1,8 @@
 import { useMemo } from 'react';
 import { verdictName } from '../components/displayNames';
+import { ChartPanel } from '../components/ChartPanel';
+import { StackedArea } from '../components/charts';
+import { verifiedCumulative } from './realizedSavings';
 
 import { useRealizedSavings } from '../api/queries';
 import { DataTable } from '../components/DataTable';
@@ -35,6 +38,10 @@ import type { ApiRealizedSaving } from '../api/types';
  * `consumed_quantity` at all. A zero there would read as a workload that
  * vanished, so the cell says the quantity was not published.
  */
+
+function wholeDollars(value: number): string {
+  return `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
+}
 
 function money(amount: string): number {
   return Number(amount);
@@ -125,6 +132,8 @@ export function WasteSavingsScreen() {
 
   const totals = Object.entries(found?.by_verdict ?? {});
 
+  const cumulative = verifiedCumulative(rows);
+
   return (
     <section aria-label="Realized savings">
       {/*
@@ -183,6 +192,38 @@ export function WasteSavingsScreen() {
           />
         ) : null}
       </section>
+
+      {/* What the verified changes have added up to, by the day each check closed. Verified
+          only: the inconclusive and the regressed keep their own totals above, never added in. */}
+      <ChartPanel
+        id="savings-cumulative"
+        title="Verified savings, as they added up"
+        caption="Each verified change's monthly saving, cost before less cost after, added on the day its check closed. Inconclusive and regressed changes are never added in"
+      >
+        {/* Said rather than drawn below two days: one point is not a running total, and the
+            chart's own words for that are about collection, which is not what is missing. */}
+        {cumulative.periods.length === 0 ? (
+          <p data-testid="savings-unverified">
+            Nothing has been verified yet, so there is nothing to add up
+          </p>
+        ) : cumulative.periods.length === 1 ? (
+          <p data-testid="savings-once">
+            One day of verified changes so far,{' '}
+            {wholeDollars(cumulative.series[0]?.values[0] ?? 0)} a month from{' '}
+            {cumulative.periods[0]}. The running total is drawn once a second day closes
+          </p>
+        ) : (
+          <StackedArea
+            periods={cumulative.periods}
+            series={cumulative.series.map((one) => ({
+              ...one,
+              provenance: 'measured' as const,
+            }))}
+            label="Verified monthly savings, cumulative, by the day each check closed"
+            format={wholeDollars}
+          />
+        )}
+      </ChartPanel>
 
       <StateBoundary state={state}>
         <DataTable

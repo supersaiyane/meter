@@ -35,6 +35,11 @@ measurement.
 So the claim is exactly: the amortized cost fell by this much, and the usage
 quantity moved by this much over the same window. Both are shown.
 
+Since TASK-P8-013, 2026-10-06, the screen draws verified savings as they added up: each verified
+change's monthly saving, cost before less cost after, added on the day its check closed.
+Verified only, because the screen never adds verdicts together. With no verified change, or one
+day of them, it says so in words, since one point is not a running total.
+
 ## Failure behaviour
 
 Three verdicts, not two. Where usage fell by more than cost did, the verdict is

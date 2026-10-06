@@ -398,6 +398,31 @@ class TopologyRepository(ScopedRepository):
             )
         return found
 
+    def counts(self, scope: Scope) -> dict[str, tuple[tuple[str | None, int], ...]]:
+        """How many resources each region and each type holds in this scope, largest first.
+
+        TASK-P8-013, the charts on Resources. Over the scope rather than under the list's own
+        filters, the rule `vocabularies` follows, so the estate's shape does not collapse to
+        one bar when a reader narrows the list. Null is counted, not dropped: a null region is
+        the account's global slice and a null type is a resource the provider gave no type.
+        """
+        found: dict[str, tuple[tuple[str | None, int], ...]] = {}
+        for name, column in (
+            ("region_counts", self.table.c.region_id),
+            ("type_counts", self.table.c.resource_type),
+        ):
+            counted = func.count()
+            statement = (
+                self.scoped_select(scope)
+                .with_only_columns(column, counted)
+                .group_by(column)
+                .order_by(counted.desc(), column)
+            )
+            found[name] = tuple(
+                (row[0], int(row[1])) for row in self._connection.execute(statement).all()
+            )
+        return found
+
     def one(self, scope: Scope, node_id: UUID) -> Node | None:
         """One node, or None where the scope cannot see it.
 

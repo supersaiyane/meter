@@ -85,6 +85,7 @@ test('a failed export says why in the menu rather than doing nothing', async ({ 
 
   const menu = page.getByTestId('export-menu');
   await menu.getByText('Export').click();
-  await menu.getByTestId('export-csv').click();
+  // The screen's own table, named, because its charts offer their numbers in the same menu.
+  await menu.getByRole('group', { name: 'Accounts' }).getByTestId('export-csv').click();
   await expect(menu.getByRole('alert')).toContainText('recorded against a person');
 });

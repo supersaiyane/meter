@@ -35,7 +35,7 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 26 | files in migrations/versions, all of which are listed below in this file |
 | Test files | 171 | test_*.py under tests/ |
-| Test functions | 2315 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test functions | 2319 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -533,6 +533,8 @@ meter/
 │   │                          finally. v1 writes nothing, constraint 6
 ├── finops-web/                IN BUILD  Vite, React and TypeScript
 │   ├── README.md              why the versions are pinned where they are
+│   ├── components/ChartPanel.tsx  A chart on the screen that owns its numbers: a
+│   │                          title, one sentence on what is drawn, then the chart
 │   ├── components/BarChart.tsx  the days, drawn. Hand rolled SVG like Sparkline,
 │   │                          so no charting dependency needs admitting and
 │   │                          nothing animates a bar up from zero, which is a
@@ -614,6 +616,14 @@ meter/
 │   │                          the screen that owns it, and links to that screen
 │   ├── screens/overviewKpis.ts  The Overview's KPI arithmetic, pure, so each
 │   │                          formula is tested without drawing a screen
+│   ├── screens/exploreSeries.ts  Cost Explorer views other screens chart, asked
+│   │                          the Explorer's own way so they share its answer, and
+│   │                          their points as stacked series
+│   ├── screens/accountHealth.ts  Each account's collectors by age in their own
+│   │                          interval, the heatmap on Accounts
+│   ├── screens/realizedSavings.ts  Verified savings added up by the day each
+│   │                          check closed, never across verdicts
+│   ├── screens/queryByDashboard.ts  Query cost summed per dashboard
 │   ├── screens/GeographyScreen.tsx  FEAT-061. The map, three leftovers that are
 │   │                          never added together, and the resources of whichever
 │   │                          continent was clicked. Nothing loads until one is

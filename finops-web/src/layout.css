@@ -2216,6 +2216,7 @@ main > section > [data-testid='state'] > p[role='status'] {
 [data-testid='kpi-note'],
 [data-testid='kpi-formula'],
 [data-testid='overview-caption'],
+[data-testid='chart-caption'],
 [data-testid='overview-no-pace'] {
   margin: 0;
   color: var(--text-muted);
@@ -2324,6 +2325,44 @@ main > section > [data-testid='state'] > p[role='status'] {
 
 [data-testid='overview-row'][data-columns='wide-narrow'] {
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+/* A chart on the screen that owns its numbers, TASK-P8-013, in the Overview's panel, two side by
+   side where there is room for both. */
+.meter-panel[data-testid^='chart-'] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+}
+
+.meter-panel[data-testid^='chart-'] > h2 {
+  margin: 0;
+  font-size: var(--font-size-3);
+  font-weight: 600;
+}
+
+[data-testid='chart-row'] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+[data-testid='chart-row'] > .meter-panel[data-testid^='chart-'] {
+  margin-bottom: 0;
+}
+
+/* Inside a screen's StateBoundary a row of chart panels would be carded by the rule that cards
+   every panel there. It is a layout, not an object: each panel in it is already a card, and a
+   card around cards is what that rule exists to prevent. The lift on hover leaves it out too. */
+main > section > [data-testid='state'] > div[data-testid='chart-row'] {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
 }
 
 .meter-panel[data-testid^='overview-'] {
@@ -3639,7 +3678,10 @@ main > section > [data-testid='state'] > [data-testid='table-scroll'] {
    is reading. */
 .meter-panel:not(:has(table)):hover,
 [data-testid='home-tile']:not(:has(table)):hover,
-main > section > [data-testid='state'] > div[data-testid]:not(:has(table)):hover,
+main
+  > section
+  > [data-testid='state']
+  > div[data-testid]:not([data-testid='chart-row']):not(:has(table)):hover,
 main > section > [data-testid='state'] > figure[data-testid]:hover,
 main > section > [data-testid='state'] > dl[data-testid]:hover {
   transform: translateY(-2px);
@@ -3746,7 +3788,10 @@ nav[aria-label='Sections'] details[open] > ul {
   :is(
     .meter-panel:not(:has(table)):hover,
     [data-testid='home-tile']:not(:has(table)):hover,
-    main > section > [data-testid='state'] > div[data-testid]:not(:has(table)):hover,
+    main
+      > section
+      > [data-testid='state']
+      > div[data-testid]:not([data-testid='chart-row']):not(:has(table)):hover,
     main > section > [data-testid='state'] > figure[data-testid]:hover,
     main > section > [data-testid='state'] > dl[data-testid]:hover
   ) {

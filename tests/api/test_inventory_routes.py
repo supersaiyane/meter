@@ -705,6 +705,33 @@ def test_the_filter_vocabularies_come_from_the_data(
     assert "" not in filters["region_id"]
 
 
+def test_the_filters_count_each_region_and_type_across_the_scope(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """TASK-P8-013. The charts on Resources draw these counts, so each is over the scope like
+    the filter values beside it, and narrowing the list does not collapse the chart."""
+    seed(engine, tenant_id)
+    client, token = client_for(engine, everything(tenant_id), settings)
+    body = get(client, token, RESOURCES)["data"]
+    assert body["filters"]["region_counts"] == [{"value": REGION, "resources": body["total"]}]
+    assert body["filters"]["type_counts"] == [
+        {"value": "AWS::EC2::VPC", "resources": body["total"]}
+    ]
+    narrowed = get(client, token, RESOURCES, node_kind="SUBNET")["data"]
+    assert narrowed["total"] < body["total"]
+    assert narrowed["filters"]["type_counts"] == body["filters"]["type_counts"]
+
+
+def test_a_narrowed_reader_counts_only_what_they_may_see(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    client, token = client_for(engine, only(tenant_id, THEIRS), settings)
+    filters = get(client, token, RESOURCES)["data"]["filters"]
+    assert filters["type_counts"] == [{"value": "AWS::EC2::VPC", "resources": 1}]
+    assert filters["region_counts"] == [{"value": REGION, "resources": 1}]
+
+
 def test_a_narrowed_reader_is_not_offered_a_filter_for_somebody_elses_account(
     engine: Engine, tenant_id: UUID, settings: Settings
 ) -> None:

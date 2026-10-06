@@ -223,8 +223,11 @@ test('on a wide screen Hide gives the screen the rail and Show takes it back', a
   await toggle.click();
   await expect(page.getByTestId('brand')).toBeHidden();
   await expect(page.locator('#sections')).toBeHidden();
+  // Under reduced motion every property still transitions for a hundredth of a millisecond,
+  // tokens.css, so the column reaches its width on the next frame rather than the one that hid
+  // the sections. Measured in that frame it still reads as open, one run in five.
+  await expect.poll(async () => (await measure(page)).rail).toBe(RAIL.collapsed);
   const hidden = await measure(page);
-  expect(hidden.rail).toBe(RAIL.collapsed);
   expect(hidden.main - open.main).toBeCloseTo(RAIL.expanded - RAIL.collapsed, 0);
 
   // The choice is the person's, so it outlives a reload.
@@ -234,5 +237,5 @@ test('on a wide screen Hide gives the screen the rail and Show takes it back', a
 
   await page.getByTestId('nav-toggle').click();
   await expect(page.getByTestId('brand')).toBeVisible();
-  expect((await measure(page)).rail).toBe(RAIL.expanded);
+  await expect.poll(async () => (await measure(page)).rail).toBe(RAIL.expanded);
 });

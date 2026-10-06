@@ -24,6 +24,10 @@ Every Terraform resource carries a `finops:module` tag. A daily collector makes 
 
 **Amended 2026-10-05, ISS-230.** The assistant's model calls are not resources, so no Terraform tag reaches them. The hub stack routes each model through an application inference profile tagged `finops:module = assistant`, and the task role may reach the model only through it, so its spend arrives as a module of its own. Unverified against a real bill, ISS-002.
 
+Since TASK-P8-013, 2026-10-06, the screen draws Meter's Effective Cost per day by module for the
+last thirty days beside the ranking by module, from the same daily rows. A module with no row on
+a day other modules have is drawn at zero for it, because that day was collected.
+
 ## Failure behaviour
 
 Governed by the closed error taxonomy in [FEAT-006](FEAT-006-typed-errors-and-freshness.md).

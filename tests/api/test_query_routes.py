@@ -10,7 +10,7 @@ makes an estate look smaller than it is.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID, uuid4, uuid5
 
@@ -878,6 +878,83 @@ def test_another_tenant_cannot_remediate_this_finding(
     assert control.writes == []
 
 
+# --- the trend ----------------------------------------------------------------
+
+
+def _audited(engine: Engine, tenant: UUID, rows: list[tuple[str, date, str, str]]) -> None:
+    """The seeded queries' audits replaced by these, each a query, a day, a cost and a grade."""
+    with engine.begin() as connection:
+        connection.execute(text("DELETE FROM query_finding WHERE tenant_id = :t"), {"t": tenant})
+        for which, day, cost, provenance in rows:
+            stamp = datetime.combine(day, datetime.min.time(), tzinfo=UTC)
+            connection.execute(
+                models.query_finding.insert().values(
+                    finding_id=uuid4(),
+                    tenant_id=tenant,
+                    query_id=key(tenant, which),
+                    run_date=day,
+                    runs_per_day=Decimal("24.00"),
+                    scan_bytes_per_run=1,
+                    cost_month_usd=Decimal(cost),
+                    provenance=provenance,
+                    measured_runs=24 if provenance == "measured" else None,
+                    severity="low",
+                    why="audited",
+                    as_of=stamp,
+                    collected_at=stamp,
+                )
+            )
+
+
+def test_the_trend_sums_every_query_audited_each_day_a_deleted_one_included(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """The expensive query was audited yesterday and is gone today, deleted by a fix.
+
+    Summing today's queries' histories would leave its yesterday off the chart and the
+    fall it caused invisible, which is the one thing a trend after a fix is read for.
+    """
+    seed(engine, tenant_id)
+    today = datetime.now(UTC).date()
+    yesterday = today - timedelta(days=1)
+    _audited(
+        engine,
+        tenant_id,
+        [
+            ("cheap", yesterday, "1.00", "measured"),
+            ("expensive", yesterday, "100.00", "modelled"),
+            ("cheap", today, "2.00", "measured"),
+        ],
+    )
+    client, token = client_for(engine, everything(tenant_id), settings)
+    payload = client.get("/api/v1/query/trend", headers=auth(token)).json()
+    days = [
+        (row["run_date"], Decimal(row["cost_month_usd"]), row["queries"], row["provenance"])
+        for row in payload["data"]
+    ]
+    assert days == [
+        (yesterday.isoformat(), Decimal("101.00"), 2, "modelled"),
+        (today.isoformat(), Decimal("2.00"), 1, "measured"),
+    ]
+    # As fresh as the newest audit, not as stale as the window's first day.
+    assert payload["meta"]["as_of"].startswith(today.isoformat())
+
+
+def test_the_trend_sums_only_what_the_scope_can_see(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    seed(engine, tenant_id)
+    today = datetime.now(UTC).date()
+    _audited(
+        engine,
+        tenant_id,
+        [("cheap", today, "2.00", "measured"), ("expensive", today, "100.00", "modelled")],
+    )
+    client, token = client_for(engine, narrow(tenant_id), settings)
+    payload = client.get("/api/v1/query/trend", headers=auth(token)).json()
+    assert [Decimal(row["cost_month_usd"]) for row in payload["data"]] == [Decimal("2.00")]
+
+
 def test_every_query_route_carries_meta(
     engine: Engine, tenant_id: UUID, settings: Settings
 ) -> None:
@@ -887,6 +964,7 @@ def test_every_query_route_carries_meta(
         "/api/v1/query/findings",
         f"/api/v1/query/findings/{key(tenant_id, 'expensive')}",
         "/api/v1/query/instances",
+        "/api/v1/query/trend",
     ):
         payload = client.get(path, headers=auth(token)).json()
         assert set(payload["meta"]) >= {

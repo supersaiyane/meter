@@ -378,6 +378,15 @@
   stroke-width: 0;
 }
 
+/* Money that belongs to no group, unallocated spend, is an outline rather than a colour or a
+   hatch, the mark RankedBars gives it, because the hatch already means modelled. */
+.meter-mark-gap {
+  fill: var(--surface);
+  stroke: var(--text-faint);
+  stroke-width: 1;
+  stroke-dasharray: 3 2;
+}
+
 .meter-mark-forecast {
   fill-opacity: 0.18;
   stroke-width: 1.5;
@@ -392,6 +401,21 @@
   stroke-width: 1.5;
   stroke-dasharray: 2 3;
   vector-effect: non-scaling-stroke;
+}
+
+/* A marked period, an anomaly on the day it happened, is a rule across the whole scale in the
+   severity ink, so it reads as an event on the chart rather than as another series. */
+.meter-marker {
+  stroke: var(--severity-4);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+/* A heatmap's row and column names, sized to its cells and drawn in the muted ink, so they read
+   in both themes. Unstyled, they were the SVG default, taller than a cell and black on dark. */
+.meter-axis-label {
+  fill: var(--text-muted);
+  font-size: 8px;
 }
 
 .meter-heat {

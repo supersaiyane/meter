@@ -22,6 +22,7 @@ from sqlalchemy import Row, func, select
 from finops_api.db import models
 from finops_api.db.repositories.base import ScopedRepository
 from finops_api.guards import require_scope, scope_predicate
+from finops_core.domain.insight import Provenance
 from finops_core.domain.tenant import Scope
 from finops_query.severity import ENGINE_SCAN
 
@@ -125,6 +126,36 @@ class QueryFindingRepository(ScopedRepository):
                 self.table.c.run_date >= cutoff,
             )
             .order_by(self.table.c.query_id, self.table.c.run_date)
+        )
+        return self._connection.execute(statement).all()
+
+    def daily_totals(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+        """Every audited query's monthly cost, summed per day over the last `TREND_DAYS`.
+
+        Every query audited on a day rather than today's queries only. A dashboard deleted
+        after a fix leaves its earlier days here, so the fall it caused shows as a fall instead
+        of the dashboard vanishing from its own past. Each day carries its stalest timestamps,
+        the same rule a set of facts follows everywhere else.
+        """
+        confirmed = require_scope(scope)
+        cutoff = func.current_date() - self.TREND_DAYS
+        statement: Any = (
+            select(
+                self.table.c.run_date,
+                func.sum(self.table.c.cost_month_usd).label("cost_month_usd"),
+                func.count().label("queries"),
+                func.bool_and(self.table.c.provenance == Provenance.MEASURED.value).label(
+                    "measured"
+                ),
+                func.min(self.table.c.as_of).label("as_of"),
+                func.min(self.table.c.collected_at).label("collected_at"),
+            )
+            .where(
+                scope_predicate(self.table, confirmed),
+                self.table.c.run_date >= cutoff,
+            )
+            .group_by(self.table.c.run_date)
+            .order_by(self.table.c.run_date)
         )
         return self._connection.execute(statement).all()
 

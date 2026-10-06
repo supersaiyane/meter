@@ -20,14 +20,28 @@ export interface HeatmapProps {
   readonly provenance: Provenance;
   readonly label: string;
   readonly format: (value: number) => string;
+  /** What the table says for a cell with no figure: not collected, unless the caller knows. */
+  readonly missing?: string;
 }
 
 const CELL = 14;
 const GAP = 2;
 const LEFT = 48;
 const TOP = 14;
+/** About how wide one character of an axis label is, in the drawing's own units. */
+const CHAR = 4.6;
+/** Column names longer than this are slanted, so neighbours do not run into each other. */
+const UPRIGHT = 3;
 
-export function Heatmap({ rows, columns, values, provenance, label, format }: HeatmapProps) {
+export function Heatmap({
+  rows,
+  columns,
+  values,
+  provenance,
+  label,
+  format,
+  missing = 'not collected',
+}: HeatmapProps) {
   const id = useChartId();
   const largest = Math.max(0, ...values.flat().map((value) => value ?? 0));
   if (rows.length === 0 || columns.length === 0) {
@@ -37,8 +51,16 @@ export function Heatmap({ rows, columns, values, provenance, label, format }: He
       </p>
     );
   }
-  const width = LEFT + columns.length * (CELL + GAP);
-  const height = TOP + rows.length * (CELL + GAP);
+  // The gutters grow to the names, so a long account or collector name is drawn whole rather
+  // than under the cells, and slanted names get the room above and to the right they rise into.
+  const longestRow = Math.max(0, ...rows.map((row) => row.length));
+  const longestColumn = Math.max(0, ...columns.map((column) => column.length));
+  const left = Math.max(LEFT, Math.ceil(longestRow * CHAR) + 8);
+  const slanted = longestColumn > UPRIGHT;
+  const rise = slanted ? Math.ceil(longestColumn * CHAR * Math.SQRT1_2) : 0;
+  const top = TOP + rise;
+  const width = left + columns.length * (CELL + GAP) + rise;
+  const height = top + rows.length * (CELL + GAP);
   const shade = (value: number): string =>
     (HEAT_FLOOR + (1 - HEAT_FLOOR) * (largest === 0 ? 0 : value / largest)).toFixed(4);
 
@@ -51,22 +73,27 @@ export function Heatmap({ rows, columns, values, provenance, label, format }: He
         aria-label={label}
       >
         <Hatch id={id} />
-        {columns.map((column, c) => (
-          <text
-            key={column}
-            x={LEFT + c * (CELL + GAP) + CELL / 2}
-            y={TOP - 4}
-            textAnchor="middle"
-            className="meter-axis-label"
-          >
-            {column}
-          </text>
-        ))}
+        {columns.map((column, c) => {
+          const x = left + c * (CELL + GAP) + CELL / 2;
+          const y = top - 4;
+          return (
+            <text
+              key={column}
+              x={x}
+              y={y}
+              textAnchor={slanted ? 'start' : 'middle'}
+              transform={slanted ? `rotate(-45 ${String(x)} ${String(y)})` : undefined}
+              className="meter-axis-label"
+            >
+              {column}
+            </text>
+          );
+        })}
         {rows.map((row, r) => (
           <g key={row}>
             <text
-              x={LEFT - 6}
-              y={TOP + r * (CELL + GAP) + CELL - 3}
+              x={left - 6}
+              y={top + r * (CELL + GAP) + CELL - 3}
               textAnchor="end"
               className="meter-axis-label"
             >
@@ -75,8 +102,8 @@ export function Heatmap({ rows, columns, values, provenance, label, format }: He
             {columns.map((column, c) => {
               const value = values[r]?.[c] ?? null;
               const box = {
-                x: LEFT + c * (CELL + GAP),
-                y: TOP + r * (CELL + GAP),
+                x: left + c * (CELL + GAP),
+                y: top + r * (CELL + GAP),
                 width: CELL,
                 height: CELL,
               };
@@ -116,7 +143,7 @@ export function Heatmap({ rows, columns, values, provenance, label, format }: He
           cells: columns.map((_, c) => {
             const value = values[r]?.[c] ?? null;
             return value === null
-              ? { value: null, text: 'not collected' }
+              ? { value: null, text: missing }
               : { value, text: format(value) };
           }),
         }))}

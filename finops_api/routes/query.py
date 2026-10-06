@@ -35,6 +35,7 @@ from finops_api.schemas import (
     CostPointOut,
     Envelope,
     FailureOut,
+    QueryCostDayOut,
     QueryFindingDetailOut,
     QueryFindingOut,
     QueryGroupOut,
@@ -42,6 +43,7 @@ from finops_api.schemas import (
     SurfaceInstanceOut,
 )
 from finops_core.config import Settings
+from finops_core.domain.insight import Provenance
 from finops_core.domain.query import SurfaceInstance, SurfaceKind, WriteLevel
 from finops_core.domain.tenant import Scope
 from finops_ingest.remediation import apply_panel_rewrite, undo_change
@@ -149,6 +151,50 @@ def query_findings(
             # Workspaces, not findings. How many findings came back says nothing
             # about how much of the estate they were drawn from, and an
             # unreachable workspace hides an unknown number of them.
+            coverage=surfaces.coverage(scope),
+            coverage_unit="workspaces",
+        ),
+    )
+
+
+@router.get("/query/trend", response_model=Envelope[list[QueryCostDayOut]])
+@exportable(ExportSpec(title="Query cost by day", row_model=QueryCostDayOut, rows=listed))
+def query_trend(
+    scope: Scope = Depends(get_scope),
+    connection: Connection = Depends(get_connection),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[list[QueryCostDayOut]]:
+    """What the audited queries cost each month, day by day, over the last thirty days.
+
+    Summed over every query audited on a day, so the trend falls when a fix deletes a
+    dashboard as well as when it slows one down.
+    """
+    days = QueryFindingRepository(connection, context).daily_totals(scope)
+    points = [
+        QueryCostDayOut(
+            run_date=row.run_date,
+            cost_month_usd=row.cost_month_usd,
+            queries=int(row.queries),
+            provenance=(Provenance.MEASURED if row.measured else Provenance.MODELLED).value,
+            as_of=row.as_of,
+            collected_at=row.collected_at,
+        )
+        for row in days
+    ]
+    latest = points[-1] if points else None
+    surfaces = SurfaceInstanceRepository(connection, context)
+    return Envelope(
+        data=points,
+        meta=build_meta(
+            connection,
+            scope,
+            context,
+            visible=len(points),
+            # The latest day's timestamps, not the stalest across the window: a trend is as
+            # fresh as its newest audit, and its oldest day is thirty days old by design.
+            as_of=None if latest is None else latest.as_of,
+            collected_at=None if latest is None else latest.collected_at,
+            extra_failures=_unreadable(surfaces.unreachable(scope)),
             coverage=surfaces.coverage(scope),
             coverage_unit="workspaces",
         ),

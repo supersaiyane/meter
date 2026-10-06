@@ -854,6 +854,24 @@ class CostPointOut(BaseModel):
     provenance: str
 
 
+class QueryCostDayOut(BaseModel):
+    """What every query audited on one day cost each month, summed. The trend on Query cost.
+
+    Every query audited that day rather than only those audited today, so a dashboard deleted
+    after a fix leaves its earlier days behind and the fall it caused is on the chart. Measured
+    only when every query that day was measured, the rule the per query trend keeps.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    run_date: date
+    cost_month_usd: Decimal
+    queries: int
+    provenance: str
+    as_of: datetime
+    collected_at: datetime
+
+
 class QueryFindingOut(BaseModel):
     """One expensive query, as the findings list shows it."""
 
@@ -1190,6 +1208,19 @@ class BlastRadiusOut(BaseModel):
     max_depth: int
 
 
+class FacetCountOut(BaseModel):
+    """One filter value and how many resources in the scope carry it. TASK-P8-013.
+
+    Null is a value like any other here: a null region is the account's global slice, and a
+    null type is a resource the provider gave no type, both counted rather than dropped.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    value: str | None
+    resources: int
+
+
 class ResourceFiltersOut(BaseModel):
     """The filter values that occur in this scope, read from the data rather than listed.
 
@@ -1206,6 +1237,11 @@ class ResourceFiltersOut(BaseModel):
     region_id: tuple[str, ...]
     node_kind: tuple[str, ...]
     resource_type: tuple[str, ...]
+    #: How many resources each region and each type holds, largest first, over the scope
+    #: rather than under the list's own filters, the rule the values above follow. Defaulted,
+    #: so a payload built before the counts existed still validates.
+    region_counts: tuple[FacetCountOut, ...] = ()
+    type_counts: tuple[FacetCountOut, ...] = ()
 
 
 class RegionOut(BaseModel):

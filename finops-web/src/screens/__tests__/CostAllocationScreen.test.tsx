@@ -1,9 +1,11 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { CostAllocationScreen } from '../CostAllocationScreen';
 import { Harness } from './Harness';
-import { clientReturning } from './fixtures';
+import type { ApiClient } from '../../api/client';
+import type { ApiEnvelope } from '../../api/types';
+import { clientReturning, exploreOf, metaOf } from './fixtures';
 import { costAllocationFixture } from '../../api/fixtures/cost';
 import { violationsIn } from '../../components/__tests__/axe';
 
@@ -57,7 +59,7 @@ describe('CostAllocationScreen', () => {
 
   it('shows every figure as measured', async () => {
     renderAllocation();
-    await screen.findByTestId('ranked-bars');
+    await screen.findByTestId('treemap');
     const figures = document.querySelectorAll('[data-testid="figure"]');
     expect(figures.length).toBeGreaterThan(0);
     for (const figure of figures) {
@@ -67,8 +69,79 @@ describe('CostAllocationScreen', () => {
 
   it('has no accessibility violations', async () => {
     const { container } = renderAllocation();
-    await screen.findByTestId('ranked-bars');
+    await screen.findByTestId('treemap');
     expect(await violationsIn(container)).toEqual([]);
+  });
+});
+
+/** Answers a path, or failing that its route, so the dated trend resolves too. */
+function byRoute(routes: Readonly<Record<string, ApiEnvelope<unknown>>>): ApiClient {
+  return {
+    ...clientReturning(routes),
+    get: <T,>(path: string): Promise<ApiEnvelope<T>> => {
+      const answer = routes[path] ?? routes[path.split('?')[0] ?? path];
+      return answer === undefined
+        ? Promise.reject(new Error(`no stub: ${path}`))
+        : Promise.resolve(answer as ApiEnvelope<T>);
+    },
+  };
+}
+
+describe('CostAllocationScreen, the charts', () => {
+  it('draws whose spend it is as areas, with the untagged part outlined', async () => {
+    renderAllocation();
+    const share = await screen.findByRole('region', { name: 'Whose spend it is, by team' });
+    await waitFor(() => {
+      expect(share.querySelector('[data-testid="treemap-cell"][data-gap="true"]')).toHaveClass(
+        'meter-mark-gap',
+      );
+    });
+  });
+
+  it('draws each month by the tag once a charge this period carries it', async () => {
+    const seen: string[] = [];
+    const client = byRoute({
+      '/api/v1/cost/allocation?tag=team': costAllocationFixture(),
+      '/api/v1/cost/explore': {
+        data: exploreOf({
+          series: ['platform'],
+          points: [
+            { bucket: '2026-08-01', series: 'platform', cost: '900.00' },
+            { bucket: '2026-09-01', series: 'platform', cost: '1100.00' },
+          ],
+        }),
+        meta: metaOf(),
+      },
+    });
+    render(
+      <Harness
+        client={{
+          ...client,
+          get: <T,>(path: string) => {
+            seen.push(path);
+            return client.get<T>(path);
+          },
+        }}
+      >
+        <CostAllocationScreen />
+      </Harness>,
+    );
+    const trend = await screen.findByRole('region', { name: 'Each month, by team' });
+    await waitFor(() => {
+      expect(trend.querySelector('[data-testid="stacked-area"]')).not.toBeNull();
+    });
+    expect(seen.find((path) => path.startsWith('/api/v1/cost/explore'))).toContain(
+      'group_by_tag=team',
+    );
+  });
+
+  it('says there is no trend by a tag nothing carries, rather than asking for one', async () => {
+    const untagged = costAllocationFixture();
+    renderAllocation({
+      ...untagged,
+      data: untagged.data.filter((row) => row.name === 'unallocated'),
+    });
+    expect(await screen.findByTestId('allocation-untrended')).toHaveTextContent('team');
   });
 });
 

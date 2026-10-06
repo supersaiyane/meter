@@ -1,9 +1,11 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { CostAnomaliesScreen } from '../CostAnomaliesScreen';
 import { Harness } from './Harness';
-import { clientReturning } from './fixtures';
+import type { ApiClient } from '../../api/client';
+import type { ApiEnvelope } from '../../api/types';
+import { clientReturning, exploreOf, metaOf } from './fixtures';
 import { costAnomaliesFixture } from '../../api/fixtures/cost';
 import { violationsIn } from '../../components/__tests__/axe';
 
@@ -15,7 +17,50 @@ function renderAnomalies(fixture = costAnomaliesFixture()) {
   );
 }
 
+/** Answers by route, so the chart's dated Explorer view resolves whatever today is. */
+function byRoute(routes: Readonly<Record<string, ApiEnvelope<unknown>>>): ApiClient {
+  return {
+    ...clientReturning(routes),
+    get: <T,>(path: string): Promise<ApiEnvelope<T>> => {
+      const answer = routes[path.split('?')[0] ?? path];
+      return answer === undefined
+        ? Promise.reject(new Error(`no stub: ${path}`))
+        : Promise.resolve(answer as ApiEnvelope<T>);
+    },
+  };
+}
+
 describe('CostAnomaliesScreen', () => {
+  it('draws each day by service and marks every day that stood out with one rule', async () => {
+    const anomalies = costAnomaliesFixture();
+    const days = [...new Set(anomalies.data.anomalies.map((one) => one.day))].sort();
+    // A day either side, so every marked day sits inside the drawn span.
+    const buckets = ['2026-09-01', ...days, '2026-09-30'];
+    const explore = exploreOf({
+      series: ['AmazonEC2'],
+      points: buckets.map((bucket) => ({ bucket, series: 'AmazonEC2', cost: '100.00' })),
+    });
+    render(
+      <Harness
+        client={byRoute({
+          '/api/v1/cost/anomalies': anomalies,
+          '/api/v1/cost/explore': { data: explore, meta: metaOf() },
+        })}
+      >
+        <CostAnomaliesScreen />
+      </Harness>,
+    );
+    const chart = await screen.findByRole('region', {
+      name: 'Each day, with the days that stood out',
+    });
+    await waitFor(() => {
+      expect(chart.querySelectorAll('[data-testid="period-marker"]')).toHaveLength(days.length);
+    });
+    for (const one of anomalies.data.anomalies) {
+      expect(chart).toHaveTextContent(one.service_name);
+    }
+  });
+
   it('says an estate is too young to judge rather than saying it is fine', async () => {
     // The hardest thing on this screen. Four days of history is not an estate
     // with no anomalies, and a reader who takes the silence for safety acts on

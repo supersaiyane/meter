@@ -10,13 +10,8 @@ import { StateBoundary } from '../components/StateBoundary';
 import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { signedDollars } from './exploreModel';
-import {
-  dailyPace,
-  dayName,
-  openRecommendations,
-  wholeDollars,
-  type Stacked,
-} from './overviewKpis';
+import { type Stacked } from './exploreSeries';
+import { dailyPace, dayName, openRecommendations, wholeDollars } from './overviewKpis';
 import { surfaceStateFor } from './surfaceStateFor';
 
 /**

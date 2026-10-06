@@ -24,14 +24,12 @@ import type { Column } from '../components/tableConfig';
 import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { AnomaliesPanel, DailyCostChart, Panel } from './OverviewParts';
+import { exploreQuery, lastDays, stacked } from './exploreSeries';
 import {
-  exploreQuery,
-  lastDays,
   MONTH_BY_SERVICE,
   openRecommendations,
   rankedRows,
   RIGHTSIZING,
-  stacked,
   wholeDollars,
 } from './overviewKpis';
 import { severityOf } from './querySeverity';
