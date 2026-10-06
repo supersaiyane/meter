@@ -2,10 +2,12 @@ import { useState } from 'react';
 
 import { useGeography, useResources } from '../api/queries';
 import { FixtureBand } from '../components/FixtureBand';
+import { DataTable } from '../components/DataTable';
 import { StateBoundary } from '../components/StateBoundary';
 import { WorldMap } from '../components/WorldMap';
 import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
+import { nodeColumns } from './nodeColumns';
 import { surfaceStateFor } from './surfaceStateFor';
 
 /**
@@ -111,43 +113,27 @@ export function GeographyScreen() {
                 {selected.resources === 1 ? 'resource' : 'resources'} in{' '}
                 {selected.regions.map((region) => region.region_id).join(' and ')}
               </h3>
-              <table data-testid="geography-table">
-                <caption data-testid="geography-table-count">
-                  {/* The denominator, like the resource list's. A page with none reads as the
-                      whole continent, and a reader who acts on that acts on a subset. */}
-                  {page === undefined
-                    ? 'Loading'
-                    : page.total === rows.length
-                      ? `All ${String(page.total)} of them`
-                      : `The first ${String(rows.length)} of ${String(page.total)}`}
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Resource</th>
-                    <th scope="col">Kind</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Account</th>
-                    <th scope="col">Region</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((node) => (
-                    <tr key={node.node_id}>
-                      <th scope="row">
-                        {/* Every row reaches the page that says what it costs and what is wrong
-                            with it, the same link the resource list uses. */}
-                        <Link to={`/inventory/resources/${node.node_id}`}>
-                          {node.name ?? node.provider_id}
-                        </Link>
-                      </th>
-                      <td>{node.node_kind}</td>
-                      <td>{node.resource_type}</td>
-                      <td>{node.account_id}</td>
-                      <td>{node.region_id ?? 'global'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div data-testid="geography-table">
+                <DataTable
+                  rows={rows}
+                  columns={nodeColumns(
+                    page !== undefined && page.total === rows.length,
+                    'Region',
+                    (node) => node.region_id ?? 'global',
+                  )}
+                  rowKey={(node) => node.node_id}
+                  // The denominator, like the resource list's. A page with none reads as the
+                  // whole continent, and a reader who acts on that acts on a subset.
+                  caption={
+                    page === undefined
+                      ? 'Loading'
+                      : page.total === rows.length
+                        ? `All ${String(page.total)} of them`
+                        : `The first ${String(rows.length)} of ${String(page.total)}`
+                  }
+                  captionTestId="geography-table-count"
+                />
+              </div>
               {page !== undefined && page.total > rows.length ? (
                 // Not paginated here on purpose. The resource list already does paging and
                 // filtering properly, and a second pager on a different screen is a second

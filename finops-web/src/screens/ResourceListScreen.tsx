@@ -2,14 +2,15 @@ import { useState } from 'react';
 
 import { useGraphCoverage, useResources } from '../api/queries';
 import { ChartPanel } from '../components/ChartPanel';
+import { DataTable } from '../components/DataTable';
 import { FixtureBand } from '../components/FixtureBand';
 import { RankedBars } from '../components/RankedBars';
 import { StateBoundary } from '../components/StateBoundary';
 import type { ApiResourceFilters, ApiSliceCoverage, ApiTopologyNode } from '../api/types';
 import { useFilters } from '../shell/filters';
-import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { RESOURCE_FILTERS } from '../shell/sections';
+import { nodeColumns } from './nodeColumns';
 import { saidOf } from './sliceCoverage';
 import { surfaceStateFor } from './surfaceStateFor';
 
@@ -285,44 +286,22 @@ export function ResourceListScreen() {
                 the thing that handles the case and it never runs. What this screen owes the
                 boundary is the filter label below, so its message names what was filtered on
                 rather than saying "none" over a narrowed list. */}
-            <table data-testid="resources">
-              <caption data-testid="resources-count">
-                {/* The denominator, every time. A page that does not publish it reads as
-                      the whole estate, and a reader who acts on that is acting on a subset. */}
-                {page.total === rows.length
-                  ? `All ${String(page.total)} resources in your scope`
-                  : `${String(page.offset + 1)} to ${String(shown)} of ${String(page.total)} ` +
-                    'resources in your scope'}
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">Resource</th>
-                  <th scope="col">Kind</th>
-                  <th scope="col">Type</th>
-                  <th scope="col">Account</th>
-                  <th scope="col">Location</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((node) => (
-                  <tr key={node.node_id}>
-                    <th scope="row">
-                      {/* Every row leads to the page that answers what it costs and what is
-                            wrong with it, which is the whole reason FEAT-053 exists. */}
-                      <Link to={`/inventory/resources/${node.node_id}`}>
-                        {node.name ?? node.provider_id}
-                      </Link>
-                    </th>
-                    <td>{node.node_kind}</td>
-                    {/* The provider's own word, beside the lossy kind. Ten of the estate's
-                          types are OTHER, so without this a list is unlabelled boxes. */}
-                    <td>{node.resource_type}</td>
-                    <td>{node.account_id}</td>
-                    <td>{placeOf(node)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div data-testid="resources">
+              <DataTable
+                rows={rows}
+                columns={nodeColumns(page.total === rows.length, 'Location', placeOf)}
+                rowKey={(node) => node.node_id}
+                // The denominator, every time. A page that does not publish it reads as the
+                // whole estate, and a reader who acts on that is acting on a subset.
+                caption={
+                  page.total === rows.length
+                    ? `All ${String(page.total)} resources in your scope`
+                    : `${String(page.offset + 1)} to ${String(shown)} of ${String(page.total)} ` +
+                      'resources in your scope'
+                }
+                captionTestId="resources-count"
+              />
+            </div>
 
             <p role="group" aria-label="Pages">
               <button

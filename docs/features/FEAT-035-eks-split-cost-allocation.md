@@ -40,6 +40,8 @@ other charge, reconciles to the same period total, and is scoped by the same gua
 A product apportioning cluster cost itself would be producing a modelled figure and
 would have to say so on every screen.
 
+Since TASK-P8-013, 2026-10-06, each cluster's workload table is a `DataTable`, largest first and sortable, with the workloads' measured cost totalled under it, the figure the reconciliation above states.
+
 ## Failure behaviour
 
 Split cost allocation data must be enabled on the Data Export, ISS-003. Until it

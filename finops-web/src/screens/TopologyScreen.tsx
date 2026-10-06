@@ -1,8 +1,10 @@
 import { lazy, Suspense, useState } from 'react';
 
 import { useGraphCoverage, useInventoryRoots, useTopologySubgraph } from '../api/queries';
-import type { ApiSliceCoverage } from '../api/types';
+import type { ApiSliceCoverage, ApiTopologyEdge, ApiTopologyNode } from '../api/types';
+import { DataTable } from '../components/DataTable';
 import { StateBoundary } from '../components/StateBoundary';
+import type { Column } from '../components/tableConfig';
 import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { saidOf } from './sliceCoverage';
@@ -37,6 +39,83 @@ const TopologyCanvas = lazy(async () => {
 });
 
 /** One incomplete slice, as a sentence a reader can act on. */
+/** The map's resources as a table, its accessible equivalent, TASK-P8-013 on `DataTable`. */
+const NODE_COLUMNS: readonly Column<ApiTopologyNode>[] = [
+  {
+    key: 'resource',
+    header: 'Resource',
+    rowHeader: true,
+    // FEAT-053. The map answers what is connected to what and nothing else, so every resource
+    // on it leads to the page that answers what it costs and what is wrong with it.
+    render: (node) => (
+      <Link to={`/inventory/resources/${node.node_id}`}>{node.name ?? node.provider_id}</Link>
+    ),
+    sortValue: (node) => node.name ?? node.provider_id,
+  },
+  {
+    key: 'type',
+    header: 'Type',
+    render: (node) => node.resource_type,
+    sortValue: (node) => node.resource_type,
+  },
+  {
+    key: 'account',
+    header: 'Account',
+    render: (node) => node.account_id,
+    sortValue: (node) => node.account_id,
+  },
+  {
+    // A null region is global, never a region nobody could read.
+    key: 'region',
+    header: 'Region',
+    render: (node) => node.region_id ?? 'global',
+    sortValue: (node) => node.region_id ?? 'global',
+  },
+  {
+    // A null zone is regional, never an unknown zone.
+    key: 'zone',
+    header: 'Zone',
+    render: (node) => node.availability_zone ?? 'regional',
+    sortValue: (node) => node.availability_zone ?? 'regional',
+  },
+];
+
+const EDGE_COLUMNS: readonly Column<ApiTopologyEdge>[] = [
+  {
+    key: 'from',
+    header: 'From',
+    rowHeader: true,
+    render: (edge) => edge.from_node_id,
+    sortValue: (edge) => edge.from_node_id,
+  },
+  {
+    key: 'relationship',
+    header: 'Relationship',
+    render: (edge) => edge.edge_kind,
+    sortValue: (edge) => edge.edge_kind,
+  },
+  {
+    key: 'to',
+    header: 'To',
+    // Said rather than drawn only, because the table is the path a screen reader takes and a
+    // dashed line means nothing to it.
+    render: (edge) => (
+      <>
+        {edge.to_node_id}
+        {edge.leaves_the_graph ? <span> (outside this view)</span> : null}
+        {edge.is_cross_account ? <span> (another account)</span> : null}
+      </>
+    ),
+    sortValue: (edge) => edge.to_node_id,
+  },
+  {
+    key: 'source',
+    header: 'Read from',
+    render: (edge) => edge.source,
+    sortValue: (edge) => edge.source,
+  },
+];
+
 export function TopologyScreen() {
   const [rootId, setRootId] = useState<string | null>(null);
   const [depth, setDepth] = useState<number>(2);
@@ -197,70 +276,19 @@ export function TopologyScreen() {
               <TopologyCanvas nodes={subgraph.nodes} edges={subgraph.edges} />
             </Suspense>
 
-            <table>
-              <caption>
-                The same {String(subgraph.nodes.length)} resources and{' '}
-                {String(subgraph.edges.length)} relationships, in a readable order. This is the
-                accessible equivalent of the map above rather than a summary of it.
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">Resource</th>
-                  <th scope="col">Type</th>
-                  <th scope="col">Account</th>
-                  <th scope="col">Region</th>
-                  <th scope="col">Zone</th>
-                </tr>
-              </thead>
-              <tbody>
-                {subgraph.nodes.map((node) => (
-                  <tr key={node.node_id}>
-                    <th scope="row">
-                      {/* FEAT-053. The map answers what is connected to what and nothing
-                          else, so every resource on it leads to the page that answers what
-                          it costs and what is wrong with it. */}
-                      <Link to={`/inventory/resources/${node.node_id}`}>
-                        {node.name ?? node.provider_id}
-                      </Link>
-                    </th>
-                    <td>{node.resource_type}</td>
-                    <td>{node.account_id}</td>
-                    {/* A null region is global, never a region nobody could read. */}
-                    <td>{node.region_id ?? 'global'}</td>
-                    {/* A null zone is regional, never an unknown zone. */}
-                    <td>{node.availability_zone ?? 'regional'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <DataTable
+              rows={subgraph.nodes}
+              columns={NODE_COLUMNS}
+              rowKey={(node) => node.node_id}
+              caption={`The same ${String(subgraph.nodes.length)} resources and ${String(subgraph.edges.length)} relationships, in a readable order. This is the accessible equivalent of the map above rather than a summary of it.`}
+            />
 
-            <table>
-              <caption>Relationships, with the API that supplied each one.</caption>
-              <thead>
-                <tr>
-                  <th scope="col">From</th>
-                  <th scope="col">Relationship</th>
-                  <th scope="col">To</th>
-                  <th scope="col">Read from</th>
-                </tr>
-              </thead>
-              <tbody>
-                {subgraph.edges.map((edge) => (
-                  <tr key={`${edge.from_node_id}->${edge.to_node_id}:${edge.edge_kind}`}>
-                    <th scope="row">{edge.from_node_id}</th>
-                    <td>{edge.edge_kind}</td>
-                    <td>
-                      {edge.to_node_id}
-                      {/* Said rather than drawn only, because the table is the path a
-                          screen reader takes and a dashed line means nothing to it. */}
-                      {edge.leaves_the_graph ? <span> (outside this view)</span> : null}
-                      {edge.is_cross_account ? <span> (another account)</span> : null}
-                    </td>
-                    <td>{edge.source}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <DataTable
+              rows={subgraph.edges}
+              columns={EDGE_COLUMNS}
+              rowKey={(edge) => `${edge.from_node_id}->${edge.to_node_id}:${edge.edge_kind}`}
+              caption="Relationships, with the API that supplied each one."
+            />
           </>
         )}
       </StateBoundary>

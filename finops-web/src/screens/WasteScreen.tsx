@@ -14,7 +14,7 @@ import { useReportMeta } from '../shell/metaRegistry';
 import { RECOMMENDATION_FILTERS } from '../shell/sections';
 import { severityLevel } from './querySeverity';
 import { surfaceStateFor } from './surfaceStateFor';
-import type { ApiRecommendation } from '../api/types';
+import type { ApiRecommendation, ApiRefusal } from '../api/types';
 
 /**
  * What the estate should cost instead. FEAT-025, FEAT-026, FEAT-028.
@@ -60,6 +60,45 @@ function savingByClass(rows: readonly ApiRecommendation[]): readonly RankedPoint
   }
   return [...totals].map(([label, value]) => ({ label: wasteClassName(label), value }));
 }
+
+/** What was looked at and left alone, TASK-P8-013 on `DataTable`. No money, so no total. */
+const REFUSAL_COLUMNS: readonly Column<ApiRefusal>[] = [
+  {
+    key: 'resource',
+    header: 'Resource',
+    rowHeader: true,
+    render: (one) => one.resource_id,
+    sortValue: (one) => one.resource_id,
+  },
+  {
+    key: 'rule',
+    header: 'Rule',
+    render: (one) => wasteClassName(one.waste_class),
+    sortValue: (one) => wasteClassName(one.waste_class),
+  },
+  {
+    // Whole, never shortened. A judgement a reader cannot argue with is one they have to
+    // take on trust.
+    key: 'reason',
+    header: 'Why it was left alone',
+    prose: true,
+    render: (one) => one.reason,
+  },
+  {
+    key: 'account',
+    header: 'Account',
+    render: (one) => one.account_id,
+    sortValue: (one) => one.account_id,
+  },
+  {
+    key: 'observed',
+    header: 'Observed',
+    numeric: true,
+    render: (one) =>
+      `${String(one.observation_days)} ${one.observation_days === 1 ? 'day' : 'days'}`,
+    sortValue: (one) => one.observation_days,
+  },
+];
 
 export function WasteScreen() {
   const query = useRecommendations();
@@ -225,36 +264,16 @@ export function WasteScreen() {
             recommended. Each line says which rule asked and what it measured, so a reader can
             disagree with it
           </p>
-          <table data-testid="refusals-table">
-            <caption data-testid="refusals-caption">
-              Least observed first. A refusal has no money, so it cannot be ranked by money: the
-              useful order is how much the judgement rests on
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Resource</th>
-                <th scope="col">Rule</th>
-                <th scope="col">Why it was left alone</th>
-                <th scope="col">Account</th>
-                <th scope="col">Observed</th>
-              </tr>
-            </thead>
-            <tbody>
-              {examined.map((one) => (
-                <tr key={`${one.resource_id}:${one.waste_class}`}>
-                  <th scope="row">{one.resource_id}</th>
-                  <td>{wasteClassName(one.waste_class)}</td>
-                  {/* Whole, never shortened. A judgement a reader cannot argue with is one
-                      they have to take on trust. */}
-                  <td className="meter-prose">{one.reason}</td>
-                  <td>{one.account_id}</td>
-                  <td>
-                    {one.observation_days} {one.observation_days === 1 ? 'day' : 'days'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div data-testid="refusals-table">
+            <DataTable
+              rows={examined}
+              columns={REFUSAL_COLUMNS}
+              rowKey={(one) => `${one.resource_id}:${one.waste_class}`}
+              caption="Least observed first. A refusal has no money, so it cannot be ranked by money: the useful order is how much the judgement rests on"
+              captionTestId="refusals-caption"
+              initialSort={{ key: 'observed', direction: 'ascending' }}
+            />
+          </div>
         </section>
       )}
     </section>

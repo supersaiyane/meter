@@ -8,6 +8,7 @@ import { violationsIn } from '../../components/__tests__/axe';
 import { EntityScreen } from '../EntityScreen';
 import { Harness } from './Harness';
 import { clientReturning } from './fixtures';
+import { sortEveryColumn } from './sortEveryColumn';
 
 /**
  * FEAT-053. The destination every list in the product needed and did not have.
@@ -313,5 +314,54 @@ describe('EntityScreen', () => {
         /stopped at its 4 hop bound/,
       );
     });
+  });
+});
+
+describe('EntityScreen sorting', () => {
+  it('sorts every column it offers, one way and then the other', async () => {
+    // Two rows in every table, because sorting one row compares nothing and runs no sort key.
+    const base = entityFixture(NODE).data;
+    const [finding] = base.findings;
+    const [neighbour] = base.neighbours;
+    if (finding === undefined || neighbour === undefined) {
+      throw new Error('The entity fixture has no finding or no neighbour to copy');
+    }
+    const second = { ...neighbour, node_id: 'second-neighbour', name: 'private-b' };
+    const entity = withEntity({
+      findings: [
+        finding,
+        { ...finding, recommendation_id: 'second-finding', estimated_monthly_saving: '1.00' },
+      ],
+      neighbours: [neighbour, second],
+      // Reached inward, so the relationship column says which way the edge points.
+      edges: [
+        ...base.edges,
+        {
+          from_node_id: 'second-neighbour',
+          to_node_id: NODE,
+          edge_kind: 'ROUTES_TO',
+          is_cross_account: false,
+          source: 'CONFIG_RELATIONSHIP',
+          leaves_the_graph: false,
+        },
+      ],
+    });
+    const scored: ApiEnvelope<ApiBlastRadius> = {
+      ...blastRadiusFixture(),
+      data: {
+        ...blastRadiusFixture().data,
+        band: 'WIDE',
+        parts: [
+          { name: 'Resources reached', count: 4, why: 'Attached to the target.' },
+          { name: 'Other accounts touched', count: 1, why: 'Not asked.' },
+        ],
+        refused_because: [],
+      },
+    };
+    const { container } = renderEntity(entity, NODE, scored);
+    await screen.findByTestId('entity-neighbours');
+    await screen.findByTestId('blast-band');
+    expect(sortEveryColumn(container)).toBeGreaterThan(0);
+    expect(screen.getByTestId('entity-neighbours')).toHaveTextContent('ROUTES_TO (inward)');
   });
 });

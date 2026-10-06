@@ -60,6 +60,8 @@ domain rule. A prefix match written again in SQL would be a second implementatio
 saying a continent holds three above a list showing two is the fault a reader finds before we do.
 A test asserts the two routes agree for every geography.
 
+Since TASK-P8-013, 2026-10-06, the continent's table is a `DataTable` under the resource list's rule: sortable only when it holds every resource there, otherwise in the server's order with its count in the caption.
+
 ## Failure behaviour
 
 Three kinds of leftover, never added together, because each needs a different remedy.

@@ -39,6 +39,8 @@ have a limit and no usage.
 
 Headroom is used against limit, and a quota with no usage has no headroom.
 
+Since TASK-P8-013, 2026-10-06, the three tables are `DataTable`s, sortable by any column and still in their own order first: the fullest quota, the unmeasured ones by name, the open requests. None has a total, because each row is a different quota in its own unit.
+
 ## Failure behaviour
 
 **A quota with no usage source reports limit known, usage unknown. It never

@@ -1,7 +1,9 @@
 import { useContainerCost, useContainerWaste } from '../api/queries';
 import { Figure } from '../components';
+import { DataTable } from '../components/DataTable';
 import { FixtureBand } from '../components/FixtureBand';
 import { StateBoundary } from '../components/StateBoundary';
+import type { Column } from '../components/tableConfig';
 import type { ApiClusterCost, ApiClusterUsage, ApiContainerUsageRow } from '../api/types';
 import { useReportMeta } from '../shell/metaRegistry';
 import { surfaceStateFor } from './surfaceStateFor';
@@ -34,41 +36,111 @@ const OOM_WORDS: Readonly<Record<ApiContainerUsageRow['oom_status'], string>> = 
   UNOBSERVED: 'could not be observed',
 };
 
-function Requested({ row }: { readonly row: ApiContainerUsageRow }) {
+function oom(row: ApiContainerUsageRow) {
   return (
-    <tr data-testid="container-row">
-      <td>{row.namespace}</td>
-      <td>
-        <strong>{row.workload}</strong>
-        <span data-testid="container-launch"> {row.launch_type.toLowerCase()}</span>
-      </td>
-      <td data-testid="cpu-requested">{row.cpu_requested_millicores} m</td>
-      <td data-testid="cpu-used">{row.cpu_used_p99_millicores ?? 'not observed'} m</td>
-      <td data-testid="memory-requested">{row.memory_requested_mib} MiB</td>
-      <td data-testid="memory-used">{row.memory_used_peak_mib ?? 'not observed'} MiB</td>
-      <td data-testid="container-oom" data-oom={row.oom_status}>
-        {OOM_WORDS[row.oom_status]}
-      </td>
-    </tr>
+    <span data-testid="container-oom" data-oom={row.oom_status}>
+      {OOM_WORDS[row.oom_status]}
+    </span>
   );
 }
 
-function UseOnly({ row }: { readonly row: ApiContainerUsageRow }) {
-  return (
-    <tr data-testid="container-row-unrequested">
-      <td>{row.namespace}</td>
-      <td>
-        <strong>{row.workload}</strong>
-      </td>
-      {/* No request cell at all. See the screen comment. */}
-      <td data-testid="cpu-used">{row.cpu_used_p99_millicores ?? 'not observed'} m</td>
-      <td data-testid="memory-used">{row.memory_used_peak_mib ?? 'not observed'} MiB</td>
-      <td data-testid="container-oom" data-oom={row.oom_status}>
-        {OOM_WORDS[row.oom_status]}
-      </td>
-    </tr>
-  );
+/** A figure the API sends as a decimal string, as a number to sort and add, or absent. */
+function amount(value: string | null): number | null {
+  return value === null ? null : Number(value);
 }
+
+const NAMESPACE: Column<ApiContainerUsageRow> = {
+  key: 'namespace',
+  header: 'Namespace',
+  render: (row) => row.namespace,
+  sortValue: (row) => row.namespace,
+};
+
+const OOM: Column<ApiContainerUsageRow> = {
+  key: 'oom',
+  header: 'Out of memory',
+  render: oom,
+  sortValue: (row) => row.oom_status,
+};
+
+/**
+ * Used, as a percentile and as a peak, and never added up: a 99th percentile and a peak are
+ * each one workload's worst moment, and the workloads did not have theirs at the same time.
+ */
+const CPU_USED: Column<ApiContainerUsageRow> = {
+  key: 'cpu-used',
+  header: 'CPU used, 99th percentile',
+  numeric: true,
+  cellTestId: 'cpu-used',
+  render: (row) => `${row.cpu_used_p99_millicores ?? 'not observed'} m`,
+  sortValue: (row) => amount(row.cpu_used_p99_millicores),
+};
+
+const MEMORY_USED: Column<ApiContainerUsageRow> = {
+  key: 'memory-used',
+  header: 'Memory used, peak',
+  numeric: true,
+  cellTestId: 'memory-used',
+  render: (row) => `${row.memory_used_peak_mib ?? 'not observed'} MiB`,
+  sortValue: (row) => amount(row.memory_used_peak_mib),
+};
+
+/** Requests do add up: together they are what the cluster reserved. */
+function requested(
+  key: string,
+  header: string,
+  unit: string,
+  raw: (row: ApiContainerUsageRow) => string | null,
+): Column<ApiContainerUsageRow> {
+  return {
+    key,
+    header,
+    numeric: true,
+    cellTestId: key,
+    render: (row) => `${raw(row) ?? 'not reported'} ${unit}`,
+    sortValue: (row) => amount(raw(row)),
+    total: {
+      value: (row) => amount(raw(row)),
+      unit: () => unit,
+      provenance: () => 'measured',
+      render: (sum) => `${String(sum)} ${unit}`,
+    },
+  };
+}
+
+const REQUESTED_COLUMNS: readonly Column<ApiContainerUsageRow>[] = [
+  NAMESPACE,
+  {
+    key: 'workload',
+    header: 'Workload',
+    render: (row) => (
+      <>
+        <strong>{row.workload}</strong>
+        <span data-testid="container-launch"> {row.launch_type.toLowerCase()}</span>
+      </>
+    ),
+    sortValue: (row) => row.workload,
+  },
+  requested('cpu-requested', 'CPU requested', 'm', (row) => row.cpu_requested_millicores),
+  CPU_USED,
+  requested('memory-requested', 'Memory requested', 'MiB', (row) => row.memory_requested_mib),
+  MEMORY_USED,
+  OOM,
+];
+
+// No request columns at all. See the screen comment.
+const USE_ONLY_COLUMNS: readonly Column<ApiContainerUsageRow>[] = [
+  NAMESPACE,
+  {
+    key: 'workload',
+    header: 'Workload',
+    render: (row) => <strong>{row.workload}</strong>,
+    sortValue: (row) => row.workload,
+  },
+  CPU_USED,
+  MEMORY_USED,
+  OOM,
+];
 
 function Cluster({
   cluster,
@@ -107,50 +179,27 @@ function Cluster({
         )}
       </p>
       {cluster.enhanced_observability ? (
-        <table data-testid="container-requests">
-          <caption>
-            Each workload's request beside its use. Two figures, never one ratio.
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Namespace</th>
-              <th scope="col">Workload</th>
-              <th scope="col">CPU requested</th>
-              <th scope="col">CPU used, 99th percentile</th>
-              <th scope="col">Memory requested</th>
-              <th scope="col">Memory used, peak</th>
-              <th scope="col">Out of memory</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cluster.workloads.map((row) => (
-              <Requested key={`${row.namespace}/${row.workload}`} row={row} />
-            ))}
-          </tbody>
-        </table>
+        <div data-testid="container-requests">
+          <DataTable
+            rows={cluster.workloads}
+            columns={REQUESTED_COLUMNS}
+            rowKey={(row) => `${row.namespace}/${row.workload}`}
+            caption="Each workload's request beside its use. Two figures, never one ratio."
+            rowAttributes={() => ({ 'data-testid': 'container-row' })}
+          />
+        </div>
       ) : (
         <>
           <p data-testid="container-reason">{cluster.request_unavailable_reason}</p>
-          <table data-testid="container-use-only">
-            <caption>
-              What each workload used. There is no request to set it against, so nothing here
-              says how much of a reservation is idle.
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Namespace</th>
-                <th scope="col">Workload</th>
-                <th scope="col">CPU used, 99th percentile</th>
-                <th scope="col">Memory used, peak</th>
-                <th scope="col">Out of memory</th>
-              </tr>
-            </thead>
-            <tbody>
-              {cluster.workloads.map((row) => (
-                <UseOnly key={`${row.namespace}/${row.workload}`} row={row} />
-              ))}
-            </tbody>
-          </table>
+          <div data-testid="container-use-only">
+            <DataTable
+              rows={cluster.workloads}
+              columns={USE_ONLY_COLUMNS}
+              rowKey={(row) => `${row.namespace}/${row.workload}`}
+              caption="What each workload used. There is no request to set it against, so nothing here says how much of a reservation is idle."
+              rowAttributes={() => ({ 'data-testid': 'container-row-unrequested' })}
+            />
+          </div>
         </>
       )}
     </section>

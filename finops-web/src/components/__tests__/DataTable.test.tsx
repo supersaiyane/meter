@@ -127,3 +127,23 @@ describe('DataTable, a table wider than its box', () => {
     expect(screen.queryByRole('region')).toBeNull();
   });
 });
+
+describe("DataTable, the hooks a screen's own table carried", () => {
+  it("puts a screen's row attributes on each row and a column's test id on each cell", () => {
+    render(
+      <DataTable
+        rows={rows(2)}
+        columns={COLUMNS.map((column) => ({ ...column, cellTestId: 'account-cell' }))}
+        rowKey={(row) => row.id}
+        caption="Hooked"
+        rowAttributes={(row) => ({ 'data-testid': 'account-row', 'data-id': row.id })}
+      />,
+    );
+    const found = screen.getAllByTestId('account-row');
+    expect(found.map((row) => row.getAttribute('data-id'))).toEqual(['0', '1']);
+    expect(screen.getAllByTestId('account-cell').map((cell) => cell.textContent)).toEqual([
+      'account-0',
+      'account-1',
+    ]);
+  });
+});

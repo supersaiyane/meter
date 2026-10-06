@@ -42,6 +42,17 @@ export interface Column<Row> {
   readonly sortValue?: (row: Row) => number | string | null;
   /** How the column adds up, where it does. See `columnTotal`. */
   readonly total?: ColumnTotal<Row>;
+  /**
+   * A test id on each of the column's cells. Kept from the hand drawn tables this one
+   * replaced, TASK-P8-013, so moving a table onto it moves nothing a journey reads.
+   */
+  readonly cellTestId?: string;
+  /**
+   * The column that names each row, drawn as a row header so a screen reader announces it
+   * with every cell in the row. The hand drawn tables had one, and a table without it reads a
+   * figure with nothing to say which row it belongs to.
+   */
+  readonly rowHeader?: boolean;
 }
 
 export interface ColumnTotal<Row> {

@@ -199,7 +199,7 @@ ISS-003.
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
-| P8 | 12 | 1 | 0 | 0 | 5 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
+| P8 | 13 | 0 | 0 | 0 | 5 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 0 | 0 | 0 | 0 | 11 | 11 | [plan](../docs/plans/P9-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -410,7 +410,7 @@ ISS-003.
 | `TASK-P8-008` | Done 2026-10-05 | spend forecast |
 | `TASK-P8-009` | Done 2026-10-05 | Excel and CSV export behind the guard |
 | `TASK-P8-012` | Done 2026-10-06 | persona dashboards on the Overview |
-| `TASK-P8-013` | Partly | every remaining screen in the new system |
+| `TASK-P8-013` | Done 2026-10-06 | every remaining screen in the new system |
 | `TASK-P8-016` | Done | the account picker on every screen |
 | `TASK-P8-018` | Done 2026-10-05 | the look as drawn |
 

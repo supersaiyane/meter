@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { COST_COLUMN_TERMS, commitmentTypeName } from '../components/displayNames';
+import { commitmentTypeName } from '../components/displayNames';
 
 import { useCommitmentDays, useCostCommitments } from '../api/queries';
 import { ChartPanel } from '../components/ChartPanel';
@@ -64,6 +64,75 @@ const COMMITMENT_RISK: RiskVerdict = {
   disturbs_running_work: false,
   is_no_regret: false,
 };
+
+/** FEAT-055's gaps as somebody's to act on, TASK-P8-013 on `DataTable`. */
+function actionColumns(freshness: {
+  readonly asOf: Date;
+  readonly collectedAt: Date;
+}): readonly Column<ApiCommitmentAction>[] {
+  return [
+    {
+      key: 'gap',
+      header: 'Gap',
+      rowHeader: true,
+      render: (row) => (
+        <>
+          {row.dimension_value}
+          <span> {commitmentTypeName(row.commitment_type)}</span>
+        </>
+      ),
+      sortValue: (row) => row.dimension_value,
+    },
+    {
+      key: 'saving',
+      header: 'Estimated monthly savings',
+      numeric: true,
+      // Modelled, never measured, and the rationale says the discount came from configuration
+      // rather than from a quote. So is the total, hatched like every figure it adds up.
+      render: (row) => (
+        <Figure
+          value={{ kind: 'modelled', amount: Number(row.estimated_monthly_saving) }}
+          freshness={freshness}
+          unit="usd"
+        />
+      ),
+      sortValue: (row) => Number(row.estimated_monthly_saving),
+      total: {
+        value: (row) => Number(row.estimated_monthly_saving),
+        unit: () => 'USD',
+        provenance: () => 'modelled',
+        render: (sum) => (
+          <Figure value={{ kind: 'modelled', amount: sum }} freshness={freshness} unit="usd" />
+        ),
+      },
+    },
+    {
+      key: 'severity',
+      header: 'Severity',
+      render: (row) => <SeverityBadge level={severityLevel(row.severity)} />,
+      sortValue: (row) => severityLevel(row.severity),
+    },
+    {
+      key: 'risk',
+      header: 'If it is wrong',
+      prose: true,
+      // Constant, and correct by construction rather than by a flag on the row: every
+      // commitment is permanent and none of them stops anything. Through the shared module so
+      // the wording matches the waste screen. The floor is the decision: a commitment
+      // obligates its whole term whether or not the usage continues.
+      render: (row) => (
+        <>
+          <strong>{riskLabel(COMMITMENT_RISK)}</strong>
+          <span>
+            {' '}
+            Worth it while usage stays above {row.usage_floor_percent} percent of today's for{' '}
+            {row.term_months} months.
+          </span>
+        </>
+      ),
+    },
+  ];
+}
 
 /** Whole dollars, what a chart of a month's commitments can show. */
 function dollars(value: number): string {
@@ -325,66 +394,22 @@ export function CostCommitmentsScreen() {
               uncovered.
             </p>
           ) : (
-            <table data-testid="actions">
-              <caption>
-                {actions.length === 1
-                  ? 'One gap worth committing to, with what being wrong would cost.'
-                  : `${String(actions.length)} gaps worth committing to, worst money first, ` +
-                    'with what being wrong would cost.'}
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">Gap</th>
-                  <th scope="col" title={COST_COLUMN_TERMS['Estimated monthly savings']}>
-                    Estimated monthly savings
-                  </th>
-                  <th scope="col">Severity</th>
-                  <th scope="col">If it is wrong</th>
-                </tr>
-              </thead>
-              <tbody>
-                {actions.map((row: ApiCommitmentAction) => (
-                  <tr key={`${row.commitment_type}:${row.dimension}:${row.dimension_value}`}>
-                    <th scope="row">
-                      {row.dimension_value}
-                      <span> {commitmentTypeName(row.commitment_type)}</span>
-                    </th>
-                    <td>
-                      {/* Modelled, never measured, and the rationale says the discount came
-                          from configuration rather than from a quote. */}
-                      <Figure
-                        value={{
-                          kind: 'modelled',
-                          amount: Number(row.estimated_monthly_saving),
-                        }}
-                        freshness={freshness}
-                        unit="usd"
-                      />
-                    </td>
-                    <td>
-                      <SeverityBadge level={severityLevel(row.severity)} />
-                    </td>
-                    <td>
-                      {/* The same two words the waste screen and the home panel use, from the
-                          same module, so a reader is not told a change is permanent in one
-                          place and reversible in another. A commitment is the least
-                          reversible thing in the product. */}
-                      {/* Constant, and correct by construction rather than by a flag on the
-                          row: every commitment is permanent and none of them stops anything.
-                          Through the shared module so the wording matches the waste screen. */}
-                      <strong>{riskLabel(COMMITMENT_RISK)}</strong>
-                      {/* The floor is the decision. A commitment obligates its whole term
-                          whether or not the usage continues. */}
-                      <span>
-                        {' '}
-                        Worth it while usage stays above {row.usage_floor_percent} percent of
-                        today's for {row.term_months} months.
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div data-testid="actions">
+              <DataTable
+                rows={actions}
+                columns={actionColumns(freshness)}
+                rowKey={(row) =>
+                  `${row.commitment_type}:${row.dimension}:${row.dimension_value}`
+                }
+                caption={
+                  actions.length === 1
+                    ? 'One gap worth committing to, with what being wrong would cost.'
+                    : `${String(actions.length)} gaps worth committing to, worst money first, ` +
+                      'with what being wrong would cost.'
+                }
+                initialSort={{ key: 'saving', direction: 'descending' }}
+              />
+            </div>
           )}
         </>
       </StateBoundary>

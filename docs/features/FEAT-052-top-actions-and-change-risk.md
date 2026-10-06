@@ -73,6 +73,8 @@ The wording lives in `components/actionRisk.ts` rather than beside the panel, be
 entity detail page shows the same label against the same findings and a second copy would be
 a second answer to how dangerous a change is.
 
+Since TASK-P8-013, 2026-10-06, each group's table is a `DataTable`: still ranked by money first and now sortable by any column, so its header row shows. No total, because a group can hold two findings on one resource that are alternatives.
+
 ## Failure behaviour
 
 An empty group says so in words rather than rendering blank, because a blank panel reads as

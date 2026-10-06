@@ -1897,10 +1897,6 @@ main > section > article {
   padding: 0 0 var(--space-2);
 }
 
-[data-testid='top-actions'] thead {
-  display: none;
-}
-
 [data-testid='top-actions'] tbody tr {
   border-bottom: 1px solid var(--border-soft);
 }

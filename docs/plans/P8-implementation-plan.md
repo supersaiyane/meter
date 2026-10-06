@@ -454,7 +454,7 @@ Engineering lead's dashboard, and the FinOps one lists its own top recommendatio
 
 | Field | Value |
 | --- | --- |
-| Status | Partly |
+| Status | Done 2026-10-06 |
 | Implements | P8 spec section 5.1 |
 | Delivers | One look across all screens |
 | Depends on | TASK-P8-002, TASK-P8-004, TASK-P8-005, TASK-P8-006 |
@@ -462,12 +462,12 @@ Engineering lead's dashboard, and the FinOps one lists its own top recommendatio
 
 **Acceptance criteria.**
 
-- [ ] Optimize, Govern, Inventory, Platform and Assist screens in the new system
-- [ ] Every table sorts, and totals where its figures share a unit and a provenance, through
+- [x] Optimize, Govern, Inventory, Platform and Assist screens in the new system
+- [x] Every table sorts, and totals where its figures share a unit and a provenance, through
       `DataTable` as TASK-P8-006 built it
-- [ ] No colour outside the tokens in any component, held by a test
-- [ ] Axe clean in both themes
-- [ ] A chart on every screen, as the owner chose on 2026-10-05: Allocation a team treemap and
+- [x] No colour outside the tokens in any component, held by a test
+- [x] Axe clean in both themes
+- [x] A chart on every screen, as the owner chose on 2026-10-05: Allocation a team treemap and
       a team trend; Anomalies daily spend with anomaly markers; Commitments utilization and
       coverage over time and a day by day heatmap; Realized savings a cumulative savings area;
       Accounts the top accounts and a health heatmap; Resources by type and by region; Query
@@ -479,18 +479,19 @@ heatmap are drawn from measured days; `/api/v1/inventory/resources` counts resou
 by region; and the realized savings area accumulates verified changes only, because the screen
 never adds verdicts together.
 
-**Progress 2026-10-06.** Drawn, each in a `ChartPanel`: Allocation's treemap and six month trend
-by tag, Anomalies' daily spend with a rule on each day that stood out, Accounts' largest accounts
-and freshness heatmap, Realized savings' running total, Query cost by dashboard and its trend from
-`/api/v1/query/trend`, Resources by type and region, and Meter cost per day by module. Then the daily
-commitments: each run reads the last 35 days at Cost Explorer's daily grain into
-`commitment_day`, per kind and never per plan, and Commitments draws use each day, coverage
-each day and a heatmap of both per kind. A test now holds that no component names a colour,
-and axe runs over every screen's own content in both themes; the one fault it found, a table
-too wide for its box that no keyboard could scroll, is fixed in `DataTable`. Still to come:
-seventeen tables drawn outside `DataTable`, so not every table sorts and totals yet, and the
-remaining screens' panels.
-
+**Delivered 2026-10-06.** A chart on every screen the owner named, each in a `ChartPanel`:
+Allocation's treemap and six month trend by tag, Anomalies' daily spend with a rule on each day
+that stood out, Accounts' largest accounts and freshness heatmap, Realized savings' running
+total, Query cost by dashboard and its trend from `/api/v1/query/trend`, Resources by type and
+region, Meter cost per day by module, and Commitments' use and coverage each day with their
+heatmap, from commitments now collected daily into `commitment_day`, per kind and never per
+plan. Every table is a `DataTable`, held by a test: each sorts, except a page of a longer list,
+which keeps the server's order rather than order a page and read as ordering the list, and
+each totals only where its figures add. No component names a colour outside the tokens, held
+by a test, and axe runs over every screen's content in both themes, clean after one fix: a
+table that scrolls is now a keyboard stop. The remaining screens are in the new system in the
+sense section 5.1 gives it: one set of tokens, one shell, and panels, charts and tables from
+one set of components, checked at six widths and in both themes.
 
 ---
 

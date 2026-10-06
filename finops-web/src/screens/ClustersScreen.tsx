@@ -1,7 +1,9 @@
 import { useClusters } from '../api/queries';
+import { DataTable } from '../components/DataTable';
 import { FixtureBand } from '../components/FixtureBand';
 import { PercentCell } from '../components/PercentCell';
 import { StateBoundary } from '../components/StateBoundary';
+import type { Column } from '../components/tableConfig';
 import type { ApiClusterInventory } from '../api/types';
 import { useReportMeta } from '../shell/metaRegistry';
 import { surfaceStateFor } from './surfaceStateFor';
@@ -29,35 +31,79 @@ function fraction(value: string | null): number | null {
   return value === null ? null : Number(value);
 }
 
-function Row({ cluster }: { readonly cluster: ApiClusterInventory }) {
-  return (
-    <tr data-testid="cluster-row" data-platform={cluster.platform}>
-      <td>
-        <strong>{cluster.cluster_name}</strong>
-      </td>
-      <td>{cluster.platform}</td>
-      <td>{cluster.account_id}</td>
-      <td>{cluster.region_id}</td>
-      <td data-testid="cluster-nodes">
-        {cluster.node_count === null ? 'no nodes' : cluster.node_count}
-      </td>
-      <td data-testid="cluster-spot">
-        <PercentCell
-          fraction={fraction(cluster.spot_ratio)}
-          absent={noSpot(cluster)}
-          provenance="measured"
-        />
-      </td>
-      <td data-testid="cluster-packing">
-        <PercentCell
-          fraction={fraction(cluster.packing_efficiency)}
-          absent={cluster.unmeasurable_reason ?? 'Cluster efficiency could not be computed.'}
-          provenance="measured"
-        />
-      </td>
-    </tr>
-  );
+/** A cluster's nodes for the total: none for ECS without nodes, unknown for an unread fleet. */
+function nodesOf(cluster: ApiClusterInventory): number | null {
+  return cluster.node_count ?? (cluster.platform === 'ECS' ? 0 : null);
 }
+
+const COLUMNS: readonly Column<ApiClusterInventory>[] = [
+  {
+    key: 'cluster',
+    header: 'Cluster',
+    render: (cluster) => <strong>{cluster.cluster_name}</strong>,
+    sortValue: (cluster) => cluster.cluster_name,
+  },
+  {
+    key: 'platform',
+    header: 'Platform',
+    render: (cluster) => cluster.platform,
+    sortValue: (cluster) => cluster.platform,
+  },
+  {
+    key: 'account',
+    header: 'Account',
+    render: (cluster) => cluster.account_id,
+    sortValue: (cluster) => cluster.account_id,
+  },
+  {
+    key: 'region',
+    header: 'Region',
+    render: (cluster) => cluster.region_id,
+    sortValue: (cluster) => cluster.region_id,
+  },
+  {
+    key: 'nodes',
+    header: 'Nodes',
+    numeric: true,
+    cellTestId: 'cluster-nodes',
+    render: (cluster) => (cluster.node_count === null ? 'no nodes' : cluster.node_count),
+    sortValue: (cluster) => cluster.node_count,
+    // Counted, so it adds up: an ECS cluster with no nodes adds nothing, and a fleet nobody
+    // could read stops the total rather than being counted as empty.
+    total: {
+      value: nodesOf,
+      unit: () => 'nodes',
+      provenance: () => 'measured',
+      render: (sum) => `${String(sum)} nodes`,
+    },
+  },
+  {
+    key: 'spot',
+    header: 'On Spot',
+    cellTestId: 'cluster-spot',
+    render: (cluster) => (
+      <PercentCell
+        fraction={fraction(cluster.spot_ratio)}
+        absent={noSpot(cluster)}
+        provenance="measured"
+      />
+    ),
+    sortValue: (cluster) => fraction(cluster.spot_ratio),
+  },
+  {
+    key: 'packing',
+    header: 'Cluster efficiency',
+    cellTestId: 'cluster-packing',
+    render: (cluster) => (
+      <PercentCell
+        fraction={fraction(cluster.packing_efficiency)}
+        absent={cluster.unmeasurable_reason ?? 'Cluster efficiency could not be computed.'}
+        provenance="measured"
+      />
+    ),
+    sortValue: (cluster) => fraction(cluster.packing_efficiency),
+  },
+];
 
 export function ClustersScreen() {
   const query = useClusters();
@@ -84,27 +130,18 @@ export function ClustersScreen() {
             measured bin packing. Fargate clusters are listed and not counted, because they run
             without nodes and have no fleet to pack.
           </p>
-          <table data-testid="clusters">
-            <caption>
-              Every cluster, its fleet, how much of it runs on Spot, and how well it is packed
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Cluster</th>
-                <th scope="col">Platform</th>
-                <th scope="col">Account</th>
-                <th scope="col">Region</th>
-                <th scope="col">Nodes</th>
-                <th scope="col">On Spot</th>
-                <th scope="col">Cluster efficiency</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clusters.map((cluster) => (
-                <Row key={`${cluster.account_id}:${cluster.cluster_name}`} cluster={cluster} />
-              ))}
-            </tbody>
-          </table>
+          <div data-testid="clusters">
+            <DataTable
+              rows={clusters}
+              columns={COLUMNS}
+              rowKey={(cluster) => `${cluster.account_id}:${cluster.cluster_name}`}
+              caption="Every cluster, its fleet, how much of it runs on Spot, and how well it is packed"
+              rowAttributes={(cluster) => ({
+                'data-testid': 'cluster-row',
+                'data-platform': cluster.platform,
+              })}
+            />
+          </div>
         </>
       </StateBoundary>
     </section>

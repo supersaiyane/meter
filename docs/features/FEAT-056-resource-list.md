@@ -34,6 +34,8 @@ from counts the route returns beside its filter values. They are counted over th
 values are, so narrowing the list does not collapse the charts, and a null type or region is
 counted as no type or global rather than dropped.
 
+Since TASK-P8-013, 2026-10-06, the list is a `DataTable`. Its columns sort only when the page holds the whole list: a page of a longer list arrives in the server's order, and sorting it would order fifty rows and read as ordering every one.
+
 ## Failure behaviour
 
 The estate wide coverage banner sits above the list, not beside it, and the count says how

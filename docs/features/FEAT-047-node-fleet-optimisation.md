@@ -35,6 +35,8 @@ tolerance per workload class, and any node group a team has pinned. Its output i
 recommendation like every other, carrying its evidence window, its confidence, its
 measured or modelled flag and a dollar impact that sets its severity.
 
+Since TASK-P8-013, 2026-10-06, the cluster table is a `DataTable`, sortable by any column, with the nodes totalled: a cluster with no nodes adds none, and a fleet nobody could read stops the total rather than counting as empty.
+
 ## Failure behaviour
 
 Undecided. The known risk is that a fleet recommendation computed from partial

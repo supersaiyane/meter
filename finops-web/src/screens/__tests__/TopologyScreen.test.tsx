@@ -11,6 +11,7 @@ import { violationsIn } from '../../components/__tests__/axe';
 import { TopologyScreen } from '../TopologyScreen';
 import { Harness } from './Harness';
 import { clientReturning } from './fixtures';
+import { sortEveryColumn } from './sortEveryColumn';
 
 vi.mock('cytoscape', () => ({
   default: () => ({ on: () => undefined, destroy: () => undefined }),
@@ -144,5 +145,12 @@ describe('TopologyScreen', () => {
       'href',
       `/inventory/resources/${ROOT}`,
     );
+  });
+});
+
+describe('TopologyScreen sorting', () => {
+  it('sorts every column it offers, one way and then the other', async () => {
+    await openTheMap();
+    expect(sortEveryColumn(document.body)).toBeGreaterThan(0);
   });
 });

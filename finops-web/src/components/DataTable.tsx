@@ -46,6 +46,13 @@ export interface DataTableProps<Row> {
    * order that stops being true the moment a reader sorts another column.
    */
   readonly initialSort?: Sort;
+  /**
+   * Data attributes on each row: the hooks a screen's own table carried before it moved
+   * here, TASK-P8-013, its row's test id and the state a stylesheet or a journey reads off it.
+   */
+  readonly rowAttributes?: (row: Row) => Readonly<Record<`data-${string}`, string>>;
+  /** A test id on the caption, for a screen whose tests read the count the caption states. */
+  readonly captionTestId?: string;
 }
 
 /** True while the box is smaller than what it holds, watched as either changes size. */
@@ -81,6 +88,8 @@ export function DataTable<Row>({
   rowKey,
   caption,
   initialSort,
+  rowAttributes,
+  captionTestId,
 }: DataTableProps<Row>) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const captionId = useId();
@@ -160,7 +169,9 @@ export function DataTable<Row>({
         style={{ overflow: 'auto', maxHeight: '70vh' }}
       >
         <table data-testid="table" data-virtualised={virtualise ? 'true' : 'false'}>
-          <caption id={captionId}>{caption}</caption>
+          <caption id={captionId} data-testid={captionTestId}>
+            {caption}
+          </caption>
           <thead>
             <tr>
               {shown.map((column) => (
@@ -207,22 +218,27 @@ export function DataTable<Row>({
                 return null;
               }
               return (
-                <tr key={rowKey(row)} data-row-index={index}>
-                  {shown.map((column) => (
-                    <td
-                      key={column.key}
-                      className={
-                        [
-                          column.numeric === true ? 'meter-numeral' : '',
-                          column.prose === true ? 'meter-prose' : '',
-                        ]
-                          .filter(Boolean)
-                          .join(' ') || undefined
-                      }
-                    >
-                      {column.render(row)}
-                    </td>
-                  ))}
+                <tr key={rowKey(row)} data-row-index={index} {...rowAttributes?.(row)}>
+                  {shown.map((column) => {
+                    const Cell = column.rowHeader === true ? 'th' : 'td';
+                    return (
+                      <Cell
+                        scope={column.rowHeader === true ? 'row' : undefined}
+                        key={column.key}
+                        data-testid={column.cellTestId}
+                        className={
+                          [
+                            column.numeric === true ? 'meter-numeral' : '',
+                            column.prose === true ? 'meter-prose' : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ') || undefined
+                        }
+                      >
+                        {column.render(row)}
+                      </Cell>
+                    );
+                  })}
                 </tr>
               );
             })}

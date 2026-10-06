@@ -218,6 +218,19 @@ describe('the visual layer', () => {
     expect(layout).toContain('max-width: 1024px');
   });
 
+  it('draws every table through DataTable, so every table can sort and total', () => {
+    // TASK-P8-013. A table drawn by hand cannot sort, total or hide a column, and seventeen of
+    // them were drawn that way until this held it. ChartTable is the one exception: it is a
+    // chart's numbers in the chart's own order, the table a screen reader takes instead.
+    const drawn = Object.entries(COMPONENT_SOURCES).filter(
+      ([path, source]) =>
+        !path.includes('__tests__') &&
+        !/\/(DataTable|ChartTable)\.tsx$/.test(path) &&
+        /<table\b/.test(source),
+    );
+    expect(drawn.map(([path]) => path)).toEqual([]);
+  });
+
   it('names no colour outside the tokens, in the layout or in any component', () => {
     // TASK-P8-013. A colour named anywhere but tokens.css is a colour the themes cannot change,
     // so it is right in one theme and wrong in the other, and nobody finds out until dark.

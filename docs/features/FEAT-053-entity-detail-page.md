@@ -76,6 +76,8 @@ A 404 answers both a node that does not exist and a node outside scope, delibera
 Distinguishing them would tell a narrowed reader that a resource exists in an account they
 were not granted.
 
+Since TASK-P8-013, 2026-10-06, its three tables, the findings, what a change can reach and what it is attached to, are `DataTable`s, sortable by any column. None totals: findings on one resource are often alternatives, and the reach counts are of different things.
+
 ## Failure behaviour
 
 `scope_coverage` on this page is one of one slices when the resource's slice is COMPLETE and
