@@ -33,7 +33,13 @@ so the map is never mistaken for a description of what exists.
 meter/
 ├── INDEX.md                   master index, the entry point for the project
 ├── README.md                  what Meter is, and the documentation map
-├── Makefile                   every routine task, run `make help`
+├── Makefile                   every routine task, run `make help`. `verify` is
+│                              the gate: backend tests, frontend unit tests, a
+│                              typed web build and the Playwright journeys.
+│                              `test-e2e` depends on `build-web` because vite
+│                              preview serves the build output without building
+│                              it, and the journeys once passed against a bundle
+│                              seven hours older than the source
 ├── pyproject.toml             dependencies, lint rules, import linter contract.
 │                              Packages are found, not listed: an explicit list
 │                              is top level only and left subpackages out of the
@@ -246,6 +252,9 @@ meter/
 │                              the gap match_observed exists to cross
 ├── finops-web/                IN BUILD  Vite, React and TypeScript
 │   ├── README.md              why the versions are pinned where they are
+│   ├── e2e/                   five Playwright journeys against the built
+│   │                          bundle, not the test renderer. They are what
+│   │                          proves the honesty rules survive the build
 │   ├── eslint.config.js       flat config. eslintrc is not read by ESLint 9.
 │   │                          Names all three tsconfig projects: a file in none
 │   │                          of them is a fatal parse error, not a skip
