@@ -94,6 +94,13 @@ tests outside the gate, and both ISS-175 and ISS-177 lived in exactly that gap.
 reports coverage, because a fraction of the suite measured against the whole
 suite's threshold is a number that cannot be read.
 
+A change that touches documents alone, Markdown, text, and anything under `docs/` or
+`tasks/`, may be gated by `make verify-docs BASE=<the branch it merges into>` instead. It
+runs the writing rules, the generated documents and the memory gate, which is everything a
+document can fail, and it first refuses any change holding another file, naming it, because
+the shortcut is only safe while no code changed. Approved by the owner on 2026-10-07,
+CHG-0123: a thirteen line change to `project_map.md` had cost about fifteen minutes of tests.
+
 ## Architectural constraints
 
 These are not style preferences. Breaking them costs a rewrite.
