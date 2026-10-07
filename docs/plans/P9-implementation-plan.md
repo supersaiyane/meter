@@ -36,7 +36,7 @@ Same contract as P0 through P8. One task, one commit.
 | Wave | Tasks | Delivers | Can start when |
 | --- | --- | --- | --- |
 | A. A way out | 001 | The hub reaches every AWS API it calls | This plan approved and OPEN-16 answered, both 2026-10-05 |
-| B. The catalogs | 002 to 005, 012, 013 | Ports, tables, the price list for five services in every Region, the instance catalog, Savings Plans rates and spot prices | A; 013 also waits on OPEN-18 |
+| B. The catalogs | 002 to 005, 012, 013 | Ports, tables, the price list for five services in every Region, the instance catalog, Savings Plans rates and spot prices | A |
 | C. Targets | 006 to 009 | Compute Optimizer fixed, downsizing and upsizing to a named type, gp2 to gp3 | B |
 | D. Surface | 010 | Routes and the Alternatives table | C |
 | E. Proof and documents | 011 | Exit criteria measured, documents updated | All |
@@ -117,7 +117,8 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 - [ ] `price_list_version`, `price`, `instance_type_spec` and `volume_type_spec`, every
       invariant in spec section 6 a constraint
 - [ ] `instance_type_spec` keyed by service as well as type, for the five services of spec
-      section 14, and the spot tables as OPEN-18 decides. Added 2026-10-07
+      section 14, and `spot_price` and `spot_price_daily` as OPEN-18 chose, spec section
+      14.7. Added 2026-10-07
 - [ ] The recommendation's target columns added as nullable, constraint 12
 - [ ] A test per constraint, and `docs/07-DATA-MODEL.md` and
       `docs/09-DATA-CLASSIFICATION.md` updated in the same commit
@@ -207,7 +208,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 | Status | Not started |
 | Implements | P9 spec section 14, FEAT-071 |
 | Delivers | Spot prices in the price catalog |
-| Depends on | TASK-P9-001, TASK-P9-003, and OPEN-18 answered |
+| Depends on | TASK-P9-001 and TASK-P9-003 |
 | Estimate | M |
 
 **Acceptance criteria.**
@@ -216,7 +217,9 @@ Added 2026-10-07 at the owner's request, spec section 14.
       as `PricingCategory` Dynamic, with the reading's own time as `as_of` and `collected_at`
       beside it
 - [ ] Read by the function outside the VPC chosen for OPEN-17, held by TASK-P9-001's test
-- [ ] Kept as OPEN-18 decides, every limit a database constraint
+- [ ] The latest price per pool, replaced each run, and each day's low and high kept for 90
+      days, as OPEN-18 chose on 2026-10-07, spec section 14.7; every limit a database
+      constraint, and the 90 days held by a test
 - [ ] Polled every 8 hours; a Region that refuses, or that the account has not opted into, is
       a typed failure such as NotOptedIn and never a price of nought, constraint 5
 
@@ -344,7 +347,6 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 ## What this plan does not answer
 
-- OPEN-18, how much spot price history is kept, spec section 14.5.
 - Whether the catalog gets a screen of its own, browsable like instances.vantage.sh, beside the
-  Alternatives table. Which services follow EC2 and EBS, whether spot is in, and OPEN-17 were
-  answered on 2026-10-07.
+  Alternatives table. Which services follow EC2 and EBS, whether spot is in, OPEN-17 and
+  OPEN-18 were answered on 2026-10-07.

@@ -1633,6 +1633,15 @@ changes:
     endpoint in every Region. About 2,700 runs a month inside the Lambda always free allowance,
     under 1 USD a month with its writes and logs (modelled), against roughly 440 USD a month for
     endpoints (modelled). The hub keeps no route out. P9 spec section 14.5'
+- id: CHG-0117
+  date: 2026-10-07
+  type: Decision
+  what: OPEN-18 answered, spot kept as the latest price per pool plus 90 days of daily lows and
+    highs
+  commit: pending
+  detail: 'Chosen over keeping every 8 hourly reading, which grows without limit, and over the
+    latest only, which shows no movement. Two tables, spot_price and spot_price_daily, P9 spec
+    section 14.7. With OPEN-17 answered the same day, P9 has no open question left'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4095,13 +4104,15 @@ open_questions:
     a month with its S3 writes and logs (modelled)'
 - id: OPEN-18
   question: 'How much spot price history does the catalog keep: the latest price per pool plus
-    each day''s low and high for 90 days, every 8 hourly reading, or the latest only'
-  status: OPEN
-  blocks: TASK-P9-013
+    each day''s low and high for 90 days, every 8 hourly reading, or the latest only. ANSWERED
+    2026-10-07: the latest plus a daily low and high for 90 days'
+  status: ANSWERED
+  blocks: nothing
   detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) section 14.5. Raised
     2026-10-07. Spot prices change far more often than list prices, so keeping every reading
     for every pool in every Region grows without limit. Recommended: the latest per pool,
-    replaced each run, plus a daily low and high kept for 90 days'
+    replaced each run, plus a daily low and high kept for 90 days. The owner chose it on
+    2026-10-07, and spec section 14.7 holds the two tables'
 - id: OPEN-16
   question: 'How does the hub reach the AWS APIs its collectors call: endpoints in every Region
     used plus a us-east-1 endpoint VPC, a NAT gateway with an AWS-only allow list, or collectors

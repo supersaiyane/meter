@@ -277,7 +277,8 @@ run still compares what AWS has published with what is stored and stops when not
   OpenSearch, section 14.
 - OPEN-17, how the hub reads spot prices and Savings Plans rates in every Region. ANSWERED
   2026-10-07: a function outside the VPC, 14.5.
-- OPEN-18, how much spot price history is kept, 14.5.
+- OPEN-18, how much spot price history is kept. ANSWERED 2026-10-07: the latest per pool
+  plus a daily low and high for 90 days, 14.5 and 14.7.
 
 ## 12. Features delivered
 
@@ -343,15 +344,26 @@ never becomes a price of nought, constraint 5.
   inside the AWS Lambda always free allowance of 1 million requests and 400,000 GB seconds,
   so under 1 USD a month with its S3 writes and logs (modelled). The hub keeps no route out.
   Endpoints in every Region, roughly 440 USD a month (modelled), are not built.
-- **OPEN-18, how much spot price history is kept.** Recommended: the latest price per pool,
-  replaced each run, plus each day's low and high kept for 90 days. The alternatives are every
-  8 hourly reading kept, which grows without limit, or the latest only, as the Vantage site
-  shows.
+- **OPEN-18, how much spot price history is kept. ANSWERED 2026-10-07:** the latest price per
+  pool, replaced each run, plus each day's low and high kept for 90 days, section 14.7. Every 8
+  hourly reading is not kept, so the history is bounded and still shows how far a pool moves.
 
 ### 14.6 What changes in the plan
 
 TASK-P9-004 loads the five services in every Region, on demand and reserved. TASK-P9-005 covers
 the five services' specs. Two tasks are added: TASK-P9-012 for Savings Plans rates and
 TASK-P9-013 for spot prices, both read by the function outside the VPC chosen for OPEN-17, and
-the second also waiting on OPEN-18. Every catalog collector runs every 8 hours.
+spot kept as OPEN-18 chose, the latest per pool and a daily low and high for 90 days. Every
+catalog collector runs every 8 hours.
+
+### 14.7 Spot data, OPEN-18
+
+| Table | Holds | Key constraints |
+| --- | --- | --- |
+| `spot_price` | Region, zone, instance type, product description, price, `as_of` (the reading's own time), `collected_at` | price greater than nought; `collected_at >= as_of`; one row per pool, replaced each run |
+| `spot_price_daily` | the same pool, the day, the low and the high, the number of readings, `as_of`, `collected_at` | low no higher than high, both greater than nought; one row per pool and day; kept for 90 days |
+
+A pool is a Region, zone, instance type and product description. A day's low and high are the
+lowest and highest readings taken that day, so they describe what Meter saw every 8 hours and
+not every price AWS set between readings, and the screen says so.
 

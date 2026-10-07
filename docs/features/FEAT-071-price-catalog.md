@@ -25,8 +25,8 @@ commercial Region, taken from the price list's own codes; on demand, reserved on
 years, Savings Plans rates and spot; and five services, EC2 with EBS, RDS, ElastiCache, Redshift
 and OpenSearch. Reserved and Savings Plans rates are `PricingCategory` Committed and spot is
 Dynamic. Spot prices and Savings Plans rates are read by a function outside the VPC that writes rows
-to S3, the owner's answer to OPEN-17 on 2026-10-07, and how much spot history is kept is
-OPEN-18, spec section 14.5.
+to S3, the owner's answer to OPEN-17 on 2026-10-07, and spot is kept as the latest price per
+pool plus each day's low and high for 90 days, the answer to OPEN-18, spec section 14.7.
 
 ## Why it exists
 
