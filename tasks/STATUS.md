@@ -41,6 +41,10 @@ so it opens in the opener's scope, and a fifth guard rule reads a row a person m
 ADR-0032. It raised OPEN-19, whether the library also lists a person's exports, and ISS-255,
 erasure not reaching the new table. Left: TASK-P8-011, TASK-P8-014 and TASK-P8-015.
 
+TASK-P8-011, scheduled reports, was paused part built on 2026-10-07 at the owner's stop, in
+the worktree `../meter-p8-011`; `docs/checkpoint.md` says what is written and what is left.
+The repository has no git remote, so nothing has been pushed.
+
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
 answered the same day: a function outside the VPC reads spot and Savings Plans, and spot keeps
