@@ -379,6 +379,9 @@ meter/
 │                              because the fixture migrates and writes. ISS-178.
 │                              test_checkpoint_rotation.py covers the only script
 │                              that deletes rows from the memory log.
+│                              test_label_table.py holds every label the
+│                              TASK-P8-004 table approved to the web source, P8
+│                              spec section 12 item 2.
 │   ├── api/                   test_fixture_surfaces.py reads the frontend's
 │   │                          FIXTURE_SURFACES and fails the build if one of
 │   │                          those templates is a live route, so a screen
@@ -621,7 +624,9 @@ meter/
 │   ├── screens/Overview*.tsx  The FinOps practitioner, Executive and Engineering
 │   │                          lead dashboards and the panels they share. They own
 │   │                          no data: every figure is read through the hook of
-│   │                          the screen that owns it, and links to that screen
+│   │                          the screen that owns it, and links to that screen.
+│   │                          The FinOps dashboard's Scheduled reports panel reads
+│   │                          the Scheduled screen's own hook, a paused one first
 │   ├── screens/overviewKpis.ts  The Overview's KPI arithmetic, pure, so each
 │   │                          formula is tested without drawing a screen
 │   ├── screens/exploreSeries.ts  Cost Explorer views other screens chart, asked
@@ -746,7 +751,10 @@ meter/
 │   │                          and the hatch fills predate the 2026-09-27
 │   │                          direction and survived it, because provenance
 │   │                          carried by fill rather than by colour is the
-│   │                          product rather than the styling
+│   │                          product rather than the styling. Every glass surface
+│   │                          blurs through one token, --panel-filter, which the
+│   │                          reduced transparency, no backdrop-filter and print
+│   │                          fallbacks switch off, ISS-257
 │   ├── src/layout.css         the shell, the tables, and since 2026-09-27 the
 │   │                          vocabulary a screen writes for itself. That last
 │   │                          section exists because nothing styled it: p was
@@ -760,7 +768,10 @@ meter/
 │   │                          survive the build. The figure is read from what
 │   │                          `make verify` runs, not from counting files: this
 │   │                          line said five for three sub projects, which is
-│   │                          how long a count in prose stays wrong
+│   │                          how long a count in prose stays wrong. a11y.spec.ts
+│   │                          sweeps every rail screen with glass, with
+│   │                          transparency reduced and without blur, and
+│   │                          reporting.spec.ts walks P8 spec section 8's path
 │   ├── eslint.config.js       flat config. eslintrc is not read by ESLint 9.
 │   │                          Names all three tsconfig projects: a file in none
 │   │                          of them is a fatal parse error, not a skip
