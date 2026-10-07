@@ -50,6 +50,7 @@ from finops_fakes import cur, fixtures, prices, utilization
 from finops_fakes import estate_shape as shape
 from finops_fakes import quotas as quota_estate
 from finops_fakes.budgets import FakeBudgets
+from finops_fakes.catalog import FakePriceCatalog
 from finops_fakes.cloudwatch_estate import FakeCloudWatchEstate
 from finops_fakes.commitment import FakeCommitmentReport
 from finops_fakes.cur import FakeCostExport, estate
@@ -77,6 +78,7 @@ from finops_ingest.collectors.invoices import InvoiceCollector
 from finops_ingest.collectors.org_tree import OrgTreeCollector
 from finops_ingest.collectors.partitions import ensure_partition, partition_maintenance
 from finops_ingest.collectors.platform_cost import PlatformCostCollector
+from finops_ingest.collectors.price_catalog import PriceCatalogCollector
 from finops_ingest.collectors.query_audit import (
     QueryAuditCollector,
     default_ingest_rate,
@@ -603,6 +605,17 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
             connection,
             unit(scope_key="billing:invoices"),
             "invoices",
+        )
+        # FEAT-071. EC2's prices in the estate's Regions, from the fake whose on demand rates are
+        # the estate's own monthly figures, so a rightsizing saving quoted from them is the
+        # difference in the bill the estate generates. The fake holds no other service, so the
+        # other four are read as having no versions rather than as failing.
+        written += _through_the_ledger(
+            ledger,
+            PriceCatalogCollector(FakePriceCatalog(), clock=lambda: now),
+            connection,
+            unit(scope_key="catalog:prices"),
+            "price_catalog",
         )
         # FEAT-055, immediately after the coverage it reads. Turning the gaps into findings in
         # the same seed run is what makes the commitments screen show the actions rather than

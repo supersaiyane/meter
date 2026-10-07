@@ -453,6 +453,7 @@
     "finops_ingest/collectors/org_tree.py",
     "finops_ingest/collectors/partitions.py",
     "finops_ingest/collectors/platform_cost.py",
+    "finops_ingest/collectors/price_catalog.py",
     "finops_ingest/collectors/query_audit.py",
     "finops_ingest/collectors/quotas.py",
     "finops_ingest/collectors/realized_savings.py",
@@ -488,6 +489,7 @@
     "finops_providers/aws/invoices.py",
     "finops_providers/aws/language_model.py",
     "finops_providers/aws/platform_cost.py",
+    "finops_providers/aws/price_list.py",
     "finops_providers/aws/query_evidence.py",
     "finops_providers/aws/quotas.py",
     "finops_providers/aws/recommendations.py",
@@ -595,6 +597,7 @@
     "migrations/versions/0031_invoices.py",
     "migrations/versions/0032_reconciliation_screen.py",
     "migrations/versions/0033_price_catalog.py",
+    "migrations/versions/0034_price_catalog_schedule.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -731,6 +734,7 @@
     "tests/ingest/collectors/test_org_tree.py",
     "tests/ingest/collectors/test_partitions.py",
     "tests/ingest/collectors/test_platform_cost.py",
+    "tests/ingest/collectors/test_price_catalog.py",
     "tests/ingest/collectors/test_quotas.py",
     "tests/ingest/collectors/test_realized_savings.py",
     "tests/ingest/collectors/test_recommendations.py",
@@ -756,6 +760,7 @@
     "tests/providers/__init__.py",
     "tests/providers/aws/__init__.py",
     "tests/providers/aws/converse.py",
+    "tests/providers/aws/pricing.py",
     "tests/providers/aws/test_accounts.py",
     "tests/providers/aws/test_aws_topology.py",
     "tests/providers/aws/test_bedrock.py",
@@ -767,6 +772,7 @@
     "tests/providers/aws/test_cur.py",
     "tests/providers/aws/test_health.py",
     "tests/providers/aws/test_invoices.py",
+    "tests/providers/aws/test_price_list.py",
     "tests/providers/aws/test_query_evidence.py",
     "tests/providers/aws/test_quotas.py",
     "tests/providers/aws/test_recommendations.py",
@@ -9328,6 +9334,26 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/price_catalog.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/price_catalog.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/price_catalog.py",
+      "t": "finops_core/ports/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/price_catalog.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/query_audit.py",
       "t": "finops_core/domain/query.py",
       "k": "python"
@@ -9898,6 +9924,21 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/price_list.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/price_list.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/price_list.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/query_evidence.py",
       "t": "finops_core/errors.py",
       "k": "python"
@@ -10340,6 +10381,11 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/platform_cost.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/price_catalog.py",
       "k": "python"
     },
     {
@@ -12403,6 +12449,36 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_price_catalog.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_price_catalog.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_price_catalog.py",
+      "t": "finops_ingest/collectors/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_price_catalog.py",
+      "t": "finops_ingest/collectors/price_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_price_catalog.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_price_catalog.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_quotas.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -12833,6 +12909,21 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/aws/pricing.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/pricing.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/pricing.py",
+      "t": "finops_providers/aws/price_list.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/aws/test_accounts.py",
       "t": "finops_core/__init__.py",
       "k": "python"
@@ -13060,6 +13151,21 @@
     {
       "s": "tests/providers/aws/test_invoices.py",
       "t": "finops_providers/aws/invoices.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_price_list.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_price_list.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_price_list.py",
+      "t": "finops_providers/aws/price_list.py",
       "k": "python"
     },
     {

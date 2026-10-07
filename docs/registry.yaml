@@ -82,7 +82,7 @@ subprojects:
 - id: P9
   name: Price catalog and rightsizing targets
   status: Specified, planned and approved by the owner 2026-10-05, in build from 2026-10-08 as priority 3,
-    TASK-P9-001 to TASK-P9-003 done, TASK-P9-004 next. EC2 and EBS list prices from AWS, rightsizing down
+    TASK-P9-001 to TASK-P9-004 done, TASK-P9-005 next. EC2 and EBS list prices from AWS, rightsizing down
     and up to a named and priced target, and gp2 to gp3. The hub now reaches every API it calls, ADR-0035
   spec: specs/2026-10-05-p9-price-catalog-design.md
   plan: plans/P9-implementation-plan.md
@@ -525,7 +525,7 @@ features:
 - id: FEAT-071
   name: Price catalog from AWS for EC2, EBS, RDS, ElastiCache, Redshift and OpenSearch, every Region and price type, versioned and FOCUS shaped
   subproject: P9
-  status: Planned
+  status: In build
   detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.2, 5.3, 7 and 14, [P9 plan](docs/plans/P9-implementation-plan.md)'
   doc: docs/features/FEAT-071-price-catalog.md
 - id: FEAT-072
@@ -2011,6 +2011,19 @@ changes:
     baseline and its source; a spot day's low is never above its high; and a recommendation's target is a
     recorded price of the same Region and version. Per tenant like every table, so the guard needs no new
     rule. A test per constraint, two red checks
+- id: CHG-0137
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-004, AWS's prices for five services in every commercial Region, on demand and reserved
+  commit: pending
+  detail: The Price List adapter reads ListPriceLists for each service's versions, the version and its
+    publication read from the ARN, and GetProducts a page at a time as a generator, EC2 narrowed at the
+    source to the comparable instance price and EBS storage. A nought term, a missing price or an unreadable
+    product is SchemaDrift. The price_catalog collector runs every 8 hours, loads only a version it does not
+    hold, one savepoint per service and Region with failures to sync_error, and prunes superseded prices
+    except those a recommendation quotes. Migration 0034 seeds its schedule row; the hub role gains the two
+    Pricing reads. Held to AWS's own samples and the real ElastiCache list; the row count and a real EC2
+    instance product wait on ISS-261
 issues:
 - id: ISS-189
   severity: LOW
@@ -4426,6 +4439,20 @@ issues:
     makes DescribeBudgets as the organization reader, and budgets:ViewBudget is granted there,
     held by tests/contract/test_network_paths.py'
 
+- id: ISS-261
+  severity: MEDIUM
+  status: OPEN
+  summary: The price catalog's size and its EC2 instance attribute names are not yet measured against AWS
+  detail: 'Found 2026-10-08 by TASK-P9-004, whose plan asks for both. The tables are sized for the ten
+    million price rows spec section 14.4 models, and only one service in one Region is measured, the
+    ElastiCache list for eu-west-1 with 506 products and 1,850 terms. The adapter filters EC2 instances by
+    tenancy, capacitystatus and preInstalledSw and keeps instanceType and operatingSystem, names from the
+    price list documentation that no real EC2 instance product in this repository confirms; the EBS sample
+    and the ElastiCache products agree with every name they share. Either a real account, ISS-002, or the
+    owner''s permission to download the public EC2 offer file for one Region (eu-west-1 is 441,439,512 bytes,
+    measured on 2026-10-05) settles both: count the comparable rows, and save one instance product as an
+    extract. Until then a wrong EC2 attribute name is NoData for the Region in sync_error, because each EC2
+    query that finds no product is NoData, and never a price of nought or a Region of volumes alone.'
 - id: ISS-260
   severity: MEDIUM
   status: OPEN

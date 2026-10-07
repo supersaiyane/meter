@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 28 of 30 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 52 in 19 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 25 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 33 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 196 | test_*.py under tests/ |
-| Test functions | 2579 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 26 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 34 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 198 | test_*.py under tests/ |
+| Test functions | 2610 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -560,6 +560,10 @@ meter/
 │   │   ├── invoices.py        FEAT-076. ListInvoiceSummaries at the payer, one
 │   │   │                      billing period at a time; anything unreadable is
 │   │   │                      SchemaDrift, never a zero. Unproved, ISS-002, ISS-003
+│   │   ├── price_list.py      FEAT-071, TASK-P9-004. ListPriceLists for the versions,
+│   │   │                      GetProducts a page at a time for the prices, EC2
+│   │   │                      narrowed at the source; a nought or unreadable term
+│   │   │                      is SchemaDrift. Unproved, ISS-002, ISS-261
 │   │   ├── relay_client.py    ADR-0035. A boto3 client in shape that reaches its
 │   │   │                      service through the relay, so an adapter reads
 │   │   │                      through it unchanged; AWS's error codes kept
@@ -1170,6 +1174,10 @@ meter/
 │       │                       the provider. Stores nothing derived, retracts nothing,
 │       │                       and counts the budgets whose scope it cannot reproduce
 │       │                       on sync_error rather than dropping them
+│       ├── price_catalog.py   FEAT-071, TASK-P9-004. Every 8 hours; loads only a
+│       │                      version it does not hold, one savepoint per service
+│       │                      and Region, and prunes superseded prices except the
+│       │                      ones a recommendation quotes
 │       ├── invoices.py        FEAT-076, TASK-P10-003. Invoices and the billing
 │       │                      periods they close, stored as read; a period with no
 │       │                      invoice is stored Open, never skipped
@@ -1442,6 +1450,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0034_price_catalog_schedule.py  TASK-P9-004. The price catalog's
+│       │                      8 hourly schedule row for every existing tenant
 │       ├── 0033_price_catalog.py  TASK-P9-003. Price versions, prices as offer
 │       │                      terms, instance and volume types, spot prices, and the
 │       │                      recommendation's target priced from one version

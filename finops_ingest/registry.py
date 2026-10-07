@@ -111,6 +111,8 @@ HOURLY = 3600
 #: Six hours. The interval the P2 specification asks for, named rather than
 #: written as a multiplication at the call site.
 SIX_HOURLY = 21600
+#: Eight hours, the interval the P9 specification's section 14.4 asks the catalog collectors for.
+EIGHT_HOURLY = 28800
 #: Twelve hours, the interval the P5 specification's section 7 asks for.
 TWELVE_HOURLY = 43200
 DAILY = 86400
@@ -334,6 +336,24 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
             "otherwise. ADR-0012, constraint 9 and FEAT-076."
         ),
         est_cost_per_run="0",
+    ),
+    # FEAT-071, TASK-P9-004. Migration 0034 installs the same row for every tenant before it.
+    ScheduleEntry(
+        collector="price_catalog",
+        cadence_seconds=EIGHT_HOURLY,
+        reason=(
+            "Every 8 hours, P9 specification section 14.4. A run asks each of five services for "
+            "its current price list version in every Region and loads only a version it does not "
+            "hold, so a run that finds nothing new is five ListPriceLists calls and writes "
+            "nothing, and a faster cadence would only repeat them. A version AWS publishes is "
+            "loaded within 8 hours, so a saving is never quoted from superseded prices for longer "
+            "than that. The Price List API makes no charge; a load costs the hub's endpoint "
+            "processing its pages at 0.01 USD a GB, AWS's published rate, and a full load of all "
+            "five services in every Region is modelled at under one GB, so the figure below "
+            "bounds a full load and a quiet run costs nothing. ADR-0012, ADR-0035, constraint 9 "
+            "and FEAT-071."
+        ),
+        est_cost_per_run="0.01",
     ),
     ScheduleEntry(
         collector="iac_state",
