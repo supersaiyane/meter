@@ -153,7 +153,7 @@ Same contract as P0 through P9. One task, one commit, `make verify` green before
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | Spec section 7, FEAT-076 |
 | Delivers | FEAT-076's surface |
 | Depends on | TASK-P10-004 |
@@ -161,11 +161,20 @@ Same contract as P0 through P9. One task, one commit, `make verify` green before
 
 **Acceptance criteria.**
 
-- [ ] An Invoice reconciliation screen at `/report/reconciliation`, every state in words,
-      the difference beside each mismatch, labelled measured
-- [ ] A Matches the invoice tile on the FinOps practitioner's Overview for the last period
-      with an issued invoice, linking to the screen
-- [ ] The screen in the rail's sweeps for axe and widths, and a journey through it
+- [x] An Invoice reconciliation screen at `/report/reconciliation`, every state in words,
+      the difference beside each mismatch, labelled measured,
+      `finops-web/src/screens/ReconciliationScreen.tsx`. The route's 403 and 404 are shown in
+      its own words rather than as a failed read. On the Report group of the rail, in
+      `SCREEN_PATHS`, and admitted as a saved view's screen by migration 0032
+- [x] A Matches the invoice tile on the FinOps practitioner's Overview for the last period
+      with an issued invoice, linking to the screen: the share of the invoiced amount before
+      tax that Meter matches, measured, with how many invoices matched, or the reason there is
+      no figure
+- [x] The screen in the rail's sweeps for axe and widths, and a journey through it,
+      `finops-web/e2e/reconciliation.spec.ts`. The journey found the screen printing the raw
+      JSON body of a 403, which the unit tests had missed because they built the error with a
+      bare sentence; fixed with the client's `reasonOf`, and a unit test now uses the body as
+      the API sends it
 
 ---
 

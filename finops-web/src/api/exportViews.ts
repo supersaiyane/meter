@@ -38,6 +38,7 @@ export const EXPORT_TITLES: Readonly<Partial<Record<string, string>>> = {
   '/api/v1/cost/showback': 'Showback',
   '/api/v1/cost/explore': 'Cost Explorer',
   '/api/v1/cost/forecast': 'Spend forecast',
+  '/api/v1/cost/reconciliation': 'Invoice reconciliation',
   '/api/v1/ingest/runs': 'Collector runs',
   '/api/v1/health/freshness': 'Freshness',
   '/api/v1/inventory/resources': 'Resources',

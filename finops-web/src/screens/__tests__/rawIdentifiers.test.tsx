@@ -72,24 +72,36 @@ const RAW: readonly RegExp[] = [
   ),
 ];
 
+/**
+ * A budget per page rather than the default five seconds for the whole walk. Each page waits 50
+ * milliseconds and renders under coverage, so the walk grows with every screen the rail gains,
+ * and a fixed limit failed the gate on 2026-10-08 the day the reconciliation screen was added,
+ * at 5.08 seconds, with nothing wrong on any page.
+ */
+const PER_PAGE_MS = 400;
+
 describe('no raw identifier on any screen', () => {
-  it('shows every code and collector in words, on every built screen and tab', async () => {
-    const found: string[] = [];
-    for (const path of PAGES) {
-      window.history.pushState({}, '', path);
-      const { unmount } = render(<App client={NEVER_ANSWERS} />);
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      });
-      const text = document.body.textContent;
-      for (const pattern of RAW) {
-        const match = pattern.exec(text);
-        if (match !== null) {
-          found.push(`${path}: ${match[0]}`);
+  it(
+    'shows every code and collector in words, on every built screen and tab',
+    async () => {
+      const found: string[] = [];
+      for (const path of PAGES) {
+        window.history.pushState({}, '', path);
+        const { unmount } = render(<App client={NEVER_ANSWERS} />);
+        await act(async () => {
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        });
+        const text = document.body.textContent;
+        for (const pattern of RAW) {
+          const match = pattern.exec(text);
+          if (match !== null) {
+            found.push(`${path}: ${match[0]}`);
+          }
         }
+        unmount();
       }
-      unmount();
-    }
-    expect(found).toEqual([]);
-  });
+      expect(found).toEqual([]);
+    },
+    PAGES.length * PER_PAGE_MS,
+  );
 });

@@ -122,6 +122,6 @@ describe('the export registry', () => {
     const titles = Object.values(EXPORT_TITLES);
     expect(Object.keys(EXPORT_TITLES).every((path) => path.startsWith('/api/v1/'))).toBe(true);
     expect(new Set(titles).size).toBe(titles.length);
-    expect(titles).toHaveLength(34);
+    expect(titles).toHaveLength(35);
   });
 });

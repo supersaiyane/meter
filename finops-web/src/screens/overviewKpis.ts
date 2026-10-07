@@ -5,10 +5,12 @@ import type {
   ApiExplore,
   ApiExploreWindow,
   ApiForecast,
+  ApiReconciliation,
   ApiRecommendation,
 } from '../api/types';
 import { wasteClassName } from '../components/displayNames';
 import { DAY_MS, exploreQuery } from './exploreSeries';
+import { periodWords } from './reconciliationModel';
 
 /**
  * The Overview's figures, FEAT-070 and P8 spec section 5.8, worked out here so each is tested
@@ -327,4 +329,32 @@ export function dailyPace(
     const at = Date.parse(`${day}T00:00:00Z`);
     return at >= start && at < end ? limit / days : null;
   });
+}
+
+/**
+ * How much of the last invoiced period Meter's rows match, FEAT-076: the invoiced amount before
+ * tax on invoices whose state is Matched, over all invoiced before tax. Amounts are taken whole,
+ * so a credit memo counts by its size rather than cancelling the invoice it corrects. A period
+ * with nothing to compare, or a route that answered in words, has no figure and says why.
+ */
+export function invoiceMatch(
+  data: ApiReconciliation | undefined,
+  instead: string | null,
+): KpiFacts {
+  const formula =
+    'Invoiced amount before tax on invoices Meter matches, over all invoiced before tax' +
+    (data === undefined ? '' : `, billing period starting ${data.period}`);
+  const base = { value: null, previous: null, period: 'the last invoiced period', formula };
+  if (instead !== null) return { ...base, unsupported: instead };
+  if (data === undefined) return base;
+  if (data.state !== null) return { ...base, unsupported: periodWords(data) };
+  const whole = (amount: string) => Math.abs(Number(amount));
+  const matched = data.invoices.filter((one) => one.state === 'Matched');
+  const total = data.invoices.reduce((sum, one) => sum + whole(one.invoice_before_tax), 0);
+  const agreed = matched.reduce((sum, one) => sum + whole(one.invoice_before_tax), 0);
+  return {
+    ...base,
+    value: total === 0 ? null : agreed / total,
+    note: `${String(matched.length)} of ${String(data.invoices.length)} invoices matched`,
+  };
 }

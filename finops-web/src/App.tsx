@@ -40,6 +40,7 @@ import { PlatformScreen } from './screens/PlatformScreen';
 import { AssistantScreen } from './screens/AssistantScreen';
 import { DigestsScreen } from './screens/DigestsScreen';
 import { ReportLibraryScreen } from './screens/ReportLibraryScreen';
+import { ReconciliationScreen } from './screens/ReconciliationScreen';
 import { ScheduledReportsScreen } from './screens/ScheduledReportsScreen';
 
 /**
@@ -161,6 +162,7 @@ export function App({
                 <Route path="/report/library" element={<ReportLibraryScreen />} />
                 <Route path="/report/scheduled" element={<ScheduledReportsScreen />} />
                 <Route path="/report/exports" element={<CostExportScreen />} />
+                <Route path="/report/reconciliation" element={<ReconciliationScreen />} />
 
                 <Route path="/assist" element={<AssistantScreen />} />
                 <Route path="/assist/digests" element={<DigestsScreen />} />

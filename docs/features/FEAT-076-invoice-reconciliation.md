@@ -60,8 +60,11 @@ are confidential financial data of the tenant and are classified in
 - `GET /api/v1/cost/reconciliation?period=YYYY-MM-DD`, an envelope of comparisons,
   exportable, built in TASK-P10-004 on 2026-10-08. Any day reads its month; no period reads
   the newest closed one; a period never read is a 404.
-- The Invoice reconciliation screen at `/report/reconciliation`.
-- The Matches the invoice tile on the FinOps practitioner's Overview.
+- The Invoice reconciliation screen at `/report/reconciliation`, on the Report group of the
+  rail, built in TASK-P10-005 on 2026-10-08.
+- The Matches the invoice tile on the FinOps practitioner's Overview: the share of the last
+  invoiced period's amount before tax that Meter's rows match, measured, with how many
+  invoices matched, or the reason there is no figure.
 - Through the MCP server, as every route is, constraint 8.
 
 ## Not doing
