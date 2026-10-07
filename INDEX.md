@@ -731,6 +731,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | P7 Insight and LLM layer | [design spec](docs/specs/2026-09-28-p7-insight-and-llm-layer-design.md) | [plan](docs/plans/P7-implementation-plan.md) |
 | P8 Experience and reporting | [design spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md), and the [label table](docs/specs/2026-10-05-p8-label-table.md) the owner approved | [plan](docs/plans/P8-implementation-plan.md) |
 | P9 Price catalog and rightsizing targets | [design spec](docs/specs/2026-10-05-p9-price-catalog-design.md) | [plan](docs/plans/P9-implementation-plan.md) |
+| P10 Proven numbers: FOCUS 1.4 and invoice reconciliation | [design spec](docs/specs/2026-10-07-p10-proven-numbers-design.md) | [plan](docs/plans/P10-implementation-plan.md) |
 
 Each sub project's status is kept in one place, the generated sub project table in the
 [roadmap](docs/01-ROADMAP.md). This table carried its own status column by hand until
