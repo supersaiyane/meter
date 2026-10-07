@@ -122,7 +122,7 @@ export function recommendationsFixture(): ApiEnvelope<ApiRecommendations> {
           owner: null,
           ticket_reference: null,
           rationale:
-            'In INSUFFICIENT_DATA since 2026-01-26, 243 days, so it has never evaluated. ' +
+            'In the insufficient data state since 2026-01-26, 243 days, so it has never evaluated. ' +
             'The queue it watches no longer exists',
           reversible: true,
           disturbs_running_work: false,

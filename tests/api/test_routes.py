@@ -236,6 +236,7 @@ def test_me_reports_the_principal_and_the_scope(
         "total": 2,
         "is_partial": True,
         "unit": "accounts",
+        "chosen": None,
     }
 
 
@@ -323,6 +324,7 @@ def test_the_tree_reports_how_many_accounts_are_reachable(
         "total": 2,
         "is_partial": True,
         "unit": "accounts",
+        "chosen": None,
     }
 
 

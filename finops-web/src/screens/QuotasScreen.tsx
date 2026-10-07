@@ -1,10 +1,11 @@
-import { Link } from 'react-router';
-
 import { useQuotaRequests, useQuotas } from '../api/queries';
+import { DataTable } from '../components/DataTable';
 import { FixtureBand } from '../components/FixtureBand';
 import { PercentCell } from '../components/PercentCell';
 import { StateBoundary } from '../components/StateBoundary';
+import type { Column } from '../components/tableConfig';
 import type { ApiQuota, ApiQuotaRequest, ApiUnmeasurableQuota } from '../api/types';
+import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { surfaceStateFor } from './surfaceStateFor';
 
@@ -71,78 +72,152 @@ function where(quota: ApiQuota | ApiUnmeasurableQuota): string {
  * asked for an increase: a quota with no figure is exactly the one somebody requests blind.
  */
 function pathFor(quota: ApiQuota | ApiUnmeasurableQuota): string {
-  return `/governance/quotas/${quota.service_code}/${quota.quota_code}`;
+  return `/govern/quotas/${quota.service_code}/${quota.quota_code}`;
 }
 
 function keyFor(quota: ApiQuota | ApiUnmeasurableQuota): string {
   return `${quota.account_id}:${quota.region_id ?? 'global'}:${quota.quota_code}`;
 }
 
-function Measured({ quota }: { readonly quota: ApiQuota }) {
-  return (
-    <tr data-testid="quota-measured">
-      <td>
+/** A figure the API sends as a decimal string, as a number to sort by, or absent. */
+function amount(value: string | null): number | null {
+  return value === null ? null : Number(value);
+}
+
+/**
+ * The quota's name and code, linked to its page. Every row links, including the unmeasured
+ * ones: otherwise the longer list is a list of dead ends, and it is the list where a reader
+ * most wants to know whether anybody has asked for an increase.
+ */
+function quotaColumn<Row extends ApiQuota | ApiUnmeasurableQuota>(): Column<Row> {
+  return {
+    key: 'quota',
+    header: 'Quota',
+    render: (quota) => (
+      <>
         <Link data-testid="quota-link" to={pathFor(quota)}>
           <strong>{quota.quota_name}</strong>
         </Link>
         <span data-testid="quota-code"> {quota.quota_code}</span>
-      </td>
-      <td>{quota.account_id}</td>
-      <td>{where(quota)}</td>
-      <td>
+      </>
+    ),
+    sortValue: (quota) => quota.quota_name,
+  };
+}
+
+function placeColumns<Row extends ApiQuota | ApiUnmeasurableQuota>(): readonly Column<Row>[] {
+  return [
+    {
+      key: 'account',
+      header: 'Account',
+      render: (quota) => quota.account_id,
+      sortValue: (quota) => quota.account_id,
+    },
+    { key: 'region', header: 'Region', render: where, sortValue: where },
+  ];
+}
+
+// No totals on any of the three: each row is a different quota in its own unit, and a sum of
+// vCPUs, buckets and requests is a number that counts nothing.
+const MEASURED_COLUMNS: readonly Column<ApiQuota>[] = [
+  quotaColumn<ApiQuota>(),
+  ...placeColumns<ApiQuota>(),
+  {
+    key: 'used',
+    header: 'Used',
+    numeric: true,
+    render: (quota) => (
+      <>
         {quota.used}
         <span> of {quota.limit ?? 'no published limit'}</span>
-      </td>
-      <td>
-        <PercentCell
-          fraction={fullness(quota)}
-          absent="The limit is not published, so how full this is cannot be stated."
-          provenance="measured"
-          inverted
-        />
-      </td>
-      <td data-testid="quota-source">{SOURCE_LABEL[quota.source] ?? quota.source}</td>
-    </tr>
-  );
-}
+      </>
+    ),
+    sortValue: (quota) => Number(quota.used),
+  },
+  {
+    key: 'full',
+    header: 'Full',
+    render: (quota) => (
+      <PercentCell
+        fraction={fullness(quota)}
+        absent="The limit is not published, so how full this is cannot be stated."
+        provenance="measured"
+        inverted
+      />
+    ),
+    sortValue: fullness,
+  },
+  {
+    key: 'source',
+    header: 'Measured by',
+    cellTestId: 'quota-source',
+    render: (quota) => SOURCE_LABEL[quota.source] ?? quota.source,
+    sortValue: (quota) => SOURCE_LABEL[quota.source] ?? quota.source,
+  },
+];
 
-function Unmeasured({ quota }: { readonly quota: ApiUnmeasurableQuota }) {
-  return (
-    <tr data-testid="quota-unmeasured">
-      <td>
-        <Link data-testid="quota-link" to={pathFor(quota)}>
-          <strong>{quota.quota_name}</strong>
-        </Link>
-        <span data-testid="quota-code"> {quota.quota_code}</span>
-      </td>
-      <td>{quota.account_id}</td>
-      <td>{where(quota)}</td>
-      <td>{quota.limit ?? 'no published limit'}</td>
-      {/* No usage cell at all, not an empty one. An empty cell in a column of numbers reads
-          as a measurement that came back zero, which is the one thing this must not say. */}
-      <td data-testid="quota-reason">{quota.reason}</td>
-    </tr>
-  );
-}
+const UNMEASURED_COLUMNS: readonly Column<ApiUnmeasurableQuota>[] = [
+  quotaColumn<ApiUnmeasurableQuota>(),
+  ...placeColumns<ApiUnmeasurableQuota>(),
+  {
+    key: 'limit',
+    header: 'Limit',
+    numeric: true,
+    render: (quota) => quota.limit ?? 'no published limit',
+    sortValue: (quota) => amount(quota.limit),
+  },
+  // No usage column at all, not an empty one. An empty cell in a column of numbers reads as a
+  // measurement that came back zero, which is the one thing this must not say.
+  {
+    key: 'reason',
+    header: 'Why there is no figure',
+    prose: true,
+    cellTestId: 'quota-reason',
+    render: (quota) => quota.reason,
+  },
+];
 
-function Request({ request }: { readonly request: ApiQuotaRequest }) {
-  return (
-    <tr data-testid="quota-request-row" data-status={request.status}>
-      <td>
-        <Link
-          data-testid="request-quota-link"
-          to={`/governance/quotas/${request.service_code}/${request.quota_code}`}
-        >
-          {request.quota_name}
-        </Link>
-      </td>
-      <td>{request.account_id}</td>
-      <td>{request.desired_value}</td>
-      <td data-testid="request-status">{request.status.replace('_', ' ').toLowerCase()}</td>
-      <td>{request.requested_at.slice(0, 10)}</td>
-    </tr>
-  );
-}
+const REQUEST_COLUMNS: readonly Column<ApiQuotaRequest>[] = [
+  {
+    key: 'quota',
+    header: 'Quota',
+    render: (request) => (
+      <Link
+        data-testid="request-quota-link"
+        to={`/govern/quotas/${request.service_code}/${request.quota_code}`}
+      >
+        {request.quota_name}
+      </Link>
+    ),
+    sortValue: (request) => request.quota_name,
+  },
+  {
+    key: 'account',
+    header: 'Account',
+    render: (request) => request.account_id,
+    sortValue: (request) => request.account_id,
+  },
+  {
+    key: 'asked',
+    header: 'Asked for',
+    numeric: true,
+    render: (request) => request.desired_value,
+    sortValue: (request) => Number(request.desired_value),
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    cellTestId: 'request-status',
+    render: (request) => request.status.replace('_', ' ').toLowerCase(),
+    sortValue: (request) => request.status,
+  },
+  {
+    key: 'requested',
+    header: 'Requested',
+    render: (request) => request.requested_at.slice(0, 10),
+    sortValue: (request) => request.requested_at,
+  },
+];
 
 export function QuotasScreen() {
   const query = useQuotas();
@@ -185,24 +260,16 @@ export function QuotasScreen() {
               ? 'One quota with a usage figure'
               : `${String(measured)} quotas with a usage figure`}
           </h3>
-          <table data-testid="quotas-measured">
-            <caption>Quotas with a usage figure, the fullest first</caption>
-            <thead>
-              <tr>
-                <th scope="col">Quota</th>
-                <th scope="col">Account</th>
-                <th scope="col">Region</th>
-                <th scope="col">Used</th>
-                <th scope="col">Full</th>
-                <th scope="col">Measured by</th>
-              </tr>
-            </thead>
-            <tbody>
-              {measurable.map((one) => (
-                <Measured key={keyFor(one)} quota={one} />
-              ))}
-            </tbody>
-          </table>
+          <div data-testid="quotas-measured">
+            <DataTable
+              rows={measurable}
+              columns={MEASURED_COLUMNS}
+              rowKey={keyFor}
+              caption="Quotas with a usage figure, the fullest first"
+              initialSort={{ key: 'full', direction: 'descending' }}
+              rowAttributes={() => ({ 'data-testid': 'quota-measured' })}
+            />
+          </div>
 
           {unmeasurable.length > 0 ? (
             <>
@@ -211,26 +278,16 @@ export function QuotasScreen() {
                   ? 'One quota nothing measures'
                   : `${String(unmeasurable.length)} quotas nothing measures`}
               </h3>
-              <table data-testid="quotas-unmeasured">
-                <caption>
-                  Quotas with a limit and no usage, by name. Nothing here is at zero: nothing
-                  here has been measured, and the reason on each row says which source declined.
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Quota</th>
-                    <th scope="col">Account</th>
-                    <th scope="col">Region</th>
-                    <th scope="col">Limit</th>
-                    <th scope="col">Why there is no figure</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {unmeasurable.map((one) => (
-                    <Unmeasured key={keyFor(one)} quota={one} />
-                  ))}
-                </tbody>
-              </table>
+              <div data-testid="quotas-unmeasured">
+                <DataTable
+                  rows={unmeasurable}
+                  columns={UNMEASURED_COLUMNS}
+                  rowKey={keyFor}
+                  caption="Quotas with a limit and no usage, by name. Nothing here is at zero: nothing here has been measured, and the reason on each row says which source declined."
+                  initialSort={{ key: 'quota', direction: 'ascending' }}
+                  rowAttributes={() => ({ 'data-testid': 'quota-unmeasured' })}
+                />
+              </div>
             </>
           ) : null}
 
@@ -241,28 +298,18 @@ export function QuotasScreen() {
                   ? 'One increase request still open'
                   : `${String(open)} increase requests still open`}
               </h3>
-              <table data-testid="quota-requests">
-                <caption>
-                  Increases somebody asked AWS for, the open ones first. Settled requests stay,
-                  refusals included: somebody waiting on an increase wants to know it was denied
-                  three weeks ago more than they want a shorter list. Meter reads this history
-                  and never adds to it.
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Quota</th>
-                    <th scope="col">Account</th>
-                    <th scope="col">Asked for</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Requested</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {requests.map((one) => (
-                    <Request key={one.request_id} request={one} />
-                  ))}
-                </tbody>
-              </table>
+              <div data-testid="quota-requests">
+                <DataTable
+                  rows={requests}
+                  columns={REQUEST_COLUMNS}
+                  rowKey={(request) => request.request_id}
+                  caption="Increases somebody asked AWS for, the open ones first. Settled requests stay, refusals included: somebody waiting on an increase wants to know it was denied three weeks ago more than they want a shorter list. Meter reads this history and never adds to it."
+                  rowAttributes={(request) => ({
+                    'data-testid': 'quota-request-row',
+                    'data-status': request.status,
+                  })}
+                />
+              </div>
             </>
           ) : null}
         </>

@@ -71,6 +71,8 @@ CPU and memory are sized differently on purpose. A CPU request set too low
 throttles a workload; a memory request set too low kills it. A percentile is right
 for the first and reckless for the second.
 
+Since TASK-P8-013, 2026-10-06, both workload tables are `DataTable`s, sortable by any column. Requested CPU and memory are totalled, because requests together are what the cluster reserved; the 99th percentile and the peak are not, because each workload's worst moment came at a different time.
+
 ## Failure behaviour
 
 **Container Insights cannot reliably report OOMKilled events**, which is the gap

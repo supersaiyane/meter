@@ -57,57 +57,66 @@ decomposition to find their work.
 | Finance | What is the allocated cost, and can I export it | Cost, allocation and export |
 
 **Nobody navigates by sub project.** P2 is a delivery unit, not a user concept.
-A user looking for an expensive dashboard looks under Governance, and never
+A user looking for an expensive dashboard looks under Govern, and never
 needs to know that a sub project called P2 built it.
 
 ## 4. Information architecture
 
-### The seven groups
+### The nine groups
 
-| # | Group | Answers | Sub projects that fill it |
+**Amended 2026-10-05, ADR-0030.** The seven question groups of ADR-0020 became
+nine groups named for the domains of the FinOps Framework, approved by the
+owner with P8 (spec section 5.2), because the owner asked for the standard
+nomenclature a FinOps practitioner already uses. The screens in each group are
+listed in ADR-0030 and in `finops-web/src/shell/sections.ts`, which is the one
+list.
+
+| # | Group | Answers | Framework domain |
 | --- | --- | --- | --- |
-| 1 | **Home** | Can I trust this, and where is the money | All |
-| 2 | **Cost** | Where is the money going | P1 |
-| 3 | **Waste** | What is being spent badly, and what did we recover | P3, P6 |
-| 4 | **Governance** | What rules and limits constrain the estate | P2, P5 |
-| 5 | **Inventory** | What do we have, and how is it connected | P0, P4 |
-| 6 | **Platform** | Is Meter itself working | P0 |
-| 7 | **Assistant** | Ask, and receive an answer with its provenance | P7 |
+| 1 | **Overview** | Can I trust this, and where is the money | Understand Usage and Cost |
+| 2 | **Analyze** | Where is the money going | Understand Usage and Cost |
+| 3 | **Plan** | What will it cost, and is that within budget | Quantify Business Value |
+| 4 | **Optimize** | What is being spent badly, and what did we recover | Optimize Usage and Cost |
+| 5 | **Govern** | What rules and limits constrain the estate | Manage the FinOps Practice |
+| 6 | **Inventory** | What do we have, and how is it connected | None; ITAM and Data Ingestion are nearest |
+| 7 | **Report** | What can I take away, and who receives it | Understand Usage and Cost |
+| 8 | **Assist** | Ask, and receive an answer with its provenance | AI for FinOps |
+| 9 | **Platform** | Is Meter itself working | Manage the FinOps Practice |
 
-The group names are nouns the audience already uses, with one deliberate
-exception. **Waste** is blunt on purpose. The alternatives, Optimisation or
-Savings, describe how the team feels about the work rather than what the screen
-shows, and a product whose thesis is honesty should not soften the label on its
-most expensive findings.
+Under ADR-0020 the third group was **Waste**, blunt on purpose. The Framework's
+Optimize replaces it because the owner chose the names practitioners search
+for; the screens under it still say what was spent badly in so many words.
 
 ### Why the groups do not grow
 
 A flat navigation grows by one entry per screen, so it is five entries today and
 roughly thirty by P4, at which point finding a screen requires knowing which
 sub project built it. Grouping by the question being asked keeps the top level
-at seven while the product grows underneath it.
+fixed while the product grows underneath it, at nine groups since 2026-10-05.
 
-The test for a new screen is: **which of the seven questions does it answer?**
+The test for a new screen is: **which group's question, and so which Framework
+domain, does it answer?**
 A screen that answers none of them is a screen whose purpose has not been
 decided yet, and the navigation refusing to place it is the correct outcome
 rather than a limitation.
 
 ### Collapsing it
 
-The seven groups are fixed, and the column holding them is not. Collapsing
-narrows the grid column from 232 px to 56 px, which gives the content the width
-rather than covering the navigation with it: at 1440 px the findings table goes
-from 1208 px to 1384 px and its explanation column wraps in two lines instead of
-four. On the dense screens that is the difference between reading a sentence and
-scanning a paragraph.
+The groups are fixed, and the column holding them is not. Collapsing
+narrows the rail from 248 px to 64 px, which gives the content the width rather
+than covering the navigation with it. On the dense screens that is the difference
+between reading a sentence and scanning a paragraph. Since TASK-P8-018 the rail is
+a glass panel whose groups open one at a time, and at or below 1024 px it is a bar
+across the top whose menu is a drawer that closes on navigation and on Escape.
 
 Three properties make it correct rather than merely present.
 
 - **The navigation is `hidden`, not painted over**, so it leaves the
   accessibility tree and the tab order together. A keyboard user never tabs
   through links that are not on screen.
-- **There is no transition.** The motion rule permits a 120 ms opacity change
-  and nothing else, and a sliding panel is exactly the decoration it rules out.
+- **There is no transition on its width.** Motion is rich since 2026-10-05 and
+  still never moves a size, because a column that slides moves every figure on the
+  screen with it.
 - **The choice is remembered per browser**, and a browser that refuses to answer
   about stored data opens the navigation rather than rendering a shell with no
   menu in it.
@@ -131,7 +140,50 @@ navigation and the router keep agreeing, which is the reason that file exists.
 ## 5. Routes
 
 Every route carries its group. A URL that does not name a group is a screen
-whose purpose was never placed.
+whose purpose was never placed. Since 2026-10-05, ADR-0030:
+
+```
+/                                  Overview
+/analyze/explorer                  Cost Explorer: two groupings, a period and the one before
+/analyze/allocation                Allocation and showback, the unallocated bucket
+/analyze/anomalies                 Anomalies, ingested and detected
+/analyze/kubernetes-cost           Kubernetes cost by cluster, namespace and workload
+/analyze/kubernetes-rightsizing    Kubernetes rightsizing, requested against used
+/analyze/clusters                  Clusters and their fleets
+/plan/budgets                      Budgets and their burn
+/plan/forecasts                    Spend forecast: a range or the reason, with its backtest
+/plan/score                        FinOps Score, decomposed to the findings that moved it
+/plan/unit-economics               Unit economics, no sub project planned
+/optimize                          Every recommendation, ranked by dollar
+/optimize/commitments              Savings Plan and Reserved Instance coverage
+/optimize/savings                  Realized savings, the north star metric
+/govern/query-cost                 Query findings, ranked by monthly cost
+/govern/query-cost/findings/:id    Finding detail, the full working
+/govern/query-cost/surfaces        Query surfaces, including unreachable ones
+/govern/query-cost/adhoc           Ad hoc queries
+/govern/quotas                     Quota utilization, with coverage gaps stated
+/govern/quotas/:service/:quota     One quota, and the increase Meter would ask for
+/govern/policies                   Active controls, expiry and revoke
+/inventory/accounts                Accounts in scope, with role health
+/inventory/accounts/organization   The organization tree and graph, a tab of Accounts
+/inventory/resources               Config inventory by region and zone
+/inventory/resources/:nodeId       One resource
+/inventory/topology                The topology map
+/inventory/topology/geography      The estate on a map, a tab of Topology
+/report/library                    Report library, saved views, FEAT-068
+/report/scheduled                  Scheduled reports and the files made for the reader, FEAT-069
+/report/exports                    Showback rows, whose file is the Export menu's
+/assist                            Ask Meter
+/assist/digests                    Per team digests and executive summaries
+/platform/freshness                Freshness per collector against its cadence
+/platform/ingest                   Runs, typed errors, per account causes
+/platform/cost                     Meter's own cost, unallocated included
+/platform/flags                    Configuration and feature flags, not yet surfaced
+```
+
+Before 2026-10-05 the routes were these, kept as the record. Each one that moved
+redirects to its new home with its query string, through `REDIRECTS` in
+`sections.ts`, and `sections.test.ts` names every one of them.
 
 ```
 /                                  Home
@@ -164,7 +216,7 @@ whose purpose was never placed.
 ### Scope and filters live in the query string
 
 ```
-/waste?scope=ou-abc123&severity=1&provenance=measured
+/optimize?scope=ou-abc123&severity=1&provenance=measured
 ```
 
 Not in the path. Three reasons, and the third is the product's own thesis.
@@ -176,7 +228,37 @@ Not in the path. Three reasons, and the third is the product's own thesis.
    screen.** A figure whose filters are invisible is a figure that cannot be
    argued with, which is the failure `docs/12-UI-DESIGN.md` exists to prevent.
 
+Built on 2026-10-05, TASK-P8-003, closing ISS-235: until then nothing read the
+query string. `useFilters` in `finops-web/src/shell/filters.ts` reads and writes a
+screen's filters there, each change is a history entry so back and forward walk
+through them, each screen declares its keys in `sections.ts`, and the shell names
+any parameter the screen does not take rather than applying it.
+
+One key is every screen's: `account`, the account chosen in the search box, FEAT-075,
+built on 2026-10-06. It is never named as ignored, because every screen honours it at
+the scope dependency, and it reaches the API as `chosen_account` on every read and in
+every cache key. Links keep it: they come from `finops-web/src/shell/links.tsx`, and a
+test fails the build if a file uses the router's own `Link` or `NavLink`, which would
+drop it.
+
 ## 6. The home screen
+
+### Since FEAT-070, 2026-10-06
+
+The home screen is the Overview, and it opens on one of three dashboards, with a switch above
+them and the reader's last choice kept in the browser. The FinOps practitioner's is the one
+drawn in `docs/design/2026-10-05-overview-frosted-ledger.jpg` and opens for a reader who has
+chosen nothing.
+
+| Dashboard | What it holds |
+| --- | --- |
+| FinOps practitioner | KPI tiles for Effective Cost, the month end forecast, budget consumed, effective savings rate, commitment coverage, cost allocated and Meter's own cost; daily Effective Cost with the estate budget's pace; cost by service; anomalies; top recommendations; scheduled reports; showback by team |
+| Executive | KPI tiles for Effective Cost to date, the forecast, budget against time elapsed, the savings rate, cost allocated, top movers and Meter's own cost; twelve months by service; this month against the forecast band; the top 10 accounts; savings available by category |
+| Engineering lead | Meter's own cost; daily Effective Cost by service; where this month went; rightsizing; anomalies; Top actions; the query cost tiles; top findings by dollar |
+
+The two rules below hold on all three: the Overview owns no data, and a slot whose sub project
+has not landed names it. The shape and the five slots below are the design the Overview grew
+from, kept because the rules they explain still bind.
 
 ### Shape
 
@@ -298,7 +380,7 @@ Twenty five screens. Status is the owning feature's status, not the screen's.
 | `/cost/allocation` | Allocation and showback | FEAT-022 | P1 | Planned |
 | `/cost/anomalies` | Anomalies | FEAT-023 | P1 | Planned |
 | `/cost/commitments` | Commitment coverage | FEAT-024 | P1 | Planned |
-| `/cost/export` | Export | FEAT-045 | P1 | Planned |
+| `/cost/export` | Export, showback rows and the Export menu | FEAT-045, FEAT-067 | P1, P8 | Delivered |
 
 ### Waste
 
@@ -470,9 +552,12 @@ implement it differently.
 | --- | --- |
 | **Scope switcher** | In the shell, always visible, writes `?scope=`. Changing scope never silently changes what a figure means, because coverage is recomputed and shown. **Not yet planned**, because ADR-0008 parks the identity adapter and a switcher over one hardcoded scope would be a control that does nothing |
 | **Trust strip** | Coverage, freshness and degraded are shell level on every screen, worst case across that screen's collectors. Meter's own cost is Home only, per constraint 7 |
-| **Search** | One field, spanning accounts, resources, dashboards and findings. Results grouped by the seven groups, so the result list teaches the navigation. **Not yet planned**, because it wants at least three entity types to search over and P0 plus P2 supply two |
+| **Search** | One box in the top bar, FEAT-075: an account's number or name, a service or a resource. An account narrows every screen, a service opens Cost Explorer filtered to it, and a resource opens its page, each keeping the account. Dashboards and findings are not in it |
+| **Account choice** | Kept in the address as `?account=`, so a shared link opens the same account and the rail keeps it. Every read of a figure carries it to the server as `chosen_account`, where the scope dependency narrows. The reads that hold no figure, the accounts to choose from and the reader's own saved views, schedules and runs, are not narrowed. FEAT-075 |
+| **Save view** | Beside Export on a screen that can be saved, keeps the screen and its query under a name, private or shared with the tenant. A view holds no figure, so it opens in the opener's scope. FEAT-068 |
+| **Schedule** | From the Report Library, on the view's own screen: one route that screen exports, a format, a cadence and the people it is for. Each file is made within its recipient's own access, FEAT-069 and ADR-0033 |
 | **Drill down** | Always into the owning group, never a modal. A finding opens its own URL, so it can be linked |
-| **Export** | Every table. **The export carries its coverage and both timestamps**, per FEAT-045 and `docs/12-UI-DESIGN.md` section 6. A spreadsheet that leaves without them becomes a number in a board pack with no way back to what it meant |
+| **Export** | Beside every screen title, for each view the screen reads, FEAT-067. The server writes the file from the screen's own query, behind the same guard. **A workbook carries its coverage, both timestamps and every failure on its About sheet**, and the showback CSV carries them on every row, per FEAT-045 and `docs/12-UI-DESIGN.md` section 6. A spreadsheet that leaves without them becomes a number in a board pack with no way back to what it meant |
 | **Fixture marker** | Any screen resolving to fixture data renders the `FIXTURE DATA` band above its own content, driven by the same resolution that chose the fixture. It is per screen rather than shell level, because the shell aggregates `meta` and a fixture is a property of one surface rather than of the view. Each such screen carries a test asserting the band renders. See section 11 |
 | **Empty groups** | A group whose sub projects have not landed shows its screens with their arrival, never a hidden or disabled entry. Hiding it makes the product look smaller than it is and makes the roadmap invisible |
 
@@ -545,11 +630,9 @@ own front page becomes the progress view**, because a slot that says
 - Screen level design for P1 and P3 to P7. Each sub project specification adds
   its screens against this frame and the visual system, per
   `docs/12-UI-DESIGN.md` section 13.
-- Chart provenance. P1 introduces charts beyond the sparkline and must extend
-  section 7 of `docs/12-UI-DESIGN.md` before it does.
 - Authentication and the sign in surface. ADR-0008 parks the identity adapter,
   and the sign in screen arrives with the adapter.
-- The scope switcher, search, and the flags screen. All three are specified
-  above and none is in the first implementation plan. Section 10 and section 8
-  say which and why, so a reader can tell a deferral from an omission.
+- The scope switcher and the flags screen. Both are specified above and neither
+  is built. Section 10 and section 8 say why, so a reader can tell a deferral
+  from an omission. Search, the third, arrived with FEAT-075.
 - Brand, logo, marketing. Meter is an internal instrument.

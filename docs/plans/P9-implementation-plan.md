@@ -1,10 +1,10 @@
 # P9 Price catalog and rightsizing targets: implementation plan
 
 Date: 2026-10-05
-Status: Approved by the owner on 2026-10-05, with its spec
+Status: Approved by the owner on 2026-10-05, with its spec, and widened by the owner on 2026-10-07, spec section 14
 Spec: `docs/specs/2026-10-05-p9-price-catalog-design.md`
 Depends on: P3 delivered; the network path the owner chose on 2026-10-05, OPEN-16, which TASK-P9-001 builds
-Tasks: 11
+Tasks: 13
 
 Meter tells an engineer an instance is too big and does not say what to move to, and the
 saving it quotes assumes the unused part of an instance can be returned on its own. This
@@ -36,7 +36,7 @@ Same contract as P0 through P8. One task, one commit.
 | Wave | Tasks | Delivers | Can start when |
 | --- | --- | --- | --- |
 | A. A way out | 001 | The hub reaches every AWS API it calls | This plan approved and OPEN-16 answered, both 2026-10-05 |
-| B. The catalogs | 002 to 005 | Ports, tables, the price list and the instance catalog | A |
+| B. The catalogs | 002 to 005, 012, 013 | Ports, tables, the price list for five services in every Region, the instance catalog, Savings Plans rates and spot prices | A |
 | C. Targets | 006 to 009 | Compute Optimizer fixed, downsizing and upsizing to a named type, gp2 to gp3 | B |
 | D. Surface | 010 | Routes and the Alternatives table | C |
 | E. Proof and documents | 011 | Exit criteria measured, documents updated | All |
@@ -62,7 +62,8 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 **Acceptance criteria.**
 
-- [ ] An ADR records A plus C for Budgets and Support, why, and its monthly cost: the
+- [ ] An ADR records A plus C for Budgets and Support, C again for spot prices and Savings
+      Plans rates in every Region, OPEN-17, why, and its monthly cost: the
       endpoint price measured from the AWS price list, the endpoints counted from the
       Terraform, and the total labelled modelled. The estimate the owner chose on was about
       20 endpoints at about 14.7 USD a month each, roughly 290 USD a month (modelled)
@@ -77,6 +78,8 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
       Cost Explorer endpoint among the hub's own, in the hub's Region, where none can be made:
       Cost Explorer's endpoint is in us-east-1 only
 - [ ] Every new resource tagged `finops:module`, constraint 7
+- [ ] Spot prices and Savings Plans rates in every Region read by a function outside the VPC
+      that writes rows to S3, the owner's answer to OPEN-17 on 2026-10-07, held by the same test
 
 ---
 
@@ -113,31 +116,40 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 - [ ] `price_list_version`, `price`, `instance_type_spec` and `volume_type_spec`, every
       invariant in spec section 6 a constraint
+- [ ] `instance_type_spec` keyed by service as well as type, for the five services of spec
+      section 14, and `spot_price` and `spot_price_daily` as OPEN-18 chose, spec section
+      14.7. Added 2026-10-07
 - [ ] The recommendation's target columns added as nullable, constraint 12
 - [ ] A test per constraint, and `docs/07-DATA-MODEL.md` and
       `docs/09-DATA-CLASSIFICATION.md` updated in the same commit
 
 ---
 
-### TASK-P9-004: the price list, EC2 and EBS, two Regions
+### TASK-P9-004: the price list, five services, every Region, on demand and reserved
 
 | Field | Value |
 | --- | --- |
 | Status | Not started |
-| Implements | P9 spec sections 5.2, 5.3 and 7, FEAT-071 |
-| Delivers | FEAT-071 |
+| Implements | P9 spec sections 5.2, 5.3, 7 and 14, FEAT-071 |
+| Delivers | FEAT-071, on demand and reserved |
 | Depends on | TASK-P9-003 |
 | Estimate | L |
 
 **Acceptance criteria.**
 
-- [ ] The adapter reads the Price List Query API, filtered to the Regions in OPEN-06, for
-      the `AmazonEC2` offer, which holds EBS
+- [ ] The adapter reads the Price List Query API for `AmazonEC2`, which holds EBS,
+      `AmazonRDS`, `AmazonElastiCache`, `AmazonRedshift` and `AmazonES`, in every commercial
+      Region, the Regions taken from the price list's own codes and never listed in code.
+      Widened from the Regions in OPEN-06 on 2026-10-07, spec section 14
+- [ ] Reserved terms, one and three years, every payment option and offering class, as
+      `PricingCategory` Committed with the term in `SkuPriceDetails`
+- [ ] The number of price rows measured before the tables are sized, against the ten
+      million spec section 14.4 models
 - [ ] Rows filtered to the comparable price: operating system, shared tenancy, used
       capacity, no preinstalled software, with the filter tested
 - [ ] A zero or missing price refused with a typed cause, never stored
 - [ ] The `price_catalog` collector, a `collector_schedule` row with its reason and cost,
-      stops when the stored version is current
+      every 8 hours, loads only the services and Regions whose version changed
 - [ ] Never loads a whole offer file into memory
 
 ---
@@ -154,12 +166,62 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 **Acceptance criteria.**
 
-- [ ] `DescribeInstanceTypes` and `DescribeInstanceTypeOfferings` per Region, paged, into
-      `instance_type_spec`
+- [ ] EC2 types from `DescribeInstanceTypes` in the hub's own Region, paged, with the
+      Regions each is sold in taken from the price list, and a test that compares two
+      Regions' descriptions of the same types. Changed 2026-10-07, spec section 14.3
+- [ ] RDS, ElastiCache, Redshift and OpenSearch instance specs from their price list
+      products' attributes, into the same table keyed by service
 - [ ] Burstable baselines and maximum credits from the EC2 guide's table, kept as data with
       their source, and a test that fails when a burstable type is missing from it
-- [ ] The `instance_catalog` collector with its schedule row; one Region failing does not
-      fail the run
+- [ ] The `instance_catalog` collector with its schedule row, every 8 hours; one Region or
+      service failing does not fail the run
+
+---
+
+### TASK-P9-012: Savings Plans rates, every Region
+
+Added 2026-10-07 at the owner's request, spec section 14.
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | P9 spec section 14, FEAT-071 |
+| Delivers | Savings Plans rates in the price catalog |
+| Depends on | TASK-P9-001 and TASK-P9-004 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [ ] Savings Plans rates from AWS's Savings Plans price list for every commercial Region, as
+      `price` rows with `PricingCategory` Committed and the plan's term in `SkuPriceDetails`
+- [ ] Read by the function outside the VPC chosen for OPEN-17, held by TASK-P9-001's test
+- [ ] Polled every 8 hours with the other catalog collectors, loading only what changed
+
+---
+
+### TASK-P9-013: spot prices, every Region and zone
+
+Added 2026-10-07 at the owner's request, spec section 14.
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | P9 spec section 14, FEAT-071 |
+| Delivers | Spot prices in the price catalog |
+| Depends on | TASK-P9-001 and TASK-P9-003 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [ ] `DescribeSpotPriceHistory` for every commercial Region, zone and product description,
+      as `PricingCategory` Dynamic, with the reading's own time as `as_of` and `collected_at`
+      beside it
+- [ ] Read by the function outside the VPC chosen for OPEN-17, held by TASK-P9-001's test
+- [ ] The latest price per pool, replaced each run, and each day's low and high kept for 90
+      days, as OPEN-18 chose on 2026-10-07, spec section 14.7; every limit a database
+      constraint, and the 90 days held by a test
+- [ ] Polled every 8 hours; a Region that refuses, or that the account has not opted into, is
+      a typed failure such as NotOptedIn and never a price of nought, constraint 5
 
 ---
 
@@ -256,7 +318,8 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 **Acceptance criteria.**
 
-- [ ] `GET /catalog/instance-types` and `GET /catalog/prices`, with version and `as_of`
+- [ ] `GET /catalog/instance-types` and `GET /catalog/prices`, with version and `as_of`,
+      filtered by service, Region and pricing category as well. Widened 2026-10-07
 - [ ] Recommendations return the target, both prices, the version and the scaled saving
 - [ ] The recommendation's screen shows an Alternatives table, the chosen target first,
       in P8's design system if it has landed
@@ -271,7 +334,7 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 | Status | Not started |
 | Implements | P9 spec sections 9 and 13 |
 | Delivers | The exit criteria, measured, and the record |
-| Depends on | TASK-P9-001 to TASK-P9-010 |
+| Depends on | TASK-P9-001 to TASK-P9-010, TASK-P9-012 and TASK-P9-013 |
 | Estimate | S |
 
 **Acceptance criteria.**
@@ -284,5 +347,6 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 ## What this plan does not answer
 
-- Which services after EC2 and EBS go into the catalog.
-- Spot prices, which wait for FEAT-047.
+- Whether the catalog gets a screen of its own, browsable like instances.vantage.sh, beside the
+  Alternatives table. Which services follow EC2 and EBS, whether spot is in, OPEN-17 and
+  OPEN-18 were answered on 2026-10-07.

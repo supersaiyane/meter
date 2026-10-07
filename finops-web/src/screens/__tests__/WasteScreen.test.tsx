@@ -36,7 +36,7 @@ describe('WasteScreen', () => {
     renderWaste();
     await screen.findByText(/i-0a1b2c3d4e5f6a7b8/);
     const headers = [...document.querySelectorAll('thead th')].map((cell) => cell.textContent);
-    const money = headers.findIndex((header) => header.includes('Monthly saving'));
+    const money = headers.findIndex((header) => header.includes('Estimated monthly savings'));
     const confidence = headers.findIndex((header) => header.includes('Confidence'));
     expect(money).toBeGreaterThanOrEqual(0);
     expect(confidence).toBeGreaterThanOrEqual(0);
@@ -102,7 +102,7 @@ describe('WasteScreen', () => {
     renderWaste();
     expect(
       await screen.findByTestId('lifecycle-2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f'),
-    ).toHaveTextContent('OPEN');
+    ).toHaveTextContent('Open');
   });
 
   it('charts only the waste that is still open', async () => {
@@ -113,8 +113,8 @@ describe('WasteScreen', () => {
     renderWaste();
     const rows = await screen.findAllByTestId('ranked-label');
     expect(rows.map((row) => row.textContent)).toEqual([
-      'RIGHTSIZE_INSTANCE',
-      'ALARM_INSUFFICIENT_DATA',
+      'Rightsizing',
+      'Alarm with insufficient data',
     ]);
   });
 
@@ -164,5 +164,30 @@ describe('WasteScreen', () => {
     expect(table).toHaveTextContent(
       '94 percent memory ceiling, so this is memory bound and a CPU rule must not shrink it',
     );
+  });
+});
+
+describe('WasteScreen, one finding from the FinOps Score', () => {
+  const FINDING = '2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f';
+
+  it('lands on the finding a FinOps Score link names, and says so', async () => {
+    render(
+      <Harness
+        initialPath={`/optimize?finding=${FINDING}`}
+        client={clientReturning({
+          [PATH]: recommendationsFixture(),
+          '/api/v1/waste/refusals': refusalsFixture(),
+        })}
+      >
+        <WasteScreen />
+      </Harness>,
+    );
+    expect(await screen.findByTestId(`lifecycle-${FINDING}`)).toBeInTheDocument();
+    expect(screen.queryByTestId('lifecycle-3a4b5c6d-7e8f-4a0b-9c1d-2e3f4a5b6c7d')).toBeNull();
+    const note = screen.getByTestId('filtered-to-finding');
+    expect(note).toHaveTextContent(FINDING);
+    expect(
+      within(note).getByRole('link', { name: 'Show every recommendation' }),
+    ).toHaveAttribute('href', '/optimize');
   });
 });

@@ -57,6 +57,9 @@ class Explorer:
     def get_savings_plans_coverage(self, **kwargs: Any) -> Any:
         return self._answer("get_savings_plans_coverage", kwargs)
 
+    def get_savings_plans_utilization(self, **kwargs: Any) -> Any:
+        return self._answer("get_savings_plans_utilization", kwargs)
+
     def get_reservation_utilization(self, **kwargs: Any) -> Any:
         return self._answer("get_reservation_utilization", kwargs)
 
@@ -378,3 +381,130 @@ class TestFreshness:
         )
         assert found[0].as_of == datetime(2026, 9, 1, tzinfo=UTC)
         assert found[0].collected_at == NOW
+
+
+def daily_answers(*, reservations: bool = True) -> dict[str, Any]:
+    """Two days of each daily read, in the documented response shapes."""
+    periods = [
+        {"Start": "2026-08-01", "End": "2026-08-02"},
+        {"Start": "2026-08-02", "End": "2026-08-03"},
+    ]
+    return {
+        "get_savings_plans_utilization": {
+            "SavingsPlansUtilizationsByTime": [
+                {
+                    "TimePeriod": period,
+                    "Utilization": {"TotalCommitment": "10.00", "UsedCommitment": "8.00"},
+                }
+                for period in periods
+            ]
+        },
+        "get_savings_plans_coverage": {
+            "SavingsPlansCoverages": [
+                {
+                    "TimePeriod": period,
+                    "Coverage": {"TotalCost": "40.00", "SpendCoveredBySavingsPlans": "8.00"},
+                }
+                for period in periods
+            ]
+        },
+        "get_reservation_utilization": {
+            "UtilizationsByTime": [
+                {
+                    "TimePeriod": period,
+                    "Total": (
+                        {
+                            "PurchasedHours": "24",
+                            "TotalActualHours": "12",
+                            "TotalAmortizedFee": "6.00",
+                        }
+                        if reservations
+                        else {}
+                    ),
+                }
+                for period in periods
+            ]
+        },
+        "get_reservation_coverage": {
+            "CoveragesByTime": [
+                {
+                    "TimePeriod": period,
+                    "Total": (
+                        {"CoverageCost": {"OnDemandCost": "7.00", "ReservedCost": "3.00"}}
+                        if reservations
+                        else {}
+                    ),
+                }
+                for period in periods
+            ]
+        },
+    }
+
+
+class TestTheDays:
+    """TASK-P8-013. Four requests at the daily grain for a whole window, never one per day."""
+
+    def test_every_read_asks_for_days_over_the_whole_window_without_grouping(
+        self, settings: Settings
+    ) -> None:
+        explorer = Explorer(**daily_answers())
+        tuple(report(settings, explorer).daily(WINDOW_START, WINDOW_END))
+        assert sorted(name for name, _ in explorer.calls) == [
+            "get_reservation_coverage",
+            "get_reservation_utilization",
+            "get_savings_plans_coverage",
+            "get_savings_plans_utilization",
+        ]
+        for _, kwargs in explorer.calls:
+            assert kwargs["Granularity"] == "DAILY"
+            assert kwargs["TimePeriod"] == {"Start": "2026-08-01", "End": "2026-09-01"}
+            assert "GroupBy" not in kwargs
+
+    def test_each_kind_is_a_row_a_day_and_a_reservation_is_still_derived(
+        self, settings: Settings
+    ) -> None:
+        rows = tuple(report(settings, Explorer(**daily_answers())).daily(WINDOW_START, WINDOW_END))
+        assert [(one.day, one.commitment_type) for one in rows] == [
+            (date(2026, 8, 1), "ReservedInstance"),
+            (date(2026, 8, 1), "SavingsPlan"),
+            (date(2026, 8, 2), "ReservedInstance"),
+            (date(2026, 8, 2), "SavingsPlan"),
+        ]
+        plan = rows[1]
+        assert (plan.committed, plan.used) == (Decimal("10.00"), Decimal("8.00"))
+        assert (plan.eligible_spend, plan.covered_spend) == (Decimal("40.00"), Decimal("8.00"))
+        reservation = rows[0]
+        # Half the purchased hours used, so half the fee, as the window derives it.
+        assert reservation.used == Decimal("3.00")
+        assert (reservation.eligible_spend, reservation.covered_spend) == (
+            Decimal("10.00"),
+            Decimal("3.00"),
+        )
+        assert plan.as_of == datetime(2026, 8, 2, tzinfo=UTC)
+        assert plan.collected_at == NOW
+
+    def test_a_payer_with_no_reservations_reports_its_plans_alone(self, settings: Settings) -> None:
+        rows = tuple(
+            report(settings, Explorer(**daily_answers(reservations=False))).daily(
+                WINDOW_START, WINDOW_END
+            )
+        )
+        assert {one.commitment_type for one in rows} == {"SavingsPlan"}
+
+    def test_a_span_with_no_day_is_refused_rather_than_filed_under_another(
+        self, settings: Settings
+    ) -> None:
+        answers = daily_answers()
+        answers["get_savings_plans_utilization"] = {
+            "SavingsPlansUtilizationsByTime": [
+                {"Utilization": {"TotalCommitment": "10.00", "UsedCommitment": "8.00"}}
+            ]
+        }
+        with pytest.raises(SchemaDrift):
+            tuple(report(settings, Explorer(**answers)).daily(WINDOW_START, WINDOW_END))
+
+    def test_nothing_committed_or_covered_is_no_data_rather_than_no_rows(
+        self, settings: Settings
+    ) -> None:
+        with pytest.raises(NoData):
+            tuple(report(settings, Explorer()).daily(WINDOW_START, WINDOW_END))

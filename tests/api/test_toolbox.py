@@ -70,7 +70,7 @@ def test_a_call_reads_the_route_as_the_asker_and_types_what_it_returns() -> None
     assert headers == {"Authorization": f"Bearer {TOKEN}"}
     assert output.envelope["data"][0]["effective_cost"] == Decimal("812.40")
     assert '"effective_cost":"812.40"' in output.text
-    assert (output.provenance, output.screen) == (Provenance.MEASURED, "/cost")
+    assert (output.provenance, output.screen) == (Provenance.MEASURED, "/analyze/explorer")
     assert output.units == TOOLS_BY_NAME["get_cost_by_service"].units
 
 

@@ -371,3 +371,64 @@ class CommitmentCoverage(Fact):
         if self.eligible_spend == 0:
             return None
         return self.covered_spend / self.eligible_spend
+
+
+@dataclass(frozen=True, kw_only=True)
+class CommitmentDay(Fact):
+    """One kind of commitment on one day: what it obliged, used and covered. TASK-P8-013.
+
+    **Per kind, not per commitment, and not by choice.** Cost Explorer reports daily Savings
+    Plans use only as one total across every plan, so a row per plan per day would cost one
+    request per plan per day, and reservations are read at the same grain so the two kinds
+    stay comparable. Coverage shares the row because at this grain both figures belong to
+    the kind and the day, and neither is attributed to a plan: the rule that keeps
+    `CommitmentUse` and `CommitmentCoverage` apart is about attributing coverage to one
+    commitment, and nothing here does.
+
+    `as_of` is the end of the day described. A day is true once it has ended, and stamping it
+    with the moment of the call would make a month of days look as fresh as the last one.
+    """
+
+    tenant_id: UUID
+    commitment_type: str
+    day: date
+
+    #: What the commitments of this kind obliged us to pay that day.
+    committed: Decimal
+    #: Of that, what was consumed. For a reservation, derived from hours, as
+    #: `CommitmentUse` says of the same figure.
+    used: Decimal
+    #: Spend that day a commitment of this kind could have covered, priced on demand.
+    eligible_spend: Decimal
+    #: Of that, what a commitment actually covered.
+    covered_spend: Decimal
+
+    def __post_init__(self) -> None:
+        for name in ("committed", "used", "eligible_spend", "covered_spend"):
+            if isinstance(getattr(self, name), float):
+                raise TypeError(f"{name} is Decimal, not float")
+        if min(self.committed, self.used, self.eligible_spend, self.covered_spend) < 0:
+            raise ValueError("a commitment day's money is never negative")
+        if self.used > self.committed:
+            raise ValueError(
+                f"a day cannot use more than was committed: {self.used} of {self.committed}"
+            )
+        if self.covered_spend > self.eligible_spend:
+            raise ValueError(
+                f"a day cannot cover more than was eligible: "
+                f"{self.covered_spend} of {self.eligible_spend}"
+            )
+
+    @property
+    def utilization(self) -> Decimal | None:
+        """Used over committed, or None on a day nothing was committed."""
+        if self.committed == 0:
+            return None
+        return self.used / self.committed
+
+    @property
+    def coverage(self) -> Decimal | None:
+        """Covered over eligible, or None on a day nothing was eligible."""
+        if self.eligible_spend == 0:
+            return None
+        return self.covered_spend / self.eligible_spend

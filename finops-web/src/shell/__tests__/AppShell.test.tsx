@@ -1,12 +1,12 @@
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
 import { violationsIn } from '../../components/__tests__/axe';
+import type { ApiClient } from '../../api/client';
 import type { ApiMeta } from '../../api/types';
+import { Harness } from '../../screens/__tests__/Harness';
 import { AppShell } from '../AppShell';
 import { allScreens } from '../sections';
-import { MetaProvider } from '../MetaProvider';
 import { useReportMeta } from '../metaRegistry';
 import type { FreshnessSource } from '../metaStore';
 
@@ -29,13 +29,20 @@ function Surface({ meta }: { readonly meta: ApiMeta }) {
   return <p>rows</p>;
 }
 
+/** The search box in the toolbar reads accounts through the API. Nothing here needs an answer. */
+const PENDING: ApiClient = {
+  get: () => new Promise(() => undefined),
+  patch: () => Promise.reject(new Error('no patch stub')),
+  delete: () => Promise.reject(new Error('no delete stub')),
+  getFile: () => new Promise<never>(() => undefined),
+  post: () => new Promise(() => undefined),
+};
+
 function renderShell(meta?: ApiMeta, initialPath = '/inventory/accounts') {
   return render(
-    <MemoryRouter initialEntries={[initialPath]}>
-      <MetaProvider>
-        <AppShell now={NOW}>{meta ? <Surface meta={meta} /> : <p>rows</p>}</AppShell>
-      </MetaProvider>
-    </MemoryRouter>,
+    <Harness client={PENDING} initialPath={initialPath}>
+      <AppShell now={NOW}>{meta ? <Surface meta={meta} /> : <p>rows</p>}</AppShell>
+    </Harness>,
   );
 }
 
@@ -53,15 +60,13 @@ function Reporting({ id, meta, freshness }: Reported) {
 
 function renderShellWith(surfaces: readonly Reported[]) {
   return render(
-    <MemoryRouter initialEntries={['/assistant']}>
-      <MetaProvider>
-        <AppShell now={NOW}>
-          {surfaces.map((surface) => (
-            <Reporting key={surface.id} {...surface} />
-          ))}
-        </AppShell>
-      </MetaProvider>
-    </MemoryRouter>,
+    <Harness client={PENDING} initialPath="/assist">
+      <AppShell now={NOW}>
+        {surfaces.map((surface) => (
+          <Reporting key={surface.id} {...surface} />
+        ))}
+      </AppShell>
+    </Harness>,
   );
 }
 
@@ -198,7 +203,7 @@ describe('AppShell', () => {
       }),
     );
     expect(screen.getByText('ACCESS DENIED')).toBeInTheDocument();
-    expect(screen.getByText(/account_health on aws:111122223333/)).toBeInTheDocument();
+    expect(screen.getByText(/Account health on aws:111122223333/)).toBeInTheDocument();
   });
 
   it('still shows a cause the frontend does not recognise', () => {
@@ -227,22 +232,35 @@ describe('AppShell', () => {
     );
     expect(screen.getByText('Showing 2 of 9 accounts')).toBeInTheDocument();
     view.rerender(
-      <MemoryRouter initialEntries={['/inventory/accounts']}>
-        <MetaProvider>
-          <AppShell now={NOW}>
-            <p>rows</p>
-          </AppShell>
-        </MetaProvider>
-      </MemoryRouter>,
+      <Harness client={PENDING} initialPath="/inventory/accounts">
+        <AppShell now={NOW}>
+          <p>rows</p>
+        </AppShell>
+      </Harness>,
     );
     expect(screen.queryByText('Showing 2 of 9 accounts')).toBeNull();
   });
 
   it('marks the current screen for assistive technology', () => {
+    // Read inside the Sections menu, because the screen's first tab carries the
+    // same name and marks itself too.
     renderShell(metaOf());
-    expect(screen.getByRole('link', { name: 'Accounts' })).toHaveAttribute(
+    const sections = screen.getByRole('navigation', { name: 'Sections' });
+    expect(sections.querySelector("a[href='/inventory/accounts']")).toHaveAttribute(
       'aria-current',
       'page',
+    );
+  });
+
+  it('draws the views of a merged screen as tabs and marks the open one', () => {
+    renderShell(metaOf(), '/inventory/accounts/organization');
+    const views = screen.getByRole('navigation', { name: 'Accounts views' });
+    expect(views.querySelector("a[href='/inventory/accounts/organization']")).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(views.querySelector("a[href='/inventory/accounts']")).not.toHaveAttribute(
+      'aria-current',
     );
   });
 
@@ -259,7 +277,7 @@ describe('AppShell', () => {
 
   it('gives a built screen no arrival note', () => {
     renderShell(metaOf());
-    const link = screen.getByRole('link', { name: /Spend and trend/ });
+    const link = screen.getByRole('link', { name: /Cost Explorer/ });
     expect(link).not.toHaveAttribute('data-arrives');
   });
 
@@ -281,5 +299,19 @@ describe('AppShell', () => {
       }),
     );
     expect(await violationsIn(container)).toEqual([]);
+  });
+});
+
+describe('AppShell, parameters a screen does not take', () => {
+  it('names a parameter the screen does not take, and applies nothing for it', () => {
+    renderShell(metaOf(), '/inventory/accounts?status=Broken&colour=red');
+    const ignored = screen.getByTestId('ignored-filters');
+    expect(ignored).toHaveTextContent('colour');
+    expect(ignored).not.toHaveTextContent('status');
+  });
+
+  it('says nothing when every parameter is one the screen takes', () => {
+    renderShell(metaOf(), '/inventory/accounts?status=Broken');
+    expect(screen.queryByTestId('ignored-filters')).toBeNull();
   });
 });

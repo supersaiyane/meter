@@ -17,14 +17,11 @@ minute of a new month than it did in the last minute of the old one.
 
 from __future__ import annotations
 
-import csv
-from collections.abc import Iterable, Sequence
 from datetime import UTC, date, datetime
 from decimal import Decimal
-from io import StringIO
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.engine import Connection
 
 from finops_api.db.repositories import AccessContext
@@ -34,11 +31,23 @@ from finops_api.db.repositories.cost import (
     BudgetRepository,
     CommitmentActionRepository,
     CommitmentCoverageRepository,
+    CommitmentDayRepository,
     CommitmentRepository,
     CostRepository,
     previous_month,
 )
 from finops_api.deps import get_access_context, get_connection, get_scope, get_settings
+from finops_api.exports import (
+    BOTH_COSTS,
+    EFFECTIVE_COST,
+    ExportSpec,
+    View,
+    billing_period,
+    exportable,
+    listed,
+    rows_in,
+    single,
+)
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
     BudgetOut,
@@ -46,6 +55,7 @@ from finops_api.schemas import (
     ClusterCostOut,
     CommitmentActionOut,
     CommitmentCoverageOut,
+    CommitmentDayOut,
     CommitmentsOut,
     CommitmentUseOut,
     ContainerCostOut,
@@ -57,6 +67,7 @@ from finops_api.schemas import (
     CostSummaryOut,
     CostTotalOut,
     Envelope,
+    ShowbackRowOut,
 )
 from finops_core.config import Settings
 from finops_core.domain.budget import elapsed_fraction, status_of
@@ -159,6 +170,15 @@ def _grouped(
 
 
 @router.get("/cost/containers", response_model=Envelope[ContainerCostOut])
+@exportable(
+    ExportSpec(
+        title="Container cost",
+        row_model=ClusterCostOut,
+        rows=rows_in("clusters"),
+        period=billing_period,
+        metric="Split cost, from AWS split cost allocation",
+    )
+)
 def cost_containers(
     period: date | None = None,
     connection: Connection = Depends(get_connection),
@@ -242,6 +262,15 @@ def cost_containers(
 
 
 @router.get("/cost/summary", response_model=Envelope[CostSummaryOut])
+@exportable(
+    ExportSpec(
+        title="Cost summary",
+        row_model=CostSummaryOut,
+        rows=single,
+        period=billing_period,
+        metric=BOTH_COSTS,
+    )
+)
 def cost_summary(
     period: date | None = None,
     connection: Connection = Depends(get_connection),
@@ -282,6 +311,17 @@ def cost_summary(
 
 
 @router.get("/cost/by-service", response_model=Envelope[list[CostSliceOut]])
+@exportable(
+    ExportSpec(
+        title="Cost by service",
+        row_model=CostSliceOut,
+        rows=listed,
+        headers={"name": "Service Name"},
+        grouping="Service",
+        period=billing_period,
+        metric=BOTH_COSTS,
+    )
+)
 def cost_by_service(
     period: date | None = None,
     connection: Connection = Depends(get_connection),
@@ -293,6 +333,17 @@ def cost_by_service(
 
 
 @router.get("/cost/by-account", response_model=Envelope[list[CostSliceOut]])
+@exportable(
+    ExportSpec(
+        title="Cost by account",
+        row_model=CostSliceOut,
+        rows=listed,
+        headers={"name": "Sub Account ID"},
+        grouping="Account",
+        period=billing_period,
+        metric=BOTH_COSTS,
+    )
+)
 def cost_by_account(
     period: date | None = None,
     connection: Connection = Depends(get_connection),
@@ -304,6 +355,17 @@ def cost_by_account(
 
 
 @router.get("/cost/allocation", response_model=Envelope[list[CostSliceOut]])
+@exportable(
+    ExportSpec(
+        title="Cost by tag",
+        row_model=CostSliceOut,
+        rows=listed,
+        headers={"name": "Tag value"},
+        grouping=lambda view: f"The tag {view.query.get('tag', '')}",
+        period=billing_period,
+        metric=BOTH_COSTS,
+    )
+)
 def cost_allocation(
     tag: str = Query(min_length=1, max_length=128),
     period: date | None = None,
@@ -333,6 +395,16 @@ def cost_allocation(
 
 
 @router.get("/cost/trend", response_model=Envelope[list[CostDayOut]])
+@exportable(
+    ExportSpec(
+        title="Daily cost",
+        row_model=CostDayOut,
+        rows=listed,
+        grouping="Day",
+        period=billing_period,
+        metric=EFFECTIVE_COST,
+    )
+)
 def cost_trend(
     period: date | None = None,
     connection: Connection = Depends(get_connection),
@@ -357,6 +429,16 @@ def cost_trend(
 
 
 @router.get("/cost/anomalies", response_model=Envelope[CostAnomaliesOut])
+@exportable(
+    ExportSpec(
+        title="Cost anomalies",
+        row_model=CostAnomalyOut,
+        rows=rows_in("anomalies"),
+        grouping="Account, service and day",
+        period="Every day Meter holds cost for",
+        metric=EFFECTIVE_COST,
+    )
+)
 def cost_anomalies(
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),
@@ -438,6 +520,15 @@ def _actual_for(
 
 
 @router.get("/cost/budgets", response_model=Envelope[BudgetsOut])
+@exportable(
+    ExportSpec(
+        title="Budgets",
+        row_model=BudgetOut,
+        rows=rows_in("budgets"),
+        period=billing_period,
+        metric=EFFECTIVE_COST,
+    )
+)
 def cost_budgets(
     period: date | None = Query(default=None, description="Billing period. Latest if omitted."),
     connection: Connection = Depends(get_connection),
@@ -532,6 +623,16 @@ def cost_budgets(
 
 
 @router.get("/cost/commitments", response_model=Envelope[CommitmentsOut])
+@exportable(
+    ExportSpec(
+        title="Commitments",
+        row_model=CommitmentUseOut,
+        rows=rows_in("commitments"),
+        period=lambda view: f"{view.data.window_start} to {view.data.window_end}",
+        metric="Commitment use: committed, used and wasted",
+        note="Coverage and purchase actions are on the screen, and not in this export, ISS-247.",
+    )
+)
 def cost_commitments(
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),
@@ -638,78 +739,93 @@ def cost_commitments(
     return Envelope(data=found, meta=meta)
 
 
-#: The header row, and the whole reason this endpoint is not a generic dump.
-#:
-#: Every money column names its measure. A spreadsheet column headed "cost" is a
-#: column somebody will reconcile against an invoice and then argue about, because
-#: amortized and billed differ by exactly the commitment discount and nothing in a
-#: bare number says which one is in the cell. FOCUS 1.1 calls them EffectiveCost and
-#: BilledCost, and those names travel with the file.
-EXPORT_HEADER = (
-    "billing_period",
-    "account_id",
-    "service_name",
-    "tag_value",
-    "effective_cost_amortized_usd",
-    "billed_cost_usd",
-    "line_items",
-    # Both timestamps, per constraint 10, and on every row rather than in a header
-    # comment. A CSV cannot carry the meta envelope the JSON routes carry, and the
-    # envelope exists so a reader can tell stale from fresh. A spreadsheet outlives
-    # the moment it was downloaded, gets mailed on and pasted into a deck, so the
-    # freshness has to travel in the cells or it does not travel.
-    "as_of",
-    "collected_at",
-    # The scope coverage, on every row, for the reason FEAT-045 gives: a spreadsheet
-    # that leaves the product without its coverage becomes a number in a board pack
-    # with no way back to what it meant. A file drawn from two of three hundred
-    # accounts is not the estate, and a reader who pastes one row into a deck has
-    # taken the coverage with them.
-    "accounts_in_file",
-    "accounts_in_organization",
-)
+@router.get("/cost/commitments/daily", response_model=Envelope[list[CommitmentDayOut]])
+@exportable(ExportSpec(title="Commitments by day", row_model=CommitmentDayOut, rows=listed))
+def cost_commitments_daily(
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[list[CommitmentDayOut]]:
+    """Each kind of commitment, day by day, for the last thirty days. TASK-P8-013.
 
-
-def _csv(header: tuple[str, ...], rows: Iterable[Sequence[object]]) -> str:
-    """The file, built through the csv module rather than by joining on commas.
-
-    A service name with a comma in it, or a tag value with a quote, breaks a hand
-    joined line in a way that shifts every later column by one and still opens in a
-    spreadsheet. That is worse than failing.
+    The daily grain of the windows above, read for the charts: use and coverage over time and
+    the day by day heatmap. Payer wide like the windows, so a narrowed caller reads no days,
+    and the envelope says the payer was not visible rather than that it was.
     """
-    buffer = StringIO()
-    writer = csv.writer(buffer, lineterminator="\n")
-    writer.writerow(header)
-    writer.writerows(rows)
-    return buffer.getvalue()
+    rows = CommitmentDayRepository(connection, context).recent(scope)
+    days = [
+        CommitmentDayOut(
+            commitment_type=str(row.commitment_type),
+            day=row.day,
+            committed=Decimal(row.committed),
+            used=Decimal(row.used),
+            utilization=_fraction(Decimal(row.used), Decimal(row.committed)),
+            eligible_spend=Decimal(row.eligible_spend),
+            covered_spend=Decimal(row.covered_spend),
+            coverage=_fraction(Decimal(row.covered_spend), Decimal(row.eligible_spend)),
+            as_of=row.as_of,
+            collected_at=row.collected_at,
+        )
+        for row in rows
+    ]
+    latest = days[-1] if days else None
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        visible=1 if scope.is_global else 0,
+        coverage=(1 if scope.is_global else 0, 1),
+        coverage_unit="payer",
+        # The newest day's timestamps rather than the stalest across the window: thirty days
+        # of history are thirty days old by design, and the series is as fresh as its last day.
+        as_of=None if latest is None else latest.as_of,
+        collected_at=None if latest is None else latest.collected_at,
+    )
+    return Envelope(data=days, meta=meta)
 
 
-@router.get("/cost/export")
-def cost_export(
+def _showback_headers(view: View) -> dict[str, str]:
+    """The tag column by the key it holds: a team on one file, a cost centre on the next."""
+    return {"tag_value": f"Tag value, {view.query.get('tag', 'team')}"}
+
+
+@router.get("/cost/showback", response_model=Envelope[list[ShowbackRowOut]])
+@exportable(
+    ExportSpec(
+        title="Showback",
+        row_model=ShowbackRowOut,
+        rows=listed,
+        headers=_showback_headers,
+        grouping=lambda view: f"Account, service and the tag {view.query.get('tag', 'team')}",
+        period=billing_period,
+        metric=BOTH_COSTS,
+    )
+)
+def cost_showback(
     tag: str = Query(default="team", min_length=1, max_length=128),
     period: date | None = None,
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),
     context: AccessContext = Depends(get_access_context),
-) -> Response:
-    """One period as CSV, at the grain finance asks for. FEAT-045.
+) -> Envelope[list[ShowbackRowOut]]:
+    """One period at the grain finance asks for: account, service and tag value. FEAT-045.
 
-    Generated from the same repository, the same scope predicate and the same
-    unallocated bucket the screens read, so the file cannot drift from what a reader
-    was shown. Summing the amortized column gives the figure on `/cost/summary`, and
-    a test asserts that by summing it.
+    Read from the same repository, the same scope predicate and the same unallocated bucket
+    the other cost screens read, so summing Effective Cost gives the figure on `/cost/summary`,
+    and a test sums it. It is a screen of rows like any other, and its file comes through the
+    one export responder, P8 spec section 5.5, which replaced the CSV this route used to write
+    by hand at `/cost/export`.
 
-    Not an envelope, because this is a file rather than a payload: a caller saves it
-    and opens it in a spreadsheet, and a JSON wrapper round a CSV is a wrapper
-    somebody has to strip by hand.
+    `unallocated` is a row like any other here. An export that quietly dropped what it could
+    not attribute would report a smaller estate than exists, and the gap is the first thing
+    finance finds.
     """
     repository = CostRepository(connection, context)
     resolved = _resolve(repository, scope, period)
-    rows = repository.for_export(scope, resolved, tag)
     totals = repository.period_total(scope, resolved)
     as_of, collected_at = totals[0][3], totals[0][4]
-    # The same two numbers the coverage banner shows, from the same place, so the
-    # screen and the file cannot disagree about how much of the estate this is.
+    # The same two numbers the coverage banner shows, from the same place, so the screen and
+    # the rows cannot disagree about how much of the estate this is.
     meta = build_meta(
         connection,
         scope,
@@ -718,35 +834,22 @@ def cost_export(
         as_of=as_of,
         collected_at=collected_at,
     )
-
-    body = _csv(
-        EXPORT_HEADER,
-        (
-            (
-                resolved.isoformat(),
-                account,
-                service,
-                # `unallocated` is a row like any other here. An export that quietly
-                # dropped what it could not attribute would report a smaller estate
-                # than exists, and the gap is the first thing finance finds.
-                tag_value,
-                f"{Decimal(effective):.4f}",
-                f"{Decimal(billed):.4f}",
-                int(line_items),
-                as_of.isoformat(),
-                collected_at.isoformat(),
-                meta.scope_coverage.visible,
-                meta.scope_coverage.total,
-            )
-            for account, service, tag_value, effective, billed, line_items in rows
-        ),
-    )
-    return Response(
-        content=body,
-        media_type="text/csv",
-        headers={
-            # Named for the period, so two downloads do not overwrite each other in
-            # a downloads folder, which is where every one of these files ends up.
-            "Content-Disposition": (f'attachment; filename="meter-cost-{resolved.isoformat()}.csv"')
-        },
-    )
+    rows = [
+        ShowbackRowOut(
+            billing_period=resolved,
+            account_id=str(account),
+            service_name=str(service),
+            tag_value=str(tag_value),
+            effective_cost=Decimal(effective),
+            billed_cost=Decimal(billed),
+            line_items=int(line_items),
+            as_of=as_of,
+            collected_at=collected_at,
+            accounts_in_file=meta.scope_coverage.visible,
+            accounts_in_organization=meta.scope_coverage.total,
+        )
+        for account, service, tag_value, effective, billed, line_items in repository.for_export(
+            scope, resolved, tag
+        )
+    ]
+    return Envelope(data=rows, meta=meta)

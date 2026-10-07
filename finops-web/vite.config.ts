@@ -43,5 +43,23 @@ export default defineConfig({
     // second copy that can pass while the source fails.
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['node_modules/**', 'dist/**', 'dist-types/**', 'dist-types-node/**'],
+    // ISS-243. Switched on by `--coverage` in `make test-web` and in the pipeline, and held
+    // to the definition of done: each file on its own at 80 percent of its lines, statements
+    // and functions, so a change cannot shelter under the rest of the suite. Vitest 4 applies
+    // `perFile` to every threshold it is given, so branches carry none rather than a per file
+    // bar that twenty two files missed when this was switched on (measured 2026-10-05). They
+    // are still reported, and ISS-244 holds that gap.
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/**/__tests__/**',
+        'src/**/*.test.{ts,tsx}',
+        'src/**/*.d.ts',
+        'src/test-setup.ts',
+      ],
+      reporter: ['text-summary'],
+      thresholds: { perFile: true, lines: 80, statements: 80, functions: 80 },
+    },
   },
 });

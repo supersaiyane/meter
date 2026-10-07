@@ -1,8 +1,10 @@
 import { useContainerCost } from '../api/queries';
+import { DataTable } from '../components/DataTable';
 import { Figure } from '../components';
 import { FixtureBand } from '../components/FixtureBand';
 import { StateBoundary } from '../components/StateBoundary';
-import type { ApiClusterCost } from '../api/types';
+import type { Column } from '../components/tableConfig';
+import type { ApiClusterCost, ApiContainerCostRow } from '../api/types';
 import { useReportMeta } from '../shell/metaRegistry';
 import { surfaceStateFor } from './surfaceStateFor';
 
@@ -29,35 +31,55 @@ function Workloads({
   readonly cluster: ApiClusterCost;
   readonly freshness: { readonly asOf: Date; readonly collectedAt: Date };
 }) {
+  const columns: readonly Column<ApiContainerCostRow>[] = [
+    {
+      key: 'namespace',
+      header: 'Namespace',
+      render: (row) => row.namespace,
+      sortValue: (row) => row.namespace,
+    },
+    {
+      key: 'workload',
+      header: 'Workload',
+      render: (row) => <strong>{row.workload_name}</strong>,
+      sortValue: (row) => row.workload_name,
+    },
+    {
+      key: 'kind',
+      header: 'Kind',
+      render: (row) => (row.workload_type === '' ? 'not reported' : row.workload_type),
+      sortValue: (row) => row.workload_type,
+    },
+    {
+      key: 'cost',
+      header: 'Cost',
+      numeric: true,
+      cellTestId: 'container-cost-figure',
+      render: (row) => (
+        <Figure value={{ kind: 'measured', amount: Number(row.cost) }} freshness={freshness} />
+      ),
+      sortValue: (row) => Number(row.cost),
+      total: {
+        value: (row) => Number(row.cost),
+        unit: () => 'USD',
+        provenance: () => 'measured',
+        render: (sum) => (
+          <Figure value={{ kind: 'measured', amount: sum }} freshness={freshness} />
+        ),
+      },
+    },
+  ];
   return (
-    <table data-testid="container-cost-workloads">
-      <caption>Each workload's measured share, the largest first</caption>
-      <thead>
-        <tr>
-          <th scope="col">Namespace</th>
-          <th scope="col">Workload</th>
-          <th scope="col">Kind</th>
-          <th scope="col">Cost</th>
-        </tr>
-      </thead>
-      <tbody>
-        {cluster.workloads.map((row) => (
-          <tr key={`${row.namespace}/${row.workload_name}`} data-testid="container-cost-row">
-            <td>{row.namespace}</td>
-            <td>
-              <strong>{row.workload_name}</strong>
-            </td>
-            <td>{row.workload_type === '' ? 'not reported' : row.workload_type}</td>
-            <td data-testid="container-cost-figure">
-              <Figure
-                value={{ kind: 'measured', amount: Number(row.cost) }}
-                freshness={freshness}
-              />
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div data-testid="container-cost-workloads">
+      <DataTable
+        rows={cluster.workloads}
+        columns={columns}
+        rowKey={(row) => `${row.namespace}/${row.workload_name}`}
+        caption="Each workload's measured share, the largest first"
+        initialSort={{ key: 'cost', direction: 'descending' }}
+        rowAttributes={() => ({ 'data-testid': 'container-cost-row' })}
+      />
+    </div>
   );
 }
 
@@ -122,7 +144,7 @@ export function ContainerCostScreen() {
   const state = surfaceStateFor(query, envelope?.meta, clusters.length, 'none', 'cost_focus');
 
   return (
-    <section aria-label="Container cost">
+    <section aria-label="Kubernetes cost">
       <FixtureBand source={query.data?.source} />
       <StateBoundary state={state}>
         <>

@@ -46,9 +46,15 @@ function drift(container: HTMLElement): HTMLElement {
 
 describe('a refusal screen path', () => {
   it('links a screen the navigation lists, to the navigation own path', () => {
+    renderExchange(refusalWith({ screen: '/analyze/kubernetes-cost' }));
+    const link = screen.getByRole('link', { name: 'Analyze, Kubernetes cost' });
+    expect(link).toHaveAttribute('href', '/analyze/kubernetes-cost');
+  });
+
+  it('follows a screen that moved in P8, so an answer stored before the move keeps its link', () => {
     renderExchange(refusalWith({ screen: '/cost/containers' }));
-    const link = screen.getByRole('link', { name: 'Cost, Containers' });
-    expect(link).toHaveAttribute('href', '/cost/containers');
+    const link = screen.getByRole('link', { name: 'Analyze, Kubernetes cost' });
+    expect(link).toHaveAttribute('href', '/analyze/kubernetes-cost');
   });
 
   it('never links a path the navigation does not list, however it is written', () => {

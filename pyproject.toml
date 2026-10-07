@@ -29,6 +29,10 @@ dependencies = [
     # at runtime rather than only in tests. Admitted through make dep-check.
     "httpx>=0.27",
     "mcp>=1.2",
+    # FEAT-067, Excel export. Admitted through make dep-check on 2026-10-05 with zero
+    # findings. Chosen over openpyxl for its constant memory mode, and because its
+    # string to formula and string to URL conversions can be switched off.
+    "xlsxwriter>=3.2",
 ]
 
 [project.optional-dependencies]
@@ -72,6 +76,12 @@ include = [
     "finops_mcp*",
     "finops_query*",
 ]
+
+# uv writes the lock and nothing else. Without this, `uv run` treats the repository as a uv
+# project, resolves it afresh, writes a uv.lock nobody asked for and syncs .venv to whatever PyPI
+# holds that day, which on 2026-10-06 moved 31 packages under a working tree. ADR-0031.
+[tool.uv]
+managed = false
 
 [tool.ruff]
 line-length = 100
@@ -139,6 +149,12 @@ strict = true
 # where the checking has to happen anyway.
 [[tool.mypy.overrides]]
 module = "yaml"
+ignore_missing_imports = true
+
+# XlsxWriter ships no type information either, and the same reasoning holds: its calls are
+# confined to finops_api/exports/writers.py, where every value it is handed is typed first.
+[[tool.mypy.overrides]]
+module = "xlsxwriter"
 ignore_missing_imports = true
 
 # boto3 and botocore ship no py.typed marker. The typed alternative is

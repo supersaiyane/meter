@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { WasteSavingsScreen } from '../WasteSavingsScreen';
 import { WasteScoreScreen } from '../WasteScoreScreen';
+import { verifiedCumulative } from '../realizedSavings';
 import { Harness } from './Harness';
 import { clientReturning } from './fixtures';
 import { realizedSavingsFixture, scoresFixture } from '../../api/fixtures/waste';
@@ -26,6 +27,67 @@ function renderScore(fixture = scoresFixture()) {
     </Harness>,
   );
 }
+
+describe('verified savings, as they added up', () => {
+  it('adds up verified changes only, by the day each check closed', () => {
+    const rows = realizedSavingsFixture().data.savings;
+    const saved = (row: (typeof rows)[number]): number =>
+      Number(row.cost_before) - Number(row.cost_after);
+    const verified = rows.filter((row) => row.verdict === 'VERIFIED');
+    // A second verified change a month later, so the total has to run on from the first day.
+    const later = verified.map((row) => ({
+      ...row,
+      recommendation_id: `${row.recommendation_id}-later`,
+      window_after_end: '2026-09-30',
+    }));
+    const shape = verifiedCumulative([...rows, ...later]);
+    const first = verified.reduce((sum, row) => sum + saved(row), 0);
+    expect(verified.length).toBeGreaterThan(0);
+    expect(shape.series.map((one) => one.label)).toEqual(['Verified']);
+    expect(shape.series[0]?.values).toEqual([first, first * 2]);
+  });
+
+  it('says one day of verified changes in words, since one point is not a running total', async () => {
+    renderSavings();
+    const panel = await screen.findByRole('region', {
+      name: 'Verified savings, as they added up',
+    });
+    expect(await within(panel).findByTestId('savings-once')).toHaveTextContent('$192 a month');
+  });
+
+  it('says nothing has been verified rather than drawing an empty chart', async () => {
+    const fixture = realizedSavingsFixture();
+    renderSavings({
+      ...fixture,
+      data: {
+        ...fixture.data,
+        savings: fixture.data.savings.filter((row) => row.verdict !== 'VERIFIED'),
+      },
+    });
+    expect(await screen.findByTestId('savings-unverified')).toBeInTheDocument();
+  });
+
+  it('draws the running total once a second day has closed', async () => {
+    const fixture = realizedSavingsFixture();
+    const verified = fixture.data.savings.find((row) => row.verdict === 'VERIFIED');
+    renderSavings({
+      ...fixture,
+      data: {
+        ...fixture.data,
+        savings: [
+          ...fixture.data.savings,
+          ...(verified === undefined
+            ? []
+            : [{ ...verified, recommendation_id: 'later', window_after_end: '2026-09-30' }]),
+        ],
+      },
+    });
+    const panel = await screen.findByRole('region', {
+      name: 'Verified savings, as they added up',
+    });
+    expect(await within(panel).findByTestId('stacked-area')).toBeInTheDocument();
+  });
+});
 
 describe('WasteSavingsScreen', () => {
   it('lists the inconclusive rows rather than hiding them', async () => {
@@ -141,7 +203,7 @@ describe('WasteScoreScreen', () => {
     const first = findings[0]?.querySelector('a');
     expect(first).toHaveAttribute(
       'href',
-      '/waste?finding=2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
+      '/optimize?finding=2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
     );
   });
 

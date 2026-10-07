@@ -126,7 +126,7 @@ test('a session carries a user through to the organization map', async ({ page }
 
   // Through to the organization map, by link rather than by section button.
   await page.getByRole('link', { name: 'Organization' }).click();
-  await expect(page).toHaveURL(/\/inventory\/organization$/);
+  await expect(page).toHaveURL(/\/inventory\/accounts\/organization$/);
   await expect(page.getByTestId('org-tree')).toBeVisible();
   await expect(page.getByText('production')).toBeVisible();
 
@@ -206,7 +206,7 @@ test('the organization map stays usable at three hundred accounts', async ({ pag
     window.localStorage.setItem('meter.token', 'a-session-token');
   });
 
-  await page.goto('/inventory/organization');
+  await page.goto('/inventory/accounts/organization');
   await expect(page.getByTestId('org-tree')).toBeVisible();
   await expect(page.getByText('account-0', { exact: true })).toBeVisible();
   await page.screenshot({ path: 'e2e/tree-300-accounts.png', fullPage: false });
@@ -236,9 +236,9 @@ test('an unbuilt screen is listed, reachable, and names what will fill it', asyn
   // unbuilt today.
   await withSession(page);
 
-  // Home, because Home's group holds nothing else. Every other group is folded
-  // here, so the first unbuilt link is necessarily inside a closed section,
-  // which is the state the next two assertions are about.
+  // Home, because Home's group holds nothing else. Every other group is folded here, since
+  // one group is open at a time and it is the current screen's, so the first unbuilt link is
+  // necessarily inside a closed group, which is the state the next assertions are about.
   await page.goto('/');
 
   const unbuilt = page.locator('nav[aria-label="Sections"] a[data-arrives]').first();
@@ -249,12 +249,11 @@ test('an unbuilt screen is listed, reachable, and names what will fill it', asyn
   expect(href).toBeTruthy();
   expect(arrives).toBeTruthy();
 
-  // Listed even while its section is closed. The navigation is an accordion, so
-  // a screen in another section is in the document and not on screen. That
-  // distinction is the whole point: absent would mean the roadmap is hidden,
-  // and this is one expansion away. Located by attribute rather than by role,
-  // because a closed details element is out of the accessibility tree and
-  // getByRole would report it missing when it is merely folded.
+  // Listed even while its group is closed. The navigation is an accordion, so a screen in
+  // another group is in the document and not on screen. That distinction is the whole point:
+  // absent would mean the roadmap is hidden, and this is one expansion away. Located by
+  // attribute rather than by role, because a closed details element is out of the
+  // accessibility tree and getByRole would report it missing when it is merely folded.
   await expect(unbuilt).not.toBeVisible();
 
   const section = page.locator('nav[aria-label="Sections"] details', {
@@ -262,6 +261,7 @@ test('an unbuilt screen is listed, reachable, and names what will fill it', asyn
   });
   await section.locator('summary').click();
   await expect(unbuilt).toBeVisible();
+  await expect(unbuilt).toContainText(`arrives with ${arrives ?? ''}`);
   await unbuilt.click();
   await expect(page).toHaveURL(new RegExp(`${href ?? ''}$`));
   await expect(page.getByTestId('not-built')).toContainText(`arrives with ${arrives ?? ''}`);
@@ -359,7 +359,7 @@ test('a violating dashboard is found, attributed, and its control is legible', a
     });
   });
 
-  await page.goto('/governance/queries');
+  await page.goto('/govern/query-cost');
   await expect(page.getByTestId('fixture-band')).toHaveCount(0);
 
   // The systemic problem is stated above the list it is drawn from. ADR-0016.
@@ -383,7 +383,7 @@ test('a violating dashboard is found, attributed, and its control is legible', a
 
   // Through to the working, which must reconcile to the figure above it.
   await page.getByRole('link', { name: /Error rate by service/ }).click();
-  await expect(page).toHaveURL(/\/governance\/queries\/11111111/);
+  await expect(page).toHaveURL(/\/govern\/query-cost\/findings\/11111111/);
   await expect(page.getByTestId('finding-working')).toContainText(
     '1,036,800 GiB scanned per month',
   );
@@ -453,7 +453,7 @@ test('a violating dashboard is found, attributed, and its control is legible', a
       },
     });
   });
-  await page.goto('/governance/instances');
+  await page.goto('/govern/query-cost/surfaces');
   const unreachable = page.getByRole('row').filter({ hasText: 'meter-prod-eu-west-1' });
   await expect(unreachable).toContainText('ACCESS DENIED');
   // A genuine zero, two rows down, still reads as zero.
@@ -466,7 +466,7 @@ test('a violating dashboard is found, attributed, and its control is legible', a
   await expect(staging).toContainText('30 s');
 
   // The control, its expiry in both forms, and a revoke that says what it did.
-  await page.goto('/governance/enforcement');
+  await page.goto('/govern/policies');
   const throttle = page.getByRole('row').filter({ hasText: 'grafana-datasource' });
   await expect(throttle).toContainText('UTC');
   await expect(page.getByRole('row').filter({ hasText: 'reporting' })).toContainText(

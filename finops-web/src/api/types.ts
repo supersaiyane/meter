@@ -16,6 +16,11 @@ export interface ApiCoverage {
   readonly total: number;
   readonly is_partial: boolean;
   /**
+   * The account the reader chose, FEAT-075, when the view is narrowed to one. Coverage is then
+   * counted against it. Absent from an envelope a stub or an older API wrote, and null otherwise.
+   */
+  readonly chosen?: string | null;
+  /**
    * What is being counted, plural. The route knows and the shell was guessing:
    * every screen said `accounts` and the query screens count workspaces.
    */
@@ -116,6 +121,20 @@ export interface ApiCostPoint {
   readonly run_date: string;
   readonly cost_month_usd: string;
   readonly provenance: string;
+}
+
+/**
+ * What every query audited on one day cost each month, summed: the trend on Query cost. Every
+ * query audited that day, so a dashboard deleted after a fix leaves its earlier days behind.
+ */
+export interface ApiQueryCostDay {
+  readonly run_date: string;
+  readonly cost_month_usd: string;
+  readonly queries: number;
+  /** Measured only when every query that day was measured. */
+  readonly provenance: string;
+  readonly as_of: string;
+  readonly collected_at: string;
 }
 
 export interface ApiQueryFinding {
@@ -290,6 +309,27 @@ export interface ApiCostSummary {
   readonly change: string | null;
 }
 
+/**
+ * One account, service and tag value in one billing period, `GET /cost/showback`. FEAT-045.
+ *
+ * The period, both timestamps and the coverage are on every row, because a showback file is
+ * mailed on and pasted into a deck, and a row pasted out of it has to carry what it meant.
+ */
+export interface ApiShowbackRow {
+  readonly billing_period: string;
+  readonly account_id: string;
+  readonly service_name: string;
+  /** The value of the chosen tag key, `unallocated` where a charge carries none. */
+  readonly tag_value: string;
+  readonly effective_cost: string;
+  readonly billed_cost: string;
+  readonly line_items: number;
+  readonly as_of: string;
+  readonly collected_at: string;
+  readonly accounts_in_file: number;
+  readonly accounts_in_organization: number;
+}
+
 export interface ApiCostSlice {
   /**
    * `unallocated` where the row carries no value for the grouping. It is never
@@ -371,6 +411,24 @@ export interface ApiCommitmentAction {
   readonly lifecycle: string;
   readonly owner: string | null;
   readonly rationale: string;
+}
+
+/**
+ * One kind of commitment on one day, TASK-P8-013. Per kind and never per plan, because the
+ * provider reports a day's Savings Plans use only as one total. A fraction is null on a day
+ * with nothing to divide by, which says something different from zero.
+ */
+export interface ApiCommitmentDay {
+  readonly commitment_type: string;
+  readonly day: string;
+  readonly committed: string;
+  readonly used: string;
+  readonly utilization: string | null;
+  readonly eligible_spend: string;
+  readonly covered_spend: string;
+  readonly coverage: string | null;
+  readonly as_of: string;
+  readonly collected_at: string;
 }
 
 export interface ApiCommitments {
@@ -708,6 +766,12 @@ export interface ApiInventoryRoots {
  * the same scope guard as the page. A count over everything beside a page of the readable rows
  * is the arithmetic that tells a narrowed reader how much they are not allowed to look at.
  */
+/** One filter value and how many resources in the scope carry it. Null is counted, not dropped. */
+export interface ApiFacetCount {
+  readonly value: string | null;
+  readonly resources: number;
+}
+
 export interface ApiResourceFilters {
   readonly account_id: readonly string[];
   /** Never an empty string. A null region is the global slice and the screen names it. */
@@ -715,6 +779,12 @@ export interface ApiResourceFilters {
   readonly node_kind: readonly string[];
   /** The provider's own words. It has no enumeration, so the data is the only list. */
   readonly resource_type: readonly string[];
+  /**
+   * How many resources each region and each type holds, largest first, over the scope rather
+   * than under the list's own filters. Absent from a payload made before the counts existed.
+   */
+  readonly region_counts?: readonly ApiFacetCount[];
+  readonly type_counts?: readonly ApiFacetCount[];
 }
 
 /**
@@ -757,12 +827,32 @@ export interface ApiGeography {
  * regions whose prefix the table does not know, which is the one somebody can act on. `refused`
  * are regions a collection could not read, so the counts above them are a floor and not a total.
  */
+/**
+ * Two regions joined by resources this reader can read at both ends. TASK-P8-017.
+ *
+ * Undirected: `one_region` sorts before `other_region`, and `links` counts pairs of resources
+ * rather than edges, so a peering recorded from both of its ends counts once. Each geography is
+ * placed by the server's own prefix rule, and is null where no table knows the prefix. A link
+ * inside one geography names it twice: it is real, and a map at continent grain cannot draw it.
+ */
+export interface ApiGeographyLink {
+  readonly one_region: string;
+  readonly other_region: string;
+  readonly one_geography: string | null;
+  readonly other_geography: string | null;
+  /** Measured, pairs of resources. */
+  readonly links: number;
+  /** The kinds of edge that join them, PEERS_WITH for one. */
+  readonly kinds: readonly string[];
+}
+
 export interface ApiGeographies {
   readonly geographies: readonly ApiGeography[];
   readonly global_resources: number;
   readonly unplaceable: readonly string[];
   readonly unplaceable_resources: number;
   readonly refused: readonly string[];
+  readonly links: readonly ApiGeographyLink[];
 }
 
 export interface ApiResourceList {
@@ -1130,4 +1220,231 @@ export interface ApiRedaction {
   readonly rule_id: string;
   readonly action: 'BLOCKED' | 'REDACTED';
   readonly occurred_at: string;
+}
+
+/** FEAT-065. What one Cost Explorer axis groups by: a FOCUS column, or `tag` and a key. */
+export interface ApiExploreGrouping {
+  readonly dimension: string;
+  readonly tag_key: string | null;
+}
+
+/** A run of days, inclusive at both ends, as ISO dates. */
+export interface ApiExploreWindow {
+  readonly start: string;
+  readonly end: string;
+}
+
+/** What one named group cost in one day or month. A null series is everything else. */
+export interface ApiExplorePoint {
+  readonly bucket: string;
+  readonly series: string | null;
+  readonly cost: string;
+}
+
+/** One table row. A null previous is a period never collected, which is not zero. */
+export interface ApiExploreRow {
+  readonly first: string;
+  readonly second: string | null;
+  readonly this_period: string;
+  readonly previous_period: string | null;
+}
+
+/** `GET /cost/explore`. Rows and omissions reconcile to the totals; a null total is none billed. */
+export interface ApiExplore {
+  readonly metric: string;
+  readonly metrics_available: readonly string[];
+  readonly period: string;
+  readonly granularity: string;
+  readonly current: ApiExploreWindow;
+  readonly previous: ApiExploreWindow;
+  /** The window ends today, so its last day is still being billed. */
+  readonly is_open: boolean;
+  readonly collected_from: string | null;
+  readonly previous_collected: boolean;
+  readonly group_by: ApiExploreGrouping;
+  readonly then_by: ApiExploreGrouping | null;
+  readonly tag_keys: readonly string[];
+  readonly total_this_period: string | null;
+  readonly total_previous_period: string | null;
+  readonly series: readonly string[];
+  readonly points: readonly ApiExplorePoint[];
+  readonly rows: readonly ApiExploreRow[];
+  readonly row_limit: number;
+  readonly rows_omitted: number;
+  readonly omitted_this_period: string;
+  readonly omitted_previous_period: string | null;
+  /**
+   * Where the first grouping is region, the geography each row's region is in, by region,
+   * resolved on the server by the geography map's own prefix rule so this application carries
+   * no second copy of it. A region no table knows is absent. TASK-P8-017.
+   */
+  readonly region_geographies: Readonly<Record<string, ApiGeographyRef>>;
+}
+
+/** Which geography a region is in, by key and by name. */
+export interface ApiGeographyRef {
+  readonly key: string;
+  readonly name: string;
+}
+
+/** FEAT-066. A forecast is a range, never a point, ADR-0015's second condition. */
+export interface ApiForecastRange {
+  readonly low: string;
+  readonly high: string;
+}
+
+/** One month's forecast, or the sentence saying why there is none. */
+export interface ApiForecastMonth {
+  readonly month: string;
+  readonly figure: ApiForecastRange | null;
+  readonly withheld: string | null;
+  /** How far off the method was at the median, as a share, measured by backtest. */
+  readonly median_miss: string | null;
+  readonly held_out: number;
+}
+
+/** One day of this month: billed so far, cumulative, or the band. Never both. */
+export interface ApiForecastDay {
+  readonly day: string;
+  readonly billed: string | null;
+  readonly low: string | null;
+  readonly high: string | null;
+}
+
+/** One held out month. The range is null where the forecast is withheld. */
+export interface ApiForecastTest {
+  readonly month: string;
+  readonly actual: string;
+  readonly miss: string;
+  readonly low: string | null;
+  readonly high: string | null;
+  readonly within: boolean | null;
+}
+
+/** `GET /cost/forecast`. Every figure is a forecast, and every forecast is a range. */
+export interface ApiForecast {
+  readonly provenance: 'forecast';
+  readonly method: string;
+  readonly method_detail: string;
+  readonly interval_percent: number;
+  readonly max_median_miss: string;
+  readonly min_held_out: number;
+  readonly billed_through: string;
+  readonly billed_to_date: string;
+  readonly month_end: ApiForecastMonth;
+  readonly days: readonly ApiForecastDay[];
+  readonly ahead: readonly ApiForecastMonth[];
+  readonly backtest: readonly ApiForecastTest[];
+}
+
+/** Who besides its owner may open a saved view, FEAT-068. */
+export type SavedViewVisibility = 'PRIVATE' | 'SHARED';
+
+/** A screen's query string as an object: a parameter's value, or every value of a repeated one. */
+export type SavedViewQuery = Readonly<Record<string, string | readonly string[]>>;
+
+/**
+ * `GET /reports/views`, one saved view as its reader sees it, FEAT-068. Configuration and never
+ * data: a screen and its query under a name, so opening it reads the screen in the reader's scope.
+ */
+export interface ApiSavedView {
+  readonly view_id: string;
+  readonly name: string;
+  readonly screen_path: string;
+  readonly query: SavedViewQuery;
+  readonly visibility: SavedViewVisibility;
+  /** The reader saved it, so may rename, share or delete it. Who saved anyone else's is not said. */
+  readonly owned: boolean;
+  readonly created_at: string;
+  readonly updated_at: string;
+}
+
+/** `POST /reports/views`. */
+export interface SavedViewIn {
+  readonly name: string;
+  readonly screen_path: string;
+  readonly query: SavedViewQuery;
+  readonly visibility: SavedViewVisibility;
+}
+
+/** `PATCH /reports/views/{view_id}`: a new name, a new visibility, or both. */
+export interface SavedViewChange {
+  readonly name?: string;
+  readonly visibility?: SavedViewVisibility;
+}
+
+/** The two formats a report is written in, FEAT-067 and FEAT-069. */
+export type ReportFormat = 'xlsx' | 'csv';
+
+/** How often a schedule renders, FEAT-069. */
+export type ReportCadence = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'MONTH_CLOSE';
+
+/** What became of a run: streamed to whoever exported it, kept, kept and sent, or failed. */
+export type ReportRunStatus = 'STREAMED' | 'RENDERED' | 'SENT' | 'FAILED';
+
+/** `GET /reports/schedules`, one schedule, its owner's alone. FEAT-069. */
+export interface ApiSchedule {
+  readonly schedule_id: string;
+  /** Null once the view is deleted; the schedule then pauses after saying why. */
+  readonly view_id: string | null;
+  /** The view's name, or null where its owner can no longer open it. */
+  readonly view_name: string | null;
+  readonly screen_path: string | null;
+  readonly export_path: string;
+  readonly format: ReportFormat;
+  readonly cadence: ReportCadence;
+  readonly recipients: readonly string[];
+  readonly enabled: boolean;
+  readonly next_run_at: string;
+  readonly created_at: string;
+  readonly updated_at: string;
+}
+
+/** `GET /reports/schedules`: the schedules, and what the deployment does with what they make. */
+export interface ApiSchedules {
+  /** False where no bucket is configured, so nothing renders. */
+  readonly rendering: boolean;
+  /** How long a file is kept, in the server's words. OPEN-15. */
+  readonly retention: string;
+  /** Where a file goes, in the server's words. OPEN-11. */
+  readonly delivery: string;
+  readonly schedules: readonly ApiSchedule[];
+}
+
+/** `GET /reports/runs`, one run made for the reader. FEAT-069. */
+export interface ApiReportRun {
+  readonly run_id: string;
+  readonly schedule_id: string | null;
+  readonly view_path: string;
+  readonly view_query: string;
+  readonly format: ReportFormat;
+  readonly status: ReportRunStatus;
+  readonly rows: number;
+  readonly bytes: number;
+  readonly truncated: boolean;
+  readonly failure_cause: string | null;
+  readonly failure_detail: string | null;
+  /** A file is kept and can be fetched again. */
+  readonly has_file: boolean;
+  readonly made_at: string;
+  readonly finished_at: string | null;
+  readonly as_of: string | null;
+  readonly collected_at: string | null;
+}
+
+/** `POST /reports/schedules`. */
+export interface ScheduleIn {
+  readonly view_id: string;
+  readonly export_path: string;
+  readonly format: ReportFormat;
+  readonly cadence: ReportCadence;
+  readonly recipients: readonly string[];
+}
+
+/** `PATCH /reports/schedules/{schedule_id}`. */
+export interface ScheduleChange {
+  readonly enabled?: boolean;
+  readonly format?: ReportFormat;
+  readonly cadence?: ReportCadence;
+  readonly recipients?: readonly string[];
 }

@@ -21,6 +21,7 @@ and a ceiling in only one of them is a ceiling somebody routes around.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any
 from uuid import UUID
@@ -38,6 +39,7 @@ from finops_api.deps import (
     get_scope,
     get_settings,
 )
+from finops_api.exports import ExportSpec, exportable, rows_in
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.routes.waste import recommendation_out
 from finops_api.schemas import (
@@ -49,7 +51,9 @@ from finops_api.schemas import (
     EdgeOut,
     EntityOut,
     Envelope,
+    FacetCountOut,
     GeographiesOut,
+    GeographyLinkOut,
     GeographyOut,
     InventoryRootOut,
     InventoryRootsOut,
@@ -86,6 +90,11 @@ router = APIRouter(prefix=API_PREFIX, tags=["inventory"])
 #: which is the honest answer and is not the same as an empty graph: an empty graph would
 #: say the resource is connected to nothing.
 NO_SUCH_NODE = "No node with that identifier is visible in this scope."
+
+#: The bounds on the search box's text, FEAT-075. Two characters match most of an estate, and
+#: reading the estate to find them is the cost of all of it. ISS-252 records the missing index.
+SEARCH_FROM = 3
+SEARCH_UP_TO = 200
 
 
 def _node_out(node: Node) -> NodeOut:
@@ -354,7 +363,23 @@ def blast_radius(
     return Envelope(data=answer, meta=meta)
 
 
+def _facets(rows: Sequence[tuple[str | None, int]]) -> tuple[FacetCountOut, ...]:
+    """A repository's counted values, as the payload carries them."""
+    return tuple(FacetCountOut(value=value, resources=count) for value, count in rows)
+
+
 @router.get("/inventory/resources", response_model=Envelope[ResourceListOut])
+@exportable(
+    ExportSpec(
+        title="Resources",
+        row_model=NodeOut,
+        rows=rows_in("resources"),
+        note=lambda view: (
+            f"Rows {view.data.offset + 1} to {view.data.offset + len(view.data.resources)} "
+            f"of {view.data.total}, the page the screen asked for."
+        ),
+    )
+)
 def resources(
     account_id: str | None = Query(default=None, description="Narrow to one account."),
     region_id: str | None = Query(
@@ -370,6 +395,15 @@ def resources(
     node_kind: str | None = Query(default=None, description="Narrow to one kind of resource."),
     resource_type: str | None = Query(
         default=None, description="Narrow to one provider resource type."
+    ),
+    q: str | None = Query(
+        default=None,
+        min_length=SEARCH_FROM,
+        max_length=SEARCH_UP_TO,
+        description=(
+            "Narrow to resources whose name or ARN holds this text, in any letter case. The "
+            "search box's resources, FEAT-075."
+        ),
     ),
     limit: int = Query(default=50, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
@@ -412,6 +446,7 @@ def resources(
         region_ids=region_ids,
         node_kind=node_kind,
         resource_type=resource_type,
+        search=q,
         limit=limit,
         offset=offset,
     )
@@ -419,12 +454,17 @@ def resources(
     # reason `page` returns its own total rather than leaving the caller to count again.
     slices = repository.slice_count(scope)
     unread = repository.incomplete(scope)
+    counts = repository.counts(scope)
     found = ResourceListOut(
         resources=tuple(_node_out(as_node(row)) for row in rows),
         total=total,
         limit=limit,
         offset=offset,
-        filters=ResourceFiltersOut(**repository.vocabularies(scope)),
+        filters=ResourceFiltersOut(
+            **repository.vocabularies(scope),
+            region_counts=_facets(counts["region_counts"]),
+            type_counts=_facets(counts["type_counts"]),
+        ),
     )
     meta = build_meta(
         connection,
@@ -439,6 +479,12 @@ def resources(
         coverage_unit="slices",
     )
     return Envelope(data=found, meta=meta)
+
+
+def _geography_key(region_id: str | None) -> str | None:
+    """The geography a region is in, or None where no table knows its prefix. TASK-P8-017."""
+    placed = geography_of(region_id)
+    return None if placed is None else placed.key
 
 
 @dataclass
@@ -462,6 +508,7 @@ class _Tally:
 
 
 @router.get("/inventory/geography", response_model=Envelope[GeographiesOut])
+@exportable(ExportSpec(title="Geography", row_model=GeographyOut, rows=rows_in("geographies")))
 def geography(
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),
@@ -551,12 +598,28 @@ def geography(
         )
     )
 
+    # TASK-P8-017. Regions joined across a region boundary, each end placed by the same rule as
+    # the geographies above, so a line on the map and a row in its table name the same places.
+    joined = repository.cross_region(scope)
+    links = tuple(
+        GeographyLinkOut(
+            one_region=str(row.one_region),
+            other_region=str(row.other_region),
+            one_geography=_geography_key(str(row.one_region)),
+            other_geography=_geography_key(str(row.other_region)),
+            links=int(row.links),
+            kinds=tuple(sorted(str(kind) for kind in (row.kinds or ()))),
+        )
+        for row in joined
+    )
+
     found = GeographiesOut(
         geographies=ordered,
         global_resources=global_resources,
         unplaceable=tuple(sorted(unplaceable)),
         unplaceable_resources=sum(unplaceable.values()),
         refused=refused,
+        links=links,
     )
     slices = repository.slice_count(scope)
     unread = repository.incomplete(scope)
@@ -567,7 +630,9 @@ def geography(
         # Slices, like the map's and the list's. A continent drawn from a region that refused us
         # is a continent whose count is a floor rather than a total.
         visible=slices - len(unread),
-        rows=rows,
+        # The links' edges as well as the counts' nodes, so the envelope is as stale as the
+        # stalest thing the map draws.
+        rows=(*rows, *joined),
         coverage=(slices - len(unread), slices),
         coverage_unit="slices",
     )
@@ -673,6 +738,7 @@ def _fleet_reason(row: Any) -> str | None:
 
 
 @router.get("/inventory/clusters", response_model=Envelope[ClustersOut])
+@exportable(ExportSpec(title="Clusters", row_model=ClusterInventoryOut, rows=rows_in("clusters")))
 def inventory_clusters(
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),

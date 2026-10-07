@@ -158,7 +158,7 @@ async function withSession(page: Page): Promise<void> {
 
 test('a cluster cost reconciles in plain sight, every figure measured', async ({ page }) => {
   await withSession(page);
-  await page.goto('/cost/containers');
+  await page.goto('/analyze/kubernetes-cost');
 
   const cluster = page.getByTestId('container-cost-cluster').first();
   await expect(cluster.getByTestId('cost-reconciliation')).toBeVisible();
@@ -173,7 +173,7 @@ test('the cluster that cannot publish requests is named, with its reason, never 
   page,
 }) => {
   await withSession(page);
-  await page.goto('/waste/containers');
+  await page.goto('/analyze/kubernetes-rightsizing');
 
   await expect(page.getByTestId('containers-ratio')).toContainText('1 of 2');
 
@@ -195,7 +195,7 @@ test('every cluster is listed with its fleet, and the Fargate one says it has no
   page,
 }) => {
   await withSession(page);
-  await page.goto('/inventory/clusters');
+  await page.goto('/analyze/clusters');
 
   const eks = page.locator('[data-testid="cluster-row"][data-platform="EKS"]');
   await expect(eks.getByTestId('cluster-packing').getByTestId('percent-figure')).toContainText(

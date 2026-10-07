@@ -191,7 +191,7 @@ export function refusedWithScreen(): ApiExchange {
       reason:
         'get_container_cost has no workload breakdown for payments-eks, because split cost ' +
         'allocation data is not enabled for that account.',
-      screen: '/cost/containers',
+      screen: '/analyze/kubernetes-cost',
     },
     failure: null,
     tool_calls: [{ call_id: 'toolu_containers', tool: 'get_container_cost', returned: true }],

@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from sqlalchemy import ColumnElement, Select, Table, and_, false, select, tuple_
+from sqlalchemy import ColumnElement, Select, Table, and_, false, or_, select, tuple_
 
 from finops_core.domain.tenant import Scope
 
@@ -93,10 +93,28 @@ class ByPrincipal:
     principal_column: str
 
 
+@dataclass(frozen=True)
+class OwnedOrShared:
+    """The row belongs to a person until they share it with the tenant. ADR-0032.
+
+    A private row is read by its owner alone, as `ByPrincipal` reads. A shared one is read by
+    everybody in the tenant whatever accounts their scope names, which is safe only because
+    what such a row holds is configuration rather than a figure: a saved view names a screen
+    and a query, and opening it reads the screen afresh in the opener's own scope. A global
+    scope does not widen it to a colleague's private rows, and a scope carrying no principal
+    reads nothing, the fail closed case.
+    """
+
+    principal_column: str
+    visibility_column: str
+    #: The visibility that opens a row to the whole tenant.
+    shared: str
+
+
 #: Tables holding tenant data, and how the account a row belongs to is found.
 #: `None` means the table carries no account identifier and none can be reached
 #: from it, so the tenant filter is the whole of its scoping.
-SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | None] = {
+SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOrShared | None] = {
     # P7, ADR-0029. A question is its asker's own words, readable by nobody else.
     "assistant_exchange": ByPrincipal("principal_id"),
     # P7, FEAT-041. A digest sums spend across every account in a team or the whole
@@ -106,6 +124,14 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | None] =
     # P7, FEAT-046 and ADR-0029. What redaction found in a question is about what that
     # person typed, so it is theirs as the question is.
     "redaction_event": ByPrincipal("principal_id"),
+    # P8, FEAT-067. An export record is its maker's own, like a question is its asker's.
+    "report_run": ByPrincipal("principal_id"),
+    # P8, FEAT-068 and ADR-0032. A saved view is its owner's until they share it, and a shared
+    # one is configuration everybody in the tenant may open, each in their own scope.
+    "saved_view": OwnedOrShared("owner_id", "visibility", "SHARED"),
+    # P8, FEAT-069. A schedule is its owner's alone. The people it renders for read the runs it
+    # made for them, through `report_run`, and never the schedule or its list of recipients.
+    "report_schedule": ByPrincipal("owner_id"),
     "cloud_account": ByAccount("account_id", "provider"),
     "org_node": None,
     "ingest_run": None,
@@ -140,6 +166,8 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | None] =
     # organization. In before the route, per the rule at the top of the P1 plan.
     "commitment_use": PayerWide(),
     "commitment_coverage": PayerWide(),
+    # TASK-P8-013. The same commitments a day at a time, so the same rule.
+    "commitment_day": PayerWide(),
     # FEAT-060. A budget is set at the payer and the API reporting it is a payer API, so it
     # inherits that scoping the way commitment coverage does, per ADR-0025. The cost is real
     # and is ISS-212: an account scoped budget is invisible to the team that owns the account.
@@ -287,6 +315,19 @@ def scope_predicate(table: Table, scope: Scope) -> ColumnElement[bool]:
         else:
             clauses.append(table.c[rule.principal_column] == scope.principal_id)
         return and_(*clauses)
+    if isinstance(rule, OwnedOrShared):
+        # Before the global check too, ADR-0032. Sharing is the owner's act, so a reader of the
+        # whole estate opens their own rows and the shared ones, never a colleague's private one.
+        if scope.principal_id is None:
+            clauses.append(false())
+        else:
+            clauses.append(
+                or_(
+                    table.c[rule.principal_column] == scope.principal_id,
+                    table.c[rule.visibility_column] == rule.shared,
+                )
+            )
+        return and_(*clauses)
     if rule is None or scope.is_global:
         return and_(*clauses)
 
@@ -335,7 +376,7 @@ def _inherited_predicate(table: Table, rule: Through, scope: Scope) -> ColumnEle
 SCOPE_APPLIED = "meter_scope_applied"
 
 
-def scoped_select(table: Table, scope: Scope) -> Select[tuple[object, ...]]:
+def scoped_select(table: Table, scope: Scope) -> Select[*tuple[object, ...]]:
     """The only constructor of a select against a scoped table."""
     confirmed = require_scope(scope)
     return (
@@ -345,7 +386,7 @@ def scoped_select(table: Table, scope: Scope) -> Select[tuple[object, ...]]:
     )
 
 
-def assert_scoped(statement: Select[tuple[object, ...]], table: Table) -> None:
+def assert_scoped(statement: Select[*tuple[object, ...]], table: Table) -> None:
     """Backstop. Refuse to run a select that did not come from `scoped_select`.
 
     This checks for the mark rather than reading the rendered WHERE clause. The

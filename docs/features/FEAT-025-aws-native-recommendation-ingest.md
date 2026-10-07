@@ -31,6 +31,8 @@ One table and not three, because a lifecycle that works for a Compute Optimizer
 recommendation and not for an unattached volume is two lifecycles, and the second
 is the one nobody maintains.
 
+Since TASK-P8-013, 2026-10-06, the table of what was looked at and left alone is a `DataTable`: still least observed first, now sortable by any column, and with no total, because a refusal has no money to add.
+
 ## Failure behaviour
 
 **`NotOptedIn` is an expected state, not a fault.** Compute Optimizer needs an

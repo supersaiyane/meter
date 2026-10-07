@@ -17,6 +17,11 @@ export default defineConfig({
   use: {
     baseURL: 'http://127.0.0.1:9736',
     trace: 'on-first-retry',
+    // Every journey reads the settled screen. Motion leaves nothing behind once it ends, so a
+    // screen at rest is the same with it or without, and a journey that ran mid fade measured a
+    // half drawn panel: axe found contrast failures on a tab still fading in, and a figure read
+    // before it arrived. e2e/motion.spec.ts proves the motion itself, with motion on.
+    contextOptions: { reducedMotion: 'reduce' },
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {

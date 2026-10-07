@@ -79,7 +79,7 @@ describe('IngestScreen', () => {
     // an error state. It must also never read as success.
     renderScreen([run({ run_id: 'p', status: 'PARTIAL', items_written: 297 })]);
     await waitFor(() => {
-      expect(screen.getByText('partial')).toBeInTheDocument();
+      expect(screen.getByText('Partial')).toBeInTheDocument();
     });
   });
 

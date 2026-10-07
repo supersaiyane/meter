@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { ContainerWasteScreen } from '../ContainerWasteScreen';
 import { Harness } from './Harness';
 import { clientReturning } from './fixtures';
+import { sortEveryColumn } from './sortEveryColumn';
 import { containerCostFixture, containerWasteFixture } from '../../api/fixtures/containers';
 import { violationsIn } from '../../components/__tests__/axe';
 
@@ -110,5 +111,36 @@ describe('accessibility', () => {
     const { container } = renderScreen();
     await screen.findAllByTestId('container-cluster');
     expect(await violationsIn(container)).toEqual([]);
+  });
+});
+
+describe('ContainerWasteScreen, what adds up', () => {
+  it('totals what was requested and never a percentile or a peak', async () => {
+    renderScreen();
+    const [first] = await screen.findAllByTestId('container-requests');
+    if (first === undefined) {
+      throw new Error('no cluster with readable requests, so the fixture and screen disagree');
+    }
+    const cluster = containerWasteFixture().data.clusters.find(
+      (one) => one.enhanced_observability,
+    );
+    const requested = (cluster?.workloads ?? []).reduce(
+      (sum, row) => sum + Number(row.cpu_requested_millicores),
+      0,
+    );
+    expect(within(first).getByTestId('total-cpu-requested')).toHaveTextContent(
+      `${String(requested)} m`,
+    );
+    // Each workload's worst moment came at a different time, so these have no total.
+    expect(within(first).getByTestId('total-cpu-used')).toBeEmptyDOMElement();
+    expect(within(first).getByTestId('total-memory-used')).toBeEmptyDOMElement();
+  });
+});
+
+describe('ContainerWasteScreen sorting', () => {
+  it('sorts every column it offers, one way and then the other', async () => {
+    const { container } = renderScreen();
+    await screen.findAllByTestId('container-cluster');
+    expect(sortEveryColumn(container)).toBeGreaterThan(0);
   });
 });

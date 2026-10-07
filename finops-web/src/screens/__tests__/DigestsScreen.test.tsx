@@ -136,7 +136,7 @@ describe('DigestsScreen', () => {
     await waitFor(() => {
       expect(screen.getByTestId('state')).toHaveAttribute('data-state', 'never-collected');
     });
-    expect(screen.getByTestId('state')).toHaveTextContent('Not yet collected by team_digests.');
+    expect(screen.getByTestId('state')).toHaveTextContent('Not yet collected by Team digests.');
   });
 
   it('reports its coverage and freshness to the trust strip, as every screen does', async () => {

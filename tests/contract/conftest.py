@@ -284,6 +284,12 @@ class ContractAthena:
         )
 
 
+#: The days the recorded daily responses describe, inside the contract's August window.
+DAILY_PERIODS: tuple[dict[str, str], ...] = tuple(
+    {"Start": f"2026-08-{day:02d}", "End": f"2026-08-{day + 1:02d}"} for day in (1, 2, 3)
+)
+
+
 class ContractCostExplorer:
     """Recorded Cost Explorer responses, shaped as the documentation describes them.
 
@@ -346,7 +352,41 @@ class ContractCostExplorer:
             ]
         }
 
-    def get_savings_plans_coverage(self, **_: Any) -> dict[str, Any]:
+    def get_savings_plans_utilization(self, **_: Any) -> dict[str, Any]:
+        # One total across every plan per day, which is all the daily grain reports for
+        # Savings Plans, fully consumed as the window's live plan is.
+        return {
+            "SavingsPlansUtilizationsByTime": [
+                {
+                    "TimePeriod": period,
+                    "Utilization": {
+                        "TotalCommitment": "24.55",
+                        "UsedCommitment": "24.55",
+                        "UnusedCommitment": "0",
+                        "UtilizationPercentage": "100",
+                    },
+                }
+                for period in DAILY_PERIODS
+            ]
+        }
+
+    def get_savings_plans_coverage(self, **kwargs: Any) -> dict[str, Any]:
+        if kwargs.get("Granularity") == "DAILY":
+            return {
+                "SavingsPlansCoverages": [
+                    {
+                        "Attributes": {},
+                        "TimePeriod": period,
+                        "Coverage": {
+                            "SpendCoveredBySavingsPlans": "24.55",
+                            "OnDemandCost": "57.31",
+                            "TotalCost": "81.86",
+                            "CoveragePercentage": "29.99",
+                        },
+                    }
+                    for period in DAILY_PERIODS
+                ]
+            }
         return {
             "SavingsPlansCoverages": [
                 {
@@ -371,7 +411,25 @@ class ContractCostExplorer:
             ]
         }
 
-    def get_reservation_utilization(self, **_: Any) -> dict[str, Any]:
+    def get_reservation_utilization(self, **kwargs: Any) -> dict[str, Any]:
+        if kwargs.get("Granularity") == "DAILY":
+            # A day of the window's reservation: its fee, and the share of its hours used.
+            return {
+                "UtilizationsByTime": [
+                    {
+                        "TimePeriod": period,
+                        "Groups": [],
+                        "Total": {
+                            "PurchasedHours": "24",
+                            "TotalActualHours": "14.88",
+                            "UnusedHours": "9.12",
+                            "UtilizationPercentage": "62",
+                            "TotalAmortizedFee": "31.19",
+                        },
+                    }
+                    for period in DAILY_PERIODS
+                ]
+            }
         return {
             "UtilizationsByTime": [
                 {
@@ -393,7 +451,20 @@ class ContractCostExplorer:
             ]
         }
 
-    def get_reservation_coverage(self, **_: Any) -> dict[str, Any]:
+    def get_reservation_coverage(self, **kwargs: Any) -> dict[str, Any]:
+        if kwargs.get("Granularity") == "DAILY":
+            return {
+                "CoveragesByTime": [
+                    {
+                        "TimePeriod": period,
+                        "Groups": [],
+                        "Total": {
+                            "CoverageCost": {"OnDemandCost": "15.32", "ReservedCost": "19.34"}
+                        },
+                    }
+                    for period in DAILY_PERIODS
+                ]
+            }
         return {
             "CoveragesByTime": [
                 {
@@ -737,6 +808,9 @@ class AwsUnderContract:
 
     def coverage(self, window_start: Any, window_end: Any) -> Any:
         return self._commitment.coverage(window_start, window_end)
+
+    def daily(self, window_start: Any, window_end: Any) -> Any:
+        return self._commitment.daily(window_start, window_end)
 
     def latest_available_period(self) -> Any:
         return self._cost.latest_available_period()

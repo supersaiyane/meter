@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useChosenAccount, withChosenAccount } from './account';
 import { useApi } from './apiContext';
+import { useExportable } from './exportViews';
 import { resolveSurface, type Resolved } from './fixtureSeam';
 import {
   queryFindingDetailFixture,
@@ -12,10 +14,8 @@ import {
 } from './fixtures/query';
 import {
   costSummaryFixture,
-  costByServiceFixture,
   costByAccountFixture,
   costAllocationFixture,
-  costTrendFixture,
   costAnomaliesFixture,
   costBudgetsFixture,
   costCommitmentsFixture,
@@ -43,6 +43,17 @@ import {
 } from './fixtures/containers';
 import { digestsFixture, exchangesFixture, redactionsFixture } from './fixtures/assistant';
 import type {
+  ApiCommitmentDay,
+  ApiReportRun,
+  ApiSchedule,
+  ApiSchedules,
+  Me,
+  ScheduleChange,
+  ScheduleIn,
+  ApiSavedView,
+  SavedViewChange,
+  SavedViewIn,
+  ApiQueryCostDay,
   ApiDigest,
   ApiExchange,
   ApiRedaction,
@@ -64,8 +75,10 @@ import type {
   ApiBudgets,
   ApiCommitments,
   ApiCostAnomalies,
-  ApiCostDay,
   ApiCostSlice,
+  ApiShowbackRow,
+  ApiExplore,
+  ApiForecast,
   ApiCostSummary,
   ApiEnvelope,
   ApiQueryFinding,
@@ -93,44 +106,125 @@ import type { FlatNode } from '../components/orgNodes';
  * envelope exists to prevent.
  */
 
-export function useAccounts() {
+/**
+ * The account chosen in the address, FEAT-075, applied the same way to every read: in the path,
+ * so the server narrows the scope rather than a screen filtering rows, and in the key, so one
+ * account's figures are never served from the cache under another's name. A path that is empty
+ * because its query is disabled stays empty.
+ */
+function useNarrowing() {
+  const account = useChosenAccount();
+  return {
+    key: (key: readonly unknown[]): readonly unknown[] => [...key, { account }],
+    path: (path: string): string => (path === '' ? path : withChosenAccount(path, account)),
+  };
+}
+
+/** How a read is made and how it is offered to the Export menu. */
+export interface ReadOptions {
+  /** False waits, and offers nothing: a view nobody read is not one to export. */
+  readonly enabled?: boolean;
+  /** The view's name in the Export menu, where the route's own name would not tell two apart. */
+  readonly title?: string;
+  /** False reads without offering, for a figure that only feeds another one. */
+  readonly offered?: boolean;
+}
+
+/** One read of a built route, narrowed, and offered to the Export menu as it was read. */
+function useRead<T>(
+  key: readonly unknown[],
+  template: string,
+  path: string,
+  { enabled = true, title, offered = true }: ReadOptions = {},
+) {
+  const client = useApi();
+  const narrowing = useNarrowing();
+  const narrowed = narrowing.path(path);
+  useExportable(template, enabled && offered ? narrowed : '', title);
+  return useQuery<ApiEnvelope<T>>({
+    queryKey: narrowing.key(key),
+    queryFn: () => client.get<T>(narrowed),
+    enabled,
+  });
+}
+
+/** How long the accounts the search box offers stay fresh. They change when an account joins. */
+const ACCOUNT_CHOICES_FRESH_MS = 5 * 60 * 1000;
+
+/**
+ * Every account this session may see, for the search box, FEAT-075. Never narrowed: a box
+ * listing only the chosen account could not choose another. Loaded once and searched in the
+ * browser, because at 1,399 accounts a round trip per keystroke leaves the list behind the typing.
+ */
+export function useAccountChoices() {
   const client = useApi();
   return useQuery<ApiEnvelope<Account[]>>({
-    queryKey: ['accounts'],
+    queryKey: ['account-choices'],
     queryFn: () => client.get<Account[]>('/api/v1/accounts'),
+    staleTime: ACCOUNT_CHOICES_FRESH_MS,
   });
+}
+
+/**
+ * The services with spend this period, for the search box, FEAT-075. Narrowed like every read,
+ * so a reader who chose an account finds that account's services, and never offered to the
+ * Export menu, because the box is not the screen.
+ */
+export function useServiceChoices() {
+  const client = useApi();
+  const narrowing = useNarrowing();
+  const path = narrowing.path('/api/v1/cost/by-service');
+  return useQuery<ApiEnvelope<ApiCostSlice[]>>({
+    queryKey: narrowing.key(['service-choices']),
+    queryFn: () => client.get<ApiCostSlice[]>(path),
+    staleTime: ACCOUNT_CHOICES_FRESH_MS,
+  });
+}
+
+/**
+ * Resources whose name or ARN holds the text, searched on the server and bounded, FEAT-075. An
+ * estate of 1,399 accounts holds too many resources to load into the browser. Null asks nothing.
+ */
+export function useResourceSearch(text: string | null, limit: number) {
+  const client = useApi();
+  const narrowing = useNarrowing();
+  const search = new URLSearchParams({ q: text ?? '', limit: String(limit) });
+  const path = narrowing.path(
+    text === null ? '' : `/api/v1/inventory/resources?${search.toString()}`,
+  );
+  return useQuery<ApiEnvelope<ApiResourceList>>({
+    queryKey: narrowing.key(['resource-search', text, limit]),
+    queryFn: () => client.get<ApiResourceList>(path),
+    enabled: text !== null,
+  });
+}
+
+export function useAccounts() {
+  return useRead<Account[]>(['accounts'], '/api/v1/accounts', '/api/v1/accounts');
 }
 
 export function useOrgTree() {
-  const client = useApi();
-  return useQuery<ApiEnvelope<FlatNode[]>>({
-    queryKey: ['org-tree'],
-    queryFn: () => client.get<FlatNode[]>('/api/v1/org/tree'),
-  });
+  return useRead<FlatNode[]>(['org-tree'], '/api/v1/org/tree', '/api/v1/org/tree');
 }
 
 export function useRuns() {
-  const client = useApi();
-  return useQuery<ApiEnvelope<Run[]>>({
-    queryKey: ['runs'],
-    queryFn: () => client.get<Run[]>('/api/v1/ingest/runs'),
-  });
+  return useRead<Run[]>(['runs'], '/api/v1/ingest/runs', '/api/v1/ingest/runs');
 }
 
 export function useFreshness() {
-  const client = useApi();
-  return useQuery<ApiEnvelope<Freshness[]>>({
-    queryKey: ['freshness'],
-    queryFn: () => client.get<Freshness[]>('/api/v1/health/freshness'),
-  });
+  return useRead<Freshness[]>(
+    ['freshness'],
+    '/api/v1/health/freshness',
+    '/api/v1/health/freshness',
+  );
 }
 
 export function usePlatformCost() {
-  const client = useApi();
-  return useQuery<ApiEnvelope<PlatformCost[]>>({
-    queryKey: ['platform-cost'],
-    queryFn: () => client.get<PlatformCost[]>('/api/v1/platform/cost'),
-  });
+  return useRead<PlatformCost[]>(
+    ['platform-cost'],
+    '/api/v1/platform/cost',
+    '/api/v1/platform/cost',
+  );
 }
 
 /**
@@ -150,9 +244,12 @@ export function useQuerySurface<T>(
   fixture: () => ApiEnvelope<T>,
 ) {
   const client = useApi();
+  const narrowing = useNarrowing();
+  const narrowed = narrowing.path(path);
+  useExportable(template, narrowed);
   return useQuery<Resolved<ApiEnvelope<T>>>({
-    queryKey: key,
-    queryFn: resolveSurface(template, () => client.get<T>(path), fixture),
+    queryKey: narrowing.key(key),
+    queryFn: resolveSurface(template, () => client.get<T>(narrowed), fixture),
   });
 }
 
@@ -207,6 +304,14 @@ export function useUndoRemediation(findingId: string) {
   });
 }
 
+export function useQueryTrend() {
+  return useRead<ApiQueryCostDay[]>(
+    ['query-trend'],
+    '/api/v1/query/trend',
+    '/api/v1/query/trend',
+  );
+}
+
 export function useQueryGroups() {
   return useQuerySurface<ApiQueryGroup[]>(
     ['query-groups'],
@@ -234,13 +339,22 @@ export function useCostSummary() {
   );
 }
 
-export function useCostByService() {
-  return useQuerySurface<ApiCostSlice[]>(
-    ['cost-by-service'],
-    '/api/v1/cost/by-service',
-    '/api/v1/cost/by-service',
-    costByServiceFixture,
+/** FEAT-066. The spend forecast: a range or the reason there is none, never a point. */
+export function useCostForecast() {
+  return useRead<ApiForecast>(
+    ['cost-forecast'],
+    '/api/v1/cost/forecast',
+    '/api/v1/cost/forecast',
   );
+}
+
+/**
+ * FEAT-065. Cost Explorer's query. The screen's query string is the view, so it is the cache
+ * key too, and a link to a view and the view a reader built share one cached answer.
+ */
+export function useCostExplore(query: string, options: ReadOptions = {}) {
+  const path = `/api/v1/cost/explore${query === '' ? '' : `?${query}`}`;
+  return useRead<ApiExplore>(['cost-explore', query], '/api/v1/cost/explore', path, options);
 }
 
 export function useCostByAccount() {
@@ -249,15 +363,6 @@ export function useCostByAccount() {
     '/api/v1/cost/by-account',
     '/api/v1/cost/by-account',
     costByAccountFixture,
-  );
-}
-
-export function useCostTrend() {
-  return useQuerySurface<ApiCostDay[]>(
-    ['cost-trend'],
-    '/api/v1/cost/trend',
-    '/api/v1/cost/trend',
-    costTrendFixture,
   );
 }
 
@@ -286,12 +391,33 @@ export function useCostAnomalies() {
   );
 }
 
+export function useCommitmentDays() {
+  return useRead<ApiCommitmentDay[]>(
+    ['commitment-days'],
+    '/api/v1/cost/commitments/daily',
+    '/api/v1/cost/commitments/daily',
+  );
+}
+
 export function useCostCommitments() {
   return useQuerySurface<ApiCommitments>(
     ['cost-commitments'],
     '/api/v1/cost/commitments',
     '/api/v1/cost/commitments',
     costCommitmentsFixture,
+  );
+}
+
+/**
+ * One billing period by account, service and tag value: showback, FEAT-045. The Export screen
+ * shows these rows and the Export menu writes them, FEAT-067, which replaced the CSV the screen
+ * used to fetch and save by hand.
+ */
+export function useShowback() {
+  return useRead<ApiShowbackRow[]>(
+    ['cost-showback'],
+    '/api/v1/cost/showback',
+    '/api/v1/cost/showback',
   );
 }
 
@@ -394,13 +520,15 @@ export function useTopologySubgraph(
   bounds: { readonly depth: number; readonly nodes: number },
 ) {
   const client = useApi();
-  const path =
+  const narrowing = useNarrowing();
+  const path = narrowing.path(
     rootId === null
       ? ''
       : `/api/v1/inventory/topology/${rootId}?depth=${String(bounds.depth)}` +
-        `&nodes=${String(bounds.nodes)}`;
+          `&nodes=${String(bounds.nodes)}`,
+  );
   return useQuery<Resolved<ApiEnvelope<ApiSubgraph>>>({
-    queryKey: ['inventory-topology', rootId, bounds.depth, bounds.nodes],
+    queryKey: narrowing.key(['inventory-topology', rootId, bounds.depth, bounds.nodes]),
     queryFn: resolveSurface(
       '/api/v1/inventory/topology/{node_id}',
       () => client.get<ApiSubgraph>(path),
@@ -419,9 +547,10 @@ export function useTopologySubgraph(
  */
 export function useEntity(nodeId: string | null) {
   const client = useApi();
-  const path = nodeId === null ? '' : `/api/v1/inventory/nodes/${nodeId}`;
+  const narrowing = useNarrowing();
+  const path = narrowing.path(nodeId === null ? '' : `/api/v1/inventory/nodes/${nodeId}`);
   return useQuery<Resolved<ApiEnvelope<ApiEntity>>>({
-    queryKey: ['inventory-entity', nodeId],
+    queryKey: narrowing.key(['inventory-entity', nodeId]),
     queryFn: resolveSurface(
       '/api/v1/inventory/nodes/{node_id}',
       () => client.get<ApiEntity>(path),
@@ -498,9 +627,12 @@ export function useResources(query: {
  */
 export function useBlastRadius(nodeId: string | null) {
   const client = useApi();
-  const path = nodeId === null ? '' : `/api/v1/inventory/nodes/${nodeId}/blast-radius`;
+  const narrowing = useNarrowing();
+  const path = narrowing.path(
+    nodeId === null ? '' : `/api/v1/inventory/nodes/${nodeId}/blast-radius`,
+  );
   return useQuery<Resolved<ApiEnvelope<ApiBlastRadius>>>({
-    queryKey: ['inventory-blast-radius', nodeId],
+    queryKey: narrowing.key(['inventory-blast-radius', nodeId]),
     queryFn: resolveSurface(
       '/api/v1/inventory/nodes/{node_id}/blast-radius',
       () => client.get<ApiBlastRadius>(path),
@@ -666,5 +798,135 @@ export function useAsk() {
       void queries.invalidateQueries({ queryKey: EXCHANGES_KEY });
       void queries.invalidateQueries({ queryKey: REDACTIONS_KEY });
     },
+  });
+}
+
+/**
+ * The report library, FEAT-068. Never narrowed to a chosen account, as the search box's accounts
+ * are not: a view is configuration rather than a figure counted in accounts, and a library that
+ * emptied when an account was chosen would hide what the reader saved. Nor offered for export, as
+ * the API's own exemption says: each view exports from its own screen.
+ */
+const SAVED_VIEWS = '/api/v1/reports/views';
+const SAVED_VIEWS_KEY = ['saved-views'] as const;
+
+function savedViewPath(viewId: string): string {
+  return `${SAVED_VIEWS}/${encodeURIComponent(viewId)}`;
+}
+
+export function useSavedViews() {
+  const client = useApi();
+  return useQuery<ApiEnvelope<ApiSavedView[]>>({
+    queryKey: SAVED_VIEWS_KEY,
+    queryFn: () => client.get<ApiSavedView[]>(SAVED_VIEWS),
+  });
+}
+
+export function useSaveView() {
+  const client = useApi();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: (view: SavedViewIn) => client.post<ApiSavedView>(SAVED_VIEWS, view),
+    onSettled: () => queries.invalidateQueries({ queryKey: SAVED_VIEWS_KEY }),
+  });
+}
+
+export function useChangeView() {
+  const client = useApi();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      viewId,
+      change,
+    }: {
+      readonly viewId: string;
+      readonly change: SavedViewChange;
+    }) => client.patch<ApiSavedView>(savedViewPath(viewId), change),
+    onSettled: () => queries.invalidateQueries({ queryKey: SAVED_VIEWS_KEY }),
+  });
+}
+
+export function useDeleteView() {
+  const client = useApi();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: (viewId: string) => client.delete<ApiSavedView>(savedViewPath(viewId)),
+    onSettled: () => queries.invalidateQueries({ queryKey: SAVED_VIEWS_KEY }),
+  });
+}
+
+/** Who is reading, FEAT-069: the schedule panel offers the reader as its first recipient. */
+export function useMe() {
+  const client = useApi();
+  return useQuery<ApiEnvelope<Me>>({
+    queryKey: ['me'],
+    queryFn: () => client.get<Me>('/api/v1/me'),
+  });
+}
+
+/**
+ * Scheduled reports, FEAT-069. Never narrowed to a chosen account, as the library is not: a
+ * schedule renders in each recipient's own scope, and a run is the reader's own record.
+ */
+const SCHEDULES = '/api/v1/reports/schedules';
+const SCHEDULES_KEY = ['report-schedules'] as const;
+const RUNS = '/api/v1/reports/runs';
+const RUNS_KEY = ['report-runs'] as const;
+
+function schedulePath(scheduleId: string): string {
+  return `${SCHEDULES}/${encodeURIComponent(scheduleId)}`;
+}
+
+/** Where a run's kept file is fetched from, after the server checks scope again. */
+export function runFilePath(runId: string): string {
+  return `${RUNS}/${encodeURIComponent(runId)}/file`;
+}
+
+export function useSchedules() {
+  const client = useApi();
+  return useQuery<ApiEnvelope<ApiSchedules>>({
+    queryKey: SCHEDULES_KEY,
+    queryFn: () => client.get<ApiSchedules>(SCHEDULES),
+  });
+}
+
+export function useReportRuns() {
+  const client = useApi();
+  return useQuery<ApiEnvelope<ApiReportRun[]>>({
+    queryKey: RUNS_KEY,
+    queryFn: () => client.get<ApiReportRun[]>(RUNS),
+  });
+}
+
+export function useCreateSchedule() {
+  const client = useApi();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: (schedule: ScheduleIn) => client.post<ApiSchedule>(SCHEDULES, schedule),
+    onSettled: () => queries.invalidateQueries({ queryKey: SCHEDULES_KEY }),
+  });
+}
+
+export function useChangeSchedule() {
+  const client = useApi();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      scheduleId,
+      change,
+    }: {
+      readonly scheduleId: string;
+      readonly change: ScheduleChange;
+    }) => client.patch<ApiSchedule>(schedulePath(scheduleId), change),
+    onSettled: () => queries.invalidateQueries({ queryKey: SCHEDULES_KEY }),
+  });
+}
+
+export function useDeleteSchedule() {
+  const client = useApi();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: (scheduleId: string) => client.delete<ApiSchedule>(schedulePath(scheduleId)),
+    onSettled: () => queries.invalidateQueries({ queryKey: SCHEDULES_KEY }),
   });
 }

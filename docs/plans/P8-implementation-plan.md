@@ -4,7 +4,7 @@ Date: 2026-10-05
 Status: Approved by the owner on 2026-10-05, with its spec
 Spec: `docs/specs/2026-10-05-p8-experience-and-reporting-design.md`
 Depends on: P1 to P7 delivered
-Tasks: 15
+Tasks: counted in `tasks/STATUS.md`, which reads them from this plan
 
 The first sub project that changes how Meter looks rather than what it knows. The owner
 approved the direction on 2026-10-05: two themes of one glass design system, navigation
@@ -47,6 +47,12 @@ Same contract as P0 through P7. One task, one commit.
 | E. Reporting | 009 to 011 | Excel and CSV export, saved views, scheduled reports | 003, D for the explorer's export |
 | F. Dashboards and screens | 012 to 013 | Persona dashboards, every remaining screen restyled | C, D |
 | G. Proof and documents | 014 to 015 | Accessibility, journeys, performance, and the documents | All |
+| H. Added 2026-10-05 | 016 to 017 | The account picker on every screen, and the geography map redrawn | 002 and 003 for the picker, 005 for the map |
+| I. Added later on 2026-10-05 | 018 | The look as drawn: light by default, rich motion, the glass rail and the top bar | 001 and 002 |
+
+**Build order, decided by the owner later on 2026-10-05.** 018, then 016, 012, 013 and
+017, then 010, 011, 014 and 015. The look comes first because the built screens were still
+in the old design when the owner compared them with the drawings.
 
 ---
 
@@ -54,7 +60,7 @@ Same contract as P0 through P7. One task, one commit.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec section 5.1, FEAT-063 |
 | Delivers | FEAT-063 |
 | Depends on | This plan approved |
@@ -65,17 +71,23 @@ a panel surface in each, and a theme toggle over the operating system's choice.
 
 **Acceptance criteria.**
 
-- [ ] Both token sets defined, the operating system chooses by default, and a toggle
+- [x] Both token sets defined, the operating system chooses by default, and a toggle
       overrides it and is remembered per person
-- [ ] With transparency reduced, or without `backdrop-filter`, panels are opaque and the
+- [x] With transparency reduced, or without `backdrop-filter`, panels are opaque and the
       page glows are gone
-- [ ] A test over the tokens holds text, muted and faint at 4.5 to 1 or better on every
+- [x] A test over the tokens holds text, muted and faint at 4.5 to 1 or better on every
       panel tier in both themes
-- [ ] Print uses the light theme with no glass
-- [ ] Geist and Geist Mono, confirmed on 2026-10-05, self hosted and admitted through
+- [x] Print uses the light theme with no glass
+- [x] Geist and Geist Mono, confirmed on 2026-10-05, self hosted and admitted through
       `make dep-check`
-- [ ] `docs/12-UI-DESIGN.md` amended with the date and the reason; its provenance,
+- [x] `docs/12-UI-DESIGN.md` amended with the date and the reason; its provenance,
       freshness, absence and numeral rules unchanged
+
+**Delivered 2026-10-05.** The choice is remembered in the person's browser, beside the
+navigation state; remembering it across their devices waits for per person storage, which
+TASK-P8-010 brings. Two light values differ from the spec's table, for its own contrast rule:
+faint is `#5a687d`, and the accent drawn as text is `#0064d2` with the table's `#0a84ff` kept
+as the accent mark. `docs/12-UI-DESIGN.md` section 7 gives the ratios.
 
 ---
 
@@ -83,7 +95,7 @@ a panel surface in each, and a theme toggle over the operating system's choice.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec section 5.2, FEAT-064 |
 | Delivers | FEAT-064, with TASK-P8-004 |
 | Depends on | TASK-P8-001 |
@@ -94,16 +106,23 @@ the new system, and every old path redirects.
 
 **Acceptance criteria.**
 
-- [ ] Groups and screens as in spec section 5.2, each group's Framework domain named in a
+- [x] Groups and screens as in spec section 5.2, each group's Framework domain named in a
       comment beside it
-- [ ] Every path in `sections.ts` before P8 redirects to its new home, and a test
+- [x] Every path in `sections.ts` before P8 redirects to its new home, and a test
       enumerates them
-- [ ] Organization, Geography and the three query cost screens become tabs of their new
+- [x] Organization, Geography and the three query cost screens become tabs of their new
       screens
-- [ ] Unit Economics is listed as arriving, never as built
-- [ ] The trust strip keeps freshness, coverage and failing collections in the new look
-- [ ] A new ADR supersedes ADR-0020, and `docs/13-UI-ARCHITECTURE.md` follows it
-- [ ] Axe clean in both themes
+- [x] Unit Economics is listed as arriving, never as built
+- [x] The trust strip keeps freshness, coverage and failing collections in the new look
+- [x] A new ADR supersedes ADR-0020, and `docs/13-UI-ARCHITECTURE.md` follows it
+- [x] Axe clean in both themes
+
+**Delivered 2026-10-05.** The spec named no home for three screens, and the owner placed them:
+the three container screens stay separate under Analyze, Enforcement becomes Policies, and Flags
+stays under Platform as arriving. The menu took the approved names now, by the owner's choice;
+labels inside screens wait for TASK-P8-004. Axe, run on the shell in a real browser for the first
+time, found the rail's faint text at 4.2 to 1, and `--nav-text-faint` moved to the dark theme's
+faint. ADR-0030 supersedes ADR-0020.
 
 ---
 
@@ -111,7 +130,7 @@ the new system, and every old path redirects.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec section 5.6 |
 | Delivers | ISS-235 closed |
 | Depends on | TASK-P8-002 |
@@ -122,10 +141,16 @@ and a saved view carry the same state.
 
 **Acceptance criteria.**
 
-- [ ] Every filter control on every screen reads and writes the query string
-- [ ] The links from FinOps Score and from Geography land filtered, tested
-- [ ] Back and forward restore the filter
-- [ ] An unknown parameter is ignored and named, never silently applied
+- [x] Every filter control on every screen reads and writes the query string
+- [x] The links from FinOps Score and from Geography land filtered, tested
+- [x] Back and forward restore the filter
+- [x] An unknown parameter is ignored and named, never silently applied
+
+**Delivered 2026-10-05.** Four screens had filter controls: Accounts, Allocation, Resources
+and, new, Recommendations, which narrows to the one finding a FinOps Score link names. Each
+declares its keys once in `sections.ts`, which is also what saved views will store in
+TASK-P8-010. The Geography link needed no change: the resource API already narrowed by
+geography, and only the screen ignored it.
 
 ---
 
@@ -133,7 +158,7 @@ and a saved view carry the same state.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec section 5.3, FEAT-064 |
 | Delivers | FEAT-064, with TASK-P8-002 |
 | Depends on | TASK-P8-002 |
@@ -144,12 +169,21 @@ its tooltip.
 
 **Acceptance criteria.**
 
-- [ ] First output: a table of every label on every screen, today, proposed and basis,
+- [x] First output: a table of every label on every screen, today, proposed and basis,
       approved by the owner before any label changes
-- [ ] Every approved label changed, and journeys updated with them
-- [ ] Every cost column carries its provider term in a tooltip
-- [ ] No raw identifier on any screen, collector names and enum codes included, held by a
+- [x] Every approved label changed, and journeys updated with them
+- [x] Every cost column carries its provider term in a tooltip
+- [x] No raw identifier on any screen, collector names and enum codes included, held by a
       test over the rendered text
+
+**Delivered 2026-10-05.** The owner approved
+`docs/specs/2026-10-05-p8-label-table.md` as written. Two things moved during the build.
+The commitment KPI headings take the approved names and keep their old sentence beneath
+them, because a test holds that two percentages side by side each name their denominator.
+The collector names the API sends are the names each collector declares, which are not
+always its module's, so the table's collector section was regenerated from the code before
+it was applied. Two shapes stay on screen on purpose: a Meter setting an operator must type,
+such as METER_ASSISTANT_MODEL_ID, and a register reference such as OPEN-10.
 
 ---
 
@@ -157,7 +191,7 @@ its tooltip.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec section 5.4 |
 | Delivers | The chart set the spec names |
 | Depends on | TASK-P8-001 |
@@ -168,12 +202,19 @@ chart dependency.
 
 **Acceptance criteria.**
 
-- [ ] Stacked area with forecast band and budget pace, stacked bar, ranked bar with a
+- [x] Stacked area with forecast band and budget pace, stacked bar, ranked bar with a
       table, KPI tile with delta and sparkline, treemap and heatmap
-- [ ] Every chart has a table alternative, and a test holds its values equal to the marks
-- [ ] Measured, modelled and forecast drawn solid, hatched and dashed, in both themes
-- [ ] No motion under `prefers-reduced-motion`
-- [ ] The existing hand built charts replaced or wrapped so one set remains
+- [x] Every chart has a table alternative, and a test holds its values equal to the marks
+- [x] Measured, modelled and forecast drawn solid, hatched and dashed, in both themes
+- [x] No motion under `prefers-reduced-motion`
+- [x] The existing hand built charts replaced or wrapped so one set remains
+
+**Delivered 2026-10-05.** The set is `finops-web/src/components/charts/`, hand built SVG with
+no chart dependency. The ranked bars already wrote every value beside its bar, which is its
+table; the bar chart gained one. Six series colours were added to the tokens, each held at 3
+to 1 on the page and every panel in both themes by the contrast test. No screen uses the new
+charts yet: Cost Explorer, the forecast and the persona dashboards do, in TASK-P8-007, 008 and
+012.
 
 ---
 
@@ -181,7 +222,7 @@ chart dependency.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec section 5.1 |
 | Delivers | Sorting, totals and drill down in `DataTable` |
 | Depends on | TASK-P8-001 |
@@ -189,11 +230,25 @@ chart dependency.
 
 **Acceptance criteria.**
 
-- [ ] Sorting by keyboard and pointer, announced with `aria-sort`
-- [ ] A sticky header and a column chooser
-- [ ] A totals row only over figures of one unit and one provenance; a mixed column says
+- [x] Sorting by keyboard and pointer, announced with `aria-sort`
+- [x] A sticky header and a column chooser
+- [x] A totals row only over figures of one unit and one provenance; a mixed column says
       why it has no total
-- [ ] A row opens its owning screen; virtualisation kept above 200 rows
+- [x] A row opens its owning screen; virtualisation kept above 200 rows
+
+**Delivered 2026-10-05.** `DataTable` sorts by a button in each header that declares a sort
+value, so the keyboard and the pointer do the same thing, and `aria-sort` says which way. A
+figure sorts largest first, and a figure that was not collected sorts last in either direction.
+The header was already sticky inside the table's scroll box. The column chooser is closed until
+opened and will not hide the last column. A column totals only where every row has a figure of
+one unit and one provenance, and otherwise says which of those failed; a figure not collected
+gives no total rather than a total that counts it as zero. A row opens its owning screen through
+the link its name cell already drew on every table that has one (query findings, quotas and
+resources), so no second link column was added. Virtualisation counts the sorted rows. Cost
+Explorer adopts all of it: every column sorts, Effective Cost and Billed Cost total to the
+headline figure above them, and the order the API sends is stated in the header by
+`initialSort` rather than claimed by the caption, where a reader's sort would make it false. The
+other tables take sort values in TASK-P8-013.
 
 ---
 
@@ -201,7 +256,7 @@ chart dependency.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec sections 5.3 and 7, FEAT-065 |
 | Delivers | FEAT-065 |
 | Depends on | TASK-P8-003, TASK-P8-005, TASK-P8-006 |
@@ -212,13 +267,24 @@ answered with the rows the product already holds.
 
 **Acceptance criteria.**
 
-- [ ] Two group bys over FOCUS dimensions and tag keys from an allow list, and filters
-- [ ] Daily and monthly; month to date, 3, 6 and 12 months, year to date and custom
-- [ ] Comparison with the previous period
-- [ ] Effective Cost by default; another cost metric offered only where the table holds it
-- [ ] The same scope dependency and guard as `/cost`, coverage and failures in the
+- [x] Two group bys over FOCUS dimensions and tag keys from an allow list, and filters
+- [x] Daily and monthly; month to date, 3, 6 and 12 months, year to date and custom
+- [x] Comparison with the previous period
+- [x] Effective Cost by default; another cost metric offered only where the table holds it
+- [x] The same scope dependency and guard as `/cost`, coverage and failures in the
       envelope, and unallocated shown, never hidden
-- [ ] A bounded query: partition pruning on the period and a row limit the envelope names
+- [x] A bounded query: partition pruning on the period and a row limit the envelope names
+
+**Delivered 2026-10-05.** The owner chose the layout, the eight groupings, tag keys from the
+period's own line items and the like for like comparison, each the recommended option. The period
+arithmetic is `finops_core/domain/explore.py`, the reads `finops_api/db/repositories/explore.py`,
+every one derived from `scoped_select`, and the route `finops_api/routes/explore.py`, registered
+as P8's first router. The table holds 500 rows and says what the rest add up to, and the
+unallocated rows are read apart from the limit. The screen at `/analyze/explorer` replaced the
+spend and trend screen: its view lives in the address, its table values are filter links, and its
+chart is StackedBar drawn as columns, an orientation added for time. The chart set's legend and
+rows had shipped with no styles in TASK-P8-005 and are styled now. The hook and fixture only the
+old screen read were removed.
 
 ---
 
@@ -226,7 +292,7 @@ answered with the rows the product already holds.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec section 7, FEAT-066 |
 | Delivers | FEAT-066 |
 | Depends on | TASK-P8-005 |
@@ -237,10 +303,21 @@ named, the first producer of forecast provenance.
 
 **Acceptance criteria.**
 
-- [ ] Meets the four conditions ADR-0015 sets before any figure carries forecast
+- [x] Meets the four conditions ADR-0015 sets before any figure carries forecast
       provenance; where one cannot be met, no figure is shown and the reason is
-- [ ] Accuracy measured by backtest over held out months and published beside the figure
-- [ ] Drawn dashed with its band, never as measured
+- [x] Accuracy measured by backtest over held out months and published beside the figure
+- [x] Drawn dashed with its band, never as measured
+
+**Delivered 2026-10-05.** The owner chose the method, the band, the gate and the screen, each the
+recommended option: a weekday profile over the eight weeks before the forecast, an 80 percent
+band from its own misses on up to 12 held out months, and withheld below 3 tests or above a 15
+percent median miss, with the reason shown where the figure would be. The arithmetic is
+`finops_query/forecast.py`, the reads `finops_api/db/repositories/forecast.py` and the route
+`finops_api/routes/forecast.py`, P8's second router. The Forecasts screen under Plan is built,
+and `forecastUnproduced.test.ts` now names it as the one producer of a forecast. On the eight
+month fake estate the month end was shown with a median miss of 5.95 percent over 5 months, and
+the months ahead were shown, withheld for their misses and withheld for want of tests (measured
+2026-10-05 on synthetic data).
 
 ---
 
@@ -248,7 +325,7 @@ named, the first producer of forecast provenance.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-05 |
 | Implements | P8 spec section 5.5, FEAT-067 |
 | Delivers | FEAT-067 and FEAT-045 |
 | Depends on | TASK-P8-002 |
@@ -259,16 +336,31 @@ with an About sheet.
 
 **Acceptance criteria.**
 
-- [ ] XlsxWriter admitted through `make dep-check`
-- [ ] `format=xlsx` and `format=csv` on every list route a screen reads, enumerated by a
+- [x] XlsxWriter admitted through `make dep-check`
+- [x] `format=xlsx` and `format=csv` on every list route a screen reads, enumerated by a
       test over the routers as the MCP drift gate does
-- [ ] A Data sheet with FOCUS headers and typed numbers, and an About sheet with every
+- [x] A Data sheet with FOCUS headers and typed numbers, and an About sheet with every
       field in spec section 5.5 item 2
-- [ ] Every leading character in spec section 5.5 item 3 written as text, tested
-- [ ] The row limit is a setting, named in the About sheet, with CSV for the full set
-- [ ] One `report_run` row per export, migration included, every invariant a constraint
-- [ ] Parity: rows equal the screen's; scope: a narrower principal never sees more
-- [ ] An Export menu on every screen, and the old Export screen's CSV replaced by it
+- [x] Every leading character in spec section 5.5 item 3 written as text, tested
+- [x] The row limit is a setting, named in the About sheet, with CSV for the full set
+- [x] One `report_run` row per export, migration included, every invariant a constraint
+- [x] Parity: rows equal the screen's; scope: a narrower principal never sees more
+- [x] An Export menu on every screen, and the old Export screen's CSV replaced by it
+
+**Delivered 2026-10-05.** One responder, `finops_api/exports/`, applied to each list route
+as `@exportable`, so no return can answer JSON for a file: 34 routes export, and
+`tests/api/test_export_routes.py` fails for a GET route that neither exports nor states why
+not. The workbook is XlsxWriter in constant memory mode, admitted through `make dep-check`
+with zero findings. `/cost/export` became `/cost/showback`, its rows in the envelope, so
+FEAT-045 is delivered through the same responder and `ENVELOPE_EXEMPT` holds no route with
+tenant data. The Export menu sits beside every screen title, fed by the query hooks. Three
+things were found on the way: a view with more than one table exports its first, ISS-247;
+the savings screen printed a verdict code the raw identifier test could not see, ISS-248,
+fixed; `report_run` holds a person's identifier no retention job or erasure reaches,
+ISS-249; and the hub passes 6 of the 74 settings the API requires, so a deployed API
+would not start, ISS-250. Against the local stack the showback workbook held 31 rows and 14 failures on its
+About sheet, and both files wrote a `report_run` row (measured 2026-10-05 on synthetic
+data).
 
 ---
 
@@ -276,7 +368,7 @@ with an About sheet.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-07 |
 | Implements | P8 spec section 5.6, FEAT-068 |
 | Delivers | FEAT-068 |
 | Depends on | TASK-P8-003, TASK-P8-009 |
@@ -284,11 +376,11 @@ with an About sheet.
 
 **Acceptance criteria.**
 
-- [ ] `saved_view` migration with the constraints in spec section 6
-- [ ] A private view is confined to its owner, ADR-0029; a shared one is visible to the
+- [x] `saved_view` migration with the constraints in spec section 6
+- [x] A private view is confined to its owner, ADR-0029; a shared one is visible to the
       tenant as configuration
-- [ ] Opening a view renders it in the opener's scope, asserted with two principals
-- [ ] The Report Library: open, rename, duplicate, share, delete and export
+- [x] Opening a view renders it in the opener's scope, asserted with two principals
+- [x] The Report Library: open, rename, duplicate, share, delete and export
 
 ---
 
@@ -296,7 +388,7 @@ with an About sheet.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-07 |
 | Implements | P8 spec section 5.7, FEAT-069 |
 | Delivers | FEAT-069 |
 | Depends on | TASK-P8-010 |
@@ -304,14 +396,14 @@ with an About sheet.
 
 **Acceptance criteria.**
 
-- [ ] `report_schedule` migration with the constraints in spec section 6
-- [ ] A collector in `collector_schedule` with its reason and cost, ADR-0012, renders each
+- [x] `report_schedule` migration with the constraints in spec section 6
+- [x] A collector in `collector_schedule` with its reason and cost, ADR-0012, renders each
       due schedule once per recipient in that recipient's scope
-- [ ] Files stored in the hub data bucket under the tenant prefix, fetched through a route
+- [x] Files stored in the hub data bucket under the tenant prefix, fetched through a route
       that checks scope again
-- [ ] A `ReportSender` port with a fake; runs listed as rendered and not sent until OPEN-11
-- [ ] One recipient failing does not fail the run
-- [ ] No deletion job until OPEN-15 is answered, and the screen says how long files are kept
+- [x] A `ReportSender` port with a fake; runs listed as rendered and not sent until OPEN-11
+- [x] One recipient failing does not fail the run
+- [x] No deletion job until OPEN-15 is answered, and the screen says how long files are kept
 
 ---
 
@@ -319,7 +411,7 @@ with an About sheet.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-06 |
 | Implements | P8 spec section 5.8, FEAT-070 |
 | Delivers | FEAT-070 |
 | Depends on | TASK-P8-005, TASK-P8-007, TASK-P8-008 |
@@ -327,11 +419,34 @@ with an About sheet.
 
 **Acceptance criteria.**
 
-- [ ] Executive, FinOps practitioner and engineering lead dashboards, the reader's last
+- [x] Executive, FinOps practitioner and engineering lead dashboards, the reader's last
       choice remembered
-- [ ] Every KPI shows its formula and baseline, and every figure links to its owning screen
-- [ ] A KPI the data cannot support says so and shows no figure
-- [ ] Built from existing routes only; no new number
+- [x] Every KPI shows its formula and baseline, and every figure links to its owning screen
+- [x] A KPI the data cannot support says so and shows no figure
+- [x] Built from existing routes only; no new number
+- [x] The charts the owner chose on 2026-10-05: a 12 month trend by service, month to date
+      against the forecast band, the top 10 accounts, a service treemap and savings by
+      category, each with its table of numbers
+- [x] Every figure and chart narrowed by the account picker, TASK-P8-016, and All accounts
+      combined when the Overview opens
+- [x] The FinOps view as drawn, decided later on 2026-10-05:
+      `docs/design/2026-10-05-overview-frosted-ledger.jpg`, KPI tiles, daily cost by
+      category with the forecast and the daily budget pace, cost by service, anomalies,
+      top recommendations, scheduled reports and showback by team, with the Executive and
+      Engineering dashboards one click away. A tile whose data is not collected says so
+      and shows no figure
+
+**Delivered 2026-10-06.** `HomeScreen` holds the switch and renders one of `OverviewFinOps`,
+`OverviewExecutive` and `OverviewEngineering`, which read through the owning screens' hooks and
+the shared `useOverviewFigures`. The KPI arithmetic is the pure module `overviewKpis.ts`, and the
+Explorer views are built in Cost Explorer's own query shape, so each shares its cache entry with
+that screen. The choice is kept in the browser under `meter.persona`. One departure from the
+drawing: the daily chart carries the budget pace and no forecast band, because the forecast
+route's figures are a running total for the month and a daily band would need a number the route
+does not produce. The forecast is the month end tile, and the Executive dashboard draws the
+running total against its band. Top actions, FEAT-052, and the query cost tiles moved to the
+Engineering lead's dashboard, and the FinOps one lists its own top recommendations, as drawn.
+
 
 ---
 
@@ -339,7 +454,7 @@ with an About sheet.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-06 |
 | Implements | P8 spec section 5.1 |
 | Delivers | One look across all screens |
 | Depends on | TASK-P8-002, TASK-P8-004, TASK-P8-005, TASK-P8-006 |
@@ -347,9 +462,36 @@ with an About sheet.
 
 **Acceptance criteria.**
 
-- [ ] Optimize, Govern, Inventory, Platform and Assist screens in the new system
-- [ ] No colour outside the tokens in any component, held by a test
-- [ ] Axe clean in both themes
+- [x] Optimize, Govern, Inventory, Platform and Assist screens in the new system
+- [x] Every table sorts, and totals where its figures share a unit and a provenance, through
+      `DataTable` as TASK-P8-006 built it
+- [x] No colour outside the tokens in any component, held by a test
+- [x] Axe clean in both themes
+- [x] A chart on every screen, as the owner chose on 2026-10-05: Allocation a team treemap and
+      a team trend; Anomalies daily spend with anomaly markers; Commitments utilization and
+      coverage over time and a day by day heatmap; Realized savings a cumulative savings area;
+      Accounts the top accounts and a health heatmap; Resources by type and by region; Query
+      cost by dashboard and its trend; Meter cost its trend by module
+
+**Decided 2026-10-06.** Three of the charts had no data behind them, and the owner chose:
+commitments are collected daily, so utilization and coverage over time and the day by day
+heatmap are drawn from measured days; `/api/v1/inventory/resources` counts resources by type and
+by region; and the realized savings area accumulates verified changes only, because the screen
+never adds verdicts together.
+
+**Delivered 2026-10-06.** A chart on every screen the owner named, each in a `ChartPanel`:
+Allocation's treemap and six month trend by tag, Anomalies' daily spend with a rule on each day
+that stood out, Accounts' largest accounts and freshness heatmap, Realized savings' running
+total, Query cost by dashboard and its trend from `/api/v1/query/trend`, Resources by type and
+region, Meter cost per day by module, and Commitments' use and coverage each day with their
+heatmap, from commitments now collected daily into `commitment_day`, per kind and never per
+plan. Every table is a `DataTable`, held by a test: each sorts, except a page of a longer list,
+which keeps the server's order rather than order a page and read as ordering the list, and
+each totals only where its figures add. No component names a colour outside the tokens, held
+by a test, and axe runs over every screen's content in both themes, clean after one fix: a
+table that scrolls is now a keyboard stop. The remaining screens are in the new system in the
+sense section 5.1 gives it: one set of tokens, one shell, and panels, charts and tables from
+one set of components, checked at six widths and in both themes.
 
 ---
 
@@ -357,19 +499,45 @@ with an About sheet.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-07 |
 | Implements | P8 spec sections 8 and 12 |
 | Delivers | The exit criteria, measured |
-| Depends on | TASK-P8-001 to TASK-P8-013 |
+| Depends on | TASK-P8-001 to TASK-P8-013, TASK-P8-016 and TASK-P8-017 |
 | Estimate | M |
 
 **Acceptance criteria.**
 
-- [ ] Axe on every screen in both themes and with transparency reduced
-- [ ] Journeys: change persona, group Cost Explorer by two dimensions, export to Excel,
+- [x] Axe on every screen in both themes and with transparency reduced
+- [x] Journeys: change persona, group Cost Explorer by two dimensions, export to Excel,
       save the view, schedule it
-- [ ] No `backdrop-filter` on any element inside a table or a list, held by a test
-- [ ] Every exit criterion in spec section 12 met, each with its evidence
+- [x] No `backdrop-filter` on any element inside a table or a list, held by a test
+- [x] Every exit criterion in spec section 12 met, each with its evidence
+
+**Delivered 2026-10-07.** The proof found three faults and they are fixed with it. With
+transparency reduced the rail and the trust strip kept their blur on every screen, because each
+fallback switched the panel's blur off by name; the blur is now one token, `--panel-filter`,
+that every glass surface reads and each fallback switches off, ISS-257. The Overview's Scheduled
+reports panel still promised them for P8 after TASK-P8-011 built them, and neither test meant to
+catch a stale promise could see it, because each ended its pattern at a word boundary that the
+page's run on text never has; the panel now lists the reader's schedules and both patterns end
+on "not a digit", ISS-258. The account journey now names the two reads a chosen account does not
+narrow, the accounts to choose from and the reader's own schedules.
+
+**Evidence, measured on 2026-10-07.** One row per exit criterion in spec section 12. Each test
+named runs in `make verify`; the counts were measured from the code and the runs that day.
+
+| Exit criterion | Held by | Measured |
+| --- | --- | --- |
+| 1. Every screen in both themes, axe clean, with transparency reduced and without blur | `finops-web/e2e/a11y.spec.ts`: every screen on the rail in light and dark, with glass, with transparency reduced, and as a browser without `backdrop-filter` reads the shipped stylesheet. Each fallback first proves it holds, then holds nothing blurred and the content and the shell axe clean. Another sweep holds no glass inside a table or a list, with a control that glass exists. `glass.test.ts` holds every stylesheet's blur to the one token | 29 screens in each of 6 axe sweeps, no violation and nothing blurred. Before the fix, the rail and the trust strip blurred on all 29 with transparency reduced |
+| 2. Every label in TASK-P8-004's table changed, and no raw identifier on any screen | `tests/test_label_table.py` finds every label the table approved in the web source, the one superseded by TASK-P8-012's redraw named with its reason. `rawIdentifiers.test.tsx` holds every code and collector in words on every built screen and tab | 136 approved rows, 90 distinct labels, all drawn but the one superseded |
+| 3. An Excel export of every exportable view, rows equal to the screen, with its About sheet | `tests/api/test_export_routes.py` holds every list route a screen reads to a file or to an exemption with its reason, and every export to its route's rows. `tests/api/test_export_writers.py` holds the data sheet and the About sheet. `export.spec.ts` and `reporting.spec.ts` save the server's workbook in the browser | 36 routes answer as a file |
+| 4. A saved view shared between two principals renders in each one's scope | `tests/api/test_saved_views.py`, a shared view opened by a colleague narrowed to one account, and kept within its tenant, against the database | Two principals, each read in their own scope |
+| 5. A schedule rendered per recipient and stored, listed as rendered and not sent until OPEN-11 | `tests/api/test_report_schedules.py`, each recipient's file of their own scope, listed and fetched by them, and refused once their access narrows. `schedule.spec.ts` and `reporting.spec.ts` show the Scheduled screen's delivery sentence | On the local stack: one schedule, two recipients, two files RENDERED and kept, 5 rows for the global auditor and 0 for the analyst whose two accounts the demo estate does not hold, and the auditor's file refused to the analyst |
+| 6. Three persona dashboards, every figure linked to its owning screen | `overview.spec.ts` holds every panel and tile on all three dashboards to a link to a screen on the rail. `OverviewViews.test.tsx` holds each dashboard's figures, and `HomeScreen.test.tsx` holds the Overview to the routes the screens it summarises read | Every panel and tile on 3 dashboards |
+| 7. Every path from before P8 resolving | `finops-web/src/shell/__tests__/sections.test.ts`, every path the navigation had before P8 lands somewhere, and only paths that left are redirected | Every pre P8 path |
+
+The journeys are spec section 8's path in one, `finops-web/e2e/reporting.spec.ts`, among
+62 journeys in all.
 
 ---
 
@@ -377,7 +545,7 @@ with an About sheet.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-07 |
 | Implements | `docs/03-CHANGE-CONTROL.md` |
 | Delivers | The record |
 | Depends on | TASK-P8-001 to TASK-P8-014 |
@@ -385,9 +553,154 @@ with an About sheet.
 
 **Acceptance criteria.**
 
-- [ ] `docs/12-UI-DESIGN.md` and `docs/13-UI-ARCHITECTURE.md` describe what was built
-- [ ] FEAT-063 to FEAT-070 and FEAT-045 carry as built sections
-- [ ] The register, `project_map.md` and the checkpoint updated, and `make check-docs` clean
+- [x] `docs/12-UI-DESIGN.md` and `docs/13-UI-ARCHITECTURE.md` describe what was built
+- [x] FEAT-063 to FEAT-070 and FEAT-045 carry as built sections
+- [x] The register, `project_map.md` and the checkpoint updated, and `make check-docs` clean
+
+**Delivered 2026-10-07.** `docs/12-UI-DESIGN.md` now states the accessibility sweeps, the
+glass rule and the chart tables, the six widths in place of the read only summary it first
+proposed, and the P8 components. `docs/13-UI-ARCHITECTURE.md` routes the library and the
+scheduled screen and adds search, the account choice, saving a view and scheduling one to its
+cross screen patterns. FEAT-064 to FEAT-070 and FEAT-045 were each written as built when their
+task landed, and FEAT-063, the last In progress, is Delivered.
+
+---
+
+### TASK-P8-016: the account picker on every screen
+
+Added 2026-10-05 at the owner's request: an estate of 1,399 accounts cannot be read only as
+one sum.
+
+| Field | Value |
+| --- | --- |
+| Status | Done |
+| Implements | FEAT-075 |
+| Delivers | FEAT-075 |
+| Depends on | TASK-P8-002, TASK-P8-003, TASK-P8-018 for the top bar |
+| Estimate | XL, after the owner widened the search on 2026-10-06 |
+
+The owner decided two more things on 2026-10-06. A screen narrowed to one account states the
+choice plainly rather than warning that it is partial, and the box in the top bar searches
+services and resources as well as accounts, as the drawing's placeholder says.
+
+The address keeps the choice as `account`, the account number Cost Explorer and Resources
+already read as a filter, so those two filters become the one choice. The API takes it as its
+own parameter, `chosen_account`, because `/api/v1/cost/explore` reads `account` as a list of
+filter values, and a scope dependency reading the same name would narrow a request for two
+accounts to one of them without saying so.
+
+**Acceptance criteria.**
+
+- [x] One search box in the top bar of every screen finds accounts, services and resources as
+      it is typed: All accounts first and the default, then accounts by number or name,
+      services by name and resources by name or ARN
+- [x] Choosing an account narrows every screen and every export to it, the Overview included,
+      and All accounts combines them again. Choosing a service opens Cost Explorer filtered to
+      it, and choosing a resource opens its page, both keeping the account
+- [x] The choice lives in the address, so a shared link opens the same account, and moving
+      between screens keeps it
+- [x] Narrowing is applied at the scope dependency, so every route obeys it at once, and it
+      can only narrow what the session may already see, never widen it, held by a test. An
+      account the session cannot see and one that does not exist get the same answer
+- [x] A narrowed screen names the account under its title and counts coverage against the
+      chosen account, so no partial warning appears, while a failure or missing data in that
+      account still shows
+- [x] Usable at 1,399 accounts: the accounts and the services load once and are searched
+      without a round trip, resources are searched on the server with a bound, and the box is
+      keyboard operable with the accessible combobox pattern
+
+**Delivered 2026-10-06.** The choice is `account` in the address, sent to every route as
+`chosen_account`, and `get_scope` narrows the resolved scope to it through `Scope.narrowed_to`,
+which refuses an account the scope does not permit; an account outside the scope and one that
+does not exist both answer 404. Every read carries the account in its cache key, every link keeps
+it, and a test fails the build if a file uses the router's own links. A narrowed envelope carries
+`scope_coverage.chosen` and counts coverage against the chosen account. The box offers 50
+accounts at a time and searches services in the browser and resources on the server, through `q`
+on `/api/v1/inventory/resources`. ISS-252 records that the resource search has no index.
+
+---
+
+### TASK-P8-017: the geography map redrawn
+
+Added 2026-10-05 at the owner's request.
+
+| Field | Value |
+| --- | --- |
+| Status | Done 2026-10-07 |
+| Implements | FEAT-061 |
+| Delivers | FEAT-061, redrawn |
+| Depends on | TASK-P8-005 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [x] The direction the owner chose on 2026-10-05: land as fine dots on a rounded world
+      projection, each geography a glowing bubble sized by this month's Effective Cost with
+      its resource count beside it, and lines for cross region links
+- [x] Glass tiles below the map, one per geography, each with a small trend
+- [x] Hover or focus on a bubble shows its numbers, and every number is also in a table
+- [x] The two stray horizontal lines on the current map gone, and a continent still the
+      finest grain, because a region name says which geography and never which city
+- [x] Both themes, and still drawn by hand in SVG with no map library
+
+**Delivered 2026-10-07.** The land is 4,569 dots, measured, on an Equal Earth grid that
+`make world` generates from the Natural Earth outline with each ring unwrapped across the
+antimeridian, and no outline is drawn, so the two stray lines are gone. Each geography is one
+glowing bubble sized by area by this month's Effective Cost, read from Cost Explorer's own view by
+region, whose answer now carries `region_geographies` placed by the server's prefix rule, with the
+resource count beside it. Lines join geographies whose resources are linked across regions, from
+`links` on the geography route, counted as pairs of resources with both ends read through the
+scope guard. A bubble is a button, and hover or focus shows its numbers in a card; a table of every
+geography and a table of every link hold them all. Below the map, a glass tile per geography
+carries thirty days of its own regions' cost. Both themes, hand drawn in SVG, no map library. A
+continent stays the finest grain, so the per region markers placed by compass word are retired.
+
+---
+
+### TASK-P8-018: the look as drawn
+
+Added later on 2026-10-05 at the owner's request, after comparing the built screens with
+the drawings: `docs/design/2026-10-05-overview-frosted-ledger.jpg` for the light theme and
+`docs/design/2026-10-05-overview-aurora-glass.jpg` for the dark.
+
+| Field | Value |
+| --- | --- |
+| Status | Done 2026-10-05 |
+| Implements | P8 spec sections 2 and 5.1, FEAT-063 |
+| Delivers | The shell and the motion of the drawings |
+| Depends on | TASK-P8-001, TASK-P8-002 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [x] Light, Frosted Ledger, opens for a reader who has chosen nothing; Dark and System
+      stay in the toggle, and a choice already made is kept
+- [x] The rail a glass panel in both themes, frosted in the light, inset as drawn, with its
+      groups and screens listed
+- [x] A top bar as drawn: the screen's title and its scope line, a toolbar holding the
+      Export menu and the theme control, and the trust line beneath it
+- [x] Motion as decided: hover, focus, menus and tabs in 150 to 200 ms; panels rising in a
+      few at a time; a lift under the pointer with a token shadow; a cross fade between
+      screens; a chart drawing in once, left to right
+- [x] No number counts up and no bar grows from zero; reduced motion stops all of it, and
+      reduced transparency and print keep their fallbacks, each held by a test
+- [x] The surface tests rewritten to the new rule: a shadow only through a token, a
+      transition never on width, height, position or `all`, keyframes from a named set
+- [x] Axe clean and contrast held in both themes, the light rail included
+
+**Delivered 2026-10-05.** Light opens for a reader who has chosen nothing, pinned in
+`index.html` so a dark system never flashes a dark page. The rail is a glass panel whose groups open
+one at a time, a bar with a menu drawer at or below 1024 pixels, and the column's top is the title and scope line, a toolbar holding Export
+and the theme control, and the sticky trust line. Motion and elevation are tokens; the
+keyframes are a named set of five, and a reduced motion block built from the same selectors
+stops all of it. The journeys now run with reduced motion, because two of them read the
+screen mid fade and failed at random, axe on a tab still fading in among them, and
+`e2e/motion.spec.ts` proves both states from the computed animation. The screens' own panels
+are still the ones they had: TASK-P8-012 and TASK-P8-013 redraw them.
+
+On 2026-10-06 the six width sweep that found the narrow and phone faults was kept as
+`e2e/viewports.spec.ts`. Run with the 2026-10-05 squeeze put back, it fails on every screen at
+768 pixels with "gives the screen 64px of 744px".
 
 ---
 

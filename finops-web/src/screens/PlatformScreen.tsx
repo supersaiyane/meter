@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 
 import { usePlatformCost } from '../api/queries';
-import { grandTotal, rollUp, type ModuleRow } from './platformRollUp';
+import { dailyByModule, grandTotal, rollUp, type ModuleRow } from './platformRollUp';
+import { ChartPanel } from '../components/ChartPanel';
+import { StackedArea } from '../components/charts';
 import { DataTable } from '../components/DataTable';
 import { Figure } from '../components/Figure';
 import { RankedBars } from '../components/RankedBars';
@@ -23,7 +25,7 @@ const COLUMNS: readonly Column<ModuleRow>[] = [
   { key: 'module', header: 'Module', render: (row) => row.module },
   {
     key: 'total',
-    header: 'Amortized cost',
+    header: 'Effective Cost',
     numeric: true,
     render: (row) => (
       <Figure
@@ -41,15 +43,21 @@ const COLUMNS: readonly Column<ModuleRow>[] = [
   },
 ];
 
+/** Whole dollars, which is what a chart of a month's spend can show. */
+function dollars(value: number): string {
+  return `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
+}
+
 export function PlatformScreen() {
   const query = usePlatformCost();
   useReportMeta('platform-cost', query.data?.meta);
   const rows = useMemo(() => rollUp(query.data?.data ?? []), [query.data]);
   const state = surfaceStateFor(query, query.data?.meta, rows.length, 'none', 'platform_cost');
   const total = useMemo(() => grandTotal(rows), [rows]);
+  const days = useMemo(() => dailyByModule(query.data?.data ?? []), [query.data]);
 
   return (
-    <section aria-label="Platform cost">
+    <section aria-label="Meter Cost">
       <StateBoundary state={state}>
         {/* Constraint 7 says the platform meters itself and its own cost is on the front
             page. It was on the front page and not on its own screen, so the one place that
@@ -75,16 +83,31 @@ export function PlatformScreen() {
           </div>
         )}
 
-        <div data-testid="platform-by-module">
-          <h2>Which module it is on</h2>
-          <RankedBars
-            points={rows.map((row) => ({ label: row.module, value: row.total }))}
-            provenance="measured"
-            format={(value) =>
-              `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`
-            }
-            restLabel="smaller modules"
-          />
+        <div data-testid="chart-row">
+          <ChartPanel
+            id="platform-by-module"
+            title="Which module it is on"
+            caption="Effective Cost by the module that spent it, every day collected"
+          >
+            <RankedBars
+              points={rows.map((row) => ({ label: row.module, value: row.total }))}
+              provenance="measured"
+              format={dollars}
+              restLabel="smaller modules"
+            />
+          </ChartPanel>
+          <ChartPanel
+            id="platform-by-day"
+            title="Each day, by module"
+            caption="Effective Cost per day for the last thirty days, stacked by module"
+          >
+            <StackedArea
+              periods={days.periods}
+              series={days.series.map((one) => ({ ...one, provenance: 'measured' as const }))}
+              label="Meter's own Effective Cost per day by module"
+              format={dollars}
+            />
+          </ChartPanel>
         </div>
 
         <DataTable

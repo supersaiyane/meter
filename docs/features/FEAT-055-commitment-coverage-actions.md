@@ -46,6 +46,8 @@ unused commitment costs more than the discount saved. A thirty percent discount 
 fall by thirty percent before the decision goes negative, which is a sentence somebody can hold a
 capacity plan against.
 
+Since TASK-P8-013, 2026-10-06, the gaps are a `DataTable`, worst money first and sortable, with the modelled monthly savings totalled and hatched like the figures it adds.
+
 ## Failure behaviour
 
 Usage below the observation minimum produces no finding, on the same principle as FEAT-054.

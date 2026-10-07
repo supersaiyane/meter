@@ -1,114 +1,172 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
 
-import { useApi } from '../api/apiContext';
-import { useCostSummary } from '../api/queries';
+import { useCostSummary, useShowback } from '../api/queries';
+import type { ApiShowbackRow } from '../api/types';
+import { DataTable } from '../components/DataTable';
 import { Figure } from '../components/Figure';
 import { StateBoundary } from '../components/StateBoundary';
+import type { Column, ColumnTotal } from '../components/tableConfig';
 import { useReportMeta } from '../shell/metaRegistry';
-import { saveFile } from './saveFile';
 import { surfaceStateFor } from './surfaceStateFor';
 
 /**
- * The file finance opens. FEAT-045.
+ * Showback, the file finance opens. FEAT-045, delivered through FEAT-067.
  *
- * This screen shows no data of its own, and that is the design rather than a gap. It
- * has one job beyond handing over a file: to state, before the download, the total the
- * file must add up to. A reader who sees that figure here and sums the same column in
- * their spreadsheet has checked our arithmetic, and the figure shown is the one
- * `/cost/summary` gives, which is the one the spend screen shows.
+ * One billing period by account, service and tag value, the grain finance asks for. Since
+ * TASK-P8-009 the rows are on the screen and the file comes from the Export menu beside the
+ * title, which every screen has: a workbook whose About sheet says what it holds, or a CSV of
+ * every row, both written by the server under this screen's scope. The CSV this screen used to
+ * fetch and save by hand is gone, and so is its reason for refusing a workbook, because the
+ * workbook now says what its figures are instead of looking like decisions nobody made.
  *
- * So the screen is a claim and a button. The claim is checkable in about ten seconds,
- * which is worth more than any amount of reassurance about the export being correct.
+ * The screen keeps its one claim: the total the file must add up to, which is the figure the
+ * spend screen shows. A reader who sums the Effective Cost column in their spreadsheet and gets
+ * that figure has checked our arithmetic, which is worth more than any reassurance.
  */
 
-const EXPORT_PATH = '/api/v1/cost/export';
+/** What the API calls a charge nobody tagged. Matched, never re-derived. */
+const UNALLOCATED = 'unallocated';
 
-/** What the reader is about to get, named so nobody has to open the file to find out. */
-const COLUMNS = [
-  'billing_period',
-  'account_id',
-  'service_name',
-  'tag_value',
-  'effective_cost_amortized_usd',
-  'billed_cost_usd',
-  'line_items',
-  'as_of',
-  'collected_at',
-  'accounts_in_file',
-  'accounts_in_organization',
-];
+/** The tag key the rows are grouped by, which is the route's default. */
+const TAG = 'team';
 
-type Progress = 'idle' | 'working' | 'saved' | 'failed';
+interface Freshness {
+  readonly asOf: Date;
+  readonly collectedAt: Date;
+}
 
 function money(amount: string): number {
   return Number(amount);
 }
 
+/** A money column's total, drawn the way its cells are. */
+function dollars(
+  pick: (row: ApiShowbackRow) => string,
+  freshness: Freshness,
+): ColumnTotal<ApiShowbackRow> {
+  return {
+    value: (row) => money(pick(row)),
+    unit: () => 'USD',
+    provenance: () => 'measured',
+    render: (sum) => <Figure value={{ kind: 'measured', amount: sum }} freshness={freshness} />,
+  };
+}
+
+function columnsFor(freshness: Freshness): readonly Column<ApiShowbackRow>[] {
+  return [
+    {
+      key: 'account',
+      header: 'Account',
+      render: (row) => row.account_id,
+      sortValue: (row) => row.account_id,
+    },
+    {
+      key: 'service',
+      header: 'Service',
+      render: (row) => row.service_name,
+      sortValue: (row) => row.service_name,
+    },
+    {
+      key: 'tag',
+      header: `By ${TAG}`,
+      render: (row) =>
+        row.tag_value === UNALLOCATED ? (
+          // Named, not blank. An empty cell reads as a rendering fault.
+          <span data-testid="export-unallocated-row">Unallocated cost</span>
+        ) : (
+          row.tag_value
+        ),
+      sortValue: (row) => row.tag_value,
+    },
+    {
+      key: 'effective',
+      header: 'Effective Cost',
+      numeric: true,
+      render: (row) => (
+        <Figure
+          value={{ kind: 'measured', amount: money(row.effective_cost) }}
+          freshness={freshness}
+        />
+      ),
+      sortValue: (row) => money(row.effective_cost),
+      total: dollars((row) => row.effective_cost, freshness),
+    },
+    {
+      key: 'billed',
+      header: 'Billed Cost',
+      numeric: true,
+      render: (row) => (
+        <Figure
+          value={{ kind: 'measured', amount: money(row.billed_cost) }}
+          freshness={freshness}
+        />
+      ),
+      sortValue: (row) => money(row.billed_cost),
+      total: dollars((row) => row.billed_cost, freshness),
+    },
+    {
+      key: 'items',
+      header: 'Line items',
+      numeric: true,
+      render: (row) => row.line_items,
+      sortValue: (row) => row.line_items,
+    },
+  ];
+}
+
 export function CostExportScreen() {
-  const client = useApi();
-  const query = useCostSummary();
-  const envelope = query.data?.data;
-  const summary = envelope?.data;
-  const [progress, setProgress] = useState<Progress>('idle');
-  const [failure, setFailure] = useState('');
+  const summaryQuery = useCostSummary();
+  const showback = useShowback();
+  const envelope = showback.data;
+  const rows = useMemo(() => envelope?.data ?? [], [envelope]);
+  const summary = summaryQuery.data?.data.data;
 
   useReportMeta('cost-export', envelope?.meta);
   const state = surfaceStateFor(
-    query,
+    showback,
     envelope?.meta,
-    summary ? 1 : 0,
+    rows.length,
     'none',
     'cost_focus_daily',
   );
 
-  const period = summary?.current.period ?? '';
-  const freshness = {
-    asOf: new Date(envelope?.meta.as_of ?? 0),
-    collectedAt: new Date(envelope?.meta.collected_at ?? 0),
-  };
-
-  async function download() {
-    setProgress('working');
-    setFailure('');
-    try {
-      const body = await client.getText(EXPORT_PATH);
-      // Named for the period, so two downloads do not overwrite each other in a
-      // downloads folder, which is where every one of these files ends up.
-      const saved = saveFile(`meter-cost-${period}.csv`, body);
-      setProgress(saved ? 'saved' : 'failed');
-      if (!saved) {
-        setFailure('This browser cannot save a generated file. Call the API directly instead');
-      }
-    } catch (error) {
-      // Said, not swallowed. A download button that silently does nothing is one a
-      // reader presses four times and then distrusts the whole screen.
-      setProgress('failed');
-      setFailure(error instanceof Error ? error.message : 'The export could not be generated');
-    }
-  }
+  const freshness = useMemo(
+    () => ({
+      asOf: new Date(envelope?.meta.as_of ?? 0),
+      collectedAt: new Date(envelope?.meta.collected_at ?? 0),
+    }),
+    [envelope],
+  );
+  const columns = useMemo(() => columnsFor(freshness), [freshness]);
+  const period = rows[0]?.billing_period ?? summary?.current.period ?? '';
 
   return (
-    <section aria-label="Export">
+    <section aria-label="Exports">
       <StateBoundary state={state}>
         <div>
-          <p data-testid="export-claim">
-            One row per account, service and tag value for {period}. The amortized column adds
-            up to{' '}
-            <Figure
-              value={{
-                kind: 'measured',
-                amount: money(summary?.current.effective_cost ?? '0'),
-              }}
-              freshness={freshness}
-            />
-            , which is the figure on the spend screen. If your spreadsheet disagrees, the export
-            is wrong and we want to know
+          {summary === undefined ? null : (
+            <p data-testid="export-claim">
+              One row per account, service and {TAG} for the period starting {period}. The
+              Effective Cost column adds up to{' '}
+              <Figure
+                value={{ kind: 'measured', amount: money(summary.current.effective_cost) }}
+                freshness={freshness}
+              />
+              , which is the figure on the spend screen. If your spreadsheet disagrees, the
+              export is wrong and we want to know
+            </p>
+          )}
+
+          <p data-testid="export-how">
+            Export, beside the title, writes these rows as an Excel workbook whose About sheet
+            says what it holds, or as a CSV of every row. The server writes both, under the same
+            scope as this screen
           </p>
 
           <p data-testid="export-measures">
-            Both measures are in the file and both name themselves in the header. Amortized and
-            billed differ by exactly the commitment discount, and a column headed only cost is a
-            column somebody argues about
+            Both measures are in the file under their FOCUS names. Amortized and billed differ
+            by exactly the commitment discount, and a column headed only cost is a column
+            somebody argues about
           </p>
 
           <p data-testid="export-unallocated">
@@ -117,30 +175,13 @@ export function CostExportScreen() {
             reports a smaller estate than exists
           </p>
 
-          <ul data-testid="export-columns">
-            {COLUMNS.map((column) => (
-              <li key={column}>{column}</li>
-            ))}
-          </ul>
-
-          <button type="button" data-testid="export-download" onClick={() => void download()}>
-            {progress === 'working' ? 'Generating' : 'Download CSV'}
-          </button>
-
-          {progress === 'saved' ? (
-            <p data-testid="export-saved">Saved as meter-cost-{period}.csv</p>
-          ) : null}
-          {progress === 'failed' ? (
-            <p data-testid="export-failed" role="alert">
-              {failure}
-            </p>
-          ) : null}
-
-          <p data-testid="export-not-excel">
-            CSV only. An Excel workbook would carry formatting and a sheet name that look like
-            decisions somebody made about these figures, and nobody has made them. A spreadsheet
-            opens this file directly
-          </p>
+          <DataTable
+            rows={rows}
+            columns={columns}
+            rowKey={(row) => `${row.account_id}|${row.service_name}|${row.tag_value}`}
+            initialSort={{ key: 'effective', direction: 'descending' }}
+            caption={`${String(rows.length)} rows, largest first, including what nobody tagged`}
+          />
         </div>
       </StateBoundary>
     </section>

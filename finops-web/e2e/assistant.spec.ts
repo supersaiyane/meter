@@ -113,7 +113,7 @@ test('a question is answered, and every value in it leads back to the call it wa
   page,
 }) => {
   const sent = await withSession(page);
-  await page.goto('/assistant');
+  await page.goto('/assist');
   await expect(page.getByTestId('not-built')).toHaveCount(0);
   // The envelopes carry no as_of, so the strip says where freshness is rather than a date.
   await expect(page.getByTestId('global-freshness')).toHaveAttribute(

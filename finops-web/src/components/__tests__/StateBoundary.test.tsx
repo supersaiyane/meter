@@ -95,7 +95,7 @@ describe('StateBoundary', () => {
         <p>rows</p>
       </StateBoundary>,
     );
-    expect(screen.getByText(/Not yet collected by org_tree/)).toBeInTheDocument();
+    expect(screen.getByText(/Not yet collected by Organization/)).toBeInTheDocument();
     expect(screen.getByText(/Next run in 40 min/)).toBeInTheDocument();
   });
 
@@ -107,6 +107,17 @@ describe('StateBoundary', () => {
     );
     expect(container.querySelector('.meter-numeral')).toBeNull();
     expect(screen.getByText('ACCESS DENIED')).toBeInTheDocument();
+  });
+
+  it('names the failing collectors in words, never by their codes', () => {
+    render(
+      <StateBoundary state={{ kind: 'degraded', failing: ['account_health', 'finops_score'] }}>
+        <p>rows</p>
+      </StateBoundary>,
+    );
+    const said = screen.getByRole('status');
+    expect(said).toHaveTextContent('Failing: Account health, FinOps Score.');
+    expect(said.textContent).not.toMatch(/account_health|finops_score/);
   });
 
   it('reports no accessibility violations in any state', async () => {

@@ -33,7 +33,7 @@ from collections.abc import Sequence
 from typing import Any, ClassVar
 from uuid import UUID
 
-from sqlalchemy import Select, Table, func, text
+from sqlalchemy import Select, Table, func, or_, text, tuple_
 from sqlalchemy.engine import Row
 
 from finops_api.db import models
@@ -106,8 +106,8 @@ WALK_INWARD = (
 
 
 def _fetch(
-    repository: ScopedRepository, scope: Scope, statement: Select[tuple[Any, ...]]
-) -> Sequence[Row[tuple[Any, ...]]]:
+    repository: ScopedRepository, scope: Scope, statement: Select[*tuple[Any, ...]]
+) -> Sequence[Row[*tuple[Any, ...]]]:
     """Run a projected select through the scoped path.
 
     One helper rather than a cast at every call site, the same one `waste.py` keeps for the
@@ -234,7 +234,7 @@ class TopologyRepository(ScopedRepository):
         rows = _fetch(self, scope, statement)
         return int(rows[0][0] or 0) if rows else 0
 
-    def by_region(self, scope: Scope) -> Sequence[Row[Any]]:
+    def by_region(self, scope: Scope) -> Sequence[Row[*tuple[Any, ...]]]:
         """How many resources and how many accounts sit in each region this scope can see.
 
         FEAT-061. Grouped in the database rather than by paging the estate into the process: an
@@ -281,9 +281,56 @@ class TopologyRepository(ScopedRepository):
         )
         return _fetch(self, scope, statement)
 
+    def cross_region(self, scope: Scope) -> Sequence[Row[*tuple[Any, ...]]]:
+        """Pairs of regions joined by an edge whose two ends this scope can read. TASK-P8-017.
+
+        **The far end is read through the guard as well as the edge.** An edge belongs to the
+        slice of its origin, so scoping the edge alone would join to a node in an account the
+        reader was never granted and disclose the region it runs in. Starting from the guarded
+        select on nodes, and joining each edge to the node at its far end, confines both.
+
+        **Undirected, and counted by pairs of resources.** A peering is often recorded from
+        each end, one edge each way, so the two regions are put in order with `least` and
+        `greatest` and the count is of distinct pairs of resources rather than of edges.
+        Without that one peering would read as two.
+
+        An end with no region is global, an IAM role for one, and joins no region to another,
+        so it is left out rather than counted against a region it is not in. Both timestamps
+        are the stalest of the edges, as in `by_region`, so a link is never fresher than the
+        evidence for it.
+        """
+        edges = models.topology_edge
+        node = self.table
+        one = func.least(edges.c.region_id, node.c.region_id)
+        other = func.greatest(edges.c.region_id, node.c.region_id)
+        pair = tuple_(
+            func.least(edges.c.from_node_id, edges.c.to_node_id),
+            func.greatest(edges.c.from_node_id, edges.c.to_node_id),
+        )
+        statement = (
+            self.scoped_select(scope)
+            .with_only_columns(
+                one.label("one_region"),
+                other.label("other_region"),
+                func.count(func.distinct(pair)).label("links"),
+                func.array_agg(func.distinct(edges.c.edge_kind)).label("kinds"),
+                func.min(edges.c.as_of).label("as_of"),
+                func.min(edges.c.collected_at).label("collected_at"),
+            )
+            .join_from(node, edges, edges.c.to_node_id == node.c.node_id)
+            .where(edges.c.tenant_id == node.c.tenant_id)
+            .where(scope_predicate(edges, scope))
+            .where(edges.c.region_id.is_not(None))
+            .where(node.c.region_id.is_not(None))
+            .where(edges.c.region_id != node.c.region_id)
+            .group_by(one, other)
+            .order_by(one, other)
+        )
+        return _fetch(self, scope, statement)
+
     def roots(
         self, scope: Scope, *, node_kind: str | None = None, limit: int = 200
-    ) -> Sequence[Row[Any]]:
+    ) -> Sequence[Row[*tuple[Any, ...]]]:
         """Nodes a reader can start a map from, containers first.
 
         Ordered by kind and then by name rather than by identifier, because a reader
@@ -307,10 +354,15 @@ class TopologyRepository(ScopedRepository):
         region_ids: Sequence[str] | None = None,
         node_kind: str | None = None,
         resource_type: str | None = None,
+        search: str | None = None,
         limit: int,
         offset: int,
-    ) -> tuple[Sequence[Row[Any]], int]:
+    ) -> tuple[Sequence[Row[*tuple[Any, ...]]], int]:
         """One page of resources, and how many match the filter in total.
+
+        `search` is the text typed in the search box, FEAT-075, matched as a substring of the
+        name or the ARN in any letter case. Its own percent signs and underscores are escaped,
+        because a person who typed them meant the characters and not the database's wildcards.
 
         FEAT-056, TASK-P4-012. The count comes back with the page rather than from a second
         call, because a reader is told "showing 50 of 4,312" and two statements could disagree
@@ -341,6 +393,13 @@ class TopologyRepository(ScopedRepository):
         ):
             if wanted is not None:
                 statement = statement.where(column == wanted)
+        if search is not None:
+            statement = statement.where(
+                or_(
+                    self.table.c.name.icontains(search, autoescape=True),
+                    self.table.c.provider_id.icontains(search, autoescape=True),
+                )
+            )
 
         total = self._connection.execute(
             statement.with_only_columns(func.count()).order_by(None)
@@ -383,6 +442,31 @@ class TopologyRepository(ScopedRepository):
             )
             found[name] = tuple(
                 row[0] for row in self._connection.execute(statement).all() if row[0] is not None
+            )
+        return found
+
+    def counts(self, scope: Scope) -> dict[str, tuple[tuple[str | None, int], ...]]:
+        """How many resources each region and each type holds in this scope, largest first.
+
+        TASK-P8-013, the charts on Resources. Over the scope rather than under the list's own
+        filters, the rule `vocabularies` follows, so the estate's shape does not collapse to
+        one bar when a reader narrows the list. Null is counted, not dropped: a null region is
+        the account's global slice and a null type is a resource the provider gave no type.
+        """
+        found: dict[str, tuple[tuple[str | None, int], ...]] = {}
+        for name, column in (
+            ("region_counts", self.table.c.region_id),
+            ("type_counts", self.table.c.resource_type),
+        ):
+            counted = func.count()
+            statement = (
+                self.scoped_select(scope)
+                .with_only_columns(column, counted)
+                .group_by(column)
+                .order_by(counted.desc(), column)
+            )
+            found[name] = tuple(
+                (row[0], int(row[1])) for row in self._connection.execute(statement).all()
             )
         return found
 
@@ -467,7 +551,7 @@ class TopologyRepository(ScopedRepository):
         found = self._coverage(scope, {(node.account_key.account_id, node.region_id)})
         return found[0] if found else None
 
-    def findings_for(self, scope: Scope, node: Node) -> tuple[Sequence[Row[Any]], int]:
+    def findings_for(self, scope: Scope, node: Node) -> tuple[Sequence[Row[*tuple[Any, ...]]], int]:
         """Recommendations about this resource, and how many in the account did not match.
 
         The second number is the honest part. A recommendation joins to a node on the
@@ -581,7 +665,7 @@ class TopologyRepository(ScopedRepository):
         )
 
 
-def as_node(row: Row[Any]) -> Node:
+def as_node(row: Row[*tuple[Any, ...]]) -> Node:
     """One row as a domain node.
 
     Public since FEAT-056, because the resource list route maps rows the same way the
@@ -602,7 +686,7 @@ def as_node(row: Row[Any]) -> Node:
     )
 
 
-def _as_edge(row: Row[Any]) -> Edge:
+def _as_edge(row: Row[*tuple[Any, ...]]) -> Edge:
     return Edge(
         from_node_id=row.from_node_id,
         to_node_id=row.to_node_id,
@@ -614,7 +698,7 @@ def _as_edge(row: Row[Any]) -> Edge:
     )
 
 
-def _as_coverage(row: Row[Any]) -> GraphCoverage:
+def _as_coverage(row: Row[*tuple[Any, ...]]) -> GraphCoverage:
     return GraphCoverage(
         account_key=AccountKey(provider=Provider.AWS, account_id=str(row.sub_account_id)),
         region_id=row.region_id,

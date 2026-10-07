@@ -11,16 +11,29 @@ import { MAX_GRAPH_NODES, type FlatNode } from '../orgNodes';
  * legibly is a question about a browser, and it belongs to the Playwright
  * journey in TASK-P0-028 rather than to a test that cannot see pixels.
  */
-const created = vi.hoisted(() => ({ calls: [] as { elements: unknown[] }[] }));
+const created = vi.hoisted(() => ({
+  calls: [] as { elements: unknown[] }[],
+  taps: [] as ((event: unknown) => void)[],
+}));
 
 vi.mock('cytoscape', () => ({
   default: (options: { elements: unknown[] }) => {
     created.calls.push({ elements: options.elements });
-    return { on: () => undefined, destroy: () => undefined };
+    return {
+      on: (_event: string, _selector: string, handler: (event: unknown) => void) => {
+        created.taps.push(handler);
+      },
+      destroy: () => undefined,
+    };
   },
 }));
 
 const { GraphCanvas } = await import('../GraphCanvas');
+
+/** A tap on one node, as cytoscape hands it to the handler. */
+function tapOn(id: string, data: Record<string, unknown>): unknown {
+  return { target: { id: () => id, data: (key: string) => data[key] } };
+}
 
 function nodes(count: number): FlatNode[] {
   return Array.from({ length: count }, (_, index) => ({
@@ -37,6 +50,7 @@ function nodes(count: number): FlatNode[] {
 describe('GraphCanvas', () => {
   beforeEach(() => {
     created.calls = [];
+    created.taps = [];
   });
 
   it('draws an organization within the cap', () => {
@@ -66,5 +80,26 @@ describe('GraphCanvas', () => {
     expect(graph.dataset['state']).toBe('too-large');
     expect(graph.textContent).toContain('tree view shows all of them');
     expect(created.calls).toHaveLength(0);
+  });
+
+  it('opens a reachable node it is tapped on, and never an unreachable one', () => {
+    const opened: string[] = [];
+    render(
+      <GraphCanvas
+        nodes={nodes(3)}
+        onSelect={(id) => {
+          opened.push(id);
+        }}
+      />,
+    );
+    const tap = created.taps[0];
+    tap?.(tapOn('1', { reachable: false }));
+    tap?.(tapOn('2', { reachable: true }));
+    expect(opened).toEqual(['2']);
+  });
+
+  it('does nothing on a tap when nothing listens for one', () => {
+    render(<GraphCanvas nodes={nodes(3)} />);
+    expect(() => created.taps[0]?.(tapOn('2', { reachable: true }))).not.toThrow();
   });
 });

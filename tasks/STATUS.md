@@ -22,17 +22,29 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 74 total, 14 specified, 13 in build, 32 delivered |
-| Decisions | 29 architecture decision records |
-| Changes | 112 recorded |
-| Issues | 146 fixed, 93 open, 0 parked |
-| Open questions | 16 awaiting a decision |
+| Features | 75 total, 13 specified, 13 in build, 42 delivered |
+| Decisions | 33 architecture decision records |
+| Changes | 121 recorded |
+| Issues | 154 fixed, 101 open, 0 parked |
+| Open questions | 19 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
 
 <!-- generated:status-summary end -->
 
 ## Where the project stands right now
+
+**2026-10-07.** P8 is delivered on `p8-build`, 18 of 18 tasks done, counted from the plan's
+statuses. TASK-P8-015 brought `docs/12-UI-DESIGN.md` and `docs/13-UI-ARCHITECTURE.md` up to what
+was built and marked FEAT-063 Delivered. TASK-P8-014 before it proved spec section 12, each exit
+criterion with its evidence in the plan, and fixed ISS-257 and ISS-258. `p8-build` merges into
+main with `--no-ff`, locally. P9 is not started, by the owner's instruction of 2026-10-07. The
+repository has no git remote, so nothing has been pushed.
+
+P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
+four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
+answered the same day: a function outside the VPC reads spot and Savings Plans, and spot keeps
+the latest price per pool plus 90 days of daily lows and highs. P9 has no open question left.
 
 **P0 is code complete and is NOT signed off.**
 
@@ -199,8 +211,8 @@ ISS-003.
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
-| P8 | 0 | 0 | 0 | 0 | 15 | 15 | [plan](../docs/plans/P8-implementation-plan.md) |
-| P9 | 0 | 0 | 0 | 0 | 11 | 11 | [plan](../docs/plans/P9-implementation-plan.md) |
+| P8 | 18 | 0 | 0 | 0 | 0 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
+| P9 | 0 | 0 | 0 | 0 | 13 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -395,6 +407,29 @@ ISS-003.
 | `TASK-P7-012` | Done | digests, composed whether or not anybody can send them |
 | `TASK-P7-013` | Done | what must not reach a prompt |
 | `TASK-P7-014` | Done | the test that keeps the write out |
+
+**P8, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P8-001` | Done 2026-10-05 | two themes, one set of tokens, and glass that degrades |
+| `TASK-P8-002` | Done 2026-10-05 | the shell, the Framework navigation and the redirects |
+| `TASK-P8-003` | Done 2026-10-05 | filters live in the query string |
+| `TASK-P8-004` | Done 2026-10-05 | FOCUS and Framework names on every screen |
+| `TASK-P8-005` | Done 2026-10-05 | chart primitives in Meter's own look |
+| `TASK-P8-006` | Done 2026-10-05 | tables that sort, total and drill |
+| `TASK-P8-007` | Done 2026-10-05 | Cost Explorer |
+| `TASK-P8-008` | Done 2026-10-05 | spend forecast |
+| `TASK-P8-009` | Done 2026-10-05 | Excel and CSV export behind the guard |
+| `TASK-P8-010` | Done 2026-10-07 | saved views and the report library |
+| `TASK-P8-011` | Done 2026-10-07 | scheduled reports, rendered for each recipient |
+| `TASK-P8-012` | Done 2026-10-06 | persona dashboards on the Overview |
+| `TASK-P8-013` | Done 2026-10-06 | every remaining screen in the new system |
+| `TASK-P8-014` | Done 2026-10-07 | proof |
+| `TASK-P8-015` | Done 2026-10-07 | documents |
+| `TASK-P8-016` | Done | the account picker on every screen |
+| `TASK-P8-017` | Done 2026-10-07 | the geography map redrawn |
+| `TASK-P8-018` | Done 2026-10-05 | the look as drawn |
 
 <!-- generated:task-status end -->
 

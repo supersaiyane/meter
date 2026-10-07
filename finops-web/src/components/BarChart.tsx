@@ -1,3 +1,4 @@
+import { ChartTable } from './charts/ChartTable';
 import type { Provenance } from './provenance';
 
 /**
@@ -103,6 +104,16 @@ export function BarChart({ points, provenance, label, format, height = 120 }: Ba
         <span data-testid="bar-chart-peak">peak {format(peak)}</span>
         <span>{points[points.length - 1]?.label}</span>
       </figcaption>
+      {/* The bars as numbers, for a reader who cannot see them or wants the value of one. */}
+      <ChartTable
+        caption={label}
+        rowHeader="Period"
+        columns={['Value']}
+        rows={points.map((point) => ({
+          label: point.label,
+          cells: [{ value: point.value, text: format(point.value) }],
+        }))}
+      />
     </figure>
   );
 }

@@ -687,3 +687,76 @@ both a code change and a change of date, month or data. A fixture built from the
 clock. Writing "because of" in a commit message about something not yet reproduced in
 isolation.
 
+## 2026-10-05: work handed to background agents while the owner waited
+
+**Mistake:** Asked to build the P8 interface first, I wrote no code. I left a background agent
+recording the P9 approvals and merging, held the P8 branch back until it finished, and started a
+second, read only agent to map P8's tasks and draft the label table. The owner saw nothing move.
+
+**Correction:** The owner asked where we were stuck and said: "i dont believe on agetns they
+jsut eat tokens and get stale".
+
+**Rule:** Do builds, merges and reviews directly in the main session, one task at a time, and
+report progress from the repository's own state: git log, test output, the process list. Start
+no background agent unless the owner asks for one. This outranks the kernel's "orchestrator
+never executes" and its advice to move to a fresh session at the CRITICAL tier, because the
+owner said so.
+
+**Triggers:** "go ahead with" a build or a merge. Reaching the CRITICAL tier. Any plan that
+has the owner waiting on work they cannot see.
+
+
+## 2026-10-05: a redesign shown without what it had not reached yet
+
+**Mistake:** After TASK-P8-008 the owner asked whether the glass design was visible, and I showed
+live screenshots without saying that the drawn Overview and a chart on every screen were tasks
+not yet started, or that `docs/12-UI-DESIGN.md` forbade the motion the drawings implied. The
+owner later compared the screens with the drawings and found "the old design".
+
+**Correction:** The owner sent the drawings as a PDF and asked: "in our UI .. i still see the
+old design, jsut the options are getting added here and there ... am i missing anything ???"
+
+**Rule:** When showing a redesign in progress, put beside the screenshot a table of the drawn
+elements: which are built, which task builds each of the rest and where it sits in the order,
+and any written rule that blocks what the drawings imply.
+
+**Triggers:** A mockup, a drawing or a design direction approved. "Can I see the difference."
+Showing screenshots midway through a restyle.
+
+## 2026-10-05: a layout called done after looking at it in one window
+
+**Mistake:** In TASK-P8-018 I replaced the working accordion with every group listed, to match a
+static drawing, and called the shell done after looking at it at 1440 pixels only. Hide left the
+name visible and cut in half, and at or below 1024 pixels the collapsed state squeezed every
+screen into a 64 pixel column.
+
+**Correction:** The owner said: "menus should be collapsable and , at a given time only one menu
+should be open ... the complete fram collapsed in a dirty way ... this is not workable any type of
+screen, pleae make it work in any screen or browser type"
+
+**Rule:** Keep a working interaction a drawing does not show unless the owner asks for it to go.
+Before calling a layout change done, sweep every built screen at 320, 375, 768, 1024, 1280 and
+1920 pixels, collapsed and expanded and in both themes, and fix anything that scrolls sideways.
+
+**Triggers:** A shell, navigation or layout change. "As drawn" applied to behaviour. A media query
+written beside a state selector that could outrank it.
+
+## 2026-10-06: a tool wrapper resolved the environment under a working tree
+
+**Mistake:** To format four files I ran `uv run ruff format`. The repository was not a uv
+project, so uv resolved `pyproject.toml` afresh, wrote a `uv.lock` nobody asked for and synced
+`.venv`: 31 packages moved to that day's releases, SQLAlchemy 2.0 to 2.1.3 among them, and mypy
+failed 154 checks in code nobody had changed. Nothing in the call said it would install anything.
+
+**Correction:** I found it when lint failed in files I had not touched, and asked the owner. The
+owner said: "what is your recommendation for better , not for short solution", and chose "Lock
+today's versions now".
+
+**Rule:** Run a project's tools through its own entry points, its `make` targets or
+`.venv/bin/<tool>`, never through a wrapper that manages environments: `uv run`, `poetry run`,
+`pipx run`, or `npx` for a package the lockfile does not hold. Before the first call to such a
+wrapper in a repository, find out whether it installs or resolves. ADR-0031 made `uv run`
+harmless in this one, and the rule still holds everywhere else.
+
+**Triggers:** Formatting, linting or type checking a few files quickly. A tool that prints
+"Installed N packages". Errors in files nobody changed.

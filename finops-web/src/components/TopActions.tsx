@@ -1,4 +1,6 @@
-import { Link } from 'react-router';
+import { Link } from '../shell/links';
+import { DataTable } from './DataTable';
+import { wasteClassName } from './displayNames';
 
 import type { ApiRecommendation } from '../api/types';
 import { Figure } from './Figure';
@@ -6,6 +8,7 @@ import { SeverityBadge } from './SeverityBadge';
 import type { Freshness } from './provenance';
 import { severityLevel } from '../screens/querySeverity';
 import { PER_GROUP, riskLabel } from './actionRisk';
+import type { Column } from './tableConfig';
 
 /**
  * What to do this morning, ranked, with what each one costs if it is wrong.
@@ -59,6 +62,70 @@ function bySaving(rows: readonly ApiRecommendation[]): readonly ApiRecommendatio
   );
 }
 
+/**
+ * A group's findings, TASK-P8-013 on `DataTable`, ranked by money and sortable by anything.
+ * No total: a group can hold two findings on one resource that are alternatives, and adding
+ * their savings would count one saving twice.
+ */
+function columnsFor(freshness: Freshness): readonly Column<ApiRecommendation>[] {
+  return [
+    {
+      key: 'finding',
+      header: 'Finding',
+      rowHeader: true,
+      render: (row) => (
+        <>
+          <Link to="/optimize">{wasteClassName(row.waste_class)}</Link>
+          {/* The resource, because a class on its own names no work. */}
+          <span> {row.resource_id}</span>
+        </>
+      ),
+      sortValue: (row) => wasteClassName(row.waste_class),
+    },
+    {
+      key: 'account',
+      header: 'Account',
+      render: (row) => row.account_id,
+      sortValue: (row) => row.account_id,
+    },
+    {
+      key: 'saving',
+      header: 'Estimated monthly savings',
+      numeric: true,
+      // Modelled, never measured. Figure carries the label.
+      render: (row) => (
+        <Figure
+          value={{ kind: 'modelled', amount: Number(row.estimated_monthly_saving) }}
+          freshness={freshness}
+          unit="usd"
+        />
+      ),
+      sortValue: (row) => Number(row.estimated_monthly_saving),
+    },
+    {
+      key: 'severity',
+      header: 'Severity',
+      // Through the one shared mapping, so this panel and the recommendations screen cannot
+      // mean different things by high.
+      render: (row) => <SeverityBadge level={severityLevel(row.severity)} />,
+      sortValue: (row) => severityLevel(row.severity),
+    },
+    {
+      key: 'risk',
+      header: 'If it is wrong',
+      prose: true,
+      // The label is the scan, the sentence is the decision. Both, because a reader who only
+      // sees the label will act on the wrong one of them.
+      render: (row) => (
+        <>
+          <strong>{riskLabel(row)}</strong>
+          <span> {row.risk_why}</span>
+        </>
+      ),
+    },
+  ];
+}
+
 function Group({
   id,
   heading,
@@ -84,53 +151,17 @@ function Group({
           Nothing open in this group, which is an answer rather than a gap.
         </p>
       ) : (
-        <table>
-          <caption>
-            {rows.length === total
+        <DataTable
+          rows={rows}
+          columns={columnsFor(freshness)}
+          rowKey={(row) => row.recommendation_id}
+          caption={
+            rows.length === total
               ? `All ${String(total)}`
-              : `The ${String(rows.length)} of ${String(total)} worth doing first`}
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Finding</th>
-              <th scope="col">Account</th>
-              <th scope="col">Saving a month</th>
-              <th scope="col">Severity</th>
-              <th scope="col">If it is wrong</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.recommendation_id}>
-                <th scope="row">
-                  <Link to="/waste">{row.waste_class}</Link>
-                  {/* The resource, because a class on its own names no work. */}
-                  <span> {row.resource_id}</span>
-                </th>
-                <td>{row.account_id}</td>
-                <td>
-                  {/* Modelled, never measured. Figure carries the label. */}
-                  <Figure
-                    value={{ kind: 'modelled', amount: Number(row.estimated_monthly_saving) }}
-                    freshness={freshness}
-                    unit="usd"
-                  />
-                </td>
-                <td>
-                  {/* Through the one shared mapping, so this panel and the
-                      recommendations screen cannot mean different things by high. */}
-                  <SeverityBadge level={severityLevel(row.severity)} />
-                </td>
-                <td>
-                  {/* The label is the scan, the sentence is the decision. Both, because a
-                      reader who only sees the label will act on the wrong one of them. */}
-                  <strong>{riskLabel(row)}</strong>
-                  <span> {row.risk_why}</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+              : `The ${String(rows.length)} of ${String(total)} worth doing first`
+          }
+          initialSort={{ key: 'saving', direction: 'descending' }}
+        />
       )}
     </div>
   );
@@ -144,7 +175,7 @@ export function TopActions({ recommendations, freshness }: TopActionsProps) {
   return (
     <section data-testid="top-actions" aria-label="Top actions">
       <h3>
-        <Link to="/waste">Top actions</Link>
+        <Link to="/optimize">Top actions</Link>
       </h3>
       <Group
         id="top-actions-saving"

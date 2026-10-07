@@ -45,8 +45,24 @@ describe('CoverageBanner', () => {
 
   it('offers no way to dismiss it', () => {
     // A banner gets dismissed. The condition does not go away with it.
-    const { container } = render(<CoverageBanner coverage={[{ unit: 'accounts', visible: 1, total: 2 }]} />);
+    const { container } = render(
+      <CoverageBanner coverage={[{ unit: 'accounts', visible: 1, total: 2 }]} />,
+    );
     expect(container.querySelector('button')).toBeNull();
+  });
+
+  it('names a chosen account rather than reading all 1 accounts, FEAT-075', () => {
+    render(<CoverageBanner coverage={[{ unit: 'accounts', visible: 1, total: 1 }]} chosen />);
+    const banner = screen.getByTestId('coverage');
+    expect(banner).toHaveTextContent('Showing the chosen account');
+    expect(banner).toHaveAttribute('data-partial', 'false');
+  });
+
+  it('still reads a chosen account with nothing collected as partial', () => {
+    render(<CoverageBanner coverage={[{ unit: 'accounts', visible: 0, total: 1 }]} chosen />);
+    const banner = screen.getByTestId('coverage');
+    expect(banner).toHaveTextContent('Showing 0 of 1 accounts');
+    expect(banner).toHaveAttribute('data-partial', 'true');
   });
 });
 

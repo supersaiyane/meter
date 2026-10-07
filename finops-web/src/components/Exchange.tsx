@@ -1,8 +1,7 @@
-import { Link } from 'react-router';
-
 import type { ApiAssistantRefusal, ApiExchange, ApiExchangeFailure } from '../api/types';
 import { stampUtc } from '../screens/enforcementTime';
-import { GROUPS } from '../shell/sections';
+import { Link } from '../shell/links';
+import { GROUPS, REDIRECTS } from '../shell/sections';
 import { CitedProse, ToolCalls } from './CitedProse';
 import { DenseRegion } from './DenseRegion';
 import { Figure } from './Figure';
@@ -58,8 +57,12 @@ function hasLabel(cause: string): cause is Exclude<Cause, 'NoData'> {
  * rather than to the text the API sent.
  */
 function navEntry(path: string): { readonly path: string; readonly name: string } | undefined {
+  // A screen that moved in P8 is followed to where it went, so an answer stored
+  // before the move keeps its link. Still exact: the redirect table is a list
+  // of whole paths, and the link goes to the navigation's own path.
+  const target = REDIRECTS[path] ?? path;
   for (const group of GROUPS) {
-    const screen = group.screens.find((one) => one.path === path);
+    const screen = group.screens.find((one) => one.path === target);
     if (screen !== undefined) {
       const name =
         group.label === screen.label ? screen.label : `${group.label}, ${screen.label}`;

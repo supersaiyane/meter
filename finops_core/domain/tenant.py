@@ -37,6 +37,9 @@ class Scope:
     #: Who the scope was resolved for, stamped by the request dependency. Only a row that
     #: belongs to a person reads it, ADR-0029, and None there reads nothing.
     principal_id: str | None = None
+    #: The one account the reader chose to look at, FEAT-075. When set the scope holds that
+    #: account and nothing else, so a view can say it was narrowed on purpose.
+    chosen: AccountKey | None = None
 
     def __post_init__(self) -> None:
         if self.is_global and self.accounts:
@@ -44,6 +47,27 @@ class Scope:
                 "A global scope must not also enumerate accounts. Two answers to the "
                 "same question is how one of them is later read by mistake."
             )
+        if self.chosen is not None and (self.is_global or self.accounts != {self.chosen}):
+            raise ValueError(
+                "A chosen account is the whole of the scope it narrows. A scope holding it "
+                "and anything else would read wider than the reader chose."
+            )
 
     def permits(self, key: AccountKey) -> bool:
         return self.is_global or key in self.accounts
+
+    def narrowed_to(self, key: AccountKey) -> Scope:
+        """This scope reduced to the one account a reader chose, FEAT-075.
+
+        A choice never widens a scope. An account this scope does not permit is refused rather
+        than granted, so a shared link naming somebody else's account reads nothing.
+        """
+        if not self.permits(key):
+            raise ValueError(f"A choice never widens a scope, and {key} is outside this one.")
+        return Scope(
+            tenant_id=self.tenant_id,
+            is_global=False,
+            accounts=frozenset({key}),
+            principal_id=self.principal_id,
+            chosen=key,
+        )

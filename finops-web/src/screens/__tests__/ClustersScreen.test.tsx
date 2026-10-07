@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { ClustersScreen } from '../ClustersScreen';
 import { Harness } from './Harness';
 import { clientReturning } from './fixtures';
+import { sortEveryColumn } from './sortEveryColumn';
 import { clustersFixture } from '../../api/fixtures/containers';
 import { violationsIn } from '../../components/__tests__/axe';
 
@@ -87,5 +88,49 @@ describe('accessibility', () => {
     const { container } = renderScreen();
     await screen.findAllByTestId('cluster-row');
     expect(await violationsIn(container)).toEqual([]);
+  });
+});
+
+describe('ClustersScreen, the fleet added up', () => {
+  function renderWith(clusters: ReturnType<typeof clustersFixture>['data']['clusters']) {
+    const fixture = clustersFixture();
+    return render(
+      <Harness
+        client={clientReturning({
+          [PATH]: { ...fixture, data: { ...fixture.data, clusters } },
+        })}
+      >
+        <ClustersScreen />
+      </Harness>,
+    );
+  }
+
+  it('totals the nodes, an ECS cluster without nodes counting as none', async () => {
+    const readable = clustersFixture().data.clusters.filter(
+      (one) => one.node_count !== null || one.platform === 'ECS',
+    );
+    renderWith(readable);
+    const expected = readable.reduce((sum, one) => sum + (one.node_count ?? 0), 0);
+    expect(await screen.findByTestId('total-nodes')).toHaveTextContent(
+      `${String(expected)} nodes`,
+    );
+  });
+
+  it('refuses to total a fleet it could not read, rather than counting it as empty', async () => {
+    const all = clustersFixture().data.clusters;
+    const eks = all.find((one) => one.platform === 'EKS');
+    if (eks === undefined) {
+      throw new Error('the clusters fixture holds no EKS cluster to make unreadable');
+    }
+    renderWith([...all.filter((one) => one !== eks), { ...eks, node_count: null }]);
+    expect(await screen.findByTestId('total-nodes')).toHaveTextContent('not collected');
+  });
+});
+
+describe('ClustersScreen sorting', () => {
+  it('sorts every column it offers, one way and then the other', async () => {
+    const { container } = renderScreen();
+    await screen.findAllByTestId('cluster-row');
+    expect(sortEveryColumn(container)).toBeGreaterThan(0);
   });
 });

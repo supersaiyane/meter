@@ -51,6 +51,10 @@ Severity comes from the money through `finops_query/severity.py`, per ADR-0016,
 which is the same function the query findings use, so two screens do not mean
 different things by the word high.
 
+Since TASK-P8-013, 2026-10-06, the screen draws Effective Cost per day by service for the last
+thirty days, read as Cost Explorer reads it, with a rule on each day that stood out. Two
+anomalies on one day share one rule, and the chart's table names both.
+
 ## What is already known
 
 Detection finds what changed. It never explains why, which is a different problem

@@ -56,13 +56,15 @@ was pasted and the page reloaded.
 Seven screens, in this order. `finops-web/e2e/demo.spec.ts` walks the same path and
 asserts a figure on each, so a broken screen fails the build rather than the demo.
 
-### 1. Home, `/`
+### 1. Overview, `/`
 
-The front page carries the estate's spend, what is open, and what Meter itself costs.
+The front page opens on the FinOps practitioner's dashboard: the estate's Effective Cost, the
+forecast, the budget, the savings rate, commitment coverage, cost allocated and what Meter
+itself costs. The Executive and Engineering lead dashboards are one click away above it.
 
-**Point at the spend tile.** It is the total for the period and the change against the
-month before, and it is the same figure the spend screen shows, because Home reads that
-screen's own hook rather than computing its own.
+**Point at the Effective Cost tile.** It is the month to date total and the change against the
+same days of the month before, and it is the same figure Cost Explorer shows, because the
+Overview reads Cost Explorer's own query rather than computing its own.
 
 Note the failure banner at the top. One account in the estate refuses Meter's role, and
 the product says so on every screen rather than quietly reporting a smaller estate.

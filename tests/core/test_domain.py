@@ -319,6 +319,43 @@ def test_an_empty_scope_permits_nothing() -> None:
     assert scope.permits(KEY) is False
 
 
+def test_a_global_scope_narrowed_to_one_account_reads_that_account_alone() -> None:
+    """FEAT-075. The account chosen in the address, applied where scope already is."""
+    narrowed = Scope(
+        tenant_id=TENANT, is_global=True, accounts=frozenset(), principal_id="p1"
+    ).narrowed_to(KEY)
+
+    assert narrowed.is_global is False
+    assert narrowed.accounts == frozenset({KEY})
+    assert narrowed.chosen == KEY
+    assert (narrowed.tenant_id, narrowed.principal_id) == (TENANT, "p1")
+    assert narrowed.permits(AccountKey(provider=Provider.AWS, account_id="999999999999")) is False
+
+
+def test_narrowing_never_widens_a_scope() -> None:
+    """A link naming an account the session cannot see must read nothing, not that account."""
+    outside = AccountKey(provider=Provider.AWS, account_id="999999999999")
+    scope = Scope(tenant_id=TENANT, is_global=False, accounts=frozenset({KEY}))
+
+    with pytest.raises(ValueError, match="never widens"):
+        scope.narrowed_to(outside)
+
+
+@pytest.mark.parametrize(
+    ("is_global", "accounts"),
+    [
+        (False, frozenset({KEY, AccountKey(provider=Provider.AWS, account_id="999999999999")})),
+        (True, frozenset()),
+        (False, frozenset()),
+    ],
+)
+def test_a_chosen_account_is_the_whole_of_its_scope(
+    is_global: bool, accounts: frozenset[AccountKey]
+) -> None:
+    with pytest.raises(ValueError, match="chosen"):
+        Scope(tenant_id=TENANT, is_global=is_global, accounts=accounts, chosen=KEY)
+
+
 # --- FOCUS -------------------------------------------------------------------
 
 

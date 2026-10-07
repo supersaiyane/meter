@@ -45,6 +45,16 @@ celebratory colour. No decorative motion. No illustration.
 
 A tool that reports a 100,000 USD mistake should not look pleased with itself.
 
+**Amended 2026-10-05.** The owner replaced the instrument direction with one
+glass design system in two themes, Aurora Glass in dark and Frosted Ledger in
+light ([P8 spec](specs/2026-10-05-p8-experience-and-reporting-design.md) section
+5.1). Two rules in the list above were written for the direction that was
+replaced and change with it. Gradient fields: the page may carry three soft
+radial glows, and only the page; a figure, a chart and a panel are never filled
+with a gradient, and the glows go under reduced transparency, without
+`backdrop-filter` and in print. Card grids of equal weight: panels may sit in a
+grid. The rest of the list stands, and so does the thesis.
+
 ## 3. Provenance: the primary visual axis
 
 Provenance is not metadata shown on hover. **It is the first thing the eye
@@ -212,6 +222,13 @@ numbers down a column. The faces are served from `node_modules` through the
 bundle, latin subset only, so a page showing customer spend makes no request to
 a third party font host.
 
+**Decided, 2026-10-05: Geist and Geist Mono, self hosted.** The owner approved
+one type family for both themes with the P8 directions, Geist for text and
+Geist Mono for figures, and it replaces IBM Plex on the same terms: served from
+`node_modules` through the bundle, latin subset only, admitted through
+`make dep-check`. The paragraph above stays as the record of why a named face
+is used at all. The rules on numerals are unchanged.
+
 Scale: 12, 14, 16, 20, 28, 40. Six sizes. A seventh means the hierarchy is
 unclear rather than insufficient.
 
@@ -269,6 +286,21 @@ beside it, so the block is small and the colour is the point.
 Light and dark are both first class. The instrument reads in a bright office
 and in a dark incident bridge.
 
+**Amended 2026-10-05: the glass system.** `tokens.css` holds the two approved
+themes, and a panel is glass over the page rather than a flat field. Glass is a
+surface, never a reason to lose contrast. `contrast.test.ts` composites every
+panel tier over the bare page and over each glow at its peak, and holds text,
+muted and faint at 4.5 to 1 on all of them in both themes. Reduced transparency
+and a browser without `backdrop-filter` get an opaque panel of the colour the
+glass would have shown and no glows, and print is the light theme with
+neither, which `glass.test.ts` holds. Two light values differ from the spec's
+table, for its own contrast rule. Faint is `#5a687d`, because the table's
+`#64738a` computes to 4.29 to 1 on the light page and 4.10 in a light well. The
+accent drawn as text is `#0064d2`, the table's hue darkened, because `#0a84ff`
+computes to 3.25 to 1 as text on the light page; `#0a84ff` stays as
+`--accent-mark`, the colour of a focus ring or a selected boundary, held at
+3 to 1.
+
 ### Spacing and density
 
 A 4 px rhythm. Density is a deliberate choice per surface:
@@ -288,19 +320,34 @@ Borders, not shadows. Shadows imply elevation and physicality, which suits a
 consumer application and not an instrument. One `--line` value, used
 consistently, is enough to build every boundary in the product.
 
+**Amended 2026-10-05.** A panel is glass: translucent, blurred behind, with a
+hairline border and a one pixel inner highlight, its radius 16 px in dark and
+18 px in light. Still no drop shadows: the hairline and one step of lightness
+separate a panel from the page.
+
+**Amended again later on 2026-10-05**, at the owner's choice of rich motion, P8 spec
+section 2. A shadow now lifts a panel under the pointer and floats a menu above the page,
+always from a `--shadow-*` token and never a literal. At rest a panel still separates by
+its hairline and one step of lightness, and "no decorative motion" above gives way to
+the motion rules below.
+
 ### Motion
 
-**Almost none, and one deliberate exception.**
+**Rich, and never on a figure.** The owner replaced "almost none" later on 2026-10-05,
+after reviewing the drawings, P8 spec section 2.
 
-Permitted: a 120 ms opacity transition on state change, and a skeleton while
-loading. That is the list.
+Permitted: transitions of 150 to 200 ms on hover, focus, menus and tabs; panels rising
+into place as their data arrives, a few at a time; a lift under the pointer with a token
+shadow; a cross fade between screens; a chart drawing in once, revealed left to right so
+every mark it shows is a value it has; a skeleton while loading.
 
-Forbidden: entrance animations, number count-ups, hover lifts, page
-transitions, anything decorative.
+Forbidden: a number that counts up, a bar that grows from zero, any mark that shows a
+value it does not have, motion on a row a reader is reading, and all of it for a reader
+who asks for reduced motion.
 
 A number that animates from 0 to 4,201 is *lying for 400 milliseconds*, and in
 a product whose entire claim is that its numbers are trustworthy, that is not a
-small thing.
+small thing. It is why the line is drawn at the figure and not at motion.
 
 The one exception: **when a figure changes because data refreshed**, the cell
 marks briefly. Not to delight. To tell a user reading a screen that the ground
@@ -338,30 +385,50 @@ Not a later pass. Two of these are load bearing for the product's core claim.
 - Focus visible always. Reduced motion respected, which given section 7 costs
   us almost nothing.
 - Every error announced to assistive technology, with its typed cause.
+- **Held in a real browser, on every screen.** `finops-web/e2e/a11y.spec.ts` runs axe over
+  every screen the rail offers, its content and the shell, in light and dark: with glass,
+  with transparency reduced, and as a browser without `backdrop-filter` reads the shipped
+  stylesheet. Each fallback sweep first proves its condition holds, then that nothing is
+  blurred. jsdom draws nothing, so axe's contrast rule runs only there; the unit suite's
+  contrast test holds the theme tokens themselves.
+- **Glass never sits on data.** Nothing inside a table or a list has a backdrop filter,
+  held over every screen with a control that glass exists, and every glass surface blurs
+  through one token, `--panel-filter`, which each fallback switches off.
+- **A chart is also a table.** Each chart primitive, `StackedArea`, `StackedBar`,
+  `Heatmap`, `Treemap` and `BarChart`, carries its numbers as a `ChartTable` behind a
+  disclosure, in the page, and the tests hold each cell equal to the mark it draws. The
+  world map's figures are its geography list, which a test holds to the map. A modelled
+  mark is hatched in the text colour, so provenance is never a colour alone.
+- **A scroll box is a keyboard stop only while it scrolls**, named by its table's caption,
+  so a keyboard reaches every column and never stops where nothing moves.
+- Reduced motion is proved rather than assumed: `finops-web/e2e/motion.spec.ts` reads
+  the computed animation in both states.
 
 ## 10. Responsive
 
-Desktop first, honestly. This is an analyst's tool used on a large screen, and
-pretending otherwise produces a bad desktop experience in exchange for a mobile
-one nobody wants.
+Desktop first, and every screen at every width. This is an analyst's tool used on a
+large screen, and it is designed there. This section first proposed a read only summary
+below 1024 pixels; TASK-P8-018 found the screens fit once the rail stopped taking a
+column, so a narrow screen gives up width, never a figure, its provenance or its age.
 
 | Width | Behaviour |
 | --- | --- |
-| 1280 and above | Full density, all columns |
-| 1024 to 1280 | Secondary columns collapse behind a disclosure |
-| Below 1024 | **Read only summary.** Coverage, freshness, top findings. No editing, no graph |
+| Above 1280 | Full density. Hide gives the screen the rail's width and Show takes it back |
+| 1280 and below | A wide table scrolls inside its own box rather than truncate a figure |
+| 1024 and below | The rail becomes a bar across the top, and its menu a drawer over the screen that closes on Escape and on a link |
 
-Below 1024 is a phone checking a number during an incident. It needs the
-figure, its provenance and its age. It does not need the whole instrument.
+`finops-web/e2e/viewports.spec.ts` opens every screen on the rail at six widths, 320,
+375, 768, 1024, 1280 and 1920 pixels, over the demo estate and over a stopped API, and
+fails any page that scrolls sideways, naming the element that pushed it.
 
 ## 11. Component inventory
 
-Built once, in P0, used by every sub project. A sub project inventing its own
+Built once, in P0 and again in P8, used by every sub project. A sub project inventing its own
 table is how a product acquires four table styles.
 
 | Component | Notes |
 | --- | --- |
-| `DataTable` | Dense, sortable, virtualised past 200 rows, tabular numerals |
+| `DataTable` | Dense, sortable both ways on every column, totals and drill down, a column chooser, virtualised past 200 rows, tabular numerals |
 | `Figure` | **The most important component.** A number plus its provenance, freshness and failure states. Nothing renders a number directly |
 | `CoverageBanner` | Persistent, shell level |
 | `FreshnessIndicator` | Age plus `as_of`, staleness against cadence |
@@ -371,6 +438,15 @@ table is how a product acquires four table styles.
 | `GraphCanvas` | Cytoscape, server filtered, with the tree as its accessible equivalent |
 | `Sparkline` | 30 day, no axes, provenance aware |
 | `StateBoundary` | Wraps a surface, implements all seven states from section 8 |
+| `KpiTile` | One figure with its period, comparison and provenance, in a panel that links to the screen owning it |
+| Chart primitives | `StackedArea`, `StackedBar`, `Heatmap`, `Treemap` and `BarChart`, drawn from the tokens, each with a `ChartTable` of its numbers and its modelled marks hatched |
+| Figures drawn as marks | `RankedBars`, `BudgetBar`, `CadenceBar` and `WorldMap` |
+| `ExportMenu` | Beside every screen title, a file for each view the screen reads, FEAT-067 |
+| `SaveView` | Beside Export, keeps the screen and its query under a name, FEAT-068 |
+| `ScheduleView` | On a saved view's own screen, opened from the Report Library, schedules one route it exports, FEAT-069 |
+| `SearchBox` | One box in the top bar for an account, a service or a resource, FEAT-075 |
+| `ThemeToggle` | System, Light and Dark, FEAT-063 |
+| `ScreenTabs` | The screens one page holds, as tabs, TASK-P8-002 |
 
 **`Figure` is the load bearing one.** No screen formats a number itself. If a
 number can only reach a user through a component that requires its provenance,
@@ -412,5 +488,3 @@ Recorded as ADR-0019, with the styling row superseded by ADR-0021.
 - P2 to P7 screen designs. Each sub project specification adds its screens
   against this system rather than inventing one.
 - Brand, logo, marketing. Meter is an internal instrument.
-- Charting beyond the sparkline. P1 introduces charts and must extend section 7
-  with a chart specific provenance treatment before it does.

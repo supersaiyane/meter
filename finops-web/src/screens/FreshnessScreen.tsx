@@ -1,4 +1,5 @@
 import { useFreshness } from '../api/queries';
+import { collectorName } from '../components/displayNames';
 import type { Freshness } from '../api/types';
 import { CadenceBar } from '../components/CadenceBar';
 import { DataTable } from '../components/DataTable';
@@ -22,7 +23,7 @@ import { surfaceStateFor } from './surfaceStateFor';
  * comes here to find was the row it left out.
  */
 const COLUMNS: readonly Column<Freshness>[] = [
-  { key: 'collector', header: 'Collector', render: (row) => row.collector },
+  { key: 'collector', header: 'Collector', render: (row) => collectorName(row.collector) },
   { key: 'scope', header: 'Scope', render: (row) => row.scope_key },
   {
     key: 'age',
@@ -97,7 +98,7 @@ export function FreshnessScreen() {
   const unmeasurable = rows.length - measurable.length;
 
   return (
-    <section aria-label="Freshness">
+    <section aria-label="Data Freshness">
       {/* Outside the boundary, like the anomalies screen's history sentence. It is a fact about
           the estate rather than about this request, and it is the question a reader opens this
           screen with. */}

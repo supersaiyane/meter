@@ -60,7 +60,7 @@ describe('FreshnessScreen', () => {
       </Harness>,
     );
     await waitFor(() => {
-      expect(screen.getByText('org_tree')).toBeInTheDocument();
+      expect(screen.getByText('Organization')).toBeInTheDocument();
     });
     expect(screen.getAllByText('stale')).toHaveLength(2);
     expect(screen.getByText('current')).toBeInTheDocument();

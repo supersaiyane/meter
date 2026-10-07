@@ -6,7 +6,7 @@
 | Status | In build |
 | Specification | [P1 spec](../specs/2026-09-18-p1-cost-intelligence-design.md) |
 | Tasks | [P1 plan](../plans/P1-implementation-plan.md), TASK-P1-009 and TASK-P1-011 |
-| Screen | `/cost/allocation` |
+| Screen | `/analyze/allocation` |
 
 ## What it does
 
@@ -24,6 +24,12 @@ The same rows as FEAT-021, grouped on a JSONB tag lookup rather than a column, s
 the key cannot name a column even though it arrives from a request. Charges with
 no value for the key fall into a literal `unallocated` bucket, which is ranked
 and rendered like any other row.
+
+Since TASK-P8-013, 2026-10-06, the screen draws whose spend it is as a treemap, with the
+unallocated part as an outline rather than a colour, and each month by the same tag for six
+months, read the way Cost Explorer reads it. The trend is asked for only once a charge this
+period carries the tag, because the Explorer groups only by keys it has seen, and a tag nothing
+carries gets a sentence instead of a failure.
 
 ## What is already known
 

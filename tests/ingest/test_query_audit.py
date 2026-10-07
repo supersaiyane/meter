@@ -208,7 +208,7 @@ def test_an_alert_is_counted_over_the_whole_day_and_a_panel_is_not(
                     "WHERE f.tenant_id = :t"
                 ),
                 {"t": tenant_id},
-            ).all()  # type: ignore[arg-type]
+            ).all()
         )
     # 86400 / 60, the whole day. Keyed by element rather than by origin: the
     # estate holds more than one alert rule since FEAT-051's critical fixture,

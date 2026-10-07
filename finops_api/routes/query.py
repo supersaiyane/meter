@@ -28,12 +28,14 @@ from finops_api.db.repositories.query import (
     SurfaceInstanceRepository,
 )
 from finops_api.deps import get_access_context, get_connection, get_scope, get_settings
+from finops_api.exports import ExportSpec, exportable, listed
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
     AdhocQueryOut,
     CostPointOut,
     Envelope,
     FailureOut,
+    QueryCostDayOut,
     QueryFindingDetailOut,
     QueryFindingOut,
     QueryGroupOut,
@@ -41,6 +43,7 @@ from finops_api.schemas import (
     SurfaceInstanceOut,
 )
 from finops_core.config import Settings
+from finops_core.domain.insight import Provenance
 from finops_core.domain.query import SurfaceInstance, SurfaceKind, WriteLevel
 from finops_core.domain.tenant import Scope
 from finops_ingest.remediation import apply_panel_rewrite, undo_change
@@ -114,6 +117,7 @@ def _finding(row: Any, history: Sequence[CostPointOut] = ()) -> QueryFindingOut:
 
 
 @router.get("/query/findings", response_model=Envelope[list[QueryFindingOut]])
+@exportable(ExportSpec(title="Query cost", row_model=QueryFindingOut, rows=listed))
 def query_findings(
     scope: Scope = Depends(get_scope),
     connection: Connection = Depends(get_connection),
@@ -153,7 +157,52 @@ def query_findings(
     )
 
 
+@router.get("/query/trend", response_model=Envelope[list[QueryCostDayOut]])
+@exportable(ExportSpec(title="Query cost by day", row_model=QueryCostDayOut, rows=listed))
+def query_trend(
+    scope: Scope = Depends(get_scope),
+    connection: Connection = Depends(get_connection),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[list[QueryCostDayOut]]:
+    """What the audited queries cost each month, day by day, over the last thirty days.
+
+    Summed over every query audited on a day, so the trend falls when a fix deletes a
+    dashboard as well as when it slows one down.
+    """
+    days = QueryFindingRepository(connection, context).daily_totals(scope)
+    points = [
+        QueryCostDayOut(
+            run_date=row.run_date,
+            cost_month_usd=row.cost_month_usd,
+            queries=int(row.queries),
+            provenance=(Provenance.MEASURED if row.measured else Provenance.MODELLED).value,
+            as_of=row.as_of,
+            collected_at=row.collected_at,
+        )
+        for row in days
+    ]
+    latest = points[-1] if points else None
+    surfaces = SurfaceInstanceRepository(connection, context)
+    return Envelope(
+        data=points,
+        meta=build_meta(
+            connection,
+            scope,
+            context,
+            visible=len(points),
+            # The latest day's timestamps, not the stalest across the window: a trend is as
+            # fresh as its newest audit, and its oldest day is thirty days old by design.
+            as_of=None if latest is None else latest.as_of,
+            collected_at=None if latest is None else latest.collected_at,
+            extra_failures=_unreadable(surfaces.unreachable(scope)),
+            coverage=surfaces.coverage(scope),
+            coverage_unit="workspaces",
+        ),
+    )
+
+
 @router.get("/query/groups", response_model=Envelope[list[QueryGroupOut]])
+@exportable(ExportSpec(title="Query cost by cause", row_model=QueryGroupOut, rows=listed))
 def query_groups(
     scope: Scope = Depends(get_scope),
     connection: Connection = Depends(get_connection),
@@ -477,6 +526,7 @@ def undo_remediation(
 
 
 @router.get("/query/adhoc", response_model=Envelope[list[AdhocQueryOut]])
+@exportable(ExportSpec(title="Ad hoc queries", row_model=AdhocQueryOut, rows=listed))
 def query_adhoc(
     scope: Scope = Depends(get_scope),
     connection: Connection = Depends(get_connection),
@@ -525,6 +575,7 @@ def query_adhoc(
 
 
 @router.get("/query/instances", response_model=Envelope[list[SurfaceInstanceOut]])
+@exportable(ExportSpec(title="Query surfaces", row_model=SurfaceInstanceOut, rows=listed))
 def query_instances(
     scope: Scope = Depends(get_scope),
     connection: Connection = Depends(get_connection),

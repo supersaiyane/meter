@@ -26,6 +26,7 @@ from finops_api.db.repositories import (
     WatermarkRepository,
 )
 from finops_api.deps import get_access_context, get_connection, get_scope
+from finops_api.exports import ExportSpec, exportable, listed
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import Envelope, FreshnessOut, RunOut
 from finops_core.constants import STALE_AFTER_CADENCE_MULTIPLE
@@ -37,6 +38,7 @@ RECENT_RUNS = 50
 
 
 @router.get("/ingest/runs", response_model=Envelope[list[RunOut]])
+@exportable(ExportSpec(title="Collector runs", row_model=RunOut, rows=listed))
 def recent_runs(
     scope: Scope = Depends(get_scope),
     connection: Connection = Depends(get_connection),
@@ -123,6 +125,7 @@ def never_collected(row: Any, cadences: dict[str, int]) -> FreshnessOut:
 
 
 @router.get("/health/freshness", response_model=Envelope[list[FreshnessOut]])
+@exportable(ExportSpec(title="Freshness", row_model=FreshnessOut, rows=listed))
 def freshness(
     scope: Scope = Depends(get_scope),
     connection: Connection = Depends(get_connection),

@@ -15,6 +15,7 @@ from sqlalchemy.engine import Connection
 
 from finops_api.db.repositories import AccessContext, AccountRepository
 from finops_api.deps import get_access_context, get_connection, get_scope
+from finops_api.exports import ExportSpec, exportable, listed
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import AccountOut, Envelope
 from finops_core.domain.account import AccountKey, Provider
@@ -38,6 +39,7 @@ def to_out(row: Any) -> AccountOut:
 
 
 @router.get("/accounts", response_model=Envelope[list[AccountOut]])
+@exportable(ExportSpec(title="Accounts", row_model=AccountOut, rows=listed))
 def list_accounts(
     scope: Scope = Depends(get_scope),
     connection: Connection = Depends(get_connection),

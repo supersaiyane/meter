@@ -73,3 +73,15 @@ REASON_MIN_LENGTH = 12
 # it. tests/api/test_assistant_limit.py reads the pool from the installed anyio rather than
 # trusting the forty written here. ISS-225.
 ASSISTANT_CONCURRENCY_CEILING = 19
+
+# The longest name a saved view keeps, FEAT-068. Long enough for a sentence that says what the
+# view shows, short enough to sit in the library's table and in a menu. Shared by the API's body
+# and by the model's mirror of the database check, so the two cannot disagree; a check
+# constraint cannot read this, so migration 0028 carries the same figure literally.
+SAVED_VIEW_NAME_MAX_LENGTH = 120
+
+# The most people one scheduled report renders for, FEAT-069. Each is a render of its own, in
+# that person's scope, so the list is a cost as well as a list; fifty is a team's distribution
+# list and not an organization's. Shared by the API's body and the model's mirror of the check,
+# which migration 0029 carries literally because a check constraint cannot read this.
+REPORT_RECIPIENTS_MAX = 50

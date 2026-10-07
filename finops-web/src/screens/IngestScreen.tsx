@@ -1,4 +1,5 @@
 import { useRuns } from '../api/queries';
+import { collectorName, runStatusName } from '../components/displayNames';
 import type { Run } from '../api/types';
 import { DataTable } from '../components/DataTable';
 import { Figure } from '../components/Figure';
@@ -54,14 +55,14 @@ function itemsCell(run: Run) {
 }
 
 const COLUMNS: readonly Column<Run>[] = [
-  { key: 'collector', header: 'Collector', render: (row) => row.collector },
+  { key: 'collector', header: 'Collector', render: (row) => collectorName(row.collector) },
   { key: 'scope', header: 'Scope', render: (row) => row.scope_key },
   {
     key: 'status',
     header: 'Status',
     // PARTIAL is the normal outcome at three hundred accounts. It is not an
     // error state and it must never render as success.
-    render: (row) => <span data-status={row.status}>{row.status.toLowerCase()}</span>,
+    render: (row) => <span data-status={row.status}>{runStatusName(row.status)}</span>,
   },
   { key: 'items', header: 'Items written', render: itemsCell, numeric: true },
 ];
@@ -73,7 +74,7 @@ export function IngestScreen() {
   const state = surfaceStateFor(query, query.data?.meta, rows.length, 'none', 'ingest');
 
   return (
-    <section aria-label="Ingest runs">
+    <section aria-label="Ingestion runs">
       <StateBoundary state={state}>
         <DataTable
           rows={rows}

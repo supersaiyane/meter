@@ -29,6 +29,13 @@ people arrive with. It answers what is connected to what, for one root, bounded 
 Server side pagination and filtering over `topology_node`, through `scoped_select`. An estate
 of three hundred accounts is not a list the browser sorts.
 
+Since TASK-P8-013, 2026-10-06, the screen draws every resource in scope by type and by region,
+from counts the route returns beside its filter values. They are counted over the scope, as the
+values are, so narrowing the list does not collapse the charts, and a null type or region is
+counted as no type or global rather than dropped.
+
+Since TASK-P8-013, 2026-10-06, the list is a `DataTable`. Its columns sort only when the page holds the whole list: a page of a longer list arrives in the server's order, and sorting it would order fifty rows and read as ordering every one.
+
 ## Failure behaviour
 
 The estate wide coverage banner sits above the list, not beside it, and the count says how
@@ -55,6 +62,10 @@ same treatment the shell's failure wall got, so a reader learns one shape.
 
 `/inventory/resources`, in the Inventory group, and the `arrives` marker in `sections.ts`
 becomes null in the same commit that ships it.
+
+`filters.region_counts` and `filters.type_counts` on `GET /api/v1/inventory/resources`, since
+2026-10-06: each value and how many resources carry it, largest first. Both default to empty, so
+a payload made before the counts still validates.
 
 ## Not doing
 

@@ -99,6 +99,13 @@ describe('the token layer', () => {
   });
 });
 
+/** Every component and screen source, raw, for the colour rule. */
+const COMPONENT_SOURCES = import.meta.glob<string>('../../**/*.{ts,tsx}', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+});
+
 describe('the visual layer', () => {
   it('introduces no class a component would have to add', () => {
     // The property ADR-0021 was decided on. If this file styled `.card`, some
@@ -118,6 +125,20 @@ describe('the visual layer', () => {
       'meter-provenance',
       // OrgTree emits this for the node kind beside a node name.
       'meter-kind',
+      // DataTable emits this for the button in a header that sorts.
+      'meter-sort',
+      // DataTable emits this for the sentence saying why a column has no total.
+      'meter-total-none',
+      // The chart set emits this for the series named beside their swatches.
+      'meter-legend',
+      // StackedBar emits this for its rows: the category, the bar and the total.
+      'meter-stacked-bars',
+      // KpiTile emits this for the tile around one headline figure.
+      'meter-kpi',
+      // KpiTile emits this for its glass, the panel that rises in and lifts, TASK-P8-018.
+      'meter-panel',
+      // Every chart in the set emits this on its figure, whose caption is its axis line.
+      'meter-chart',
     ]);
     const withoutComments = layout.replace(/\/\*[\s\S]*?\*\//g, '');
     const targeted = new Set(
@@ -148,21 +169,42 @@ describe('the visual layer', () => {
     expect([...new Set(invented)]).toEqual([]);
   });
 
-  it('uses borders and never shadows', () => {
-    // A shadow implies elevation and physicality, which suits a consumer
-    // application and not an instrument.
+  it('draws a shadow only from a token, to lift or to float, and never a literal', () => {
+    // A border separates a panel from the page at rest. Since the owner chose rich motion later
+    // on 2026-10-05, P8 spec section 2, a shadow lifts a panel under the pointer and floats a
+    // menu above the page, and every one is a token: a literal shadow is a colour outside the
+    // system, and one at rest would make every panel look raised.
     expect(layout).toContain('border:');
-    expect(layout).not.toMatch(/box-shadow\s*:/);
+    const shadows = layout.match(/box-shadow\s*:[^;]+;/g) ?? [];
+    expect(shadows.length).toBeGreaterThan(0);
+    for (const rule of shadows) {
+      expect(rule).toMatch(/var\(--(shadow-lift|shadow-float|hairline-highlight)\)/);
+      expect(rule).not.toMatch(/#[0-9a-f]{3,8}\b|rgba?\(/i);
+    }
   });
 
-  it('animates nothing but opacity and background', () => {
-    // A number counting up from zero is lying for four hundred milliseconds.
-    const transitions = layout.match(/transition:[^;]+;/g) ?? [];
+  it('moves nothing that changes a figure, from a named set, and nothing under reduced motion', () => {
+    // A number counting up from zero is lying for four hundred milliseconds, and a bar growing
+    // from zero is the same lie drawn. Motion is rich since 2026-10-05 and still never touches a
+    // size or a position, and never `all`, which would.
+    const transitions = layout.match(/transition\s*:[^;]+;/g) ?? [];
     expect(transitions.length).toBeGreaterThan(0);
     for (const rule of transitions) {
-      expect(rule).not.toMatch(/\b(width|height|transform|top|left|all)\b/);
+      expect(rule).not.toMatch(/\b(width|height|top|left|right|bottom|all)\b/);
     }
-    expect(layout).not.toMatch(/@keyframes/);
+    const names = [...layout.matchAll(/@keyframes\s+([\w-]+)/g)].map((m) => m[1]);
+    expect(names.sort()).toEqual([
+      'meter-fade',
+      'meter-pop',
+      'meter-reveal',
+      'meter-rise',
+      'meter-shimmer',
+    ]);
+    const frames = layout.slice(layout.indexOf('@keyframes'));
+    expect(frames).not.toMatch(/\b(width|height|scale|scaleX|scaleY)\s*[:(]/);
+    expect(layout).toMatch(
+      /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*animation: none;[\s\S]*transform: none;/,
+    );
   });
 
   it('applies the severity ramp, so rank is visible and not only labelled', () => {
@@ -174,6 +216,34 @@ describe('the visual layer', () => {
   it('carries the three breakpoints section 10 names', () => {
     expect(layout).toContain('max-width: 1280px');
     expect(layout).toContain('max-width: 1024px');
+  });
+
+  it('draws every table through DataTable, so every table can sort and total', () => {
+    // TASK-P8-013. A table drawn by hand cannot sort, total or hide a column, and seventeen of
+    // them were drawn that way until this held it. ChartTable is the one exception: it is a
+    // chart's numbers in the chart's own order, the table a screen reader takes instead.
+    const drawn = Object.entries(COMPONENT_SOURCES).filter(
+      ([path, source]) =>
+        !path.includes('__tests__') &&
+        !/\/(DataTable|ChartTable)\.tsx$/.test(path) &&
+        /<table\b/.test(source),
+    );
+    expect(drawn.map(([path]) => path)).toEqual([]);
+  });
+
+  it('names no colour outside the tokens, in the layout or in any component', () => {
+    // TASK-P8-013. A colour named anywhere but tokens.css is a colour the themes cannot change,
+    // so it is right in one theme and wrong in the other, and nobody finds out until dark.
+    const inLayout = [
+      ...layout.matchAll(/^[^/*\n]*:[^;\n]*(#[0-9a-f]{3,8}\b|\brgba?\(|\bhsla?\()/gim),
+    ];
+    expect(inLayout.map((found) => found[0].trim())).toEqual([]);
+    const inComponents = Object.entries(COMPONENT_SOURCES).filter(
+      ([path, source]) =>
+        !path.includes('__tests__') &&
+        /['"`]#[0-9a-fA-F]{3,8}['"`]|\brgba?\(|\bhsla?\(/.test(source),
+    );
+    expect(inComponents.map(([path]) => path)).toEqual([]);
   });
 
   it('consumes every colour and spacing token that tokens.css declares', () => {

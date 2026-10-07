@@ -401,6 +401,7 @@ class TestTheDigests:
             "total": 1,
             "unit": "payer",
             "is_partial": False,
+            "chosen": None,
         }
         cited = [c for digest in body["data"] for c in digest["citations"]]
         assert {(c["kind"], c["unit"]) for c in cited} == {("figure", "usd"), ("label", None)}

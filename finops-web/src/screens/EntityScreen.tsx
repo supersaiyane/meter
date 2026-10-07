@@ -1,13 +1,23 @@
-import { Link, useParams } from 'react-router';
+import { useParams } from 'react-router';
+import { lifecycleName, wasteClassName } from '../components/displayNames';
 
 import { useBlastRadius, useEntity } from '../api/queries';
+import { DataTable } from '../components/DataTable';
 import { Figure } from '../components/Figure';
 import { FixtureBand } from '../components/FixtureBand';
 import { SeverityBadge } from '../components/SeverityBadge';
 import { StateBoundary } from '../components/StateBoundary';
+import type { Column } from '../components/tableConfig';
 import { riskLabel } from '../components/actionRisk';
 import type { Freshness } from '../components/provenance';
-import type { ApiEntity, ApiTopologyEdge, ApiTopologyNode } from '../api/types';
+import type {
+  ApiBlastPart,
+  ApiEntity,
+  ApiRecommendation,
+  ApiTopologyEdge,
+  ApiTopologyNode,
+} from '../api/types';
+import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { severityLevel } from './querySeverity';
 import { saidOf } from './sliceCoverage';
@@ -60,6 +70,117 @@ function relationOf(
   // Reachable only if the repository returned a neighbour with no edge to it, which would be
   // a bug in the walk rather than a state of the estate. Said rather than rendered blank.
   return 'no recorded relationship';
+}
+
+/**
+ * The findings that name this resource, TASK-P8-013 on `DataTable`. No total: two findings on
+ * one resource are often alternatives, resize it or remove it, and adding their savings would
+ * count one saving twice.
+ */
+function findingColumns(freshness: Freshness): readonly Column<ApiRecommendation>[] {
+  return [
+    {
+      key: 'finding',
+      header: 'Finding',
+      rowHeader: true,
+      render: (row) => <Link to="/optimize">{wasteClassName(row.waste_class)}</Link>,
+      sortValue: (row) => wasteClassName(row.waste_class),
+    },
+    {
+      key: 'saving',
+      header: 'Estimated monthly savings',
+      numeric: true,
+      // Modelled, never measured, unlike the cost above. Figure carries the label so the two
+      // cannot be confused on one page.
+      render: (row) => (
+        <Figure
+          value={{ kind: 'modelled', amount: Number(row.estimated_monthly_saving) }}
+          freshness={freshness}
+          unit="usd"
+        />
+      ),
+      sortValue: (row) => Number(row.estimated_monthly_saving),
+    },
+    {
+      key: 'severity',
+      header: 'Severity',
+      render: (row) => <SeverityBadge level={severityLevel(row.severity)} />,
+      sortValue: (row) => severityLevel(row.severity),
+    },
+    {
+      key: 'state',
+      header: 'State',
+      render: (row) => lifecycleName(row.lifecycle),
+      sortValue: (row) => lifecycleName(row.lifecycle),
+    },
+    {
+      key: 'risk',
+      header: 'If it is wrong',
+      prose: true,
+      // The same two words and the same sentence the home panel shows, from the same module,
+      // so a reader cannot be told a change is reversible on one screen and permanent on
+      // another.
+      render: (row) => (
+        <>
+          <strong>{riskLabel(row)}</strong>
+          <span> {row.risk_why}</span>
+        </>
+      ),
+    },
+  ];
+}
+
+/** What a change can reach, by kind. Counts of different things, so they do not add up. */
+const PART_COLUMNS: readonly Column<ApiBlastPart>[] = [
+  {
+    key: 'name',
+    header: 'Counted',
+    rowHeader: true,
+    render: (part) => part.name,
+    sortValue: (part) => part.name,
+  },
+  {
+    key: 'count',
+    header: 'How many',
+    numeric: true,
+    render: (part) => part.count,
+    sortValue: (part) => part.count,
+  },
+  // Prose, so it wraps. Without it the cell inherits the nowrap every data cell needs and the
+  // table grows past its container: measured at 1456px inside 955px before this was here.
+  { key: 'why', header: 'What it means', prose: true, render: (part) => part.why },
+];
+
+function neighbourColumns(entity: ApiEntity): readonly Column<ApiTopologyNode>[] {
+  return [
+    {
+      key: 'resource',
+      header: 'Resource',
+      rowHeader: true,
+      render: (one) => (
+        <Link to={`/inventory/resources/${one.node_id}`}>{one.name ?? one.provider_id}</Link>
+      ),
+      sortValue: (one) => one.name ?? one.provider_id,
+    },
+    {
+      key: 'kind',
+      header: 'Kind',
+      render: (one) => one.node_kind,
+      sortValue: (one) => one.node_kind,
+    },
+    {
+      key: 'relationship',
+      header: 'Relationship',
+      render: (one) => relationOf(entity.edges, entity.node.node_id, one.node_id),
+      sortValue: (one) => relationOf(entity.edges, entity.node.node_id, one.node_id),
+    },
+    {
+      key: 'account',
+      header: 'Account',
+      render: (one) => one.account_id,
+      sortValue: (one) => one.account_id,
+    },
+  ];
 }
 
 export function EntityScreen() {
@@ -200,55 +321,20 @@ export function EntityScreen() {
             {entity.findings.length === 0 ? (
               <p data-testid="entity-findings-empty">No finding names this resource.</p>
             ) : (
-              <table data-testid="entity-findings">
-                <caption>
-                  {entity.findings.length === 1
-                    ? 'One finding names this resource, open or already decided.'
-                    : `${String(entity.findings.length)} findings name this resource, open ` +
-                      'or already decided.'}
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Finding</th>
-                    <th scope="col">Saving a month</th>
-                    <th scope="col">Severity</th>
-                    <th scope="col">State</th>
-                    <th scope="col">If it is wrong</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {entity.findings.map((row) => (
-                    <tr key={row.recommendation_id}>
-                      <th scope="row">
-                        <Link to="/waste">{row.waste_class}</Link>
-                      </th>
-                      <td>
-                        {/* Modelled, never measured, unlike the cost above. Figure carries
-                            the label so the two cannot be confused on one page. */}
-                        <Figure
-                          value={{
-                            kind: 'modelled',
-                            amount: Number(row.estimated_monthly_saving),
-                          }}
-                          freshness={freshness}
-                          unit="usd"
-                        />
-                      </td>
-                      <td>
-                        <SeverityBadge level={severityLevel(row.severity)} />
-                      </td>
-                      <td>{row.lifecycle}</td>
-                      <td>
-                        {/* The same two words and the same sentence the home panel shows,
-                            from the same module, so a reader cannot be told a change is
-                            reversible on one screen and permanent on another. */}
-                        <strong>{riskLabel(row)}</strong>
-                        <span> {row.risk_why}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div data-testid="entity-findings">
+                <DataTable
+                  rows={entity.findings}
+                  columns={findingColumns(freshness)}
+                  rowKey={(row) => row.recommendation_id}
+                  caption={
+                    entity.findings.length === 1
+                      ? 'One finding names this resource, open or already decided.'
+                      : `${String(entity.findings.length)} findings name this resource, open ` +
+                        'or already decided.'
+                  }
+                  initialSort={{ key: 'saving', direction: 'descending' }}
+                />
+              </div>
             )}
             {entity.unmatched_findings > 0 ? (
               // The honest half. A finding joins to a resource on the provider's identifier,
@@ -295,39 +381,23 @@ export function EntityScreen() {
                 <p>
                   <strong data-testid="blast-band">{radius.band}</strong>
                 </p>
-                <table>
-                  <caption>
-                    {/* Not optional, and not a footnote. An infrastructure graph cannot see
-                        that one service reads another's queue, or that a report somebody runs
-                        every Monday is built on this table, so every figure below is a floor. */}
-                    At least this wide. An infrastructure graph holds what a resource is
-                    attached to and not what reads it, so application level dependencies are
-                    invisible here and the real radius can only be larger.
-                    {radius.depth_bound_reached
-                      ? ` The walk also stopped at its ${String(radius.max_depth)} hop bound,
-                         so anything beyond that was never looked at.`
-                      : ''}
-                  </caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Counted</th>
-                      <th scope="col">How many</th>
-                      <th scope="col">What it means</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {radius.parts.map((part) => (
-                      <tr key={part.name}>
-                        <th scope="row">{part.name}</th>
-                        <td className="meter-numeral">{part.count}</td>
-                        {/* Prose, so it wraps. Without the class it inherits the nowrap every
-                            data cell needs and the table grows past its container: measured at
-                            1456px inside 955px before this was here. */}
-                        <td className="meter-prose">{part.why}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                {/* Not optional, and not a footnote. An infrastructure graph cannot see that
+                    one service reads another's queue, or that a report somebody runs every
+                    Monday is built on this table, so every figure below is a floor. */}
+                <DataTable
+                  rows={radius.parts}
+                  columns={PART_COLUMNS}
+                  rowKey={(part) => part.name}
+                  caption={
+                    'At least this wide. An infrastructure graph holds what a resource is ' +
+                    'attached to and not what reads it, so application level dependencies are ' +
+                    'invisible here and the real radius can only be larger.' +
+                    (radius.depth_bound_reached
+                      ? ` The walk also stopped at its ${String(radius.max_depth)} hop bound, ` +
+                        'so anything beyond that was never looked at.'
+                      : '')
+                  }
+                />
               </div>
             )}
 
@@ -337,35 +407,14 @@ export function EntityScreen() {
                 Nothing is recorded as attached to this resource.
               </p>
             ) : (
-              <table data-testid="entity-neighbours">
-                <caption>
-                  One hop. {String(entity.neighbours.length)} resources, through the same
-                  traversal the map uses, so the two cannot disagree about what this is attached
-                  to.
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Resource</th>
-                    <th scope="col">Kind</th>
-                    <th scope="col">Relationship</th>
-                    <th scope="col">Account</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {entity.neighbours.map((one) => (
-                    <tr key={one.node_id}>
-                      <th scope="row">
-                        <Link to={`/inventory/resources/${one.node_id}`}>
-                          {one.name ?? one.provider_id}
-                        </Link>
-                      </th>
-                      <td>{one.node_kind}</td>
-                      <td>{relationOf(entity.edges, entity.node.node_id, one.node_id)}</td>
-                      <td>{one.account_id}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div data-testid="entity-neighbours">
+                <DataTable
+                  rows={entity.neighbours}
+                  columns={neighbourColumns(entity)}
+                  rowKey={(one) => one.node_id}
+                  caption={`One hop. ${String(entity.neighbours.length)} resources, through the same traversal the map uses, so the two cannot disagree about what this is attached to.`}
+                />
+              </div>
             )}
             {boundary.length > 0 ? (
               // The most interesting relationship on the page, and the one a neighbour list

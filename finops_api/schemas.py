@@ -18,10 +18,20 @@ from __future__ import annotations
 from collections.abc import Sequence
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Literal
+from typing import Literal, Self
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    computed_field,
+    field_validator,
+    model_validator,
+)
+
+from finops_api.screens import SCREEN_PATHS
+from finops_core.constants import REPORT_RECIPIENTS_MAX, SAVED_VIEW_NAME_MAX_LENGTH
 
 
 class CoverageOut(BaseModel):
@@ -36,6 +46,10 @@ class CoverageOut(BaseModel):
     #: what it counted and the interface was guessing, so every screen said
     #: "accounts" and the query screens were counting something else.
     unit: str = "accounts"
+    #: The account the reader chose, FEAT-075, when the view is narrowed to one. Coverage is
+    #: then counted against that account, so a choice is stated rather than reported as a
+    #: partial view, by the owner's decision of 2026-10-06.
+    chosen: str | None = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -89,11 +103,12 @@ class Meta(BaseModel):
         as_of: datetime | None = None,
         collected_at: datetime | None = None,
         failures: Sequence[FailureOut] = (),
+        chosen: str | None = None,
     ) -> Meta:
         return cls(
             as_of=as_of,
             collected_at=collected_at,
-            scope_coverage=CoverageOut(visible=visible, total=total, unit=unit),
+            scope_coverage=CoverageOut(visible=visible, total=total, unit=unit, chosen=chosen),
             failures=tuple(failures),
         )
 
@@ -557,6 +572,28 @@ class CommitmentUseOut(BaseModel):
     utilization: Decimal | None
 
 
+class CommitmentDayOut(BaseModel):
+    """One kind of commitment on one day, TASK-P8-013, with its two fractions worked out.
+
+    Each fraction is null on a day with nothing to divide by: nothing committed has no
+    utilization, and nothing eligible has no coverage, which is a different sentence from
+    zero.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    commitment_type: str
+    day: date
+    committed: Decimal
+    used: Decimal
+    utilization: Decimal | None
+    eligible_spend: Decimal
+    covered_spend: Decimal
+    coverage: Decimal | None
+    as_of: datetime
+    collected_at: datetime
+
+
 class CommitmentCoverageOut(BaseModel):
     """How much of one slice of the estate was on a commitment."""
 
@@ -680,6 +717,30 @@ class CostSliceOut(BaseModel):
     effective_cost: Decimal
     billed_cost: Decimal
     line_items: int
+
+
+class ShowbackRowOut(BaseModel):
+    """One account, service and tag value in one billing period. FEAT-045.
+
+    The period, both timestamps and the coverage are on every row rather than only in the
+    envelope, because a showback file is mailed on and pasted into a deck, and a row pasted
+    out of it has to carry what it meant. Constraint 10 and FEAT-045.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    billing_period: date
+    account_id: str
+    service_name: str
+    #: The value of the tag key the reader chose, `unallocated` where the line carries none.
+    tag_value: str
+    effective_cost: Decimal
+    billed_cost: Decimal
+    line_items: int
+    as_of: datetime
+    collected_at: datetime
+    accounts_in_file: int
+    accounts_in_organization: int
 
 
 class ContainerCostRowOut(BaseModel):
@@ -823,6 +884,24 @@ class CostPointOut(BaseModel):
     run_date: date
     cost_month_usd: Decimal
     provenance: str
+
+
+class QueryCostDayOut(BaseModel):
+    """What every query audited on one day cost each month, summed. The trend on Query cost.
+
+    Every query audited that day rather than only those audited today, so a dashboard deleted
+    after a fix leaves its earlier days behind and the fall it caused is on the chart. Measured
+    only when every query that day was measured, the rule the per query trend keeps.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    run_date: date
+    cost_month_usd: Decimal
+    queries: int
+    provenance: str
+    as_of: datetime
+    collected_at: datetime
 
 
 class QueryFindingOut(BaseModel):
@@ -1161,6 +1240,19 @@ class BlastRadiusOut(BaseModel):
     max_depth: int
 
 
+class FacetCountOut(BaseModel):
+    """One filter value and how many resources in the scope carry it. TASK-P8-013.
+
+    Null is a value like any other here: a null region is the account's global slice, and a
+    null type is a resource the provider gave no type, both counted rather than dropped.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    value: str | None
+    resources: int
+
+
 class ResourceFiltersOut(BaseModel):
     """The filter values that occur in this scope, read from the data rather than listed.
 
@@ -1177,6 +1269,11 @@ class ResourceFiltersOut(BaseModel):
     region_id: tuple[str, ...]
     node_kind: tuple[str, ...]
     resource_type: tuple[str, ...]
+    #: How many resources each region and each type holds, largest first, over the scope
+    #: rather than under the list's own filters, the rule the values above follow. Defaulted,
+    #: so a payload built before the counts existed still validates.
+    region_counts: tuple[FacetCountOut, ...] = ()
+    type_counts: tuple[FacetCountOut, ...] = ()
 
 
 class RegionOut(BaseModel):
@@ -1219,6 +1316,36 @@ class GeographyOut(BaseModel):
     accounts: int
 
 
+class GeographyLinkOut(BaseModel):
+    """Two regions joined by edges whose two ends this reader can read. FEAT-061, TASK-P8-017.
+
+    **Undirected, and counted once per pair of resources.** A peering is often recorded from
+    both of its ends, as one edge each way, and a line on a map has no direction to give either
+    of them. So `one_region` sorts before `other_region` and `links` counts distinct pairs of
+    resources, not edges.
+
+    **Both ends readable, or no link.** The far end's region is a fact about the far end, so a
+    reader narrowed away from it learns nothing about where it is, the same rule the geography
+    counts follow.
+
+    `one_geography` and `other_geography` come from the region name prefix through the same rule
+    as the geographies themselves, and are None where a prefix is not one the table knows. A
+    link inside one geography carries the same key twice: it is real, and a map at continent
+    grain cannot draw it, so the table under the map is where it is said.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    one_region: str
+    other_region: str
+    one_geography: str | None
+    other_geography: str | None
+    #: Distinct pairs of resources, measured.
+    links: int
+    #: The kinds of edge that join them, such as PEERS_WITH, so a line says what it stands for.
+    kinds: tuple[str, ...]
+
+
 class GeographiesOut(BaseModel):
     """The estate by continent, with everything the continent view cannot hold. FEAT-061.
 
@@ -1250,6 +1377,8 @@ class GeographiesOut(BaseModel):
     unplaceable_resources: int
     #: Regions a collection could not read, from the same slice coverage the map uses.
     refused: tuple[str, ...]
+    #: Pairs of regions joined across a region boundary, both ends readable. TASK-P8-017.
+    links: tuple[GeographyLinkOut, ...] = ()
 
 
 class ResourceListOut(BaseModel):
@@ -1667,3 +1796,439 @@ class RedactionOut(BaseModel):
     rule_id: str
     action: Literal["BLOCKED", "REDACTED"]
     occurred_at: datetime
+
+
+class ExploreGroupingOut(BaseModel):
+    """What one Cost Explorer axis groups by: a FOCUS column, or `tag` and one tag key."""
+
+    model_config = ConfigDict(frozen=True)
+
+    dimension: str
+    tag_key: str | None = None
+
+
+class ExploreWindowOut(BaseModel):
+    """A run of days, inclusive at both ends."""
+
+    model_config = ConfigDict(frozen=True)
+
+    start: date
+    end: date
+
+
+class ExplorePointOut(BaseModel):
+    """What one named group cost in one day or month. A null series is everything else."""
+
+    model_config = ConfigDict(frozen=True)
+
+    bucket: date
+    series: str | None
+    cost: Decimal
+
+
+class GeographyRefOut(BaseModel):
+    """Which geography a region is in, by the rule the geography map uses. FEAT-061."""
+
+    model_config = ConfigDict(frozen=True)
+
+    key: str
+    name: str
+
+
+class ExploreRowOut(BaseModel):
+    """One row of the explorer's table: a value of each grouping, this period and the last.
+
+    `previous_period` is null where the period before was never collected, which is not the
+    same as a group that cost nothing then, and is never sent as zero.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    first: str
+    second: str | None
+    this_period: Decimal
+    previous_period: Decimal | None
+
+
+class ExploreOut(BaseModel):
+    """FEAT-065. Cost grouped two ways over a period, set against the period before it.
+
+    A total is null where nothing was billed in the window, rather than zero. The table holds
+    at most `row_limit` rows, and `rows_omitted` with the two omitted sums says what the rest
+    add up to, so the rows and the omissions always reconcile to the totals.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    metric: str
+    metrics_available: list[str]
+    period: str
+    granularity: str
+    current: ExploreWindowOut
+    previous: ExploreWindowOut
+    #: The window ends today, so its last day is still being billed and its total is not whole.
+    is_open: bool
+    #: The first billing month the scope holds line items for, or null for none.
+    collected_from: date | None
+    #: False where the previous window starts before `collected_from`.
+    previous_collected: bool
+    group_by: ExploreGroupingOut
+    then_by: ExploreGroupingOut | None
+    #: The allow list: the most used tag keys on this period's line items.
+    tag_keys: list[str]
+    total_this_period: Decimal | None
+    total_previous_period: Decimal | None
+    #: The groups the chart names, in stacking order. Points outside them carry a null series.
+    series: list[str]
+    points: list[ExplorePointOut]
+    rows: list[ExploreRowOut]
+    row_limit: int
+    rows_omitted: int
+    omitted_this_period: Decimal
+    omitted_previous_period: Decimal | None
+    #: Where the first grouping is region, the geography each row's region is in, by region,
+    #: resolved here by the region name prefix rule so a screen that adds cost up by continent
+    #: carries no second copy of it. A region no table knows is absent. Beside the rows rather
+    #: than on each, so the export's columns stay the screen's. TASK-P8-017.
+    region_geographies: dict[str, GeographyRefOut] = Field(default_factory=dict)
+
+
+class ForecastRangeOut(BaseModel):
+    """A forecast: a low and a high. Never a point, which is ADR-0015's second condition."""
+
+    model_config = ConfigDict(frozen=True)
+
+    low: Decimal
+    high: Decimal
+
+
+class ForecastMonthOut(BaseModel):
+    """One month's forecast, or the sentence saying why there is none.
+
+    `median_miss` is how far off the method was at the median over the months it was tested on,
+    as a share of what each month cost, measured by backtest. `held_out` is how many months.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    month: date
+    figure: ForecastRangeOut | None
+    withheld: str | None
+    median_miss: Decimal | None
+    held_out: int
+
+
+class ForecastDayOut(BaseModel):
+    """One day of this month: cost billed to date, cumulative, or the band. Never both."""
+
+    model_config = ConfigDict(frozen=True)
+
+    day: date
+    billed: Decimal | None
+    low: Decimal | None
+    high: Decimal | None
+
+
+class ForecastTestOut(BaseModel):
+    """One held out month of the month end backtest.
+
+    The range is the band the method draws today applied to what it forecast for that month, so
+    `within` says whether today's band would have held the month that happened. Both are null
+    where the forecast is withheld.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    month: date
+    actual: Decimal
+    miss: Decimal
+    low: Decimal | None
+    high: Decimal | None
+    within: bool | None
+
+
+class ForecastOut(BaseModel):
+    """FEAT-066. This month's total and the next three months', each a range or the reason.
+
+    Every figure here is a forecast, said once in `provenance` and again on screen, and every
+    figure is a range. The method is named, and its accuracy is published beside it.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    provenance: Literal["forecast"] = "forecast"
+    method: str
+    method_detail: str
+    interval_percent: int
+    #: The median miss above which a forecast is withheld, as a share.
+    max_median_miss: Decimal
+    #: The complete months a forecast is tested on before it is shown.
+    min_held_out: int
+    #: The last day with line items. Billed cost runs to here, and the forecast from the day after.
+    billed_through: date
+    billed_to_date: Decimal
+    month_end: ForecastMonthOut
+    days: list[ForecastDayOut]
+    ahead: list[ForecastMonthOut]
+    backtest: list[ForecastTestOut]
+
+
+# --- saved views, FEAT-068 and TASK-P8-010 -------------------------------------------------
+
+#: P8 spec section 6, and the database's `ck_saved_view__named`.
+VIEW_NAME_MAX_LENGTH = SAVED_VIEW_NAME_MAX_LENGTH
+#: How much query a view keeps: keys, characters in a key, values under one key, and characters
+#: in a value. A screen's own parameters fit with room to spare, and a body cannot fill a row
+#: with anything else.
+VIEW_QUERY_MAX_KEYS = 40
+VIEW_QUERY_MAX_KEY_LENGTH = 64
+VIEW_QUERY_MAX_VALUES = 100
+VIEW_QUERY_MAX_VALUE_LENGTH = 2000
+
+ViewVisibility = Literal["PRIVATE", "SHARED"]
+#: A screen's query string as an object: a parameter given once is a string, and one given more
+#: than once is the list of its values, as the browser's own `URLSearchParams` holds them.
+ViewQuery = dict[str, str | list[str]]
+
+
+def view_name(name: str) -> str:
+    """A view's name without its surrounding space, refused when nothing else is left."""
+    stripped = name.strip()
+    if not stripped:
+        raise ValueError("a saved view needs a name that is not blank")
+    if any(character < " " for character in stripped):
+        raise ValueError("a saved view's name is one line of text")
+    return stripped
+
+
+def bounded_query(query: ViewQuery) -> ViewQuery:
+    """The query, refused when it holds more than any screen's parameters could."""
+    if len(query) > VIEW_QUERY_MAX_KEYS:
+        raise ValueError(f"a saved view keeps at most {VIEW_QUERY_MAX_KEYS} query parameters")
+    for key, value in query.items():
+        if not key or len(key) > VIEW_QUERY_MAX_KEY_LENGTH:
+            raise ValueError(
+                f"a query parameter's name is 1 to {VIEW_QUERY_MAX_KEY_LENGTH} characters"
+            )
+        values = [value] if isinstance(value, str) else value
+        if len(values) > VIEW_QUERY_MAX_VALUES:
+            raise ValueError(f"{key} has more than {VIEW_QUERY_MAX_VALUES} values")
+        if any(len(item) > VIEW_QUERY_MAX_VALUE_LENGTH for item in values):
+            raise ValueError(f"{key} has a value over {VIEW_QUERY_MAX_VALUE_LENGTH} characters")
+    return query
+
+
+class SavedViewIn(BaseModel):
+    """A screen and its query, named, kept for oneself or shared with the tenant. FEAT-068.
+
+    Configuration and never data, P8 spec section 5.6. Nothing here is a figure, so opening the
+    view reads its screen afresh in the opener's own scope, and a view saved by a reader of the
+    whole estate shows a narrowed colleague only what their scope reaches.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    name: str = Field(min_length=1, max_length=VIEW_NAME_MAX_LENGTH)
+    screen_path: str
+    query: ViewQuery = Field(default_factory=dict)
+    visibility: ViewVisibility = "PRIVATE"
+
+    @field_validator("name")
+    @classmethod
+    def _named(cls, name: str) -> str:
+        return view_name(name)
+
+    @field_validator("screen_path")
+    @classmethod
+    def _known(cls, path: str) -> str:
+        if path not in SCREEN_PATHS:
+            raise ValueError(f"{path} is not a screen the navigation knows")
+        return path
+
+    @field_validator("query")
+    @classmethod
+    def _bounded(cls, query: ViewQuery) -> ViewQuery:
+        return bounded_query(query)
+
+
+class SavedViewPatchIn(BaseModel):
+    """A new name, a new visibility, or both, for a view the reader saved.
+
+    The screen and the query are what a view is, so a different one is a different view, saved
+    anew, and this refuses them rather than ignoring them.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    name: str | None = Field(default=None, min_length=1, max_length=VIEW_NAME_MAX_LENGTH)
+    visibility: ViewVisibility | None = None
+
+    @field_validator("name")
+    @classmethod
+    def _named(cls, name: str | None) -> str | None:
+        return None if name is None else view_name(name)
+
+    @model_validator(mode="after")
+    def _changes_something(self) -> Self:
+        if self.name is None and self.visibility is None:
+            raise ValueError("a change names a new name, a new visibility, or both")
+        return self
+
+
+class SavedViewOut(BaseModel):
+    """One saved view, as the person reading it sees it. FEAT-068.
+
+    `owned` says whether the reader saved it, which decides whether they may rename, share or
+    delete it. Who saved somebody else's shared view is not said: the owner is a person, as in
+    ADR-0029, and sharing a view shares the view, not who made it.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    view_id: UUID
+    name: str
+    screen_path: str
+    query: ViewQuery
+    visibility: ViewVisibility
+    owned: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+# --- report schedules and runs, FEAT-069 and TASK-P8-011 -------------------------------------
+
+ReportFormat = Literal["xlsx", "csv"]
+ReportCadence = Literal["DAILY", "WEEKLY", "MONTHLY", "MONTH_CLOSE"]
+ReportRunStatus = Literal["STREAMED", "RENDERED", "SENT", "FAILED"]
+#: The longest identifier a recipient may have: an email address's limit, which is the longest
+#: form a principal's identifier takes.
+RECIPIENT_MAX_LENGTH = 320
+#: The longest route and query a schedule keeps. A screen's query fits many times over.
+EXPORT_PATH_MAX_LENGTH = 2000
+
+
+def recipients_of(recipients: Sequence[str]) -> list[str]:
+    """Each person once, in the order given, without surrounding space, refused when blank."""
+    people: list[str] = []
+    for recipient in recipients:
+        person = recipient.strip()
+        if not person:
+            raise ValueError("a recipient is a person's identifier and cannot be blank")
+        if len(person) > RECIPIENT_MAX_LENGTH or any(character < " " for character in person):
+            raise ValueError(f"{person[:40]} is not a person's identifier")
+        if person not in people:
+            people.append(person)
+    return people
+
+
+class ScheduleIn(BaseModel):
+    """A saved view, one route its screen exports, a format, a cadence and who it is for.
+
+    The route comes from the screen's own Export list, so it is one the screen reads. Each run
+    renders it once per recipient in that recipient's scope, P8 spec section 5.7.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    view_id: UUID
+    export_path: str = Field(min_length=1, max_length=EXPORT_PATH_MAX_LENGTH)
+    format: ReportFormat
+    cadence: ReportCadence
+    recipients: list[str] = Field(min_length=1, max_length=REPORT_RECIPIENTS_MAX)
+
+    @field_validator("recipients")
+    @classmethod
+    def _people(cls, recipients: list[str]) -> list[str]:
+        return recipients_of(recipients)
+
+
+class SchedulePatchIn(BaseModel):
+    """Pause or resume a schedule, or change its format, cadence or recipients.
+
+    The view and the route are what a schedule is, so another one is a new schedule.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    enabled: bool | None = None
+    format: ReportFormat | None = None
+    cadence: ReportCadence | None = None
+    recipients: list[str] | None = Field(
+        default=None, min_length=1, max_length=REPORT_RECIPIENTS_MAX
+    )
+
+    @field_validator("recipients")
+    @classmethod
+    def _people(cls, recipients: list[str] | None) -> list[str] | None:
+        return None if recipients is None else recipients_of(recipients)
+
+    @model_validator(mode="after")
+    def _changes_something(self) -> Self:
+        if (
+            self.enabled is None
+            and self.format is None
+            and self.cadence is None
+            and self.recipients is None
+        ):
+            raise ValueError("a change names something to change")
+        return self
+
+
+class ScheduleOut(BaseModel):
+    """One of the reader's schedules. A schedule is its owner's alone, ADR-0029."""
+
+    model_config = ConfigDict(frozen=True)
+
+    schedule_id: UUID
+    #: None once the view is deleted, which a run reports before the schedule pauses.
+    view_id: UUID | None
+    #: The view's name, or None where its owner can no longer open it, which a run reports.
+    view_name: str | None
+    screen_path: str | None
+    export_path: str
+    format: ReportFormat
+    cadence: ReportCadence
+    recipients: list[str]
+    enabled: bool
+    next_run_at: datetime
+    created_at: datetime
+    updated_at: datetime
+
+
+class SchedulesOut(BaseModel):
+    """The reader's schedules, and what the deployment does with what they render."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: False where no bucket is configured, so nothing renders, which the screen says.
+    rendering: bool
+    #: How long a rendered file is kept, in the server's words so the screen cannot drift. OPEN-15.
+    retention: str
+    #: Where a rendered file goes. Until OPEN-11 names a channel, nowhere: it is kept and listed.
+    delivery: str
+    schedules: list[ScheduleOut]
+
+
+class ReportRunOut(BaseModel):
+    """One run made for the reader: a file they exported, or one a schedule rendered for them."""
+
+    model_config = ConfigDict(frozen=True)
+
+    run_id: UUID
+    schedule_id: UUID | None
+    #: The route the file was made from, and its query without the format.
+    view_path: str
+    view_query: str
+    format: ReportFormat
+    status: ReportRunStatus
+    rows: int
+    bytes: int
+    truncated: bool
+    failure_cause: str | None
+    failure_detail: str | None
+    #: True when a file is kept and can be fetched again through the file route.
+    has_file: bool
+    made_at: datetime
+    finished_at: datetime | None
+    as_of: datetime | None
+    collected_at: datetime | None

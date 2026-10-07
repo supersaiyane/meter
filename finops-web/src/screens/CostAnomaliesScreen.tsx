@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 
-import { useCostAnomalies } from '../api/queries';
+import { useCostAnomalies, useCostExplore } from '../api/queries';
+import { ChartPanel } from '../components/ChartPanel';
+import { StackedArea } from '../components/charts';
 import { DataTable } from '../components/DataTable';
 import { RankedBars } from '../components/RankedBars';
 import { Figure } from '../components/Figure';
@@ -8,6 +10,8 @@ import { SeverityBadge } from '../components/SeverityBadge';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
 import { useReportMeta } from '../shell/metaRegistry';
+import { exploreQuery, lastDays, stacked } from './exploreSeries';
+import { signedDollars } from './exploreModel';
 import { severityLevel } from './querySeverity';
 import { surfaceStateFor } from './surfaceStateFor';
 import type { ApiCostAnomaly } from '../api/types';
@@ -33,6 +37,16 @@ function money(amount: string): number {
   return Number(amount);
 }
 
+/** The fortnight judged and the fortnight before it, which is what it was judged against. */
+const CHART_DAYS = 30;
+
+/** Services drawn by name. Every other service is one layer, so nothing leaves the stack. */
+const SERVICES_KEPT = 5;
+
+function dollars(value: number): string {
+  return `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
+}
+
 export function CostAnomaliesScreen() {
   const query = useCostAnomalies();
   const envelope = query.data?.data;
@@ -48,6 +62,27 @@ export function CostAnomaliesScreen() {
   };
 
   const judgeable = (found?.days_collected ?? 0) >= (found?.days_needed ?? 0);
+
+  // The days around the anomalies, read the way Cost Explorer reads them, so the chart and the
+  // Explorer share one answer.
+  const window = useMemo(() => lastDays(CHART_DAYS, new Date()), []);
+  const daily = useCostExplore(
+    exploreQuery({ period: 'custom', start: window.start, end: window.end }),
+    { title: 'Effective Cost per day by service, last 30 days' },
+  );
+  useReportMeta('anomalies-daily', daily.data?.meta);
+  const dailyState = surfaceStateFor(daily, daily.data?.meta, 1, 'none', 'cost_focus_daily');
+  const shape = useMemo(
+    () => stacked(daily.data?.data, SERVICES_KEPT, 'All other services'),
+    [daily.data],
+  );
+  const markers = {
+    name: 'Anomaly',
+    at: rows.map((row) => ({
+      period: row.day,
+      label: `${row.service_name} in ${row.account_id}, ${signedDollars(money(row.delta))}`,
+    })),
+  };
 
   const columns: readonly Column<ApiCostAnomaly>[] = [
     {
@@ -65,7 +100,7 @@ export function CostAnomaliesScreen() {
     },
     {
       key: 'delta',
-      header: 'More than usual',
+      header: 'Impact',
       numeric: true,
       render: (row) => (
         <Figure value={{ kind: 'measured', amount: money(row.delta) }} freshness={freshness} />
@@ -73,7 +108,7 @@ export function CostAnomaliesScreen() {
     },
     {
       key: 'observed',
-      header: 'That day',
+      header: 'Actual cost',
       numeric: true,
       render: (row) => (
         <Figure
@@ -84,7 +119,7 @@ export function CostAnomaliesScreen() {
     },
     {
       key: 'baseline',
-      header: 'Usually',
+      header: 'Expected cost',
       numeric: true,
       render: (row) => (
         <Figure
@@ -134,6 +169,24 @@ export function CostAnomaliesScreen() {
           No day in the last fortnight stood out from the days before it
         </p>
       ) : null}
+
+      {/* The days in context: what each cost by service, with a rule on every day that stood
+          out, so a reader sees whether it was one service's spike or the whole estate's. */}
+      <ChartPanel
+        id="anomalies-daily"
+        title="Each day, with the days that stood out"
+        caption="Effective Cost per day for the last thirty days by service. A rule marks each day that stood out, and the bars below set it against its usual cost"
+      >
+        <StateBoundary state={dailyState} coverageShownElsewhere>
+          <StackedArea
+            periods={shape.periods}
+            series={shape.series.map((one) => ({ ...one, provenance: 'measured' as const }))}
+            markers={markers}
+            label="Effective Cost per day by service, last thirty days, with anomalies marked"
+            format={dollars}
+          />
+        </StateBoundary>
+      </ChartPanel>
 
       <StateBoundary state={state}>
         {/* What the day cost, with a tick at what it usually costs. This is the screen where

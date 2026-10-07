@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { QuotasScreen } from '../QuotasScreen';
 import { Harness } from './Harness';
 import { clientReturning } from './fixtures';
+import { sortEveryColumn } from './sortEveryColumn';
 import { quotaRequestsFixture, quotasFixture } from '../../api/fixtures/quotas';
 import type { ApiEnvelope, ApiQuota, ApiQuotas } from '../../api/types';
 import { violationsIn } from '../../components/__tests__/axe';
@@ -203,5 +204,14 @@ describe('the requests beside the lists', () => {
     const unmeasured = screen.getAllByTestId('quota-unmeasured').map((row) => row.textContent);
     expect(tracked).toContain('Brokers per account');
     expect(unmeasured.some((text) => text.includes('Brokers per account'))).toBe(true);
+  });
+});
+
+describe('QuotasScreen sorting', () => {
+  it('sorts every column it offers, one way and then the other', async () => {
+    const { container } = renderQuotas();
+    await screen.findAllByTestId('quota-request-row');
+    await screen.findByTestId('quotas-measured');
+    expect(sortEveryColumn(container)).toBeGreaterThan(0);
   });
 });

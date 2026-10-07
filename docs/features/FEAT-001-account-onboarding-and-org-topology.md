@@ -22,6 +22,12 @@ The original requirement asked to add accounts and scan for children. Scanning i
 
 `ListRoots`, then `ListOrganizationalUnitsForParent` and `ListAccountsForParent` recursively, through `FinOpsOrgReaderRole` in the management account. The tree is stored as a plain adjacency list in `org_node` and traversed with a recursive common table expression. `FinOpsCollectorRole` reaches every account through a service managed CloudFormation StackSet with automatic deployment to the organization root, so a new account is onboarded with zero human steps. `account_health` then attempts an assume role plus one cheap call per account and records the outcome.
 
+Since TASK-P8-013, 2026-10-06, the Accounts screen draws where the money is, the ten largest
+accounts by this period's Effective Cost and the rest together, and how fresh each account is: a
+heatmap of how long ago each collector last read the account, counted in that collector's own
+interval, the stalest accounts first. A pair with no age to count is an outline and is never
+ranked as late, the rule the Freshness screen keeps.
+
 ## Failure behaviour
 
 Governed by the closed error taxonomy in [FEAT-006](FEAT-006-typed-errors-and-freshness.md).

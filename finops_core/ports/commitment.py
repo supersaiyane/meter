@@ -26,7 +26,7 @@ from collections.abc import Iterable
 from datetime import date
 from typing import Protocol, runtime_checkable
 
-from finops_core.domain.cost import CommitmentCoverage, CommitmentUse
+from finops_core.domain.cost import CommitmentCoverage, CommitmentDay, CommitmentUse
 
 
 @runtime_checkable
@@ -70,5 +70,19 @@ class CommitmentReport(Protocol):
                 a fact about the estate rather than a failure.
             Throttled: The provider rejected the read rate.
             Unreachable: The endpoint did not answer.
+        """
+        ...
+
+    def daily(self, window_start: date, window_end: date) -> Iterable[CommitmentDay]:
+        """Each kind of commitment's use and coverage, one row per kind per day.
+
+        Read at the provider's daily grain, one request per figure for the whole window, so
+        a run that reads a month of days costs what one window does, and each run rewrites
+        the days a late bill changed. A kind with nothing committed and nothing covered on a
+        day has no row for that day. `window_end` is exclusive, and no day after it is read.
+
+        Raises:
+            AccessDenied, NotOptedIn, Throttled, Unreachable: as for `utilization`.
+            NoData: Nothing was committed or covered on any day in the window.
         """
         ...

@@ -53,6 +53,38 @@ function renderScreen(
   );
 }
 
+describe('ResourceListScreen, the charts', () => {
+  it('draws every resource in scope by type and by region, naming the nulls', async () => {
+    const filters = resourceListFixture().data.filters;
+    renderScreen({
+      [PATH]: pageOf({
+        filters: {
+          ...filters,
+          type_counts: [
+            { value: 'AWS::EC2::Instance', resources: 20 },
+            { value: null, resources: 7 },
+          ],
+          region_counts: [
+            { value: 'eu-west-1', resources: 25 },
+            { value: null, resources: 2 },
+          ],
+        },
+      }),
+      '/api/v1/inventory/coverage': graphCoverageFixture(),
+    });
+    const types = await screen.findByRole('region', { name: 'By type' });
+    expect(types).toHaveTextContent('AWS::EC2::Instance');
+    expect(types).toHaveTextContent('no type');
+    expect(screen.getByRole('region', { name: 'By region' })).toHaveTextContent('global');
+  });
+
+  it('draws nothing from a payload made before the counts, rather than empty charts', async () => {
+    renderScreen();
+    await screen.findByTestId('resources-count');
+    expect(screen.queryByTestId('chart-row')).toBeNull();
+  });
+});
+
 describe('ResourceListScreen', () => {
   it('says how many of how many, so a page does not read as the estate', async () => {
     // The first of the two claims. A list without its denominator reads as complete, and a
@@ -223,5 +255,23 @@ describe('ResourceListScreen', () => {
     // markup actually says.
     expect(detail.hasAttribute('open')).toBe(false);
     expect(detail.querySelectorAll('li').length).toBeGreaterThan(0);
+  });
+});
+
+describe('ResourceListScreen, narrowed by the address', () => {
+  it('lands narrowed to the geography a map click carried, and shows it', async () => {
+    render(
+      <Harness
+        initialPath="/inventory/resources?geography=eu"
+        client={clientReturning({
+          '/api/v1/inventory/resources?limit=50&offset=0&geography=eu': pageOf({}),
+          '/api/v1/inventory/coverage': graphCoverageFixture(),
+        })}
+      >
+        <ResourceListScreen />
+      </Harness>,
+    );
+    expect(await screen.findByTestId('resources-count')).toBeInTheDocument();
+    expect(screen.getByTestId('filter-geography')).toHaveTextContent('eu');
   });
 });

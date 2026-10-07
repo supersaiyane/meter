@@ -434,6 +434,25 @@ export function geographyFixture(): ApiEnvelope<ApiGeographies> {
       unplaceable: ['fake-region-c'],
       unplaceable_resources: 2,
       refused: ['fake-region-c'],
+      links: [
+        {
+          one_region: 'eu-fake-1',
+          other_region: 'us-east-1',
+          one_geography: 'eu',
+          other_geography: 'us',
+          links: 3,
+          kinds: ['PEERS_WITH'],
+        },
+        {
+          // Inside one geography, so the table says it and the drawing cannot.
+          one_region: 'us-east-1',
+          other_region: 'us-fake-1',
+          one_geography: 'us',
+          other_geography: 'us',
+          links: 1,
+          kinds: ['ROUTES_TO'],
+        },
+      ],
     },
     meta: {
       as_of: '2026-09-26T06:00:00Z',

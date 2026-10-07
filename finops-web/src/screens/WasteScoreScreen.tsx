@@ -1,8 +1,7 @@
-import { Link } from 'react-router';
-
 import { useFinopsScore } from '../api/queries';
 import { Figure } from '../components/Figure';
 import { StateBoundary } from '../components/StateBoundary';
+import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { surfaceStateFor } from './surfaceStateFor';
 import type { ApiScore, ApiScoreComponent } from '../api/types';
@@ -61,7 +60,7 @@ function ScoreComponent({ component }: { readonly component: ApiScoreComponent }
             <li key={finding}>
               {/* Each component links to what moved it. The ship condition, at
                   the level a reader actually uses. */}
-              <Link to={`/waste?finding=${finding}`}>{finding}</Link>
+              <Link to={`/optimize?finding=${finding}`}>{finding}</Link>
             </li>
           ))}
         </ul>

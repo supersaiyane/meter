@@ -20,6 +20,7 @@ from sqlalchemy.engine import Connection
 
 from finops_api.db.repositories import AccessContext, OrgRepository
 from finops_api.deps import get_access_context, get_connection, get_scope
+from finops_api.exports import ExportSpec, exportable, listed
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import Envelope, OrgNodeOut
 from finops_core.domain.account import AccountKey, Provider
@@ -37,6 +38,7 @@ def reachable_for(row: Any, scope: Scope) -> bool:
 
 
 @router.get("/org/tree", response_model=Envelope[list[OrgNodeOut]])
+@exportable(ExportSpec(title="Organisation", row_model=OrgNodeOut, rows=listed))
 def org_tree(
     scope: Scope = Depends(get_scope),
     connection: Connection = Depends(get_connection),

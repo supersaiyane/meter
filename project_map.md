@@ -29,13 +29,13 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 28 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 23 in 7 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Screens built | 27 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 49 in 18 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 25 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 160 | test_*.py under tests/ |
-| Test functions | 2180 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 29 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 179 | test_*.py under tests/ |
+| Test functions | 2426 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -76,6 +76,9 @@ meter/
 │                              Packages are found, not listed: an explicit list
 │                              is top level only and left subpackages out of the
 │                              built wheel
+├── requirements/              the hashed dependency locks every install reads,
+│                              dev.lock for a venv and CI, runtime.lock for the
+│                              images. Written by make lock, never by hand. ADR-0031
 ├── docker-compose.yml         local stack only, never used to deploy. Every
 │                              python service takes env_file, so a new setting
 │                              does not have to be added twice, and the postgres
@@ -182,10 +185,17 @@ meter/
 │   │   │                      of one glass system, the Framework navigation,
 │   │   │                      FOCUS names, and Excel and CSV made by the server
 │   │   │                      behind the scope guard
+│   │   ├── 2026-10-05-p8-label-table.md
+│   │   │                      Every label on every screen with its FOCUS or
+│   │   │                      Framework name, built from the code by a script and
+│   │   │                      approved by the owner as written
 │   │   └── 2026-10-05-p9-price-catalog-design.md
 │   │                          Section 3 is the EC2 and EBS price research with
 │   │                          its sources; section 5.1 is the network path the
-│   │                          hub needs before any collector reaches AWS
+│   │                          hub needs before any collector reaches AWS;
+│   │                          section 14, 2026-10-07, widens the catalog to the
+│   │                          instances.vantage.sh data: every Region, four price
+│   │                          types, five services, polled every 8 hours
 │   └── plans/                 implementation plans, written per sub project.
 │                              `sync.py` reads task status out of these, so the
 │                              Status row in each task is data, not prose. It
@@ -212,7 +222,11 @@ meter/
 │       └── P9-implementation-plan.md   approved 2026-10-05. TASK-P9-001, the
 │                                  ADR and Terraform for interface endpoints plus
 │                                  two functions outside the VPC for Budgets and
-│                                  Support, gates the rest
+│                                  Support, gates the rest. Widened 2026-10-07 by
+│                                  TASK-P9-012 and 013, Savings Plans and spot,
+│                                  read by a function outside the VPC, OPEN-17;
+│                                  spot kept as the latest plus 90 days of daily
+│                                  lows and highs, OPEN-18
 │
 │                              No task count per plan in this listing. It said 20,
 │                              11 and 8 for P3, P4 and P5 while all three were
@@ -298,7 +312,10 @@ meter/
 │   │                          check_forbidden_imports.py, check_memory.py,
 │   │                          check_env_keys.py, refresh_base_images.py. Flag and
 │   │                          hardcoding checks, forbidden imports, the memory
-│   │                          gate, base image resolver. check_env_keys names the
+│   │                          gate, base image resolver. check_image_arch.py
+│   │                          reads every compiled file in an exported image and
+│   │                          fails on one built for another machine, which the
+│   │                          label alone cannot see, ISS-254. check_env_keys names the
 │   │                          settings .env.example has gained that a local .env
 │   │                          never did, before make up starts anything: it is
 │   │                          copied once and never again, so eleven accumulated
@@ -316,6 +333,8 @@ meter/
 │   │                          why the api image carries this directory and only
 │   │                          this one. erase_principal.py, deliberately not an
 │   │                          API route. local_token.py mints a session.
+│   │                          local_bucket.py makes the data bucket in LocalStack
+│   │                          for make up, and refuses any other endpoint
 │   │                          restore_drill.py restores a copy into a scratch
 │   │                          database, migrates it, starts the application
 │   │                          against it and reads the freshness route. Refuses
@@ -406,6 +425,9 @@ meter/
 │       │                      Also CommitmentUse and CommitmentCoverage, kept
 │       │                      apart for the reason the port keeps its methods
 │       │                      apart, and BillingPeriod and source_fingerprint
+│       ├── explore.py         Cost Explorer's periods: each preset's window and
+│       │                      the like for like window before it, pure and
+│       │                      tested against fixed dates. FEAT-065
 │       ├── metrics.py         MetricPoint. `at` is the instant, `as_of` the freshness
 │       ├── resource.py        ResourceRef. Opaque identifier, never parsed
 │       ├── containers.py      Workload, ClusterSlice, ReservationVsUse. OOM status
@@ -466,6 +488,9 @@ meter/
 │       ├── quotas.py          QuotaSource
 │       ├── recommendations.py RecommendationSource, what Compute Optimizer, Cost
 │       │                      Optimization Hub and Trusted Advisor already know
+│       ├── reports.py         ReportStore and ReportSender, FEAT-069. The store is
+│       │                      the data bucket; the sender has a fake and no adapter
+│       │                      until OPEN-11 names a channel
 │       └── tickets.py         TicketSink. A fake and no adapter, since the
 │                              ticketing system is OPEN-05
 ├── finops_providers/          IN BUILD  aws/, grafana/, gcp/, azure/. The fakes
@@ -476,6 +501,8 @@ meter/
 │   │   ├── accounts.py        the exact org tree. Every call paginated
 │   │   ├── health.py          is the role usable, and if not, whose fix is it
 │   │   ├── platform_cost.py   the one Cost Explorer request, grouped
+│   │   ├── report_store.py    FEAT-069. Scheduled report files in the data bucket;
+│   │   │                      a key with nothing under it is NoData, not SchemaDrift
 │   │   ├── commitment.py      utilization and coverage, four Cost Explorer
 │   │   │                      calls. **Never yet run**, ISS-122. Savings
 │   │   │                      Plans report money and reservations report
@@ -526,6 +553,8 @@ meter/
 │   │                          finally. v1 writes nothing, constraint 6
 ├── finops-web/                IN BUILD  Vite, React and TypeScript
 │   ├── README.md              why the versions are pinned where they are
+│   ├── components/ChartPanel.tsx  A chart on the screen that owns its numbers: a
+│   │                          title, one sentence on what is drawn, then the chart
 │   ├── components/BarChart.tsx  the days, drawn. Hand rolled SVG like Sparkline,
 │   │                          so no charting dependency needs admitting and
 │   │                          nothing animates a bar up from zero, which is a
@@ -563,46 +592,61 @@ meter/
 │   │                          absences with two sentences: no age is never
 │   │                          collected, no cadence is not scheduled, and they
 │   │                          need different actions
-│   ├── scripts/build_world.mjs  generates the coastline from Natural Earth 110m,
-│   │                          run by `make world`. Its two dependencies are dev
-│   │                          only and never reach a browser: what ships is a
-│   │                          committed string of path data, so the page draws a
-│   │                          real coastline with no mapping library and no fetch
-│   ├── components/worldPaths.ts  GENERATED, never edited by hand. The projection
-│   │                          it was made with travels in the same file, because a
-│   │                          second copy that drifted would put every marker in
-│   │                          the wrong sea
-│   ├── components/worldLand.ts  where each continent's marker sits, and nothing
-│   │                          else now. It held hand written coastlines for one
-│   │                          revision and they drew shapes nobody recognised.
-│   │                          Coordinates may be written down here when a region
-│   │                          coordinate table may not, and that is the whole
-│   │                          distinction: a region table is a fact about somebody
-│   │                          else's estate and goes stale the day they open
-│   │                          another region, while a coastline is a fact about
-│   │                          the world
-│   ├── components/WorldMap.tsx  the estate on a world map, equirectangular and
-│   │                          cropped to the latitudes people run things in. It
-│   │                          shipped first as a graticule and two dots, on the
-│   │                          argument that a coastline implies a precision the
-│   │                          prefix lacks, and that was wrong about where the
-│   │                          claim lives: a coastline says this is the world, and
-│   │                          it is the marker position that would claim a
-│   │                          datacentre. Markers are sized by area, so
-│   │                          four times the resources is four times the ink:
-│   │                          sizing by radius would claim four times again. The
-│   │                          positions live here rather than in the domain because
-│   │                          where a continent sits in a picture is a fact about
-│   │                          the picture, and a geography with no position is
-│   │                          still in the legend and counted in a sentence. The
-│   │                          SVG is aria-hidden and the legend is the content and
-│   │                          the control, since markers are not reachable from a
-│   │                          keyboard
-│   ├── screens/GeographyScreen.tsx  FEAT-061. The map, three leftovers that are
-│   │                          never added together, and the resources of whichever
-│   │                          continent was clicked. Nothing loads until one is
-│   │                          chosen, because a screen that loads the first has
-│   │                          decided which continent matters
+│   ├── scripts/build_world.mjs  generates the land as dots from Natural Earth 110m
+│   │                          on an Equal Earth grid, run by `make world`, each ring
+│   │                          unwrapped across the antimeridian so no line can cross
+│   │                          the map. Its two dependencies are dev only and never
+│   │                          reach a browser. TASK-P8-017
+│   ├── components/worldDots.ts  GENERATED, never edited by hand: the dots as row
+│   │                          runs, the projection's constants, the rounded frame
+│   │                          and the points it projected, which equalEarth.ts is
+│   │                          tested against
+│   ├── components/equalEarth.ts  the projection each bubble is placed by, and the
+│   │                          land as one path of round capped strokes
+│   ├── components/worldLand.ts  where each continent's bubble sits, and nothing
+│   │                          else. Coordinates may be written down here when a
+│   │                          region coordinate table may not: a region table is a
+│   │                          fact about somebody else's estate and goes stale the
+│   │                          day they open another region, while land is a fact
+│   │                          about the world
+│   ├── components/WorldMap.tsx  the estate on a world of dots: a glowing bubble per
+│   │                          geography sized by area by this month's Effective
+│   │                          Cost, its resource count beside it, lines for links
+│   │                          between geographies, and its numbers on hover or
+│   │                          focus. A cost not read sizes nothing and says so.
+│   │                          TASK-P8-017
+│   ├── screens/HomeScreen.tsx  The Overview, FEAT-070. A switch between three
+│   │                          dashboards, the reader's choice kept in the browser,
+│   │                          and the slots still arriving under them
+│   ├── screens/Overview*.tsx  The FinOps practitioner, Executive and Engineering
+│   │                          lead dashboards and the panels they share. They own
+│   │                          no data: every figure is read through the hook of
+│   │                          the screen that owns it, and links to that screen
+│   ├── screens/overviewKpis.ts  The Overview's KPI arithmetic, pure, so each
+│   │                          formula is tested without drawing a screen
+│   ├── screens/exploreSeries.ts  Cost Explorer views other screens chart, asked
+│   │                          the Explorer's own way so they share its answer, and
+│   │                          their points as stacked series
+│   ├── screens/accountHealth.ts  Each account's collectors by age in their own
+│   │                          interval, the heatmap on Accounts
+│   ├── screens/realizedSavings.ts  Verified savings added up by the day each
+│   │                          check closed, never across verdicts
+│   ├── screens/queryByDashboard.ts  Query cost summed per dashboard
+│   ├── screens/commitmentDays.ts  The daily commitment figures as two money
+│   │                          stacks and a heatmap of the two percentages
+│   ├── screens/GeographyScreen.tsx  FEAT-061. The map, a glass tile per geography,
+│   │                          a table of every geography and of every link, the
+│   │                          leftovers of resources and of cost that are never
+│   │                          added together, and the resources of whichever
+│   │                          continent was chosen. Nothing loads until one is
+│   ├── screens/GeographyTile.tsx  one geography's tile: this month's cost, the same
+│   │                          days last month, and thirty days of its own regions'
+│   │                          shape. Its resource count and the list control sit
+│   │                          in the footer a failed cost read does not replace
+│   ├── screens/geographyModel.ts  the Geography screen's arithmetic: cost by
+│   │                          geography from the Explorer's view by region, links
+│   │                          between geographies, bubble sizes, and each tile's
+│   │                          query. Holds no copy of the prefix rule
 │   ├── components/rankedRows.ts  the collapse and the truncation, and the one
 │   │                          place a ranked chart can be quietly wrong: a total
 │   │                          taken after the remainder was folded in makes every
@@ -642,6 +686,23 @@ meter/
 │   │                          of the things being ranked, one device each, because
 │   │                          a mark with two meanings cannot be read. Used by the
 │   │                          allocation screen and the waste queue
+│   ├── screens/ScheduledReportsScreen.tsx  Scheduled, FEAT-069: the reader's schedules,
+│   │                          paused, resumed and deleted, and the reports made for
+│   │                          them with a download where a file is kept.
+│   │                          scheduleModel.ts holds its words
+│   ├── screens/ReportLibraryScreen.tsx  the Report Library, FEAT-068: the reader's
+│   │                          saved views and the shared ones, opened, renamed,
+│   │                          duplicated, shared, deleted and exported, with the
+│   │                          changes their owner's alone. libraryModel.ts holds
+│   │                          what it says about each view
+│   ├── screens/ForecastScreen.tsx  Forecasts, FEAT-066: the one screen that draws a
+│   │                          forecast, always a range beside its accuracy, or the
+│   │                          reason where the figure would be. forecastModel.ts
+│   │                          holds its rules
+│   ├── screens/CostScreen.tsx  Cost Explorer, FEAT-065. The view lives in the
+│   │                          address under the route's own names, so a link
+│   │                          lands on it. exploreModel.ts holds its rules,
+│   │                          ExploreControls.tsx and ExploreResult.tsx its parts
 │   ├── screens/ContainerCostScreen.tsx  FEAT-035, under Cost. Each cluster states its
 │   │                          workloads' share and the capacity no pod requested,
 │   │                          and the two make its total in plain sight, so a
@@ -710,22 +771,59 @@ meter/
 │       ├── tokens.css         light and dark in one declaration, via light-dark().
 │       │                      Tokens, and the classes that carry meaning. The
 │       │                      severity ramp is warm because a blue one ended on
-│       │                      the accent, the dark failure red is saturated
-│       │                      rather than light so it outranks the prose beside
-│       │                      it, and the faces are IBM Plex, self hosted, so a
-│       │                      column of figures is the same width everywhere
+│       │                      the accent, the failure red outranks the prose
+│       │                      beside it, and since 2026-10-05 the two themes are
+│       │                      one glass system, Aurora Glass and Frosted Ledger,
+│       │                      in Geist and Geist Mono, self hosted, with opaque
+│       │                      fallbacks for reduced transparency, no
+│       │                      backdrop-filter and print
 │       ├── storage.ts         the one place that knows browser storage is
 │       │                      allowed to refuse. A blocked browser throws on
 │       │                      the property access, and reading the token
 │       │                      without this stopped the application starting
-│       ├── shell/AppShell.tsx the frame. Trust strip, the page heading, and a
-│       │                      navigation column that collapses to 56 px, hidden
-│       │                      rather than covered, remembered per browser
-│       ├── shell/sections.ts  the seven navigation groups, one matchFor behind
-│       │                      screenTitleFor and activeGroupFor so the heading
-│       │                      and the open accordion cannot disagree, and
-│       │                      the one place a screen's name is decided, so the
-│       │                      heading and the menu cannot disagree
+│       ├── theme.ts           the theme a person chose: the operating system
+│       │                      until they choose, then pinned as data-theme and
+│       │                      remembered in their browser
+│       ├── shell/AppShell.tsx the frame, as drawn: a glass rail listing every group
+│       │                      and screen, collapsing to 64 px, and a column topped
+│       │                      by the title and scope line, a toolbar with Save view,
+│       │                      Export and the theme, and the sticky trust line. TASK-P8-018
+│       ├── shell/ExportMenu.tsx  Export beside every screen title: each view the
+│       │                      screen reads, as a workbook or a CSV the server
+│       │                      writes and the browser saves under its name. FEAT-067.
+│       │                      Opens itself when the report library's Export sent
+│       │                      the reader, FEAT-068
+│       ├── shell/ScheduleView.tsx  the Schedule panel, opened on a view's own screen
+│       │                      from the library, offering the routes that screen
+│       │                      exports. FEAT-069
+│       ├── shell/SaveView.tsx  Save view beside Export on every built screen and
+│       │                      tab: the screen and its query under a name, private
+│       │                      or shared, never a figure. FEAT-068
+│       ├── shell/ThemeToggle.tsx  System, Light and Dark as three radios in the
+│       │                      toolbar, Light the default since 2026-10-05, so the
+│       │                      way back to the system never passes through the
+│       │                      other theme
+│       ├── shell/sections.ts  the nine Framework groups of ADR-0030, the tabs of
+│       │                      merged screens, and the redirect table every
+│       │                      pre P8 path resolves through. One matchFor behind
+│       │                      screenTitleFor, activeGroupFor and tabsFor, so the
+│       │                      heading, the open group and the open tab cannot
+│       │                      disagree. isSavable says which addresses a view
+│       │                      can be saved from
+│       ├── shell/ScreenTabs.tsx  a merged screen's views as links under its
+│       │                      heading, the open one marked with aria-current
+│       ├── shell/filters.ts   useFilters: a screen's filters live in the query
+│       │                      string, as history entries, under the keys its
+│       │                      entry in sections.ts declares
+│       ├── components/displayNames.ts  every code the API sends, in the words
+│       │                      the approved label table gives it, and the
+│       │                      provider's term for each cost column's tooltip
+│       ├── components/charts/ the chart set, hand built SVG: stacked area with
+│       │                      forecast band and budget pace, stacked bar in
+│       │                      rows or, over time, columns,
+│       │                      treemap, heatmap and KPI tile, with the earlier
+│       │                      bars and sparkline, each with a table of its
+│       │                      numbers that a test holds equal to its marks
 │       ├── layout.css         where things sit. Element selectors, because
 │       │                      DataTable is the only table and Figure the only
 │       │                      numeral. Needs no component to accept a className,
@@ -743,8 +841,12 @@ meter/
 │       │   │                 sentence and never the rows, for tiles that sit
 │       │   │                 under a shell already making the claim
 │       │   ├── surfaceState.ts    which of the seven a query is in, one decision
-│       │   ├── DataTable.tsx  virtualised past 200 rows, headless
-│       │   ├── tableConfig.ts column widths and alignment. Numerals right, always
+│       │   ├── DataTable.tsx  virtualised past 200 rows, headless. Sorts by a
+│       │   │                  header button with aria-sort, hides the columns a
+│       │   │                  reader unticks, totals a column of one unit and
+│       │   │                  one provenance, and otherwise says why not
+│       │   ├── tableConfig.ts column widths and alignment. Numerals right, always.
+│       │   │                  columnTotal, nextSort and sortRows, all pure
 │       │   ├── TypedError.tsx cause and remediation. Never a numeral
 │       │   ├── CoverageBanner.tsx  not dismissible. The condition does not go away
 │       │   ├── FreshnessIndicator.tsx  age against cadence, not a fixed threshold
@@ -762,6 +864,11 @@ meter/
 │       ├── api/               typed client. Refuses a response with no envelope
 │       │   ├── queries.ts     one hook per route, plus useQuerySurface for a
 │       │   │                  surface whose route does not exist yet
+│       │   ├── exportViews.ts the views a screen offers for export, registered
+│       │   │                  by the query hooks, and only from inside a screen,
+│       │   │                  and the state that opens the menu from the library
+│       │   ├── savedViews.ts  a saved view's address both ways: the query it
+│       │   │                  keeps, and the address that opens it. FEAT-068
 │       │   ├── fixtureSeam.ts FIXTURE_SURFACES and resolveSurface. Route
 │       │   │                  templates, not urls, so a detail path matches.
 │       │   │                  A failing route raises, it never falls back
@@ -1083,6 +1190,21 @@ meter/
 │   ├── deps.py                the first scope point. Scope comes from the resolver
 │   ├── middleware.py          request id on every line and back on the response
 │   ├── schemas.py             the meta envelope. degraded is computed, never set
+│   ├── screens.py             every screen and tab the navigation knows, which a
+│   │                          saved view may name. Held to sections.ts by a test,
+│   │                          and copied into migration 0028's constraint
+│   ├── exports/               FEAT-067. One export responder: @exportable on every
+│   │                          list route a screen reads answers format=xlsx with a
+│   │                          Data sheet and an About this export sheet, and
+│   │                          format=csv with every row, from the route's own
+│   │                          envelope after the same guard. cells.py names columns
+│   │                          and collectors, writers.py writes both files with a
+│   │                          hostile cell kept as text, responder.py records each
+│   │                          file in report_run. test_export_routes.py holds every
+│   │                          GET route to it or to an exemption with its reason.
+│   │                          scheduled.py is the report runner, ADR-0033: each due
+│   │                          schedule rendered as each recipient through its route
+│   │                          in process, kept in the data bucket, recorded
 │   ├── routes/                the seven P0 routes, all returning the envelope.
 │   │                          inventory.py holds P4's routes, counted above: the subgraph,
 │   │                          the estate
@@ -1097,6 +1219,18 @@ meter/
 │   │                          An open period says so in the payload, because
 │   │                          two copies of a calendar rule is one that is
 │   │                          eventually wrong in one of them
+│   │   ├── forecast.py        FEAT-066's GET /cost/forecast: the month end and three
+│   │   │                      months ahead, each a range or the reason, the method
+│   │   │                      named and its backtest published beside it
+│   │   ├── schedules.py       FEAT-069's /reports/schedules and /reports/runs, and
+│   │   │                      the file route that checks the reader's scope again
+│   │   ├── views.py           FEAT-068's /reports/views: list, save, open, rename
+│   │   │                      or share, and delete. A refused change answers 403 or
+│   │   │                      404 rather than raising, so its audit row commits
+│   │   ├── explore.py         FEAT-065's GET /cost/explore: two groupings over
+│   │   │                      eight FOCUS columns and the period's own tag keys,
+│   │   │                      a period and the one before it. Refuses a view it
+│   │   │                      cannot draw with the sentence that says why
 │   │   ├── me.py              principal, tier, scope summary
 │   │   ├── accounts.py        accounts in scope, plus the role health recheck
 │   │   ├── org.py             the tree. Out of scope branches marked, not hidden
@@ -1126,13 +1260,16 @@ meter/
 │   │                          data that does not exist yet, ISS-148. Coverage
 │   │                          here counts workspaces, not findings
 │   ├── guards.py              the scope guard. No default, empty means nothing.
-│   │                          Five shapes: tenant only, ByAccount for a row
+│   │                          Six shapes: tenant only, ByAccount for a row
 │   │                          that names its account, Through for one that
 │   │                          does not and inherits from the row it hangs off,
 │   │                          PayerWide for a row about the whole payer, which a
 │   │                          narrowed scope reads none of, and ByPrincipal for a
 │   │                          row that belongs to a person, which only that person
-│   │                          reads and a global scope does not widen, ADR-0029.
+│   │                          reads and a global scope does not widen, ADR-0029,
+│   │                          and OwnedOrShared for a row its owner may share
+│   │                          with the tenant, which only configuration may use,
+│   │                          ADR-0032.
 │   │                          Through recurses, so a finding is scoped through
 │   │                          its definition through its instance
 │   ├── tools.py               the tool table, eleven rows, each a name, a route,
@@ -1178,7 +1315,20 @@ meter/
 │                              assistant.py holds the exchange, digest and
 │                              redaction repositories, and tokens_spent, the one
 │                              read across people: a tenant wide sum for the
-│                              budget, which returns a number and never a row
+│                              budget, which returns a number and never a row.
+│                              explore.py is Cost Explorer's: every read derived
+│                              from scoped_select, the ranking a window count and
+│                              the tag keys a function in the FROM clause, because
+│                              a wrapped query loses the mark the guard checks.
+│                              forecast.py reads the first month and last day held
+│                              and the cost of each UTC day, a zero for a day that
+│                              billed nothing, so a gap and a quiet day differ.
+│                              reports.py writes one report_run row per export
+│                              file, in the transaction of the read it records.
+│                              views.py holds saved views: every write confined
+│                              to the owner as well as the scope, and audited.
+│                              schedules.py holds report schedules, the owner's
+│                              alone, and reports.py the run reader, ByPrincipal
 │
 ├── alembic.ini                no database URL in it, env.py reads the settings
 ├── migrations/                the only way the schema changes
@@ -1236,6 +1386,20 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0029_report_schedule.py  FEAT-069. The schedule, a trigger holding its
+│       │                      view visible to its owner; what a run records; and
+│       │                      which process runs each cadence
+│       ├── 0028_saved_view.py  FEAT-068. A screen and its query under a name,
+│       │                      private or shared. The screen is one the navigation
+│       │                      knew that day, the query a JSON object, held by
+│       │                      constraints
+│       ├── 0027_commitment_day.py  TASK-P8-013, FEAT-024. One row per kind of
+│       │                      commitment per day: committed, used, eligible and
+│       │                      covered, each held by a constraint. Payer wide
+│       ├── 0026_report_run.py  FEAT-067. One row per export file: who, which view
+│       │                      and query, which scope as its account list, the
+│       │                      format, rows and bytes, and whether a workbook
+│       │                      stopped at the row limit. Scoped to its person
 │       ├── 0025_redaction_event.py  FEAT-046. The rule and the action, one row
 │       │                      per rule per question, and no column the secret could
 │       │                      go in: not its text, a hash, its position or its
@@ -1324,6 +1488,10 @@ meter/
 │                              expiry, a modelled row cannot claim a measured
 │                              count, and a change cannot exist without its undo
 ├── finops_query/              IN BUILD  P2 query cost governance, P3 waste, P4 graph
+│   ├── forecast.py            FEAT-066, TASK-P8-008. A weekday profile forecast of
+│   │                          this month and the next three, each a range from its
+│   │                          own backtest or the sentence saying why it is
+│   │                          withheld. Never a point. No database and no clock
 │   ├── insight.py             FEAT-038, TASK-P7-006 and TASK-P7-007. The loop: a
 │   │                          question, tool calls through a Toolbox, and an answer
 │   │                          whose values are read from the tool results by call
@@ -1390,6 +1558,9 @@ meter/
 │   │                          throttles, a low memory request kills. Every
 │   │                          series is hourly, which is what keeps p99 from
 │   │                          quietly becoming the max rule
+│   ├── report_schedule.py     FEAT-069, in finops_core/domain/. The four cadences and
+│   │                          each one's next run after a moment, read in UTC, so every
+│   │                          container agrees and no clock is read inside it
 │   ├── geography.py           FEAT-061. Where a region is, from its name and from
 │   │                          nothing else. The prefix rather than a coordinate table,
 │   │                          and that is the whole argument: a coordinate table has to
@@ -1531,6 +1702,7 @@ continuous integration, not by good intentions.
 | What an audit found, and when | `audits/`, newest last by filename |
 | Is the posture currently clean | `security/POSTURE.md` |
 | Which base image digest are we on | `docker/base-images.lock` |
+| Which version of a Python dependency runs | `requirements/runtime.lock`, and `requirements/dev.lock` for tests and tools |
 | Why is a vulnerability accepted | `security/policy/accepted.yaml`, and ADR-0018 |
 | How a number is rendered, and how a failure is | `docs/12-UI-DESIGN.md` |
 | Which tasks are done | `tasks/STATUS.md`, generated from the plan files |

@@ -70,7 +70,7 @@ describe('EnforcementScreen', () => {
     const row = rowFor('arn:aws:iam::role/grafana-datasource');
     expect(within(row).getByRole('link', { name: /why/i })).toHaveAttribute(
       'href',
-      '/governance/queries/11111111-1111-1111-1111-111111111111',
+      '/govern/query-cost/findings/11111111-1111-1111-1111-111111111111',
     );
   });
 

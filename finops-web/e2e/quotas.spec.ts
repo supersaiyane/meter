@@ -228,7 +228,7 @@ async function withSession(page: Page): Promise<void> {
 
 test('a quota nobody can measure is a row with a reason, never a zero', async ({ page }) => {
   await withSession(page);
-  await page.goto('/governance/quotas');
+  await page.goto('/govern/quotas');
 
   // The ratio first, because it is what tells a reader the shorter list is not the whole story.
   await expect(page.getByTestId('quotas-ratio')).toContainText('3 of 7');
@@ -247,7 +247,7 @@ test('a quota nobody can measure is a row with a reason, never a zero', async ({
 
 test('the fullest quota is first and is drawn on the inverted ramp', async ({ page }) => {
   await withSession(page);
-  await page.goto('/governance/quotas');
+  await page.goto('/govern/quotas');
 
   const first = page.getByTestId('quota-measured').first();
   await expect(first).toContainText('L-1216C47A');
@@ -259,10 +259,10 @@ test('a quota leads to the increase Meter would ask for and would not submit', a
   page,
 }) => {
   await withSession(page);
-  await page.goto('/governance/quotas');
+  await page.goto('/govern/quotas');
 
   await page.getByTestId('quota-measured').first().getByTestId('quota-link').click();
-  await expect(page).toHaveURL(/\/governance\/quotas\/ec2\/L-1216C47A$/);
+  await expect(page).toHaveURL(/\/govern\/quotas\/ec2\/L-1216C47A$/);
 
   // The figures, so the suggestion can be checked rather than taken on faith.
   await expect(page.getByTestId('draft-figures')).toContainText('520');
@@ -286,7 +286,7 @@ test('a quota leads to the increase Meter would ask for and would not submit', a
 
 test('a request made outside Meter is tracked, refusal and all', async ({ page }) => {
   await withSession(page);
-  await page.goto('/governance/quotas');
+  await page.goto('/govern/quotas');
 
   // The request is for a quota in the unmeasured list, which is the independence TASK-P5-008 is
   // about: the quotas somebody requests blind are exactly the ones with no figure to look at.
@@ -295,7 +295,7 @@ test('a request made outside Meter is tracked, refusal and all', async ({ page }
   await expect(row.getByTestId('request-status')).toContainText('denied');
 
   await row.getByTestId('request-quota-link').click();
-  await expect(page).toHaveURL(/\/governance\/quotas\/kafka\/L-MSK-BROKERS$/);
+  await expect(page).toHaveURL(/\/govern\/quotas\/kafka\/L-MSK-BROKERS$/);
 
   // When it was denied, not only that it was.
   await expect(page.getByTestId('request-history')).toContainText('2026-08-26');

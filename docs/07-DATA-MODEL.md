@@ -493,6 +493,30 @@ CREATE TABLE commitment_coverage (
 );
 ```
 
+The same commitments a day at a time, since TASK-P8-013:
+
+```sql
+CREATE TABLE commitment_day (
+    day_id          UUID PRIMARY KEY,
+    tenant_id       UUID            NOT NULL REFERENCES tenant (tenant_id),
+    ingest_run_id   UUID            NOT NULL,
+    commitment_type TEXT            NOT NULL,
+    day             DATE            NOT NULL,
+    committed       NUMERIC(20, 10) NOT NULL,   -- used <= committed
+    used            NUMERIC(20, 10) NOT NULL,
+    eligible_spend  NUMERIC(20, 10) NOT NULL,   -- covered_spend <= eligible_spend
+    covered_spend   NUMERIC(20, 10) NOT NULL,
+    as_of           TIMESTAMPTZ     NOT NULL,   -- the end of the day, collected_at >= as_of
+    collected_at    TIMESTAMPTZ     NOT NULL,
+    UNIQUE (tenant_id, commitment_type, day)
+);
+```
+
+One row per kind of commitment per day, never per plan, because the provider's daily grain
+reports Savings Plans use only as one total across every plan. Coverage shares the row
+because at this grain neither figure is attributed to a plan, so the rule below, which is
+about attributing coverage to one commitment, is not broken. `PayerWide` like the other two.
+
 **Two tables and not one, and `commitment_coverage` deliberately has no
 `commitment_id`.** A provider reports utilization per commitment and coverage per
 service or region, because a dollar of covered spend cannot be attributed to one
@@ -730,6 +754,117 @@ was found in it.
 Two of the three tables hold a person's identifier, and the guard confines them
 to that person through the `ByPrincipal` rule, ADR-0029. None of the three has
 a retention job yet, and `erase_principal` does not reach them, ISS-226.
+
+### Export records, P8
+
+Migration `0026_report_run`, FEAT-067. One row for every file an export writes, inserted by
+`finops_api/db/repositories/reports.py` in the transaction of the read it records, so a file
+cannot leave without its record.
+
+```sql
+CREATE TABLE report_run (
+    run_id          UUID         PRIMARY KEY,
+    tenant_id       UUID         NOT NULL REFERENCES tenant (tenant_id),
+    principal_id    TEXT         NOT NULL,      -- who made the file
+    view_path       TEXT         NOT NULL,      -- the route, /api/v1/...
+    view_query      TEXT         NOT NULL,      -- its query, without the format
+    scope_global    BOOLEAN      NOT NULL,
+    scope_accounts  TEXT[]       NOT NULL,      -- the accounts a narrowed scope named,
+                                                -- empty for a global one
+    format          TEXT         NOT NULL,      -- xlsx or csv
+    row_count       INTEGER      NOT NULL,
+    byte_count      BIGINT       NOT NULL,
+    truncated       BOOLEAN      NOT NULL,      -- a workbook stopped at the row limit
+    made_at         TIMESTAMPTZ  NOT NULL
+);
+CREATE INDEX ix_report_run__principal ON report_run (tenant_id, principal_id, made_at);
+```
+
+Four check constraints hold it: the format is one of two, the counts are never negative, the
+person is named and the view is a path, and a global scope names no accounts. The accounts are
+a list rather than a count, because a count says how much was taken and the list says what,
+which is the question an audit asks. The guard confines the table to its person through
+`ByPrincipal`, ADR-0029, so a reader lists their own runs and nobody else's, which the
+Scheduled screen does, FEAT-069. No retention job reads it and `erase_principal` does not reach it,
+ISS-249.
+
+### Saved views, P8
+
+Migration `0028_saved_view`, FEAT-068. A screen and its query under a name, kept by the person
+who saved it or shared with the tenant. Configuration and never data: no column holds a figure,
+so opening a view reads its screen afresh in the opener's scope.
+
+```sql
+CREATE TABLE saved_view (
+    view_id      UUID         PRIMARY KEY,
+    tenant_id    UUID         NOT NULL REFERENCES tenant (tenant_id),
+    owner_id     TEXT         NOT NULL,      -- who saved it
+    name         TEXT         NOT NULL,
+    screen_path  TEXT         NOT NULL,      -- a screen the navigation knows
+    query        JSONB        NOT NULL,      -- its query string as an object
+    visibility   TEXT         NOT NULL,      -- PRIVATE or SHARED
+    created_at   TIMESTAMPTZ  NOT NULL,
+    updated_at   TIMESTAMPTZ  NOT NULL
+);
+CREATE INDEX ix_saved_view__owner ON saved_view (tenant_id, owner_id, updated_at);
+CREATE INDEX ix_saved_view__shared ON saved_view (tenant_id, updated_at)
+    WHERE visibility = 'SHARED';
+```
+
+Five check constraints hold it: the visibility is one of two, the owner and the name are not
+blank and the name is not over its length, the screen is one of the paths in
+`finops_api/screens.py` on the day the migration ran, the query is a JSON object, and a view is
+never changed before it was made. A screen added to the navigation widens the screen constraint
+in a migration of its own, and `tests/api/test_saved_views.py` reads the constraint back out of
+the database to hold it to the list. The guard reads the table through `OwnedOrShared`,
+ADR-0032: the owner reads their views, everybody in the tenant reads the shared ones, and only
+the owner's writes change a row. No retention job reads it and `erase_principal` does not reach
+it, ISS-255.
+
+### Report schedules and what a run records, P8
+
+Migration `0029_report_schedule`, FEAT-069 and ADR-0033.
+
+```sql
+CREATE TABLE report_schedule (
+    schedule_id  UUID         PRIMARY KEY,
+    tenant_id    UUID         NOT NULL REFERENCES tenant (tenant_id),
+    owner_id     TEXT         NOT NULL,
+    view_id      UUID         REFERENCES saved_view (view_id) ON DELETE SET NULL,
+    export_path  TEXT         NOT NULL,      -- the route a run renders, /api/v1/..., no format
+    format       TEXT         NOT NULL,      -- xlsx or csv
+    cadence      TEXT         NOT NULL,      -- DAILY, WEEKLY, MONTHLY or MONTH_CLOSE
+    recipients   TEXT[]       NOT NULL,      -- the principals it renders for
+    enabled      BOOLEAN      NOT NULL,
+    next_run_at  TIMESTAMPTZ  NOT NULL,
+    created_at   TIMESTAMPTZ  NOT NULL,
+    updated_at   TIMESTAMPTZ  NOT NULL
+);
+-- report_run gains the schedule that made it, its status, where its file is kept, the
+-- typed cause of a failure, the freshness of what it read, and when it finished.
+ALTER TABLE report_run
+    ADD COLUMN schedule_id    UUID REFERENCES report_schedule (schedule_id) ON DELETE SET NULL,
+    ADD COLUMN status         TEXT NOT NULL DEFAULT 'STREAMED',
+    ADD COLUMN storage_key    TEXT,
+    ADD COLUMN failure_cause  TEXT,
+    ADD COLUMN failure_detail TEXT,
+    ADD COLUMN as_of          TIMESTAMPTZ,
+    ADD COLUMN collected_at   TIMESTAMPTZ,
+    ADD COLUMN finished_at    TIMESTAMPTZ;
+-- Which process runs each cadence: the ingest worker, or the API for the scheduled reports.
+ALTER TABLE collector_schedule ADD COLUMN runs_in TEXT NOT NULL DEFAULT 'worker';
+```
+
+A schedule's checks hold the format, the cadence, between one and fifty recipients none of them
+blank, a named owner, a route of this API's own with no format in it, and a schedule never
+changed before it was made. A trigger holds the invariant a check cannot read: the view is one
+the owner can open, their own or a shared one, in the schedule's tenant. A view deleted later
+leaves its schedules with no view rather than deleting other people's schedules with it, and the
+runner records why for each recipient once and pauses them. A run's checks hold four
+statuses, a typed cause on a failure and on nothing else, a key on a file kept or sent, neither a
+key nor a schedule on a file streamed to whoever exported it, and a finish never before the
+making. The guard reads `report_schedule` through `ByPrincipal` on its owner. No retention job
+reads it and `erase_principal` does not reach it, ISS-256.
 
 ## Migration workflow, Alembic
 

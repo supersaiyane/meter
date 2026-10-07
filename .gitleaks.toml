@@ -38,4 +38,9 @@ stopwords = [
   "account_health",
   "platform_cost",
   "org_tree",
+  # A query string in a test, beside a variable named token. `tests/api/test_cost_showback.py`
+  # asks for the showback of a tag key nobody used, `download(client, token,
+  # "tag=nobody-uses-this")`, and `generic-api-key` read the query as the token's value. It is a
+  # tag key chosen to match nothing, written in plain sight, and could never be a credential.
+  "nobody-uses-this",
 ]

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
 
 import { useEnforcementActions } from '../api/queries';
 import type { ApiEnforcementAction } from '../api/types';
@@ -7,6 +6,7 @@ import { DataTable } from '../components/DataTable';
 import { FixtureBand } from '../components/FixtureBand';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
+import { Link } from '../shell/links';
 import { countdown, stampUtc } from './enforcementTime';
 import { useReportMeta } from '../shell/metaRegistry';
 import { surfaceStateFor } from './surfaceStateFor';
@@ -66,7 +66,9 @@ export function EnforcementScreen({ now }: EnforcementScreenProps) {
     {
       key: 'reason',
       header: 'Reason',
-      render: (row) => <Link to={`/governance/queries/${row.reason_finding_id}`}>why</Link>,
+      render: (row) => (
+        <Link to={`/govern/query-cost/findings/${row.reason_finding_id}`}>why</Link>
+      ),
     },
     {
       key: 'revoke',
@@ -94,7 +96,7 @@ export function EnforcementScreen({ now }: EnforcementScreenProps) {
   const state = surfaceStateFor(query, envelope?.meta, rows.length, 'none', 'query_control');
 
   return (
-    <section aria-label="Enforcement">
+    <section aria-label="Policies">
       <FixtureBand source={source} />
       {note === null ? null : (
         <p data-testid="revoke-note" role="status">

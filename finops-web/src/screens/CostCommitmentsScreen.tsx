@@ -1,12 +1,16 @@
 import { useMemo } from 'react';
+import { commitmentTypeName } from '../components/displayNames';
 
-import { useCostCommitments } from '../api/queries';
+import { useCommitmentDays, useCostCommitments } from '../api/queries';
+import { ChartPanel } from '../components/ChartPanel';
+import { Heatmap, StackedArea } from '../components/charts';
 import { DataTable } from '../components/DataTable';
 import { PercentCell } from '../components/PercentCell';
 import { Figure } from '../components/Figure';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
 import { useReportMeta } from '../shell/metaRegistry';
+import { committedEachDay, coverageEachDay, dayByDay } from './commitmentDays';
 import { surfaceStateFor } from './surfaceStateFor';
 import { riskLabel, type RiskVerdict } from '../components/actionRisk';
 import { SeverityBadge } from '../components/SeverityBadge';
@@ -61,6 +65,80 @@ const COMMITMENT_RISK: RiskVerdict = {
   is_no_regret: false,
 };
 
+/** FEAT-055's gaps as somebody's to act on, TASK-P8-013 on `DataTable`. */
+function actionColumns(freshness: {
+  readonly asOf: Date;
+  readonly collectedAt: Date;
+}): readonly Column<ApiCommitmentAction>[] {
+  return [
+    {
+      key: 'gap',
+      header: 'Gap',
+      rowHeader: true,
+      render: (row) => (
+        <>
+          {row.dimension_value}
+          <span> {commitmentTypeName(row.commitment_type)}</span>
+        </>
+      ),
+      sortValue: (row) => row.dimension_value,
+    },
+    {
+      key: 'saving',
+      header: 'Estimated monthly savings',
+      numeric: true,
+      // Modelled, never measured, and the rationale says the discount came from configuration
+      // rather than from a quote. So is the total, hatched like every figure it adds up.
+      render: (row) => (
+        <Figure
+          value={{ kind: 'modelled', amount: Number(row.estimated_monthly_saving) }}
+          freshness={freshness}
+          unit="usd"
+        />
+      ),
+      sortValue: (row) => Number(row.estimated_monthly_saving),
+      total: {
+        value: (row) => Number(row.estimated_monthly_saving),
+        unit: () => 'USD',
+        provenance: () => 'modelled',
+        render: (sum) => (
+          <Figure value={{ kind: 'modelled', amount: sum }} freshness={freshness} unit="usd" />
+        ),
+      },
+    },
+    {
+      key: 'severity',
+      header: 'Severity',
+      render: (row) => <SeverityBadge level={severityLevel(row.severity)} />,
+      sortValue: (row) => severityLevel(row.severity),
+    },
+    {
+      key: 'risk',
+      header: 'If it is wrong',
+      prose: true,
+      // Constant, and correct by construction rather than by a flag on the row: every
+      // commitment is permanent and none of them stops anything. Through the shared module so
+      // the wording matches the waste screen. The floor is the decision: a commitment
+      // obligates its whole term whether or not the usage continues.
+      render: (row) => (
+        <>
+          <strong>{riskLabel(COMMITMENT_RISK)}</strong>
+          <span>
+            {' '}
+            Worth it while usage stays above {row.usage_floor_percent} percent of today's for{' '}
+            {row.term_months} months.
+          </span>
+        </>
+      ),
+    },
+  ];
+}
+
+/** Whole dollars, what a chart of a month's commitments can show. */
+function dollars(value: number): string {
+  return `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`;
+}
+
 export function CostCommitmentsScreen() {
   const query = useCostCommitments();
   const envelope = query.data?.data;
@@ -70,6 +148,16 @@ export function CostCommitmentsScreen() {
   const actions = useMemo(() => found?.actions ?? [], [found]);
 
   useReportMeta('cost-commitments', envelope?.meta);
+
+  // TASK-P8-013. The same commitments a day at a time, read for the three charts.
+  const daily = useCommitmentDays();
+  useReportMeta('cost-commitment-days', daily.data?.meta);
+  const days = useMemo(() => daily.data?.data ?? [], [daily.data]);
+  const daysState = surfaceStateFor(daily, daily.data?.meta, days.length, 'none', 'commitment');
+  const usedByDay = useMemo(() => committedEachDay(days), [days]);
+  const coveredByDay = useMemo(() => coverageEachDay(days), [days]);
+  const grid = useMemo(() => dayByDay(days), [days]);
+
   const state = surfaceStateFor(
     query,
     envelope?.meta,
@@ -95,7 +183,7 @@ export function CostCommitmentsScreen() {
     },
     {
       key: 'utilization',
-      header: 'Of what we paid for, used',
+      header: 'Commitment utilization',
       numeric: true,
       render: (row) => (
         <span data-testid={`utilization-${row.commitment_id}`}>
@@ -123,7 +211,7 @@ export function CostCommitmentsScreen() {
     },
     {
       key: 'wasted',
-      header: 'Paid for and unused',
+      header: 'Unused commitment',
       numeric: true,
       // In money, because that is the number somebody can act on. A percentage
       // alone does not say whether it is worth a morning.
@@ -135,10 +223,14 @@ export function CostCommitmentsScreen() {
 
   const covered: readonly Column<ApiCommitmentCoverage>[] = [
     { key: 'service', header: 'Service', render: (row) => row.dimension_value },
-    { key: 'type', header: 'Kind of commitment', render: (row) => row.commitment_type },
+    {
+      key: 'type',
+      header: 'Commitment discount type',
+      render: (row) => commitmentTypeName(row.commitment_type),
+    },
     {
       key: 'coverage',
-      header: 'Of what could be committed, is',
+      header: 'Commitment coverage',
       numeric: true,
       render: (row) => (
         <span data-testid={`coverage-${row.dimension_value}`}>
@@ -166,7 +258,7 @@ export function CostCommitmentsScreen() {
     },
     {
       key: 'uncovered',
-      header: 'On demand instead',
+      header: 'On-Demand cost',
       numeric: true,
       // The gap, in money. A reader buying against this row needs the amount, not
       // the percentage it works out to.
@@ -205,9 +297,64 @@ export function CostCommitmentsScreen() {
         </p>
       ) : null}
 
+      {/* Over time before the window's detail. Money is stacked where its total means
+          something, what was committed and what could have been covered, and the two
+          percentages go to the heatmap, because two utilizations added together measure
+          nothing. */}
+      <StateBoundary state={daysState} coverageShownElsewhere>
+        <div data-testid="chart-row">
+          <ChartPanel
+            id="commitments-use"
+            title="Use, each day"
+            caption="What every commitment obliged each day, as used and as paid for and unused. The last thirty days"
+          >
+            <StackedArea
+              periods={usedByDay.periods}
+              series={usedByDay.series.map((one) => ({
+                ...one,
+                provenance: 'measured' as const,
+              }))}
+              label="Commitment money each day, used and unused"
+              format={dollars}
+            />
+          </ChartPanel>
+          <ChartPanel
+            id="commitments-coverage"
+            title="Coverage, each day"
+            caption="Spend a commitment could have covered each day, as covered and as left on demand"
+          >
+            <StackedArea
+              periods={coveredByDay.periods}
+              series={coveredByDay.series.map((one) => ({
+                ...one,
+                provenance: 'measured' as const,
+              }))}
+              label="Eligible spend each day, covered and on demand"
+              format={dollars}
+            />
+          </ChartPanel>
+        </div>
+        <ChartPanel
+          id="commitments-day-by-day"
+          title="Day by day"
+          caption="Each kind's utilization and coverage per day, in percent, darker for higher. An outline is a day with nothing to divide by"
+        >
+          <Heatmap
+            rows={grid.rows}
+            columns={grid.columns}
+            values={grid.values}
+            provenance="measured"
+            label="Utilization and coverage by kind and day, percent"
+            format={(value) => `${value.toFixed(0)} percent`}
+            missing="nothing to divide by"
+          />
+        </ChartPanel>
+      </StateBoundary>
+
       <StateBoundary state={state}>
         <>
-          <h2 data-testid="utilization-heading">How much of what we paid for was used</h2>
+          <h2 data-testid="utilization-heading">Commitment utilization</h2>
+          <p data-testid="utilization-means">How much of what we paid for was used</p>
           <p data-testid="utilization-explains">
             Per commitment. A commitment at a hundred percent was correctly sized. It says
             nothing about how much of the estate is on a commitment
@@ -219,7 +366,8 @@ export function CostCommitmentsScreen() {
             caption={`${String(commitments.length)} commitments, most unused money first`}
           />
 
-          <h2 data-testid="coverage-heading">How much of the estate is on a commitment</h2>
+          <h2 data-testid="coverage-heading">Commitment coverage</h2>
+          <p data-testid="coverage-means">How much of the estate is on a commitment</p>
           <p data-testid="coverage-explains">
             Per service, never per commitment, because a covered dollar cannot be attributed to
             one of several overlapping plans. A low figure here says buy, whatever the
@@ -246,64 +394,22 @@ export function CostCommitmentsScreen() {
               uncovered.
             </p>
           ) : (
-            <table data-testid="actions">
-              <caption>
-                {actions.length === 1
-                  ? 'One gap worth committing to, with what being wrong would cost.'
-                  : `${String(actions.length)} gaps worth committing to, worst money first, ` +
-                    'with what being wrong would cost.'}
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">Gap</th>
-                  <th scope="col">Saving a month</th>
-                  <th scope="col">Severity</th>
-                  <th scope="col">If it is wrong</th>
-                </tr>
-              </thead>
-              <tbody>
-                {actions.map((row: ApiCommitmentAction) => (
-                  <tr key={`${row.commitment_type}:${row.dimension}:${row.dimension_value}`}>
-                    <th scope="row">
-                      {row.dimension_value}
-                      <span> {row.commitment_type}</span>
-                    </th>
-                    <td>
-                      {/* Modelled, never measured, and the rationale says the discount came
-                          from configuration rather than from a quote. */}
-                      <Figure
-                        value={{
-                          kind: 'modelled',
-                          amount: Number(row.estimated_monthly_saving),
-                        }}
-                        freshness={freshness}
-                        unit="usd"
-                      />
-                    </td>
-                    <td>
-                      <SeverityBadge level={severityLevel(row.severity)} />
-                    </td>
-                    <td>
-                      {/* The same two words the waste screen and the home panel use, from the
-                          same module, so a reader is not told a change is permanent in one
-                          place and reversible in another. A commitment is the least
-                          reversible thing in the product. */}
-                      {/* Constant, and correct by construction rather than by a flag on the
-                          row: every commitment is permanent and none of them stops anything.
-                          Through the shared module so the wording matches the waste screen. */}
-                      <strong>{riskLabel(COMMITMENT_RISK)}</strong>
-                      {/* The floor is the decision. A commitment obligates its whole term
-                          whether or not the usage continues. */}
-                      <span>
-                        {' '}
-                        Worth it while usage stays above {row.usage_floor_percent} percent of
-                        today's for {row.term_months} months.
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div data-testid="actions">
+              <DataTable
+                rows={actions}
+                columns={actionColumns(freshness)}
+                rowKey={(row) =>
+                  `${row.commitment_type}:${row.dimension}:${row.dimension_value}`
+                }
+                caption={
+                  actions.length === 1
+                    ? 'One gap worth committing to, with what being wrong would cost.'
+                    : `${String(actions.length)} gaps worth committing to, worst money first, ` +
+                      'with what being wrong would cost.'
+                }
+                initialSort={{ key: 'saving', direction: 'descending' }}
+              />
+            </div>
           )}
         </>
       </StateBoundary>

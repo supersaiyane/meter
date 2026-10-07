@@ -6,7 +6,7 @@
 | Status | In build |
 | Specification | [P1 spec](../specs/2026-09-18-p1-cost-intelligence-design.md) |
 | Tasks | [P1 plan](../plans/P1-implementation-plan.md), TASK-P1-006, TASK-P1-008 to TASK-P1-010 |
-| Screen | `/cost` |
+| Screen | `/`, the Overview's spend tile. `/analyze/explorer` is FEAT-065's since 2026-10-05 |
 
 ## What it does
 
@@ -64,6 +64,13 @@ period's total, so the first few bars add up by eye to most of the bill.
 
 The chart and the table are the same rows and are held to the same order by a test. A reader who
 catches those two disagreeing about which service is largest stops trusting both.
+
+On 2026-10-05 TASK-P8-007 replaced this screen with Cost Explorer, FEAT-065, which reads
+`/cost/explore` and draws the same line items grouped two ways. The routes here still serve the
+Overview's spend tile and trend, the assistant's cost answers and the export. The history above
+is the spend and trend screen's, kept because three of its decisions carried over: the open
+period is said, unallocated is never hidden, and a figure is set against the period before only
+where that period was collected.
 
 The screen was given a hierarchy on 2026-09-27. Its headline figure was rendering at body size,
 so the most opened screen in the product showed the number it exists for as a line of prose while

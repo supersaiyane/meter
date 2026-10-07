@@ -18,7 +18,7 @@ from typing import Any
 
 from finops_core.domain.account import AccountKey, CloudAccount
 from finops_core.domain.containers import ClusterSlice, ReservationVsUse
-from finops_core.domain.cost import CommitmentCoverage, CommitmentUse, CostRecord
+from finops_core.domain.cost import CommitmentCoverage, CommitmentDay, CommitmentUse, CostRecord
 from finops_core.domain.identity import Entitlement, Principal
 from finops_core.domain.metrics import MetricPoint
 from finops_core.domain.org import OrgNode
@@ -216,6 +216,10 @@ class FakeProvider:
     def coverage(self, window_start: date, window_end: date) -> Iterable[CommitmentCoverage]:
         self._fail_if_planned(fixtures.ORGANIZATION_SCOPE)
         return self._commitment.coverage(window_start, window_end)
+
+    def daily(self, window_start: date, window_end: date) -> Iterable[CommitmentDay]:
+        self._fail_if_planned(fixtures.ORGANIZATION_SCOPE)
+        return self._commitment.daily(window_start, window_end)
 
     # -- MetricSource ------------------------------------------------------
 

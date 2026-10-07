@@ -39,7 +39,13 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 
-from finops_core.constants import REASON_MIN_LENGTH
+from finops_api.screens import SCREEN_PATHS
+from finops_core.constants import (
+    REASON_MIN_LENGTH,
+    REPORT_RECIPIENTS_MAX,
+    SAVED_VIEW_NAME_MAX_LENGTH,
+)
+from finops_core.domain.report_schedule import Cadence
 
 metadata = MetaData()
 
@@ -88,6 +94,8 @@ COVERAGE_STATES = ("COMPLETE", "PARTIAL", "UNREAD")
 #: because nothing failed. `NotYetAttempted` is that state.
 COVERAGE_CAUSES = (*ERROR_TYPES, "NotYetAttempted")
 TIERS = ("viewer", "analyst", "owner")
+#: P8, 0029, ADR-0033. The processes a cadence row can belong to.
+SCHEDULE_RUNNERS = ("worker", "api")
 
 
 def _in_list(column: str, allowed: tuple[str, ...]) -> str:
@@ -227,9 +235,13 @@ collector_schedule = Table(
     Column("is_enabled", Boolean, nullable=False, server_default=text("true")),
     Column("updated_by", Text, nullable=False),
     Column("updated_at", DateTime(timezone=True), nullable=False, server_default=NOW),
+    #: P8, 0029, ADR-0033. Which process runs this cadence. The ingest worker runs the
+    #: collectors; the API runs the scheduled reports, which render through its own routes.
+    Column("runs_in", Text, nullable=False, server_default=text("'worker'")),
     CheckConstraint(
         "cadence_seconds BETWEEN 60 AND 2592000", name="ck_collector_schedule__cadence_sane"
     ),
+    CheckConstraint(_in_list("runs_in", SCHEDULE_RUNNERS), name="ck_collector_schedule__runs_in"),
 )
 
 # `uq_ingest_run__idempotency_key` is what makes re running a collector safe. It
@@ -755,6 +767,26 @@ commitment_coverage = Table(
     Column("dimension_value", Text, nullable=False),
     Column("window_start", Date, nullable=False),
     Column("window_end", Date, nullable=False),
+    Column("eligible_spend", Numeric(20, 10), nullable=False),
+    Column("covered_spend", Numeric(20, 10), nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
+#: TASK-P8-013. One kind of commitment on one day. Per kind and never per commitment, because
+#: Cost Explorer reports daily Savings Plans use only as one total across every plan; and the
+#: coverage figures share the row because at this grain neither is attributed to a plan.
+commitment_day = Table(
+    "commitment_day",
+    metadata,
+    Column("day_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("commitment_type", Text, nullable=False),
+    Column("day", Date, nullable=False),
+    Column("committed", Numeric(20, 10), nullable=False),
+    Column("used", Numeric(20, 10), nullable=False),
     Column("eligible_spend", Numeric(20, 10), nullable=False),
     Column("covered_spend", Numeric(20, 10), nullable=False),
     Column("as_of", DateTime(timezone=True), nullable=False),
@@ -1509,6 +1541,161 @@ redaction_event = Table(
     Index("ix_redaction_event__principal", "tenant_id", "principal_id", "occurred_at"),
 )
 
+#: P8, 0026. The two formats an export is written in, mirrored by the migration's constraint.
+REPORT_FORMATS = ("xlsx", "csv")
+#: P8, 0029. What became of a run: streamed to whoever pressed Export, rendered and kept, kept
+#: and sent, or failed with one of the seven causes.
+REPORT_RUN_STATUSES = ("STREAMED", "RENDERED", "SENT", "FAILED")
+#: P8, 0029. How often a schedule renders, from the domain's own enumeration.
+REPORT_CADENCES = tuple(cadence.value for cadence in Cadence)
+
+report_run = Table(
+    "report_run",
+    metadata,
+    #: FEAT-067, 0026. One row per export file, written in the transaction of the read it
+    #: records, so a copy of the estate's figures never leaves without a line saying who took it.
+    Column("run_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    #: Who made it, so the guard can confine the rows to them, ADR-0029.
+    Column("principal_id", Text, nullable=False),
+    #: The route the view reads, and its query without the format.
+    Column("view_path", Text, nullable=False),
+    Column("view_query", Text, nullable=False),
+    #: The scope it was made under: every account, or exactly these.
+    Column("scope_global", Boolean, nullable=False),
+    Column("scope_accounts", ARRAY(Text), nullable=False),
+    Column("format", Text, nullable=False),
+    Column("row_count", Integer, nullable=False),
+    Column("byte_count", BigInteger, nullable=False),
+    #: The workbook stopped at the row limit, which its About sheet says.
+    Column("truncated", Boolean, nullable=False),
+    Column("made_at", DateTime(timezone=True), nullable=False),
+    #: FEAT-069, 0029. The schedule that rendered it, or none for a file somebody exported.
+    Column(
+        "schedule_id",
+        UUID(as_uuid=True),
+        ForeignKey("report_schedule.schedule_id", ondelete="SET NULL"),
+    ),
+    Column("status", Text, nullable=False, server_default=text("'STREAMED'")),
+    #: Where a rendered file is kept, under the tenant's prefix in the data bucket.
+    Column("storage_key", Text),
+    Column("failure_cause", Text),
+    Column("failure_detail", Text),
+    #: How fresh the file's figures were, from the envelope the export was written from.
+    Column("as_of", DateTime(timezone=True)),
+    Column("collected_at", DateTime(timezone=True)),
+    Column("finished_at", DateTime(timezone=True)),
+    CheckConstraint(_in_list("format", REPORT_FORMATS), name="ck_report_run__format"),
+    CheckConstraint(_in_list("status", REPORT_RUN_STATUSES), name="ck_report_run__status"),
+    CheckConstraint(
+        f"(status = 'FAILED') = (failure_cause IS NOT NULL) "
+        f"AND (failure_cause IS NULL OR {_in_list('failure_cause', ERROR_TYPES)})",
+        name="ck_report_run__failure",
+    ),
+    CheckConstraint(
+        "status NOT IN ('RENDERED', 'SENT') OR storage_key IS NOT NULL",
+        name="ck_report_run__stored",
+    ),
+    CheckConstraint(
+        "status <> 'STREAMED' OR (storage_key IS NULL AND schedule_id IS NULL)",
+        name="ck_report_run__streamed",
+    ),
+    CheckConstraint(
+        "finished_at IS NULL OR finished_at >= made_at", name="ck_report_run__finished"
+    ),
+    CheckConstraint("row_count >= 0 AND byte_count >= 0", name="ck_report_run__counts"),
+    CheckConstraint(
+        "length(trim(principal_id)) > 0 AND view_path LIKE '/%'", name="ck_report_run__named"
+    ),
+    CheckConstraint(
+        "NOT scope_global OR cardinality(scope_accounts) = 0", name="ck_report_run__scope"
+    ),
+    Index("ix_report_run__principal", "tenant_id", "principal_id", "made_at"),
+    Index("ix_report_run__schedule", "schedule_id"),
+)
+
+#: P8, 0028. Who besides its owner may open a saved view, mirrored by the migration's constraint.
+SAVED_VIEW_VISIBILITIES = ("PRIVATE", "SHARED")
+
+saved_view = Table(
+    "saved_view",
+    metadata,
+    #: FEAT-068, 0028. A screen and its query, named by a person and kept for them or shared
+    #: with the tenant. Configuration and never data, P8 spec section 5.6: no figure is stored,
+    #: so the screen is read afresh in the opener's own scope.
+    Column("view_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    #: Whose it is. Only they rename, share or delete it, and a private one only they open,
+    #: ADR-0032.
+    Column("owner_id", Text, nullable=False),
+    Column("name", Text, nullable=False),
+    #: A screen the navigation knows, `finops_api.screens`.
+    Column("screen_path", Text, nullable=False),
+    #: The screen's query string as an object, each key to one value or a list of them.
+    Column("query", JSONB, nullable=False),
+    Column("visibility", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint(
+        _in_list("visibility", SAVED_VIEW_VISIBILITIES), name="ck_saved_view__visibility"
+    ),
+    CheckConstraint(
+        "length(trim(owner_id)) > 0 AND length(trim(name)) > 0 "
+        f"AND length(name) <= {SAVED_VIEW_NAME_MAX_LENGTH}",
+        name="ck_saved_view__named",
+    ),
+    CheckConstraint(_in_list("screen_path", SCREEN_PATHS), name="ck_saved_view__screen"),
+    CheckConstraint("jsonb_typeof(query) = 'object'", name="ck_saved_view__query"),
+    CheckConstraint("updated_at >= created_at", name="ck_saved_view__times"),
+    Index("ix_saved_view__owner", "tenant_id", "owner_id", "updated_at"),
+    Index(
+        "ix_saved_view__shared",
+        "tenant_id",
+        "updated_at",
+        postgresql_where=text("visibility = 'SHARED'"),
+    ),
+)
+
+report_schedule = Table(
+    "report_schedule",
+    metadata,
+    #: FEAT-069, 0029. A saved view, one route its screen exports, a format, a cadence and the
+    #: people it renders for, each in their own scope. The view must be one the owner can open,
+    #: which a trigger in the migration holds because a check cannot read another table.
+    Column("schedule_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("owner_id", Text, nullable=False),
+    #: Null once the view is deleted: the schedule stays, paused, so its owner sees what happened
+    #: rather than finding it gone, and nobody's schedule is deleted by somebody else.
+    Column("view_id", UUID(as_uuid=True), ForeignKey("saved_view.view_id", ondelete="SET NULL")),
+    #: The route a run renders, with its query and without a format, `/api/v1/...`.
+    Column("export_path", Text, nullable=False),
+    Column("format", Text, nullable=False),
+    Column("cadence", Text, nullable=False),
+    #: The principals it renders for, by the identifier their sessions carry.
+    Column("recipients", ARRAY(Text), nullable=False),
+    Column("enabled", Boolean, nullable=False),
+    Column("next_run_at", DateTime(timezone=True), nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint(_in_list("format", REPORT_FORMATS), name="ck_report_schedule__format"),
+    CheckConstraint(_in_list("cadence", REPORT_CADENCES), name="ck_report_schedule__cadence"),
+    CheckConstraint(
+        f"cardinality(recipients) BETWEEN 1 AND {REPORT_RECIPIENTS_MAX} "
+        "AND NOT ('' = ANY (recipients))",
+        name="ck_report_schedule__recipients",
+    ),
+    CheckConstraint("length(trim(owner_id)) > 0", name="ck_report_schedule__named"),
+    CheckConstraint(
+        "export_path LIKE '/api/v1/%' AND position('format=' in export_path) = 0",
+        name="ck_report_schedule__path",
+    ),
+    CheckConstraint("updated_at >= created_at", name="ck_report_schedule__times"),
+    Index("ix_report_schedule__due", "next_run_at", postgresql_where=text("enabled")),
+    Index("ix_report_schedule__owner", "tenant_id", "owner_id", "updated_at"),
+    Index("ix_report_schedule__view", "view_id"),
+)
+
 
 #: Every table in the schema. Used by the drift test and by the repository layer.
 ALL_TABLES = tuple(metadata.sorted_tables)
@@ -1519,7 +1706,13 @@ ALL_TABLES = tuple(metadata.sorted_tables)
 #: which is a statement about Meter, so there is nothing for a `collected_at` to mean.
 #: Listed by name because each is an argued exception, and a list of exceptions that has
 #: to be defended one at a time does not rot the way an inventory of the rule does.
-NOT_FACT_TABLES = ("ingest_watermark",)
+NOT_FACT_TABLES = (
+    "ingest_watermark",
+    # P8, 0029. A run records Meter's own work, a file made or not, and its `as_of` is the
+    # freshness of the figures in that file: absent for a run that made none, and for every row
+    # written before 0029, so it cannot be held non null the way a fact's can.
+    "report_run",
+)
 
 #: Tables holding a fact about a cloud, which must carry both timestamps.
 #:

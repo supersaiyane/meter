@@ -58,7 +58,7 @@ describe('TopActions', () => {
     const cells = await within(saving).findAllByRole('rowheader');
     // The 412.64 rightsizing outranks the 188.20 Graviton candidate, which is the same order
     // the recommendations screen uses.
-    expect(cells[0]).toHaveTextContent('RIGHTSIZE_INSTANCE');
+    expect(cells[0]).toHaveTextContent('Rightsizing');
   });
 
   it('separates the no regret group from the biggest saving group', () => {
@@ -66,8 +66,8 @@ describe('TopActions', () => {
     const noRegret = screen.getByTestId('top-actions-no-regret');
     // The alarm, which is reversible and stops nothing. It is also the smallest money on the
     // list, which is the point of the group being separate rather than a boost.
-    expect(noRegret).toHaveTextContent('ALARM_INSUFFICIENT_DATA');
-    expect(noRegret).not.toHaveTextContent('RIGHTSIZE_INSTANCE');
+    expect(noRegret).toHaveTextContent('Alarm with insufficient data');
+    expect(noRegret).not.toHaveTextContent('Rightsizing');
   });
 
   it('calls an irreversible finding permanent even though nothing is running', () => {
@@ -89,7 +89,7 @@ describe('TopActions', () => {
     };
     renderPanel([permanent]);
     const saving = screen.getByTestId('top-actions-saving');
-    expect(saving).toHaveTextContent('EBS_UNATTACHED');
+    expect(saving).toHaveTextContent('Unattached volume');
     expect(saving).toHaveTextContent('permanent');
     // And not among the easy wins, which is the whole claim.
     expect(screen.getByTestId('top-actions-no-regret-empty')).toBeInTheDocument();
@@ -114,7 +114,7 @@ describe('TopActions', () => {
     renderPanel();
     const saving = screen.getByTestId('top-actions-saving');
     expect(saving).not.toHaveTextContent('GRAVITON_CANDIDATE');
-    expect(saving).not.toHaveTextContent('EBS_UNATTACHED');
+    expect(saving).not.toHaveTextContent('Unattached volume');
     // Two of the fixture's four rows are work, and the group shows both, so the caption says
     // so rather than implying something was held back.
     expect(saving).toHaveTextContent('All 2');

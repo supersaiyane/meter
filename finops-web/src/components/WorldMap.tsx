@@ -1,259 +1,265 @@
-import type { ApiGeography } from '../api/types';
+import { useId, useState, type KeyboardEvent } from 'react';
+
+import { arc, radiusFor, weightFor, type GeographyLink } from '../screens/geographyModel';
+import { DenseRegion } from './DenseRegion';
+import { dotPath, project } from './equalEarth';
+import { Figure } from './Figure';
+import type { Freshness } from './provenance';
 import { ANCHORS } from './worldLand';
-import { LAND, WORLD } from './worldPaths';
+import { FRAME, ROWS, WORLD } from './worldDots';
 
 /**
- * The estate on a schematic world. FEAT-061.
+ * The estate on a world of dots. FEAT-061, redrawn by TASK-P8-017 to the owner's direction of
+ * 2026-10-05: land as fine dots on a rounded projection, each geography a glowing bubble sized by
+ * this month's Effective Cost with its resource count beside it, and lines for links across
+ * regions.
  *
- * **A real coastline, from the outline every mapping library uses.** The first version was a
- * graticule and two dots, on the argument that a coastline implies a precision the prefix does
- * not have. That argument was wrong about where the claim lives: a coastline says "this is the
- * world", and it is the marker's position that would claim a datacentre. The second version drew
- * continents written out from memory and produced shapes nobody recognised, which was the wrong
- * approach rather than a poor attempt at the right one. The outlines are now generated from the
- * Natural Earth 110m land polygons into `worldPaths.ts` by `make world`, whose dependencies are
- * dev only, so the page renders a real coastline with no runtime library and no fetch.
+ * **A real coastline, from the outline every mapping library uses.** The dots are generated from
+ * the Natural Earth 110m land by `make world` into `worldDots.ts`, with dev only dependencies, so
+ * the page draws the world with no runtime library and no fetch. Two earlier versions drew
+ * continents from memory and produced shapes nobody recognised; a third drew outlines, and two of
+ * them crossed the antimeridian as stray lines across the whole map. Dots cannot.
  *
- * **Equirectangular, and cropped north and south.** The simplest projection there is, one
- * multiplication per axis, because the drawing's job is recognition and not measurement. Cropped
- * to the latitudes that hold land people run things in, which drops Antarctica and most of the
- * empty ocean the full range spends half its height on.
+ * **A continent is the finest grain, because a region name is.** A region name says which
+ * geography it is in and never which city, so one bubble per geography sits on a point inside the
+ * continent, never on a datacentre. The regions inside it are named in the tooltip, in its tile
+ * and in the table, which is the honest way to admit what the name cannot tell.
  *
- * **The positions live in the drawing and not in the domain.** The backend decides which geography
- * a region is in; where that geography sits in a picture is a fact about the picture. A geography
- * the backend returns and this table has no anchor for is therefore not dropped: it is absent from
- * the drawing, still listed in the legend, and counted in a sentence, because a map that silently
- * omits a continent reports a smaller estate than exists.
+ * **Bubbles are sized by area, not by radius.** Four times the cost is four times the ink, and a
+ * cost that could not be read draws every bubble the same size and says so, rather than sizing by
+ * something else or drawing a failure as nought.
  *
- * **Markers are sized by area, not by radius.** A continent with four times the resources gets a
- * marker with four times the area, so doubling the radius would claim four times again. That is
- * the oldest lie in data drawing and it is one square root away from being honest.
- *
- * **A marker is two marks.** A fixed core dot says where, and a halo sized by the count says how
- * much. One disc sized by the count did both badly: at forty pixels across it says the place is
- * somewhere inside it, which is a precision claim in the wrong direction from the one the caption
- * is careful about. This is how every infrastructure map draws a point of presence, AWS's own
- * included, and it is right for the same reason: position and quantity are different questions
- * and a single mark cannot answer both.
- *
- * **The drawing is decoration and the legend is the content.** The SVG carries `aria-hidden` and
- * every figure in it is written out as text underneath, which is the same choice `RankedBars`
- * makes and for the same reason: a reader who cannot see the picture loses a faster way to
- * compare numbers that are all written down.
+ * **Every number on the drawing is also in a table under it.** A bubble is a button a keyboard
+ * reaches, so hover and focus show the same numbers, and the screen's tables hold them all.
  */
 
-//: Taken from the generated file rather than declared here, because the coastline was projected
-//: with these numbers and a second copy that drifted would put every marker in the wrong sea.
-const { width: WIDTH, height: HEIGHT, north: NORTH, south: SOUTH } = WORLD;
-
-//: Every thirty degrees, with the equator and the prime meridian picked out. A graticule at real
-//: intervals is what tells a reader this is a projection rather than a decorative grid.
-const MERIDIANS = [-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150];
-const PARALLELS = [60, 30, 0, -30];
-
-/** Longitude and latitude to a point in the drawing. Equirectangular, which is two multiplies. */
-function project(lon: number, lat: number): readonly [number, number] {
-  return [((lon + 180) / 360) * WIDTH, ((NORTH - lat) / (NORTH - SOUTH)) * HEIGHT];
-}
-
-const SMALLEST = 7;
-const LARGEST = 34;
-
-/**
- * Where a compass word puts a region inside its continent, in degrees from the anchor.
- *
- * ISS-213, reduced. The prefix says Europe and can never say Dublin, but the name's second fact
- * is a compass point, so `eu-west-1` and `eu-central-1` land in different parts of the continent
- * with no table of regions to go stale when the next one opens.
- *
- * Modest on purpose. Ten degrees of longitude is a few hundred miles and keeps a marker on the
- * landmass it belongs to; enough to separate two regions and far short of claiming a city, which
- * the caption still says it is not doing.
- */
-const OFFSETS: Readonly<Record<string, readonly [number, number]>> = {
-  north: [0, 7],
-  south: [0, -7],
-  east: [10, 0],
-  west: [-10, 0],
-  central: [0, 0],
-  northeast: [8, 5],
-  northwest: [-8, 5],
-  southeast: [8, -5],
-  southwest: [-8, -5],
-};
-
-/** One region, ready to draw: where it goes and which geography it belongs to. */
-interface Placed {
+/** One geography as the map draws it. */
+export interface MapGeography {
   readonly key: string;
-  readonly regionId: string;
+  readonly name: string;
   readonly resources: number;
-  readonly lon: number;
-  readonly lat: number;
+  readonly accounts: number;
+  /** The regions inside it this reader can see, named because the prefix cannot say more. */
+  readonly regions: readonly string[];
+  /** This month's Effective Cost, measured, or null where it was not read. */
+  readonly cost: number | null;
+  /** Pairs of resources joined to another region, summed over this geography's regions. */
+  readonly links: number;
 }
 
 export interface WorldMapProps {
-  readonly geographies: readonly ApiGeography[];
+  readonly geographies: readonly MapGeography[];
+  /** Links between two different geographies, which is all a map at continent grain can draw. */
+  readonly links: readonly GeographyLink[];
+  /**
+   * Why no bubble is sized by this month's cost, which is loading or could not be read, or null
+   * when every bubble is. Said in the caption, so equal bubbles are never read as equal costs.
+   */
+  readonly unsized: string | null;
+  readonly freshness: Freshness;
   /** The geography whose resources are being listed, or null for none. */
   readonly selected: string | null;
   readonly onSelect: (key: string) => void;
 }
 
-/** Marker radius, by area rather than by radius. See the note above. */
-function radiusFor(resources: number, peak: number): number {
-  if (peak <= 0) return SMALLEST;
-  const share = Math.sqrt(resources / peak);
-  return SMALLEST + share * (LARGEST - SMALLEST);
+//: Built once. Four and a half thousand dots are one path, and one path is one element.
+const LAND = dotPath(ROWS, WORLD.pitch);
+
+function plural(count: number, one: string, many: string): string {
+  return `${count.toLocaleString('en-GB')} ${count === 1 ? one : many}`;
 }
 
-export function WorldMap({ geographies, selected, onSelect }: WorldMapProps) {
-  // A marker per region rather than per continent, which is ISS-213's reduction: the name says
-  // which part of the continent, so the drawing can say it too. A region whose name carries no
-  // compass word sits on the continent's own anchor, which is the honest answer to a name that
-  // did not say.
-  const placed: Placed[] = geographies.flatMap((one) => {
+/** What a bubble says to a screen reader, which is what the tooltip says to a pointer. */
+function spoken(one: MapGeography): string {
+  const cost =
+    one.cost === null
+      ? 'Effective Cost not read'
+      : `$${Math.round(one.cost).toLocaleString('en-GB')} Effective Cost this month`;
+  return `${one.name}: ${cost}, ${plural(one.resources, 'resource', 'resources')}, ${plural(
+    one.accounts,
+    'account',
+    'accounts',
+  )}, ${plural(one.links, 'link', 'links')} to other regions`;
+}
+
+export function WorldMap({
+  geographies,
+  links,
+  unsized,
+  freshness,
+  selected,
+  onSelect,
+}: WorldMapProps) {
+  const glow = useId();
+  const tip = useId();
+  const [shown, setShown] = useState<string | null>(null);
+
+  const placed = geographies.flatMap((one) => {
     const anchor = ANCHORS[one.key];
-    if (anchor === undefined) return [];
-    const [lon, lat] = anchor;
-    return one.regions.map((region) => {
-      const [dlon, dlat] =
-        region.direction === null ? [0, 0] : (OFFSETS[region.direction] ?? [0, 0]);
-      return {
-        key: one.key,
-        regionId: region.region_id,
-        resources: region.resources,
-        lon: lon + dlon,
-        lat: lat + dlat,
-      };
-    });
+    return anchor === undefined ? [] : [{ one, at: project(anchor[0], anchor[1]) }];
   });
-  // The peak is over the regions now, because the markers are regions. Taking it over the
-  // continents would size every marker against a total none of them is.
-  const peak = placed.reduce((most, one) => Math.max(most, one.resources), 0);
+  const where = new Map(placed.map(({ one, at }) => [one.key, at]));
+  const peak = placed.reduce((most, { one }) => Math.max(most, one.cost ?? 0), 0);
   const unplaced = geographies.filter((one) => ANCHORS[one.key] === undefined);
+  const showing = placed.find(({ one }) => one.key === shown);
+
+  const press = (key: string) => (event: KeyboardEvent<SVGGElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onSelect(key);
+    }
+  };
 
   return (
     <figure data-testid="world-map">
-      <svg viewBox={`0 0 ${String(WIDTH)} ${String(HEIGHT)}`} aria-hidden="true">
-        {/* The graticule. It says "schematic" without pretending to be cartography, and it
-            gives the markers something to be positioned against. */}
-        <g data-testid="world-map-grid">
-          {PARALLELS.map((lat) => (
-            <line
-              key={`lat${String(lat)}`}
-              x1={0}
-              x2={WIDTH}
-              y1={project(0, lat)[1]}
-              y2={project(0, lat)[1]}
-              data-major={lat === 0}
-            />
-          ))}
-          {MERIDIANS.map((lon) => (
-            <line
-              key={`lon${String(lon)}`}
-              y1={0}
-              y2={HEIGHT}
-              x1={project(lon, 0)[0]}
-              x2={project(lon, 0)[0]}
-              data-major={lon === 0}
-            />
-          ))}
-        </g>
-        {/* The land, over the graticule. One path per landmass, generated, so what a reader
-            sees is the coastline and not an approximation of one. */}
-        <g data-testid="world-map-land">
-          {LAND.map((outline) => (
-            <path key={outline.slice(0, 32)} d={outline} />
-          ))}
-        </g>
-        {placed.map((one) => {
-          const [x, y] = project(one.lon, one.lat);
-          return (
-            <g
-              key={one.regionId}
-              data-testid="world-map-marker"
-              data-key={one.key}
-              data-selected={selected === one.key}
-              onClick={() => {
-                onSelect(one.key);
-              }}
-            >
-              {/* Two marks, because they answer two questions. The halo is sized by the
-                  count and answers how much; the core is a fixed small dot and answers
-                  where. One blob sized by count does the first badly and the second not at
-                  all: a forty pixel disc says the place is somewhere inside it. */}
-              <circle
-                data-testid="world-map-halo"
-                cx={x}
-                cy={y}
-                r={radiusFor(one.resources, peak)}
-              />
-              <circle data-testid="world-map-point" cx={x} cy={y} r={3.5} />
-              <text x={x} y={y - radiusFor(one.resources, peak) - 12}>
-                {one.regionId}
-              </text>
-              {/* The count on the marker, so the drawing can be read without running the eye
-                  down to the legend for every continent. */}
-              <text
-                data-testid="world-map-marker-count"
-                x={x}
-                y={y + radiusFor(one.resources, peak) + 22}
+      <div data-testid="world-map-canvas">
+        <svg
+          viewBox={`0 0 ${String(WORLD.width)} ${String(WORLD.height)}`}
+          role="group"
+          aria-label="The estate by geography, on a world map"
+        >
+          <defs>
+            <radialGradient id={glow}>
+              <stop offset="0%" data-testid="world-map-glow-core" />
+              <stop offset="100%" data-testid="world-map-glow-edge" />
+            </radialGradient>
+          </defs>
+          <path data-testid="world-map-frame" d={FRAME} aria-hidden="true" />
+          <path data-testid="world-map-land" d={LAND} aria-hidden="true" />
+          <g data-testid="world-map-links" aria-hidden="true">
+            {links.flatMap((link) => {
+              const from = where.get(link.between[0]);
+              const to = where.get(link.between[1]);
+              return from === undefined || to === undefined
+                ? []
+                : [
+                    <path
+                      key={link.between.join(' ')}
+                      data-testid="world-map-link"
+                      data-between={link.between.join(' ')}
+                      d={arc(from, to)}
+                      strokeWidth={weightFor(link.links)}
+                    />,
+                  ];
+            })}
+          </g>
+          {placed.map(({ one, at: [x, y] }) => {
+            const radius = radiusFor(unsized === null ? one.cost : null, peak);
+            return (
+              <g
+                key={one.key}
+                data-testid="world-map-marker"
+                data-key={one.key}
+                data-selected={selected === one.key}
+                role="button"
+                tabIndex={0}
+                aria-pressed={selected === one.key}
+                aria-label={spoken(one)}
+                aria-describedby={shown === one.key ? tip : undefined}
+                onClick={() => {
+                  onSelect(one.key);
+                }}
+                onKeyDown={press(one.key)}
+                onMouseEnter={() => {
+                  setShown(one.key);
+                }}
+                onMouseLeave={() => {
+                  setShown(null);
+                }}
+                onFocus={() => {
+                  setShown(one.key);
+                }}
+                onBlur={() => {
+                  setShown(null);
+                }}
               >
-                {one.resources}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
+                <circle
+                  data-testid="world-map-glow"
+                  cx={x}
+                  cy={y}
+                  r={radius * 2}
+                  fill={`url(#${glow})`}
+                />
+                <circle data-testid="world-map-bubble" cx={x} cy={y} r={radius} />
+                <text data-testid="world-map-marker-name" x={x + radius + 6} y={y - 3}>
+                  {one.name}
+                </text>
+                {/* The count beside the bubble, so the drawing reads without the table. */}
+                <text data-testid="world-map-marker-count" x={x + radius + 6} y={y + 12}>
+                  {plural(one.resources, 'resource', 'resources')}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+        {showing === undefined ? null : (
+          <div
+            id={tip}
+            role="tooltip"
+            data-testid="world-map-tooltip"
+            // Below a bubble in the top half and above one in the bottom half, so it opens into
+            // the map rather than off it, and held inside the map's width at either edge.
+            data-side={showing.at[1] < WORLD.height / 2 ? 'below' : 'above'}
+            style={{
+              left: `${String(Math.min(85, Math.max(15, (showing.at[0] / WORLD.width) * 100)))}%`,
+              top: `${String((showing.at[1] / WORLD.height) * 100)}%`,
+            }}
+          >
+            <strong>{showing.one.name}</strong>
+            {/* Dense, as in a table: the figure keeps its provenance, and its freshness is the
+                screen's, said once above the map rather than inside every card. */}
+            <DenseRegion>
+              <dl>
+                <dt>Effective Cost, this month</dt>
+                <dd>
+                  {showing.one.cost === null ? (
+                    'Not read'
+                  ) : (
+                    <Figure
+                      value={{ kind: 'measured', amount: showing.one.cost }}
+                      freshness={freshness}
+                    />
+                  )}
+                </dd>
+                <dt>Resources</dt>
+                <dd>{showing.one.resources.toLocaleString('en-GB')}</dd>
+                <dt>Accounts</dt>
+                <dd>{showing.one.accounts.toLocaleString('en-GB')}</dd>
+                <dt>Regions</dt>
+                {/* One unbreakable name each, so a list wraps between regions and never
+                    inside one at its hyphen. */}
+                <dd>
+                  {showing.one.regions.map((region, index) => (
+                    <span key={region} data-testid="world-map-tooltip-region">
+                      {index === 0 ? '' : ', '}
+                      {region}
+                    </span>
+                  ))}
+                </dd>
+                <dt>Links to other regions</dt>
+                <dd>{showing.one.links.toLocaleString('en-GB')}</dd>
+              </dl>
+            </DenseRegion>
+          </div>
+        )}
+      </div>
 
       <figcaption data-testid="world-map-caption">
-        Continents, from region names. A region name says which geography it is in and never
-        which city, so a marker is a continent and not a datacentre.
+        One bubble per geography, from region names: a region name says which continent it is in
+        and never which city, so a bubble is a continent and not a datacentre.{' '}
+        {unsized ?? 'Each is sized by its Effective Cost this month, by area.'} Lines join
+        geographies whose resources are linked across regions.
         {unplaced.length > 0 ? (
           // Never dropped. A drawing that omits a continent reports a smaller estate.
           <span data-testid="world-map-unplaced">
             {' '}
             {unplaced.length === 1
-              ? '1 geography is not on the drawing and is listed below'
-              : `${String(unplaced.length)} geographies are not on the drawing and are listed below`}
+              ? '1 geography is not on the drawing and is in the table below'
+              : `${String(unplaced.length)} geographies are not on the drawing and are in the table below`}
             .
           </span>
         ) : null}
       </figcaption>
-
-      {/* The content. Every figure in the drawing, written out, and the control that actually
-          works from a keyboard. */}
-      <ul data-testid="world-map-legend">
-        {geographies.map((one) => (
-          <li key={one.key}>
-            <button
-              type="button"
-              data-testid="world-map-choice"
-              data-key={one.key}
-              aria-pressed={selected === one.key}
-              onClick={() => {
-                onSelect(one.key);
-              }}
-            >
-              <span data-testid="world-map-name">{one.name}</span>
-              <span data-testid="world-map-count">
-                {one.resources} {one.resources === 1 ? 'resource' : 'resources'}
-                {', '}
-                {/* Distinct across the geography, not the sum of its regions. ISS-214: an
-                    account with a disaster recovery copy in a second region of the same
-                    continent used to be counted twice. */}
-                <span data-testid="world-map-accounts">
-                  {one.accounts} {one.accounts === 1 ? 'account' : 'accounts'}
-                </span>
-              </span>
-              {/* Named, because the prefix cannot tell one city from another and a reader
-                  looking at Europe is entitled to know which regions that means. */}
-              <span data-testid="world-map-regions">
-                {one.regions.map((region) => region.region_id).join(', ')}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
     </figure>
   );
 }

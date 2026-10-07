@@ -25,6 +25,8 @@ Cytoscape.js, filtered server side to at most 2,000 nodes, because a browser wil
 Cytoscape.js, filtered server side to at most 2,000 nodes because a browser will
 not survive more. The cap is enforced by the route rather than by the client.
 
+Since TASK-P8-013, 2026-10-06, the map's two accessible tables, its resources and its relationships, are `DataTable`s: sortable by any column, each row still named by a row header.
+
 ## Failure behaviour
 
 Two things this map must do that a topology map usually does not.

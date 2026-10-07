@@ -17,24 +17,42 @@
     "docker/finops_query",
     "docker/migrations",
     "docker/pyproject.toml",
+    "docker/requirements/runtime.lock",
     "docker/scripts/ops",
+    "finops-web/e2e/a11y.spec.ts",
+    "finops-web/e2e/account.spec.ts",
     "finops-web/e2e/assistant.spec.ts",
     "finops-web/e2e/containers.spec.ts",
     "finops-web/e2e/cost.spec.ts",
     "finops-web/e2e/demo.spec.ts",
+    "finops-web/e2e/estate.ts",
+    "finops-web/e2e/export.spec.ts",
+    "finops-web/e2e/filters.spec.ts",
+    "finops-web/e2e/forecast.spec.ts",
     "finops-web/e2e/journey.spec.ts",
+    "finops-web/e2e/library.spec.ts",
+    "finops-web/e2e/motion.spec.ts",
+    "finops-web/e2e/overview.spec.ts",
     "finops-web/e2e/quotas.spec.ts",
+    "finops-web/e2e/reporting.spec.ts",
+    "finops-web/e2e/schedule.spec.ts",
     "finops-web/e2e/topology.spec.ts",
+    "finops-web/e2e/viewports.spec.ts",
     "finops-web/playwright.config.ts",
     "finops-web/src/App.test.tsx",
     "finops-web/src/App.tsx",
     "finops-web/src/App.tsx?raw",
     "finops-web/src/api/ApiProvider.tsx",
+    "finops-web/src/api/__tests__/account.test.tsx",
     "finops-web/src/api/__tests__/client.test.ts",
+    "finops-web/src/api/__tests__/exportViews.test.tsx",
     "finops-web/src/api/__tests__/fixtureSeam.test.ts",
     "finops-web/src/api/__tests__/queryFixtures.test.ts",
+    "finops-web/src/api/__tests__/savedViews.test.ts",
+    "finops-web/src/api/account.ts",
     "finops-web/src/api/apiContext.ts",
     "finops-web/src/api/client.ts",
+    "finops-web/src/api/exportViews.ts",
     "finops-web/src/api/fixtureSeam.ts",
     "finops-web/src/api/fixtures/assistant.ts",
     "finops-web/src/api/fixtures/containers.ts",
@@ -44,11 +62,13 @@
     "finops-web/src/api/fixtures/topology.ts",
     "finops-web/src/api/fixtures/waste.ts",
     "finops-web/src/api/queries.ts",
+    "finops-web/src/api/savedViews.ts",
     "finops-web/src/api/types.ts",
     "finops-web/src/components",
     "finops-web/src/components/BarChart.tsx",
     "finops-web/src/components/BudgetBar.tsx",
     "finops-web/src/components/CadenceBar.tsx",
+    "finops-web/src/components/ChartPanel.tsx",
     "finops-web/src/components/CitedProse.tsx",
     "finops-web/src/components/CoverageBanner.tsx",
     "finops-web/src/components/DataTable.tsx",
@@ -81,17 +101,35 @@
     "finops-web/src/components/__tests__/Sparkline.test.tsx",
     "finops-web/src/components/__tests__/StateBoundary.test.tsx",
     "finops-web/src/components/__tests__/TopActions.test.tsx",
+    "finops-web/src/components/__tests__/TopologyCanvas.test.tsx",
     "finops-web/src/components/__tests__/WorldMap.test.tsx",
     "finops-web/src/components/__tests__/axe.ts",
+    "finops-web/src/components/__tests__/charts.test.tsx",
     "finops-web/src/components/__tests__/citations.test.ts",
     "finops-web/src/components/__tests__/contrast.test.ts",
+    "finops-web/src/components/__tests__/dataTableFeatures.test.tsx",
+    "finops-web/src/components/__tests__/equalEarth.test.ts",
     "finops-web/src/components/__tests__/forecastUnproduced.test.ts",
+    "finops-web/src/components/__tests__/glass.test.ts",
     "finops-web/src/components/__tests__/orgNodes.test.ts",
     "finops-web/src/components/__tests__/shell.test.tsx",
     "finops-web/src/components/__tests__/surface.test.ts",
     "finops-web/src/components/actionRisk.ts",
+    "finops-web/src/components/charts",
+    "finops-web/src/components/charts/ChartTable.tsx",
+    "finops-web/src/components/charts/Hatch.tsx",
+    "finops-web/src/components/charts/Heatmap.tsx",
+    "finops-web/src/components/charts/KpiTile.tsx",
+    "finops-web/src/components/charts/StackedArea.tsx",
+    "finops-web/src/components/charts/StackedBar.tsx",
+    "finops-web/src/components/charts/Treemap.tsx",
+    "finops-web/src/components/charts/index.ts",
+    "finops-web/src/components/charts/marks.ts",
+    "finops-web/src/components/charts/treemapLayout.ts",
     "finops-web/src/components/citations.ts",
     "finops-web/src/components/density.ts",
+    "finops-web/src/components/displayNames.ts",
+    "finops-web/src/components/equalEarth.ts",
     "finops-web/src/components/index.ts",
     "finops-web/src/components/lateness.ts",
     "finops-web/src/components/orgNodes.ts",
@@ -99,11 +137,12 @@
     "finops-web/src/components/rankedRows.ts",
     "finops-web/src/components/surfaceState.ts",
     "finops-web/src/components/tableConfig.ts",
+    "finops-web/src/components/worldDots.ts",
     "finops-web/src/components/worldLand.ts",
-    "finops-web/src/components/worldPaths.ts",
     "finops-web/src/layout.css",
     "finops-web/src/layout.css?raw",
     "finops-web/src/main.tsx",
+    "finops-web/src/main.tsx?raw",
     "finops-web/src/queryClient.ts",
     "finops-web/src/screens/AccountsScreen.tsx",
     "finops-web/src/screens/AssistantScreen.tsx",
@@ -119,11 +158,19 @@
     "finops-web/src/screens/DigestsScreen.tsx",
     "finops-web/src/screens/EnforcementScreen.tsx",
     "finops-web/src/screens/EntityScreen.tsx",
+    "finops-web/src/screens/ExploreControls.tsx",
+    "finops-web/src/screens/ExploreResult.tsx",
+    "finops-web/src/screens/ForecastScreen.tsx",
     "finops-web/src/screens/FreshnessScreen.tsx",
     "finops-web/src/screens/GeographyScreen.tsx",
+    "finops-web/src/screens/GeographyTile.tsx",
     "finops-web/src/screens/HomeScreen.tsx",
     "finops-web/src/screens/IngestScreen.tsx",
     "finops-web/src/screens/OrganizationScreen.tsx",
+    "finops-web/src/screens/OverviewEngineering.tsx",
+    "finops-web/src/screens/OverviewExecutive.tsx",
+    "finops-web/src/screens/OverviewFinOps.tsx",
+    "finops-web/src/screens/OverviewParts.tsx",
     "finops-web/src/screens/PlatformScreen.tsx",
     "finops-web/src/screens/QueryAdhocScreen.tsx",
     "finops-web/src/screens/QueryFindingDetailScreen.tsx",
@@ -133,7 +180,9 @@
     "finops-web/src/screens/QuotaDetailScreen.tsx",
     "finops-web/src/screens/QuotasScreen.tsx",
     "finops-web/src/screens/RemediationControls.tsx",
+    "finops-web/src/screens/ReportLibraryScreen.tsx",
     "finops-web/src/screens/ResourceListScreen.tsx",
+    "finops-web/src/screens/ScheduledReportsScreen.tsx",
     "finops-web/src/screens/TopologyScreen.tsx",
     "finops-web/src/screens/WasteSavingsScreen.tsx",
     "finops-web/src/screens/WasteScoreScreen.tsx",
@@ -152,12 +201,14 @@
     "finops-web/src/screens/__tests__/DigestsScreen.test.tsx",
     "finops-web/src/screens/__tests__/EnforcementScreen.test.tsx",
     "finops-web/src/screens/__tests__/EntityScreen.test.tsx",
+    "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
     "finops-web/src/screens/__tests__/FreshnessScreen.test.tsx",
     "finops-web/src/screens/__tests__/GeographyScreen.test.tsx",
     "finops-web/src/screens/__tests__/Harness.tsx",
     "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
     "finops-web/src/screens/__tests__/IngestScreen.test.tsx",
     "finops-web/src/screens/__tests__/OrganizationScreen.test.tsx",
+    "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
     "finops-web/src/screens/__tests__/PlatformScreen.test.tsx",
     "finops-web/src/screens/__tests__/QueryAdhocScreen.test.tsx",
     "finops-web/src/screens/__tests__/QueryFindingDetailScreen.test.tsx",
@@ -166,32 +217,78 @@
     "finops-web/src/screens/__tests__/QuotaDetailScreen.test.tsx",
     "finops-web/src/screens/__tests__/QuotasScreen.test.tsx",
     "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
+    "finops-web/src/screens/__tests__/ReportLibraryScreen.test.tsx",
     "finops-web/src/screens/__tests__/ResourceListScreen.test.tsx",
+    "finops-web/src/screens/__tests__/ScheduledReportsScreen.test.tsx",
     "finops-web/src/screens/__tests__/TopologyScreen.test.tsx",
     "finops-web/src/screens/__tests__/WasteSavingsScreen.test.tsx",
     "finops-web/src/screens/__tests__/WasteScreen.test.tsx",
+    "finops-web/src/screens/__tests__/accountHealth.test.ts",
+    "finops-web/src/screens/__tests__/commitmentDays.test.ts",
     "finops-web/src/screens/__tests__/enforcementTime.test.ts",
+    "finops-web/src/screens/__tests__/exploreModel.test.ts",
+    "finops-web/src/screens/__tests__/exploreSeries.test.ts",
     "finops-web/src/screens/__tests__/fixtures.ts",
+    "finops-web/src/screens/__tests__/forecastModel.test.ts",
     "finops-web/src/screens/__tests__/freshnessContract.test.ts",
+    "finops-web/src/screens/__tests__/geographyModel.test.ts",
+    "finops-web/src/screens/__tests__/nodeColumns.test.ts",
+    "finops-web/src/screens/__tests__/overviewKpis.test.ts",
+    "finops-web/src/screens/__tests__/rawIdentifiers.test.tsx",
+    "finops-web/src/screens/__tests__/scheduleModel.test.ts",
+    "finops-web/src/screens/__tests__/sortEveryColumn.ts",
     "finops-web/src/screens/__tests__/surfaceStateFor.test.ts",
+    "finops-web/src/screens/accountHealth.ts",
+    "finops-web/src/screens/commitmentDays.ts",
     "finops-web/src/screens/enforcementTime.ts",
+    "finops-web/src/screens/exploreModel.ts",
+    "finops-web/src/screens/exploreSeries.ts",
     "finops-web/src/screens/findingFigure.ts",
+    "finops-web/src/screens/forecastModel.ts",
+    "finops-web/src/screens/geographyModel.ts",
+    "finops-web/src/screens/libraryModel.ts",
+    "finops-web/src/screens/nodeColumns.tsx",
+    "finops-web/src/screens/overviewKpis.ts",
+    "finops-web/src/screens/personas.ts",
     "finops-web/src/screens/platformRollUp.ts",
+    "finops-web/src/screens/queryByDashboard.ts",
     "finops-web/src/screens/querySeverity.ts",
-    "finops-web/src/screens/saveFile.ts",
+    "finops-web/src/screens/realizedSavings.ts",
+    "finops-web/src/screens/scheduleModel.ts",
     "finops-web/src/screens/sliceCoverage.ts",
     "finops-web/src/screens/surfaceStateFor.ts",
+    "finops-web/src/screens/useOverviewFigures.ts",
     "finops-web/src/shell/AppShell.tsx",
+    "finops-web/src/shell/ExportMenu.tsx",
     "finops-web/src/shell/MetaProvider.tsx",
+    "finops-web/src/shell/SaveView.tsx",
+    "finops-web/src/shell/ScheduleView.tsx",
+    "finops-web/src/shell/ScreenTabs.tsx",
+    "finops-web/src/shell/SearchBox.tsx",
+    "finops-web/src/shell/ThemeToggle.test.tsx",
+    "finops-web/src/shell/ThemeToggle.tsx",
     "finops-web/src/shell/__tests__/AppShell.test.tsx",
+    "finops-web/src/shell/__tests__/ExportMenu.test.tsx",
+    "finops-web/src/shell/__tests__/SaveView.test.tsx",
+    "finops-web/src/shell/__tests__/ScheduleView.test.tsx",
+    "finops-web/src/shell/__tests__/SearchBox.test.tsx",
+    "finops-web/src/shell/__tests__/filters.test.tsx",
+    "finops-web/src/shell/__tests__/links.test.tsx",
     "finops-web/src/shell/__tests__/metaStore.test.ts",
+    "finops-web/src/shell/__tests__/searchModel.test.ts",
     "finops-web/src/shell/__tests__/sections.test.ts",
+    "finops-web/src/shell/filters.ts",
+    "finops-web/src/shell/links.tsx",
     "finops-web/src/shell/metaRegistry.ts",
     "finops-web/src/shell/metaStore.ts",
+    "finops-web/src/shell/saveFile.ts",
+    "finops-web/src/shell/searchModel.ts",
     "finops-web/src/shell/sections.ts",
     "finops-web/src/storage.test.ts",
     "finops-web/src/storage.ts",
     "finops-web/src/test-setup.ts",
+    "finops-web/src/theme.test.ts",
+    "finops-web/src/theme.ts",
     "finops-web/src/tokens.css",
     "finops-web/src/tokens.css?raw",
     "finops-web/src/vite-env.d.ts",
@@ -206,14 +303,24 @@
     "finops_api/db/repositories/base.py",
     "finops_api/db/repositories/containers.py",
     "finops_api/db/repositories/cost.py",
+    "finops_api/db/repositories/explore.py",
+    "finops_api/db/repositories/forecast.py",
     "finops_api/db/repositories/freshness.py",
     "finops_api/db/repositories/ingest.py",
     "finops_api/db/repositories/org.py",
     "finops_api/db/repositories/query.py",
     "finops_api/db/repositories/quotas.py",
+    "finops_api/db/repositories/reports.py",
+    "finops_api/db/repositories/schedules.py",
     "finops_api/db/repositories/topology.py",
+    "finops_api/db/repositories/views.py",
     "finops_api/db/repositories/waste.py",
     "finops_api/deps.py",
+    "finops_api/exports/__init__.py",
+    "finops_api/exports/cells.py",
+    "finops_api/exports/responder.py",
+    "finops_api/exports/scheduled.py",
+    "finops_api/exports/writers.py",
     "finops_api/flags.py",
     "finops_api/guards.py",
     "finops_api/identity/__init__.py",
@@ -227,6 +334,8 @@
     "finops_api/routes/accounts.py",
     "finops_api/routes/assistant.py",
     "finops_api/routes/cost.py",
+    "finops_api/routes/explore.py",
+    "finops_api/routes/forecast.py",
     "finops_api/routes/ingest.py",
     "finops_api/routes/inventory.py",
     "finops_api/routes/me.py",
@@ -234,8 +343,11 @@
     "finops_api/routes/platform.py",
     "finops_api/routes/query.py",
     "finops_api/routes/quotas.py",
+    "finops_api/routes/schedules.py",
+    "finops_api/routes/views.py",
     "finops_api/routes/waste.py",
     "finops_api/schemas.py",
+    "finops_api/screens.py",
     "finops_api/toolbox.py",
     "finops_api/tools.py",
     "finops_core/__init__.py",
@@ -246,6 +358,7 @@
     "finops_core/domain/budget.py",
     "finops_core/domain/containers.py",
     "finops_core/domain/cost.py",
+    "finops_core/domain/explore.py",
     "finops_core/domain/fact.py",
     "finops_core/domain/geography.py",
     "finops_core/domain/iac.py",
@@ -258,6 +371,7 @@
     "finops_core/domain/platform.py",
     "finops_core/domain/query.py",
     "finops_core/domain/quota.py",
+    "finops_core/domain/report_schedule.py",
     "finops_core/domain/resource.py",
     "finops_core/domain/tenant.py",
     "finops_core/domain/topology.py",
@@ -280,6 +394,7 @@
     "finops_core/ports/query.py",
     "finops_core/ports/quotas.py",
     "finops_core/ports/recommendations.py",
+    "finops_core/ports/reports.py",
     "finops_core/ports/tickets.py",
     "finops_fakes/__init__.py",
     "finops_fakes/budgets.py",
@@ -300,6 +415,7 @@
     "finops_fakes/pull_requests.py",
     "finops_fakes/quotas.py",
     "finops_fakes/recommendations.py",
+    "finops_fakes/reports.py",
     "finops_fakes/surface.py",
     "finops_fakes/terraform_state.py",
     "finops_fakes/tickets.py",
@@ -359,6 +475,7 @@
     "finops_providers/aws/query_evidence.py",
     "finops_providers/aws/quotas.py",
     "finops_providers/aws/recommendations.py",
+    "finops_providers/aws/report_store.py",
     "finops_providers/aws/terraform_state.py",
     "finops_providers/aws/topology.py",
     "finops_providers/aws/waste.py",
@@ -374,6 +491,7 @@
     "finops_query/containers.py",
     "finops_query/cost_model.py",
     "finops_query/digest.py",
+    "finops_query/forecast.py",
     "finops_query/gate.py",
     "finops_query/graph.py",
     "finops_query/insight.py",
@@ -444,11 +562,17 @@
     "migrations/versions/0023_assistant_exchange.py",
     "migrations/versions/0024_team_digest.py",
     "migrations/versions/0025_redaction_event.py",
+    "migrations/versions/0026_report_run.py",
+    "migrations/versions/0027_commitment_day.py",
+    "migrations/versions/0028_saved_view.py",
+    "migrations/versions/0029_report_schedule.py",
     "scripts/ci/check_dashboards.py",
+    "scripts/ci/check_dev_only.py",
     "scripts/ci/check_env_keys.py",
     "scripts/ci/check_flags.py",
     "scripts/ci/check_forbidden_imports.py",
     "scripts/ci/check_hardcoded.py",
+    "scripts/ci/check_image_arch.py",
     "scripts/ci/check_memory.py",
     "scripts/ci/code_review.py",
     "scripts/ci/refresh_base_images.py",
@@ -464,6 +588,7 @@
     "scripts/docs/rotate_checkpoint.py",
     "scripts/docs/sync.py",
     "scripts/ops/erase_principal.py",
+    "scripts/ops/local_bucket.py",
     "scripts/ops/local_token.py",
     "scripts/ops/restore_drill.py",
     "tests/__init__.py",
@@ -476,10 +601,18 @@
     "tests/api/test_container_routes.py",
     "tests/api/test_cost_budgets.py",
     "tests/api/test_cost_commitments.py",
-    "tests/api/test_cost_export_route.py",
+    "tests/api/test_cost_explore.py",
+    "tests/api/test_cost_forecast.py",
     "tests/api/test_cost_repository.py",
     "tests/api/test_cost_routes.py",
+    "tests/api/test_cost_showback.py",
+    "tests/api/test_export_names.py",
+    "tests/api/test_export_parity.py",
+    "tests/api/test_export_responder.py",
+    "tests/api/test_export_routes.py",
+    "tests/api/test_export_writers.py",
     "tests/api/test_fixture_surfaces.py",
+    "tests/api/test_forecast_shapes.py",
     "tests/api/test_forecast_unproduced.py",
     "tests/api/test_identity_local.py",
     "tests/api/test_inventory_geography.py",
@@ -487,14 +620,18 @@
     "tests/api/test_lifecycle.py",
     "tests/api/test_query_routes.py",
     "tests/api/test_quota_routes.py",
+    "tests/api/test_report_schedules.py",
     "tests/api/test_routes.py",
+    "tests/api/test_saved_views.py",
     "tests/api/test_scope_enforcement.py",
+    "tests/api/test_screens.py",
     "tests/api/test_the_two_savings_figures.py",
     "tests/api/test_toolbox.py",
     "tests/api/test_topology_repository.py",
     "tests/api/test_waste_guard.py",
     "tests/api/test_waste_refusals.py",
     "tests/api/test_waste_routes.py",
+    "tests/api/workbook.py",
     "tests/conftest.py",
     "tests/contract/__init__.py",
     "tests/contract/conftest.py",
@@ -517,12 +654,14 @@
     "tests/core/test_cost_domain.py",
     "tests/core/test_domain.py",
     "tests/core/test_errors.py",
+    "tests/core/test_explore_periods.py",
     "tests/core/test_geography.py",
     "tests/core/test_iac.py",
     "tests/core/test_insight.py",
     "tests/core/test_llm_port.py",
     "tests/core/test_ports.py",
     "tests/core/test_quota.py",
+    "tests/core/test_report_schedule.py",
     "tests/core/test_topology.py",
     "tests/core/test_waste_domain.py",
     "tests/db/__init__.py",
@@ -588,6 +727,7 @@
     "tests/providers/aws/test_query_evidence.py",
     "tests/providers/aws/test_quotas.py",
     "tests/providers/aws/test_recommendations.py",
+    "tests/providers/aws/test_report_store.py",
     "tests/providers/aws/test_response_shapes.py",
     "tests/providers/aws/test_terraform_state.py",
     "tests/providers/aws/test_translate.py",
@@ -618,6 +758,7 @@
     "tests/query/test_containers.py",
     "tests/query/test_cost_model.py",
     "tests/query/test_digest.py",
+    "tests/query/test_forecast.py",
     "tests/query/test_gate.py",
     "tests/query/test_graph.py",
     "tests/query/test_insight_budget.py",
@@ -637,16 +778,20 @@
     "tests/scripts/__init__.py",
     "tests/scripts/test_backup_retention.py",
     "tests/scripts/test_build_file_graph.py",
+    "tests/scripts/test_check_dev_only.py",
     "tests/scripts/test_check_identifiers.py",
+    "tests/scripts/test_check_image_arch.py",
     "tests/scripts/test_check_index.py",
     "tests/scripts/test_layer_agreement.py",
     "tests/scripts/test_lint_scope.py",
+    "tests/scripts/test_local_bucket.py",
     "tests/scripts/test_local_token.py",
     "tests/scripts/test_observability.py",
     "tests/scripts/test_pipeline.py",
     "tests/scripts/test_restore_drill.py",
     "tests/scripts/test_seed_demo.py",
-    "tests/test_checkpoint_rotation.py"
+    "tests/test_checkpoint_rotation.py",
+    "tests/test_label_table.py"
   ],
   "edges": [
     {
@@ -692,6 +837,11 @@
     {
       "s": "docker/Dockerfile.api",
       "t": "docker/pyproject.toml",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.api",
+      "t": "docker/requirements/runtime.lock",
       "k": "docker"
     },
     {
@@ -770,6 +920,41 @@
       "k": "docker"
     },
     {
+      "s": "docker/Dockerfile.worker",
+      "t": "docker/requirements/runtime.lock",
+      "k": "docker"
+    },
+    {
+      "s": "finops-web/e2e/a11y.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/e2e/account.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/e2e/demo.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/e2e/overview.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/e2e/reporting.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/e2e/viewports.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/App.test.tsx",
       "t": "finops-web/src/App.tsx",
       "k": "typescript"
@@ -777,6 +962,16 @@
     {
       "s": "finops-web/src/App.test.tsx",
       "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
       "k": "typescript"
     },
     {
@@ -866,6 +1061,11 @@
     },
     {
       "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/ForecastScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/FreshnessScreen.tsx",
       "k": "typescript"
     },
@@ -926,7 +1126,17 @@
     },
     {
       "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/ResourceListScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/ScheduledReportsScreen.tsx",
       "k": "typescript"
     },
     {
@@ -975,8 +1185,48 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/api/__tests__/account.test.tsx",
+      "t": "finops-web/src/api/account.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/__tests__/account.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/__tests__/account.test.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/__tests__/account.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/__tests__/account.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/__tests__/account.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/__tests__/account.test.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/api/__tests__/client.test.ts",
       "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/__tests__/exportViews.test.tsx",
+      "t": "finops-web/src/api/exportViews.ts",
       "k": "typescript"
     },
     {
@@ -987,6 +1237,11 @@
     {
       "s": "finops-web/src/api/__tests__/queryFixtures.test.ts",
       "t": "finops-web/src/api/fixtures/query.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/__tests__/savedViews.test.ts",
+      "t": "finops-web/src/api/savedViews.ts",
       "k": "typescript"
     },
     {
@@ -1041,7 +1296,17 @@
     },
     {
       "s": "finops-web/src/api/queries.ts",
+      "t": "finops-web/src/api/account.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/queries.ts",
       "t": "finops-web/src/api/apiContext.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/queries.ts",
+      "t": "finops-web/src/api/exportViews.ts",
       "k": "typescript"
     },
     {
@@ -1092,6 +1357,16 @@
     {
       "s": "finops-web/src/api/queries.ts",
       "t": "finops-web/src/components/orgNodes.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/savedViews.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/BarChart.tsx",
+      "t": "finops-web/src/components/charts/ChartTable.tsx",
       "k": "typescript"
     },
     {
@@ -1156,6 +1431,11 @@
     },
     {
       "s": "finops-web/src/components/DataTable.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/DataTable.tsx",
       "t": "finops-web/src/components/tableConfig.ts",
       "k": "typescript"
     },
@@ -1202,6 +1482,11 @@
     {
       "s": "finops-web/src/components/Exchange.tsx",
       "t": "finops-web/src/screens/enforcementTime.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/Exchange.tsx",
+      "t": "finops-web/src/shell/links.tsx",
       "k": "typescript"
     },
     {
@@ -1276,12 +1561,22 @@
     },
     {
       "s": "finops-web/src/components/StateBoundary.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/StateBoundary.tsx",
       "t": "finops-web/src/components/surfaceState.ts",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/components/TopActions.tsx",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/TopActions.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
       "k": "typescript"
     },
     {
@@ -1301,12 +1596,27 @@
     },
     {
       "s": "finops-web/src/components/TopActions.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/TopActions.tsx",
       "t": "finops-web/src/components/provenance.ts",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/components/TopActions.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/TopActions.tsx",
       "t": "finops-web/src/screens/querySeverity.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/TopActions.tsx",
+      "t": "finops-web/src/shell/links.tsx",
       "k": "typescript"
     },
     {
@@ -1321,7 +1631,27 @@
     },
     {
       "s": "finops-web/src/components/WorldMap.tsx",
-      "t": "finops-web/src/api/types.ts",
+      "t": "finops-web/src/components/DenseRegion.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/WorldMap.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/WorldMap.tsx",
+      "t": "finops-web/src/components/equalEarth.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/WorldMap.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/WorldMap.tsx",
+      "t": "finops-web/src/components/worldDots.ts",
       "k": "typescript"
     },
     {
@@ -1331,7 +1661,7 @@
     },
     {
       "s": "finops-web/src/components/WorldMap.tsx",
-      "t": "finops-web/src/components/worldPaths.ts",
+      "t": "finops-web/src/screens/geographyModel.ts",
       "k": "typescript"
     },
     {
@@ -1510,8 +1840,13 @@
       "k": "typescript"
     },
     {
-      "s": "finops-web/src/components/__tests__/WorldMap.test.tsx",
+      "s": "finops-web/src/components/__tests__/TopologyCanvas.test.tsx",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/TopologyCanvas.test.tsx",
+      "t": "finops-web/src/components/TopologyCanvas.tsx",
       "k": "typescript"
     },
     {
@@ -1522,6 +1857,21 @@
     {
       "s": "finops-web/src/components/__tests__/WorldMap.test.tsx",
       "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/WorldMap.test.tsx",
+      "t": "finops-web/src/screens/geographyModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/charts.test.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/charts.test.tsx",
+      "t": "finops-web/src/tokens.css?raw",
       "k": "typescript"
     },
     {
@@ -1540,8 +1890,53 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/__tests__/dataTableFeatures.test.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/dataTableFeatures.test.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/dataTableFeatures.test.tsx",
+      "t": "finops-web/src/layout.css?raw",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/equalEarth.test.ts",
+      "t": "finops-web/src/components/equalEarth.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/equalEarth.test.ts",
+      "t": "finops-web/src/components/worldDots.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/equalEarth.test.ts",
+      "t": "finops-web/src/components/worldLand.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/components/__tests__/forecastUnproduced.test.ts",
       "t": "finops-web/src/layout.css?raw",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/glass.test.ts",
+      "t": "finops-web/src/layout.css?raw",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/glass.test.ts",
+      "t": "finops-web/src/main.tsx?raw",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/glass.test.ts",
+      "t": "finops-web/src/tokens.css?raw",
       "k": "typescript"
     },
     {
@@ -1600,8 +1995,183 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/charts/Heatmap.tsx",
+      "t": "finops-web/src/components/charts/ChartTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Heatmap.tsx",
+      "t": "finops-web/src/components/charts/Hatch.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Heatmap.tsx",
+      "t": "finops-web/src/components/charts/marks.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Heatmap.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/KpiTile.tsx",
+      "t": "finops-web/src/components/Sparkline.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/KpiTile.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/KpiTile.tsx",
+      "t": "finops-web/src/components/charts/ChartTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/KpiTile.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/KpiTile.tsx",
+      "t": "finops-web/src/components/surfaceState.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/KpiTile.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/StackedArea.tsx",
+      "t": "finops-web/src/components/charts/ChartTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/StackedArea.tsx",
+      "t": "finops-web/src/components/charts/Hatch.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/StackedArea.tsx",
+      "t": "finops-web/src/components/charts/marks.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/StackedArea.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/StackedBar.tsx",
+      "t": "finops-web/src/components/charts/ChartTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/StackedBar.tsx",
+      "t": "finops-web/src/components/charts/Hatch.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/StackedBar.tsx",
+      "t": "finops-web/src/components/charts/marks.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/StackedBar.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Treemap.tsx",
+      "t": "finops-web/src/components/charts/ChartTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Treemap.tsx",
+      "t": "finops-web/src/components/charts/Hatch.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Treemap.tsx",
+      "t": "finops-web/src/components/charts/marks.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Treemap.tsx",
+      "t": "finops-web/src/components/charts/treemapLayout.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/Treemap.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/BarChart.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/RankedBars.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/Sparkline.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/charts/ChartTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/charts/Heatmap.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/charts/KpiTile.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/charts/StackedArea.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/charts/StackedBar.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/charts/Treemap.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/index.ts",
+      "t": "finops-web/src/components/charts/marks.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/charts/marks.ts",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/components/citations.ts",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/equalEarth.ts",
+      "t": "finops-web/src/components/worldDots.ts",
       "k": "typescript"
     },
     {
@@ -1675,6 +2245,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/tableConfig.ts",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/main.tsx",
       "t": "finops-web/src/App.tsx",
       "k": "typescript"
@@ -1696,6 +2271,11 @@
     },
     {
       "s": "finops-web/src/main.tsx",
+      "t": "finops-web/src/theme.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/main.tsx",
       "t": "finops-web/src/tokens.css",
       "k": "typescript"
     },
@@ -1711,7 +2291,17 @@
     },
     {
       "s": "finops-web/src/screens/AccountsScreen.tsx",
+      "t": "finops-web/src/components/ChartPanel.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AccountsScreen.tsx",
       "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AccountsScreen.tsx",
+      "t": "finops-web/src/components/RankedBars.tsx",
       "k": "typescript"
     },
     {
@@ -1721,7 +2311,17 @@
     },
     {
       "s": "finops-web/src/screens/AccountsScreen.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AccountsScreen.tsx",
       "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AccountsScreen.tsx",
+      "t": "finops-web/src/screens/accountHealth.ts",
       "k": "typescript"
     },
     {
@@ -1731,7 +2331,17 @@
     },
     {
       "s": "finops-web/src/screens/AccountsScreen.tsx",
+      "t": "finops-web/src/shell/filters.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AccountsScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AccountsScreen.tsx",
+      "t": "finops-web/src/shell/sections.ts",
       "k": "typescript"
     },
     {
@@ -1836,6 +2446,11 @@
     },
     {
       "s": "finops-web/src/screens/ClustersScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ClustersScreen.tsx",
       "t": "finops-web/src/components/FixtureBand.tsx",
       "k": "typescript"
     },
@@ -1851,6 +2466,11 @@
     },
     {
       "s": "finops-web/src/screens/ClustersScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ClustersScreen.tsx",
       "t": "finops-web/src/screens/surfaceStateFor.ts",
       "k": "typescript"
     },
@@ -1876,12 +2496,22 @@
     },
     {
       "s": "finops-web/src/screens/ContainerCostScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerCostScreen.tsx",
       "t": "finops-web/src/components/FixtureBand.tsx",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/ContainerCostScreen.tsx",
       "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerCostScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
       "k": "typescript"
     },
     {
@@ -1911,12 +2541,22 @@
     },
     {
       "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
       "t": "finops-web/src/components/FixtureBand.tsx",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
       "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ContainerWasteScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
       "k": "typescript"
     },
     {
@@ -1937,6 +2577,11 @@
     {
       "s": "finops-web/src/screens/CostAllocationScreen.tsx",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "t": "finops-web/src/components/ChartPanel.tsx",
       "k": "typescript"
     },
     {
@@ -1951,12 +2596,12 @@
     },
     {
       "s": "finops-web/src/screens/CostAllocationScreen.tsx",
-      "t": "finops-web/src/components/RankedBars.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/CostAllocationScreen.tsx",
-      "t": "finops-web/src/components/StateBoundary.tsx",
+      "t": "finops-web/src/components/charts",
       "k": "typescript"
     },
     {
@@ -1966,12 +2611,27 @@
     },
     {
       "s": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "t": "finops-web/src/screens/exploreSeries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAllocationScreen.tsx",
       "t": "finops-web/src/screens/surfaceStateFor.ts",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "t": "finops-web/src/shell/filters.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAllocationScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAllocationScreen.tsx",
+      "t": "finops-web/src/shell/sections.ts",
       "k": "typescript"
     },
     {
@@ -1982,6 +2642,11 @@
     {
       "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "t": "finops-web/src/components/ChartPanel.tsx",
       "k": "typescript"
     },
     {
@@ -2011,7 +2676,22 @@
     },
     {
       "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
       "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostAnomaliesScreen.tsx",
+      "t": "finops-web/src/screens/exploreSeries.ts",
       "k": "typescript"
     },
     {
@@ -2037,6 +2717,11 @@
     {
       "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/components/ChartPanel.tsx",
       "k": "typescript"
     },
     {
@@ -2071,7 +2756,22 @@
     },
     {
       "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
       "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostCommitmentsScreen.tsx",
+      "t": "finops-web/src/screens/commitmentDays.ts",
       "k": "typescript"
     },
     {
@@ -2091,67 +2791,47 @@
     },
     {
       "s": "finops-web/src/screens/CostExportScreen.tsx",
-      "t": "finops-web/src/api/apiContext.ts",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/CostExportScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/CostExportScreen.tsx",
-      "t": "finops-web/src/components/Figure.tsx",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/CostExportScreen.tsx",
-      "t": "finops-web/src/components/StateBoundary.tsx",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/CostExportScreen.tsx",
-      "t": "finops-web/src/screens/saveFile.ts",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/CostExportScreen.tsx",
-      "t": "finops-web/src/screens/surfaceStateFor.ts",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/CostExportScreen.tsx",
-      "t": "finops-web/src/shell/metaRegistry.ts",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/CostScreen.tsx",
-      "t": "finops-web/src/api/queries.ts",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/CostScreen.tsx",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
     },
     {
-      "s": "finops-web/src/screens/CostScreen.tsx",
-      "t": "finops-web/src/components/BarChart.tsx",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/CostScreen.tsx",
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
       "t": "finops-web/src/components/DataTable.tsx",
       "k": "typescript"
     },
     {
-      "s": "finops-web/src/screens/CostScreen.tsx",
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
       "t": "finops-web/src/components/Figure.tsx",
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostExportScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/CostScreen.tsx",
-      "t": "finops-web/src/components/RankedBars.tsx",
+      "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
     },
     {
@@ -2161,7 +2841,22 @@
     },
     {
       "s": "finops-web/src/screens/CostScreen.tsx",
-      "t": "finops-web/src/components/tableConfig.ts",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/screens/ExploreControls.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/screens/ExploreResult.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
       "k": "typescript"
     },
     {
@@ -2171,7 +2866,17 @@
     },
     {
       "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/shell/filters.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/CostScreen.tsx",
+      "t": "finops-web/src/shell/sections.ts",
       "k": "typescript"
     },
     {
@@ -2261,6 +2966,11 @@
     },
     {
       "s": "finops-web/src/screens/EnforcementScreen.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EnforcementScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
       "k": "typescript"
     },
@@ -2272,6 +2982,11 @@
     {
       "s": "finops-web/src/screens/EntityScreen.tsx",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EntityScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
       "k": "typescript"
     },
     {
@@ -2301,7 +3016,17 @@
     },
     {
       "s": "finops-web/src/screens/EntityScreen.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EntityScreen.tsx",
       "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EntityScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
       "k": "typescript"
     },
     {
@@ -2321,6 +3046,121 @@
     },
     {
       "s": "finops-web/src/screens/EntityScreen.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/EntityScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreControls.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreControls.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreResult.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreResult.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreResult.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreResult.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreResult.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreResult.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreResult.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ExploreResult.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/screens/forecastModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ForecastScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
       "k": "typescript"
     },
@@ -2347,6 +3187,11 @@
     {
       "s": "finops-web/src/screens/FreshnessScreen.tsx",
       "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/FreshnessScreen.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
       "k": "typescript"
     },
     {
@@ -2381,6 +3226,21 @@
     },
     {
       "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
       "t": "finops-web/src/components/FixtureBand.tsx",
       "k": "typescript"
     },
@@ -2396,12 +3256,72 @@
     },
     {
       "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/screens/GeographyTile.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/screens/exploreSeries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/screens/geographyModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/screens/nodeColumns.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
       "t": "finops-web/src/screens/surfaceStateFor.ts",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/GeographyScreen.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyTile.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyTile.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyTile.tsx",
+      "t": "finops-web/src/components/surfaceState.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyTile.tsx",
+      "t": "finops-web/src/screens/geographyModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/GeographyTile.tsx",
+      "t": "finops-web/src/screens/overviewKpis.ts",
       "k": "typescript"
     },
     {
@@ -2411,47 +3331,32 @@
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/api/types.ts",
+      "t": "finops-web/src/components/charts",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/components/BarChart.tsx",
+      "t": "finops-web/src/screens/OverviewEngineering.tsx",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/components/BudgetBar.tsx",
+      "t": "finops-web/src/screens/OverviewExecutive.tsx",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/components/DataTable.tsx",
+      "t": "finops-web/src/screens/OverviewFinOps.tsx",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/components/Figure.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/components/SeverityBadge.tsx",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/components/StateBoundary.tsx",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/components/TopActions.tsx",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/components/tableConfig.ts",
+      "t": "finops-web/src/screens/personas.ts",
       "k": "typescript"
     },
     {
@@ -2461,12 +3366,12 @@
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/screens/querySeverity.ts",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/HomeScreen.tsx",
-      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "t": "finops-web/src/shell/links.tsx",
       "k": "typescript"
     },
     {
@@ -2502,6 +3407,11 @@
     {
       "s": "finops-web/src/screens/IngestScreen.tsx",
       "t": "finops-web/src/components/TypedError.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/IngestScreen.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
       "k": "typescript"
     },
     {
@@ -2555,8 +3465,318 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/components/SeverityBadge.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/components/TopActions.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/screens/OverviewParts.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/screens/exploreSeries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/screens/overviewKpis.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/screens/querySeverity.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewEngineering.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/components/BudgetBar.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/components/RankedBars.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/screens/OverviewParts.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/screens/exploreSeries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/screens/forecastModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/screens/overviewKpis.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/screens/useOverviewFigures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewExecutive.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/components/BudgetBar.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/components/RankedBars.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/screens/OverviewParts.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/screens/exploreSeries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/screens/overviewKpis.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/screens/useOverviewFigures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/components/density.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/screens/exploreSeries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/screens/libraryModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/screens/overviewKpis.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/screens/scheduleModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/PlatformScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/PlatformScreen.tsx",
+      "t": "finops-web/src/components/ChartPanel.tsx",
       "k": "typescript"
     },
     {
@@ -2582,6 +3802,11 @@
     {
       "s": "finops-web/src/screens/PlatformScreen.tsx",
       "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/PlatformScreen.tsx",
+      "t": "finops-web/src/components/charts",
       "k": "typescript"
     },
     {
@@ -2706,6 +3931,11 @@
     },
     {
       "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/components/ChartPanel.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
       "t": "finops-web/src/components/DataTable.tsx",
       "k": "typescript"
     },
@@ -2717,6 +3947,11 @@
     {
       "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
       "t": "finops-web/src/components/FixtureBand.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/components/RankedBars.tsx",
       "k": "typescript"
     },
     {
@@ -2736,6 +3971,11 @@
     },
     {
       "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
       "t": "finops-web/src/components/provenance.ts",
       "k": "typescript"
     },
@@ -2751,12 +3991,22 @@
     },
     {
       "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/screens/queryByDashboard.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
       "t": "finops-web/src/screens/querySeverity.ts",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
       "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QueryFindingsScreen.tsx",
+      "t": "finops-web/src/shell/links.tsx",
       "k": "typescript"
     },
     {
@@ -2902,6 +4152,11 @@
     {
       "s": "finops-web/src/screens/QuotasScreen.tsx",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuotasScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
       "k": "typescript"
     },
     {
@@ -2921,7 +4176,17 @@
     },
     {
       "s": "finops-web/src/screens/QuotasScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuotasScreen.tsx",
       "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/QuotasScreen.tsx",
+      "t": "finops-web/src/shell/links.tsx",
       "k": "typescript"
     },
     {
@@ -2940,6 +4205,81 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "t": "finops-web/src/api/account.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "t": "finops-web/src/api/exportViews.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "t": "finops-web/src/api/savedViews.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "t": "finops-web/src/components/surfaceState.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "t": "finops-web/src/screens/libraryModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/ResourceListScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
@@ -2951,12 +4291,32 @@
     },
     {
       "s": "finops-web/src/screens/ResourceListScreen.tsx",
+      "t": "finops-web/src/components/ChartPanel.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ResourceListScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ResourceListScreen.tsx",
       "t": "finops-web/src/components/FixtureBand.tsx",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/ResourceListScreen.tsx",
+      "t": "finops-web/src/components/RankedBars.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ResourceListScreen.tsx",
       "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ResourceListScreen.tsx",
+      "t": "finops-web/src/screens/nodeColumns.tsx",
       "k": "typescript"
     },
     {
@@ -2971,7 +4331,77 @@
     },
     {
       "s": "finops-web/src/screens/ResourceListScreen.tsx",
+      "t": "finops-web/src/shell/filters.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ResourceListScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ResourceListScreen.tsx",
+      "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ScheduledReportsScreen.tsx",
+      "t": "finops-web/src/api/apiContext.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ScheduledReportsScreen.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ScheduledReportsScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ScheduledReportsScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ScheduledReportsScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ScheduledReportsScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ScheduledReportsScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ScheduledReportsScreen.tsx",
+      "t": "finops-web/src/screens/libraryModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ScheduledReportsScreen.tsx",
+      "t": "finops-web/src/screens/scheduleModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ScheduledReportsScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ScheduledReportsScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ScheduledReportsScreen.tsx",
+      "t": "finops-web/src/shell/saveFile.ts",
       "k": "typescript"
     },
     {
@@ -2982,6 +4412,11 @@
     {
       "s": "finops-web/src/screens/TopologyScreen.tsx",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/TopologyScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
       "k": "typescript"
     },
     {
@@ -2996,12 +4431,22 @@
     },
     {
       "s": "finops-web/src/screens/TopologyScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/TopologyScreen.tsx",
       "t": "finops-web/src/screens/sliceCoverage.ts",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/screens/TopologyScreen.tsx",
       "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/TopologyScreen.tsx",
+      "t": "finops-web/src/shell/links.tsx",
       "k": "typescript"
     },
     {
@@ -3017,6 +4462,11 @@
     {
       "s": "finops-web/src/screens/WasteSavingsScreen.tsx",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteSavingsScreen.tsx",
+      "t": "finops-web/src/components/ChartPanel.tsx",
       "k": "typescript"
     },
     {
@@ -3041,7 +4491,22 @@
     },
     {
       "s": "finops-web/src/screens/WasteSavingsScreen.tsx",
+      "t": "finops-web/src/components/charts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteSavingsScreen.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteSavingsScreen.tsx",
       "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteSavingsScreen.tsx",
+      "t": "finops-web/src/screens/realizedSavings.ts",
       "k": "typescript"
     },
     {
@@ -3086,6 +4551,11 @@
     },
     {
       "s": "finops-web/src/screens/WasteScoreScreen.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScoreScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
       "k": "typescript"
     },
@@ -3126,6 +4596,11 @@
     },
     {
       "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
       "t": "finops-web/src/components/tableConfig.ts",
       "k": "typescript"
     },
@@ -3141,7 +4616,27 @@
     },
     {
       "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/shell/filters.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/AccountsScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/cost.ts",
       "k": "typescript"
     },
     {
@@ -3260,6 +4755,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/ClustersScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/sortEveryColumn.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/ContainerCostScreen.test.tsx",
       "t": "finops-web/src/api/fixtures/containers.ts",
       "k": "typescript"
@@ -3310,8 +4810,23 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/ContainerWasteScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/sortEveryColumn.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx",
       "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostAllocationScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
       "k": "typescript"
     },
     {
@@ -3336,7 +4851,17 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/CostAnomaliesScreen.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostAnomaliesScreen.test.tsx",
       "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostAnomaliesScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
       "k": "typescript"
     },
     {
@@ -3386,7 +4911,22 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/CostExportScreen.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostExportScreen.test.tsx",
+      "t": "finops-web/src/api/exportViews.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostExportScreen.test.tsx",
       "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostExportScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
       "k": "typescript"
     },
     {
@@ -3411,7 +4951,12 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/CostScreen.test.tsx",
-      "t": "finops-web/src/api/fixtures/cost.ts",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/CostScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
       "k": "typescript"
     },
     {
@@ -3525,6 +5070,41 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/EntityScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/sortEveryColumn.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
+      "t": "finops-web/src/screens/ForecastScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ForecastScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/FreshnessScreen.test.tsx",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -3551,6 +5131,11 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/GeographyScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/GeographyScreen.test.tsx",
       "t": "finops-web/src/components/__tests__/axe.ts",
       "k": "typescript"
     },
@@ -3567,6 +5152,16 @@
     {
       "s": "finops-web/src/screens/__tests__/GeographyScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/GeographyScreen.test.tsx",
+      "t": "finops-web/src/screens/exploreSeries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/GeographyScreen.test.tsx",
+      "t": "finops-web/src/screens/geographyModel.ts",
       "k": "typescript"
     },
     {
@@ -3596,6 +5191,11 @@
     },
     {
       "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
       "t": "finops-web/src/components/__tests__/axe.ts",
       "k": "typescript"
     },
@@ -3612,6 +5212,11 @@
     {
       "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
+      "t": "finops-web/src/screens/personas.ts",
       "k": "typescript"
     },
     {
@@ -3647,6 +5252,56 @@
     {
       "s": "finops-web/src/screens/__tests__/OrganizationScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/api/fixtures/query.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/api/fixtures/waste.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/screens/HomeScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
+      "t": "finops-web/src/screens/overviewKpis.ts",
       "k": "typescript"
     },
     {
@@ -3755,6 +5410,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/QueryFindingsScreen.test.tsx",
+      "t": "finops-web/src/screens/queryByDashboard.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
       "t": "finops-web/src/api/fixtures/query.ts",
       "k": "typescript"
@@ -3840,6 +5500,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/QuotasScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/sortEveryColumn.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
       "t": "finops-web/src/api/fixtures/query.ts",
       "k": "typescript"
@@ -3862,6 +5527,46 @@
     {
       "s": "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ReportLibraryScreen.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ReportLibraryScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ReportLibraryScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ReportLibraryScreen.test.tsx",
+      "t": "finops-web/src/screens/ReportLibraryScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ReportLibraryScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ReportLibraryScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ReportLibraryScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/sortEveryColumn.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ReportLibraryScreen.test.tsx",
+      "t": "finops-web/src/screens/libraryModel.ts",
       "k": "typescript"
     },
     {
@@ -3895,6 +5600,41 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/ScheduledReportsScreen.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ScheduledReportsScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ScheduledReportsScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ScheduledReportsScreen.test.tsx",
+      "t": "finops-web/src/screens/ScheduledReportsScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ScheduledReportsScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ScheduledReportsScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ScheduledReportsScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/sortEveryColumn.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/TopologyScreen.test.tsx",
       "t": "finops-web/src/api/fixtures/topology.ts",
       "k": "typescript"
@@ -3917,6 +5657,11 @@
     {
       "s": "finops-web/src/screens/__tests__/TopologyScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/TopologyScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/sortEveryColumn.ts",
       "k": "typescript"
     },
     {
@@ -3950,6 +5695,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/WasteSavingsScreen.test.tsx",
+      "t": "finops-web/src/screens/realizedSavings.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/WasteScreen.test.tsx",
       "t": "finops-web/src/api/fixtures/waste.ts",
       "k": "typescript"
@@ -3975,8 +5725,58 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/accountHealth.test.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/accountHealth.test.ts",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/accountHealth.test.ts",
+      "t": "finops-web/src/screens/accountHealth.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/commitmentDays.test.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/commitmentDays.test.ts",
+      "t": "finops-web/src/screens/commitmentDays.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/enforcementTime.test.ts",
       "t": "finops-web/src/screens/enforcementTime.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/exploreModel.test.ts",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/exploreModel.test.ts",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/exploreModel.test.ts",
+      "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/exploreSeries.test.ts",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/exploreSeries.test.ts",
+      "t": "finops-web/src/screens/exploreSeries.ts",
       "k": "typescript"
     },
     {
@@ -3995,8 +5795,108 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/forecastModel.test.ts",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/forecastModel.test.ts",
+      "t": "finops-web/src/screens/forecastModel.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/freshnessContract.test.ts",
       "t": "finops-web/src/App.tsx?raw",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/geographyModel.test.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/geographyModel.test.ts",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/geographyModel.test.ts",
+      "t": "finops-web/src/screens/geographyModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/nodeColumns.test.ts",
+      "t": "finops-web/src/api/fixtures/topology.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/nodeColumns.test.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/nodeColumns.test.ts",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/nodeColumns.test.ts",
+      "t": "finops-web/src/screens/nodeColumns.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/overviewKpis.test.ts",
+      "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/overviewKpis.test.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/overviewKpis.test.ts",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/overviewKpis.test.ts",
+      "t": "finops-web/src/screens/overviewKpis.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/rawIdentifiers.test.tsx",
+      "t": "finops-web/src/App.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/rawIdentifiers.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/rawIdentifiers.test.tsx",
+      "t": "finops-web/src/api/fixtureSeam.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/rawIdentifiers.test.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/rawIdentifiers.test.tsx",
+      "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/scheduleModel.test.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/scheduleModel.test.ts",
+      "t": "finops-web/src/screens/scheduleModel.ts",
       "k": "typescript"
     },
     {
@@ -4010,6 +5910,56 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/accountHealth.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/commitmentDays.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/commitmentDays.ts",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/commitmentDays.ts",
+      "t": "finops-web/src/screens/exploreSeries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/exploreModel.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/exploreModel.ts",
+      "t": "finops-web/src/components/charts/StackedBar.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/exploreModel.ts",
+      "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/exploreSeries.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/exploreSeries.ts",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/exploreSeries.ts",
+      "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/findingFigure.ts",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -4020,7 +5970,92 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/forecastModel.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/forecastModel.ts",
+      "t": "finops-web/src/components/charts/StackedArea.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/forecastModel.ts",
+      "t": "finops-web/src/screens/exploreModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/geographyModel.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/geographyModel.ts",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/geographyModel.ts",
+      "t": "finops-web/src/screens/exploreSeries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/libraryModel.ts",
+      "t": "finops-web/src/api/savedViews.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/libraryModel.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/nodeColumns.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/nodeColumns.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/nodeColumns.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/overviewKpis.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/overviewKpis.ts",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/overviewKpis.ts",
+      "t": "finops-web/src/screens/exploreSeries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/personas.ts",
+      "t": "finops-web/src/storage.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/platformRollUp.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/platformRollUp.ts",
+      "t": "finops-web/src/screens/exploreSeries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/queryByDashboard.ts",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
     },
@@ -4032,6 +6067,31 @@
     {
       "s": "finops-web/src/screens/querySeverity.ts",
       "t": "finops-web/src/components/SeverityBadge.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/realizedSavings.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/realizedSavings.ts",
+      "t": "finops-web/src/screens/exploreSeries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/scheduleModel.ts",
+      "t": "finops-web/src/api/exportViews.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/scheduleModel.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/scheduleModel.ts",
+      "t": "finops-web/src/components/surfaceState.ts",
       "k": "typescript"
     },
     {
@@ -4055,6 +6115,51 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/useOverviewFigures.ts",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/useOverviewFigures.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/useOverviewFigures.ts",
+      "t": "finops-web/src/components/surfaceState.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/useOverviewFigures.ts",
+      "t": "finops-web/src/screens/overviewKpis.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/useOverviewFigures.ts",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/useOverviewFigures.ts",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/api/account.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/api/exportViews.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/shell/AppShell.tsx",
       "t": "finops-web/src/components/CoverageBanner.tsx",
       "k": "typescript"
@@ -4071,7 +6176,47 @@
     },
     {
       "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
       "t": "finops-web/src/components/provenance.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/shell/ExportMenu.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/shell/SaveView.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/shell/ScheduleView.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/shell/ScreenTabs.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/shell/SearchBox.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/shell/ThemeToggle.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/shell/links.tsx",
       "k": "typescript"
     },
     {
@@ -4090,6 +6235,21 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/shell/ExportMenu.tsx",
+      "t": "finops-web/src/api/apiContext.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ExportMenu.tsx",
+      "t": "finops-web/src/api/exportViews.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ExportMenu.tsx",
+      "t": "finops-web/src/shell/saveFile.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/shell/MetaProvider.tsx",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -4102,6 +6262,111 @@
     {
       "s": "finops-web/src/shell/MetaProvider.tsx",
       "t": "finops-web/src/shell/metaStore.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/SaveView.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/SaveView.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/SaveView.tsx",
+      "t": "finops-web/src/api/savedViews.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/SaveView.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/SaveView.tsx",
+      "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ScheduleView.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ScheduleView.tsx",
+      "t": "finops-web/src/api/exportViews.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ScheduleView.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ScheduleView.tsx",
+      "t": "finops-web/src/api/savedViews.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ScheduleView.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ScheduleView.tsx",
+      "t": "finops-web/src/screens/scheduleModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ScheduleView.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ScreenTabs.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ScreenTabs.tsx",
+      "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/SearchBox.tsx",
+      "t": "finops-web/src/api/account.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/SearchBox.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/SearchBox.tsx",
+      "t": "finops-web/src/shell/searchModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ThemeToggle.test.tsx",
+      "t": "finops-web/src/shell/ThemeToggle.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ThemeToggle.test.tsx",
+      "t": "finops-web/src/theme.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/ThemeToggle.tsx",
+      "t": "finops-web/src/theme.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/AppShell.test.tsx",
+      "t": "finops-web/src/api/client.ts",
       "k": "typescript"
     },
     {
@@ -4116,12 +6381,12 @@
     },
     {
       "s": "finops-web/src/shell/__tests__/AppShell.test.tsx",
-      "t": "finops-web/src/shell/AppShell.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
       "k": "typescript"
     },
     {
       "s": "finops-web/src/shell/__tests__/AppShell.test.tsx",
-      "t": "finops-web/src/shell/MetaProvider.tsx",
+      "t": "finops-web/src/shell/AppShell.tsx",
       "k": "typescript"
     },
     {
@@ -4140,6 +6405,146 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/shell/__tests__/ExportMenu.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/ExportMenu.test.tsx",
+      "t": "finops-web/src/api/exportViews.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/ExportMenu.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/ExportMenu.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/ExportMenu.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/ExportMenu.test.tsx",
+      "t": "finops-web/src/shell/ExportMenu.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/SaveView.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/SaveView.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/SaveView.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/SaveView.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/SaveView.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/SaveView.test.tsx",
+      "t": "finops-web/src/shell/SaveView.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/SaveView.test.tsx",
+      "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/ScheduleView.test.tsx",
+      "t": "finops-web/src/api/ApiProvider.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/ScheduleView.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/ScheduleView.test.tsx",
+      "t": "finops-web/src/api/exportViews.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/ScheduleView.test.tsx",
+      "t": "finops-web/src/api/savedViews.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/ScheduleView.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/ScheduleView.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/ScheduleView.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/ScheduleView.test.tsx",
+      "t": "finops-web/src/shell/ScheduleView.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/SearchBox.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/SearchBox.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/SearchBox.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/SearchBox.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/SearchBox.test.tsx",
+      "t": "finops-web/src/shell/SearchBox.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/filters.test.tsx",
+      "t": "finops-web/src/shell/filters.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/links.test.tsx",
+      "t": "finops-web/src/shell/links.tsx",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/shell/__tests__/metaStore.test.ts",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -4150,8 +6555,23 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/shell/__tests__/searchModel.test.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/__tests__/searchModel.test.ts",
+      "t": "finops-web/src/shell/searchModel.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/shell/__tests__/sections.test.ts",
       "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/shell/links.tsx",
+      "t": "finops-web/src/api/account.ts",
       "k": "typescript"
     },
     {
@@ -4170,7 +6590,22 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/shell/searchModel.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/storage.test.ts",
+      "t": "finops-web/src/storage.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/theme.test.ts",
+      "t": "finops-web/src/theme.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/theme.ts",
       "t": "finops-web/src/storage.ts",
       "k": "typescript"
     },
@@ -4206,7 +6641,17 @@
     },
     {
       "s": "finops_api/db/models.py",
+      "t": "finops_api/screens.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/models.py",
       "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/models.py",
+      "t": "finops_core/domain/report_schedule.py",
       "k": "python"
     },
     {
@@ -4350,6 +6795,51 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/explore.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/explore.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/explore.py",
+      "t": "finops_api/db/repositories/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/explore.py",
+      "t": "finops_core/domain/explore.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/explore.py",
+      "t": "finops_core/domain/platform.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/explore.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/forecast.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/forecast.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/forecast.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/freshness.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -4412,6 +6902,11 @@
     {
       "s": "finops_api/db/repositories/query.py",
       "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/query.py",
+      "t": "finops_core/domain/insight.py",
       "k": "python"
     },
     {
@@ -4436,6 +6931,41 @@
     },
     {
       "s": "finops_api/db/repositories/quotas.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/reports.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/reports.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/reports.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/schedules.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/schedules.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/schedules.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/schedules.py",
       "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
@@ -4480,6 +7010,26 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/views.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/views.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/views.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/views.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/waste.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -4496,12 +7046,22 @@
     },
     {
       "s": "finops_api/deps.py",
+      "t": "finops_api/db/repositories/accounts.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/deps.py",
       "t": "finops_api/db/repositories/base.py",
       "k": "python"
     },
     {
       "s": "finops_api/deps.py",
       "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/deps.py",
+      "t": "finops_core/domain/account.py",
       "k": "python"
     },
     {
@@ -4517,6 +7077,116 @@
     {
       "s": "finops_api/deps.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/__init__.py",
+      "t": "finops_api/exports/responder.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/responder.py",
+      "t": "finops_api/db/repositories/reports.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/responder.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/responder.py",
+      "t": "finops_api/exports/cells.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/responder.py",
+      "t": "finops_api/exports/writers.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/responder.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/responder.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/responder.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/responder.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/scheduled.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/scheduled.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/scheduled.py",
+      "t": "finops_api/db/repositories/reports.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/scheduled.py",
+      "t": "finops_api/db/repositories/views.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/scheduled.py",
+      "t": "finops_api/exports/responder.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/scheduled.py",
+      "t": "finops_api/toolbox.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/scheduled.py",
+      "t": "finops_core/domain/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/scheduled.py",
+      "t": "finops_core/domain/report_schedule.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/scheduled.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/scheduled.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/scheduled.py",
+      "t": "finops_core/ports/reports.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/scheduled.py",
+      "t": "finops_ingest/ledger.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/exports/writers.py",
+      "t": "finops_api/exports/cells.py",
       "k": "python"
     },
     {
@@ -4606,6 +7276,11 @@
     },
     {
       "s": "finops_api/main.py",
+      "t": "finops_api/exports/scheduled.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/main.py",
       "t": "finops_api/guards.py",
       "k": "python"
     },
@@ -4655,6 +7330,11 @@
       "k": "python"
     },
     {
+      "s": "finops_api/main.py",
+      "t": "finops_providers/aws/report_store.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/middleware.py",
       "t": "finops_api/deps.py",
       "k": "python"
@@ -4682,6 +7362,11 @@
     {
       "s": "finops_api/routes/accounts.py",
       "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/accounts.py",
+      "t": "finops_api/exports/__init__.py",
       "k": "python"
     },
     {
@@ -4726,6 +7411,11 @@
     },
     {
       "s": "finops_api/routes/assistant.py",
+      "t": "finops_api/exports/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/assistant.py",
       "t": "finops_api/routes/__init__.py",
       "k": "python"
     },
@@ -4757,6 +7447,11 @@
     {
       "s": "finops_api/routes/cost.py",
       "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_api/exports/__init__.py",
       "k": "python"
     },
     {
@@ -4795,6 +7490,116 @@
       "k": "python"
     },
     {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_api/db/repositories/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_api/db/repositories/explore.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_api/exports/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_api/exports/cells.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_api/routes/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_core/domain/explore.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_core/domain/geography.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/explore.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_api/db/repositories/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_api/db/repositories/forecast.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_api/exports/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_api/routes/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/forecast.py",
+      "t": "finops_query/forecast.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/routes/ingest.py",
       "t": "finops_api/db/repositories/__init__.py",
       "k": "python"
@@ -4802,6 +7607,11 @@
     {
       "s": "finops_api/routes/ingest.py",
       "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ingest.py",
+      "t": "finops_api/exports/__init__.py",
       "k": "python"
     },
     {
@@ -4847,6 +7657,11 @@
     {
       "s": "finops_api/routes/inventory.py",
       "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/inventory.py",
+      "t": "finops_api/exports/__init__.py",
       "k": "python"
     },
     {
@@ -4936,6 +7751,11 @@
     },
     {
       "s": "finops_api/routes/org.py",
+      "t": "finops_api/exports/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/org.py",
       "t": "finops_api/routes/__init__.py",
       "k": "python"
     },
@@ -4971,6 +7791,11 @@
     },
     {
       "s": "finops_api/routes/platform.py",
+      "t": "finops_api/exports/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/platform.py",
       "t": "finops_api/routes/__init__.py",
       "k": "python"
     },
@@ -5001,6 +7826,11 @@
     },
     {
       "s": "finops_api/routes/query.py",
+      "t": "finops_api/exports/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
       "t": "finops_api/routes/__init__.py",
       "k": "python"
     },
@@ -5012,6 +7842,11 @@
     {
       "s": "finops_api/routes/query.py",
       "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/query.py",
+      "t": "finops_core/domain/insight.py",
       "k": "python"
     },
     {
@@ -5056,6 +7891,11 @@
     },
     {
       "s": "finops_api/routes/quotas.py",
+      "t": "finops_api/exports/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/quotas.py",
       "t": "finops_api/routes/__init__.py",
       "k": "python"
     },
@@ -5072,6 +7912,96 @@
     {
       "s": "finops_api/routes/quotas.py",
       "t": "finops_query/quota.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/schedules.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/schedules.py",
+      "t": "finops_api/db/repositories/reports.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/schedules.py",
+      "t": "finops_api/db/repositories/schedules.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/schedules.py",
+      "t": "finops_api/db/repositories/views.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/schedules.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/schedules.py",
+      "t": "finops_api/exports/responder.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/schedules.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/schedules.py",
+      "t": "finops_api/routes/views.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/schedules.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/schedules.py",
+      "t": "finops_core/domain/report_schedule.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/schedules.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/schedules.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/views.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/views.py",
+      "t": "finops_api/db/repositories/views.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/views.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/views.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/views.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/views.py",
+      "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
     {
@@ -5097,6 +8027,11 @@
     {
       "s": "finops_api/routes/waste.py",
       "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/waste.py",
+      "t": "finops_api/exports/__init__.py",
       "k": "python"
     },
     {
@@ -5132,6 +8067,16 @@
     {
       "s": "finops_api/routes/waste.py",
       "t": "finops_query/actions.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/schemas.py",
+      "t": "finops_api/screens.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/schemas.py",
+      "t": "finops_core/constants.py",
       "k": "python"
     },
     {
@@ -5746,6 +8691,11 @@
     },
     {
       "s": "finops_fakes/recommendations.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/reports.py",
       "t": "finops_core/errors.py",
       "k": "python"
     },
@@ -6640,6 +9590,21 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/report_store.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/report_store.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/report_store.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/terraform_state.py",
       "t": "finops_core/domain/iac.py",
       "k": "python"
@@ -7045,6 +10010,11 @@
       "k": "python"
     },
     {
+      "s": "scripts/ops/local_bucket.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
       "s": "scripts/ops/local_token.py",
       "t": "finops_api/identity/local_config.py",
       "k": "python"
@@ -7355,13 +10325,73 @@
       "k": "python"
     },
     {
-      "s": "tests/api/test_cost_export_route.py",
+      "s": "tests/api/test_cost_explore.py",
+      "t": "finops_api/db/repositories/explore.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_explore.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_explore.py",
       "t": "finops_core/config.py",
       "k": "python"
     },
     {
-      "s": "tests/api/test_cost_export_route.py",
+      "s": "tests/api/test_cost_explore.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_explore.py",
+      "t": "finops_core/domain/explore.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_explore.py",
+      "t": "finops_core/domain/geography.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_explore.py",
       "t": "finops_core/domain/platform.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_forecast.py",
+      "t": "finops_api/routes/forecast.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_forecast.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_forecast.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_forecast.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_forecast.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_forecast.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_forecast.py",
+      "t": "finops_query/forecast.py",
       "k": "python"
     },
     {
@@ -7450,6 +10480,81 @@
       "k": "python"
     },
     {
+      "s": "tests/api/test_cost_showback.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_cost_showback.py",
+      "t": "finops_core/domain/platform.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_export_names.py",
+      "t": "finops_api/exports/cells.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_export_parity.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_export_parity.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_export_responder.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_export_responder.py",
+      "t": "finops_api/exports/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_export_responder.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_export_responder.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_export_responder.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_export_routes.py",
+      "t": "finops_api/exports/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_export_routes.py",
+      "t": "finops_api/exports/cells.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_export_routes.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_export_writers.py",
+      "t": "finops_api/exports/cells.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_export_writers.py",
+      "t": "finops_api/exports/writers.py",
+      "k": "python"
+    },
+    {
       "s": "tests/api/test_fixture_surfaces.py",
       "t": "finops_api/main.py",
       "k": "python"
@@ -7457,6 +10562,16 @@
     {
       "s": "tests/api/test_fixture_surfaces.py",
       "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_forecast_shapes.py",
+      "t": "finops_api/routes/forecast.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_forecast_shapes.py",
+      "t": "finops_query/forecast.py",
       "k": "python"
     },
     {
@@ -7590,6 +10705,76 @@
       "k": "python"
     },
     {
+      "s": "tests/api/test_report_schedules.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_report_schedules.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_report_schedules.py",
+      "t": "finops_api/db/repositories/reports.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_report_schedules.py",
+      "t": "finops_api/db/repositories/schedules.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_report_schedules.py",
+      "t": "finops_api/db/repositories/views.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_report_schedules.py",
+      "t": "finops_api/exports/scheduled.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_report_schedules.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_report_schedules.py",
+      "t": "finops_api/identity/session.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_report_schedules.py",
+      "t": "finops_api/main.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_report_schedules.py",
+      "t": "finops_api/routes/schedules.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_report_schedules.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_report_schedules.py",
+      "t": "finops_core/domain/identity.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_report_schedules.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_report_schedules.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/api/test_routes.py",
       "t": "finops_api/identity/__init__.py",
       "k": "python"
@@ -7622,6 +10807,56 @@
     {
       "s": "tests/api/test_routes.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_saved_views.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_saved_views.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_saved_views.py",
+      "t": "finops_api/db/repositories/views.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_saved_views.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_saved_views.py",
+      "t": "finops_api/identity/session.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_saved_views.py",
+      "t": "finops_api/main.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_saved_views.py",
+      "t": "finops_api/routes/views.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_saved_views.py",
+      "t": "finops_api/screens.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_saved_views.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_saved_views.py",
+      "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
     {
@@ -7672,6 +10907,16 @@
     {
       "s": "tests/api/test_scope_enforcement.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_screens.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_screens.py",
+      "t": "finops_api/screens.py",
       "k": "python"
     },
     {
@@ -8080,6 +11325,11 @@
       "k": "python"
     },
     {
+      "s": "tests/core/test_explore_periods.py",
+      "t": "finops_core/domain/explore.py",
+      "k": "python"
+    },
+    {
       "s": "tests/core/test_geography.py",
       "t": "finops_core/domain/geography.py",
       "k": "python"
@@ -8132,6 +11382,11 @@
     {
       "s": "tests/core/test_quota.py",
       "t": "finops_core/domain/quota.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_report_schedule.py",
+      "t": "finops_core/domain/report_schedule.py",
       "k": "python"
     },
     {
@@ -8891,6 +12146,11 @@
     },
     {
       "s": "tests/ingest/test_registry.py",
+      "t": "finops_api/exports/scheduled.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_registry.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
@@ -9325,6 +12585,21 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/aws/test_report_store.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_report_store.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_report_store.py",
+      "t": "finops_providers/aws/report_store.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/aws/test_response_shapes.py",
       "t": "finops_core/domain/quota.py",
       "k": "python"
@@ -9382,6 +12657,11 @@
     {
       "s": "tests/providers/fake/test_commitment.py",
       "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_commitment.py",
+      "t": "finops_core/errors.py",
       "k": "python"
     },
     {
@@ -9642,6 +12922,11 @@
     {
       "s": "tests/query/test_digest.py",
       "t": "finops_query/digest.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_forecast.py",
+      "t": "finops_query/forecast.py",
       "k": "python"
     },
     {

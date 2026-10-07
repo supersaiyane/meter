@@ -50,7 +50,7 @@ function clientFor(ask: ApiEnvelope<ApiExchange> = askFixture()): ApiClient {
 
 function renderScreen(client: ApiClient = clientFor()) {
   return render(
-    <Harness client={client} initialPath="/assistant">
+    <Harness client={client} initialPath="/assist">
       <AssistantScreen />
     </Harness>,
   );
@@ -164,8 +164,8 @@ describe('AssistantScreen, a refusal', () => {
       'split cost allocation data is not enabled',
     );
     // By the words the navigation uses, and to the route the API named.
-    const link = within(refusal).getByRole('link', { name: 'Cost, Containers' });
-    expect(link).toHaveAttribute('href', '/cost/containers');
+    const link = within(refusal).getByRole('link', { name: 'Analyze, Kubernetes cost' });
+    expect(link).toHaveAttribute('href', '/analyze/kubernetes-cost');
     // A refusal is not an error and not an answer.
     expect(within(entry).queryByTestId('answer')).toBeNull();
     expect(within(entry).queryByTestId('exchange-failure')).toBeNull();
@@ -470,7 +470,7 @@ describe('AssistantScreen, the trust strip', () => {
 /** The screen inside the shell, so the page heading the shell draws is part of what is checked. */
 function renderInShell(client: ApiClient = clientFor()) {
   return render(
-    <Harness client={client} initialPath="/assistant">
+    <Harness client={client} initialPath="/assist">
       <AppShell now={new Date('2026-10-04T09:00:00Z')}>
         <AssistantScreen />
       </AppShell>

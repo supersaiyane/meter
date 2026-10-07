@@ -3,10 +3,14 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { App } from './App';
 import type { ApiClient } from './api/client';
+import type { ApiEnvelope } from './api/types';
+import { metaOf } from './screens/__tests__/fixtures';
 
 const NEVER_ANSWERS: ApiClient = {
   get: () => new Promise(() => undefined),
-  getText: () => new Promise<string>(() => undefined),
+  patch: () => Promise.reject(new Error('no patch stub')),
+  delete: () => Promise.reject(new Error('no delete stub')),
+  getFile: () => new Promise<never>(() => undefined),
   post: () => new Promise(() => undefined),
 };
 
@@ -42,9 +46,9 @@ describe('App', () => {
     // heading at all and a reader navigating by heading landed on nothing. The
     // name comes from the navigation list, so the two cannot disagree.
     for (const [path, name] of [
-      ['/', 'Home'],
-      ['/governance/queries', 'Query findings'],
-      ['/platform/freshness', 'Freshness'],
+      ['/', 'Overview'],
+      ['/govern/query-cost', 'Query Cost'],
+      ['/platform/freshness', 'Data Freshness'],
       ['/inventory/accounts', 'Accounts'],
     ] as const) {
       const { unmount } = open(path);
@@ -55,44 +59,98 @@ describe('App', () => {
 
   it('names the screen in the document title, not just the product', () => {
     // Four Meter tabs that all read "Meter" cannot be told apart.
-    open('/governance/queries');
-    expect(document.title).toBe('Query findings, Meter');
+    open('/govern/query-cost');
+    expect(document.title).toBe('Query Cost, Meter');
   });
 
   it('does not tell a screen named after the product about the product twice', () => {
     open('/platform/cost');
-    expect(document.title).toBe('Meter cost');
+    expect(document.title).toBe('Meter Cost');
   });
 
   it('titles a detail page with the screen it was reached from', () => {
     // A finding detail is not in the navigation, and the screen names the
     // finding itself underneath.
-    open('/governance/queries/abc-123');
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Query findings' }),
-    ).toBeInTheDocument();
+    open('/govern/query-cost/findings/abc-123');
+    expect(screen.getByRole('heading', { level: 1, name: 'Query Cost' })).toBeInTheDocument();
   });
 
-  it('opens only the section holding the current screen', () => {
-    // The point of the accordion. Seven groups fully expanded is a wall of
-    // links; one open group is a menu pointing at where the reader is.
-    open('/governance/queries');
-    const governance = screen.getByTestId('group-Governance');
-    expect(governance).toHaveAttribute('open');
-    for (const label of ['Cost', 'Waste', 'Inventory', 'Platform']) {
+  it('opens only the group holding the current screen', () => {
+    // One group open at a time, by the owner's ask later on 2026-10-05. Nine groups fully
+    // expanded is a wall of links; one open group is a menu pointing at where the reader is.
+    open('/govern/query-cost');
+    expect(screen.getByTestId('group-Govern')).toHaveAttribute('open');
+    for (const label of [
+      'Analyze',
+      'Plan',
+      'Optimize',
+      'Inventory',
+      'Report',
+      'Assist',
+      'Platform',
+    ]) {
       expect(screen.getByTestId(`group-${label}`)).not.toHaveAttribute('open');
     }
   });
 
-  it('opens the section a detail page was reached from', () => {
-    open('/governance/queries/abc-123');
-    expect(screen.getByTestId('group-Governance')).toHaveAttribute('open');
+  it('opens one group at a time: opening another closes the one that was open', () => {
+    open('/govern/query-cost');
+    const plan = screen.getByTestId<HTMLDetailsElement>('group-Plan');
+    plan.open = true;
+    fireEvent(plan, new Event('toggle'));
+    expect(screen.getByTestId('group-Plan')).toHaveAttribute('open');
+    expect(screen.getByTestId('group-Govern')).not.toHaveAttribute('open');
   });
 
-  it('draws Home as a link rather than a section holding only itself', () => {
+  it('closes the open group when the reader closes it, and leaves every group closed', () => {
+    open('/govern/query-cost');
+    const govern = screen.getByTestId<HTMLDetailsElement>('group-Govern');
+    govern.open = false;
+    fireEvent(govern, new Event('toggle'));
+    expect(document.querySelectorAll("nav[aria-label='Sections'] details[open]")).toHaveLength(
+      0,
+    );
+  });
+
+  it('on a narrow screen opens the menu as a drawer, and Escape closes it', () => {
+    // At or below 1024 pixels the rail is a bar across the top and its menu a drawer, closed
+    // until asked for, so a phone never opens on a wall of links.
+    const original = Object.getOwnPropertyDescriptor(window, 'matchMedia');
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({
+        matches: true,
+        media: query,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      }),
+    });
+    try {
+      open('/govern/query-cost');
+      expect(screen.getByTestId('shell')).toHaveAttribute('data-layout', 'narrow');
+      expect(screen.queryByRole('navigation', { name: 'Sections' })).toBeNull();
+      fireEvent.click(screen.getByTestId('nav-toggle'));
+      expect(screen.getByRole('navigation', { name: 'Sections' })).toBeInTheDocument();
+      fireEvent.keyDown(window, { key: 'Escape' });
+      expect(screen.queryByRole('navigation', { name: 'Sections' })).toBeNull();
+    } finally {
+      if (original === undefined) {
+        Reflect.deleteProperty(window, 'matchMedia');
+      } else {
+        Object.defineProperty(window, 'matchMedia', original);
+      }
+    }
+  });
+
+  it('opens the group a detail page was reached from', () => {
+    open('/govern/query-cost/findings/abc-123');
+    expect(screen.getByTestId('group-Govern')).toHaveAttribute('open');
+  });
+
+  it('draws Overview as a link rather than a section holding only itself', () => {
     open('/');
-    expect(screen.getByTestId('nav-self-link')).toHaveTextContent('Home');
-    expect(screen.queryByTestId('group-Home')).toBeNull();
+    expect(screen.getByTestId('nav-self-link')).toHaveTextContent('Overview');
+    expect(screen.queryByTestId('group-Overview')).toBeNull();
   });
 
   it('keeps every screen in the document, open section or not', () => {
@@ -104,7 +162,12 @@ describe('App', () => {
     // and dropping them would hide the roadmap. The journey asserts the
     // browser's own behaviour, which is the part this cannot see.
     open('/');
-    for (const href of ['/cost', '/waste', '/inventory/accounts', '/governance/queries']) {
+    for (const href of [
+      '/analyze/explorer',
+      '/optimize',
+      '/inventory/accounts',
+      '/govern/query-cost',
+    ]) {
       expect(
         document.querySelector(`nav[aria-label='Sections'] a[href='${href}']`),
       ).not.toBeNull();
@@ -171,17 +234,21 @@ describe('App', () => {
     );
   });
 
-  it('lands on Home, which promises nothing that has already shipped', () => {
-    // Home named the sub project behind each unfilled slot, and the last one, realized
-    // savings, still said P3 after P3 shipped. Nothing is left to arrive on Home, so it
-    // draws no rail. Read inside the screen rather than the whole page, because the
-    // navigation still lists the Flags screen as arriving, which is true.
+  it('lands on Overview, which promises nothing that has already shipped', () => {
+    // The front page named the sub project behind each unfilled slot, and the last one,
+    // realized savings, still said P3 after P3 shipped. Nothing is left to arrive there,
+    // so it draws no rail. Read inside the screen rather than the whole page, because the
+    // navigation still lists screens as arriving, which is true.
     open('/');
     expect(screen.queryByTestId('not-built')).toBeNull();
     expect(screen.queryByTestId('home-rail')).toBeNull();
     const page = screen.getByRole('main');
-    expect(page).not.toHaveTextContent(/arrives with/i);
-    expect(page).not.toHaveTextContent(/\bP3\b/);
+    // A promise naming a sub project that has shipped is the failure. Each pattern ends on "not
+    // a digit" rather than a word boundary, because the page's text runs one panel's last word
+    // into the next panel's title, and "P8" then "Showback" hid a stale promise until
+    // TASK-P8-014.
+    expect(page).not.toHaveTextContent(/arrives with P[1-8](?!\d)/);
+    expect(page).not.toHaveTextContent(/\bP3(?!\d)/);
   });
 
   it('tells a wrong address apart from a screen that is merely unbuilt', () => {
@@ -193,8 +260,11 @@ describe('App', () => {
   });
 
   it('marks the current screen for assistive technology', () => {
+    // Read inside the Sections menu, because the screen's first tab carries the
+    // same name and marks itself too.
     open('/inventory/accounts');
-    expect(screen.getByRole('link', { name: 'Accounts' })).toHaveAttribute(
+    const sections = screen.getByRole('navigation', { name: 'Sections' });
+    expect(sections.querySelector("a[href='/inventory/accounts']")).toHaveAttribute(
       'aria-current',
       'page',
     );
@@ -203,5 +273,76 @@ describe('App', () => {
   it('opens a built screen at its own route', () => {
     open('/platform/ingest');
     expect(screen.queryByTestId('not-built')).toBeNull();
+  });
+
+  it('sends a path that moved in P8 to its new home, and keeps the query', () => {
+    // A bookmark, a digest link or a link in a pull request body made before
+    // 2026-10-05 still lands. sections.test.ts enumerates every such path.
+    open('/waste?finding=abc');
+    expect(window.location.pathname).toBe('/optimize');
+    expect(window.location.search).toBe('?finding=abc');
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Recommendations' }),
+    ).toBeInTheDocument();
+  });
+
+  it('sends an old finding detail to the same finding under Query Cost', () => {
+    open('/governance/queries/abc-123');
+    expect(window.location.pathname).toBe('/govern/query-cost/findings/abc-123');
+    expect(screen.getByRole('heading', { level: 1, name: 'Query Cost' })).toBeInTheDocument();
+  });
+
+  it('draws a merged screen as a tab of the screen it joined', () => {
+    open('/inventory/accounts/organization');
+    const views = screen.getByRole('navigation', { name: 'Accounts views' });
+    expect(views.querySelector("a[href='/inventory/accounts/organization']")).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(screen.getByRole('heading', { level: 1, name: 'Accounts' })).toBeInTheDocument();
+  });
+});
+
+describe('the account chosen in the address, FEAT-075', () => {
+  // Answers the list the shell names accounts from. Every other read stays pending.
+  const ACCOUNTS: ApiClient = {
+    get: <T,>(path: string): Promise<ApiEnvelope<T>> =>
+      path === '/api/v1/accounts'
+        ? Promise.resolve({
+            data: [{ account_id: '444455556666', name: 'Platform' }],
+            meta: metaOf(),
+          } as unknown as ApiEnvelope<T>)
+        : new Promise<ApiEnvelope<T>>(() => undefined),
+    patch: () => Promise.reject(new Error('no patch stub')),
+    delete: () => Promise.reject(new Error('no delete stub')),
+    getFile: () => new Promise<never>(() => undefined),
+    post: () => new Promise(() => undefined),
+  };
+
+  function openWith(path: string) {
+    window.history.pushState({}, '', path);
+    return render(<App client={ACCOUNTS} />);
+  }
+
+  it('names the chosen account under the title', async () => {
+    openWith('/?account=444455556666');
+    expect(await screen.findByText('Account Platform, 444455556666')).toBeInTheDocument();
+  });
+
+  it('says so when the address names an account the session cannot see', async () => {
+    openWith('/?account=999999999999');
+    expect(
+      await screen.findByText('Account 999999999999, which this session cannot see'),
+    ).toBeInTheDocument();
+  });
+
+  it('names no account when none is chosen', () => {
+    openWith('/');
+    expect(screen.queryByTestId('chosen-account')).toBeNull();
+  });
+
+  it('never calls the choice a filter the screen ignores', () => {
+    openWith('/analyze/anomalies?account=444455556666');
+    expect(screen.queryByTestId('ignored-filters')).toBeNull();
   });
 });

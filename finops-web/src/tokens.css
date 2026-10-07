@@ -4,9 +4,20 @@
  * puts its worst contrast exactly where this product needs its best, on
  * numerals.
  *
- * Each token names both values in one declaration through light-dark(), rather
+ * Each colour names both values in one declaration through light-dark(), rather
  * than repeating the whole palette in a second block. Two blocks drift, and the
- * half that drifts is always the one nobody is looking at.
+ * half that drifts is always the one nobody is looking at. Lengths cannot go
+ * through light-dark(), so the three that differ by theme are declared in the
+ * blocks after this one, and glass.test.ts holds the two dark blocks equal.
+ *
+ * Since 2026-10-05 the themes are the owner's approved directions, P8 spec
+ * section 5.1: dark is Aurora Glass and light is Frosted Ledger, one glass
+ * design system. Two light values differ from the spec's table, both because
+ * of the contrast its own rule demands. Faint is #5a687d rather than #64738a,
+ * which falls below 4.5 to 1 on the light page and in a light well. The accent
+ * as text is #0064d2, the table's hue darkened, because #0a84ff falls below
+ * 4.5 to 1 as text; #0a84ff stays as the accent mark, for rings and
+ * boundaries, which need 3.
  *
  * Provenance is never carried by colour alone. The fill, the tilde prefix and
  * the text label each carry it independently, because colour fails for roughly
@@ -17,52 +28,79 @@
 :root {
   color-scheme: light dark;
 
-  /* Surfaces. Three depths rather than two, because a card on a page has to be
-     distinguishable from the page without a shadow: shadows in a dense interface
-     stack into mud, and a border plus one step of lightness does the same job for
-     nothing. `raised` is a card, `raised-2` is a row inside a card that needs
-     separating from it. */
-  --surface: light-dark(#f5f7fa, #0b0f14);
-  --surface-sunken: light-dark(#eef2f7, #090d12);
-  --surface-raised: light-dark(#ffffff, #121820);
-  --surface-raised-2: light-dark(#f4f7fb, #171f29);
-  --border: light-dark(#e3e8ef, #212c39);
-  --border-soft: light-dark(#e9eef4, #1a232e);
-  --border-strong: light-dark(#b9c4d2, #354356);
+  /* Surfaces: the page, a panel of glass on it, a row raised inside a panel,
+     and a well set into either. A panel is translucent, so its colour is what
+     it composites to over the page, which is why the contrast test composites
+     before it measures. A shadow is still not how a panel separates from the
+     page at rest; a hairline and one step of lightness do that. A shadow lifts a
+     panel under the pointer and floats a menu, from the tokens below. */
+  --surface: light-dark(#eef2f8, #070a12);
+  --surface-sunken: light-dark(#e9edf4, #05080f);
+  --surface-raised: light-dark(rgba(255, 255, 255, 0.64), rgba(15, 20, 32, 0.55));
+  --surface-raised-2: light-dark(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.04));
+  /* What the glass shows over the bare page, for when there is no glass:
+     reduced transparency, no backdrop-filter, and print. The contrast test
+     holds each to its glass within one step per channel. */
+  --surface-raised-solid: light-dark(#f9fafc, #0b101a);
+  --surface-raised-2-solid: light-dark(#fcfdfe, #151a23);
+  /* Hairlines, and the inner highlight that makes glass read as an edge
+     rather than a stroke. */
+  --border: light-dark(rgba(15, 23, 42, 0.08), rgba(255, 255, 255, 0.09));
+  --border-soft: light-dark(rgba(15, 23, 42, 0.05), rgba(255, 255, 255, 0.06));
+  --border-strong: light-dark(rgba(15, 23, 42, 0.22), rgba(255, 255, 255, 0.22));
+  --hairline-highlight: light-dark(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.06));
+
+  /* The page's glows: indigo, cyan and pink in the light, teal, violet and blue
+     in the dark, one per corner so that no two peaks meet. The contrast test
+     measures every panel, and everything drawn on the page itself, over each
+     glow at its peak. The light glows are the fainter because a light page
+     has less room: at the alphas the dark theme uses, a focus ring and the
+     failure red on the light page fell below their thresholds. */
+  --glow-1: light-dark(rgba(91, 69, 232, 0.05), rgba(94, 234, 212, 0.16));
+  --glow-2: light-dark(rgba(6, 182, 212, 0.07), rgba(167, 139, 250, 0.14));
+  --glow-3: light-dark(rgba(236, 72, 153, 0.06), rgba(59, 130, 246, 0.14));
+  --page-glow:
+    radial-gradient(60rem 40rem at 0% 0%, var(--glow-1), transparent 70%),
+    radial-gradient(52rem 36rem at 100% 0%, var(--glow-2), transparent 70%),
+    radial-gradient(60rem 40rem at 50% 100%, var(--glow-3), transparent 70%);
 
   /* Three inks, which is what a dense screen needs: the value, the label, and the
      thing a reader is allowed to skip. A fourth is a hierarchy nobody can hold,
-     and two makes every label shout. */
-  --text: light-dark(#101722, #e8eef6);
-  --text-muted: light-dark(#56657a, #93a3b8);
-  --text-faint: light-dark(#7b8ba1, #61728a);
+     and two makes every label shout. Skippable is not illegible: faint holds
+     4.5 to 1 on every panel tier. */
+  --text: light-dark(#0f172a, #e8eef7);
+  --text-muted: light-dark(#4a5870, #a1acbe);
+  --text-faint: light-dark(#5a687d, #8390a6);
   /* Numerals get the highest contrast available. Misreading a digit is the
      failure mode that matters here, so this is AAA rather than AA. */
   --text-numeral: light-dark(#070c14, #f4f8ff);
 
   /* Interactive, and interactive only. Nothing merely important is this colour,
      because the moment a heading is accent coloured a reader starts clicking
-     headings. */
-  --accent: light-dark(#1a6fd4, #4da3ff);
-  --accent-quiet: light-dark(#e8f1fd, rgba(77, 163, 255, 0.14));
+     headings. The accent is drawn as text, so it holds 4.5 to 1; the mark is a
+     focus ring or a selected boundary, so it holds the 3 that WCAG asks of
+     those. */
+  --accent: light-dark(#0064d2, #5eead4);
+  /* The mark's two stops, one value in both themes on purpose: a mark is recognised by staying
+     the same. Tokens all the same, so no colour is named outside this file. */
+  --brand-from: #4da3ff;
+  --brand-to: #9b6cff;
+  --accent-mark: light-dark(#0a84ff, #5eead4);
+  --accent-quiet: light-dark(#e6f0fd, rgba(94, 234, 212, 0.14));
 
   /* A good outcome, and the only green in the product. A saving verified against
      the bill is green; a saving we modelled is not, because the difference between
      those two is the thing this product sells. */
-  --good: light-dark(#0f7554, #31c48d);
-  --good-quiet: light-dark(#e3f5ee, rgba(49, 196, 141, 0.14));
+  --good: light-dark(#047857, #34d399);
+  --good-quiet: light-dark(#e3f5ee, rgba(52, 211, 153, 0.14));
 
   /* Failure is the only thing that is ever red, so that when red appears it
-     means exactly one thing. A large cost is not a failure. */
-  /* The dark value is saturated rather than merely light. The old #f08a8a was
-     a pale pink at 43 percent saturation sitting next to near white body text,
-     so it cleared every contrast check while reading as quieter than the
-     sentences around it, which is the opposite of its job. This is the same
-     hue as the light value and carries 62 percent saturation, which separates
-     it from body text by 2.55 to 1 rather than 2.00. */
-  --failure: light-dark(#a01b1b, #fa5e5e);
+     means exactly one thing. A large cost is not a failure. The test holds it
+     2.2 to 1 apart from body text as well as legible, because a failure that
+     reads quieter than the sentences around it is a failure scrolled past. */
+  --failure: light-dark(#c81e1e, #fb7185);
   --failure-quiet: light-dark(#fbeaea, #2a1416);
-  --stale: light-dark(#8a5a00, #e0b25c);
+  --stale: light-dark(#b45309, #fbbf24);
   --stale-quiet: light-dark(#fdf3e0, #2a2113);
 
   /* Sequential, not a traffic light. Severity is a ramp of one hue so that
@@ -83,29 +121,38 @@
   --severity-4: light-dark(#a4542c, #c4744c);
   --severity-5: light-dark(#68300f, #eeab86);
 
-  /* The navigation is dark in both themes, and that is a decision rather than an
-     oversight. It is chrome: it does not carry a figure, nothing in it has to be
-     read against a number, and a dark rail against a light page is what separates
-     the thing you navigate with from the thing you are reading. Every real tool in
-     this category does it, and the one that does not is the one where the sidebar
-     and the content blur into each other.
+  /* Motion, by the owner's choice of rich motion later on 2026-10-05, P8 spec section 2:
+     hover, focus, menus and tabs move fast; a panel rises and a screen fades a little slower; a
+     chart takes the longest, because it draws in left to right and the eye follows it. One
+     easing for all of it, so nothing on a screen moves to a different rhythm. Every figure is
+     still drawn at its value from the first frame. */
+  --motion-fast: 160ms;
+  --motion-base: 220ms;
+  --motion-slow: 420ms;
+  --motion-chart: 700ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
 
-     Fixed hues rather than tokens, because a value that followed the theme would
-     make this rule untrue half the time. */
-  --nav-surface: #0f1620;
-  --nav-surface-2: #17202c;
-  --nav-line: #1e2937;
-  --nav-text: #b3c0d1;
-  --nav-text-strong: #f2f6fb;
-  --nav-text-faint: #6b7b90;
-  --nav-active: rgba(77, 163, 255, 0.16);
-  --nav-accent: #57a9ff;
+  /* Elevation, for the same decision: a panel lifts under the pointer and a menu floats above
+     the page. Never at rest, where the hairline and one step of lightness still separate a
+     panel from the page, and never a literal, which the surface test holds. */
+  --shadow-ink: light-dark(rgba(15, 23, 42, 0.14), rgba(0, 0, 0, 0.5));
+  --shadow-lift: 0 14px 30px -14px var(--shadow-ink), 0 3px 8px -3px var(--shadow-ink);
+  --shadow-float: 0 18px 44px -12px var(--shadow-ink), 0 4px 12px -4px var(--shadow-ink);
 
   /* Chart ink. One hue for a measured series, and the peak lifted out of it,
      because the eye finds the tallest bar anyway and then has to be told what it
      found. */
   --chart-bar: light-dark(#7fb2f0, #2f6ca8);
   --chart-bar-peak: light-dark(#1a6fd4, #4da3ff);
+  /* Series, for a chart with more than one: six steps, each held at 3 to 1 or better on the
+     page and every panel in both themes by the contrast test, the bar WCAG sets for a mark.
+     The first two are the themes' accent and second series from the P8 spec's table. */
+  --series-1: light-dark(#0a84ff, #5eead4);
+  --series-2: light-dark(#5b45e8, #a78bfa);
+  --series-3: light-dark(#0f766e, #60a5fa);
+  --series-4: light-dark(#db2777, #f472b6);
+  --series-5: light-dark(#64748b, #94a3b8);
+  --series-6: light-dark(#9a3412, #fb923c);
 
   --hatch-line: light-dark(rgba(20, 24, 29, 0.32), rgba(230, 234, 239, 0.34));
 
@@ -119,20 +166,30 @@
   --space-5: 20px;
   --space-6: 28px;
 
-  /* Three radii and each has one job. A card is a soft object, a chip is a pill,
-     everything else takes the small one. A fourth would be a decision nobody could
-     reproduce. */
-  --radius: 6px;
-  --radius-card: 10px;
+  /* Three radii and each has one job. A panel is a soft object, a chip is a pill,
+     everything else is a control. Controls take one radius in both themes; a
+     panel takes its theme's, light here and dark in the blocks below. */
+  --radius: 10px;
+  --radius-card: 18px;
   --radius-pill: 999px;
+
+  /* Glass. The blur and the saturation behind a panel are the theme's own, like
+     its radius. */
+  --panel-blur: 22px;
+  --panel-saturate: 170%;
+  /* The filter itself, so each fallback below turns every glass surface off by
+     switching one token. Declared here alone: a theme block that declared it
+     again would outrank the fallbacks, which select :root alone. */
+  --panel-filter: blur(var(--panel-blur)) saturate(var(--panel-saturate));
 
   /* Named faces, not the machine's own. A system stack renders a different
      font per operating system, so column widths and density differ between two
-     people reading the same figures. Plex is self hosted from node_modules, so
-     nothing is requested from a third party by a page showing spend. This is
-     what docs/12-UI-DESIGN.md section 7 already asked for. */
-  --font-ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-numeral: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+     people reading the same figures. Geist for text and Geist Mono for figures,
+     confirmed by the owner on 2026-10-05, self hosted from node_modules as IBM
+     Plex was, so nothing is requested from a third party by a page showing
+     spend. */
+  --font-ui: 'Geist Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-numeral: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* Six sizes. A seventh means the hierarchy is unclear rather than
      insufficient, per docs/12-UI-DESIGN.md section 7. */
@@ -148,6 +205,16 @@
   --row-height: 32px;
 }
 
+/* The dark lengths, declared once for a system that prefers dark and once for
+   a person who chose it. glass.test.ts holds the two equal. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --radius-card: 16px;
+    --panel-blur: 18px;
+    --panel-saturate: 140%;
+  }
+}
+
 /* An explicit choice wins over the operating system in both directions. */
 :root[data-theme='light'] {
   color-scheme: light;
@@ -155,6 +222,58 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
+  --radius-card: 16px;
+  --panel-blur: 18px;
+  --panel-saturate: 140%;
+}
+
+/* The panel surface. Everything it draws comes from a token, so each fallback
+   below only ever switches tokens. */
+.meter-panel {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: inset 0 1px 0 var(--hairline-highlight);
+  -webkit-backdrop-filter: var(--panel-filter);
+  backdrop-filter: var(--panel-filter);
+}
+
+/* Glass is a surface, never a reason to lose contrast. Where transparency is
+   unwelcome or cannot be drawn, a panel is the colour the glass would have
+   shown, opaque, nothing is blurred, and the page drops its glows. */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --surface-raised: var(--surface-raised-solid);
+    --surface-raised-2: var(--surface-raised-2-solid);
+    --page-glow: none;
+    --panel-filter: none;
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root {
+    --surface-raised: var(--surface-raised-solid);
+    --surface-raised-2: var(--surface-raised-2-solid);
+    --page-glow: none;
+    --panel-filter: none;
+  }
+}
+
+/* Print is the light theme with no glass and no glows, whatever was chosen on
+   screen: paper has no backdrop to blur, and a dark page is ink on everything. */
+@media print {
+  :root,
+  :root[data-theme='dark'] {
+    color-scheme: light;
+    --surface-raised: var(--surface-raised-solid);
+    --surface-raised-2: var(--surface-raised-2-solid);
+    --page-glow: none;
+    --panel-filter: none;
+  }
+
+  .meter-panel {
+    box-shadow: none;
+  }
 }
 
 /* Numerals are tabular everywhere, so a column of figures aligns by digit and a
@@ -198,7 +317,8 @@
 
 /* A number counting up from zero is lying for four hundred milliseconds, and
    this product's whole claim is that its numbers are trustworthy. Nothing here
-   animates a value. What little motion exists is switched off on request. */
+   animates a value. The motion the owner chose on 2026-10-05 is switched off on
+   request, here for everything and in layout.css for each thing that moves. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -218,4 +338,102 @@
 
 .meter-bar-peak {
   fill: var(--chart-bar-peak);
+}
+
+/* The chart set's marks, TASK-P8-005. A series colour fills and strokes, and provenance says
+   how: measured solid, modelled a lighter fill under the hatch, forecast a dashed outline over
+   a faint fill. Nothing here moves, so reduced motion has nothing to stop. */
+.meter-series-1 {
+  fill: var(--series-1);
+  stroke: var(--series-1);
+}
+
+.meter-series-2 {
+  fill: var(--series-2);
+  stroke: var(--series-2);
+}
+
+.meter-series-3 {
+  fill: var(--series-3);
+  stroke: var(--series-3);
+}
+
+.meter-series-4 {
+  fill: var(--series-4);
+  stroke: var(--series-4);
+}
+
+.meter-series-5 {
+  fill: var(--series-5);
+  stroke: var(--series-5);
+}
+
+.meter-series-6 {
+  fill: var(--series-6);
+  stroke: var(--series-6);
+}
+
+.meter-mark-measured {
+  stroke-width: 0;
+}
+
+.meter-mark-modelled {
+  fill-opacity: 0.45;
+  stroke-width: 0;
+}
+
+/* Money that belongs to no group, unallocated spend, is an outline rather than a colour or a
+   hatch, the mark RankedBars gives it, because the hatch already means modelled. */
+.meter-mark-gap {
+  fill: var(--surface);
+  stroke: var(--text-faint);
+  stroke-width: 1;
+  stroke-dasharray: 3 2;
+}
+
+.meter-mark-forecast {
+  fill-opacity: 0.18;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
+}
+
+/* The budget pace is a reference, not a series, so it is drawn in ink, dotted. */
+.meter-pace {
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 3;
+  vector-effect: non-scaling-stroke;
+}
+
+/* A marked period, an anomaly on the day it happened, is a rule across the whole scale in the
+   severity ink, so it reads as an event on the chart rather than as another series. */
+.meter-marker {
+  stroke: var(--severity-4);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+/* A heatmap's row and column names, sized to its cells and drawn in the muted ink, so they read
+   in both themes. Unstyled, they were the SVG default, taller than a cell and black on dark. */
+.meter-axis-label {
+  fill: var(--text-muted);
+  font-size: 8px;
+}
+
+.meter-heat {
+  fill: var(--series-1);
+}
+
+.meter-heat-forecast {
+  stroke: var(--series-1);
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+
+.meter-heat-missing {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1;
 }

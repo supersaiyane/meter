@@ -151,6 +151,15 @@ DEMO_TABLES = (
     # exchange and has no cascade, so the event goes first.
     "redaction_event",
     "assistant_exchange",
+    # P8, FEAT-067. The seed writes none, and every export made on the demo writes one,
+    # so unseed removes them. It references the tenant and nothing else.
+    "report_run",
+    # P8, FEAT-069. The seed writes none, and every schedule made on the demo writes one. It
+    # references the views below and is referenced by the runs above, so it goes between them.
+    "report_schedule",
+    # P8, FEAT-068. The seed writes none, and every view saved on the demo writes one, so
+    # unseed removes them. It references the tenant and nothing else.
+    "saved_view",
     # FEAT-051. Added with the table in TASK-P2-026 and missed here, so unseed
     # failed on the foreign key rather than removing the estate. A table that
     # references the tenant and is not in this list makes the teardown a lie.
@@ -183,7 +192,9 @@ DEMO_TABLES = (
     "budget",
     "commitment_action",
     # P1, FEAT-024. Neither references the other, and both reference only the
-    # tenant, so their order between themselves does not matter.
+    # tenant, so their order between themselves does not matter. The daily rows, TASK-P8-013,
+    # are the same commitments at another grain and reference only the tenant too.
+    "commitment_day",
     "commitment_coverage",
     "commitment_use",
     # P1. The monthly aggregate goes before the daily rows it is derived from,

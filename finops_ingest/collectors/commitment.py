@@ -1,9 +1,11 @@
 """Writing what was committed and what it covered.
 
-Two reads and two upserts, in one transaction. The port's two methods stay two
+Three reads and three upserts, in one transaction. The port's two window methods stay two
 here rather than being merged into a single row per commitment, because a coverage
 figure attached to a commitment is a number nobody measured. See
-`finops_core/ports/commitment.py`.
+`finops_core/ports/commitment.py`. The third read is the last month of days, per kind of
+commitment, TASK-P8-013, at the provider's daily grain: four requests whatever the number of
+days, and every run rewrites the days a late bill changed.
 
 **A window is replaced, never accumulated.** Both upserts key on the window, so a
 second run over the same month replaces its rows. Four runs a day would otherwise
@@ -24,7 +26,7 @@ commitments rather than to say a collection broke.
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
@@ -81,6 +83,23 @@ WRITE_COVERAGE = text(
 )
 
 
+#: A month of days and the few a late bill rewrites, reread whole on every run. At the daily
+#: grain it costs four requests however many days it holds.
+DAYS_READ = 35
+
+WRITE_DAY = text(
+    "INSERT INTO commitment_day (day_id, tenant_id, ingest_run_id, commitment_type, day, "
+    "committed, used, eligible_spend, covered_spend, as_of, collected_at) "
+    "VALUES (:id, :tenant, :run, :type, :day, :committed, :used, :eligible, :covered, "
+    ":as_of, :collected_at) "
+    "ON CONFLICT (tenant_id, commitment_type, day) DO UPDATE SET "
+    "ingest_run_id = EXCLUDED.ingest_run_id, committed = EXCLUDED.committed, "
+    "used = EXCLUDED.used, eligible_spend = EXCLUDED.eligible_spend, "
+    "covered_spend = EXCLUDED.covered_spend, as_of = EXCLUDED.as_of, "
+    "collected_at = EXCLUDED.collected_at"
+)
+
+
 class CommitmentCollector:
     """Reads a month of commitment utilization and coverage, and writes both."""
 
@@ -99,9 +118,12 @@ class CommitmentCollector:
                 "carry it in a NOT NULL column."
             )
 
-        window_start, window_end = _month_containing(self._clock().date())
+        today = self._clock().date()
+        window_start, window_end = _month_containing(today)
         written = self._write_use(context, window_start, window_end)
         written += self._write_coverage(context, window_start, window_end)
+        # Up to today and not including it: today has not ended, so nothing is true of it yet.
+        written += self._write_days(context, today - timedelta(days=DAYS_READ), today)
         return CollectorOutcome(items_written=written)
 
     def _write_use(self, context: CollectorContext, window_start: date, window_end: date) -> int:
@@ -162,6 +184,32 @@ class CommitmentCollector:
                     "covered": slice_.covered_spend,
                     "as_of": slice_.as_of,
                     "collected_at": slice_.collected_at,
+                },
+            )
+        return len(found)
+
+    def _write_days(self, context: CollectorContext, start: date, end: date) -> int:
+        try:
+            found = tuple(self._report.daily(start, end))
+        except NoData:
+            # Nothing committed or covered on any of the days. A fact, as for a window.
+            return 0
+
+        for day in found:
+            context.connection.execute(
+                WRITE_DAY,
+                {
+                    "id": uuid4(),
+                    "tenant": context.unit.tenant_id,
+                    "run": context.run_id,
+                    "type": day.commitment_type,
+                    "day": day.day,
+                    "committed": day.committed,
+                    "used": day.used,
+                    "eligible": day.eligible_spend,
+                    "covered": day.covered_spend,
+                    "as_of": day.as_of,
+                    "collected_at": day.collected_at,
                 },
             )
         return len(found)

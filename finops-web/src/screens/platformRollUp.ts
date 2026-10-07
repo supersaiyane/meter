@@ -1,4 +1,5 @@
 import type { PlatformCost } from '../api/types';
+import type { Stacked } from './exploreSeries';
 
 /**
  * Rolling the daily rows up per module, with a thirty day shape.
@@ -79,5 +80,36 @@ export function grandTotal(rows: readonly ModuleRow[]): GrandTotal | null {
       (oldest, row) => (row.collectedAt < oldest ? row.collectedAt : oldest),
       first.collectedAt,
     ),
+  };
+}
+
+/**
+ * Each module's cost on each of the last thirty days, for the trend by module. A module with no
+ * row on a day other modules have is drawn at zero, because the day was collected and that
+ * module spent nothing on it. A day no module has is not in the chart at all.
+ */
+export function dailyByModule(rows: readonly PlatformCost[]): Stacked {
+  const days = [...new Set(rows.map((row) => row.day))].sort().slice(-WINDOW_DAYS);
+  const kept = new Set(days);
+  const byModule = new Map<string, Map<string, number>>();
+  for (const row of rows) {
+    if (!kept.has(row.day)) {
+      continue;
+    }
+    const byDay = byModule.get(row.module) ?? new Map<string, number>();
+    byDay.set(row.day, (byDay.get(row.day) ?? 0) + Number(row.amortized_cost));
+    byModule.set(row.module, byDay);
+  }
+  const totalOf = (byDay: ReadonlyMap<string, number>): number =>
+    [...byDay.values()].reduce((sum, value) => sum + value, 0);
+  return {
+    periods: days,
+    series: [...byModule]
+      .sort((left, right) => totalOf(right[1]) - totalOf(left[1]))
+      .map(([module, byDay]) => ({
+        key: module,
+        label: module,
+        values: days.map((day) => byDay.get(day) ?? 0),
+      })),
   };
 }

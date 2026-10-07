@@ -47,6 +47,7 @@ from finops_core.domain.cost import (
     EXPIRED,
     QUEUED,
     CommitmentCoverage,
+    CommitmentDay,
     CommitmentUse,
 )
 from finops_core.errors import NoData, SchemaDrift
@@ -67,6 +68,13 @@ RESERVED_INSTANCE = "ReservedInstance"
 COST_EXPLORER_REGION = "us-east-1"  # allow-hardcoded: Cost Explorer is a single global endpoint
 
 ZERO = Decimal("0")
+
+#: Cost Explorer's own word for one row per day. A run reads a month of days in one request
+#: per figure rather than one request per day, which is what makes a daily read affordable.
+DAILY = "DAILY"
+
+#: The four figures a day carries, each summed across whatever the response reports for it.
+_DAY_FIGURES = ("committed", "used", "eligible_spend", "covered_spend")
 
 
 def _money(raw: Any, field: str) -> Decimal:
@@ -106,6 +114,24 @@ def _a_date(raw: Any, fallback: date) -> date:
         return date.fromisoformat(str(raw)[:10])
     except ValueError:
         return fallback
+
+
+def _the_day(span: Any) -> date:
+    """The day a daily span describes, or a typed refusal.
+
+    Unlike a plan's attributes, the period here is the key a figure is filed under, so a
+    missing or unreadable one is schema drift rather than a fallback: falling back would file
+    one day's money under another day, which no reader could ever find.
+    """
+    raw = (span.get("TimePeriod") or {}).get("Start")
+    try:
+        return date.fromisoformat(str(raw)[:10])
+    except ValueError as error:
+        raise SchemaDrift(
+            scope_key=SCOPE,
+            collector=COLLECTOR,
+            detail=f"a daily span had no readable start: {raw!r}",
+        ) from error
 
 
 def _reservation_money(committed: Decimal, actual: Decimal, purchased: Decimal) -> Decimal:
@@ -373,3 +399,105 @@ class CostExplorerCommitmentReport:
                     )
                 )
         return tuple(rows)
+
+    # -- each day, at the provider's daily grain -----------------------------
+
+    def daily(self, window_start: date, window_end: date) -> Iterable[CommitmentDay]:
+        """Each kind's use and coverage per day, four requests for the whole window.
+
+        The same four reads as a window, asked at the daily grain and without grouping:
+        Savings Plans report one total across every plan per day, so that is the grain all
+        four are read at. The reservation figures keep the derivation, and the weak coverage
+        mapping, that the window reads document.
+        """
+        period = self._period(window_start, window_end)
+        totals: dict[tuple[str, date], dict[str, Decimal]] = {}
+
+        def add(kind: str, day: date, **amounts: Decimal) -> None:
+            found = totals.setdefault((kind, day), dict.fromkeys(_DAY_FIGURES, ZERO))
+            for name, amount in amounts.items():
+                found[name] += amount
+
+        for span in self._call(
+            "get_savings_plans_utilization", TimePeriod=period, Granularity=DAILY
+        ).get("SavingsPlansUtilizationsByTime", []):
+            found = span.get("Utilization") or {}
+            if found:
+                add(
+                    SAVINGS_PLAN,
+                    _the_day(span),
+                    committed=_money(found.get("TotalCommitment"), "TotalCommitment"),
+                    used=_money(found.get("UsedCommitment"), "UsedCommitment"),
+                )
+        for slice_ in self._call(
+            "get_savings_plans_coverage", TimePeriod=period, Granularity=DAILY
+        ).get("SavingsPlansCoverages", []):
+            found = slice_.get("Coverage") or {}
+            if found:
+                add(
+                    SAVINGS_PLAN,
+                    _the_day(slice_),
+                    eligible_spend=_money(found.get("TotalCost"), "TotalCost"),
+                    covered_spend=_money(
+                        found.get("SpendCoveredBySavingsPlans"), "SpendCoveredBySavingsPlans"
+                    ),
+                )
+        for span in self._call(
+            "get_reservation_utilization", TimePeriod=period, Granularity=DAILY
+        ).get("UtilizationsByTime", []):
+            found = span.get("Total") or {}
+            if found:
+                purchased = _money(found.get("PurchasedHours"), "PurchasedHours")
+                actual = _money(found.get("TotalActualHours"), "TotalActualHours")
+                committed = _money(found.get("TotalAmortizedFee"), "TotalAmortizedFee")
+                add(
+                    RESERVED_INSTANCE,
+                    _the_day(span),
+                    committed=committed,
+                    used=_reservation_money(committed, actual, purchased),
+                )
+        for span in self._call(
+            "get_reservation_coverage", TimePeriod=period, Granularity=DAILY
+        ).get("CoveragesByTime", []):
+            cost = (span.get("Total") or {}).get("CoverageCost") or {}
+            if cost:
+                on_demand = _money(cost.get("OnDemandCost"), "OnDemandCost")
+                reserved = _money(cost.get("ReservedCost", "0"), "ReservedCost")
+                add(
+                    RESERVED_INSTANCE,
+                    _the_day(span),
+                    eligible_spend=on_demand + reserved,
+                    covered_spend=reserved,
+                )
+
+        rows = tuple(
+            self._day(kind, day, figures)
+            for (kind, day), figures in sorted(totals.items(), key=lambda item: item[0][::-1])
+            if window_start <= day < window_end
+            and (figures["committed"] > ZERO or figures["covered_spend"] > ZERO)
+        )
+        if not rows:
+            raise NoData(
+                scope_key=SCOPE,
+                collector=COLLECTOR,
+                detail=(
+                    f"nothing was committed or covered on any day "
+                    f"between {window_start} and {window_end}"
+                ),
+            )
+        return rows
+
+    def _day(self, kind: str, day: date, figures: dict[str, Decimal]) -> CommitmentDay:
+        # True once the day has ended, so `as_of` is the start of the next one.
+        as_of, collected_at = self._timestamps(day + timedelta(days=1))
+        return CommitmentDay(
+            as_of=as_of,
+            collected_at=collected_at,
+            tenant_id=self._tenant_id,
+            commitment_type=kind,
+            day=day,
+            committed=figures["committed"],
+            used=figures["used"],
+            eligible_spend=figures["eligible_spend"],
+            covered_spend=figures["covered_spend"],
+        )

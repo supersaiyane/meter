@@ -1,13 +1,17 @@
 import { useMemo } from 'react';
-import { Link } from 'react-router';
 
-import { useQueryFindings } from '../api/queries';
+import { useQueryFindings, useQueryTrend } from '../api/queries';
+import { StackedArea } from '../components/charts';
 import type { ApiQueryFinding } from '../api/types';
+import { ChartPanel } from '../components/ChartPanel';
 import { DataTable } from '../components/DataTable';
+import { RankedBars } from '../components/RankedBars';
 import { Figure } from '../components/Figure';
 import { FixtureBand } from '../components/FixtureBand';
 import { Sparkline } from '../components/Sparkline';
 import { SeverityBadge } from '../components/SeverityBadge';
+import { Link } from '../shell/links';
+import { byDashboard } from './queryByDashboard';
 import { QueryGroups } from './QueryGroups';
 import { severityOf } from './querySeverity';
 import { StateBoundary } from '../components/StateBoundary';
@@ -62,7 +66,7 @@ function columnsFor(freshness: Freshness): readonly Column<ApiQueryFinding>[] {
       // A link, because a finding that cannot be linked to is a finding nobody
       // hands to its owner. The id is in the URL for the same reason.
       render: (row) => (
-        <Link to={`/governance/queries/${row.finding_id}`}>
+        <Link to={`/govern/query-cost/findings/${row.finding_id}`}>
           {row.dashboard_title}
           <br />
           {row.panel_title}
@@ -126,9 +130,7 @@ function columnsFor(freshness: Freshness): readonly Column<ApiQueryFinding>[] {
           <Sparkline
             points={series.map((point) => Number(point.cost_month_usd))}
             provenance={
-              series.every((point) => point.provenance === 'measured')
-                ? 'measured'
-                : 'modelled'
+              series.every((point) => point.provenance === 'measured') ? 'measured' : 'modelled'
             }
             label={`Monthly cost across ${String(series.length)} days`}
             width={64}
@@ -164,13 +166,71 @@ export function QueryFindingsScreen() {
     collectedAt: new Date(envelope?.meta.collected_at ?? 0),
   };
   const state = surfaceStateFor(query, envelope?.meta, rows.length, 'none', 'query_audit');
+  const dashboards = useMemo(() => byDashboard(rows), [rows]);
+
+  const trend = useQueryTrend();
+  useReportMeta('query-trend', trend.data?.meta);
+  const days = trend.data?.data ?? [];
+  const trendState = surfaceStateFor(
+    trend,
+    trend.data?.meta,
+    days.length,
+    'none',
+    'query_audit',
+  );
 
   return (
-    <section aria-label="Query findings">
+    <section aria-label="Findings">
       {/* Groups first. The list below is what each group is made of. */}
       <QueryGroups />
       <FixtureBand source={query.data?.source} />
       <StateBoundary state={state}>
+        <div data-testid="chart-row">
+          <ChartPanel
+            id="query-by-dashboard"
+            title="Which dashboards it is on"
+            caption="What each dashboard's queries cost each month, summed, the largest first"
+          >
+            <RankedBars
+              points={dashboards}
+              // Measured only when every query behind the figures was measured, as the trend
+              // in each row decides it.
+              provenance={
+                rows.every((row) => row.provenance === 'measured') ? 'measured' : 'modelled'
+              }
+              format={(value) =>
+                `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`
+              }
+              restLabel="Smaller dashboards"
+            />
+          </ChartPanel>
+          <ChartPanel
+            id="query-by-day"
+            title="Each day"
+            caption="What every query audited that day costs each month, summed, for the last thirty days. A dashboard deleted after a fix keeps its earlier days"
+          >
+            <StateBoundary state={trendState} coverageShownElsewhere>
+              <StackedArea
+                periods={days.map((day) => day.run_date)}
+                series={[
+                  {
+                    key: 'queries',
+                    label: 'Every audited query',
+                    // Modelled if any day was, the rule each finding's own trend keeps.
+                    provenance: days.every((day) => day.provenance === 'measured')
+                      ? 'measured'
+                      : 'modelled',
+                    values: days.map((day) => Number(day.cost_month_usd)),
+                  },
+                ]}
+                label="Monthly cost of every audited query, day by day"
+                format={(value) =>
+                  `$${value.toLocaleString('en-GB', { maximumFractionDigits: 0 })}`
+                }
+              />
+            </StateBoundary>
+          </ChartPanel>
+        </div>
         <DataTable
           rows={rows}
           columns={columnsFor(freshness)}

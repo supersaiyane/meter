@@ -49,6 +49,19 @@ reports a figure matching neither invoice.
 a ten dollar reservation at forty percent above a ten thousand dollar plan at
 ninety five, and only one of those is worth a morning.
 
+Since TASK-P8-013, 2026-10-06, the owner having chosen to collect daily, each run also reads
+the last 35 days at Cost Explorer's daily grain: the same four reads, each asked once for the
+whole span, so a month of days costs four requests and each run rewrites the days a late bill
+changed. The days are kept per kind of commitment, never per plan, because the daily grain
+reports Savings Plans use only as one total across every plan; one request per plan per day
+would cost far more. They land in `commitment_day`, one row per kind per day, and the screen
+draws three charts from the last thirty: use each day, used under unused money and stacked
+to what was committed; coverage each day, covered under on demand and stacked to what was
+eligible; and a heatmap of each kind's utilization and coverage per day, in percent. The two
+percentages are never stacked or added, which is why they are rows of a heatmap rather than
+layers of a chart. The collector's cost per run rose from 0.02 to 0.08 dollars, eight requests
+at a cent each, written in `collector_schedule`.
+
 ## What is already known
 
 Reads the AWS utilization and coverage APIs directly rather than deriving them,
@@ -85,6 +98,10 @@ test for each.
 An expired commitment is reported as expired, never dropped. The money was spent,
 and the coverage gap the expiry leaves is the finding.
 
+The daily read is its own read. When it fails, its three charts say so and the window's
+tables below still stand; a day with nothing committed has no utilization rather than a
+utilization of zero, drawn as an outline in the heatmap.
+
 ## Security considerations
 
 Both tables are `PayerWide` in `finops_api/guards.py`, a guard shape added for this
@@ -115,6 +132,12 @@ that came back zero, and for a commitment nought percent used says the money was
 change made that stronger rather than weaker: the helper used to format the percentage and return
 the absent sentence as a string, so a sentence and a measurement were indistinguishable to
 everything downstream. The null now travels and the component decides what an absence looks like.
+
+`GET /api/v1/cost/commitments/daily`, since 2026-10-06: the last thirty days, oldest first,
+one row per kind per day with `committed`, `used`, `utilization`, `eligible_spend`,
+`covered_spend`, `coverage`, `as_of` and `collected_at`. A fraction is null with nothing to
+divide by. Payer wide like the window, so a narrowed reader gets no days and an envelope
+saying the payer was not visible.
 
 ## Not doing
 

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { CostCommitmentsScreen } from '../CostCommitmentsScreen';
 import { Harness } from './Harness';
-import { clientReturning } from './fixtures';
+import { clientReturning, metaOf } from './fixtures';
 import { costCommitmentsFixture } from '../../api/fixtures/cost';
 import { violationsIn } from '../../components/__tests__/axe';
 
@@ -15,18 +15,57 @@ function renderCommitments(fixture = costCommitmentsFixture()) {
   );
 }
 
+describe('CostCommitmentsScreen, each day', () => {
+  it('draws use and coverage each day and the kinds day by day', async () => {
+    const day = (on: string, utilization: string) => ({
+      commitment_type: 'SavingsPlan',
+      day: on,
+      committed: '10',
+      used: String(Number(utilization) * 10),
+      utilization,
+      eligible_spend: '40',
+      covered_spend: '8',
+      coverage: '0.2',
+      as_of: `${on}T23:59:59Z`,
+      collected_at: `${on}T23:59:59Z`,
+    });
+    render(
+      <Harness
+        client={clientReturning({
+          '/api/v1/cost/commitments': costCommitmentsFixture(),
+          '/api/v1/cost/commitments/daily': {
+            data: [day('2026-10-04', '0.9'), day('2026-10-05', '0.8')],
+            meta: metaOf(),
+          },
+        })}
+      >
+        <CostCommitmentsScreen />
+      </Harness>,
+    );
+    const use = await screen.findByRole('region', { name: 'Use, each day' });
+    expect(await within(use).findByTestId('stacked-area')).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Coverage, each day' })).toBeInTheDocument();
+    const grid = screen.getByRole('region', { name: 'Day by day' });
+    expect(grid.querySelectorAll('[data-testid="heat-cell"]')).toHaveLength(4);
+  });
+});
+
 describe('CostCommitmentsScreen', () => {
   it('keeps the two percentages apart, each saying what it is a percentage of', async () => {
     // The whole design problem. Two percentages sit near each other and mean
     // opposite things, and a reader who conflates them draws the wrong conclusion
     // with confidence. Each heading has to name its own denominator.
     renderCommitments();
-    expect(await screen.findByTestId('utilization-heading')).toHaveTextContent(
+    expect(await screen.findByTestId('utilization-means')).toHaveTextContent(
       /what we paid for was used/i,
     );
-    expect(screen.getByTestId('coverage-heading')).toHaveTextContent(
+    expect(screen.getByTestId('coverage-means')).toHaveTextContent(
       /estate is on a commitment/i,
     );
+    expect(screen.getByTestId('utilization-heading')).toHaveTextContent(
+      'Commitment utilization',
+    );
+    expect(screen.getByTestId('coverage-heading')).toHaveTextContent('Commitment coverage');
   });
 
   it('warns that a low coverage says buy whatever the utilization says', async () => {
@@ -114,7 +153,7 @@ describe('CostCommitmentsScreen', () => {
       renderCommitments();
       const actions = await screen.findByTestId('actions');
       expect(actions).toHaveTextContent('AmazonEC2');
-      expect(actions).toHaveTextContent('SAVINGS_PLAN');
+      expect(actions).toHaveTextContent('Savings Plan');
     });
 
     it('publishes the usage floor, which is what being wrong looks like', async () => {

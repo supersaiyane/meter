@@ -11,6 +11,7 @@ from collections.abc import Sequence
 from typing import ClassVar
 
 from sqlalchemy import Row, Table, func, select
+from sqlalchemy.dialects.postgresql import distinct_on
 
 from finops_api.db import models
 from finops_api.db.repositories.base import ScopedRepository
@@ -22,13 +23,13 @@ class IngestRunRepository(ScopedRepository):
     table: ClassVar[Table] = models.ingest_run
     resource: ClassVar[str] = "ingest_run"
 
-    def recent(self, scope: Scope, limit: int) -> Sequence[Row[tuple[object, ...]]]:
+    def recent(self, scope: Scope, limit: int) -> Sequence[Row[*tuple[object, ...]]]:
         statement = (
             self.scoped_select(scope).order_by(self.table.c["started_at"].desc()).limit(limit)
         )
         return self.fetch(scope, statement)
 
-    def never_succeeded(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+    def never_succeeded(self, scope: Scope) -> Sequence[Row[*tuple[object, ...]]]:
         """Collector and scope pairs that have run and never once succeeded.
 
         The freshness page lists watermarks, and a watermark only appears after
@@ -48,7 +49,9 @@ class IngestRunRepository(ScopedRepository):
         statement = (
             self.scoped_select(scope)
             .where(~already.exists())
-            .distinct(self.table.c.collector, self.table.c.scope_key)
+            # PostgreSQL's own construct since SQLAlchemy 2.1, which deprecates columns passed
+            # to `distinct` as the way to write DISTINCT ON. ADR-0031.
+            .ext(distinct_on(self.table.c.collector, self.table.c.scope_key))
             .order_by(
                 self.table.c.collector,
                 self.table.c.scope_key,
@@ -77,6 +80,6 @@ class SyncErrorRepository(ScopedRepository):
     table: ClassVar[Table] = models.sync_error
     resource: ClassVar[str] = "sync_error"
 
-    def open_errors(self, scope: Scope) -> Sequence[Row[tuple[object, ...]]]:
+    def open_errors(self, scope: Scope) -> Sequence[Row[*tuple[object, ...]]]:
         statement = self.scoped_select(scope).order_by(self.table.c["last_seen_at"].desc())
         return self.fetch(scope, statement)

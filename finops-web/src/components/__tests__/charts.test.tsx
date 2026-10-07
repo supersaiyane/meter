@@ -1,0 +1,378 @@
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
+import tokens from '../../tokens.css?raw';
+import {
+  BarChart,
+  HEAT_FLOOR,
+  Heatmap,
+  KpiTile,
+  StackedArea,
+  StackedBar,
+  Treemap,
+} from '../charts';
+
+/**
+ * TASK-P8-005: Meter's chart set, hand built in SVG.
+ *
+ * Every chart carries a table a keyboard and a screen reader can use, and each test here
+ * reads the numbers that table states and the marks the chart drew, and holds them equal.
+ * A chart whose drawing and whose table disagree is two answers to one question.
+ */
+
+const money = (value: number): string => `$${value.toFixed(2)}`;
+
+/** The numbers a chart's table states, in reading order. */
+function stated(container: HTMLElement): number[] {
+  return [...container.querySelectorAll('table td[data-value]')]
+    .map((cell) => cell.getAttribute('data-value'))
+    .filter((value): value is string => value !== null && value !== '')
+    .map(Number);
+}
+
+function numberAttr(element: Element | null, name: string): number {
+  return Number(element?.getAttribute(name));
+}
+
+/** The top edge of an area path: the first `count` points it draws. */
+function topEdge(path: Element, count: number): number[] {
+  const d = path.getAttribute('d') ?? '';
+  return [...d.matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g)].slice(0, count).map((m) => Number(m[2]));
+}
+
+describe('StackedArea', () => {
+  const series = [
+    { key: 'ec2', label: 'EC2', provenance: 'measured' as const, values: [10, 20, 30] },
+    { key: 's3', label: 'S3', provenance: 'measured' as const, values: [5, 5, 10] },
+  ];
+
+  it('draws each layer at the height its table states, stacked', () => {
+    const { container } = render(
+      <StackedArea
+        periods={['Jan', 'Feb', 'Mar']}
+        series={series}
+        label="Spend"
+        format={money}
+      />,
+    );
+    const svg = container.querySelector('svg[role="img"]');
+    const top = numberAttr(svg, 'data-top');
+    const height = numberAttr(svg, 'data-height');
+    const toValue = (y: number): number => ((height - y) / height) * top;
+    const layers = [...container.querySelectorAll('[data-testid="area-layer"]')];
+    expect(layers).toHaveLength(2);
+    const [base, upper] = layers;
+    expect(topEdge(base as Element, 3).map(toValue)).toEqual(
+      [10, 20, 30].map((v) => expect.closeTo(v, 1) as unknown as number),
+    );
+    // The second layer sits on the first, so its top edge is the running total.
+    expect(topEdge(upper as Element, 3).map(toValue)).toEqual(
+      [15, 25, 40].map((v) => expect.closeTo(v, 1) as unknown as number),
+    );
+    expect(stated(container)).toEqual([10, 20, 30, 5, 5, 10]);
+  });
+
+  it('draws a forecast as a dashed band and the budget pace as its own line', () => {
+    const { container } = render(
+      <StackedArea
+        periods={['Jan', 'Feb', 'Mar', 'Apr']}
+        series={[
+          { key: 'all', label: 'All', provenance: 'measured', values: [10, 20, 30, null] },
+        ]}
+        forecast={{ low: [null, null, 30, 35], high: [null, null, 30, 45] }}
+        pace={[25, 50, 75, 100]}
+        label="Spend against budget"
+        format={money}
+      />,
+    );
+    expect(container.querySelector('[data-testid="forecast-band"]')).toHaveClass(
+      'meter-mark-forecast',
+    );
+    expect(container.querySelector('[data-testid="budget-pace"]')).toHaveClass('meter-pace');
+    const rows = [...container.querySelectorAll('table tbody th')].map(
+      (cell) => cell.textContent,
+    );
+    expect(rows).toEqual(['All', 'Forecast, low', 'Forecast, high', 'Budget pace']);
+  });
+
+  it('marks a period with one rule, and names what happened in the table', () => {
+    const { container } = render(
+      <StackedArea
+        periods={['Jan', 'Feb', 'Mar']}
+        series={series}
+        markers={{
+          name: 'Anomaly',
+          at: [
+            { period: 'Feb', label: 'EC2, +$90' },
+            { period: 'Feb', label: 'S3, +$4' },
+            { period: 'Dec', label: 'outside the chart' },
+          ],
+        }}
+        label="Spend"
+        format={money}
+      />,
+    );
+    const rules = container.querySelectorAll('[data-testid="period-marker"]');
+    expect(rules).toHaveLength(1);
+    expect(rules[0]).toHaveClass('meter-marker');
+    // February is the second of three periods, twenty units along a forty unit scale.
+    expect(rules[0]?.getAttribute('x1')).toBe('20.00');
+    const marked = [...container.querySelectorAll('table tbody tr')].find(
+      (row) => row.querySelector('th')?.textContent === 'Anomaly',
+    );
+    expect([...(marked?.querySelectorAll('td') ?? [])].map((cell) => cell.textContent)).toEqual(
+      ['', 'EC2, +$90; S3, +$4', ''],
+    );
+    // A rule states no number, so the numbers the table states are still the series' alone.
+    expect(stated(container)).toEqual([10, 20, 30, 5, 5, 10]);
+  });
+
+  it('says nothing is collected rather than drawing an empty frame', () => {
+    render(<StackedArea periods={['Jan']} series={[]} label="Spend" format={money} />);
+    expect(screen.getByTestId('chart-absent')).toHaveAttribute('data-state', 'never-collected');
+  });
+});
+
+describe('StackedBar', () => {
+  it('draws each segment at the width its table states, modelled ones hatched', () => {
+    const { container } = render(
+      <StackedBar
+        categories={['AmazonEC2', 'AmazonS3']}
+        series={[
+          { key: 'prod', label: 'Production', provenance: 'measured', values: [60, 20] },
+          { key: 'dev', label: 'Development', provenance: 'modelled', values: [40, 10] },
+        ]}
+        label="Spend by service and environment"
+        format={money}
+      />,
+    );
+    const segments = [...container.querySelectorAll('[data-testid="bar-segment"]')];
+    expect(segments).toHaveLength(4);
+    // The widest row is the scale: 100 here, so a width is its value.
+    for (const segment of segments) {
+      expect(numberAttr(segment, 'width')).toBeCloseTo(numberAttr(segment, 'data-value'), 1);
+    }
+    expect(
+      segments.filter((one) => one.classList.contains('meter-mark-modelled')),
+    ).toHaveLength(2);
+    expect(container.querySelectorAll('[data-testid="hatch-over"]')).toHaveLength(2);
+    expect(stated(container)).toEqual([60, 40, 100, 20, 10, 30]);
+  });
+
+  it('draws time as columns, each segment as tall as its table states, the axis three labels', () => {
+    const { container } = render(
+      <StackedBar
+        categories={['1 Oct', '2 Oct', '3 Oct']}
+        series={[
+          { key: 'ec2', label: 'AmazonEC2', provenance: 'measured', values: [79, 40, 20] },
+          {
+            key: 'rest',
+            label: 'Everything else',
+            provenance: 'modelled',
+            values: [0, 39, 10],
+          },
+        ]}
+        label="Effective Cost by day, by Service"
+        format={money}
+        orientation="columns"
+      />,
+    );
+    const segments = [...container.querySelectorAll('[data-testid="bar-segment"]')];
+    expect(segments).toHaveLength(6);
+    // The tallest column is the scale: 79 here, against a drawing 158 high, so twice its value.
+    for (const segment of segments) {
+      expect(numberAttr(segment, 'height')).toBeCloseTo(
+        numberAttr(segment, 'data-value') * 2,
+        1,
+      );
+    }
+    expect(
+      screen.getByRole('img', { name: 'Effective Cost by day, by Service' }),
+    ).toBeVisible();
+    expect(screen.getByTestId('stacked-columns-axis')).toHaveTextContent(
+      /^1 Oct.*peak.*3 Oct$/,
+    );
+    expect(stated(container)).toEqual([79, 0, 79, 40, 39, 79, 20, 10, 30]);
+  });
+});
+
+describe('Treemap', () => {
+  it('gives each item an area in proportion to its value', () => {
+    const items = [
+      { label: 'EC2', value: 60 },
+      { label: 'S3', value: 25 },
+      { label: 'RDS', value: 15 },
+    ];
+    const { container } = render(
+      <Treemap items={items} provenance="measured" label="Spend by service" format={money} />,
+    );
+    const cells = [...container.querySelectorAll('[data-testid="treemap-cell"]')];
+    const area = (cell: Element): number =>
+      numberAttr(cell, 'width') * numberAttr(cell, 'height');
+    const total = cells.reduce((sum, cell) => sum + area(cell), 0);
+    for (const cell of cells) {
+      expect(area(cell) / total).toBeCloseTo(numberAttr(cell, 'data-value') / 100, 2);
+    }
+    expect(stated(container)).toEqual([60, 25, 15]);
+  });
+});
+
+describe('Treemap, money that belongs to no group', () => {
+  it('draws unallocated spend as an outline, never a colour', () => {
+    const { container } = render(
+      <Treemap
+        items={[
+          { label: 'platform', value: 70 },
+          { label: 'Unallocated cost', value: 30, isGap: true },
+        ]}
+        provenance="measured"
+        label="By team"
+        format={money}
+      />,
+    );
+    const gap = container.querySelector('[data-testid="treemap-cell"][data-gap="true"]');
+    expect(gap).toHaveClass('meter-mark-gap');
+    expect(gap?.getAttribute('class')).not.toContain('meter-series');
+    expect(stated(container)).toEqual([70, 30]);
+  });
+});
+
+describe('Heatmap', () => {
+  it('shades each cell by the value its table states', () => {
+    const values = [
+      [1, 2, 3, 4],
+      [0, 4, 2, 1],
+    ];
+    const { container } = render(
+      <Heatmap
+        rows={['Mon', 'Tue']}
+        columns={['00', '06', '12', '18']}
+        values={values}
+        provenance="measured"
+        label="Spend by hour"
+        format={money}
+      />,
+    );
+    const cells = [...container.querySelectorAll('[data-testid="heat-cell"]')];
+    const max = 4;
+    for (const cell of cells) {
+      const shade = numberAttr(cell, 'fill-opacity');
+      expect(((shade - HEAT_FLOOR) / (1 - HEAT_FLOOR)) * max).toBeCloseTo(
+        numberAttr(cell, 'data-value'),
+        1,
+      );
+    }
+    expect(stated(container)).toEqual(values.flat());
+  });
+
+  it('makes room for long names rather than drawing them under the cells', () => {
+    const { container } = render(
+      <Heatmap
+        rows={['Platform sandbox']}
+        columns={['cost_focus', 'inventory']}
+        values={[[1, null]]}
+        provenance="measured"
+        label="Freshness"
+        format={money}
+      />,
+    );
+    // Sixteen characters of row name need more than the default gutter of 48.
+    expect(
+      numberAttr(container.querySelector('[data-testid="heat-cell"]'), 'x'),
+    ).toBeGreaterThan(48);
+    const name = [...container.querySelectorAll('text')].find(
+      (text) => text.textContent === 'cost_focus',
+    );
+    expect(name?.getAttribute('transform')).toMatch(/^rotate\(-45 /);
+    expect(name).toHaveClass('meter-axis-label');
+  });
+});
+
+describe('KpiTile', () => {
+  it('states the change against the previous period and draws its trend', () => {
+    const { container } = render(
+      <KpiTile
+        label="Effective Cost"
+        value={1200}
+        previous={1000}
+        points={[900, 1000, 1100, 1200]}
+        provenance="measured"
+        format={money}
+        period="last month"
+      />,
+    );
+    expect(screen.getByTestId('kpi-value')).toHaveTextContent('$1200.00');
+    expect(screen.getByTestId('kpi-delta')).toHaveTextContent('+20.0% against last month');
+    expect(screen.getByTestId('sparkline')).toBeInTheDocument();
+    expect(stated(container)).toEqual([1200, 1000, 200]);
+  });
+
+  it('says a figure is missing rather than drawing it as zero', () => {
+    render(
+      <KpiTile
+        label="Effective Cost"
+        value={null}
+        previous={1000}
+        points={[]}
+        provenance="measured"
+        format={money}
+        period="last month"
+      />,
+    );
+    expect(screen.getByTestId('kpi-value')).toHaveTextContent('Not yet collected');
+    expect(screen.queryByTestId('kpi-delta')).toBeNull();
+  });
+
+  it('draws its footer whatever the state, so facts that do not hang on the figure stay', () => {
+    // A geography's tile, TASK-P8-017: its cost could not be read, and its resource count,
+    // which comes from another read, is still there.
+    render(
+      <KpiTile
+        label="Europe"
+        value={null}
+        previous={null}
+        points={[]}
+        provenance="measured"
+        format={money}
+        period="last month"
+        state={{ kind: 'failed', cause: 'AccessDenied', remediation: 'Grant the reader role.' }}
+        footer={<p data-testid="tile-footer">12 resources</p>}
+      />,
+    );
+    expect(screen.queryByTestId('kpi-value')).toBeNull();
+    expect(screen.getByTestId('tile-footer')).toHaveTextContent('12 resources');
+  });
+});
+
+describe('BarChart, wrapped into the set', () => {
+  it('carries a table of the bars it draws', () => {
+    const { container } = render(
+      <BarChart
+        points={[
+          { label: '1 Oct', value: 4 },
+          { label: '2 Oct', value: 8 },
+        ]}
+        provenance="measured"
+        label="Daily spend"
+        format={money}
+      />,
+    );
+    expect(stated(container)).toEqual([4, 8]);
+  });
+});
+
+describe('one set of marks', () => {
+  it('draws measured solid, modelled hatched and forecast dashed', () => {
+    expect(tokens).toMatch(/\.meter-mark-modelled\s*\{[^}]*fill-opacity/);
+    expect(tokens).toMatch(/\.meter-mark-forecast\s*\{[^}]*stroke-dasharray/);
+    expect(tokens).toMatch(/\.meter-pace\s*\{[^}]*stroke-dasharray/);
+  });
+
+  it('moves nothing, so reduced motion has nothing to stop', () => {
+    const rules = tokens.match(/\.meter-(series|mark|pace|heat)[^{]*\{[^}]*\}/g) ?? [];
+    expect(rules.length).toBeGreaterThan(0);
+    for (const rule of rules) {
+      expect(rule).not.toMatch(/transition|animation/);
+    }
+  });
+});

@@ -18,7 +18,7 @@ add up on a screen.
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 import pytest
@@ -28,6 +28,7 @@ from finops_core.domain.cost import (
     EXPIRED,
     QUEUED,
     CommitmentCoverage,
+    CommitmentDay,
     CommitmentUse,
 )
 
@@ -52,6 +53,10 @@ def _uses(subject: ProviderUnderTest) -> list[CommitmentUse]:
 
 def _coverages(subject: ProviderUnderTest) -> list[CommitmentCoverage]:
     return list(subject.provider.coverage(WINDOW_START, WINDOW_END))
+
+
+def _days(subject: ProviderUnderTest) -> list[CommitmentDay]:
+    return list(subject.provider.daily(WINDOW_START, WINDOW_END))
 
 
 class TestTheTwoFiguresStaySeparate:
@@ -201,3 +206,41 @@ class TestFreshness:
         for slice_ in _coverages(subject):
             assert slice_.window_start == WINDOW_START
             assert slice_.window_end == WINDOW_END
+
+
+class TestTheDays:
+    """TASK-P8-013. One row per kind per day, inside the window, held to a window's arithmetic."""
+
+    def test_every_day_is_inside_the_window_and_said_once_per_kind(
+        self, subject: ProviderUnderTest
+    ) -> None:
+        days = _days(subject)
+        assert days
+        keys = [(one.commitment_type, one.day) for one in days]
+        assert len(keys) == len(set(keys))
+        for one in days:
+            assert WINDOW_START <= one.day < WINDOW_END
+
+    def test_the_days_report_the_kinds_the_window_does(self, subject: ProviderUnderTest) -> None:
+        committed = {use.commitment_type for use in _uses(subject) if use.committed > 0}
+        assert {one.commitment_type for one in _days(subject)} == committed
+
+    def test_a_day_uses_and_covers_no_more_than_it_could(self, subject: ProviderUnderTest) -> None:
+        for one in _days(subject):
+            assert one.used <= one.committed
+            assert one.covered_spend <= one.eligible_spend
+            for figure in (one.utilization, one.coverage):
+                if figure is not None:
+                    assert Decimal("0") <= figure <= Decimal("1")
+
+    def test_money_is_decimal_and_never_float(self, subject: ProviderUnderTest) -> None:
+        for one in _days(subject):
+            for figure in (one.committed, one.used, one.eligible_spend, one.covered_spend):
+                assert isinstance(figure, Decimal)
+
+    def test_a_day_is_true_once_it_has_ended(self, subject: ProviderUnderTest) -> None:
+        # Constraint 10. A day's figure is true at its end, not at the moment of the call,
+        # or a month of days would all look as fresh as the last one.
+        for one in _days(subject):
+            assert one.as_of.date() == one.day + timedelta(days=1)
+            assert one.as_of <= one.collected_at

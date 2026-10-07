@@ -2,7 +2,6 @@ import type {
   ApiBudgets,
   ApiCommitments,
   ApiCostAnomalies,
-  ApiCostDay,
   ApiCostSlice,
   ApiCostSummary,
   ApiEnvelope,
@@ -60,44 +59,6 @@ export function costSummaryFixture(): ApiEnvelope<ApiCostSummary> {
       // has to say why, or this reads as spending having collapsed.
       change: '-1684.9431',
     },
-    meta: meta(5),
-  };
-}
-
-export function costByServiceFixture(): ApiEnvelope<ApiCostSlice[]> {
-  return {
-    data: [
-      {
-        name: 'AmazonEC2',
-        effective_cost: '2388.4032',
-        billed_cost: '2579.4755',
-        line_items: 115,
-      },
-      {
-        name: 'AmazonRDS',
-        effective_cost: '1074.7814',
-        billed_cost: '1160.7639',
-        line_items: 115,
-      },
-      {
-        name: 'AmazonCloudWatch',
-        effective_cost: '543.3062',
-        billed_cost: '586.7707',
-        line_items: 115,
-      },
-      {
-        name: 'AmazonS3',
-        effective_cost: '358.2605',
-        billed_cost: '386.9213',
-        line_items: 115,
-      },
-      {
-        name: 'AWSLambda',
-        effective_cost: '149.2752',
-        billed_cost: '161.2172',
-        line_items: 115,
-      },
-    ],
     meta: meta(5),
   };
 }
@@ -164,20 +125,6 @@ export function costAllocationFixture(): ApiEnvelope<ApiCostSlice[]> {
     ],
     meta: meta(5),
   };
-}
-
-export function costTrendFixture(): ApiEnvelope<ApiCostDay[]> {
-  const days: ApiCostDay[] = [];
-  for (let index = 0; index < 23; index += 1) {
-    const day = String(index + 1).padStart(2, '0');
-    // A slow rise, matching what the fake estate actually produces, so a chart
-    // drawn from this looks like a chart drawn from the real thing.
-    days.push({
-      day: `2026-08-${day}`,
-      effective_cost: (193.1 + index * 0.9655).toFixed(4),
-    });
-  }
-  return { data: days, meta: meta(5) };
 }
 
 export function costCommitmentsFixture(): ApiEnvelope<ApiCommitments> {

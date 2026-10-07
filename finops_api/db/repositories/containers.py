@@ -23,8 +23,8 @@ from finops_core.domain.tenant import Scope
 
 
 def _fetch(
-    repository: ScopedRepository, scope: Scope, statement: Select[tuple[Any, ...]]
-) -> Sequence[Row[tuple[Any, ...]]]:
+    repository: ScopedRepository, scope: Scope, statement: Select[*tuple[Any, ...]]
+) -> Sequence[Row[*tuple[Any, ...]]]:
     """Run a select through the scoped path, projected or not."""
     return repository.fetch(scope, statement)
 
@@ -35,7 +35,7 @@ class ContainerClusterRepository(ScopedRepository):
     table: ClassVar[Table] = models.container_cluster
     resource: ClassVar[str] = "container_cluster"
 
-    def clusters(self, scope: Scope) -> Sequence[Row[tuple[Any, ...]]]:
+    def clusters(self, scope: Scope) -> Sequence[Row[*tuple[Any, ...]]]:
         """Every cluster this caller may see, the unmeasurable ones included."""
         statement = self.scoped_select(scope).order_by(
             self.table.c.sub_account_id, self.table.c.region_id, self.table.c.cluster_name
@@ -78,7 +78,7 @@ class ContainerUsageRepository(ScopedRepository):
     table: ClassVar[Table] = models.container_usage
     resource: ClassVar[str] = "container_usage"
 
-    def reservations(self, scope: Scope, limit: int = 2000) -> Sequence[Row[tuple[Any, ...]]]:
+    def reservations(self, scope: Scope, limit: int = 2000) -> Sequence[Row[*tuple[Any, ...]]]:
         statement = (
             self.scoped_select(scope)
             .order_by(

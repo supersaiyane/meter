@@ -58,7 +58,7 @@ def test_a_cluster_without_split_cost_allocation_is_refused_naming_the_setting(
     assert isinstance(refusal, Refusal), refusal
     assert refusal.gap is Gap.FIGURE
     assert "split cost allocation" in refusal.reason.lower()
-    assert refusal.screen == "/cost/containers"
+    assert refusal.screen == "/analyze/kubernetes-cost"
 
 
 def test_an_account_outside_the_askers_scope_is_refused_as_not_visible(
