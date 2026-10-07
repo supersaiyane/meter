@@ -1,0 +1,42 @@
+[
+ {
+  "RuleID": "generic-api-key",
+  "Description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+  "StartLine": 212,
+  "EndLine": 212,
+  "StartColumn": 37,
+  "EndColumn": 75,
+  "Match": "instance.scope_key, REDACTED",
+  "Secret": "REDACTED",
+  "File": "finops_providers/grafana/amg.py",
+  "SymlinkFile": "",
+  "Commit": "f5c5392565d05e7540d3a068e1e869477fca87d2",
+  "Entropy": 3.6163485,
+  "Author": "Supersaiyane",
+  "Email": "senghgurpreett@gmail.com",
+  "Date": "2026-09-24T04:00:00Z",
+  "Message": "feat: TASK-P2-006, the AMG connection strategy\n\nDiscovery over ListWorkspaces per account and region, paginated, with a token\nminted per read and revoked in a finally. The prototype left service accounts\nbehind when a run died half way; minting is a loan, not an allocation.\n\nA region that could not be listed becomes a visible unreachable instance rather\nthan a shorter list. Nothing downstream can tell that a region was meant to be\nthere, so a silently smaller estate is worse here than almost anywhere else.\n\nThe import contract refused the first implementation. finops_query sits above\nfinops_providers because it reads what an adapter fetched, so classifying inside\nthe adapter inverted the layers. The adapter now names a QueryParser port in\nfinops_core and a collector supplies the implementation.\n\nAn alert rule's intervalSeconds is a number, and refresh_seconds parses Grafana\nduration strings, so passing one to the other returned zero. An alert that runs\nevery minute would have been reported as one that never runs, and an alert is\nusually the largest term in a cost figure.\n\nmoto implements no Grafana operation at all, so the contract suite runs under\nbotocore.stub, which validates against the real service model and caught the\nfixture omitting four fields ListWorkspaces requires. ISS-141.",
+  "Tags": [],
+  "Fingerprint": "f5c5392565d05e7540d3a068e1e869477fca87d2:finops_providers/grafana/amg.py:generic-api-key:212"
+ },
+ {
+  "RuleID": "generic-api-key",
+  "Description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+  "StartLine": 269,
+  "EndLine": 269,
+  "StartColumn": 37,
+  "EndColumn": 75,
+  "Match": "instance.scope_key, REDACTED",
+  "Secret": "REDACTED",
+  "File": "finops_providers/grafana/amg.py",
+  "SymlinkFile": "",
+  "Commit": "f5c5392565d05e7540d3a068e1e869477fca87d2",
+  "Entropy": 3.6163485,
+  "Author": "Supersaiyane",
+  "Email": "senghgurpreett@gmail.com",
+  "Date": "2026-09-24T04:00:00Z",
+  "Message": "feat: TASK-P2-006, the AMG connection strategy\n\nDiscovery over ListWorkspaces per account and region, paginated, with a token\nminted per read and revoked in a finally. The prototype left service accounts\nbehind when a run died half way; minting is a loan, not an allocation.\n\nA region that could not be listed becomes a visible unreachable instance rather\nthan a shorter list. Nothing downstream can tell that a region was meant to be\nthere, so a silently smaller estate is worse here than almost anywhere else.\n\nThe import contract refused the first implementation. finops_query sits above\nfinops_providers because it reads what an adapter fetched, so classifying inside\nthe adapter inverted the layers. The adapter now names a QueryParser port in\nfinops_core and a collector supplies the implementation.\n\nAn alert rule's intervalSeconds is a number, and refresh_seconds parses Grafana\nduration strings, so passing one to the other returned zero. An alert that runs\nevery minute would have been reported as one that never runs, and an alert is\nusually the largest term in a cost figure.\n\nmoto implements no Grafana operation at all, so the contract suite runs under\nbotocore.stub, which validates against the real service model and caught the\nfixture omitting four fields ListWorkspaces requires. ISS-141.",
+  "Tags": [],
+  "Fingerprint": "f5c5392565d05e7540d3a068e1e869477fca87d2:finops_providers/grafana/amg.py:generic-api-key:269"
+ }
+]

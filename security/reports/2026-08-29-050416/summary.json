@@ -1,0 +1,141 @@
+{
+  "generated": "2026-08-29 05:05:22Z",
+  "label": "working tree",
+  "unresolved_total": 8,
+  "allowlisted_total": 0,
+  "unfixable_accepted_total": 11,
+  "by_severity": {
+    "High": 4,
+    "Medium": 4
+  },
+  "findings": [
+    {
+      "id": "GHSA-6v7p-g79w-8964",
+      "severity": "High",
+      "package": "msgpack",
+      "installed": "1.1.2",
+      "fixed_in": "1.2.1",
+      "ecosystem": "python-pkg",
+      "target": "api",
+      "description": "### Impact\n\nIf the Unpacker is used repeatedly after an error occurs, the process may crash with a SEGV.\n\nIf the Unpacker is used repeatedly to unpack untrusted input from external sources, it may be vulnerable to a DoS attack.\n\n### Patches\n\nv1.2.1\n\n### Workarounds\n\nUsers should create a new Unpacker instead of reusing the same Unpacker after an error occurs.\n\nApplying the above patch can prevent ",
+      "url": "https://github.com/advisories/GHSA-6v7p-g79w-8964",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Pin msgpack&gt;=1.2.1 in pyproject.toml, then make setup."
+    },
+    {
+      "id": "GHSA-6v7p-g79w-8964",
+      "severity": "High",
+      "package": "msgpack",
+      "installed": "1.1.2",
+      "fixed_in": "1.2.1",
+      "ecosystem": "python-pkg",
+      "target": "worker",
+      "description": "### Impact\n\nIf the Unpacker is used repeatedly after an error occurs, the process may crash with a SEGV.\n\nIf the Unpacker is used repeatedly to unpack untrusted input from external sources, it may be vulnerable to a DoS attack.\n\n### Patches\n\nv1.2.1\n\n### Workarounds\n\nUsers should create a new Unpacker instead of reusing the same Unpacker after an error occurs.\n\nApplying the above patch can prevent ",
+      "url": "https://github.com/advisories/GHSA-6v7p-g79w-8964",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Pin msgpack&gt;=1.2.1 in pyproject.toml, then make setup."
+    },
+    {
+      "id": "CVE-2025-47273",
+      "severity": "High",
+      "package": "setuptools",
+      "installed": "70.3.0",
+      "fixed_in": "78.1.1",
+      "ecosystem": "python-pkg",
+      "target": "api",
+      "description": "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code executio",
+      "url": "https://avd.aquasec.com/nvd/cve-2025-47273",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Pin setuptools&gt;=78.1.1 in pyproject.toml, then make setup."
+    },
+    {
+      "id": "CVE-2025-47273",
+      "severity": "High",
+      "package": "setuptools",
+      "installed": "70.3.0",
+      "fixed_in": "78.1.1",
+      "ecosystem": "python-pkg",
+      "target": "worker",
+      "description": "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. A path traversal vulnerability in `PackageIndex` is present in setuptools prior to version 78.1.1. An attacker would be allowed to write files to arbitrary locations on the filesystem with the permissions of the process running the Python code, which could escalate to remote code executio",
+      "url": "https://avd.aquasec.com/nvd/cve-2025-47273",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Pin setuptools&gt;=78.1.1 in pyproject.toml, then make setup."
+    },
+    {
+      "id": "CVE-2026-19672",
+      "severity": "Medium",
+      "package": "python-3.13",
+      "installed": "3.13.15-r0",
+      "fixed_in": "",
+      "ecosystem": "apk",
+      "target": "api",
+      "description": "The tarfile module's tar and data\n extraction filters created directories outside the destination for \nmembers whose name leaves the destination and returns to it, such as ../evil/../dest/sub/file. The containment check used the resolved path, but intermediate directories were created from the name as given.\n\nOnly\n empty directories are created outside the destination. Member contents \nare still e",
+      "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-19672",
+      "scanner_family": "vuln",
+      "scanners": [
+        "grype"
+      ],
+      "fix_html": "No published fix and no acceptance record. Add one to security/policy/accepted.yaml with a reachability argument, or change the version. See ADR-0018."
+    },
+    {
+      "id": "CVE-2026-19672",
+      "severity": "Medium",
+      "package": "python-3.13",
+      "installed": "3.13.15-r0",
+      "fixed_in": "",
+      "ecosystem": "apk",
+      "target": "worker",
+      "description": "The tarfile module's tar and data\n extraction filters created directories outside the destination for \nmembers whose name leaves the destination and returns to it, such as ../evil/../dest/sub/file. The containment check used the resolved path, but intermediate directories were created from the name as given.\n\nOnly\n empty directories are created outside the destination. Member contents \nare still e",
+      "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-19672",
+      "scanner_family": "vuln",
+      "scanners": [
+        "grype"
+      ],
+      "fix_html": "No published fix and no acceptance record. Add one to security/policy/accepted.yaml with a reachability argument, or change the version. See ADR-0018."
+    },
+    {
+      "id": "CVE-2026-59890",
+      "severity": "Medium",
+      "package": "setuptools",
+      "installed": "70.3.0",
+      "fixed_in": "83.0.0",
+      "ecosystem": "python-pkg",
+      "target": "api",
+      "description": "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. Prior to 83.0.0, FileList applied MANIFEST.in exclude, global-exclude, recursive-exclude, and prune directives by matching compiled glob patterns against on-disk file names without Unicode normalization, so on macOS APFS or HFS+ an NFD file name could bypass an NFC exclusion rule and be p",
+      "url": "https://avd.aquasec.com/nvd/cve-2026-59890",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Pin setuptools&gt;=83.0.0 in pyproject.toml, then make setup."
+    },
+    {
+      "id": "CVE-2026-59890",
+      "severity": "Medium",
+      "package": "setuptools",
+      "installed": "70.3.0",
+      "fixed_in": "83.0.0",
+      "ecosystem": "python-pkg",
+      "target": "worker",
+      "description": "setuptools is a package that allows users to download, build, install, upgrade, and uninstall Python packages. Prior to 83.0.0, FileList applied MANIFEST.in exclude, global-exclude, recursive-exclude, and prune directives by matching compiled glob patterns against on-disk file names without Unicode normalization, so on macOS APFS or HFS+ an NFD file name could bypass an NFC exclusion rule and be p",
+      "url": "https://avd.aquasec.com/nvd/cve-2026-59890",
+      "scanner_family": "vuln",
+      "scanners": [
+        "trivy"
+      ],
+      "fix_html": "Pin setuptools&gt;=83.0.0 in pyproject.toml, then make setup."
+    }
+  ]
+}
