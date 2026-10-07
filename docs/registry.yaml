@@ -87,6 +87,14 @@ subprojects:
   spec: specs/2026-10-05-p9-price-catalog-design.md
   plan: plans/P9-implementation-plan.md
   depends_on: P3
+- id: P10
+  name: 'Proven numbers: FOCUS 1.4 and invoice reconciliation'
+  status: Specified, planned and approved by the owner 2026-10-07 as priority 2 of next-in-scope.txt,
+    not started, TASK-P10-001 next. Runs before P9 by the owner's priority. The cost row gains FOCUS 1.4's
+    mandatory and invoice columns, and each AWS invoice is compared with Meter's billed cost
+  spec: specs/2026-10-07-p10-proven-numbers-design.md
+  plan: plans/P10-implementation-plan.md
+  depends_on: P1
 features:
 - id: FEAT-001
   name: Account onboarding and organization topology, parent to child map
@@ -544,6 +552,12 @@ features:
   detail: 'Requested by the owner on 2026-10-05 for an estate of 1,399 accounts, and widened on 2026-10-06 to find services and resources as well. [P8 plan](docs/plans/P8-implementation-plan.md), TASK-P8-016'
   doc: docs/features/FEAT-075-account-picker.md
 
+- id: FEAT-076
+  name: Invoice reconciliation, Meter's billed cost against the provider's invoice
+  subproject: P10
+  status: Specified
+  detail: '[P10 spec](docs/specs/2026-10-07-p10-proven-numbers-design.md) sections 5.3 to 5.5, 6, 7'
+  doc: docs/features/FEAT-076-invoice-reconciliation.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -681,6 +695,10 @@ adrs:
   status: Accepted
   doc: docs/adr/ADR-0033-scheduled-reports-render-in-the-api.md
 
+- id: ADR-0034
+  decision: The canonical cost schema follows FOCUS 1.4, and each ratified version after it
+  status: Accepted
+  doc: docs/adr/ADR-0034-canonical-cost-schema-follows-focus-1-4.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'
@@ -1728,6 +1746,18 @@ changes:
     Specified. FEAT-023's name promised the ingest of AWS Cost Anomaly Detection, which its own document
     rules out, so it is renamed for what it does. next-in-scope.txt gains section 8, the features taken
     from other tools, and loses a claim that FOCUS 1.4 carries token fields, which arrive with 1.5
+
+- id: CHG-0125
+  date: '2026-10-07'
+  type: Design
+  what: 'P10 specified and planned: FOCUS 1.4 and invoice reconciliation, priority 1 item 3 and priority
+    2'
+  commit: pending
+  detail: 'The FOCUS 1.4 gap, measured: Meter''s row lacks 6 of the 21 mandatory Cost and Usage columns
+    and both invoice columns, and still stores the two 1.4 removes. P10 adds them, reads AWS invoices
+    through ListInvoiceSummaries, and compares each with Meter''s billed cost before tax and tax apart,
+    every comparison a typed state. ADR-0034 moves the canonical schema to FOCUS 1.4; OPEN-21 asks whether
+    to read AWS''s FOCUS export. Six tasks, FEAT-076'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4287,3 +4317,12 @@ open_questions:
     costing before deployment, performance aware rightsizing, more providers through FOCUS, and carbon
     beside cost. Recommended: the order in section 7 of next-in-scope.txt, owners and the savings ledger
     first because ISS-021 blocks every action after it.'
+- id: OPEN-21
+  question: Should Meter read AWS's FOCUS export instead of normalising CUR 2.0 itself?
+  status: OPEN
+  blocks: nothing
+  detail: 'Raised 2026-10-07 with P10. AWS has exported FOCUS 1.2 since 2025-11-19 and was among the first
+    data generators certified conformant, so reading it would make Meter''s columns AWS''s own. It does
+    not carry the EKS split columns FEAT-035 reads. Recommended: yes once an account exists, for the cost
+    row, keeping CUR 2.0 for the split columns. P10 keeps CUR 2.0 and maps the new columns by AWS''s published
+    mapping, so either answer keeps its work.'

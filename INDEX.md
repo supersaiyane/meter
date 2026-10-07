@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-75 features across 10 sub projects. 11 specified, 7 planned, 13 in build, 44 delivered.
+76 features across 11 sub projects. 12 specified, 7 planned, 13 in build, 44 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -135,6 +135,12 @@ block is caught by `make check-docs`. See
 | [FEAT-045](docs/features/FEAT-045-chargeback-export.md) | Chargeback and showback export | Delivered | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
 | [FEAT-055](docs/features/FEAT-055-commitment-coverage-actions.md) | A commitment coverage gap as a ranked action | Delivered | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 | [FEAT-060](docs/features/FEAT-060-budgets.md) | Budget against actual, with a red amber green status | Delivered | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-27, adopted from the FinOpsForge dashboard checklist |
+
+### P10 Proven numbers: FOCUS 1.4 and invoice reconciliation
+
+| ID | Feature | Status | Detail |
+| --- | --- | --- | --- |
+| [FEAT-076](docs/features/FEAT-076-invoice-reconciliation.md) | Invoice reconciliation, Meter's billed cost against the provider's invoice | Specified | [P10 spec](docs/specs/2026-10-07-p10-proven-numbers-design.md) sections 5.3 to 5.5, 6, 7 |
 
 ### P3 Utilization and Rightsizing
 
@@ -260,6 +266,7 @@ block is caught by `make check-docs`. See
 | ADR-0031 | Dependencies are installed from a lock, never resolved | Accepted | [ADR-0031](docs/adr/ADR-0031-dependencies-installed-from-a-lock.md) |
 | ADR-0032 | A row a person may share is read by its owner and, once shared, by the tenant | Accepted | [ADR-0032](docs/adr/ADR-0032-a-shared-row-is-configuration.md) |
 | ADR-0033 | Scheduled reports render inside the API, as each recipient | Accepted | [ADR-0033](docs/adr/ADR-0033-scheduled-reports-render-in-the-api.md) |
+| ADR-0034 | The canonical cost schema follows FOCUS 1.4, and each ratified version after it | Accepted | [ADR-0034](docs/adr/ADR-0034-canonical-cost-schema-follows-focus-1-4.md) |
 
 Index of records: [docs/adr/README.md](docs/adr/README.md)
 
@@ -398,6 +405,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0122 | 2026-10-07 | Scope | Market research and nine proposals recorded in next-in-scope.txt; priorities 1 to 3 approved | `pending` | Research of 2026-10-07 across AWS, IBM, Flexera, Vantage, the FinOps Foundation and the State of FinOps 2026, with nine proposals in priority order and a timeline. The owner approved priorities 1 to 3 the same day, to run in sequence: the one day wins, the FOCUS 1.4 upgrade with invoice reconciliation, and P9, which lifts the hold placed on P9 that morning. Proposals 2 to 9 wait on OPEN-20 |
 | CHG-0123 | 2026-10-07 | Process | make verify-docs: a gate for a change to documents alone, priority 1 of next-in-scope.txt | `pending` | A change touching only Markdown, text, docs/ and tasks/ runs the writing rules, the generated documents and the memory gate instead of every suite. scripts/ci/check_docs_only.py decides that from git, committed, staged, unstaged and untracked, links aside, and refuses any other file by name. Approved by the owner on 2026-10-07 after a thirteen line documentation change had cost about fifteen minutes of tests |
 | CHG-0124 | 2026-10-07 | Correction | FEAT-023 and FEAT-024 marked Delivered, and FEAT-023 renamed, priority 1 item 2 | `pending` | Both were built by P1 on 2026-09-20, TASK-P1-014 to TASK-P1-017, and the registry still said Specified. FEAT-023's name promised the ingest of AWS Cost Anomaly Detection, which its own document rules out, so it is renamed for what it does. next-in-scope.txt gains section 8, the features taken from other tools, and loses a claim that FOCUS 1.4 carries token fields, which arrive with 1.5 |
+| CHG-0125 | 2026-10-07 | Design | P10 specified and planned: FOCUS 1.4 and invoice reconciliation, priority 1 item 3 and priority 2 | `pending` | The FOCUS 1.4 gap, measured: Meter's row lacks 6 of the 21 mandatory Cost and Usage columns and both invoice columns, and still stores the two 1.4 removes. P10 adds them, reads AWS invoices through ListInvoiceSummaries, and compares each with Meter's billed cost before tax and tax apart, every comparison a typed state. ADR-0034 moves the canonical schema to FOCUS 1.4; OPEN-21 asks whether to read AWS's FOCUS export. Six tasks, FEAT-076 |
 
 <!-- generated:changes end -->
 
@@ -703,6 +711,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | OPEN-16 | How does the hub reach the AWS APIs its collectors call: endpoints in every Region used plus a us-east-1 endpoint VPC, a NAT gateway with an AWS-only allow list, or collectors outside the VPC. ANSWERED 2026-10-05: A plus C for two. Interface endpoints for every service that has one, and Budgets and Support, which have none, as two functions outside the VPC that write rows to S3 | ANSWERED | Nothing now. TASK-P9-001 builds the path and writes the ADR that prices it, and ISS-242 stays OPEN until it is built | [P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) section 5.1. The owner chose on 2026-10-05: an interface endpoint for every service that has one, in an endpoint VPC in us-east-1 for the services that answer only there and in each Region called for the rest. Budgets and Support have no interface endpoint (measured 2026-10-05, https://docs.aws.amazon.com/vpc/latest/privatelink/aws-services-privatelink-support.html), so they run as two small functions outside the VPC that write rows to S3, and the hub keeps no route out, which ADR-0028 relies on. About 20 endpoints at about 14.7 USD a month each, roughly 290 USD a month (modelled); the ADR measures it. B, the NAT gateway, was not chosen |
 | OPEN-06 | Which regions beyond Ireland and London. ANSWERED 2026-08-23: those two only, eu-west-1 and eu-west-2 | ANSWERED | nothing | Set in METER_REGIONS, see .env.example section 3 |
 | OPEN-20 | Which of proposals 2 to 9 in next-in-scope.txt are approved, and in what order? | OPEN | Every proposal after P9 | Raised 2026-10-07 with the market research. Priorities 1 to 3 were approved the same day. The rest are FinOps for AI, owners and a savings ledger, graded autonomy through pull requests, commitments, costing before deployment, performance aware rightsizing, more providers through FOCUS, and carbon beside cost. Recommended: the order in section 7 of next-in-scope.txt, owners and the savings ledger first because ISS-021 blocks every action after it. |
+| OPEN-21 | Should Meter read AWS's FOCUS export instead of normalising CUR 2.0 itself? | OPEN | nothing | Raised 2026-10-07 with P10. AWS has exported FOCUS 1.2 since 2025-11-19 and was among the first data generators certified conformant, so reading it would make Meter's columns AWS's own. It does not carry the EKS split columns FEAT-035 reads. Recommended: yes once an account exists, for the cost row, keeping CUR 2.0 for the split columns. P10 keeps CUR 2.0 and maps the new columns by AWS's published mapping, so either answer keeps its work. |
 
 <!-- generated:open-questions end -->
 
