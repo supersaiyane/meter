@@ -22,11 +22,11 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 75 total, 11 specified, 13 in build, 44 delivered |
-| Decisions | 33 architecture decision records |
-| Changes | 124 recorded |
+| Features | 76 total, 12 specified, 13 in build, 44 delivered |
+| Decisions | 34 architecture decision records |
+| Changes | 125 recorded |
 | Issues | 154 fixed, 101 open, 0 parked |
-| Open questions | 20 awaiting a decision |
+| Open questions | 21 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
 
@@ -40,7 +40,8 @@ was built and marked FEAT-063 Delivered. TASK-P8-014 before it proved spec secti
 criterion with its evidence in the plan, and fixed ISS-257 and ISS-258. `p8-build` merges into
 main with `--no-ff`, locally. Later on 2026-10-07 the owner approved
 priorities 1 to 3 of `next-in-scope.txt`, CHG-0122: the one day wins, FOCUS 1.4 with invoice
-reconciliation, and P9. They run in sequence on `next-build`. The repository has no git remote,
+reconciliation, and P9. They run in sequence on `next-build`. Priority 1 is done but its
+owners slice; priority 2 is specified and planned as P10, six tasks, ADR-0034, and runs next. The repository has no git remote,
 so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
@@ -207,6 +208,7 @@ ISS-003.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P1 | 22 | 0 | 0 | 0 | 0 | 22 | [plan](../docs/plans/P1-implementation-plan.md) |
+| P10 | 0 | 0 | 0 | 0 | 6 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 | P3 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |

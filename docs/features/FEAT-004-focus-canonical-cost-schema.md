@@ -44,3 +44,9 @@ feature are listed in [ADR-0009](../adr/ADR-0009-mcp-alongside-http-api.md).
 ## Not doing
 
 Does not populate the table. That is FEAT-020 in P1. Does not reconcile to the invoice.
+
+## Status of this document
+
+In build since P0 at FOCUS 1.1. P10 moves the row to FOCUS 1.4's mandatory columns and
+its invoice columns, ADR-0034, specified and planned on 2026-10-07: measured that day, the
+row lacked 6 of the 21 mandatory columns, P10 spec section 4.

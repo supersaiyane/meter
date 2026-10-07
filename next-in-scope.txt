@@ -217,7 +217,7 @@ Everything, in priority order
 
 Pri  Task                                                        Source        Days  Start       Finish      Depends on
 1    The one day wins above                                      this file     1     2026-10-08  2026-10-08  Nothing
-2    FOCUS 1.4 upgrade and invoice reconciliation, on fakes      proposal 1    4     2026-10-09  2026-10-14  Live proof: the AWS account
+2    P10: FOCUS 1.4 and invoice reconciliation, on fakes         proposal 1    4     2026-10-09  2026-10-14  Live proof: the AWS account
 3    TASK-P9-001 the hub reaches every AWS API (L)               P9            2     2026-10-15  2026-10-16  Owner go ahead on P9
 3    TASK-P9-002 ports and fakes, prices and instance types (M)  P9            1     2026-10-19  2026-10-19  P9-001
 3    TASK-P9-003 the catalog tables (M)                          P9            1     2026-10-20  2026-10-20  P9-002
@@ -240,6 +240,7 @@ Pri  Task                                                        Source        D
 10   More providers through FOCUS: Azure and GCP first           proposal 8    6     2026-12-21  2026-12-28  A test account in each
 11   Carbon beside cost                                          proposal 9    3     2026-12-29  2026-12-31  Live data: the AWS account
 
+Priority 2 is specified and planned as P10, six tasks, docs/plans/P10-implementation-plan.md.
 Approved 2026-10-07: the owner asked for priorities 1, 2 and 3 to be done in sequence,
 which lifts the morning's hold on P9. Proposals 2 to 9 wait on OPEN-20.
 
