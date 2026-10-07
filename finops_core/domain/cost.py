@@ -1,4 +1,4 @@
-"""One row of cost, in FOCUS 1.1, with the Meter columns alongside it.
+"""One row of cost, in FOCUS 1.4's mandatory columns, with the Meter columns alongside it.
 
 ADR-0002. The column names are the specification's, not ours. They are not
 renamed to something more readable, because the entire value of adopting a

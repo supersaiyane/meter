@@ -11,7 +11,7 @@
 ## What it does
 
 Reads a billing export, one period at a time, and writes it to `cost_focus_daily`
-in FOCUS 1.1. Corrects what the provider restated and removes what it withdrew.
+in FOCUS 1.4's mandatory columns. Corrects what the provider restated and removes what it withdrew.
 
 ## Why it exists
 

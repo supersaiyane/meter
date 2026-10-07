@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-76 features across 11 sub projects. 11 specified, 7 planned, 14 in build, 44 delivered.
+76 features across 11 sub projects. 11 specified, 7 planned, 13 in build, 45 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -98,7 +98,7 @@ block is caught by `make check-docs`. See
 | [FEAT-001](docs/features/FEAT-001-account-onboarding-and-org-topology.md) | Account onboarding and organization topology, parent to child map | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 5.2, 7 |
 | [FEAT-002](docs/features/FEAT-002-cross-account-credential-brokering.md) | Cross account credential brokering by StackSet deployed role | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 10, [ADR-0004](docs/adr/ADR-0004-cross-account-access.md) |
 | [FEAT-003](docs/features/FEAT-003-provider-port-abstraction.md) | Provider port abstraction, eight provider ports | Delivered | [architecture](docs/02-ARCHITECTURE.md) section "Ports" |
-| [FEAT-004](docs/features/FEAT-004-focus-canonical-cost-schema.md) | FOCUS 1.1 canonical cost schema | In build | [ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md) |
+| [FEAT-004](docs/features/FEAT-004-focus-canonical-cost-schema.md) | FOCUS canonical cost schema | In build | [ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md) |
 | [FEAT-005](docs/features/FEAT-005-ingestion-framework.md) | Ingestion framework, idempotent and partial failure tolerant | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 7 |
 | [FEAT-006](docs/features/FEAT-006-typed-errors-and-freshness.md) | Typed error taxonomy and data freshness contract | Delivered | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6 |
 | [FEAT-007](docs/features/FEAT-007-authorization-scope-enforcement.md) | Authorization scope enforcement, two independent points | In build | [P0 spec](docs/specs/2026-08-23-p0-foundation-design.md) section 6, [ADR-0008](docs/adr/ADR-0008-identity-adapter-deferred.md) |
@@ -140,7 +140,7 @@ block is caught by `make check-docs`. See
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-076](docs/features/FEAT-076-invoice-reconciliation.md) | Invoice reconciliation, Meter's billed cost against the provider's invoice | In build | [P10 spec](docs/specs/2026-10-07-p10-proven-numbers-design.md) sections 5.3 to 5.5, 6, 7 |
+| [FEAT-076](docs/features/FEAT-076-invoice-reconciliation.md) | Invoice reconciliation, Meter's billed cost against the provider's invoice | Delivered | [P10 spec](docs/specs/2026-10-07-p10-proven-numbers-design.md) sections 5.3 to 5.5, 6, 7 |
 
 ### P3 Utilization and Rightsizing
 
@@ -413,6 +413,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0130 | 2026-10-08 | Feature | TASK-P10-003, billing periods and invoices read from the payer, FEAT-076 | `pending` | An Invoice entity and an InvoiceSource port; a fake built from the bill's rows, with one period matching, one 2.50 over beside a Marketplace invoice and the running month open; an AWS adapter calling ListInvoiceSummaries one billing period at a time, with anything unreadable as SchemaDrift; migration 0031 with billing_period and invoice_detail, their constraints and the invoices cadence row; a collector storing both as read; both tables PayerWide before any route reads them; the demo seeded with the invoices; and invoicing:ListInvoiceSummaries on the management account's reader role. Three acceptance criteria were reworded to what is true, recorded in the plan. Two red checks found tests that could not fail, a surcharge compared with the fake's own constant and no test that the tables are payer wide, and both were fixed |
 | CHG-0131 | 2026-10-08 | Feature | TASK-P10-004, each invoice compared with Meter's billed cost and the route that serves it, FEAT-076 | `pending` | A pure comparison in finops_core with the six states of spec section 5.4, before tax and tax apart, rows in another currency never converted, and no figure on a state that is not a comparison; GET /api/v1/cost/reconciliation, exportable, refusing a narrowed reader with a 403 before any read, reading the newest closed period by default and answering 404 for a period never read. Two decisions recorded in the spec and the plan, the tolerance's one cent floor and the period as a date like every other cost route. Three red checks proved the refusal, the tax split and the currency rule are held |
 | CHG-0132 | 2026-10-08 | Feature | TASK-P10-005, the Invoice reconciliation screen and the Matches the invoice tile, FEAT-076 | `pending` | A screen at /report/reconciliation on the Report group of the rail, every state in words with the difference signed and labelled measured, the route's 403 and 404 shown in its own words; a tile on the FinOps practitioner's Overview with the matched share of the invoiced amount; the screen in SCREEN_PATHS and migration 0032 admitting it as a saved view's screen, whose downgrade refuses rather than deletes a view; and a journey. The journey found the screen printing a 403's raw JSON body, which unit tests built with a bare sentence had missed, fixed with the client's reasonOf |
+| CHG-0133 | 2026-10-08 | Feature | TASK-P10-006, P10's proof and documents; constraint 2 and FOCUS_VERSION name FOCUS 1.4 | `pending` | Each exit criterion of the P10 spec's section 12 met with its evidence in the plan. Constraint 2 in CLAUDE.md, FOCUS_VERSION, the architecture and data model documents, README and the docstrings that state the schema now name FOCUS 1.4, ADR-0034; ADR-0002's decision stands and its version is amended. A test now proves criterion 2, which no test held before, that a row written before migration 0030 arrives with its provider pair backfilled, and the release before P10 still writes after it, shown red without the backfill. FEAT-076 and P10 are Delivered against fakes |
 
 <!-- generated:changes end -->
 

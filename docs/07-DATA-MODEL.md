@@ -3,7 +3,7 @@
 Last updated: 2026-08-23
 Update trigger: any schema change, in the same commit as the migration
 Migrations: Alembic. See "Migration workflow" below
-Canonical cost schema: FOCUS 1.1, ADR-0002
+Canonical cost schema: FOCUS 1.4, ADR-0002 and ADR-0034
 
 This document is the schema of record. A table that is not here does not exist,
 and a column added without updating this document is an incomplete change.
@@ -330,7 +330,7 @@ CREATE TABLE sync_error (
 `remediation` is `NOT NULL`. An error a user cannot act on without reading logs
 is an error that stays unfixed.
 
-### Cost, FOCUS 1.1
+### Cost, FOCUS 1.4
 
 ```sql
 CREATE TABLE cost_focus_daily (

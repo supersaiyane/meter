@@ -20,7 +20,7 @@ Every cloud bills in a different shape. Inventing an internal schema means a mig
 
 ## How it works
 
-`cost_focus_daily` carries the FOCUS 1.1 columns unchanged, with Meter columns alongside rather than inside that namespace: `tenant_id`, `as_of`, `ingest_run_id`, `source_fingerprint`. Provider specific fields that FOCUS does not carry live in `cost_provider_extra`, keyed by the same fact. Amortized and net amortized are the primary measures everywhere, because with Reserved Instances and Savings Plans in play unblended per resource cost is fiction. Unblended is retained only for invoice reconciliation and is never the default on a chart. The table is partitioned by billing period, and ingestion is idempotent, because CUR is restated throughout the month.
+`cost_focus_daily` carries FOCUS 1.4's mandatory Cost and Usage columns and its two invoice columns unchanged, with Meter columns alongside rather than inside that namespace: `tenant_id`, `as_of`, `ingest_run_id`, `source_fingerprint`. Provider specific fields that FOCUS does not carry live in `cost_provider_extra`, keyed by the same fact. Amortized and net amortized are the primary measures everywhere, because with Reserved Instances and Savings Plans in play unblended per resource cost is fiction. Unblended is retained only for invoice reconciliation and is never the default on a chart. The table is partitioned by billing period, and ingestion is idempotent, because CUR is restated throughout the month.
 
 ## Failure behaviour
 
@@ -43,13 +43,17 @@ feature are listed in [ADR-0009](../adr/ADR-0009-mcp-alongside-http-api.md).
 
 ## Not doing
 
-Does not populate the table. That is FEAT-020 in P1. Does not reconcile to the invoice.
+Does not populate the table. That is FEAT-020 in P1. Does not reconcile to the invoice, which is FEAT-076 in P10.
 
 ## Status of this document
 
 In build since P0 at FOCUS 1.1. TASK-P10-002 gave the row every column FOCUS 1.4 makes
 mandatory and the two invoice columns on 2026-10-07, migration 0030, read from AWS's FOCUS export
 where it carries them and null where it does not; `tests/api/test_focus_columns.py` holds all 21.
-P10 moves the row to FOCUS 1.4's mandatory columns and
-its invoice columns, ADR-0034, specified and planned on 2026-10-07: measured that day, the
-row lacked 6 of the 21 mandatory columns, P10 spec section 4.
+P10 moved the row to FOCUS 1.4's mandatory columns and
+its invoice columns, ADR-0034: measured on 2026-10-07, the row lacked 6 of the 21 mandatory
+columns, P10 spec section 4, and since TASK-P10-006 on 2026-10-08 constraint 2 and
+`FOCUS_VERSION` name FOCUS 1.4. A row written before migration 0030 arrives with its provider
+pair backfilled, and the release before P10 still writes after it,
+`tests/db/test_focus_1_4_migration.py`. The conditional and recommended columns no source of
+Meter's fills yet wait for FOCUS conformance, P10 spec section 4.

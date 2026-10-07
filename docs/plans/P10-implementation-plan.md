@@ -1,7 +1,7 @@
 # P10 Proven numbers, FOCUS 1.4 and invoice reconciliation: implementation plan
 
 Date: 2026-10-07
-Status: Approved by the owner on 2026-10-07 as priority 2 of `next-in-scope.txt`, CHG-0122
+Status: Delivered on 2026-10-08 against fakes, TASK-P10-006. Approved by the owner on 2026-10-07 as priority 2 of `next-in-scope.txt`, CHG-0122
 Spec: `docs/specs/2026-10-07-p10-proven-numbers-design.md`
 Depends on: P1 delivered. Proof against a real invoice waits on ISS-002, ISS-003 and TASK-P9-001
 Tasks: 6
@@ -182,7 +182,7 @@ Same contract as P0 through P9. One task, one commit, `make verify` green before
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | Spec section 12, `docs/03-CHANGE-CONTROL.md` |
 | Delivers | The record |
 | Depends on | TASK-P10-001 to TASK-P10-005 |
@@ -190,7 +190,40 @@ Same contract as P0 through P9. One task, one commit, `make verify` green before
 
 **Acceptance criteria.**
 
-- [ ] Every exit criterion in spec section 12 met, each with its evidence
-- [ ] Constraint 2 in `CLAUDE.md` names FOCUS 1.4, and FEAT-004 and FEAT-076 say what was
-      built
-- [ ] The register, `project_map.md` and the checkpoint updated, and `make check-docs` clean
+- [x] Every exit criterion in spec section 12 met, each with its evidence, below
+- [x] Constraint 2 in `CLAUDE.md` names FOCUS 1.4, and FEAT-004 and FEAT-076 say what was
+      built. `FOCUS_VERSION` is 1.4, and the architecture and data model documents, README
+      and the docstrings that state the schema name it; ADR-0002's decision stands with its
+      version amended by ADR-0034
+- [x] The register, `project_map.md` and the checkpoint updated, and `make check-docs` clean
+
+**Delivered 2026-10-08.** The spec's section 12, each criterion with its evidence. The test
+counts are measured, from the full gate on TASK-P10-005's branch on 2026-10-08: 3283 backend
+tests, 938 frontend unit tests and 65 journeys passing.
+
+1. Every FOCUS 1.4 mandatory Cost and Usage column is on the row, held by
+   `tests/api/test_focus_columns.py`, which reads the six the spec named missing from its
+   section 4 and holds all 21 to the record and the table. TASK-P10-002, migration 0030.
+2. `ProviderName` is carried into `ServiceProviderName` and `HostProviderName`, with an old
+   reader still working. No test held the second half until this task:
+   `tests/db/test_focus_1_4_migration.py` migrates to 0029, writes a row as the release before
+   P10 did, migrates back, and finds the pair backfilled and the old writer still writing. It
+   fails with the backfill removed.
+3. Invoices are read through `InvoiceSource`, with `FakeInvoices` and `AwsInvoices`, typed
+   failures and both timestamps: `tests/providers/fake/test_invoices.py`,
+   `tests/providers/aws/test_invoices.py`, `tests/ingest/collectors/test_invoices.py`, and the
+   invoice read declared in `tests/providers/aws/test_response_shapes.py`. TASK-P10-003.
+4. Each invoice is compared before tax and tax apart, in every state of section 5.4, and never
+   as a zero for a failure: `tests/core/test_reconciliation.py` and
+   `tests/api/test_reconciliation.py`, with red checks on the tax split and the currency rule.
+   TASK-P10-004.
+5. A narrowed reader is refused by type, a 403 before any read, asserted with two principals
+   against the database in `tests/api/test_reconciliation.py`, and both tables are `PayerWide`
+   in `tests/db/test_scope_guard.py`. TASK-P10-003 and TASK-P10-004.
+6. The screen and the Overview tile, labelled measured:
+   `finops-web/src/screens/__tests__/ReconciliationScreen.test.tsx` and
+   `finops-web/e2e/reconciliation.spec.ts`, and the screen in the rail's axe and width sweeps.
+   TASK-P10-005.
+7. `make verify` green on every task's branch before it merged, and the comparison against a
+   real invoice recorded as waiting on ISS-002, ISS-003 and TASK-P9-001, in FEAT-076, the spec
+   and the register's P10 entry.
