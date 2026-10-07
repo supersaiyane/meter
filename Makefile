@@ -213,6 +213,10 @@ api-reference: ## Generate the API reference from docstrings into docs/api
 check-memory: ## Fail if a resume vector, a cited commit or a lesson has rotted
 	@$(DOCPY) scripts/ci/check_memory.py
 
+.PHONY: check-docs-only
+check-docs-only: ## Fail unless documents alone differ from BASE, default main. CLAUDE.md
+	@$(DOCPY) scripts/ci/check_docs_only.py --base $(or $(BASE),main)
+
 .PHONY: lesson
 lesson: ## Append a lesson skeleton. Usage: make lesson m="short name"
 	@$(DOCPY) scripts/docs/add_lesson.py "$(m)"
@@ -621,6 +625,12 @@ tf-member: ## Apply the member account StackSet. Needs management account creden
 .PHONY: verify
 verify: lint check-writing check-docs check-docstrings check-memory test test-web test-e2e security-scan ## Everything CI runs on a merge request
 	@echo "verify passed"
+
+# Every check a document can fail, for a change that is documents alone. check-docs-only runs
+# first and refuses anything else by name, so a code change can never take this path.
+.PHONY: verify-docs
+verify-docs: check-docs-only check-writing check-docs check-memory ## A change to documents alone. Refuses any other change
+	@echo "verify-docs passed"
 
 # Kept as a name rather than removed, because the pipeline and two scripts say
 # `make ci`. It has nothing left to add: `verify` runs the integration tests now.
