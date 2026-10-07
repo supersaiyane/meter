@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-75 features across 10 sub projects. 13 specified, 7 planned, 13 in build, 41 delivered.
+75 features across 10 sub projects. 13 specified, 7 planned, 13 in build, 42 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -197,7 +197,7 @@ block is caught by `make check-docs`. See
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-063](docs/features/FEAT-063-two-theme-design-system.md) | Two theme design system with glass surfaces, dark and light | In progress | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.1, [P8 plan](docs/plans/P8-implementation-plan.md) |
+| [FEAT-063](docs/features/FEAT-063-two-theme-design-system.md) | Two theme design system with glass surfaces, dark and light | Delivered | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.1, [P8 plan](docs/plans/P8-implementation-plan.md) |
 | [FEAT-064](docs/features/FEAT-064-framework-navigation-and-focus-names.md) | Navigation by the FinOps Framework and FOCUS names on every screen | Delivered | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) sections 5.2 and 5.3, [P8 plan](docs/plans/P8-implementation-plan.md) |
 | [FEAT-065](docs/features/FEAT-065-cost-explorer.md) | Cost Explorer, two group bys over FOCUS dimensions and tags | Delivered | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) sections 5.3 and 7, [P8 plan](docs/plans/P8-implementation-plan.md) |
 | [FEAT-066](docs/features/FEAT-066-spend-forecast.md) | Spend forecast, month end and three months, with a published backtest | Delivered | [P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 7, [P8 plan](docs/plans/P8-implementation-plan.md), [ADR-0015](docs/adr/ADR-0015-deterministic-forecasting-is-permitted.md) |
@@ -394,6 +394,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0118 | 2026-10-07 | Feature | TASK-P8-010, saved views and the report library, FEAT-068 | `pending` | Save view beside Export keeps a screen and its query under a name, private or shared with the tenant, and the Report Library opens, renames, duplicates, shares, deletes and exports them. A view holds no figure, so it opens in the opener's scope, asserted with two principals. The guard gains OwnedOrShared, ADR-0032, and the client gains patch and delete. Export records are not listed, OPEN-19, and erasure does not reach the table, ISS-255 |
 | CHG-0119 | 2026-10-07 | Feature | TASK-P8-011, scheduled reports rendered for each recipient, FEAT-069 | `pending` | A schedule names a saved view, one route its screen exports, a format, a cadence and its recipients. The runner, in the API by ADR-0033, renders each due schedule once per recipient through the route as that person, keeps the file in the data bucket and lists it on the Scheduled screen, where a route checks the reader's access again. A sender port with a fake waits on OPEN-11, and nothing deletes until OPEN-15. Raised ISS-256 |
 | CHG-0120 | 2026-10-07 | Feature | TASK-P8-014, the proof of P8 spec section 12 | `pending` | Every screen on the rail is axe clean in both themes with glass, with transparency reduced and as a browser without backdrop-filter reads the shipped stylesheet, nothing is blurred under either fallback, and no glass is drawn inside a table or a list. Spec section 8's journey runs as one, from the Overview to a scheduled workbook of a view grouped twice. Every approved label is held to the web source, and every panel and tile on the three dashboards to a screen on the rail. Each exit criterion has its evidence in the plan, measured. Found and fixed ISS-257 and ISS-258 |
+| CHG-0121 | 2026-10-07 | Design | TASK-P8-015, the UI design and architecture documents as P8 built them | `pending` | docs/12-UI-DESIGN.md states the accessibility sweeps, the glass rule, the chart tables, the six widths that replaced the read only summary it first proposed, and the P8 components. docs/13-UI-ARCHITECTURE.md routes the library and the scheduled screen and adds search, the account choice, saving a view and scheduling one to its cross screen patterns. FEAT-063 is Delivered, and P8 with it, 18 of 18 tasks |
 
 <!-- generated:changes end -->
 

@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P8 |
-| Status | In progress |
+| Status | Delivered |
 | Specification | [P8 spec](../specs/2026-10-05-p8-experience-and-reporting-design.md), section 5.1 |
 | Tasks | TASK-P8-001 and TASK-P8-018. TASK-P8-013 carries it to every remaining screen |
 
@@ -111,8 +111,9 @@ accent mark. `docs/12-UI-DESIGN.md` section 7 gives the ratios.
 
 ## Status of this document
 
-In progress. TASK-P8-001 built the design system on 2026-10-05, TASK-P8-018 made light the
-default, drew the rail and the top bar and added the motion the same day, and TASK-P8-013
-carries it to every remaining screen. TASK-P8-014 proved it on every screen on 2026-10-07.
+Delivered. TASK-P8-001 built the design system on 2026-10-05, TASK-P8-018 made light the
+default, drew the rail and the top bar and added the motion the same day, TASK-P8-013
+carried it to every remaining screen, and TASK-P8-014 proved it on every screen on
+2026-10-07.
 
 See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P8.
