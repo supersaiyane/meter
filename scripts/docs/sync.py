@@ -286,6 +286,11 @@ def render_subprojects(reg: Registry) -> str:
     return "\n".join(lines)
 
 
+def plan_order(path: Path) -> int:
+    """A plan's sub project number, so P10 follows P9 rather than P1 as text would sort it."""
+    return int(path.name.split("-", 1)[0].removeprefix("P"))
+
+
 def render_task_status(_reg: Registry) -> str:
     """Task state, read from the plan files rather than copied into STATUS.md.
 
@@ -312,7 +317,7 @@ def render_task_status(_reg: Registry) -> str:
     # did not mention it: thirteen tasks absent rather than shown as not
     # started, which understates the work by a whole sub project and looks
     # exactly like a sub project nobody planned.
-    for path in sorted(ROOT.glob("docs/plans/P*-implementation-plan.md")):
+    for path in sorted(ROOT.glob("docs/plans/P*-implementation-plan.md"), key=plan_order):
         sub = path.name.split("-", 1)[0]
         text = path.read_text(encoding="utf-8")
         blocks = re.split(rf"\n### (TASK-{sub}-\d{{3}}): ", text)

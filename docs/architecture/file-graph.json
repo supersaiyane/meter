@@ -792,6 +792,7 @@
     "tests/scripts/test_pipeline.py",
     "tests/scripts/test_restore_drill.py",
     "tests/scripts/test_seed_demo.py",
+    "tests/scripts/test_two_digit_sub_projects.py",
     "tests/test_checkpoint_rotation.py",
     "tests/test_label_table.py"
   ],

@@ -90,8 +90,9 @@ subprojects:
 - id: P10
   name: 'Proven numbers: FOCUS 1.4 and invoice reconciliation'
   status: Specified, planned and approved by the owner 2026-10-07 as priority 2 of next-in-scope.txt,
-    not started, TASK-P10-001 next. Runs before P9 by the owner's priority. The cost row gains FOCUS 1.4's
-    mandatory and invoice columns, and each AWS invoice is compared with Meter's billed cost
+    TASK-P10-001 done on 2026-10-07, TASK-P10-002 next. Runs before P9 by the owner's priority. The cost
+    row gains FOCUS 1.4's mandatory and invoice columns, and each AWS invoice is compared with Meter's
+    billed cost
   spec: specs/2026-10-07-p10-proven-numbers-design.md
   plan: plans/P10-implementation-plan.md
   depends_on: P1
@@ -1758,6 +1759,15 @@ changes:
     through ListInvoiceSummaries, and compares each with Meter''s billed cost before tax and tax apart,
     every comparison a typed state. ADR-0034 moves the canonical schema to FOCUS 1.4; OPEN-21 asks whether
     to read AWS''s FOCUS export. Six tasks, FEAT-076'
+
+- id: CHG-0127
+  date: '2026-10-07'
+  type: Chore
+  what: TASK-P10-001, two digit sub projects in the memory gate and the generated task table
+  commit: pending
+  detail: check_memory.py took one digit after P, so a citation of TASK-P10-001 was never checked, and
+    sync.py sorted plan files as text, which put P10 between P1 and P2. The pattern takes one or more
+    digits and plans sort by number, each held by a test that failed on the old behaviour
 issues:
 - id: ISS-189
   severity: LOW

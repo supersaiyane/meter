@@ -71,7 +71,9 @@ BACKTICKED = re.compile(r"`([^`]+)`")
 #: `git cat-file` and report each one as a commit that does not resolve.
 SHA = re.compile(r"^[0-9a-f]{7,40}$")
 IDENTIFIER = re.compile(
-    r"\b(?:TASK-P\d-\d{3}|ISS-\d{3}|ADR-\d{4}|CHG-\d{4}|FEAT-\d{3}|OPEN-\d{2})\b"
+    # One or more digits after P: TASK-P10-001 was skipped, not checked, by the single digit
+    # this pattern carried until TASK-P10-001 widened it.
+    r"\b(?:TASK-P\d+-\d{3}|ISS-\d{3}|ADR-\d{4}|CHG-\d{4}|FEAT-\d{3}|OPEN-\d{2})\b"
 )
 
 

@@ -24,7 +24,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 76 total, 12 specified, 13 in build, 44 delivered |
 | Decisions | 34 architecture decision records |
-| Changes | 125 recorded |
+| Changes | 126 recorded |
 | Issues | 154 fixed, 101 open, 0 parked |
 | Open questions | 21 awaiting a decision |
 
@@ -208,7 +208,6 @@ ISS-003.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P0 | 39 | 0 | 0 | 0 | 0 | 39 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P1 | 22 | 0 | 0 | 0 | 0 | 22 | [plan](../docs/plans/P1-implementation-plan.md) |
-| P10 | 0 | 0 | 0 | 0 | 6 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 | P2 | 21 | 0 | 2 | 2 | 1 | 26 | [plan](../docs/plans/P2-implementation-plan.md) |
 | P3 | 21 | 0 | 0 | 0 | 0 | 21 | [plan](../docs/plans/P3-implementation-plan.md) |
 | P4 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P4-implementation-plan.md) |
@@ -217,6 +216,7 @@ ISS-003.
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 | P8 | 18 | 0 | 0 | 0 | 0 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 0 | 0 | 0 | 0 | 13 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
+| P10 | 1 | 0 | 0 | 0 | 5 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -434,6 +434,12 @@ ISS-003.
 | `TASK-P8-016` | Done | the account picker on every screen |
 | `TASK-P8-017` | Done 2026-10-07 | the geography map redrawn |
 | `TASK-P8-018` | Done 2026-10-05 | the look as drawn |
+
+**P10, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P10-001` | Done 2026-10-07 | two digit sub projects in the tooling |
 
 <!-- generated:task-status end -->
 

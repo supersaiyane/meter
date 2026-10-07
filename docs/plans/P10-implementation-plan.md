@@ -42,7 +42,7 @@ Same contract as P0 through P9. One task, one commit, `make verify` green before
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-07 |
 | Implements | Spec section 12, the precondition for citing P10's tasks |
 | Delivers | Tooling |
 | Depends on | This plan approved, 2026-10-07 |
@@ -50,9 +50,9 @@ Same contract as P0 through P9. One task, one commit, `make verify` green before
 
 **Acceptance criteria.**
 
-- [ ] `scripts/ci/check_memory.py` recognises `TASK-P10-001`, which its pattern of one digit
+- [x] `scripts/ci/check_memory.py` recognises `TASK-P10-001`, which its pattern of one digit
       skips today, with a test that a rotted P10 citation fails
-- [ ] `scripts/docs/sync.py` orders sub projects by number, so P10 follows P9 rather than P1,
+- [x] `scripts/docs/sync.py` orders sub projects by number, so P10 follows P9 rather than P1,
       with a test
 
 ---
