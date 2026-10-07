@@ -63,6 +63,20 @@ describe('WasteScreen', () => {
     ).toHaveTextContent('nobody yet');
   });
 
+  it('names whom an unowned resource is tagged to, and suggests nobody it was not told', async () => {
+    // ISS-021's first slice: the resource's team tag says whom to ask, and is never an owner.
+    renderWaste();
+    expect(
+      await screen.findByTestId('suggested-owner-2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f'),
+    ).toHaveTextContent('its team tag says platform');
+    expect(
+      screen.getByTestId('unowned-7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c0d'),
+    ).toHaveTextContent('nobody yet');
+    expect(
+      screen.queryByTestId('suggested-owner-7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c0d'),
+    ).toBeNull();
+  });
+
   it('counts the unowned findings above the table', async () => {
     renderWaste();
     expect(await screen.findByTestId('waste-unowned-count')).toHaveTextContent(

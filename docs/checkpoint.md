@@ -44,13 +44,15 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-07 | make verify-docs, priority 1 item 5, CHG-0123 | Done | A change to documents alone runs the writing rules, the generated documents and the memory gate; `scripts/ci/check_docs_only.py` refuses any other file by name, from git, links aside. Use `BASE=next-build` while next-build is the integration branch | `scripts/ci/check_docs_only.py:66`, `Makefile:632`, `CLAUDE.md:98` |
 | 2026-10-07 | FEAT-023 and FEAT-024 reconciled, and the features taken from other tools, priority 1 item 2, CHG-0124 | Done | Both features Delivered as P1 built them; FEAT-023 renamed for what it does. `next-in-scope.txt` section 8 maps every feature taken from another tool and recommends a home for each one not yet proposed; the FOCUS 1.4 token claim is corrected to 1.5 | `next-in-scope.txt:251`, `docs/features/FEAT-023-cost-anomaly-detection.md:122`, `docs/registry.yaml:1711` |
 | 2026-10-07 | P10 specified and planned, priority 1 item 3 and priority 2, CHG-0125 | Done | The FOCUS 1.4 gap measured: 6 of 21 mandatory columns and both invoice columns missing, two removed columns still stored. P10 adds them, reads AWS invoices and compares each with Meter's billed cost; ADR-0034, FEAT-076, OPEN-21. Next: priority 1 item 4, owners from the team tag, then TASK-P10-001 | `docs/specs/2026-10-07-p10-proven-numbers-design.md:45`, `docs/plans/P10-implementation-plan.md:41`, `docs/adr/ADR-0034-canonical-cost-schema-follows-focus-1-4.md:18` |
+| 2026-10-07 | Suggested owners from the team tag, priority 1 item 4, CHG-0126 | Done | A recommendation suggests the team its resource's tag names, from the inventory node in the same account and the reader's scope, never stored; the waste screen shows it beside nobody yet. TEAM_TAG is the one key for showback, digests and the suggestion. Priority 1 is complete; next is TASK-P10-001 | `finops_api/db/repositories/waste.py:75`, `finops-web/src/screens/WasteScreen.tsx:202`, `tests/api/test_recommendation_owner.py:52` |
+| 2026-10-07 | P10's design corrected before any code, CHG-0128 | Done | The spec, plan, ADR-0034 and FEAT-076 said Meter normalised CUR 2.0; `finops_providers/aws/cur.py` already reads AWS's FOCUS export. Five new columns are read where the export has them, both provider columns derive from ProviderName as FOCUS defines, and OPEN-21 is withdrawn | `docs/specs/2026-10-07-p10-proven-numbers-design.md:81`, `finops_providers/aws/cur.py:65` |
 | 2026-10-07 | TASK-P10-001: two digit sub projects in the tooling, CHG-0127 | Done | The memory gate now checks TASK-P10 citations it used to skip, and plans sort by number so P10 follows P9. Next TASK-P10-002, the FOCUS 1.4 columns | `scripts/ci/check_memory.py:76`, `scripts/docs/sync.py:289`, `tests/scripts/test_two_digit_sub_projects.py:36` |
 
 ## Next action
 
-**P8 is delivered and merged into main. Next, approved by the owner on 2026-10-07: priorities 1
-to 3 of `next-in-scope.txt`, in sequence, on `next-build`.** First the one day wins, then the FOCUS
-1.4 upgrade with invoice reconciliation built on fakes, then P9 from TASK-P9-001. The repository
+**Priority 1 of `next-in-scope.txt` is complete on `next-build`, and P10 is specified and planned.**
+Next, by the owner's approval of 2026-10-07: P10 from TASK-P10-001, then P9 from TASK-P9-001, each
+task on its own branch merged into `next-build`, which merges into main at the end. The repository
 has no git remote; once one exists, a push to main runs `deploy:dev`, a terraform apply, and
 ISS-250 is still open.
 

@@ -75,8 +75,9 @@ test('the demo walk reaches every screen the runbook points at', async ({ page }
   // nobody owns says so in words rather than leaving a cell blank.
   await page.goto('/optimize');
   await expect(page.getByText('412.64')).toBeVisible();
+  // Unowned, and its resource's team tag says whom to ask, ISS-021.
   await expect(page.getByTestId('unowned-2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f')).toHaveText(
-    'nobody yet',
+    'nobody yet; its team tag says platform',
   );
   await expect(
     page.getByTestId('confidence-2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f'),

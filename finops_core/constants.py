@@ -85,3 +85,10 @@ SAVED_VIEW_NAME_MAX_LENGTH = 120
 # list and not an organization's. Shared by the API's body and the model's mirror of the check,
 # which migration 0029 carries literally because a check constraint cannot read this.
 REPORT_RECIPIENTS_MAX = 50
+
+# The tag that says whose a resource is: the key showback groups by unless asked for another,
+# the key a team's weekly digest is grouped by, and where a recommendation's suggested owner
+# comes from, ISS-021. One value for all three, because the team a resource's spend belongs
+# to is the team to ask about changing it. A tenant that names its owners under another key
+# needs a setting, ISS-021's next step, never a second literal.
+TEAM_TAG = "team"

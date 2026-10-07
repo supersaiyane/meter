@@ -708,12 +708,14 @@ changes:
     lessons, project map, checkpoint
   commit: f6d7603 to 9adb1aa
   detail: '[docs/checkpoint.md](docs/checkpoint.md)'
+
 - id: CHG-0002
   date: '2026-08-23'
   type: Process
   what: Checkpoint log and project map moved to the paths the session enforcement script requires
   commit: a3ea1cf
   detail: '[docs/checkpoint.md](docs/checkpoint.md)'
+
 - id: CHG-0003
   date: '2026-08-23'
   type: Infrastructure
@@ -721,12 +723,14 @@ changes:
     deployment document'
   commit: 9f9e5ff
   detail: '[docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md)'
+
 - id: CHG-0004
   date: '2026-08-23'
   type: Process
   what: This index, the change control process, five document templates, and the index consistency checker
   commit: 3c531e0
   detail: '[docs/03-CHANGE-CONTROL.md](docs/03-CHANGE-CONTROL.md)'
+
 - id: CHG-0005
   date: '2026-08-23'
   type: Design
@@ -734,12 +738,14 @@ changes:
     fields
   commit: 7e5525a
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0006
   date: '2026-08-23'
   type: Design
   what: MCP server added as a facade over the HTTP API, not a replacement. FEAT-042 assistant bot added
   commit: 7e4cc01
   detail: '[ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md)'
+
 - id: CHG-0007
   date: '2026-08-23'
   type: Infrastructure
@@ -747,6 +753,7 @@ changes:
     to the ALB
   commit: 2e22413
   detail: '[ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md)'
+
 - id: CHG-0008
   date: '2026-08-23'
   type: Process
@@ -754,6 +761,7 @@ changes:
     auto fix, nightly posture scan
   commit: 0c87ae5
   detail: '[docs/05-SECURITY.md](docs/05-SECURITY.md)'
+
 - id: CHG-0009
   date: '2026-08-23'
   type: Process
@@ -761,6 +769,7 @@ changes:
     generation added as pipeline stages
   commit: 7e4cc01
   detail: '[ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md)'
+
 - id: CHG-0010
   date: '2026-08-23'
   type: Design
@@ -768,6 +777,7 @@ changes:
     switch event driven
   commit: 7e4cc01
   detail: '[docs/06-DATA-FRESHNESS.md](docs/06-DATA-FRESHNESS.md)'
+
 - id: CHG-0011
   date: '2026-08-23'
   type: Process
@@ -775,18 +785,21 @@ changes:
     scripts consolidated under scripts/
   commit: 02eca11
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0012
   date: '2026-08-23'
   type: Infrastructure
   what: Platform pinned to linux/amd64 at five points, because a push never converts an arm64 image
   commit: 3591a1f
   detail: '[docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md)'
+
 - id: CHG-0013
   date: '2026-08-23'
   type: Design
   what: Database schema documented in full, with Alembic migration rules and constraint level invariants
   commit: 0f0f1e9
   detail: '[docs/07-DATA-MODEL.md](docs/07-DATA-MODEL.md)'
+
 - id: CHG-0014
   date: '2026-08-23'
   type: Process
@@ -794,12 +807,14 @@ changes:
     from a prior project
   commit: 3d93f76
   detail: '[ADR-0013](docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md)'
+
 - id: CHG-0015
   date: '2026-08-23'
   type: Process
   what: Derived documentation generated from docs/registry.yaml instead of hand maintained in four places
   commit: 5355ac3
   detail: '[ADR-0014](docs/adr/ADR-0014-generated-documentation.md)'
+
 - id: CHG-0016
   date: '2026-08-23'
   type: Process
@@ -807,6 +822,7 @@ changes:
     security gates, the remediation path, and a gotchas table'
   commit: aaf6a6a
   detail: '[README.md](README.md)'
+
 - id: CHG-0017
   date: '2026-08-23'
   type: Process
@@ -814,6 +830,7 @@ changes:
     profile for local scanning, and provenance verification before every deploy'
   commit: 061c351
   detail: '[docs/05-SECURITY.md](docs/05-SECURITY.md)'
+
 - id: CHG-0018
   date: '2026-08-23'
   type: Process
@@ -821,6 +838,7 @@ changes:
     commands
   commit: 403c57b
   detail: '[README.md](README.md)'
+
 - id: CHG-0019
   date: '2026-08-23'
   type: Process
@@ -828,6 +846,7 @@ changes:
     its limits stated
   commit: f3b5aef
   detail: '[README.md](README.md)'
+
 - id: CHG-0020
   date: '2026-08-23'
   type: Process
@@ -835,6 +854,7 @@ changes:
     promotion rule. 18 findings promoted to the issue register
   commit: eca070d
   detail: '[AUDIT-001](audits/AUDIT-001-2026-08-23-full-project.md)'
+
 - id: CHG-0021
   date: '2026-08-23'
   type: Correction
@@ -843,6 +863,7 @@ changes:
     dead graph output, the context index generator and the duplicated roadmap table'
   commit: ef23f8a
   detail: '[REMEDIATION-LOG](audits/REMEDIATION-LOG.md)'
+
 - id: CHG-0022
   date: '2026-08-23'
   type: Design
@@ -850,6 +871,7 @@ changes:
     root email column removed from the schema as a result
   commit: 3a16bd0
   detail: '[docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md)'
+
 - id: CHG-0023
   date: '2026-08-23'
   type: Design
@@ -857,6 +879,7 @@ changes:
     exit criteria and the performance budget. All 18 findings now closed'
   commit: 6cceaa8
   detail: '[REMEDIATION-LOG](audits/REMEDIATION-LOG.md)'
+
 - id: CHG-0024
   date: '2026-08-23'
   type: Process
@@ -864,6 +887,7 @@ changes:
     stats reports
   commit: a92ae60
   detail: '[README.md](README.md), "Starting a coding session"'
+
 - id: CHG-0025
   date: '2026-08-23'
   type: Scope
@@ -871,6 +895,7 @@ changes:
     four capabilities explicitly rejected
   commit: c7f45f0
   detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md)'
+
 - id: CHG-0026
   date: '2026-08-23'
   type: Design
@@ -879,6 +904,7 @@ changes:
     and London. Management account taken off the critical path via LocalStack'
   commit: 5a78798
   detail: '[ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md)'
+
 - id: CHG-0027
   date: '2026-08-23'
   type: Design
@@ -886,6 +912,7 @@ changes:
     levels and three write levels behind per tenant flags, both defaulting safe
   commit: ee3ea68
   detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md)'
+
 - id: CHG-0028
   date: '2026-08-23'
   type: Design
@@ -893,6 +920,7 @@ changes:
     before anything touches it
   commit: 80a0ac3
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+
 - id: CHG-0029
   date: '2026-08-23'
   type: Correction
@@ -901,6 +929,7 @@ changes:
     image can meet the original
   commit: 9754a59
   detail: '[ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md)'
+
 - id: CHG-0030
   date: '2026-08-23'
   type: Design
@@ -909,6 +938,7 @@ changes:
     as ADR-0019
   commit: d904e7d
   detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md)'
+
 - id: CHG-0031
   date: '2026-08-23'
   type: Process
@@ -916,6 +946,7 @@ changes:
     name their own source
   commit: d20d35c
   detail: '[tasks/STATUS.md](tasks/STATUS.md)'
+
 - id: CHG-0032
   date: '2026-08-23'
   type: Correction
@@ -923,6 +954,7 @@ changes:
     package names that also appeared in CLAUDE.md
   commit: a9ef75c
   detail: '[project_map.md](project_map.md)'
+
 - id: CHG-0033
   date: '2026-08-23'
   type: Correction
@@ -930,6 +962,7 @@ changes:
     and the dependency admission gate missed by TASK-P0-029 was run
   commit: a699d3c
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0034
   date: '2026-08-24'
   type: Process
@@ -938,6 +971,7 @@ changes:
     command
   commit: a7e44b7
   detail: '[docs/checkpoint.md](docs/checkpoint.md)'
+
 - id: CHG-0035
   date: '2026-08-24'
   type: Process
@@ -945,6 +979,7 @@ changes:
     why it exists and a grade of A, B or C, so the scaffolding can be lifted into a new project
   commit: 798dda0
   detail: '[scripts/README.md](scripts/README.md)'
+
 - id: CHG-0036
   date: '2026-08-24'
   type: Feature
@@ -952,6 +987,7 @@ changes:
     gate raised back to 80 now that there is a module to cover
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0037
   date: '2026-08-24'
   type: Feature
@@ -959,6 +995,7 @@ changes:
     place, no defaults in code except a flag, and a startup that refuses a bad configuration
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0038
   date: '2026-08-24'
   type: Feature
@@ -966,6 +1003,7 @@ changes:
     and a Fact base class that makes the two timestamp rule structural rather than a habit
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0039
   date: '2026-08-24'
   type: Feature
@@ -973,6 +1011,7 @@ changes:
     and a test fails the build when one does not
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0040
   date: '2026-08-24'
   type: Feature
@@ -980,6 +1019,7 @@ changes:
     plannable for any scope, and a fixture organization that never moves between runs
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0041
   date: '2026-08-24'
   type: Feature
@@ -987,6 +1027,7 @@ changes:
     error type parity as the assertion it exists for. Wave B complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0042
   date: '2026-08-24'
   type: Feature
@@ -994,6 +1035,7 @@ changes:
     invariants are constraints rather than conventions, proved against a real PostgreSQL
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0043
   date: '2026-08-24'
   type: Feature
@@ -1001,6 +1043,7 @@ changes:
     enforcement points, plus an audit row on every read. ISS-109 closed
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0044
   date: '2026-08-24'
   type: Feature
@@ -1009,6 +1052,7 @@ changes:
     Wave C complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0045
   date: '2026-08-24'
   type: Feature
@@ -1016,6 +1060,7 @@ changes:
     refreshed before expiry, and every provider code mapped to one of the six causes
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0046
   date: '2026-08-24'
   type: Feature
@@ -1023,6 +1068,7 @@ changes:
     dropped, and the contract suite live across both providers with no skips
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0047
   date: '2026-08-24'
   type: Feature
@@ -1030,6 +1076,7 @@ changes:
     a deployment probe rather than by guessing at an error message. Wave E complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0048
   date: '2026-08-24'
   type: Feature
@@ -1037,6 +1084,7 @@ changes:
     move forward, and run uniqueness scoped to the tenant after a collision was found
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0049
   date: '2026-08-24'
   type: Feature
@@ -1044,6 +1092,7 @@ changes:
     caught, and the two spec section 11 tests passing
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0050
   date: '2026-08-24'
   type: Feature
@@ -1051,6 +1100,7 @@ changes:
     rows that make the hourly refresh data rather than a claim
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0051
   date: '2026-08-27'
   type: Feature
@@ -1058,6 +1108,7 @@ changes:
     cost named rather than dropped, and the metering charge owned. Wave F complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0052
   date: '2026-08-27'
   type: Feature
@@ -1065,6 +1116,7 @@ changes:
     with the adversarial test that proves a forgetful route cannot leak
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0053
   date: '2026-08-27'
   type: Feature
@@ -1072,6 +1124,7 @@ changes:
     typed errors with remediation, freshness per collector cadence. Wave G complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0054
   date: '2026-08-27'
   type: Chore
@@ -1079,6 +1132,7 @@ changes:
     and tests, with no component library and no state library yet
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0055
   date: '2026-08-27'
   type: Feature
@@ -1086,6 +1140,7 @@ changes:
     requires its provenance and its freshness, and no formatter is exported at all
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0056
   date: '2026-08-27'
   type: Feature
@@ -1093,6 +1148,7 @@ changes:
     the worst panel, and the API client refuses a response with no envelope
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0057
   date: '2026-08-27'
   type: Feature
@@ -1100,6 +1156,7 @@ changes:
     click, the tree is the default, and unreachable branches are drawn and marked
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0058
   date: '2026-08-27'
   type: Chore
@@ -1107,6 +1164,7 @@ changes:
     rejection of the banned dash by the local hook. Wave A complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0059
   date: '2026-08-27'
   type: Feature
@@ -1114,6 +1172,7 @@ changes:
     budgets measured. The restore drill is not performed and is recorded as open
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0060
   date: '2026-08-27'
   type: Feature
@@ -1123,6 +1182,7 @@ changes:
     then drops whole partitions
   commit: 'b5750f3'
   detail: '[Data classification](docs/09-DATA-CLASSIFICATION.md)'
+
 - id: CHG-0061
   date: '2026-08-27'
   type: Feature
@@ -1131,6 +1191,7 @@ changes:
     never have started, because its command named a symbol that has never existed
   commit: '2d6982c'
   detail: '[ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md)'
+
 - id: CHG-0062
   date: '2026-08-28'
   type: Chore
@@ -1139,6 +1200,7 @@ changes:
     three of its eight checks, and that a duplicate job name silently deletes a job
   commit: '46147cc'
   detail: '[ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md)'
+
 - id: CHG-0063
   date: '2026-08-29'
   type: Feature
@@ -1147,6 +1209,7 @@ changes:
     scheduler. No NAT Gateway, no ReadOnlyAccess, and no fifth image for the MCP server
   commit: 'eb8a507'
   detail: '[Deployment](docs/04-DEPLOYMENT.md)'
+
 - id: CHG-0064
   date: '2026-08-29'
   type: Feature
@@ -1155,6 +1218,7 @@ changes:
     says four
   commit: 'eb8a507'
   detail: '[Observability](docs/10-OBSERVABILITY.md)'
+
 - id: CHG-0065
   date: '2026-08-31'
   type: Fix
@@ -1163,6 +1227,7 @@ changes:
     deliberate ones accepted with a reachability argument
   commit: '74e9d28'
   detail: '[ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md)'
+
 - id: CHG-0066
   date: '2026-09-02'
   type: Chore
@@ -1171,6 +1236,7 @@ changes:
     the gates. A test now asks the filesystem rather than trusting the list
   commit: '045b5b8'
   detail: '[Change control](docs/03-CHANGE-CONTROL.md)'
+
 - id: CHG-0067
   date: '2026-09-02'
   type: Decision
@@ -1179,6 +1245,7 @@ changes:
     and ISS-024 closed as by design rather than fixed
   commit: 'a2304cf'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+
 - id: CHG-0068
   date: '2026-09-02'
   type: Feature
@@ -1187,6 +1254,7 @@ changes:
     own switches rather than through mocks
   commit: 'a2304cf'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+
 - id: CHG-0069
   date: '2026-09-03'
   type: Refactor
@@ -1195,6 +1263,7 @@ changes:
     diverges, the em dash the writing rules forbid, and it is enumerated rather than absorbed
   commit: '70da3ae'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+
 - id: CHG-0070
   date: '2026-09-04'
   type: Refactor
@@ -1204,6 +1273,7 @@ changes:
     empty list on failure
   commit: 'f3f0758'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+
 - id: CHG-0071
   date: '2026-09-05'
   type: Feature
@@ -1213,6 +1283,7 @@ changes:
     ports of one kind
   commit: 'd86bfe1'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+
 - id: CHG-0072
   date: '2026-09-06'
   type: Process
@@ -1223,6 +1294,7 @@ changes:
     is visible while it is being built rather than after
   commit: '9687fd7'
   detail: '[docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md)'
+
 - id: CHG-0073
   date: '2026-09-06'
   type: Process
@@ -1232,6 +1304,7 @@ changes:
     screen as such, so P2 is reviewable while it is being built rather than at task 21 of 22
   commit: '9687fd7'
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md), [P2 plan](docs/plans/P2-implementation-plan.md)'
+
 - id: CHG-0074
   date: '2026-09-07'
   type: Feature
@@ -1241,6 +1314,7 @@ changes:
     react-router admitted at rung two of ADR-0013. AppShell lost its section and onSelect props
   commit: '295f032'
   detail: '[ADR-0020](docs/adr/ADR-0020-seven-fixed-navigation-groups.md)'
+
 - id: CHG-0075
   date: '2026-09-09'
   type: Feature
@@ -1251,6 +1325,7 @@ changes:
     the build when one becomes a live route, discovering route modules rather than listing them
   commit: 'bf90690'
   detail: '[docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md) section 11'
+
 - id: CHG-0076
   date: '2026-09-11'
   type: Feature
@@ -1261,6 +1336,7 @@ changes:
     P0 reaches 38 of 38 tasks, which is not the same as P0 being signed off
   commit: '623b2a3'
   detail: '[docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md) section 6'
+
 - id: CHG-0077
   date: '2026-09-13'
   type: Feature
@@ -1271,6 +1347,7 @@ changes:
     does not overclaim. Scanned volume reported in MiB after GiB rounded a real scan to zero
   commit: '29676ef'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-022'
+
 - id: CHG-0078
   date: '2026-09-15'
   type: Feature
@@ -1282,6 +1359,7 @@ changes:
     declared template and the fetched path differ
   commit: '1f34786'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-023'
+
 - id: CHG-0079
   date: '2026-09-17'
   type: Feature
@@ -1292,6 +1370,7 @@ changes:
     008 and a fixture claiming them would show an estate that cannot exist
   commit: '92e2eea'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-024'
+
 - id: CHG-0080
   date: '2026-09-19'
   type: Feature
@@ -1303,6 +1382,7 @@ changes:
     floor and the undo from TASK-P2-017 and 019, which this task never depended on
   commit: 'a9ac9d7'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-025'
+
 - id: CHG-0081
   date: '2026-09-21'
   type: Feature
@@ -1313,6 +1393,7 @@ changes:
     a colour. ROW_HEIGHT moved from 28 to 32 to agree with the CSS. P0 reaches 39 of 39 tasks
   commit: 'd5c8cdc'
   detail: '[ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md)'
+
 - id: CHG-0082
   date: '2026-09-18'
   type: Design
@@ -1321,6 +1402,7 @@ changes:
     the export. The schema it writes to was already migrated by P0, so it adds no migration
   commit: '0000929'
   detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md)'
+
 - id: CHG-0083
   date: '2026-09-18'
   type: Design
@@ -1329,6 +1411,7 @@ changes:
     not mention P1, so it is derived from the plan files present now and a test holds it there
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md)'
+
 - id: CHG-0084
   date: '2026-09-18'
   type: Correction
@@ -1337,6 +1420,7 @@ changes:
     period end is exclusive, which the fixtures assumed and nothing had written down
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-001'
+
 - id: CHG-0085
   date: '2026-09-18'
   type: Design
@@ -1347,6 +1431,7 @@ changes:
     fake and the collector cannot disagree about a line item's identity
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-002'
+
 - id: CHG-0086
   date: '2026-09-18'
   type: Design
@@ -1357,6 +1442,7 @@ changes:
     collector could never produce
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-003'
+
 - id: CHG-0087
   date: '2026-09-18'
   type: Design
@@ -1367,6 +1453,7 @@ changes:
     around
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-004'
+
 - id: CHG-0088
   date: '2026-09-18'
   type: Design
@@ -1377,6 +1464,7 @@ changes:
     can actually see the ordering was added
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-005'
+
 - id: CHG-0089
   date: '2026-09-19'
   type: Design
@@ -1385,6 +1473,7 @@ changes:
     and a seeded estate. The cost surface is live end to end against a fake export
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) waves B to D'
+
 - id: CHG-0090
   date: '2026-09-19'
   type: Design
@@ -1395,6 +1484,7 @@ changes:
     than allowlisted. P1's cost surface is 13 of 13
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-013'
+
 - id: CHG-0091
   date: 2026-09-20
   type: Feature
@@ -1404,6 +1494,7 @@ changes:
     baseline makes every departure infinitely many deviations
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-014, TASK-P1-015'
+
 - id: CHG-0092
   date: 2026-09-20
   type: Design
@@ -1414,6 +1505,7 @@ changes:
     have served a narrowed viewer the payer whole commitment position. Migration 0009
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-016, TASK-P1-017'
+
 - id: CHG-0093
   date: 2026-09-20
   type: Feature
@@ -1423,6 +1515,7 @@ changes:
     coverage appearing as columns on every row
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-018'
+
 - id: CHG-0094
   date: 2026-09-20
   type: Correction
@@ -1432,6 +1525,7 @@ changes:
     obliging zero dollars at any clock but its own. Adds the demo runbook and its journey
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-019 to TASK-P1-021'
+
 - id: CHG-0095
   date: 2026-09-20
   type: Design
@@ -1442,6 +1536,7 @@ changes:
     than returning a low one
   commit: pending
   detail: '[P3 plan](docs/plans/P3-implementation-plan.md)'
+
 - id: CHG-0096
   date: 2026-09-20
   type: Design
@@ -1452,6 +1547,7 @@ changes:
     estimated monthly cost written into the task before it is applied
   commit: pending
   detail: '[P4 plan](docs/plans/P4-implementation-plan.md)'
+
 - id: CHG-0097
   date: 2026-09-20
   type: Design
@@ -1463,6 +1559,7 @@ changes:
     source reports limit known and usage unknown, never zero, enforced by a database constraint
   commit: pending
   detail: '[P5 plan](docs/plans/P5-implementation-plan.md)'
+
 - id: CHG-0098
   date: 2026-09-20
   type: Design
@@ -1475,6 +1572,7 @@ changes:
     check could not be made
   commit: pending
   detail: '[P6 plan](docs/plans/P6-implementation-plan.md)'
+
 - id: CHG-0099
   date: 2026-09-20
   type: Correction
@@ -1483,6 +1581,7 @@ changes:
     promising what the product will not do is one that will be quoted back
   commit: pending
   detail: '[P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 6'
+
 - id: CHG-0100
   date: 2026-09-28
   type: Design
@@ -1494,6 +1593,7 @@ changes:
     model cites figures rather than emitting them, so there is nowhere in a sentence for a
     hallucinated number to live, and that its tools are the MCP tools which are the HTTP API,
     so scope is not reimplemented'
+
 - id: CHG-0101
   date: 2026-09-28
   type: Decision
@@ -1503,6 +1603,7 @@ changes:
     consequences bought with a narrower model choice. No seventh trust boundary, token spend on
     the bill self metering already reads, and FEAT-046 as defence in depth rather than a
     prerequisite of every other P7 feature'
+
 - id: CHG-0102
   date: 2026-09-28
   type: Correction
@@ -1513,6 +1614,7 @@ changes:
     named three routes under a containers prefix, which breaks ADR-0020 of 2026-09-06: that
     decision fixes seven top level groups and containers is not one of them. Caught before any
     route existed, so it is a correction rather than a migration of every URL and bookmark'
+
 - id: CHG-0103
   date: 2026-09-28
   type: Correction
@@ -1522,6 +1624,7 @@ changes:
   detail: 'The External dependencies table in tasks/STATUS.md says its rows are tracked in
     tasks/ISSUES.md and these three were not, so a reader chasing ISS-003 from the P6 plan,
     which names it as that sub project blocker, found nothing'
+
 - id: CHG-0104
   date: 2026-09-28
   type: Correction
@@ -1532,6 +1635,7 @@ changes:
     FEAT-058 and ISS-208. The two features are one digit apart in a project that also has an
     ISS-029 about the same subject, which is how it survived. Found while planning P7, whose
     own features include the number being misused'
+
 - id: CHG-0105
   date: 2026-09-28
   type: Process
@@ -1545,6 +1649,7 @@ changes:
     correctly and means something else, which was the FEAT-041 half of CHG-0104, and the
     docstring says so. Its own test file is the single exemption, because it has to cite
     unresolvable ids to watch the check fail'
+
 - id: CHG-0106
   date: 2026-10-04
   type: Feature
@@ -1556,6 +1661,7 @@ changes:
     into P3''s table, Fargate snapped up to the orderable matrix with the saving taken from the
     snapped size, and forecast as a third provenance with guards that nothing produces one. FEAT-035
     and FEAT-036 Delivered, FEAT-037 In build because the adapter reads no ECS, ISS-224'
+
 - id: CHG-0107
   date: 2026-10-04
   type: Correction
@@ -1567,6 +1673,7 @@ changes:
     anchored to the estate clock, the misattribution is corrected in two code comments and the
     lesson, and the first of month emptiness it was confused with is ISS-221, separate and
     still open for the make seed half'
+
 - id: CHG-0108
   date: 2026-10-04
   type: Feature
@@ -1580,6 +1687,7 @@ changes:
     redacted or blocked before anything else. Digests are composed weekly and kept unsent until
     OPEN-11. FEAT-038, FEAT-041, FEAT-042 and FEAT-046 Delivered, FEAT-039 and FEAT-040 In
     build, ISS-227 and ISS-228. The Bedrock adapter has never run against AWS, ISS-002'
+
 - id: CHG-0109
   date: 2026-10-04
   type: Design
@@ -1590,6 +1698,7 @@ changes:
     redaction_event to the person who asked. It is checked ahead of the global case, so a payer
     wide entitlement does not widen it. The month''s token sum is the one read across people,
     and it returns a number'
+
 - id: CHG-0110
   date: 2026-10-04
   type: Refactor
@@ -1599,6 +1708,7 @@ changes:
     MCP server publishes, and the API may not import the facade in front of it. The MCP server
     now imports the table from the API, its drift gate covers every router from P0 to P5, and
     ISS-148 names the new path'
+
 - id: CHG-0111
   date: 2026-10-04
   type: Design
@@ -1610,6 +1720,7 @@ changes:
     the documentation commit after the migrations rather than with them, as the routing rule
     asks. None of the three has a retention job yet and erasure does not reach them, ISS-226
     and OPEN-14'
+
 - id: CHG-0112
   date: 2026-10-05
   type: Fix
@@ -1623,6 +1734,7 @@ changes:
     called. Every cited figure carries the unit its tool declares, held by an exhaustive test
     over the tool table. ADR-0028 is amended, because its consequence that the model would be
     tagged with no work was wrong. Unverified against an account, ISS-002'
+
 - id: CHG-0113
   date: 2026-10-06
   type: Process
@@ -1633,6 +1745,7 @@ changes:
     --require-hashes and then pip check. The move to the new releases came with it: 92
     annotations to SQLAlchemy 2.1, two counts read through Any, one DISTINCT ON through
     distinct_on. Measured on the lock: mypy clean over 451 files and 3,007 backend tests passed'
+
 - id: CHG-0114
   date: 2026-10-07
   type: Fix
@@ -1644,6 +1757,7 @@ changes:
     under an amd64 label. Both builders now build for TARGETPLATFORM, and make verify-platform
     checks every ELF file inside each image against the platform with
     scripts/ci/check_image_arch.py, as well as the label'
+
 - id: CHG-0115
   date: 2026-10-07
   type: Scope
@@ -1654,6 +1768,7 @@ changes:
     own database and kept current by polling AWS. Decided the same day: every commercial Region;
     on demand, reserved, Savings Plans and spot; EC2 with EBS, RDS, ElastiCache, Redshift and
     OpenSearch; every 8 hours. P9 spec section 14, two tasks added, OPEN-17 and OPEN-18 raised'
+
 - id: CHG-0116
   date: 2026-10-07
   type: Decision
@@ -1663,6 +1778,7 @@ changes:
     endpoint in every Region. About 2,700 runs a month inside the Lambda always free allowance,
     under 1 USD a month with its writes and logs (modelled), against roughly 440 USD a month for
     endpoints (modelled). The hub keeps no route out. P9 spec section 14.5'
+
 - id: CHG-0117
   date: 2026-10-07
   type: Decision
@@ -1760,6 +1876,17 @@ changes:
     every comparison a typed state. ADR-0034 moves the canonical schema to FOCUS 1.4; OPEN-21 asks whether
     to read AWS''s FOCUS export. Six tasks, FEAT-076'
 
+- id: CHG-0126
+  date: '2026-10-07'
+  type: Feature
+  what: A recommendation's suggested owner from its resource's team tag, priority 1 item 4, ISS-021's
+    first slice
+  commit: pending
+  detail: The recommendations route returns suggested_owner, the team tag of the inventory node naming
+    the resource in the same account, confined by the node table's own scope rule and never stored. The
+    waste screen's Owner cell says whom the tag names while nobody owns a finding. TEAM_TAG in finops_core.constants
+    is now the one key showback, the weekly digest and the suggestion read
+
 - id: CHG-0127
   date: '2026-10-07'
   type: Chore
@@ -1768,6 +1895,18 @@ changes:
   detail: check_memory.py took one digit after P, so a citation of TASK-P10-001 was never checked, and
     sync.py sorted plan files as text, which put P10 between P1 and P2. The pattern takes one or more
     digits and plans sort by number, each held by a test that failed on the old behaviour
+
+- id: CHG-0128
+  date: '2026-10-07'
+  type: Correction
+  what: 'P10''s design corrected: Meter reads AWS''s FOCUS export, and the service provider replaces ProviderName'
+  commit: pending
+  detail: 'The P10 spec, plan, ADR-0034 and FEAT-076 said Meter normalised raw CUR 2.0 and would map the
+    new columns itself; finops_providers/aws/cur.py already reads AWS''s FOCUS export by FOCUS names.
+    They also backfilled ServiceProviderName from PublisherName, where FOCUS introduced it to replace
+    ProviderName. Corrected before any code: five columns are read where the export has them, both provider
+    columns derive from ProviderName, and OPEN-21 is withdrawn'
+
 issues:
 - id: ISS-189
   severity: LOW
@@ -2683,7 +2822,10 @@ issues:
   severity: HIGH
   summary: No owner attribution, and an unowned finding is never fixed
   status: OPEN
-  detail: FEAT-016
+  detail: 'FEAT-016. First slice 2026-10-07, CHG-0126: a recommendation suggests the owner its resource''s
+    team tag names, read from the inventory node within the reader''s scope and never stored, beside the
+    owner a person assigns. Still open: a setting for a tenant whose owners live under another key, owners
+    from the service catalogue and from CloudTrail creators, and owners on query findings and anomalies.'
 - id: ISS-022
   severity: HIGH
   summary: The cost model is never back tested against the bill
@@ -4328,11 +4470,10 @@ open_questions:
     beside cost. Recommended: the order in section 7 of next-in-scope.txt, owners and the savings ledger
     first because ISS-021 blocks every action after it.'
 - id: OPEN-21
-  question: Should Meter read AWS's FOCUS export instead of normalising CUR 2.0 itself?
-  status: OPEN
+  question: 'Should Meter read AWS''s FOCUS export instead of normalising CUR 2.0 itself? WITHDRAWN 2026-10-07:
+    Meter already reads AWS''s FOCUS export, so the question rested on a wrong premise'
+  status: ANSWERED
   blocks: nothing
-  detail: 'Raised 2026-10-07 with P10. AWS has exported FOCUS 1.2 since 2025-11-19 and was among the first
-    data generators certified conformant, so reading it would make Meter''s columns AWS''s own. It does
-    not carry the EKS split columns FEAT-035 reads. Recommended: yes once an account exists, for the cost
-    row, keeping CUR 2.0 for the split columns. P10 keeps CUR 2.0 and maps the new columns by AWS''s published
-    mapping, so either answer keeps its work.'
+  detail: Raised and withdrawn 2026-10-07 with P10. The P10 draft said Meter normalised raw CUR 2.0; finops_providers/aws/cur.py
+    already reads AWS's FOCUS export through Athena by FOCUS column names. P10 spec section 5.2 now reads
+    the new columns where the export carries them. CHG-0128.

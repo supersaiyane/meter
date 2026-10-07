@@ -1,10 +1,10 @@
 # P10 Proven numbers, FOCUS 1.4 and invoice reconciliation: design specification
 
 Date: 2026-10-07
-Status: Approved by the owner on 2026-10-07 as priority 2 of `next-in-scope.txt`, CHG-0122. The design choices below carry their recommendation; OPEN-21 is open and blocks nothing
+Status: Approved by the owner on 2026-10-07 as priority 2 of `next-in-scope.txt`, CHG-0122. The design choices below carry their recommendation; OPEN-21 was withdrawn the same day, section 5.2
 Sub project: P10
 Features: FEAT-076, and a change to FEAT-004
-Depends on: P1 delivered. Proof against a real bill waits on ISS-002 and ISS-003, an AWS account and CUR 2.0, and on TASK-P9-001, the hub's network path, ISS-242
+Depends on: P1 delivered. Proof against a real bill waits on ISS-002 and ISS-003, an AWS account and its billing export, and on TASK-P9-001, the hub's network path, ISS-242
 Supersedes: nothing
 Order: runs before P9, by the owner's priority of 2026-10-07. It is numbered P10 because P9 was already specified
 
@@ -21,9 +21,10 @@ invoices, and shows how closely Meter's billed cost matches each one, as a measu
 
 - Meter's cost row carries every column FOCUS 1.4 makes Mandatory for Cost and Usage, and
   `InvoiceId` and `InvoiceDetailId`.
-- `ProviderName` and `PublisherName`, which FOCUS 1.4 removes, are replaced by
-  `HostProviderName` and `ServiceProviderName` without breaking a running version: added
-  and backfilled in P10, dropped in a later release, constraint 12.
+- `ProviderName`, which FOCUS 1.3 replaced with `ServiceProviderName`, is carried into that
+  column and into `HostProviderName`, without breaking a running version: added and
+  backfilled in P10, with `ProviderName` and `PublisherName`, which 1.4 removes, dropped in a
+  later release, constraint 12.
 - Each AWS invoice is read with its two timestamps and compared with the sum of Meter's
   billed cost for that invoice, before tax and tax apart, in the invoice's currency.
 - Every comparison has a typed state, and a failure is never shown as a zero.
@@ -37,7 +38,8 @@ invoices, and shows how closely Meter's billed cost matches each one, as a measu
 - The conditional and recommended FOCUS 1.4 columns no source of Meter's fills yet, listed
   in section 4. They come with FOCUS conformance, `next-in-scope.txt` section 8.
 - The Contract Commitment dataset. It belongs with commitments, proposal 5.
-- Reading AWS's FOCUS export instead of normalising CUR 2.0. That is OPEN-21.
+- Asking AWS for a FOCUS 1.3 or later export. When one exists, its own provider columns
+  replace the derivation in section 5.2.
 - Invoice line items. AWS's `ListInvoiceSummaries` returns none, so Meter's Invoice Detail
   rows are at the grain of a whole invoice.
 - Any provider but AWS.
@@ -76,12 +78,25 @@ Constraint 2 named FOCUS 1.1. P10 moves Meter's row to FOCUS 1.4's mandatory col
 its invoice columns, and constraint 2's text changes in TASK-P10-006, when the code carries
 it, not before. Each newly ratified version gets a gap note like section 4 within a month.
 
-### 5.2 The source stays CUR 2.0 for P10
+### 5.2 The source is AWS's FOCUS export, read where each column is present
 
-The new columns are mapped from CUR 2.0 by the mapping AWS publishes for its own FOCUS 1.2
-export, the Data Exports table dictionary, so that Meter and AWS agree on what each column
-means. Whether to read that export directly is OPEN-21. Recommended: yes once an account
-exists, keeping CUR 2.0 for the EKS split columns, which the export does not carry.
+Meter already reads AWS's FOCUS export through Athena, `finops_providers/aws/cur.py`, by
+FOCUS column names; it has never normalised raw CUR 2.0 itself. AWS's FOCUS 1.2 export,
+generally available since 2025-11-19, carries `BillingAccountName`, `BillingCurrency`,
+`ChargeClass`, `PricingUnit` and `InvoiceId`. Each is read when the export's table has it,
+asked of the catalog as the split columns already are, so an older export reads as before
+with those columns null rather than failing.
+
+`ServiceProviderName` and `HostProviderName` arrive with FOCUS 1.3, which no AWS export
+offered on 2026-10-07, so P10 derives them. FOCUS introduced `ServiceProviderName` as the
+replacement for `ProviderName`, and `HostProviderName` must equal it unless a host is
+exposed, so both take `ProviderName`'s value. `InvoiceDetailId` is the `InvoiceId`, section
+5.3.
+
+The first draft of this section, written the same day, said Meter normalised CUR 2.0 and
+asked, as OPEN-21, whether to read the export instead, and it backfilled the service
+provider from `PublisherName`. Reading the adapter showed the first premise wrong, and
+FOCUS's definition of `ServiceProviderName` showed the second, CHG-0128.
 
 ### 5.3 Invoices come from the AWS Invoicing API
 
@@ -124,8 +139,8 @@ gets a typed refusal, never a total that includes accounts they cannot see.
 Migration 0030, TASK-P10-002, adds to `cost_focus_daily`, all nullable at first:
 `billing_account_name`, `billing_currency`, `charge_class`, `pricing_unit`,
 `service_provider_name`, `host_provider_name`, `invoice_id`, `invoice_detail_id`. It
-backfills `service_provider_name` from `publisher_name` and `host_provider_name` from
-`provider_name`, and holds `billing_currency` to three capital letters by a constraint. The
+backfills both `service_provider_name` and `host_provider_name` from `provider_name`, and
+holds `billing_currency` to three capital letters by a constraint. The
 two old columns are dropped in a release after P10, never in it.
 
 Migration 0031, TASK-P10-003, adds `billing_period` and `invoice_detail`, each with
@@ -147,7 +162,8 @@ cannot drift from either.
 
 ## 8. Testing
 
-- Each new column mapped from fake CUR 2.0 rows, and the backfill, with an old reader still
+- Each new column read from a fake export row where the table has it and null where it
+  does not, the derived provider columns, and the backfill, with an old reader still
   reading after the migration.
 - The invoice adapter with a stubbed client: pages, a credit memo, AccessDenied, throttling.
 - The comparison in every state of section 5.4, the tax split, and a credit memo.
@@ -159,13 +175,18 @@ cannot drift from either.
 - A sum of line items can differ from an invoice for reasons that are not errors: rounding,
   credits applied on the invoice, and Marketplace charges invoiced by another entity. Each
   invoicing entity's invoice is compared on its own.
-- `ChargeClass` and the provider names depend on AWS's mapping, and AWS documents gaps in
-  its own conformance.
+- `ChargeClass` and the other columns are AWS's, and AWS documents gaps in its own
+  conformance.
+- For a Marketplace row, FOCUS 1.3 names the seller as the service provider, where an export
+  older than 1.3 puts AWS in `ProviderName` and the seller in `PublisherName`. The derivation
+  follows FOCUS's naming of the replaced column, so such a row says AWS until AWS exports a
+  later version.
 - No account is connected, so nothing here has met a real invoice.
 
 ## 10. Open questions
 
-- OPEN-21: read AWS's FOCUS export instead of normalising CUR 2.0. Recommended in 5.2.
+- OPEN-21, withdrawn on 2026-10-07: it asked whether to read AWS's FOCUS export, which
+  Meter already reads, section 5.2.
 - OPEN-08, already open: when a closed billing period is final.
 
 ## 11. Features delivered
@@ -176,8 +197,8 @@ FEAT-076, invoice reconciliation. FEAT-004 moves to FOCUS 1.4's mandatory column
 
 1. Every FOCUS 1.4 mandatory Cost and Usage column on Meter's row, held by a test that
    reads the list from this specification's section 4.
-2. `ProviderName` and `PublisherName` backfilled into their replacements, with an old reader
-   still working.
+2. `ProviderName` carried into `ServiceProviderName` and `HostProviderName`, with an old
+   reader still working.
 3. Invoices read through a port with a fake and an AWS adapter, with typed failures and two
    timestamps.
 4. Each invoice compared before tax and tax apart, in every state of section 5.4, never zero

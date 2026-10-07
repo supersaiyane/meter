@@ -47,6 +47,11 @@ answers how much money is at stake; confidence answers how sure the estimate is.
 ten thousand dollar recommendation resting on three days of data is `CRITICAL` and
 `LOW`, and a reader needs both to decide whether to act this week.
 
+While nobody owns a recommendation, it suggests whom to ask: the `team` tag, `TEAM_TAG`, of
+the inventory node naming its resource in the same account, read within the reader's scope
+and never stored. The waste screen says it beside nobody yet. Accepting still needs a person
+to name the owner, because a tag only says whom to ask. ISS-021's first slice, 2026-10-07.
+
 ## Failure behaviour
 
 An illegal transition is refused: `VERIFIED` does not return to `OPEN`. Dismissal
