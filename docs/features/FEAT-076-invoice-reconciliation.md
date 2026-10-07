@@ -35,7 +35,8 @@ row naming the invoice it corrects and closes nothing. Built in TASK-P10-003 on 
 nothing in production builds the adapter yet, ISS-182. Each cost row carries the `invoice_id` its row in AWS's
 FOCUS export names, so the comparison is a sum over the rows of one invoice, computed when it is read so
 it cannot drift from either side. The tolerance is 0.01 percent of the invoice, modelled, a
-named constant to revisit once a real invoice has been compared.
+named constant to revisit once a real invoice has been compared, with a one cent floor because
+an invoice is stated in cents. A difference is Meter's figure less the invoice's.
 
 ## Failure behaviour
 
@@ -48,15 +49,17 @@ fails the run.
 ## Security considerations
 
 An invoice totals every account under the payer, so the guard's `PayerWide` rule confines it
-to a reader whose scope covers the whole payer, as budgets are by ADR-0025; a narrower reader
-gets a typed refusal and no total. The management account's organization reader role
+to a reader whose scope covers the whole payer, as budgets are by ADR-0025; a narrower reader,
+or one who chose a single account, gets a 403 before anything is read, and no total. The management account's organization reader role
 gains `invoicing:ListInvoiceSummaries` and nothing that writes, constraint 6. Invoice amounts
 are confidential financial data of the tenant and are classified in
 `docs/09-DATA-CLASSIFICATION.md`.
 
 ## Interface
 
-- `GET /api/v1/cost/reconciliation?period=YYYY-MM`, an envelope of comparisons, exportable.
+- `GET /api/v1/cost/reconciliation?period=YYYY-MM-DD`, an envelope of comparisons,
+  exportable, built in TASK-P10-004 on 2026-10-08. Any day reads its month; no period reads
+  the newest closed one; a period never read is a 404.
 - The Invoice reconciliation screen at `/report/reconciliation`.
 - The Matches the invoice tile on the FinOps practitioner's Overview.
 - Through the MCP server, as every route is, constraint 8.

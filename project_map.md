@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 25 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 31 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 187 | test_*.py under tests/ |
-| Test functions | 2485 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 189 | test_*.py under tests/ |
+| Test functions | 2509 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -452,6 +452,10 @@ meter/
 │       ├── invoice.py         Invoice and BillingPeriodStatus, FEAT-076. An invoice
 │       │                      is read, never derived; a credit memo names what it
 │       │                      corrects; months and next_month for billing periods
+│       ├── reconciliation.py  FEAT-076. An invoice beside Meter's sums: the six
+│       │                      states, before tax and tax apart, the tolerance a
+│       │                      modelled 0.01 percent with a one cent floor, and no
+│       │                      figure at all for a state that is not a comparison
 │       └── quota.py           QuotaUsage. Unpublished usage is None, never zero
 │   └── ports/                 protocols only. No implementation, no cloud import.
 │                              The Ports section of docs/02-ARCHITECTURE.md says
@@ -1250,6 +1254,10 @@ meter/
 │   │   ├── forecast.py        FEAT-066's GET /cost/forecast: the month end and three
 │   │   │                      months ahead, each a range or the reason, the method
 │   │   │                      named and its backtest published beside it
+│   │   ├── reconciliation.py  FEAT-076's GET /cost/reconciliation: each invoice
+│   │   │                      beside Meter's billed cost under it, before tax and
+│   │   │                      tax apart. A narrowed reader is refused 403 before
+│   │   │                      anything is read; nothing is stored
 │   │   ├── schedules.py       FEAT-069's /reports/schedules and /reports/runs, and
 │   │   │                      the file route that checks the reader's scope again
 │   │   ├── views.py           FEAT-068's /reports/views: list, save, open, rename
@@ -1348,6 +1356,9 @@ meter/
 │                              from scoped_select, the ranking a window count and
 │                              the tag keys a function in the FROM clause, because
 │                              a wrapped query loses the mark the guard checks.
+│                              invoices.py is FEAT-076's: the invoices, the periods
+│                              they close, and Meter's billed cost per invoice id
+│                              and currency, tax apart
 │                              forecast.py reads the first month and last day held
 │                              and the cost of each UTC day, a zero for a day that
 │                              billed nothing, so a gap and a quiet day differ.

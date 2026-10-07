@@ -125,7 +125,7 @@ Same contract as P0 through P9. One task, one commit, `make verify` green before
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | Spec sections 5.4, 5.5 and 7, FEAT-076 |
 | Delivers | FEAT-076's figure |
 | Depends on | TASK-P10-003 |
@@ -133,12 +133,19 @@ Same contract as P0 through P9. One task, one commit, `make verify` green before
 
 **Acceptance criteria.**
 
-- [ ] For each invoice, before tax and tax apart, in its currency, every state in spec
-      section 5.4, with the tolerance a named constant and its reason
-- [ ] `GET /api/v1/cost/reconciliation?period=` in the envelope, exportable, with `as_of`
-      and `collected_at`
-- [ ] The guard's `PayerWide` rule on both tables, and a narrowed reader refused by type,
-      asserted with two principals against the database
+- [x] For each invoice, before tax and tax apart, in its currency, every state in spec
+      section 5.4, with the tolerance a named constant and its reason,
+      `finops_core/domain/reconciliation.py` and `tests/core/test_reconciliation.py`. The
+      tolerance gained a one cent floor on 2026-10-08, because an invoice is stated in cents
+      and 0.01 percent of a zero tax line would demand an exact match, spec section 5.4
+- [x] `GET /api/v1/cost/reconciliation?period=` in the envelope, exportable, with `as_of`
+      and `collected_at`, `finops_api/routes/reconciliation.py`. The period is a date, as on
+      every other cost route, and any day in a month reads that month; the spec's `YYYY-MM`
+      was corrected the same day. With no period it reads the newest closed one, and a
+      period never read is a 404 rather than an open period
+- [x] The guard's `PayerWide` rule on both tables, TASK-P10-003, and a narrowed reader refused
+      by type, a 403 before anything is read, asserted with two principals against the
+      database, `tests/api/test_reconciliation.py`
 
 ---
 

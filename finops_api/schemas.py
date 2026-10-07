@@ -658,6 +658,63 @@ class BudgetsOut(BaseModel):
     unsupported: int
 
 
+class InvoiceComparisonOut(BaseModel):
+    """One invoice beside Meter's billed cost for it. FEAT-076, TASK-P10-004.
+
+    The invoice's amounts are the provider's and always present. Meter's and the differences are
+    null whenever the state is not a comparison, No rows or Currency differs, and null there is
+    not zero. A difference is Meter's figure less the invoice's, so a negative one is a charge
+    the invoice carries and Meter's rows do not.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    invoice_id: str
+    #: INVOICE or CREDIT_MEMO.
+    invoice_type: str
+    #: The invoice a credit memo corrects, and null on an invoice.
+    original_invoice_id: str | None
+    #: Who issued it, which is not always the provider: Marketplace charges are invoiced apart.
+    invoice_issuer_name: str
+    billing_currency: str
+    invoice_before_tax: Decimal
+    invoice_tax: Decimal
+    invoice_billed_cost: Decimal
+    meter_before_tax: Decimal | None
+    meter_tax: Decimal | None
+    difference_before_tax: Decimal | None
+    difference_tax: Decimal | None
+    #: Matched, Mismatched, No rows or Currency differs.
+    state: str
+    issued_at: datetime
+    as_of: datetime
+    collected_at: datetime
+
+
+class ReconciliationOut(BaseModel):
+    """A billing period's invoices, each compared with Meter's billed cost. FEAT-076.
+
+    Measured on both sides: the invoice is read from the provider and Meter's figure is summed
+    from the collected rows. The tolerance is the one modelled figure, and it travels on the
+    payload so a reader can check a Matched rather than take it.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    period: date
+    #: Open or Closed, as FOCUS 1.4 names them.
+    period_status: str
+    #: Period open or Not readable when there is no invoice to compare, and null when there is.
+    state: str | None
+    #: The typed cause of the failed read behind Not readable, and null otherwise.
+    cause: str | None
+    #: The share of an invoice amount a difference may be and still match, modelled.
+    tolerance: Decimal
+    #: The least difference that counts, because an invoice is stated in cents.
+    minimum_difference: Decimal
+    invoices: tuple[InvoiceComparisonOut, ...]
+
+
 class CommitmentActionOut(BaseModel):
     """A coverage gap as something somebody is accountable for closing. FEAT-055.
 

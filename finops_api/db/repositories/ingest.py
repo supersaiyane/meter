@@ -29,6 +29,18 @@ class IngestRunRepository(ScopedRepository):
         )
         return self.fetch(scope, statement)
 
+    def latest_of(self, scope: Scope, collector: str) -> Row[*tuple[object, ...]] | None:
+        """The most recent run of one collector, with its status and typed cause, or None if it
+        has never run. FEAT-076 reads it to say why a period has nothing to compare."""
+        statement = (
+            self.scoped_select(scope)
+            .where(self.table.c["collector"] == collector)
+            .order_by(self.table.c["started_at"].desc())
+            .limit(1)
+        )
+        found = self.fetch(scope, statement)
+        return found[0] if found else None
+
     def never_succeeded(self, scope: Scope) -> Sequence[Row[*tuple[object, ...]]]:
         """Collector and scope pairs that have run and never once succeeded.
 

@@ -90,7 +90,7 @@ subprojects:
 - id: P10
   name: 'Proven numbers: FOCUS 1.4 and invoice reconciliation'
   status: Specified, planned and approved by the owner 2026-10-07 as priority 2 of next-in-scope.txt,
-    TASK-P10-001 and TASK-P10-002 done on 2026-10-07, TASK-P10-003 on 2026-10-08, TASK-P10-004 next. Runs before P9 by the owner's
+    TASK-P10-001 and TASK-P10-002 done on 2026-10-07, TASK-P10-003 and TASK-P10-004 on 2026-10-08, TASK-P10-005 next. Runs before P9 by the owner's
     priority. The cost row gains FOCUS 1.4's mandatory and invoice columns, and each AWS invoice is compared
     with Meter's billed cost
   spec: specs/2026-10-07-p10-proven-numbers-design.md
@@ -1934,6 +1934,18 @@ changes:
     role. Three acceptance criteria were reworded to what is true, recorded in the plan. Two red checks
     found tests that could not fail, a surcharge compared with the fake's own constant and no test that
     the tables are payer wide, and both were fixed
+- id: CHG-0131
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P10-004, each invoice compared with Meter's billed cost and the route that serves it,
+    FEAT-076
+  commit: pending
+  detail: A pure comparison in finops_core with the six states of spec section 5.4, before tax and
+    tax apart, rows in another currency never converted, and no figure on a state that is not a comparison;
+    GET /api/v1/cost/reconciliation, exportable, refusing a narrowed reader with a 403 before any read,
+    reading the newest closed period by default and answering 404 for a period never read. Two decisions
+    recorded in the spec and the plan, the tolerance's one cent floor and the period as a date like every
+    other cost route. Three red checks proved the refusal, the tax split and the currency rule are held
 issues:
 - id: ISS-189
   severity: LOW
