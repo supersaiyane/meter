@@ -24,9 +24,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 75 total, 13 specified, 13 in build, 42 delivered |
 | Decisions | 33 architecture decision records |
-| Changes | 121 recorded |
+| Changes | 122 recorded |
 | Issues | 154 fixed, 101 open, 0 parked |
-| Open questions | 19 awaiting a decision |
+| Open questions | 20 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
 
@@ -38,8 +38,10 @@ Generated from `docs/registry.yaml`. Change a status there, then run `make doc-s
 statuses. TASK-P8-015 brought `docs/12-UI-DESIGN.md` and `docs/13-UI-ARCHITECTURE.md` up to what
 was built and marked FEAT-063 Delivered. TASK-P8-014 before it proved spec section 12, each exit
 criterion with its evidence in the plan, and fixed ISS-257 and ISS-258. `p8-build` merges into
-main with `--no-ff`, locally. P9 is not started, by the owner's instruction of 2026-10-07. The
-repository has no git remote, so nothing has been pushed.
+main with `--no-ff`, locally. Later on 2026-10-07 the owner approved
+priorities 1 to 3 of `next-in-scope.txt`, CHG-0122: the one day wins, FOCUS 1.4 with invoice
+reconciliation, and P9. They run in sequence on `next-build`. The repository has no git remote,
+so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were

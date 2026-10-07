@@ -1,0 +1,277 @@
+NEXT IN SCOPE: what the market research of 2026-10-07 found, and what to add next
+==================================================================================
+
+Written 2026-10-07, after P8 merged into main (31b14d7). A record of findings and
+proposals for the owner to decide on. Nothing here is approved or planned yet.
+Market figures are as reported by their source, not measured by Meter. Meter
+figures come from docs/registry.yaml and the plans on 2026-10-07.
+
+
+1. THE BOTTOM LINE
+------------------
+
+Meter's strongest claim, that every number says how far it can be trusted, is one
+no competitor makes structurally. It cannot yet prove that claim, because no adapter
+has ever called a real AWS account. During 2026 the market made several of the
+things Meter is still building free or common. Meter wins by becoming the FinOps
+platform whose numbers are proven against the invoice, then by owning AI cost,
+owners and savings credit, and pull request based action. More breadth before real
+data is the wrong next move.
+
+
+2. THE MARKET IN 2026
+---------------------
+
+AWS (free, native)
+  - AWS FinOps Agent, public preview 2026-06-09, us-east-1, no charge in preview.
+    Natural language cost questions, anomaly investigation correlated with
+    CloudTrail ("what changed and who changed it"), Slack and Jira, recurring
+    reports. Read only.
+  - Billing and Cost Management MCP server, 2025-08.
+  - At FinOps X 2026: Savings Plans coverage targets, automatic cost and forecast
+    explanations, twice as many idle recommendations, Bedrock cost by app, agent
+    and user.
+  - Published a four tier automation model: read only, human approved mutation,
+    rule based automation, autonomy with boundaries.
+
+IBM (Turbonomic, Cloudability, Kubecost, Apptio)
+  - A Leader in the 2025 Gartner Magic Quadrant for Cloud Financial Management
+    Tools, published 2025-09-15, 13 vendors evaluated.
+  - Turbonomic: real time sizing up and down against application targets, GPU
+    optimisation (8.12, NVIDIA, MIG aware), Terraform pull requests through
+    GitOps (commitMode request or direct).
+  - Cloudability: Conversational Insights, an MCP server, a FOCUS AI agent.
+  - The suite is converging; one 2026 guide reports cross module integration
+    still in progress.
+  - Reviewers' complaints about Turbonomic: complex setup, a dated and dense UI,
+    expensive tiered licensing, actions too aggressive without policy tuning.
+
+Flexera
+  - A Leader in the same Gartner report.
+  - Bought Spot from NetApp (closed 2025-03-03), then ProsperOps and Chaos Genius
+    (2026-01-06). Now autonomous commitment management across AWS, Azure and GCP,
+    plus Snowflake and Databricks optimisation.
+  - ProsperOps reports customers at 60.8 and 62.4 percent effective savings rate
+    (vendor reported).
+
+Others
+  - Vantage: MCP server, a FinOps Agent that removes waste by policy, Autopilot
+    buying Savings Plans, virtual tags.
+  - CloudZero and Finout: AI cost per customer and per feature, virtual tagging.
+  - CAST AI, ScaleOps: autonomous Kubernetes and GPU optimisation. Kubecost shows
+    and allocates; it does not act.
+  - Infracost: cost of a Terraform change in the pull request, policies, AutoFix.
+  - Oracle, Azure: MCP servers for cost.
+  - Agentic FinOps became a category in 2026 (PointFive, nOps Clara, cloudgov.ai
+    and others).
+
+FinOps Foundation and standards
+  - FOCUS 1.3 ratified 2025-12-05. FOCUS 1.4 ratified 2026-06-04: Invoice Detail and
+    Billing Period datasets, invoice reconciliation, Contract Commitment grown to
+    30 columns, commitment eligibility, token fields (input, output, cached).
+  - FOCUS 1.5 due 2026-12: native token and model identity, a Price Sheet dataset.
+  - A FOCUS Certified Conformant program; AWS and Nebius certified first.
+  - The Tokenomics Foundation (Linux Foundation, announced 2026-06-03). FinOps X
+    becomes part of Tokenomicon, 2027-06-07 to 2027-06-10.
+
+State of FinOps 2026 (1,192 respondents, over 83 billion dollars of annual cloud
+spend, as reported)
+  - In scope: AI 98 percent, SaaS 90, licensing 64, private cloud 57, data
+    centre 48, labour 28.
+  - Top priority now: workload optimisation and waste. Next twelve months:
+    FinOps for AI, then AI for FinOps, then more technology categories.
+  - Most wanted tool features: granular AI spend (tokens, LLM requests, GPU use),
+    costing before deployment, one view across all technology spend.
+  - The unsolved problem: "Once you fix it, it's gone." Developers get no lasting
+    credit for savings they make.
+
+
+3. WHERE METER ALREADY LEADS
+----------------------------
+
+  - Provenance on every figure: measured, modelled or forecast, two timestamps,
+    typed failures, never a zero for a failure.
+  - The MCP server goes through the same API and scope checks as a person, so an
+    agent can never see more than its human.
+  - Query cost governance for observability (P2) and quotas (P5): little
+    competition in depth.
+  - The platform meters itself, on the front page.
+  - FOCUS native from the first day, so another provider is a connector.
+
+
+4. WHAT COULD HAVE BEEN BETTER
+------------------------------
+
+  1. Breadth before proof. Nine sub projects and 42 features delivered, and no
+     adapter has made a real call (ISS-002). CUR 2.0 has never been enabled
+     (ISS-003). No Terraform stack has been applied (ISS-122). A deployed API would
+     refuse to start (ISS-250).
+  2. The interface was polished before the foundation was signed off. P0 is code
+     complete and not signed off (ISS-111, ISS-122). FEAT-004, FEAT-005 and FEAT-007
+     are still In build in the registry.
+  3. The only CRITICAL issue is the product's central gap: ISS-020, "It reports,
+     it does not prevent".
+  4. No owner attribution (ISS-021), so a finding, and later a pull request, has
+     nobody to go to.
+  5. FOCUS 1.1 is pinned while the standard reached 1.4. ISS-022, the cost model
+     never back tested against the bill, is what 1.4's invoice reconciliation is for.
+  6. Owner decisions block the action loop: OPEN-01 identity provider, OPEN-02
+     payers, OPEN-05 ticketing, OPEN-11 delivery, OPEN-13 code host.
+  7. FEAT-039 (anomaly narration from CloudTrail) and the P7 assistant now overlap
+     the free AWS FinOps Agent.
+  8. The gate is slow for small changes: about 15.5 minutes of backend tests for a
+     13 line documentation change on 2026-10-07 (measured, 927 and 935 seconds).
+  9. Possible registry drift: FEAT-023 (anomalies) and FEAT-024 (commitments) say
+     Specified while P1 says both were built. To reconcile.
+
+
+5. WHAT TO ADD, IN PRIORITY ORDER (proposals for the owner)
+-----------------------------------------------------------
+
+Do not build where the market is now free: a generic chat box over cost data and
+CloudTrail anomaly explanation. Take in AWS's explanations and add what AWS
+cannot: scope, owners, provenance and other providers.
+
+  1. Proven numbers. Connect one real payer, run one billing period, reconcile to
+     the invoice with FOCUS 1.4, and show the match rate on the front page.
+     Closes ISS-002, ISS-003, ISS-122, ISS-250 and ISS-022.
+  2. FinOps for AI. Bedrock by app, agent and user; OpenAI and Anthropic API cost;
+     GPU use; cost per token, request and feature; FOCUS 1.4 and 1.5 token fields.
+  3. Owners and a savings ledger. Owners from tags, the service catalogue and
+     CloudTrail creators; every saving credited to the engineer whose change made
+     it, verified against the bill. Answers ISS-021 and the survey's unsolved
+     problem.
+  4. Graded autonomy through pull requests. Finish FEAT-040 once OPEN-13 is
+     answered; auto merge low risk classes (gp2 to gp3 from P9, unattached
+     volumes, old snapshots) under policy, with measured before and after.
+  5. Commitments. Coverage and eligibility (FOCUS 1.4), effective savings rate as
+     the headline, purchase plans behind approval. Partner rather than build
+     autonomous buying.
+  6. Costing before deployment. Price a Terraform plan in the pull request from
+     P9's catalogue, then compare the estimate with the bill a month later.
+  7. Performance aware rightsizing (FEAT-058), down and up against service level
+     targets, for EC2, RDS and EKS only.
+  8. More providers through FOCUS: Azure, GCP, OCI, Snowflake, Databricks and
+     Grafana Cloud, which now exports FOCUS and helps P2.
+  9. Carbon beside cost, using AWS's carbon tool, which now covers Scope 3, for
+     EU buyers under CSRD.
+
+Against Turbonomic: minutes to first value, the P8 interface, plain pricing,
+every action a reviewed pull request with provenance, one data model instead of
+three acquired products. Do not chase on premises VMware or its analytics engine.
+
+Suggested order: real data and reconciliation, then AI cost and owners, then
+pull request autonomy and commitments, then costing before deployment and more
+providers. After P9. Shape P9's price catalogue to FOCUS 1.5's Price Sheet.
+
+
+6. EVERY PHASE ON 2026-10-07 (from the plans and the registry)
+--------------------------------------------------------------
+
+Phase                    Tasks  Closed  Open  Why open                                   Whose dependency
+P0 Foundation             39     39      0    Not signed off: ISS-111, ISS-122           Owner: an AWS account to apply the stack
+P1 Cost Intelligence      22     22      0    Built on a fake export; CUR 2.0 never on   Owner: enable CUR 2.0 in the payer, ISS-003
+P2 Query Cost Governance  26     21      5    2 descoped, 2 parked, 1 not started        OPEN-04 (answered), ISS-122, ISS-002
+P3 Utilization            21     21      0    Adapters never run against AWS             Owner: AWS account, ISS-002
+P4 Inventory, Topology    13     13      0    ISS-200, ISS-202; Config stack not applied Owner: AWS account, ISS-122
+P5 Quotas and Limits       8      8      0    Adapters never run, ISS-122, ISS-218       Owner: AWS account
+P6 Containers             12     12      0    FEAT-037 reads EKS, never ECS, ISS-224     Engineering
+P7 Insight and LLM        14     14      0    FEAT-039, FEAT-040 In build, ISS-227/228   Owner: OPEN-10, OPEN-13
+P8 Experience, Reporting  18     18      0    Closed; OPEN-11, OPEN-15, OPEN-19 open      Owner decisions
+P9 Price Catalog          13      0     13    Not started, by the owner on 2026-10-07   Owner: go ahead
+
+Open tasks
+TASK-P2-007  self hosted connection    Descoped 2026-09-02  OPEN-04: Amazon Managed Grafana only   Owner (reopens only if OPEN-04 changes)
+TASK-P2-008  Grafana Cloud connection  Descoped 2026-09-02  OPEN-04: Amazon Managed Grafana only   Owner (reopens only if OPEN-04 changes)
+TASK-P2-015  detection and alerting    Parked 2026-08-29    Needs EventBridge, Lambda, Budgets Actions deployed   ISS-122
+TASK-P2-016  throttle and deny         Parked 2026-08-29    As P2-015, and after it                ISS-122, TASK-P2-015
+TASK-P2-020  back test against bill    Not started          Needs real P1 cost data                ISS-002, ISS-003
+TASK-P9-001 to TASK-P9-013             Not started          Owner said not to start P9             Owner, then the plan's chain from TASK-P9-001
+
+
+7. TIMELINE (proposed 2026-10-07, for the owner to approve)
+-----------------------------------------------------------
+
+Every duration here is modelled from the pace of P8 on 2026-10-07, not measured.
+Sizes: S is about half a day, M one day, L two days, each including a gate run.
+One task at a time, weekdays only, no holidays, starting 2026-10-08. Everything
+can be built against fakes as the earlier phases were; nothing is proven live
+until the AWS account is connected, the stack applied and CUR 2.0 switched on.
+
+What fits in one day, no AWS account needed (2026-10-08)
+
+#  Task                                                                   Time        Needs from the owner
+1  Commit this file and register the nine proposals as proposals          1 hour      Nothing
+2  Reconcile FEAT-023 and FEAT-024 with what P1 built                     1 hour      Nothing
+3  FOCUS 1.4 gap analysis and a backward compatible migration plan        2 hours     Nothing
+4  Owners, first slice: the team tag names an owner on every finding      half a day  Nothing
+5  A faster gate for changes that touch only documents                    1 hour      A yes: it changes the definition of done
+
+The same day, one hour of owner decisions unblocks most of what follows:
+OPEN-13 the code host, OPEN-05 Jira or ServiceNow, OPEN-11 email or Slack, and a
+date for connecting the real AWS account.
+
+Everything, in priority order
+
+Pri  Task                                                        Source        Days  Start       Finish      Depends on
+1    The one day wins above                                      this file     1     2026-10-08  2026-10-08  Nothing
+2    FOCUS 1.4 upgrade and invoice reconciliation, on fakes      proposal 1    4     2026-10-09  2026-10-14  Live proof: the AWS account
+3    TASK-P9-001 the hub reaches every AWS API (L)               P9            2     2026-10-15  2026-10-16  Owner go ahead on P9
+3    TASK-P9-002 ports and fakes, prices and instance types (M)  P9            1     2026-10-19  2026-10-19  P9-001
+3    TASK-P9-003 the catalog tables (M)                          P9            1     2026-10-20  2026-10-20  P9-002
+3    TASK-P9-004 the price list, five services, every Region (L) P9            2     2026-10-21  2026-10-22  P9-003
+3    TASK-P9-005 the instance capability catalog (M)             P9            1     2026-10-23  2026-10-23  P9-003
+3    TASK-P9-009 gp2 to gp3, priced (S)                          P9            0.5   2026-10-26  2026-10-26  P9-004
+3    TASK-P9-012 Savings Plans rates, every Region (M)           P9            1     2026-10-26  2026-10-27  P9-001, P9-004
+3    TASK-P9-013 spot prices, every Region and zone (M)          P9            1     2026-10-27  2026-10-28  P9-001, P9-003
+3    TASK-P9-006 Compute Optimizer, every Region and account (M) P9            1     2026-10-28  2026-10-29  P9-004, P9-005
+3    TASK-P9-007 downsizing to a named, priced target (L)        P9            2     2026-10-29  2026-11-02  P9-006
+3    TASK-P9-008 upsizing, as an added cost (M)                  P9            1     2026-11-02  2026-11-03  P9-007
+3    TASK-P9-010 routes and the Alternatives table (M)           P9            1     2026-11-03  2026-11-04  P9-007, P9-008, P9-009
+3    TASK-P9-011 proof and documents (S)                         P9            0.5   2026-11-04  2026-11-04  All of P9
+4    Owners from tags, catalogue, CloudTrail; savings ledger     proposal 3    5     2026-11-05  2026-11-11  Nothing
+5    FinOps for AI: Bedrock, OpenAI, Anthropic, GPU, per token   proposal 2    7     2026-11-12  2026-11-20  Live data: the AWS account
+6    Graded autonomy: remediation PRs, auto merge low risk       proposal 4    5     2026-11-23  2026-11-27  Owner: OPEN-13
+7    Commitments: coverage, eligibility, purchase plans          proposal 5    5     2026-11-30  2026-12-04  P9-012
+8    Costing before deployment: price a Terraform plan in a PR   proposal 6    4     2026-12-07  2026-12-10  P9-004
+9    Performance aware rightsizing, EC2, RDS, EKS                proposal 7    6     2026-12-11  2026-12-18  P9-007, P9-008
+10   More providers through FOCUS: Azure and GCP first           proposal 8    6     2026-12-21  2026-12-28  A test account in each
+11   Carbon beside cost                                          proposal 9    3     2026-12-29  2026-12-31  Live data: the AWS account
+
+Approved 2026-10-07: the owner asked for priorities 1, 2 and 3 to be done in sequence,
+which lifts the morning's hold on P9. Proposals 2 to 9 wait on OPEN-20.
+
+Totals, modelled: 61 working days from 2026-10-08 to 2026-12-31. P9 alone is 15
+working days, 2026-10-15 to 2026-11-04. P9 is not started until the owner says so.
+Connecting the AWS account in October would let priority 2 show a real match
+against the invoice after one billing period, by mid November.
+
+
+Sources
+-------
+https://aws.amazon.com/blogs/aws-cloud-financial-management/aws-finops-agent-is-now-public-preview/
+https://aws.amazon.com/blogs/aws-cloud-financial-management/automation-and-trust-in-finops/
+https://aws.amazon.com/about-aws/whats-new/2025/08/aws-billing-cost-management-mcp-server
+https://www.flexera.com/blog/perspectives/finops-x-2026-recap/
+https://data.finops.org/
+https://www.ciodive.com/news/foundation-tackle-ai-token-cost-management/822839/
+https://www.prnewswire.com/news-releases/finops-foundation-launches-focus-1-3-to-deepen-cloud-and-saas-billing-transparency-announces-expanded-vendor-support-for-focus-1-2--302638930.html
+https://kostkompass.com/focus-1-4-invoice-reconciliation/
+https://github.com/FinOps-Open-Cost-and-Usage-Spec/FOCUS_Spec/blob/working_draft/CHANGELOG.md
+https://www.ibm.com/new/announcements/optimize-gpu-resources-turbonomic
+https://developer.ibm.com/tutorials/turbonomic-gitops-run-turbonomic-actions/
+https://www.g2.com/products/ibm-turbonomic/reviews
+https://www.gartner.com/reviews/market/cloud-management-tooling/vendor/ibm/product/ibm-turbonomic/likes-dislikes
+https://www.lighthousetechnology.ai/insights/ibm-finops-complete-guide
+https://www.ibm.com/new/announcements/ibm-turbonomic-and-ibm-kubecost-unite-to-optimize-kubernetes-performance-and-cost
+https://www.flexera.com/about-us/press-center/flexera-named-a-leader-in-gartner-magic-quadrant-cloud-financial-management-tools-2025
+https://www.doit.com/news/doit-named-visionary-2025-gartner-magic-quadrant-cloud-financial-management-tools/
+https://www.apmdigest.com/flexera-completes-acquisition-netapps-spot-finops-portfolio
+https://www.thomabravo.com/press-releases/flexera-acquires-prosperops-and-chaos-genius-to-expand-its-finops-solution
+https://www.prosperops.com/blog/key-announcements-at-finops-x-2026/
+https://www.vantage.sh/blog/best-cloud-cost-management-tools-2026
+https://www.finout.io/blog/best-ai-cost-observability-tools-in-2026
+https://cast.ai/blog/best-kubernetes-cost-optimization-tools/
+https://dev.to/zop_8abedcc7e12/top-10-ai-agent-finops-tools-in-2026-an-honest-buyer-comparison-4j5j
+https://infracost.io
+https://aws.amazon.com/blogs/aws/aws-customer-carbon-footprint-tool-now-includes-scope-3-emissions/
