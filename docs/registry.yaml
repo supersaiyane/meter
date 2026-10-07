@@ -1758,6 +1758,17 @@ changes:
     through ListInvoiceSummaries, and compares each with Meter''s billed cost before tax and tax apart,
     every comparison a typed state. ADR-0034 moves the canonical schema to FOCUS 1.4; OPEN-21 asks whether
     to read AWS''s FOCUS export. Six tasks, FEAT-076'
+
+- id: CHG-0128
+  date: '2026-10-07'
+  type: Correction
+  what: 'P10''s design corrected: Meter reads AWS''s FOCUS export, and the service provider replaces ProviderName'
+  commit: pending
+  detail: 'The P10 spec, plan, ADR-0034 and FEAT-076 said Meter normalised raw CUR 2.0 and would map the
+    new columns itself; finops_providers/aws/cur.py already reads AWS''s FOCUS export by FOCUS names.
+    They also backfilled ServiceProviderName from PublisherName, where FOCUS introduced it to replace
+    ProviderName. Corrected before any code: five columns are read where the export has them, both provider
+    columns derive from ProviderName, and OPEN-21 is withdrawn'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4318,11 +4329,10 @@ open_questions:
     beside cost. Recommended: the order in section 7 of next-in-scope.txt, owners and the savings ledger
     first because ISS-021 blocks every action after it.'
 - id: OPEN-21
-  question: Should Meter read AWS's FOCUS export instead of normalising CUR 2.0 itself?
-  status: OPEN
+  question: 'Should Meter read AWS''s FOCUS export instead of normalising CUR 2.0 itself? WITHDRAWN 2026-10-07:
+    Meter already reads AWS''s FOCUS export, so the question rested on a wrong premise'
+  status: ANSWERED
   blocks: nothing
-  detail: 'Raised 2026-10-07 with P10. AWS has exported FOCUS 1.2 since 2025-11-19 and was among the first
-    data generators certified conformant, so reading it would make Meter''s columns AWS''s own. It does
-    not carry the EKS split columns FEAT-035 reads. Recommended: yes once an account exists, for the cost
-    row, keeping CUR 2.0 for the split columns. P10 keeps CUR 2.0 and maps the new columns by AWS''s published
-    mapping, so either answer keeps its work.'
+  detail: Raised and withdrawn 2026-10-07 with P10. The P10 draft said Meter normalised raw CUR 2.0; finops_providers/aws/cur.py
+    already reads AWS's FOCUS export through Athena by FOCUS column names. P10 spec section 5.2 now reads
+    the new columns where the export carries them. CHG-0128.

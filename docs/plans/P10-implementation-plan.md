@@ -17,8 +17,8 @@ Same contract as P0 through P9. One task, one commit, `make verify` green before
 
 **Four rules specific to P10.**
 
-1. **FOCUS names the columns.** Every new column takes its FOCUS 1.4 name in snake case, and
-   its meaning from AWS's published mapping for its own FOCUS 1.2 export, spec section 5.2.
+1. **FOCUS names the columns.** Every new column takes its FOCUS 1.4 name in snake case and
+   is read from AWS's FOCUS export where the export carries it, spec section 5.2.
 2. **Add, backfill, drop later.** Nothing is renamed or dropped in P10. `provider_name` and
    `publisher_name` stay readable until a release after it, constraint 12.
 3. **A comparison is a state before it is a number.** Every comparison has one of the states
@@ -73,10 +73,12 @@ Same contract as P0 through P9. One task, one commit, `make verify` green before
       `pricing_unit`, `service_provider_name`, `host_provider_name`, `invoice_id` and
       `invoice_detail_id` to `cost_focus_daily`, nullable, with `billing_currency` held to
       three capital letters by a constraint, and a down migration
-- [ ] It backfills `service_provider_name` from `publisher_name` and `host_provider_name`
-      from `provider_name`, and both old columns stay and stay readable
-- [ ] The domain row and the CUR 2.0 normalisation fill each new column by AWS's mapping,
-      each with a test from a fake row
+- [ ] It backfills `service_provider_name` and `host_provider_name` from `provider_name`,
+      and `provider_name` and `publisher_name` stay and stay readable
+- [ ] The domain row and the export adapter read `billingaccountname`, `billingcurrency`,
+      `chargeclass`, `pricingunit` and `invoiceid` where the export's table has them, asked of
+      the catalog as the split columns are, and derive the two provider columns, each with a
+      test from a fake row, present and absent
 - [ ] A test reads spec section 4's list of mandatory columns and fails if the row lacks one
 
 ---

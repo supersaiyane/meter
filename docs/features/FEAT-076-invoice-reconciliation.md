@@ -29,8 +29,8 @@ the claim into a figure anyone can check.
 A port in `finops_core` names the read; a fake answers in tests and an AWS adapter calls the
 Invoicing API's `ListInvoiceSummaries` through the credential broker. The `invoices`
 collector writes `billing_period` and `invoice_detail` rows at the grain of a whole invoice,
-because AWS returns no line items. Each cost row carries the `invoice_id` its CUR 2.0 line
-names, so the comparison is a sum over the rows of one invoice, computed when it is read so
+because AWS returns no line items. Each cost row carries the `invoice_id` its row in AWS's
+FOCUS export names, so the comparison is a sum over the rows of one invoice, computed when it is read so
 it cannot drift from either side. The tolerance is 0.01 percent of the invoice, modelled, a
 named constant to revisit once a real invoice has been compared.
 
@@ -60,5 +60,4 @@ are classified in `docs/09-DATA-CLASSIFICATION.md` when the tables land.
 ## Not doing
 
 Invoice line items, because AWS's summary API has none. Invoices from any provider but AWS.
-Converting between currencies. Reading AWS's FOCUS export instead of CUR 2.0, which is
-OPEN-21. Deciding when a closed period is final, which is OPEN-08.
+Converting between currencies. Deciding when a closed period is final, which is OPEN-08.
