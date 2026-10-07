@@ -88,17 +88,16 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-07 | P9 widened to the instances.vantage.sh data, every Region, polled every 8 hours | Done | The owner asked for the data instances.vantage.sh shows, in Meter's own database and kept current by polling, and decided: every commercial Region; on demand, reserved, Savings Plans and spot; EC2 with EBS, RDS, ElastiCache, Redshift and OpenSearch; every 8 hours. Recorded as section 14 of `docs/specs/2026-10-05-p9-price-catalog-design.md`, the widened TASK-P9-001, 003, 004, 005, 010 and 011 and the new TASK-P9-012 and 013 in `docs/plans/P9-implementation-plan.md`, FEAT-071 and FEAT-072, CHG-0115. Every price and every non EC2 spec comes through the endpoint in us-east-1 already approved; spot and Savings Plans need a path into each Region, OPEN-17, and spot history needs a limit, OPEN-18, both with a recommendation and not asked | The owner's answers to OPEN-17 and OPEN-18. P9 follows P8, which has TASK-P8-010, 011, 014 and 015 left |
 | 2026-10-07 | OPEN-17 answered: a function outside the VPC reads spot and Savings Plans | Done | The owner chose C for spot prices and Savings Plans rates in every Region: a small function outside the VPC that writes rows to S3, as approved for Budgets and Support, about 2,700 runs a month inside the Lambda always free allowance, under 1 USD a month (modelled), over endpoints in every Region at roughly 440 USD a month (modelled). Recorded in section 14.5 of `docs/specs/2026-10-05-p9-price-catalog-design.md`, TASK-P9-001, 012 and 013 of `docs/plans/P9-implementation-plan.md`, OPEN-17, CHG-0116, FEAT-071 and the map | OPEN-18, how much spot history is kept. P9 follows P8, which has TASK-P8-010, 011, 014 and 015 left |
 | 2026-10-07 | OPEN-18 answered: spot keeps the latest per pool plus 90 days of daily lows and highs | Done | The owner chose the bounded history: `spot_price`, the latest reading per pool, replaced each run, and `spot_price_daily`, each day's low and high per pool, kept for 90 days. Recorded as section 14.7 of `docs/specs/2026-10-05-p9-price-catalog-design.md`, TASK-P9-003 and 013 of `docs/plans/P9-implementation-plan.md`, OPEN-18, CHG-0117, FEAT-071 and the map. P9 has no open question left | P9 follows P8, which has TASK-P8-010, 011, 014 and 015 left |
+| 2026-10-07 | TASK-P8-010: saved views and the report library, FEAT-068 | Done | Migration 0028 adds `saved_view`, its section 6 invariants as constraints and its screens copied from `finops_api/screens.py`, which a test holds to `sections.ts`. The guard gains `OwnedOrShared`, ADR-0032. Five routes under `/reports/views`; a refused change answers rather than raises so its DENIED audit row commits. The client gains `patch` and `delete`, Save view sits beside Export, and the Report Library opens, renames, duplicates, shares, deletes and exports. Raised OPEN-19 and ISS-255 | `finops_api/routes/views.py:94`, `finops_api/guards.py:97`, `finops_api/db/repositories/views.py:33`, `finops-web/src/screens/ReportLibraryScreen.tsx:168`, `finops-web/src/shell/SaveView.tsx:21` |
 
 ## Next action
 
-**P8 is in build on branch `p8-build`, first by the owner's choice on 2026-10-05.**
-TASK-P8-001 to TASK-P8-009, TASK-P8-016 and TASK-P8-018 are done: the glass themes, the
-Framework navigation, filters in the query string, FOCUS and Framework names on every screen,
-the chart set, tables that sort and total, Cost Explorer, the spend forecast, Excel and CSV
-export, the look as drawn held at six widths by a journey, and one search box that narrows every
-screen to an account and opens services and resources. TASK-P8-012, the Overview as drawn, is
-next, then TASK-P8-013 and TASK-P8-017, then TASK-P8-010, TASK-P8-011, TASK-P8-014 and
-TASK-P8-015.
+**P8 is in build on branch `p8-build`, first by the owner's choice on 2026-10-05.** 15 of
+18 tasks are done, counted from the plan's statuses. Left: TASK-P8-011, TASK-P8-014 and TASK-P8-015. TASK-P8-010 landed on
+2026-10-07: saved views and the report library, FEAT-068, read through a fifth guard rule for a
+row a person may share, ADR-0032. TASK-P8-011, scheduled reports, is next, and OPEN-19 asks
+whether the library lists a person's exports, recommended there. When P8 is done, `p8-build`
+merges into main with `--no-ff`, locally.
 Every sub project through P7 is delivered in its first cut. P9, the EC2 and EBS price catalog, is specified, planned, approved by the owner
 on 2026-10-05 and merged as documents, and the hub's path to AWS is chosen, OPEN-16: interface
 endpoints for every service that has one, and two functions outside the VPC for Budgets and

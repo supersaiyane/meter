@@ -44,7 +44,7 @@ Status: `OPEN`, `IN PROGRESS`, `FIXED`, `WONT FIX`, `PARKED`, `CLOSED`.
 <!-- generated:issue-register start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-253 issues. 152 fixed, 99 open, 0 parked.
+254 issues. 152 fixed, 100 open, 0 parked.
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in `tasks/STATUS.md`.
 
@@ -254,6 +254,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-248 | MEDIUM | The realized savings screen printed each verdict by its code, VERIFIED among them, and the raw identifier test could not see it | FIXED | `finops-web/src/screens/WasteSavingsScreen.tsx` headed each verdict total with the code itself. `rawIdentifiers.test.tsx` reads the page text with a word boundary, and the heading before the tile ended in a letter, so SavingsVERIFIED never matched. Found 2026-10-05 when the Export menu put a full stop before it. Fixed the same day: the tile names the verdict through `verdictName`. |
 | ISS-249 | MEDIUM | An export record names the person who made it, and no retention job or erasure reaches report_run | OPEN | `report_run`, FEAT-067, holds the principal of every export file. It is classified personal in `docs/09-DATA-CLASSIFICATION.md`, but `scripts/ops/erase_principal.py` does not delete or tombstone its rows and no retention job reads it, the gap ISS-226 records for the P7 tables. Found 2026-10-05 while classifying the table. |
 | ISS-252 | MEDIUM | The search box finds resources by scanning the tenant's resources, with no index for the text | OPEN | `q` on `/api/v1/inventory/resources`, FEAT-075, matches a substring of the name or the ARN in any letter case. `topology_node` is indexed by tenant, account and region, and by run, so the match reads every resource the scope reaches and the bound of three to 200 characters and eight results limits what comes back, not what is read. Nothing has measured it: the tests seed five resources, and no estate of 1,399 accounts has been read. The usual answer is a trigram index on the two columns, which needs the `pg_trgm` extension in the database and a migration built concurrently, and is a decision about the database for the owner. |
+| ISS-255 | MEDIUM | A saved view names its owner, and no retention job or erasure reaches saved_view | OPEN | `saved_view`, FEAT-068, holds the principal who saved each view and the names they chose. It is classified personal in `docs/09-DATA-CLASSIFICATION.md`, but `scripts/ops/erase_principal.py` does not reach it and no retention job reads it, the gap ISS-226 and ISS-249 record for the P7 tables and `report_run`. Erasing a shared view also takes it from everyone it was shared with, which is a decision as well as a deletion. Found 2026-10-07 while classifying the table. |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |

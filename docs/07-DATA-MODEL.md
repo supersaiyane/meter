@@ -784,8 +784,42 @@ Four check constraints hold it: the format is one of two, the counts are never n
 person is named and the view is a path, and a global scope names no accounts. The accounts are
 a list rather than a count, because a count says how much was taken and the list says what,
 which is the question an audit asks. The guard confines the table to its person through
-`ByPrincipal`, ADR-0029, so the report library, TASK-P8-010, lists a reader's own exports and
-nobody else's. No retention job reads it and `erase_principal` does not reach it, ISS-249.
+`ByPrincipal`, ADR-0029, so a reader could list their own exports and nobody else's, which no
+screen does yet, OPEN-19. No retention job reads it and `erase_principal` does not reach it,
+ISS-249.
+
+### Saved views, P8
+
+Migration `0028_saved_view`, FEAT-068. A screen and its query under a name, kept by the person
+who saved it or shared with the tenant. Configuration and never data: no column holds a figure,
+so opening a view reads its screen afresh in the opener's scope.
+
+```sql
+CREATE TABLE saved_view (
+    view_id      UUID         PRIMARY KEY,
+    tenant_id    UUID         NOT NULL REFERENCES tenant (tenant_id),
+    owner_id     TEXT         NOT NULL,      -- who saved it
+    name         TEXT         NOT NULL,
+    screen_path  TEXT         NOT NULL,      -- a screen the navigation knows
+    query        JSONB        NOT NULL,      -- its query string as an object
+    visibility   TEXT         NOT NULL,      -- PRIVATE or SHARED
+    created_at   TIMESTAMPTZ  NOT NULL,
+    updated_at   TIMESTAMPTZ  NOT NULL
+);
+CREATE INDEX ix_saved_view__owner ON saved_view (tenant_id, owner_id, updated_at);
+CREATE INDEX ix_saved_view__shared ON saved_view (tenant_id, updated_at)
+    WHERE visibility = 'SHARED';
+```
+
+Five check constraints hold it: the visibility is one of two, the owner and the name are not
+blank and the name is not over its length, the screen is one of the paths in
+`finops_api/screens.py` on the day the migration ran, the query is a JSON object, and a view is
+never changed before it was made. A screen added to the navigation widens the screen constraint
+in a migration of its own, and `tests/api/test_saved_views.py` reads the constraint back out of
+the database to hold it to the list. The guard reads the table through `OwnedOrShared`,
+ADR-0032: the owner reads their views, everybody in the tenant reads the shared ones, and only
+the owner's writes change a row. No retention job reads it and `erase_principal` does not reach
+it, ISS-255.
 
 ## Migration workflow, Alembic
 

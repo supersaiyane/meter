@@ -18,10 +18,20 @@ from __future__ import annotations
 from collections.abc import Sequence
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Literal
+from typing import Literal, Self
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    computed_field,
+    field_validator,
+    model_validator,
+)
+
+from finops_api.screens import SCREEN_PATHS
+from finops_core.constants import SAVED_VIEW_NAME_MAX_LENGTH
 
 
 class CoverageOut(BaseModel):
@@ -1961,3 +1971,125 @@ class ForecastOut(BaseModel):
     days: list[ForecastDayOut]
     ahead: list[ForecastMonthOut]
     backtest: list[ForecastTestOut]
+
+
+# --- saved views, FEAT-068 and TASK-P8-010 -------------------------------------------------
+
+#: P8 spec section 6, and the database's `ck_saved_view__named`.
+VIEW_NAME_MAX_LENGTH = SAVED_VIEW_NAME_MAX_LENGTH
+#: How much query a view keeps: keys, characters in a key, values under one key, and characters
+#: in a value. A screen's own parameters fit with room to spare, and a body cannot fill a row
+#: with anything else.
+VIEW_QUERY_MAX_KEYS = 40
+VIEW_QUERY_MAX_KEY_LENGTH = 64
+VIEW_QUERY_MAX_VALUES = 100
+VIEW_QUERY_MAX_VALUE_LENGTH = 2000
+
+ViewVisibility = Literal["PRIVATE", "SHARED"]
+#: A screen's query string as an object: a parameter given once is a string, and one given more
+#: than once is the list of its values, as the browser's own `URLSearchParams` holds them.
+ViewQuery = dict[str, str | list[str]]
+
+
+def view_name(name: str) -> str:
+    """A view's name without its surrounding space, refused when nothing else is left."""
+    stripped = name.strip()
+    if not stripped:
+        raise ValueError("a saved view needs a name that is not blank")
+    if any(character < " " for character in stripped):
+        raise ValueError("a saved view's name is one line of text")
+    return stripped
+
+
+def bounded_query(query: ViewQuery) -> ViewQuery:
+    """The query, refused when it holds more than any screen's parameters could."""
+    if len(query) > VIEW_QUERY_MAX_KEYS:
+        raise ValueError(f"a saved view keeps at most {VIEW_QUERY_MAX_KEYS} query parameters")
+    for key, value in query.items():
+        if not key or len(key) > VIEW_QUERY_MAX_KEY_LENGTH:
+            raise ValueError(
+                f"a query parameter's name is 1 to {VIEW_QUERY_MAX_KEY_LENGTH} characters"
+            )
+        values = [value] if isinstance(value, str) else value
+        if len(values) > VIEW_QUERY_MAX_VALUES:
+            raise ValueError(f"{key} has more than {VIEW_QUERY_MAX_VALUES} values")
+        if any(len(item) > VIEW_QUERY_MAX_VALUE_LENGTH for item in values):
+            raise ValueError(f"{key} has a value over {VIEW_QUERY_MAX_VALUE_LENGTH} characters")
+    return query
+
+
+class SavedViewIn(BaseModel):
+    """A screen and its query, named, kept for oneself or shared with the tenant. FEAT-068.
+
+    Configuration and never data, P8 spec section 5.6. Nothing here is a figure, so opening the
+    view reads its screen afresh in the opener's own scope, and a view saved by a reader of the
+    whole estate shows a narrowed colleague only what their scope reaches.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    name: str = Field(min_length=1, max_length=VIEW_NAME_MAX_LENGTH)
+    screen_path: str
+    query: ViewQuery = Field(default_factory=dict)
+    visibility: ViewVisibility = "PRIVATE"
+
+    @field_validator("name")
+    @classmethod
+    def _named(cls, name: str) -> str:
+        return view_name(name)
+
+    @field_validator("screen_path")
+    @classmethod
+    def _known(cls, path: str) -> str:
+        if path not in SCREEN_PATHS:
+            raise ValueError(f"{path} is not a screen the navigation knows")
+        return path
+
+    @field_validator("query")
+    @classmethod
+    def _bounded(cls, query: ViewQuery) -> ViewQuery:
+        return bounded_query(query)
+
+
+class SavedViewPatchIn(BaseModel):
+    """A new name, a new visibility, or both, for a view the reader saved.
+
+    The screen and the query are what a view is, so a different one is a different view, saved
+    anew, and this refuses them rather than ignoring them.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    name: str | None = Field(default=None, min_length=1, max_length=VIEW_NAME_MAX_LENGTH)
+    visibility: ViewVisibility | None = None
+
+    @field_validator("name")
+    @classmethod
+    def _named(cls, name: str | None) -> str | None:
+        return None if name is None else view_name(name)
+
+    @model_validator(mode="after")
+    def _changes_something(self) -> Self:
+        if self.name is None and self.visibility is None:
+            raise ValueError("a change names a new name, a new visibility, or both")
+        return self
+
+
+class SavedViewOut(BaseModel):
+    """One saved view, as the person reading it sees it. FEAT-068.
+
+    `owned` says whether the reader saved it, which decides whether they may rename, share or
+    delete it. Who saved somebody else's shared view is not said: the owner is a person, as in
+    ADR-0029, and sharing a view shares the view, not who made it.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    view_id: UUID
+    name: str
+    screen_path: str
+    query: ViewQuery
+    visibility: ViewVisibility
+    owned: bool
+    created_at: datetime
+    updated_at: datetime

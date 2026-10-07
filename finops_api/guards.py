@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from sqlalchemy import ColumnElement, Select, Table, and_, false, select, tuple_
+from sqlalchemy import ColumnElement, Select, Table, and_, false, or_, select, tuple_
 
 from finops_core.domain.tenant import Scope
 
@@ -93,10 +93,28 @@ class ByPrincipal:
     principal_column: str
 
 
+@dataclass(frozen=True)
+class OwnedOrShared:
+    """The row belongs to a person until they share it with the tenant. ADR-0032.
+
+    A private row is read by its owner alone, as `ByPrincipal` reads. A shared one is read by
+    everybody in the tenant whatever accounts their scope names, which is safe only because
+    what such a row holds is configuration rather than a figure: a saved view names a screen
+    and a query, and opening it reads the screen afresh in the opener's own scope. A global
+    scope does not widen it to a colleague's private rows, and a scope carrying no principal
+    reads nothing, the fail closed case.
+    """
+
+    principal_column: str
+    visibility_column: str
+    #: The visibility that opens a row to the whole tenant.
+    shared: str
+
+
 #: Tables holding tenant data, and how the account a row belongs to is found.
 #: `None` means the table carries no account identifier and none can be reached
 #: from it, so the tenant filter is the whole of its scoping.
-SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | None] = {
+SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOrShared | None] = {
     # P7, ADR-0029. A question is its asker's own words, readable by nobody else.
     "assistant_exchange": ByPrincipal("principal_id"),
     # P7, FEAT-041. A digest sums spend across every account in a team or the whole
@@ -108,6 +126,9 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | None] =
     "redaction_event": ByPrincipal("principal_id"),
     # P8, FEAT-067. An export record is its maker's own, like a question is its asker's.
     "report_run": ByPrincipal("principal_id"),
+    # P8, FEAT-068 and ADR-0032. A saved view is its owner's until they share it, and a shared
+    # one is configuration everybody in the tenant may open, each in their own scope.
+    "saved_view": OwnedOrShared("owner_id", "visibility", "SHARED"),
     "cloud_account": ByAccount("account_id", "provider"),
     "org_node": None,
     "ingest_run": None,
@@ -290,6 +311,19 @@ def scope_predicate(table: Table, scope: Scope) -> ColumnElement[bool]:
             clauses.append(false())
         else:
             clauses.append(table.c[rule.principal_column] == scope.principal_id)
+        return and_(*clauses)
+    if isinstance(rule, OwnedOrShared):
+        # Before the global check too, ADR-0032. Sharing is the owner's act, so a reader of the
+        # whole estate opens their own rows and the shared ones, never a colleague's private one.
+        if scope.principal_id is None:
+            clauses.append(false())
+        else:
+            clauses.append(
+                or_(
+                    table.c[rule.principal_column] == scope.principal_id,
+                    table.c[rule.visibility_column] == rule.shared,
+                )
+            )
         return and_(*clauses)
     if rule is None or scope.is_global:
         return and_(*clauses)

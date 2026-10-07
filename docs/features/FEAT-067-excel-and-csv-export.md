@@ -110,5 +110,5 @@ and absent from a screen that reads none.
 
 A CSV has no About sheet. It holds every row and nothing else, and the workbook is the file
 that says what it is. The showback CSV carries its period, timestamps and coverage on every
-row, FEAT-045. Exports to a schedule are FEAT-069, and the library that lists a person's
-records is TASK-P8-010.
+row, FEAT-045. Exports to a schedule are FEAT-069. No screen lists a person's records yet,
+and whether the report library should is OPEN-19.

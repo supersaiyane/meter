@@ -117,3 +117,16 @@ export function useExportRegistry(): {
   }, [held]);
   return { views, register };
 }
+
+/** The navigation state the report library's Export sends a reader with, FEAT-068. */
+export const OPEN_EXPORT = { openExport: true } as const;
+
+/** True when the reader arrived from the report library's Export rather than any other way. */
+export function asksForExport(state: unknown): boolean {
+  return (
+    typeof state === 'object' &&
+    state !== null &&
+    'openExport' in state &&
+    state.openExport === true
+  );
+}

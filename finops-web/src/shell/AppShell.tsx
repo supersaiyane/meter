@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useLocation, useSearchParams } from 'react-router';
 
 import { ACCOUNT_KEY, useChosenAccount } from '../api/account';
-import { ExportContext, useExportRegistry } from '../api/exportViews';
+import { ExportContext, asksForExport, useExportRegistry } from '../api/exportViews';
 import { useAccountChoices } from '../api/queries';
 import { CoverageBanner } from '../components/CoverageBanner';
 import { FreshnessIndicator } from '../components/FreshnessIndicator';
@@ -22,6 +22,7 @@ import {
   tabsFor,
 } from './sections';
 import { ScreenTabs } from './ScreenTabs';
+import { SaveView } from './SaveView';
 import { SearchBox } from './SearchBox';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -130,7 +131,8 @@ function ChosenAccount({ number }: { readonly number: string }) {
 
 export function AppShell({ children, now }: AppShellProps) {
   const meta = useAggregateMeta();
-  const { pathname } = useLocation();
+  const location = useLocation();
+  const { pathname } = location;
   const title = screenTitleFor(pathname);
   const tabbed = tabsFor(pathname);
   const [params] = useSearchParams();
@@ -304,7 +306,8 @@ export function AppShell({ children, now }: AppShellProps) {
           </div>
           <div data-testid="toolbar">
             <SearchBox />
-            <ExportMenu views={exports.views} />
+            <SaveView />
+            <ExportMenu views={exports.views} openOnArrival={asksForExport(location.state)} />
             <ThemeToggle />
           </div>
         </div>

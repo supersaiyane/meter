@@ -49,6 +49,8 @@ function estate({ accountsFail = false } = {}) {
       }
       return Promise.reject(new Error(`no stub: ${path}`));
     },
+    patch: () => Promise.reject(new Error('no patch stub')),
+    delete: () => Promise.reject(new Error('no delete stub')),
     getFile: () => Promise.reject(new Error('no file stub')),
     post: () => Promise.reject(new Error('no write stub')),
   };

@@ -29,13 +29,13 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 25 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 41 in 15 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Screens built | 26 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 44 in 16 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 27 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 172 | test_*.py under tests/ |
-| Test functions | 2358 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 28 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 174 | test_*.py under tests/ |
+| Test functions | 2381 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -679,6 +679,11 @@ meter/
 │   │                          of the things being ranked, one device each, because
 │   │                          a mark with two meanings cannot be read. Used by the
 │   │                          allocation screen and the waste queue
+│   ├── screens/ReportLibraryScreen.tsx  the Report Library, FEAT-068: the reader's
+│   │                          saved views and the shared ones, opened, renamed,
+│   │                          duplicated, shared, deleted and exported, with the
+│   │                          changes their owner's alone. libraryModel.ts holds
+│   │                          what it says about each view
 │   ├── screens/ForecastScreen.tsx  Forecasts, FEAT-066: the one screen that draws a
 │   │                          forecast, always a range beside its accuracy, or the
 │   │                          reason where the figure would be. forecastModel.ts
@@ -770,11 +775,16 @@ meter/
 │       │                      remembered in their browser
 │       ├── shell/AppShell.tsx the frame, as drawn: a glass rail listing every group
 │       │                      and screen, collapsing to 64 px, and a column topped
-│       │                      by the title and scope line, a toolbar with Export
-│       │                      and the theme, and the sticky trust line. TASK-P8-018
+│       │                      by the title and scope line, a toolbar with Save view,
+│       │                      Export and the theme, and the sticky trust line. TASK-P8-018
 │       ├── shell/ExportMenu.tsx  Export beside every screen title: each view the
 │       │                      screen reads, as a workbook or a CSV the server
-│       │                      writes and the browser saves under its name. FEAT-067
+│       │                      writes and the browser saves under its name. FEAT-067.
+│       │                      Opens itself when the report library's Export sent
+│       │                      the reader, FEAT-068
+│       ├── shell/SaveView.tsx  Save view beside Export on every built screen and
+│       │                      tab: the screen and its query under a name, private
+│       │                      or shared, never a figure. FEAT-068
 │       ├── shell/ThemeToggle.tsx  System, Light and Dark as three radios in the
 │       │                      toolbar, Light the default since 2026-10-05, so the
 │       │                      way back to the system never passes through the
@@ -784,7 +794,8 @@ meter/
 │       │                      pre P8 path resolves through. One matchFor behind
 │       │                      screenTitleFor, activeGroupFor and tabsFor, so the
 │       │                      heading, the open group and the open tab cannot
-│       │                      disagree
+│       │                      disagree. isSavable says which addresses a view
+│       │                      can be saved from
 │       ├── shell/ScreenTabs.tsx  a merged screen's views as links under its
 │       │                      heading, the open one marked with aria-current
 │       ├── shell/filters.ts   useFilters: a screen's filters live in the query
@@ -840,7 +851,10 @@ meter/
 │       │   ├── queries.ts     one hook per route, plus useQuerySurface for a
 │       │   │                  surface whose route does not exist yet
 │       │   ├── exportViews.ts the views a screen offers for export, registered
-│       │   │                  by the query hooks, and only from inside a screen
+│       │   │                  by the query hooks, and only from inside a screen,
+│       │   │                  and the state that opens the menu from the library
+│       │   ├── savedViews.ts  a saved view's address both ways: the query it
+│       │   │                  keeps, and the address that opens it. FEAT-068
 │       │   ├── fixtureSeam.ts FIXTURE_SURFACES and resolveSurface. Route
 │       │   │                  templates, not urls, so a detail path matches.
 │       │   │                  A failing route raises, it never falls back
@@ -1162,6 +1176,9 @@ meter/
 │   ├── deps.py                the first scope point. Scope comes from the resolver
 │   ├── middleware.py          request id on every line and back on the response
 │   ├── schemas.py             the meta envelope. degraded is computed, never set
+│   ├── screens.py             every screen and tab the navigation knows, which a
+│   │                          saved view may name. Held to sections.ts by a test,
+│   │                          and copied into migration 0028's constraint
 │   ├── exports/               FEAT-067. One export responder: @exportable on every
 │   │                          list route a screen reads answers format=xlsx with a
 │   │                          Data sheet and an About this export sheet, and
@@ -1188,6 +1205,9 @@ meter/
 │   │   ├── forecast.py        FEAT-066's GET /cost/forecast: the month end and three
 │   │   │                      months ahead, each a range or the reason, the method
 │   │   │                      named and its backtest published beside it
+│   │   ├── views.py           FEAT-068's /reports/views: list, save, open, rename
+│   │   │                      or share, and delete. A refused change answers 403 or
+│   │   │                      404 rather than raising, so its audit row commits
 │   │   ├── explore.py         FEAT-065's GET /cost/explore: two groupings over
 │   │   │                      eight FOCUS columns and the period's own tag keys,
 │   │   │                      a period and the one before it. Refuses a view it
@@ -1221,13 +1241,16 @@ meter/
 │   │                          data that does not exist yet, ISS-148. Coverage
 │   │                          here counts workspaces, not findings
 │   ├── guards.py              the scope guard. No default, empty means nothing.
-│   │                          Five shapes: tenant only, ByAccount for a row
+│   │                          Six shapes: tenant only, ByAccount for a row
 │   │                          that names its account, Through for one that
 │   │                          does not and inherits from the row it hangs off,
 │   │                          PayerWide for a row about the whole payer, which a
 │   │                          narrowed scope reads none of, and ByPrincipal for a
 │   │                          row that belongs to a person, which only that person
-│   │                          reads and a global scope does not widen, ADR-0029.
+│   │                          reads and a global scope does not widen, ADR-0029,
+│   │                          and OwnedOrShared for a row its owner may share
+│   │                          with the tenant, which only configuration may use,
+│   │                          ADR-0032.
 │   │                          Through recurses, so a finding is scoped through
 │   │                          its definition through its instance
 │   ├── tools.py               the tool table, eleven rows, each a name, a route,
@@ -1282,7 +1305,9 @@ meter/
 │                              and the cost of each UTC day, a zero for a day that
 │                              billed nothing, so a gap and a quiet day differ.
 │                              reports.py writes one report_run row per export
-│                              file, in the transaction of the read it records
+│                              file, in the transaction of the read it records.
+│                              views.py holds saved views: every write confined
+│                              to the owner as well as the scope, and audited
 │
 ├── alembic.ini                no database URL in it, env.py reads the settings
 ├── migrations/                the only way the schema changes
@@ -1340,6 +1365,10 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0028_saved_view.py  FEAT-068. A screen and its query under a name,
+│       │                      private or shared. The screen is one the navigation
+│       │                      knew that day, the query a JSON object, held by
+│       │                      constraints
 │       ├── 0027_commitment_day.py  TASK-P8-013, FEAT-024. One row per kind of
 │       │                      commitment per day: committed, used, eligible and
 │       │                      covered, each held by a constraint. Payer wide

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useApi } from '../api/apiContext';
 import { withFormat, type ExportFormat, type ExportView } from '../api/exportViews';
@@ -23,20 +23,33 @@ const FORMATS: readonly { readonly format: ExportFormat; readonly label: string 
 
 export interface ExportMenuProps {
   readonly views: readonly ExportView[];
+  /**
+   * Open as the screen arrives, because the reader came from the report library's Export,
+   * FEAT-068, and the file they asked for should be one choice of format away.
+   */
+  readonly openOnArrival?: boolean;
 }
 
-export function ExportMenu({ views }: ExportMenuProps) {
+export function ExportMenu({ views, openOnArrival = false }: ExportMenuProps) {
   // Nothing on this screen is a table the API exports, a map or one resource's page, and a
   // control that can only fail is worse than none. Decided before anything reaches for the
   // client, so a shell with nothing to export needs none.
-  return views.length === 0 ? null : <Offered views={views} />;
+  return views.length === 0 ? null : <Offered views={views} openOnArrival={openOnArrival} />;
 }
 
-function Offered({ views }: ExportMenuProps) {
+function Offered({ views, openOnArrival = false }: ExportMenuProps) {
   const client = useApi();
   const menu = useRef<HTMLDetailsElement>(null);
   const [working, setWorking] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
+
+  // Once, when the menu first has something to offer, and never again on its own: a reader who
+  // closes it has answered, and a menu that reopened itself would be arguing with them.
+  useEffect(() => {
+    if (openOnArrival && menu.current !== null) {
+      menu.current.open = true;
+    }
+  }, [openOnArrival]);
 
   async function download(view: ExportView, format: ExportFormat): Promise<void> {
     setWorking(`${view.path} ${format}`);

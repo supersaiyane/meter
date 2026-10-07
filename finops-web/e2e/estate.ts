@@ -54,6 +54,37 @@ export async function demoEstate(page: Page): Promise<void> {
     meta: META,
   });
 
+  // FEAT-068: the report library, one view of the reader's own and one a colleague shared, so the
+  // sweeps measure a library with both kinds of row rather than one with nothing in it.
+  await stub(page, '/api/v1/reports/views', {
+    data: [
+      {
+        view_id: 'v-accounts',
+        name: 'Active accounts',
+        screen_path: '/inventory/accounts',
+        query: { status: 'ACTIVE' },
+        visibility: 'PRIVATE',
+        owned: true,
+        created_at: '2026-09-30T08:00:00Z',
+        updated_at: '2026-10-01T08:00:00Z',
+      },
+      {
+        view_id: 'v-explorer',
+        name: 'Spend by service, this quarter',
+        screen_path: '/analyze/explorer',
+        query: { group: 'service' },
+        visibility: 'SHARED',
+        owned: false,
+        created_at: '2026-09-20T08:00:00Z',
+        updated_at: '2026-09-20T08:00:00Z',
+      },
+    ],
+    meta: {
+      ...META,
+      scope_coverage: { visible: 2, total: 2, is_partial: false, unit: 'saved views' },
+    },
+  });
+
   // FEAT-045 through FEAT-067: the showback rows the Export screen shows and its menu writes.
   // They add up to the summary's Effective Cost, which is the claim the screen makes.
   await stub(page, '/api/v1/cost/showback', {

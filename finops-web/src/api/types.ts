@@ -1336,3 +1336,39 @@ export interface ApiForecast {
   readonly ahead: readonly ApiForecastMonth[];
   readonly backtest: readonly ApiForecastTest[];
 }
+
+/** Who besides its owner may open a saved view, FEAT-068. */
+export type SavedViewVisibility = 'PRIVATE' | 'SHARED';
+
+/** A screen's query string as an object: a parameter's value, or every value of a repeated one. */
+export type SavedViewQuery = Readonly<Record<string, string | readonly string[]>>;
+
+/**
+ * `GET /reports/views`, one saved view as its reader sees it, FEAT-068. Configuration and never
+ * data: a screen and its query under a name, so opening it reads the screen in the reader's scope.
+ */
+export interface ApiSavedView {
+  readonly view_id: string;
+  readonly name: string;
+  readonly screen_path: string;
+  readonly query: SavedViewQuery;
+  readonly visibility: SavedViewVisibility;
+  /** The reader saved it, so may rename, share or delete it. Who saved anyone else's is not said. */
+  readonly owned: boolean;
+  readonly created_at: string;
+  readonly updated_at: string;
+}
+
+/** `POST /reports/views`. */
+export interface SavedViewIn {
+  readonly name: string;
+  readonly screen_path: string;
+  readonly query: SavedViewQuery;
+  readonly visibility: SavedViewVisibility;
+}
+
+/** `PATCH /reports/views/{view_id}`: a new name, a new visibility, or both. */
+export interface SavedViewChange {
+  readonly name?: string;
+  readonly visibility?: SavedViewVisibility;
+}

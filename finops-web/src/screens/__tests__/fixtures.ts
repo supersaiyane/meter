@@ -73,6 +73,17 @@ export const posted: string[] = [];
  */
 export const postedBodies: unknown[] = [];
 
+/**
+ * Every change and deletion a screen made, FEAT-068, in order, with what each carried. Its own
+ * list rather than more entries in `posted`, so a test of a refusal that asserts nothing was
+ * posted is not passed by a deletion it never looked for.
+ */
+export const changed: {
+  readonly method: 'PATCH' | 'DELETE';
+  readonly path: string;
+  readonly body: unknown;
+}[] = [];
+
 export function clientReturning(
   answers: Readonly<Record<string, ApiEnvelope<unknown>>>,
   failure?: Error,
@@ -91,6 +102,24 @@ export function clientReturning(
         return Promise.reject(new Error(`no file stub for ${path}`));
       }
       return Promise.resolve({ name: fileNameOf(null, path), body: new Blob([answer]) });
+    },
+    patch: <T>(path: string, body: unknown): Promise<ApiEnvelope<T>> => {
+      changed.push({ method: 'PATCH', path, body });
+      if (failure) return Promise.reject(failure);
+      const answer = answers[path];
+      if (answer === undefined) {
+        return Promise.reject(new Error(`no stub for ${path}`));
+      }
+      return Promise.resolve(answer as ApiEnvelope<T>);
+    },
+    delete: <T>(path: string): Promise<ApiEnvelope<T>> => {
+      changed.push({ method: 'DELETE', path, body: undefined });
+      if (failure) return Promise.reject(failure);
+      const answer = answers[path];
+      if (answer === undefined) {
+        return Promise.reject(new Error(`no stub for ${path}`));
+      }
+      return Promise.resolve(answer as ApiEnvelope<T>);
     },
     post: <T>(path: string, body?: unknown): Promise<ApiEnvelope<T>> => {
       posted.push(path);
