@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 75 total, 13 specified, 13 in build, 40 delivered |
-| Decisions | 32 architecture decision records |
-| Changes | 118 recorded |
-| Issues | 152 fixed, 100 open, 0 parked |
+| Features | 75 total, 13 specified, 13 in build, 41 delivered |
+| Decisions | 33 architecture decision records |
+| Changes | 119 recorded |
+| Issues | 152 fixed, 101 open, 0 parked |
 | Open questions | 19 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -34,16 +34,13 @@ Generated from `docs/registry.yaml`. Change a status there, then run `make doc-s
 
 ## Where the project stands right now
 
-**2026-10-07.** P8 stands at 15 of 18 tasks done, counted from the plan's statuses.
-TASK-P8-010 landed on `p8-build`: Save view beside Export, and the Report Library, which opens,
-renames, duplicates, shares, deletes and exports saved views, FEAT-068. A view holds no figure,
-so it opens in the opener's scope, and a fifth guard rule reads a row a person may share,
-ADR-0032. It raised OPEN-19, whether the library also lists a person's exports, and ISS-255,
-erasure not reaching the new table. Left: TASK-P8-011, TASK-P8-014 and TASK-P8-015.
-
-TASK-P8-011, scheduled reports, was paused part built on 2026-10-07 at the owner's stop, in
-the worktree `../meter-p8-011`; `docs/checkpoint.md` says what is written and what is left.
-The repository has no git remote, so nothing has been pushed.
+**2026-10-07.** P8 stands at 16 of 18 tasks done, counted from the plan's statuses.
+TASK-P8-011 landed on `p8-build`: scheduled reports, FEAT-069. A schedule renders a saved view's
+route once per recipient, within their own access, in the API by ADR-0033, keeps each file in the
+data bucket and lists it on the Scheduled screen, where a route checks access again. Nothing is
+sent until OPEN-11 and nothing deleted until OPEN-15. It raised ISS-256, erasure not reaching
+`report_schedule`. TASK-P8-010 landed before it, saved views and the report library. Left:
+TASK-P8-014 and TASK-P8-015. The repository has no git remote, so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -215,7 +212,7 @@ ISS-003.
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
-| P8 | 15 | 0 | 0 | 0 | 3 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
+| P8 | 16 | 0 | 0 | 0 | 2 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 0 | 0 | 0 | 0 | 13 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -426,6 +423,7 @@ ISS-003.
 | `TASK-P8-008` | Done 2026-10-05 | spend forecast |
 | `TASK-P8-009` | Done 2026-10-05 | Excel and CSV export behind the guard |
 | `TASK-P8-010` | Done 2026-10-07 | saved views and the report library |
+| `TASK-P8-011` | Done 2026-10-07 | scheduled reports, rendered for each recipient |
 | `TASK-P8-012` | Done 2026-10-06 | persona dashboards on the Overview |
 | `TASK-P8-013` | Done 2026-10-06 | every remaining screen in the new system |
 | `TASK-P8-016` | Done | the account picker on every screen |

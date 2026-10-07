@@ -40,6 +40,7 @@ import { PlatformScreen } from './screens/PlatformScreen';
 import { AssistantScreen } from './screens/AssistantScreen';
 import { DigestsScreen } from './screens/DigestsScreen';
 import { ReportLibraryScreen } from './screens/ReportLibraryScreen';
+import { ScheduledReportsScreen } from './screens/ScheduledReportsScreen';
 
 /**
  * A route the navigation lists and no sub project has built yet.
@@ -158,6 +159,7 @@ export function App({
                 <Route path="/inventory/topology/geography" element={<GeographyScreen />} />
 
                 <Route path="/report/library" element={<ReportLibraryScreen />} />
+                <Route path="/report/scheduled" element={<ScheduledReportsScreen />} />
                 <Route path="/report/exports" element={<CostExportScreen />} />
 
                 <Route path="/assist" element={<AssistantScreen />} />

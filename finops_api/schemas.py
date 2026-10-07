@@ -31,7 +31,7 @@ from pydantic import (
 )
 
 from finops_api.screens import SCREEN_PATHS
-from finops_core.constants import SAVED_VIEW_NAME_MAX_LENGTH
+from finops_core.constants import REPORT_RECIPIENTS_MAX, SAVED_VIEW_NAME_MAX_LENGTH
 
 
 class CoverageOut(BaseModel):
@@ -2093,3 +2093,142 @@ class SavedViewOut(BaseModel):
     owned: bool
     created_at: datetime
     updated_at: datetime
+
+
+# --- report schedules and runs, FEAT-069 and TASK-P8-011 -------------------------------------
+
+ReportFormat = Literal["xlsx", "csv"]
+ReportCadence = Literal["DAILY", "WEEKLY", "MONTHLY", "MONTH_CLOSE"]
+ReportRunStatus = Literal["STREAMED", "RENDERED", "SENT", "FAILED"]
+#: The longest identifier a recipient may have: an email address's limit, which is the longest
+#: form a principal's identifier takes.
+RECIPIENT_MAX_LENGTH = 320
+#: The longest route and query a schedule keeps. A screen's query fits many times over.
+EXPORT_PATH_MAX_LENGTH = 2000
+
+
+def recipients_of(recipients: Sequence[str]) -> list[str]:
+    """Each person once, in the order given, without surrounding space, refused when blank."""
+    people: list[str] = []
+    for recipient in recipients:
+        person = recipient.strip()
+        if not person:
+            raise ValueError("a recipient is a person's identifier and cannot be blank")
+        if len(person) > RECIPIENT_MAX_LENGTH or any(character < " " for character in person):
+            raise ValueError(f"{person[:40]} is not a person's identifier")
+        if person not in people:
+            people.append(person)
+    return people
+
+
+class ScheduleIn(BaseModel):
+    """A saved view, one route its screen exports, a format, a cadence and who it is for.
+
+    The route comes from the screen's own Export list, so it is one the screen reads. Each run
+    renders it once per recipient in that recipient's scope, P8 spec section 5.7.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    view_id: UUID
+    export_path: str = Field(min_length=1, max_length=EXPORT_PATH_MAX_LENGTH)
+    format: ReportFormat
+    cadence: ReportCadence
+    recipients: list[str] = Field(min_length=1, max_length=REPORT_RECIPIENTS_MAX)
+
+    @field_validator("recipients")
+    @classmethod
+    def _people(cls, recipients: list[str]) -> list[str]:
+        return recipients_of(recipients)
+
+
+class SchedulePatchIn(BaseModel):
+    """Pause or resume a schedule, or change its format, cadence or recipients.
+
+    The view and the route are what a schedule is, so another one is a new schedule.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    enabled: bool | None = None
+    format: ReportFormat | None = None
+    cadence: ReportCadence | None = None
+    recipients: list[str] | None = Field(
+        default=None, min_length=1, max_length=REPORT_RECIPIENTS_MAX
+    )
+
+    @field_validator("recipients")
+    @classmethod
+    def _people(cls, recipients: list[str] | None) -> list[str] | None:
+        return None if recipients is None else recipients_of(recipients)
+
+    @model_validator(mode="after")
+    def _changes_something(self) -> Self:
+        if (
+            self.enabled is None
+            and self.format is None
+            and self.cadence is None
+            and self.recipients is None
+        ):
+            raise ValueError("a change names something to change")
+        return self
+
+
+class ScheduleOut(BaseModel):
+    """One of the reader's schedules. A schedule is its owner's alone, ADR-0029."""
+
+    model_config = ConfigDict(frozen=True)
+
+    schedule_id: UUID
+    #: None once the view is deleted, which a run reports before the schedule pauses.
+    view_id: UUID | None
+    #: The view's name, or None where its owner can no longer open it, which a run reports.
+    view_name: str | None
+    screen_path: str | None
+    export_path: str
+    format: ReportFormat
+    cadence: ReportCadence
+    recipients: list[str]
+    enabled: bool
+    next_run_at: datetime
+    created_at: datetime
+    updated_at: datetime
+
+
+class SchedulesOut(BaseModel):
+    """The reader's schedules, and what the deployment does with what they render."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: False where no bucket is configured, so nothing renders, which the screen says.
+    rendering: bool
+    #: How long a rendered file is kept, in the server's words so the screen cannot drift. OPEN-15.
+    retention: str
+    #: Where a rendered file goes. Until OPEN-11 names a channel, nowhere: it is kept and listed.
+    delivery: str
+    schedules: list[ScheduleOut]
+
+
+class ReportRunOut(BaseModel):
+    """One run made for the reader: a file they exported, or one a schedule rendered for them."""
+
+    model_config = ConfigDict(frozen=True)
+
+    run_id: UUID
+    schedule_id: UUID | None
+    #: The route the file was made from, and its query without the format.
+    view_path: str
+    view_query: str
+    format: ReportFormat
+    status: ReportRunStatus
+    rows: int
+    bytes: int
+    truncated: bool
+    failure_cause: str | None
+    failure_detail: str | None
+    #: True when a file is kept and can be fetched again through the file route.
+    has_file: bool
+    made_at: datetime
+    finished_at: datetime | None
+    as_of: datetime | None
+    collected_at: datetime | None

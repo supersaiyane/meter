@@ -5,7 +5,7 @@ import { keepAccount, useChosenAccount } from '../api/account';
 import { reasonOf } from '../api/client';
 import { OPEN_EXPORT } from '../api/exportViews';
 import { useChangeView, useDeleteView, useSaveView, useSavedViews } from '../api/queries';
-import { VIEW_NAME_MAX, hrefOf } from '../api/savedViews';
+import { VIEW_NAME_MAX, hrefOf, scheduleState } from '../api/savedViews';
 import type { ApiSavedView, SavedViewVisibility } from '../api/types';
 import { DataTable } from '../components/DataTable';
 import { StateBoundary } from '../components/StateBoundary';
@@ -260,6 +260,11 @@ export function ReportLibraryScreen() {
     void navigate(keepAccount(hrefOf(view), account), { state: OPEN_EXPORT });
   }
 
+  function scheduleView(view: ApiSavedView): void {
+    // Scheduled on the view's own screen, FEAT-069, where the routes it reads are known.
+    void navigate(keepAccount(hrefOf(view), account), { state: scheduleState(view) });
+  }
+
   const actions = (view: ApiSavedView) => (
     <div role="group" aria-label={`${view.name}, actions`} data-testid="library-actions">
       <button
@@ -270,6 +275,15 @@ export function ReportLibraryScreen() {
         }}
       >
         Export
+      </button>
+      <button
+        type="button"
+        data-testid="library-schedule"
+        onClick={() => {
+          scheduleView(view);
+        }}
+      >
+        Schedule
       </button>
       <button
         type="button"

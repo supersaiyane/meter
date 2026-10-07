@@ -29,13 +29,13 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 26 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 44 in 16 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Screens built | 27 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 45 in 17 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 28 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 174 | test_*.py under tests/ |
-| Test functions | 2381 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 29 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 178 | test_*.py under tests/ |
+| Test functions | 2423 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -333,6 +333,8 @@ meter/
 │   │                          why the api image carries this directory and only
 │   │                          this one. erase_principal.py, deliberately not an
 │   │                          API route. local_token.py mints a session.
+│   │                          local_bucket.py makes the data bucket in LocalStack
+│   │                          for make up, and refuses any other endpoint
 │   │                          restore_drill.py restores a copy into a scratch
 │   │                          database, migrates it, starts the application
 │   │                          against it and reads the freshness route. Refuses
@@ -486,6 +488,9 @@ meter/
 │       ├── quotas.py          QuotaSource
 │       ├── recommendations.py RecommendationSource, what Compute Optimizer, Cost
 │       │                      Optimization Hub and Trusted Advisor already know
+│       ├── reports.py         ReportStore and ReportSender, FEAT-069. The store is
+│       │                      the data bucket; the sender has a fake and no adapter
+│       │                      until OPEN-11 names a channel
 │       └── tickets.py         TicketSink. A fake and no adapter, since the
 │                              ticketing system is OPEN-05
 ├── finops_providers/          IN BUILD  aws/, grafana/, gcp/, azure/. The fakes
@@ -496,6 +501,8 @@ meter/
 │   │   ├── accounts.py        the exact org tree. Every call paginated
 │   │   ├── health.py          is the role usable, and if not, whose fix is it
 │   │   ├── platform_cost.py   the one Cost Explorer request, grouped
+│   │   ├── report_store.py    FEAT-069. Scheduled report files in the data bucket;
+│   │   │                      a key with nothing under it is NoData, not SchemaDrift
 │   │   ├── commitment.py      utilization and coverage, four Cost Explorer
 │   │   │                      calls. **Never yet run**, ISS-122. Savings
 │   │   │                      Plans report money and reservations report
@@ -679,6 +686,10 @@ meter/
 │   │                          of the things being ranked, one device each, because
 │   │                          a mark with two meanings cannot be read. Used by the
 │   │                          allocation screen and the waste queue
+│   ├── screens/ScheduledReportsScreen.tsx  Scheduled, FEAT-069: the reader's schedules,
+│   │                          paused, resumed and deleted, and the reports made for
+│   │                          them with a download where a file is kept.
+│   │                          scheduleModel.ts holds its words
 │   ├── screens/ReportLibraryScreen.tsx  the Report Library, FEAT-068: the reader's
 │   │                          saved views and the shared ones, opened, renamed,
 │   │                          duplicated, shared, deleted and exported, with the
@@ -782,6 +793,9 @@ meter/
 │       │                      writes and the browser saves under its name. FEAT-067.
 │       │                      Opens itself when the report library's Export sent
 │       │                      the reader, FEAT-068
+│       ├── shell/ScheduleView.tsx  the Schedule panel, opened on a view's own screen
+│       │                      from the library, offering the routes that screen
+│       │                      exports. FEAT-069
 │       ├── shell/SaveView.tsx  Save view beside Export on every built screen and
 │       │                      tab: the screen and its query under a name, private
 │       │                      or shared, never a figure. FEAT-068
@@ -1187,7 +1201,10 @@ meter/
 │   │                          and collectors, writers.py writes both files with a
 │   │                          hostile cell kept as text, responder.py records each
 │   │                          file in report_run. test_export_routes.py holds every
-│   │                          GET route to it or to an exemption with its reason
+│   │                          GET route to it or to an exemption with its reason.
+│   │                          scheduled.py is the report runner, ADR-0033: each due
+│   │                          schedule rendered as each recipient through its route
+│   │                          in process, kept in the data bucket, recorded
 │   ├── routes/                the seven P0 routes, all returning the envelope.
 │   │                          inventory.py holds P4's routes, counted above: the subgraph,
 │   │                          the estate
@@ -1205,6 +1222,8 @@ meter/
 │   │   ├── forecast.py        FEAT-066's GET /cost/forecast: the month end and three
 │   │   │                      months ahead, each a range or the reason, the method
 │   │   │                      named and its backtest published beside it
+│   │   ├── schedules.py       FEAT-069's /reports/schedules and /reports/runs, and
+│   │   │                      the file route that checks the reader's scope again
 │   │   ├── views.py           FEAT-068's /reports/views: list, save, open, rename
 │   │   │                      or share, and delete. A refused change answers 403 or
 │   │   │                      404 rather than raising, so its audit row commits
@@ -1307,7 +1326,9 @@ meter/
 │                              reports.py writes one report_run row per export
 │                              file, in the transaction of the read it records.
 │                              views.py holds saved views: every write confined
-│                              to the owner as well as the scope, and audited
+│                              to the owner as well as the scope, and audited.
+│                              schedules.py holds report schedules, the owner's
+│                              alone, and reports.py the run reader, ByPrincipal
 │
 ├── alembic.ini                no database URL in it, env.py reads the settings
 ├── migrations/                the only way the schema changes
@@ -1365,6 +1386,9 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0029_report_schedule.py  FEAT-069. The schedule, a trigger holding its
+│       │                      view visible to its owner; what a run records; and
+│       │                      which process runs each cadence
 │       ├── 0028_saved_view.py  FEAT-068. A screen and its query under a name,
 │       │                      private or shared. The screen is one the navigation
 │       │                      knew that day, the query a JSON object, held by
@@ -1534,6 +1558,9 @@ meter/
 │   │                          throttles, a low memory request kills. Every
 │   │                          series is hourly, which is what keeps p99 from
 │   │                          quietly becoming the max rule
+│   ├── report_schedule.py     FEAT-069, in finops_core/domain/. The four cadences and
+│   │                          each one's next run after a moment, read in UTC, so every
+│   │                          container agrees and no clock is read inside it
 │   ├── geography.py           FEAT-061. Where a region is, from its name and from
 │   │                          nothing else. The prefix rather than a coordinate table,
 │   │                          and that is the whole argument: a coordinate table has to

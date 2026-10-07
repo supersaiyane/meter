@@ -23,6 +23,7 @@ import {
 } from './sections';
 import { ScreenTabs } from './ScreenTabs';
 import { SaveView } from './SaveView';
+import { ScheduleView } from './ScheduleView';
 import { SearchBox } from './SearchBox';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -307,6 +308,7 @@ export function AppShell({ children, now }: AppShellProps) {
           <div data-testid="toolbar">
             <SearchBox />
             <SaveView />
+            <ScheduleView views={exports.views} />
             <ExportMenu views={exports.views} openOnArrival={asksForExport(location.state)} />
             <ThemeToggle />
           </div>

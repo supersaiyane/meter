@@ -79,3 +79,9 @@ ASSISTANT_CONCURRENCY_CEILING = 19
 # and by the model's mirror of the database check, so the two cannot disagree; a check
 # constraint cannot read this, so migration 0028 carries the same figure literally.
 SAVED_VIEW_NAME_MAX_LENGTH = 120
+
+# The most people one scheduled report renders for, FEAT-069. Each is a render of its own, in
+# that person's scope, so the list is a cost as well as a list; fifty is a team's distribution
+# list and not an organization's. Shared by the API's body and the model's mirror of the check,
+# which migration 0029 carries literally because a check constraint cannot read this.
+REPORT_RECIPIENTS_MAX = 50

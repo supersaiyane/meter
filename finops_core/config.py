@@ -72,6 +72,11 @@ class Settings(BaseSettings):
     cur_athena_table: str = Field(min_length=1)
     cur_athena_workgroup: str = Field(min_length=1)
 
+    # The hub's data bucket, where a scheduled report's files are kept under reports/<tenant>/.
+    # P8, FEAT-069. The hub stack already passes it to every task. Empty turns rendering off, and
+    # the Scheduled screen says so rather than listing schedules that would never run.
+    s3_bucket: str = ""
+
     # Anomaly detection. P1, FEAT-023. Both are here rather than in code so
     # meeting a real estate is a change of a number rather than a release.
     anomaly_sensitivity: float = Field(gt=0)

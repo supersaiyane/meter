@@ -29,9 +29,11 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any, Final, Literal, get_type_hints
-from urllib.parse import urlencode
+from urllib.parse import parse_qsl, urlencode, urlsplit
+from uuid import UUID
 
 from fastapi import Depends, HTTPException, Query, Request, Response, status
+from fastapi.routing import APIRoute
 from pydantic import BaseModel
 from sqlalchemy.engine import Connection
 
@@ -49,6 +51,11 @@ MEDIA_TYPES: Final[Mapping[str, str]] = {
     "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "csv": "text/csv; charset=utf-8",
 }
+
+#: The run a file was recorded as, on every file the responder answers with. The report runner
+#: reads it to attach the schedule and the stored file to the row the responder just wrote, so
+#: one file still has one record. FEAT-069.
+RUN_HEADER: Final = "X-Meter-Run"
 
 #: Every amount the API holds is in US dollars, so the About sheet says it once.
 CURRENCY: Final = "USD, for every amount in the Data sheet"
@@ -179,13 +186,14 @@ class Exporter:
             )
         else:
             written = csv_file(sheet)
-        self._record(written, made_at)
+        run_id = self._record(written, made_at, envelope)
         return Response(
             content=written.body,
             media_type=MEDIA_TYPES[self.file_format],
             headers={
                 "Content-Disposition": f'attachment; filename="{self.filename(made_at)}"',
                 "Cache-Control": "no-store",
+                RUN_HEADER: str(run_id),
             },
         )
 
@@ -247,13 +255,13 @@ class Exporter:
         slug = re.sub(r"[^a-z0-9]+", "-", self.spec.title.lower()).strip("-")
         return f"meter-{slug}-{made_at:%Y-%m-%d}.{self.file_format}"
 
-    def _record(self, written: Written, made_at: datetime) -> None:
+    def _record(self, written: Written, made_at: datetime, envelope: Envelope[Any]) -> UUID:
         kept = [
             (key, value)
             for key, value in self.request.query_params.multi_items()
             if key != "format"
         ]
-        record_run(
+        return record_run(
             self.connection,
             tenant_id=self.scope.tenant_id,
             principal_id=self.scope.principal_id or "",
@@ -267,6 +275,8 @@ class Exporter:
             size=len(written.body),
             truncated=written.truncated,
             made_at=made_at,
+            as_of=envelope.meta.as_of,
+            collected_at=envelope.meta.collected_at,
         )
 
 
@@ -352,3 +362,50 @@ def _failures(envelope: Envelope[Any]) -> list[tuple[str, str, str, str]]:
         (collector_name(failure.collector), failure.cause, failure.scope_key, failure.remediation)
         for failure in envelope.meta.failures
     ]
+
+
+def exported_path(path: str) -> str | None:
+    """`path` as a schedule keeps it, when it names a route that answers as a file. FEAT-069.
+
+    The path part must be one GET route carrying this module's dependency, and the query keeps
+    every parameter but `format`, which each run sets. None for anything else, including a path
+    with a host in it, so a schedule can only ever render one of this API's own routes.
+    """
+    split = urlsplit(path)
+    if split.scheme or split.netloc or not split.path.startswith("/"):
+        return None
+    if not any(route.path_regex.match(split.path) for route in _exporting_routes()):
+        return None
+    kept = [
+        (key, value)
+        for key, value in parse_qsl(split.query, keep_blank_values=True)
+        if key != "format"
+    ]
+    return split.path if not kept else f"{split.path}?{urlencode(kept)}"
+
+
+@functools.cache
+def _exporting_routes() -> tuple[APIRoute, ...]:
+    """Every GET route that answers as a file, found as the export enumeration test finds them.
+
+    Imported here rather than at the top because the route modules import this one.
+    """
+    import importlib
+    import pkgutil
+
+    import finops_api.routes as routes
+
+    found: list[APIRoute] = []
+    for module in pkgutil.iter_modules(routes.__path__):
+        loaded = importlib.import_module(f"{routes.__name__}.{module.name}")
+        router = getattr(loaded, "router", None)
+        if router is None:
+            continue
+        found.extend(
+            route
+            for route in router.routes
+            if isinstance(route, APIRoute)
+            and "GET" in (route.methods or set())
+            and any(isinstance(d.call, ExportDependency) for d in route.dependant.dependencies)
+        )
+    return tuple(found)

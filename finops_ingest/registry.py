@@ -99,8 +99,14 @@ class ScheduleEntry:
     cadence_seconds: int
     reason: str
     est_cost_per_run: str
+    #: Which process runs it, 0029 and ADR-0033. The worker runs the collectors; the API runs
+    #: the scheduled reports, because they render through its routes and nothing below it may
+    #: import them.
+    runs_in: str = "worker"
 
 
+#: P8, FEAT-069. How often the API looks for scheduled reports that are due.
+FIFTEEN_MINUTES = 900
 HOURLY = 3600
 #: Six hours. The interval the P2 specification asks for, named rather than
 #: written as a multiplication at the call site.
@@ -453,6 +459,21 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         ),
         est_cost_per_run="0",
     ),
+    # P8, FEAT-069 and ADR-0033. Run by the API, not the worker: due_collectors leaves it out.
+    # Migration 0029 installs the same row for every tenant that existed before it.
+    ScheduleEntry(
+        collector="report_schedules",
+        cadence_seconds=FIFTEEN_MINUTES,
+        reason=(
+            "A schedule falls due at a fixed hour at most once a day, so looking every fifteen "
+            "minutes renders each within a quarter of an hour of its time. A look reads the due "
+            "schedules and renders through the API in process, calling no provider and no "
+            "model, so its cost is a query, and an S3 request for each file written. ADR-0012, "
+            "ADR-0033 and FEAT-069."
+        ),
+        est_cost_per_run="0.000005",
+        runs_in="api",
+    ),
 )
 
 
@@ -500,7 +521,7 @@ def due_collectors(
             "  WHERE r.tenant_id = s.tenant_id AND r.collector = s.collector "
             "  AND r.status IN ('SUCCEEDED', 'PARTIAL')"
             ") latest ON true WHERE s.tenant_id = :tenant AND s.is_enabled "
-            "ORDER BY s.collector"
+            "AND s.runs_in = 'worker' ORDER BY s.collector"
         ),
         {"tenant": tenant_id},
     ).mappings()
@@ -530,8 +551,8 @@ def install_default_schedule(connection: Any, tenant_id: Any, updated_by: str) -
         result = connection.execute(
             text(
                 "INSERT INTO collector_schedule (tenant_id, collector, cadence_seconds, "
-                "reason, est_cost_per_run, updated_by) VALUES (:tenant, :collector, "
-                ":cadence, :reason, :cost, :who) "
+                "reason, est_cost_per_run, updated_by, runs_in) VALUES (:tenant, :collector, "
+                ":cadence, :reason, :cost, :who, :runs_in) "
                 "ON CONFLICT (tenant_id, collector) DO NOTHING"
             ),
             {
@@ -541,6 +562,7 @@ def install_default_schedule(connection: Any, tenant_id: Any, updated_by: str) -
                 "reason": entry.reason,
                 "cost": entry.est_cost_per_run,
                 "who": updated_by,
+                "runs_in": entry.runs_in,
             },
         )
         written += result.rowcount or 0

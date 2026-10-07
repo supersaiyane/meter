@@ -178,7 +178,7 @@ export const GROUPS: readonly GroupDef[] = [
     path: '/report',
     screens: [
       { path: '/report/library', label: 'Report Library', arrives: null },
-      { path: '/report/scheduled', label: 'Scheduled', arrives: 'P8' },
+      { path: '/report/scheduled', label: 'Scheduled', arrives: null },
       { path: '/report/exports', label: 'Exports', arrives: null },
     ],
   },

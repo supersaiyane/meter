@@ -503,7 +503,7 @@ features:
 - id: FEAT-069
   name: Scheduled reports rendered for each recipient
   subproject: P8
-  status: Planned
+  status: Delivered
   detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.7, [P8 plan](docs/plans/P8-implementation-plan.md), OPEN-11, OPEN-15'
   doc: docs/features/FEAT-069-scheduled-reports.md
 - id: FEAT-070
@@ -674,6 +674,11 @@ adrs:
   decision: A row a person may share is read by its owner and, once shared, by the tenant
   status: Accepted
   doc: docs/adr/ADR-0032-a-shared-row-is-configuration.md
+
+- id: ADR-0033
+  decision: Scheduled reports render inside the API, as each recipient
+  status: Accepted
+  doc: docs/adr/ADR-0033-scheduled-reports-render-in-the-api.md
 
 changes:
 - id: CHG-0001
@@ -1658,6 +1663,17 @@ changes:
     A view holds no figure, so it opens in the opener's scope, asserted with two principals. The guard
     gains OwnedOrShared, ADR-0032, and the client gains patch and delete. Export records are not listed,
     OPEN-19, and erasure does not reach the table, ISS-255
+
+- id: CHG-0119
+  date: '2026-10-07'
+  type: Feature
+  what: TASK-P8-011, scheduled reports rendered for each recipient, FEAT-069
+  commit: pending
+  detail: A schedule names a saved view, one route its screen exports, a format, a cadence and its
+    recipients. The runner, in the API by ADR-0033, renders each due schedule once per recipient through
+    the route as that person, keeps the file in the data bucket and lists it on the Scheduled screen,
+    where a route checks the reader's access again. A sender port with a fake waits on OPEN-11, and
+    nothing deletes until OPEN-15. Raised ISS-256
 issues:
 - id: ISS-189
   severity: LOW
@@ -4016,6 +4032,16 @@ issues:
     tables and `report_run`. Erasing a shared view also takes it from everyone it was shared with,
     which is a decision as well as a deletion. Found 2026-10-07 while classifying the table.'
 
+- id: ISS-256
+  severity: MEDIUM
+  status: OPEN
+  summary: A report schedule names its owner and its recipients, and erasure does not reach report_schedule
+  detail: '`report_schedule`, FEAT-069, holds the principal who owns each schedule and the principals
+    it renders for. It is classified personal in `docs/09-DATA-CLASSIFICATION.md`, but `scripts/ops/erase_principal.py`
+    does not reach it and no retention job reads it, the gap ISS-255 records for `saved_view`. Erasing
+    a person also has to remove them from other people''s recipient lists, which is a change to rows
+    they do not own. Found 2026-10-07 while classifying the table.'
+
 open_questions:
 - id: OPEN-07
   question: What does the cost screen show for a tenant whose first ingest has not run, an
@@ -4146,10 +4172,9 @@ open_questions:
   blocks: nothing
   detail: 'Raised 2026-10-07 while building TASK-P8-010. Three documents written with TASK-P8-009
     said the library would list a reader''s own exports, and the task''s acceptance criteria do not
-    ask for it, so it was not built and the three now say so. Recommended: yes, as a second table
-    in the library, built in TASK-P8-011, which gives report_run its schedule, status and storage
-    columns, so the table is drawn once over the record''s final shape. The guard already confines
-    report_run to its person, ADR-0029.'
+    ask for it, so it was not built there. TASK-P8-011 built the spec''s GET /reports/runs, and the
+    Scheduled screen lists a person''s runs with their exports among them, so a person can see what
+    they took. Left open: whether the library lists them as well. Recommended: no, one list is enough.'
 - id: OPEN-16
   question: 'How does the hub reach the AWS APIs its collectors call: endpoints in every Region
     used plus a us-east-1 endpoint VPC, a NAT gateway with an AWS-only allow list, or collectors
