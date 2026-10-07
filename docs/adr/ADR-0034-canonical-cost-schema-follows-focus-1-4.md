@@ -9,8 +9,8 @@ Relates to: constraint 2, constraint 12, FEAT-004, FEAT-076, the P10 specificati
 
 Constraint 2 says the canonical cost schema is FOCUS 1.1 and forbids inventing one. The
 standard has moved on since: 1.2 in June 2025, 1.3 in December 2025 and 1.4 on 2026-06-04.
-1.4 removes two columns Meter stores, `ProviderName` and `PublisherName`, replaces them with
-`ServiceProviderName` and `HostProviderName`, and adds invoice reconciliation, the one way a
+1.4 removes two columns Meter stores, `ProviderName` and `PublisherName`, after 1.3 added
+`ServiceProviderName` to replace the first, and `HostProviderName`, and 1.4 adds invoice reconciliation, the one way a
 FinOps tool can show its totals agree with the bill. Measured on 2026-10-07, Meter's row
 lacks 6 of the 21 columns 1.4 makes mandatory, P10 spec section 4. AWS exports FOCUS 1.2
 itself and was among the first data generators certified conformant.
@@ -19,8 +19,8 @@ itself and was among the first data generators certified conformant.
 
 **Meter's canonical cost row follows FOCUS 1.4: every Mandatory column, and the conditional
 columns a source of Meter's fills.** P10 adds the six mandatory columns Meter lacks and the
-two that tie a row to its invoice, backfills the two replacements from the columns 1.4
-removes, and keeps those old columns readable until a release after P10, constraint 12.
+two that tie a row to its invoice, backfills `ServiceProviderName` and `HostProviderName`
+from `ProviderName`, and keeps those old columns readable until a release after P10, constraint 12.
 Constraint 2's text names FOCUS 1.4 in TASK-P10-006, when the code carries it.
 
 **Each ratified version after 1.4 gets a gap note within a month**, measured as P10 spec
@@ -34,14 +34,14 @@ section 4 is, and the move to it is planned from that note rather than discovere
 - **Adopt all 65 columns at once.** Most conditional columns have no source Meter reads
   today, so they would be null everywhere and look conformant while saying nothing. They come
   with FOCUS conformance, when a source fills them.
-- **Read AWS's FOCUS export and stop normalising CUR 2.0.** Possibly right, and open as
-  OPEN-21. The export does not carry the EKS split columns FEAT-035 reads, so it cannot
-  replace CUR 2.0 alone.
+- **Wait for AWS to export FOCUS 1.4.** Reconciliation, which the research found nobody
+  publishes, would wait on AWS's timetable. Reading each column as the export carries it
+  lets Meter move as soon as AWS does, and Meter already reads AWS's FOCUS export.
 
 ## What it costs
 
-Two migrations in P10 and a third, later, that drops the old columns. The CUR 2.0
-normalisation gains eight columns, each mapped by AWS's published mapping. Tracking each new
+Two migrations in P10 and a third, later, that drops the old columns. The export
+adapter reads five more columns where the export has them and derives two. Tracking each new
 version is a standing cost of about one gap note per release, two releases a year so far.
 
 ## Why this is an ADR
