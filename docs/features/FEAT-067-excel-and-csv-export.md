@@ -106,9 +106,12 @@ heading row. The hub's task definition does not pass it yet, nor 67 other settin
 requires, ISS-250. The Export menu is beside the title of every screen that reads an exporting view,
 and absent from a screen that reads none.
 
+Every file answers with `X-Meter-Run`, the record it was written as, and the record keeps the
+file's `as_of` and `collected_at`, so the report runner can find the row a file made, FEAT-069.
+
 ## Not doing
 
 A CSV has no About sheet. It holds every row and nothing else, and the workbook is the file
 that says what it is. The showback CSV carries its period, timestamps and coverage on every
-row, FEAT-045. Exports to a schedule are FEAT-069. No screen lists a person's records yet,
-and whether the report library should is OPEN-19.
+row, FEAT-045. Exports to a schedule are FEAT-069, and the Scheduled screen lists a person's
+records; whether the report library should as well is OPEN-19.

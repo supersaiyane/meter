@@ -388,7 +388,7 @@ data).
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-07 |
 | Implements | P8 spec section 5.7, FEAT-069 |
 | Delivers | FEAT-069 |
 | Depends on | TASK-P8-010 |
@@ -396,14 +396,14 @@ data).
 
 **Acceptance criteria.**
 
-- [ ] `report_schedule` migration with the constraints in spec section 6
-- [ ] A collector in `collector_schedule` with its reason and cost, ADR-0012, renders each
+- [x] `report_schedule` migration with the constraints in spec section 6
+- [x] A collector in `collector_schedule` with its reason and cost, ADR-0012, renders each
       due schedule once per recipient in that recipient's scope
-- [ ] Files stored in the hub data bucket under the tenant prefix, fetched through a route
+- [x] Files stored in the hub data bucket under the tenant prefix, fetched through a route
       that checks scope again
-- [ ] A `ReportSender` port with a fake; runs listed as rendered and not sent until OPEN-11
-- [ ] One recipient failing does not fail the run
-- [ ] No deletion job until OPEN-15 is answered, and the screen says how long files are kept
+- [x] A `ReportSender` port with a fake; runs listed as rendered and not sent until OPEN-11
+- [x] One recipient failing does not fail the run
+- [x] No deletion job until OPEN-15 is answered, and the screen says how long files are kept
 
 ---
 

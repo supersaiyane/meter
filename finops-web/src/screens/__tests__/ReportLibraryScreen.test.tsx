@@ -259,6 +259,18 @@ describe('the report library', () => {
     expect(landed).toHaveAttribute('data-state', '{"openExport":true}');
   });
 
+  it('schedules a view on its own screen, where the routes it reads are known', async () => {
+    renderLibrary();
+    await screen.findByRole('rowheader', { name: THEIRS.name });
+    fireEvent.click(within(rowOf(THEIRS.name)).getByTestId('library-schedule'));
+    const landed = await screen.findByTestId('landed');
+    expect(landed).toHaveTextContent('/analyze/explorer?group=service&filter=a&filter=b');
+    expect(landed).toHaveAttribute(
+      'data-state',
+      JSON.stringify({ scheduleView: { viewId: THEIRS.view_id, name: THEIRS.name } }),
+    );
+  });
+
   it('keeps the account the reader chose, on Open and on Export alike', async () => {
     renderLibrary({ at: '/report/library?account=111122223333' });
     const link = await screen.findByRole('link', { name: THEIRS.name });

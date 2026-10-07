@@ -34,3 +34,34 @@ export function hrefOf(view: Pick<ApiSavedView, 'screen_path' | 'query'>): strin
   const search = params.toString();
   return search === '' ? view.screen_path : `${view.screen_path}?${search}`;
 }
+
+/** The view the report library's Schedule sent the reader to schedule, FEAT-069. */
+export interface ScheduleRequest {
+  readonly viewId: string;
+  readonly name: string;
+}
+
+/** The navigation state the library's Schedule sends a reader to a view with. */
+export function scheduleState(view: Pick<ApiSavedView, 'view_id' | 'name'>): {
+  readonly scheduleView: ScheduleRequest;
+} {
+  return { scheduleView: { viewId: view.view_id, name: view.name } };
+}
+
+/** The view to schedule when the reader arrived from the library's Schedule, else null. */
+export function scheduleRequested(state: unknown): ScheduleRequest | null {
+  if (typeof state !== 'object' || state === null || !('scheduleView' in state)) {
+    return null;
+  }
+  const asked: unknown = state.scheduleView;
+  if (
+    typeof asked !== 'object' ||
+    asked === null ||
+    !('viewId' in asked) ||
+    !('name' in asked)
+  ) {
+    return null;
+  }
+  const { viewId, name } = asked;
+  return typeof viewId === 'string' && typeof name === 'string' ? { viewId, name } : null;
+}

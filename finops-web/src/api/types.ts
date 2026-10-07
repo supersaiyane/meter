@@ -1372,3 +1372,79 @@ export interface SavedViewChange {
   readonly name?: string;
   readonly visibility?: SavedViewVisibility;
 }
+
+/** The two formats a report is written in, FEAT-067 and FEAT-069. */
+export type ReportFormat = 'xlsx' | 'csv';
+
+/** How often a schedule renders, FEAT-069. */
+export type ReportCadence = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'MONTH_CLOSE';
+
+/** What became of a run: streamed to whoever exported it, kept, kept and sent, or failed. */
+export type ReportRunStatus = 'STREAMED' | 'RENDERED' | 'SENT' | 'FAILED';
+
+/** `GET /reports/schedules`, one schedule, its owner's alone. FEAT-069. */
+export interface ApiSchedule {
+  readonly schedule_id: string;
+  /** Null once the view is deleted; the schedule then pauses after saying why. */
+  readonly view_id: string | null;
+  /** The view's name, or null where its owner can no longer open it. */
+  readonly view_name: string | null;
+  readonly screen_path: string | null;
+  readonly export_path: string;
+  readonly format: ReportFormat;
+  readonly cadence: ReportCadence;
+  readonly recipients: readonly string[];
+  readonly enabled: boolean;
+  readonly next_run_at: string;
+  readonly created_at: string;
+  readonly updated_at: string;
+}
+
+/** `GET /reports/schedules`: the schedules, and what the deployment does with what they make. */
+export interface ApiSchedules {
+  /** False where no bucket is configured, so nothing renders. */
+  readonly rendering: boolean;
+  /** How long a file is kept, in the server's words. OPEN-15. */
+  readonly retention: string;
+  /** Where a file goes, in the server's words. OPEN-11. */
+  readonly delivery: string;
+  readonly schedules: readonly ApiSchedule[];
+}
+
+/** `GET /reports/runs`, one run made for the reader. FEAT-069. */
+export interface ApiReportRun {
+  readonly run_id: string;
+  readonly schedule_id: string | null;
+  readonly view_path: string;
+  readonly view_query: string;
+  readonly format: ReportFormat;
+  readonly status: ReportRunStatus;
+  readonly rows: number;
+  readonly bytes: number;
+  readonly truncated: boolean;
+  readonly failure_cause: string | null;
+  readonly failure_detail: string | null;
+  /** A file is kept and can be fetched again. */
+  readonly has_file: boolean;
+  readonly made_at: string;
+  readonly finished_at: string | null;
+  readonly as_of: string | null;
+  readonly collected_at: string | null;
+}
+
+/** `POST /reports/schedules`. */
+export interface ScheduleIn {
+  readonly view_id: string;
+  readonly export_path: string;
+  readonly format: ReportFormat;
+  readonly cadence: ReportCadence;
+  readonly recipients: readonly string[];
+}
+
+/** `PATCH /reports/schedules/{schedule_id}`. */
+export interface ScheduleChange {
+  readonly enabled?: boolean;
+  readonly format?: ReportFormat;
+  readonly cadence?: ReportCadence;
+  readonly recipients?: readonly string[];
+}

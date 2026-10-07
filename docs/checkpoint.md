@@ -90,27 +90,15 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-07 | OPEN-18 answered: spot keeps the latest per pool plus 90 days of daily lows and highs | Done | The owner chose the bounded history: `spot_price`, the latest reading per pool, replaced each run, and `spot_price_daily`, each day's low and high per pool, kept for 90 days. Recorded as section 14.7 of `docs/specs/2026-10-05-p9-price-catalog-design.md`, TASK-P9-003 and 013 of `docs/plans/P9-implementation-plan.md`, OPEN-18, CHG-0117, FEAT-071 and the map. P9 has no open question left | P9 follows P8, which has TASK-P8-010, 011, 014 and 015 left |
 | 2026-10-07 | TASK-P8-010: saved views and the report library, FEAT-068 | Done | Migration 0028 adds `saved_view`, its section 6 invariants as constraints and its screens copied from `finops_api/screens.py`, which a test holds to `sections.ts`. The guard gains `OwnedOrShared`, ADR-0032. Five routes under `/reports/views`; a refused change answers rather than raises so its DENIED audit row commits. The client gains `patch` and `delete`, Save view sits beside Export, and the Report Library opens, renames, duplicates, shares, deletes and exports. Raised OPEN-19 and ISS-255 | `finops_api/routes/views.py:94`, `finops_api/guards.py:97`, `finops_api/db/repositories/views.py:33`, `finops-web/src/screens/ReportLibraryScreen.tsx:168`, `finops-web/src/shell/SaveView.tsx:21` |
 | 2026-10-07 | TASK-P8-011 paused part built, by the owner's stop | Paused | The migration, model, cadence rules, store and sender ports, fake, S3 adapter, setting and registry change are written in `../meter-p8-011`, uncommitted. The rendering design is decided, its ADR still to write: in the API, as each recipient, through the exported route. The push the owner asked for is blocked: no remote | `docs/plans/P8-implementation-plan.md:387`, `docs/specs/2026-10-05-p8-experience-and-reporting-design.md:250`, `finops_api/exports/responder.py:256` |
+| 2026-10-07 | TASK-P8-011: scheduled reports, rendered for each recipient, FEAT-069 | Done | Migration 0029 adds `report_schedule`, with a trigger holding the view visible to its owner, gives `report_run` its schedule, status, key, typed failure, freshness and finish, and gives `collector_schedule` a `runs_in`. The runner renders in the API as each recipient, ADR-0033, through the route in process, so the responder writes the file and its record. Six routes, the Schedule panel on a view's screen, the Scheduled screen, and `make up` makes the LocalStack bucket. Raised ISS-256 | `finops_api/exports/scheduled.py:100`, `finops_api/routes/schedules.py:271`, `migrations/versions/0029_report_schedule.py:124`, `finops-web/src/screens/ScheduledReportsScreen.tsx:135`, `finops-web/src/shell/ScheduleView.tsx:27` |
 
 ## Next action
 
-**P8 is in build on branch `p8-build`, first by the owner's choice on 2026-10-05.** 15 of
-18 tasks are done, counted from the plan's statuses. Left: TASK-P8-011, TASK-P8-014 and TASK-P8-015.
-
-**TASK-P8-011 is paused part built, by the owner's stop on 2026-10-07.** The work is in the
-worktree `../meter-p8-011`, branch `p8-011`, uncommitted, linted and not yet tested. Written:
-migration 0029 (`report_schedule` with a trigger holding the view visible to its owner,
-`report_run` gaining schedule, status, storage key, typed failure, freshness and finish time,
-and `collector_schedule.runs_in`), the model's mirror, `finops_core/domain/report_schedule.py`
-(the four cadences and the next run), `finops_core/ports/reports.py` (store and sender),
-`finops_fakes/reports.py`, `finops_providers/aws/report_store.py`, the `s3_bucket` setting read
-from the `METER_S3_BUCKET` the hub stack already passes, and the ingest registry's `runs_in`.
-Decided and not yet written down in an ADR: the schedules render inside the API process, as
-each recipient, by calling the exported route in process, because nothing below the API may
-import its guard and export responder; a schedule names a saved view and one route its screen
-exports, chosen from that screen's Export list. Left: the guard entry, the repositories, the
-runner, the routes, the Scheduled screen and a Schedule action, the tests, that ADR and the
-documents. Then TASK-P8-014 and TASK-P8-015, then `p8-build` merges into main with `--no-ff`,
-locally.
+**P8 is in build on branch `p8-build`, first by the owner's choice on 2026-10-05.** 16 of
+18 tasks are done, counted from the plan's statuses. Left: TASK-P8-014 and TASK-P8-015. TASK-P8-011 landed on
+2026-10-07: scheduled reports, FEAT-069, rendered in the API as each recipient, ADR-0033. Next is
+TASK-P8-014, the proof, then TASK-P8-015, the documents, then `p8-build` merges into main with
+`--no-ff`, locally.
 
 **Pushing needs a remote first.** The repository has none. Once one exists, a push to main runs
 `deploy:dev`, a `terraform apply`, on its own, and ISS-250 still stands: the hub's task

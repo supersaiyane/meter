@@ -44,6 +44,12 @@ import {
 import { digestsFixture, exchangesFixture, redactionsFixture } from './fixtures/assistant';
 import type {
   ApiCommitmentDay,
+  ApiReportRun,
+  ApiSchedule,
+  ApiSchedules,
+  Me,
+  ScheduleChange,
+  ScheduleIn,
   ApiSavedView,
   SavedViewChange,
   SavedViewIn,
@@ -846,5 +852,81 @@ export function useDeleteView() {
   return useMutation({
     mutationFn: (viewId: string) => client.delete<ApiSavedView>(savedViewPath(viewId)),
     onSettled: () => queries.invalidateQueries({ queryKey: SAVED_VIEWS_KEY }),
+  });
+}
+
+/** Who is reading, FEAT-069: the schedule panel offers the reader as its first recipient. */
+export function useMe() {
+  const client = useApi();
+  return useQuery<ApiEnvelope<Me>>({
+    queryKey: ['me'],
+    queryFn: () => client.get<Me>('/api/v1/me'),
+  });
+}
+
+/**
+ * Scheduled reports, FEAT-069. Never narrowed to a chosen account, as the library is not: a
+ * schedule renders in each recipient's own scope, and a run is the reader's own record.
+ */
+const SCHEDULES = '/api/v1/reports/schedules';
+const SCHEDULES_KEY = ['report-schedules'] as const;
+const RUNS = '/api/v1/reports/runs';
+const RUNS_KEY = ['report-runs'] as const;
+
+function schedulePath(scheduleId: string): string {
+  return `${SCHEDULES}/${encodeURIComponent(scheduleId)}`;
+}
+
+/** Where a run's kept file is fetched from, after the server checks scope again. */
+export function runFilePath(runId: string): string {
+  return `${RUNS}/${encodeURIComponent(runId)}/file`;
+}
+
+export function useSchedules() {
+  const client = useApi();
+  return useQuery<ApiEnvelope<ApiSchedules>>({
+    queryKey: SCHEDULES_KEY,
+    queryFn: () => client.get<ApiSchedules>(SCHEDULES),
+  });
+}
+
+export function useReportRuns() {
+  const client = useApi();
+  return useQuery<ApiEnvelope<ApiReportRun[]>>({
+    queryKey: RUNS_KEY,
+    queryFn: () => client.get<ApiReportRun[]>(RUNS),
+  });
+}
+
+export function useCreateSchedule() {
+  const client = useApi();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: (schedule: ScheduleIn) => client.post<ApiSchedule>(SCHEDULES, schedule),
+    onSettled: () => queries.invalidateQueries({ queryKey: SCHEDULES_KEY }),
+  });
+}
+
+export function useChangeSchedule() {
+  const client = useApi();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      scheduleId,
+      change,
+    }: {
+      readonly scheduleId: string;
+      readonly change: ScheduleChange;
+    }) => client.patch<ApiSchedule>(schedulePath(scheduleId), change),
+    onSettled: () => queries.invalidateQueries({ queryKey: SCHEDULES_KEY }),
+  });
+}
+
+export function useDeleteSchedule() {
+  const client = useApi();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: (scheduleId: string) => client.delete<ApiSchedule>(schedulePath(scheduleId)),
+    onSettled: () => queries.invalidateQueries({ queryKey: SCHEDULES_KEY }),
   });
 }

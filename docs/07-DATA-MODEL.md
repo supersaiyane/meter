@@ -784,8 +784,8 @@ Four check constraints hold it: the format is one of two, the counts are never n
 person is named and the view is a path, and a global scope names no accounts. The accounts are
 a list rather than a count, because a count says how much was taken and the list says what,
 which is the question an audit asks. The guard confines the table to its person through
-`ByPrincipal`, ADR-0029, so a reader could list their own exports and nobody else's, which no
-screen does yet, OPEN-19. No retention job reads it and `erase_principal` does not reach it,
+`ByPrincipal`, ADR-0029, so a reader lists their own runs and nobody else's, which the
+Scheduled screen does, FEAT-069. No retention job reads it and `erase_principal` does not reach it,
 ISS-249.
 
 ### Saved views, P8
@@ -820,6 +820,51 @@ the database to hold it to the list. The guard reads the table through `OwnedOrS
 ADR-0032: the owner reads their views, everybody in the tenant reads the shared ones, and only
 the owner's writes change a row. No retention job reads it and `erase_principal` does not reach
 it, ISS-255.
+
+### Report schedules and what a run records, P8
+
+Migration `0029_report_schedule`, FEAT-069 and ADR-0033.
+
+```sql
+CREATE TABLE report_schedule (
+    schedule_id  UUID         PRIMARY KEY,
+    tenant_id    UUID         NOT NULL REFERENCES tenant (tenant_id),
+    owner_id     TEXT         NOT NULL,
+    view_id      UUID         REFERENCES saved_view (view_id) ON DELETE SET NULL,
+    export_path  TEXT         NOT NULL,      -- the route a run renders, /api/v1/..., no format
+    format       TEXT         NOT NULL,      -- xlsx or csv
+    cadence      TEXT         NOT NULL,      -- DAILY, WEEKLY, MONTHLY or MONTH_CLOSE
+    recipients   TEXT[]       NOT NULL,      -- the principals it renders for
+    enabled      BOOLEAN      NOT NULL,
+    next_run_at  TIMESTAMPTZ  NOT NULL,
+    created_at   TIMESTAMPTZ  NOT NULL,
+    updated_at   TIMESTAMPTZ  NOT NULL
+);
+-- report_run gains the schedule that made it, its status, where its file is kept, the
+-- typed cause of a failure, the freshness of what it read, and when it finished.
+ALTER TABLE report_run
+    ADD COLUMN schedule_id    UUID REFERENCES report_schedule (schedule_id) ON DELETE SET NULL,
+    ADD COLUMN status         TEXT NOT NULL DEFAULT 'STREAMED',
+    ADD COLUMN storage_key    TEXT,
+    ADD COLUMN failure_cause  TEXT,
+    ADD COLUMN failure_detail TEXT,
+    ADD COLUMN as_of          TIMESTAMPTZ,
+    ADD COLUMN collected_at   TIMESTAMPTZ,
+    ADD COLUMN finished_at    TIMESTAMPTZ;
+-- Which process runs each cadence: the ingest worker, or the API for the scheduled reports.
+ALTER TABLE collector_schedule ADD COLUMN runs_in TEXT NOT NULL DEFAULT 'worker';
+```
+
+A schedule's checks hold the format, the cadence, between one and fifty recipients none of them
+blank, a named owner, a route of this API's own with no format in it, and a schedule never
+changed before it was made. A trigger holds the invariant a check cannot read: the view is one
+the owner can open, their own or a shared one, in the schedule's tenant. A view deleted later
+leaves its schedules with no view rather than deleting other people's schedules with it, and the
+runner records why for each recipient once and pauses them. A run's checks hold four
+statuses, a typed cause on a failure and on nothing else, a key on a file kept or sent, neither a
+key nor a schedule on a file streamed to whoever exported it, and a finish never before the
+making. The guard reads `report_schedule` through `ByPrincipal` on its owner. No retention job
+reads it and `erase_principal` does not reach it, ISS-256.
 
 ## Migration workflow, Alembic
 

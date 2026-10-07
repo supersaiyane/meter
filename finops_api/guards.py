@@ -129,6 +129,9 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOr
     # P8, FEAT-068 and ADR-0032. A saved view is its owner's until they share it, and a shared
     # one is configuration everybody in the tenant may open, each in their own scope.
     "saved_view": OwnedOrShared("owner_id", "visibility", "SHARED"),
+    # P8, FEAT-069. A schedule is its owner's alone. The people it renders for read the runs it
+    # made for them, through `report_run`, and never the schedule or its list of recipients.
+    "report_schedule": ByPrincipal("owner_id"),
     "cloud_account": ByAccount("account_id", "provider"),
     "org_node": None,
     "ingest_run": None,

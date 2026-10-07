@@ -18,7 +18,8 @@ exactly the system meant to notice.
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterable, Iterator
+from collections.abc import AsyncIterator, Iterable, Iterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, get_origin
 
@@ -53,6 +54,10 @@ ENVELOPE_EXEMPT = frozenset(
         "/docs",
         "/docs/oauth2-redirect",
         "/redoc",
+        # FEAT-069. A stored report is a file, written by the export responder with its About
+        # sheet, kept, and handed back after the reader's scope is checked again. The envelope it
+        # was made from is what its About sheet says.
+        "/api/v1/reports/runs/{run_id}/file",
     }
 )
 
@@ -261,13 +266,13 @@ def p7_routers() -> tuple[APIRouter, ...]:
 def p8_routers() -> tuple[APIRouter, ...]:
     """The experience and reporting routes, from the P8 spec's section 7 list.
 
-    Cost Explorer's query, TASK-P8-007, the spend forecast, TASK-P8-008, and the report
-    library's saved views, TASK-P8-010. The export is a dependency every list route carries,
-    TASK-P8-009, and the schedule routes arrive with TASK-P8-011.
+    Cost Explorer's query, TASK-P8-007, the spend forecast, TASK-P8-008, the report library's
+    saved views, TASK-P8-010, and the schedules and their runs, TASK-P8-011. The export is a
+    dependency every list route carries, TASK-P8-009.
     """
-    from finops_api.routes import explore, forecast, views
+    from finops_api.routes import explore, forecast, schedules, views
 
-    return (explore.router, forecast.router, views.router)
+    return (explore.router, forecast.router, views.router, schedules.router)
 
 
 def _assistant(app: FastAPI, settings: Settings, model: Any) -> Any:
@@ -299,6 +304,23 @@ def _assistant(app: FastAPI, settings: Settings, model: Any) -> Any:
     )
 
 
+@asynccontextmanager
+async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Start the report runner with the application and stop it with it, where there is one.
+
+    Only `bootstrap` gives the application a runner, ADR-0033, so an application a test builds
+    never renders on a thread of its own.
+    """
+    runner = getattr(app.state, "report_runner", None)
+    if runner is not None:
+        runner.start()
+    try:
+        yield
+    finally:
+        if runner is not None:
+            runner.stop()
+
+
 def create_app(
     engine: Engine,
     entitlements: Any,
@@ -313,6 +335,12 @@ def create_app(
     #: The model behind the assistant. None is the default and is not a failure: no model
     #: has been chosen, OPEN-10, and every question then says the assistant is not enabled.
     language_model: Any = None,
+    #: Where a scheduled report's files are kept, FEAT-069. None is the default and is not a
+    #: failure: nothing renders, the schedules screen says so, and the file route refuses.
+    report_store: Any = None,
+    #: Where a rendered file is sent. None until OPEN-11 names a channel, so a run is kept and
+    #: listed as rendered and not sent.
+    report_sender: Any = None,
     extra_routers: tuple[APIRouter, ...] = (),
     include_p0_routes: bool = True,
 ) -> FastAPI:
@@ -322,7 +350,7 @@ def create_app(
     # stopped the container booting: every test passes settings explicitly, so
     # nothing caught it until the image ran.
     resolved = settings or load_settings()
-    app = FastAPI(title="Meter", version="0", docs_url="/docs")
+    app = FastAPI(title="Meter", version="0", docs_url="/docs", lifespan=_lifespan)
     app.state.engine = engine
     app.state.entitlements = entitlements
     app.state.signer = signer
@@ -334,6 +362,10 @@ def create_app(
     # silently reported success would be the worst of both.
     app.state.remediation_control = remediation_control
     app.state.assistant = _assistant(app, resolved, language_model)
+    app.state.report_store = report_store
+    app.state.report_sender = report_sender
+    # Set by `bootstrap` alone, so no test's application renders on a thread of its own.
+    app.state.report_runner = None
     app.add_middleware(RequestIdMiddleware)
     routers = (
         build_router(),
@@ -397,10 +429,20 @@ def bootstrap() -> FastAPI:
         tenant_id=settings.local_tenant_id,
         cache_ttl_minutes=settings.entitlement_cache_ttl_minutes,
     )
-    return create_app(
+    from finops_api.exports.scheduled import ReportRunner
+    from finops_providers.aws.report_store import S3ReportStore
+
+    # FEAT-069 and ADR-0033. With a bucket, scheduled reports render on a thread the lifespan
+    # starts; without one nothing renders, and the schedules screen and the file route say so.
+    store = S3ReportStore.from_settings(settings) if settings.s3_bucket.strip() else None
+    app = create_app(
         engine=create_engine(settings.database_url, pool_pre_ping=True),
         entitlements=provider,
         signer=SessionSigner(settings.session_signing_key, ttl_hours=settings.session_ttl_hours),
         settings=settings,
         language_model=language_model(settings),
+        report_store=store,
     )
+    if store is not None:
+        app.state.report_runner = ReportRunner(app, store=store)
+    return app

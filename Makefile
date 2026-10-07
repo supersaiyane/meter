@@ -316,6 +316,8 @@ up: local-auth.yaml .env ## Start the full local stack, then run migrations
 	@$(DOCPY) scripts/ci/check_env_keys.py
 	$(COMPOSE) up -d --build
 	$(MAKE) migrate
+	@# FEAT-069. The data bucket scheduled reports are kept in, made in LocalStack and never in AWS.
+	@$(COMPOSE) run --rm -T api python scripts/ops/local_bucket.py
 	@echo "API  http://localhost:9731/docs"
 	@echo "Web  http://localhost:9732        the built bundle, which is what this target starts"
 	@echo "     http://localhost:9735        the development server, if npm run dev is running"

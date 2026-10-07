@@ -274,13 +274,15 @@ body {
 }
 
 [data-testid='export-menu'],
-[data-testid='save-view'] {
+[data-testid='save-view'],
+[data-testid='schedule-view'] {
   position: relative;
 }
 
 /* A toolbar control: the same border, radius and glass as every other one in the bar. */
 [data-testid='export-menu'] > summary,
 [data-testid='save-view'] > summary,
+[data-testid='schedule-view'] > summary,
 [data-testid='theme-toggle'] {
   background: var(--surface-raised);
   border: 1px solid var(--border);
@@ -288,7 +290,8 @@ body {
 }
 
 [data-testid='export-menu'] > summary,
-[data-testid='save-view'] > summary {
+[data-testid='save-view'] > summary,
+[data-testid='schedule-view'] > summary {
   cursor: pointer;
   list-style: none;
   padding: 6px var(--space-4);
@@ -298,32 +301,37 @@ body {
 }
 
 [data-testid='export-menu'] > summary:hover,
-[data-testid='save-view'] > summary:hover {
+[data-testid='save-view'] > summary:hover,
+[data-testid='schedule-view'] > summary:hover {
   border-color: var(--accent-mark);
 }
 
 [data-testid='export-menu'][open] > summary,
-[data-testid='save-view'][open] > summary {
+[data-testid='save-view'][open] > summary,
+[data-testid='schedule-view'][open] > summary {
   border-color: var(--accent-mark);
   background: var(--accent-quiet);
   color: var(--accent);
 }
 
 [data-testid='export-menu'] > summary:focus-visible,
-[data-testid='save-view'] > summary:focus-visible {
+[data-testid='save-view'] > summary:focus-visible,
+[data-testid='schedule-view'] > summary:focus-visible {
   outline: 2px solid var(--accent-mark);
   outline-offset: 2px;
 }
 
 [data-testid='export-menu'] > summary::-webkit-details-marker,
-[data-testid='save-view'] > summary::-webkit-details-marker {
+[data-testid='save-view'] > summary::-webkit-details-marker,
+[data-testid='schedule-view'] > summary::-webkit-details-marker {
   display: none;
 }
 
 /* Solid rather than glass: it opens over the screen's own figures, and a menu they show
    through is a menu nobody can read. */
 [data-testid='export-views'],
-[data-testid='save-view-form'] {
+[data-testid='save-view-form'],
+[data-testid='schedule-view-form'] {
   position: absolute;
   left: 0;
   top: calc(100% + var(--space-1));
@@ -352,7 +360,8 @@ body {
 }
 
 [data-testid='export-note'],
-[data-testid='save-view-note'] {
+[data-testid='save-view-note'],
+[data-testid='schedule-view-note'] {
   margin: 0;
   color: var(--text-muted);
   font-size: var(--font-size-1);
@@ -377,8 +386,43 @@ body {
   margin: 0;
 }
 
+/* Schedule's fields, FEAT-069: a choice is a fieldset of radios, each beside its box. */
+[data-testid='schedule-view-form'] fieldset {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+[data-testid='schedule-view-form'] fieldset label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-2);
+}
+
+[data-testid='schedule-view-form'] > label {
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--font-size-2);
+}
+
+[data-testid='schedule-view-title'],
+[data-testid='schedule-view-nothing'],
+[data-testid='schedule-view-made'],
+[data-testid='schedule-view-failure'] {
+  margin: 0;
+}
+
+[data-testid='schedule-view-title'] {
+  font-weight: 600;
+}
+
 /* The report library, FEAT-068. A row's actions wrap rather than widen the table. */
-[data-testid='library-actions'] {
+[data-testid='library-actions'],
+[data-testid='scheduled-actions'] {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1);
@@ -386,7 +430,8 @@ body {
 
 /* A rename or a deletion is asked in a panel above the table, one at a time. */
 [data-testid='library-rename'],
-[data-testid='library-delete'] {
+[data-testid='library-delete'],
+[data-testid='scheduled-delete'] {
   display: flex;
   flex-wrap: wrap;
   align-items: end;
@@ -399,7 +444,8 @@ body {
 }
 
 [data-testid='library-rename'] label,
-[data-testid='library-delete'] > p {
+[data-testid='library-delete'] > p,
+[data-testid='scheduled-delete'] > p {
   flex: 1 1 16rem;
   margin: 0;
 }
@@ -414,7 +460,8 @@ body {
 
 [data-testid='search-input'],
 [data-testid='save-view-name'],
-[data-testid='library-rename-name'] {
+[data-testid='library-rename-name'],
+[data-testid='schedule-view-recipients'] {
   width: 100%;
   box-sizing: border-box;
   padding: 6px var(--space-3);
@@ -432,13 +479,15 @@ body {
 
 [data-testid='search-input']:hover,
 [data-testid='save-view-name']:hover,
-[data-testid='library-rename-name']:hover {
+[data-testid='library-rename-name']:hover,
+[data-testid='schedule-view-recipients']:hover {
   border-color: var(--accent-mark);
 }
 
 [data-testid='search-input']:focus-visible,
 [data-testid='save-view-name']:focus-visible,
-[data-testid='library-rename-name']:focus-visible {
+[data-testid='library-rename-name']:focus-visible,
+[data-testid='schedule-view-recipients']:focus-visible {
   outline: 2px solid var(--accent-mark);
   outline-offset: 2px;
   border-color: var(--accent-mark);
@@ -3786,6 +3835,7 @@ main > section > [data-testid='state'] > dl[data-testid]:hover {
 /* A menu opens rather than appearing. */
 [data-testid='export-menu'][open] > [data-testid='export-views'],
 [data-testid='save-view'][open] > [data-testid='save-view-form'],
+[data-testid='schedule-view'][open] > [data-testid='schedule-view-form'],
 [data-testid='shell-failures'] details[open] > ul,
 nav[aria-label='Sections'] details[open] > ul {
   animation: meter-pop var(--motion-fast) var(--ease-out);
@@ -3865,6 +3915,7 @@ nav[aria-label='Sections'] details[open] > ul {
     [data-testid='stacked-columns'] svg,
     [data-testid='export-menu'][open] > [data-testid='export-views'],
     [data-testid='save-view'][open] > [data-testid='save-view-form'],
+    [data-testid='schedule-view'][open] > [data-testid='schedule-view-form'],
     [data-testid='shell-failures'] details[open] > ul,
     nav[aria-label='Sections'] details[open] > ul,
     [data-testid='skeleton-row']

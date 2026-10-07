@@ -87,5 +87,5 @@ and its coverage counted in saved views. The routes are exempt from export in
 
 A view cannot be pointed at another screen or query; that is a new view, saved anew. A shared
 view is shared with the whole tenant and nobody narrower. The library does not list a person's
-export records, `report_run`, and whether it should is OPEN-19. Scheduled reports are FEAT-069,
-TASK-P8-011.
+export records; the Scheduled screen does, FEAT-069, and whether the library should as well is
+OPEN-19. Schedule, on each row, opens the view's own screen with the schedule panel open.

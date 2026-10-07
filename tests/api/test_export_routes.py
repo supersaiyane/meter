@@ -33,6 +33,9 @@ EXEMPT: Mapping[str, str] = {
     "/api/v1/waste/recommendations/{recommendation_id}": "One recommendation's detail page",
     "/api/v1/reports/views": "Saved views are configuration, and each exports from its own screen",
     "/api/v1/reports/views/{view_id}": "One saved view, configuration that opens a screen",
+    "/api/v1/reports/schedules": "The reader's schedules, configuration that renders a route",
+    "/api/v1/reports/runs": "The reader's run records, each of which is already a file of its own",
+    "/api/v1/reports/runs/{run_id}/file": "A stored report, which is the file itself",
 }
 
 

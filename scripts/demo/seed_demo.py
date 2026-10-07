@@ -154,6 +154,9 @@ DEMO_TABLES = (
     # P8, FEAT-067. The seed writes none, and every export made on the demo writes one,
     # so unseed removes them. It references the tenant and nothing else.
     "report_run",
+    # P8, FEAT-069. The seed writes none, and every schedule made on the demo writes one. It
+    # references the views below and is referenced by the runs above, so it goes between them.
+    "report_schedule",
     # P8, FEAT-068. The seed writes none, and every view saved on the demo writes one, so
     # unseed removes them. It references the tenant and nothing else.
     "saved_view",

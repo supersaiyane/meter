@@ -82,11 +82,41 @@ def test_no_cadence_names_a_collector_that_does_not_exist() -> None:
     from finops_ingest.registry import governed_by_retention_flag
 
     unknown = {
-        name
-        for name in scheduled_names() - collector_names()
-        if not governed_by_retention_flag(name)
+        name for name in worker_names() - collector_names() if not governed_by_retention_flag(name)
     }
     assert not unknown, f"scheduled but not implemented: {sorted(unknown)}"
+
+
+def worker_names() -> frozenset[str]:
+    return frozenset(entry.collector for entry in DEFAULT_SCHEDULE if entry.runs_in == "worker")
+
+
+def test_a_cadence_the_api_runs_names_what_the_api_runs() -> None:
+    """ADR-0033. The scheduled reports are looked at by the API, not by a collector, so their
+    cadence names the API's runner, and nothing else may claim to run there."""
+    from finops_api.exports.scheduled import COLLECTOR
+
+    in_the_api = {entry.collector for entry in DEFAULT_SCHEDULE if entry.runs_in == "api"}
+    assert in_the_api == {COLLECTOR}
+    assert {entry.runs_in for entry in DEFAULT_SCHEDULE} == {"worker", "api"}
+
+
+def test_the_migration_installs_the_cadence_the_registry_declares() -> None:
+    """Migration 0029 installs the runner's row for the tenants that existed before it, and
+    `install_default_schedule` for every tenant after, so the two must say the same thing."""
+    import importlib.util
+
+    from finops_api.exports.scheduled import COLLECTOR
+
+    migration = Path(__file__).resolve().parents[2] / "migrations/versions/0029_report_schedule.py"
+    spec = importlib.util.spec_from_file_location("migration_0029", migration)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    entry = next(e for e in DEFAULT_SCHEDULE if e.collector == COLLECTOR)
+    declared = (entry.cadence_seconds, entry.reason, entry.est_cost_per_run)
+    installed = (module._CADENCE_SECONDS, module._REASON, module._COST_PER_RUN)
+    assert installed == declared
 
 
 @pytest.mark.parametrize("entry", DEFAULT_SCHEDULE, ids=lambda e: e.collector)

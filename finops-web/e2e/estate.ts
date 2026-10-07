@@ -85,6 +85,65 @@ export async function demoEstate(page: Page): Promise<void> {
     },
   });
 
+  // FEAT-069: one schedule and the three kinds of run, so the sweeps measure the Scheduled screen
+  // with a row of each state rather than with nothing in it.
+  await stub(page, '/api/v1/reports/schedules', {
+    data: {
+      rendering: true,
+      retention:
+        'Files are kept until a retention period is decided, OPEN-15, and nothing deletes them yet.',
+      delivery: 'Nothing is sent yet: where reports go, email or Slack, is OPEN-11.',
+      schedules: [
+        {
+          schedule_id: 's-accounts',
+          view_id: 'v-accounts',
+          view_name: 'Active accounts',
+          screen_path: '/inventory/accounts',
+          export_path: '/api/v1/accounts?status=ACTIVE',
+          format: 'xlsx',
+          cadence: 'WEEKLY',
+          recipients: ['dev@example.local'],
+          enabled: true,
+          next_run_at: '2026-10-12T06:00:00Z',
+          created_at: '2026-10-01T08:00:00Z',
+          updated_at: '2026-10-01T08:00:00Z',
+        },
+      ],
+    },
+    meta: {
+      ...META,
+      scope_coverage: { visible: 1, total: 1, is_partial: false, unit: 'schedules' },
+    },
+  });
+  await stub(page, '/api/v1/reports/runs', {
+    data: [
+      ['r-kept', 'RENDERED', null, true],
+      ['r-failed', 'FAILED', 'AccessDenied', false],
+      ['r-streamed', 'STREAMED', null, false],
+    ].map(([id, status, cause, kept]) => ({
+      run_id: id,
+      schedule_id: status === 'STREAMED' ? null : 's-accounts',
+      view_path: '/api/v1/accounts',
+      view_query: 'status=ACTIVE',
+      format: 'xlsx',
+      status,
+      rows: status === 'FAILED' ? 0 : 2,
+      bytes: status === 'FAILED' ? 0 : 1200,
+      truncated: false,
+      failure_cause: cause,
+      failure_detail: cause === null ? null : 'this person reaches no account',
+      has_file: kept,
+      made_at: '2026-10-05T06:00:00Z',
+      finished_at: '2026-10-05T06:00:02Z',
+      as_of: '2026-10-05T04:00:00Z',
+      collected_at: '2026-10-05T05:00:00Z',
+    })),
+    meta: {
+      ...META,
+      scope_coverage: { visible: 3, total: 3, is_partial: false, unit: 'report runs' },
+    },
+  });
+
   // FEAT-045 through FEAT-067: the showback rows the Export screen shows and its menu writes.
   // They add up to the summary's Effective Cost, which is the claim the screen makes.
   await stub(page, '/api/v1/cost/showback', {
