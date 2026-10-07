@@ -177,6 +177,10 @@
      its radius. */
   --panel-blur: 22px;
   --panel-saturate: 170%;
+  /* The filter itself, so each fallback below turns every glass surface off by
+     switching one token. Declared here alone: a theme block that declared it
+     again would outrank the fallbacks, which select :root alone. */
+  --panel-filter: blur(var(--panel-blur)) saturate(var(--panel-saturate));
 
   /* Named faces, not the machine's own. A system stack renders a different
      font per operating system, so column widths and density differ between two
@@ -224,29 +228,25 @@
 }
 
 /* The panel surface. Everything it draws comes from a token, so each fallback
-   below only ever switches tokens and the backdrop filter. */
+   below only ever switches tokens. */
 .meter-panel {
   background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   box-shadow: inset 0 1px 0 var(--hairline-highlight);
-  -webkit-backdrop-filter: blur(var(--panel-blur)) saturate(var(--panel-saturate));
-  backdrop-filter: blur(var(--panel-blur)) saturate(var(--panel-saturate));
+  -webkit-backdrop-filter: var(--panel-filter);
+  backdrop-filter: var(--panel-filter);
 }
 
 /* Glass is a surface, never a reason to lose contrast. Where transparency is
    unwelcome or cannot be drawn, a panel is the colour the glass would have
-   shown, opaque, and the page drops its glows. */
+   shown, opaque, nothing is blurred, and the page drops its glows. */
 @media (prefers-reduced-transparency: reduce) {
   :root {
     --surface-raised: var(--surface-raised-solid);
     --surface-raised-2: var(--surface-raised-2-solid);
     --page-glow: none;
-  }
-
-  .meter-panel {
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
+    --panel-filter: none;
   }
 }
 
@@ -255,6 +255,7 @@
     --surface-raised: var(--surface-raised-solid);
     --surface-raised-2: var(--surface-raised-2-solid);
     --page-glow: none;
+    --panel-filter: none;
   }
 }
 
@@ -267,11 +268,10 @@
     --surface-raised: var(--surface-raised-solid);
     --surface-raised-2: var(--surface-raised-2-solid);
     --page-glow: none;
+    --panel-filter: none;
   }
 
   .meter-panel {
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
     box-shadow: none;
   }
 }

@@ -12,12 +12,11 @@ import {
 import type { ApiReportRun, ApiSchedule } from '../api/types';
 import { DataTable } from '../components/DataTable';
 import { StateBoundary } from '../components/StateBoundary';
-import type { SurfaceState } from '../components/surfaceState';
 import type { Column } from '../components/tableConfig';
 import { useReportMeta } from '../shell/metaRegistry';
 import { saveFile } from '../shell/saveFile';
 import { changedAt } from './libraryModel';
-import { cadenceWords, formatWords, routeTitle, statusWords } from './scheduleModel';
+import { cadenceWords, formatWords, listState, routeTitle, statusWords } from './scheduleModel';
 import { surfaceStateFor } from './surfaceStateFor';
 
 /**
@@ -30,11 +29,6 @@ import { surfaceStateFor } from './surfaceStateFor';
  * reader's access again, and how long files are kept, and where they are sent, are said in the
  * server's own words, because both wait on decisions, OPEN-15 and OPEN-11.
  */
-
-/** Collector failures describe figures, and a schedule or a run holds none. */
-function listState(state: SurfaceState): SurfaceState {
-  return state.kind === 'degraded' || state.kind === 'partial' ? { kind: 'ready' } : state;
-}
 
 function scheduleColumns(
   actions: (schedule: ApiSchedule) => ReactNode,

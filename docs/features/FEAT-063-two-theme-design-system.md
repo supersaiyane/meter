@@ -46,7 +46,10 @@ word for word.
 The three lengths that differ by theme, a panel's radius, blur and saturation, are declared
 once for a system that prefers dark and once for a person who chose it, and a test holds the two
 equal. A panel is the `.meter-panel` class: the translucent `--surface-raised`, a hairline, a
-one pixel inner highlight and a backdrop blur, all from tokens. The page carries three radial
+one pixel inner highlight and a backdrop blur, all from tokens. The blur is itself one token,
+`--panel-filter`, declared in `:root` alone so no theme block outranks a fallback, and every
+glass surface blurs through it: the panel, the rail and the trust strip. `glass.test.ts` holds
+that for every stylesheet. The page carries three radial
 glows, one per corner, and the shell's main column is transparent so the glows reach the panels.
 
 Motion is drawn from tokens too, TASK-P8-018: `--motion-fast` for controls, `--motion-base`
@@ -74,7 +77,13 @@ order.
 
 With transparency reduced, or on a browser without `backdrop-filter`, `--surface-raised` and
 `--surface-raised-2` become their opaque `-solid` equivalents, the colour the glass would have
-shown over the bare page, and the glows are dropped. Print is the light theme with neither. A
+shown over the bare page, `--panel-filter` becomes `none` so nothing is blurred, and the glows
+are dropped. Until TASK-P8-014 the fallbacks switched the panel's blur off by name and left the
+rail and the trust strip blurred, ISS-257. `finops-web/e2e/a11y.spec.ts` opens every screen on
+the rail in both themes with transparency reduced, and again as a browser without
+`backdrop-filter` reads the shipped stylesheet, and holds each opaque, unblurred and axe clean.
+It also holds that no screen draws glass inside a table or a list. Print is the light theme
+with none of it. A
 browser that refuses storage keeps the light default, because `src/storage.ts` treats a
 refusal as no value. A reader who asks for reduced motion gets none: nothing fades, rises,
 draws, pops or lifts. The journeys run that way so they read the settled screen, and
@@ -104,6 +113,6 @@ accent mark. `docs/12-UI-DESIGN.md` section 7 gives the ratios.
 
 In progress. TASK-P8-001 built the design system on 2026-10-05, TASK-P8-018 made light the
 default, drew the rail and the top bar and added the motion the same day, and TASK-P8-013
-carries it to every remaining screen.
+carries it to every remaining screen. TASK-P8-014 proved it on every screen on 2026-10-07.
 
 See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P8.

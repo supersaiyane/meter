@@ -46,6 +46,11 @@ Cost Explorer's month to date view with the query Cost Explorer itself sends, so
 one cache entry and cannot disagree. The reads the views share are made once, in
 `useOverviewFigures`.
 
+The FinOps practitioner's Scheduled reports panel lists the reader's schedules through
+`useSchedules`, the Scheduled screen's own hook, FEAT-069: three at most, a paused one first,
+because a report that will not arrive is the one its reader most needs telling about, then the
+next to run. A schedule holds no figure, so a chosen account does not narrow the read.
+
 The arithmetic is a pure module, `overviewKpis.ts`, tested without drawing a screen.
 
 - Effective savings rate is one minus FOCUS Effective Cost over FOCUS List Cost, month to date.
@@ -94,11 +99,13 @@ browser keeps only the name of the chosen dashboard.
   a running total for the month, so a daily band would need a number the route does not
   produce. The forecast is the month end tile, and the Executive dashboard draws the month's
   running total against its band.
-- Scheduled reports. The panel is in place and names P8, and TASK-P8-011 builds them.
 - A dashboard choice saved on the server. It lives in the browser, as the theme does.
 
 ## Status of this document
 
-Written when TASK-P8-012 was delivered, 2026-10-06.
+Written when TASK-P8-012 was delivered, 2026-10-06. Updated 2026-10-07 by TASK-P8-014: the
+Scheduled reports panel lists schedules, where until then it still promised them for P8, and
+`finops-web/e2e/overview.spec.ts` holds every panel and tile on all three dashboards to a link
+to a screen on the rail, P8 spec section 12 item 6.
 
 See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P8.

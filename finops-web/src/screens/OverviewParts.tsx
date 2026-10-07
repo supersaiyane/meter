@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
-import { useCostAnomalies, useRecommendations } from '../api/queries';
-import type { ApiBudget } from '../api/types';
+import { useCostAnomalies, useRecommendations, useSchedules } from '../api/queries';
+import type { ApiBudget, ApiSchedule } from '../api/types';
 import { StackedArea } from '../components/charts';
 import { wasteClassName } from '../components/displayNames';
 import { DensityContext } from '../components/density';
@@ -11,7 +11,9 @@ import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { signedDollars } from './exploreModel';
 import { type Stacked } from './exploreSeries';
+import { changedAt } from './libraryModel';
 import { dailyPace, dayName, openRecommendations, wholeDollars } from './overviewKpis';
+import { cadenceWords, listState } from './scheduleModel';
 import { surfaceStateFor } from './surfaceStateFor';
 
 /**
@@ -148,6 +150,57 @@ export function RecommendationsPanel({ limit }: { readonly limit: number }) {
               ))}
             </ul>
           </DensityContext.Provider>
+        )}
+      </StateBoundary>
+    </Panel>
+  );
+}
+
+/** A paused schedule first, then the next to run. */
+function byAttention(left: ApiSchedule, right: ApiSchedule): number {
+  if (left.enabled !== right.enabled) {
+    return left.enabled ? 1 : -1;
+  }
+  return left.next_run_at.localeCompare(right.next_run_at);
+}
+
+/**
+ * The reader's scheduled reports, FEAT-069: a paused one first and says so, because a report
+ * that will not arrive is the one its reader most needs telling about, then the next to run.
+ */
+export function ScheduledPanel({ limit }: { readonly limit: number }) {
+  const schedules = useSchedules();
+  const envelope = schedules.data;
+  useReportMeta('overview-scheduled', envelope?.meta);
+  // Ready once the answer is in, even with nothing in it, as the anomalies are.
+  const state = listState(
+    surfaceStateFor(schedules, envelope?.meta, 1, 'none', 'report_schedules'),
+  );
+  const shown = [...(envelope?.data.schedules ?? [])].sort(byAttention).slice(0, limit);
+  return (
+    <Panel id="scheduled" title="Scheduled reports" href="/report/scheduled">
+      <StateBoundary state={state} coverageShownElsewhere>
+        {shown.length === 0 ? (
+          <p data-testid="overview-scheduled-none">
+            None yet. A saved view is scheduled from the{' '}
+            <Link to="/report/library">Report Library</Link>.
+          </p>
+        ) : (
+          <ul data-testid="overview-scheduled-list">
+            {shown.map((one) => (
+              <li key={one.schedule_id}>
+                <span>{one.view_name ?? 'A view you can no longer open'}</span>
+                <span>{cadenceWords(one.cadence)}</span>
+                {one.enabled ? (
+                  <time className="meter-numeral" dateTime={one.next_run_at}>
+                    {changedAt(one.next_run_at)}
+                  </time>
+                ) : (
+                  <span>Paused</span>
+                )}
+              </li>
+            ))}
+          </ul>
         )}
       </StateBoundary>
     </Panel>

@@ -4,14 +4,25 @@ import layout from '../../layout.css?raw';
 import main from '../../main.tsx?raw';
 import tokens from '../../tokens.css?raw';
 
+/** Every stylesheet the application has, by path, so a new one is held as these are. */
+const sheets = import.meta.glob<string>('../../**/*.css', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+});
+
 /**
- * Glass that degrades, P8 spec section 5.1 and TASK-P8-001.
+ * Glass that degrades, P8 spec section 5.1, TASK-P8-001 and TASK-P8-014.
  *
  * The contrast test holds the colours. This holds the rules that decide which
  * colours apply: reduced transparency and a browser without backdrop-filter
- * get opaque panels and no glows, print gets the light theme with neither, and
- * the dark lengths, which light-dark() cannot carry, are declared once for each
- * way of choosing dark and held equal, because two blocks drift.
+ * get opaque panels, no blur and no glows, print gets the light theme with
+ * none of them, and the dark lengths, which light-dark() cannot carry, are
+ * declared once for each way of choosing dark and held equal, because two
+ * blocks drift. Every glass surface blurs through one token, which each
+ * fallback switches off, because a fallback that names its surfaces misses
+ * the next one: it missed the rail and the trust strip until TASK-P8-014's
+ * sweep with transparency reduced found them still blurred.
  */
 
 /** The text inside the braces of the first block whose line starts with `prelude`. */
@@ -51,6 +62,7 @@ const SWAPPED_FOR_SOLID = [
   '--surface-raised: var(--surface-raised-solid)',
   '--surface-raised-2: var(--surface-raised-2-solid)',
   '--page-glow: none',
+  '--panel-filter: none',
 ] as const;
 
 const LENGTHS = ['--radius-card', '--panel-blur', '--panel-saturate'] as const;
@@ -77,7 +89,6 @@ describe('glass that degrades', () => {
     for (const line of SWAPPED_FOR_SOLID) {
       expect(body).toContain(line);
     }
-    expect(body).toContain('backdrop-filter: none');
   });
 
   it('declares the light lengths by default and the dark ones the same way twice', () => {
@@ -103,9 +114,31 @@ describe('glass that degrades', () => {
   it('blurs a panel by the tokens, so the fallback has one thing to switch off', () => {
     const panel = block(tokens, '.meter-panel');
     expect(panel).toContain('background: var(--surface-raised)');
-    expect(panel).toContain(
-      'backdrop-filter: blur(var(--panel-blur)) saturate(var(--panel-saturate))',
+    expect(panel).toContain('backdrop-filter: var(--panel-filter)');
+  });
+
+  it('declares the filter in :root alone, where no theme block outranks a fallback', () => {
+    expect(declarations(block(tokens, ':root'), ['--panel-filter'])).toEqual({
+      '--panel-filter': 'blur(var(--panel-blur)) saturate(var(--panel-saturate))',
+    });
+    for (const theme of [
+      '@media (prefers-color-scheme: dark)',
+      ":root[data-theme='light']",
+      ":root[data-theme='dark']",
+    ]) {
+      expect(block(tokens, theme)).not.toContain('--panel-filter');
+    }
+  });
+
+  it('blurs every glass surface in every stylesheet through that one token', () => {
+    const filters = Object.entries(sheets).flatMap(([path, css]) =>
+      [...css.matchAll(/(?:-webkit-)?backdrop-filter:\s*([^;{}]+);/g)].map(
+        (found) => `${path}: ${found[1]?.trim() ?? ''}`,
+      ),
     );
+    // The rail, the trust strip and the panel, each declared twice for WebKit.
+    expect(filters).toHaveLength(6);
+    expect(filters.filter((filter) => !filter.endsWith(': var(--panel-filter)'))).toEqual([]);
   });
 
   it('paints the glows on the page and keeps the shell from covering them', () => {

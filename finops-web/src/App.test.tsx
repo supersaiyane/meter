@@ -243,10 +243,12 @@ describe('App', () => {
     expect(screen.queryByTestId('not-built')).toBeNull();
     expect(screen.queryByTestId('home-rail')).toBeNull();
     const page = screen.getByRole('main');
-    // Scheduled reports arrive with P8, which is true while TASK-P8-011 is unbuilt. A promise
-    // naming a sub project that has shipped is the failure.
-    expect(page).not.toHaveTextContent(/arrives with P[1-7]\b/);
-    expect(page).not.toHaveTextContent(/\bP3\b/);
+    // A promise naming a sub project that has shipped is the failure. Each pattern ends on "not
+    // a digit" rather than a word boundary, because the page's text runs one panel's last word
+    // into the next panel's title, and "P8" then "Showback" hid a stale promise until
+    // TASK-P8-014.
+    expect(page).not.toHaveTextContent(/arrives with P[1-8](?!\d)/);
+    expect(page).not.toHaveTextContent(/\bP3(?!\d)/);
   });
 
   it('tells a wrong address apart from a screen that is merely unbuilt', () => {

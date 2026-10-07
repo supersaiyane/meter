@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 75 total, 13 specified, 13 in build, 41 delivered |
 | Decisions | 33 architecture decision records |
-| Changes | 119 recorded |
-| Issues | 152 fixed, 101 open, 0 parked |
+| Changes | 120 recorded |
+| Issues | 154 fixed, 101 open, 0 parked |
 | Open questions | 19 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -34,13 +34,14 @@ Generated from `docs/registry.yaml`. Change a status there, then run `make doc-s
 
 ## Where the project stands right now
 
-**2026-10-07.** P8 stands at 16 of 18 tasks done, counted from the plan's statuses.
-TASK-P8-011 landed on `p8-build`: scheduled reports, FEAT-069. A schedule renders a saved view's
-route once per recipient, within their own access, in the API by ADR-0033, keeps each file in the
-data bucket and lists it on the Scheduled screen, where a route checks access again. Nothing is
-sent until OPEN-11 and nothing deleted until OPEN-15. It raised ISS-256, erasure not reaching
-`report_schedule`. TASK-P8-010 landed before it, saved views and the report library. Left:
-TASK-P8-014 and TASK-P8-015. The repository has no git remote, so nothing has been pushed.
+**2026-10-07.** P8 stands at 17 of 18 tasks done, counted from the plan's statuses.
+TASK-P8-014 landed on `p8-build`: the proof of spec section 12. Every screen on the rail is axe
+clean in both themes with glass, with transparency reduced and without blur, spec section 8's
+journey runs as one, and each exit criterion has its evidence in the plan, measured. It found and
+fixed ISS-257, the rail and the trust strip still blurred with transparency reduced, and ISS-258,
+the Overview still promising scheduled reports for P8. TASK-P8-011 landed before it: scheduled
+reports, FEAT-069, rendered for each recipient in the API by ADR-0033 and checked on the local
+stack. Left: TASK-P8-015. The repository has no git remote, so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -212,7 +213,7 @@ ISS-003.
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
-| P8 | 16 | 0 | 0 | 0 | 2 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
+| P8 | 17 | 0 | 0 | 0 | 1 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 0 | 0 | 0 | 0 | 13 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -426,6 +427,7 @@ ISS-003.
 | `TASK-P8-011` | Done 2026-10-07 | scheduled reports, rendered for each recipient |
 | `TASK-P8-012` | Done 2026-10-06 | persona dashboards on the Overview |
 | `TASK-P8-013` | Done 2026-10-06 | every remaining screen in the new system |
+| `TASK-P8-014` | Done 2026-10-07 | proof |
 | `TASK-P8-016` | Done | the account picker on every screen |
 | `TASK-P8-017` | Done 2026-10-07 | the geography map redrawn |
 | `TASK-P8-018` | Done 2026-10-05 | the look as drawn |

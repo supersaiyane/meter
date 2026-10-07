@@ -499,7 +499,7 @@ one set of components, checked at six widths and in both themes.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-07 |
 | Implements | P8 spec sections 8 and 12 |
 | Delivers | The exit criteria, measured |
 | Depends on | TASK-P8-001 to TASK-P8-013, TASK-P8-016 and TASK-P8-017 |
@@ -507,11 +507,37 @@ one set of components, checked at six widths and in both themes.
 
 **Acceptance criteria.**
 
-- [ ] Axe on every screen in both themes and with transparency reduced
-- [ ] Journeys: change persona, group Cost Explorer by two dimensions, export to Excel,
+- [x] Axe on every screen in both themes and with transparency reduced
+- [x] Journeys: change persona, group Cost Explorer by two dimensions, export to Excel,
       save the view, schedule it
-- [ ] No `backdrop-filter` on any element inside a table or a list, held by a test
-- [ ] Every exit criterion in spec section 12 met, each with its evidence
+- [x] No `backdrop-filter` on any element inside a table or a list, held by a test
+- [x] Every exit criterion in spec section 12 met, each with its evidence
+
+**Delivered 2026-10-07.** The proof found three faults and they are fixed with it. With
+transparency reduced the rail and the trust strip kept their blur on every screen, because each
+fallback switched the panel's blur off by name; the blur is now one token, `--panel-filter`,
+that every glass surface reads and each fallback switches off, ISS-257. The Overview's Scheduled
+reports panel still promised them for P8 after TASK-P8-011 built them, and neither test meant to
+catch a stale promise could see it, because each ended its pattern at a word boundary that the
+page's run on text never has; the panel now lists the reader's schedules and both patterns end
+on "not a digit", ISS-258. The account journey now names the two reads a chosen account does not
+narrow, the accounts to choose from and the reader's own schedules.
+
+**Evidence, measured on 2026-10-07.** One row per exit criterion in spec section 12. Each test
+named runs in `make verify`; the counts were measured from the code and the runs that day.
+
+| Exit criterion | Held by | Measured |
+| --- | --- | --- |
+| 1. Every screen in both themes, axe clean, with transparency reduced and without blur | `finops-web/e2e/a11y.spec.ts`: every screen on the rail in light and dark, with glass, with transparency reduced, and as a browser without `backdrop-filter` reads the shipped stylesheet. Each fallback first proves it holds, then holds nothing blurred and the content and the shell axe clean. Another sweep holds no glass inside a table or a list, with a control that glass exists. `glass.test.ts` holds every stylesheet's blur to the one token | 29 screens in each of 6 axe sweeps, no violation and nothing blurred. Before the fix, the rail and the trust strip blurred on all 29 with transparency reduced |
+| 2. Every label in TASK-P8-004's table changed, and no raw identifier on any screen | `tests/test_label_table.py` finds every label the table approved in the web source, the one superseded by TASK-P8-012's redraw named with its reason. `rawIdentifiers.test.tsx` holds every code and collector in words on every built screen and tab | 136 approved rows, 90 distinct labels, all drawn but the one superseded |
+| 3. An Excel export of every exportable view, rows equal to the screen, with its About sheet | `tests/api/test_export_routes.py` holds every list route a screen reads to a file or to an exemption with its reason, and every export to its route's rows. `tests/api/test_export_writers.py` holds the data sheet and the About sheet. `export.spec.ts` and `reporting.spec.ts` save the server's workbook in the browser | 36 routes answer as a file |
+| 4. A saved view shared between two principals renders in each one's scope | `tests/api/test_saved_views.py`, a shared view opened by a colleague narrowed to one account, and kept within its tenant, against the database | Two principals, each read in their own scope |
+| 5. A schedule rendered per recipient and stored, listed as rendered and not sent until OPEN-11 | `tests/api/test_report_schedules.py`, each recipient's file of their own scope, listed and fetched by them, and refused once their access narrows. `schedule.spec.ts` and `reporting.spec.ts` show the Scheduled screen's delivery sentence | On the local stack: one schedule, two recipients, two files RENDERED and kept, 5 rows for the global auditor and 0 for the analyst whose two accounts the demo estate does not hold, and the auditor's file refused to the analyst |
+| 6. Three persona dashboards, every figure linked to its owning screen | `overview.spec.ts` holds every panel and tile on all three dashboards to a link to a screen on the rail. `OverviewViews.test.tsx` holds each dashboard's figures, and `HomeScreen.test.tsx` holds the Overview to the routes the screens it summarises read | Every panel and tile on 3 dashboards |
+| 7. Every path from before P8 resolving | `finops-web/src/shell/__tests__/sections.test.ts`, every path the navigation had before P8 lands somewhere, and only paths that left are redirected | Every pre P8 path |
+
+The journeys are spec section 8's path in one, `finops-web/e2e/reporting.spec.ts`, among
+62 journeys in all.
 
 ---
 
