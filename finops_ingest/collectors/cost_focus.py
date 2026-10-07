@@ -89,6 +89,16 @@ COLUMNS = (
     "commitment_discount_id",
     "commitment_discount_type",
     "commitment_discount_status",
+    # FOCUS 1.4's mandatory and invoice columns, TASK-P10-002. Null where the export does not
+    # carry them; the provider pair is derived in the domain record.
+    "billing_account_name",
+    "billing_currency",
+    "charge_class",
+    "pricing_unit",
+    "service_provider_name",
+    "host_provider_name",
+    "invoice_id",
+    "invoice_detail_id",
     # Split cost allocation, TASK-P6-002. Written as nulls where the export does
     # not carry them, which is every export until ISS-003 is done.
     "eks_cluster_name",

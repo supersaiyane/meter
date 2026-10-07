@@ -61,7 +61,7 @@ Same contract as P0 through P9. One task, one commit, `make verify` green before
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-07 |
 | Implements | Spec sections 4, 5.1, 5.2 and 6, FEAT-004 |
 | Delivers | FEAT-004 at FOCUS 1.4's mandatory columns |
 | Depends on | TASK-P10-001 |
@@ -69,17 +69,17 @@ Same contract as P0 through P9. One task, one commit, `make verify` green before
 
 **Acceptance criteria.**
 
-- [ ] Migration 0030 adds `billing_account_name`, `billing_currency`, `charge_class`,
+- [x] Migration 0030 adds `billing_account_name`, `billing_currency`, `charge_class`,
       `pricing_unit`, `service_provider_name`, `host_provider_name`, `invoice_id` and
       `invoice_detail_id` to `cost_focus_daily`, nullable, with `billing_currency` held to
       three capital letters by a constraint, and a down migration
-- [ ] It backfills `service_provider_name` and `host_provider_name` from `provider_name`,
+- [x] It backfills `service_provider_name` and `host_provider_name` from `provider_name`,
       and `provider_name` and `publisher_name` stay and stay readable
-- [ ] The domain row and the export adapter read `billingaccountname`, `billingcurrency`,
+- [x] The domain row and the export adapter read `billingaccountname`, `billingcurrency`,
       `chargeclass`, `pricingunit` and `invoiceid` where the export's table has them, asked of
       the catalog as the split columns are, and derive the two provider columns, each with a
       test from a fake row, present and absent
-- [ ] A test reads spec section 4's list of mandatory columns and fails if the row lacks one
+- [x] A test reads spec section 4's list of mandatory columns and fails if the row lacks one
 
 ---
 

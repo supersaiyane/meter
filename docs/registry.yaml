@@ -90,9 +90,9 @@ subprojects:
 - id: P10
   name: 'Proven numbers: FOCUS 1.4 and invoice reconciliation'
   status: Specified, planned and approved by the owner 2026-10-07 as priority 2 of next-in-scope.txt,
-    TASK-P10-001 done on 2026-10-07, TASK-P10-002 next. Runs before P9 by the owner's priority. The cost
-    row gains FOCUS 1.4's mandatory and invoice columns, and each AWS invoice is compared with Meter's
-    billed cost
+    TASK-P10-001 and TASK-P10-002 done on 2026-10-07, TASK-P10-003 next. Runs before P9 by the owner's
+    priority. The cost row gains FOCUS 1.4's mandatory and invoice columns, and each AWS invoice is compared
+    with Meter's billed cost
   spec: specs/2026-10-07-p10-proven-numbers-design.md
   plan: plans/P10-implementation-plan.md
   depends_on: P1
@@ -1907,6 +1907,19 @@ changes:
     ProviderName. Corrected before any code: five columns are read where the export has them, both provider
     columns derive from ProviderName, and OPEN-21 is withdrawn'
 
+
+- id: CHG-0129
+  date: '2026-10-07'
+  type: Feature
+  what: TASK-P10-002, FOCUS 1.4's mandatory and invoice columns on the cost row, FEAT-004
+  commit: pending
+  detail: Migration 0030 adds billing_account_name, billing_currency, charge_class, pricing_unit, service_provider_name,
+    host_provider_name, invoice_id and invoice_detail_id, nullable, with the currency held to ISO 4217
+    by a constraint and a partial index for the sum over one invoice. The adapter reads the five AWS's
+    FOCUS 1.2 export carries where its table has them, found by the probe the split columns use, and refuses
+    a currency that is not ISO 4217 as SchemaDrift. The record derives both provider columns from provider_name
+    as FOCUS defines, for every source. A test holds all 21 FOCUS 1.4 mandatory columns to the record
+    and the table
 issues:
 - id: ISS-189
   severity: LOW

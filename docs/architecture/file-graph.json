@@ -566,6 +566,7 @@
     "migrations/versions/0027_commitment_day.py",
     "migrations/versions/0028_saved_view.py",
     "migrations/versions/0029_report_schedule.py",
+    "migrations/versions/0030_focus_1_4_columns.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -613,6 +614,7 @@
     "tests/api/test_export_routes.py",
     "tests/api/test_export_writers.py",
     "tests/api/test_fixture_surfaces.py",
+    "tests/api/test_focus_columns.py",
     "tests/api/test_forecast_shapes.py",
     "tests/api/test_forecast_unproduced.py",
     "tests/api/test_identity_local.py",
@@ -10596,6 +10598,16 @@
     {
       "s": "tests/api/test_fixture_surfaces.py",
       "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_focus_columns.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_focus_columns.py",
+      "t": "finops_core/domain/cost.py",
       "k": "python"
     },
     {
