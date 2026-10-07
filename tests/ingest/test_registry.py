@@ -101,19 +101,28 @@ def test_a_cadence_the_api_runs_names_what_the_api_runs() -> None:
     assert {entry.runs_in for entry in DEFAULT_SCHEDULE} == {"worker", "api"}
 
 
-def test_the_migration_installs_the_cadence_the_registry_declares() -> None:
-    """Migration 0029 installs the runner's row for the tenants that existed before it, and
-    `install_default_schedule` for every tenant after, so the two must say the same thing."""
+@pytest.mark.parametrize(
+    ("revision", "collector"),
+    [
+        ("0029_report_schedule", "report_schedules"),
+        ("0031_invoices", "invoices"),
+        ("0034_price_catalog_schedule", "price_catalog"),
+    ],
+)
+def test_the_migration_installs_the_cadence_the_registry_declares(
+    revision: str, collector: str
+) -> None:
+    """Each of these migrations installs a collector's row for the tenants that existed before
+    it, and `install_default_schedule` for every tenant after, so the two must say the same
+    thing. 0031 and 0034 joined 0029 here in TASK-P9-004."""
     import importlib.util
 
-    from finops_api.exports.scheduled import COLLECTOR
-
-    migration = Path(__file__).resolve().parents[2] / "migrations/versions/0029_report_schedule.py"
-    spec = importlib.util.spec_from_file_location("migration_0029", migration)
+    migration = Path(__file__).resolve().parents[2] / f"migrations/versions/{revision}.py"
+    spec = importlib.util.spec_from_file_location(f"migration_{revision}", migration)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    entry = next(e for e in DEFAULT_SCHEDULE if e.collector == COLLECTOR)
+    entry = next(e for e in DEFAULT_SCHEDULE if e.collector == collector)
     declared = (entry.cadence_seconds, entry.reason, entry.est_cost_per_run)
     installed = (module._CADENCE_SECONDS, module._REASON, module._COST_PER_RUN)
     assert installed == declared

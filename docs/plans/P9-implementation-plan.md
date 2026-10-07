@@ -160,7 +160,7 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec sections 5.2, 5.3, 7 and 14, FEAT-071 |
 | Delivers | FEAT-071, on demand and reserved |
 | Depends on | TASK-P9-003 |
@@ -168,26 +168,31 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 **Acceptance criteria.**
 
-- [ ] The adapter reads the Price List Query API for `AmazonEC2`, which holds EBS,
+- [x] The adapter reads the Price List Query API for `AmazonEC2`, which holds EBS,
       `AmazonRDS`, `AmazonElastiCache`, `AmazonRedshift` and `AmazonES`, in every commercial
       Region, the Regions taken from the price list's own codes and never listed in code.
       Widened from the Regions in OPEN-06 on 2026-10-07, spec section 14
-- [ ] Reserved terms, one and three years, every payment option and offering class, as
+- [x] Reserved terms, one and three years, every payment option and offering class, as
       `PricingCategory` Committed with the term in `SkuPriceDetails`
 - [ ] The number of price rows measured before the tables are sized, against the ten
-      million spec section 14.4 models
-- [ ] Rows filtered to the comparable price: operating system, shared tenancy, used
+      million spec section 14.4 models. Open, ISS-261: only the ElastiCache list for eu-west-1
+      is measured, 506 products and 1,850 terms; the rest needs an account or the owner's
+      permission to download an offer file
+- [x] Rows filtered to the comparable price: operating system, shared tenancy, used
       capacity, no preinstalled software, with the filter tested, and Extended Support
       products named rather than read as a second price for the same type, found in the real
       ElastiCache list on 2026-10-08
-- [ ] A term whose every price is nought, or a missing price, refused with a typed cause,
+- [x] A term whose every price is nought, or a missing price, refused with a typed cause,
       never stored; an All Upfront term's nought hourly rate beside its fee kept, spec section
       5.3 as corrected on 2026-10-08
-- [ ] The adapter added to `tests/contract/test_catalog_contract.py`, and its attribute names
-      held to a real EC2 extract, which TASK-P9-002 could not take without an account
-- [ ] The `price_catalog` collector, a `collector_schedule` row with its reason and cost,
+- [x] The adapter added to `tests/contract/test_catalog_contract.py`, over a stub serving the
+      fake's prices in GetProducts' shape. Its attribute names are held to the real EC2 EBS
+      product in the API reference's sample and to the real ElastiCache list; a real EC2
+      instance product is still to come, ISS-261
+- [x] The `price_catalog` collector, a `collector_schedule` row with its reason and cost,
       every 8 hours, loads only the services and Regions whose version changed
-- [ ] Never loads a whole offer file into memory
+- [x] Never loads a whole offer file into memory: GetProducts is read a page at a time as
+      a generator, and prices are written 1,000 at a time
 
 ---
 

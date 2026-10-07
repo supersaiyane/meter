@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 76 total, 11 specified, 13 in build, 45 delivered |
+| Features | 76 total, 11 specified, 14 in build, 45 delivered |
 | Decisions | 35 architecture decision records |
-| Changes | 136 recorded |
-| Issues | 156 fixed, 101 open, 0 parked |
+| Changes | 137 recorded |
+| Issues | 156 fixed, 102 open, 0 parked |
 | Open questions | 21 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -49,9 +49,11 @@ the FinOps practitioner's Matches the invoice tile, and constraint 2 naming FOCU
 comparison against a real invoice waits on ISS-002, ISS-003 and TASK-P9-001. Priority 3, P9, is
 in build: on 2026-10-08 TASK-P9-001 gave the hub a path to every AWS API it calls, ADR-0035,
 endpoints in three Regions and a relay outside the VPC for the services with none, and
-TASK-P9-002 the price and instance type ports, shaped by AWS's real price list, and TASK-P9-003
-the catalog's tables, every invariant a constraint. TASK-P9-004 is next. The repository has no git remote,
-so nothing has been pushed.
+TASK-P9-002 the price and instance type ports, shaped by AWS's real price list, TASK-P9-003
+the catalog's tables, every invariant a constraint, and TASK-P9-004 AWS's on demand and reserved
+prices for five services in every commercial Region, loaded every 8 hours when a version changes.
+The catalog's size and a real EC2 instance product wait on ISS-261. TASK-P9-005 is next. The
+repository has no git remote, so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -224,7 +226,7 @@ ISS-003.
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 | P8 | 18 | 0 | 0 | 0 | 0 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
-| P9 | 3 | 0 | 0 | 0 | 10 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
+| P9 | 4 | 0 | 0 | 0 | 9 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -451,6 +453,7 @@ ISS-003.
 | `TASK-P9-001` | Done 2026-10-08 | the hub reaches every AWS API it calls |
 | `TASK-P9-002` | Done 2026-10-08 | ports and fakes for prices and instance types |
 | `TASK-P9-003` | Done 2026-10-08 | the catalog tables |
+| `TASK-P9-004` | Done 2026-10-08 | the price list, five services, every Region, on demand and reserved |
 
 **P10, not in the default state**
 

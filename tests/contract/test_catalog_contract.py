@@ -1,8 +1,9 @@
 """What every price catalog and instance catalog must do, fake or real. TASK-P9-002.
 
-P9 spec sections 5.3, 5.4 and 14. The fakes pass it now; TASK-P9-004 and TASK-P9-005 add their
-AWS adapters to the parameters below, against a stubbed client, and pass the same assertions. A
-contract one implementation is held to and another is not is a description of the first.
+P9 spec sections 5.3, 5.4 and 14. The fakes pass it, and so does the AWS price list adapter,
+TASK-P9-004, over a stubbed client serving the fake's own prices in GetProducts' shape; TASK-P9-005
+adds the instance catalog's adapter the same way. A contract one implementation is held to and
+another is not is a description of the first.
 """
 
 from __future__ import annotations
@@ -19,10 +20,11 @@ from finops_core.ports import InstanceCatalog, PriceCatalog
 from finops_fakes.catalog import FakeInstanceCatalog, FakePriceCatalog
 from finops_fakes.estate_shape import REGIONS
 from finops_fakes.prices import INSTANCE_USD
+from tests.providers.aws.pricing import fake_backed
 
 EC2 = "AmazonEC2"
 
-PRICE_CATALOGS: dict[str, Callable[..., Any]] = {"fake": FakePriceCatalog}
+PRICE_CATALOGS: dict[str, Callable[..., Any]] = {"fake": FakePriceCatalog, "aws": fake_backed}
 INSTANCE_CATALOGS: dict[str, Callable[..., Any]] = {"fake": FakeInstanceCatalog}
 
 

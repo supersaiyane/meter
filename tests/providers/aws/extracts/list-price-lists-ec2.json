@@ -1,0 +1,14 @@
+{
+  "PriceLists": [
+    {
+      "PriceListArn": "arn:aws:pricing:::price-list/aws/AmazonEC2/USD/20220603151047/us-east-1",
+      "RegionCode": "us-east-1",
+      "CurrencyCode": "USD",
+      "FileFormats": [
+        "json",
+        "csv"
+      ]
+    }
+  ],
+  "NextToken": "abcdefg123"
+}

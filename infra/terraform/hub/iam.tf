@@ -185,6 +185,22 @@ data "aws_iam_policy_document" "task" {
     resources = ["*"]
   }
 
+  # AWS's public prices, FEAT-071, TASK-P9-004: finops_providers/aws/price_list.py reads the
+  # list's versions and its products through the endpoint in us-east-1, ADR-0035. The Price
+  # List API has no resource level permissions, so this is a wildcard AWS will not let us
+  # narrow. Read only, constraint 6.
+  statement {
+    sid    = "ReadAwsPrices"
+    effect = "Allow"
+
+    actions = [
+      "pricing:ListPriceLists",
+      "pricing:GetProducts",
+    ]
+
+    resources = ["*"]
+  }
+
   # Metrics the collectors publish about themselves. Restricted to the Meter
   # namespace, so a bug cannot overwrite another team's metrics.
   statement {

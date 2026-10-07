@@ -96,6 +96,17 @@ READS: dict[tuple[str, str], set[str]] = {
         "Taxes",
         "NextToken",
     },
+    # FEAT-071, TASK-P9-004. The price list: its versions, then each version's products. A product
+    # is a JSON string, so what is read inside it is held to the API reference's sample instead,
+    # tests/providers/aws/test_price_list.py.
+    ("pricing", "ListPriceLists"): {
+        "PriceLists",
+        "PriceListArn",
+        "RegionCode",
+        "CurrencyCode",
+        "NextToken",
+    },
+    ("pricing", "GetProducts"): {"PriceList", "NextToken"},
     # FEAT-060, ISS-211. The budgets, one paginated describe.
     ("budgets", "DescribeBudgets"): {
         "Budgets",
@@ -192,6 +203,8 @@ TOKENS: dict[tuple[str, str], str] = {
     ("iam", "ListRoles"): "Marker",
     ("budgets", "DescribeBudgets"): "NextToken",
     ("invoicing", "ListInvoiceSummaries"): "NextToken",
+    ("pricing", "ListPriceLists"): "NextToken",
+    ("pricing", "GetProducts"): "NextToken",
     ("service-quotas", "ListServices"): "NextToken",
     ("service-quotas", "ListServiceQuotas"): "NextToken",
     ("service-quotas", "ListRequestedServiceQuotaChangeHistory"): "NextToken",
@@ -294,6 +307,8 @@ SENDS: dict[tuple[str, str], set[str]] = {
     ("s3", "GetObject"): {"Bucket", "Key"},
     ("budgets", "DescribeBudgets"): {"AccountId"},
     ("invoicing", "ListInvoiceSummaries"): {"Selector", "Filter"},
+    ("pricing", "ListPriceLists"): {"ServiceCode", "EffectiveDate", "CurrencyCode"},
+    ("pricing", "GetProducts"): {"ServiceCode", "FormatVersion", "Filters"},
     ("service-quotas", "ListServices"): set(),
     ("service-quotas", "ListServiceQuotas"): {"ServiceCode"},
     ("service-quotas", "ListRequestedServiceQuotaChangeHistory"): set(),
@@ -365,6 +380,25 @@ FALLS_THROUGH: dict[tuple[str, str], set[str]] = {
         "InternalServerException",
         "ResourceNotFoundException",
         "ValidationException",
+    },
+    # The Price List API refuses as AccessDeniedException and throttles as ThrottlingException,
+    # both mapped. What is left is a page token that expired or is wrong, our own request being
+    # wrong, a service or price list the API does not know, and the service failing: SchemaDrift
+    # for now, as ISS-215 records for every adapter here.
+    ("pricing", "ListPriceLists"): {
+        "ExpiredNextTokenException",
+        "InternalErrorException",
+        "InvalidNextTokenException",
+        "InvalidParameterException",
+        "NotFoundException",
+        "ResourceNotFoundException",
+    },
+    ("pricing", "GetProducts"): {
+        "ExpiredNextTokenException",
+        "InternalErrorException",
+        "InvalidNextTokenException",
+        "InvalidParameterException",
+        "NotFoundException",
     },
     # Service Quotas throttles as TooManyRequestsException and refuses as
     # AccessDeniedException, both of which translate maps. What is left is our own request

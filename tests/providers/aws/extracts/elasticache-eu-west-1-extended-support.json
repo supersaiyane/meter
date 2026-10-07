@@ -1,0 +1,49 @@
+{
+  "formatVersion": "v1.0",
+  "offerCode": "AmazonElastiCache",
+  "version": "20260914063714",
+  "publicationDate": "2026-09-14T06:37:14Z",
+  "products": {
+    "WFGK6RZEMVUFK7WG": {
+      "sku": "WFGK6RZEMVUFK7WG",
+      "productFamily": "Cache Instance",
+      "attributes": {
+        "servicecode": "AmazonElastiCache",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "instanceType": "cache.m5.xlarge",
+        "cacheEngine": "Redis",
+        "usagetype": "EU-ExtendedSupportYr3-NodeUsage:cache.m5.xlarge",
+        "operation": "CreateCacheCluster:0002",
+        "regionCode": "eu-west-1",
+        "servicename": "Amazon ElastiCache",
+        "year_number": "Yr3"
+      }
+    }
+  },
+  "terms": {
+    "OnDemand": {
+      "WFGK6RZEMVUFK7WG": {
+        "WFGK6RZEMVUFK7WG.JRTCKXETXF": {
+          "offerTermCode": "JRTCKXETXF",
+          "sku": "WFGK6RZEMVUFK7WG",
+          "effectiveDate": "2026-09-01T00:00:00Z",
+          "priceDimensions": {
+            "WFGK6RZEMVUFK7WG.JRTCKXETXF.6YS6EN2CT7": {
+              "rateCode": "WFGK6RZEMVUFK7WG.JRTCKXETXF.6YS6EN2CT7",
+              "description": "$0.549 per Hr for ExtendedSupportYr3-NodeUsage:cache.m5.xlarge in EU (Ireland)",
+              "beginRange": "0",
+              "endRange": "Inf",
+              "unit": "Hrs",
+              "pricePerUnit": {
+                "USD": "0.5490000000"
+              },
+              "appliesTo": []
+            }
+          },
+          "termAttributes": {}
+        }
+      }
+    }
+  }
+}
