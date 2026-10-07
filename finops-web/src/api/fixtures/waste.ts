@@ -44,6 +44,7 @@ export function recommendationsFixture(): ApiEnvelope<ApiRecommendations> {
           observation_days: 15,
           lifecycle: 'OPEN',
           owner: null,
+          suggested_owner: 'platform',
           ticket_reference: null,
           rationale:
             'p99 CPU of 11.4 percent against 4 vCPU over 15 days, so 1 vCPU with the ' +
@@ -68,6 +69,7 @@ export function recommendationsFixture(): ApiEnvelope<ApiRecommendations> {
           observation_days: 45,
           lifecycle: 'ACCEPTED',
           owner: 'platform@example.local',
+          suggested_owner: null,
           ticket_reference: 'FAKE-1042',
           rationale:
             'm5.xlarge on x86 with no architecture specific workload detected over 45 days. ' +
@@ -93,6 +95,7 @@ export function recommendationsFixture(): ApiEnvelope<ApiRecommendations> {
           observation_days: 92,
           lifecycle: 'DONE',
           owner: 'storage@example.local',
+          suggested_owner: null,
           ticket_reference: 'FAKE-1019',
           rationale:
             '800 GiB gp3 volume attached to nothing for 92 days. The saving is the whole cost',
@@ -120,6 +123,7 @@ export function recommendationsFixture(): ApiEnvelope<ApiRecommendations> {
           observation_days: 243,
           lifecycle: 'OPEN',
           owner: null,
+          suggested_owner: null,
           ticket_reference: null,
           rationale:
             'In the insufficient data state since 2026-01-26, 243 days, so it has never evaluated. ' +

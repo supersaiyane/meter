@@ -361,6 +361,10 @@ class RecommendationOut(BaseModel):
     lifecycle: str
     #: Null is a reported condition, not a gap. An unowned finding is never fixed.
     owner: str | None
+    #: The resource's team tag, TEAM_TAG, from the inventory node naming it, ISS-021. A
+    #: suggestion of whom to ask, never stored and never an owner: null when no node in the
+    #: reader's access names the resource, or its tag is missing or empty.
+    suggested_owner: str | None = None
     ticket_reference: str | None
     #: The working, so a reader can disagree with the verdict.
     rationale: str

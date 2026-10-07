@@ -1759,6 +1759,17 @@ changes:
     every comparison a typed state. ADR-0034 moves the canonical schema to FOCUS 1.4; OPEN-21 asks whether
     to read AWS''s FOCUS export. Six tasks, FEAT-076'
 
+- id: CHG-0126
+  date: '2026-10-07'
+  type: Feature
+  what: A recommendation's suggested owner from its resource's team tag, priority 1 item 4, ISS-021's
+    first slice
+  commit: pending
+  detail: The recommendations route returns suggested_owner, the team tag of the inventory node naming
+    the resource in the same account, confined by the node table's own scope rule and never stored. The
+    waste screen's Owner cell says whom the tag names while nobody owns a finding. TEAM_TAG in finops_core.constants
+    is now the one key showback, the weekly digest and the suggestion read
+
 - id: CHG-0128
   date: '2026-10-07'
   type: Correction
@@ -2684,7 +2695,10 @@ issues:
   severity: HIGH
   summary: No owner attribution, and an unowned finding is never fixed
   status: OPEN
-  detail: FEAT-016
+  detail: 'FEAT-016. First slice 2026-10-07, CHG-0126: a recommendation suggests the owner its resource''s
+    team tag names, read from the inventory node within the reader''s scope and never stored, beside the
+    owner a person assigns. Still open: a setting for a tenant whose owners live under another key, owners
+    from the service catalogue and from CloudTrail creators, and owners on query findings and anomalies.'
 - id: ISS-022
   severity: HIGH
   summary: The cost model is never back tested against the bill

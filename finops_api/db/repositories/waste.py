@@ -11,10 +11,12 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any, ClassVar
 
-from sqlalchemy import Row, Select, Table, func
+from sqlalchemy import Row, ScalarSelect, Select, Table, func, select
 
 from finops_api.db import models
 from finops_api.db.repositories.base import ScopedRepository
+from finops_api.guards import scope_predicate
+from finops_core.constants import TEAM_TAG
 from finops_core.domain.tenant import Scope
 
 
@@ -70,6 +72,26 @@ class RecommendationRepository(ScopedRepository):
     table: ClassVar[Table] = models.recommendation
     resource: ClassVar[str] = "recommendation"
 
+    def _suggested_owner(self, scope: Scope) -> ScalarSelect[Any]:
+        """The resource's team tag, from the inventory node naming it, as a suggestion. ISS-021.
+
+        Joined on the provider's own identifier within the account, as `findings_for` joins, and
+        confined by the node table's own scope rule, so a node outside the reader's access never
+        suggests anything. Never stored: an owner is a person's decision, and a tag only says
+        whom to ask. An empty tag suggests nobody. At most one node can match, because
+        `uq_topology_node__provider_id` holds one node per resource in a tenant.
+        """
+        node = models.topology_node
+        return (
+            select(func.nullif(node.c.tags[TEAM_TAG].astext, ""))
+            .where(node.c.tenant_id == self.table.c.tenant_id)
+            .where(node.c.sub_account_id == self.table.c.sub_account_id)
+            .where(node.c.provider_id == self.table.c.resource_id)
+            .where(scope_predicate(node, scope))
+            .correlate(self.table)
+            .scalar_subquery()
+        )
+
     def worst_first(
         self,
         scope: Scope,
@@ -85,7 +107,9 @@ class RecommendationRepository(ScopedRepository):
         ordered by confidence puts a certain twenty dollars above an uncertain ten
         thousand, and only one of those is worth a morning.
         """
-        statement = self.scoped_select(scope)
+        statement = self.scoped_select(scope).add_columns(
+            self._suggested_owner(scope).label("suggested_owner")
+        )
         if lifecycle is not None:
             statement = statement.where(self.table.c.lifecycle == lifecycle)
         if waste_class is not None:
@@ -102,7 +126,9 @@ class RecommendationRepository(ScopedRepository):
         rows = _fetch(
             self,
             scope,
-            self.scoped_select(scope).where(self.table.c.recommendation_id == recommendation_id),
+            self.scoped_select(scope)
+            .add_columns(self._suggested_owner(scope).label("suggested_owner"))
+            .where(self.table.c.recommendation_id == recommendation_id),
         )
         return rows[0] if rows else None
 
