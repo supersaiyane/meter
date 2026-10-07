@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P10 |
-| Status | Specified |
+| Status | In build |
 | Specification | [P10 spec](../specs/2026-10-07-p10-proven-numbers-design.md), sections 5.3 to 5.5, 6 and 7 |
 | Tasks | TASK-P10-003, TASK-P10-004, TASK-P10-005 |
 | Refresh cadence | Daily, the `invoices` row in `collector_schedule` |
@@ -27,9 +27,12 @@ the claim into a figure anyone can check.
 ## How it works
 
 A port in `finops_core` names the read; a fake answers in tests and an AWS adapter calls the
-Invoicing API's `ListInvoiceSummaries` through the credential broker. The `invoices`
-collector writes `billing_period` and `invoice_detail` rows at the grain of a whole invoice,
-because AWS returns no line items. Each cost row carries the `invoice_id` its row in AWS's
+Invoicing API's `ListInvoiceSummaries` at the payer, one billing period at a time. The
+`invoices` collector writes `invoice_detail` rows at the grain of a whole invoice, because
+AWS returns no line items, and a `billing_period` row for each of the last three months,
+Closed once an invoice for it has been issued and Open until then. A credit memo is its own
+row naming the invoice it corrects and closes nothing. Built in TASK-P10-003 on 2026-10-08;
+nothing in production builds the adapter yet, ISS-182. Each cost row carries the `invoice_id` its row in AWS's
 FOCUS export names, so the comparison is a sum over the rows of one invoice, computed when it is read so
 it cannot drift from either side. The tolerance is 0.01 percent of the invoice, modelled, a
 named constant to revisit once a real invoice has been compared.
@@ -46,9 +49,10 @@ fails the run.
 
 An invoice totals every account under the payer, so the guard's `PayerWide` rule confines it
 to a reader whose scope covers the whole payer, as budgets are by ADR-0025; a narrower reader
-gets a typed refusal and no total. The reader role gains `invoicing:ListInvoiceSummaries`
-and nothing that writes, constraint 6. Invoice amounts are financial data of the tenant and
-are classified in `docs/09-DATA-CLASSIFICATION.md` when the tables land.
+gets a typed refusal and no total. The management account's organization reader role
+gains `invoicing:ListInvoiceSummaries` and nothing that writes, constraint 6. Invoice amounts
+are confidential financial data of the tenant and are classified in
+`docs/09-DATA-CLASSIFICATION.md`.
 
 ## Interface
 

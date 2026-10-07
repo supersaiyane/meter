@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 27 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 49 in 18 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 30 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 183 | test_*.py under tests/ |
-| Test functions | 2452 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 25 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 31 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 187 | test_*.py under tests/ |
+| Test functions | 2485 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -449,6 +449,9 @@ meter/
 │       │                      holds placeholders and no figures, and an Answer
 │       │                      cannot be built holding a figure it did not cite.
 │       │                      TASK-P7-002
+│       ├── invoice.py         Invoice and BillingPeriodStatus, FEAT-076. An invoice
+│       │                      is read, never derived; a credit memo names what it
+│       │                      corrects; months and next_month for billing periods
 │       └── quota.py           QuotaUsage. Unpublished usage is None, never zero
 │   └── ports/                 protocols only. No implementation, no cloud import.
 │                              The Ports section of docs/02-ARCHITECTURE.md says
@@ -459,6 +462,7 @@ meter/
 │       │                      that test never reaches it, ISS-239
 │       ├── accounts.py        AccountDiscovery
 │       ├── budget.py          BudgetSource, the payer's budgets
+│       ├── invoice.py         InvoiceSource, the payer's invoices, FEAT-076
 │       ├── cloudwatch_estate.py
 │       │                      CloudWatchEstate, what CloudWatch holds rather than
 │       │                      the values in it. A fake and no adapter, ISS-240
@@ -544,6 +548,9 @@ meter/
 │   │   ├── language_model.py  language_model(settings), the one composition point
 │   │   │                      that names the vendor. None when no model is set,
 │   │   │                      and the assistant then says it is not enabled
+│   │   ├── invoices.py        FEAT-076. ListInvoiceSummaries at the payer, one
+│   │   │                      billing period at a time; anything unreadable is
+│   │   │                      SchemaDrift, never a zero. Unproved, ISS-002, ISS-003
 │   │   └── cur.py             the billing export through Athena. **Never yet
 │   │                          run**, ISS-122, and COLUMNS is the part only a
 │   │                          real export can settle. A period comes back
@@ -1031,6 +1038,10 @@ meter/
 │   │                     Takes the time it is observed at, because the
 │   │                     constants are right for a test and wrong for a
 │   │                     demo estate
+│   ├── invoices.py        the payer's invoices, built from the rows of the bill:
+│   │                      the newest closed period matches, the oldest is 2.50
+│   │                      over beside a Marketplace invoice, the running month
+│   │                      has none. FEAT-076
 │   ├── health.py          role health. Separates an account whose role is
 │   │                     misconfigured from one Meter could not ask about
 │   │                     at all, which are different fixes and owners
@@ -1138,6 +1149,9 @@ meter/
 │       │                       the provider. Stores nothing derived, retracts nothing,
 │       │                       and counts the budgets whose scope it cannot reproduce
 │       │                       on sync_error rather than dropping them
+│       ├── invoices.py        FEAT-076, TASK-P10-003. Invoices and the billing
+│       │                      periods they close, stored as read; a period with no
+│       │                      invoice is stored Open, never skipped
 │       ├── digests.py         FEAT-041, TASK-P7-012. DigestCollector, weekly: one
 │       │                      digest per team the bill's team tag names and one for
 │       │                      the organization. One team failing is a sync_error
@@ -1400,6 +1414,9 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0031_invoices.py   TASK-P10-003, FEAT-076. billing_period and
+│       │                      invoice_detail, payer wide, nothing derived stored;
+│       │                      the invoices cadence row for every tenant
 │       ├── 0030_focus_1_4_columns.py  TASK-P10-002, FEAT-004, ADR-0034. FOCUS
 │       │                      1.4's six missing mandatory columns and the two invoice
 │       │                      columns, nullable; the currency held to ISO 4217; the

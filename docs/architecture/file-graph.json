@@ -365,6 +365,7 @@
     "finops_core/domain/identity.py",
     "finops_core/domain/ingest.py",
     "finops_core/domain/insight.py",
+    "finops_core/domain/invoice.py",
     "finops_core/domain/metrics.py",
     "finops_core/domain/observation.py",
     "finops_core/domain/org.py",
@@ -388,6 +389,7 @@
     "finops_core/ports/iac.py",
     "finops_core/ports/identity.py",
     "finops_core/ports/inventory.py",
+    "finops_core/ports/invoice.py",
     "finops_core/ports/llm.py",
     "finops_core/ports/metrics.py",
     "finops_core/ports/pull_requests.py",
@@ -407,6 +409,7 @@
     "finops_fakes/evidence.py",
     "finops_fakes/fixtures.py",
     "finops_fakes/health.py",
+    "finops_fakes/invoices.py",
     "finops_fakes/llm.py",
     "finops_fakes/planted.py",
     "finops_fakes/platform_cost.py",
@@ -435,6 +438,7 @@
     "finops_ingest/collectors/digests.py",
     "finops_ingest/collectors/iac_state.py",
     "finops_ingest/collectors/inventory.py",
+    "finops_ingest/collectors/invoices.py",
     "finops_ingest/collectors/org_tree.py",
     "finops_ingest/collectors/partitions.py",
     "finops_ingest/collectors/platform_cost.py",
@@ -470,6 +474,7 @@
     "finops_providers/aws/credentials.py",
     "finops_providers/aws/cur.py",
     "finops_providers/aws/health.py",
+    "finops_providers/aws/invoices.py",
     "finops_providers/aws/language_model.py",
     "finops_providers/aws/platform_cost.py",
     "finops_providers/aws/query_evidence.py",
@@ -567,6 +572,7 @@
     "migrations/versions/0028_saved_view.py",
     "migrations/versions/0029_report_schedule.py",
     "migrations/versions/0030_focus_1_4_columns.py",
+    "migrations/versions/0031_invoices.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -662,6 +668,7 @@
     "tests/core/test_geography.py",
     "tests/core/test_iac.py",
     "tests/core/test_insight.py",
+    "tests/core/test_invoice.py",
     "tests/core/test_llm_port.py",
     "tests/core/test_ports.py",
     "tests/core/test_quota.py",
@@ -690,6 +697,7 @@
     "tests/ingest/collectors/test_digests.py",
     "tests/ingest/collectors/test_iac_state.py",
     "tests/ingest/collectors/test_inventory.py",
+    "tests/ingest/collectors/test_invoices.py",
     "tests/ingest/collectors/test_org_tree.py",
     "tests/ingest/collectors/test_partitions.py",
     "tests/ingest/collectors/test_platform_cost.py",
@@ -728,6 +736,7 @@
     "tests/providers/aws/test_credentials.py",
     "tests/providers/aws/test_cur.py",
     "tests/providers/aws/test_health.py",
+    "tests/providers/aws/test_invoices.py",
     "tests/providers/aws/test_query_evidence.py",
     "tests/providers/aws/test_quotas.py",
     "tests/providers/aws/test_recommendations.py",
@@ -740,6 +749,7 @@
     "tests/providers/fake/test_commitment.py",
     "tests/providers/fake/test_cur.py",
     "tests/providers/fake/test_evidence.py",
+    "tests/providers/fake/test_invoices.py",
     "tests/providers/fake/test_surface.py",
     "tests/providers/fake/test_utilization_estates.py",
     "tests/providers/test_amg_surface.py",
@@ -8256,6 +8266,11 @@
       "k": "python"
     },
     {
+      "s": "finops_core/domain/invoice.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/domain/metrics.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -8451,6 +8466,11 @@
       "k": "python"
     },
     {
+      "s": "finops_core/ports/invoice.py",
+      "t": "finops_core/domain/invoice.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/ports/metrics.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -8612,6 +8632,21 @@
     },
     {
       "s": "finops_fakes/health.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/invoices.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/invoices.py",
+      "t": "finops_core/domain/invoice.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/invoices.py",
       "t": "finops_core/errors.py",
       "k": "python"
     },
@@ -8972,6 +9007,21 @@
     },
     {
       "s": "finops_ingest/collectors/inventory.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/invoices.py",
+      "t": "finops_core/domain/invoice.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/invoices.py",
+      "t": "finops_core/ports/invoice.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/invoices.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
@@ -9531,6 +9581,26 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/invoices.py",
+      "t": "finops_core/domain/invoice.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/invoices.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/invoices.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/invoices.py",
+      "t": "finops_providers/aws/cur.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/language_model.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -9973,6 +10043,11 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/invoices.py",
       "k": "python"
     },
     {
@@ -11411,6 +11486,11 @@
       "k": "python"
     },
     {
+      "s": "tests/core/test_invoice.py",
+      "t": "finops_core/domain/invoice.py",
+      "k": "python"
+    },
+    {
       "s": "tests/core/test_llm_port.py",
       "t": "finops_core/ports/llm.py",
       "k": "python"
@@ -11847,6 +11927,31 @@
     },
     {
       "s": "tests/ingest/collectors/test_inventory.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_invoices.py",
+      "t": "finops_core/domain/invoice.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_invoices.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_invoices.py",
+      "t": "finops_ingest/collectors/invoices.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_invoices.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_invoices.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
@@ -12576,6 +12681,26 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/aws/test_invoices.py",
+      "t": "finops_core/domain/invoice.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_invoices.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_invoices.py",
+      "t": "finops_core/ports/invoice.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_invoices.py",
+      "t": "finops_providers/aws/invoices.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/aws/test_query_evidence.py",
       "t": "finops_core/errors.py",
       "k": "python"
@@ -12738,6 +12863,21 @@
     {
       "s": "tests/providers/fake/test_evidence.py",
       "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_invoices.py",
+      "t": "finops_core/domain/invoice.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_invoices.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/fake/test_invoices.py",
+      "t": "finops_core/ports/invoice.py",
       "k": "python"
     },
     {

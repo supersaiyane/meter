@@ -172,6 +172,11 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOr
     # inherits that scoping the way commitment coverage does, per ADR-0025. The cost is real
     # and is ISS-212: an account scoped budget is invisible to the team that owns the account.
     "budget": PayerWide(),
+    # FEAT-076, TASK-P10-003. An invoice totals every account under the payer, and a period is
+    # closed by an invoice, so both are payer wide like a budget, P10 spec section 5.5. A
+    # narrowed reader gets nothing rather than a total including accounts they cannot see.
+    "billing_period": PayerWide(),
+    "invoice_detail": PayerWide(),
     # FEAT-055, and the reason the table exists. A finding derived from a payer wide fact is
     # payer wide, so it inherits the scoping of the coverage it was computed from rather than
     # the scoping of the findings table it resembles. ADR-0025.

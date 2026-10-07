@@ -429,3 +429,32 @@ def test_the_request_history_is_scoped_through_the_request_it_belongs_to() -> No
     rendered = str(scope_predicate(table, scope))
     assert "quota_request" in rendered
     assert "request_id" in rendered
+
+
+# --- P10, before any route reads these tables --------------------------------
+#
+# The order the P4 and P5 blocks set, for TASK-P10-003: both tables are guarded before
+# TASK-P10-004 adds the route that reads them. An invoice totals every account under the
+# payer and a period is closed by one, so a reader narrowed to some accounts reads none of
+# either, P10 spec section 5.5, rather than a total including accounts they cannot see.
+
+P10_TABLES = ("billing_period", "invoice_detail")
+
+
+@pytest.mark.parametrize("table_name", P10_TABLES)
+def test_a_p10_table_is_payer_wide(table_name: str) -> None:
+    from finops_api.guards import SCOPED_TABLES, PayerWide
+
+    assert isinstance(SCOPED_TABLES.get(table_name), PayerWide)
+
+
+@pytest.mark.parametrize("table_name", P10_TABLES)
+def test_a_narrowed_reader_reads_nothing_of_a_p10_table(table_name: str) -> None:
+    from sqlalchemy.dialects import postgresql
+
+    table = models.metadata.tables[table_name]
+    narrowed = Scope(tenant_id=uuid4(), is_global=False, accounts=keys("111122223333"))
+    whole = Scope(tenant_id=uuid4(), is_global=True, accounts=frozenset())
+    dialect = postgresql.dialect()
+    assert str(scope_predicate(table, narrowed).compile(dialect=dialect)) == "false"
+    assert "tenant_id" in str(scope_predicate(table, whole).compile(dialect=dialect))

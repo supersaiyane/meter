@@ -9,7 +9,7 @@
      own content rather than scaffolding, and is not tagged.
 -->
 
-Last updated: 2026-09-27
+Last updated: 2026-10-08
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 76 total, 12 specified, 13 in build, 44 delivered |
+| Features | 76 total, 11 specified, 14 in build, 44 delivered |
 | Decisions | 34 architecture decision records |
-| Changes | 129 recorded |
-| Issues | 154 fixed, 101 open, 0 parked |
+| Changes | 130 recorded |
+| Issues | 154 fixed, 102 open, 0 parked |
 | Open questions | 21 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -42,7 +42,9 @@ main with `--no-ff`, locally. Later on 2026-10-07 the owner approved
 priorities 1 to 3 of `next-in-scope.txt`, CHG-0122: the one day wins, FOCUS 1.4 with invoice
 reconciliation, and P9. They run in sequence on `next-build`. Priority 1 is done,
 including suggested owners from the team tag; priority 2 is specified and planned as P10, six
-tasks, ADR-0034, and runs next. The repository has no git remote,
+tasks, ADR-0034, and is under way: on 2026-10-08 TASK-P10-001 to TASK-P10-003 are done, the
+FOCUS 1.4 columns and the payer's invoices read into `billing_period` and `invoice_detail`, and
+TASK-P10-004, the comparison, is next. The repository has no git remote,
 so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
@@ -217,7 +219,7 @@ ISS-003.
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 | P8 | 18 | 0 | 0 | 0 | 0 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 0 | 0 | 0 | 0 | 13 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
-| P10 | 2 | 0 | 0 | 0 | 4 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
+| P10 | 3 | 0 | 0 | 0 | 3 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -442,6 +444,7 @@ ISS-003.
 | --- | --- | --- |
 | `TASK-P10-001` | Done 2026-10-07 | two digit sub projects in the tooling |
 | `TASK-P10-002` | Done 2026-10-07 | FOCUS 1.4's mandatory and invoice columns on the cost row |
+| `TASK-P10-003` | Done 2026-10-08 | billing periods and invoices |
 
 <!-- generated:task-status end -->
 

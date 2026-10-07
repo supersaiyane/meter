@@ -939,6 +939,52 @@ budget = Table(
 )
 
 
+#: FEAT-076, migration 0031. FOCUS 1.4's Billing Period dataset: one row per tenant and month,
+#: Closed once an invoice for it has been issued and Open until then. Payer wide, ADR-0025.
+billing_period = Table(
+    "billing_period",
+    metadata,
+    Column("billing_period_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("billing_period_start", Date, nullable=False),
+    Column("billing_period_end", Date, nullable=False),
+    #: Open or Closed, in FOCUS's own capitalisation.
+    Column("billing_period_status", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
+#: FEAT-076, migration 0031. FOCUS 1.4's Invoice Detail dataset at the grain AWS gives, one row
+#: per whole invoice or credit memo, so `invoice_detail_id` is the `invoice_id`. Stored as read:
+#: Meter's own sum and the difference are computed when read, TASK-P10-004. Payer wide.
+invoice_detail = Table(
+    "invoice_detail",
+    metadata,
+    Column("invoice_detail_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("invoice_id", Text, nullable=False),
+    Column("invoice_detail_id", Text, nullable=False),
+    #: INVOICE or CREDIT_MEMO. A credit memo names the invoice it corrects.
+    Column("invoice_type", Text, nullable=False),
+    Column("original_invoice_id", Text),
+    Column("billing_account_id", Text, nullable=False),
+    Column("billing_period_start", Date, nullable=False),
+    Column("billing_period_end", Date, nullable=False),
+    #: Not always AWS: Marketplace charges are invoiced by another entity.
+    Column("invoice_issuer_name", Text, nullable=False),
+    Column("billing_currency", Text, nullable=False),
+    Column("billed_cost_before_tax", Numeric(20, 10), nullable=False),
+    Column("tax", Numeric(20, 10), nullable=False),
+    Column("billed_cost", Numeric(20, 10), nullable=False),
+    Column("issued_at", DateTime(timezone=True), nullable=False),
+    Column("due_date", Date),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
 query_adhoc = Table(
     "query_adhoc",
     metadata,

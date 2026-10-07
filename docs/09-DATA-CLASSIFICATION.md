@@ -48,6 +48,8 @@ that before there is data in it, which is the only cheap moment to do it.
 | `report_schedule` | **P** and C | Who scheduled which view and route, how often, and the people it renders for, by their identifiers. Never a figure | **Not decided**. No retention job reads it, ISS-256 | **Not yet.** `erase_principal` does not reach it, and a person erased would still be named in other people's recipient lists, ISS-256 |
 | `saved_view` | **P** and C | Who saved which screen and query under what name, and whether they shared it with the tenant. Never a figure the screen showed | **Not decided**. No retention job reads it, ISS-255 | **Not yet.** `erase_principal` does not reach it, and erasing a shared view takes it from everyone it was shared with, ISS-255 |
 | `team_digest` | C | A week of spend for one team or the whole payer, as prose and citations. No personal data: the team is a cost allocation label | **Not decided**, OPEN-14 | Not applicable |
+| `billing_period` | C | Which months the payer has been invoiced for. No personal data | Life of the tenant. A month is closed once and stays closed | Not applicable |
+| `invoice_detail` | **C** | Every invoice and credit memo issued to the payer, its amounts before and after tax, and the entity that issued it. Payer wide, ADR-0025. No personal data | **37 months**, as `cost_focus_daily`, because an invoice is compared with those rows | Not applicable |
 
 ### The account root email address
 

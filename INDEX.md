@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-76 features across 11 sub projects. 12 specified, 7 planned, 13 in build, 44 delivered.
+76 features across 11 sub projects. 11 specified, 7 planned, 14 in build, 44 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -140,7 +140,7 @@ block is caught by `make check-docs`. See
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-076](docs/features/FEAT-076-invoice-reconciliation.md) | Invoice reconciliation, Meter's billed cost against the provider's invoice | Specified | [P10 spec](docs/specs/2026-10-07-p10-proven-numbers-design.md) sections 5.3 to 5.5, 6, 7 |
+| [FEAT-076](docs/features/FEAT-076-invoice-reconciliation.md) | Invoice reconciliation, Meter's billed cost against the provider's invoice | In build | [P10 spec](docs/specs/2026-10-07-p10-proven-numbers-design.md) sections 5.3 to 5.5, 6, 7 |
 
 ### P3 Utilization and Rightsizing
 
@@ -410,6 +410,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0127 | 2026-10-07 | Chore | TASK-P10-001, two digit sub projects in the memory gate and the generated task table | `pending` | check_memory.py took one digit after P, so a citation of TASK-P10-001 was never checked, and sync.py sorted plan files as text, which put P10 between P1 and P2. The pattern takes one or more digits and plans sort by number, each held by a test that failed on the old behaviour |
 | CHG-0128 | 2026-10-07 | Correction | P10's design corrected: Meter reads AWS's FOCUS export, and the service provider replaces ProviderName | `pending` | The P10 spec, plan, ADR-0034 and FEAT-076 said Meter normalised raw CUR 2.0 and would map the new columns itself; finops_providers/aws/cur.py already reads AWS's FOCUS export by FOCUS names. They also backfilled ServiceProviderName from PublisherName, where FOCUS introduced it to replace ProviderName. Corrected before any code: five columns are read where the export has them, both provider columns derive from ProviderName, and OPEN-21 is withdrawn |
 | CHG-0129 | 2026-10-07 | Feature | TASK-P10-002, FOCUS 1.4's mandatory and invoice columns on the cost row, FEAT-004 | `pending` | Migration 0030 adds billing_account_name, billing_currency, charge_class, pricing_unit, service_provider_name, host_provider_name, invoice_id and invoice_detail_id, nullable, with the currency held to ISO 4217 by a constraint and a partial index for the sum over one invoice. The adapter reads the five AWS's FOCUS 1.2 export carries where its table has them, found by the probe the split columns use, and refuses a currency that is not ISO 4217 as SchemaDrift. The record derives both provider columns from provider_name as FOCUS defines, for every source. A test holds all 21 FOCUS 1.4 mandatory columns to the record and the table |
+| CHG-0130 | 2026-10-08 | Feature | TASK-P10-003, billing periods and invoices read from the payer, FEAT-076 | `pending` | An Invoice entity and an InvoiceSource port; a fake built from the bill's rows, with one period matching, one 2.50 over beside a Marketplace invoice and the running month open; an AWS adapter calling ListInvoiceSummaries one billing period at a time, with anything unreadable as SchemaDrift; migration 0031 with billing_period and invoice_detail, their constraints and the invoices cadence row; a collector storing both as read; both tables PayerWide before any route reads them; the demo seeded with the invoices; and invoicing:ListInvoiceSummaries on the management account's reader role. Three acceptance criteria were reworded to what is true, recorded in the plan. Two red checks found tests that could not fail, a surcharge compared with the fake's own constant and no test that the tables are payer wide, and both were fixed |
 
 <!-- generated:changes end -->
 
@@ -420,7 +421,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**154 FIXED, 101 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**154 FIXED, 102 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -633,6 +634,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-255 | MEDIUM | A saved view names its owner, and no retention job or erasure reaches saved_view | OPEN | `saved_view`, FEAT-068, holds the principal who saved each view and the names they chose. It is classified personal in `docs/09-DATA-CLASSIFICATION.md`, but `scripts/ops/erase_principal.py` does not reach it and no retention job reads it, the gap ISS-226 and ISS-249 record for the P7 tables and `report_run`. Erasing a shared view also takes it from everyone it was shared with, which is a decision as well as a deletion. Found 2026-10-07 while classifying the table. |
 | ISS-256 | MEDIUM | A report schedule names its owner and its recipients, and erasure does not reach report_schedule | OPEN | `report_schedule`, FEAT-069, holds the principal who owns each schedule and the principals it renders for. It is classified personal in `docs/09-DATA-CLASSIFICATION.md`, but `scripts/ops/erase_principal.py` does not reach it and no retention job reads it, the gap ISS-255 records for `saved_view`. Erasing a person also has to remove them from other people's recipient lists, which is a change to rows they do not own. Found 2026-10-07 while classifying the table. |
 | ISS-258 | MEDIUM | The Overview still promised scheduled reports for P8 after they were built, and its guards could not see it | FIXED | Found 2026-10-07 by TASK-P8-014. The FinOps practitioner's Overview said Scheduled reports were not built and arrive with P8, after TASK-P8-011 built them. App.test.tsx and HomeScreen.test.tsx each exist to catch a promise naming a sub project that has shipped, and neither could: each ended its pattern at a word boundary, and the page's text runs one panel's last word into the next panel's title with no space, so P8 followed by Showback never matched. Measured by putting the promise back: HomeScreen.test.tsx passed over it before the change, and both fail over it after. Fixed the same day: the panel lists the reader's schedules, and both patterns end on not a digit and cover P8. |
+| ISS-259 | MEDIUM | No stack grants the budgets read the budgets adapter calls | OPEN | Found 2026-10-08 while adding the invoice read to the management account's reader role, TASK-P10-003. finops_providers/aws/budgets.py calls DescribeBudgets at the payer, which needs budgets:ViewBudget, and no file under infra/ grants it, so the first live run of the budgets collector would read AccessDenied. Recorded rather than fixed in P10 because it is FEAT-060's and a grant belongs in the change that proves it against a real payer, ISS-002 and ISS-003. The fix is one action in the org_read document of infra/terraform/management/main.tf, beside the invoice read |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |

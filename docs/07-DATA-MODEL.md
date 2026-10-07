@@ -880,6 +880,55 @@ key nor a schedule on a file streamed to whoever exported it, and a finish never
 making. The guard reads `report_schedule` through `ByPrincipal` on its owner. No retention job
 reads it and `erase_principal` does not reach it, ISS-256.
 
+### Billing periods and invoices, P10
+
+FEAT-076, migration 0031. FOCUS 1.4's Billing Period and Invoice Detail datasets at the grain
+AWS gives, one row per whole invoice. Stored as read: Meter's own sum over the cost rows and
+the difference are computed when read, TASK-P10-004. Both are payer wide, ADR-0025.
+
+```sql
+CREATE TABLE billing_period (
+    billing_period_pk     UUID PRIMARY KEY,
+    tenant_id             UUID NOT NULL REFERENCES tenant(tenant_id),
+    ingest_run_id         UUID NOT NULL,
+    billing_period_start  DATE NOT NULL,
+    billing_period_end    DATE NOT NULL,
+    billing_period_status TEXT NOT NULL,       -- 'Open' or 'Closed', FOCUS 1.4's words
+    as_of                 TIMESTAMPTZ NOT NULL, -- first invoice issued, or now while open
+    collected_at          TIMESTAMPTZ NOT NULL,
+    UNIQUE (tenant_id, billing_period_start),
+    CHECK (billing_period_end > billing_period_start),
+    CHECK (collected_at >= as_of)
+);
+
+CREATE TABLE invoice_detail (
+    invoice_detail_pk      UUID PRIMARY KEY,
+    tenant_id              UUID NOT NULL REFERENCES tenant(tenant_id),
+    ingest_run_id          UUID NOT NULL,
+    invoice_id             TEXT NOT NULL,
+    invoice_detail_id      TEXT NOT NULL,      -- the invoice_id, at AWS's grain
+    invoice_type           TEXT NOT NULL,      -- 'INVOICE' or 'CREDIT_MEMO'
+    original_invoice_id    TEXT,               -- required on a credit memo
+    billing_account_id     TEXT NOT NULL,
+    billing_period_start   DATE NOT NULL,
+    billing_period_end     DATE NOT NULL,
+    invoice_issuer_name    TEXT NOT NULL,      -- not always AWS: Marketplace
+    billing_currency       TEXT NOT NULL,      -- ISO 4217, '^[A-Z]{3}$'
+    billed_cost_before_tax NUMERIC(20,10) NOT NULL,
+    tax                    NUMERIC(20,10) NOT NULL,
+    billed_cost            NUMERIC(20,10) NOT NULL,
+    issued_at              TIMESTAMPTZ NOT NULL,
+    due_date               DATE,
+    as_of                  TIMESTAMPTZ NOT NULL, -- the issue time
+    collected_at           TIMESTAMPTZ NOT NULL,
+    UNIQUE (tenant_id, invoice_id)
+);
+```
+
+The amounts are not constrained to add up: AWS documents the total and the amount before
+tax but not the arithmetic between them once fees and discounts are in the breakdown, and a
+constraint could refuse a real invoice.
+
 ## Migration workflow, Alembic
 
 Alembic is the only way the schema changes. A manual `ALTER TABLE` against any
