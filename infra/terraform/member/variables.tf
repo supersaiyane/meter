@@ -25,6 +25,12 @@ variable "hub_task_role_name" {
   default     = "FinOpsHubTaskRole"
 }
 
+variable "relay_role_name" {
+  description = "The hub's relay role, ADR-0035, also permitted to assume the collector role."
+  type        = string
+  default     = "FinOpsRelayRole"
+}
+
 variable "collector_role_name" {
   description = "Must match METER_COLLECTOR_ROLE_NAME on the hub side."
   type        = string

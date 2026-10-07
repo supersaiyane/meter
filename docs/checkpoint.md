@@ -52,32 +52,27 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-08 | TASK-P10-004: the comparison and its route, CHG-0131 | Done | A pure comparison with the six states, tax apart and a modelled tolerance with a one cent floor; GET /api/v1/cost/reconciliation, exportable, 403 for a narrowed reader before any read, 404 for a period never read; three red checks. Next TASK-P10-005, the screen and the Overview tile | `finops_api/routes/reconciliation.py:80`, `finops_core/domain/reconciliation.py:76`, `finops_api/db/repositories/invoices.py:88`, `tests/api/test_reconciliation.py:1` |
 | 2026-10-08 | TASK-P10-005: the screen and the Overview tile, CHG-0132 | Done | Invoice reconciliation at /report/reconciliation, every state in words, the difference signed, measured; the Matches the invoice tile on the FinOps Overview; migration 0032 admits the screen for saved views; a journey, which caught a 403's raw JSON body on screen. Next TASK-P10-006, proof and documents, then P9 | `finops-web/src/screens/ReconciliationScreen.tsx:1`, `finops-web/src/screens/reconciliationModel.ts:1`, `finops-web/e2e/reconciliation.spec.ts:1`, `migrations/versions/0032_reconciliation_screen.py:1` |
 | 2026-10-08 | TASK-P10-006: proof and documents, P10 delivered, CHG-0133 | Done | Each P10 exit criterion with its evidence in the plan; constraint 2, FOCUS_VERSION and the schema documents name FOCUS 1.4; a new migration test proves the provider backfill and the old writer, red without the backfill; FEAT-076 and P10 Delivered against fakes. Next priority 3, P9, TASK-P9-001 | `docs/plans/P10-implementation-plan.md:181`, `tests/db/test_focus_1_4_migration.py:1`, `finops_core/constants.py:13`, `CLAUDE.md:111` |
+| 2026-10-08 | TASK-P9-001: the hub reaches every AWS API it calls, CHG-0134, ADR-0035 | Done | Ten endpoints added in the hub's Region, peered endpoint VPCs in us-east-1 and eu-west-2 with a private hosted zone per service, and finops_relay outside the VPC for Budgets, Support and Invoicing and for spot prices and Savings Plans rates; the payer role gains budgets:ViewBudget; a test holds every service the code calls to its path. ISS-242 and ISS-259 closed, ISS-260 found. Next TASK-P9-002, ports and fakes for prices and instance types | `infra/terraform/hub/endpoints.tf:1`, `infra/terraform/hub/relay.tf:1`, `finops_relay/relay.py:1`, `tests/contract/test_network_paths.py:1` |
 
 ## Next action
 
-**Priority 1 of `next-in-scope.txt` is complete on `next-build`, and P10 is specified and planned.**
-Next, by the owner's approval of 2026-10-07: P10 from TASK-P10-001, then P9 from TASK-P9-001, each
-task on its own branch merged into `next-build`, which merges into main at the end. The repository
-has no git remote; once one exists, a push to main runs `deploy:dev`, a terraform apply, and
-ISS-250 is still open.
+**Priorities 1 and 2 of `next-in-scope.txt` are delivered on `next-build`, and priority 3, P9, is in
+build.** P10 was delivered on 2026-10-08 against fakes. P9 continues from TASK-P9-002, each task on its
+own branch merged into `next-build`, which merges into main at the end. TASK-P9-001 gave the hub a
+path to every AWS API it calls, ADR-0035, and closed ISS-242.
 
 **Pushing needs a remote first.** The repository has none. Once one exists, a push to main runs
 `deploy:dev`, a `terraform apply`, on its own, and ISS-250 still stands: the hub's task
-definition does not pass the settings the API needs.
-Every sub project through P7 is delivered in its first cut. P9, the EC2 and EBS price catalog, is specified, planned, approved by the owner
-on 2026-10-05 and merged as documents, and the hub's path to AWS is chosen, OPEN-16: interface
-endpoints for every service that has one, and two functions outside the VPC for Budgets and
-Support. Its build starts at TASK-P9-001, which builds that path and closes ISS-242. The owner
-chose P8 first on 2026-10-05, so TASK-P9-001 follows it.
+definition does not pass the settings the API needs. ISS-260 says the deploy jobs may also pick
+the wrong plan, or none, by reading alone.
 
 The candidates, in the order they would pay:
 
-1. **ISS-002, a real account.** Still the single thing that would close the most, once ISS-242
-   is closed: the hub VPC has no NAT and six interface endpoints, so a collector could not
-   reach the services it reads even with a real account to read. Every adapter
-   here, P7's Bedrock adapter included, has been checked against published shapes and never
-   against a call, and OPEN-10 has to name a model before the assistant answers anything.
-   The first thing to confirm there is that `bedrock:InferenceProfileArn` is set for an
+1. **ISS-002, a real account.** Still the single thing that would close the most. Every adapter
+   here, P7's Bedrock adapter and P10's invoice reader included, has been checked against
+   published shapes and never against a call, and the network path of ADR-0035 has been
+   validated and never applied. OPEN-10 has to name a model before the assistant answers
+   anything. The first thing to confirm there is that `bedrock:InferenceProfileArn` is set for an
    application profile, because the assistant's grant depends on it.
 2. **The P7 decisions waiting on the owner.** OPEN-14, how long a person's questions are kept
    and whether erasure deletes or tombstones them, after which ISS-226 is a small change, and

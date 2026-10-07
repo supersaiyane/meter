@@ -134,6 +134,15 @@ data "aws_iam_policy_document" "task" {
     resources = [aws_secretsmanager_secret.external_id.arn]
   }
 
+  # TASK-P9-001, ADR-0035. The relay outside the VPC, for the calls no endpoint carries. Its
+  # answers are read back under UseTheBucket below.
+  statement {
+    sid       = "InvokeTheRelay"
+    effect    = "Allow"
+    actions   = ["lambda:InvokeFunction"]
+    resources = [aws_lambda_function.relay.arn]
+  }
+
   statement {
     sid    = "UseTheBucket"
     effect = "Allow"

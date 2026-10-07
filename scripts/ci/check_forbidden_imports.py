@@ -36,6 +36,7 @@ PACKAGES = (
     "finops_api",
     "finops_mcp",
     "finops_query",
+    "finops_relay",
 )
 
 # module -> the advisory whose acceptance depends on not importing it

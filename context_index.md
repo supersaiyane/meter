@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-938 public symbols across 5 packages.
+942 public symbols across 5 packages.
 
 ## finops_core
 
@@ -214,7 +214,7 @@ a duplicate.
 | `CredentialBroker` | class | `finops_core/ports/credentials.py:33` | Produces a scoped session for a target account. | nothing in this tree |
 | `CredentialBroker.session_for` | method | `finops_core/ports/credentials.py:36` | Assume into `account` in `region` and return a session. | `finops_ingest/worker.py`, `finops_providers/aws/health.py` |
 | `StateSource` | class | `finops_core/ports/iac.py:25` | Reads the resources named by the configured infrastructure as code state. | nothing in this tree |
-| `StateSource.read` | method | `finops_core/ports/iac.py:28` | Every resource the given state locations own, and the ones that refused. | `finops_ingest/collectors/iac_state.py`, `finops_ingest/collectors/recommendations.py`, `finops_providers/aws/report_store.py`, `finops_providers/aws/terraform_state.py` |
+| `StateSource.read` | method | `finops_core/ports/iac.py:28` | Every resource the given state locations own, and the ones that refused. | `finops_ingest/collectors/iac_state.py`, `finops_ingest/collectors/recommendations.py`, `finops_providers/aws/relay_client.py`, `finops_providers/aws/report_store.py`, and 1 more |
 | `StateSource.locations` | method | `finops_core/ports/iac.py:47` | The configured locations, so a caller can report the denominator. | nothing in this tree |
 | `IdentityProvider` | class | `finops_core/ports/identity.py:19` | Turns a credential presented by a caller into a principal. | nothing in this tree |
 | `IdentityProvider.authenticate` | method | `finops_core/ports/identity.py:22` | The principal the token identifies. | nothing in this tree |
@@ -283,7 +283,7 @@ a duplicate.
 | `RecommendationSource.trusted_advisor` | method | `finops_core/ports/recommendations.py:53` | Idle and underused resources, and the limit checks. | nothing in this tree |
 | `ReportStore` | class | `finops_core/ports/reports.py:19` | Somewhere a rendered file is kept under a key, and read back by that key. | nothing in this tree |
 | `ReportStore.put` | method | `finops_core/ports/reports.py:22` | Keep `body` under `key`. Every key a run writes is new, so nothing is replaced. | `finops_api/exports/scheduled.py` |
-| `ReportStore.get` | method | `finops_core/ports/reports.py:29` | The file kept under `key`. | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 61 more |
+| `ReportStore.get` | method | `finops_core/ports/reports.py:29` | The file kept under `key`. | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 62 more |
 | `ReportSender` | class | `finops_core/ports/reports.py:39` | Somewhere a person will receive a file. OPEN-11 decides where. | nothing in this tree |
 | `ReportSender.send` | method | `finops_core/ports/reports.py:42` | Deliver one file to one person. | `finops_api/exports/scheduled.py` |
 | `TicketSink` | class | `finops_core/ports/tickets.py:23` | Somewhere a human will actually see the work. | nothing in this tree |
@@ -344,14 +344,18 @@ a duplicate.
 | `CostRecommendationSource.compute_optimizer` | method | `finops_providers/aws/recommendations.py:175` |  | nothing in this tree |
 | `CostRecommendationSource.cost_optimization_hub` | method | `finops_providers/aws/recommendations.py:222` |  | nothing in this tree |
 | `CostRecommendationSource.trusted_advisor` | method | `finops_providers/aws/recommendations.py:245` |  | nothing in this tree |
+| `RelayClient` | class | `finops_providers/aws/relay_client.py:42` | One service, in one Region, about one account, reached through the relay. | nothing in this tree |
+| `RelayClient.get_paginator` | method | `finops_providers/aws/relay_client.py:60` |  | `finops_providers/aws/accounts.py`, `finops_providers/aws/budgets.py`, `finops_providers/aws/container_insights.py`, `finops_providers/aws/cur.py`, and 2 more |
+| `lambda_invoke` | function | `finops_providers/aws/relay_client.py:101` | The relay invoked through the Lambda endpoint. A function error is the relay failing. | nothing in this tree |
+| `s3_fetch` | function | `finops_providers/aws/relay_client.py:115` | An answer read back through the S3 gateway endpoint. | nothing in this tree |
 | `S3ReportStore` | class | `finops_providers/aws/report_store.py:30` | Report files in one bucket, one object per file. | nothing in this tree |
 | `S3ReportStore.from_settings` | method | `finops_providers/aws/report_store.py:38` | The store the API writes to: the data bucket the hub stack names. | `finops_api/main.py` |
 | `S3ReportStore.put` | method | `finops_providers/aws/report_store.py:42` |  | `finops_api/exports/scheduled.py` |
-| `S3ReportStore.get` | method | `finops_providers/aws/report_store.py:50` |  | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 61 more |
+| `S3ReportStore.get` | method | `finops_providers/aws/report_store.py:50` |  | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 62 more |
 | `address_of` | function | `finops_providers/aws/terraform_state.py:53` | The Terraform address of one resource instance. | nothing in this tree |
 | `S3TerraformState` | class | `finops_providers/aws/terraform_state.py:75` | Terraform state read from S3 objects an operator named. | nothing in this tree |
 | `S3TerraformState.locations` | method | `finops_providers/aws/terraform_state.py:90` |  | nothing in this tree |
-| `S3TerraformState.read` | method | `finops_providers/aws/terraform_state.py:93` | Every resource the given locations own, and the ones that refused. | `finops_ingest/collectors/iac_state.py`, `finops_ingest/collectors/recommendations.py`, `finops_providers/aws/report_store.py` |
+| `S3TerraformState.read` | method | `finops_providers/aws/terraform_state.py:93` | Every resource the given locations own, and the ones that refused. | `finops_ingest/collectors/iac_state.py`, `finops_ingest/collectors/recommendations.py`, `finops_providers/aws/relay_client.py`, `finops_providers/aws/report_store.py` |
 | `AwsEdgeSupplement` | class | `finops_providers/aws/topology.py:182` | The four APIs Config does not cover, each guarded on its own. | nothing in this tree |
 | `AwsEdgeSupplement.enrolled_slices` | method | `finops_providers/aws/topology.py:213` |  | nothing in this tree |
 | `AwsEdgeSupplement.read_slice` | method | `finops_providers/aws/topology.py:216` | Four reads, and a result that says which of them fell short. | `finops_ingest/collectors/inventory.py`, `finops_ingest/collectors/topology.py` |
@@ -475,7 +479,7 @@ a duplicate.
 | `install_default_schedule` | function | `finops_ingest/registry.py:554` | Give a tenant the P0 cadences. Idempotent, and never overwrites a change. | nothing in this tree |
 | `CollectorRegistry` | class | `finops_ingest/registry.py:583` | The collectors this process knows how to run. | nothing in this tree |
 | `CollectorRegistry.register` | method | `finops_ingest/registry.py:589` |  | `finops_ingest/collectors/retention.py` |
-| `CollectorRegistry.get` | method | `finops_ingest/registry.py:597` |  | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 61 more |
+| `CollectorRegistry.get` | method | `finops_ingest/registry.py:597` |  | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 62 more |
 | `CollectorRegistry.names` | method | `finops_ingest/registry.py:606` |  | nothing in this tree |
 | `FloorOutcome` | class | `finops_ingest/remediation.py:43` | What happened, in enough detail to explain a refusal. | nothing in this tree |
 | `apply_refresh_floor` | function | `finops_ingest/remediation.py:59` | Raise one workspace's floor, if this deployment is permitted to. | nothing in this tree |
@@ -962,12 +966,12 @@ a duplicate.
 | `SchedulesOut` | class | `finops_api/schemas.py:2259` | The reader's schedules, and what the deployment does with what they render. | `finops_api/routes/schedules.py` |
 | `ReportRunOut` | class | `finops_api/schemas.py:2273` | One run made for the reader: a file they exported, or one a schedule rendered for them. | `finops_api/routes/schedules.py` |
 | `Transport` | class | `finops_api/toolbox.py:33` | What the toolbox needs of an HTTP client, and nothing more. | nothing in this tree |
-| `Transport.get` | method | `finops_api/toolbox.py:36` |  | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 60 more |
+| `Transport.get` | method | `finops_api/toolbox.py:36` |  | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 61 more |
 | `ApiToolbox` | class | `finops_api/toolbox.py:39` | The asker's tools, each one a route called with the asker's token. | `finops_api/main.py` |
 | `ApiToolbox.schemas` | method | `finops_api/toolbox.py:49` |  | nothing in this tree |
 | `ApiToolbox.call` | method | `finops_api/toolbox.py:52` | One route, read as the asker. | `finops_providers/aws/cur.py` |
 | `InProcessTransport` | class | `finops_api/toolbox.py:91` | The API calling its own routes as the asker, without a network. | `finops_api/main.py` |
-| `InProcessTransport.get` | method | `finops_api/toolbox.py:108` |  | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 60 more |
+| `InProcessTransport.get` | method | `finops_api/toolbox.py:108` |  | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 61 more |
 | `ToolSpec` | class | `finops_api/tools.py:51` | One tool. The envelope model is the single source of both schemas. | nothing in this tree |
 | `ToolSpec.output_schema` | method | `finops_api/tools.py:71` | What a caller is told to expect, taken from the API's own model. | nothing in this tree |
 | `ToolSpec.schema` | method | `finops_api/tools.py:75` | The tool as a model is offered it. Every tool here takes no arguments. | `finops_api/toolbox.py` |
@@ -979,9 +983,9 @@ a duplicate.
 | `ApiError` | class | `finops_mcp/api.py:32` | The API refused or could not answer. Carries the status for the caller. | nothing in this tree |
 | `EnvelopeMissingError` | class | `finops_mcp/api.py:41` | A 200 with no `meta`. Not the contract, so not treated as data. | nothing in this tree |
 | `Transport` | class | `finops_mcp/api.py:45` | What the client needs from an HTTP library, and nothing more. | nothing in this tree |
-| `Transport.get` | method | `finops_mcp/api.py:53` |  | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 60 more |
+| `Transport.get` | method | `finops_mcp/api.py:53` |  | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 61 more |
 | `MeterApi` | class | `finops_mcp/api.py:56` | A caller of the Meter HTTP API. Holds no scope and no credential. | `finops_mcp/server.py` |
-| `MeterApi.get` | method | `finops_mcp/api.py:68` | One GET, returning the envelope exactly as the API sent it. | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 60 more |
+| `MeterApi.get` | method | `finops_mcp/api.py:68` | One GET, returning the envelope exactly as the API sent it. | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 61 more |
 | `MissingTokenError` | class | `finops_mcp/server.py:37` | No caller token. The tool refuses rather than answering as somebody else. | nothing in this tree |
 | `token_from` | function | `finops_mcp/server.py:41` | The caller's bearer token, or an error. | nothing in this tree |
 | `make_handler` | function | `finops_mcp/server.py:59` | Bind one row of the tool table to one handler. | nothing in this tree |

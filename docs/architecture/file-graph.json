@@ -488,6 +488,7 @@
     "finops_providers/aws/query_evidence.py",
     "finops_providers/aws/quotas.py",
     "finops_providers/aws/recommendations.py",
+    "finops_providers/aws/relay_client.py",
     "finops_providers/aws/report_store.py",
     "finops_providers/aws/terraform_state.py",
     "finops_providers/aws/topology.py",
@@ -520,6 +521,8 @@
     "finops_query/score.py",
     "finops_query/severity.py",
     "finops_query/waste.py",
+    "finops_relay/__init__.py",
+    "finops_relay/relay.py",
     "infra/terraform/config/cost.tf",
     "infra/terraform/config/main.tf",
     "infra/terraform/config/outputs.tf",
@@ -531,12 +534,18 @@
     "infra/terraform/hub/database.tf",
     "infra/terraform/hub/ecr.tf",
     "infra/terraform/hub/ecs.tf",
+    "infra/terraform/hub/endpoints.tf",
     "infra/terraform/hub/iam.tf",
     "infra/terraform/hub/logs.tf",
+    "infra/terraform/hub/modules/endpoint_vpc",
+    "infra/terraform/hub/modules/endpoint_vpc/main.tf",
+    "infra/terraform/hub/modules/endpoint_vpc/outputs.tf",
+    "infra/terraform/hub/modules/endpoint_vpc/variables.tf",
     "infra/terraform/hub/network.tf",
     "infra/terraform/hub/observability.tf",
     "infra/terraform/hub/outputs.tf",
     "infra/terraform/hub/queue.tf",
+    "infra/terraform/hub/relay.tf",
     "infra/terraform/hub/scheduler.tf",
     "infra/terraform/hub/storage.tf",
     "infra/terraform/hub/variables.tf",
@@ -595,6 +604,7 @@
     "scripts/ci/refresh_base_images.py",
     "scripts/demo/export_fake_estate.py",
     "scripts/demo/seed_demo.py",
+    "scripts/deploy/build_relay.py",
     "scripts/docs/add_lesson.py",
     "scripts/docs/build_context_index.py",
     "scripts/docs/build_file_graph.py",
@@ -662,6 +672,7 @@
     "tests/contract/test_cost_export.py",
     "tests/contract/test_credential_broker.py",
     "tests/contract/test_llm_provider.py",
+    "tests/contract/test_network_paths.py",
     "tests/contract/test_no_llm_writes.py",
     "tests/contract/test_no_quota_writes.py",
     "tests/contract/test_partial_graph_consumers.py",
@@ -752,6 +763,7 @@
     "tests/providers/aws/test_query_evidence.py",
     "tests/providers/aws/test_quotas.py",
     "tests/providers/aws/test_recommendations.py",
+    "tests/providers/aws/test_relay.py",
     "tests/providers/aws/test_report_store.py",
     "tests/providers/aws/test_response_shapes.py",
     "tests/providers/aws/test_terraform_state.py",
@@ -804,6 +816,7 @@
     "tests/scripts/__init__.py",
     "tests/scripts/test_backup_retention.py",
     "tests/scripts/test_build_file_graph.py",
+    "tests/scripts/test_build_relay.py",
     "tests/scripts/test_check_dev_only.py",
     "tests/scripts/test_check_docs_only.py",
     "tests/scripts/test_check_identifiers.py",
@@ -9913,6 +9926,11 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/relay_client.py",
+      "t": "finops_relay/relay.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/report_store.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -10186,6 +10204,11 @@
       "s": "finops_query/waste.py",
       "t": "finops_core/domain/waste.py",
       "k": "python"
+    },
+    {
+      "s": "infra/terraform/hub/endpoints.tf",
+      "t": "infra/terraform/hub/modules/endpoint_vpc",
+      "k": "terraform"
     },
     {
       "s": "migrations/env.py",
@@ -11560,6 +11583,11 @@
     {
       "s": "tests/contract/test_llm_provider.py",
       "t": "finops_providers/aws/bedrock.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_network_paths.py",
+      "t": "finops_relay/relay.py",
       "k": "python"
     },
     {
@@ -13040,6 +13068,36 @@
     {
       "s": "tests/providers/aws/test_recommendations.py",
       "t": "finops_providers/aws/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_relay.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_relay.py",
+      "t": "finops_providers/aws/budgets.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_relay.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_relay.py",
+      "t": "finops_providers/aws/invoices.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_relay.py",
+      "t": "finops_providers/aws/relay_client.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_relay.py",
+      "t": "finops_relay/relay.py",
       "k": "python"
     },
     {

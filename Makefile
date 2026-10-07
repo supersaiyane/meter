@@ -40,7 +40,7 @@ PLATFORM      ?= linux/amd64
 # One line, and it has to stay one line: tests/scripts/test_lint_scope.py reads
 # this assignment with a single line regex, which is how it catches a package
 # that quietly leaves the linter's sight.
-PY_PKGS := finops_core finops_providers finops_fakes finops_ingest finops_api finops_mcp finops_query
+PY_PKGS := finops_core finops_providers finops_fakes finops_ingest finops_api finops_mcp finops_query finops_relay
 # scripts/ and migrations/ are here because they were outside the linter for
 # long enough to accumulate 10 ruff findings and 36 mypy errors that nothing
 # ever reported. Two of those were real: a list annotated flat while holding
@@ -601,6 +601,10 @@ buildx-push: ecr-login ## Build for $(PLATFORM) and push in one step, no local l
 	done
 
 # ---------------------------------------------------------------- terraform
+
+.PHONY: build-relay
+build-relay: ## Zip finops_relay for the relay function, ADR-0035. Deterministic, so equal code is an equal hash
+	@$(PY) scripts/deploy/build_relay.py --out build/relay.zip
 
 .PHONY: tf-init
 tf-init: ## Initialise the hub stack for TF_ENV, default dev

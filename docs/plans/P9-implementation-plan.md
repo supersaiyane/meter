@@ -47,7 +47,7 @@ Same contract as P0 through P8. One task, one commit.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 5.1 |
 | Delivers | ISS-242 closed |
 | Depends on | This plan approved and OPEN-16 answered, both 2026-10-05 |
@@ -62,24 +62,38 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 **Acceptance criteria.**
 
-- [ ] An ADR records A plus C for Budgets and Support, C again for spot prices and Savings
+- [x] An ADR records A plus C for Budgets and Support, C again for spot prices and Savings
       Plans rates in every Region, OPEN-17, why, and its monthly cost: the
       endpoint price measured from the AWS price list, the endpoints counted from the
-      Terraform, and the total labelled modelled. The estimate the owner chose on was about
-      20 endpoints at about 14.7 USD a month each, roughly 290 USD a month (modelled)
-- [ ] Terraform builds it, and `terraform validate` and `fmt` pass for every stack touched
-- [ ] A test lists every AWS service the adapters create a client for, and holds each one
+      Terraform, and the total labelled modelled. ADR-0035: 0.011 USD per endpoint per zone
+      hour in eu-west-1 and eu-west-2 and 0.010 in us-east-1, measured from offer file
+      20260917190528; 21 endpoints added; about 338 USD a month in all (modelled), against
+      the 290 the owner chose on
+- [x] Terraform builds it, and `terraform validate` and `fmt` pass for every stack touched:
+      hub, member and management on 2026-10-08, validated against the providers already
+      installed, so nothing was downloaded. `endpoints.tf`, `relay.tf` and
+      `modules/endpoint_vpc`
+- [x] A test lists every AWS service the adapters create a client for, and holds each one
       to a path: an interface endpoint in the Region it is called in, or, for Budgets and
-      Support only, one of the two functions outside the VPC
-- [ ] No NAT gateway and no default route in the hub's private subnets: every call leaves
-      through an interface endpoint, the peered endpoint VPC or the S3 gateway endpoint
-- [ ] The comment in `infra/terraform/hub/network.tf` that calls six endpoints every
+      Support only, one of the two functions outside the VPC.
+      `tests/contract/test_network_paths.py` reads the services from the code and from the
+      operations `test_response_shapes.py` declares, and four red checks failed it. Reworded
+      on 2026-10-08: Invoicing, added by P10, has no interface endpoint either, measured that
+      day, so it takes the same path under the owner's rule; and the two functions are one
+      relay with an allow list, `finops_relay`, which the existing adapters read through
+      unchanged
+- [x] No NAT gateway and no default route in the hub's private subnets: every call leaves
+      through an interface endpoint, the peered endpoint VPC or the S3 gateway endpoint, and
+      the relay is invoked through the Lambda endpoint. Held by the same test
+- [x] The comment in `infra/terraform/hub/network.tf` that calls six endpoints every
       service the tasks call is corrected, and so is `docs/04-DEPLOYMENT.md`, which names a
       Cost Explorer endpoint among the hub's own, in the hub's Region, where none can be made:
       Cost Explorer's endpoint is in us-east-1 only
-- [ ] Every new resource tagged `finops:module`, constraint 7
-- [ ] Spot prices and Savings Plans rates in every Region read by a function outside the VPC
-      that writes rows to S3, the owner's answer to OPEN-17 on 2026-10-07, held by the same test
+- [x] Every new resource tagged `finops:module`, constraint 7: all three providers carry the
+      one set of default tags, held by the same test
+- [x] Spot prices and Savings Plans rates in every Region read by a function outside the VPC
+      that writes rows to S3, the owner's answer to OPEN-17 on 2026-10-07, held by the same test.
+      The relay allows both; reading them is TASK-P9-012 and TASK-P9-013
 
 ---
 

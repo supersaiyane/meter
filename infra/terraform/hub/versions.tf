@@ -28,21 +28,46 @@ terraform {
   backend "s3" {}
 }
 
+# Constraint 7: the platform meters itself. Every resource carries
+# finops:module, and the platform's own cost is on the front page. A resource
+# without the tag is invisible to that page, and self metering reports nothing
+# rather than failing, which is the worst kind of broken. Default tags mean it
+# cannot be forgotten on a resource, only overridden deliberately. One set, so
+# the endpoint VPCs in the other two Regions carry exactly the same tags.
+locals {
+  default_tags = {
+    "finops:module" = "hub"
+    "finops:env"    = var.env
+    "finops:owner"  = var.owner
+    ManagedBy       = "terraform"
+  }
+}
+
 provider "aws" {
   region = var.region
 
-  # Constraint 7: the platform meters itself. Every resource carries
-  # finops:module, and the platform's own cost is on the front page. A resource
-  # without the tag is invisible to that page, and self metering reports nothing
-  # rather than failing, which is the worst kind of broken. Default tags mean it
-  # cannot be forgotten on a resource, only overridden deliberately.
   default_tags {
-    tags = {
-      "finops:module" = "hub"
-      "finops:env"    = var.env
-      "finops:owner"  = var.owner
-      ManagedBy       = "terraform"
-    }
+    tags = local.default_tags
+  }
+}
+
+# The endpoint VPCs, endpoints.tf, ADR-0035: us-east-1 for the services that answer only
+# there, and the other collection Region.
+provider "aws" {
+  alias  = "global"
+  region = var.global_region
+
+  default_tags {
+    tags = local.default_tags
+  }
+}
+
+provider "aws" {
+  alias  = "second"
+  region = var.second_region
+
+  default_tags {
+    tags = local.default_tags
   }
 }
 

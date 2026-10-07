@@ -23,9 +23,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | Register | Counts |
 | --- | --- |
 | Features | 76 total, 11 specified, 13 in build, 45 delivered |
-| Decisions | 34 architecture decision records |
-| Changes | 133 recorded |
-| Issues | 154 fixed, 102 open, 0 parked |
+| Decisions | 35 architecture decision records |
+| Changes | 134 recorded |
+| Issues | 156 fixed, 101 open, 0 parked |
 | Open questions | 21 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -47,7 +47,9 @@ payer's invoices read into `billing_period` and `invoice_detail`, each invoice c
 Meter's billed cost at `GET /api/v1/cost/reconciliation`, the Invoice reconciliation screen and
 the FinOps practitioner's Matches the invoice tile, and constraint 2 naming FOCUS 1.4. The
 comparison against a real invoice waits on ISS-002, ISS-003 and TASK-P9-001. Priority 3, P9, is
-next. The repository has no git remote,
+in build: on 2026-10-08 TASK-P9-001 gave the hub a path to every AWS API it calls, ADR-0035,
+endpoints in three Regions and a relay outside the VPC for the services with none, and
+TASK-P9-002 is next. The repository has no git remote,
 so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
@@ -221,7 +223,7 @@ ISS-003.
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 | P8 | 18 | 0 | 0 | 0 | 0 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
-| P9 | 0 | 0 | 0 | 0 | 13 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
+| P9 | 1 | 0 | 0 | 0 | 12 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -440,6 +442,12 @@ ISS-003.
 | `TASK-P8-016` | Done | the account picker on every screen |
 | `TASK-P8-017` | Done 2026-10-07 | the geography map redrawn |
 | `TASK-P8-018` | Done 2026-10-05 | the look as drawn |
+
+**P9, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P9-001` | Done 2026-10-08 | the hub reaches every AWS API it calls |
 
 **P10, not in the default state**
 
