@@ -385,30 +385,50 @@ Not a later pass. Two of these are load bearing for the product's core claim.
 - Focus visible always. Reduced motion respected, which given section 7 costs
   us almost nothing.
 - Every error announced to assistive technology, with its typed cause.
+- **Held in a real browser, on every screen.** `finops-web/e2e/a11y.spec.ts` runs axe over
+  every screen the rail offers, its content and the shell, in light and dark: with glass,
+  with transparency reduced, and as a browser without `backdrop-filter` reads the shipped
+  stylesheet. Each fallback sweep first proves its condition holds, then that nothing is
+  blurred. jsdom draws nothing, so axe's contrast rule runs only there; the unit suite's
+  contrast test holds the theme tokens themselves.
+- **Glass never sits on data.** Nothing inside a table or a list has a backdrop filter,
+  held over every screen with a control that glass exists, and every glass surface blurs
+  through one token, `--panel-filter`, which each fallback switches off.
+- **A chart is also a table.** Each chart primitive, `StackedArea`, `StackedBar`,
+  `Heatmap`, `Treemap` and `BarChart`, carries its numbers as a `ChartTable` behind a
+  disclosure, in the page, and the tests hold each cell equal to the mark it draws. The
+  world map's figures are its geography list, which a test holds to the map. A modelled
+  mark is hatched in the text colour, so provenance is never a colour alone.
+- **A scroll box is a keyboard stop only while it scrolls**, named by its table's caption,
+  so a keyboard reaches every column and never stops where nothing moves.
+- Reduced motion is proved rather than assumed: `finops-web/e2e/motion.spec.ts` reads
+  the computed animation in both states.
 
 ## 10. Responsive
 
-Desktop first, honestly. This is an analyst's tool used on a large screen, and
-pretending otherwise produces a bad desktop experience in exchange for a mobile
-one nobody wants.
+Desktop first, and every screen at every width. This is an analyst's tool used on a
+large screen, and it is designed there. This section first proposed a read only summary
+below 1024 pixels; TASK-P8-018 found the screens fit once the rail stopped taking a
+column, so a narrow screen gives up width, never a figure, its provenance or its age.
 
 | Width | Behaviour |
 | --- | --- |
-| 1280 and above | Full density, all columns |
-| 1024 to 1280 | Secondary columns collapse behind a disclosure |
-| Below 1024 | **Read only summary.** Coverage, freshness, top findings. No editing, no graph |
+| Above 1280 | Full density. Hide gives the screen the rail's width and Show takes it back |
+| 1280 and below | A wide table scrolls inside its own box rather than truncate a figure |
+| 1024 and below | The rail becomes a bar across the top, and its menu a drawer over the screen that closes on Escape and on a link |
 
-Below 1024 is a phone checking a number during an incident. It needs the
-figure, its provenance and its age. It does not need the whole instrument.
+`finops-web/e2e/viewports.spec.ts` opens every screen on the rail at six widths, 320,
+375, 768, 1024, 1280 and 1920 pixels, over the demo estate and over a stopped API, and
+fails any page that scrolls sideways, naming the element that pushed it.
 
 ## 11. Component inventory
 
-Built once, in P0, used by every sub project. A sub project inventing its own
+Built once, in P0 and again in P8, used by every sub project. A sub project inventing its own
 table is how a product acquires four table styles.
 
 | Component | Notes |
 | --- | --- |
-| `DataTable` | Dense, sortable, virtualised past 200 rows, tabular numerals |
+| `DataTable` | Dense, sortable both ways on every column, totals and drill down, a column chooser, virtualised past 200 rows, tabular numerals |
 | `Figure` | **The most important component.** A number plus its provenance, freshness and failure states. Nothing renders a number directly |
 | `CoverageBanner` | Persistent, shell level |
 | `FreshnessIndicator` | Age plus `as_of`, staleness against cadence |
@@ -418,6 +438,15 @@ table is how a product acquires four table styles.
 | `GraphCanvas` | Cytoscape, server filtered, with the tree as its accessible equivalent |
 | `Sparkline` | 30 day, no axes, provenance aware |
 | `StateBoundary` | Wraps a surface, implements all seven states from section 8 |
+| `KpiTile` | One figure with its period, comparison and provenance, in a panel that links to the screen owning it |
+| Chart primitives | `StackedArea`, `StackedBar`, `Heatmap`, `Treemap` and `BarChart`, drawn from the tokens, each with a `ChartTable` of its numbers and its modelled marks hatched |
+| Figures drawn as marks | `RankedBars`, `BudgetBar`, `CadenceBar` and `WorldMap` |
+| `ExportMenu` | Beside every screen title, a file for each view the screen reads, FEAT-067 |
+| `SaveView` | Beside Export, keeps the screen and its query under a name, FEAT-068 |
+| `ScheduleView` | On a saved view's own screen, opened from the Report Library, schedules one route it exports, FEAT-069 |
+| `SearchBox` | One box in the top bar for an account, a service or a resource, FEAT-075 |
+| `ThemeToggle` | System, Light and Dark, FEAT-063 |
+| `ScreenTabs` | The screens one page holds, as tabs, TASK-P8-002 |
 
 **`Figure` is the load bearing one.** No screen formats a number itself. If a
 number can only reach a user through a component that requires its provenance,
@@ -459,5 +488,3 @@ Recorded as ADR-0019, with the styling row superseded by ADR-0021.
 - P2 to P7 screen designs. Each sub project specification adds its screens
   against this system rather than inventing one.
 - Brand, logo, marketing. Meter is an internal instrument.
-- Charting beyond the sparkline. P1 introduces charts and must extend section 7
-  with a chart specific provenance treatment before it does.

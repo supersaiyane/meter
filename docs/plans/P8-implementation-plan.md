@@ -545,7 +545,7 @@ The journeys are spec section 8's path in one, `finops-web/e2e/reporting.spec.ts
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-07 |
 | Implements | `docs/03-CHANGE-CONTROL.md` |
 | Delivers | The record |
 | Depends on | TASK-P8-001 to TASK-P8-014 |
@@ -553,9 +553,16 @@ The journeys are spec section 8's path in one, `finops-web/e2e/reporting.spec.ts
 
 **Acceptance criteria.**
 
-- [ ] `docs/12-UI-DESIGN.md` and `docs/13-UI-ARCHITECTURE.md` describe what was built
-- [ ] FEAT-063 to FEAT-070 and FEAT-045 carry as built sections
-- [ ] The register, `project_map.md` and the checkpoint updated, and `make check-docs` clean
+- [x] `docs/12-UI-DESIGN.md` and `docs/13-UI-ARCHITECTURE.md` describe what was built
+- [x] FEAT-063 to FEAT-070 and FEAT-045 carry as built sections
+- [x] The register, `project_map.md` and the checkpoint updated, and `make check-docs` clean
+
+**Delivered 2026-10-07.** `docs/12-UI-DESIGN.md` now states the accessibility sweeps, the
+glass rule and the chart tables, the six widths in place of the read only summary it first
+proposed, and the P8 components. `docs/13-UI-ARCHITECTURE.md` routes the library and the
+scheduled screen and adds search, the account choice, saving a view and scheduling one to its
+cross screen patterns. FEAT-064 to FEAT-070 and FEAT-045 were each written as built when their
+task landed, and FEAT-063, the last In progress, is Delivered.
 
 ---
 

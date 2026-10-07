@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 75 total, 13 specified, 13 in build, 41 delivered |
+| Features | 75 total, 13 specified, 13 in build, 42 delivered |
 | Decisions | 33 architecture decision records |
-| Changes | 120 recorded |
+| Changes | 121 recorded |
 | Issues | 154 fixed, 101 open, 0 parked |
 | Open questions | 19 awaiting a decision |
 
@@ -34,14 +34,12 @@ Generated from `docs/registry.yaml`. Change a status there, then run `make doc-s
 
 ## Where the project stands right now
 
-**2026-10-07.** P8 stands at 17 of 18 tasks done, counted from the plan's statuses.
-TASK-P8-014 landed on `p8-build`: the proof of spec section 12. Every screen on the rail is axe
-clean in both themes with glass, with transparency reduced and without blur, spec section 8's
-journey runs as one, and each exit criterion has its evidence in the plan, measured. It found and
-fixed ISS-257, the rail and the trust strip still blurred with transparency reduced, and ISS-258,
-the Overview still promising scheduled reports for P8. TASK-P8-011 landed before it: scheduled
-reports, FEAT-069, rendered for each recipient in the API by ADR-0033 and checked on the local
-stack. Left: TASK-P8-015. The repository has no git remote, so nothing has been pushed.
+**2026-10-07.** P8 is delivered on `p8-build`, 18 of 18 tasks done, counted from the plan's
+statuses. TASK-P8-015 brought `docs/12-UI-DESIGN.md` and `docs/13-UI-ARCHITECTURE.md` up to what
+was built and marked FEAT-063 Delivered. TASK-P8-014 before it proved spec section 12, each exit
+criterion with its evidence in the plan, and fixed ISS-257 and ISS-258. `p8-build` merges into
+main with `--no-ff`, locally. P9 is not started, by the owner's instruction of 2026-10-07. The
+repository has no git remote, so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -213,7 +211,7 @@ ISS-003.
 | P5 | 8 | 0 | 0 | 0 | 0 | 8 | [plan](../docs/plans/P5-implementation-plan.md) |
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
-| P8 | 17 | 0 | 0 | 0 | 1 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
+| P8 | 18 | 0 | 0 | 0 | 0 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 0 | 0 | 0 | 0 | 13 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -428,6 +426,7 @@ ISS-003.
 | `TASK-P8-012` | Done 2026-10-06 | persona dashboards on the Overview |
 | `TASK-P8-013` | Done 2026-10-06 | every remaining screen in the new system |
 | `TASK-P8-014` | Done 2026-10-07 | proof |
+| `TASK-P8-015` | Done 2026-10-07 | documents |
 | `TASK-P8-016` | Done | the account picker on every screen |
 | `TASK-P8-017` | Done 2026-10-07 | the geography map redrawn |
 | `TASK-P8-018` | Done 2026-10-05 | the look as drawn |

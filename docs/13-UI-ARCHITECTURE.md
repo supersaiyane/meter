@@ -170,8 +170,8 @@ whose purpose was never placed. Since 2026-10-05, ADR-0030:
 /inventory/resources/:nodeId       One resource
 /inventory/topology                The topology map
 /inventory/topology/geography      The estate on a map, a tab of Topology
-/report/library                    Report library, arrives with P8
-/report/scheduled                  Scheduled reports, arrives with P8
+/report/library                    Report library, saved views, FEAT-068
+/report/scheduled                  Scheduled reports and the files made for the reader, FEAT-069
 /report/exports                    Showback rows, whose file is the Export menu's
 /assist                            Ask Meter
 /assist/digests                    Per team digests and executive summaries
@@ -552,7 +552,10 @@ implement it differently.
 | --- | --- |
 | **Scope switcher** | In the shell, always visible, writes `?scope=`. Changing scope never silently changes what a figure means, because coverage is recomputed and shown. **Not yet planned**, because ADR-0008 parks the identity adapter and a switcher over one hardcoded scope would be a control that does nothing |
 | **Trust strip** | Coverage, freshness and degraded are shell level on every screen, worst case across that screen's collectors. Meter's own cost is Home only, per constraint 7 |
-| **Search** | One field, spanning accounts, resources, dashboards and findings. Results grouped by the seven groups, so the result list teaches the navigation. **Not yet planned**, because it wants at least three entity types to search over and P0 plus P2 supply two |
+| **Search** | One box in the top bar, FEAT-075: an account's number or name, a service or a resource. An account narrows every screen, a service opens Cost Explorer filtered to it, and a resource opens its page, each keeping the account. Dashboards and findings are not in it |
+| **Account choice** | Kept in the address as `?account=`, so a shared link opens the same account and the rail keeps it. Every read of a figure carries it to the server as `chosen_account`, where the scope dependency narrows. The reads that hold no figure, the accounts to choose from and the reader's own saved views, schedules and runs, are not narrowed. FEAT-075 |
+| **Save view** | Beside Export on a screen that can be saved, keeps the screen and its query under a name, private or shared with the tenant. A view holds no figure, so it opens in the opener's scope. FEAT-068 |
+| **Schedule** | From the Report Library, on the view's own screen: one route that screen exports, a format, a cadence and the people it is for. Each file is made within its recipient's own access, FEAT-069 and ADR-0033 |
 | **Drill down** | Always into the owning group, never a modal. A finding opens its own URL, so it can be linked |
 | **Export** | Beside every screen title, for each view the screen reads, FEAT-067. The server writes the file from the screen's own query, behind the same guard. **A workbook carries its coverage, both timestamps and every failure on its About sheet**, and the showback CSV carries them on every row, per FEAT-045 and `docs/12-UI-DESIGN.md` section 6. A spreadsheet that leaves without them becomes a number in a board pack with no way back to what it meant |
 | **Fixture marker** | Any screen resolving to fixture data renders the `FIXTURE DATA` band above its own content, driven by the same resolution that chose the fixture. It is per screen rather than shell level, because the shell aggregates `meta` and a fixture is a property of one surface rather than of the view. Each such screen carries a test asserting the band renders. See section 11 |
@@ -627,11 +630,9 @@ own front page becomes the progress view**, because a slot that says
 - Screen level design for P1 and P3 to P7. Each sub project specification adds
   its screens against this frame and the visual system, per
   `docs/12-UI-DESIGN.md` section 13.
-- Chart provenance. P1 introduces charts beyond the sparkline and must extend
-  section 7 of `docs/12-UI-DESIGN.md` before it does.
 - Authentication and the sign in surface. ADR-0008 parks the identity adapter,
   and the sign in screen arrives with the adapter.
-- The scope switcher, search, and the flags screen. All three are specified
-  above and none is in the first implementation plan. Section 10 and section 8
-  say which and why, so a reader can tell a deferral from an omission.
+- The scope switcher and the flags screen. Both are specified above and neither
+  is built. Section 10 and section 8 say why, so a reader can tell a deferral
+  from an omission. Search, the third, arrived with FEAT-075.
 - Brand, logo, marketing. Meter is an internal instrument.

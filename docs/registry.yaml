@@ -72,9 +72,10 @@ subprojects:
   depends_on: P1, P2, P3
 - id: P8
   name: Experience and reporting
-  status: In build. Specified, planned and approved by the owner 2026-10-05, 15 tasks, TASK-P8-001 done on 2026-10-05. Two themes
-    of one glass design system, navigation by the FinOps Framework, and Excel and CSV reports
-    behind the scope guard
+  status: Delivered, 18 of 18 tasks. Two themes of one glass design system, navigation by the FinOps Framework,
+    Cost Explorer and the spend forecast, Excel and CSV reports behind the scope guard, saved views and
+    scheduled reports rendered for each recipient, three persona dashboards and the account picker. Nothing
+    is sent until OPEN-11 and nothing deleted until OPEN-15
   spec: specs/2026-10-05-p8-experience-and-reporting-design.md
   plan: plans/P8-implementation-plan.md
   depends_on: P1, P2, P3, P4, P5, P6, P7
@@ -467,7 +468,7 @@ features:
 - id: FEAT-063
   name: Two theme design system with glass surfaces, dark and light
   subproject: P8
-  status: In progress
+  status: Delivered
   detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.1, [P8 plan](docs/plans/P8-implementation-plan.md)'
   doc: docs/features/FEAT-063-two-theme-design-system.md
 - id: FEAT-064
@@ -1686,6 +1687,16 @@ changes:
     the Overview to a scheduled workbook of a view grouped twice. Every approved label is held to the
     web source, and every panel and tile on the three dashboards to a screen on the rail. Each exit criterion
     has its evidence in the plan, measured. Found and fixed ISS-257 and ISS-258
+
+- id: CHG-0121
+  date: '2026-10-07'
+  type: Design
+  what: TASK-P8-015, the UI design and architecture documents as P8 built them
+  commit: pending
+  detail: docs/12-UI-DESIGN.md states the accessibility sweeps, the glass rule, the chart tables, the
+    six widths that replaced the read only summary it first proposed, and the P8 components. docs/13-UI-ARCHITECTURE.md
+    routes the library and the scheduled screen and adds search, the account choice, saving a view and
+    scheduling one to its cross screen patterns. FEAT-063 is Delivered, and P8 with it, 18 of 18 tasks
 issues:
 - id: ISS-189
   severity: LOW
