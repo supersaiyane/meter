@@ -225,7 +225,8 @@ meter/
 │                                  Support, gates the rest. Widened 2026-10-07 by
 │                                  TASK-P9-012 and 013, Savings Plans and spot,
 │                                  read by a function outside the VPC, OPEN-17;
-│                                  spot also waits on OPEN-18
+│                                  spot kept as the latest plus 90 days of daily
+│                                  lows and highs, OPEN-18
 │
 │                              No task count per plan in this listing. It said 20,
 │                              11 and 8 for P3, P4 and P5 while all three were
