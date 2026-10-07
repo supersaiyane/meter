@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 25 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 32 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 193 | test_*.py under tests/ |
-| Test functions | 2545 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 195 | test_*.py under tests/ |
+| Test functions | 2566 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -428,6 +428,9 @@ meter/
 │       ├── org.py             OrgNode and the closed ROOT, OU, ACCOUNT set
 │       ├── identity.py        Principal and Entitlement
 │       ├── ingest.py          IngestRun, CollectionFailure, Watermark
+│       ├── catalog.py         Price, PriceListVersion and InstanceTypeSpec, P9. A
+│       │                      price is one offer term, its recurring price and its
+│       │                      upfront fee; a term nought in both is refused
 │       ├── cost.py            CostRecord, FOCUS 1.4 names, Decimal money.
 │       │                      Also CommitmentUse and CommitmentCoverage, kept
 │       │                      apart for the reason the port keeps its methods
@@ -467,6 +470,7 @@ meter/
 │       │                      that test never reaches it, ISS-239
 │       ├── accounts.py        AccountDiscovery
 │       ├── budget.py          BudgetSource, the payer's budgets
+│       ├── catalog.py         PriceCatalog and InstanceCatalog, CATALOG_PORTS, P9
 │       ├── invoice.py         InvoiceSource, the payer's invoices, FEAT-076
 │       ├── cloudwatch_estate.py
 │       │                      CloudWatchEstate, what CloudWatch holds rather than
@@ -1052,6 +1056,9 @@ meter/
 │   │                     Takes the time it is observed at, because the
 │   │                     constants are right for a test and wrong for a
 │   │                     demo estate
+│   ├── catalog.py         AWS's price list and instance types for the estate:
+│   │                      structure from the real extracts, prices from the
+│   │                      estate's own table, so a saving and the bill agree
 │   ├── invoices.py        the payer's invoices, built from the rows of the bill:
 │   │                      the newest closed period matches, the oldest is 2.50
 │   │                      over beside a Marketplace invoice, the running month

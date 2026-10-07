@@ -363,6 +363,7 @@
     "finops_core/domain/__init__.py",
     "finops_core/domain/account.py",
     "finops_core/domain/budget.py",
+    "finops_core/domain/catalog.py",
     "finops_core/domain/containers.py",
     "finops_core/domain/cost.py",
     "finops_core/domain/explore.py",
@@ -389,6 +390,7 @@
     "finops_core/ports/__init__.py",
     "finops_core/ports/accounts.py",
     "finops_core/ports/budget.py",
+    "finops_core/ports/catalog.py",
     "finops_core/ports/cloudwatch_estate.py",
     "finops_core/ports/commitment.py",
     "finops_core/ports/containers.py",
@@ -408,6 +410,7 @@
     "finops_core/ports/tickets.py",
     "finops_fakes/__init__.py",
     "finops_fakes/budgets.py",
+    "finops_fakes/catalog.py",
     "finops_fakes/cloudwatch_estate.py",
     "finops_fakes/commitment.py",
     "finops_fakes/containers.py",
@@ -666,6 +669,7 @@
     "tests/contract/__init__.py",
     "tests/contract/conftest.py",
     "tests/contract/test_account_discovery.py",
+    "tests/contract/test_catalog_contract.py",
     "tests/contract/test_cause_vocabulary.py",
     "tests/contract/test_commitment.py",
     "tests/contract/test_container_source.py",
@@ -680,6 +684,7 @@
     "tests/contract/test_topology_source.py",
     "tests/core/__init__.py",
     "tests/core/test_budget.py",
+    "tests/core/test_catalog.py",
     "tests/core/test_config.py",
     "tests/core/test_containers_domain.py",
     "tests/core/test_cost_domain.py",
@@ -8451,6 +8456,11 @@
       "k": "python"
     },
     {
+      "s": "finops_core/domain/catalog.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/domain/containers.py",
       "t": "finops_core/domain/fact.py",
       "k": "python"
@@ -8592,6 +8602,11 @@
     },
     {
       "s": "finops_core/ports/__init__.py",
+      "t": "finops_core/ports/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/__init__.py",
       "t": "finops_core/ports/containers.py",
       "k": "python"
     },
@@ -8648,6 +8663,11 @@
     {
       "s": "finops_core/ports/budget.py",
       "t": "finops_core/domain/budget.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/catalog.py",
+      "t": "finops_core/domain/catalog.py",
       "k": "python"
     },
     {
@@ -8738,6 +8758,16 @@
     {
       "s": "finops_fakes/budgets.py",
       "t": "finops_core/domain/budget.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/catalog.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/catalog.py",
+      "t": "finops_core/errors.py",
       "k": "python"
     },
     {
@@ -11526,6 +11556,21 @@
       "k": "python"
     },
     {
+      "s": "tests/contract/test_catalog_contract.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_catalog_contract.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_catalog_contract.py",
+      "t": "finops_core/ports/__init__.py",
+      "k": "python"
+    },
+    {
       "s": "tests/contract/test_cause_vocabulary.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -11658,6 +11703,11 @@
     {
       "s": "tests/core/test_budget.py",
       "t": "finops_core/domain/budget.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_catalog.py",
+      "t": "finops_core/domain/catalog.py",
       "k": "python"
     },
     {

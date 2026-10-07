@@ -101,7 +101,7 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec sections 5.3 and 5.4 |
 | Delivers | `PriceCatalog` and `InstanceCatalog` ports |
 | Depends on | TASK-P9-001 |
@@ -109,10 +109,21 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 **Acceptance criteria.**
 
-- [ ] Ports in `finops_core/ports/`, no SDK, constraint 1
-- [ ] Fakes in `finops_fakes/` shaped from small real extracts of the offer files and of
-      `DescribeInstanceTypes`, with the planted cases' types and prices
-- [ ] A contract test both the fake and the adapter will pass
+- [x] Ports in `finops_core/ports/`, no SDK, constraint 1: `PriceCatalog` and
+      `InstanceCatalog` in `catalog.py`, in a group of their own, `CATALOG_PORTS`, so the ports
+      test reaches both, with the domain in `finops_core/domain/catalog.py`
+- [x] Fakes in `finops_fakes/` shaped from small real extracts of the offer files and of
+      `DescribeInstanceTypes`, with the planted cases' types and prices.
+      `finops_fakes/catalog.py`, its term and rate codes from AWS's ElastiCache price list for
+      eu-west-1, version 20260914063714, and its prices from the estate's own table so a saving
+      and the bill agree. The extracts, pruned to one product each, are in
+      `tests/providers/aws/extracts` with their sources; `tests/core/test_catalog.py` builds the
+      domain's records from them. Reading the real list corrected the spec, section 5.3: an All
+      Upfront reservation is nought an hour beside its fee, so the refusal is of a term whose
+      every price is nought
+- [x] A contract test both the fake and the adapter will pass,
+      `tests/contract/test_catalog_contract.py`, parametrized so TASK-P9-004 and TASK-P9-005 add
+      their adapters to it. Three red checks failed the tests
 
 ---
 
@@ -129,7 +140,9 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 **Acceptance criteria.**
 
 - [ ] `price_list_version`, `price`, `instance_type_spec` and `volume_type_spec`, every
-      invariant in spec section 6 a constraint
+      invariant in spec section 6 a constraint, with `price` holding a term's recurring price
+      and upfront fee and refusing only a term that is nought in both, as corrected on
+      2026-10-08
 - [ ] `instance_type_spec` keyed by service as well as type, for the five services of spec
       section 14, and `spot_price` and `spot_price_daily` as OPEN-18 chose, spec section
       14.7. Added 2026-10-07
@@ -160,8 +173,14 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 - [ ] The number of price rows measured before the tables are sized, against the ten
       million spec section 14.4 models
 - [ ] Rows filtered to the comparable price: operating system, shared tenancy, used
-      capacity, no preinstalled software, with the filter tested
-- [ ] A zero or missing price refused with a typed cause, never stored
+      capacity, no preinstalled software, with the filter tested, and Extended Support
+      products named rather than read as a second price for the same type, found in the real
+      ElastiCache list on 2026-10-08
+- [ ] A term whose every price is nought, or a missing price, refused with a typed cause,
+      never stored; an All Upfront term's nought hourly rate beside its fee kept, spec section
+      5.3 as corrected on 2026-10-08
+- [ ] The adapter added to `tests/contract/test_catalog_contract.py`, and its attribute names
+      held to a real EC2 extract, which TASK-P9-002 could not take without an account
 - [ ] The `price_catalog` collector, a `collector_schedule` row with its reason and cost,
       every 8 hours, loads only the services and Regions whose version changed
 - [ ] Never loads a whole offer file into memory

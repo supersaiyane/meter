@@ -82,8 +82,8 @@ subprojects:
 - id: P9
   name: Price catalog and rightsizing targets
   status: Specified, planned and approved by the owner 2026-10-05, in build from 2026-10-08 as priority 3,
-    TASK-P9-001 done, TASK-P9-002 next. EC2 and EBS list prices from AWS, rightsizing down and up to a
-    named and priced target, and gp2 to gp3. The hub now reaches every API it calls, ADR-0035
+    TASK-P9-001 and TASK-P9-002 done, TASK-P9-003 next. EC2 and EBS list prices from AWS, rightsizing down
+    and up to a named and priced target, and gp2 to gp3. The hub now reaches every API it calls, ADR-0035
   spec: specs/2026-10-05-p9-price-catalog-design.md
   plan: plans/P9-implementation-plan.md
   depends_on: P3
@@ -1986,6 +1986,19 @@ changes:
     the adapters call from the code and holds each to its path; four red checks failed it. Endpoint prices
     measured from the AWS price list; about 338 USD a month in all, modelled. Validated offline against
     installed providers. ISS-242 closed, ISS-260 found
+- id: CHG-0135
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-002, the price and instance type ports and their fakes, shaped by AWS's real data
+  commit: pending
+  detail: PriceCatalog and InstanceCatalog in a group of their own, CATALOG_PORTS, with Price,
+    PriceListVersion and InstanceTypeSpec in the domain. The fakes take their structure from real
+    extracts kept in tests/providers/aws/extracts, an ElastiCache price list for eu-west-1 and AWS's
+    published DescribeInstanceTypes example, and their prices from the estate's own table. Reading the
+    real list corrected the spec, section 5.3, the same day, that an All Upfront reservation is nought an
+    hour beside its fee, so a price row is a term with both and only a term nought in both is refused,
+    and that SkuPriceId is the SKU with its term. A contract test the adapters of TASK-P9-004 and
+    TASK-P9-005 join; three red checks
 issues:
 - id: ISS-189
   severity: LOW

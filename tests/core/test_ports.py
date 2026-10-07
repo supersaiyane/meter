@@ -49,6 +49,10 @@ EXPECTED_PORTS = {
     # P7, TASK-P7-001. The model behind the assistant, ADR-0028. Its own group,
     # because neither the cloud fake nor a query surface implements it.
     "LlmProvider",
+    # P9, TASK-P9-002. AWS's price list and its description of instance types, read from
+    # different places and failing apart, so two ports in a group of their own.
+    "PriceCatalog",
+    "InstanceCatalog",
 }
 
 FORBIDDEN_IMPORTS = {"boto3", "botocore", "fastapi", "sqlalchemy", "httpx", "requests"}
@@ -71,8 +75,9 @@ def port_methods(port: type) -> list[tuple[str, object]]:
 # --- shape -------------------------------------------------------------------
 
 
-def test_there_are_exactly_thirteen_ports() -> None:
-    """The provider ports, the three P2 surface ports, and the P7 model port.
+def test_there_are_exactly_fifteen_ports() -> None:
+    """The provider ports, the three P2 surface ports, the P7 model port, the two P9 catalog
+    ports.
 
     `__all__` also carries the two grouping tuples, so the comparison is against
     the protocols rather than against every name the package exports. Adding a
@@ -84,18 +89,25 @@ def test_there_are_exactly_thirteen_ports() -> None:
     assert exported == EXPECTED_PORTS
 
 
-def test_the_three_groups_together_are_every_port() -> None:
+def test_the_four_groups_together_are_every_port() -> None:
     """The groups exist so a test can ask for provider ports without filtering
     by hand, and a port left out of all of them would be invisible to every
     caller that uses them."""
     grouped = {
-        port.__name__ for port in (*ports.PROVIDER_PORTS, *ports.SURFACE_PORTS, *ports.MODEL_PORTS)
+        port.__name__
+        for port in (
+            *ports.PROVIDER_PORTS,
+            *ports.SURFACE_PORTS,
+            *ports.MODEL_PORTS,
+            *ports.CATALOG_PORTS,
+        )
     }
 
     assert grouped == EXPECTED_PORTS
     assert len(ports.PROVIDER_PORTS) == 9
     assert len(ports.SURFACE_PORTS) == 3
     assert len(ports.MODEL_PORTS) == 1
+    assert len(ports.CATALOG_PORTS) == 2
 
 
 def test_all_ports_are_protocols() -> None:

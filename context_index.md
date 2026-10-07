@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-942 public symbols across 5 packages.
+953 public symbols across 5 packages.
 
 ## finops_core
 
@@ -51,6 +51,12 @@ a duplicate.
 | `BudgetStanding.remaining` | method | `finops_core/domain/budget.py:105` |  | nothing in this tree |
 | `status_of` | function | `finops_core/domain/budget.py:111` | Where a budget stands, from pace rather than from a forecast. | `finops_api/routes/cost.py` |
 | `elapsed_fraction` | function | `finops_core/domain/budget.py:146` | How far through a period today is, nought to one. | `finops_api/routes/cost.py` |
+| `PricingCategory` | class | `finops_core/domain/catalog.py:37` | FOCUS's words for how a price is paid. | nothing in this tree |
+| `PurchaseOption` | class | `finops_core/domain/catalog.py:46` | How much of a reservation is paid when it is bought, in the price list's own words. | nothing in this tree |
+| `PriceListVersion` | class | `finops_core/domain/catalog.py:55` | One publication of one service's prices in one Region. `as_of` is its publication. | nothing in this tree |
+| `Price` | class | `finops_core/domain/catalog.py:64` | One offer term for one product in one Region, as the price list states it. | nothing in this tree |
+| `Price.effective_hourly` | method | `finops_core/domain/catalog.py:104` | An hourly price with any upfront fee spread over the lease, for comparing terms. | nothing in this tree |
+| `InstanceTypeSpec` | class | `finops_core/domain/catalog.py:117` | One instance type as AWS describes it in one Region. | nothing in this tree |
 | `LaunchType` | class | `finops_core/domain/containers.py:45` | Where a workload's compute comes from, which decides how it gets resized. | nothing in this tree |
 | `OomStatus` | class | `finops_core/domain/containers.py:58` | Whether a workload has been killed for running out of memory. | nothing in this tree |
 | `OomStatus.from_observation` | method | `finops_core/domain/containers.py:73` | Map a nullable reading, which is how the column and the fake both hold it. | `finops_api/routes/waste.py` |
@@ -193,6 +199,11 @@ a duplicate.
 | `AccountDiscovery.describe_organization` | method | `finops_core/ports/accounts.py:35` | Every node of the organization tree, roots and units included. | `finops_ingest/collectors/org_tree.py` |
 | `BudgetSource` | class | `finops_core/ports/budget.py:16` | Reads budgets from the payer. | nothing in this tree |
 | `BudgetSource.budgets` | method | `finops_core/ports/budget.py:19` | Every budget the payer holds. | `finops_ingest/collectors/budgets.py` |
+| `PriceCatalog` | class | `finops_core/ports/catalog.py:20` | AWS's published prices, one service and one Region at a time. | nothing in this tree |
+| `PriceCatalog.versions` | method | `finops_core/ports/catalog.py:23` | The current version of a service's price list in every Region it is sold in. | nothing in this tree |
+| `PriceCatalog.prices` | method | `finops_core/ports/catalog.py:36` | Every on demand and reserved price in one version of one service in one Region. | nothing in this tree |
+| `InstanceCatalog` | class | `finops_core/ports/catalog.py:52` | EC2's own description of its instance types, per Region. | nothing in this tree |
+| `InstanceCatalog.instance_types` | method | `finops_core/ports/catalog.py:55` | Every instance type EC2 describes in a Region. | nothing in this tree |
 | `LogGroup` | class | `finops_core/ports/cloudwatch_estate.py:23` | One log group, and the two facts that decide whether it is wasteful. | nothing in this tree |
 | `Alarm` | class | `finops_core/ports/cloudwatch_estate.py:36` | One alarm, and how long it has been unable to say anything. | nothing in this tree |
 | `CloudWatchEstate` | class | `finops_core/ports/cloudwatch_estate.py:49` | The inventory of what CloudWatch holds, not the values in it. | nothing in this tree |
@@ -1009,6 +1020,12 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `BudgetStatus` in `finops_core/domain/budget.py:55`
 - `BudgetStanding` in `finops_core/domain/budget.py:87`
 - `BudgetStanding.remaining` in `finops_core/domain/budget.py:105`
+- `PricingCategory` in `finops_core/domain/catalog.py:37`
+- `PurchaseOption` in `finops_core/domain/catalog.py:46`
+- `PriceListVersion` in `finops_core/domain/catalog.py:55`
+- `Price` in `finops_core/domain/catalog.py:64`
+- `Price.effective_hourly` in `finops_core/domain/catalog.py:104`
+- `InstanceTypeSpec` in `finops_core/domain/catalog.py:117`
 - `LaunchType` in `finops_core/domain/containers.py:45`
 - `OomStatus` in `finops_core/domain/containers.py:58`
 - `OomStatus.was_checked` in `finops_core/domain/containers.py:85`
@@ -1051,9 +1068,3 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `ControlAction` in `finops_core/domain/query.py:62`
 - `ControlRequest` in `finops_core/domain/query.py:208`
 - `UsageSource` in `finops_core/domain/quota.py:38`
-- `QuotaUsage.headroom` in `finops_core/domain/quota.py:134`
-- `QuotaUsage.is_measurable` in `finops_core/domain/quota.py:152`
-- `ReconciliationState` in `finops_core/domain/reconciliation.py:26`
-- `Comparison` in `finops_core/domain/reconciliation.py:61`
-- `allowance` in `finops_core/domain/reconciliation.py:71`
-- `ResourceRef` in `finops_core/domain/resource.py:19`
