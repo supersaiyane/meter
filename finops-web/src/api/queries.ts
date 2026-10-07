@@ -19,6 +19,7 @@ import {
   costAnomaliesFixture,
   costBudgetsFixture,
   costCommitmentsFixture,
+  reconciliationFixture,
 } from './fixtures/cost';
 import {
   recommendationsFixture,
@@ -73,6 +74,7 @@ import type {
   ApiResourceList,
   ApiSubgraph,
   ApiBudgets,
+  ApiReconciliation,
   ApiCommitments,
   ApiCostAnomalies,
   ApiCostSlice,
@@ -697,6 +699,21 @@ export function useBudgets() {
     '/api/v1/cost/budgets',
     '/api/v1/cost/budgets',
     costBudgetsFixture,
+  );
+}
+
+/**
+ * Each invoice for a billing period beside Meter's billed cost under it. FEAT-076.
+ *
+ * Payer wide: a reader narrowed to fewer accounts, or one who chose a single account, is refused
+ * with a 403 that names why, and the screen says so rather than showing a failure.
+ */
+export function useReconciliation() {
+  return useQuerySurface<ApiReconciliation>(
+    ['cost-reconciliation'],
+    '/api/v1/cost/reconciliation',
+    '/api/v1/cost/reconciliation',
+    reconciliationFixture,
   );
 }
 

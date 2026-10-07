@@ -1,5 +1,6 @@
 import type {
   ApiBudgets,
+  ApiReconciliation,
   ApiCommitments,
   ApiCostAnomalies,
   ApiCostSlice,
@@ -363,6 +364,86 @@ export function costBudgetsFixture(): ApiEnvelope<ApiBudgets> {
       as_of: '2026-09-26T06:00:00Z',
       collected_at: '2026-09-26T06:05:00Z',
       scope_coverage: { visible: 1, total: 1, is_partial: false, unit: 'accounts' },
+      degraded: false,
+      failures: [],
+    },
+  };
+}
+
+/**
+ * A closed period's invoices beside Meter's billed cost, FEAT-076. Three on purpose: the
+ * payer's invoice 2.50 over its rows and a Marketplace invoice no row carries, as the demo seeds
+ * them, and a credit memo that matches, which the demo does not hold, so an offline screen shows
+ * a correction beside what it corrects as well as the two ways a comparison falls short.
+ */
+export function reconciliationFixture(): ApiEnvelope<ApiReconciliation> {
+  const at = { issued_at: '2026-09-03T06:00:00Z', as_of: '2026-09-03T06:00:00Z' };
+  return {
+    data: {
+      period: '2026-08-01',
+      period_status: 'Closed',
+      state: null,
+      cause: null,
+      tolerance: '0.0001',
+      minimum_difference: '0.01',
+      invoices: [
+        {
+          invoice_id: 'fake-invoice-2026-08',
+          invoice_type: 'INVOICE',
+          original_invoice_id: null,
+          invoice_issuer_name: 'Fake',
+          billing_currency: 'USD',
+          invoice_before_tax: '15111.6978',
+          invoice_tax: '0.0000',
+          invoice_billed_cost: '15111.6978',
+          meter_before_tax: '15109.1978',
+          meter_tax: '0.0000',
+          difference_before_tax: '-2.5000',
+          difference_tax: '0.0000',
+          state: 'Mismatched',
+          ...at,
+          collected_at: '2026-09-03T06:05:00Z',
+        },
+        {
+          invoice_id: 'fake-credit-2026-08',
+          invoice_type: 'CREDIT_MEMO',
+          original_invoice_id: 'fake-invoice-2026-08',
+          invoice_issuer_name: 'Fake',
+          billing_currency: 'USD',
+          invoice_before_tax: '-41.3300',
+          invoice_tax: '0.0000',
+          invoice_billed_cost: '-41.3300',
+          meter_before_tax: '-41.3300',
+          meter_tax: '0.0000',
+          difference_before_tax: '0.0000',
+          difference_tax: '0.0000',
+          state: 'Matched',
+          ...at,
+          collected_at: '2026-09-03T06:05:00Z',
+        },
+        {
+          invoice_id: 'fake-marketplace-2026-08',
+          invoice_type: 'INVOICE',
+          original_invoice_id: null,
+          invoice_issuer_name: 'Fake Marketplace',
+          billing_currency: 'USD',
+          invoice_before_tax: '40.0000',
+          invoice_tax: '0.0000',
+          invoice_billed_cost: '40.0000',
+          meter_before_tax: null,
+          meter_tax: null,
+          difference_before_tax: null,
+          difference_tax: null,
+          state: 'No rows',
+          ...at,
+          collected_at: '2026-09-03T06:05:00Z',
+        },
+      ],
+    },
+    meta: {
+      as_of: '2026-09-03T06:00:00Z',
+      collected_at: '2026-09-03T06:05:00Z',
+      scope_coverage: { visible: 1, total: 1, is_partial: false, unit: 'payer' },
       degraded: false,
       failures: [],
     },

@@ -475,6 +475,50 @@ export interface ApiBudgets {
   readonly unsupported: number;
 }
 
+/**
+ * One invoice beside Meter's billed cost for it. FEAT-076.
+ *
+ * The invoice's amounts are the provider's and always present. Meter's and the differences are
+ * null whenever the state is not a comparison, and null there is not zero. A difference is
+ * Meter's figure less the invoice's.
+ */
+export interface ApiInvoiceComparison {
+  readonly invoice_id: string;
+  /** INVOICE or CREDIT_MEMO. */
+  readonly invoice_type: string;
+  readonly original_invoice_id: string | null;
+  readonly invoice_issuer_name: string;
+  readonly billing_currency: string;
+  readonly invoice_before_tax: string;
+  readonly invoice_tax: string;
+  readonly invoice_billed_cost: string;
+  readonly meter_before_tax: string | null;
+  readonly meter_tax: string | null;
+  readonly difference_before_tax: string | null;
+  readonly difference_tax: string | null;
+  /** Matched, Mismatched, No rows or Currency differs. */
+  readonly state: string;
+  readonly issued_at: string;
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
+/** A billing period's invoices, each compared with Meter's billed cost. FEAT-076. */
+export interface ApiReconciliation {
+  readonly period: string;
+  /** Open or Closed, as FOCUS 1.4 names them. */
+  readonly period_status: string;
+  /** Period open or Not readable when there is no invoice to compare, null when there is. */
+  readonly state: string | null;
+  /** The typed cause of the failed read behind Not readable. */
+  readonly cause: string | null;
+  /** The share of an invoice amount a difference may be and still match, modelled. */
+  readonly tolerance: string;
+  /** The least difference that counts, because an invoice is stated in cents. */
+  readonly minimum_difference: string;
+  readonly invoices: readonly ApiInvoiceComparison[];
+}
+
 export interface ApiCostAnomaly {
   readonly account_id: string;
   readonly service_name: string;

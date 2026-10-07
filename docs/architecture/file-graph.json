@@ -34,6 +34,7 @@
     "finops-web/e2e/motion.spec.ts",
     "finops-web/e2e/overview.spec.ts",
     "finops-web/e2e/quotas.spec.ts",
+    "finops-web/e2e/reconciliation.spec.ts",
     "finops-web/e2e/reporting.spec.ts",
     "finops-web/e2e/schedule.spec.ts",
     "finops-web/e2e/topology.spec.ts",
@@ -179,6 +180,7 @@
     "finops-web/src/screens/QuerySurfacesScreen.tsx",
     "finops-web/src/screens/QuotaDetailScreen.tsx",
     "finops-web/src/screens/QuotasScreen.tsx",
+    "finops-web/src/screens/ReconciliationScreen.tsx",
     "finops-web/src/screens/RemediationControls.tsx",
     "finops-web/src/screens/ReportLibraryScreen.tsx",
     "finops-web/src/screens/ResourceListScreen.tsx",
@@ -216,6 +218,7 @@
     "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
     "finops-web/src/screens/__tests__/QuotaDetailScreen.test.tsx",
     "finops-web/src/screens/__tests__/QuotasScreen.test.tsx",
+    "finops-web/src/screens/__tests__/ReconciliationScreen.test.tsx",
     "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
     "finops-web/src/screens/__tests__/ReportLibraryScreen.test.tsx",
     "finops-web/src/screens/__tests__/ResourceListScreen.test.tsx",
@@ -235,6 +238,7 @@
     "finops-web/src/screens/__tests__/nodeColumns.test.ts",
     "finops-web/src/screens/__tests__/overviewKpis.test.ts",
     "finops-web/src/screens/__tests__/rawIdentifiers.test.tsx",
+    "finops-web/src/screens/__tests__/reconciliationModel.test.ts",
     "finops-web/src/screens/__tests__/scheduleModel.test.ts",
     "finops-web/src/screens/__tests__/sortEveryColumn.ts",
     "finops-web/src/screens/__tests__/surfaceStateFor.test.ts",
@@ -254,6 +258,7 @@
     "finops-web/src/screens/queryByDashboard.ts",
     "finops-web/src/screens/querySeverity.ts",
     "finops-web/src/screens/realizedSavings.ts",
+    "finops-web/src/screens/reconciliationModel.ts",
     "finops-web/src/screens/scheduleModel.ts",
     "finops-web/src/screens/sliceCoverage.ts",
     "finops-web/src/screens/surfaceStateFor.ts",
@@ -576,6 +581,7 @@
     "migrations/versions/0029_report_schedule.py",
     "migrations/versions/0030_focus_1_4_columns.py",
     "migrations/versions/0031_invoices.py",
+    "migrations/versions/0032_reconciliation_screen.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -966,6 +972,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/e2e/reconciliation.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/e2e/reporting.spec.ts",
       "t": "finops-web/e2e/estate.ts",
       "k": "typescript"
@@ -1143,6 +1154,11 @@
     {
       "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/QuotasScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/ReconciliationScreen.tsx",
       "k": "typescript"
     },
     {
@@ -3677,6 +3693,11 @@
     },
     {
       "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/components/surfaceState.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
       "t": "finops-web/src/components/tableConfig.ts",
       "k": "typescript"
     },
@@ -3698,6 +3719,11 @@
     {
       "s": "finops-web/src/screens/OverviewFinOps.tsx",
       "t": "finops-web/src/screens/overviewKpis.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewFinOps.tsx",
+      "t": "finops-web/src/screens/reconciliationModel.ts",
       "k": "typescript"
     },
     {
@@ -4212,6 +4238,51 @@
     },
     {
       "s": "finops-web/src/screens/QuotasScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReconciliationScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReconciliationScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReconciliationScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReconciliationScreen.tsx",
+      "t": "finops-web/src/components/FixtureBand.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReconciliationScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReconciliationScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReconciliationScreen.tsx",
+      "t": "finops-web/src/screens/reconciliationModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReconciliationScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/ReconciliationScreen.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
       "k": "typescript"
     },
@@ -5531,6 +5602,41 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/ReconciliationScreen.test.tsx",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ReconciliationScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ReconciliationScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ReconciliationScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ReconciliationScreen.test.tsx",
+      "t": "finops-web/src/screens/ReconciliationScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ReconciliationScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/ReconciliationScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
       "t": "finops-web/src/api/fixtures/query.ts",
       "k": "typescript"
@@ -5916,6 +6022,26 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/reconciliationModel.test.ts",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/reconciliationModel.test.ts",
+      "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/reconciliationModel.test.ts",
+      "t": "finops-web/src/screens/overviewKpis.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/reconciliationModel.test.ts",
+      "t": "finops-web/src/screens/reconciliationModel.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/scheduleModel.test.ts",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -6066,6 +6192,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/overviewKpis.ts",
+      "t": "finops-web/src/screens/reconciliationModel.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/personas.ts",
       "t": "finops-web/src/storage.ts",
       "k": "typescript"
@@ -6103,6 +6234,16 @@
     {
       "s": "finops-web/src/screens/realizedSavings.ts",
       "t": "finops-web/src/screens/exploreSeries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/reconciliationModel.ts",
+      "t": "finops-web/src/api/client.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/reconciliationModel.ts",
+      "t": "finops-web/src/api/types.ts",
       "k": "typescript"
     },
     {

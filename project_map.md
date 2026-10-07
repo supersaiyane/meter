@@ -29,11 +29,11 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 27 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 49 in 18 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Screens built | 28 of 30 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 52 in 19 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 25 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 31 | files in migrations/versions, all of which are listed below in this file |
+| Migration revisions | 32 | files in migrations/versions, all of which are listed below in this file |
 | Test files | 189 | test_*.py under tests/ |
 | Test functions | 2509 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
@@ -718,6 +718,12 @@ meter/
 │   │                          forecast, always a range beside its accuracy, or the
 │   │                          reason where the figure would be. forecastModel.ts
 │   │                          holds its rules
+│   ├── screens/ReconciliationScreen.tsx  Invoice reconciliation, FEAT-076: each
+│   │                          invoice beside Meter's billed cost, every state in
+│   │                          words, the difference signed, labelled measured; the
+│   │                          route's 403 and 404 shown in its own words.
+│   │                          reconciliationModel.ts holds the words, and the
+│   │                          FinOps Overview's Matches the invoice tile reads it
 │   ├── screens/CostScreen.tsx  Cost Explorer, FEAT-065. The view lives in the
 │   │                          address under the route's own names, so a link
 │   │                          lands on it. exploreModel.ts holds its rules,
@@ -1425,6 +1431,9 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0032_reconciliation_screen.py  TASK-P10-005. A saved view may name
+│       │                      /report/reconciliation; the downgrade refuses while
+│       │                      one does rather than deleting it
 │       ├── 0031_invoices.py   TASK-P10-003, FEAT-076. billing_period and
 │       │                      invoice_detail, payer wide, nothing derived stored;
 │       │                      the invoices cadence row for every tenant

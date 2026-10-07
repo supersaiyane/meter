@@ -1,12 +1,13 @@
 import { useMemo, type ReactNode } from 'react';
 
-import { useCostCommitments, useCostExplore } from '../api/queries';
+import { useCostCommitments, useCostExplore, useReconciliation } from '../api/queries';
 import type { ApiCostSlice } from '../api/types';
 import { BudgetBar } from '../components/BudgetBar';
 import { KpiTile } from '../components/charts';
 import { DataTable } from '../components/DataTable';
 import { RankedBars } from '../components/RankedBars';
 import { StateBoundary } from '../components/StateBoundary';
+import type { SurfaceState } from '../components/surfaceState';
 import type { Column } from '../components/tableConfig';
 import { useReportMeta } from '../shell/metaRegistry';
 import { dollars } from './exploreModel';
@@ -21,10 +22,12 @@ import { exploreQuery, lastDays, stacked } from './exploreSeries';
 import {
   ALLOCATION_TAG,
   commitmentCoverage,
+  invoiceMatch,
   percent,
   rankedRows,
   wholeDollars,
 } from './overviewKpis';
+import { answeredInstead } from './reconciliationModel';
 import { surfaceStateFor } from './surfaceStateFor';
 import { useOverviewFigures } from './useOverviewFigures';
 
@@ -67,6 +70,17 @@ export function OverviewFinOps({ meterCost }: { readonly meterCost: ReactNode })
     'none',
     'commitment_use',
   );
+
+  // FEAT-076. The route's 403 and 404 are answers in words, so the tile says them rather than
+  // naming a failure that did not happen.
+  const reconciliation = useReconciliation();
+  const reconciliationEnvelope = reconciliation.data?.data;
+  useReportMeta('overview-reconciliation', reconciliationEnvelope?.meta);
+  const reconciliationInstead = answeredInstead(reconciliation.error);
+  const reconciliationState: SurfaceState =
+    reconciliationInstead !== null
+      ? { kind: 'ready' }
+      : surfaceStateFor(reconciliation, reconciliationEnvelope?.meta, 1, 'none', 'invoices');
 
   const window = useMemo(() => lastDays(DAILY_DAYS, new Date()), []);
   const dailyQuery = exploreQuery({
@@ -165,6 +179,15 @@ export function OverviewFinOps({ meterCost }: { readonly meterCost: ReactNode })
           points={[]}
           state={figures.allocated.state}
           {...figures.allocated.facts}
+        />
+        <KpiTile
+          label="Matches the invoice"
+          href="/report/reconciliation"
+          provenance="measured"
+          format={percent}
+          points={[]}
+          state={reconciliationState}
+          {...invoiceMatch(reconciliationEnvelope?.data, reconciliationInstead)}
         />
         {meterCost}
       </section>

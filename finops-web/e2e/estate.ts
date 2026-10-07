@@ -28,9 +28,50 @@ async function stub(page: Page, path: string, json: unknown): Promise<void> {
 }
 
 /** The estate the runbook describes, at the grain each screen reads it. */
+/**
+ * One invoice beside Meter's billed cost, FEAT-076, shaped as `/api/v1/cost/reconciliation`
+ * answers. The newest closed period, which is what the route reads with no period asked for and
+ * what the demo seeds to match its rows.
+ */
+export const RECONCILED = {
+  invoice_id: 'fake-invoice-2026-08',
+  invoice_type: 'INVOICE',
+  original_invoice_id: null,
+  invoice_issuer_name: 'Fake',
+  billing_currency: 'USD',
+  invoice_before_tax: '6197.6500',
+  invoice_tax: '0.0000',
+  invoice_billed_cost: '6197.6500',
+  meter_before_tax: '6197.6500',
+  meter_tax: '0.0000',
+  difference_before_tax: '0.0000',
+  difference_tax: '0.0000',
+  state: 'Matched',
+  issued_at: '2026-09-03T06:00:00Z',
+  as_of: '2026-09-03T06:00:00Z',
+  collected_at: '2026-09-03T06:05:00Z',
+};
+
+export function reconciliationOf(invoices: readonly unknown[], period = '2026-08-01'): unknown {
+  return {
+    period,
+    period_status: 'Closed',
+    state: null,
+    cause: null,
+    tolerance: '0.0001',
+    minimum_difference: '0.01',
+    invoices,
+  };
+}
+
 export async function demoEstate(page: Page): Promise<void> {
   await page.addInitScript(() => {
     window.localStorage.setItem('meter.token', 'a-session-token');
+  });
+
+  await stub(page, '/api/v1/cost/reconciliation', {
+    data: reconciliationOf([RECONCILED]),
+    meta: PAYER_META,
   });
 
   await stub(page, '/api/v1/cost/summary', {

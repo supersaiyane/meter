@@ -90,7 +90,7 @@ subprojects:
 - id: P10
   name: 'Proven numbers: FOCUS 1.4 and invoice reconciliation'
   status: Specified, planned and approved by the owner 2026-10-07 as priority 2 of next-in-scope.txt,
-    TASK-P10-001 and TASK-P10-002 done on 2026-10-07, TASK-P10-003 and TASK-P10-004 on 2026-10-08, TASK-P10-005 next. Runs before P9 by the owner's
+    TASK-P10-001 and TASK-P10-002 done on 2026-10-07, TASK-P10-003 to TASK-P10-005 on 2026-10-08, TASK-P10-006 next. Runs before P9 by the owner's
     priority. The cost row gains FOCUS 1.4's mandatory and invoice columns, and each AWS invoice is compared
     with Meter's billed cost
   spec: specs/2026-10-07-p10-proven-numbers-design.md
@@ -1946,6 +1946,17 @@ changes:
     reading the newest closed period by default and answering 404 for a period never read. Two decisions
     recorded in the spec and the plan, the tolerance's one cent floor and the period as a date like every
     other cost route. Three red checks proved the refusal, the tax split and the currency rule are held
+- id: CHG-0132
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P10-005, the Invoice reconciliation screen and the Matches the invoice tile, FEAT-076
+  commit: pending
+  detail: A screen at /report/reconciliation on the Report group of the rail, every state in words
+    with the difference signed and labelled measured, the route's 403 and 404 shown in its own words;
+    a tile on the FinOps practitioner's Overview with the matched share of the invoiced amount; the
+    screen in SCREEN_PATHS and migration 0032 admitting it as a saved view's screen, whose downgrade
+    refuses rather than deletes a view; and a journey. The journey found the screen printing a 403's raw
+    JSON body, which unit tests built with a bare sentence had missed, fixed with the client's reasonOf
 issues:
 - id: ISS-189
   severity: LOW

@@ -45,6 +45,7 @@ SCREEN_PATHS: Final[tuple[str, ...]] = (
     "/report/library",
     "/report/scheduled",
     "/report/exports",
+    "/report/reconciliation",
     "/assist",
     "/assist/digests",
     "/platform/freshness",
