@@ -1624,6 +1624,15 @@ changes:
     own database and kept current by polling AWS. Decided the same day: every commercial Region;
     on demand, reserved, Savings Plans and spot; EC2 with EBS, RDS, ElastiCache, Redshift and
     OpenSearch; every 8 hours. P9 spec section 14, two tasks added, OPEN-17 and OPEN-18 raised'
+- id: CHG-0116
+  date: 2026-10-07
+  type: Decision
+  what: OPEN-17 answered, spot prices and Savings Plans rates read by a function outside the VPC
+  commit: pending
+  detail: 'The pattern approved for Budgets and Support on 2026-10-05, chosen over an interface
+    endpoint in every Region. About 2,700 runs a month inside the Lambda always free allowance,
+    under 1 USD a month with its writes and logs (modelled), against roughly 440 USD a month for
+    endpoints (modelled). The hub keeps no route out. P9 spec section 14.5'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4072,15 +4081,18 @@ open_questions:
 - id: OPEN-17
   question: 'How does the hub read spot prices and Savings Plans rates in every commercial
     Region: a small function outside the VPC that writes rows to S3, the pattern approved for
-    Budgets and Support, or an interface endpoint for each in every Region'
-  status: OPEN
-  blocks: TASK-P9-012 and TASK-P9-013
+    Budgets and Support, or an interface endpoint for each in every Region. ANSWERED 2026-10-07: the function
+    outside the VPC'
+  status: ANSWERED
+  blocks: 'Nothing now. TASK-P9-001 builds the function, and TASK-P9-013 still waits on OPEN-18'
   detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) section 14.5. Raised
     2026-10-07 when the owner widened the catalog to every Region and four price types. Every
     other part of the catalog is read through the endpoint in us-east-1 already approved.
     Recommended: the function outside the VPC, a few USD a month (modelled). The alternative is
     about 30 Regions at about 14.7 USD a month an endpoint, roughly 440 USD a month for spot
-    alone (modelled), on top of the 290 USD a month approved for OPEN-16'
+    alone (modelled), on top of the 290 USD a month approved for OPEN-16. The owner chose the function on
+    2026-10-07: about 2,700 runs a month inside the Lambda always free allowance, under 1 USD
+    a month with its S3 writes and logs (modelled)'
 - id: OPEN-18
   question: 'How much spot price history does the catalog keep: the latest price per pool plus
     each day''s low and high for 90 days, every 8 hourly reading, or the latest only'

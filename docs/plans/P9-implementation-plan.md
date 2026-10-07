@@ -36,7 +36,7 @@ Same contract as P0 through P8. One task, one commit.
 | Wave | Tasks | Delivers | Can start when |
 | --- | --- | --- | --- |
 | A. A way out | 001 | The hub reaches every AWS API it calls | This plan approved and OPEN-16 answered, both 2026-10-05 |
-| B. The catalogs | 002 to 005, 012, 013 | Ports, tables, the price list for five services in every Region, the instance catalog, Savings Plans rates and spot prices | A; 012 and 013 also wait on OPEN-17, and 013 on OPEN-18 |
+| B. The catalogs | 002 to 005, 012, 013 | Ports, tables, the price list for five services in every Region, the instance catalog, Savings Plans rates and spot prices | A; 013 also waits on OPEN-18 |
 | C. Targets | 006 to 009 | Compute Optimizer fixed, downsizing and upsizing to a named type, gp2 to gp3 | B |
 | D. Surface | 010 | Routes and the Alternatives table | C |
 | E. Proof and documents | 011 | Exit criteria measured, documents updated | All |
@@ -62,7 +62,8 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 **Acceptance criteria.**
 
-- [ ] An ADR records A plus C for Budgets and Support, why, and its monthly cost: the
+- [ ] An ADR records A plus C for Budgets and Support, C again for spot prices and Savings
+      Plans rates in every Region, OPEN-17, why, and its monthly cost: the
       endpoint price measured from the AWS price list, the endpoints counted from the
       Terraform, and the total labelled modelled. The estimate the owner chose on was about
       20 endpoints at about 14.7 USD a month each, roughly 290 USD a month (modelled)
@@ -77,8 +78,8 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
       Cost Explorer endpoint among the hub's own, in the hub's Region, where none can be made:
       Cost Explorer's endpoint is in us-east-1 only
 - [ ] Every new resource tagged `finops:module`, constraint 7
-- [ ] The path for spot prices and Savings Plans rates in every Region, as OPEN-17 decides,
-      held by the same test. Added 2026-10-07, spec section 14
+- [ ] Spot prices and Savings Plans rates in every Region read by a function outside the VPC
+      that writes rows to S3, the owner's answer to OPEN-17 on 2026-10-07, held by the same test
 
 ---
 
@@ -185,14 +186,14 @@ Added 2026-10-07 at the owner's request, spec section 14.
 | Status | Not started |
 | Implements | P9 spec section 14, FEAT-071 |
 | Delivers | Savings Plans rates in the price catalog |
-| Depends on | TASK-P9-004, and OPEN-17 answered |
+| Depends on | TASK-P9-001 and TASK-P9-004 |
 | Estimate | M |
 
 **Acceptance criteria.**
 
 - [ ] Savings Plans rates from AWS's Savings Plans price list for every commercial Region, as
       `price` rows with `PricingCategory` Committed and the plan's term in `SkuPriceDetails`
-- [ ] Read by the path OPEN-17 decides, held by TASK-P9-001's test
+- [ ] Read by the function outside the VPC chosen for OPEN-17, held by TASK-P9-001's test
 - [ ] Polled every 8 hours with the other catalog collectors, loading only what changed
 
 ---
@@ -206,7 +207,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 | Status | Not started |
 | Implements | P9 spec section 14, FEAT-071 |
 | Delivers | Spot prices in the price catalog |
-| Depends on | TASK-P9-003, and OPEN-17 and OPEN-18 answered |
+| Depends on | TASK-P9-001, TASK-P9-003, and OPEN-18 answered |
 | Estimate | M |
 
 **Acceptance criteria.**
@@ -214,6 +215,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 - [ ] `DescribeSpotPriceHistory` for every commercial Region, zone and product description,
       as `PricingCategory` Dynamic, with the reading's own time as `as_of` and `collected_at`
       beside it
+- [ ] Read by the function outside the VPC chosen for OPEN-17, held by TASK-P9-001's test
 - [ ] Kept as OPEN-18 decides, every limit a database constraint
 - [ ] Polled every 8 hours; a Region that refuses, or that the account has not opted into, is
       a typed failure such as NotOptedIn and never a price of nought, constraint 5
@@ -342,8 +344,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 ## What this plan does not answer
 
-- OPEN-17, the path for spot prices and Savings Plans rates in every Region, spec section 14.5.
 - OPEN-18, how much spot price history is kept, spec section 14.5.
 - Whether the catalog gets a screen of its own, browsable like instances.vantage.sh, beside the
-  Alternatives table. Which services follow EC2 and EBS, and whether spot is in, were answered
-  on 2026-10-07.
+  Alternatives table. Which services follow EC2 and EBS, whether spot is in, and OPEN-17 were
+  answered on 2026-10-07.

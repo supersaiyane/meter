@@ -24,7 +24,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 75 total, 13 specified, 13 in build, 39 delivered |
 | Decisions | 31 architecture decision records |
-| Changes | 115 recorded |
+| Changes | 116 recorded |
 | Issues | 152 fixed, 99 open, 0 parked |
 | Open questions | 18 awaiting a decision |
 
@@ -40,8 +40,9 @@ ADR-0031, and the Python images built on the platform they run on, ISS-254. Left
 TASK-P8-011, TASK-P8-014 and TASK-P8-015.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
-four price types and five services, polled every 8 hours. Spec section 14; OPEN-17 and OPEN-18
-wait on the owner.
+four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 was answered
+the same day, a function outside the VPC reads spot and Savings Plans, and OPEN-18 waits on the
+owner.
 
 **P0 is code complete and is NOT signed off.**
 

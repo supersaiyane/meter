@@ -24,8 +24,9 @@ Meter's own database and kept current by polling AWS, and decided the same day: 
 commercial Region, taken from the price list's own codes; on demand, reserved one and three
 years, Savings Plans rates and spot; and five services, EC2 with EBS, RDS, ElastiCache, Redshift
 and OpenSearch. Reserved and Savings Plans rates are `PricingCategory` Committed and spot is
-Dynamic. Where spot prices and Savings Plans rates are read from, and how much spot history is
-kept, are OPEN-17 and OPEN-18, spec section 14.5.
+Dynamic. Spot prices and Savings Plans rates are read by a function outside the VPC that writes rows
+to S3, the owner's answer to OPEN-17 on 2026-10-07, and how much spot history is kept is
+OPEN-18, spec section 14.5.
 
 ## Why it exists
 

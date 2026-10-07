@@ -275,7 +275,8 @@ run still compares what AWS has published with what is stored and stops when not
 - OPEN-16, the network path in 5.1. ANSWERED 2026-10-05: A, plus C for Budgets and Support.
 - Which services after EC2 and EBS. ANSWERED 2026-10-07: RDS, ElastiCache, Redshift and
   OpenSearch, section 14.
-- OPEN-17, how the hub reads spot prices and Savings Plans rates in every Region, 14.5.
+- OPEN-17, how the hub reads spot prices and Savings Plans rates in every Region. ANSWERED
+  2026-10-07: a function outside the VPC, 14.5.
 - OPEN-18, how much spot price history is kept, 14.5.
 
 ## 12. Features delivered
@@ -317,8 +318,8 @@ scope, section 4: every figure on it is AWS's own, so Meter reads AWS directly.
 | On demand and reserved prices, five services | The Price List Query API by service code, `AmazonEC2`, `AmazonRDS`, `AmazonElastiCache`, `AmazonRedshift` and `AmazonES`, and by Region code. Reserved rates are the same products' reserved terms | The endpoint in us-east-1 already in option A |
 | Specs of RDS, ElastiCache, Redshift and OpenSearch instances | The same products' attributes: vCPUs, memory, network and storage | The same endpoint |
 | Specs of EC2 instance types | `DescribeInstanceTypes` in the hub's own Region, with the Regions a type is sold in taken from the price list. A test compares two Regions' descriptions so the assumption that a type is described alike everywhere is held, not trusted | The hub's own `ec2` endpoint, already in option A |
-| Savings Plans rates | The Savings Plans price list, per Region | OPEN-17 |
-| Spot prices | `DescribeSpotPriceHistory`, per Region and zone | OPEN-17 |
+| Savings Plans rates | The Savings Plans price list, per Region | A function outside the VPC, OPEN-17 |
+| Spot prices | `DescribeSpotPriceHistory`, per Region and zone | A function outside the VPC, OPEN-17 |
 
 Prices for every Region come through the one endpoint in us-east-1, so spot prices and Savings
 Plans rates are the only reads that need a path into each Region.
@@ -336,12 +337,12 @@ never becomes a price of nought, constraint 5.
 
 ### 14.5 Open, for the owner
 
-- **OPEN-17, the path for spot prices and Savings Plans rates in every Region.** Recommended: C,
-  a small function outside the VPC that calls each Region and writes rows to S3, the pattern
-  approved for Budgets and Support on 2026-10-05, at a few USD a month (modelled). The
-  alternative is A, an interface endpoint for each in every Region: about 30 Regions at about
-  14.7 USD a month an endpoint, roughly 440 USD a month for spot alone (modelled), on top of
-  the 290 USD a month already approved.
+- **OPEN-17, the path for spot prices and Savings Plans rates in every Region. ANSWERED
+  2026-10-07: C**, a small function outside the VPC that calls each Region and writes rows to
+  S3, the pattern approved for Budgets and Support on 2026-10-05. About 2,700 runs a month,
+  inside the AWS Lambda always free allowance of 1 million requests and 400,000 GB seconds,
+  so under 1 USD a month with its S3 writes and logs (modelled). The hub keeps no route out.
+  Endpoints in every Region, roughly 440 USD a month (modelled), are not built.
 - **OPEN-18, how much spot price history is kept.** Recommended: the latest price per pool,
   replaced each run, plus each day's low and high kept for 90 days. The alternatives are every
   8 hourly reading kept, which grows without limit, or the latest only, as the Vantage site
@@ -350,7 +351,7 @@ never becomes a price of nought, constraint 5.
 ### 14.6 What changes in the plan
 
 TASK-P9-004 loads the five services in every Region, on demand and reserved. TASK-P9-005 covers
-the five services' specs. Two tasks are added: TASK-P9-012 for Savings Plans rates once OPEN-17
-is answered, and TASK-P9-013 for spot prices once OPEN-17 and OPEN-18 are. Every catalog
-collector runs every 8 hours.
+the five services' specs. Two tasks are added: TASK-P9-012 for Savings Plans rates and
+TASK-P9-013 for spot prices, both read by the function outside the VPC chosen for OPEN-17, and
+the second also waiting on OPEN-18. Every catalog collector runs every 8 hours.
 
