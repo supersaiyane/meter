@@ -15,7 +15,12 @@ import {
   surfaceInstancesFixture,
 } from '../../api/fixtures/query';
 import { recommendationsFixture } from '../../api/fixtures/waste';
-import type { ApiEnvelope, ApiRecommendation } from '../../api/types';
+import type {
+  ApiEnvelope,
+  ApiRecommendation,
+  ApiSchedule,
+  ApiSchedules,
+} from '../../api/types';
 import { wasteClassName } from '../../components/displayNames';
 import { HomeScreen } from '../HomeScreen';
 import { RIGHTSIZING } from '../overviewKpis';
@@ -27,7 +32,53 @@ import { exploreOf, forecastOf, metaOf } from './fixtures';
  * hold. `HomeScreen.test.tsx` covers the frame and the reads that fail; this covers the figures.
  */
 
+const SCHEDULE: ApiSchedule = {
+  schedule_id: 's-1',
+  view_id: 'v-1',
+  view_name: 'Active accounts',
+  screen_path: '/inventory/accounts',
+  export_path: '/api/v1/accounts',
+  format: 'xlsx',
+  cadence: 'WEEKLY',
+  recipients: ['dev@example.local'],
+  enabled: true,
+  next_run_at: '2026-10-12T06:00:00Z',
+  created_at: '2026-10-07T09:00:00Z',
+  updated_at: '2026-10-07T09:00:00Z',
+};
+
+/** Four schedules, so the panel's three are a choice: one paused, three that will run. */
+const SCHEDULES: ApiSchedules = {
+  rendering: true,
+  retention: 'Files are kept until a retention period is decided, OPEN-15.',
+  delivery: 'Nothing is sent yet: where reports go is OPEN-11.',
+  schedules: [
+    {
+      ...SCHEDULE,
+      schedule_id: 's-later',
+      view_name: 'Cost by region',
+      cadence: 'MONTH_CLOSE',
+      next_run_at: '2026-11-06T06:00:00Z',
+    },
+    {
+      ...SCHEDULE,
+      schedule_id: 's-last',
+      view_name: 'Last',
+      next_run_at: '2026-12-01T06:00:00Z',
+    },
+    SCHEDULE,
+    {
+      ...SCHEDULE,
+      schedule_id: 's-paused',
+      view_name: null,
+      enabled: false,
+      next_run_at: '2026-12-31T06:00:00Z',
+    },
+  ],
+};
+
 const ESTATE: Readonly<Record<string, ApiEnvelope<unknown>>> = {
+  '/api/v1/reports/schedules': { data: SCHEDULES, meta: metaOf() },
   '/api/v1/platform/cost': { data: [], meta: metaOf() },
   '/api/v1/cost/explore': { data: exploreOf(), meta: metaOf() },
   '/api/v1/cost/explore?metric=list_cost': {
@@ -192,6 +243,45 @@ describe('the FinOps practitioner dashboard, as drawn', () => {
       expect(region('Budget consumed').querySelector("[data-state='failed']")).not.toBeNull();
     });
     expect(within(region('Daily Effective Cost')).queryByTestId('overview-no-pace')).toBeNull();
+  });
+
+  it('lists the scheduled reports, a paused one first and then the next to run', async () => {
+    open();
+    const panel = within(region('Scheduled reports'));
+    const items = await panel.findAllByRole('listitem');
+    expect(items.map((item) => [...item.children].map((part) => part.textContent))).toEqual([
+      ['A view you can no longer open', 'Weekly', 'Paused'],
+      ['Active accounts', 'Weekly', '2026-10-12 06:00 UTC'],
+      ['Cost by region', 'When the month closes', '2026-11-06 06:00 UTC'],
+    ]);
+    expect(panel.getByRole('link', { name: 'Scheduled reports' })).toHaveAttribute(
+      'href',
+      '/report/scheduled',
+    );
+    expect(region('Scheduled reports')).not.toHaveTextContent(/arrives with/);
+  });
+
+  it('says where a schedule is made when there is none', async () => {
+    open(undefined, {
+      '/api/v1/reports/schedules': { data: { ...SCHEDULES, schedules: [] }, meta: metaOf() },
+    });
+    const none = await within(region('Scheduled reports')).findByTestId(
+      'overview-scheduled-none',
+    );
+    expect(within(none).getByRole('link', { name: 'Report Library' })).toHaveAttribute(
+      'href',
+      '/report/library',
+    );
+  });
+
+  it('fails the schedules as a failure, never as none', async () => {
+    open(undefined, { '/api/v1/reports/schedules': null });
+    await waitFor(() => {
+      expect(region('Scheduled reports').querySelector("[data-state='failed']")).not.toBeNull();
+    });
+    expect(
+      within(region('Scheduled reports')).queryByTestId('overview-scheduled-none'),
+    ).toBeNull();
   });
 });
 

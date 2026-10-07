@@ -34,6 +34,7 @@
     "finops-web/e2e/motion.spec.ts",
     "finops-web/e2e/overview.spec.ts",
     "finops-web/e2e/quotas.spec.ts",
+    "finops-web/e2e/reporting.spec.ts",
     "finops-web/e2e/schedule.spec.ts",
     "finops-web/e2e/topology.spec.ts",
     "finops-web/e2e/viewports.spec.ts",
@@ -789,7 +790,8 @@
     "tests/scripts/test_pipeline.py",
     "tests/scripts/test_restore_drill.py",
     "tests/scripts/test_seed_demo.py",
-    "tests/test_checkpoint_rotation.py"
+    "tests/test_checkpoint_rotation.py",
+    "tests/test_label_table.py"
   ],
   "edges": [
     {
@@ -939,6 +941,11 @@
     },
     {
       "s": "finops-web/e2e/overview.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/e2e/reporting.spec.ts",
       "t": "finops-web/e2e/estate.ts",
       "k": "typescript"
     },
@@ -3684,11 +3691,6 @@
     },
     {
       "s": "finops-web/src/screens/OverviewFinOps.tsx",
-      "t": "finops-web/src/shell/links.tsx",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/OverviewFinOps.tsx",
       "t": "finops-web/src/shell/metaRegistry.ts",
       "k": "typescript"
     },
@@ -3739,7 +3741,17 @@
     },
     {
       "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/screens/libraryModel.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
       "t": "finops-web/src/screens/overviewKpis.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/OverviewParts.tsx",
+      "t": "finops-web/src/screens/scheduleModel.ts",
       "k": "typescript"
     },
     {
@@ -4360,11 +4372,6 @@
     {
       "s": "finops-web/src/screens/ScheduledReportsScreen.tsx",
       "t": "finops-web/src/components/StateBoundary.tsx",
-      "k": "typescript"
-    },
-    {
-      "s": "finops-web/src/screens/ScheduledReportsScreen.tsx",
-      "t": "finops-web/src/components/surfaceState.ts",
       "k": "typescript"
     },
     {
@@ -6080,6 +6087,11 @@
     {
       "s": "finops-web/src/screens/scheduleModel.ts",
       "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/scheduleModel.ts",
+      "t": "finops-web/src/components/surfaceState.ts",
       "k": "typescript"
     },
     {

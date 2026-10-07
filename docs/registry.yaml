@@ -1674,6 +1674,18 @@ changes:
     the route as that person, keeps the file in the data bucket and lists it on the Scheduled screen,
     where a route checks the reader's access again. A sender port with a fake waits on OPEN-11, and
     nothing deletes until OPEN-15. Raised ISS-256
+
+- id: CHG-0120
+  date: '2026-10-07'
+  type: Feature
+  what: TASK-P8-014, the proof of P8 spec section 12
+  commit: pending
+  detail: Every screen on the rail is axe clean in both themes with glass, with transparency reduced and
+    as a browser without backdrop-filter reads the shipped stylesheet, nothing is blurred under either
+    fallback, and no glass is drawn inside a table or a list. Spec section 8's journey runs as one, from
+    the Overview to a scheduled workbook of a view grouped twice. Every approved label is held to the
+    web source, and every panel and tile on the three dashboards to a screen on the rail. Each exit criterion
+    has its evidence in the plan, measured. Found and fixed ISS-257 and ISS-258
 issues:
 - id: ISS-189
   severity: LOW
@@ -4041,6 +4053,32 @@ issues:
     does not reach it and no retention job reads it, the gap ISS-255 records for `saved_view`. Erasing
     a person also has to remove them from other people''s recipient lists, which is a change to rows
     they do not own. Found 2026-10-07 while classifying the table.'
+
+- id: ISS-257
+  severity: LOW
+  status: FIXED
+  summary: With transparency reduced, the rail and the trust strip kept their backdrop blur
+  detail: 'Found 2026-10-07 by TASK-P8-014''s sweep with transparency reduced, measured: on all 29 screens
+    on the rail, in both themes, the rail and the trust strip kept a computed backdrop-filter, because
+    each fallback in tokens.css switched off the blur of .meter-panel by name and those two surfaces declare
+    their own. Their surfaces were already opaque, so nothing showed through, but the preference was not
+    honoured and the blur was still composited. Fixed the same day: the blur is one token, --panel-filter,
+    declared in :root alone, which every glass surface reads and the reduced transparency, no backdrop-filter
+    and print blocks set to none. glass.test.ts holds every stylesheet to the token, and e2e/a11y.spec.ts
+    holds every screen unblurred under both fallbacks.'
+
+- id: ISS-258
+  severity: MEDIUM
+  status: FIXED
+  summary: The Overview still promised scheduled reports for P8 after they were built, and its guards
+    could not see it
+  detail: 'Found 2026-10-07 by TASK-P8-014. The FinOps practitioner''s Overview said Scheduled reports
+    were not built and arrive with P8, after TASK-P8-011 built them. App.test.tsx and HomeScreen.test.tsx
+    each exist to catch a promise naming a sub project that has shipped, and neither could: each ended
+    its pattern at a word boundary, and the page''s text runs one panel''s last word into the next panel''s
+    title with no space, so P8 followed by Showback never matched. Measured by putting the promise back:
+    HomeScreen.test.tsx passed over it before the change, and both fail over it after. Fixed the same
+    day: the panel lists the reader''s schedules, and both patterns end on not a digit and cover P8.'
 
 open_questions:
 - id: OPEN-07

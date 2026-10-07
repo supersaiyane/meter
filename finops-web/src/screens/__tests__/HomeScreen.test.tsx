@@ -129,13 +129,17 @@ describe('the arriving rail', () => {
 });
 
 describe('HomeScreen', () => {
-  it('promises nothing that has already shipped', () => {
-    // Scheduled reports say they arrive with P8, which is true while TASK-P8-011 is unbuilt.
-    // A promise naming a sub project that has shipped is the failure this guards.
+  it('promises nothing that has already shipped', async () => {
+    // Scheduled reports said they arrive with P8 until TASK-P8-011 built them, and outlived the
+    // build until TASK-P8-014 found them: this ended each pattern at a word boundary, and the
+    // page's text runs one panel's last word into the next panel's title with no space between,
+    // so "P8" followed by "Showback" never matched. A promise naming a sub project that has
+    // shipped is the failure this guards.
     const { container } = renderHome();
+    await meterCostShown();
     expect(screen.queryByTestId('home-rail')).toBeNull();
-    expect(container).not.toHaveTextContent(/arrives with P[1-7]\b/);
-    expect(container).not.toHaveTextContent(/\bP3\b/);
+    expect(container).not.toHaveTextContent(/arrives with P[1-8](?!\d)/);
+    expect(container).not.toHaveTextContent(/\bP3(?!\d)/);
   });
 
   it('links its spend to the screen that owns it', () => {
@@ -189,6 +193,8 @@ describe('HomeScreen', () => {
       // `useCostForecast`, the forecast screen's own hook.
       '/api/v1/cost/forecast',
       '/api/v1/platform/cost',
+      // `useSchedules`, the Scheduled screen's own hook.
+      '/api/v1/reports/schedules',
       // `useRecommendations`, the recommendations screen's own hook.
       '/api/v1/waste/recommendations',
     ]);

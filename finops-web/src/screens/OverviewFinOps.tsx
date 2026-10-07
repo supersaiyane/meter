@@ -8,10 +8,15 @@ import { DataTable } from '../components/DataTable';
 import { RankedBars } from '../components/RankedBars';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
-import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { dollars } from './exploreModel';
-import { AnomaliesPanel, DailyCostChart, Panel, RecommendationsPanel } from './OverviewParts';
+import {
+  AnomaliesPanel,
+  DailyCostChart,
+  Panel,
+  RecommendationsPanel,
+  ScheduledPanel,
+} from './OverviewParts';
 import { exploreQuery, lastDays, stacked } from './exploreSeries';
 import {
   ALLOCATION_TAG,
@@ -38,9 +43,10 @@ const DAILY_DAYS = 30;
 const SERVICES_SHOWN = 6;
 /** Categories the daily chart names before folding the rest into one layer. */
 const CATEGORIES_KEPT = 4;
-/** Anomalies and recommendations shown, as drawn. */
+/** Anomalies, recommendations and schedules shown, as drawn. */
 const ANOMALIES_SHOWN = 3;
 const RECOMMENDATIONS_SHOWN = 3;
+const SCHEDULES_SHOWN = 3;
 
 const UNALLOCATED = 'unallocated';
 
@@ -199,11 +205,7 @@ export function OverviewFinOps({ meterCost }: { readonly meterCost: ReactNode })
       <div data-testid="overview-row" data-columns="three">
         <AnomaliesPanel limit={ANOMALIES_SHOWN} />
         <RecommendationsPanel limit={RECOMMENDATIONS_SHOWN} />
-        <Panel id="scheduled" title="Scheduled reports" href="/report/scheduled">
-          <p data-testid="overview-scheduled-arrives">
-            Not built yet, arrives with <Link to="/report/scheduled">P8</Link>
-          </p>
-        </Panel>
+        <ScheduledPanel limit={SCHEDULES_SHOWN} />
       </div>
 
       <Panel id="showback" title="Showback by team" href="/analyze/allocation">

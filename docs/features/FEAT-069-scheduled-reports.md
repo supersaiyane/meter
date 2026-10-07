@@ -16,7 +16,8 @@ that recipient's own access, keeps it in the hub's data bucket under the tenant'
 lists it for them on the Scheduled screen, where it is fetched through a route that checks their
 access again. Schedule, in the Report Library, opens the view's own screen with the schedule
 panel open. The Scheduled screen pauses, resumes and deletes schedules and lists the reports made
-for the reader, the files they exported among them.
+for the reader, the files they exported among them. The FinOps practitioner's Overview lists the
+same schedules, a paused one first, FEAT-070.
 
 ## Why it exists
 

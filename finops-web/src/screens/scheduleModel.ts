@@ -1,5 +1,6 @@
 import { EXPORT_TITLES } from '../api/exportViews';
 import type { ApiReportRun, ReportCadence, ReportFormat } from '../api/types';
+import type { SurfaceState } from '../components/surfaceState';
 
 /**
  * What the schedule screens say about a schedule and a run. FEAT-069, TASK-P8-011.
@@ -49,6 +50,14 @@ export function statusWords(run: Pick<ApiReportRun, 'status' | 'failure_cause'>)
     case 'FAILED':
       return `Failed: ${run.failure_cause ?? 'cause not recorded'}`;
   }
+}
+
+/**
+ * A list of schedules or runs in its query's state, except that a collector's failure does not
+ * degrade it: collector failures describe figures, and a schedule or a run holds none.
+ */
+export function listState(state: SurfaceState): SurfaceState {
+  return state.kind === 'degraded' || state.kind === 'partial' ? { kind: 'ready' } : state;
 }
 
 /** The people a typed list names: separated by commas, spaces or lines, each once, in order. */

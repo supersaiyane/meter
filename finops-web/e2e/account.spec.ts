@@ -6,12 +6,19 @@ import { demoEstate } from './estate';
  * The account chosen in the address, FEAT-075, in the built bundle.
  *
  * A shared link is the first way an account arrives, so this opens one. The account is named
- * under the title, every read the page makes carries it to the server as `chosen_account`, and
- * moving to another screen through the rail keeps it. The one read a choice must never narrow is
- * the list of accounts to choose from.
+ * under the title, every read of a figure carries it to the server as `chosen_account`, and
+ * moving to another screen through the rail keeps it. Two reads go without it: the list of
+ * accounts to choose from, which a choice must never narrow, and the reader's own schedules,
+ * which hold no figure to narrow, as saved views and report runs hold none.
  */
 
 const CHOSEN = '444455556666';
+
+/** The reads that carry no account, each for the reason above. */
+const UNNARROWED: ReadonlySet<string> = new Set([
+  '/api/v1/accounts',
+  '/api/v1/reports/schedules',
+]);
 
 const META = {
   as_of: '2026-09-19T04:00:00Z',
@@ -69,7 +76,7 @@ test('a shared link opens one account, and every read and every move keeps it', 
   await expect(page.getByTestId('chosen-account')).toHaveText(`Account Platform, ${CHOSEN}`);
   await expect(spend(page)).toHaveText('$3,782');
   expect(seen.some(narrowed)).toBe(true);
-  expect(seen.filter((path) => path !== '/api/v1/accounts' && !narrowed(path))).toEqual([]);
+  expect(seen.filter((path) => !UNNARROWED.has(path) && !narrowed(path))).toEqual([]);
 
   await page.getByTestId('group-Analyze').locator('summary').click();
   await page.getByRole('link', { name: 'Cost Explorer' }).click();
