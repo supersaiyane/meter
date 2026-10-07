@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P10 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P10 spec](../specs/2026-10-07-p10-proven-numbers-design.md), sections 5.3 to 5.5, 6 and 7 |
 | Tasks | TASK-P10-003, TASK-P10-004, TASK-P10-005 |
 | Refresh cadence | Daily, the `invoices` row in `collector_schedule` |
@@ -71,3 +71,12 @@ are confidential financial data of the tenant and are classified in
 
 Invoice line items, because AWS's summary API has none. Invoices from any provider but AWS.
 Converting between currencies. Deciding when a closed period is final, which is OPEN-08.
+
+## Status of this document
+
+Delivered on 2026-10-08 against fakes, TASK-P10-001 to TASK-P10-006: the invoices read, every
+invoice compared before tax and tax apart in the six states, the route, the screen and the
+Overview tile, each with its tests and journey. Nothing here has met a real invoice: the
+comparison against one waits on an AWS account and its billing export, ISS-002 and ISS-003, and
+on the hub's network path to the Invoicing API, TASK-P9-001. The tolerance is modelled until it
+has.

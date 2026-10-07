@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 25 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 32 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 189 | test_*.py under tests/ |
-| Test functions | 2509 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 190 | test_*.py under tests/ |
+| Test functions | 2510 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -410,7 +410,7 @@ meter/
 │   │                          nineteen, ISS-225
 │   ├── constants.py           the values that are decisions rather than deployments
 │   └── domain/                frozen entities, no persistence and no cloud concern.
-│                              cost.py holds CostRecord in FOCUS 1.1, plus
+│                              cost.py holds CostRecord in FOCUS 1.4, plus
 │                              BillingPeriod, whose end is exclusive and whose
 │                              is_open takes the clock from the caller, and
 │                              CostTotal, which cannot exist without a
@@ -427,7 +427,7 @@ meter/
 │       ├── org.py             OrgNode and the closed ROOT, OU, ACCOUNT set
 │       ├── identity.py        Principal and Entitlement
 │       ├── ingest.py          IngestRun, CollectionFailure, Watermark
-│       ├── cost.py            CostRecord, FOCUS 1.1 names, Decimal money.
+│       ├── cost.py            CostRecord, FOCUS 1.4 names, Decimal money.
 │       │                      Also CommitmentUse and CommitmentCoverage, kept
 │       │                      apart for the reason the port keeps its methods
 │       │                      apart, and BillingPeriod and source_fingerprint

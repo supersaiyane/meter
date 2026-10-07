@@ -108,8 +108,9 @@ These are not style preferences. Breaking them costs a rewrite.
 1. **`finops_core` never imports boto3.** No cloud SDK, no framework, no
    HTTP client. Domain and ports only. This is what makes GCP and Azure a
    connector instead of a rewrite.
-2. **The canonical cost schema is FOCUS 1.1.** Do not invent a cost schema.
-   Normalize at ingest.
+2. **The canonical cost schema is FOCUS 1.4.** Its mandatory Cost and Usage
+   columns and the two that tie a row to its invoice, ADR-0034. Do not invent a
+   cost schema. Normalize at ingest.
 3. **Scope is enforced in two places**, a request dependency and a repository
    guard. A route that forgets the dependency must still not be able to read
    out of scope data.

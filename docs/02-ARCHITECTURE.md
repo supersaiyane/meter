@@ -123,11 +123,20 @@ Adding a provider means writing an adapter for each port in `PROVIDER_PORTS`, an
 other port that provider can serve. It does not mean touching the domain, the API, or the
 frontend.
 
-## Canonical cost schema: FOCUS 1.1
+## Canonical cost schema: FOCUS 1.4
 
 The FinOps Open Cost and Usage Specification is the canonical internal cost
 schema. It is not invented here. AWS Data Exports emits FOCUS natively, and
 GCP and Azure both publish FOCUS exports.
+
+Since P10, ADR-0034, the row carries every column FOCUS 1.4 makes mandatory for
+Cost and Usage and the two that tie a row to its invoice: `BillingAccountName`,
+`BillingCurrency`, `ChargeClass`, `PricingUnit`, `ServiceProviderName`,
+`HostProviderName`, `InvoiceId` and `InvoiceDetailId` beside the columns below.
+Each is read from AWS's FOCUS 1.2 export where its table has it, and null where it
+does not. Invoices and billing periods are FOCUS 1.4 datasets of their own,
+`invoice_detail` and `billing_period`, and FEAT-076 compares each invoice with
+the rows carrying its id.
 
 Core columns carried: `BillingAccountId`, `SubAccountId`, `ChargePeriodStart`,
 `ChargePeriodEnd`, `BillingPeriodStart`, `BillingPeriodEnd`, `ServiceName`,

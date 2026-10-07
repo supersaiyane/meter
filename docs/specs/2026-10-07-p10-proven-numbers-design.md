@@ -1,7 +1,7 @@
 # P10 Proven numbers, FOCUS 1.4 and invoice reconciliation: design specification
 
 Date: 2026-10-07
-Status: Approved by the owner on 2026-10-07 as priority 2 of `next-in-scope.txt`, CHG-0122. The design choices below carry their recommendation; OPEN-21 was withdrawn the same day, section 5.2
+Status: Delivered on 2026-10-08 against fakes, section 12. Approved by the owner on 2026-10-07 as priority 2 of `next-in-scope.txt`, CHG-0122. The design choices below carry their recommendation; OPEN-21 was withdrawn the same day, section 5.2
 Sub project: P10
 Features: FEAT-076, and a change to FEAT-004
 Depends on: P1 delivered. Proof against a real bill waits on ISS-002 and ISS-003, an AWS account and its billing export, and on TASK-P9-001, the hub's network path, ISS-242

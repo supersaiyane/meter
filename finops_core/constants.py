@@ -9,8 +9,9 @@ and `scripts/ci/check_hardcoded.py` exists to catch the ones that slip.
 
 from __future__ import annotations
 
-# The canonical cost schema. Constraint 2 in CLAUDE.md and ADR-0002.
-FOCUS_VERSION = "1.1"
+# The canonical cost schema. Constraint 2 in CLAUDE.md, ADR-0002, and ADR-0034, which moved the
+# row to FOCUS 1.4's mandatory Cost and Usage columns and its two invoice columns on 2026-10-08.
+FOCUS_VERSION = "1.4"
 
 # Every platform resource carries this tag. Constraint 7 in CLAUDE.md.
 PLATFORM_TAG_KEY = "finops:module"

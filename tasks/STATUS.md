@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 76 total, 11 specified, 14 in build, 44 delivered |
+| Features | 76 total, 11 specified, 13 in build, 45 delivered |
 | Decisions | 34 architecture decision records |
-| Changes | 132 recorded |
+| Changes | 133 recorded |
 | Issues | 154 fixed, 102 open, 0 parked |
 | Open questions | 21 awaiting a decision |
 
@@ -42,11 +42,12 @@ main with `--no-ff`, locally. Later on 2026-10-07 the owner approved
 priorities 1 to 3 of `next-in-scope.txt`, CHG-0122: the one day wins, FOCUS 1.4 with invoice
 reconciliation, and P9. They run in sequence on `next-build`. Priority 1 is done,
 including suggested owners from the team tag; priority 2 is specified and planned as P10, six
-tasks, ADR-0034, and is under way: on 2026-10-08 TASK-P10-001 to TASK-P10-004 are done, the
-FOCUS 1.4 columns, the payer's invoices read into `billing_period` and `invoice_detail`, and
-each invoice compared with Meter's billed cost at `GET /api/v1/cost/reconciliation`, shown on
-the Invoice reconciliation screen and the FinOps practitioner's Matches the invoice tile.
-TASK-P10-006, proof and documents, is next. The repository has no git remote,
+tasks, ADR-0034, and was delivered on 2026-10-08 against fakes: the FOCUS 1.4 columns, the
+payer's invoices read into `billing_period` and `invoice_detail`, each invoice compared with
+Meter's billed cost at `GET /api/v1/cost/reconciliation`, the Invoice reconciliation screen and
+the FinOps practitioner's Matches the invoice tile, and constraint 2 naming FOCUS 1.4. The
+comparison against a real invoice waits on ISS-002, ISS-003 and TASK-P9-001. Priority 3, P9, is
+next. The repository has no git remote,
 so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
@@ -221,7 +222,7 @@ ISS-003.
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 | P8 | 18 | 0 | 0 | 0 | 0 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 0 | 0 | 0 | 0 | 13 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
-| P10 | 5 | 0 | 0 | 0 | 1 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
+| P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -449,6 +450,7 @@ ISS-003.
 | `TASK-P10-003` | Done 2026-10-08 | billing periods and invoices |
 | `TASK-P10-004` | Done 2026-10-08 | the comparison and its route |
 | `TASK-P10-005` | Done 2026-10-08 | the screen and the Overview tile |
+| `TASK-P10-006` | Done 2026-10-08 | proof and documents |
 
 <!-- generated:task-status end -->
 

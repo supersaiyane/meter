@@ -89,10 +89,10 @@ subprojects:
   depends_on: P3
 - id: P10
   name: 'Proven numbers: FOCUS 1.4 and invoice reconciliation'
-  status: Specified, planned and approved by the owner 2026-10-07 as priority 2 of next-in-scope.txt,
-    TASK-P10-001 and TASK-P10-002 done on 2026-10-07, TASK-P10-003 to TASK-P10-005 on 2026-10-08, TASK-P10-006 next. Runs before P9 by the owner's
-    priority. The cost row gains FOCUS 1.4's mandatory and invoice columns, and each AWS invoice is compared
-    with Meter's billed cost
+  status: Delivered on 2026-10-08 against fakes, TASK-P10-001 to TASK-P10-006. The cost row carries
+    FOCUS 1.4's mandatory and invoice columns, each AWS invoice is read and compared with Meter's billed
+    cost on a screen and the FinOps practitioner's Overview, and constraint 2 names FOCUS 1.4. The comparison
+    against a real invoice waits on ISS-002, ISS-003 and TASK-P9-001
   spec: specs/2026-10-07-p10-proven-numbers-design.md
   plan: plans/P10-implementation-plan.md
   depends_on: P1
@@ -116,7 +116,7 @@ features:
   detail: '[architecture](docs/02-ARCHITECTURE.md) section "Ports"'
   doc: docs/features/FEAT-003-provider-port-abstraction.md
 - id: FEAT-004
-  name: FOCUS 1.1 canonical cost schema
+  name: FOCUS canonical cost schema
   subproject: P0
   status: In build
   detail: '[ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md)'
@@ -556,7 +556,7 @@ features:
 - id: FEAT-076
   name: Invoice reconciliation, Meter's billed cost against the provider's invoice
   subproject: P10
-  status: In build
+  status: Delivered
   detail: '[P10 spec](docs/specs/2026-10-07-p10-proven-numbers-design.md) sections 5.3 to 5.5, 6, 7'
   doc: docs/features/FEAT-076-invoice-reconciliation.md
 adrs:
@@ -1957,6 +1957,17 @@ changes:
     screen in SCREEN_PATHS and migration 0032 admitting it as a saved view's screen, whose downgrade
     refuses rather than deletes a view; and a journey. The journey found the screen printing a 403's raw
     JSON body, which unit tests built with a bare sentence had missed, fixed with the client's reasonOf
+- id: CHG-0133
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P10-006, P10's proof and documents; constraint 2 and FOCUS_VERSION name FOCUS 1.4
+  commit: pending
+  detail: Each exit criterion of the P10 spec's section 12 met with its evidence in the plan. Constraint
+    2 in CLAUDE.md, FOCUS_VERSION, the architecture and data model documents, README and the docstrings
+    that state the schema now name FOCUS 1.4, ADR-0034; ADR-0002's decision stands and its version is
+    amended. A test now proves criterion 2, which no test held before, that a row written before migration
+    0030 arrives with its provider pair backfilled, and the release before P10 still writes after it,
+    shown red without the backfill. FEAT-076 and P10 are Delivered against fakes
 issues:
 - id: ISS-189
   severity: LOW

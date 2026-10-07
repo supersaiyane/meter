@@ -3,7 +3,7 @@
 Three constraints from CLAUDE.md meet in this module. Constraint 4, every fact
 carries `as_of`. Constraint 10, two timestamps on every figure, because
 conflating them makes a stale number look fresh. Constraint 2, the canonical
-cost schema is FOCUS 1.1 and is not ours to improve.
+cost schema is FOCUS 1.4 and is not ours to improve.
 
 The FOCUS test reads the column list out of `docs/07-DATA-MODEL.md` rather than
 out of a list kept next to the entity. A list kept next to the entity would

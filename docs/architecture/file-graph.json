@@ -687,6 +687,7 @@
     "tests/core/test_topology.py",
     "tests/core/test_waste_domain.py",
     "tests/db/__init__.py",
+    "tests/db/test_focus_1_4_migration.py",
     "tests/db/test_models.py",
     "tests/db/test_p2_constraints.py",
     "tests/db/test_p3_constraints.py",
@@ -11819,6 +11820,11 @@
     {
       "s": "tests/core/test_waste_domain.py",
       "t": "finops_query/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/db/test_focus_1_4_migration.py",
+      "t": "finops_ingest/collectors/partitions.py",
       "k": "python"
     },
     {

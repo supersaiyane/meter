@@ -1,7 +1,8 @@
 # ADR-0002: FOCUS 1.1 is the canonical cost schema
 
 Date: 2026-08-23
-Status: Accepted
+Status: Accepted. The version was moved to FOCUS 1.4 on 2026-10-08 by ADR-0034; the decision to
+adopt FOCUS rather than invent a schema stands as written here
 
 ## Context
 

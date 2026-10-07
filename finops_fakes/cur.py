@@ -1,4 +1,4 @@
-"""A bill for the fake estate, in FOCUS 1.1.
+"""A bill for the fake estate, in FOCUS 1.4's mandatory columns.
 
 The four row fixture in `fixtures.py` proves the port and cannot exercise a
 screen: one service, one period, every row tagged, every cost a dollar. A
