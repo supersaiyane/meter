@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 29 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 179 | test_*.py under tests/ |
-| Test functions | 2426 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 180 | test_*.py under tests/ |
+| Test functions | 2434 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -315,7 +315,10 @@ meter/
 │   │                          gate, base image resolver. check_image_arch.py
 │   │                          reads every compiled file in an exported image and
 │   │                          fails on one built for another machine, which the
-│   │                          label alone cannot see, ISS-254. check_env_keys names the
+│   │                          label alone cannot see, ISS-254. check_docs_only.py
+│   │                          lets make verify-docs gate a change to documents
+│   │                          alone, and refuses it by name for any other file,
+│   │                          from git, links aside, CHG-0123. check_env_keys names the
 │   │                          settings .env.example has gained that a local .env
 │   │                          never did, before make up starts anything: it is
 │   │                          copied once and never again, so eleven accumulated

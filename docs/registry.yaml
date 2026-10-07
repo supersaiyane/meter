@@ -1708,6 +1708,17 @@ changes:
     1 to 3 the same day, to run in sequence: the one day wins, the FOCUS 1.4 upgrade with invoice reconciliation,
     and P9, which lifts the hold placed on P9 that morning. Proposals 2 to 9 wait on OPEN-20'
 
+- id: CHG-0123
+  date: '2026-10-07'
+  type: Process
+  what: 'make verify-docs: a gate for a change to documents alone, priority 1 of next-in-scope.txt'
+  commit: pending
+  detail: A change touching only Markdown, text, docs/ and tasks/ runs the writing rules, the generated
+    documents and the memory gate instead of every suite. scripts/ci/check_docs_only.py decides that from
+    git, committed, staged, unstaged and untracked, links aside, and refuses any other file by name. Approved
+    by the owner on 2026-10-07 after a thirteen line documentation change had cost about fifteen minutes
+    of tests
+
 - id: CHG-0124
   date: '2026-10-07'
   type: Correction
