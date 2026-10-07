@@ -1,4 +1,5 @@
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 import { ApiError } from '../../api/client';
@@ -107,6 +108,25 @@ describe('ReconciliationScreen', () => {
     const reason = 'No invoices have been read for this billing period.';
     renderWith(undefined, new ApiError(404, reason));
     expect(await screen.findByTestId('reconciliation-instead')).toHaveTextContent(reason);
+  });
+
+  it('sorts by the size of the difference, an uncompared invoice always last', async () => {
+    renderWith();
+    await screen.findAllByTestId('reconciliation-row');
+    const order = () =>
+      screen.getAllByTestId('reconciliation-row').map((row) => row.getAttribute('data-state'));
+    const header = (name: RegExp) =>
+      within(screen.getByRole('columnheader', { name })).getByRole('button');
+
+    await userEvent.click(header(/^Difference/));
+    expect(order()).toEqual(['Mismatched', 'Matched', 'No rows']);
+    await userEvent.click(header(/^Difference/));
+    expect(order()).toEqual(['Matched', 'Mismatched', 'No rows']);
+
+    await userEvent.click(header(/^Invoice, before tax/));
+    expect(order()).toEqual(['Mismatched', 'No rows', 'Matched']);
+    await userEvent.click(header(/^State/));
+    expect(order()).toEqual(['Matched', 'Mismatched', 'No rows']);
   });
 
   it('has no accessibility violations', async () => {
