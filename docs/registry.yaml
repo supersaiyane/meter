@@ -221,15 +221,15 @@ features:
   detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 9'
   doc: docs/features/FEAT-022-allocation-and-showback.md
 - id: FEAT-023
-  name: Anomaly detection and ingest of AWS Cost Anomaly Detection
+  name: Cost anomaly detection, deterministic, its working on the screen
   subproject: P1
-  status: Specified
+  status: Delivered
   detail: '[roadmap](docs/01-ROADMAP.md) P1'
   doc: docs/features/FEAT-023-cost-anomaly-detection.md
 - id: FEAT-024
   name: Savings Plan and Reserved Instance utilization and coverage
   subproject: P1
-  status: Specified
+  status: Delivered
   detail: '[roadmap](docs/01-ROADMAP.md) P1'
   doc: docs/features/FEAT-024-commitment-coverage.md
 - id: FEAT-025
@@ -1707,6 +1707,16 @@ changes:
     of FinOps 2026, with nine proposals in priority order and a timeline. The owner approved priorities
     1 to 3 the same day, to run in sequence: the one day wins, the FOCUS 1.4 upgrade with invoice reconciliation,
     and P9, which lifts the hold placed on P9 that morning. Proposals 2 to 9 wait on OPEN-20'
+
+- id: CHG-0124
+  date: '2026-10-07'
+  type: Correction
+  what: FEAT-023 and FEAT-024 marked Delivered, and FEAT-023 renamed, priority 1 item 2
+  commit: pending
+  detail: Both were built by P1 on 2026-09-20, TASK-P1-014 to TASK-P1-017, and the registry still said
+    Specified. FEAT-023's name promised the ingest of AWS Cost Anomaly Detection, which its own document
+    rules out, so it is renamed for what it does. next-in-scope.txt gains section 8, the features taken
+    from other tools, and loses a claim that FOCUS 1.4 carries token fields, which arrive with 1.5
 issues:
 - id: ISS-189
   severity: LOW

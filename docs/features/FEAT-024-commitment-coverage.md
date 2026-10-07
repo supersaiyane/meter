@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P1 |
-| Status | Specified |
+| Status | Delivered |
 | Specification | [P1 spec](../specs/2026-09-18-p1-cost-intelligence-design.md), section 16 |
 | Tasks | TASK-P1-016, TASK-P1-017 |
 | Refresh cadence | 24 hours |
@@ -149,3 +149,8 @@ cannot without an account. ISS-122.
 The commitment inventory API is not read either, so a reservation's real term is
 unknown and the reported term is the window. A screen showing a term it had
 inferred would be inventing a date somebody might plan a renewal around.
+
+## Status of this document
+
+Delivered on 2026-09-20 by TASK-P1-016 and TASK-P1-017. The registry and this document said Specified
+until 2026-10-07, when the market research found the drift, CHG-0124.
