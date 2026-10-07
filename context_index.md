@@ -70,15 +70,15 @@ a duplicate.
 | `BillingPeriod.covers` | method | `finops_core/domain/cost.py:124` | Whether a day falls inside the period. | nothing in this tree |
 | `BillingPeriod.is_open` | method | `finops_core/domain/cost.py:128` | Whether charges can still land in this period at that moment. | `finops_api/routes/cost.py` |
 | `CostTotal` | class | `finops_core/domain/cost.py:145` | An aggregate of cost, which always says which measure it is. | nothing in this tree |
-| `CostRecord` | class | `finops_core/domain/cost.py:170` | A FOCUS 1.1 charge row. Field names are the specification's. | `finops_providers/aws/cur.py` |
-| `CommitmentUse` | class | `finops_core/domain/cost.py:246` | What one commitment obliged us to pay, and how much of it was consumed. | `finops_providers/aws/commitment.py` |
-| `CommitmentUse.utilization` | method | `finops_core/domain/cost.py:301` | How much of what we paid for was consumed, as a fraction. | `finops_ingest/collectors/commitment.py` |
-| `CommitmentUse.is_expired` | method | `finops_core/domain/cost.py:313` |  | nothing in this tree |
-| `CommitmentCoverage` | class | `finops_core/domain/cost.py:318` | How much of the eligible estate was on a commitment, for one dimension. | `finops_providers/aws/commitment.py` |
-| `CommitmentCoverage.coverage` | method | `finops_core/domain/cost.py:365` | The covered fraction, or None where nothing was eligible. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_api/routes/quotas.py`, `finops_ingest/collectors/commitment.py` |
-| `CommitmentDay` | class | `finops_core/domain/cost.py:377` | One kind of commitment on one day: what it obliged, used and covered. TASK-P8-013. | `finops_providers/aws/commitment.py` |
-| `CommitmentDay.utilization` | method | `finops_core/domain/cost.py:423` | Used over committed, or None on a day nothing was committed. | `finops_ingest/collectors/commitment.py` |
-| `CommitmentDay.coverage` | method | `finops_core/domain/cost.py:430` | Covered over eligible, or None on a day nothing was eligible. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_api/routes/quotas.py`, `finops_ingest/collectors/commitment.py` |
+| `CostRecord` | class | `finops_core/domain/cost.py:170` | A FOCUS charge row. Field names are the specification's. | `finops_providers/aws/cur.py` |
+| `CommitmentUse` | class | `finops_core/domain/cost.py:274` | What one commitment obliged us to pay, and how much of it was consumed. | `finops_providers/aws/commitment.py` |
+| `CommitmentUse.utilization` | method | `finops_core/domain/cost.py:329` | How much of what we paid for was consumed, as a fraction. | `finops_ingest/collectors/commitment.py` |
+| `CommitmentUse.is_expired` | method | `finops_core/domain/cost.py:341` |  | nothing in this tree |
+| `CommitmentCoverage` | class | `finops_core/domain/cost.py:346` | How much of the eligible estate was on a commitment, for one dimension. | `finops_providers/aws/commitment.py` |
+| `CommitmentCoverage.coverage` | method | `finops_core/domain/cost.py:393` | The covered fraction, or None where nothing was eligible. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_api/routes/quotas.py`, `finops_ingest/collectors/commitment.py` |
+| `CommitmentDay` | class | `finops_core/domain/cost.py:405` | One kind of commitment on one day: what it obliged, used and covered. TASK-P8-013. | `finops_providers/aws/commitment.py` |
+| `CommitmentDay.utilization` | method | `finops_core/domain/cost.py:451` | Used over committed, or None on a day nothing was committed. | `finops_ingest/collectors/commitment.py` |
+| `CommitmentDay.coverage` | method | `finops_core/domain/cost.py:458` | Covered over eligible, or None on a day nothing was eligible. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_api/routes/quotas.py`, `finops_ingest/collectors/commitment.py` |
 | `PeriodError` | class | `finops_core/domain/explore.py:38` | A period that cannot be drawn, carrying the sentence that says why. | nothing in this tree |
 | `Window` | class | `finops_core/domain/explore.py:43` | A run of days, inclusive at both ends. | `finops_ingest/collectors/realized_savings.py` |
 | `Window.days` | method | `finops_core/domain/explore.py:50` | How many days the window holds, both ends counted. | nothing in this tree |
@@ -308,10 +308,10 @@ a duplicate.
 | `AwsCredentialBroker` | class | `finops_providers/aws/credentials.py:53` | Produces a scoped session for a target account, and caches it sensibly. | nothing in this tree |
 | `AwsCredentialBroker.external_id` | method | `finops_providers/aws/credentials.py:72` | Read the ExternalId once. Never logged, never put in an error detail. | nothing in this tree |
 | `AwsCredentialBroker.session_for` | method | `finops_providers/aws/credentials.py:89` |  | `finops_ingest/worker.py`, `finops_providers/aws/health.py` |
-| `AthenaCostExport` | class | `finops_providers/aws/cur.py:150` | `CostExport` over a Data Exports table. Never yet run against AWS. | nothing in this tree |
-| `AthenaCostExport.latest_available_period` | method | `finops_providers/aws/cur.py:179` | The newest partition the export actually holds. | `finops_ingest/collectors/cost_focus.py` |
-| `AthenaCostExport.read_period` | method | `finops_providers/aws/cur.py:193` | Every charge row in the period, or an exception. Never a short list. | `finops_ingest/collectors/cost_focus.py` |
-| `AthenaCostExport.split_cost_available` | method | `finops_providers/aws/cur.py:310` | Whether this export carries the container grain at all. | nothing in this tree |
+| `AthenaCostExport` | class | `finops_providers/aws/cur.py:166` | `CostExport` over a Data Exports table. Never yet run against AWS. | nothing in this tree |
+| `AthenaCostExport.latest_available_period` | method | `finops_providers/aws/cur.py:197` | The newest partition the export actually holds. | `finops_ingest/collectors/cost_focus.py` |
+| `AthenaCostExport.read_period` | method | `finops_providers/aws/cur.py:211` | Every charge row in the period, or an exception. Never a short list. | `finops_ingest/collectors/cost_focus.py` |
+| `AthenaCostExport.split_cost_available` | method | `finops_providers/aws/cur.py:338` | Whether this export carries the container grain at all. | nothing in this tree |
 | `AccountHealthCheck` | class | `finops_providers/aws/health.py:54` | Assumes the role and makes one cheap call, then names what went wrong. | nothing in this tree |
 | `AccountHealthCheck.check` | method | `finops_providers/aws/health.py:67` |  | `finops_api/routes/accounts.py`, `finops_ingest/collectors/account_health.py` |
 | `language_model` | function | `finops_providers/aws/language_model.py:18` | The configured model, or None where none is. | `finops_api/main.py` |
@@ -370,7 +370,7 @@ a duplicate.
 | `CommitmentActionsCollector` | class | `finops_ingest/collectors/commitment_actions.py:90` | A coverage gap, as something somebody is accountable for closing. | nothing in this tree |
 | `ContainerUsageCollector` | class | `finops_ingest/collectors/container_usage.py:171` | Clusters and reservations for one account in one region. | nothing in this tree |
 | `CostAnomalyCollector` | class | `finops_ingest/collectors/cost_anomaly.py:92` | Judges the most recent day of each account and service pair. | nothing in this tree |
-| `CostFocusCollector` | class | `finops_ingest/collectors/cost_focus.py:163` | Reads one billing period, writes it, and removes what was withdrawn. | nothing in this tree |
+| `CostFocusCollector` | class | `finops_ingest/collectors/cost_focus.py:173` | Reads one billing period, writes it, and removes what was withdrawn. | nothing in this tree |
 | `roll_up_period` | function | `finops_ingest/collectors/cost_rollup.py:66` | Recompute one month from its line items, and drop what is no longer there. | `finops_ingest/collectors/cost_focus.py` |
 | `roll_up_before` | function | `finops_ingest/collectors/cost_rollup.py:85` | Aggregate every month older than the boundary, ahead of dropping them. | `finops_ingest/collectors/retention.py` |
 | `DigestCollector` | class | `finops_ingest/collectors/digests.py:107` | Composes the last complete week's digests for one tenant. | nothing in this tree |
@@ -987,7 +987,7 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `CostMeasure` in `finops_core/domain/cost.py:31`
 - `BillingPeriod.covers` in `finops_core/domain/cost.py:124`
 - `CostTotal` in `finops_core/domain/cost.py:145`
-- `CommitmentUse.is_expired` in `finops_core/domain/cost.py:313`
+- `CommitmentUse.is_expired` in `finops_core/domain/cost.py:341`
 - `PeriodError` in `finops_core/domain/explore.py:38`
 - `Window.days` in `finops_core/domain/explore.py:50`
 - `Fact` in `finops_core/domain/fact.py:27`

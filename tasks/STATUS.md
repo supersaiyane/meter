@@ -24,7 +24,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 76 total, 12 specified, 13 in build, 44 delivered |
 | Decisions | 34 architecture decision records |
-| Changes | 128 recorded |
+| Changes | 129 recorded |
 | Issues | 154 fixed, 101 open, 0 parked |
 | Open questions | 21 awaiting a decision |
 
@@ -217,7 +217,7 @@ ISS-003.
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 | P8 | 18 | 0 | 0 | 0 | 0 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 0 | 0 | 0 | 0 | 13 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
-| P10 | 1 | 0 | 0 | 0 | 5 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
+| P10 | 2 | 0 | 0 | 0 | 4 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -441,6 +441,7 @@ ISS-003.
 | Task | Status | Title |
 | --- | --- | --- |
 | `TASK-P10-001` | Done 2026-10-07 | two digit sub projects in the tooling |
+| `TASK-P10-002` | Done 2026-10-07 | FOCUS 1.4's mandatory and invoice columns on the cost row |
 
 <!-- generated:task-status end -->
 

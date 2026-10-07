@@ -357,6 +357,15 @@ cost_focus_daily = Table(
     Column("split_usage", Numeric(30, 10)),
     Column("split_usage_ratio", Numeric(20, 10)),
     Column("unused_cost", Numeric(20, 10)),
+    # FOCUS 1.4's mandatory and invoice columns, migration 0030, ADR-0034.
+    Column("billing_account_name", Text),
+    Column("billing_currency", Text),
+    Column("charge_class", Text),
+    Column("pricing_unit", Text),
+    Column("service_provider_name", Text),
+    Column("host_provider_name", Text),
+    Column("invoice_id", Text),
+    Column("invoice_detail_id", Text),
     postgresql_partition_by="RANGE (billing_period_start)",
 )
 

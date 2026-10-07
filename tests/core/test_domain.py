@@ -452,3 +452,22 @@ def test_unpublished_quota_usage_is_none_and_never_zero() -> None:
         collected_at=NOW,
     )
     assert quota.used is None
+
+
+def test_the_service_and_host_providers_follow_provider_name_until_a_source_names_them() -> None:
+    """P10 spec section 5.2: FOCUS replaced ProviderName with ServiceProviderName, and the host
+    equals the service provider unless one is exposed. One rule, in the record, for every source."""
+    derived = sample_cost_record()
+    assert (derived.service_provider_name, derived.host_provider_name) == ("AWS", "AWS")
+    named = sample_cost_record(service_provider_name="Seller", host_provider_name="AWS")
+    assert (named.service_provider_name, named.host_provider_name) == ("Seller", "AWS")
+    hosted_by_seller = sample_cost_record(service_provider_name="Seller")
+    assert hosted_by_seller.host_provider_name == "Seller"
+
+
+def test_an_invoice_detail_is_its_invoice_until_a_source_says_otherwise() -> None:
+    assert sample_cost_record().invoice_detail_id is None
+    assert sample_cost_record(invoice_id="INV-1").invoice_detail_id == "INV-1"
+    assert (
+        sample_cost_record(invoice_id="INV-1", invoice_detail_id="D-7").invoice_detail_id == "D-7"
+    )

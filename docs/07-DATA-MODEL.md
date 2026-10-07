@@ -387,6 +387,20 @@ CREATE TABLE cost_focus_daily (
     commitment_discount_status  TEXT,
     tags                        JSONB          NOT NULL DEFAULT '{}'::jsonb,
 
+    -- FOCUS 1.4, P10 and ADR-0034, migration 0030: the six mandatory columns 1.1 lacked and
+    -- the two that tie a row to its invoice. Nullable, because an export older than FOCUS 1.2
+    -- carries none of them. service_provider_name replaced provider_name in FOCUS 1.3 and
+    -- host_provider_name equals it unless a host is exposed; both are provider_name until an
+    -- export carries them. provider_name and publisher_name stay until a later release.
+    billing_account_name        TEXT,
+    billing_currency            TEXT           CHECK (billing_currency ~ '^[A-Z]{3}$'),
+    charge_class                TEXT,
+    pricing_unit                TEXT,
+    service_provider_name       TEXT,
+    host_provider_name          TEXT,
+    invoice_id                  TEXT,
+    invoice_detail_id           TEXT,
+
     PRIMARY KEY (tenant_id, billing_period_start, source_fingerprint)
 ) PARTITION BY RANGE (billing_period_start);
 

@@ -47,6 +47,9 @@ Does not populate the table. That is FEAT-020 in P1. Does not reconcile to the i
 
 ## Status of this document
 
-In build since P0 at FOCUS 1.1. P10 moves the row to FOCUS 1.4's mandatory columns and
+In build since P0 at FOCUS 1.1. TASK-P10-002 gave the row every column FOCUS 1.4 makes
+mandatory and the two invoice columns on 2026-10-07, migration 0030, read from AWS's FOCUS export
+where it carries them and null where it does not; `tests/api/test_focus_columns.py` holds all 21.
+P10 moves the row to FOCUS 1.4's mandatory columns and
 its invoice columns, ADR-0034, specified and planned on 2026-10-07: measured that day, the
 row lacked 6 of the 21 mandatory columns, P10 spec section 4.

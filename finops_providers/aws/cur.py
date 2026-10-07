@@ -23,6 +23,7 @@ the single most embarrassing way for this product to fail.
 
 from __future__ import annotations
 
+import re
 import time
 from collections.abc import Callable, Iterable, Iterator
 from datetime import UTC, date, datetime
@@ -117,6 +118,21 @@ SPLIT_COLUMNS: dict[str, str] = {
     "split_line_item_unused_cost": "unused_cost",
 }
 
+#: FOCUS 1.2 columns AWS's FOCUS 1.2 export carries and an older export does not, P10 spec
+#: section 5.2, FEAT-004. Optional at the source for the same reason the split columns are:
+#: asked of the catalog, so an older export is read with the SQL it always was and these
+#: land as None rather than failing the read.
+FOCUS_1_2_COLUMNS: dict[str, str] = {
+    "billingaccountname": "billing_account_name",
+    "billingcurrency": "billing_currency",
+    "chargeclass": "charge_class",
+    "pricingunit": "pricing_unit",
+    "invoiceid": "invoice_id",
+}
+
+#: The form FOCUS 1.4 mandates for a currency: an ISO 4217 code, three capital letters.
+CURRENCY = re.compile(r"[A-Z]{3}")
+
 #: What the catalog is asked, to learn which of the above exist. It reads metadata,
 #: so it scans no data and costs nothing against the bytes Athena bills for.
 CATALOG_SQL = (
@@ -170,6 +186,8 @@ class AthenaCostExport:
     #: Filled on first use by `_present_split_columns`. None means not yet asked,
     #: which is different from an empty mapping meaning asked and absent.
     _split_columns: dict[str, str] | None = None
+    #: The FOCUS 1.2 columns present, filled by the same probe as the split columns.
+    _focus_columns: dict[str, str] | None = None
 
     def _default_client(self, service: str) -> Any:
         return boto3.client(service, config=self._config)
@@ -291,7 +309,7 @@ class AthenaCostExport:
                 for row in page["ResultSet"]["Rows"]:
                     for cell in row["Data"]:
                         name = (cell.get("VarCharValue") or "").lower()
-                        if name in SPLIT_COLUMNS:
+                        if name in SPLIT_COLUMNS or name in FOCUS_1_2_COLUMNS:
                             found.add(name)
         except (CollectionError, BotoCoreError, ClientError, KeyError):
             # An unreadable catalog leaves the export looking like one without split
@@ -303,8 +321,18 @@ class AthenaCostExport:
             # again and a blip costs one period rather than a run.
             return {}
 
-        self._split_columns = {name: SPLIT_COLUMNS[name] for name in sorted(found)}
+        self._split_columns = {
+            name: SPLIT_COLUMNS[name] for name in sorted(found) if name in SPLIT_COLUMNS
+        }
+        self._focus_columns = {
+            name: FOCUS_1_2_COLUMNS[name] for name in sorted(found) if name in FOCUS_1_2_COLUMNS
+        }
         return self._split_columns
+
+    def _present_focus_columns(self) -> dict[str, str]:
+        """The FOCUS 1.2 columns this export has, from the probe the split columns run."""
+        self._present_split_columns()
+        return self._focus_columns or {}
 
     @property
     def split_cost_available(self) -> bool:
@@ -326,7 +354,9 @@ class AthenaCostExport:
         columns this export actually has, so an export without them is read with the
         same SQL it was always read with.
         """
-        columns = ", ".join(sorted([*COLUMNS, *self._present_split_columns()]))
+        columns = ", ".join(
+            sorted([*COLUMNS, *self._present_split_columns(), *self._present_focus_columns()])
+        )
         return (
             f"SELECT {columns} "
             f'FROM "{self._settings.cur_athena_database}"."{self._settings.cur_athena_table}" '
@@ -380,11 +410,25 @@ class AthenaCostExport:
 
     def _record(self, row: dict[str, str | None]) -> CostRecord:
         fields: dict[str, Any] = {}
-        for column, field in (*COLUMNS.items(), *SPLIT_COLUMNS.items()):
+        for column, field in (
+            *COLUMNS.items(),
+            *SPLIT_COLUMNS.items(),
+            *FOCUS_1_2_COLUMNS.items(),
+        ):
             # Every split column is read through `row.get`, so one absent from the
             # projection lands as None rather than raising. That is the whole of
             # "reads them where present and does not fail where absent".
             fields[field] = _coerce(field, row.get(column))
+
+        currency = fields["billing_currency"]
+        if currency is not None and not CURRENCY.fullmatch(currency):
+            # Refused here as a typed failure, rather than by the table's constraint, which
+            # would abort the whole period's write with an error nobody can read.
+            raise SchemaDrift(
+                scope_key=SCOPE,
+                collector=COLLECTOR,
+                detail=f"billing currency {currency!r} is not an ISO 4217 code",
+            )
 
         missing = [name for name in REQUIRED if fields.get(name) is None]
         if missing:
