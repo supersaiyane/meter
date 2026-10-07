@@ -44,6 +44,9 @@ import {
 import { digestsFixture, exchangesFixture, redactionsFixture } from './fixtures/assistant';
 import type {
   ApiCommitmentDay,
+  ApiSavedView,
+  SavedViewChange,
+  SavedViewIn,
   ApiQueryCostDay,
   ApiDigest,
   ApiExchange,
@@ -789,5 +792,59 @@ export function useAsk() {
       void queries.invalidateQueries({ queryKey: EXCHANGES_KEY });
       void queries.invalidateQueries({ queryKey: REDACTIONS_KEY });
     },
+  });
+}
+
+/**
+ * The report library, FEAT-068. Never narrowed to a chosen account, as the search box's accounts
+ * are not: a view is configuration rather than a figure counted in accounts, and a library that
+ * emptied when an account was chosen would hide what the reader saved. Nor offered for export, as
+ * the API's own exemption says: each view exports from its own screen.
+ */
+const SAVED_VIEWS = '/api/v1/reports/views';
+const SAVED_VIEWS_KEY = ['saved-views'] as const;
+
+function savedViewPath(viewId: string): string {
+  return `${SAVED_VIEWS}/${encodeURIComponent(viewId)}`;
+}
+
+export function useSavedViews() {
+  const client = useApi();
+  return useQuery<ApiEnvelope<ApiSavedView[]>>({
+    queryKey: SAVED_VIEWS_KEY,
+    queryFn: () => client.get<ApiSavedView[]>(SAVED_VIEWS),
+  });
+}
+
+export function useSaveView() {
+  const client = useApi();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: (view: SavedViewIn) => client.post<ApiSavedView>(SAVED_VIEWS, view),
+    onSettled: () => queries.invalidateQueries({ queryKey: SAVED_VIEWS_KEY }),
+  });
+}
+
+export function useChangeView() {
+  const client = useApi();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      viewId,
+      change,
+    }: {
+      readonly viewId: string;
+      readonly change: SavedViewChange;
+    }) => client.patch<ApiSavedView>(savedViewPath(viewId), change),
+    onSettled: () => queries.invalidateQueries({ queryKey: SAVED_VIEWS_KEY }),
+  });
+}
+
+export function useDeleteView() {
+  const client = useApi();
+  const queries = useQueryClient();
+  return useMutation({
+    mutationFn: (viewId: string) => client.delete<ApiSavedView>(savedViewPath(viewId)),
+    onSettled: () => queries.invalidateQueries({ queryKey: SAVED_VIEWS_KEY }),
   });
 }

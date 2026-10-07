@@ -39,7 +39,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 
-from finops_core.constants import REASON_MIN_LENGTH
+from finops_api.screens import SCREEN_PATHS
+from finops_core.constants import REASON_MIN_LENGTH, SAVED_VIEW_NAME_MAX_LENGTH
 
 metadata = MetaData()
 
@@ -1562,6 +1563,48 @@ report_run = Table(
         "NOT scope_global OR cardinality(scope_accounts) = 0", name="ck_report_run__scope"
     ),
     Index("ix_report_run__principal", "tenant_id", "principal_id", "made_at"),
+)
+
+#: P8, 0028. Who besides its owner may open a saved view, mirrored by the migration's constraint.
+SAVED_VIEW_VISIBILITIES = ("PRIVATE", "SHARED")
+
+saved_view = Table(
+    "saved_view",
+    metadata,
+    #: FEAT-068, 0028. A screen and its query, named by a person and kept for them or shared
+    #: with the tenant. Configuration and never data, P8 spec section 5.6: no figure is stored,
+    #: so the screen is read afresh in the opener's own scope.
+    Column("view_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    #: Whose it is. Only they rename, share or delete it, and a private one only they open,
+    #: ADR-0032.
+    Column("owner_id", Text, nullable=False),
+    Column("name", Text, nullable=False),
+    #: A screen the navigation knows, `finops_api.screens`.
+    Column("screen_path", Text, nullable=False),
+    #: The screen's query string as an object, each key to one value or a list of them.
+    Column("query", JSONB, nullable=False),
+    Column("visibility", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint(
+        _in_list("visibility", SAVED_VIEW_VISIBILITIES), name="ck_saved_view__visibility"
+    ),
+    CheckConstraint(
+        "length(trim(owner_id)) > 0 AND length(trim(name)) > 0 "
+        f"AND length(name) <= {SAVED_VIEW_NAME_MAX_LENGTH}",
+        name="ck_saved_view__named",
+    ),
+    CheckConstraint(_in_list("screen_path", SCREEN_PATHS), name="ck_saved_view__screen"),
+    CheckConstraint("jsonb_typeof(query) = 'object'", name="ck_saved_view__query"),
+    CheckConstraint("updated_at >= created_at", name="ck_saved_view__times"),
+    Index("ix_saved_view__owner", "tenant_id", "owner_id", "updated_at"),
+    Index(
+        "ix_saved_view__shared",
+        "tenant_id",
+        "updated_at",
+        postgresql_where=text("visibility = 'SHARED'"),
+    ),
 )
 
 

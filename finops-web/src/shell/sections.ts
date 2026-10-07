@@ -177,7 +177,7 @@ export const GROUPS: readonly GroupDef[] = [
     label: 'Report',
     path: '/report',
     screens: [
-      { path: '/report/library', label: 'Report Library', arrives: 'P8' },
+      { path: '/report/library', label: 'Report Library', arrives: null },
       { path: '/report/scheduled', label: 'Scheduled', arrives: 'P8' },
       { path: '/report/exports', label: 'Exports', arrives: null },
     ],
@@ -362,4 +362,25 @@ export function tabsFor(pathname: string): {
  */
 export function isSelfGroup(group: GroupDef): boolean {
   return group.screens.length === 1 && group.screens[0]?.path === group.path;
+}
+
+/** The report library, FEAT-068, whose rows are saved views and which is no view itself. */
+export const LIBRARY_PATH = '/report/library';
+
+/**
+ * True for an address a view can be saved from, FEAT-068: a built screen or a tab of one, which
+ * is what the API's list of screens holds, other than the library, whose rows are the views.
+ */
+export function isSavable(pathname: string): boolean {
+  if (pathname === LIBRARY_PATH) {
+    return false;
+  }
+  const screen = screenFor(pathname);
+  if (screen !== undefined) {
+    return screen.arrives === null;
+  }
+  return Object.entries(TABS).some(
+    ([owner, tabs]) =>
+      screenFor(owner)?.arrives === null && tabs.some((tab) => tab.path === pathname),
+  );
 }

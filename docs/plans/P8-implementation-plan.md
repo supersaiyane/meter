@@ -368,7 +368,7 @@ data).
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-07 |
 | Implements | P8 spec section 5.6, FEAT-068 |
 | Delivers | FEAT-068 |
 | Depends on | TASK-P8-003, TASK-P8-009 |
@@ -376,11 +376,11 @@ data).
 
 **Acceptance criteria.**
 
-- [ ] `saved_view` migration with the constraints in spec section 6
-- [ ] A private view is confined to its owner, ADR-0029; a shared one is visible to the
+- [x] `saved_view` migration with the constraints in spec section 6
+- [x] A private view is confined to its owner, ADR-0029; a shared one is visible to the
       tenant as configuration
-- [ ] Opening a view renders it in the opener's scope, asserted with two principals
-- [ ] The Report Library: open, rename, duplicate, share, delete and export
+- [x] Opening a view renders it in the opener's scope, asserted with two principals
+- [x] The Report Library: open, rename, duplicate, share, delete and export
 
 ---
 

@@ -164,6 +164,8 @@ describe('HomeScreen', () => {
     const inner = clientReturning({ '/api/v1/platform/cost': COST });
     const recording: ApiClient = {
       post: <T,>(path: string) => inner.post<T>(path),
+      patch: () => Promise.reject(new Error('no patch stub')),
+      delete: () => Promise.reject(new Error('no delete stub')),
       getFile: (path: string) => inner.getFile(path),
       get: <T,>(path: string) => {
         asked.push(path);

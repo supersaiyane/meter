@@ -1,7 +1,8 @@
 """Export records. FEAT-067, TASK-P8-009, P8 spec section 5.5 item 5.
 
-Written here and read by the report library, TASK-P8-010. One function, because a record is one
-insert, and an export that skipped it would be a copy of the estate nobody could trace.
+Written here and read by nothing yet: whether the report library lists a person's records is
+OPEN-19. One function, because a record is one insert, and an export that skipped it would be a
+copy of the estate nobody could trace.
 """
 
 from __future__ import annotations

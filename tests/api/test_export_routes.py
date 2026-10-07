@@ -31,6 +31,8 @@ EXEMPT: Mapping[str, str] = {
     "/api/v1/query/findings/{finding_id}": "One finding's detail page",
     "/api/v1/governance/quotas/{service_code}/{quota_code}": "One quota's detail page",
     "/api/v1/waste/recommendations/{recommendation_id}": "One recommendation's detail page",
+    "/api/v1/reports/views": "Saved views are configuration, and each exports from its own screen",
+    "/api/v1/reports/views/{view_id}": "One saved view, configuration that opens a screen",
 }
 
 

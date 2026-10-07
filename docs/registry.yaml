@@ -497,7 +497,7 @@ features:
 - id: FEAT-068
   name: Saved views and a report library, shared as configuration
   subproject: P8
-  status: Planned
+  status: Delivered
   detail: '[P8 spec](docs/specs/2026-10-05-p8-experience-and-reporting-design.md) section 5.6, [P8 plan](docs/plans/P8-implementation-plan.md), ISS-235'
   doc: docs/features/FEAT-068-saved-views-and-report-library.md
 - id: FEAT-069
@@ -669,6 +669,11 @@ adrs:
   decision: Dependencies are installed from a lock, never resolved
   status: Accepted
   doc: docs/adr/ADR-0031-dependencies-installed-from-a-lock.md
+
+- id: ADR-0032
+  decision: A row a person may share is read by its owner and, once shared, by the tenant
+  status: Accepted
+  doc: docs/adr/ADR-0032-a-shared-row-is-configuration.md
 
 changes:
 - id: CHG-0001
@@ -1642,6 +1647,17 @@ changes:
   detail: 'Chosen over keeping every 8 hourly reading, which grows without limit, and over the
     latest only, which shows no movement. Two tables, spot_price and spot_price_daily, P9 spec
     section 14.7. With OPEN-17 answered the same day, P9 has no open question left'
+
+- id: CHG-0118
+  date: '2026-10-07'
+  type: Feature
+  what: TASK-P8-010, saved views and the report library, FEAT-068
+  commit: pending
+  detail: Save view beside Export keeps a screen and its query under a name, private or shared with
+    the tenant, and the Report Library opens, renames, duplicates, shares, deletes and exports them.
+    A view holds no figure, so it opens in the opener's scope, asserted with two principals. The guard
+    gains OwnedOrShared, ADR-0032, and the client gains patch and delete. Export records are not listed,
+    OPEN-19, and erasure does not reach the table, ISS-255
 issues:
 - id: ISS-189
   severity: LOW
@@ -3990,6 +4006,16 @@ issues:
     scripts/ci/check_image_arch.py. After the fix, measured: all 162 compiled files in the
     amd64 API image are amd64, and the same imports succeed under amd64.'
 
+- id: ISS-255
+  severity: MEDIUM
+  status: OPEN
+  summary: A saved view names its owner, and no retention job or erasure reaches saved_view
+  detail: '`saved_view`, FEAT-068, holds the principal who saved each view and the names they chose.
+    It is classified personal in `docs/09-DATA-CLASSIFICATION.md`, but `scripts/ops/erase_principal.py`
+    does not reach it and no retention job reads it, the gap ISS-226 and ISS-249 record for the P7
+    tables and `report_run`. Erasing a shared view also takes it from everyone it was shared with,
+    which is a decision as well as a deletion. Found 2026-10-07 while classifying the table.'
+
 open_questions:
 - id: OPEN-07
   question: What does the cost screen show for a tenant whose first ingest has not run, an
@@ -4113,6 +4139,17 @@ open_questions:
     for every pool in every Region grows without limit. Recommended: the latest per pool,
     replaced each run, plus a daily low and high kept for 90 days. The owner chose it on
     2026-10-07, and spec section 14.7 holds the two tables'
+
+- id: OPEN-19
+  question: Does the report library also list a person's own export records, report_run?
+  status: OPEN
+  blocks: nothing
+  detail: 'Raised 2026-10-07 while building TASK-P8-010. Three documents written with TASK-P8-009
+    said the library would list a reader''s own exports, and the task''s acceptance criteria do not
+    ask for it, so it was not built and the three now say so. Recommended: yes, as a second table
+    in the library, built in TASK-P8-011, which gives report_run its schedule, status and storage
+    columns, so the table is drawn once over the record''s final shape. The guard already confines
+    report_run to its person, ADR-0029.'
 - id: OPEN-16
   question: 'How does the hub reach the AWS APIs its collectors call: endpoints in every Region
     used plus a us-east-1 endpoint VPC, a NAT gateway with an AWS-only allow list, or collectors

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { fileNameOf, type ApiClient, type DownloadedFile } from '../../api/client';
-import type { ExportView } from '../../api/exportViews';
+import { OPEN_EXPORT, asksForExport, type ExportView } from '../../api/exportViews';
 import { violationsIn } from '../../components/__tests__/axe';
 import { Harness } from '../../screens/__tests__/Harness';
 import { clientReturning } from '../../screens/__tests__/fixtures';
@@ -132,5 +132,36 @@ describe('ExportMenu', () => {
     const { container } = renderMenu(clientAsking(saved).client);
     await userEvent.click(screen.getByText('Export'));
     expect(await violationsIn(container)).toEqual([]);
+  });
+});
+
+describe('the Export menu, opened from the report library, FEAT-068', () => {
+  it('opens itself when the reader came from the library to export', async () => {
+    const { client } = clientAsking(saved);
+    render(
+      <Harness client={client}>
+        <ExportMenu views={VIEWS} openOnArrival />
+      </Harness>,
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('export-menu')).toHaveAttribute('open');
+    });
+  });
+
+  it('stays closed when the reader arrived any other way', () => {
+    const { client } = clientAsking(saved);
+    render(
+      <Harness client={client}>
+        <ExportMenu views={VIEWS} />
+      </Harness>,
+    );
+    expect(screen.getByTestId('export-menu')).not.toHaveAttribute('open');
+  });
+
+  it("knows the library's state and nothing else", () => {
+    expect(asksForExport(OPEN_EXPORT)).toBe(true);
+    for (const state of [null, undefined, 'openExport', {}, { openExport: 'yes' }]) {
+      expect(asksForExport(state)).toBe(false);
+    }
   });
 });
