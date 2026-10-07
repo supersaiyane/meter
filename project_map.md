@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 25 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 32 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 190 | test_*.py under tests/ |
-| Test functions | 2510 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 193 | test_*.py under tests/ |
+| Test functions | 2545 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -363,7 +363,8 @@ meter/
 │   │                          clears it by its fixed tenant.
 │   │                          export_fake_estate.py writes the estate to CSV,
 │   │                          which is build output and is never committed
-│   └── deploy/                migration task runner
+│   └── deploy/                migration task runner, and build_relay.py, which zips
+│                              finops_relay the same way every time, ADR-0035
 │
 ├── tests/                     the suite. Its size is in the counted table above, as test
 │                              files and test functions; the pytest total is what `make
@@ -555,6 +556,9 @@ meter/
 │   │   ├── invoices.py        FEAT-076. ListInvoiceSummaries at the payer, one
 │   │   │                      billing period at a time; anything unreadable is
 │   │   │                      SchemaDrift, never a zero. Unproved, ISS-002, ISS-003
+│   │   ├── relay_client.py    ADR-0035. A boto3 client in shape that reaches its
+│   │   │                      service through the relay, so an adapter reads
+│   │   │                      through it unchanged; AWS's error codes kept
 │   │   └── cur.py             the billing export through Athena. **Never yet
 │   │                          run**, ISS-122, and COLUMNS is the part only a
 │   │                          real export can settle. A period comes back
@@ -1542,6 +1546,12 @@ meter/
 │                              the feature: a deny cannot be written without an
 │                              expiry, a modelled row cannot claim a measured
 │                              count, and a change cannot exist without its undo
+├── finops_relay/              IN BUILD  TASK-P9-001, ADR-0035. The relay outside the hub's
+│   │                          VPC, run as a Lambda function: one allow listed, read
+│   │                          only AWS call, made as the role its list names and
+│   │                          narrowed by a session policy, answered through S3.
+│   │                          Imports nothing of Meter's, a contract in pyproject
+│   └── relay.py               the allow list, the codec, the handler
 ├── finops_query/              IN BUILD  P2 query cost governance, P3 waste, P4 graph
 │   ├── forecast.py            FEAT-066, TASK-P8-008. A weekday profile forecast of
 │   │                          this month and the next three, each a range from its
@@ -1716,6 +1726,10 @@ meter/
                                full price. iam.tf gives each assistant model an
                                inference profile tagged finops:module = assistant,
                                so its spend is a module of its own, ISS-230.
+                               endpoints.tf and modules/endpoint_vpc are the endpoint
+                               VPCs in us-east-1 and eu-west-2, peered, with a
+                               private hosted zone per service, and relay.tf the
+                               relay outside the VPC, ADR-0035.
                                Validated, never applied. ISS-122
 ```
 
@@ -1729,6 +1743,7 @@ meter/
 | `finops_ingest` | Dispatcher, worker, run ledger, watermarks, collectors | `finops_core`, a provider | `finops-web` |
 | `finops_api` | HTTP surface, scope dependency, repository guard | `finops_core`, a provider | boto3 directly |
 | `finops-web` | User interface | `finops_api` over HTTP | anything Python |
+| `finops_relay` | The relay outside the hub's VPC, ADR-0035: six allow listed read calls answered through S3 | botocore | everything of Meter's, a contract in `pyproject.toml`, because its runtime has only boto3 |
 | `finops_mcp` | MCP tools for any model client | `finops_api` over HTTP, and `finops_api.tools` for the table it publishes, CHG-0110 | the service layer, repositories, boto3 |
 | `infra/terraform` | Hub stack, member StackSet, management role, Config aggregator and recorders | nothing | nothing |
 

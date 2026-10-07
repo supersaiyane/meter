@@ -151,6 +151,12 @@ keeps no route out, which ADR-0028 relies on, and B is not built. About 20 endpo
 14.7 USD a month each is roughly 290 USD a month (modelled); the ADR that TASK-P9-001 writes
 measures it. OPEN-16 is answered.
 
+**Built on 2026-10-08, ADR-0035.** As chosen, with one service the owner's rule reaches that the
+choice did not name: Invoicing, added by P10, has no interface endpoint either (measured against
+the same list on 2026-10-08), so it takes the relay beside Budgets and Support. The two functions
+are one relay with an allow list. 21 endpoints are added, at prices measured from the AWS price
+list, about 338 USD a month in all (modelled).
+
 ### 5.2 Prices come from AWS, never from a third party
 
 The Price List Query API, filtered to the two Regions in OPEN-06, for on demand EC2 and

@@ -75,6 +75,7 @@ include = [
     "finops_api*",
     "finops_mcp*",
     "finops_query*",
+    "finops_relay*",
 ]
 
 # uv writes the lock and nothing else. Without this, `uv run` treats the repository as a uv
@@ -130,7 +131,7 @@ extend-immutable-calls = [
 # than a tidy up to be done later.
 addopts = """-q --strict-markers \
   --cov=finops_core --cov=finops_providers --cov=finops_ingest \
-  --cov=finops_api --cov=finops_mcp --cov=finops_query \
+  --cov=finops_api --cov=finops_mcp --cov=finops_query --cov=finops_relay \
   --cov-report=term-missing --cov-fail-under=80"""
 testpaths = ["tests"]
 markers = [
@@ -184,6 +185,7 @@ root_packages = [
     "finops_api",
     "finops_mcp",
     "finops_query",
+    "finops_relay",
 ]
 
 [[tool.importlinter.contracts]]
@@ -239,8 +241,25 @@ source_modules = [
     "finops_ingest",
     "finops_api",
     "finops_mcp",
+    "finops_relay",
 ]
 forbidden_modules = ["finops_fakes"]
+
+[[tool.importlinter.contracts]]
+name = "the relay imports nothing of Meter's, because its runtime has only boto3"
+type = "forbidden"
+source_modules = ["finops_relay"]
+forbidden_modules = [
+    "finops_core",
+    "finops_providers",
+    "finops_ingest",
+    "finops_api",
+    "finops_mcp",
+    "finops_query",
+    "pydantic",
+    "pydantic_settings",
+    "sqlalchemy",
+]
 
 [[tool.importlinter.contracts]]
 name = "layers are respected"
@@ -255,6 +274,8 @@ layers = [
     # finops_api and nothing would have said so.
     "finops_query",
     "finops_providers",
+    # TASK-P9-001, ADR-0035. The relay outside the VPC, below the adapter that invokes it.
+    "finops_relay",
     "finops_core",
 ]
 

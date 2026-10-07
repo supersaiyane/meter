@@ -83,6 +83,21 @@ resource "aws_s3_bucket_lifecycle_configuration" "data" {
       days_after_initiation = 7
     }
   }
+
+  # TASK-P9-001. The relay's answers are read once, by the collector that asked, so a day is
+  # more than they need, and one kept longer is a copy of AWS's data that nobody reads.
+  rule {
+    id     = "expire-relay-answers"
+    status = "Enabled"
+
+    filter {
+      prefix = "${local.relay_prefix}/"
+    }
+
+    expiration {
+      days = 1
+    }
+  }
 }
 
 # The ExternalId. Created empty and populated out of band, because a secret

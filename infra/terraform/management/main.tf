@@ -18,13 +18,18 @@ data "aws_caller_identity" "current" {}
 # ExternalId without a named principal trusts a shared secret on its own.
 data "aws_iam_policy_document" "trust" {
   statement {
-    sid     = "HubTaskRoleOnly"
+    sid     = "HubTaskRoleAndRelayOnly"
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
 
+    # The task role, and the relay that makes the payer's Budgets and Invoicing reads outside
+    # the hub's VPC, TASK-P9-001 and ADR-0035. Each by name, and each needing the ExternalId.
     principals {
-      type        = "AWS"
-      identifiers = ["arn:aws:iam::${var.hub_account_id}:role/${var.hub_task_role_name}"]
+      type = "AWS"
+      identifiers = [
+        "arn:aws:iam::${var.hub_account_id}:role/${var.hub_task_role_name}",
+        "arn:aws:iam::${var.hub_account_id}:role/${var.hub_relay_role_name}",
+      ]
     }
 
     condition {
@@ -68,6 +73,9 @@ data "aws_iam_policy_document" "org_read" {
     effect = "Allow"
 
     actions = [
+      # finops_providers/aws/budgets.py, FEAT-060. DescribeBudgets needs this, and no stack
+      # granted it until TASK-P9-001 built the path the call takes, ISS-259.
+      "budgets:ViewBudget",
       # finops_providers/aws/invoices.py, FEAT-076, TASK-P10-003. AWS issues
       # invoices to the payer, so the management account is the one place they
       # can be read. A list, read only, constraint 6.
@@ -87,7 +95,7 @@ resource "aws_iam_role" "org_reader" {
   assume_role_policy   = data.aws_iam_policy_document.trust.json
   max_session_duration = var.max_session_duration_seconds
 
-  # A boundary on a role whose only policy is ten read actions looks like
+  # A boundary on a role whose only policy is eleven read actions looks like
   # belt and braces, and it is. It is here because this role lives in the
   # management account, where a future edit that widens the inline policy has
   # the largest blast radius in the organization.

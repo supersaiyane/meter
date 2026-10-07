@@ -22,6 +22,7 @@ resource "aws_cloudformation_stack_set" "collector" {
   parameters = {
     HubAccountId    = var.hub_account_id
     HubTaskRoleName = var.hub_task_role_name
+    RelayRoleName   = var.relay_role_name
     ExternalId      = var.external_id
     OrganizationId  = var.organization_id
     RoleName        = var.collector_role_name

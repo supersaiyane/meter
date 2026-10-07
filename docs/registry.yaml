@@ -81,9 +81,9 @@ subprojects:
   depends_on: P1, P2, P3, P4, P5, P6, P7
 - id: P9
   name: Price catalog and rightsizing targets
-  status: Specified, planned and approved by the owner 2026-10-05, not started, TASK-P9-001 next.
-    EC2 and EBS list prices from AWS, rightsizing down and up to a named and priced target, and gp2
-    to gp3, once the hub reaches AWS by the path chosen in OPEN-16
+  status: Specified, planned and approved by the owner 2026-10-05, in build from 2026-10-08 as priority 3,
+    TASK-P9-001 done, TASK-P9-002 next. EC2 and EBS list prices from AWS, rightsizing down and up to a
+    named and priced target, and gp2 to gp3. The hub now reaches every API it calls, ADR-0035
   spec: specs/2026-10-05-p9-price-catalog-design.md
   plan: plans/P9-implementation-plan.md
   depends_on: P3
@@ -700,6 +700,10 @@ adrs:
   decision: The canonical cost schema follows FOCUS 1.4, and each ratified version after it
   status: Accepted
   doc: docs/adr/ADR-0034-canonical-cost-schema-follows-focus-1-4.md
+- id: ADR-0035
+  decision: The hub reaches AWS through endpoints, and through a relay for what has none
+  status: Accepted
+  doc: docs/adr/ADR-0035-hub-network-path-endpoints-and-relay.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'
@@ -1968,6 +1972,20 @@ changes:
     amended. A test now proves criterion 2, which no test held before, that a row written before migration
     0030 arrives with its provider pair backfilled, and the release before P10 still writes after it,
     shown red without the backfill. FEAT-076 and P10 are Delivered against fakes
+- id: CHG-0134
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-001, the hub reaches every AWS API it calls, ADR-0035
+  commit: pending
+  detail: Ten interface endpoints added in the hub's Region, endpoint VPCs in us-east-1 and eu-west-2
+    peered to the hub with a private hosted zone per service, and a relay outside the VPC, finops_relay,
+    for Budgets, Support and Invoicing and for spot prices and Savings Plans rates. The relay makes only
+    six allow listed read calls, as the role the list names, narrowed by a session policy, and imports
+    nothing of Meter's; the existing adapters read through it unchanged. The member and payer roles trust
+    it by name, and the payer role gains budgets:ViewBudget, closing ISS-259. A test reads every service
+    the adapters call from the code and holds each to its path; four red checks failed it. Endpoint prices
+    measured from the AWS price list; about 338 USD a month in all, modelled. Validated offline against
+    installed providers. ISS-242 closed, ISS-260 found
 issues:
 - id: ISS-189
   severity: LOW
@@ -4150,7 +4168,7 @@ issues:
     describe 2026-08-24 and are right as records
 - id: ISS-242
   severity: HIGH
-  status: OPEN
+  status: FIXED
   summary: The hub's private subnets reach six AWS services, and its collectors call about
     fifteen more, several only in us-east-1 or in eu-west-2
   detail: '`infra/terraform/hub/network.tf` has interface endpoints for `sts`, `sqs`,
@@ -4174,7 +4192,11 @@ issues:
     2026-10-05, A plus C: interface endpoints for every service that has one, and two functions outside the
     VPC for Budgets and Support. It stays OPEN until TASK-P9-001 builds that path. Numbered 236
     on branch p9-plan, in commit d85410d, and renumbered before the merge because main had
-    registered that number first'
+    registered that number first. Fixed 2026-10-08 by TASK-P9-001, ADR-0035: an endpoint in the
+    hub''s Region for each service called there, peered endpoint VPCs in us-east-1 and eu-west-2,
+    and a relay outside the VPC for Budgets, Support and Invoicing, held by
+    tests/contract/test_network_paths.py, which reads every service the adapters call from the
+    code. Not yet applied, ISS-002'
 - id: ISS-243
   severity: MEDIUM
   status: FIXED
@@ -4367,7 +4389,7 @@ issues:
 
 - id: ISS-259
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: No stack grants the budgets read the budgets adapter calls
   detail: 'Found 2026-10-08 while adding the invoice read to the management account''s reader role,
     TASK-P10-003. finops_providers/aws/budgets.py calls DescribeBudgets at the payer, which needs
@@ -4375,7 +4397,23 @@ issues:
     collector would read AccessDenied. Recorded rather than fixed in P10 because it is FEAT-060''s
     and a grant belongs in the change that proves it against a real payer, ISS-002 and ISS-003. The
     fix is one action in the org_read document of infra/terraform/management/main.tf, beside the
-    invoice read'
+    invoice read. Fixed 2026-10-08 by TASK-P9-001, which built the path the call takes: the relay
+    makes DescribeBudgets as the organization reader, and budgets:ViewBudget is granted there,
+    held by tests/contract/test_network_paths.py'
+
+- id: ISS-260
+  severity: MEDIUM
+  status: OPEN
+  summary: The deploy jobs may apply the wrong plan, or none
+  detail: 'Found 2026-10-08 by reading .gitlab-ci.yml while adding the relay build, TASK-P9-001, and
+    not verified, because there is no remote and no pipeline has run. terraform-plan is a parallel
+    matrix over dev and prod, and both write infra/terraform/hub/tfplan as an artifact. deploy:dev
+    needs terraform-plan, so it downloads both into one path and applies whichever arrived last.
+    deploy:prod needs only deploy:dev, which publishes no artifact, so it would find no tfplan at all.
+    A plan saved for one backend applied after an init of the other should be refused by Terraform
+    rather than applied, so the likely outcome is a failed deploy, not a wrong one. The fix is a plan
+    file named per environment, or needs that select the matching matrix job. ISS-250 is the same
+    pipeline on the first push'
 
 open_questions:
 - id: OPEN-07

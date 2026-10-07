@@ -329,6 +329,22 @@ build:web:
     SERVICE: web
     DOCKERFILE: docker/Dockerfile.web
 
+# The relay's zip, TASK-P9-001 and ADR-0035. Built here because the plan and the apply both
+# read it and their image has no Python. Deterministic, so the plan only replaces the function
+# when its code changed.
+build:relay:
+  stage: build
+  image: python:3.13-slim
+  script:
+    - python scripts/deploy/build_relay.py --out build/relay.zip
+  artifacts:
+    paths:
+      - build/relay.zip
+    expire_in: 7 days
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
 # ------------------------------------------------------------------ scan
 #
 # Every image is scanned after it is built and before it can be deployed. An
@@ -465,7 +481,7 @@ deploy:dev:
   <<: *deploy
   variables:
     TF_ENV: dev
-  needs: ["verify-provenance", "terraform-plan"]
+  needs: ["verify-provenance", "terraform-plan", "build:relay"]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
@@ -473,7 +489,7 @@ deploy:prod:
   <<: *deploy
   variables:
     TF_ENV: prod
-  needs: ["deploy:dev"]
+  needs: ["deploy:dev", "build:relay"]
   when: manual
   allow_failure: false
   rules:

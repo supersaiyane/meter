@@ -329,3 +329,60 @@ variable "athena_bytes_scanned_cutoff" {
     error_message = "Athena refuses a cutoff below ten mebibytes."
   }
 }
+
+# --- the network path, TASK-P9-001 and ADR-0035 --------------------------------
+
+variable "global_region" {
+  description = <<-EOT
+    The Region AWS answers its global services in. Cost Explorer, Organizations, IAM and Cost
+    Optimization Hub answer only there, so its endpoint VPC holds theirs. An AWS fact rather than
+    a choice, held here so no Region is written inline.
+  EOT
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "second_region" {
+  description = <<-EOT
+    The collection Region other than the hub's own, OPEN-06. The collectors call each member
+    account there, through the endpoint VPC endpoints.tf builds in it.
+  EOT
+  type        = string
+  default     = "eu-west-2"
+
+  validation {
+    condition     = var.second_region != var.region
+    error_message = "second_region is the collection Region that is not the hub's own."
+  }
+}
+
+variable "global_endpoint_vpc_cidr" {
+  description = "The us-east-1 endpoint VPC. Must not overlap the hub or the other endpoint VPC."
+  type        = string
+  default     = "10.41.0.0/24"
+}
+
+variable "second_endpoint_vpc_cidr" {
+  description = "The second Region's endpoint VPC. Must not overlap the hub or the other."
+  type        = string
+  default     = "10.42.0.0/24"
+}
+
+variable "relay_package" {
+  description = <<-EOT
+    The relay's zip, built by `make build-relay` and by the build:relay job, relative to this
+    stack. Absent at validate, which is why the hash is taken only when it exists.
+  EOT
+  type        = string
+  default     = "../../../build/relay.zip"
+}
+
+variable "relay_role_name" {
+  description = <<-EOT
+    The relay's role. The member StackSet and the management stack trust it by this name, so the
+    three must agree, as they do for the task role.
+  EOT
+  type        = string
+  default     = "FinOpsRelayRole"
+}
+
