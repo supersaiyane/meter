@@ -329,6 +329,7 @@ export async function demoEstate(page: Page): Promise<void> {
           observation_days: 15,
           lifecycle: 'OPEN',
           owner: null,
+          suggested_owner: 'platform',
           ticket_reference: null,
           rationale: 'p99 CPU of 11.4 percent against 4 vCPU over 15 days, so 1 vCPU',
         },

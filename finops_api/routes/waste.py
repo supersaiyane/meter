@@ -99,6 +99,8 @@ def recommendation_out(row: Any) -> RecommendationOut:
         observation_days=row.observation_days,
         lifecycle=row.lifecycle,
         owner=row.owner,
+        # Absent from rows read outside the recommendation repository, a resource page's own.
+        suggested_owner=row._mapping.get("suggested_owner"),
         ticket_reference=row.ticket_reference,
         rationale=row.rationale,
         reversible=risk.reversible,

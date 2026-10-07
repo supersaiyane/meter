@@ -555,6 +555,8 @@ export interface ApiRecommendation {
   readonly lifecycle: string;
   /** Null where nobody owns it, which ISS-021 says is how a finding dies. */
   readonly owner: string | null;
+  /** The resource's team tag, from its inventory node, while nobody owns it. ISS-021. */
+  readonly suggested_owner: string | null;
   readonly ticket_reference: string | null;
   readonly rationale: string;
   /**

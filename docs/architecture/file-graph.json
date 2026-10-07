@@ -621,6 +621,7 @@
     "tests/api/test_lifecycle.py",
     "tests/api/test_query_routes.py",
     "tests/api/test_quota_routes.py",
+    "tests/api/test_recommendation_owner.py",
     "tests/api/test_report_schedules.py",
     "tests/api/test_routes.py",
     "tests/api/test_saved_views.py",
@@ -4608,6 +4609,11 @@
     },
     {
       "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/screens/overviewKpis.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
       "t": "finops-web/src/screens/querySeverity.ts",
       "k": "typescript"
     },
@@ -7043,6 +7049,16 @@
     },
     {
       "s": "finops_api/db/repositories/waste.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/waste.py",
+      "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/waste.py",
       "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
@@ -7469,6 +7485,11 @@
     {
       "s": "finops_api/routes/cost.py",
       "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/cost.py",
+      "t": "finops_core/constants.py",
       "k": "python"
     },
     {
@@ -8893,6 +8914,11 @@
     },
     {
       "s": "finops_ingest/collectors/digests.py",
+      "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/digests.py",
       "t": "finops_core/domain/insight.py",
       "k": "python"
     },
@@ -9744,6 +9770,11 @@
     {
       "s": "finops_query/cost_model.py",
       "t": "finops_query/classify.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/digest.py",
+      "t": "finops_core/constants.py",
       "k": "python"
     },
     {
@@ -10704,6 +10735,16 @@
     {
       "s": "tests/api/test_quota_routes.py",
       "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_recommendation_owner.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_recommendation_owner.py",
+      "t": "finops_core/constants.py",
       "k": "python"
     },
     {

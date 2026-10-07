@@ -12,6 +12,7 @@ import { useFilters } from '../shell/filters';
 import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { RECOMMENDATION_FILTERS } from '../shell/sections';
+import { ALLOCATION_TAG } from './overviewKpis';
 import { severityLevel } from './querySeverity';
 import { surfaceStateFor } from './surfaceStateFor';
 import type { ApiRecommendation, ApiRefusal } from '../api/types';
@@ -194,7 +195,15 @@ export function WasteScreen() {
           // Said, not left blank. An unowned finding is never fixed, and a blank
           // cell is the least noticeable way to render the fact most likely to
           // kill the work.
-          <span data-testid={`unowned-${row.recommendation_id}`}>nobody yet</span>
+          <span data-testid={`unowned-${row.recommendation_id}`}>
+            nobody yet
+            {/* Whom to ask, from the resource's own tag, never an owner: ISS-021. */}
+            {row.suggested_owner === null ? null : (
+              <span data-testid={`suggested-owner-${row.recommendation_id}`}>
+                ; its {ALLOCATION_TAG} tag says {row.suggested_owner}
+              </span>
+            )}
+          </span>
         ) : (
           row.owner
         ),

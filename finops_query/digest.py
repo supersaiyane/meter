@@ -23,6 +23,7 @@ from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from enum import StrEnum
 
+from finops_core.constants import TEAM_TAG
 from finops_core.domain.insight import Answer, Citation, Provenance, Unit
 from finops_core.domain.platform import UNALLOCATED
 
@@ -105,7 +106,9 @@ def compose(week: WeekOfSpend) -> Answer:
         opening = "In the week to {{week_end}}, spend no team tag claims came to {{spend}}"
     else:
         opening = "In the week to {{week_end}}, {{team}} spent {{spend}}"
-        citations.append(cite("team", "tags.team", str(week.team), week.spend_as_of, unit=None))
+        citations.append(
+            cite("team", f"tags.{TEAM_TAG}", str(week.team), week.spend_as_of, unit=None)
+        )
 
     if week.previous is not None and week.previous_as_of is not None:
         sentences = [f"{opening}, against {{{{previous}}}} the week before."]

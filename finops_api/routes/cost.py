@@ -70,6 +70,7 @@ from finops_api.schemas import (
     ShowbackRowOut,
 )
 from finops_core.config import Settings
+from finops_core.constants import TEAM_TAG
 from finops_core.domain.budget import elapsed_fraction, status_of
 from finops_core.domain.cost import BillingPeriod
 from finops_core.domain.tenant import Scope
@@ -786,7 +787,7 @@ def cost_commitments_daily(
 
 def _showback_headers(view: View) -> dict[str, str]:
     """The tag column by the key it holds: a team on one file, a cost centre on the next."""
-    return {"tag_value": f"Tag value, {view.query.get('tag', 'team')}"}
+    return {"tag_value": f"Tag value, {view.query.get('tag', TEAM_TAG)}"}
 
 
 @router.get("/cost/showback", response_model=Envelope[list[ShowbackRowOut]])
@@ -796,13 +797,13 @@ def _showback_headers(view: View) -> dict[str, str]:
         row_model=ShowbackRowOut,
         rows=listed,
         headers=_showback_headers,
-        grouping=lambda view: f"Account, service and the tag {view.query.get('tag', 'team')}",
+        grouping=lambda view: f"Account, service and the tag {view.query.get('tag', TEAM_TAG)}",
         period=billing_period,
         metric=BOTH_COSTS,
     )
 )
 def cost_showback(
-    tag: str = Query(default="team", min_length=1, max_length=128),
+    tag: str = Query(default=TEAM_TAG, min_length=1, max_length=128),
     period: date | None = None,
     connection: Connection = Depends(get_connection),
     scope: Scope = Depends(get_scope),
