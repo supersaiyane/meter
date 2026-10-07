@@ -68,7 +68,8 @@ Others
 FinOps Foundation and standards
   - FOCUS 1.3 ratified 2025-12-05. FOCUS 1.4 ratified 2026-06-04: Invoice Detail and
     Billing Period datasets, invoice reconciliation, Contract Commitment grown to
-    30 columns, commitment eligibility, token fields (input, output, cached).
+    30 columns, commitment eligibility, and completeness and correction rules.
+    Token fields are not in 1.4: the changelog lists none, and they arrive with 1.5.
   - FOCUS 1.5 due 2026-12: native token and model identity, a Price Sheet dataset.
   - A FOCUS Certified Conformant program; AWS and Nebius certified first.
   - The Tokenomics Foundation (Linux Foundation, announced 2026-06-03). FinOps X
@@ -122,7 +123,8 @@ spend, as reported)
   8. The gate is slow for small changes: about 15.5 minutes of backend tests for a
      13 line documentation change on 2026-10-07 (measured, 927 and 935 seconds).
   9. Possible registry drift: FEAT-023 (anomalies) and FEAT-024 (commitments) say
-     Specified while P1 says both were built. To reconcile.
+     Specified while P1 says both were built. Reconciled 2026-10-07, CHG-0124:
+     both are Delivered within the scope their documents state.
 
 
 5. WHAT TO ADD, IN PRIORITY ORDER (proposals for the owner)
@@ -136,7 +138,7 @@ cannot: scope, owners, provenance and other providers.
      the invoice with FOCUS 1.4, and show the match rate on the front page.
      Closes ISS-002, ISS-003, ISS-122, ISS-250 and ISS-022.
   2. FinOps for AI. Bedrock by app, agent and user; OpenAI and Anthropic API cost;
-     GPU use; cost per token, request and feature; FOCUS 1.4 and 1.5 token fields.
+     GPU use; cost per token, request and feature; FOCUS 1.5 token fields.
   3. Owners and a savings ledger. Owners from tags, the service catalogue and
      CloudTrail creators; every saving credited to the engineer whose change made
      it, verified against the bill. Answers ISS-021 and the survey's unsolved
@@ -245,6 +247,48 @@ Totals, modelled: 61 working days from 2026-10-08 to 2026-12-31. P9 alone is 15
 working days, 2026-10-15 to 2026-11-04. P9 is not started until the owner says so.
 Connecting the AWS account in October would let priority 2 show a real match
 against the invoice after one billing period, by mid November.
+
+8. FEATURES TAKEN FROM OTHER TOOLS (added 2026-10-07)
+-----------------------------------------------------
+
+Which ideas come from where, and whether this file already proposes them.
+
+Feature                                          Seen in                                      In this file
+Invoice reconciliation, a published match rate   FOCUS 1.4, AWS FOCUS 1.2 export              Yes, proposal 1
+AI cost: tokens, app, agent, user, GPU           AWS Bedrock, Cloudability, Google, Finout    Yes, proposal 2
+Cost per customer and per feature                CloudZero                                    Partly, in proposal 2
+Owners                                           The gap itself, ISS-021                      Yes, proposal 3
+Savings credited to engineers                    Nobody: the survey's unsolved problem        Yes, proposal 3
+Actions as pull requests, graded autonomy        Turbonomic GitOps, AWS, Infracost AutoFix    Yes, proposal 4
+Waste removed by policy                          Vantage FinOps Agent                         Yes, proposal 4
+Coverage targets and purchase plans              AWS, ProsperOps, Vantage Autopilot           Yes, proposal 5
+Costing a change before deployment               Infracost                                    Yes, proposal 6
+Rightsizing that respects performance            Turbonomic, Cloudability with Turbonomic     Yes, proposal 7
+More providers through FOCUS                     Vantage, Flexera, PointFive                  Yes, proposal 8
+Carbon beside cost                               AWS carbon tool, GreenOps tools              Yes, proposal 9
+Virtual tags: allocation rules without retagging Vantage, Finout                              No
+Commitment laddering, staggered terms            ProsperOps                                   No
+Budgets that roll up a team hierarchy            Vantage                                      No
+Spend caps for AI services                       Google                                       No
+Findings delivered to Slack and Jira             AWS FinOps Agent                             No
+FOCUS conformance certification                  FinOps Foundation                            No
+GPU optimisation, not only GPU use               Turbonomic, CAST AI                          Partly, use only in proposal 2
+Plain language questions and an MCP server       Everyone                                     Built already, P7 and the MCP server
+Anomalies explained from CloudTrail              AWS FinOps Agent                             Not building: take AWS's in
+Autonomous Kubernetes bin packing and spot       CAST AI, ScaleOps                            Not building: integrate instead
+Choosing a model by cost                         Microsoft Foundry                            Left out: not a FinOps tool's job
+
+Recommended homes for the ones marked No, for the owner to decide with OPEN-20:
+  - Virtual tags and budgets that roll up a team hierarchy belong with owners,
+    proposal 3, because both are rules about who a cost belongs to.
+  - Commitment laddering belongs with commitments, proposal 5.
+  - Spend caps for AI services belong with FinOps for AI, proposal 2, as its
+    guardrail, alongside FEAT-015, the kill switch already specified.
+  - Slack and Jira delivery waits on OPEN-05 and OPEN-11, and then serves
+    proposals 3 and 4: an owner has to be told.
+  - FOCUS conformance belongs with proposal 1: a platform claiming proven numbers
+    should hold the badge for the data it reads and writes.
+  - GPU optimisation follows proposal 2's GPU use, and sits with proposal 7.
 
 
 Sources

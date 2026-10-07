@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P1 |
-| Status | Specified |
+| Status | Delivered |
 | Specification | [P1 spec](../specs/2026-09-18-p1-cost-intelligence-design.md), section 16 |
 | Tasks | TASK-P1-014, TASK-P1-015 |
 | Refresh cadence | 6 hours |
@@ -118,3 +118,9 @@ AWS Cost Anomaly Detection findings are not ingested. Our own detection is
 deterministic and its working is on the screen; theirs is neither, and mixing the
 two under one severity scale would make both unreadable. It is a separate source
 when there is an account to read it from, ISS-122.
+
+## Status of this document
+
+Delivered on 2026-09-20 by TASK-P1-014 and TASK-P1-015. The registry and this document said Specified
+until 2026-10-07, when the market research found the drift, CHG-0124. Its name no longer
+promises the ingest of AWS Cost Anomaly Detection, which the Not doing section rules out.

@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-75 features across 10 sub projects. 13 specified, 7 planned, 13 in build, 42 delivered.
+75 features across 10 sub projects. 11 specified, 7 planned, 13 in build, 44 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -130,8 +130,8 @@ block is caught by `make check-docs`. See
 | [FEAT-020](docs/features/FEAT-020-cur-focus-ingest.md) | CUR 2.0 ingest with resource identifiers and split cost allocation | In build | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 5 and 7 |
 | [FEAT-021](docs/features/FEAT-021-cost-rollups-and-trends.md) | Cost rollups, trends and per resource attribution | In build | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) sections 8 and 9 |
 | [FEAT-022](docs/features/FEAT-022-allocation-and-showback.md) | Allocation, showback and the unallocated bucket | In build | [P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 9 |
-| [FEAT-023](docs/features/FEAT-023-cost-anomaly-detection.md) | Anomaly detection and ingest of AWS Cost Anomaly Detection | Specified | [roadmap](docs/01-ROADMAP.md) P1 |
-| [FEAT-024](docs/features/FEAT-024-commitment-coverage.md) | Savings Plan and Reserved Instance utilization and coverage | Specified | [roadmap](docs/01-ROADMAP.md) P1 |
+| [FEAT-023](docs/features/FEAT-023-cost-anomaly-detection.md) | Cost anomaly detection, deterministic, its working on the screen | Delivered | [roadmap](docs/01-ROADMAP.md) P1 |
+| [FEAT-024](docs/features/FEAT-024-commitment-coverage.md) | Savings Plan and Reserved Instance utilization and coverage | Delivered | [roadmap](docs/01-ROADMAP.md) P1 |
 | [FEAT-045](docs/features/FEAT-045-chargeback-export.md) | Chargeback and showback export | Delivered | [Competitive review](docs/11-COMPETITIVE-REVIEW.md) |
 | [FEAT-055](docs/features/FEAT-055-commitment-coverage-actions.md) | A commitment coverage gap as a ranked action | Delivered | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-26 section, adopted from IBM Turbonomic |
 | [FEAT-060](docs/features/FEAT-060-budgets.md) | Budget against actual, with a red amber green status | Delivered | [competitive review](docs/11-COMPETITIVE-REVIEW.md) 2026-09-27, adopted from the FinOpsForge dashboard checklist |
@@ -397,6 +397,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0121 | 2026-10-07 | Design | TASK-P8-015, the UI design and architecture documents as P8 built them | `pending` | docs/12-UI-DESIGN.md states the accessibility sweeps, the glass rule, the chart tables, the six widths that replaced the read only summary it first proposed, and the P8 components. docs/13-UI-ARCHITECTURE.md routes the library and the scheduled screen and adds search, the account choice, saving a view and scheduling one to its cross screen patterns. FEAT-063 is Delivered, and P8 with it, 18 of 18 tasks |
 | CHG-0122 | 2026-10-07 | Scope | Market research and nine proposals recorded in next-in-scope.txt; priorities 1 to 3 approved | `pending` | Research of 2026-10-07 across AWS, IBM, Flexera, Vantage, the FinOps Foundation and the State of FinOps 2026, with nine proposals in priority order and a timeline. The owner approved priorities 1 to 3 the same day, to run in sequence: the one day wins, the FOCUS 1.4 upgrade with invoice reconciliation, and P9, which lifts the hold placed on P9 that morning. Proposals 2 to 9 wait on OPEN-20 |
 | CHG-0123 | 2026-10-07 | Process | make verify-docs: a gate for a change to documents alone, priority 1 of next-in-scope.txt | `pending` | A change touching only Markdown, text, docs/ and tasks/ runs the writing rules, the generated documents and the memory gate instead of every suite. scripts/ci/check_docs_only.py decides that from git, committed, staged, unstaged and untracked, links aside, and refuses any other file by name. Approved by the owner on 2026-10-07 after a thirteen line documentation change had cost about fifteen minutes of tests |
+| CHG-0124 | 2026-10-07 | Correction | FEAT-023 and FEAT-024 marked Delivered, and FEAT-023 renamed, priority 1 item 2 | `pending` | Both were built by P1 on 2026-09-20, TASK-P1-014 to TASK-P1-017, and the registry still said Specified. FEAT-023's name promised the ingest of AWS Cost Anomaly Detection, which its own document rules out, so it is renamed for what it does. next-in-scope.txt gains section 8, the features taken from other tools, and loses a claim that FOCUS 1.4 carries token fields, which arrive with 1.5 |
 
 <!-- generated:changes end -->
 
