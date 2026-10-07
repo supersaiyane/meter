@@ -594,6 +594,7 @@
     "migrations/versions/0030_focus_1_4_columns.py",
     "migrations/versions/0031_invoices.py",
     "migrations/versions/0032_reconciliation_screen.py",
+    "migrations/versions/0033_price_catalog.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -710,6 +711,7 @@
     "tests/db/test_p4_constraints.py",
     "tests/db/test_p5_constraints.py",
     "tests/db/test_p7_constraints.py",
+    "tests/db/test_price_catalog_constraints.py",
     "tests/db/test_schema.py",
     "tests/db/test_scope_guard.py",
     "tests/ingest/__init__.py",
@@ -11963,6 +11965,11 @@
     {
       "s": "tests/db/test_p7_constraints.py",
       "t": "finops_query/redaction.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/db/test_price_catalog_constraints.py",
+      "t": "finops_api/db/__init__.py",
       "k": "python"
     },
     {

@@ -33,9 +33,9 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Playwright journeys | 52 in 19 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 25 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 32 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 195 | test_*.py under tests/ |
-| Test functions | 2566 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 33 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 196 | test_*.py under tests/ |
+| Test functions | 2579 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1442,6 +1442,9 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0033_price_catalog.py  TASK-P9-003. Price versions, prices as offer
+│       │                      terms, instance and volume types, spot prices, and the
+│       │                      recommendation's target priced from one version
 │       ├── 0032_reconciliation_screen.py  TASK-P10-005. A saved view may name
 │       │                      /report/reconciliation; the downgrade refuses while
 │       │                      one does rather than deleting it

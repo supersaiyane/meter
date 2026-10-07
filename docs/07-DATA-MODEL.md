@@ -929,6 +929,69 @@ The amounts are not constrained to add up: AWS documents the total and the amoun
 tax but not the arithmetic between them once fees and discounts are in the breakdown, and a
 constraint could refuse a real invoice.
 
+### The price catalog, P9
+
+Migration 0033, TASK-P9-003. AWS's own prices and descriptions, per tenant as every table is,
+under the guard's tenant rule and nothing narrower, because they are public and about no account.
+Every invariant is a constraint and `tests/db/test_price_catalog_constraints.py` writes a row
+breaking each.
+
+```sql
+CREATE TABLE price_list_version (          -- one publication, one service, one Region
+    service_code, region, version TEXT NOT NULL, row_count INTEGER NOT NULL >= 0,
+    as_of TIMESTAMPTZ,                     -- the publication date
+    collected_at TIMESTAMPTZ >= as_of,
+    UNIQUE (tenant_id, service_code, region, version)
+);
+
+CREATE TABLE price (                       -- one offer term, spec 5.3 as corrected 2026-10-08
+    service_code, region, sku, sku_price_id, sku_meter, pricing_unit TEXT NOT NULL,
+    pricing_category TEXT IN ('Standard', 'Committed'),
+    currency TEXT ~ '^[A-Z]{3}$',
+    recurring_unit_price, upfront_fee NUMERIC(20,10) >= 0, not both nought,
+    lease_years SMALLINT IN (1, 3), purchase_option, offering_class,
+                                           -- present together exactly on a reservation
+    sku_price_details JSONB object, effective_date DATE, version TEXT,
+    as_of, collected_at >= as_of,
+    UNIQUE (tenant_id, region, sku_price_id, version),
+    FOREIGN KEY (tenant_id, service_code, region, version) REFERENCES price_list_version
+);
+
+CREATE TABLE instance_type_spec (          -- EC2 and the four managed services
+    service_code, region, instance_type, family TEXT, current_generation BOOLEAN,
+    architectures TEXT[] not empty, burstable BOOLEAN,
+    baseline_cpu NUMERIC in (0, 1], maximum_credits, baseline_source,
+                                           -- required of a burstable type
+    vcpus INTEGER > 0, memory_mib BIGINT > 0, network_performance TEXT,
+    network_baseline_gbps <= network_peak_gbps, ebs_baseline_mbps <= ebs_maximum_mbps,
+    gpu_count >= 0, offered BOOLEAN,
+    UNIQUE (tenant_id, service_code, region, instance_type)
+);
+
+CREATE TABLE volume_type_spec (            -- included and maximum performance, sourced
+    volume_type TEXT, baseline_iops <= maximum_iops > 0,
+    baseline_throughput_mibps <= maximum_throughput_mibps > 0, iops_per_gib,
+    source TEXT not blank, UNIQUE (tenant_id, volume_type)
+);
+
+CREATE TABLE spot_price (                  -- the latest per pool, replaced each run, OPEN-18
+    region, availability_zone, instance_type, product_description TEXT,
+    price > 0, as_of (the reading), collected_at >= as_of,
+    UNIQUE (tenant_id, region, availability_zone, instance_type, product_description)
+);
+
+CREATE TABLE spot_price_daily (            -- a pool's daily low and high, kept 90 days
+    the pool, day DATE, low <= high, both > 0, readings > 0,
+    UNIQUE (the pool, day)
+);
+```
+
+The recommendation gains four nullable columns, `current_sku_price_id`,
+`target_instance_type`, `target_sku_price_id` and `price_version`: a target is named with its
+price and version or not at all, and each price id is held by a composite foreign key to a price
+of the same tenant, Region and version, so a saving is quoted only from two prices that exist
+together. TASK-P9-007 writes them.
+
 ## Migration workflow, Alembic
 
 Alembic is the only way the schema changes. A manual `ALTER TABLE` against any

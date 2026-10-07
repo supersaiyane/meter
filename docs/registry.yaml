@@ -82,7 +82,7 @@ subprojects:
 - id: P9
   name: Price catalog and rightsizing targets
   status: Specified, planned and approved by the owner 2026-10-05, in build from 2026-10-08 as priority 3,
-    TASK-P9-001 and TASK-P9-002 done, TASK-P9-003 next. EC2 and EBS list prices from AWS, rightsizing down
+    TASK-P9-001 to TASK-P9-003 done, TASK-P9-004 next. EC2 and EBS list prices from AWS, rightsizing down
     and up to a named and priced target, and gp2 to gp3. The hub now reaches every API it calls, ADR-0035
   spec: specs/2026-10-05-p9-price-catalog-design.md
   plan: plans/P9-implementation-plan.md
@@ -1999,6 +1999,18 @@ changes:
     hour beside its fee, so a price row is a term with both and only a term nought in both is refused,
     and that SkuPriceId is the SKU with its term. A contract test the adapters of TASK-P9-004 and
     TASK-P9-005 join; three red checks
+- id: CHG-0136
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-003, the price catalog's tables, every invariant a constraint
+  commit: pending
+  detail: Migration 0033 adds price_list_version, price, instance_type_spec, volume_type_spec, spot_price
+    and spot_price_daily, and four nullable target columns on the recommendation. A price is an offer term
+    whose two prices are never negative and never both nought, belongs to a recorded version by a foreign
+    key, and names its lease and payment exactly when it is a reservation; a burstable type carries its
+    baseline and its source; a spot day's low is never above its high; and a recommendation's target is a
+    recorded price of the same Region and version. Per tenant like every table, so the guard needs no new
+    rule. A test per constraint, two red checks
 issues:
 - id: ISS-189
   severity: LOW

@@ -135,6 +135,15 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOr
     "cloud_account": ByAccount("account_id", "provider"),
     "org_node": None,
     "ingest_run": None,
+    # P9, migration 0033. AWS's own prices and descriptions, public and about no account, so the
+    # tenant rule and nothing narrower: a reader granted one account sees the same price list as
+    # one granted all of them.
+    "price_list_version": None,
+    "price": None,
+    "instance_type_spec": None,
+    "volume_type_spec": None,
+    "spot_price": None,
+    "spot_price_daily": None,
     "ingest_watermark": None,
     "sync_error": None,
     # P1. Every charge names the account it was incurred in, so a caller
