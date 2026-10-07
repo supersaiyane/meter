@@ -1697,6 +1697,16 @@ changes:
     six widths that replaced the read only summary it first proposed, and the P8 components. docs/13-UI-ARCHITECTURE.md
     routes the library and the scheduled screen and adds search, the account choice, saving a view and
     scheduling one to its cross screen patterns. FEAT-063 is Delivered, and P8 with it, 18 of 18 tasks
+
+- id: CHG-0122
+  date: '2026-10-07'
+  type: Scope
+  what: Market research and nine proposals recorded in next-in-scope.txt; priorities 1 to 3 approved
+  commit: pending
+  detail: 'Research of 2026-10-07 across AWS, IBM, Flexera, Vantage, the FinOps Foundation and the State
+    of FinOps 2026, with nine proposals in priority order and a timeline. The owner approved priorities
+    1 to 3 the same day, to run in sequence: the one day wins, the FOCUS 1.4 upgrade with invoice reconciliation,
+    and P9, which lifts the hold placed on P9 that morning. Proposals 2 to 9 wait on OPEN-20'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4247,3 +4257,12 @@ open_questions:
   status: ANSWERED
   blocks: nothing
   detail: Set in METER_REGIONS, see .env.example section 3
+- id: OPEN-20
+  question: Which of proposals 2 to 9 in next-in-scope.txt are approved, and in what order?
+  status: OPEN
+  blocks: Every proposal after P9
+  detail: 'Raised 2026-10-07 with the market research. Priorities 1 to 3 were approved the same day. The
+    rest are FinOps for AI, owners and a savings ledger, graded autonomy through pull requests, commitments,
+    costing before deployment, performance aware rightsizing, more providers through FOCUS, and carbon
+    beside cost. Recommended: the order in section 7 of next-in-scope.txt, owners and the savings ledger
+    first because ISS-021 blocks every action after it.'
