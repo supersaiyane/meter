@@ -87,7 +87,7 @@ Same contract as P0 through P9. One task, one commit, `make verify` green before
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | Spec sections 5.3 and 6, FEAT-076 |
 | Delivers | FEAT-076's source |
 | Depends on | TASK-P10-002 |
@@ -95,17 +95,29 @@ Same contract as P0 through P9. One task, one commit, `make verify` green before
 
 **Acceptance criteria.**
 
-- [ ] A port in `finops_core` names the read and its typed causes, with a fake in
-      `finops_fakes`
-- [ ] An AWS adapter calls `ListInvoiceSummaries` through the credential broker, pages, keeps
-      a credit memo with its original invoice, and turns AccessDenied, throttling and a
-      missing account into the typed causes, tested with a stubbed client
-- [ ] Migration 0031 adds `billing_period` and `invoice_detail` with their constraints, each
-      row carrying `as_of`, the issue date, and `collected_at`
-- [ ] A collector, `invoices`, with its cadence row, daily, its run in the ledger, and
-      partial failure that never fails the run
-- [ ] `invoicing:ListInvoiceSummaries` is added to the reader role in the member and hub
-      stacks, and nothing that writes
+- [x] A port in `finops_core` names the read and its typed causes, with a fake in
+      `finops_fakes`. `finops_core/ports/invoice.py`, `finops_fakes/invoices.py`, whose
+      invoices are built from the bill's rows: one period matches, one is 2.50 over beside a
+      Marketplace invoice, the running month has none. `tests/providers/fake/test_invoices.py`
+- [x] An AWS adapter calls `ListInvoiceSummaries`, one billing period at a time, pages, keeps
+      a credit memo with its original invoice, skips a payment receipt, turns AccessDenied and
+      throttling into the typed causes through `translate`, and reads an unreadable amount,
+      currency, period or date as SchemaDrift, never a zero, tested with a stubbed client,
+      `tests/providers/aws/test_invoices.py`. Reworded on 2026-10-08: the criterion said
+      through the credential broker, and the adapter is given the payer's client as
+      `AwsBudgets` is; nothing in production builds either, which is ISS-182
+- [x] Migration 0031 adds `billing_period` and `invoice_detail` with their constraints, each
+      row carrying `as_of`, the issue date, and `collected_at`, and the guard holds both
+      `PayerWide` before any route reads them, `tests/db/test_scope_guard.py`
+- [x] A collector, `invoices`, with its cadence row, daily, in the migration and in
+      `DEFAULT_SCHEDULE` with one reason, and its run in the ledger. Reworded on 2026-10-08:
+      the read is one call at the payer, so a failure fails its own unit and is recorded by
+      type, and no other collector's; it never writes a period Open because its invoices
+      could not be read. `tests/ingest/collectors/test_invoices.py`
+- [x] `invoicing:ListInvoiceSummaries` is added to the management account's organization
+      reader role, `infra/terraform/management/main.tf`, and nothing that writes. Reworded on
+      2026-10-08: the criterion named the member and hub stacks, and AWS issues invoices to
+      the payer, so the management account is the only place they can be read
 
 ---
 

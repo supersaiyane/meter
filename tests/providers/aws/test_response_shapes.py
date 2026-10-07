@@ -74,6 +74,28 @@ READS: dict[tuple[str, str], set[str]] = {
     },
     # FEAT-057, ISS-209. The state file, one object read.
     ("s3", "GetObject"): {"Body"},
+    # FEAT-076, TASK-P10-003. The payer's invoices, one paginated list per billing period.
+    ("invoicing", "ListInvoiceSummaries"): {
+        "InvoiceSummaries",
+        "AccountId",
+        "InvoiceId",
+        "IssuedDate",
+        "DueDate",
+        "Entity",
+        "InvoicingEntity",
+        "BillingPeriod",
+        "Month",
+        "Year",
+        "InvoiceType",
+        "OriginalInvoiceId",
+        "BaseCurrencyAmount",
+        "TotalAmount",
+        "TotalAmountBeforeTax",
+        "CurrencyCode",
+        "AmountBreakdown",
+        "Taxes",
+        "NextToken",
+    },
     # FEAT-060, ISS-211. The budgets, one paginated describe.
     ("budgets", "DescribeBudgets"): {
         "Budgets",
@@ -169,6 +191,7 @@ TOKENS: dict[tuple[str, str], str] = {
     ("ec2", "DescribeVpcEndpointConnections"): "NextToken",
     ("iam", "ListRoles"): "Marker",
     ("budgets", "DescribeBudgets"): "NextToken",
+    ("invoicing", "ListInvoiceSummaries"): "NextToken",
     ("service-quotas", "ListServices"): "NextToken",
     ("service-quotas", "ListServiceQuotas"): "NextToken",
     ("service-quotas", "ListRequestedServiceQuotaChangeHistory"): "NextToken",
@@ -270,6 +293,7 @@ SENDS: dict[tuple[str, str], set[str]] = {
     ("iam", "ListRoles"): set(),
     ("s3", "GetObject"): {"Bucket", "Key"},
     ("budgets", "DescribeBudgets"): {"AccountId"},
+    ("invoicing", "ListInvoiceSummaries"): {"Selector", "Filter"},
     ("service-quotas", "ListServices"): set(),
     ("service-quotas", "ListServiceQuotas"): {"ServiceCode"},
     ("service-quotas", "ListRequestedServiceQuotaChangeHistory"): set(),
@@ -333,6 +357,14 @@ FALLS_THROUGH: dict[tuple[str, str], set[str]] = {
         "InvalidNextTokenException",
         "InvalidParameterException",
         "NotFoundException",
+    },
+    # The Invoicing API refuses as AccessDeniedException and throttles as ThrottlingException,
+    # both mapped. What is left is our own request being wrong, a payer the API does not know,
+    # and the service failing, SchemaDrift for now as ISS-215 records for every adapter here.
+    ("invoicing", "ListInvoiceSummaries"): {
+        "InternalServerException",
+        "ResourceNotFoundException",
+        "ValidationException",
     },
     # Service Quotas throttles as TooManyRequestsException and refuses as
     # AccessDeniedException, both of which translate maps. What is left is our own request

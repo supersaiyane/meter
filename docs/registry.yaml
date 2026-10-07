@@ -90,7 +90,7 @@ subprojects:
 - id: P10
   name: 'Proven numbers: FOCUS 1.4 and invoice reconciliation'
   status: Specified, planned and approved by the owner 2026-10-07 as priority 2 of next-in-scope.txt,
-    TASK-P10-001 and TASK-P10-002 done on 2026-10-07, TASK-P10-003 next. Runs before P9 by the owner's
+    TASK-P10-001 and TASK-P10-002 done on 2026-10-07, TASK-P10-003 on 2026-10-08, TASK-P10-004 next. Runs before P9 by the owner's
     priority. The cost row gains FOCUS 1.4's mandatory and invoice columns, and each AWS invoice is compared
     with Meter's billed cost
   spec: specs/2026-10-07-p10-proven-numbers-design.md
@@ -556,7 +556,7 @@ features:
 - id: FEAT-076
   name: Invoice reconciliation, Meter's billed cost against the provider's invoice
   subproject: P10
-  status: Specified
+  status: In build
   detail: '[P10 spec](docs/specs/2026-10-07-p10-proven-numbers-design.md) sections 5.3 to 5.5, 6, 7'
   doc: docs/features/FEAT-076-invoice-reconciliation.md
 adrs:
@@ -1920,6 +1920,20 @@ changes:
     a currency that is not ISO 4217 as SchemaDrift. The record derives both provider columns from provider_name
     as FOCUS defines, for every source. A test holds all 21 FOCUS 1.4 mandatory columns to the record
     and the table
+- id: CHG-0130
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P10-003, billing periods and invoices read from the payer, FEAT-076
+  commit: pending
+  detail: An Invoice entity and an InvoiceSource port; a fake built from the bill's rows, with one period
+    matching, one 2.50 over beside a Marketplace invoice and the running month open; an AWS adapter
+    calling ListInvoiceSummaries one billing period at a time, with anything unreadable as SchemaDrift;
+    migration 0031 with billing_period and invoice_detail, their constraints and the invoices cadence
+    row; a collector storing both as read; both tables PayerWide before any route reads them; the demo
+    seeded with the invoices; and invoicing:ListInvoiceSummaries on the management account's reader
+    role. Three acceptance criteria were reworded to what is true, recorded in the plan. Two red checks
+    found tests that could not fail, a surcharge compared with the fake's own constant and no test that
+    the tables are payer wide, and both were fixed
 issues:
 - id: ISS-189
   severity: LOW
@@ -4316,6 +4330,18 @@ issues:
     title with no space, so P8 followed by Showback never matched. Measured by putting the promise back:
     HomeScreen.test.tsx passed over it before the change, and both fail over it after. Fixed the same
     day: the panel lists the reader''s schedules, and both patterns end on not a digit and cover P8.'
+
+- id: ISS-259
+  severity: MEDIUM
+  status: OPEN
+  summary: No stack grants the budgets read the budgets adapter calls
+  detail: 'Found 2026-10-08 while adding the invoice read to the management account''s reader role,
+    TASK-P10-003. finops_providers/aws/budgets.py calls DescribeBudgets at the payer, which needs
+    budgets:ViewBudget, and no file under infra/ grants it, so the first live run of the budgets
+    collector would read AccessDenied. Recorded rather than fixed in P10 because it is FEAT-060''s
+    and a grant belongs in the change that proves it against a real payer, ISS-002 and ISS-003. The
+    fix is one action in the org_read document of infra/terraform/management/main.tf, beside the
+    invoice read'
 
 open_questions:
 - id: OPEN-07

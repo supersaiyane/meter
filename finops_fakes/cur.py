@@ -301,6 +301,8 @@ def _row(
     effective = (daily_usd * drift * cost_factor).quantize(Decimal("0.0001"))
     # One unit a day before any change, which is what every existing row carried.
     consumed = (Decimal("1") * usage_factor).quantize(Decimal("0.0001"))
+    # Closed once the month after it has begun, which is when the fake payer is invoiced.
+    invoiced = period < date(at.year, at.month, 1)
     return CostRecord(
         tenant_id=fixtures.TENANT_ID,
         ingest_run_id=fixtures.INGEST_RUN_ID,
@@ -348,7 +350,21 @@ def _row(
         commitment_discount_type=None,
         commitment_discount_status=None,
         tags=_tags(account, service),
+        billing_account_name="Fake payer",
+        billing_currency=CURRENCY,
+        pricing_unit="Hrs",
+        invoice_id=invoice_id_for(period) if invoiced else None,
     )
+
+
+#: The currency the fake estate is billed in. TASK-P10-002 and P10-003.
+CURRENCY = "USD"
+
+
+def invoice_id_for(period: date) -> str:
+    """The invoice a closed period's rows carry. An open period has none, as AWS leaves the
+    invoice id blank until it issues one, so its rows carry None and the period reads as open."""
+    return f"fake-invoice-{period:%Y-%m}"
 
 
 def periods_ending_at(at: datetime, count: int = 3) -> tuple[date, ...]:

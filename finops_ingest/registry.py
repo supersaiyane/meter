@@ -325,6 +325,17 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0",
     ),
     ScheduleEntry(
+        collector="invoices",
+        cadence_seconds=DAILY,
+        reason=(
+            "Daily, because AWS issues an invoice once a month and a credit memo rarely, so a "
+            "daily read finds each within a day of its issue. A run is one ListInvoiceSummaries "
+            "per billing period at the payer, modelled at no cost until a real bill shows "
+            "otherwise. ADR-0012, constraint 9 and FEAT-076."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
         collector="iac_state",
         cadence_seconds=DAILY,
         reason=(

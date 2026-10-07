@@ -56,6 +56,7 @@ from finops_fakes.cur import FakeCostExport, estate
 from finops_fakes.estate_metrics import EstateMetrics, ec2_candidates
 from finops_fakes.evidence import FakeQueryEvidence
 from finops_fakes.health import FakeRoleHealth
+from finops_fakes.invoices import FakeInvoices
 from finops_fakes.platform_cost import FakePlatformCost
 from finops_fakes.provider import FakeProvider
 from finops_fakes.recommendations import FakeRecommendationSource
@@ -72,6 +73,7 @@ from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
 from finops_ingest.collectors.iac_state import IacStateCollector
 from finops_ingest.collectors.inventory import InventoryCollector
+from finops_ingest.collectors.invoices import InvoiceCollector
 from finops_ingest.collectors.org_tree import OrgTreeCollector
 from finops_ingest.collectors.partitions import ensure_partition, partition_maintenance
 from finops_ingest.collectors.platform_cost import PlatformCostCollector
@@ -190,6 +192,9 @@ DEMO_TABLES = (
     "sizing_refusal",
     # P1, FEAT-060. References only the tenant.
     "budget",
+    # P10, FEAT-076. Both reference only the tenant.
+    "invoice_detail",
+    "billing_period",
     "commitment_action",
     # P1, FEAT-024. Neither references the other, and both reference only the
     # tenant, so their order between themselves does not matter. The daily rows, TASK-P8-013,
@@ -580,6 +585,16 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
             connection,
             unit(scope_key="billing:budgets"),
             "budgets",
+        )
+        # FEAT-076. Built from the same bill the cost rows were, so the invoices match those rows
+        # by construction except where the fake says otherwise: one period matches, one is
+        # 2.50 over with a Marketplace invoice beside it, and the running month is open.
+        written += _through_the_ledger(
+            ledger,
+            InvoiceCollector(FakeInvoices(rows=bill), clock=lambda: now),
+            connection,
+            unit(scope_key="billing:invoices"),
+            "invoices",
         )
         # FEAT-055, immediately after the coverage it reads. Turning the gaps into findings in
         # the same seed run is what makes the commitments screen show the actions rather than
