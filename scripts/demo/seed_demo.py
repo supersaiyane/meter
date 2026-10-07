@@ -195,6 +195,14 @@ DEMO_TABLES = (
     # P10, FEAT-076. Both reference only the tenant.
     "invoice_detail",
     "billing_period",
+    # P9, migration 0033. After `recommendation`, whose target references a price, and each
+    # price before the version it belongs to. The rest reference only the tenant.
+    "price",
+    "price_list_version",
+    "instance_type_spec",
+    "volume_type_spec",
+    "spot_price_daily",
+    "spot_price",
     "commitment_action",
     # P1, FEAT-024. Neither references the other, and both reference only the
     # tenant, so their order between themselves does not matter. The daily rows, TASK-P8-013,

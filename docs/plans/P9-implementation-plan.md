@@ -131,7 +131,7 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 6 |
 | Delivers | Four tables and the recommendation's added columns |
 | Depends on | TASK-P9-002 |
@@ -139,16 +139,20 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 **Acceptance criteria.**
 
-- [ ] `price_list_version`, `price`, `instance_type_spec` and `volume_type_spec`, every
+- [x] `price_list_version`, `price`, `instance_type_spec` and `volume_type_spec`, every
       invariant in spec section 6 a constraint, with `price` holding a term's recurring price
       and upfront fee and refusing only a term that is nought in both, as corrected on
-      2026-10-08
-- [ ] `instance_type_spec` keyed by service as well as type, for the five services of spec
+      2026-10-08. Migration 0033; a price's version is a foreign key, so no price exists
+      without the publication it came from
+- [x] `instance_type_spec` keyed by service as well as type, for the five services of spec
       section 14, and `spot_price` and `spot_price_daily` as OPEN-18 chose, spec section
       14.7. Added 2026-10-07
-- [ ] The recommendation's target columns added as nullable, constraint 12
-- [ ] A test per constraint, and `docs/07-DATA-MODEL.md` and
-      `docs/09-DATA-CLASSIFICATION.md` updated in the same commit
+- [x] The recommendation's target columns added as nullable, constraint 12, each price id held
+      by a composite foreign key to a price of the same Region and version
+- [x] A test per constraint, `tests/db/test_price_catalog_constraints.py`, and
+      `docs/07-DATA-MODEL.md` and `docs/09-DATA-CLASSIFICATION.md` updated in the same commit.
+      Two red checks failed it. Per tenant, as every table is, rather than shared as the spec's
+      table drew them, so the guard needs no new rule; the migration records why
 
 ---
 
