@@ -126,7 +126,10 @@ currency; a row in another currency is a typed state, never converted silently.
 
 The tolerance is 0.01 percent of the invoice's amount, modelled: rounding between line
 items and an invoice is expected, and the figure is revisited once a real invoice has been
-compared. It is a named constant with this reason beside it.
+compared. It is a named constant with this reason beside it. A difference under one cent
+always matches, added on 2026-10-08 with TASK-P10-004, CHG-0131: an invoice is stated in
+cents, and without the floor a zero tax line would demand an exact match from a sum of rows
+held to ten decimal places.
 
 ### 5.5 An invoice is payer wide
 
@@ -153,7 +156,7 @@ cannot drift from either.
 
 ## 7. Interface
 
-- `GET /api/v1/cost/reconciliation?period=YYYY-MM`, an envelope of comparisons, exportable
+- `GET /api/v1/cost/reconciliation?period=YYYY-MM-DD`, an envelope of comparisons, exportable
   as every list route is.
 - A screen, Invoice reconciliation, at `/report/reconciliation`.
 - A tile on the FinOps practitioner's Overview, Matches the invoice, for the last period with

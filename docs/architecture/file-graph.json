@@ -307,6 +307,7 @@
     "finops_api/db/repositories/forecast.py",
     "finops_api/db/repositories/freshness.py",
     "finops_api/db/repositories/ingest.py",
+    "finops_api/db/repositories/invoices.py",
     "finops_api/db/repositories/org.py",
     "finops_api/db/repositories/query.py",
     "finops_api/db/repositories/quotas.py",
@@ -343,6 +344,7 @@
     "finops_api/routes/platform.py",
     "finops_api/routes/query.py",
     "finops_api/routes/quotas.py",
+    "finops_api/routes/reconciliation.py",
     "finops_api/routes/schedules.py",
     "finops_api/routes/views.py",
     "finops_api/routes/waste.py",
@@ -372,6 +374,7 @@
     "finops_core/domain/platform.py",
     "finops_core/domain/query.py",
     "finops_core/domain/quota.py",
+    "finops_core/domain/reconciliation.py",
     "finops_core/domain/report_schedule.py",
     "finops_core/domain/resource.py",
     "finops_core/domain/tenant.py",
@@ -630,6 +633,7 @@
     "tests/api/test_query_routes.py",
     "tests/api/test_quota_routes.py",
     "tests/api/test_recommendation_owner.py",
+    "tests/api/test_reconciliation.py",
     "tests/api/test_report_schedules.py",
     "tests/api/test_routes.py",
     "tests/api/test_saved_views.py",
@@ -672,6 +676,7 @@
     "tests/core/test_llm_port.py",
     "tests/core/test_ports.py",
     "tests/core/test_quota.py",
+    "tests/core/test_reconciliation.py",
     "tests/core/test_report_schedule.py",
     "tests/core/test_topology.py",
     "tests/core/test_waste_domain.py",
@@ -6896,6 +6901,31 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/invoices.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/invoices.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/invoices.py",
+      "t": "finops_core/domain/invoice.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/invoices.py",
+      "t": "finops_core/domain/reconciliation.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/invoices.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/org.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -7948,6 +7978,56 @@
     {
       "s": "finops_api/routes/quotas.py",
       "t": "finops_query/quota.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/reconciliation.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/reconciliation.py",
+      "t": "finops_api/db/repositories/ingest.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/reconciliation.py",
+      "t": "finops_api/db/repositories/invoices.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/reconciliation.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/reconciliation.py",
+      "t": "finops_api/exports/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/reconciliation.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/reconciliation.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/reconciliation.py",
+      "t": "finops_core/domain/invoice.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/reconciliation.py",
+      "t": "finops_core/domain/reconciliation.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/reconciliation.py",
+      "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
     {
@@ -10836,6 +10916,51 @@
       "k": "python"
     },
     {
+      "s": "tests/api/test_reconciliation.py",
+      "t": "finops_api/routes/reconciliation.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_reconciliation.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_reconciliation.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_reconciliation.py",
+      "t": "finops_core/domain/invoice.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_reconciliation.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_reconciliation.py",
+      "t": "finops_ingest/collectors/invoices.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_reconciliation.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_reconciliation.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_reconciliation.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/api/test_report_schedules.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -11518,6 +11643,11 @@
     {
       "s": "tests/core/test_quota.py",
       "t": "finops_core/domain/quota.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_reconciliation.py",
+      "t": "finops_core/domain/reconciliation.py",
       "k": "python"
     },
     {
