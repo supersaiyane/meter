@@ -650,7 +650,7 @@ changes:
   type: Correction
   what: project_map.md verified against the tree and four errors corrected, including hyphenated Python
     package names that also appeared in CLAUDE.md
-  commit: pending
+  commit: a9ef75c
   detail: '[project_map.md](project_map.md)'
 issues:
 - id: ISS-001
