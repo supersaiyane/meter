@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P9 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.4, 7 and 14 |
 | Tasks | TASK-P9-005, done 2026-10-08. TASK-P9-010 serves it as `GET /catalog/instance-types`, done 2026-10-08 |
 | Refresh cadence | Every 8 hours, the `instance_catalog` collector |
@@ -109,7 +109,8 @@ in this repository shows.
 
 ## Status of this document
 
-In build. Built on 2026-10-08 by TASK-P9-005, against stubs and AWS's own samples. Specified in
+Delivered on 2026-10-08 against fakes, proven by TASK-P9-011. Built that day by TASK-P9-005,
+against stubs and AWS's own samples. Specified in
 the [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.4, 7 and 14, and planned
 in the [P9 plan](../plans/P9-implementation-plan.md).
 
