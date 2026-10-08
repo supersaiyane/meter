@@ -52,6 +52,7 @@ that before there is data in it, which is the only cheap moment to do it.
 | `invoice_detail` | **C** | Every invoice and credit memo issued to the payer, its amounts before and after tax, and the entity that issued it. Payer wide, ADR-0025. No personal data | **37 months**, as `cost_focus_daily`, because an invoice is compared with those rows | Not applicable |
 | `price_list_version`, `price` | U | AWS's published prices, every term, per service, Region and version. Nothing of the tenant's, and no personal data | Until superseded; how many versions are kept back is decided with TASK-P9-004 once the row count is measured | Not applicable |
 | `instance_type_spec`, `volume_type_spec` | U | AWS's own descriptions of its instance and volume types | Current state, replaced each run | Not applicable |
+| `recommendation_option` | C | Every target a provider ranked for a finding about the tenant's own resources, with the catalog price each quotes or the reason it has none, TASK-P9-006 | Replaced with each read of its recommendation; kept while the recommendation is | Not applicable |
 | `spot_price`, `spot_price_daily` | U | AWS's published spot prices, the latest per pool and each day's low and high | The latest replaced each run; the daily rows **90 days**, OPEN-18 | Not applicable |
 
 ### The account root email address

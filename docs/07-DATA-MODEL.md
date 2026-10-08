@@ -990,7 +990,25 @@ The recommendation gains four nullable columns, `current_sku_price_id`,
 `target_instance_type`, `target_sku_price_id` and `price_version`: a target is named with its
 price and version or not at all, and each price id is held by a composite foreign key to a price
 of the same tenant, Region and version, so a saving is quoted only from two prices that exist
-together. TASK-P9-007 writes them.
+together. TASK-P9-006 writes them for Compute Optimizer's findings, from the first ranked
+option and the instance's current type; TASK-P9-007 for Meter's own.
+
+```sql
+CREATE TABLE recommendation_option (       -- every target a provider ranked, migration 0038
+    recommendation_id REFERENCES recommendation, region TEXT, rank >= 1, instance_type TEXT,
+    performance_risk 0 to 4, provider_monthly_saving (any sign), migration_effort,
+    platform_differences TEXT[],
+    sku_price_id, price_version, hourly_price > 0,    -- all three, from one recorded price
+    unpriced_reason,                                  -- or this instead, never both
+    FOREIGN KEY (tenant_id, region, sku_price_id, price_version) REFERENCES price,
+    UNIQUE (recommendation_id, rank)
+);
+```
+
+An option is priced from a recorded price, with its version and hourly price beside it, or it
+names why it could not be, never both and never neither, so an unpriced option is never a price
+of nought. Price pruning spares a price an option quotes, as it spares one a recommendation
+quotes. Scoped through its recommendation, as `recommendation_event` is. OPEN-23.
 
 ## Migration workflow, Alembic
 

@@ -137,6 +137,24 @@ READS: dict[tuple[str, str], set[str]] = {
         "Timestamp",
         "NextToken",
     },
+    # TASK-P9-006. Compute Optimizer, a Region and an account at a time, every ranked option.
+    ("compute-optimizer", "GetEC2InstanceRecommendations"): {
+        "instanceRecommendations",
+        "instanceArn",
+        "finding",
+        "currentInstanceType",
+        "lookBackPeriodInDays",
+        "recommendationOptions",
+        "instanceType",
+        "rank",
+        "performanceRisk",
+        "migrationEffort",
+        "platformDifferences",
+        "savingsOpportunity",
+        "estimatedMonthlySavings",
+        "value",
+        "nextToken",
+    },
     # FEAT-072, TASK-P9-005. EC2's description of its types, every figure the spec stores.
     ("ec2", "DescribeInstanceTypes"): {
         "InstanceTypes",
@@ -376,6 +394,11 @@ SENDS: dict[tuple[str, str], set[str]] = {
     },
     # The window's two ends, and every zone and product description.
     ("ec2", "DescribeSpotPriceHistory"): {"StartTime", "EndTime", "MaxResults"},
+    # One account a request, and Graviton asked for through the architecture preference.
+    ("compute-optimizer", "GetEC2InstanceRecommendations"): {
+        "accountIds",
+        "recommendationPreferences",
+    },
     # Every type, unfiltered: the hub's Region describes all it supports.
     ("ec2", "DescribeInstanceTypes"): set(),
     ("service-quotas", "ListServices"): set(),
@@ -506,6 +529,16 @@ FALLS_THROUGH: dict[tuple[str, str], set[str]] = {
     ("savingsplans", "DescribeSavingsPlansOfferingRates"): {
         "InternalServerException",
         "ValidationException",
+    },
+    # Compute Optimizer's not enabled codes become NotOptedIn in the adapter itself, ISS-004;
+    # what is left here reaches translate as SchemaDrift, ISS-215.
+    ("compute-optimizer", "GetEC2InstanceRecommendations"): {
+        "InternalServerException",
+        "InvalidParameterValueException",
+        "MissingAuthenticationToken",
+        "OptInRequiredException",
+        "ResourceNotFoundException",
+        "ServiceUnavailableException",
     },
     # EC2 declares no modelled errors at all for either counter, nor for its instance types.
     ("ec2", "DescribeVpcs"): set(),

@@ -608,6 +608,7 @@
     "migrations/versions/0035_instance_catalog_schedule.py",
     "migrations/versions/0036_savings_plan_rates_schedule.py",
     "migrations/versions/0037_spot_prices_schedule.py",
+    "migrations/versions/0038_recommendation_option.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -725,6 +726,7 @@
     "tests/db/test_p5_constraints.py",
     "tests/db/test_p7_constraints.py",
     "tests/db/test_price_catalog_constraints.py",
+    "tests/db/test_recommendation_option_constraints.py",
     "tests/db/test_schema.py",
     "tests/db/test_scope_guard.py",
     "tests/ingest/__init__.py",
@@ -748,6 +750,7 @@
     "tests/ingest/collectors/test_price_catalog.py",
     "tests/ingest/collectors/test_quotas.py",
     "tests/ingest/collectors/test_realized_savings.py",
+    "tests/ingest/collectors/test_recommendation_options.py",
     "tests/ingest/collectors/test_recommendations.py",
     "tests/ingest/collectors/test_retention.py",
     "tests/ingest/collectors/test_savings_plan_rates.py",
@@ -8622,6 +8625,11 @@
       "k": "python"
     },
     {
+      "s": "finops_core/domain/waste.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/ports/__init__.py",
       "t": "finops_core/ports/accounts.py",
       "k": "python"
@@ -9484,6 +9492,11 @@
     {
       "s": "finops_ingest/collectors/recommendations.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/recommendations.py",
+      "t": "finops_ingest/collectors/price_catalog.py",
       "k": "python"
     },
     {
@@ -12108,6 +12121,11 @@
     },
     {
       "s": "tests/core/test_waste_domain.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_waste_domain.py",
       "t": "finops_query/__init__.py",
       "k": "python"
     },
@@ -12713,6 +12731,41 @@
     },
     {
       "s": "tests/ingest/collectors/test_realized_savings.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_recommendation_options.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_recommendation_options.py",
+      "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_recommendation_options.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_recommendation_options.py",
+      "t": "finops_ingest/collectors/price_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_recommendation_options.py",
+      "t": "finops_ingest/collectors/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_recommendation_options.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_recommendation_options.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
@@ -13529,6 +13582,11 @@
     {
       "s": "tests/providers/aws/test_recommendations.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_recommendations.py",
+      "t": "finops_providers/aws/__init__.py",
       "k": "python"
     },
     {

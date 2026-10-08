@@ -207,6 +207,8 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOr
     # uses: a denormalised account column here would be a second copy of a fact
     # and therefore a second chance to disagree with the first.
     "recommendation_event": Through("recommendation", "recommendation_id", "recommendation_id"),
+    # TASK-P9-006. The targets a finding was compared with are as visible as the finding.
+    "recommendation_option": Through("recommendation", "recommendation_id", "recommendation_id"),
     # A realized saving belongs to the recommendation it verifies, and inherits
     # its account for the same reason the event does.
     "realized_saving": Through("recommendation", "recommendation_id", "recommendation_id"),
