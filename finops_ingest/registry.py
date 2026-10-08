@@ -371,6 +371,21 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         ),
         est_cost_per_run="0.001",
     ),
+    # FEAT-071, TASK-P9-012. Migration 0036 installs the same row for every tenant before it.
+    ScheduleEntry(
+        collector="savings_plan_rates",
+        cadence_seconds=EIGHT_HOURLY,
+        reason=(
+            "Every 8 hours, with the other catalog collectors, P9 specification section 14.4. "
+            "Savings Plans rates carry no published version, so every Region is read each run "
+            "and a Region whose rates have not moved is stored as nothing. A run is six relay "
+            "calls a Region, one per plan type and payment option, so no answer outgrows the "
+            "relay; about 180 calls a run across 30 Regions (modelled), inside the Lambda free "
+            "allowance, and an S3 write each at 0.005 USD a thousand, AWS's published rate. "
+            "ADR-0012, ADR-0035, constraint 9, FEAT-071 and OPEN-19."
+        ),
+        est_cost_per_run="0.001",
+    ),
     ScheduleEntry(
         collector="iac_state",
         cadence_seconds=DAILY,

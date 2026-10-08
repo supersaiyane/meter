@@ -50,7 +50,7 @@ from finops_fakes import cur, fixtures, prices, utilization
 from finops_fakes import estate_shape as shape
 from finops_fakes import quotas as quota_estate
 from finops_fakes.budgets import FakeBudgets
-from finops_fakes.catalog import FakeInstanceCatalog, FakePriceCatalog
+from finops_fakes.catalog import FakeInstanceCatalog, FakePriceCatalog, FakeSavingsPlansRates
 from finops_fakes.cloudwatch_estate import FakeCloudWatchEstate
 from finops_fakes.commitment import FakeCommitmentReport
 from finops_fakes.cur import FakeCostExport, estate
@@ -90,6 +90,7 @@ from finops_ingest.collectors.realized_savings import (
     RealizedSavingsCollector,
 )
 from finops_ingest.collectors.recommendations import RecommendationCollector
+from finops_ingest.collectors.savings_plan_rates import SavingsPlanRatesCollector
 from finops_ingest.collectors.score import ScoreCollector
 from finops_ingest.collectors.waste_cloudwatch import WasteCloudWatchCollector
 from finops_ingest.collectors.waste_compute import Candidate, WasteComputeCollector
@@ -628,6 +629,14 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
             connection,
             unit(scope_key="catalog:instances"),
             "instance_catalog",
+        )
+        # FEAT-071, TASK-P9-012. The Savings Plans rates for every Region the prices are held for.
+        written += _through_the_ledger(
+            ledger,
+            SavingsPlanRatesCollector(FakeSavingsPlansRates(), clock=lambda: now),
+            connection,
+            unit(scope_key="catalog:savings-plans"),
+            "savings_plan_rates",
         )
         # FEAT-055, immediately after the coverage it reads. Turning the gaps into findings in
         # the same seed run is what makes the commitments screen show the actions rather than

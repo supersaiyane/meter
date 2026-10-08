@@ -133,109 +133,118 @@ class PriceCatalogCollector:
             try:
                 versions = tuple(self._source.versions(service))
             except CollectionError as failure:
-                failures.append(self._refused(context, failure, now))
+                failures.append(refuse(context, COLLECTOR, failure, now))
                 continue
-            held = {
-                (row.region, row.version)
-                for row in context.connection.execute(
-                    HELD, {"t": context.unit.tenant_id, "s": service}
-                )
-            }
+            known = held(context, service)
             for version in versions:
-                if (version.region, version.version) in held:
+                if (version.region, version.version) in known:
                     read = True
                     continue
                 try:
                     with context.connection.begin_nested():
-                        written += self._load(context, version)
-                        removed += self._prune(context, version)
+                        written += store(context, version, self._source.prices(version))
+                        removed += prune(context, version)
                 except CollectionError as failure:
-                    failures.append(self._refused(context, failure, now))
+                    failures.append(refuse(context, COLLECTOR, failure, now))
                 else:
                     read = True
         if failures and not read:
             raise failures[0]
         return CollectorOutcome(items_written=written, items_removed=removed)
 
-    def _load(self, context: CollectorContext, version: PriceListVersion) -> int:
-        connection = context.connection
-        key = self._key(context, version)
-        connection.execute(
-            WRITE_VERSION,
-            {
-                **key,
-                "pk": uuid4(),
-                "run": context.run_id,
-                "as_of": version.as_of,
-                "collected": version.collected_at,
-            },
-        )
-        batch: list[dict[str, Any]] = []
-        for price in self._source.prices(version):
-            batch.append(self._row(context, price))
-            if len(batch) == BATCH:
-                connection.execute(WRITE_PRICE, batch)
-                batch = []
-        if batch:
-            connection.execute(WRITE_PRICE, batch)
-        return int(connection.execute(COUNT_VERSION, key).scalar_one())
 
-    def _prune(self, context: CollectorContext, version: PriceListVersion) -> int:
-        key = {**self._key(context, version), "as_of": version.as_of}
-        prices = context.connection.execute(PRUNE_PRICES, key).rowcount
-        versions = context.connection.execute(PRUNE_VERSIONS, key).rowcount
-        return int(prices) + int(versions)
+# --- shared with the other collectors that store prices by version, TASK-P9-012 -----------
 
-    @staticmethod
-    def _key(context: CollectorContext, version: PriceListVersion) -> dict[str, Any]:
-        return {
-            "t": context.unit.tenant_id,
-            "s": version.service_code,
-            "r": version.region,
-            "v": version.version,
-        }
 
-    @staticmethod
-    def _row(context: CollectorContext, price: Price) -> dict[str, Any]:
-        return {
+def held(context: CollectorContext, service: str) -> set[tuple[str, str]]:
+    """Every (Region, version) of a service already stored."""
+    rows = context.connection.execute(HELD, {"t": context.unit.tenant_id, "s": service})
+    return {(row.region, row.version) for row in rows}
+
+
+def store(context: CollectorContext, version: PriceListVersion, prices: Iterable[Price]) -> int:
+    """A version and its prices, written `BATCH` at a time. Returns the rows stored."""
+    connection = context.connection
+    key = _key(context, version)
+    connection.execute(
+        WRITE_VERSION,
+        {
+            **key,
             "pk": uuid4(),
-            "t": context.unit.tenant_id,
             "run": context.run_id,
-            "s": price.service_code,
-            "r": price.region,
-            "sku": price.sku,
-            "sku_price_id": price.sku_price_id,
-            "meter": price.sku_meter,
-            "unit": price.pricing_unit,
-            "category": price.pricing_category.value,
-            "currency": price.currency,
-            "recurring": price.recurring_unit_price,
-            "upfront": price.upfront_fee,
-            "lease": price.lease_years,
-            "option": price.purchase_option.value if price.purchase_option else None,
-            "class": price.offering_class,
-            "details": json.dumps(dict(price.details), sort_keys=True),
-            "effective": price.effective_date,
-            "v": price.version,
-            "as_of": price.as_of,
-            "collected": price.collected_at,
-        }
+            "as_of": version.as_of,
+            "collected": version.collected_at,
+        },
+    )
+    batch: list[dict[str, Any]] = []
+    for price in prices:
+        batch.append(_row(context, price))
+        if len(batch) == BATCH:
+            connection.execute(WRITE_PRICE, batch)
+            batch = []
+    if batch:
+        connection.execute(WRITE_PRICE, batch)
+    return int(connection.execute(COUNT_VERSION, key).scalar_one())
 
-    @staticmethod
-    def _refused(
-        context: CollectorContext, failure: CollectionError, now: datetime
-    ) -> CollectionError:
-        context.connection.execute(
-            REFUSED,
-            {
-                "id": uuid4(),
-                "t": context.unit.tenant_id,
-                "c": COLLECTOR,
-                "s": failure.scope_key,
-                "type": failure.cause,
-                "d": str(failure),
-                "r": failure.remediation,
-                "now": now,
-            },
-        )
-        return failure
+
+def prune(context: CollectorContext, version: PriceListVersion) -> int:
+    """The service and Region's earlier versions and their prices, except those quoted."""
+    key = {**_key(context, version), "as_of": version.as_of}
+    prices = context.connection.execute(PRUNE_PRICES, key).rowcount
+    versions = context.connection.execute(PRUNE_VERSIONS, key).rowcount
+    return int(prices) + int(versions)
+
+
+def refuse(
+    context: CollectorContext, collector: str, failure: CollectionError, now: datetime
+) -> CollectionError:
+    """A typed failure recorded in `sync_error`, and returned for the run to count."""
+    context.connection.execute(
+        REFUSED,
+        {
+            "id": uuid4(),
+            "t": context.unit.tenant_id,
+            "c": collector,
+            "s": failure.scope_key,
+            "type": failure.cause,
+            "d": str(failure),
+            "r": failure.remediation,
+            "now": now,
+        },
+    )
+    return failure
+
+
+def _key(context: CollectorContext, version: PriceListVersion) -> dict[str, Any]:
+    return {
+        "t": context.unit.tenant_id,
+        "s": version.service_code,
+        "r": version.region,
+        "v": version.version,
+    }
+
+
+def _row(context: CollectorContext, price: Price) -> dict[str, Any]:
+    return {
+        "pk": uuid4(),
+        "t": context.unit.tenant_id,
+        "run": context.run_id,
+        "s": price.service_code,
+        "r": price.region,
+        "sku": price.sku,
+        "sku_price_id": price.sku_price_id,
+        "meter": price.sku_meter,
+        "unit": price.pricing_unit,
+        "category": price.pricing_category.value,
+        "currency": price.currency,
+        "recurring": price.recurring_unit_price,
+        "upfront": price.upfront_fee,
+        "lease": price.lease_years,
+        "option": price.purchase_option.value if price.purchase_option else None,
+        "class": price.offering_class,
+        "details": json.dumps(dict(price.details), sort_keys=True),
+        "effective": price.effective_date,
+        "v": price.version,
+        "as_of": price.as_of,
+        "collected": price.collected_at,
+    }

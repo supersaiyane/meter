@@ -25,8 +25,11 @@ from finops_fakes.catalog import (
     UPFRONT_RATE,
     VERSION,
     FakePriceCatalog,
+    FakeSavingsPlansRates,
 )
+from finops_fakes.estate_shape import REGIONS
 from finops_providers.aws.price_list import AwsPriceCatalog
+from finops_providers.aws.savings_plans import AwsSavingsPlansRates
 
 #: The code AWS answers each cause with, so a planned failure reaches `translate` as AWS's would.
 CODES: dict[str, str] = {
@@ -223,3 +226,79 @@ def fake_backed(*, failure: type[CollectionError] | None = None) -> AwsPriceCata
         failure=failure.cause if failure is not None else None,
     )
     return AwsPriceCatalog(client=client, clock=lambda: fixtures.COLLECTED_AT)
+
+
+# --- Savings Plans rates, TASK-P9-012 ------------------------------------------------------
+
+#: A plan's length in years, to the seconds the API states it in.
+SECONDS: dict[int, int] = {1: 31536000, 3: 94608000}
+
+
+def search_result(price: Price) -> dict[str, Any]:
+    """One `searchResults` entry for a fake rate, in the Savings Plans API's own shape."""
+    details = dict(price.details)
+    years = price.lease_years or 1
+    return {
+        "savingsPlanOffering": {
+            "offeringId": price.sku,
+            "paymentOption": price.purchase_option.value if price.purchase_option else "",
+            "planType": price.offering_class,
+            "durationSeconds": SECONDS[years],
+            "currency": price.currency,
+            "planDescription": f"{years} year {price.offering_class}",
+        },
+        "rate": str(price.recurring_unit_price),
+        "unit": price.pricing_unit,
+        "productType": details.pop("productType", "EC2"),
+        "serviceCode": details.pop("discountedServiceCode", EC2),
+        "usageType": price.sku_meter,
+        "operation": price.sku_price_id.rsplit(".", 1)[1],
+        "properties": [
+            {"name": "region", "value": price.region},
+            *({"name": name, "value": value} for name, value in sorted(details.items())),
+        ],
+    }
+
+
+class StubSavingsPlans:
+    """Answers `describe_savings_plans_offering_rates` as the relay returns it: every page."""
+
+    def __init__(
+        self, results: list[dict[str, Any]], *, failure: str | None = None, page_size: int = 50
+    ) -> None:
+        self._results = results
+        self._failure = failure
+        self._page_size = page_size
+        self.requests: list[dict[str, Any]] = []
+
+    def get_paginator(self, operation: str) -> StubSavingsPlans:
+        assert operation == "describe_savings_plans_offering_rates"
+        return self
+
+    def paginate(self, **request: Any) -> Iterator[dict[str, Any]]:
+        self.requests.append(request)
+        if self._failure is not None:
+            code = CODES[self._failure]
+            raise ClientError({"Error": {"Code": code, "Message": "stubbed"}}, "DescribeRates")
+        wanted = {f["name"]: set(f["values"]) for f in request.get("filters", [])}
+        found = [
+            result
+            for result in self._results
+            if result["savingsPlanOffering"]["planType"] in request["savingsPlanTypes"]
+            and result["savingsPlanOffering"]["paymentOption"]
+            in request["savingsPlanPaymentOptions"]
+            and all(
+                any(p["name"] == name and p["value"] in values for p in result["properties"])
+                for name, values in wanted.items()
+            )
+        ]
+        for start in range(0, max(len(found), 1), self._page_size):
+            yield {"searchResults": found[start : start + self._page_size]}
+
+
+def fake_rates_backed(*, failure: type[CollectionError] | None = None) -> AwsSavingsPlansRates:
+    """The AWS adapter over a stub serving the fake's rates in every Region, for the contract."""
+    fake = FakeSavingsPlansRates()
+    results = [search_result(price) for region in REGIONS for price in fake.rates(region).prices]
+    client = StubSavingsPlans(results, failure=failure.cause if failure is not None else None)
+    return AwsSavingsPlansRates(client=client, clock=lambda: fixtures.COLLECTED_AT)

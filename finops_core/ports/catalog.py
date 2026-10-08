@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Protocol, runtime_checkable
 
-from finops_core.domain.catalog import InstanceTypeSpec, Price, PriceListVersion
+from finops_core.domain.catalog import InstanceTypeSpec, Price, PriceListVersion, PriceSheet
 
 
 @runtime_checkable
@@ -61,5 +61,27 @@ class InstanceCatalog(Protocol):
             Unreachable: The endpoint did not answer.
             NotOptedIn: The Region is not enabled for the account.
             SchemaDrift: A description with no vCPUs, no memory, or a shape this cannot read.
+        """
+        ...
+
+
+@runtime_checkable
+class SavingsPlansRates(Protocol):
+    """Savings Plans rates for EC2 usage, one Region at a time. TASK-P9-012.
+
+    Read through the relay outside the VPC, ADR-0035 and OPEN-17. The rates carry no published
+    version, so a sheet's version is a digest of its rates, `sheet_version`.
+    """
+
+    def rates(self, region: str) -> PriceSheet:
+        """Every Compute and EC2 Instance Savings Plans rate for shared tenancy EC2 in a Region.
+
+        Raises:
+            AccessDenied: The relay's role may not read the rates.
+            Throttled: The provider rejected the call rate.
+            Unreachable: The relay or the endpoint did not answer.
+            NoData: No rate for EC2 in this Region.
+            SchemaDrift: A rate this cannot read, a rate of nought, or more pages than the relay
+                follows.
         """
         ...

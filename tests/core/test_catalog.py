@@ -20,8 +20,11 @@ from finops_core.domain.catalog import (
     HOURS_PER_YEAR,
     InstanceTypeSpec,
     Price,
+    PriceListVersion,
+    PriceSheet,
     PricingCategory,
     PurchaseOption,
+    sheet_version,
 )
 
 EXTRACTS = Path(__file__).resolve().parents[1] / "providers" / "aws" / "extracts"
@@ -227,3 +230,35 @@ def test_a_burstable_type_holds_its_baseline_with_its_source() -> None:
         baseline_source="the EC2 guide",
     )
     assert (held.baseline_cpu, held.maximum_credits) == (Decimal("0.30"), Decimal(864))
+
+
+# --- a sheet of prices read together, TASK-P9-012 -------------------------------------------
+
+
+def test_a_sheets_version_is_its_rates_in_any_order() -> None:
+    rates = [("A.x", Decimal("0.10")), ("B.y", Decimal("0.2"))]
+    assert sheet_version(rates) == sheet_version(reversed(rates))
+    # The same price written with more places is the same price.
+    assert sheet_version([("A.x", Decimal("0.1")), ("B.y", Decimal("0.20"))]) == (
+        sheet_version(rates)
+    )
+
+
+def test_one_rate_moving_makes_a_new_version() -> None:
+    before = sheet_version([("A.x", Decimal("0.10")), ("B.y", Decimal("0.2"))])
+    after = sheet_version([("A.x", Decimal("0.11")), ("B.y", Decimal("0.2"))])
+    assert before != after
+    assert len(before) == 20
+
+
+def test_a_sheet_holds_only_its_own_versions_prices() -> None:
+    version = PriceListVersion(
+        service_code="AmazonEC2",
+        region="eu-west-1",
+        version="20260917190528",
+        as_of=AT,
+        collected_at=AT,
+    )
+    assert PriceSheet(version=version, prices=(price(),)).prices
+    with pytest.raises(ValueError, match="does not belong"):
+        PriceSheet(version=version, prices=(price(region="eu-west-2"),))

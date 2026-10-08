@@ -49,6 +49,10 @@ GLOBAL_ONLY = frozenset({"ce", "organizations", "iam", "cost-optimization-hub", 
 #: The services with no interface endpoint, measured against the AWS PrivateLink service list on
 #: 2026-10-05 for Budgets and Support and on 2026-10-08 for Invoicing.
 NO_ENDPOINT = frozenset({"budgets", "support", "invoicing"})
+#: The services read through the relay by the owner's choice rather than for want of an endpoint:
+#: Savings Plans rates, OPEN-17 as answered on 2026-10-07, TASK-P9-012. Spot prices are an ec2
+#: call, which has an endpoint in the hub and is relayed into the other Regions.
+RELAYED = frozenset({"savingsplans"})
 #: What the collectors call in each member account, in every collection Region.
 PER_COLLECTION_REGION = frozenset(
     {"ec2", "cloudwatch", "logs", "cloudtrail", "service-quotas", "compute-optimizer"}
@@ -141,6 +145,8 @@ def test_every_service_called_has_a_path(service: str) -> None:
         assert 'vpc_endpoint_type = "Gateway"' in text(HUB / "network.tf")
     elif service in NO_ENDPOINT:
         assert service in relay_services(), f"{service} has no endpoint and is not relayed"
+    elif service in RELAYED:
+        assert service in relay_services(), f"{service} is to be relayed and the relay refuses it"
     elif service in GLOBAL_ONLY:
         assert service in global_endpoints(), (
             f"{service} answers in us-east-1 and has no endpoint there"

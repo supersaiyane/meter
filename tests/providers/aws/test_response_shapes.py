@@ -107,6 +107,26 @@ READS: dict[tuple[str, str], set[str]] = {
         "NextToken",
     },
     ("pricing", "GetProducts"): {"PriceList", "NextToken"},
+    # FEAT-071, TASK-P9-012. Savings Plans rates, through the relay, which follows the token.
+    ("savingsplans", "DescribeSavingsPlansOfferingRates"): {
+        "searchResults",
+        "savingsPlanOffering",
+        "offeringId",
+        "paymentOption",
+        "planType",
+        "durationSeconds",
+        "currency",
+        "rate",
+        "unit",
+        "productType",
+        "serviceCode",
+        "usageType",
+        "operation",
+        "properties",
+        "name",
+        "value",
+        "nextToken",
+    },
     # FEAT-072, TASK-P9-005. EC2's description of its types, every figure the spec stores.
     ("ec2", "DescribeInstanceTypes"): {
         "InstanceTypes",
@@ -336,6 +356,13 @@ SENDS: dict[tuple[str, str], set[str]] = {
     ("invoicing", "ListInvoiceSummaries"): {"Selector", "Filter"},
     ("pricing", "ListPriceLists"): {"ServiceCode", "EffectiveDate", "CurrencyCode"},
     ("pricing", "GetProducts"): {"ServiceCode", "FormatVersion", "Filters"},
+    ("savingsplans", "DescribeSavingsPlansOfferingRates"): {
+        "savingsPlanTypes",
+        "savingsPlanPaymentOptions",
+        "products",
+        "filters",
+        "maxResults",
+    },
     # Every type, unfiltered: the hub's Region describes all it supports.
     ("ec2", "DescribeInstanceTypes"): set(),
     ("service-quotas", "ListServices"): set(),
@@ -461,6 +488,12 @@ FALLS_THROUGH: dict[tuple[str, str], set[str]] = {
     # SchemaDrift in the reason sentence rather than as NotOptedIn.
     ("support", "DescribeTrustedAdvisorChecks"): {"InternalServerError"},
     ("support", "DescribeTrustedAdvisorCheckResult"): {"InternalServerError"},
+    # Savings Plans declares two, both our request or the service failing: SchemaDrift for now,
+    # ISS-215. It throttles and refuses with codes it does not declare, which translate maps.
+    ("savingsplans", "DescribeSavingsPlansOfferingRates"): {
+        "InternalServerException",
+        "ValidationException",
+    },
     # EC2 declares no modelled errors at all for either counter, nor for its instance types.
     ("ec2", "DescribeVpcs"): set(),
     ("ec2", "DescribeInstanceTypes"): set(),
@@ -533,3 +566,16 @@ def test_the_request_status_vocabulary_is_the_one_the_service_model_declares(
         f"declared: {sorted({s.value for s in RequestStatus} - declared)}. Widening this "
         f"needs a migration: the vocabulary is a check constraint in 0020 as well."
     )
+
+
+def test_the_relay_follows_the_token_savings_plans_uses(loader: botocore.session.Session) -> None:
+    """TASK-P9-012. botocore has no paginator for the rates, so `TOKENS` cannot hold them and the
+    relay follows the token by hand. The name it follows must be the one the model declares on
+    both sides, or the relay reads the first page forever."""
+    from finops_relay.relay import _TOKENS
+
+    model = loader.get_service_model("savingsplans").operation_model(
+        "DescribeSavingsPlansOfferingRates"
+    )
+    shared = set(model.input_shape.members) & set(model.output_shape.members)
+    assert shared & set(_TOKENS) == {"nextToken"}

@@ -5,7 +5,7 @@
 | Sub project | P9 |
 | Status | In build |
 | Specification | [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.2, 5.3, 7 and 14 |
-| Tasks | TASK-P9-004, on demand and reserved, done 2026-10-08. TASK-P9-012, Savings Plans rates, and TASK-P9-013, spot, to come. TASK-P9-010 serves it as `GET /catalog/prices` |
+| Tasks | TASK-P9-004, on demand and reserved, and TASK-P9-012, Savings Plans rates, done 2026-10-08. TASK-P9-013, spot, to come. TASK-P9-010 serves it as `GET /catalog/prices` |
 | Refresh cadence | Every 8 hours, the catalog collectors, each loading only what AWS has published since the last run |
 
 ## What it does
@@ -21,10 +21,12 @@ tenancy, capacity status, preinstalled software, licence, engine and volume type
 A version is one publication of one service's list in one Region, its publication time is the
 row's `as_of`, and every row carries `collected_at` beside it, constraint 10.
 
-Built in TASK-P9-004: the adapter, the collector, its schedule, and the reserved terms. Savings
-Plans rates, TASK-P9-012, and spot prices, TASK-P9-013, are still to come, read by the relay
-function outside the VPC, the owner's answer to OPEN-17 on 2026-10-07, and spot is kept as the
-latest price per pool plus each day's low and high for 90 days, OPEN-18, spec section 14.7.
+Built in TASK-P9-004: the adapter, the collector, its schedule, and the reserved terms. Built in
+TASK-P9-012: Savings Plans rates for EC2, Compute and EC2 Instance plans, read by the relay
+function outside the VPC, the owner's answer to OPEN-17 on 2026-10-07, and stored as `price` rows
+under `ComputeSavingsPlans`, Committed, with the plan type as the offering class. Spot prices,
+TASK-P9-013, are still to come, kept as the latest price per pool plus each day's low and high for
+90 days, OPEN-18, spec section 14.7.
 
 ## Why it exists
 
@@ -69,6 +71,19 @@ records the version's stored row count, and then removes the earlier versions' p
 versions left empty, except any price a recommendation quotes, which stays with its version until
 the recommendation is written again from a newer one.
 
+**Savings Plans rates**, TASK-P9-012. `finops_providers/aws/savings_plans.py`,
+`AwsSavingsPlansRates`, asks `DescribeSavingsPlansOfferingRates` through the relay for EC2 usage in
+shared tenancy, one call per plan type and payment option, six a Region, so no single answer holds
+a whole Region's rates in the relay's 256 MB (about 13,000 rates a call, modelled). botocore has no
+paginator for the call, so the relay follows its `nextToken` itself, up to 200 pages. The API
+publishes no version, so a Region's rates are a `PriceSheet` whose version is a digest of the rates,
+`sheet_version`: the same rates read again make the same version. `as_of` is the first read of that
+set of rates, and the effective date is the day it was read, because the API names neither.
+`finops_ingest/collectors/savings_plan_rates.py` reads every Region the price catalog holds EC2 for,
+every 8 hours from its schedule row, migration 0036, and stores a sheet only when its version is new,
+through the same store and prune steps as the price catalog, so a rate a recommendation quotes
+outlives its sheet the same way.
+
 ## Failure behaviour
 
 Partial failure is first class, constraint 5. One service in one Region failing rolls back that one
@@ -80,7 +95,11 @@ ledger rather than a green one with errors beside it.
 A price is refused with SchemaDrift, never stored and never read as nought: a term whose every
 price is nought, a product with no price, a currency other than USD, a term with more than one
 recurring price, an unreadable product, ARN or version, or a product priced for another Region.
-`AccessDeniedException` and `ThrottlingException` are AccessDenied and Throttled; the codes the
+A Savings Plans rate of nought, a plan length other than one or three years, a currency other
+than USD, a rate with no unit, or a rate for another Region is SchemaDrift for that Region's sheet,
+and the sheet already held stays. A call with more pages than the relay follows is refused whole,
+`RelayPageLimit`, never answered with the pages it reached. `AccessDeniedException` and
+`ThrottlingException` are AccessDenied and Throttled; the codes the
 Pricing model declares beyond those fall through to SchemaDrift and are pinned in
 `tests/providers/aws/test_response_shapes.py`, ISS-215. A Region the list holds nothing for is
 NoData, and so is each EC2 query that finds no product, so an instance filter that matched
@@ -96,14 +115,17 @@ recorded in migration 0033.
 
 ## Interface
 
-No route yet; TASK-P9-010 serves the catalog as `GET /catalog/prices`. The collector writes
-`price_list_version` and `price`, migration 0033, and `sync_error`. The `PriceCatalog` port,
-`finops_core/ports/catalog.py`, is held by `tests/contract/test_catalog_contract.py` to the same
-assertions for the fake and for this adapter over a stubbed client.
+No route yet; TASK-P9-010 serves the catalog as `GET /catalog/prices`. The collectors write
+`price_list_version` and `price`, migration 0033, and `sync_error`. The `PriceCatalog` and
+`SavingsPlansRates` ports, `finops_core/ports/catalog.py`, are held by
+`tests/contract/test_catalog_contract.py` to the same assertions for each fake and each adapter over
+a stubbed client.
 
 ## Not doing
 
-- Savings Plans rates and spot prices, which are TASK-P9-012 and TASK-P9-013.
+- Spot prices, which are TASK-P9-013.
+- Savings Plans rates for Fargate, Lambda, SageMaker and the database plans, which no P9 target
+  is priced against.
 - Dedicated tenancy, capacity reservations and preinstalled software prices, which are not the
   comparable price.
 - Data transfer, addresses, snapshots, IOPS and throughput prices. TASK-P9-009 adds the gp3 IOPS
@@ -113,7 +135,8 @@ assertions for the fake and for this adapter over a stubbed client.
 ## What is not yet proved
 
 Proved offline only, against AWS's own samples: the two responses in the API reference and the
-real ElastiCache list for eu-west-1, saved in `tests/providers/aws/extracts`. Two things the plan
+real ElastiCache list for eu-west-1, saved in `tests/providers/aws/extracts`. The Savings Plans rates are
+unproved against the API, ISS-263. Two things the plan
 asks for wait on an account or on the owner, ISS-261: the number of rows a full load stores,
 against the ten million spec section 14.4 models, and a real EC2 instance product to hold the EC2
 attribute names to. The attribute names used for EC2 instances are the price list documentation's;
@@ -122,7 +145,8 @@ the real ElastiCache product and the EBS sample agree with every name they share
 ## Status of this document
 
 In build. On demand and reserved prices for the five services were built on 2026-10-08 by
-TASK-P9-004, against stubs and AWS's own samples. Specified in the
+TASK-P9-004, against stubs and AWS's own samples, and Savings Plans rates the same day by
+TASK-P9-012, against stubs in the shape the botocore model gives. Specified in the
 [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.2, 5.3, 7 and 14, and planned in
 the [P9 plan](../plans/P9-implementation-plan.md).
 
