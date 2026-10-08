@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 28 of 30 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 52 in 19 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 27 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 35 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 201 | test_*.py under tests/ |
-| Test functions | 2653 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 28 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 36 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 203 | test_*.py under tests/ |
+| Test functions | 2680 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -560,6 +560,9 @@ meter/
 │   │   ├── invoices.py        FEAT-076. ListInvoiceSummaries at the payer, one
 │   │   │                      billing period at a time; anything unreadable is
 │   │   │                      SchemaDrift, never a zero. Unproved, ISS-002, ISS-003
+│   │   ├── savings_plans.py   FEAT-071, TASK-P9-012. Savings Plans rates through the
+│   │   │                      relay, six calls a Region, versioned by their digest.
+│   │   │                      Unproved, ISS-263
 │   │   ├── instance_types.py  FEAT-072, TASK-P9-005. DescribeInstanceTypes for EC2,
 │   │   │                      and the managed services' classes from their price
 │   │   │                      list products; a figure left out is None. ISS-262
@@ -1179,6 +1182,8 @@ meter/
 │       │                       the provider. Stores nothing derived, retracts nothing,
 │       │                       and counts the budgets whose scope it cannot reproduce
 │       │                       on sync_error rather than dropping them
+│       ├── savings_plan_rates.py  FEAT-071, TASK-P9-012. Every 8 hours; every Region
+│       │                      the prices are held for, a sheet stored when it moves
 │       ├── instance_catalog.py  FEAT-072, TASK-P9-005. Every 8 hours; EC2 described
 │       │                      in the hub's Region and stored where it is sold,
 │       │                      checked against a second Region; withdrawn types kept
@@ -1458,6 +1463,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0036_savings_plan_rates_schedule.py  TASK-P9-012. The Savings
+│       │                      Plans rates' 8 hourly schedule row for every tenant
 │       ├── 0035_instance_catalog_schedule.py  TASK-P9-005. The instance
 │       │                      catalog's 8 hourly schedule row for every tenant
 │       ├── 0034_price_catalog_schedule.py  TASK-P9-004. The price catalog's

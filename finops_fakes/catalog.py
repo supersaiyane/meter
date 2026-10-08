@@ -17,11 +17,17 @@ product attribute names, `operatingSystem` and the rest, are the price list docu
 TASK-P9-004 holds them to a real EC2 extract when it reads one.
 
 Only EC2 is faked. Another service's versions are none, and its prices are NoData.
+
+**Savings Plans rates**, TASK-P9-012, for every type the estate prices, Linux and shared tenancy,
+both plan types, both lengths and every payment option. The discounts are invented and round, as
+the reservations' are; the shape, an offering id, a usage type and a rate per hour, is the
+Savings Plans API's.
 """
 
 from __future__ import annotations
 
 import hashlib
+import uuid
 from collections.abc import Iterable
 from datetime import UTC, date, datetime
 from decimal import Decimal
@@ -29,11 +35,14 @@ from typing import Any, Final
 
 from finops_core.domain.catalog import (
     HOURS_PER_YEAR,
+    SAVINGS_PLANS,
     InstanceTypeSpec,
     Price,
     PriceListVersion,
+    PriceSheet,
     PricingCategory,
     PurchaseOption,
+    sheet_version,
 )
 from finops_core.errors import CollectionError, NoData, NotOptedIn
 from finops_fakes import fixtures, prices
@@ -274,4 +283,135 @@ class FakeInstanceCatalog:
                 gpus,
                 network,
             ) in sorted(SPECS.items())
+        )
+
+
+#: Invented. A Savings Plans rate's discount off on demand, by plan type, length and payment.
+SAVINGS_PLAN_DISCOUNT: Final[dict[tuple[str, int], dict[PurchaseOption, Decimal]]] = {
+    ("Compute", 1): {
+        PurchaseOption.NO_UPFRONT: Decimal("0.28"),
+        PurchaseOption.PARTIAL_UPFRONT: Decimal("0.30"),
+        PurchaseOption.ALL_UPFRONT: Decimal("0.31"),
+    },
+    ("Compute", 3): {
+        PurchaseOption.NO_UPFRONT: Decimal("0.48"),
+        PurchaseOption.PARTIAL_UPFRONT: Decimal("0.50"),
+        PurchaseOption.ALL_UPFRONT: Decimal("0.52"),
+    },
+    ("EC2Instance", 1): {
+        PurchaseOption.NO_UPFRONT: Decimal("0.38"),
+        PurchaseOption.PARTIAL_UPFRONT: Decimal("0.40"),
+        PurchaseOption.ALL_UPFRONT: Decimal("0.41"),
+    },
+    ("EC2Instance", 3): {
+        PurchaseOption.NO_UPFRONT: Decimal("0.58"),
+        PurchaseOption.PARTIAL_UPFRONT: Decimal("0.60"),
+        PurchaseOption.ALL_UPFRONT: Decimal("0.62"),
+    },
+}
+#: The operation a Linux instance's usage is billed under, the Savings Plans API's own word.
+LINUX_OPERATION: Final = "RunInstances"
+
+
+def offering_id(plan: str, years: int, option: PurchaseOption, family: str) -> str:
+    """An offering id in the API's form, a UUID, the same every time for one offering.
+
+    An EC2 Instance plan is offered per family and a Compute plan across all of them.
+    """
+    scope = family if plan == "EC2Instance" else "all"
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"meter-fake:{plan}:{years}:{option.value}:{scope}"))
+
+
+class FakeSavingsPlansRates:
+    """Savings Plans rates for every type the estate prices, in every fake Region."""
+
+    def __init__(
+        self,
+        *,
+        regions: Iterable[str] = REGIONS,
+        failure: type[CollectionError] | None = None,
+    ) -> None:
+        self._regions = tuple(regions)
+        self._failure = failure
+
+    def rates(self, region: str) -> PriceSheet:
+        if self._failure is not None:
+            raise self._failure(
+                scope_key=f"{SAVINGS_PLANS}:{region}",
+                collector="savings_plan_rates",
+                detail="planned by the fake Savings Plans rates",
+            )
+        if region not in self._regions:
+            raise NoData(
+                scope_key=f"{SAVINGS_PLANS}:{region}",
+                collector="savings_plan_rates",
+                detail="the fake holds rates for the fake Regions only",
+            )
+        terms = [
+            (instance_type, plan, years, option, discount)
+            for instance_type in sorted(prices.INSTANCE_USD)
+            for (plan, years), by_option in SAVINGS_PLAN_DISCOUNT.items()
+            for option, discount in by_option.items()
+        ]
+        rated = [(*term, self._rate(term[0], term[4])) for term in terms]
+        version = sheet_version((self._id(t[0], t[1], t[2], t[3]), t[5]) for t in rated)
+        sheet = PriceListVersion(
+            service_code=SAVINGS_PLANS,
+            region=region,
+            version=version,
+            as_of=PUBLISHED,
+            collected_at=fixtures.COLLECTED_AT,
+        )
+        return PriceSheet(
+            version=sheet,
+            prices=tuple(self._price(region, version, *t) for t in rated),
+        )
+
+    @staticmethod
+    def _rate(instance_type: str, discount: Decimal) -> Decimal:
+        return (on_demand_hourly(instance_type) * (1 - discount)).quantize(_HOURLY)
+
+    @staticmethod
+    def _id(instance_type: str, plan: str, years: int, option: PurchaseOption) -> str:
+        family = instance_type.split(".")[0]
+        offering = offering_id(plan, years, option, family)
+        return f"{offering}.BoxUsage:{instance_type}.{LINUX_OPERATION}"
+
+    def _price(
+        self,
+        region: str,
+        version: str,
+        instance_type: str,
+        plan: str,
+        years: int,
+        option: PurchaseOption,
+        _discount: Decimal,
+        rate: Decimal,
+    ) -> Price:
+        family = instance_type.split(".")[0]
+        return Price(
+            service_code=SAVINGS_PLANS,
+            region=region,
+            sku=offering_id(plan, years, option, family),
+            sku_price_id=self._id(instance_type, plan, years, option),
+            sku_meter=f"BoxUsage:{instance_type}",
+            pricing_unit="Hrs",
+            pricing_category=PricingCategory.COMMITTED,
+            currency=CURRENCY,
+            recurring_unit_price=rate,
+            lease_years=years,
+            purchase_option=option,
+            offering_class=plan,
+            details={
+                "instanceType": instance_type,
+                "instanceFamily": family,
+                "productDescription": "Linux/UNIX",
+                "tenancy": "shared",
+                "discountedServiceCode": EC2,
+                "productType": "EC2",
+            },
+            effective_date=EFFECTIVE,
+            version=version,
+            as_of=PUBLISHED,
+            collected_at=fixtures.COLLECTED_AT,
         )

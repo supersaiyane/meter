@@ -228,7 +228,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 14, FEAT-071 |
 | Delivers | Savings Plans rates in the price catalog |
 | Depends on | TASK-P9-001 and TASK-P9-004 |
@@ -236,10 +236,15 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 **Acceptance criteria.**
 
-- [ ] Savings Plans rates from AWS's Savings Plans price list for every commercial Region, as
-      `price` rows with `PricingCategory` Committed and the plan's term in `SkuPriceDetails`
-- [ ] Read by the function outside the VPC chosen for OPEN-17, held by TASK-P9-001's test
-- [ ] Polled every 8 hours with the other catalog collectors, loading only what changed
+- [x] Savings Plans rates for every commercial Region, as `price` rows with `PricingCategory`
+      Committed and the plan's term in `SkuPriceDetails`. Read from the Savings Plans API rather
+      than the price list file, because the relay makes API calls; the Regions are the price
+      list's, the ones the price catalog holds EC2 for
+- [x] Read by the function outside the VPC chosen for OPEN-17, held by TASK-P9-001's test,
+      which now also holds the relay following `nextToken` for a call botocore cannot page
+- [x] Polled every 8 hours with the other catalog collectors, loading only what changed: the
+      rates carry no version, so a sheet's version is a digest of its rates, and an unchanged
+      sheet stores nothing. Every Region is still read each run, OPEN-22
 
 ---
 

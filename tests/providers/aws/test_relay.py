@@ -15,14 +15,16 @@ from decimal import Decimal
 from typing import Any
 
 import pytest
-from botocore.exceptions import ClientError, EndpointConnectionError
+from botocore.exceptions import ClientError, EndpointConnectionError, OperationNotPageableError
 
 from finops_core.errors import AccessDenied, Throttled
 from finops_providers.aws.budgets import AwsBudgets
 from finops_providers.aws.invoices import AwsInvoices
 from finops_providers.aws.relay_client import RelayClient, lambda_invoke, s3_fetch
+from finops_relay import relay as relay_module
 from finops_relay.relay import (
     ALLOWED,
+    PAGE_LIMIT,
     PREFIX,
     REFUSED,
     UNREACHED,
@@ -32,6 +34,7 @@ from finops_relay.relay import (
     RoleKind,
     decode,
     encode,
+    follow,
     parse,
     session_policy,
 )
@@ -391,3 +394,74 @@ def test_the_relays_copy_of_the_role_arn_matches_the_adapters(region: str) -> No
     assert relays(PAYER, "FinOpsCollectorRole", region) == adapters(
         PAYER, "FinOpsCollectorRole", region
     )
+
+
+# --- a call botocore has no paginator for, TASK-P9-012 ----------------------------------
+
+
+class _Unpageable:
+    """A client whose call pages by `nextToken` and that botocore cannot paginate."""
+
+    def __init__(self, pages: int, token: str = "nextToken") -> None:
+        self._pages = pages
+        self._token = token
+        self.asked: list[dict[str, Any]] = []
+
+    def get_paginator(self, name: str) -> Any:
+        raise OperationNotPageableError(operation_name=name)
+
+    def describe_savings_plans_offering_rates(self, **params: Any) -> Any:
+        self.asked.append(params)
+        index = len(self.asked)
+        page: dict[str, Any] = {"searchResults": [{"rate": str(index)}]}
+        if index < self._pages:
+            page[self._token] = f"page-{index + 1}"
+        return page
+
+
+def test_a_call_botocore_cannot_paginate_is_followed_by_its_token() -> None:
+    aws = _Unpageable(pages=3)
+    relay, bucket, _ = relayed(aws)  # type: ignore[arg-type]
+    client = RelayClient(
+        service="savingsplans",
+        region="us-east-1",
+        account_id=None,
+        invoke=relay,
+        fetch=bucket.__getitem__,
+    )
+    pages = list(
+        client.get_paginator("describe_savings_plans_offering_rates").paginate(
+            savingsPlanTypes=["Compute"]
+        )
+    )
+    assert [page["searchResults"][0]["rate"] for page in pages] == ["1", "2", "3"]
+    assert aws.asked == [
+        {"savingsPlanTypes": ["Compute"]},
+        {"savingsPlanTypes": ["Compute"], "nextToken": "page-2"},
+        {"savingsPlanTypes": ["Compute"], "nextToken": "page-3"},
+    ]
+
+
+def test_either_spelling_of_the_token_is_followed() -> None:
+    aws = _Unpageable(pages=2, token="NextToken")
+    pages = follow(aws.describe_savings_plans_offering_rates, {})
+    assert len(pages) == 2
+    assert aws.asked[1] == {"NextToken": "page-2"}
+
+
+def test_more_pages_than_the_relay_follows_is_refused_not_cut_short(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(relay_module, "MAX_PAGES", 2)
+    relay, bucket, _ = relayed(_Unpageable(pages=5))  # type: ignore[arg-type]
+    answer = relay(
+        {
+            "service": "savingsplans",
+            "operation": "DescribeSavingsPlansOfferingRates",
+            "params": {},
+            "region": "us-east-1",
+            "paginate": True,
+        }
+    )
+    assert answer["error"]["Code"] == PAGE_LIMIT
+    assert bucket == {}

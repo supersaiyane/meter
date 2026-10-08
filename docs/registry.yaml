@@ -82,7 +82,7 @@ subprojects:
 - id: P9
   name: Price catalog and rightsizing targets
   status: Specified, planned and approved by the owner 2026-10-05, in build from 2026-10-08 as priority 3,
-    TASK-P9-001 to TASK-P9-005 done, TASK-P9-012 next. EC2 and EBS list prices from AWS, rightsizing down
+    TASK-P9-001 to TASK-P9-005 and TASK-P9-012 done, TASK-P9-013 next. EC2 and EBS list prices from AWS, rightsizing down
     and up to a named and priced target, and gp2 to gp3. The hub now reaches every API it calls, ADR-0035
   spec: specs/2026-10-05-p9-price-catalog-design.md
   plan: plans/P9-implementation-plan.md
@@ -2037,6 +2037,18 @@ changes:
     sells it, compares a second Region when one is configured, reads a managed service only where its price
     list changed, and marks withdrawn types not offered. Migration 0035 seeds its schedule; the hub role gains
     ec2:DescribeInstanceTypes. The domain now refuses an empty architecture list and a peak below its baseline
+- id: CHG-0139
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-012, Savings Plans rates for EC2 in every Region the price list sells EC2 in
+  commit: pending
+  detail: AwsSavingsPlansRates reads DescribeSavingsPlansOfferingRates through the relay, one call per plan
+    type and payment option, EC2 in shared tenancy, and returns a PriceSheet whose version is a digest of its
+    rates, because the API publishes none. The relay follows nextToken itself for a call botocore cannot page,
+    up to 200 pages, and refuses a longer one whole. The savings_plan_rates collector runs every 8 hours,
+    reads the Regions the price catalog holds EC2 for, and stores a sheet only when its version is new,
+    through store and prune steps now shared with the price catalog collector. Migration 0036 seeds its
+    schedule. A third catalog port, SavingsPlansRates, with a fake and a contract
 issues:
 - id: ISS-189
   severity: LOW
@@ -4478,6 +4490,17 @@ issues:
     from attributes named vcpu, memory, memoryGib, networkPerformance, currentGeneration and
     physicalProcessor, which only the real ElastiCache list confirms. A wrong name reads as a class with no
     size, so the Region stores nothing for it, never a wrong size. A real account, ISS-002, settles both.'
+- id: ISS-263
+  severity: MEDIUM
+  status: OPEN
+  summary: The Savings Plans rates are read from a shape no real answer has confirmed
+  detail: 'Found 2026-10-08 by TASK-P9-012. The adapter asks DescribeSavingsPlansOfferingRates for products
+    EC2 with the filters region and tenancy shared, and reads the plan from savingsPlanOffering and the type
+    from the properties instanceType, instanceFamily, productDescription and tenancy. The names are the
+    botocore 1.43.108 model''s, held by test_response_shapes.py, but the filter value shared and the property
+    values are not shown by the model, and no real answer is saved in this repository. The size of one call,
+    about 13,000 rates (modelled), is what keeps it inside the relay''s 256 MB. A wrong filter value reads as
+    NoData for every Region in sync_error, never as a rate of nought. A real account, ISS-002, settles it.'
 - id: ISS-260
   severity: MEDIUM
   status: OPEN
@@ -4665,3 +4688,16 @@ open_questions:
   detail: Raised and withdrawn 2026-10-07 with P10. The P10 draft said Meter normalised raw CUR 2.0; finops_providers/aws/cur.py
     already reads AWS's FOCUS export through Athena by FOCUS column names. P10 spec section 5.2 now reads
     the new columns where the export carries them. CHG-0128.
+- id: OPEN-22
+  question: 'Savings Plans rates: read every Region every 8 hours, about 16,200 relay calls a month, or
+    read them daily?'
+  status: OPEN
+  blocks: nothing
+  detail: 'Raised 2026-10-08 by TASK-P9-012. Spec section 14.5 modelled about 2,700 relay runs a month for
+    spot and Savings Plans together, one a Region a poll. The Savings Plans API has no paginator, no
+    version and about 77,000 EC2 rates a Region (modelled), so the adapter makes six calls a Region to keep
+    each answer inside the relay''s 256 MB, and must read every Region to learn whether anything moved:
+    about 180 calls a run, 16,200 a month at 8 hours (modelled). That is inside the Lambda free allowance of
+    1 million requests and costs about 0.08 USD a month in S3 writes (modelled), so it is built as asked.
+    Recommended: keep 8 hours, since the cost is negligible and the cadence is a schedule row that can be
+    changed without code; revisit if ISS-263 measures a larger answer.'

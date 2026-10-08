@@ -460,6 +460,7 @@
     "finops_ingest/collectors/realized_savings.py",
     "finops_ingest/collectors/recommendations.py",
     "finops_ingest/collectors/retention.py",
+    "finops_ingest/collectors/savings_plan_rates.py",
     "finops_ingest/collectors/score.py",
     "finops_ingest/collectors/topology.py",
     "finops_ingest/collectors/waste_cloudwatch.py",
@@ -498,6 +499,7 @@
     "finops_providers/aws/recommendations.py",
     "finops_providers/aws/relay_client.py",
     "finops_providers/aws/report_store.py",
+    "finops_providers/aws/savings_plans.py",
     "finops_providers/aws/terraform_state.py",
     "finops_providers/aws/topology.py",
     "finops_providers/aws/waste.py",
@@ -602,6 +604,7 @@
     "migrations/versions/0033_price_catalog.py",
     "migrations/versions/0034_price_catalog_schedule.py",
     "migrations/versions/0035_instance_catalog_schedule.py",
+    "migrations/versions/0036_savings_plan_rates_schedule.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -744,6 +747,7 @@
     "tests/ingest/collectors/test_realized_savings.py",
     "tests/ingest/collectors/test_recommendations.py",
     "tests/ingest/collectors/test_retention.py",
+    "tests/ingest/collectors/test_savings_plan_rates.py",
     "tests/ingest/collectors/test_score.py",
     "tests/ingest/collectors/test_waste_against_the_estate.py",
     "tests/ingest/collectors/test_waste_cloudwatch.py",
@@ -787,6 +791,7 @@
     "tests/providers/aws/test_relay.py",
     "tests/providers/aws/test_report_store.py",
     "tests/providers/aws/test_response_shapes.py",
+    "tests/providers/aws/test_savings_plans.py",
     "tests/providers/aws/test_terraform_state.py",
     "tests/providers/aws/test_translate.py",
     "tests/providers/aws/test_waste_metrics.py",
@@ -9497,6 +9502,31 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/savings_plan_rates.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/savings_plan_rates.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/savings_plan_rates.py",
+      "t": "finops_core/ports/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/savings_plan_rates.py",
+      "t": "finops_ingest/collectors/price_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/savings_plan_rates.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/score.py",
       "t": "finops_core/domain/waste.py",
       "k": "python"
@@ -10077,6 +10107,21 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/savings_plans.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/savings_plans.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/savings_plans.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/terraform_state.py",
       "t": "finops_core/domain/iac.py",
       "k": "python"
@@ -10469,6 +10514,11 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/savings_plan_rates.py",
       "k": "python"
     },
     {
@@ -12657,6 +12707,36 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_savings_plan_rates.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_savings_plan_rates.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_savings_plan_rates.py",
+      "t": "finops_ingest/collectors/price_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_savings_plan_rates.py",
+      "t": "finops_ingest/collectors/savings_plan_rates.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_savings_plan_rates.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_savings_plan_rates.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_score.py",
       "t": "finops_ingest/collectors/partitions.py",
       "k": "python"
@@ -13032,6 +13112,11 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/aws/pricing.py",
+      "t": "finops_providers/aws/savings_plans.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/aws/test_accounts.py",
       "t": "finops_core/__init__.py",
       "k": "python"
@@ -13393,6 +13478,11 @@
     },
     {
       "s": "tests/providers/aws/test_relay.py",
+      "t": "finops_relay/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_relay.py",
       "t": "finops_relay/relay.py",
       "k": "python"
     },
@@ -13419,6 +13509,26 @@
     {
       "s": "tests/providers/aws/test_response_shapes.py",
       "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_response_shapes.py",
+      "t": "finops_relay/relay.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_savings_plans.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_savings_plans.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_savings_plans.py",
+      "t": "finops_providers/aws/savings_plans.py",
       "k": "python"
     },
     {

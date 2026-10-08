@@ -18,8 +18,9 @@ newer or cheaper is decided elsewhere, from these and the prices.
 
 from __future__ import annotations
 
+import hashlib
 import re
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
@@ -32,6 +33,12 @@ from finops_core.domain.fact import Fact
 _CURRENCY: Final = re.compile(r"[A-Z]{3}")
 #: Hours in a year of a reservation, as AWS counts them for an effective hourly rate.
 HOURS_PER_YEAR: Final = 8760
+#: The service a Savings Plans rate is listed under, as AWS's Savings Plans price list names it.
+#: One code for Compute and EC2 Instance plans alike; the plan type is the offering class.
+SAVINGS_PLANS: Final = "ComputeSavingsPlans"
+#: Hex digits of a sheet's digest kept as its version: 80 bits, far past any collision a few
+#: thousand versions could meet.
+_DIGEST_DIGITS: Final = 20
 
 
 class PricingCategory(StrEnum):
@@ -166,3 +173,32 @@ class InstanceTypeSpec(Fact):
         ebs_max, ebs_base = self.ebs_maximum_mbps, self.ebs_baseline_mbps
         if ebs_max is not None and ebs_base is not None and ebs_max < ebs_base:
             raise ValueError(f"{self.instance_type}'s EBS maximum is below its baseline")
+
+
+def sheet_version(rates: Iterable[tuple[str, Decimal]]) -> str:
+    """A version for prices read through an API that publishes none, from the prices themselves.
+
+    TASK-P9-012. The same rates in any order make the same version, so a run that reads them
+    unchanged finds the version held and stores nothing; one rate moving makes a new one.
+    """
+    lines = sorted(f"{sku_price_id}={rate.normalize()}" for sku_price_id, rate in rates)
+    digest = hashlib.sha256("\n".join(lines).encode()).hexdigest()
+    return digest[:_DIGEST_DIGITS]
+
+
+@dataclass(frozen=True, kw_only=True)
+class PriceSheet:
+    """Every price of one version of one service in one Region, read together. TASK-P9-012."""
+
+    version: PriceListVersion
+    prices: tuple[Price, ...]
+
+    def __post_init__(self) -> None:
+        version = self.version
+        for price in self.prices:
+            if (price.service_code, price.region, price.version) != (
+                version.service_code,
+                version.region,
+                version.version,
+            ):
+                raise ValueError(f"{price.sku_price_id} does not belong to the sheet's version")

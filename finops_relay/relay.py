@@ -14,6 +14,12 @@ organization reader, a member account's collector role, or the function's own. A
 refused before a client exists. A role it assumes is narrowed by a session policy to the one
 action, so even a relay that was edited to call something else could not, constraint 6.
 
+**One paginated call is every page, even where botocore has no paginator.** Savings Plans'
+`DescribeSavingsPlansOfferingRates` pages by `nextToken` and botocore 1.43.108 models no paginator
+for it, so the relay follows the token itself, up to `MAX_PAGES`, TASK-P9-012. A call that would
+go further is refused with `PAGE_LIMIT` rather than answered with the pages it reached, because a
+partial answer read as a whole one is a catalog quietly missing prices.
+
 **Errors travel as AWS said them.** A refused or throttled call returns AWS's own code and
 message, and the hub raises them as the `ClientError` they were, so `translate` names the same
 cause it would have named for a direct call. Nothing is collapsed into an empty answer.
@@ -31,7 +37,7 @@ from typing import Any, Final
 from uuid import uuid4
 
 from botocore import xform_name
-from botocore.exceptions import BotoCoreError, ClientError
+from botocore.exceptions import BotoCoreError, ClientError, OperationNotPageableError
 
 
 class RoleKind(StrEnum):
@@ -99,6 +105,14 @@ PREFIX: Final = "relay"
 REFUSED: Final = "RelayRefused"
 #: The code for a call that never reached AWS, which the hub reads as Unreachable.
 UNREACHED: Final = "RelayUnreachable"
+#: The code for a call with more pages than one invocation follows. SchemaDrift at the hub.
+PAGE_LIMIT: Final = "RelayPageLimit"
+#: The most pages one invocation follows by hand. A Region's Savings Plans rates for one plan
+#: type and payment option are about 13 pages of 1,000 (modelled), so this is far above any call
+#: the allow list makes, and far below the function's 300 second timeout.
+MAX_PAGES: Final = 200
+#: The continuation token's name, as the services the relay calls spell it.
+_TOKENS: Final = ("NextToken", "nextToken")
 SESSION_NAME: Final = "meter-relay"
 
 _DATETIME: Final = "$datetime"
@@ -106,6 +120,10 @@ _DATETIME: Final = "$datetime"
 
 class RefusedError(ValueError):
     """A request the relay will not make, with the reason in words."""
+
+
+class PageLimitError(RuntimeError):
+    """A call with more pages than the relay follows in one invocation."""
 
 
 @dataclass(frozen=True)
@@ -174,9 +192,27 @@ def decode(body: bytes) -> list[Any]:
 def call(client: Any, request: Request) -> list[Any]:
     """Make the one call, every page of it where asked, and return the pages."""
     method = xform_name(request.operation)
-    if request.paginate:
-        return list(client.get_paginator(method).paginate(**request.params))
-    return [getattr(client, method)(**request.params)]
+    if not request.paginate:
+        return [getattr(client, method)(**request.params)]
+    try:
+        paginator = client.get_paginator(method)
+    except OperationNotPageableError:
+        return follow(getattr(client, method), request.params)
+    return list(paginator.paginate(**request.params))
+
+
+def follow(operation: Callable[..., Any], params: Mapping[str, Any]) -> list[Any]:
+    """Every page of a call botocore cannot paginate, following its token by hand."""
+    pages: list[Any] = []
+    token: dict[str, Any] = {}
+    while len(pages) < MAX_PAGES:
+        page = operation(**params, **token)
+        pages.append(page)
+        name = next((key for key in _TOKENS if page.get(key)), None)
+        if name is None:
+            return pages
+        token = {name: page[name]}
+    raise PageLimitError(f"more than {MAX_PAGES} pages; none is returned rather than some")
 
 
 def session_policy(request: Request) -> str:
@@ -221,6 +257,8 @@ class Relay:
             return {"error": {"Code": error.get("Code", ""), "Message": error.get("Message", "")}}
         except BotoCoreError as failure:
             return {"error": {"Code": UNREACHED, "Message": str(failure)}}
+        except PageLimitError as failure:
+            return {"error": {"Code": PAGE_LIMIT, "Message": str(failure)}}
         key = self._new_key(request)
         self._put(key, encode(pages))
         return {"key": key, "pages": len(pages)}

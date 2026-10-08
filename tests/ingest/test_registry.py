@@ -108,6 +108,7 @@ def test_a_cadence_the_api_runs_names_what_the_api_runs() -> None:
         ("0031_invoices", "invoices"),
         ("0034_price_catalog_schedule", "price_catalog"),
         ("0035_instance_catalog_schedule", "instance_catalog"),
+        ("0036_savings_plan_rates_schedule", "savings_plan_rates"),
     ],
 )
 def test_the_migration_installs_the_cadence_the_registry_declares(
@@ -115,7 +116,8 @@ def test_the_migration_installs_the_cadence_the_registry_declares(
 ) -> None:
     """Each of these migrations installs a collector's row for the tenants that existed before
     it, and `install_default_schedule` for every tenant after, so the two must say the same
-    thing. 0031 and 0034 joined 0029 here in TASK-P9-004, and 0035 in TASK-P9-005."""
+    thing. 0031 and 0034 joined 0029 here in TASK-P9-004, 0035 in TASK-P9-005, and 0036 in
+    TASK-P9-012."""
     import importlib.util
 
     migration = Path(__file__).resolve().parents[2] / f"migrations/versions/{revision}.py"

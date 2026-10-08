@@ -14,14 +14,14 @@ from typing import Any
 
 import pytest
 
-from finops_core.domain.catalog import PricingCategory, PurchaseOption
+from finops_core.domain.catalog import SAVINGS_PLANS, PricingCategory, PurchaseOption
 from finops_core.errors import AccessDenied, NoData, NotOptedIn
-from finops_core.ports import InstanceCatalog, PriceCatalog
-from finops_fakes.catalog import FakeInstanceCatalog, FakePriceCatalog
+from finops_core.ports import InstanceCatalog, PriceCatalog, SavingsPlansRates
+from finops_fakes.catalog import FakeInstanceCatalog, FakePriceCatalog, FakeSavingsPlansRates
 from finops_fakes.estate_shape import REGIONS
 from finops_fakes.prices import INSTANCE_USD
 from tests.providers.aws.ec2_types import fake_backed as instances_over_ec2
-from tests.providers.aws.pricing import fake_backed
+from tests.providers.aws.pricing import fake_backed, fake_rates_backed
 
 EC2 = "AmazonEC2"
 
@@ -30,6 +30,14 @@ INSTANCE_CATALOGS: dict[str, Callable[..., Any]] = {
     "fake": FakeInstanceCatalog,
     "aws": instances_over_ec2,
 }
+
+
+RATES: dict[str, Callable[..., Any]] = {"fake": FakeSavingsPlansRates, "aws": fake_rates_backed}
+
+
+@pytest.fixture(params=sorted(RATES))
+def make_rates(request: pytest.FixtureRequest) -> Callable[..., Any]:
+    return RATES[request.param]
 
 
 @pytest.fixture(params=sorted(PRICE_CATALOGS))
@@ -182,3 +190,43 @@ def test_a_burstable_type_carries_its_baseline_and_its_source(
 def test_every_type_the_estate_bills_is_described() -> None:
     described = {s.instance_type for s in FakeInstanceCatalog().instance_types(REGIONS[0])}
     assert described == set(INSTANCE_USD)
+
+
+# --- Savings Plans rates, TASK-P9-012 ------------------------------------------------------
+
+
+def test_it_is_a_savings_plans_rates(make_rates: Callable[..., Any]) -> None:
+    assert isinstance(make_rates(), SavingsPlansRates)
+
+
+def test_a_sheet_is_one_version_of_committed_rates(make_rates: Callable[..., Any]) -> None:
+    sheet = make_rates().rates(REGIONS[0])
+    assert sheet.version.service_code == SAVINGS_PLANS
+    assert sheet.version.collected_at >= sheet.version.as_of
+    assert sheet.prices
+    assert all(p.pricing_category is PricingCategory.COMMITTED for p in sheet.prices)
+    assert all(p.lease_years in (1, 3) and p.purchase_option for p in sheet.prices)
+    assert all(p.recurring_unit_price > 0 and p.upfront_fee == 0 for p in sheet.prices)
+    counts = Counter(p.sku_price_id for p in sheet.prices)
+    assert max(counts.values()) == 1
+
+
+def test_the_same_rates_read_again_are_the_same_version(make_rates: Callable[..., Any]) -> None:
+    rates = make_rates()
+    assert rates.rates(REGIONS[0]).version.version == rates.rates(REGIONS[0]).version.version
+
+
+def test_a_rate_names_the_type_it_discounts(make_rates: Callable[..., Any]) -> None:
+    sheet = make_rates().rates(REGIONS[0])
+    assert {p.details["instanceType"] for p in sheet.prices} == set(INSTANCE_USD)
+    assert {p.offering_class for p in sheet.prices} == {"Compute", "EC2Instance"}
+
+
+def test_a_region_with_no_rates_is_no_data(make_rates: Callable[..., Any]) -> None:
+    with pytest.raises(NoData):
+        make_rates().rates("nowhere-1")
+
+
+def test_a_refused_rate_read_is_raised_by_its_cause(make_rates: Callable[..., Any]) -> None:
+    with pytest.raises(AccessDenied):
+        make_rates(failure=AccessDenied).rates(REGIONS[0])
