@@ -16,10 +16,16 @@ import pytest
 
 from finops_core.domain.catalog import SAVINGS_PLANS, PricingCategory, PurchaseOption
 from finops_core.errors import AccessDenied, NoData, NotOptedIn
-from finops_core.ports import InstanceCatalog, PriceCatalog, SavingsPlansRates
-from finops_fakes.catalog import FakeInstanceCatalog, FakePriceCatalog, FakeSavingsPlansRates
+from finops_core.ports import InstanceCatalog, PriceCatalog, SavingsPlansRates, SpotPrices
+from finops_fakes.catalog import (
+    FakeInstanceCatalog,
+    FakePriceCatalog,
+    FakeSavingsPlansRates,
+    FakeSpotPrices,
+)
 from finops_fakes.estate_shape import REGIONS
 from finops_fakes.prices import INSTANCE_USD
+from tests.providers.aws.ec2_types import SpotClock, fake_spot_backed
 from tests.providers.aws.ec2_types import fake_backed as instances_over_ec2
 from tests.providers.aws.pricing import fake_backed, fake_rates_backed
 
@@ -33,6 +39,12 @@ INSTANCE_CATALOGS: dict[str, Callable[..., Any]] = {
 
 
 RATES: dict[str, Callable[..., Any]] = {"fake": FakeSavingsPlansRates, "aws": fake_rates_backed}
+SPOT: dict[str, Callable[..., Any]] = {"fake": FakeSpotPrices, "aws": fake_spot_backed}
+
+
+@pytest.fixture(params=sorted(SPOT))
+def make_spot(request: pytest.FixtureRequest) -> Callable[..., Any]:
+    return SPOT[request.param]
 
 
 @pytest.fixture(params=sorted(RATES))
@@ -230,3 +242,39 @@ def test_a_region_with_no_rates_is_no_data(make_rates: Callable[..., Any]) -> No
 def test_a_refused_rate_read_is_raised_by_its_cause(make_rates: Callable[..., Any]) -> None:
     with pytest.raises(AccessDenied):
         make_rates(failure=AccessDenied).rates(REGIONS[0])
+
+
+# --- spot prices, TASK-P9-013 ---------------------------------------------------------------
+
+SINCE = SpotClock.since
+
+
+def test_it_is_a_spot_price_source(make_spot: Callable[..., Any]) -> None:
+    assert isinstance(make_spot(), SpotPrices)
+
+
+def test_every_pool_arrives_with_the_price_it_had_when_the_window_opened(
+    make_spot: Callable[..., Any],
+) -> None:
+    readings = tuple(make_spot().prices(REGIONS[0], SINCE))
+    assert readings
+    pools = {r.pool for r in readings}
+    opened = {r.pool for r in readings if r.as_of <= SINCE}
+    assert opened == pools
+    assert all(r.region == REGIONS[0] and r.price > 0 for r in readings)
+    assert all(r.collected_at >= r.as_of for r in readings)
+
+
+def test_a_spot_region_not_opted_into_is_not_opted_in(make_spot: Callable[..., Any]) -> None:
+    with pytest.raises(NotOptedIn):
+        tuple(make_spot(not_opted_in=[REGIONS[1]]).prices(REGIONS[1], SINCE))
+
+
+def test_a_region_with_no_spot_is_no_data(make_spot: Callable[..., Any]) -> None:
+    with pytest.raises(NoData):
+        tuple(make_spot().prices("nowhere-1", SINCE))
+
+
+def test_a_refused_spot_read_is_raised_by_its_cause(make_spot: Callable[..., Any]) -> None:
+    with pytest.raises(AccessDenied):
+        tuple(make_spot(failure=AccessDenied).prices(REGIONS[0], SINCE))

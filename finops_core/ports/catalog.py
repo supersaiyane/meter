@@ -11,9 +11,16 @@ nothing about whether it can read the other.
 from __future__ import annotations
 
 from collections.abc import Iterable
+from datetime import datetime
 from typing import Protocol, runtime_checkable
 
-from finops_core.domain.catalog import InstanceTypeSpec, Price, PriceListVersion, PriceSheet
+from finops_core.domain.catalog import (
+    InstanceTypeSpec,
+    Price,
+    PriceListVersion,
+    PriceSheet,
+    SpotPrice,
+)
 
 
 @runtime_checkable
@@ -83,5 +90,29 @@ class SavingsPlansRates(Protocol):
             NoData: No rate for EC2 in this Region.
             SchemaDrift: A rate this cannot read, a rate of nought, or more pages than the relay
                 follows.
+        """
+        ...
+
+
+@runtime_checkable
+class SpotPrices(Protocol):
+    """EC2's spot price readings, one Region at a time. TASK-P9-013.
+
+    Read through the relay outside the VPC, ADR-0035 and OPEN-17.
+    """
+
+    def prices(self, region: str, since: datetime) -> Iterable[SpotPrice]:
+        """Every pool's price in effect at `since`, and every change since, in a Region.
+
+        EC2 answers a window with the price each pool had when it opened as well as the changes
+        inside it, so a pool that has not moved still arrives once.
+
+        Raises:
+            AccessDenied: The relay's role may not read spot prices.
+            Throttled: The provider rejected the call rate.
+            NotOptedIn: The Region is not enabled for the account.
+            Unreachable: The relay or the endpoint did not answer.
+            NoData: The Region offers no spot pool.
+            SchemaDrift: A reading this cannot read, or a price of nought.
         """
         ...

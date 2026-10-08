@@ -22,6 +22,10 @@ Only EC2 is faked. Another service's versions are none, and its prices are NoDat
 both plan types, both lengths and every payment option. The discounts are invented and round, as
 the reservations' are; the shape, an offering id, a usage type and a rate per hour, is the
 Savings Plans API's.
+
+**Spot prices**, TASK-P9-013, in two zones of every Region for every type the estate prices, Linux:
+the price each pool had when the window opened and one change inside it, as EC2 answers a window.
+The discounts are invented.
 """
 
 from __future__ import annotations
@@ -29,7 +33,7 @@ from __future__ import annotations
 import hashlib
 import uuid
 from collections.abc import Iterable
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from typing import Any, Final
 
@@ -42,6 +46,7 @@ from finops_core.domain.catalog import (
     PriceSheet,
     PricingCategory,
     PurchaseOption,
+    SpotPrice,
     sheet_version,
 )
 from finops_core.errors import CollectionError, NoData, NotOptedIn
@@ -415,3 +420,70 @@ class FakeSavingsPlansRates:
             as_of=PUBLISHED,
             collected_at=fixtures.COLLECTED_AT,
         )
+
+
+#: Invented. A spot price's discount off on demand, by zone, when the window opens and after the
+#: one change inside it.
+SPOT_DISCOUNT: Final[dict[str, tuple[Decimal, Decimal]]] = {
+    "a": (Decimal("0.70"), Decimal("0.68")),
+    "b": (Decimal("0.66"), Decimal("0.67")),
+}
+SPOT_PRODUCT: Final = "Linux/UNIX"
+#: When, relative to the window, the fake's pools last changed and change again.
+SPOT_OPENED: Final = timedelta(days=1)
+SPOT_CHANGED: Final = timedelta(hours=1)
+
+
+class FakeSpotPrices:
+    """Spot readings in two zones of every fake Region, as EC2 answers a window."""
+
+    def __init__(
+        self,
+        *,
+        regions: Iterable[str] = REGIONS,
+        not_opted_in: Iterable[str] = (),
+        failure: type[CollectionError] | None = None,
+    ) -> None:
+        self._regions = tuple(regions)
+        self._not_opted_in = frozenset(not_opted_in)
+        self._failure = failure
+
+    def prices(self, region: str, since: datetime) -> Iterable[SpotPrice]:
+        scope = f"spot:{region}"
+        if self._failure is not None:
+            raise self._failure(
+                scope_key=scope, collector="spot_prices", detail="planned by the fake spot prices"
+            )
+        if region in self._not_opted_in:
+            raise NotOptedIn(
+                scope_key=scope,
+                collector="spot_prices",
+                detail="the Region is not enabled for the account",
+            )
+        if region not in self._regions:
+            raise NoData(
+                scope_key=scope,
+                collector="spot_prices",
+                detail="the fake offers spot in the fake Regions only",
+            )
+        read = since + 2 * SPOT_CHANGED
+        found: list[SpotPrice] = []
+        for instance_type in sorted(prices.INSTANCE_USD):
+            hourly = on_demand_hourly(instance_type)
+            for zone, (opening, changed) in SPOT_DISCOUNT.items():
+                for at, discount in (
+                    (since - SPOT_OPENED, opening),
+                    (since + SPOT_CHANGED, changed),
+                ):
+                    found.append(
+                        SpotPrice(
+                            region=region,
+                            availability_zone=f"{region}{zone}",
+                            instance_type=instance_type,
+                            product_description=SPOT_PRODUCT,
+                            price=(hourly * (1 - discount)).quantize(_HOURLY),
+                            as_of=at,
+                            collected_at=read,
+                        )
+                    )
+        return tuple(found)

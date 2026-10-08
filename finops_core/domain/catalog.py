@@ -202,3 +202,31 @@ class PriceSheet:
                 version.version,
             ):
                 raise ValueError(f"{price.sku_price_id} does not belong to the sheet's version")
+
+
+@dataclass(frozen=True, kw_only=True)
+class SpotPrice(Fact):
+    """One spot price reading for one pool, as EC2 recorded it. TASK-P9-013.
+
+    A pool is an instance type and a product description in one Availability Zone. `as_of` is
+    the reading's own time, when EC2 set the price, and `collected_at` is when Meter read it,
+    constraint 10.
+    """
+
+    region: str
+    availability_zone: str
+    instance_type: str
+    product_description: str
+    price: Decimal
+
+    def __post_init__(self) -> None:
+        if self.price <= 0:
+            raise ValueError(
+                f"a spot price of {self.price} for {self.instance_type} is not a price"
+            )
+        if not self.availability_zone.startswith(self.region):
+            raise ValueError(f"{self.availability_zone} is not a zone of {self.region}")
+
+    @property
+    def pool(self) -> tuple[str, str, str]:
+        return (self.availability_zone, self.instance_type, self.product_description)

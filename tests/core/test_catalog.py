@@ -24,6 +24,7 @@ from finops_core.domain.catalog import (
     PriceSheet,
     PricingCategory,
     PurchaseOption,
+    SpotPrice,
     sheet_version,
 )
 
@@ -262,3 +263,36 @@ def test_a_sheet_holds_only_its_own_versions_prices() -> None:
     assert PriceSheet(version=version, prices=(price(),)).prices
     with pytest.raises(ValueError, match="does not belong"):
         PriceSheet(version=version, prices=(price(region="eu-west-2"),))
+
+
+# --- a spot reading, TASK-P9-013 -------------------------------------------------------------
+
+
+def spot(**overrides: Any) -> SpotPrice:
+    fields: dict[str, Any] = {
+        "region": "eu-west-1",
+        "availability_zone": "eu-west-1a",
+        "instance_type": "m5.large",
+        "product_description": "Linux/UNIX",
+        "price": Decimal("0.0381"),
+        "as_of": AT,
+        "collected_at": AT,
+    }
+    return SpotPrice(**{**fields, **overrides})
+
+
+def test_a_spot_reading_names_its_pool() -> None:
+    assert spot().pool == ("eu-west-1a", "m5.large", "Linux/UNIX")
+
+
+@pytest.mark.parametrize(
+    ("overrides", "says"),
+    [
+        ({"price": Decimal(0)}, "not a price"),
+        ({"price": Decimal("-0.01")}, "not a price"),
+        ({"availability_zone": "us-east-1a"}, "not a zone of eu-west-1"),
+    ],
+)
+def test_a_spot_reading_that_is_not_one_is_refused(overrides: dict[str, Any], says: str) -> None:
+    with pytest.raises(ValueError, match=says):
+        spot(**overrides)

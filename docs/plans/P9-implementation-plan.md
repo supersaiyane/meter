@@ -254,7 +254,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 14, FEAT-071 |
 | Delivers | Spot prices in the price catalog |
 | Depends on | TASK-P9-001 and TASK-P9-003 |
@@ -262,14 +262,16 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 **Acceptance criteria.**
 
-- [ ] `DescribeSpotPriceHistory` for every commercial Region, zone and product description,
+- [x] `DescribeSpotPriceHistory` for every commercial Region, zone and product description,
       as `PricingCategory` Dynamic, with the reading's own time as `as_of` and `collected_at`
       beside it
-- [ ] Read by the function outside the VPC chosen for OPEN-17, held by TASK-P9-001's test
-- [ ] The latest price per pool, replaced each run, and each day's low and high kept for 90
+- [x] Read by the function outside the VPC chosen for OPEN-17, held by TASK-P9-001's test
+- [x] The latest price per pool, replaced each run, and each day's low and high kept for 90
       days, as OPEN-18 chose on 2026-10-07, spec section 14.7; every limit a database
-      constraint, and the 90 days held by a test
-- [ ] Polled every 8 hours; a Region that refuses, or that the account has not opted into, is
+      constraint, and the 90 days held by a test. The 90 days are a removal each run rather than
+      a constraint, since no constraint can age a row; the test holds the 90th day kept and the
+      91st removed
+- [x] Polled every 8 hours; a Region that refuses, or that the account has not opted into, is
       a typed failure such as NotOptedIn and never a price of nought, constraint 5
 
 ---
