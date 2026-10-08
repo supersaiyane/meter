@@ -366,7 +366,15 @@ def test_there_is_no_second_recommendation_table() -> None:
     would have found a disagreement with the spec, and this is where it would show.
     """
     names = {name for name in models.metadata.tables if "recommendation" in name}
-    assert names == {"recommendation", "recommendation_event"}, names
+    # TASK-P9-006 added the options a provider ranked for one recommendation. A child of a
+    # recommendation rather than a second list of them, which the foreign key below holds.
+    assert names == {"recommendation", "recommendation_event", "recommendation_option"}, names
+    parents = {
+        key.column.table.name
+        for key in models.metadata.tables["recommendation_option"].foreign_keys
+        if key.parent.name == "recommendation_id"
+    }
+    assert parents == {"recommendation"}
 
 
 def test_fargate_tasks_are_sized_by_the_matrix_without_a_measured_cost(
