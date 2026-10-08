@@ -1006,6 +1006,19 @@ Optimizer scores its options' performance risk from 0 to 4 and Meter's rule give
 migration 0040 lets `performance_risk` be null, meaning the source gave no score; the 0 to 4 check
 still holds every score given. OPEN-24.
 
+```
+CREATE TABLE resource_owner (            -- P11, FEAT-077: one row per resource per source
+    sub_account_id, region_id NULL for a global resource, resource_id not blank,
+    source in (CATALOGUE, TAG, CREATOR), owner and detail not blank,
+    owner_kind in (TEAM, PERSON, AUTOMATION), a TAG row a TEAM, a CREATOR row never one,
+    collected_at >= as_of, UNIQUE (tenant_id, sub_account_id, resource_id, source)
+);
+```
+
+A suggestion of whom to ask, never an owner: `recommendation.owner` stays a person's to write.
+Written by the `ownership` collector, migration 0041, which replaces each source's rows each run,
+so a tag taken off a resource stops suggesting its team. Scoped by account, `ByAccount`.
+
 ```sql
 CREATE TABLE recommendation_option (       -- every target a provider ranked, migration 0038
     recommendation_id REFERENCES recommendation, region TEXT, rank >= 1, instance_type TEXT,

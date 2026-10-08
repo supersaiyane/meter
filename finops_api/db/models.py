@@ -1157,6 +1157,25 @@ spot_price_daily = Table(
     Column("collected_at", DateTime(timezone=True), nullable=False),
 )
 
+#: Who an estate says owns each resource, one row per resource per source, migration 0041,
+#: FEAT-077. A suggestion, never an owner: `recommendation.owner` is a person's to write.
+resource_owner = Table(
+    "resource_owner",
+    metadata,
+    Column("owner_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column("region_id", Text),
+    Column("resource_id", Text, nullable=False),
+    Column("source", Text, nullable=False),
+    Column("owner", Text, nullable=False),
+    Column("owner_kind", Text, nullable=False),
+    Column("detail", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
 query_adhoc = Table(
     "query_adhoc",
     metadata,

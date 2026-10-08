@@ -103,6 +103,14 @@ class Settings:
     def iac_exhaustive(self) -> frozenset[str]:
         return frozenset(p.strip() for p in self.iac_exhaustive_accounts.split(",") if p.strip())
 
+    # FEAT-077's one, which the ownership collector refuses to run without. Same value as
+    # `.env.example`; the seed widens it to name the demo's second key.
+    owner_tag_keys = "team"
+
+    @property
+    def owner_tag_key_list(self) -> tuple[str, ...]:
+        return tuple(p.strip() for p in self.owner_tag_keys.split(",") if p.strip())
+
     def model_copy(self, *, update: dict[str, object] | None = None) -> Settings:
         """The stub's own copy, because the seed uses it to override the state locations.
 
@@ -645,5 +653,34 @@ def test_the_seed_produces_the_container_estate(engine: object) -> None:
         assert states == {True, False, None}, states
         assert recommended >= 1, "no container recommendation reached P3's list"
         assert costed >= 1, "the seeded bill carries no container grain"
+    finally:
+        seed_demo.remove(engine)
+
+
+def test_the_seeded_estate_names_owners_from_its_tags(engine: object) -> None:
+    """FEAT-077. Every tagged resource's team, and the planted volume under the second key.
+
+    `fake-product-b` carries no team tag, so its only owner from tags is the volume that carries
+    `owner`, which the demo names as its second key.
+    """
+    from sqlalchemy import text as sql
+
+    seed_demo.seed(engine, Settings(), _now())
+    try:
+        with engine.connect() as connection:  # type: ignore[attr-defined]
+            found = {
+                (row.resource_id, row.owner, row.detail)
+                for row in connection.execute(
+                    sql(
+                        "SELECT resource_id, owner, detail FROM resource_owner "
+                        "WHERE tenant_id = :t AND source = 'TAG'"
+                    ),
+                    {"t": DEMO_TENANT},
+                )
+            }
+        assert ("amazonebs/fake-product-b/0001", "data-platform", "owner") in found
+        assert ("amazonec2/fake-product-a/0003", "product", "team") in found
+        untagged = {one for one in found if "/fake-product-b/" in one[0]}
+        assert untagged == {("amazonebs/fake-product-b/0001", "data-platform", "owner")}
     finally:
         seed_demo.remove(engine)

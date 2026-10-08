@@ -82,6 +82,7 @@ from finops_ingest.collectors.instance_catalog import InstanceCatalogCollector
 from finops_ingest.collectors.inventory import InventoryCollector
 from finops_ingest.collectors.invoices import InvoiceCollector
 from finops_ingest.collectors.org_tree import OrgTreeCollector
+from finops_ingest.collectors.ownership import OwnershipCollector
 from finops_ingest.collectors.partitions import ensure_partition, partition_maintenance
 from finops_ingest.collectors.platform_cost import PlatformCostCollector
 from finops_ingest.collectors.price_catalog import PriceCatalogCollector
@@ -140,6 +141,9 @@ DEMO_TABLES = (
     # Within the three: the edges reference the nodes, so the edges go first.
     "topology_edge",
     "topology_node",
+    # P11, FEAT-077. Owners read from the nodes above; no foreign key, so anywhere above
+    # the tenant would do, and beside the nodes is where a reader looks for it.
+    "resource_owner",
     "graph_coverage",
     # P6, FEAT-035 and FEAT-036. Above `ingest_run` like the P4 and P5 tables,
     # because both carry the run that wrote them. Neither references the other, so
@@ -836,6 +840,18 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
             connection,
             unit(),
             "inventory",
+        )
+
+        # P11, FEAT-077. Owners from the nodes' tags, after the inventory because it reads them.
+        # The demo names `owner` as a second key so the planted volume that carries only that
+        # tag, in the account with no team tags, shows the case; a deployment names its own.
+        written += _through_the_ledger(
+            ledger,
+            OwnershipCollector(clock=lambda: now),
+            connection,
+            unit(scope_key="ownership"),
+            "ownership",
+            settings=settings.model_copy(update={"owner_tag_keys": "team,owner"}),
         )
 
         # FEAT-057. Seeded after the inventory on purpose, because it joins to it: the

@@ -873,6 +873,12 @@ def _tags(s: Spec) -> Mapping[str, str]:
     return MappingProxyType({"team": owner, "finops:module": "fixture", **s.extra_tags})
 
 
+def tags_of(resource_id: str) -> Mapping[str, str]:
+    """A resource's tags as the inventory reads them, none for one the estate does not hold."""
+    found = _BY_ID.get(resource_id)
+    return _tags(found) if found is not None else MappingProxyType({})
+
+
 def launched_at(s: Spec, at: datetime = fixtures.AS_OF) -> datetime:
     """When the resource first existed, bounded below by the window start."""
     start, end = shape.window(at)

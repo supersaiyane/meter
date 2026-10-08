@@ -5,7 +5,7 @@
 | Sub project | P11 |
 | Status | In build |
 | Specification | [P11 spec](../specs/2026-10-08-p11-owners-and-savings-ledger-design.md), sections 5.1 to 5.4 |
-| Tasks | TASK-P11-001 to TASK-P11-005; TASK-P11-001 done 2026-10-08 |
+| Tasks | TASK-P11-001 to TASK-P11-005; TASK-P11-001 and TASK-P11-002 done 2026-10-08 |
 
 ## What it does
 
@@ -45,7 +45,10 @@ source, each with its detail and two timestamps, P11 spec sections 5.1 to 5.4:
 A recommendation lists them strongest first beside its assigned owner. None is written as an owner.
 TASK-P11-001 built the owner types and their rules in `finops_core/domain/ownership.py`, the
 `ServiceCatalogue` and `ResourceCreators` ports, and the fakes in `finops_fakes/ownership.py`,
-which plant every case in `fake-product-b`, the account with no team tags.
+which plant every case in `fake-product-b`, the account with no team tags. TASK-P11-002 built
+`resource_owner`, migration 0041 with the same rules as constraints, the `owner_tag_keys` setting,
+and the daily `ownership` collector, which writes TAG rows from the inventory's nodes and removes
+those it no longer finds; the demo's nodes now carry the estate's own tags.
 
 ## Failure behaviour
 

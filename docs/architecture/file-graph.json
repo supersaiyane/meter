@@ -460,6 +460,7 @@
     "finops_ingest/collectors/inventory.py",
     "finops_ingest/collectors/invoices.py",
     "finops_ingest/collectors/org_tree.py",
+    "finops_ingest/collectors/ownership.py",
     "finops_ingest/collectors/partitions.py",
     "finops_ingest/collectors/platform_cost.py",
     "finops_ingest/collectors/price_catalog.py",
@@ -622,6 +623,7 @@
     "migrations/versions/0038_recommendation_option.py",
     "migrations/versions/0039_upsize_added_cost.py",
     "migrations/versions/0040_option_risk_optional.py",
+    "migrations/versions/0041_resource_owner.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -744,6 +746,7 @@
     "tests/db/test_p7_constraints.py",
     "tests/db/test_price_catalog_constraints.py",
     "tests/db/test_recommendation_option_constraints.py",
+    "tests/db/test_resource_owner_constraints.py",
     "tests/db/test_schema.py",
     "tests/db/test_scope_guard.py",
     "tests/db/test_upsize_constraints.py",
@@ -763,6 +766,7 @@
     "tests/ingest/collectors/test_inventory.py",
     "tests/ingest/collectors/test_invoices.py",
     "tests/ingest/collectors/test_org_tree.py",
+    "tests/ingest/collectors/test_ownership.py",
     "tests/ingest/collectors/test_partitions.py",
     "tests/ingest/collectors/test_platform_cost.py",
     "tests/ingest/collectors/test_price_catalog.py",
@@ -9584,6 +9588,21 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/ownership.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/ownership.py",
+      "t": "finops_core/domain/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/ownership.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/partitions.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
@@ -10831,6 +10850,11 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/org_tree.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/ownership.py",
       "k": "python"
     },
     {
@@ -12950,6 +12974,21 @@
     },
     {
       "s": "tests/ingest/collectors/test_org_tree.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ownership.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ownership.py",
+      "t": "finops_ingest/collectors/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ownership.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
