@@ -98,6 +98,15 @@ subprojects:
   spec: specs/2026-10-07-p10-proven-numbers-design.md
   plan: plans/P10-implementation-plan.md
   depends_on: P1
+- id: P11
+  name: Owners and a savings ledger
+  status: Specified and planned 2026-10-08, waiting for the owner's approval to build. Chosen by the owner
+    on 2026-10-08 as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
+    AppRegistry and CloudTrail as suggestions beside the assigned owner, and a ledger crediting each
+    verified saving to its owner and team for every month the bill shows it held
+  spec: specs/2026-10-08-p11-owners-and-savings-ledger-design.md
+  plan: plans/P11-implementation-plan.md
+  depends_on: P3
 features:
 - id: FEAT-001
   name: Account onboarding and organization topology, parent to child map
@@ -561,6 +570,18 @@ features:
   status: Delivered
   detail: '[P10 spec](docs/specs/2026-10-07-p10-proven-numbers-design.md) sections 5.3 to 5.5, 6, 7'
   doc: docs/features/FEAT-076-invoice-reconciliation.md
+- id: FEAT-077
+  name: Owners from tags, the service catalogue and CloudTrail
+  subproject: P11
+  status: Planned
+  detail: '[P11 spec](docs/specs/2026-10-08-p11-owners-and-savings-ledger-design.md) sections 5.1 to 5.4, [P11 plan](docs/plans/P11-implementation-plan.md)'
+  doc: docs/features/FEAT-077-owners-from-tags-catalogue-and-cloudtrail.md
+- id: FEAT-078
+  name: The savings ledger, verified savings credited and re-measured
+  subproject: P11
+  status: Planned
+  detail: '[P11 spec](docs/specs/2026-10-08-p11-owners-and-savings-ledger-design.md) sections 5.5 and 5.6, [P11 plan](docs/plans/P11-implementation-plan.md)'
+  doc: docs/features/FEAT-078-savings-ledger.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -2134,6 +2155,18 @@ changes:
     collected before it was true. Criterion 3 failed at first, ISS-266, and the seed now judges every
     account that holds instances or attached volumes. FEAT-071 to FEAT-074 delivered, the evidence in
     the plan
+- id: CHG-0147
+  date: '2026-10-08'
+  type: Scope
+  what: P11, owners and a savings ledger, specified and planned as the next priority
+  commit: pending
+  detail: 'The owner chose proposal 3 of next-in-scope.txt as the next priority on 2026-10-08, answering
+    OPEN-20 for it. The spec reads owners from tags under configurable keys, AWS AppRegistry and the
+    CloudTrail event that created a resource, shows them as suggestions beside the assigned owner, and
+    credits each verified saving to its owner and team for every month the bill shows it held. Nine
+    tasks, about eight and a half working days (modelled). OPEN-25 to OPEN-27 put the catalogue, the
+    CloudTrail store and whether individuals are ranked, each with its recommendation. Waiting for the
+    owner''s approval to build'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4790,7 +4823,8 @@ open_questions:
   blocks: nothing
   detail: Set in METER_REGIONS, see .env.example section 3
 - id: OPEN-20
-  question: Which of proposals 2 to 9 in next-in-scope.txt are approved, and in what order?
+  question: Which of proposals 2 to 9 in next-in-scope.txt are approved, and in what order? ANSWERED IN PART
+    2026-10-08, proposal 3, owners and a savings ledger, is next, as P11; the rest stay open
   status: OPEN
   blocks: Every proposal after P9
   detail: 'Raised 2026-10-07 with the market research. Priorities 1 to 3 were approved the same day. The
@@ -4843,3 +4877,30 @@ open_questions:
     options'' risk from 0 to 4 and Meter''s rule gives none, so migration 0040 lets that column be null
     rather than invent a nought that would read as no risk. The cost is a write per targeted finding.
     Reversing it is storing the demand on the recommendation instead; the owner may say so.'
+- id: OPEN-25
+  question: Which service catalogue names owners, AWS AppRegistry, a Backstage catalogue, or a list kept in
+    Meter?
+  status: OPEN
+  blocks: TASK-P11-003
+  detail: 'Raised 2026-10-08 by the P11 spec, section 5.3. Recommended: AWS AppRegistry, the store behind
+    myApplications, read only through four calls in the botocore 1.43.108 model, the owner read from the
+    application''s attribute group under a configurable key. Backstage waits on OPEN-13, the code host;
+    a list kept in Meter would be a second source of truth.'
+- id: OPEN-26
+  question: Are creators read from CloudTrail's event history, or from CloudTrail Lake or the organization
+    trail through Athena?
+  status: OPEN
+  blocks: TASK-P11-004
+  detail: 'Raised 2026-10-08 by the P11 spec, section 5.4. Recommended: the event history through
+    LookupEvents by resource name, which needs no new infrastructure and reuses the paging the query
+    evidence adapter has, read once per resource; a resource older than the history says so. Lake or the
+    organization trail reach further back and need infrastructure no account has yet, ISS-122, and either
+    can replace the adapter behind the same port.'
+- id: OPEN-27
+  question: May the savings ledger rank individual engineers, or teams only?
+  status: OPEN
+  blocks: TASK-P11-008
+  detail: 'Raised 2026-10-08 by the P11 spec, section 5.6. Recommended: teams only, a person named only as
+    the owner on a team''s credits, because a leaderboard of named engineers is a performance review
+    nobody asked Meter to run. Ranking individuals is a change to the screen and its route, not to the
+    data.'
