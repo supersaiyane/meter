@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 78 total, 11 specified, 13 in build, 49 delivered |
+| Features | 78 total, 11 specified, 14 in build, 49 delivered |
 | Decisions | 35 architecture decision records |
-| Changes | 147 recorded |
+| Changes | 148 recorded |
 | Issues | 157 fixed, 106 open, 0 parked |
 | Open questions | 27 awaiting a decision |
 
@@ -74,8 +74,8 @@ the whole demo estate, where the gp2 volume turned out never to be judged, ISS-2
 day, and P9 was delivered against fakes on 2026-10-08. A real price list and real Compute Optimizer
 answers wait on ISS-002. next-build was merged into main locally on 2026-10-08, bb1601c. The owner
 then chose proposal 3, owners and a savings ledger, as the next priority, OPEN-20: it is specified and
-planned as P11, nine tasks, and waits for the owner's approval to build, with OPEN-25 to OPEN-27 put
-to the owner. The repository has no git remote, so nothing has been pushed.
+planned as P11, nine tasks, approved the same day with OPEN-25 to OPEN-27 as recommended. TASK-P11-001
+built the owner types, the two ownership ports and the fakes that plant each case. The repository has no git remote, so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -250,7 +250,7 @@ ISS-003.
 | P8 | 18 | 0 | 0 | 0 | 0 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
-| P11 | 0 | 0 | 0 | 0 | 9 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
+| P11 | 1 | 0 | 0 | 0 | 8 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -497,6 +497,12 @@ ISS-003.
 | `TASK-P10-004` | Done 2026-10-08 | the comparison and its route |
 | `TASK-P10-005` | Done 2026-10-08 | the screen and the Overview tile |
 | `TASK-P10-006` | Done 2026-10-08 | proof and documents |
+
+**P11, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P11-001` | Done 2026-10-08 | owner sources as ports, and the fake estate's owners |
 
 <!-- generated:task-status end -->
 

@@ -703,6 +703,9 @@ SPECS: tuple[Spec, ...] = (
         "VolumeId",
         disk=("fill", 0.07, 0.08),
         planted="EBS_OVERSIZED",
+        # TASK-P11-001. An owner under a second tag key, in the account that carries no team tag:
+        # a deployment naming `owner` among its owner tag keys finds this team, P11 spec 5.2.
+        extra_tags={"owner": "data-platform"},
     ),
     Spec(
         "amazonec2/fake-product-b/0002",
@@ -859,10 +862,14 @@ def spec(resource_id: str) -> Spec:
 
 
 def _tags(s: Spec) -> Mapping[str, str]:
-    """The same tagging holes the bill has: `fake-product-b` carries nothing."""
+    """The same tagging holes the bill has: `fake-product-b` carries no team tag.
+
+    A resource's own extra tags survive the hole, so the one planted under a second owner key,
+    TASK-P11-001, carries it with no `team` beside it.
+    """
     owner = cur.OWNERS.get(s.account_id)
     if owner is None:
-        return MappingProxyType({})
+        return MappingProxyType(dict(s.extra_tags))
     return MappingProxyType({"team": owner, "finops:module": "fixture", **s.extra_tags})
 
 
