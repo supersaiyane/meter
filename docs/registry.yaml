@@ -2201,6 +2201,19 @@ changes:
     every list through botocore''s paginators, held to the model''s shapes; the hub reaches
     servicecatalog-appregistry through an interface endpoint in every collection Region, and the member
     role gains its five servicecatalog reads. A refused catalogue is typed and keeps its account''s rows'
+- id: CHG-0151
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P11-004, creators from CloudTrail's event history
+  commit: pending
+  detail: 'AwsResourceCreators asks LookupEvents by the ARN''s own id and then the whole ARN, paced to
+    the two requests a second AWS documents, and names the earliest event that created the resource,
+    its verb a creating one and its noun the type the ARN names, so a later CreateTags is never taken
+    for its creation; a session under an IAM Identity Center role is a person and any other role
+    automation. creator_lookup, migration 0042, keeps each resource asked, found or older than the 90
+    days, so none is asked twice, and the collector asks at most creator_lookups_per_run of the
+    resources no tag or catalogue names. The member role gains cloudtrail:LookupEvents; spec 5.4
+    amended'
 issues:
 - id: ISS-189
   severity: LOW

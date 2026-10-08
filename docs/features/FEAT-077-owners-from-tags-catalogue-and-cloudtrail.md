@@ -5,7 +5,7 @@
 | Sub project | P11 |
 | Status | In build |
 | Specification | [P11 spec](../specs/2026-10-08-p11-owners-and-savings-ledger-design.md), sections 5.1 to 5.4 |
-| Tasks | TASK-P11-001 to TASK-P11-005; TASK-P11-001 to TASK-P11-003 done 2026-10-08 |
+| Tasks | TASK-P11-001 to TASK-P11-005; TASK-P11-001 to TASK-P11-004 done 2026-10-08 |
 
 ## What it does
 
@@ -41,8 +41,12 @@ source, each with its detail and two timestamps, P11 spec sections 5.1 to 5.4:
   node carrying one is the application's. An owner with an `@` is a person. Strongest.
 - **The tags**, under `owner_tag_keys` in `Settings`, `team` unless set: the first key a resource
   carries with a value names its team. Read from the inventory, with no AWS call.
-- **The creator**, CloudTrail's event history by resource name: a person, or a pipeline's role named
-  as automation. Read once per resource; one older than the history says so. Weakest.
+- **The creator**, CloudTrail's event history by resource name, `LookupEvents` paced to the two
+  requests a second AWS documents: the earliest event that created the resource, its verb a
+  creating one and its noun the type the resource's ARN names, so a later `CreateTags` is never
+  taken for it. A person signed in, or a pipeline's role named as automation. Asked only of a
+  resource no tag or catalogue names, at most `creator_lookups_per_run` a run, and once: each
+  answer is kept in `creator_lookup`, and one older than the history says so. Weakest.
 
 A recommendation lists them strongest first beside its assigned owner. None is written as an owner.
 TASK-P11-001 built the owner types and their rules in `finops_core/domain/ownership.py`, the
@@ -53,12 +57,20 @@ and the daily `ownership` collector, which writes TAG rows from the inventory's 
 those it no longer finds; the demo's nodes now carry the estate's own tags. TASK-P11-003 built the
 AppRegistry adapter, `finops_providers/aws/appregistry.py`, its network path and permissions, and
 the collector's catalogue pass, which keeps an account's rows when its catalogue is refused.
+TASK-P11-004 built the CloudTrail adapter, `finops_providers/aws/cloudtrail_creators.py`,
+`creator_lookup`, migration 0042, the member role's `cloudtrail:LookupEvents`, and the collector's
+creator pass, which keeps a creator's row since who created a resource does not change.
 
 ## Failure behaviour
 
 Each source fails alone, typed in `sync_error`: a catalogue refused in one account leaves its tags
 and creators, and every other account, standing. A failure is never read as "nobody owns this",
-and a resource older than the event history is said to be, never guessed.
+and a resource older than the event history is said to be, never guessed. A creator lookup
+refused in one account and Region is recorded as asked nowhere, and the rest of that account and
+Region waits for the next run. A creating event this cannot read, or whose principal it cannot
+name, is SchemaDrift rather than a guessed name. One way it can still be wrong is known: a
+resource created by an event this does not recognise reads as older than the history, and the fix
+is that event's noun in `CREATES`.
 
 ## Security considerations
 
@@ -78,12 +90,16 @@ strongest first; `suggested_owner` stays, the strongest team. The ports are
 - Merging two names for one person, which waits on an identity provider, OPEN-01.
 - Owners on query findings and anomalies, which keep FEAT-016's.
 - A catalogue in a code host, which waits on OPEN-13.
+- The creator of a resource no Region holds, an IAM role: the event history is kept Region by
+  Region, and the global one is not asked.
+- CloudTrail Lake or the organization trail, which reach past 90 days, ISS-122.
 
 ## Status of this document
 
 In build. Approved by the owner on 2026-10-08 with AppRegistry, CloudTrail's event history and
 teams only. TASK-P11-001 built the owner types, the `ServiceCatalogue` and `ResourceCreators` ports
-and the fakes that plant each case. Specified in the
+and the fakes that plant each case; TASK-P11-002 to TASK-P11-004 the tags, the catalogue and the
+creators behind them. Specified in the
 [P11 spec](../specs/2026-10-08-p11-owners-and-savings-ledger-design.md) and planned in the
 [P11 plan](../plans/P11-implementation-plan.md). The sections a built feature carries are written as
 its tasks build it.

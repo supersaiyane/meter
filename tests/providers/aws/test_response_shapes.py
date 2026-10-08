@@ -279,6 +279,15 @@ READS: dict[tuple[str, str], set[str]] = {
         "nextToken",
     },
     ("servicecatalog-appregistry", "GetAttributeGroup"): {"attributes"},
+    # FEAT-077, TASK-P11-004. The event that created a resource and who made the call.
+    ("cloudtrail", "LookupEvents"): {
+        "Events",
+        "EventId",
+        "EventName",
+        "EventTime",
+        "CloudTrailEvent",
+        "NextToken",
+    },
 }
 
 #: Which key carries the continuation token, per operation. Separate from the reads because this
@@ -302,6 +311,7 @@ TOKENS: dict[tuple[str, str], str] = {
     ("service-quotas", "ListRequestedServiceQuotaChangeHistory"): "NextToken",
     ("cloudwatch", "GetMetricData"): "NextToken",
     ("ec2", "DescribeVpcs"): "NextToken",
+    ("cloudtrail", "LookupEvents"): "NextToken",
 }
 
 
@@ -432,6 +442,8 @@ SENDS: dict[tuple[str, str], set[str]] = {
     ("servicecatalog-appregistry", "ListAssociatedResources"): {"application"},
     ("servicecatalog-appregistry", "ListAttributeGroupsForApplication"): {"application"},
     ("servicecatalog-appregistry", "GetAttributeGroup"): {"attributeGroup"},
+    # By resource name inside the documented window; the service requires nothing.
+    ("cloudtrail", "LookupEvents"): set(),
 }
 
 
@@ -594,6 +606,17 @@ FALLS_THROUGH: dict[tuple[str, str], set[str]] = {
         "InternalServerException",
         "ResourceNotFoundException",
         "ValidationException",
+    },
+    # CloudTrail's event history. Each is a request this adapter builds wrong or a trail the
+    # account cannot look up in, and fails the account and Region loud, never as nobody.
+    ("cloudtrail", "LookupEvents"): {
+        "InvalidEventCategoryException",
+        "InvalidLookupAttributesException",
+        "InvalidMaxResultsException",
+        "InvalidNextTokenException",
+        "InvalidTimeRangeException",
+        "OperationNotPermittedException",
+        "UnsupportedOperationException",
     },
 }
 

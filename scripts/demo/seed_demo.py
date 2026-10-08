@@ -63,7 +63,7 @@ from finops_fakes.estate_metrics import EstateMetrics, ec2_candidates, volume_ca
 from finops_fakes.evidence import FakeQueryEvidence
 from finops_fakes.health import FakeRoleHealth
 from finops_fakes.invoices import FakeInvoices
-from finops_fakes.ownership import FakeServiceCatalogue
+from finops_fakes.ownership import FakeResourceCreators, FakeServiceCatalogue
 from finops_fakes.platform_cost import FakePlatformCost
 from finops_fakes.provider import FakeProvider
 from finops_fakes.recommendations import FakeRecommendationSource
@@ -145,6 +145,8 @@ DEMO_TABLES = (
     # P11, FEAT-077. Owners read from the nodes above; no foreign key, so anywhere above
     # the tenant would do, and beside the nodes is where a reader looks for it.
     "resource_owner",
+    # TASK-P11-004. Which resources CloudTrail was asked about; no foreign key either.
+    "creator_lookup",
     "graph_coverage",
     # P6, FEAT-035 and FEAT-036. Above `ingest_run` like the P4 and P5 tables,
     # because both carry the run that wrote them. Neither references the other, so
@@ -848,8 +850,13 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
         # tag, in the account with no team tags, shows the case; a deployment names its own.
         written += _through_the_ledger(
             ledger,
-            # And the fake AppRegistry, whose applications mark resources by tag, TASK-P11-003.
-            OwnershipCollector(clock=lambda: now, catalogue=FakeServiceCatalogue()),
+            # And the fake AppRegistry, whose applications mark resources by tag, TASK-P11-003,
+            # and the fake event history, which saw two of the unnamed resources made, P11-004.
+            OwnershipCollector(
+                clock=lambda: now,
+                catalogue=FakeServiceCatalogue(),
+                creators=FakeResourceCreators(),
+            ),
             connection,
             unit(scope_key="ownership"),
             "ownership",

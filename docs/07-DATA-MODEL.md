@@ -1016,8 +1016,22 @@ CREATE TABLE resource_owner (            -- P11, FEAT-077: one row per resource 
 ```
 
 A suggestion of whom to ask, never an owner: `recommendation.owner` stays a person's to write.
-Written by the `ownership` collector, migration 0041, which replaces each source's rows each run,
-so a tag taken off a resource stops suggesting its team. Scoped by account, `ByAccount`.
+Written by the `ownership` collector, migration 0041, which replaces the tag and catalogue rows
+each run, so a tag taken off a resource stops suggesting its team, and keeps a creator's row, which
+cannot change. Scoped by account, `ByAccount`.
+
+```
+CREATE TABLE creator_lookup (            -- P11, FEAT-077: one row per resource ever asked about
+    sub_account_id, region_id, resource_id not blank, outcome in (FOUND, BEFORE_HISTORY),
+    history_starts set exactly when the outcome is BEFORE_HISTORY, collected_at >= as_of,
+    UNIQUE (tenant_id, sub_account_id, resource_id)
+);
+```
+
+Which resources CloudTrail's event history was asked who created them, migration 0042, so none is
+asked twice: a FOUND resource has its CREATOR row in `resource_owner`, and one older than the
+history keeps where the history began. Never replaced, since the answer cannot change. Scoped by
+account, `ByAccount`.
 
 ```sql
 CREATE TABLE recommendation_option (       -- every target a provider ranked, migration 0038

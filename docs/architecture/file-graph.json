@@ -495,6 +495,7 @@
     "finops_providers/aws/budgets.py",
     "finops_providers/aws/burstable.py",
     "finops_providers/aws/client.py",
+    "finops_providers/aws/cloudtrail_creators.py",
     "finops_providers/aws/commitment.py",
     "finops_providers/aws/config_inventory.py",
     "finops_providers/aws/container_insights.py",
@@ -625,6 +626,7 @@
     "migrations/versions/0039_upsize_added_cost.py",
     "migrations/versions/0040_option_risk_optional.py",
     "migrations/versions/0041_resource_owner.py",
+    "migrations/versions/0042_creator_lookup.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -738,6 +740,7 @@
     "tests/core/test_topology.py",
     "tests/core/test_waste_domain.py",
     "tests/db/__init__.py",
+    "tests/db/test_creator_lookup_constraints.py",
     "tests/db/test_focus_1_4_migration.py",
     "tests/db/test_models.py",
     "tests/db/test_p2_constraints.py",
@@ -810,6 +813,7 @@
     "tests/providers/aws/test_bedrock.py",
     "tests/providers/aws/test_bedrock_permissions.py",
     "tests/providers/aws/test_burstable.py",
+    "tests/providers/aws/test_cloudtrail_creators.py",
     "tests/providers/aws/test_commitment.py",
     "tests/providers/aws/test_config_inventory.py",
     "tests/providers/aws/test_container_insights.py",
@@ -10200,6 +10204,26 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/cloudtrail_creators.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/cloudtrail_creators.py",
+      "t": "finops_core/domain/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/cloudtrail_creators.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/cloudtrail_creators.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/commitment.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -13016,6 +13040,11 @@
     },
     {
       "s": "tests/ingest/collectors/test_ownership.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ownership.py",
       "t": "finops_core/domain/ownership.py",
       "k": "python"
     },
@@ -13887,6 +13916,31 @@
     {
       "s": "tests/providers/aws/test_burstable.py",
       "t": "finops_providers/aws/burstable.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_cloudtrail_creators.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_cloudtrail_creators.py",
+      "t": "finops_core/domain/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_cloudtrail_creators.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_cloudtrail_creators.py",
+      "t": "finops_providers/aws/cloudtrail_creators.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_cloudtrail_creators.py",
+      "t": "finops_query/parser.py",
       "k": "python"
     },
     {

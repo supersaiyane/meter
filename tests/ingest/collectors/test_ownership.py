@@ -12,8 +12,14 @@ import pytest
 from sqlalchemy import Engine, text
 
 from finops_core.config import Settings
-from finops_core.domain.ownership import CatalogueApplication
-from finops_core.errors import AccessDenied
+from finops_core.domain.account import AccountKey
+from finops_core.domain.ownership import (
+    BeforeHistory,
+    CatalogueApplication,
+    Creator,
+    OwnerKind,
+)
+from finops_core.errors import AccessDenied, CollectionError
 from finops_fakes.ownership import (
     APPLICATION_TAG,
     CHECKOUT,
@@ -326,3 +332,155 @@ def test_a_resource_no_longer_marked_loses_its_suggestion(
     outcome = catalogued(engine, tenant_id, settings, FakeServiceCatalogue())
     assert set(from_catalogue(engine, tenant_id)) == {"db-reporting"}
     assert outcome.items_removed == 1
+
+
+# --- creators, TASK-P11-004 ------------------------------------------------------------
+
+LOOKUPS = text(
+    "SELECT resource_id, outcome, history_starts, as_of, collected_at FROM creator_lookup "
+    "WHERE tenant_id = :t"
+)
+#: A tagged resource, one CloudTrail saw created, and one older than its history.
+UNNAMED: tuple[tuple[str, str | None, dict[str, str]], ...] = (
+    ("i-team", "eu-west-2", {"team": "platform"}),
+    ("i-made", "eu-west-2", {}),
+    ("i-older", "eu-west-2", {}),
+)
+CREATED = AT - timedelta(days=9)
+
+
+class Creators:
+    """A record of creators that keeps what it was asked, and refuses where it is told to."""
+
+    def __init__(self, refusal: type[CollectionError] | None = None) -> None:
+        self.asked: list[str] = []
+        self._refusal = refusal
+
+    def creator(
+        self, account: AccountKey, region: str, resource_id: str
+    ) -> Creator | BeforeHistory:
+        self.asked.append(resource_id)
+        if self._refusal is not None:
+            raise self._refusal(scope_key=f"{account.account_id}:{region}", collector="ownership")
+        if resource_id == "i-made":
+            return Creator(
+                account_key=account,
+                region_id=region,
+                resource_id=resource_id,
+                principal="dev.lead@fake.example",
+                kind=OwnerKind.PERSON,
+                event_id="evt-made",
+                created_at=CREATED,
+                as_of=CREATED,
+                collected_at=NOW,
+            )
+        return BeforeHistory(
+            account_key=account,
+            region_id=region,
+            resource_id=resource_id,
+            history_starts=NOW - timedelta(days=90),
+            as_of=NOW,
+            collected_at=NOW,
+        )
+
+
+def asked_of(
+    engine: Engine, tenant: UUID, settings: Settings, creators: Creators, cap: int = 200
+) -> CollectorOutcome:
+    configured = settings.model_copy(update={"creator_lookups_per_run": cap})
+    with engine.begin() as connection:
+        return OwnershipCollector(clock=lambda: NOW, creators=creators)(
+            CollectorContext(
+                unit=Unit(tenant_id=tenant),
+                connection=connection,
+                run_id=uuid4(),
+                settings=configured,
+            )
+        )
+
+
+def lookups(engine: Engine, tenant: UUID) -> dict[str, dict[str, Any]]:
+    with engine.connect() as connection:
+        return {
+            row["resource_id"]: dict(row)
+            for row in connection.execute(LOOKUPS, {"t": tenant}).mappings()
+        }
+
+
+def test_a_resource_nothing_else_names_is_asked_who_created_it(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    nodes(engine, tenant_id, *UNNAMED)
+    creators = Creators()
+    outcome = asked_of(engine, tenant_id, settings, creators)
+    assert sorted(creators.asked) == ["i-made", "i-older"], "a tagged resource is not asked"
+    row = owners(engine, tenant_id)["i-made"]
+    assert (row["source"], row["owner"], row["owner_kind"], row["detail"]) == (
+        "CREATOR",
+        "dev.lead@fake.example",
+        "PERSON",
+        "evt-made",
+    )
+    assert (row["as_of"], row["collected_at"]) == (CREATED, NOW)
+    found = lookups(engine, tenant_id)
+    assert (found["i-made"]["outcome"], found["i-made"]["history_starts"]) == ("FOUND", None)
+    assert (found["i-older"]["outcome"], found["i-older"]["history_starts"]) == (
+        "BEFORE_HISTORY",
+        NOW - timedelta(days=90),
+    )
+    assert "i-older" not in owners(engine, tenant_id), "older than the history names nobody"
+    # The tag, and the two resources answered.
+    assert outcome.items_written == 3
+
+
+def test_a_resource_once_asked_is_never_asked_again_and_keeps_its_creator(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    nodes(engine, tenant_id, *UNNAMED)
+    asked_of(engine, tenant_id, settings, Creators())
+    again = Creators()
+    outcome = asked_of(engine, tenant_id, settings, again)
+    assert again.asked == []
+    assert owners(engine, tenant_id)["i-made"]["source"] == "CREATOR"
+    assert outcome.items_removed == 0
+
+
+def test_a_run_asks_no_more_than_its_cap_and_the_next_run_the_rest(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    nodes(engine, tenant_id, *UNNAMED)
+    first, second = Creators(), Creators()
+    asked_of(engine, tenant_id, settings, first, cap=1)
+    asked_of(engine, tenant_id, settings, second, cap=1)
+    assert (first.asked, second.asked) == (["i-made"], ["i-older"])
+
+
+def test_a_refused_account_is_typed_and_asked_again_on_the_next_run(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    nodes(engine, tenant_id, *UNNAMED)
+    refusing = Creators(AccessDenied)
+    asked_of(engine, tenant_id, settings, refusing)
+    assert refusing.asked == ["i-made"], "the rest of the account and Region waits"
+    assert lookups(engine, tenant_id) == {}, "a refusal is not recorded as asked"
+    with engine.connect() as connection:
+        errors = connection.execute(
+            text(
+                "SELECT error_type, scope_key FROM sync_error "
+                "WHERE tenant_id = :t AND collector = 'ownership'"
+            ),
+            {"t": tenant_id},
+        ).all()
+    assert [tuple(row) for row in errors] == [("AccessDenied", f"{ACCOUNT}:eu-west-2")]
+    retried = Creators()
+    asked_of(engine, tenant_id, settings, retried)
+    assert sorted(retried.asked) == ["i-made", "i-older"]
+
+
+def test_a_resource_no_region_holds_is_not_asked(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    nodes(engine, tenant_id, ("global-1", None, {}))
+    creators = Creators()
+    asked_of(engine, tenant_id, settings, creators)
+    assert creators.asked == []

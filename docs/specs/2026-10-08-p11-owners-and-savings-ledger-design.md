@@ -113,6 +113,16 @@ Recommended over CloudTrail Lake or the organization trail through Athena, which
 back but need infrastructure no account has yet, ISS-122; either can replace the adapter behind
 the same port.
 
+Amended 2026-10-08, TASK-P11-004. The inventory holds ARNs and CloudTrail records most resources
+by their own id, the ARN's last segment, and some by the whole ARN, so both are asked, the own id
+first. A creating verb is not enough to name a creation: `CreateTags` and `CreateSnapshot` name a
+resource they did not create, so the creating event's noun must be the type the ARN names, with a
+short table where AWS's names differ, `CreateDBInstance` for an RDS `db`. An id that is not an ARN
+has no type, and then the creating event is the one whose request does not name the resource. A
+resource is asked once: `creator_lookup` keeps each answer, found or older than the history, and a
+run asks at most `creator_lookups_per_run`, 200 by default, of the resources no tag or catalogue
+names, the rest on the next day's run.
+
 ### 5.5 The ledger credits verified savings to their owner and team
 
 When FEAT-029 records a VERIFIED saving, the ledger writes one credit: the recommendation's owner

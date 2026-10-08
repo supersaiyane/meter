@@ -1176,6 +1176,23 @@ resource_owner = Table(
     Column("collected_at", DateTime(timezone=True), nullable=False),
 )
 
+#: Which resources CloudTrail has been asked about, found or older than its history, so none is
+#: asked twice, migration 0042, FEAT-077.
+creator_lookup = Table(
+    "creator_lookup",
+    metadata,
+    Column("lookup_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column("region_id", Text, nullable=False),
+    Column("resource_id", Text, nullable=False),
+    Column("outcome", Text, nullable=False),
+    Column("history_starts", DateTime(timezone=True)),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
 query_adhoc = Table(
     "query_adhoc",
     metadata,

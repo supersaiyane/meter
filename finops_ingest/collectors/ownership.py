@@ -15,9 +15,16 @@ application that names an owner suggests one; an owner with an `@` in it is a pe
 team. A catalogue refused in one account and Region is typed in `sync_error`, its rows there are
 kept rather than read as nobody, and every other account and Region still loads.
 
-**Replaced, not accumulated.** A run writes what each source it read said, and removes that
+**Creators are asked once**, TASK-P11-004. A resource neither a tag nor the catalogue names is
+asked of CloudTrail's event history, at most `creator_lookups_per_run` a run, and the answer is
+kept in `creator_lookup`: the creator found, written as a CREATOR row, or a resource older than the
+history, said with where the history began. Either way it is never asked again, because who
+created a resource does not change. A refusal is typed in `sync_error`, the rest of that account
+and Region waits for the next run, and nothing is recorded as asked.
+
+**Replaced, not accumulated.** A run writes what tags and the catalogue said, and removes that
 source's rows it did not find again, so a tag taken off a resource stops suggesting its team. A
-source the run did not read keeps its rows.
+source the run did not read keeps its rows, and a creator's row is kept, since it cannot change.
 
 **Never an owner.** Nothing here writes `recommendation.owner`. A suggestion is a person's to
 accept, ISS-021.
@@ -34,13 +41,15 @@ from sqlalchemy import text
 
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.ownership import (
+    BeforeHistory,
     CatalogueApplication,
+    Creator,
     OwnerKind,
     OwnerSource,
     OwnerSuggestion,
 )
 from finops_core.errors import CollectionError
-from finops_core.ports.ownership import ServiceCatalogue
+from finops_core.ports.ownership import ResourceCreators, ServiceCatalogue
 from finops_ingest.registry import CollectorContext, CollectorOutcome
 
 COLLECTOR = "ownership"
@@ -74,6 +83,27 @@ WITHDRAW_READ = text(
     "AND NOT (sub_account_id || ':' || coalesce(region_id, '')) = ANY(:refused)"
 )
 
+#: The resources CloudTrail has not been asked about and no tag or catalogue names, a run's worth.
+#: A resource no Region holds is not asked: the event history is kept Region by Region.
+UNASKED = text(
+    "SELECT n.sub_account_id, n.region_id, n.provider_id FROM topology_node n "
+    "WHERE n.tenant_id = :t AND n.region_id IS NOT NULL "
+    "AND NOT EXISTS (SELECT 1 FROM creator_lookup l WHERE l.tenant_id = n.tenant_id "
+    "AND l.sub_account_id = n.sub_account_id AND l.resource_id = n.provider_id) "
+    "AND NOT EXISTS (SELECT 1 FROM resource_owner o WHERE o.tenant_id = n.tenant_id "
+    "AND o.sub_account_id = n.sub_account_id AND o.resource_id = n.provider_id "
+    "AND o.source <> 'CREATOR') "
+    "ORDER BY n.sub_account_id, n.region_id, n.provider_id LIMIT :cap"
+)
+
+#: A resource asked about, so it is never asked again.
+ASKED = text(
+    "INSERT INTO creator_lookup (lookup_pk, tenant_id, ingest_run_id, sub_account_id, region_id, "
+    "resource_id, outcome, history_starts, as_of, collected_at) VALUES (:pk, :t, :run, "
+    ":account, :region, :resource, :outcome, :starts, :as_of, :now) "
+    "ON CONFLICT (tenant_id, sub_account_id, resource_id) DO NOTHING"
+)
+
 #: Upserted on the scope, like every other sync error.
 REFUSED = text(
     "INSERT INTO sync_error (error_id, tenant_id, collector, scope_key, error_type, "
@@ -104,11 +134,17 @@ class OwnershipCollector:
     """Every resource's suggested owners, from each source it is given."""
 
     def __init__(
-        self, *, clock: Clock = _system_clock, catalogue: ServiceCatalogue | None = None
+        self,
+        *,
+        clock: Clock = _system_clock,
+        catalogue: ServiceCatalogue | None = None,
+        creators: ResourceCreators | None = None,
     ) -> None:
         self._clock = clock
         # None where the deployment reads no catalogue, and then its rows are left alone.
         self._catalogue = catalogue
+        # None where the deployment reads no event history, and then nothing is asked.
+        self._creators = creators
 
     def __call__(self, context: CollectorContext) -> CollectorOutcome:
         if context.settings is None:
@@ -133,7 +169,36 @@ class OwnershipCollector:
             catalogued, withdrawn = self._from_catalogue(context, self._catalogue, nodes, now)
             written += catalogued
             removed += withdrawn
+        if self._creators is not None:
+            # Last, so a resource this run's tags or catalogue just named is not asked about.
+            written += self._from_creators(
+                context, self._creators, context.settings.creator_lookups_per_run, now
+            )
         return CollectorOutcome(items_written=written, items_removed=removed)
+
+    def _from_creators(
+        self, context: CollectorContext, creators: ResourceCreators, cap: int, now: datetime
+    ) -> int:
+        """Each unasked resource's creator, or that it is older than the history; how many."""
+        unasked = context.connection.execute(UNASKED, {"t": context.unit.tenant_id, "cap": cap})
+        refused: set[tuple[str, str]] = set()
+        answers: list[Creator | BeforeHistory] = []
+        for node in list(unasked):
+            where = (node.sub_account_id, node.region_id)
+            if where in refused:
+                continue
+            account = AccountKey(provider=Provider.AWS, account_id=node.sub_account_id)
+            try:
+                answers.append(creators.creator(account, node.region_id, node.provider_id))
+            except CollectionError as failure:
+                _record(context, failure, now)
+                refused.add(where)
+        found = [_from_creator(one, now) for one in answers if isinstance(one, Creator)]
+        if found:
+            context.connection.execute(UPSERT, [_row(context, one, now) for one in found])
+        if answers:
+            context.connection.execute(ASKED, [_asked(context, one, now) for one in answers])
+        return len(answers)
 
     def _from_catalogue(
         self,
@@ -215,6 +280,39 @@ def _from_catalogue(
         as_of=holding.as_of,
         collected_at=max(now, holding.as_of),
     )
+
+
+def _from_creator(found: Creator, now: datetime) -> OwnerSuggestion:
+    return OwnerSuggestion(
+        account_key=found.account_key,
+        region_id=found.region_id,
+        resource_id=found.resource_id,
+        source=OwnerSource.CREATOR,
+        owner=found.principal,
+        kind=found.kind,
+        # The event a reader can open in CloudTrail to check it.
+        detail=found.event_id,
+        as_of=found.as_of,
+        collected_at=max(now, found.as_of),
+    )
+
+
+def _asked(
+    context: CollectorContext, answer: Creator | BeforeHistory, now: datetime
+) -> dict[str, Any]:
+    starts = answer.history_starts if isinstance(answer, BeforeHistory) else None
+    return {
+        "pk": uuid4(),
+        "t": context.unit.tenant_id,
+        "run": context.run_id,
+        "account": answer.account_key.account_id,
+        "region": answer.region_id,
+        "resource": answer.resource_id,
+        "outcome": "FOUND" if starts is None else "BEFORE_HISTORY",
+        "starts": starts,
+        "as_of": answer.as_of,
+        "now": max(now, answer.as_of),
+    }
 
 
 def _record(context: CollectorContext, failure: CollectionError, now: datetime) -> None:
