@@ -200,7 +200,7 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 5.4, FEAT-072 |
 | Delivers | FEAT-072 |
 | Depends on | TASK-P9-003 |
@@ -208,14 +208,16 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 **Acceptance criteria.**
 
-- [ ] EC2 types from `DescribeInstanceTypes` in the hub's own Region, paged, with the
+- [x] EC2 types from `DescribeInstanceTypes` in the hub's own Region, paged, with the
       Regions each is sold in taken from the price list, and a test that compares two
-      Regions' descriptions of the same types. Changed 2026-10-07, spec section 14.3
-- [ ] RDS, ElastiCache, Redshift and OpenSearch instance specs from their price list
+      Regions' descriptions of the same types. Changed 2026-10-07, spec section 14.3. The
+      comparison runs on every run when a second Region is configured, and the tests prove a
+      difference is caught; two real Regions' descriptions wait on ISS-262
+- [x] RDS, ElastiCache, Redshift and OpenSearch instance specs from their price list
       products' attributes, into the same table keyed by service
-- [ ] Burstable baselines and maximum credits from the EC2 guide's table, kept as data with
+- [x] Burstable baselines and maximum credits from the EC2 guide's table, kept as data with
       their source, and a test that fails when a burstable type is missing from it
-- [ ] The `instance_catalog` collector with its schedule row, every 8 hours; one Region or
+- [x] The `instance_catalog` collector with its schedule row, every 8 hours; one Region or
       service failing does not fail the run
 
 ---

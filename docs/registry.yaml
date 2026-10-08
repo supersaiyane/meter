@@ -82,7 +82,7 @@ subprojects:
 - id: P9
   name: Price catalog and rightsizing targets
   status: Specified, planned and approved by the owner 2026-10-05, in build from 2026-10-08 as priority 3,
-    TASK-P9-001 to TASK-P9-004 done, TASK-P9-005 next. EC2 and EBS list prices from AWS, rightsizing down
+    TASK-P9-001 to TASK-P9-005 done, TASK-P9-012 next. EC2 and EBS list prices from AWS, rightsizing down
     and up to a named and priced target, and gp2 to gp3. The hub now reaches every API it calls, ADR-0035
   spec: specs/2026-10-05-p9-price-catalog-design.md
   plan: plans/P9-implementation-plan.md
@@ -531,7 +531,7 @@ features:
 - id: FEAT-072
   name: Instance capability catalog for EC2, RDS, ElastiCache, Redshift and OpenSearch
   subproject: P9
-  status: Planned
+  status: In build
   detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.4, 7 and 14, [P9 plan](docs/plans/P9-implementation-plan.md)'
   doc: docs/features/FEAT-072-instance-capability-catalog.md
 - id: FEAT-073
@@ -2024,6 +2024,19 @@ changes:
     except those a recommendation quotes. Migration 0034 seeds its schedule row; the hub role gains the two
     Pricing reads. Held to AWS's own samples and the real ElastiCache list; the row count and a real EC2
     instance product wait on ISS-261
+- id: CHG-0138
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-005, what each instance type is, in every Region it is sold in
+  commit: pending
+  detail: AwsInstanceCatalog pages DescribeInstanceTypes, network figures summed over the cards and None
+    where unpublished; PriceListInstanceCatalog reads RDS, ElastiCache, Redshift and OpenSearch classes from
+    their products, only those carrying vCPUs and memory. Burstable baselines are the EC2 guide's credit table,
+    held as data with its URL and checked against the guide's formulas on import. The instance_catalog
+    collector runs every 8 hours, describes EC2 in the hub's Region and stores each type where the price list
+    sells it, compares a second Region when one is configured, reads a managed service only where its price
+    list changed, and marks withdrawn types not offered. Migration 0035 seeds its schedule; the hub role gains
+    ec2:DescribeInstanceTypes. The domain now refuses an empty architecture list and a peak below its baseline
 issues:
 - id: ISS-189
   severity: LOW
@@ -4453,6 +4466,18 @@ issues:
     measured on 2026-10-05) settles both: count the comparable rows, and save one instance product as an
     extract. Until then a wrong EC2 attribute name is NoData for the Region in sync_error, because each EC2
     query that finds no product is NoData, and never a price of nought or a Region of volumes alone.'
+- id: ISS-262
+  severity: MEDIUM
+  status: OPEN
+  summary: The instance catalog's two Region comparison and three services' attribute names are not yet proved against AWS
+  detail: 'Found 2026-10-08 by TASK-P9-005. The spec asks for two Regions'' descriptions of EC2 types to be
+    compared so that one description standing for every Region is held rather than trusted. The collector
+    compares them on every run when a second Region is configured and the tests prove a difference is
+    caught, but no two real descriptions have been compared, and no composition passes the second Region
+    yet; eu-west-2 is the one the hub reaches, ADR-0035. The RDS, Redshift and OpenSearch classes are read
+    from attributes named vcpu, memory, memoryGib, networkPerformance, currentGeneration and
+    physicalProcessor, which only the real ElastiCache list confirms. A wrong name reads as a class with no
+    size, so the Region stores nothing for it, never a wrong size. A real account, ISS-002, settles both.'
 - id: ISS-260
   severity: MEDIUM
   status: OPEN

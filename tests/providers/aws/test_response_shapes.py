@@ -107,6 +107,32 @@ READS: dict[tuple[str, str], set[str]] = {
         "NextToken",
     },
     ("pricing", "GetProducts"): {"PriceList", "NextToken"},
+    # FEAT-072, TASK-P9-005. EC2's description of its types, every figure the spec stores.
+    ("ec2", "DescribeInstanceTypes"): {
+        "InstanceTypes",
+        "InstanceType",
+        "CurrentGeneration",
+        "ProcessorInfo",
+        "SupportedArchitectures",
+        "BurstablePerformanceSupported",
+        "VCpuInfo",
+        "DefaultVCpus",
+        "MemoryInfo",
+        "SizeInMiB",
+        "NetworkInfo",
+        "NetworkPerformance",
+        "NetworkCards",
+        "BaselineBandwidthInGbps",
+        "PeakBandwidthInGbps",
+        "EbsInfo",
+        "EbsOptimizedInfo",
+        "BaselineBandwidthInMbps",
+        "MaximumBandwidthInMbps",
+        "GpuInfo",
+        "Gpus",
+        "Count",
+        "NextToken",
+    },
     # FEAT-060, ISS-211. The budgets, one paginated describe.
     ("budgets", "DescribeBudgets"): {
         "Budgets",
@@ -205,6 +231,7 @@ TOKENS: dict[tuple[str, str], str] = {
     ("invoicing", "ListInvoiceSummaries"): "NextToken",
     ("pricing", "ListPriceLists"): "NextToken",
     ("pricing", "GetProducts"): "NextToken",
+    ("ec2", "DescribeInstanceTypes"): "NextToken",
     ("service-quotas", "ListServices"): "NextToken",
     ("service-quotas", "ListServiceQuotas"): "NextToken",
     ("service-quotas", "ListRequestedServiceQuotaChangeHistory"): "NextToken",
@@ -309,6 +336,8 @@ SENDS: dict[tuple[str, str], set[str]] = {
     ("invoicing", "ListInvoiceSummaries"): {"Selector", "Filter"},
     ("pricing", "ListPriceLists"): {"ServiceCode", "EffectiveDate", "CurrencyCode"},
     ("pricing", "GetProducts"): {"ServiceCode", "FormatVersion", "Filters"},
+    # Every type, unfiltered: the hub's Region describes all it supports.
+    ("ec2", "DescribeInstanceTypes"): set(),
     ("service-quotas", "ListServices"): set(),
     ("service-quotas", "ListServiceQuotas"): {"ServiceCode"},
     ("service-quotas", "ListRequestedServiceQuotaChangeHistory"): set(),
@@ -432,8 +461,9 @@ FALLS_THROUGH: dict[tuple[str, str], set[str]] = {
     # SchemaDrift in the reason sentence rather than as NotOptedIn.
     ("support", "DescribeTrustedAdvisorChecks"): {"InternalServerError"},
     ("support", "DescribeTrustedAdvisorCheckResult"): {"InternalServerError"},
-    # EC2 declares no modelled errors at all for either counter.
+    # EC2 declares no modelled errors at all for either counter, nor for its instance types.
     ("ec2", "DescribeVpcs"): set(),
+    ("ec2", "DescribeInstanceTypes"): set(),
     ("ec2", "DescribeAddresses"): set(),
 }
 
