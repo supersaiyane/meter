@@ -79,10 +79,13 @@ def optimizer(*, finding: str = "Overprovisioned", saving: Any = "240.00") -> di
             {
                 "instanceArn": "arn:aws:ec2:eu-west-1:111122223333:instance/i-0001",
                 "finding": finding,
+                "currentInstanceType": "m5.xlarge",
                 "lookBackPeriodInDays": 30,
                 "recommendationOptions": [
                     {
                         "instanceType": "m6i.large",
+                        "rank": 1,
+                        "performanceRisk": 1.0,
                         "savingsOpportunity": {"estimatedMonthlySavings": {"value": saving}},
                     }
                 ],
@@ -300,3 +303,194 @@ class TestItSaysItHasNeverRun:
             head = Path(f"finops_providers/aws/{name}").read_text(encoding="utf-8")[:900]
             assert "has ever made a call" in head, name
             assert "ISS-122" in head, name
+
+
+# --- every Region, every account, every page, every option, TASK-P9-006 -------------------
+
+
+def instance(
+    account: str, region: str, number: int, *, options: list[dict[str, Any]] | None = None
+) -> dict[str, Any]:
+    return {
+        "instanceArn": f"arn:aws:ec2:{region}:{account}:instance/i-{number:04d}",
+        "finding": "Overprovisioned",
+        "currentInstanceType": "m5.2xlarge",
+        "lookBackPeriodInDays": 30,
+        "recommendationOptions": options
+        if options is not None
+        else [
+            {
+                "instanceType": "m6g.xlarge",
+                "rank": 2,
+                "performanceRisk": 1.5,
+                "migrationEffort": "Medium",
+                "platformDifferences": ["Architecture"],
+                "savingsOpportunity": {"estimatedMonthlySavings": {"value": 140.0}},
+            },
+            {
+                "instanceType": "m5.xlarge",
+                "rank": 1,
+                "performanceRisk": 1.0,
+                "savingsOpportunity": {"estimatedMonthlySavings": {"value": 120.0}},
+            },
+            {"instanceType": "r5.large", "rank": 3, "performanceRisk": 3.0},
+        ],
+    }
+
+
+class Regional:
+    """Compute Optimizer in each Region, answering each account in pages of one instance."""
+
+    def __init__(self, instances: dict[tuple[str, str], list[dict[str, Any]]]) -> None:
+        self._instances = instances
+        self.requests: list[tuple[str, dict[str, Any]]] = []
+        self.failing: dict[tuple[str, str], Exception] = {}
+
+    def __call__(self, service: str, region: str) -> Any:
+        assert service == "compute-optimizer"
+        return _RegionalClient(self, region)
+
+
+class _RegionalClient:
+    def __init__(self, owner: Regional, region: str) -> None:
+        self._owner = owner
+        self._region = region
+
+    def get_ec2_instance_recommendations(self, **request: Any) -> Any:
+        self._owner.requests.append((self._region, request))
+        (account,) = request["accountIds"]
+        failure = self._owner.failing.get((account, self._region))
+        if failure is not None:
+            raise failure
+        items = self._owner._instances.get((account, self._region), [])
+        index = int(request.get("nextToken") or 0)
+        page: dict[str, Any] = {"instanceRecommendations": items[index : index + 1]}
+        if index + 1 < len(items):
+            page["nextToken"] = str(index + 1)
+        return page
+
+
+def scoped(settings: Settings, regional: Regional, accounts: list[str]) -> Any:
+    return CostRecommendationSource(
+        settings,
+        tenant_id=fixtures.TENANT_ID,
+        severity_of=lambda amount: "HIGH" if amount >= Decimal("100") else "LOW",
+        regional_client_factory=regional,
+        accounts=lambda: accounts,
+        clock=lambda: NOW,
+    )
+
+
+A, B = "111122223333", "444455556666"
+
+
+class TestComputeOptimizerScopes:
+    def test_each_region_is_asked_about_each_account_alone_with_graviton(
+        self, settings: Settings
+    ) -> None:
+        regional = Regional({})
+        scoped(settings, regional, [A, B]).compute_optimizer()
+        asked = {(region, tuple(r["accountIds"])) for region, r in regional.requests}
+        assert asked == {(region, (a,)) for region in settings.region_list for a in (A, B)}
+        assert all(
+            r["recommendationPreferences"] == {"cpuVendorArchitectures": ["AWS_ARM64", "CURRENT"]}
+            for _, r in regional.requests
+        )
+
+    def test_every_page_is_followed(self, settings: Settings) -> None:
+        region = settings.region_list[0]
+        many = [instance(A, region, n) for n in range(3)]
+        found = scoped(settings, Regional({(A, region): many}), [A]).compute_optimizer()
+        assert len(tuple(found)) == 3
+
+    def test_every_option_is_kept_in_rank_with_its_risk(self, settings: Settings) -> None:
+        region = settings.region_list[0]
+        found = scoped(
+            settings, Regional({(A, region): [instance(A, region, 1)]}), [A]
+        ).compute_optimizer()
+        (rec,) = tuple(found)
+        assert [o.instance_type for o in rec.options] == ["m5.xlarge", "m6g.xlarge", "r5.large"]
+        assert [o.performance_risk for o in rec.options] == [
+            Decimal("1.0"),
+            Decimal("1.5"),
+            Decimal("3.0"),
+        ]
+        assert rec.options[1].platform_differences == ("Architecture",)
+        assert rec.options[1].migration_effort == "Medium"
+        assert rec.options[2].provider_monthly_saving is None
+        # The recommendation's own saving is the first ranked option's.
+        assert rec.estimated_monthly_saving == Decimal("120.0")
+        assert rec.current_instance_type == "m5.2xlarge"
+        assert "m5.xlarge first of 3 ranked options" in rec.rationale
+
+    def test_one_account_failing_is_returned_beside_what_was_read(self, settings: Settings) -> None:
+        region = settings.region_list[0]
+        regional = Regional({(A, region): [instance(A, region, 1)]})
+        regional.failing[(B, region)] = ClientError(
+            {"Error": {"Code": "ThrottlingException"}}, "GetEC2InstanceRecommendations"
+        )
+        found = scoped(settings, regional, [A, B]).compute_optimizer()
+        assert len(tuple(found)) == 1
+        assert (A, region) in found.read and (B, region) not in found.read
+        assert [failure.cause for failure in found.refused] == ["Throttled"]
+        assert found.refused[0].scope_key == f"{B}:{region}"
+
+    def test_every_scope_failing_raises_the_cause(self, settings: Settings) -> None:
+        regional = Regional({})
+        for region in settings.region_list:
+            regional.failing[(A, region)] = ClientError(
+                {"Error": {"Code": "OptInRequiredException"}}, "GetEC2InstanceRecommendations"
+            )
+        with pytest.raises(NotOptedIn):
+            scoped(settings, regional, [A]).compute_optimizer()
+
+    def test_an_option_with_no_risk_is_refused_for_its_scope_alone(
+        self, settings: Settings
+    ) -> None:
+        region = settings.region_list[0]
+        bad = instance(A, region, 1, options=[{"instanceType": "m5.large", "rank": 1}])
+        found = scoped(settings, Regional({(A, region): [bad]}), [A]).compute_optimizer()
+        assert tuple(found) == ()
+        (refusal,) = found.refused
+        assert refusal.cause == "SchemaDrift"
+        assert "performanceRisk" in str(refusal)
+
+    def test_a_risk_off_the_scale_is_refused(self, settings: Settings) -> None:
+        region = settings.region_list[0]
+        bad = instance(
+            A, region, 1, options=[{"instanceType": "m5.large", "rank": 1, "performanceRisk": 9}]
+        )
+        found = scoped(settings, Regional({(A, region): [bad]}), [A]).compute_optimizer()
+        (refusal,) = found.refused
+        assert "off the scale" in str(refusal)
+
+    def test_an_account_with_more_pages_than_followed_is_refused(
+        self, settings: Settings, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from finops_providers.aws import recommendations
+
+        monkeypatch.setattr(recommendations, "MAX_PAGES", 2)
+        region = settings.region_list[0]
+        many = [instance(A, region, n) for n in range(5)]
+        found = scoped(settings, Regional({(A, region): many}), [A]).compute_optimizer()
+        (refusal,) = found.refused
+        assert "more than 2 pages" in str(refusal)
+        assert (A, region) not in found.read
+
+    def test_with_no_accounts_named_the_callers_own_is_read(self, settings: Settings) -> None:
+        asked: list[dict[str, Any]] = []
+
+        class Own:
+            def get_ec2_instance_recommendations(self, **request: Any) -> Any:
+                asked.append(request)
+                return {"instanceRecommendations": []}
+
+        CostRecommendationSource(
+            settings,
+            tenant_id=fixtures.TENANT_ID,
+            severity_of=lambda _amount: "LOW",
+            regional_client_factory=lambda _service, _region: Own(),
+            clock=lambda: NOW,
+        ).compute_optimizer()
+        assert asked
+        assert all("accountIds" not in request for request in asked)

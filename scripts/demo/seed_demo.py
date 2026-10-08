@@ -190,6 +190,8 @@ DEMO_TABLES = (
     # finding they are about second.
     "realized_saving",
     "recommendation_event",
+    # Before the recommendations it hangs off and the prices it quotes. TASK-P9-006.
+    "recommendation_option",
     "recommendation",
     # P1, FEAT-023. Derived from the daily rows, so it goes before them.
     "cost_anomaly",

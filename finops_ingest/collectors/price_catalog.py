@@ -82,7 +82,11 @@ PRUNE_PRICES = text(
     "AND p.region = old.region AND p.version = old.version "
     "AND NOT EXISTS (SELECT 1 FROM recommendation rec WHERE rec.tenant_id = p.tenant_id "
     "AND rec.region_id = p.region AND rec.price_version = p.version "
-    "AND p.sku_price_id IN (rec.current_sku_price_id, rec.target_sku_price_id))"
+    "AND p.sku_price_id IN (rec.current_sku_price_id, rec.target_sku_price_id)) "
+    # A ranked option quotes a price too, TASK-P9-006.
+    "AND NOT EXISTS (SELECT 1 FROM recommendation_option opt WHERE opt.tenant_id = p.tenant_id "
+    "AND opt.region = p.region AND opt.price_version = p.version "
+    "AND opt.sku_price_id = p.sku_price_id)"
 )
 
 PRUNE_VERSIONS = text(

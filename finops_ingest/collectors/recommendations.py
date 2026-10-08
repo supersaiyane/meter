@@ -15,6 +15,18 @@ every six hours would make the screen useless and the acceptance meaningless.
 **One service failing does not fail the others.** Compute Optimizer needs an opt
 in, Trusted Advisor needs a support tier, and an estate may have one and not the
 other. Each is read in its own try, its refusal is recorded, and the rest continue.
+
+**One account or Region failing does not fail its service either**, TASK-P9-006. A
+source that reads scope by scope returns `ScopedFindings`: each refusal is recorded in
+`sync_error`, and only a finding in a scope that was read can be withdrawn, so an
+account that timed out keeps its findings rather than seeing them dismissed.
+
+**Every ranked option is kept and priced from the catalog**, P9 spec section 5.5. An
+option is priced at the catalog's newest EC2 version for its Region, at the Linux on
+demand comparable price, or kept with the reason it could not be. The recommendation's
+current and target prices are set from that same version, so a saving is only ever
+the difference of two prices that exist together. The operating system is Linux until
+the instance's own is read from its bill line, which TASK-P9-007 does.
 """
 
 from __future__ import annotations
@@ -26,8 +38,9 @@ from uuid import uuid4
 
 from sqlalchemy import text
 
-from finops_core.domain.waste import Lifecycle, Recommendation, Source
+from finops_core.domain.waste import Lifecycle, RankedOption, Recommendation, ScopedFindings, Source
 from finops_core.errors import CollectionError, NotOptedIn
+from finops_ingest.collectors.price_catalog import refuse
 from finops_ingest.registry import CollectorContext, CollectorOutcome
 
 COLLECTOR = "recommendations"
@@ -61,7 +74,8 @@ WRITE = text(
     # working and leaves where the recommendation got to alone, unless nobody has
     # moved it, in which case reopening a previously withdrawn finding is right.
     "lifecycle = CASE WHEN recommendation.lifecycle IN ('OPEN', 'DISMISSED') "
-    "THEN 'OPEN' ELSE recommendation.lifecycle END"
+    "THEN 'OPEN' ELSE recommendation.lifecycle END "
+    "RETURNING recommendation_id"
 )
 
 #: The first event of a recommendation's life. Written only when the row is new,
@@ -89,12 +103,12 @@ FIRST_EVENT = text(
 #: doing the work, a provider that stopped reporting the finding has most likely
 #: noticed the work, and dismissing it out from under them would lose the fact
 #: that it was being done.
-WITHDRAW = text(
+_WITHDRAW = (
     "WITH going AS ("
     "  SELECT recommendation_id, lifecycle AS was FROM recommendation"
     "  WHERE tenant_id = :tenant AND source = :source"
     "    AND lifecycle IN ('OPEN', 'ACCEPTED')"
-    "    AND source_reference <> ALL(:seen)"
+    "    AND source_reference <> ALL(:seen){scope}"
     "  FOR UPDATE"
     "), done AS ("
     "  UPDATE recommendation r SET lifecycle = 'DISMISSED', collected_at = :now"
@@ -102,11 +116,59 @@ WITHDRAW = text(
     "  RETURNING r.recommendation_id"
     ") SELECT recommendation_id, was FROM going"
 )
+WITHDRAW = text(_WITHDRAW.format(scope=""))
+#: The same, inside the scopes a source read: an account in a Region, or every account in a
+#: Region read without naming one. TASK-P9-006.
+WITHDRAW_SCOPED = text(
+    _WITHDRAW.format(
+        scope=" AND ((sub_account_id || '|' || region_id) = ANY(:pairs)"
+        " OR region_id = ANY(:anywhere))"
+    )
+)
 
 WITHDRAW_EVENT = text(
     "INSERT INTO recommendation_event (event_id, recommendation_id, tenant_id, "
     "from_lifecycle, to_lifecycle, actor, reason, occurred_at, as_of, collected_at) "
     "VALUES (:id, :recommendation, :tenant, :from, 'DISMISSED', :actor, :reason, :now, :now, :now)"
+)
+
+
+#: The newest EC2 price list version the catalog holds for a Region.
+LATEST_VERSION = text(
+    "SELECT version FROM price_list_version WHERE tenant_id = :t AND service_code = 'AmazonEC2' "
+    "AND region = :r ORDER BY as_of DESC LIMIT 1"
+)
+#: A type's comparable on demand price in one version: Linux, shared tenancy, used capacity,
+#: nothing preinstalled, no licence, and not an Extended Support surcharge, FEAT-071.
+PRICE_OF = text(
+    "SELECT sku_price_id, recurring_unit_price FROM price "
+    "WHERE tenant_id = :t AND service_code = 'AmazonEC2' AND region = :r AND version = :v "
+    "AND pricing_category = 'Standard' AND pricing_unit = 'Hrs' "
+    "AND sku_price_details ->> 'instanceType' = :type "
+    "AND sku_price_details ->> 'operatingSystem' = 'Linux' "
+    "AND coalesce(sku_price_details ->> 'tenancy', 'Shared') = 'Shared' "
+    "AND coalesce(sku_price_details ->> 'capacitystatus', 'Used') = 'Used' "
+    "AND coalesce(sku_price_details ->> 'preInstalledSw', 'NA') = 'NA' "
+    "AND coalesce(sku_price_details ->> 'licenseModel', 'No License required') "
+    "= 'No License required' "
+    "AND (sku_price_details ->> 'extendedSupport') IS NULL "
+    "ORDER BY sku_price_id LIMIT 1"
+)
+CLEAR_OPTIONS = text(
+    "DELETE FROM recommendation_option WHERE tenant_id = :t AND recommendation_id = :id"
+)
+WRITE_OPTION = text(
+    "INSERT INTO recommendation_option (option_pk, tenant_id, recommendation_id, region, rank, "
+    "instance_type, performance_risk, provider_monthly_saving, migration_effort, "
+    "platform_differences, sku_price_id, price_version, hourly_price, unpriced_reason, as_of, "
+    "collected_at) VALUES (:pk, :t, :id, :r, :rank, :type, :risk, :saving, :effort, "
+    ":differences, :sku, :v, :hourly, :reason, :as_of, :now)"
+)
+#: The recommendation's own current and target prices, from the version its options used.
+SET_PRICES = text(
+    "UPDATE recommendation SET current_sku_price_id = :current, "
+    "target_instance_type = :target_type, target_sku_price_id = :target, price_version = :v "
+    "WHERE recommendation_id = :id"
 )
 
 
@@ -136,7 +198,8 @@ class RecommendationCollector:
         now: datetime,
     ) -> int:
         try:
-            found = tuple(read())
+            result = read()
+            found = tuple(result)
         except NotOptedIn:
             # An expected state. The estate is correctly configured and has fewer
             # signals, and nothing is withdrawn: a service that was never on has
@@ -148,14 +211,21 @@ class RecommendationCollector:
             # every finding from a service that merely timed out.
             raise
 
+        scopes: frozenset[tuple[str, str]] | None = None
+        if isinstance(result, ScopedFindings):
+            # Recorded and not raised: the scopes that were read still count, constraint 5.
+            for failure in result.refused:
+                refuse(context, COLLECTOR, failure, now)
+            scopes = result.read
+
         for item in found:
             self._write(context, item, now)
 
-        self._withdraw(context, source, [item.source_reference for item in found], now)
+        self._withdraw(context, source, [item.source_reference for item in found], now, scopes)
         return len(found)
 
     def _write(self, context: CollectorContext, item: Recommendation, now: datetime) -> None:
-        context.connection.execute(
+        recommendation_id = context.connection.execute(
             WRITE,
             {
                 "id": uuid4(),
@@ -175,7 +245,9 @@ class RecommendationCollector:
                 "as_of": item.as_of,
                 "now": now,
             },
-        )
+        ).scalar_one()
+        if item.options:
+            self._price_options(context, recommendation_id, item, now)
         context.connection.execute(
             FIRST_EVENT,
             {
@@ -189,21 +261,83 @@ class RecommendationCollector:
             },
         )
 
-    def _withdraw(
-        self, context: CollectorContext, source: Source, seen: list[str], now: datetime
+    def _price_options(
+        self,
+        context: CollectorContext,
+        recommendation_id: object,
+        item: Recommendation,
+        now: datetime,
     ) -> None:
-        """Dismiss what this run did not see, keeping the row and its history."""
-        gone = context.connection.execute(
-            WITHDRAW,
+        """Replace a recommendation's options, each priced from one catalog version or not."""
+        tenant, region = context.unit.tenant_id, item.region_id
+        connection = context.connection
+        version = connection.execute(LATEST_VERSION, {"t": tenant, "r": region}).scalar()
+        connection.execute(CLEAR_OPTIONS, {"t": tenant, "id": recommendation_id})
+
+        def priced(instance_type: str | None) -> tuple[str, object] | None:
+            if version is None or not instance_type:
+                return None
+            row = connection.execute(
+                PRICE_OF, {"t": tenant, "r": region, "v": version, "type": instance_type}
+            ).first()
+            return None if row is None else (str(row[0]), row[1])
+
+        prices: dict[int, tuple[str, object] | None] = {}
+        for option in item.options:
+            prices[option.rank] = found = priced(option.instance_type)
+            connection.execute(
+                WRITE_OPTION,
+                {
+                    **_option_row(option, found, version, region),
+                    "pk": uuid4(),
+                    "t": tenant,
+                    "id": recommendation_id,
+                    "r": region,
+                    "as_of": item.as_of,
+                    "now": now,
+                },
+            )
+        best = min(item.options, key=lambda option: option.rank)
+        target, current = prices[best.rank], priced(item.current_instance_type)
+        connection.execute(
+            SET_PRICES,
             {
-                "tenant": context.unit.tenant_id,
-                "source": source.value,
-                # An empty list is a real answer: the service returned nothing, so
-                # everything it previously reported has been withdrawn.
-                "seen": seen or [""],
-                "now": now,
+                "id": recommendation_id,
+                "current": current[0] if current else None,
+                "target_type": best.instance_type if target else None,
+                "target": target[0] if target else None,
+                "v": version if (target or current) else None,
             },
-        ).all()
+        )
+
+    def _withdraw(
+        self,
+        context: CollectorContext,
+        source: Source,
+        seen: list[str],
+        now: datetime,
+        scopes: frozenset[tuple[str, str]] | None = None,
+    ) -> None:
+        """Dismiss what this run did not see, keeping the row and its history.
+
+        Inside the scopes a scoped source read, and nowhere else: a finding in an account
+        that could not be read was not seen to go, so it stays.
+        """
+        parameters: dict[str, object] = {
+            "tenant": context.unit.tenant_id,
+            "source": source.value,
+            # An empty list is a real answer: the service returned nothing, so
+            # everything it previously reported has been withdrawn.
+            "seen": seen or [""],
+            "now": now,
+        }
+        if scopes is None:
+            statement = WITHDRAW
+        else:
+            statement = WITHDRAW_SCOPED
+            parameters["pairs"] = [f"{a}|{r}" for a, r in scopes if a != "*"] or [""]
+            parameters["anywhere"] = [r for a, r in scopes if a == "*"] or [""]
+        gone = context.connection.execute(statement, parameters).all()
         for row in gone:
             context.connection.execute(
                 WITHDRAW_EVENT,
@@ -217,3 +351,30 @@ class RecommendationCollector:
                     "now": now,
                 },
             )
+
+
+def _option_row(
+    option: RankedOption, price: tuple[str, object] | None, version: str | None, region: str
+) -> dict[str, object]:
+    """An option's columns: its price from the catalog, or the reason it has none."""
+    if price is None:
+        reason: str | None = (
+            f"the catalog holds no EC2 price list for {region}"
+            if version is None
+            else f"the catalog holds no Linux on demand price for {option.instance_type} "
+            f"in {region}"
+        )
+    else:
+        reason = None
+    return {
+        "rank": option.rank,
+        "type": option.instance_type,
+        "risk": option.performance_risk,
+        "saving": option.provider_monthly_saving,
+        "effort": option.migration_effort,
+        "differences": list(option.platform_differences),
+        "sku": price[0] if price else None,
+        "v": version if price else None,
+        "hourly": price[1] if price else None,
+        "reason": reason,
+    }

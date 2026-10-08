@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-988 public symbols across 5 packages.
+990 public symbols across 5 packages.
 
 ## finops_core
 
@@ -179,16 +179,18 @@ a duplicate.
 | `dominant_cause` | function | `finops_core/domain/topology.py:344` | The cause a slice's coverage row carries when several APIs fell short. | nothing in this tree |
 | `GraphCoverage` | class | `finops_core/domain/topology.py:366` | How much of one account's one region the graph was built from. | `finops_api/db/repositories/topology.py` |
 | `GraphCoverage.is_whole` | method | `finops_core/domain/topology.py:412` | True only for a slice the graph can be trusted to be complete over. | nothing in this tree |
-| `Confidence` | class | `finops_core/domain/waste.py:31` | How much data the estimate rests on. Never derived from the money. | nothing in this tree |
-| `Lifecycle` | class | `finops_core/domain/waste.py:39` | Where a recommendation is. The event log is what says how it got there. | `finops_api/lifecycle.py`, `finops_ingest/collectors/score.py` |
-| `Source` | class | `finops_core/domain/waste.py:68` | Who found it. One table holds all of them. | nothing in this tree |
-| `WasteClass` | class | `finops_core/domain/waste.py:77` | The closed list. A free text class is one no screen can label and no score | `finops_api/routes/waste.py` |
-| `confidence_of` | function | `finops_core/domain/waste.py:108` | How sure the estimate is, from how long it watched. | `finops_ingest/collectors/commitment_actions.py`, `finops_ingest/collectors/container_usage.py`, `finops_ingest/collectors/waste_cloudwatch.py`, `finops_ingest/collectors/waste_compute.py`, and 1 more |
-| `Recommendation` | class | `finops_core/domain/waste.py:123` | One thing worth changing, whatever found it. | `finops_providers/aws/recommendations.py` |
-| `Recommendation.confidence` | method | `finops_core/domain/waste.py:169` |  | nothing in this tree |
-| `Recommendation.may_move_to` | method | `finops_core/domain/waste.py:172` |  | nothing in this tree |
-| `RealizedSaving` | class | `finops_core/domain/waste.py:177` | What actually appeared in the bill, and what it can honestly claim. | nothing in this tree |
-| `RealizedSaving.realized_monthly_saving` | method | `finops_core/domain/waste.py:211` |  | nothing in this tree |
+| `Confidence` | class | `finops_core/domain/waste.py:33` | How much data the estimate rests on. Never derived from the money. | nothing in this tree |
+| `Lifecycle` | class | `finops_core/domain/waste.py:41` | Where a recommendation is. The event log is what says how it got there. | `finops_api/lifecycle.py`, `finops_ingest/collectors/score.py` |
+| `Source` | class | `finops_core/domain/waste.py:70` | Who found it. One table holds all of them. | nothing in this tree |
+| `WasteClass` | class | `finops_core/domain/waste.py:79` | The closed list. A free text class is one no screen can label and no score | `finops_api/routes/waste.py` |
+| `confidence_of` | function | `finops_core/domain/waste.py:110` | How sure the estimate is, from how long it watched. | `finops_ingest/collectors/commitment_actions.py`, `finops_ingest/collectors/container_usage.py`, `finops_ingest/collectors/waste_cloudwatch.py`, `finops_ingest/collectors/waste_compute.py`, and 1 more |
+| `RankedOption` | class | `finops_core/domain/waste.py:130` | One target a provider ranked for a recommendation, as it ranked it. TASK-P9-006. | `finops_providers/aws/recommendations.py` |
+| `Recommendation` | class | `finops_core/domain/waste.py:159` | One thing worth changing, whatever found it. | `finops_providers/aws/recommendations.py` |
+| `Recommendation.confidence` | method | `finops_core/domain/waste.py:212` |  | nothing in this tree |
+| `Recommendation.may_move_to` | method | `finops_core/domain/waste.py:215` |  | nothing in this tree |
+| `RealizedSaving` | class | `finops_core/domain/waste.py:220` | What actually appeared in the bill, and what it can honestly claim. | nothing in this tree |
+| `RealizedSaving.realized_monthly_saving` | method | `finops_core/domain/waste.py:254` |  | nothing in this tree |
+| `ScopedFindings` | class | `finops_core/domain/waste.py:259` | What a source found in the scopes it could read, and why it could not read the rest. | `finops_providers/aws/recommendations.py` |
 | `CollectionError` | class | `finops_core/errors.py:27` | Abstract parent of the six causes. Never raised, never constructed. | nothing in this tree |
 | `CollectionError.remediation` | method | `finops_core/errors.py:53` | What the person reading the failure should actually do next. | nothing in this tree |
 | `AccessDenied` | class | `finops_core/errors.py:62` | The credential was refused, so the answer is unknown rather than zero. | `finops_api/exports/scheduled.py`, `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/aws/client.py`, and 1 more |
@@ -372,10 +374,10 @@ a duplicate.
 | `AwsQuotas` | class | `finops_providers/aws/quotas.py:197` | Every quota in one account and region, with usage where anything publishes it. | nothing in this tree |
 | `AwsQuotas.list_quotas` | method | `finops_providers/aws/quotas.py:216` | Every quota for the account and region, with usage where published. | `finops_ingest/collectors/quotas.py` |
 | `AwsQuotas.requests` | method | `finops_providers/aws/quotas.py:239` | Every increase request AWS has a record of, whatever became of it. | `finops_ingest/collectors/quotas.py` |
-| `CostRecommendationSource` | class | `finops_providers/aws/recommendations.py:99` | `RecommendationSource` over three AWS services. Unproved, ISS-122. | nothing in this tree |
-| `CostRecommendationSource.compute_optimizer` | method | `finops_providers/aws/recommendations.py:175` |  | nothing in this tree |
-| `CostRecommendationSource.cost_optimization_hub` | method | `finops_providers/aws/recommendations.py:222` |  | nothing in this tree |
-| `CostRecommendationSource.trusted_advisor` | method | `finops_providers/aws/recommendations.py:245` |  | nothing in this tree |
+| `CostRecommendationSource` | class | `finops_providers/aws/recommendations.py:122` | `RecommendationSource` over three AWS services. Unproved, ISS-122. | nothing in this tree |
+| `CostRecommendationSource.compute_optimizer` | method | `finops_providers/aws/recommendations.py:213` |  | nothing in this tree |
+| `CostRecommendationSource.cost_optimization_hub` | method | `finops_providers/aws/recommendations.py:317` |  | nothing in this tree |
+| `CostRecommendationSource.trusted_advisor` | method | `finops_providers/aws/recommendations.py:340` |  | nothing in this tree |
 | `RelayClient` | class | `finops_providers/aws/relay_client.py:42` | One service, in one Region, about one account, reached through the relay. | nothing in this tree |
 | `RelayClient.get_paginator` | method | `finops_providers/aws/relay_client.py:60` |  | `finops_providers/aws/accounts.py`, `finops_providers/aws/budgets.py`, `finops_providers/aws/container_insights.py`, `finops_providers/aws/cur.py`, and 6 more |
 | `lambda_invoke` | function | `finops_providers/aws/relay_client.py:101` | The relay invoked through the Lambda endpoint. A function error is the relay failing. | nothing in this tree |
@@ -450,17 +452,17 @@ a duplicate.
 | `attribute` | function | `finops_ingest/collectors/platform_cost.py:51` | Name the module a charge belongs to. Never returns an empty string. | nothing in this tree |
 | `PlatformCostCollector` | class | `finops_ingest/collectors/platform_cost.py:58` | One grouped request a day, written by module and service. | nothing in this tree |
 | `total` | function | `finops_ingest/collectors/platform_cost.py:106` | What the platform cost over the set, for a caller that wants one figure. | nothing in this tree |
-| `PriceCatalogCollector` | class | `finops_ingest/collectors/price_catalog.py:114` | Each service's current prices in every Region, loaded when AWS publishes new ones. | nothing in this tree |
-| `held` | function | `finops_ingest/collectors/price_catalog.py:159` | Every (Region, version) of a service already stored. | `finops_ingest/collectors/savings_plan_rates.py` |
-| `store` | function | `finops_ingest/collectors/price_catalog.py:165` | A version and its prices, written `BATCH` at a time. Returns the rows stored. | `finops_ingest/collectors/instance_catalog.py`, `finops_ingest/collectors/savings_plan_rates.py` |
-| `prune` | function | `finops_ingest/collectors/price_catalog.py:190` | The service and Region's earlier versions and their prices, except those quoted. | `finops_ingest/collectors/savings_plan_rates.py` |
-| `refuse` | function | `finops_ingest/collectors/price_catalog.py:198` | A typed failure recorded in `sync_error`, and returned for the run to count. | `finops_ingest/collectors/instance_catalog.py`, `finops_ingest/collectors/savings_plan_rates.py`, `finops_ingest/collectors/spot_prices.py` |
+| `PriceCatalogCollector` | class | `finops_ingest/collectors/price_catalog.py:118` | Each service's current prices in every Region, loaded when AWS publishes new ones. | nothing in this tree |
+| `held` | function | `finops_ingest/collectors/price_catalog.py:163` | Every (Region, version) of a service already stored. | `finops_ingest/collectors/savings_plan_rates.py` |
+| `store` | function | `finops_ingest/collectors/price_catalog.py:169` | A version and its prices, written `BATCH` at a time. Returns the rows stored. | `finops_ingest/collectors/instance_catalog.py`, `finops_ingest/collectors/savings_plan_rates.py` |
+| `prune` | function | `finops_ingest/collectors/price_catalog.py:194` | The service and Region's earlier versions and their prices, except those quoted. | `finops_ingest/collectors/savings_plan_rates.py` |
+| `refuse` | function | `finops_ingest/collectors/price_catalog.py:202` | A typed failure recorded in `sync_error`, and returned for the run to count. | `finops_ingest/collectors/instance_catalog.py`, `finops_ingest/collectors/recommendations.py`, `finops_ingest/collectors/savings_plan_rates.py`, `finops_ingest/collectors/spot_prices.py` |
 | `rates_from` | function | `finops_ingest/collectors/query_audit.py:78` | Build the model's rates from configuration. | nothing in this tree |
 | `default_ingest_rate` | function | `finops_ingest/collectors/query_audit.py:113` | The fallback used when ingestion cannot be measured for a log group. | nothing in this tree |
 | `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:136` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
 | `QuotaCollector` | class | `finops_ingest/collectors/quotas.py:134` | Quotas and increase requests for one account in one region. | nothing in this tree |
 | `RealizedSavingsCollector` | class | `finops_ingest/collectors/realized_savings.py:174` | The north star metric, measured rather than modelled. | nothing in this tree |
-| `RecommendationCollector` | class | `finops_ingest/collectors/recommendations.py:113` | Reads three services and writes one table. | nothing in this tree |
+| `RecommendationCollector` | class | `finops_ingest/collectors/recommendations.py:175` | Reads three services and writes one table. | nothing in this tree |
 | `hashed_subject` | function | `finops_ingest/collectors/retention.py:66` | A stable, non reversible stand in, so a duplicate sign in is still one row. | nothing in this tree |
 | `retention_principal` | function | `finops_ingest/collectors/retention.py:75` | Anonymise principals unseen past the window. Never removes a row. | nothing in this tree |
 | `retention_operational` | function | `finops_ingest/collectors/retention.py:97` | Remove run history, resolved errors and dead watermarks past the window. | nothing in this tree |
@@ -774,10 +776,10 @@ a duplicate.
 | `PayerWide` | class | `finops_api/guards.py:66` | The row describes the whole payer and belongs to no account. | nothing in this tree |
 | `ByPrincipal` | class | `finops_api/guards.py:85` | The row belongs to a person, and only that person reads it. ADR-0029. | nothing in this tree |
 | `OwnedOrShared` | class | `finops_api/guards.py:97` | The row belongs to a person until they share it with the tenant. ADR-0032. | nothing in this tree |
-| `require_scope` | function | `finops_api/guards.py:290` | Refuse anything that is not a scope, including None. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/cost.py`, `finops_api/db/repositories/ingest.py`, and 4 more |
-| `scope_predicate` | function | `finops_api/guards.py:306` | The WHERE clause that confines a read to what the scope permits. | `finops_api/db/repositories/ingest.py`, `finops_api/db/repositories/query.py`, `finops_api/db/repositories/schedules.py`, `finops_api/db/repositories/topology.py`, and 2 more |
-| `scoped_select` | function | `finops_api/guards.py:393` | The only constructor of a select against a scoped table. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/assistant.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/containers.py`, and 14 more |
-| `assert_scoped` | function | `finops_api/guards.py:403` | Backstop. Refuse to run a select that did not come from `scoped_select`. | `finops_api/db/repositories/base.py` |
+| `require_scope` | function | `finops_api/guards.py:292` | Refuse anything that is not a scope, including None. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/cost.py`, `finops_api/db/repositories/ingest.py`, and 4 more |
+| `scope_predicate` | function | `finops_api/guards.py:308` | The WHERE clause that confines a read to what the scope permits. | `finops_api/db/repositories/ingest.py`, `finops_api/db/repositories/query.py`, `finops_api/db/repositories/schedules.py`, `finops_api/db/repositories/topology.py`, and 2 more |
+| `scoped_select` | function | `finops_api/guards.py:395` | The only constructor of a select against a scoped table. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/assistant.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/containers.py`, and 14 more |
+| `assert_scoped` | function | `finops_api/guards.py:405` | Backstop. Refuse to run a select that did not come from `scoped_select`. | `finops_api/db/repositories/base.py` |
 | `ScopeCoverage` | class | `finops_api/identity/coverage.py:19` | Visible accounts against every account the organization holds. | nothing in this tree |
 | `ScopeCoverage.is_partial` | method | `finops_api/identity/coverage.py:36` | True when the figures on the page describe part of the organization. | nothing in this tree |
 | `ScopeCoverage.fraction` | method | `finops_api/identity/coverage.py:41` | Visible share, between 0 and 1. An empty organization is fully covered. | nothing in this tree |

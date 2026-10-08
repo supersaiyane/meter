@@ -19,12 +19,15 @@ from finops_core.domain.waste import (
     ALLOWED,
     Confidence,
     Lifecycle,
+    RankedOption,
     RealizedSaving,
     Recommendation,
+    ScopedFindings,
     Source,
     WasteClass,
     confidence_of,
 )
+from finops_core.errors import Throttled
 
 NOW = datetime(2026, 9, 21, 6, 0, tzinfo=UTC)
 
@@ -185,3 +188,59 @@ class TestRealizedSaving:
     def test_a_window_ends_after_it_starts(self) -> None:
         with pytest.raises(ValueError, match="ends after"):
             self.a_saving(window_before_start=date(2026, 7, 1), window_before_end=date(2026, 6, 1))
+
+
+# --- ranked options and scoped findings, TASK-P9-006 -----------------------------------------
+
+
+def option(**overrides: object) -> RankedOption:
+    fields: dict[str, object] = {
+        "rank": 1,
+        "instance_type": "m6i.large",
+        "performance_risk": Decimal("1.0"),
+    }
+    fields.update(overrides)
+    return RankedOption(**fields)  # type: ignore[arg-type]
+
+
+class TestRankedOptions:
+    def test_a_recommendation_keeps_every_option_with_its_current_type(self) -> None:
+        options = (option(), option(rank=2, instance_type="m6g.large"))
+        held = a_recommendation(current_instance_type="m5.xlarge", options=options)
+        assert held.options == options
+        assert held.current_instance_type == "m5.xlarge"
+
+    def test_two_options_sharing_a_rank_are_refused(self) -> None:
+        with pytest.raises(ValueError, match="share a rank"):
+            a_recommendation(options=(option(), option(instance_type="m5.large")))
+
+    @pytest.mark.parametrize(
+        ("overrides", "says"),
+        [
+            ({"rank": 0}, "not ranked"),
+            ({"instance_type": ""}, "names the type"),
+            ({"performance_risk": Decimal("4.5")}, "off the scale"),
+            ({"performance_risk": Decimal("-0.1")}, "off the scale"),
+        ],
+    )
+    def test_an_option_that_is_not_one_is_refused(
+        self, overrides: dict[str, object], says: str
+    ) -> None:
+        with pytest.raises(ValueError, match=says):
+            option(**overrides)
+
+    def test_a_provider_saving_may_be_absent_or_negative(self) -> None:
+        # An option to a larger type costs more, and its figure says so.
+        assert option(provider_monthly_saving=Decimal("-40")).provider_monthly_saving == -40
+        assert option().provider_monthly_saving is None
+
+
+class TestScopedFindings:
+    def test_it_iterates_as_its_findings_and_keeps_its_refusals(self) -> None:
+        found = a_recommendation()
+        refusal = Throttled(scope_key="444455556666:eu-west-1", collector="recommendations")
+        scoped = ScopedFindings(
+            found=(found,), read=frozenset({("111122223333", "eu-west-1")}), refused=(refusal,)
+        )
+        assert tuple(scoped) == (found,)
+        assert scoped.refused == (refusal,)

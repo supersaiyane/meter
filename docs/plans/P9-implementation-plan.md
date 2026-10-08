@@ -280,7 +280,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 5.5 |
 | Delivers | Compute Optimizer targets kept and priced |
 | Depends on | TASK-P9-004, TASK-P9-005 |
@@ -288,11 +288,11 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 **Acceptance criteria.**
 
-- [ ] The adapter calls each Region, one member account per request, follows `nextToken`,
+- [x] The adapter calls each Region, one member account per request, follows `nextToken`,
       and asks for Graviton through its architecture preference
-- [ ] Every ranked option kept, each priced from the catalog, with its performance risk
-- [ ] An option whose type has no price in the catalog is kept and says so, never priced
-      at zero
+- [x] Every ranked option kept, each priced from the catalog, with its performance risk
+- [x] An option whose type has no price in the catalog is kept and says so, never priced
+      at zero. Kept in `recommendation_option`, migration 0038, with the reason, OPEN-23
 
 ---
 

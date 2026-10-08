@@ -3,64 +3,99 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P9 |
-| Status | Planned |
+| Status | In build |
 | Specification | [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.5 to 5.7 |
-| Tasks | TASK-P9-006 to TASK-P9-008. TASK-P9-010 adds the Alternatives table |
+| Tasks | TASK-P9-006, Compute Optimizer's targets kept and priced, done 2026-10-08. TASK-P9-007 and TASK-P9-008 to come. TASK-P9-010 adds the Alternatives table |
 
 ## What it does
 
 Every rightsizing recommendation names a target instance type offered in the Region, with the
-current and target list prices, the price list version and its publication date, and the
-saving as their difference, labelled modelled. Where measured use calls for a bigger machine it
-recommends growing instead, as an Upsize with an added monthly cost. The recommendation's
-screen shows an Alternatives table of type, vCPUs, memory, network baseline, price per hour and
-month, and saving, the chosen target first.
+current and target list prices, the price list version, and the saving as their difference,
+labelled modelled. Where measured use calls for a bigger machine it recommends growing instead,
+as an Upsize with an added monthly cost. The recommendation's screen shows an Alternatives table
+of type, vCPUs, memory, network baseline, price per hour and month, and saving, the chosen
+target first.
+
+Built in TASK-P9-006: Compute Optimizer's findings carry every option it ranked, each with its
+rank, its performance risk, its own monthly saving, the migration effort and the platform
+differences, and each priced from the catalog or kept saying why not. A Compute Optimizer
+recommendation names its first ranked option as its target, with both prices from one catalog
+version. Meter's own rule where Compute Optimizer has no answer, TASK-P9-007, and the Upsize,
+TASK-P9-008, are still to come.
 
 ## Why it exists
 
-Meter's rightsizing names no target and overstates the saving, which today is the instance's
-monthly cost times its unused fraction. For the planted m5.2xlarge at 7 percent CPU that
-reports 90.9 percent of 324.12 USD a month (modelled), when one size down, m5.xlarge, saves 50
-percent at measured list prices, and m7g.xlarge would save 57.5 percent (modelled from
-measured prices). The owner asked on 2026-10-05 for what lets Meter say which machine to move
-to, shrinking or growing.
+Meter's rightsizing named no target and overstated the saving, which was the instance's monthly
+cost times its unused fraction. For the planted m5.2xlarge at 7 percent CPU that reports 90.9
+percent of 324.12 USD a month (modelled), when one size down, m5.xlarge, saves 50 percent at
+measured list prices, and m7g.xlarge would save 57.5 percent (modelled from measured prices). The
+owner asked on 2026-10-05 for what lets Meter say which machine to move to, shrinking or growing.
 
-## What is already known
+## How it works
 
-Compute Optimizer stays the first source of targets, ADR-0006. Its adapter makes one call to
-us-east-1 today, with no member account and no `nextToken`, and keeps the first option as text.
-It is fixed to call each Region, pass one member account per request, follow `nextToken` and ask
-for Graviton through its architecture preference, and every ranked option is kept and priced
-from the catalog. Where Compute Optimizer is not enabled or has no answer, Meter's own rule
-takes candidates from the same family one or two sizes away, the newer generation, and the
-Graviton and AMD variants, each offered in the Region. A candidate fits when CPU p99 times 1.30
-is within its vCPUs, memory peak times 1.15, or 1.25 after an out of memory kill, is within its
-memory, and network and EBS p99 are within its baseline, never its burst. The cheapest fit is
-chosen, snapped to a real type as P6 snaps Fargate sizes. With no agent there is no memory
-figure, so only one step down within the family is offered and the rationale says why. Across a
-generation or an architecture, the recommendation says vCPUs are not equivalent and Graviton
-needs arm64 builds. The metrics today are CPU average and agent memory maximum, with no network
-or EBS series, which the fit needs.
+**Compute Optimizer, read properly**, P9 spec section 5.5 and ADR-0006.
+`finops_providers/aws/recommendations.py` reads `GetEC2InstanceRecommendations` in each Region the
+settings name, for each member account in its own request, follows `nextToken` itself because
+botocore has no paginator for the call, and asks for Graviton through the CPU architecture
+preference. Every option is kept as a `RankedOption`; an option with no performance risk, or one
+off the scale of nought to four, is SchemaDrift. One account or Region that cannot be read is
+returned beside what was read, `ScopedFindings`.
 
-The saving is the current list price minus the target's for the hours the instance runs.
-Because list is not what an estate pays, it is also shown scaled by the ratio of effective to
-list cost for that instance in the bill, and both are labelled modelled with the price version
-beside them. The recommendation gains nullable columns for the current `sku_price_id`, the
-target type, the target `sku_price_id` and the price version, and a target must name a price
-from the same version. CPU or memory p95 above 90 percent, or bandwidth at its baseline, recommends the next
-size or a family with more memory per vCPU. An Upsize is a recommendation of its own kind with
-an added monthly cost, never a negative saving, so no total of savings can be reduced by it, and
-the planted c6i.2xlarge above 90 percent comes out as one. Nothing here reaches AWS until
-TASK-P9-001 builds the path the owner chose for OPEN-16 on 2026-10-05, ISS-242.
+**Priced from the catalog.** `finops_ingest/collectors/recommendations.py` replaces a
+recommendation's options in `recommendation_option` on each read and prices each at the catalog's
+newest EC2 version for its Region, at the Linux on demand comparable price: shared tenancy, used
+capacity, nothing preinstalled, no licence, and not an Extended Support surcharge. An option the
+catalog cannot price is kept with the reason, either no price list for the Region or no such
+price in it. The recommendation's `current_sku_price_id`, `target_instance_type`,
+`target_sku_price_id` and `price_version` are set from the same version, the target being the
+first ranked option, so a saving can only be the difference of two prices that exist together.
+The recommendation's own saving stays Compute Optimizer's figure for its first option until
+TASK-P9-007 quotes the price difference.
+
+## Failure behaviour
+
+One account or Region that cannot be read is recorded in `sync_error` under `recommendations` by
+its typed cause, the rest is stored, and only findings in the scopes that were read can be
+withdrawn: a finding in an account that timed out stays open rather than being dismissed,
+constraint 5. Every scope failing raises the cause, and NotOptedIn everywhere is the service not
+being enabled, ISS-004, recorded as nothing to withdraw. More than 100 pages for one account in
+one Region is SchemaDrift for that scope. An unpriced option is never a price of nought: the
+database refuses an option with neither a price nor a reason, migration 0038.
+
+## Security considerations
+
+Read only, constraint 6. Compute Optimizer is read with the role the composition gives it, one
+member account a request; no new permission is added here. `recommendation_option` is scoped
+through its recommendation by the guard, as `recommendation_event` is, so a reader who may not
+see a finding cannot see what it was compared with.
+
+## Interface
+
+No route yet; TASK-P9-010 adds the Alternatives table and the target on the recommendation's
+screen. The collector writes `recommendation_option` and the recommendation's four price columns.
+`RecommendationSource.compute_optimizer` returns `ScopedFindings`, which iterates as its findings,
+so the fake and any caller that knows nothing of scopes read it as before.
+
+## Not doing
+
+- Pricing at the instance's own operating system. Linux is the comparable price until
+  TASK-P9-007 reads the instance's own from its bill line.
+- Meter's own targets where Compute Optimizer has no answer, TASK-P9-007, and the Upsize,
+  TASK-P9-008.
+- Writing to Compute Optimizer: its preferences are asked per request and never stored at AWS,
+  constraint 6.
+
+## What is not yet proved
+
+The Compute Optimizer shapes are the botocore 1.43.108 model's, held by
+`tests/providers/aws/test_response_shapes.py`, and its answers are recorded, not real, ISS-122.
+The member account list comes from the organization tree at composition, which nothing assembles
+yet, ISS-182.
 
 ## Status of this document
 
-Planned. The feature is specified in the
-[P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.5 to 5.7, and planned as
-TASK-P9-006 to TASK-P9-008 in the [P9 plan](../plans/P9-implementation-plan.md), both approved
-by the owner on 2026-10-05. The sections a built feature carries, how it works, its failure
-behaviour, its security considerations, its interface and what it does not do, are written
-when it is built. Recording only what is decided is deliberate: a document that invents detail
-ahead of the build is worse than a short one, because it will be believed.
+In build. TASK-P9-006 was built on 2026-10-08. Specified in the
+[P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.5 to 5.7, and planned in the
+[P9 plan](../plans/P9-implementation-plan.md).
 
 See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P9.

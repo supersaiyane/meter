@@ -661,6 +661,35 @@ recommendation_event = Table(
 )
 
 
+#: TASK-P9-006, migration 0038. Every target a provider ranked, priced from the catalog or saying
+#: why not. Its constraints live in the migration; this mirrors the columns for the schema test.
+recommendation_option = Table(
+    "recommendation_option",
+    metadata,
+    Column("option_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column(
+        "recommendation_id",
+        UUID(as_uuid=True),
+        ForeignKey("recommendation.recommendation_id"),
+        nullable=False,
+    ),
+    Column("region", Text, nullable=False),
+    Column("rank", SmallInteger, nullable=False),
+    Column("instance_type", Text, nullable=False),
+    Column("performance_risk", Numeric(3, 1), nullable=False),
+    Column("provider_monthly_saving", Numeric(20, 10)),
+    Column("migration_effort", Text),
+    Column("platform_differences", ARRAY(Text), nullable=False, server_default=text("'{}'")),
+    Column("sku_price_id", Text),
+    Column("price_version", Text),
+    Column("hourly_price", Numeric(20, 10)),
+    Column("unpriced_reason", Text),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
 #: The measured half, in its own table so it cannot be summed with the estimate by
 #: accident. Every tool that inflates identified savings does it by adding a
 #: modelled number to a measured one.

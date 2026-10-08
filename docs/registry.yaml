@@ -82,7 +82,7 @@ subprojects:
 - id: P9
   name: Price catalog and rightsizing targets
   status: Specified, planned and approved by the owner 2026-10-05, in build from 2026-10-08 as priority 3,
-    TASK-P9-001 to TASK-P9-005, TASK-P9-012 and TASK-P9-013 done, TASK-P9-006 next. EC2 and EBS list prices from AWS, rightsizing down
+    TASK-P9-001 to TASK-P9-006, TASK-P9-012 and TASK-P9-013 done, TASK-P9-007 next. EC2 and EBS list prices from AWS, rightsizing down
     and up to a named and priced target, and gp2 to gp3. The hub now reaches every API it calls, ADR-0035
   spec: specs/2026-10-05-p9-price-catalog-design.md
   plan: plans/P9-implementation-plan.md
@@ -537,7 +537,7 @@ features:
 - id: FEAT-073
   name: Rightsizing to a named, priced target, down and up
   subproject: P9
-  status: Planned
+  status: In build
   detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.5 to 5.7, [P9 plan](docs/plans/P9-implementation-plan.md)'
   doc: docs/features/FEAT-073-rightsizing-to-a-priced-target.md
 - id: FEAT-074
@@ -2060,6 +2060,18 @@ changes:
     latest price per pool only with a reading at least as new, merges each day's low and high with the price
     in effect at the close counted towards its day, and removes daily rows older than 90 days, OPEN-18.
     Migration 0037 seeds its schedule. A fourth catalog port, SpotPrices, with a fake and a contract
+- id: CHG-0141
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-006, Compute Optimizer in every Region and account, every ranked option kept and priced
+  commit: pending
+  detail: The Compute Optimizer read asks each Region about each member account alone, follows nextToken,
+    and asks for Graviton through the architecture preference; every option is a RankedOption with its rank,
+    performance risk and the provider's own saving. One scope failing comes back as ScopedFindings beside
+    what was read, recorded in sync_error, and only findings in scopes read can be withdrawn. Migration 0038
+    adds recommendation_option, each option priced from a recorded catalog price or saying why not, and
+    price pruning now spares a price an option quotes. The recommendation's current and target prices are
+    set from one version
 issues:
 - id: ISS-189
   severity: LOW
@@ -4722,3 +4734,14 @@ open_questions:
     1 million requests and costs about 0.08 USD a month in S3 writes (modelled), so it is built as asked.
     Recommended: keep 8 hours, since the cost is negligible and the cadence is a schedule row that can be
     changed without code; revisit if ISS-263 measures a larger answer.'
+- id: OPEN-23
+  question: 'Where are Compute Optimizer''s ranked options kept: a table of their own, or a JSON column on
+    the recommendation? BUILT 2026-10-08 as recommended, a table'
+  status: OPEN
+  blocks: nothing
+  detail: 'Raised 2026-10-08 by TASK-P9-006. The spec asks for every ranked option to be kept and priced,
+    and its data model gave the recommendation one target. Recommended and built: a table,
+    recommendation_option, migration 0038, because constraint 11 makes an option''s rules database
+    constraints, priced from a recorded price by a foreign key or naming why not, ranks unique, risk on
+    its scale, and a JSON column could hold none of them. The cost is one more table scoped through its
+    recommendation. Reversing it is a migration that folds the rows into a column; the owner may say so.'
