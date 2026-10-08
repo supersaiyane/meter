@@ -48,7 +48,7 @@ Waves B and D are independent. Run them in parallel if two people are working.
 
 | Field | Value |
 | --- | --- |
-| Status | **Partly done.** Packages and `.venv` exist, from TASK-P0-029. The editable install, `tests/conftest.py` and the pytest harness do not |
+| Status | **Done 2026-10-07** |
 | Implements | P0 spec section 4 |
 | Delivers | Nothing user facing. Enables everything |
 | Depends on | none |
@@ -651,6 +651,11 @@ caller forgets to ask for scoping.
 | `tests/db/test_scope_guard.py::test_unscoped_query_raises` | Calling a scoped method without a scope raises, and does not return rows |
 | `tests/db/test_scope_guard.py::test_scope_filters_rows` | A principal scoped to two accounts sees exactly those two |
 | `tests/db/test_scope_guard.py::test_global_scope_is_audited` | A global read produces an audit event tagged global |
+
+**Also.** `finops_api.db` now exists, so the `finops_mcp` import contract stops
+being inert for that target. Confirm it fires: add `import finops_api.db` to a
+scratch file under `finops_mcp`, run `lint-imports`, see the contract BROKEN,
+then remove it. ISS-109.
 
 **Do not.**
 
@@ -1324,6 +1329,10 @@ adversarial test that proves enforcement is not bypassable.
 | `tests/api/test_scope_enforcement.py::test_route_without_dependency_cannot_leak` | Spec section 11. The adversarial test for ISS-009 |
 | `tests/api/test_scope_enforcement.py::test_every_response_carries_meta` | Iterates the registered routes and asserts the envelope |
 
+**Also.** `finops_api.guards` now exists, so the last inert target in the
+`finops_mcp` contract becomes live. Confirm it fires by probe, as in
+TASK-P0-011. ISS-109 closes here.
+
 **Do not.**
 
 - Do not add a route that returns bare data without the `meta` envelope. The
@@ -1689,6 +1698,19 @@ published fix, with three unfixable CPython findings accepted under a
 reachability argument that `check_forbidden_imports.py` enforces.
 
 Posture: **zero fixable findings**, three accepted unfixable, no secrets found.
+
+**Dependency admission, run 2026-10-07.** This criterion was missed when the
+task was first marked done, and is recorded here rather than quietly satisfied
+later. The full declared set was installed into a throwaway environment and the
+resolved tree scanned, which is stronger than a per package run because it also
+covers what the resolution pulls in.
+
+| Scanner | Scope | Result |
+| --- | --- | --- |
+| grype, via a syft SBOM | 97 resolved packages | **0 findings** |
+| pip-audit | 113 packages | **0 advisories** |
+
+All 10 runtime and 9 development dependencies admitted.
 
 **Deviation.** The task also created the Python package namespaces and the
 virtualenv, which belong to TASK-P0-001, because the policy checks needed

@@ -53,7 +53,14 @@ target-version = "py313"
 select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "ARG", "PTH", "RUF"]
 
 [tool.pytest.ini_options]
-addopts = "-q --strict-markers --cov=finops_core --cov=finops_providers --cov=finops_ingest --cov=finops_api --cov-report=term-missing --cov-fail-under=80"
+# cov-fail-under is 0 only while there is no code to cover. TASK-P0-005 lands
+# the first real module and its tests, and restores it to 80 in the same
+# commit. A coverage gate set to 0 and forgotten is a coverage gate that does
+# nothing, so the restoration is an acceptance criterion of that task.
+addopts = """-q --strict-markers \
+  --cov=finops_core --cov=finops_providers --cov=finops_ingest \
+  --cov=finops_api --cov=finops_mcp \
+  --cov-report=term-missing --cov-fail-under=0"""
 testpaths = ["tests"]
 markers = [
     "integration: requires a database or LocalStack",
@@ -68,6 +75,11 @@ warn_unreachable = true
 # The rule that keeps multi cloud cheap. finops_core must stay free of every
 # cloud SDK and every framework. Enforced here, not by good intentions.
 [tool.importlinter]
+# Required whenever a contract forbids an external module. Without it the
+# contracts referencing boto3, fastapi and sqlalchemy do not fail, they simply
+# never see those imports, which is worse than no contract because it looks
+# like one. Found by TASK-P0-001.
+include_external_packages = true
 root_packages = [
     "finops_core",
     "finops_providers",
@@ -93,6 +105,12 @@ forbidden_modules = ["boto3", "botocore", "fastapi", "sqlalchemy", "requests", "
 name = "finops_mcp is a facade, never a second implementation"
 type = "forbidden"
 source_modules = ["finops_mcp"]
+# CAUTION. import-linter can only forbid a module it can resolve. finops_api.db
+# and finops_api.guards do not exist yet, so those two entries are INERT: this
+# contract currently protects against the other three only. Verified by probe at
+# TASK-P0-001. TASK-P0-011 and TASK-P0-024 create those modules and each carries
+# an acceptance criterion to re-run the probe and confirm the contract fires.
+# ISS-109.
 forbidden_modules = [
     "finops_api.db",
     "finops_api.guards",

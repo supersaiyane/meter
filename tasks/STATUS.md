@@ -15,8 +15,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 50 total, 20 specified, 0 in build, 0 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 32 recorded |
-| Issues | 71 fixed, 34 open, 0 parked |
+| Changes | 33 recorded |
+| Issues | 73 fixed, 35 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -42,14 +42,14 @@ pytest harness and `conftest.py` do not.
 
 | Sub project | Done | Partly | Not started | Total | Plan |
 | --- | --- | --- | --- | --- | --- |
-| P0 | 1 | 1 | 33 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
+| P0 | 2 | 0 | 33 | 35 | [plan](../docs/plans/P0-implementation-plan.md) |
 | P2 | 0 | 0 | 22 | 22 | [plan](../docs/plans/P2-implementation-plan.md) |
 
 **P0, not in the default state**
 
 | Task | Status | Title |
 | --- | --- | --- |
-| `TASK-P0-001` | **Partly done.** Packages and `.venv` exist, from TASK-P0-029. The editable install, `tests/conftest.py` and the pytest harness do not | create the Python workspace and quality gates |
+| `TASK-P0-001` | **Done 2026-10-07** | create the Python workspace and quality gates |
 | `TASK-P0-029` | **Done 2026-08-23**, commit `9754a59` | establish the security tool chain and the first posture |
 
 <!-- generated:task-status end -->

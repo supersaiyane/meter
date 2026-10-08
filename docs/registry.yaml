@@ -652,6 +652,13 @@ changes:
     package names that also appeared in CLAUDE.md
   commit: a9ef75c
   detail: '[project_map.md](project_map.md)'
+- id: CHG-0033
+  date: '2026-08-23'
+  type: Correction
+  what: TASK-P0-001 workspace and quality gates. The import contracts were found to have never worked,
+    and the dependency admission gate missed by TASK-P0-029 was run
+  commit: pending
+  detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL
@@ -1262,6 +1269,29 @@ issues:
   detail: 'Both corrected and the map verified against the tree. Also fixed: the map claimed PLANNED modules
     had no directory, which stopped being true at TASK-P0-029, the feature count said 42 against an actual
     50, and nine files were absent from the listing'
+- id: ISS-109
+  severity: MEDIUM
+  status: OPEN
+  summary: Two of the five forbidden targets in the finops_mcp import contract are inert because finops_api.db
+    and finops_api.guards do not exist yet, so the contract reads as more protective than it currently
+    is
+  detail: Noted in `pyproject.toml`. TASK-P0-011 and TASK-P0-024 each carry a probe to confirm the contract
+    fires once the module exists
+- id: ISS-110
+  severity: HIGH
+  status: FIXED
+  summary: 'The import linter contracts forbidding external modules never worked: include_external_packages
+    was not set, so boto3, fastapi and sqlalchemy were never checked and the contract looked like protection
+    it was not providing'
+  detail: 'Set in `pyproject.toml`, and verified by probe: finops_core importing boto3 now breaks the
+    contract'
+- id: ISS-111
+  severity: MEDIUM
+  status: FIXED
+  summary: TASK-P0-029 was marked done without running the dependency admission gate, one of its acceptance
+    criteria
+  detail: 'Run 2026-10-07 against the full resolved tree: grype 0 findings across 97 packages, pip-audit
+    0 advisories across 113. Recorded in the task evidence'
 open_questions:
 - id: OPEN-01
   question: 'Identity provider approach: new ADFS relying party, IAM Identity Center, or reuse the AWS
