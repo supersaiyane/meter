@@ -13,18 +13,18 @@ from collections.abc import Iterable
 from typing import Protocol, runtime_checkable
 
 from finops_core.domain.account import AccountKey
-from finops_core.domain.ownership import BeforeHistory, CatalogueEntry, Creator
+from finops_core.domain.ownership import BeforeHistory, CatalogueApplication, Creator
 
 
 @runtime_checkable
 class ServiceCatalogue(Protocol):
-    """The applications an account declares, the resources in each, and who owns each one."""
+    """The applications an account declares, who owns each, and the tags that mark its resources."""
 
-    def entries(self, account: AccountKey, region: str) -> Iterable[CatalogueEntry]:
-        """Every resource an application in this account and Region is associated with.
+    def applications(self, account: AccountKey, region: str) -> Iterable[CatalogueApplication]:
+        """Every application in this account and Region.
 
-        An application that names no owner still yields its resources, with the owner None: the
-        catalogue was read, and it says nobody.
+        An application that names no owner is still returned, with the owner None: the catalogue
+        was read, and it says nobody. Its resources are matched by the tags it marks them with.
 
         Raises:
             AccessDenied: The session may not read the catalogue in this account.

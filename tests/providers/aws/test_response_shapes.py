@@ -263,6 +263,22 @@ READS: dict[tuple[str, str], set[str]] = {
         "inputTokens",
         "outputTokens",
     },
+    # FEAT-077, TASK-P11-003. AppRegistry's applications, the tag and stacks that mark their
+    # resources, and the owner their attribute groups name.
+    ("servicecatalog-appregistry", "ListApplications"): {"applications", "id", "name", "nextToken"},
+    ("servicecatalog-appregistry", "GetApplication"): {"applicationTag"},
+    ("servicecatalog-appregistry", "ListAssociatedResources"): {
+        "resources",
+        "resourceType",
+        "arn",
+        "nextToken",
+    },
+    ("servicecatalog-appregistry", "ListAttributeGroupsForApplication"): {
+        "attributeGroupsDetails",
+        "id",
+        "nextToken",
+    },
+    ("servicecatalog-appregistry", "GetAttributeGroup"): {"attributes"},
 }
 
 #: Which key carries the continuation token, per operation. Separate from the reads because this
@@ -410,6 +426,12 @@ SENDS: dict[tuple[str, str], set[str]] = {
     ("support", "DescribeTrustedAdvisorCheckResult"): {"checkId", "language"},
     ("ec2", "DescribeVpcs"): set(),
     ("ec2", "DescribeAddresses"): set(),
+    # Every application, then each one by its id.
+    ("servicecatalog-appregistry", "ListApplications"): set(),
+    ("servicecatalog-appregistry", "GetApplication"): {"application"},
+    ("servicecatalog-appregistry", "ListAssociatedResources"): {"application"},
+    ("servicecatalog-appregistry", "ListAttributeGroupsForApplication"): {"application"},
+    ("servicecatalog-appregistry", "GetAttributeGroup"): {"attributeGroup"},
 }
 
 
@@ -545,6 +567,34 @@ FALLS_THROUGH: dict[tuple[str, str], set[str]] = {
     ("ec2", "DescribeInstanceTypes"): set(),
     ("ec2", "DescribeSpotPriceHistory"): set(),
     ("ec2", "DescribeAddresses"): set(),
+    # AppRegistry. An application deleted between the list and the read is ResourceNotFound and
+    # fails the account and Region as SchemaDrift, loud and never an owner of nobody, ISS-215.
+    ("servicecatalog-appregistry", "ListApplications"): {
+        "InternalServerException",
+        "ValidationException",
+    },
+    ("servicecatalog-appregistry", "GetApplication"): {
+        "ConflictException",
+        "InternalServerException",
+        "ResourceNotFoundException",
+        "ValidationException",
+    },
+    ("servicecatalog-appregistry", "ListAssociatedResources"): {
+        "InternalServerException",
+        "ResourceNotFoundException",
+        "ValidationException",
+    },
+    ("servicecatalog-appregistry", "ListAttributeGroupsForApplication"): {
+        "InternalServerException",
+        "ResourceNotFoundException",
+        "ValidationException",
+    },
+    ("servicecatalog-appregistry", "GetAttributeGroup"): {
+        "ConflictException",
+        "InternalServerException",
+        "ResourceNotFoundException",
+        "ValidationException",
+    },
 }
 
 

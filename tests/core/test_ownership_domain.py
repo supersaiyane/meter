@@ -14,7 +14,7 @@ from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.ownership import (
     ORDER,
     BeforeHistory,
-    CatalogueEntry,
+    CatalogueApplication,
     Creator,
     OwnerKind,
     OwnerSource,
@@ -71,27 +71,35 @@ def test_a_suggestion_that_could_not_be_checked_is_refused(
         suggestion(**overrides)
 
 
-def test_an_application_that_names_nobody_is_still_an_entry() -> None:
-    entry = CatalogueEntry(
-        account_key=ACCOUNT,
-        region_id="eu-west-2",
-        resource_id="db-1",
-        application="reporting",
-        owner=None,
-        as_of=AT,
-        collected_at=AT,
-    )
-    assert entry.owner is None
+def application(**overrides: Any) -> CatalogueApplication:
+    fields: dict[str, Any] = {
+        "account_key": ACCOUNT,
+        "region_id": "eu-west-2",
+        "name": "reporting",
+        "application_id": "app-1",
+        "owner": None,
+        "marks": frozenset({("app", "reporting"), ("stack", "stack-1")}),
+        "as_of": AT,
+        "collected_at": AT,
+        **overrides,
+    }
+    return CatalogueApplication(**fields)
+
+
+def test_an_application_that_names_nobody_is_still_an_application() -> None:
+    assert application().owner is None
     with pytest.raises(ValueError, match="owner is blank"):
-        CatalogueEntry(
-            account_key=ACCOUNT,
-            region_id="eu-west-2",
-            resource_id="db-1",
-            application="reporting",
-            owner="",
-            as_of=AT,
-            collected_at=AT,
-        )
+        application(owner="")
+    with pytest.raises(ValueError, match="application_id is blank"):
+        application(application_id=" ")
+
+
+def test_a_resource_is_an_applications_when_any_of_its_marks_is_on_it() -> None:
+    reporting = application()
+    assert reporting.holds({"stack": "stack-1", "team": "x"})
+    assert reporting.holds({"app": "reporting"})
+    assert not reporting.holds({"app": "checkout"})
+    assert not reporting.holds({})
 
 
 def test_a_creator_is_never_a_team() -> None:

@@ -55,7 +55,16 @@ NO_ENDPOINT = frozenset({"budgets", "support", "invoicing"})
 RELAYED = frozenset({"savingsplans"})
 #: What the collectors call in each member account, in every collection Region.
 PER_COLLECTION_REGION = frozenset(
-    {"ec2", "cloudwatch", "logs", "cloudtrail", "service-quotas", "compute-optimizer"}
+    {
+        "ec2",
+        "cloudwatch",
+        "logs",
+        "cloudtrail",
+        "service-quotas",
+        "compute-optimizer",
+        # FEAT-077, TASK-P11-003. Applications live in each member account.
+        "servicecatalog-appregistry",
+    }
 )
 
 

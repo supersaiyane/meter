@@ -5,7 +5,7 @@
 | Sub project | P11 |
 | Status | In build |
 | Specification | [P11 spec](../specs/2026-10-08-p11-owners-and-savings-ledger-design.md), sections 5.1 to 5.4 |
-| Tasks | TASK-P11-001 to TASK-P11-005; TASK-P11-001 and TASK-P11-002 done 2026-10-08 |
+| Tasks | TASK-P11-001 to TASK-P11-005; TASK-P11-001 to TASK-P11-003 done 2026-10-08 |
 
 ## What it does
 
@@ -35,8 +35,10 @@ OPEN-26, were answered as recommended on 2026-10-08.
 Three sources, read by the `ownership` collector into `resource_owner`, one row per resource per
 source, each with its detail and two timestamps, P11 spec sections 5.1 to 5.4:
 
-- **The catalogue**, AWS AppRegistry: each application's associated resources, and the owner its
-  attribute group names under `catalogue_owner_key`. Strongest.
+- **The catalogue**, AWS AppRegistry: each application, the owner its attribute group names under
+  `catalogue_owner_key`, and the tags that mark its resources, `awsApplication` and the stack tag
+  CloudFormation adds, since AppRegistry associates stacks and a tag rather than resources; a
+  node carrying one is the application's. An owner with an `@` is a person. Strongest.
 - **The tags**, under `owner_tag_keys` in `Settings`, `team` unless set: the first key a resource
   carries with a value names its team. Read from the inventory, with no AWS call.
 - **The creator**, CloudTrail's event history by resource name: a person, or a pipeline's role named
@@ -48,7 +50,9 @@ TASK-P11-001 built the owner types and their rules in `finops_core/domain/owners
 which plant every case in `fake-product-b`, the account with no team tags. TASK-P11-002 built
 `resource_owner`, migration 0041 with the same rules as constraints, the `owner_tag_keys` setting,
 and the daily `ownership` collector, which writes TAG rows from the inventory's nodes and removes
-those it no longer finds; the demo's nodes now carry the estate's own tags.
+those it no longer finds; the demo's nodes now carry the estate's own tags. TASK-P11-003 built the
+AppRegistry adapter, `finops_providers/aws/appregistry.py`, its network path and permissions, and
+the collector's catalogue pass, which keeps an account's rows when its catalogue is refused.
 
 ## Failure behaviour
 

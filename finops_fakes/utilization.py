@@ -47,7 +47,7 @@ from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.metrics import MetricPoint
 from finops_core.domain.resource import ResourceRef
 from finops_core.errors import AccessDenied, NotOptedIn
-from finops_fakes import containers, cur, fixtures
+from finops_fakes import containers, cur, fixtures, ownership
 from finops_fakes import estate_shape as shape
 from finops_fakes.containers import SeriesPoint
 
@@ -684,6 +684,8 @@ SPECS: tuple[Spec, ...] = (
         mem=("steady", 45, 20),
         disk=("fill", 0.07, 0.08),
         planted="DEV_BOX_IDLE_AT_NIGHT",
+        # TASK-P11-003. The `sandbox` application, which names no owner.
+        extra_tags={ownership.APPLICATION_TAG: ownership.SANDBOX},
     ),
     Spec(
         "amazonebs/fake-product-b/0001",
@@ -771,6 +773,8 @@ SPECS: tuple[Spec, ...] = (
         mem=None,
         disk=None,
         planted="OVERSIZED_MEMORY_UNOBSERVED",
+        # TASK-P11-003. AppRegistry's application `checkout`, by its awsApplication tag.
+        extra_tags={ownership.APPLICATION_TAG: ownership.CHECKOUT},
     ),
     Spec(
         "amazonrds/fake-product-b/0001",
@@ -795,6 +799,8 @@ SPECS: tuple[Spec, ...] = (
         disk=("fill", 0.20, 0.21),
         idle_since_days=47,
         planted="RDS_IDLE",
+        # TASK-P11-003. The `reporting` application's, by the stack that made it.
+        extra_tags={ownership.STACK_TAG: ownership.REPORTING_STACK},
     ),
     Spec(
         "amazonvpc/fake-product-b/nat-0001",

@@ -24,7 +24,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 78 total, 11 specified, 14 in build, 49 delivered |
 | Decisions | 35 architecture decision records |
-| Changes | 149 recorded |
+| Changes | 150 recorded |
 | Issues | 157 fixed, 106 open, 0 parked |
 | Open questions | 27 awaiting a decision |
 
@@ -76,7 +76,8 @@ answers wait on ISS-002. next-build was merged into main locally on 2026-10-08, 
 then chose proposal 3, owners and a savings ledger, as the next priority, OPEN-20: it is specified and
 planned as P11, nine tasks, approved the same day with OPEN-25 to OPEN-27 as recommended. TASK-P11-001
 built the owner types, the two ownership ports and the fakes that plant each case; TASK-P11-002 the
-`resource_owner` table and the daily `ownership` collector, owners from tags under configurable keys. The repository has no git remote, so nothing has been pushed.
+`resource_owner` table and the daily `ownership` collector, owners from tags under configurable keys;
+TASK-P11-003 owners from AWS AppRegistry, matched by the tags its applications mark resources with. The repository has no git remote, so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -251,7 +252,7 @@ ISS-003.
 | P8 | 18 | 0 | 0 | 0 | 0 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
-| P11 | 2 | 0 | 0 | 0 | 7 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
+| P11 | 3 | 0 | 0 | 0 | 6 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -505,6 +506,7 @@ ISS-003.
 | --- | --- | --- |
 | `TASK-P11-001` | Done 2026-10-08 | owner sources as ports, and the fake estate's owners |
 | `TASK-P11-002` | Done 2026-10-08 | owners from tags, and the `ownership` collector |
+| `TASK-P11-003` | Done 2026-10-08 | owners from AWS AppRegistry |
 
 <!-- generated:task-status end -->
 

@@ -89,6 +89,17 @@ with `GetAttributeGroup` for its attributes, whose JSON holds the owner under th
 alternative, a Backstage catalogue, waits on OPEN-13; a list kept inside Meter is a second
 source of truth.
 
+**Amended 2026-10-08 by TASK-P11-003.** AppRegistry does not list an application's resources one
+by one: the botocore model's associated resource is a `CFN_STACK` or a `RESOURCE_TAG_VALUE`
+(measured), and AppRegistry marks the application's own resources with the tag `awsApplication`,
+whose value is the application's ARN, read from `GetApplication`'s `applicationTag`, as AWS
+documents it (The awsApplication tag, the AppRegistry guide). So the adapter returns each
+application with the tags that mark its resources, `awsApplication` and the
+`aws:cloudformation:stack-id` CloudFormation puts on a stack's resources, and the collector
+matches the inventory's nodes by the tags they carry. The hub reaches AppRegistry through the
+`servicecatalog-appregistry` interface endpoint in every collection Region, which AWS lists among
+its PrivateLink services, and the member role gains its five `servicecatalog:` reads.
+
 ### 5.4 Creators from CloudTrail's event history, OPEN-26
 
 `LookupEvents` by `ResourceName`, which the botocore model offers as a lookup key (measured),

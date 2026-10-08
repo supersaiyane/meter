@@ -18,7 +18,7 @@ Query findings have their own owner, from Grafana folders and last editors,
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
@@ -91,23 +91,36 @@ def strongest_first(suggestions: Iterable[OwnerSuggestion]) -> tuple[OwnerSugges
 
 
 @dataclass(frozen=True, kw_only=True)
-class CatalogueEntry(Fact):
-    """A resource an application is associated with, and the owner the application names."""
+class CatalogueApplication(Fact):
+    """An application the catalogue declares, the owner it names, and how its resources are known.
+
+    A catalogue does not list an application's resources one by one: AWS AppRegistry associates
+    stacks and a tag value with an application, TASK-P11-003. So an application carries the tags
+    that mark a resource as its own, and a resource is matched by the tags the inventory already
+    holds. The tag keys are the provider's, supplied by its adapter, which keeps this provider
+    neutral, constraint 1.
+    """
 
     account_key: AccountKey
     region_id: str
-    resource_id: str
-    application: str
-    #: None where the application names nobody, which is a fact about the catalogue and not a
-    #: reason to leave the resource out: it says the application was looked at.
+    name: str
+    application_id: str
+    #: None where the application names nobody, which is a fact about the catalogue: it was read,
+    #: and it says nobody.
     owner: str | None
+    #: The tag key and value pairs that mark a resource as this application's.
+    marks: frozenset[tuple[str, str]]
 
     def __post_init__(self) -> None:
-        _named(self.resource_id, "resource_id")
-        _named(self.application, "application")
+        _named(self.name, "name")
+        _named(self.application_id, "application_id")
         if self.owner is not None:
             _named(self.owner, "owner")
         _in_order(self.as_of, self.collected_at)
+
+    def holds(self, tags: Mapping[str, str]) -> bool:
+        """Whether a resource with these tags is this application's."""
+        return any(tags.get(key) == value for key, value in self.marks)
 
 
 @dataclass(frozen=True, kw_only=True)
