@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 28 of 30 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 53 in 19 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 31 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 40 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 218 | test_*.py under tests/ |
-| Test functions | 2829 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 32 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 41 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 220 | test_*.py under tests/ |
+| Test functions | 2841 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1170,6 +1170,8 @@ meter/
 │       ├── topology.py        the edges between them, four APIs. ISS-202, same footing
 │       ├── waste_compute.py   the bespoke candidates, which are the ones carrying an
 │       │                      ARN and therefore the ones that join to a node
+│       ├── ownership.py       FEAT-077, TASK-P11-002. Daily; each resource's suggested
+│       │                      owners into resource_owner, tags from the inventory first
 │       ├── waste_volumes.py   FEAT-074, TASK-P9-009. waste_compute's gp2 volume pass:
 │       │                      EBS operations and bytes in the same batch, priced as gp3
 │       ├── waste_cloudwatch.py  log retention and alarms that have never fired
@@ -1492,6 +1494,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0041_resource_owner.py  TASK-P11-002. Each resource's suggested owners,
+│       │                      one row per source, and the ownership schedule row
 │       ├── 0040_option_risk_optional.py  TASK-P9-010. An option's performance risk may
 │       │                      be null, for Meter's own alternatives, OPEN-24
 │       ├── 0039_upsize_added_cost.py  TASK-P9-008. An Upsize's added monthly cost,

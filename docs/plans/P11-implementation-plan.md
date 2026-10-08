@@ -64,7 +64,7 @@ days.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | Spec sections 5.2, 6 and 7 |
 | Delivers | FEAT-077 |
 | Depends on | TASK-P11-001 |
@@ -72,9 +72,9 @@ days.
 
 **Acceptance criteria.**
 
-- [ ] `owner_tag_keys` in `Settings`, defaulting to `team`, the first key carried naming the team
-- [ ] `resource_owner`, its migration, constraints and `ByAccount` guard entry
-- [ ] The `ownership` collector, daily, its schedule row and reason, writing TAG rows from the
+- [x] `owner_tag_keys` in `Settings`, defaulting to `team`, the first key carried naming the team
+- [x] `resource_owner`, its migration, constraints and `ByAccount` guard entry
+- [x] The `ownership` collector, daily, its schedule row and reason, writing TAG rows from the
       inventory's nodes with no AWS call, and replacing the last run's
 
 ---

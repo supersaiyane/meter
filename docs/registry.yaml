@@ -101,7 +101,7 @@ subprojects:
 - id: P11
   name: Owners and a savings ledger
   status: Approved by the owner on 2026-10-08 with OPEN-25 to OPEN-27 as recommended, in build, TASK-P11-001
-    done. Chosen as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
+    and TASK-P11-002 done. Chosen as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
     AppRegistry and CloudTrail as suggestions beside the assigned owner, and a ledger crediting each
     verified saving to its owner and team for every month the bill shows it held
   spec: specs/2026-10-08-p11-owners-and-savings-ledger-design.md
@@ -2178,6 +2178,17 @@ changes:
     group; the fakes plant an application owner, an application naming nobody, a person and a pipeline as
     creators and resources older than the 90 day record in fake-product-b, and the estate carries an owner
     under a second tag key. A contract test holds every implementation to them'
+- id: CHG-0149
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P11-002, owners from tags and the ownership collector
+  commit: pending
+  detail: 'resource_owner, migration 0041, one row per resource per source with the domain''s rules as
+    constraints and scoped by account, and the ownership collector''s daily schedule row. The
+    owner_tag_keys setting, team by default, names the keys tried in order; the collector writes TAG rows
+    from the inventory''s nodes with no AWS call and removes those it no longer finds, and refuses to run
+    without settings rather than guess the keys. The fake inventory''s estate nodes now carry their own
+    tags, and the demo names owner as a second key so the planted volume shows'
 issues:
 - id: ISS-189
   severity: LOW
