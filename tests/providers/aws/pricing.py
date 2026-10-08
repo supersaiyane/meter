@@ -51,8 +51,12 @@ def price_list(service: str, version: str, region: str) -> dict[str, Any]:
     }
 
 
-def document(prices: Iterable[Price], family: str = "Compute Instance") -> str:
-    """One GetProducts item for one product, from the prices of its terms."""
+def document(prices: Iterable[Price], family: str | None = None) -> str:
+    """One GetProducts item for one product, from the prices of its terms.
+
+    The product family is the one named, else the one the price's details carry, as an EBS price
+    does, else an instance's.
+    """
     terms: dict[str, dict[str, Any]] = {"OnDemand": {}, "Reserved": {}}
     first: Price | None = None
     for price in prices:
@@ -86,11 +90,13 @@ def document(prices: Iterable[Price], family: str = "Compute Instance") -> str:
             "termAttributes": attributes,
         }
     assert first is not None, "a product is written from at least one price"
+    details = dict(first.details)
+    named = details.pop("productFamily", None)
     product = {
-        "productFamily": family,
+        "productFamily": family or named or "Compute Instance",
         "sku": first.sku,
         "attributes": {
-            **first.details,
+            **details,
             "usagetype": first.sku_meter,
             "regionCode": first.region,
             "servicecode": first.service_code,
@@ -142,17 +148,14 @@ def volume(region: str) -> str:
 
 
 def fake_documents() -> dict[str, list[str]]:
-    """The fake catalog's EC2 prices as GetProducts items, by Region, with one volume each."""
+    """The fake catalog's EC2 prices as GetProducts items, by Region, its EBS prices among them."""
     catalog = FakePriceCatalog()
     by_region: dict[str, list[str]] = {}
     for version in catalog.versions(EC2):
         by_sku: dict[str, list[Price]] = defaultdict(list)
         for price in catalog.prices(version):
             by_sku[price.sku].append(price)
-        by_region[version.region] = [
-            *(document(terms) for _, terms in sorted(by_sku.items())),
-            volume(version.region),
-        ]
+        by_region[version.region] = [document(terms) for _, terms in sorted(by_sku.items())]
     return by_region
 
 

@@ -30,7 +30,8 @@ is a surcharge on a type rather than its price, so it is kept and named, `extend
 that is not ISO 4217, or a term with more than one recurring price is SchemaDrift. That fails one
 service in one Region, and the collector keeps the version it already holds. Each query that finds
 no product is NoData, so an EC2 instance filter that matched nothing fails the Region rather than
-storing its volumes alone.
+storing its volumes alone; the two that price gp3's IOPS and throughput are the exception, because
+a Region without them loses only the gp2 to gp3 comparison, which then says why, TASK-P9-009.
 """
 
 from __future__ import annotations
@@ -85,12 +86,22 @@ EXTENDED_SUPPORT: Final = "ExtendedSupport"
 UPFRONT_UNIT: Final = "Quantity"
 TERM_KINDS: Final = {"OnDemand": PricingCategory.STANDARD, "Reserved": PricingCategory.COMMITTED}
 
-#: What is asked of GetProducts beyond the Region, per service: one query per tuple. EC2 asks
-#: twice, for instances at the comparable price and for EBS storage. Any other service is read
-#: whole for its Region.
+#: The EBS product families a volume is priced from: its storage, then gp3's IOPS and throughput
+#: above what its storage includes, TASK-P9-009.
+STORAGE: Final = "Storage"
+VOLUME_FAMILIES: Final = (STORAGE, "System Operation", "Provisioned Throughput")
+#: What is asked of GetProducts beyond the Region, per service: one query per tuple. EC2 asks for
+#: instances at the comparable price and for each EBS family. Any other service is read whole for
+#: its Region.
 QUERIES: Final[Mapping[str, tuple[tuple[tuple[str, str], ...], ...]]] = {
-    "AmazonEC2": (tuple(COMPARABLE.items()), (("productFamily", "Storage"),)),
+    "AmazonEC2": (
+        tuple(COMPARABLE.items()),
+        *((("productFamily", family),) for family in VOLUME_FAMILIES),
+    ),
 }
+#: Queries a Region may answer with nothing: without them only the gp2 to gp3 comparison is lost,
+#: and it says so, where an instance price missing would lose every rightsizing in the Region.
+OPTIONAL: Final = frozenset((("productFamily", family),) for family in VOLUME_FAMILIES[1:])
 _WHOLE_REGION: Final[tuple[tuple[tuple[str, str], ...], ...]] = ((),)
 
 
@@ -156,7 +167,7 @@ class AwsPriceCatalog:
                         yield from _Product(document, version, at, scope).prices()
                 # Each query, not the Region: an EC2 filter that matched no instance would
                 # otherwise store the Region's volumes and quietly no instance at all.
-                if products == 0:
+                if products == 0 and query not in OPTIONAL:
                     asked = ", ".join(f"{field} {value}" for field, value in query)
                     raise NoData(
                         scope_key=scope,
@@ -239,9 +250,12 @@ class _Product:
         return found
 
     def _compared(self) -> bool:
-        """An instance or an EBS volume, at the comparable price."""
-        kept = bool(self._attributes.get("instanceType")) or (
-            self._product.get("productFamily") == "Storage"
+        """An instance or an EBS volume's storage, IOPS or throughput, at the comparable price."""
+        family = self._product.get("productFamily")
+        kept = (
+            bool(self._attributes.get("instanceType"))
+            or family == STORAGE
+            or (family in VOLUME_FAMILIES and bool(self._attributes.get("volumeApiName")))
         )
         return kept and all(
             self._attributes.get(name, wanted) == wanted for name, wanted in COMPARABLE.items()
@@ -250,6 +264,8 @@ class _Product:
     def _details(self, meter: str) -> dict[str, str]:
         attributes = self._attributes
         details = {name: str(attributes[name]) for name in DETAILS if attributes.get(name)}
+        if self._product.get("productFamily") in VOLUME_FAMILIES:
+            details["productFamily"] = str(self._product["productFamily"])
         if EXTENDED_SUPPORT in meter:
             details["extendedSupport"] = str(self._attributes.get("year_number") or meter)
         return details

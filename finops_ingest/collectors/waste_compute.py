@@ -40,6 +40,11 @@ baseline, the rule names the cheapest larger type that fits, and the recommendat
 total of savings falls because of it. Its severity is read from that added cost, the
 money at stake. Without a type or a catalog, or with no larger type that fits, the
 refusal says the instance is under pressure and why nothing could be named.
+
+**A gp2 volume is priced as gp3**, TASK-P9-009, spec section 5.8. Where the caller names the
+estate's volumes, the attached gp2 ones join the same batch with their EBS operations and bytes,
+and `waste_volumes` prices each as the gp3 that matches it, a recommendation with the working in
+its rationale or a refusal with the reason. A volume publishing neither is unobserved.
 """
 
 from __future__ import annotations
@@ -58,7 +63,9 @@ from finops_core.domain.metrics import MetricPoint
 from finops_core.domain.observation import MINIMUM_HISTORY
 from finops_core.domain.waste import Source, WasteClass, confidence_of
 from finops_core.ports.metrics import MetricRequest
+from finops_ingest.collectors import waste_volumes
 from finops_ingest.collectors.catalog_reads import LINUX, latest_version, offers
+from finops_ingest.collectors.waste_volumes import VolumeCandidate
 from finops_ingest.registry import CollectorContext, CollectorOutcome
 from finops_query.severity import severity_for, thresholds_from
 from finops_query.targets import (
@@ -196,6 +203,7 @@ class WasteComputeCollector:
         metrics: Any,
         candidates: Callable[[CollectorContext], Sequence[Candidate]],
         clock: Clock = _system_clock,
+        volumes: Callable[[CollectorContext], Sequence[VolumeCandidate]] | None = None,
     ) -> None:
         self._metrics = metrics
         # Passed in rather than discovered here, because which resources exist is
@@ -203,6 +211,9 @@ class WasteComputeCollector:
         # will supply a real one.
         self._candidates = candidates
         self._clock = clock
+        # The estate's volumes, for the gp2 to gp3 pass. None where the caller has no
+        # inventory of them, and then the pass is not run rather than run on nothing.
+        self._volumes = volumes
 
     def __call__(self, context: CollectorContext) -> CollectorOutcome:
         if context.settings is None:
@@ -217,9 +228,13 @@ class WasteComputeCollector:
         now = self._clock()
         thresholds = thresholds_from(context.settings)
         candidates = self._candidates(context)
+        volumes = waste_volumes.gp2_only(self._volumes(context)) if self._volumes else []
         window_end = now
         window_start = now - timedelta(
-            days=max((c.observation_days for c in candidates), default=0)
+            days=max(
+                [c.observation_days for c in candidates] + [v.observation_days for v in volumes],
+                default=0,
+            )
         )
 
         # Two series per instance in one batch. Memory is asked for because a CPU
@@ -266,7 +281,8 @@ class WasteComputeCollector:
                 for candidate in candidates
                 for prefix, metrics in ((NETWORK_KEY, NETWORK), (EBS_KEY, EBS))
                 for metric in metrics
-            ],
+            ]
+            + waste_volumes.requests(volumes),
             window_start,
             window_end,
         )
@@ -329,6 +345,12 @@ class WasteComputeCollector:
                 continue
             self._write(context, candidate, estimate, thresholds, now, prices)
             written += 1
+
+        volumes_written, volumes_unobserved = self._volume_pass(
+            context, volumes, series, thresholds, now
+        )
+        written += volumes_written
+        unobserved += volumes_unobserved
 
         if unobserved:
             # Recorded rather than silent. An estate where half the instances
@@ -525,6 +547,40 @@ class WasteComputeCollector:
             "target": target.sku_price_id,
             "version": version,
         }
+
+    def _volume_pass(
+        self,
+        context: CollectorContext,
+        volumes: Sequence[VolumeCandidate],
+        series: Mapping[str, Sequence[MetricPoint]],
+        thresholds: Any,
+        now: datetime,
+    ) -> tuple[int, int]:
+        """Each gp2 volume priced as gp3, written or refused. Returns written and unobserved."""
+        written = unobserved = 0
+        for volume in volumes:
+            measured = waste_volumes.demand(series, volume)
+            if measured.iops_p99 is None and measured.mibps_p99 is None:
+                unobserved += 1
+                continue
+            estimate = waste_volumes.judged(
+                context.connection, context.unit.tenant_id, volume, measured
+            )
+            # The writes read only what any judged resource has, so a volume goes through them as
+            # a candidate with no type.
+            judged_as = Candidate(
+                resource_id=volume.resource_id,
+                account_id=volume.account_id,
+                region_id=volume.region_id,
+                observation_days=volume.observation_days,
+                monthly_cost=volume.monthly_cost,
+            )
+            if not estimate.is_worth_acting_on:
+                self._write_refusal(context, judged_as, estimate, now)
+                continue
+            self._write(context, judged_as, estimate, thresholds, now)
+            written += 1
+        return written, unobserved
 
     def _write_refusal(
         self,

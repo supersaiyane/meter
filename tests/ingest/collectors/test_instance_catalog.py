@@ -23,10 +23,13 @@ from finops_ingest.collectors.instance_catalog import InstanceCatalogCollector
 from finops_ingest.collectors.price_catalog import PriceCatalogCollector
 from finops_ingest.dispatcher import WorkUnit
 from finops_ingest.registry import CollectorContext, CollectorOutcome
+from finops_query.volumes import READ_AT, SOURCE, VOLUME_TYPES
 
 AT = datetime(2026, 10, 8, 6, 0, tzinfo=UTC)
 HUB, OTHER = REGIONS[0], REGIONS[1]
 TYPES = len(SPECS)
+#: gp2 and gp3, stored by every run from the EBS guide, TASK-P9-009.
+VOLUMES = len(VOLUME_TYPES)
 RDS = "AmazonRDS"
 
 pytestmark = pytest.mark.integration
@@ -163,7 +166,7 @@ def test_before_any_prices_the_types_are_stored_in_the_hubs_region(
     engine: Engine, tenant_id: UUID
 ) -> None:
     outcome = run(engine, tenant_id, FakeInstanceCatalog())
-    assert outcome.items_written == TYPES
+    assert outcome.items_written == TYPES + VOLUMES
     assert {region for region, _ in stored(engine, tenant_id)} == {HUB}
 
 
@@ -172,7 +175,7 @@ def test_each_type_is_stored_in_every_region_the_price_list_sells_it(
 ) -> None:
     priced(engine, tenant_id)
     outcome = run(engine, tenant_id, FakeInstanceCatalog())
-    assert outcome.items_written == TYPES * len(REGIONS)
+    assert outcome.items_written == TYPES * len(REGIONS) + VOLUMES
     rows = stored(engine, tenant_id)
     assert {region for region, _ in rows} == set(REGIONS)
     assert all(row["offered"] for row in rows.values())
@@ -201,7 +204,7 @@ def test_a_burstable_type_the_table_lacks_is_named_and_not_stored(
         baseline_source=None,
     )
     outcome = run(engine, tenant_id, Adding(new))
-    assert outcome.items_written == TYPES
+    assert outcome.items_written == TYPES + VOLUMES
     assert (HUB, "t9.micro") not in stored(engine, tenant_id)
     assert "t9.micro" in errors(engine, tenant_id)[f"{EC2}:{HUB}:burstable"]
 
@@ -239,7 +242,7 @@ def test_a_second_region_that_cannot_be_read_is_noted_and_the_rest_stored(
             return super().instance_types(region)
 
     outcome = run(engine, tenant_id, Refusing(), compare_region=OTHER)
-    assert outcome.items_written == TYPES
+    assert outcome.items_written == TYPES + VOLUMES
     assert errors(engine, tenant_id)[f"{EC2}:{OTHER}"].startswith("NotOptedIn")
 
 
@@ -294,7 +297,7 @@ def test_a_managed_region_that_fails_is_recorded_and_the_run_stands(
     listed(engine, tenant_id, OTHER, AT - timedelta(days=1))
     managed = {RDS: Managed(failing=OTHER)}
     outcome = run(engine, tenant_id, FakeInstanceCatalog(), managed=managed)
-    assert outcome.items_written == TYPES + 1
+    assert outcome.items_written == TYPES + 1 + VOLUMES
     assert errors(engine, tenant_id)[f"{RDS}:{OTHER}"].startswith("AccessDenied")
 
 
@@ -304,6 +307,29 @@ def test_managed_services_alone_keep_a_run_whose_ec2_failed(
     listed(engine, tenant_id, HUB, AT - timedelta(days=1))
     failing = FakeInstanceCatalog(failure=AccessDenied)
     outcome = run(engine, tenant_id, failing, managed={RDS: Managed()})
-    assert outcome.items_written == 1
+    assert outcome.items_written == 1 + VOLUMES
     # The fake names the Region alone as its scope.
     assert errors(engine, tenant_id)[HUB].startswith("AccessDenied")
+
+
+def test_every_run_stores_gp2_and_gp3_as_the_guide_gives_them(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    for _ in range(2):
+        run(engine, tenant_id, FakeInstanceCatalog())
+    with engine.connect() as connection:
+        found = {
+            row.volume_type: row
+            for row in connection.execute(
+                text("SELECT * FROM volume_type_spec WHERE tenant_id = :t"), {"t": tenant_id}
+            )
+        }
+    # Rewritten in place: two rows after two runs.
+    assert set(found) == {"gp2", "gp3"}
+    gp2, gp3 = found["gp2"], found["gp3"]
+    assert (gp2.baseline_iops, gp2.maximum_iops, gp2.maximum_throughput_mibps) == (None, 16000, 250)
+    assert gp2.iops_per_gib == 3
+    assert (gp3.baseline_iops, gp3.baseline_throughput_mibps) == (3000, 125)
+    assert (gp3.maximum_iops, gp3.maximum_throughput_mibps, gp3.iops_per_gib) == (80000, 2000, 500)
+    assert {row.source for row in found.values()} == {SOURCE}
+    assert all(row.as_of == READ_AT and row.collected_at >= READ_AT for row in found.values())

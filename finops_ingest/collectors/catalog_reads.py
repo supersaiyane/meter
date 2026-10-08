@@ -15,6 +15,7 @@ from typing import Any, Final
 from sqlalchemy import text
 
 from finops_query.targets import TypeOffer
+from finops_query.volumes import VolumePrices
 
 EC2: Final = "AmazonEC2"
 #: The operating system a price is quoted for when the source names none.
@@ -59,6 +60,27 @@ OFFERS = text(
 )
 
 
+#: gp2's and gp3's EBS prices in one version, TASK-P9-009.
+VOLUME_PRICES = text(
+    "SELECT p.sku_price_details ->> 'volumeApiName' AS volume, p.pricing_unit, "
+    "p.recurring_unit_price FROM price p WHERE p.tenant_id = :t AND p.service_code = :s "
+    "AND p.region = :r AND p.version = :v AND p.pricing_category = 'Standard' "
+    "AND p.sku_price_details ->> 'volumeApiName' IN ('gp2', 'gp3') ORDER BY p.sku_price_id"
+)
+#: Which term of a volume a price is, by the unit it is sold in. A throughput price is read as per
+#: MiB/s whichever unit labels it and is never divided by 1,024: dividing a price that was per MiB/s
+#: all along would make gp3 look 1,024 times cheaper than it is, where not dividing one that was per
+#: GiB/s can only understate a saving. ISS-265.
+_TERMS: Final = {
+    "gb-mo": "storage",
+    "iops-mo": "iops",
+    "mibps-mo": "throughput",
+    "gibps-mo": "throughput",
+}
+#: In the order `VolumePrices` takes them.
+_WANTED: Final = (("gp2", "storage"), ("gp3", "storage"), ("gp3", "iops"), ("gp3", "throughput"))
+
+
 def latest_version(connection: Any, tenant: object, region: str) -> str | None:
     found = connection.execute(LATEST_VERSION, {"t": tenant, "s": EC2, "r": region}).scalar()
     return None if found is None else str(found)
@@ -85,6 +107,20 @@ def price_of(
         },
     ).first()
     return None if row is None else (str(row[0]), Decimal(row[1]))
+
+
+def volume_prices(connection: Any, tenant: object, region: str, version: str) -> VolumePrices | str:
+    """The four prices gp2 to gp3 is worked out from, or which of them the catalog lacks."""
+    found: dict[tuple[str, str], Decimal] = {}
+    rows = connection.execute(VOLUME_PRICES, {"t": tenant, "s": EC2, "r": region, "v": version})
+    for row in rows:
+        term = _TERMS.get(str(row.pricing_unit).lower())
+        if term is not None:
+            found.setdefault((row.volume, term), Decimal(row.recurring_unit_price))
+    missing = [f"{volume} {term}" for volume, term in _WANTED if (volume, term) not in found]
+    if missing:
+        return f"the catalog holds no {', '.join(missing)} price in version {version}"
+    return VolumePrices(*(found[wanted] for wanted in _WANTED))
 
 
 def offers(
