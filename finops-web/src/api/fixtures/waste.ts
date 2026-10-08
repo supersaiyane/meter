@@ -46,6 +46,8 @@ export function recommendationsFixture(): ApiEnvelope<ApiRecommendations> {
           lifecycle: 'OPEN',
           owner: null,
           suggested_owner: 'platform',
+          owner_suggestions: [],
+          created_before: null,
           ticket_reference: null,
           rationale:
             'p99 CPU of 11.4 percent against 4 vCPU over 15 days, so 1 vCPU with the ' +
@@ -70,7 +72,27 @@ export function recommendationsFixture(): ApiEnvelope<ApiRecommendations> {
           observation_days: 45,
           lifecycle: 'ACCEPTED',
           owner: 'platform@example.local',
-          suggested_owner: null,
+          suggested_owner: 'payments',
+          // TASK-P11-005. Listed under the owner a person assigned, strongest first.
+          owner_suggestions: [
+            {
+              owner: 'payments',
+              kind: 'TEAM',
+              source: 'CATALOGUE',
+              detail: 'checkout',
+              as_of: '2026-08-24T06:00:00Z',
+              collected_at: '2026-08-24T06:05:00Z',
+            },
+            {
+              owner: 'deploy-pipeline',
+              kind: 'AUTOMATION',
+              source: 'CREATOR',
+              detail: 'evt-0001',
+              as_of: '2026-07-25T06:00:00Z',
+              collected_at: '2026-08-24T06:05:00Z',
+            },
+          ],
+          created_before: null,
           ticket_reference: 'FAKE-1042',
           rationale:
             'm5.xlarge on x86 with no architecture specific workload detected over 45 days. ' +
@@ -97,6 +119,8 @@ export function recommendationsFixture(): ApiEnvelope<ApiRecommendations> {
           lifecycle: 'DONE',
           owner: 'storage@example.local',
           suggested_owner: null,
+          owner_suggestions: [],
+          created_before: null,
           ticket_reference: 'FAKE-1019',
           rationale:
             '800 GiB gp3 volume attached to nothing for 92 days. The saving is the whole cost',
@@ -125,6 +149,9 @@ export function recommendationsFixture(): ApiEnvelope<ApiRecommendations> {
           lifecycle: 'OPEN',
           owner: null,
           suggested_owner: null,
+          owner_suggestions: [],
+          // Asked of CloudTrail and older than its history: said, not guessed.
+          created_before: '2026-05-26T06:05:00Z',
           ticket_reference: null,
           rationale:
             'In the insufficient data state since 2026-01-26, 243 days, so it has never evaluated. ' +

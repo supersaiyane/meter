@@ -51,6 +51,12 @@ While nobody owns a recommendation, it suggests whom to ask: the `team` tag, `TE
 the inventory node naming its resource in the same account, read within the reader's scope
 and never stored. The waste screen says it beside nobody yet. Accepting still needs a person
 to name the owner, because a tag only says whom to ask. ISS-021's first slice, 2026-10-07.
+Since TASK-P11-005, 2026-10-08, every recommendation also lists FEAT-077's suggestions under
+the owner cell, owned or not, strongest first: the catalogue's application owner, the owner
+tags, then whoever created the resource, each with where it came from. `suggested_owner` is
+the strongest team among them, failing which the node's tag as before, and a creator never is.
+A resource older than CloudTrail's history says it was created before the 90 days. No source
+writes the owner, held by `tests/contract/test_suggestions_never_owners.py`.
 
 ## Failure behaviour
 
@@ -75,7 +81,8 @@ account.
 
 `GET /waste/recommendations`, `GET /waste/recommendations/{id}`, and two `POST`
 transitions that carry no body: what to write is decided by the server from the row
-it already holds.
+it already holds. Each recommendation carries `owner_suggestions`, each with its owner,
+kind, source, detail, `as_of` and `collected_at`, and `created_before`, TASK-P11-005.
 
 ## Not doing
 

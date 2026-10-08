@@ -5,6 +5,7 @@ import { useRecommendations, useRefusals } from '../api/queries';
 import { DataTable } from '../components/DataTable';
 import { RankedBars, type RankedPoint } from '../components/RankedBars';
 import { Figure } from '../components/Figure';
+import { OwnerSuggestions } from '../components/OwnerSuggestions';
 import { SeverityBadge } from '../components/SeverityBadge';
 import { StateBoundary } from '../components/StateBoundary';
 import type { Column } from '../components/tableConfig';
@@ -210,23 +211,33 @@ export function WasteScreen() {
     {
       key: 'owner',
       header: 'Owner',
-      render: (row) =>
-        row.owner === null ? (
-          // Said, not left blank. An unowned finding is never fixed, and a blank
-          // cell is the least noticeable way to render the fact most likely to
-          // kill the work.
-          <span data-testid={`unowned-${row.recommendation_id}`}>
-            nobody yet
-            {/* Whom to ask, from the resource's own tag, never an owner: ISS-021. */}
-            {row.suggested_owner === null ? null : (
-              <span data-testid={`suggested-owner-${row.recommendation_id}`}>
-                ; its {ALLOCATION_TAG} tag says {row.suggested_owner}
-              </span>
-            )}
-          </span>
-        ) : (
-          row.owner
-        ),
+      render: (row) => (
+        <>
+          {row.owner === null ? (
+            // Said, not left blank. An unowned finding is never fixed, and a blank
+            // cell is the least noticeable way to render the fact most likely to
+            // kill the work.
+            <span data-testid={`unowned-${row.recommendation_id}`}>
+              nobody yet
+              {/* Whom to ask, from the resource's own tag, never an owner: ISS-021. Where
+                  the sources below name somebody, they say it with where it came from. */}
+              {row.suggested_owner === null || row.owner_suggestions.length > 0 ? null : (
+                <span data-testid={`suggested-owner-${row.recommendation_id}`}>
+                  ; its {ALLOCATION_TAG} tag says {row.suggested_owner}
+                </span>
+              )}
+            </span>
+          ) : (
+            row.owner
+          )}
+          {/* TASK-P11-005. Every source's suggestion, under the owner, owned or not. */}
+          <OwnerSuggestions
+            id={row.recommendation_id}
+            suggestions={row.owner_suggestions}
+            createdBefore={row.created_before}
+          />
+        </>
+      ),
     },
   ];
 

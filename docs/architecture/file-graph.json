@@ -80,6 +80,7 @@
     "finops-web/src/components/FreshnessIndicator.tsx",
     "finops-web/src/components/GraphCanvas.tsx",
     "finops-web/src/components/OrgTree.tsx",
+    "finops-web/src/components/OwnerSuggestions.tsx",
     "finops-web/src/components/PercentCell.tsx",
     "finops-web/src/components/RankedBars.tsx",
     "finops-web/src/components/SeverityBadge.tsx",
@@ -97,6 +98,7 @@
     "finops-web/src/components/__tests__/FixtureBand.test.tsx",
     "finops-web/src/components/__tests__/GraphCanvas.test.tsx",
     "finops-web/src/components/__tests__/OrgTree.test.tsx",
+    "finops-web/src/components/__tests__/OwnerSuggestions.test.tsx",
     "finops-web/src/components/__tests__/PercentCell.test.tsx",
     "finops-web/src/components/__tests__/RankedBars.test.tsx",
     "finops-web/src/components/__tests__/Sparkline.test.tsx",
@@ -683,6 +685,7 @@
     "tests/api/test_inventory_geography.py",
     "tests/api/test_inventory_routes.py",
     "tests/api/test_lifecycle.py",
+    "tests/api/test_owner_suggestions.py",
     "tests/api/test_query_routes.py",
     "tests/api/test_quota_routes.py",
     "tests/api/test_recommendation_alternatives.py",
@@ -717,6 +720,7 @@
     "tests/contract/test_ownership_contract.py",
     "tests/contract/test_partial_graph_consumers.py",
     "tests/contract/test_quota_source.py",
+    "tests/contract/test_suggestions_never_owners.py",
     "tests/contract/test_topology_source.py",
     "tests/core/__init__.py",
     "tests/core/test_budget.py",
@@ -1654,6 +1658,16 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/OwnerSuggestions.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/OwnerSuggestions.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/components/PercentCell.tsx",
       "t": "finops-web/src/components/provenance.ts",
       "k": "typescript"
@@ -1886,6 +1900,21 @@
     {
       "s": "finops-web/src/components/__tests__/OrgTree.test.tsx",
       "t": "finops-web/src/components/orgNodes.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/OwnerSuggestions.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/OwnerSuggestions.test.tsx",
+      "t": "finops-web/src/components/OwnerSuggestions.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/OwnerSuggestions.test.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
       "k": "typescript"
     },
     {
@@ -2285,6 +2314,11 @@
     },
     {
       "s": "finops-web/src/components/citations.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/displayNames.ts",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
     },
@@ -4786,6 +4820,11 @@
     {
       "s": "finops-web/src/screens/WasteScreen.tsx",
       "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/components/OwnerSuggestions.tsx",
       "k": "typescript"
     },
     {
@@ -7411,6 +7450,11 @@
     {
       "s": "finops_api/db/repositories/waste.py",
       "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/waste.py",
+      "t": "finops_core/domain/ownership.py",
       "k": "python"
     },
     {
@@ -11661,6 +11705,11 @@
     {
       "s": "tests/api/test_lifecycle.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_owner_suggestions.py",
+      "t": "finops_core/config.py",
       "k": "python"
     },
     {

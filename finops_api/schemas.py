@@ -337,6 +337,22 @@ class CostAnomaliesOut(BaseModel):
     days_needed: int
 
 
+class OwnerSuggestionOut(BaseModel):
+    """Whom one source says to ask about a resource. A suggestion, never an owner. FEAT-077."""
+
+    model_config = ConfigDict(frozen=True)
+
+    owner: str
+    #: TEAM, PERSON or AUTOMATION. A creator is never a team, and a pipeline is never a person.
+    kind: str
+    #: CATALOGUE, TAG or CREATOR, the order a recommendation lists them in.
+    source: str
+    #: What a reader checks it against: the application, the tag key, or the creating event.
+    detail: str
+    as_of: datetime
+    collected_at: datetime
+
+
 class RecommendationOut(BaseModel):
     """One thing worth changing.
 
@@ -361,10 +377,17 @@ class RecommendationOut(BaseModel):
     lifecycle: str
     #: Null is a reported condition, not a gap. An unowned finding is never fixed.
     owner: str | None
-    #: The resource's team tag, TEAM_TAG, from the inventory node naming it, ISS-021. A
-    #: suggestion of whom to ask, never stored and never an owner: null when no node in the
-    #: reader's access names the resource, or its tag is missing or empty.
+    #: The strongest team any source names, ISS-021: the catalogue's, then the owner tags', and
+    #: failing both the inventory node's TEAM_TAG, read as it was before TASK-P11-005. A
+    #: suggestion of whom to ask, never an owner: null when nothing in the reader's access names
+    #: a team. A creator is never a team, so it is never this.
     suggested_owner: str | None = None
+    #: TASK-P11-005. Every source's suggestion, strongest first: the catalogue, the tags, the
+    #: creator. Whom to ask, never an owner, ISS-021; empty where no source names anybody.
+    owner_suggestions: list[OwnerSuggestionOut] = Field(default_factory=list)
+    #: Where CloudTrail's event history began when it was asked who created the resource and
+    #: found it older: created before CloudTrail's 90 days. Null when not asked, or found.
+    created_before: datetime | None = None
     ticket_reference: str | None
     #: The working, so a reader can disagree with the verdict.
     rationale: str

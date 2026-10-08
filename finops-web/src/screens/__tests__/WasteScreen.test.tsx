@@ -205,3 +205,30 @@ describe('WasteScreen, one finding from the FinOps Score', () => {
     ).toHaveAttribute('href', '/optimize');
   });
 });
+
+describe('owner suggestions, TASK-P11-005', () => {
+  it('lists every source under the owner a person assigned, strongest first', async () => {
+    renderWaste();
+    const listed = await screen.findByTestId(
+      'owner-suggestions-3a4b5c6d-7e8f-4a0b-9c1d-2e3f4a5b6c7d',
+    );
+    expect(
+      within(listed)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent),
+    ).toEqual([
+      "payments, the catalogue's checkout application",
+      'deploy-pipeline, the pipeline that created it',
+    ]);
+  });
+
+  it('says an unowned resource older than the history was created before it', async () => {
+    renderWaste();
+    expect(
+      await screen.findByTestId('created-before-7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c0d'),
+    ).toHaveTextContent("created before CloudTrail's 90 days, which begin 2026-05-26");
+    expect(
+      screen.getByTestId('unowned-7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c0d'),
+    ).toHaveTextContent('nobody yet');
+  });
+});
