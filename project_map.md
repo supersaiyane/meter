@@ -29,13 +29,13 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 27 of 29 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 49 in 18 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Screens built | 28 of 30 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 53 in 19 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 24 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 29 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 179 | test_*.py under tests/ |
-| Test functions | 2426 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 31 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 40 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 216 | test_*.py under tests/ |
+| Test functions | 2813 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -315,7 +315,10 @@ meter/
 │   │                          gate, base image resolver. check_image_arch.py
 │   │                          reads every compiled file in an exported image and
 │   │                          fails on one built for another machine, which the
-│   │                          label alone cannot see, ISS-254. check_env_keys names the
+│   │                          label alone cannot see, ISS-254. check_docs_only.py
+│   │                          lets make verify-docs gate a change to documents
+│   │                          alone, and refuses it by name for any other file,
+│   │                          from git, links aside, CHG-0123. check_env_keys names the
 │   │                          settings .env.example has gained that a local .env
 │   │                          never did, before make up starts anything: it is
 │   │                          copied once and never again, so eleven accumulated
@@ -360,7 +363,8 @@ meter/
 │   │                          clears it by its fixed tenant.
 │   │                          export_fake_estate.py writes the estate to CSV,
 │   │                          which is build output and is never committed
-│   └── deploy/                migration task runner
+│   └── deploy/                migration task runner, and build_relay.py, which zips
+│                              finops_relay the same way every time, ADR-0035
 │
 ├── tests/                     the suite. Its size is in the counted table above, as test
 │                              files and test functions; the pytest total is what `make
@@ -407,7 +411,7 @@ meter/
 │   │                          nineteen, ISS-225
 │   ├── constants.py           the values that are decisions rather than deployments
 │   └── domain/                frozen entities, no persistence and no cloud concern.
-│                              cost.py holds CostRecord in FOCUS 1.1, plus
+│                              cost.py holds CostRecord in FOCUS 1.4, plus
 │                              BillingPeriod, whose end is exclusive and whose
 │                              is_open takes the clock from the caller, and
 │                              CostTotal, which cannot exist without a
@@ -424,7 +428,10 @@ meter/
 │       ├── org.py             OrgNode and the closed ROOT, OU, ACCOUNT set
 │       ├── identity.py        Principal and Entitlement
 │       ├── ingest.py          IngestRun, CollectionFailure, Watermark
-│       ├── cost.py            CostRecord, FOCUS 1.1 names, Decimal money.
+│       ├── catalog.py         Price, PriceListVersion and InstanceTypeSpec, P9. A
+│       │                      price is one offer term, its recurring price and its
+│       │                      upfront fee; a term nought in both is refused
+│       ├── cost.py            CostRecord, FOCUS 1.4 names, Decimal money.
 │       │                      Also CommitmentUse and CommitmentCoverage, kept
 │       │                      apart for the reason the port keeps its methods
 │       │                      apart, and BillingPeriod and source_fingerprint
@@ -446,6 +453,13 @@ meter/
 │       │                      holds placeholders and no figures, and an Answer
 │       │                      cannot be built holding a figure it did not cite.
 │       │                      TASK-P7-002
+│       ├── invoice.py         Invoice and BillingPeriodStatus, FEAT-076. An invoice
+│       │                      is read, never derived; a credit memo names what it
+│       │                      corrects; months and next_month for billing periods
+│       ├── reconciliation.py  FEAT-076. An invoice beside Meter's sums: the six
+│       │                      states, before tax and tax apart, the tolerance a
+│       │                      modelled 0.01 percent with a one cent floor, and no
+│       │                      figure at all for a state that is not a comparison
 │       └── quota.py           QuotaUsage. Unpublished usage is None, never zero
 │   └── ports/                 protocols only. No implementation, no cloud import.
 │                              The Ports section of docs/02-ARCHITECTURE.md says
@@ -456,6 +470,8 @@ meter/
 │       │                      that test never reaches it, ISS-239
 │       ├── accounts.py        AccountDiscovery
 │       ├── budget.py          BudgetSource, the payer's budgets
+│       ├── catalog.py         PriceCatalog and InstanceCatalog, CATALOG_PORTS, P9
+│       ├── invoice.py         InvoiceSource, the payer's invoices, FEAT-076
 │       ├── cloudwatch_estate.py
 │       │                      CloudWatchEstate, what CloudWatch holds rather than
 │       │                      the values in it. A fake and no adapter, ISS-240
@@ -541,6 +557,26 @@ meter/
 │   │   ├── language_model.py  language_model(settings), the one composition point
 │   │   │                      that names the vendor. None when no model is set,
 │   │   │                      and the assistant then says it is not enabled
+│   │   ├── invoices.py        FEAT-076. ListInvoiceSummaries at the payer, one
+│   │   │                      billing period at a time; anything unreadable is
+│   │   │                      SchemaDrift, never a zero. Unproved, ISS-002, ISS-003
+│   │   ├── spot.py            FEAT-071, TASK-P9-013. Spot readings through the relay,
+│   │   │                      one window a Region, every zone. ISS-264
+│   │   ├── savings_plans.py   FEAT-071, TASK-P9-012. Savings Plans rates through the
+│   │   │                      relay, six calls a Region, versioned by their digest.
+│   │   │                      Unproved, ISS-263
+│   │   ├── instance_types.py  FEAT-072, TASK-P9-005. DescribeInstanceTypes for EC2,
+│   │   │                      and the managed services' classes from their price
+│   │   │                      list products; a figure left out is None. ISS-262
+│   │   ├── burstable.py       The EC2 guide's credit table as data with its URL,
+│   │   │                      checked against the guide's formulas on import
+│   │   ├── price_list.py      FEAT-071, TASK-P9-004. ListPriceLists for the versions,
+│   │   │                      GetProducts a page at a time for the prices, EC2
+│   │   │                      narrowed at the source; a nought or unreadable term
+│   │   │                      is SchemaDrift. Unproved, ISS-002, ISS-261
+│   │   ├── relay_client.py    ADR-0035. A boto3 client in shape that reaches its
+│   │   │                      service through the relay, so an adapter reads
+│   │   │                      through it unchanged; AWS's error codes kept
 │   │   └── cur.py             the billing export through Athena. **Never yet
 │   │                          run**, ISS-122, and COLUMNS is the part only a
 │   │                          real export can settle. A period comes back
@@ -704,6 +740,12 @@ meter/
 │   │                          forecast, always a range beside its accuracy, or the
 │   │                          reason where the figure would be. forecastModel.ts
 │   │                          holds its rules
+│   ├── screens/ReconciliationScreen.tsx  Invoice reconciliation, FEAT-076: each
+│   │                          invoice beside Meter's billed cost, every state in
+│   │                          words, the difference signed, labelled measured; the
+│   │                          route's 403 and 404 shown in its own words.
+│   │                          reconciliationModel.ts holds the words, and the
+│   │                          FinOps Overview's Matches the invoice tile reads it
 │   ├── screens/CostScreen.tsx  Cost Explorer, FEAT-065. The view lives in the
 │   │                          address under the route's own names, so a link
 │   │                          lands on it. exploreModel.ts holds its rules,
@@ -716,6 +758,10 @@ meter/
 │   │                          cluster, both better high so neither ramp inverts.
 │   │                          A missing figure says why, and an unreadable fleet and
 │   │                          a Fargate cluster with none are different sentences
+│   ├── screens/RecommendationAlternatives.tsx  FEAT-073, TASK-P9-010. What one
+│   │                          rightsizing was compared with, under that finding on
+│   │                          WasteScreen: the chosen type first, an unpriced option
+│   │                          kept with its reason, no risk score said in words
 │   ├── screens/ContainerWasteScreen.tsx  FEAT-036. Request beside use, two
 │   │                          figures and never one percentage, because twenty
 │   │                          percent can mean over requesting or idle. A cluster
@@ -1028,6 +1074,13 @@ meter/
 │   │                     Takes the time it is observed at, because the
 │   │                     constants are right for a test and wrong for a
 │   │                     demo estate
+│   ├── catalog.py         AWS's price list and instance types for the estate:
+│   │                      structure from the real extracts, prices from the
+│   │                      estate's own table, so a saving and the bill agree
+│   ├── invoices.py        the payer's invoices, built from the rows of the bill:
+│   │                      the newest closed period matches, the oldest is 2.50
+│   │                      over beside a Marketplace invoice, the running month
+│   │                      has none. FEAT-076
 │   ├── health.py          role health. Separates an account whose role is
 │   │                     misconfigured from one Meter could not ask about
 │   │                     at all, which are different fixes and owners
@@ -1110,6 +1163,8 @@ meter/
 │       ├── topology.py        the edges between them, four APIs. ISS-202, same footing
 │       ├── waste_compute.py   the bespoke candidates, which are the ones carrying an
 │       │                      ARN and therefore the ones that join to a node
+│       ├── waste_volumes.py   FEAT-074, TASK-P9-009. waste_compute's gp2 volume pass:
+│       │                      EBS operations and bytes in the same batch, priced as gp3
 │       ├── waste_cloudwatch.py  log retention and alarms that have never fired
 │       ├── waste_parking.py   FEAT-054. A workload quiet on the same hours every week,
 │       │                      judged per hour and never per estate, because a window
@@ -1135,6 +1190,24 @@ meter/
 │       │                       the provider. Stores nothing derived, retracts nothing,
 │       │                       and counts the budgets whose scope it cannot reproduce
 │       │                       on sync_error rather than dropping them
+│       ├── catalog_reads.py   TASK-P9-007. The comparable price and a Region's
+│       │                      offers, read one way by every collector that prices;
+│       │                      gp2's and gp3's four EBS prices, TASK-P9-009
+│       ├── spot_prices.py     FEAT-071, TASK-P9-013. Every 8 hours; the latest per
+│       │                      pool and each day's low and high, 90 days kept
+│       ├── savings_plan_rates.py  FEAT-071, TASK-P9-012. Every 8 hours; every Region
+│       │                      the prices are held for, a sheet stored when it moves
+│       ├── instance_catalog.py  FEAT-072, TASK-P9-005. Every 8 hours; EC2 described
+│       │                      in the hub's Region and stored where it is sold,
+│       │                      checked against a second Region; withdrawn types kept;
+│       │                      gp2's and gp3's guide figures in volume_type_spec
+│       ├── price_catalog.py   FEAT-071, TASK-P9-004. Every 8 hours; loads only a
+│       │                      version it does not hold, one savepoint per service
+│       │                      and Region, and prunes superseded prices except the
+│       │                      ones a recommendation quotes
+│       ├── invoices.py        FEAT-076, TASK-P10-003. Invoices and the billing
+│       │                      periods they close, stored as read; a period with no
+│       │                      invoice is stored Open, never skipped
 │       ├── digests.py         FEAT-041, TASK-P7-012. DigestCollector, weekly: one
 │       │                      digest per team the bill's team tag names and one for
 │       │                      the organization. One team failing is a sync_error
@@ -1233,6 +1306,14 @@ meter/
 │   │   ├── forecast.py        FEAT-066's GET /cost/forecast: the month end and three
 │   │   │                      months ahead, each a range or the reason, the method
 │   │   │                      named and its backtest published beside it
+│   │   ├── catalog.py         FEAT-071 and FEAT-072, TASK-P9-010. GET /catalog/prices
+│   │   │                      and GET /catalog/instance-types: the catalog as stored,
+│   │   │                      each row with its version and as_of, coverage in Regions.
+│   │   │                      waste.py adds GET /waste/recommendations/{id}/alternatives
+│   │   ├── reconciliation.py  FEAT-076's GET /cost/reconciliation: each invoice
+│   │   │                      beside Meter's billed cost under it, before tax and
+│   │   │                      tax apart. A narrowed reader is refused 403 before
+│   │   │                      anything is read; nothing is stored
 │   │   ├── schedules.py       FEAT-069's /reports/schedules and /reports/runs, and
 │   │   │                      the file route that checks the reader's scope again
 │   │   ├── views.py           FEAT-068's /reports/views: list, save, open, rename
@@ -1327,10 +1408,17 @@ meter/
 │                              redaction repositories, and tokens_spent, the one
 │                              read across people: a tenant wide sum for the
 │                              budget, which returns a number and never a row.
+│                              catalog.py reads the price list, its versions and
+│                              the instance types under the tenant rule alone,
+│                              TASK-P9-010; waste.py's option repository reads a
+│                              recommendation's alternatives through it.
 │                              explore.py is Cost Explorer's: every read derived
 │                              from scoped_select, the ranking a window count and
 │                              the tag keys a function in the FROM clause, because
 │                              a wrapped query loses the mark the guard checks.
+│                              invoices.py is FEAT-076's: the invoices, the periods
+│                              they close, and Meter's billed cost per invoice id
+│                              and currency, tax apart
 │                              forecast.py reads the first month and last day held
 │                              and the cost of each UTC day, a zero for a day that
 │                              billed nothing, so a gap and a quiet day differ.
@@ -1397,6 +1485,33 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0040_option_risk_optional.py  TASK-P9-010. An option's performance risk may
+│       │                      be null, for Meter's own alternatives, OPEN-24
+│       ├── 0039_upsize_added_cost.py  TASK-P9-008. An Upsize's added monthly cost,
+│       │                      held to the kind, with a saving of nought
+│       ├── 0038_recommendation_option.py  TASK-P9-006. Every target a provider
+│       │                      ranked, priced from a recorded price or saying why not
+│       ├── 0037_spot_prices_schedule.py  TASK-P9-013. The spot prices' 8 hourly
+│       │                      schedule row for every tenant
+│       ├── 0036_savings_plan_rates_schedule.py  TASK-P9-012. The Savings
+│       │                      Plans rates' 8 hourly schedule row for every tenant
+│       ├── 0035_instance_catalog_schedule.py  TASK-P9-005. The instance
+│       │                      catalog's 8 hourly schedule row for every tenant
+│       ├── 0034_price_catalog_schedule.py  TASK-P9-004. The price catalog's
+│       │                      8 hourly schedule row for every existing tenant
+│       ├── 0033_price_catalog.py  TASK-P9-003. Price versions, prices as offer
+│       │                      terms, instance and volume types, spot prices, and the
+│       │                      recommendation's target priced from one version
+│       ├── 0032_reconciliation_screen.py  TASK-P10-005. A saved view may name
+│       │                      /report/reconciliation; the downgrade refuses while
+│       │                      one does rather than deleting it
+│       ├── 0031_invoices.py   TASK-P10-003, FEAT-076. billing_period and
+│       │                      invoice_detail, payer wide, nothing derived stored;
+│       │                      the invoices cadence row for every tenant
+│       ├── 0030_focus_1_4_columns.py  TASK-P10-002, FEAT-004, ADR-0034. FOCUS
+│       │                      1.4's six missing mandatory columns and the two invoice
+│       │                      columns, nullable; the currency held to ISO 4217; the
+│       │                      provider pair backfilled from provider_name
 │       ├── 0029_report_schedule.py  FEAT-069. The schedule, a trigger holding its
 │       │                      view visible to its owner; what a run records; and
 │       │                      which process runs each cadence
@@ -1498,6 +1613,12 @@ meter/
 │                              the feature: a deny cannot be written without an
 │                              expiry, a modelled row cannot claim a measured
 │                              count, and a change cannot exist without its undo
+├── finops_relay/              IN BUILD  TASK-P9-001, ADR-0035. The relay outside the hub's
+│   │                          VPC, run as a Lambda function: one allow listed, read
+│   │                          only AWS call, made as the role its list names and
+│   │                          narrowed by a session policy, answered through S3.
+│   │                          Imports nothing of Meter's, a contract in pyproject
+│   └── relay.py               the allow list, the codec, the handler
 ├── finops_query/              IN BUILD  P2 query cost governance, P3 waste, P4 graph
 │   ├── forecast.py            FEAT-066, TASK-P8-008. A weekday profile forecast of
 │   │                          this month and the next three, each a range from its
@@ -1530,6 +1651,11 @@ meter/
 │   │                          not allowlisted, because a question is not
 │   │                          documentation. A hit keeps the rule and the action,
 │   │                          never the secret
+│   ├── targets.py             FEAT-073, TASK-P9-007. A smaller type that still
+│   │                          fits, named and priced: candidates, fit, the cheapest,
+│   │                          and the saving as a price difference for the hours run
+│   ├── volumes.py             FEAT-074, TASK-P9-009. A gp2 volume priced as the gp3
+│   │                          that does its work, inside the EBS guide's limits
 │   ├── containers.py          FEAT-036, TASK-P6-007. Container sizing, composed
 │   │                          onto waste.py rather than beside it: the memory
 │   │                          margins, the fourteen day floor and the saving floor
@@ -1672,6 +1798,10 @@ meter/
                                full price. iam.tf gives each assistant model an
                                inference profile tagged finops:module = assistant,
                                so its spend is a module of its own, ISS-230.
+                               endpoints.tf and modules/endpoint_vpc are the endpoint
+                               VPCs in us-east-1 and eu-west-2, peered, with a
+                               private hosted zone per service, and relay.tf the
+                               relay outside the VPC, ADR-0035.
                                Validated, never applied. ISS-122
 ```
 
@@ -1685,6 +1815,7 @@ meter/
 | `finops_ingest` | Dispatcher, worker, run ledger, watermarks, collectors | `finops_core`, a provider | `finops-web` |
 | `finops_api` | HTTP surface, scope dependency, repository guard | `finops_core`, a provider | boto3 directly |
 | `finops-web` | User interface | `finops_api` over HTTP | anything Python |
+| `finops_relay` | The relay outside the hub's VPC, ADR-0035: six allow listed read calls answered through S3 | botocore | everything of Meter's, a contract in `pyproject.toml`, because its runtime has only boto3 |
 | `finops_mcp` | MCP tools for any model client | `finops_api` over HTTP, and `finops_api.tools` for the table it publishes, CHG-0110 | the service layer, repositories, boto3 |
 | `infra/terraform` | Hub stack, member StackSet, management role, Config aggregator and recorders | nothing | nothing |
 

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { demoEstate } from './estate';
+import { RIGHTSIZED, demoEstate } from './estate';
 
 /**
  * The walk in `docs/runbooks/demo.md`, in the order somebody demonstrates it.
@@ -75,8 +75,9 @@ test('the demo walk reaches every screen the runbook points at', async ({ page }
   // nobody owns says so in words rather than leaving a cell blank.
   await page.goto('/optimize');
   await expect(page.getByText('412.64')).toBeVisible();
+  // Unowned, and its resource's team tag says whom to ask, ISS-021.
   await expect(page.getByTestId('unowned-2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f')).toHaveText(
-    'nobody yet',
+    'nobody yet; its team tag says platform',
   );
   await expect(
     page.getByTestId('confidence-2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f'),
@@ -128,6 +129,29 @@ test('the P3 walk keeps the estimate and the realization on separate screens', a
   const savings = (await page.locator('body').innerText()).toLowerCase();
   expect(savings).toContain('cost before');
   expect(savings).not.toContain('412.64');
+});
+
+test('a rightsizing names its target and leads its alternatives with it', async ({ page }) => {
+  /**
+   * TASK-P9-010 against the real bundle. From the queue to one finding's comparison: the type it
+   * names first, an option the catalog cannot price kept with the reason, and no risk score said
+   * in words rather than drawn as nought.
+   */
+  await demoEstate(page);
+
+  await page.goto('/optimize');
+  const target = page.getByTestId(`target-${RIGHTSIZED}`);
+  await expect(target).toContainText('m5.xlarge to m6i.large');
+  await target.getByRole('link', { name: 'Alternatives' }).click();
+
+  const alternatives = page.getByTestId('alternatives');
+  await expect(alternatives.getByTestId('alternative-chosen')).toBeVisible();
+  await expect(alternatives.getByRole('row').nth(1)).toContainText('m6i.large');
+  await expect(alternatives.getByTestId('unpriced-m6g.large')).toContainText('not priced');
+  await expect(alternatives.getByTestId('no-risk-score-m5.large')).toHaveText('none given');
+  await expect(page.getByTestId('alternatives-basis')).toContainText(
+    'price list version 20260820000000',
+  );
 });
 
 test('the commitments screen never puts the two percentages side by side', async ({ page }) => {

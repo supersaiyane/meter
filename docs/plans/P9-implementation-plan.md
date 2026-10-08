@@ -47,7 +47,7 @@ Same contract as P0 through P8. One task, one commit.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 5.1 |
 | Delivers | ISS-242 closed |
 | Depends on | This plan approved and OPEN-16 answered, both 2026-10-05 |
@@ -62,24 +62,38 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 **Acceptance criteria.**
 
-- [ ] An ADR records A plus C for Budgets and Support, C again for spot prices and Savings
+- [x] An ADR records A plus C for Budgets and Support, C again for spot prices and Savings
       Plans rates in every Region, OPEN-17, why, and its monthly cost: the
       endpoint price measured from the AWS price list, the endpoints counted from the
-      Terraform, and the total labelled modelled. The estimate the owner chose on was about
-      20 endpoints at about 14.7 USD a month each, roughly 290 USD a month (modelled)
-- [ ] Terraform builds it, and `terraform validate` and `fmt` pass for every stack touched
-- [ ] A test lists every AWS service the adapters create a client for, and holds each one
+      Terraform, and the total labelled modelled. ADR-0035: 0.011 USD per endpoint per zone
+      hour in eu-west-1 and eu-west-2 and 0.010 in us-east-1, measured from offer file
+      20260917190528; 21 endpoints added; about 338 USD a month in all (modelled), against
+      the 290 the owner chose on
+- [x] Terraform builds it, and `terraform validate` and `fmt` pass for every stack touched:
+      hub, member and management on 2026-10-08, validated against the providers already
+      installed, so nothing was downloaded. `endpoints.tf`, `relay.tf` and
+      `modules/endpoint_vpc`
+- [x] A test lists every AWS service the adapters create a client for, and holds each one
       to a path: an interface endpoint in the Region it is called in, or, for Budgets and
-      Support only, one of the two functions outside the VPC
-- [ ] No NAT gateway and no default route in the hub's private subnets: every call leaves
-      through an interface endpoint, the peered endpoint VPC or the S3 gateway endpoint
-- [ ] The comment in `infra/terraform/hub/network.tf` that calls six endpoints every
+      Support only, one of the two functions outside the VPC.
+      `tests/contract/test_network_paths.py` reads the services from the code and from the
+      operations `test_response_shapes.py` declares, and four red checks failed it. Reworded
+      on 2026-10-08: Invoicing, added by P10, has no interface endpoint either, measured that
+      day, so it takes the same path under the owner's rule; and the two functions are one
+      relay with an allow list, `finops_relay`, which the existing adapters read through
+      unchanged
+- [x] No NAT gateway and no default route in the hub's private subnets: every call leaves
+      through an interface endpoint, the peered endpoint VPC or the S3 gateway endpoint, and
+      the relay is invoked through the Lambda endpoint. Held by the same test
+- [x] The comment in `infra/terraform/hub/network.tf` that calls six endpoints every
       service the tasks call is corrected, and so is `docs/04-DEPLOYMENT.md`, which names a
       Cost Explorer endpoint among the hub's own, in the hub's Region, where none can be made:
       Cost Explorer's endpoint is in us-east-1 only
-- [ ] Every new resource tagged `finops:module`, constraint 7
-- [ ] Spot prices and Savings Plans rates in every Region read by a function outside the VPC
-      that writes rows to S3, the owner's answer to OPEN-17 on 2026-10-07, held by the same test
+- [x] Every new resource tagged `finops:module`, constraint 7: all three providers carry the
+      one set of default tags, held by the same test
+- [x] Spot prices and Savings Plans rates in every Region read by a function outside the VPC
+      that writes rows to S3, the owner's answer to OPEN-17 on 2026-10-07, held by the same test.
+      The relay allows both; reading them is TASK-P9-012 and TASK-P9-013
 
 ---
 
@@ -87,7 +101,7 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec sections 5.3 and 5.4 |
 | Delivers | `PriceCatalog` and `InstanceCatalog` ports |
 | Depends on | TASK-P9-001 |
@@ -95,10 +109,21 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 **Acceptance criteria.**
 
-- [ ] Ports in `finops_core/ports/`, no SDK, constraint 1
-- [ ] Fakes in `finops_fakes/` shaped from small real extracts of the offer files and of
-      `DescribeInstanceTypes`, with the planted cases' types and prices
-- [ ] A contract test both the fake and the adapter will pass
+- [x] Ports in `finops_core/ports/`, no SDK, constraint 1: `PriceCatalog` and
+      `InstanceCatalog` in `catalog.py`, in a group of their own, `CATALOG_PORTS`, so the ports
+      test reaches both, with the domain in `finops_core/domain/catalog.py`
+- [x] Fakes in `finops_fakes/` shaped from small real extracts of the offer files and of
+      `DescribeInstanceTypes`, with the planted cases' types and prices.
+      `finops_fakes/catalog.py`, its term and rate codes from AWS's ElastiCache price list for
+      eu-west-1, version 20260914063714, and its prices from the estate's own table so a saving
+      and the bill agree. The extracts, pruned to one product each, are in
+      `tests/providers/aws/extracts` with their sources; `tests/core/test_catalog.py` builds the
+      domain's records from them. Reading the real list corrected the spec, section 5.3: an All
+      Upfront reservation is nought an hour beside its fee, so the refusal is of a term whose
+      every price is nought
+- [x] A contract test both the fake and the adapter will pass,
+      `tests/contract/test_catalog_contract.py`, parametrized so TASK-P9-004 and TASK-P9-005 add
+      their adapters to it. Three red checks failed the tests
 
 ---
 
@@ -106,7 +131,7 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 6 |
 | Delivers | Four tables and the recommendation's added columns |
 | Depends on | TASK-P9-002 |
@@ -114,14 +139,20 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 **Acceptance criteria.**
 
-- [ ] `price_list_version`, `price`, `instance_type_spec` and `volume_type_spec`, every
-      invariant in spec section 6 a constraint
-- [ ] `instance_type_spec` keyed by service as well as type, for the five services of spec
+- [x] `price_list_version`, `price`, `instance_type_spec` and `volume_type_spec`, every
+      invariant in spec section 6 a constraint, with `price` holding a term's recurring price
+      and upfront fee and refusing only a term that is nought in both, as corrected on
+      2026-10-08. Migration 0033; a price's version is a foreign key, so no price exists
+      without the publication it came from
+- [x] `instance_type_spec` keyed by service as well as type, for the five services of spec
       section 14, and `spot_price` and `spot_price_daily` as OPEN-18 chose, spec section
       14.7. Added 2026-10-07
-- [ ] The recommendation's target columns added as nullable, constraint 12
-- [ ] A test per constraint, and `docs/07-DATA-MODEL.md` and
-      `docs/09-DATA-CLASSIFICATION.md` updated in the same commit
+- [x] The recommendation's target columns added as nullable, constraint 12, each price id held
+      by a composite foreign key to a price of the same Region and version
+- [x] A test per constraint, `tests/db/test_price_catalog_constraints.py`, and
+      `docs/07-DATA-MODEL.md` and `docs/09-DATA-CLASSIFICATION.md` updated in the same commit.
+      Two red checks failed it. Per tenant, as every table is, rather than shared as the spec's
+      table drew them, so the guard needs no new rule; the migration records why
 
 ---
 
@@ -129,7 +160,7 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec sections 5.2, 5.3, 7 and 14, FEAT-071 |
 | Delivers | FEAT-071, on demand and reserved |
 | Depends on | TASK-P9-003 |
@@ -137,20 +168,31 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 **Acceptance criteria.**
 
-- [ ] The adapter reads the Price List Query API for `AmazonEC2`, which holds EBS,
+- [x] The adapter reads the Price List Query API for `AmazonEC2`, which holds EBS,
       `AmazonRDS`, `AmazonElastiCache`, `AmazonRedshift` and `AmazonES`, in every commercial
       Region, the Regions taken from the price list's own codes and never listed in code.
       Widened from the Regions in OPEN-06 on 2026-10-07, spec section 14
-- [ ] Reserved terms, one and three years, every payment option and offering class, as
+- [x] Reserved terms, one and three years, every payment option and offering class, as
       `PricingCategory` Committed with the term in `SkuPriceDetails`
 - [ ] The number of price rows measured before the tables are sized, against the ten
-      million spec section 14.4 models
-- [ ] Rows filtered to the comparable price: operating system, shared tenancy, used
-      capacity, no preinstalled software, with the filter tested
-- [ ] A zero or missing price refused with a typed cause, never stored
-- [ ] The `price_catalog` collector, a `collector_schedule` row with its reason and cost,
+      million spec section 14.4 models. Open, ISS-261: only the ElastiCache list for eu-west-1
+      is measured, 506 products and 1,850 terms; the rest needs an account or the owner's
+      permission to download an offer file
+- [x] Rows filtered to the comparable price: operating system, shared tenancy, used
+      capacity, no preinstalled software, with the filter tested, and Extended Support
+      products named rather than read as a second price for the same type, found in the real
+      ElastiCache list on 2026-10-08
+- [x] A term whose every price is nought, or a missing price, refused with a typed cause,
+      never stored; an All Upfront term's nought hourly rate beside its fee kept, spec section
+      5.3 as corrected on 2026-10-08
+- [x] The adapter added to `tests/contract/test_catalog_contract.py`, over a stub serving the
+      fake's prices in GetProducts' shape. Its attribute names are held to the real EC2 EBS
+      product in the API reference's sample and to the real ElastiCache list; a real EC2
+      instance product is still to come, ISS-261
+- [x] The `price_catalog` collector, a `collector_schedule` row with its reason and cost,
       every 8 hours, loads only the services and Regions whose version changed
-- [ ] Never loads a whole offer file into memory
+- [x] Never loads a whole offer file into memory: GetProducts is read a page at a time as
+      a generator, and prices are written 1,000 at a time
 
 ---
 
@@ -158,7 +200,7 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 5.4, FEAT-072 |
 | Delivers | FEAT-072 |
 | Depends on | TASK-P9-003 |
@@ -166,14 +208,16 @@ write rows to S3. The hub keeps no route out, which ADR-0028 relies on.
 
 **Acceptance criteria.**
 
-- [ ] EC2 types from `DescribeInstanceTypes` in the hub's own Region, paged, with the
+- [x] EC2 types from `DescribeInstanceTypes` in the hub's own Region, paged, with the
       Regions each is sold in taken from the price list, and a test that compares two
-      Regions' descriptions of the same types. Changed 2026-10-07, spec section 14.3
-- [ ] RDS, ElastiCache, Redshift and OpenSearch instance specs from their price list
+      Regions' descriptions of the same types. Changed 2026-10-07, spec section 14.3. The
+      comparison runs on every run when a second Region is configured, and the tests prove a
+      difference is caught; two real Regions' descriptions wait on ISS-262
+- [x] RDS, ElastiCache, Redshift and OpenSearch instance specs from their price list
       products' attributes, into the same table keyed by service
-- [ ] Burstable baselines and maximum credits from the EC2 guide's table, kept as data with
+- [x] Burstable baselines and maximum credits from the EC2 guide's table, kept as data with
       their source, and a test that fails when a burstable type is missing from it
-- [ ] The `instance_catalog` collector with its schedule row, every 8 hours; one Region or
+- [x] The `instance_catalog` collector with its schedule row, every 8 hours; one Region or
       service failing does not fail the run
 
 ---
@@ -184,7 +228,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 14, FEAT-071 |
 | Delivers | Savings Plans rates in the price catalog |
 | Depends on | TASK-P9-001 and TASK-P9-004 |
@@ -192,10 +236,15 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 **Acceptance criteria.**
 
-- [ ] Savings Plans rates from AWS's Savings Plans price list for every commercial Region, as
-      `price` rows with `PricingCategory` Committed and the plan's term in `SkuPriceDetails`
-- [ ] Read by the function outside the VPC chosen for OPEN-17, held by TASK-P9-001's test
-- [ ] Polled every 8 hours with the other catalog collectors, loading only what changed
+- [x] Savings Plans rates for every commercial Region, as `price` rows with `PricingCategory`
+      Committed and the plan's term in `SkuPriceDetails`. Read from the Savings Plans API rather
+      than the price list file, because the relay makes API calls; the Regions are the price
+      list's, the ones the price catalog holds EC2 for
+- [x] Read by the function outside the VPC chosen for OPEN-17, held by TASK-P9-001's test,
+      which now also holds the relay following `nextToken` for a call botocore cannot page
+- [x] Polled every 8 hours with the other catalog collectors, loading only what changed: the
+      rates carry no version, so a sheet's version is a digest of its rates, and an unchanged
+      sheet stores nothing. Every Region is still read each run, OPEN-22
 
 ---
 
@@ -205,7 +254,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 14, FEAT-071 |
 | Delivers | Spot prices in the price catalog |
 | Depends on | TASK-P9-001 and TASK-P9-003 |
@@ -213,14 +262,16 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 **Acceptance criteria.**
 
-- [ ] `DescribeSpotPriceHistory` for every commercial Region, zone and product description,
+- [x] `DescribeSpotPriceHistory` for every commercial Region, zone and product description,
       as `PricingCategory` Dynamic, with the reading's own time as `as_of` and `collected_at`
       beside it
-- [ ] Read by the function outside the VPC chosen for OPEN-17, held by TASK-P9-001's test
-- [ ] The latest price per pool, replaced each run, and each day's low and high kept for 90
+- [x] Read by the function outside the VPC chosen for OPEN-17, held by TASK-P9-001's test
+- [x] The latest price per pool, replaced each run, and each day's low and high kept for 90
       days, as OPEN-18 chose on 2026-10-07, spec section 14.7; every limit a database
-      constraint, and the 90 days held by a test
-- [ ] Polled every 8 hours; a Region that refuses, or that the account has not opted into, is
+      constraint, and the 90 days held by a test. The 90 days are a removal each run rather than
+      a constraint, since no constraint can age a row; the test holds the 90th day kept and the
+      91st removed
+- [x] Polled every 8 hours; a Region that refuses, or that the account has not opted into, is
       a typed failure such as NotOptedIn and never a price of nought, constraint 5
 
 ---
@@ -229,7 +280,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 5.5 |
 | Delivers | Compute Optimizer targets kept and priced |
 | Depends on | TASK-P9-004, TASK-P9-005 |
@@ -237,11 +288,11 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 **Acceptance criteria.**
 
-- [ ] The adapter calls each Region, one member account per request, follows `nextToken`,
+- [x] The adapter calls each Region, one member account per request, follows `nextToken`,
       and asks for Graviton through its architecture preference
-- [ ] Every ranked option kept, each priced from the catalog, with its performance risk
-- [ ] An option whose type has no price in the catalog is kept and says so, never priced
-      at zero
+- [x] Every ranked option kept, each priced from the catalog, with its performance risk
+- [x] An option whose type has no price in the catalog is kept and says so, never priced
+      at zero. Kept in `recommendation_option`, migration 0038, with the reason, OPEN-23
 
 ---
 
@@ -249,7 +300,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec sections 5.5 and 5.6, FEAT-073 |
 | Delivers | FEAT-073, with TASK-P9-008 |
 | Depends on | TASK-P9-006 |
@@ -257,14 +308,14 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 **Acceptance criteria.**
 
-- [ ] Candidates, fit and snapping as in spec section 5.5, where Compute Optimizer has no
-      answer
-- [ ] The metrics batch gains network and EBS series, so the fit can check them
-- [ ] The saving is the price difference for the hours run, shown at list and scaled to
+- [x] Candidates, fit and snapping as in spec section 5.5, where Compute Optimizer has no
+      answer, `finops_query/targets.py`
+- [x] The metrics batch gains network and EBS series, so the fit can check them
+- [x] The saving is the price difference for the hours run, shown at list and scaled to
       the bill's effective to list ratio, both modelled, with the price version
-- [ ] Across a generation or an architecture, the rationale says vCPUs are not equivalent
-- [ ] The planted m5.2xlarge at 7 percent names a target and saves its price difference,
-      no longer 90.9 percent of its cost
+- [x] Across a generation or an architecture, the rationale says vCPUs are not equivalent
+- [x] The planted m5.2xlarge at 7 percent names a target and saves its price difference,
+      no longer 90.9 percent of its cost: m5.xlarge, about half its cost (modelled)
 
 ---
 
@@ -272,7 +323,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 5.7, FEAT-073 |
 | Delivers | FEAT-073, with TASK-P9-007 |
 | Depends on | TASK-P9-007 |
@@ -280,11 +331,11 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 **Acceptance criteria.**
 
-- [ ] CPU or memory p95 above 90 percent, or bandwidth at its baseline, recommends the next
+- [x] CPU or memory p95 above 90 percent, or bandwidth at its baseline, recommends the next
       size or a family with more memory per vCPU
-- [ ] An Upsize is its own kind with an added monthly cost, migration included
-- [ ] No total of savings falls because of an Upsize, tested
-- [ ] The planted c6i.2xlarge above 90 percent comes out as an Upsize
+- [x] An Upsize is its own kind with an added monthly cost, migration included: 0039
+- [x] No total of savings falls because of an Upsize, tested in the database and on the Overview
+- [x] The planted c6i.2xlarge above 90 percent comes out as an Upsize, to c6i.4xlarge
 
 ---
 
@@ -292,7 +343,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 5.8, FEAT-074 |
 | Delivers | FEAT-074 |
 | Depends on | TASK-P9-004 |
@@ -300,9 +351,9 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 **Acceptance criteria.**
 
-- [ ] Needed IOPS is the larger of the gp2 baseline and the measured p99; gp3 cost is
+- [x] Needed IOPS is the larger of the gp2 baseline and the measured p99; gp3 cost is
       storage plus IOPS above 3,000 plus throughput above 125 MiB/s
-- [ ] The planted 1000 GiB gp2 volume priced as gp3, with the working shown
+- [x] The planted 1000 GiB gp2 volume priced as gp3, with the working shown
 
 ---
 
@@ -310,7 +361,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 8 |
 | Delivers | The catalog routes and the Alternatives table |
 | Depends on | TASK-P9-007, TASK-P9-008, TASK-P9-009 |
@@ -318,12 +369,12 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 **Acceptance criteria.**
 
-- [ ] `GET /catalog/instance-types` and `GET /catalog/prices`, with version and `as_of`,
+- [x] `GET /catalog/instance-types` and `GET /catalog/prices`, with version and `as_of`,
       filtered by service, Region and pricing category as well. Widened 2026-10-07
-- [ ] Recommendations return the target, both prices, the version and the scaled saving
-- [ ] The recommendation's screen shows an Alternatives table, the chosen target first,
+- [x] Recommendations return the target, both prices, the version and the scaled saving
+- [x] The recommendation's screen shows an Alternatives table, the chosen target first,
       in P8's design system if it has landed
-- [ ] Exportable through P8's export responder where it exists
+- [x] Exportable through P8's export responder where it exists
 
 ---
 
@@ -331,7 +382,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec sections 9 and 13 |
 | Delivers | The exit criteria, measured, and the record |
 | Depends on | TASK-P9-001 to TASK-P9-010, TASK-P9-012 and TASK-P9-013 |
@@ -339,9 +390,49 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 **Acceptance criteria.**
 
-- [ ] Every exit criterion in spec section 13 met, each with its evidence
-- [ ] FEAT-071 to FEAT-074 carry as built sections; the register, `project_map.md` and the
+- [x] Every exit criterion in spec section 13 met, each with its evidence
+- [x] FEAT-071 to FEAT-074 carry as built sections; the register, `project_map.md` and the
       checkpoint updated, and `make check-docs` clean
+
+**Delivered 2026-10-08.** The spec's section 13, each criterion with its evidence. The test
+counts are measured, from the full gate on TASK-P9-010's branch on 2026-10-08: 3831 backend
+tests, 946 frontend unit tests and 66 journeys passing. Every figure the criteria name is
+modelled from a recorded price list version; a real price list waits on ISS-002.
+
+1. The hub reaches every AWS API an adapter calls, by the path ADR-0035 chose:
+   `tests/contract/test_network_paths.py`, whose `test_the_scan_finds_what_the_adapters_call`
+   reads every adapter and `test_every_service_called_has_a_path` holds each service it finds to
+   a path from the hub, the relayed ones included. TASK-P9-001 and TASK-P9-012.
+2. Every rightsizing names an offered target with both prices and the version:
+   `tests/scripts/test_p9_exit_criteria.py` seeds the demo with every collector and finds no
+   rightsizing or Upsize, from Meter or from Compute Optimizer, without an offered target, both
+   price ids and the version. Per collector, `tests/ingest/collectors/test_waste_targets.py` and
+   `tests/ingest/collectors/test_recommendation_options.py`, and on the wire
+   `tests/api/test_recommendation_alternatives.py`. Where the inventory names no type, the
+   finding keeps the old estimate and says why no target is named, FEAT-073,
+   `test_without_a_type_no_target_is_named_and_it_says_why`. TASK-P9-006 to TASK-P9-010.
+3. The three planted cases come out as section 9 says, in the seeded estate,
+   `test_the_three_planted_cases_come_out_as_section_9_says`: the m5.2xlarge at 7 percent names
+   m5.xlarge and saves the price difference, the c6i.2xlarge above 90 percent is an Upsize to
+   c6i.4xlarge with an added cost, and the 1000 GiB gp2 volume is priced as gp3, 15.00 a month on
+   the fake catalog's prices, with the spec's own eu-west-2 example, 17.40, in
+   `tests/query/test_volumes.py`. No total of savings falls because of an Upsize,
+   `test_an_upsize_never_lowers_the_total_of_savings` and `overviewKpis.test.ts`. This criterion
+   failed at first in the seeded estate: the seed never judged the gp2 volume's account, ISS-266,
+   fixed in the same change.
+4. Every price carries its version, `as_of` and `collected_at`, and none is nought: migration
+   0033's constraints, held by `tests/db/test_price_catalog_constraints.py`; the adapter refuses
+   a nought term as SchemaDrift, `tests/providers/aws/test_price_list.py`; and
+   `test_every_price_carries_its_version_and_both_times_and_none_is_nought` counts none in the
+   seeded estate.
+5. Every commercial Region, the five services and the four price types, and a run that finds
+   nothing newly published does no work: `tests/ingest/collectors/test_price_catalog.py`,
+   `test_a_first_run_loads_every_region_and_counts_what_it_stored` and
+   `test_an_unchanged_version_does_no_work`; Regions kept by their commercial shape,
+   `test_only_a_commercial_region_is_kept_by_its_shape`; Savings Plans rates and spot prices,
+   `tests/ingest/collectors/test_savings_plan_rates.py` and
+   `tests/ingest/collectors/test_spot_prices.py`; a burstable type the table lacks fails,
+   `test_a_burstable_type_the_table_lacks_is_named_and_not_stored`.
 
 ---
 

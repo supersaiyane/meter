@@ -1,0 +1,233 @@
+{
+  "formatVersion": "v1.0",
+  "disclaimer": "This pricing list is for informational purposes only. All prices are subject to the additional terms included in the pricing pages on http://aws.amazon.com. All Free Tier prices are also subject to the terms included at https://aws.amazon.com/free/",
+  "offerCode": "AmazonElastiCache",
+  "version": "20260914063714",
+  "publicationDate": "2026-09-14T06:37:14Z",
+  "products": {
+    "RPVSXBK67RKQZAHJ": {
+      "sku": "RPVSXBK67RKQZAHJ",
+      "productFamily": "Cache Instance",
+      "attributes": {
+        "servicecode": "AmazonElastiCache",
+        "location": "EU (Ireland)",
+        "locationType": "AWS Region",
+        "instanceType": "cache.m5.large",
+        "currentGeneration": "Yes",
+        "instanceFamily": "Standard",
+        "vcpu": "2",
+        "memory": "6.38 GiB",
+        "networkPerformance": "Up to 10 Gigabit",
+        "cacheEngine": "Valkey",
+        "usagetype": "EU-NodeUsage:cache.m5.large",
+        "operation": "CreateCacheCluster:Valkey",
+        "normalizationSizeFactor": "3.2",
+        "regionCode": "eu-west-1",
+        "servicename": "Amazon ElastiCache"
+      }
+    }
+  },
+  "terms": {
+    "OnDemand": {
+      "RPVSXBK67RKQZAHJ": {
+        "RPVSXBK67RKQZAHJ.JRTCKXETXF": {
+          "offerTermCode": "JRTCKXETXF",
+          "sku": "RPVSXBK67RKQZAHJ",
+          "effectiveDate": "2026-09-01T00:00:00Z",
+          "priceDimensions": {
+            "RPVSXBK67RKQZAHJ.JRTCKXETXF.6YS6EN2CT7": {
+              "rateCode": "RPVSXBK67RKQZAHJ.JRTCKXETXF.6YS6EN2CT7",
+              "description": "$0.1376 per Gen Purpose M5.large node hour running Valkey",
+              "beginRange": "0",
+              "endRange": "Inf",
+              "unit": "Hrs",
+              "pricePerUnit": {
+                "USD": "0.1376000000"
+              },
+              "appliesTo": []
+            }
+          },
+          "termAttributes": {}
+        }
+      }
+    },
+    "Reserved": {
+      "RPVSXBK67RKQZAHJ": {
+        "RPVSXBK67RKQZAHJ.NQ3QZPMQV9": {
+          "offerTermCode": "NQ3QZPMQV9",
+          "sku": "RPVSXBK67RKQZAHJ",
+          "effectiveDate": "2026-09-14T06:37:23Z",
+          "priceDimensions": {
+            "RPVSXBK67RKQZAHJ.NQ3QZPMQV9.6YS6EN2CT7": {
+              "rateCode": "RPVSXBK67RKQZAHJ.NQ3QZPMQV9.6YS6EN2CT7",
+              "description": "Valkey, cache.m5.large reserved instance applied",
+              "beginRange": "0",
+              "endRange": "Inf",
+              "unit": "Hrs",
+              "pricePerUnit": {
+                "USD": "0.0000000000"
+              },
+              "appliesTo": []
+            },
+            "RPVSXBK67RKQZAHJ.NQ3QZPMQV9.2TG2D8R56U": {
+              "rateCode": "RPVSXBK67RKQZAHJ.NQ3QZPMQV9.2TG2D8R56U",
+              "description": "Upfront Fee",
+              "unit": "Quantity",
+              "pricePerUnit": {
+                "USD": "1631.2"
+              },
+              "appliesTo": []
+            }
+          },
+          "termAttributes": {
+            "LeaseContractLength": "3yr",
+            "PurchaseOption": "All Upfront",
+            "OfferingClass": "standard"
+          }
+        },
+        "RPVSXBK67RKQZAHJ.BPH4J8HBKS": {
+          "offerTermCode": "BPH4J8HBKS",
+          "sku": "RPVSXBK67RKQZAHJ",
+          "effectiveDate": "2026-09-14T06:37:23Z",
+          "priceDimensions": {
+            "RPVSXBK67RKQZAHJ.BPH4J8HBKS.6YS6EN2CT7": {
+              "rateCode": "RPVSXBK67RKQZAHJ.BPH4J8HBKS.6YS6EN2CT7",
+              "description": "Valkey, cache.m5.large reserved instance applied",
+              "beginRange": "0",
+              "endRange": "Inf",
+              "unit": "Hrs",
+              "pricePerUnit": {
+                "USD": "0.0712000000"
+              },
+              "appliesTo": []
+            }
+          },
+          "termAttributes": {
+            "LeaseContractLength": "3yr",
+            "PurchaseOption": "No Upfront",
+            "OfferingClass": "standard"
+          }
+        },
+        "RPVSXBK67RKQZAHJ.6QCMYABX3D": {
+          "offerTermCode": "6QCMYABX3D",
+          "sku": "RPVSXBK67RKQZAHJ",
+          "effectiveDate": "2026-09-14T06:37:23Z",
+          "priceDimensions": {
+            "RPVSXBK67RKQZAHJ.6QCMYABX3D.6YS6EN2CT7": {
+              "rateCode": "RPVSXBK67RKQZAHJ.6QCMYABX3D.6YS6EN2CT7",
+              "description": "Valkey, cache.m5.large reserved instance applied",
+              "beginRange": "0",
+              "endRange": "Inf",
+              "unit": "Hrs",
+              "pricePerUnit": {
+                "USD": "0.0000000000"
+              },
+              "appliesTo": []
+            },
+            "RPVSXBK67RKQZAHJ.6QCMYABX3D.2TG2D8R56U": {
+              "rateCode": "RPVSXBK67RKQZAHJ.6QCMYABX3D.2TG2D8R56U",
+              "description": "Upfront Fee",
+              "unit": "Quantity",
+              "pricePerUnit": {
+                "USD": "768"
+              },
+              "appliesTo": []
+            }
+          },
+          "termAttributes": {
+            "LeaseContractLength": "1yr",
+            "PurchaseOption": "All Upfront",
+            "OfferingClass": "standard"
+          }
+        },
+        "RPVSXBK67RKQZAHJ.38NPMPTW36": {
+          "offerTermCode": "38NPMPTW36",
+          "sku": "RPVSXBK67RKQZAHJ",
+          "effectiveDate": "2026-09-14T06:37:23Z",
+          "priceDimensions": {
+            "RPVSXBK67RKQZAHJ.38NPMPTW36.6YS6EN2CT7": {
+              "rateCode": "RPVSXBK67RKQZAHJ.38NPMPTW36.6YS6EN2CT7",
+              "description": "Valkey, cache.m5.large reserved instance applied",
+              "beginRange": "0",
+              "endRange": "Inf",
+              "unit": "Hrs",
+              "pricePerUnit": {
+                "USD": "0.0328000000"
+              },
+              "appliesTo": []
+            },
+            "RPVSXBK67RKQZAHJ.38NPMPTW36.2TG2D8R56U": {
+              "rateCode": "RPVSXBK67RKQZAHJ.38NPMPTW36.2TG2D8R56U",
+              "description": "Upfront Fee",
+              "unit": "Quantity",
+              "pricePerUnit": {
+                "USD": "868"
+              },
+              "appliesTo": []
+            }
+          },
+          "termAttributes": {
+            "LeaseContractLength": "3yr",
+            "PurchaseOption": "Partial Upfront",
+            "OfferingClass": "standard"
+          }
+        },
+        "RPVSXBK67RKQZAHJ.HU7G6KETJZ": {
+          "offerTermCode": "HU7G6KETJZ",
+          "sku": "RPVSXBK67RKQZAHJ",
+          "effectiveDate": "2026-09-14T06:37:23Z",
+          "priceDimensions": {
+            "RPVSXBK67RKQZAHJ.HU7G6KETJZ.6YS6EN2CT7": {
+              "rateCode": "RPVSXBK67RKQZAHJ.HU7G6KETJZ.6YS6EN2CT7",
+              "description": "Valkey, cache.m5.large reserved instance applied",
+              "beginRange": "0",
+              "endRange": "Inf",
+              "unit": "Hrs",
+              "pricePerUnit": {
+                "USD": "0.0448000000"
+              },
+              "appliesTo": []
+            },
+            "RPVSXBK67RKQZAHJ.HU7G6KETJZ.2TG2D8R56U": {
+              "rateCode": "RPVSXBK67RKQZAHJ.HU7G6KETJZ.2TG2D8R56U",
+              "description": "Upfront Fee",
+              "unit": "Quantity",
+              "pricePerUnit": {
+                "USD": "392"
+              },
+              "appliesTo": []
+            }
+          },
+          "termAttributes": {
+            "LeaseContractLength": "1yr",
+            "PurchaseOption": "Partial Upfront",
+            "OfferingClass": "standard"
+          }
+        },
+        "RPVSXBK67RKQZAHJ.4NA7Y494T4": {
+          "offerTermCode": "4NA7Y494T4",
+          "sku": "RPVSXBK67RKQZAHJ",
+          "effectiveDate": "2026-09-14T06:37:23Z",
+          "priceDimensions": {
+            "RPVSXBK67RKQZAHJ.4NA7Y494T4.6YS6EN2CT7": {
+              "rateCode": "RPVSXBK67RKQZAHJ.4NA7Y494T4.6YS6EN2CT7",
+              "description": "Valkey, cache.m5.large reserved instance applied",
+              "beginRange": "0",
+              "endRange": "Inf",
+              "unit": "Hrs",
+              "pricePerUnit": {
+                "USD": "0.0936000000"
+              },
+              "appliesTo": []
+            }
+          },
+          "termAttributes": {
+            "LeaseContractLength": "1yr",
+            "PurchaseOption": "No Upfront",
+            "OfferingClass": "standard"
+          }
+        }
+      }
+    }
+  }
+}

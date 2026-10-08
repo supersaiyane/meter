@@ -1,4 +1,4 @@
-"""One row of cost, in FOCUS 1.1, with the Meter columns alongside it.
+"""One row of cost, in FOCUS 1.4's mandatory columns, with the Meter columns alongside it.
 
 ADR-0002. The column names are the specification's, not ours. They are not
 renamed to something more readable, because the entire value of adopting a
@@ -168,7 +168,12 @@ class CostTotal(Fact):
 
 @dataclass(frozen=True, kw_only=True)
 class CostRecord(Fact):
-    """A FOCUS 1.1 charge row. Field names are the specification's."""
+    """A FOCUS charge row. Field names are the specification's.
+
+    FOCUS 1.1's columns, and from P10 the columns FOCUS 1.4 makes mandatory and the two that
+    tie a row to its invoice, ADR-0034. The 1.4 columns are optional here because an export
+    older than FOCUS 1.2 carries none of them, and a null is what Meter knows.
+    """
 
     # Meter columns, alongside the FOCUS namespace and never inside it.
     tenant_id: UUID
@@ -205,6 +210,21 @@ class CostRecord(Fact):
     commitment_discount_type: str | None
     commitment_discount_status: str | None
     tags: Mapping[str, str]
+    #: FOCUS 1.4, P10. Null where the export does not carry the column, never a guess.
+    billing_account_name: str | None = None
+    #: An ISO 4217 code of three capital letters, which the adapter and a constraint hold.
+    billing_currency: str | None = None
+    charge_class: str | None = None
+    pricing_unit: str | None = None
+    #: FOCUS 1.3 replaced `provider_name` with this. Until an export carries it, it is
+    #: `provider_name`, filled in `__post_init__` so every source keeps the same rule.
+    service_provider_name: str | None = None
+    #: Equal to the service provider unless a host is exposed, as FOCUS 1.4 requires.
+    host_provider_name: str | None = None
+    invoice_id: str | None = None
+    #: Meter's invoice detail is a whole invoice, AWS returning no line items, so this is
+    #: the `invoice_id` unless a source says otherwise.
+    invoice_detail_id: str | None = None
     #: Split cost allocation, FEAT-035. Absent on every charge that is not a pod's,
     #: and absent on every export where split cost allocation is not enabled, which
     #: is ISS-003. None rather than zero: a cluster costing nothing is a claim.
@@ -227,6 +247,14 @@ class CostRecord(Fact):
         # behind it being edited, and a shared tag dictionary quietly mutated by
         # one caller is the kind of defect that only shows up in aggregate.
         object.__setattr__(self, "tags", MappingProxyType(dict(self.tags)))
+        # One rule for every source, P10 spec section 5.2: FOCUS introduced the service
+        # provider to replace `provider_name`, and the host equals it unless one is exposed.
+        if self.service_provider_name is None:
+            object.__setattr__(self, "service_provider_name", self.provider_name)
+        if self.host_provider_name is None:
+            object.__setattr__(self, "host_provider_name", self.service_provider_name)
+        if self.invoice_detail_id is None and self.invoice_id is not None:
+            object.__setattr__(self, "invoice_detail_id", self.invoice_id)
 
 
 #: A commitment whose term has not started. AWS queues a Savings Plan to begin on

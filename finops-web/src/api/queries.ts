@@ -19,9 +19,11 @@ import {
   costAnomaliesFixture,
   costBudgetsFixture,
   costCommitmentsFixture,
+  reconciliationFixture,
 } from './fixtures/cost';
 import {
   recommendationsFixture,
+  alternativesFixture,
   refusalsFixture,
   realizedSavingsFixture,
   scoresFixture,
@@ -73,6 +75,7 @@ import type {
   ApiResourceList,
   ApiSubgraph,
   ApiBudgets,
+  ApiReconciliation,
   ApiCommitments,
   ApiCostAnomalies,
   ApiCostSlice,
@@ -87,6 +90,7 @@ import type {
   ApiQueryFindingDetail,
   ApiRealizedSavings,
   ApiRecommendations,
+  ApiAlternatives,
   ApiRefusals,
   ApiScores,
   ApiEnforcementAction,
@@ -446,6 +450,19 @@ export function useRecommendations() {
   );
 }
 
+/**
+ * What one rightsizing was compared with, TASK-P9-010. The declared template is FastAPI's, the
+ * fetched path names the recommendation, as `useQueryFinding` does.
+ */
+export function useAlternatives(recommendationId: string) {
+  return useQuerySurface<ApiAlternatives>(
+    ['waste-alternatives', recommendationId],
+    '/api/v1/waste/recommendations/{recommendation_id}/alternatives',
+    `/api/v1/waste/recommendations/${recommendationId}/alternatives`,
+    () => alternativesFixture(recommendationId),
+  );
+}
+
 export function useRealizedSavings() {
   return useQuerySurface<ApiRealizedSavings>(
     ['waste-savings'],
@@ -697,6 +714,21 @@ export function useBudgets() {
     '/api/v1/cost/budgets',
     '/api/v1/cost/budgets',
     costBudgetsFixture,
+  );
+}
+
+/**
+ * Each invoice for a billing period beside Meter's billed cost under it. FEAT-076.
+ *
+ * Payer wide: a reader narrowed to fewer accounts, or one who chose a single account, is refused
+ * with a 403 that names why, and the screen says so rather than showing a failure.
+ */
+export function useReconciliation() {
+  return useQuerySurface<ApiReconciliation>(
+    ['cost-reconciliation'],
+    '/api/v1/cost/reconciliation',
+    '/api/v1/cost/reconciliation',
+    reconciliationFixture,
   );
 }
 

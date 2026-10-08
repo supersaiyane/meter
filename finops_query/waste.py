@@ -80,9 +80,11 @@ class Estimate:
     waste_class: WasteClass
     monthly_saving: Decimal
     reason: str
+    #: What acting adds to the bill a month, for an Upsize only. TASK-P9-008.
+    added_monthly_cost: Decimal | None = None
 
 
-def _percentile(values: Sequence[Decimal], p: int) -> Decimal:
+def percentile(values: Sequence[Decimal], p: int) -> Decimal:
     """The pth percentile, or the only value when there is one.
 
     `statistics.quantiles` needs at least two points and returns cut points rather
@@ -150,7 +152,7 @@ def rightsize_cpu(
             "smaller size would halve the memory along with the vCPU",
         )
 
-    p99 = _percentile(utilization_percent, 99)
+    p99 = percentile(utilization_percent, 99)
     needed = p99 * CPU_HEADROOM
     if needed >= Decimal("100"):
         return _refused(kind, f"p99 of {p99:.1f} percent leaves no room to shrink")
@@ -201,7 +203,7 @@ def idle(
         # data points would recommend terminating a running system.
         return _refused(kind, "no utilization was observed, which is not the same as none used")
 
-    p95 = _percentile(utilization_percent, 95)
+    p95 = percentile(utilization_percent, 95)
     if p95 >= idle_below_percent:
         return _refused(kind, f"p95 of {p95:.1f} percent is above the {idle_below_percent} floor")
     saving = monthly_cost.quantize(Decimal("0.01"))

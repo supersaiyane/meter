@@ -33,7 +33,7 @@ from __future__ import annotations
 import argparse
 import sys
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any
@@ -50,12 +50,19 @@ from finops_fakes import cur, fixtures, prices, utilization
 from finops_fakes import estate_shape as shape
 from finops_fakes import quotas as quota_estate
 from finops_fakes.budgets import FakeBudgets
+from finops_fakes.catalog import (
+    FakeInstanceCatalog,
+    FakePriceCatalog,
+    FakeSavingsPlansRates,
+    FakeSpotPrices,
+)
 from finops_fakes.cloudwatch_estate import FakeCloudWatchEstate
 from finops_fakes.commitment import FakeCommitmentReport
 from finops_fakes.cur import FakeCostExport, estate
-from finops_fakes.estate_metrics import EstateMetrics, ec2_candidates
+from finops_fakes.estate_metrics import EstateMetrics, ec2_candidates, volume_candidates
 from finops_fakes.evidence import FakeQueryEvidence
 from finops_fakes.health import FakeRoleHealth
+from finops_fakes.invoices import FakeInvoices
 from finops_fakes.platform_cost import FakePlatformCost
 from finops_fakes.provider import FakeProvider
 from finops_fakes.recommendations import FakeRecommendationSource
@@ -71,10 +78,13 @@ from finops_ingest.collectors.container_usage import ContainerUsageCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
 from finops_ingest.collectors.iac_state import IacStateCollector
+from finops_ingest.collectors.instance_catalog import InstanceCatalogCollector
 from finops_ingest.collectors.inventory import InventoryCollector
+from finops_ingest.collectors.invoices import InvoiceCollector
 from finops_ingest.collectors.org_tree import OrgTreeCollector
 from finops_ingest.collectors.partitions import ensure_partition, partition_maintenance
 from finops_ingest.collectors.platform_cost import PlatformCostCollector
+from finops_ingest.collectors.price_catalog import PriceCatalogCollector
 from finops_ingest.collectors.query_audit import (
     QueryAuditCollector,
     default_ingest_rate,
@@ -85,10 +95,13 @@ from finops_ingest.collectors.realized_savings import (
     RealizedSavingsCollector,
 )
 from finops_ingest.collectors.recommendations import RecommendationCollector
+from finops_ingest.collectors.savings_plan_rates import SavingsPlanRatesCollector
 from finops_ingest.collectors.score import ScoreCollector
+from finops_ingest.collectors.spot_prices import SpotPricesCollector
 from finops_ingest.collectors.waste_cloudwatch import WasteCloudWatchCollector
 from finops_ingest.collectors.waste_compute import Candidate, WasteComputeCollector
 from finops_ingest.collectors.waste_parking import Parkable, WasteParkingCollector
+from finops_ingest.collectors.waste_volumes import VolumeCandidate
 from finops_ingest.ledger import RunLedger
 from finops_ingest.registry import CollectorContext, install_default_schedule
 from finops_query.parser import GrafanaQueryParser
@@ -178,6 +191,8 @@ DEMO_TABLES = (
     # finding they are about second.
     "realized_saving",
     "recommendation_event",
+    # Before the recommendations it hangs off and the prices it quotes. TASK-P9-006.
+    "recommendation_option",
     "recommendation",
     # P1, FEAT-023. Derived from the daily rows, so it goes before them.
     "cost_anomaly",
@@ -190,6 +205,17 @@ DEMO_TABLES = (
     "sizing_refusal",
     # P1, FEAT-060. References only the tenant.
     "budget",
+    # P10, FEAT-076. Both reference only the tenant.
+    "invoice_detail",
+    "billing_period",
+    # P9, migration 0033. After `recommendation`, whose target references a price, and each
+    # price before the version it belongs to. The rest reference only the tenant.
+    "price",
+    "price_list_version",
+    "instance_type_spec",
+    "volume_type_spec",
+    "spot_price_daily",
+    "spot_price",
     "commitment_action",
     # P1, FEAT-024. Neither references the other, and both reference only the
     # tenant, so their order between themselves does not matter. The daily rows, TASK-P8-013,
@@ -581,6 +607,54 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
             unit(scope_key="billing:budgets"),
             "budgets",
         )
+        # FEAT-076. Built from the same bill the cost rows were, so the invoices match those rows
+        # by construction except where the fake says otherwise: one period matches, one is
+        # 2.50 over with a Marketplace invoice beside it, and the running month is open.
+        written += _through_the_ledger(
+            ledger,
+            InvoiceCollector(FakeInvoices(rows=bill), clock=lambda: now),
+            connection,
+            unit(scope_key="billing:invoices"),
+            "invoices",
+        )
+        # FEAT-071. EC2's prices in the estate's Regions, from the fake whose on demand rates are
+        # the estate's own monthly figures, so a rightsizing saving quoted from them is the
+        # difference in the bill the estate generates. The fake holds no other service, so the
+        # other four are read as having no versions rather than as failing.
+        written += _through_the_ledger(
+            ledger,
+            PriceCatalogCollector(FakePriceCatalog(), clock=lambda: now),
+            connection,
+            unit(scope_key="catalog:prices"),
+            "price_catalog",
+        )
+        # FEAT-072, after the prices it places EC2's types by: every type the estate prices,
+        # described in the first Region and stored in each Region the fake sells it in.
+        written += _through_the_ledger(
+            ledger,
+            InstanceCatalogCollector(
+                FakeInstanceCatalog(), hub_region=shape.REGIONS[0], clock=lambda: now
+            ),
+            connection,
+            unit(scope_key="catalog:instances"),
+            "instance_catalog",
+        )
+        # FEAT-071, TASK-P9-012. The Savings Plans rates for every Region the prices are held for.
+        written += _through_the_ledger(
+            ledger,
+            SavingsPlanRatesCollector(FakeSavingsPlansRates(), clock=lambda: now),
+            connection,
+            unit(scope_key="catalog:savings-plans"),
+            "savings_plan_rates",
+        )
+        # FEAT-071, TASK-P9-013. Spot prices for the same Regions: the latest and today's range.
+        written += _through_the_ledger(
+            ledger,
+            SpotPricesCollector(FakeSpotPrices(), clock=lambda: now),
+            connection,
+            unit(scope_key="catalog:spot"),
+            "spot_prices",
+        )
         # FEAT-055, immediately after the coverage it reads. Turning the gaps into findings in
         # the same seed run is what makes the commitments screen show the actions rather than
         # only the chart, and ordering matters: seeded before the coverage it would read an
@@ -634,7 +708,13 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
         # single global run would leave every account unscored but one. And a run per
         # account is what the dispatcher actually does, so seeding it any other way
         # would be a demo of an arrangement that does not exist.
-        for judged in sorted({c.account_id for c in ec2_candidates(at=ESTATE_AT)}):
+        instances = ec2_candidates(at=ESTATE_AT)
+        volumes = volume_candidates(at=ESTATE_AT)
+        # Every account with something to judge, instances or attached volumes. An account
+        # holding only volumes, as fake-platform-b does, was skipped until TASK-P9-011 found its
+        # planted gp2 volume never priced in the demo.
+        for judged in sorted({c.account_id for c in instances} | {v.account_id for v in volumes}):
+            attached = [VolumeCandidate(**asdict(v)) for v in volumes if v.account_id == judged]
             chosen = [
                 Candidate(
                     resource_id=c.resource_id,
@@ -643,19 +723,24 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
                     observation_days=c.observation_days,
                     monthly_cost=c.monthly_cost,
                     credit_balance=c.credit_balance,
+                    instance_type=c.instance_type,
                 )
-                for c in ec2_candidates(at=ESTATE_AT)
+                for c in instances
                 if c.account_id == judged
             ]
+            region = chosen[0].region_id if chosen else attached[0].region_id
             written += _through_the_ledger(
                 ledger,
                 WasteComputeCollector(
                     EstateMetrics(at=ESTATE_AT),
                     _always(chosen),
                     clock=lambda: ESTATE_AT,
+                    # The account's attached volumes, so the planted gp2 one is priced as gp3
+                    # in the same run as its instances, TASK-P9-009.
+                    volumes=_always(attached),
                 ),
                 connection,
-                unit(scope_key=f"aws:{judged}:{chosen[0].region_id}"),
+                unit(scope_key=f"aws:{judged}:{region}"),
                 "waste_compute",
                 settings=settings,
             )

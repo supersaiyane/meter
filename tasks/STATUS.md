@@ -9,7 +9,7 @@
      own content rather than scaffolding, and is not tagged.
 -->
 
-Last updated: 2026-09-27
+Last updated: 2026-10-08
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -22,11 +22,11 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 75 total, 13 specified, 13 in build, 42 delivered |
-| Decisions | 33 architecture decision records |
-| Changes | 121 recorded |
-| Issues | 154 fixed, 101 open, 0 parked |
-| Open questions | 19 awaiting a decision |
+| Features | 76 total, 11 specified, 13 in build, 49 delivered |
+| Decisions | 35 architecture decision records |
+| Changes | 146 recorded |
+| Issues | 157 fixed, 106 open, 0 parked |
+| Open questions | 24 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
 
@@ -38,8 +38,41 @@ Generated from `docs/registry.yaml`. Change a status there, then run `make doc-s
 statuses. TASK-P8-015 brought `docs/12-UI-DESIGN.md` and `docs/13-UI-ARCHITECTURE.md` up to what
 was built and marked FEAT-063 Delivered. TASK-P8-014 before it proved spec section 12, each exit
 criterion with its evidence in the plan, and fixed ISS-257 and ISS-258. `p8-build` merges into
-main with `--no-ff`, locally. P9 is not started, by the owner's instruction of 2026-10-07. The
-repository has no git remote, so nothing has been pushed.
+main with `--no-ff`, locally. Later on 2026-10-07 the owner approved
+priorities 1 to 3 of `next-in-scope.txt`, CHG-0122: the one day wins, FOCUS 1.4 with invoice
+reconciliation, and P9. They run in sequence on `next-build`. Priority 1 is done,
+including suggested owners from the team tag; priority 2 is specified and planned as P10, six
+tasks, ADR-0034, and was delivered on 2026-10-08 against fakes: the FOCUS 1.4 columns, the
+payer's invoices read into `billing_period` and `invoice_detail`, each invoice compared with
+Meter's billed cost at `GET /api/v1/cost/reconciliation`, the Invoice reconciliation screen and
+the FinOps practitioner's Matches the invoice tile, and constraint 2 naming FOCUS 1.4. The
+comparison against a real invoice waits on ISS-002, ISS-003 and TASK-P9-001. Priority 3, P9, is
+in build: on 2026-10-08 TASK-P9-001 gave the hub a path to every AWS API it calls, ADR-0035,
+endpoints in three Regions and a relay outside the VPC for the services with none, and
+TASK-P9-002 the price and instance type ports, shaped by AWS's real price list, TASK-P9-003
+the catalog's tables, every invariant a constraint, and TASK-P9-004 AWS's on demand and reserved
+prices for five services in every commercial Region, loaded every 8 hours when a version changes.
+The catalog's size and a real EC2 instance product wait on ISS-261. TASK-P9-005 added what each
+instance type is in every Region it is sold in, burstable baselines from the EC2 guide's credit
+table, with the two Region comparison and three services' attribute names waiting on ISS-262.
+TASK-P9-012 added Savings Plans rates through the relay, versioned by their own digest, with the
+call volume put to the owner as OPEN-22. TASK-P9-013 added spot prices, the latest per pool and
+each day's low and high for 90 days. The catalog is complete. TASK-P9-006 read Compute Optimizer
+in every Region and account and kept every ranked option, each priced from the catalog or saying
+why not, in a table of its own put to the owner as OPEN-23. TASK-P9-007 made Meter's own
+rightsizing name the cheapest type that fits and quote the price difference: the planted m5.2xlarge
+at 7 percent now names m5.xlarge and saves about half its cost (modelled). TASK-P9-008 made an
+instance under pressure an Upsize of its own kind, an added cost with a saving of nought, so no
+total of savings falls: the planted c6i.2xlarge grows to c6i.4xlarge. TASK-P9-009 priced a gp2
+volume as the gp3 that does its work, inside the EBS guide's limits read on 2026-10-08: the planted
+1,000 GiB volume saves 15.00 a month (modelled), and the unit of a real gp3 throughput price is
+ISS-265. TASK-P9-010 served the catalog as GET /catalog/prices and GET /catalog/instance-types,
+gave every recommendation its target and both list prices, and showed what a rightsizing was
+compared with in an Alternatives table under one finding; Meter's own alternatives are written when
+its rule judges them, with no risk score, OPEN-24. TASK-P9-011 proved the exit criteria against
+the whole demo estate, where the gp2 volume turned out never to be judged, ISS-266, fixed the same
+day, and P9 was delivered against fakes on 2026-10-08. A real price list and real Compute Optimizer
+answers wait on ISS-002. The repository has no git remote, so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -212,7 +245,8 @@ ISS-003.
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 | P8 | 18 | 0 | 0 | 0 | 0 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
-| P9 | 0 | 0 | 0 | 0 | 13 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
+| P9 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
+| P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -430,6 +464,35 @@ ISS-003.
 | `TASK-P8-016` | Done | the account picker on every screen |
 | `TASK-P8-017` | Done 2026-10-07 | the geography map redrawn |
 | `TASK-P8-018` | Done 2026-10-05 | the look as drawn |
+
+**P9, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P9-001` | Done 2026-10-08 | the hub reaches every AWS API it calls |
+| `TASK-P9-002` | Done 2026-10-08 | ports and fakes for prices and instance types |
+| `TASK-P9-003` | Done 2026-10-08 | the catalog tables |
+| `TASK-P9-004` | Done 2026-10-08 | the price list, five services, every Region, on demand and reserved |
+| `TASK-P9-005` | Done 2026-10-08 | the instance capability catalog |
+| `TASK-P9-012` | Done 2026-10-08 | Savings Plans rates, every Region |
+| `TASK-P9-013` | Done 2026-10-08 | spot prices, every Region and zone |
+| `TASK-P9-006` | Done 2026-10-08 | Compute Optimizer, every Region, every account, every option |
+| `TASK-P9-007` | Done 2026-10-08 | downsizing to a named, priced target |
+| `TASK-P9-008` | Done 2026-10-08 | upsizing, as an added cost |
+| `TASK-P9-009` | Done 2026-10-08 | gp2 to gp3, priced |
+| `TASK-P9-010` | Done 2026-10-08 | routes and the Alternatives table |
+| `TASK-P9-011` | Done 2026-10-08 | proof and documents |
+
+**P10, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P10-001` | Done 2026-10-07 | two digit sub projects in the tooling |
+| `TASK-P10-002` | Done 2026-10-07 | FOCUS 1.4's mandatory and invoice columns on the cost row |
+| `TASK-P10-003` | Done 2026-10-08 | billing periods and invoices |
+| `TASK-P10-004` | Done 2026-10-08 | the comparison and its route |
+| `TASK-P10-005` | Done 2026-10-08 | the screen and the Overview tile |
+| `TASK-P10-006` | Done 2026-10-08 | proof and documents |
 
 <!-- generated:task-status end -->
 

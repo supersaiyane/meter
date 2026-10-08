@@ -172,9 +172,26 @@ applying another.
 
 ## Network
 
-Workers run in private subnets with VPC interface endpoints for STS, SQS,
-Secrets Manager, Cost Explorer and CloudWatch Logs, plus a gateway endpoint for
-S3. No NAT Gateway.
+Workers run in private subnets with no NAT Gateway and no default route. Every
+call leaves through one of three paths, ADR-0035, TASK-P9-001:
+
+- An interface endpoint in the hub's Region for each service the tasks call
+  there, sixteen of them, plus the S3 gateway endpoint.
+- An endpoint VPC in us-east-1, peered to the hub, for the services that answer
+  only there: Cost Explorer, Organizations, IAM, Cost Optimization Hub and the
+  Price List. An endpoint VPC in eu-west-2 for what the collectors call in each
+  member account there. Private hosted zones in the hub resolve each service's
+  hostname to its endpoint across the peering.
+- The relay, a Lambda function outside the VPC invoked through the Lambda
+  endpoint, for Budgets, Support and Invoicing, which have no interface endpoint,
+  and for spot prices and Savings Plans rates in every Region.
+
+**Correction, 2026-10-08.** This section once named a Cost Explorer interface
+endpoint among the hub's own. None can be made in the hub's Region: Cost
+Explorer answers only in us-east-1, and its endpoint is in the us-east-1
+endpoint VPC above. ISS-242. The six endpoint figures below are the ones the
+original decision was taken on; ADR-0035 prices the path as built, about 330
+USD a month more (modelled, from endpoint prices measured on 2026-10-08).
 
 **Correction, 2026-08-23.** This was previously justified on cost, and that
 justification was wrong. Working the numbers for the cost estimate below

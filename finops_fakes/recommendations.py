@@ -16,6 +16,11 @@ never reach a screen. It is here so the floor is exercised rather than assumed.
 Optimizer does flag and which our own collector correctly refuses. Both appear,
 because the product's answer to "AWS says this and we disagree" has to be visible
 somewhere.
+
+**Compute Optimizer's findings carry their ranked options**, TASK-P9-006, as the real
+service returns them: the oversized instance's second option is Graviton, `m6g.large`,
+which the fake catalog does not price, so an option kept without a price and saying
+why is on the demo rather than only in a test.
 """
 
 from __future__ import annotations
@@ -26,7 +31,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from typing import TypedDict
 from uuid import UUID
 
-from finops_core.domain.waste import Lifecycle, Recommendation, Source, WasteClass
+from finops_core.domain.waste import Lifecycle, RankedOption, Recommendation, Source, WasteClass
 from finops_core.errors import CollectionError, NotOptedIn
 from finops_fakes import cur, fixtures
 
@@ -92,6 +97,8 @@ def findings(
         days: int,
         rationale: str,
         account: str = "fake-platform-a",
+        current: str | None = None,
+        options: tuple[RankedOption, ...] = (),
     ) -> Recommendation:
         return Recommendation(
             **common,
@@ -108,6 +115,8 @@ def findings(
             owner=None,
             ticket_reference=None,
             rationale=rationale,
+            current_instance_type=current,
+            options=options,
         )
 
     return (
@@ -121,6 +130,23 @@ def findings(
             saving=_money(ec2 * Decimal("0.20")),
             days=45,
             rationale="Compute Optimizer finding Overprovisioned, recommending m6i.large",
+            current="m5.xlarge",
+            options=(
+                RankedOption(
+                    rank=1,
+                    instance_type="m6i.large",
+                    performance_risk=Decimal("1.0"),
+                    provider_monthly_saving=_money(ec2 * Decimal("0.20")),
+                ),
+                RankedOption(
+                    rank=2,
+                    instance_type="m6g.large",
+                    performance_risk=Decimal("1.5"),
+                    migration_effort="Medium",
+                    platform_differences=("Architecture",),
+                ),
+                RankedOption(rank=3, instance_type="m5.large", performance_risk=Decimal("2.0")),
+            ),
         ),
         build(
             source=Source.COMPUTE_OPTIMIZER,
@@ -134,6 +160,10 @@ def findings(
             # because the credit balance is healthy, and both answers being
             # visible is the point.
             rationale="Compute Optimizer finding Overprovisioned on a t class instance",
+            current="t3.large",
+            options=(
+                RankedOption(rank=1, instance_type="t3.medium", performance_risk=Decimal("2.0")),
+            ),
         ),
         build(
             source=Source.COST_OPTIMIZATION_HUB,

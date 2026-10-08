@@ -1,4 +1,4 @@
-"""Locating and reading billing data, already normalized to FOCUS 1.1.
+"""Locating and reading billing data, already normalized to FOCUS 1.4.
 
 ADR-0002. Normalization happens in the adapter, at ingest, so that every
 consumer above this line reads one schema. A port that returned a provider's
@@ -32,7 +32,7 @@ class CostExport(Protocol):
         ...
 
     def read_period(self, period_start: date, period_end: date) -> Iterable[CostRecord]:
-        """Every charge row covering the period, normalized to FOCUS 1.1.
+        """Every charge row covering the period, normalized to FOCUS 1.4.
 
         Raises:
             AccessDenied: The export bucket or its key prefix is not readable.

@@ -180,6 +180,7 @@ export const GROUPS: readonly GroupDef[] = [
       { path: '/report/library', label: 'Report Library', arrives: null },
       { path: '/report/scheduled', label: 'Scheduled', arrives: null },
       { path: '/report/exports', label: 'Exports', arrives: null },
+      { path: '/report/reconciliation', label: 'Invoice reconciliation', arrives: null },
     ],
   },
   {

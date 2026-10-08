@@ -16,6 +16,12 @@ adding it needed a new file and one line here, and changed nothing else.
 """
 
 from finops_core.ports.accounts import AccountDiscovery
+from finops_core.ports.catalog import (
+    InstanceCatalog,
+    PriceCatalog,
+    SavingsPlansRates,
+    SpotPrices,
+)
 from finops_core.ports.containers import ContainerSource
 from finops_core.ports.cost import CostExport
 from finops_core.ports.credentials import CredentialBroker
@@ -55,7 +61,13 @@ SURFACE_PORTS = (QuerySurface, RefreshFloor, PanelRewrite)
 #: one fake to be both.
 MODEL_PORTS = (LlmProvider,)
 
+#: AWS's price list and its description of instance types, P9 and TASK-P9-002. Their own group,
+#: because they describe what AWS sells rather than an estate: the cloud fake does not implement
+#: them, and their fakes are built from the estate's own prices in `finops_fakes/catalog.py`.
+CATALOG_PORTS = (PriceCatalog, InstanceCatalog, SavingsPlansRates, SpotPrices)
+
 __all__ = [
+    "CATALOG_PORTS",
     "MODEL_PORTS",
     "PROVIDER_PORTS",
     "SURFACE_PORTS",
@@ -65,13 +77,17 @@ __all__ = [
     "CredentialBroker",
     "EntitlementResolver",
     "IdentityProvider",
+    "InstanceCatalog",
     "LlmProvider",
     "MetricSource",
     "PanelRewrite",
+    "PriceCatalog",
     "QuerySurface",
     "QuotaSource",
     "RefreshFloor",
     "ResourceInventory",
+    "SavingsPlansRates",
+    "SpotPrices",
 ]
 # `ProviderSession` is deliberately absent. It is a supporting type for
 # adapters rather than a port, and an adapter imports it from

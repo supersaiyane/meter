@@ -30,6 +30,16 @@ variable "hub_task_role_name" {
   default     = "FinOpsHubTaskRole"
 }
 
+variable "hub_relay_role_name" {
+  description = <<-EOT
+    The relay's role in the hub account, which makes the payer's Budgets and Invoicing reads
+    outside the hub's VPC, ADR-0035. Named, not wildcarded, and equal to the hub's
+    relay_role_name.
+  EOT
+  type        = string
+  default     = "FinOpsRelayRole"
+}
+
 variable "external_id" {
   description = <<-EOT
     The shared secret required on every assume. Held in Secrets Manager on the

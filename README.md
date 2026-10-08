@@ -729,7 +729,7 @@ See `tasks/STATUS.md`.
 | Database | Aurora Serverless v2 PostgreSQL, Alembic migrations |
 | Analytics | Athena and Glue over CUR 2.0 Parquet, extract and load only |
 | Base images | Minimus, `reg.mini.dev` |
-| Canonical cost schema | FOCUS 1.1 |
+| Canonical cost schema | FOCUS 1.4, its mandatory Cost and Usage columns and its invoice columns |
 | Local AWS emulation | LocalStack, development only, never a permission test |
 | Scanners | grype, syft, trivy, pip-audit, npm audit, gitleaks, cosign |
 | Scale assumption | 50 to 300 accounts, 10 to 100 GB CUR per month |

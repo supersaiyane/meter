@@ -357,6 +357,15 @@ cost_focus_daily = Table(
     Column("split_usage", Numeric(30, 10)),
     Column("split_usage_ratio", Numeric(20, 10)),
     Column("unused_cost", Numeric(20, 10)),
+    # FOCUS 1.4's mandatory and invoice columns, migration 0030, ADR-0034.
+    Column("billing_account_name", Text),
+    Column("billing_currency", Text),
+    Column("charge_class", Text),
+    Column("pricing_unit", Text),
+    Column("service_provider_name", Text),
+    Column("host_provider_name", Text),
+    Column("invoice_id", Text),
+    Column("invoice_detail_id", Text),
     postgresql_partition_by="RANGE (billing_period_start)",
 )
 
@@ -618,6 +627,15 @@ recommendation = Table(
     Column("rationale", Text, nullable=False),
     Column("as_of", DateTime(timezone=True), nullable=False),
     Column("collected_at", DateTime(timezone=True), nullable=False),
+    #: P9, migration 0033. What the resource is billed at and what it should move to, each a
+    #: price from one version of the catalog, held there by a composite foreign key. Null until
+    #: TASK-P9-007 names a target.
+    Column("current_sku_price_id", Text),
+    Column("target_instance_type", Text),
+    Column("target_sku_price_id", Text),
+    Column("price_version", Text),
+    #: An Upsize's added monthly cost, modelled, and nothing else's. Migration 0039.
+    Column("added_monthly_cost", Numeric(20, 10)),
 )
 
 
@@ -640,6 +658,36 @@ recommendation_event = Table(
     Column("actor", Text, nullable=False),
     Column("reason", Text),
     Column("occurred_at", DateTime(timezone=True), nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
+#: TASK-P9-006, migration 0038. Every target a provider ranked, priced from the catalog or saying
+#: why not. Its constraints live in the migration; this mirrors the columns for the schema test.
+recommendation_option = Table(
+    "recommendation_option",
+    metadata,
+    Column("option_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column(
+        "recommendation_id",
+        UUID(as_uuid=True),
+        ForeignKey("recommendation.recommendation_id"),
+        nullable=False,
+    ),
+    Column("region", Text, nullable=False),
+    Column("rank", SmallInteger, nullable=False),
+    Column("instance_type", Text, nullable=False),
+    # Null where the source gives no risk, as Meter's own rule does not, migration 0040.
+    Column("performance_risk", Numeric(3, 1), nullable=True),
+    Column("provider_monthly_saving", Numeric(20, 10)),
+    Column("migration_effort", Text),
+    Column("platform_differences", ARRAY(Text), nullable=False, server_default=text("'{}'")),
+    Column("sku_price_id", Text),
+    Column("price_version", Text),
+    Column("hourly_price", Numeric(20, 10)),
+    Column("unpriced_reason", Text),
     Column("as_of", DateTime(timezone=True), nullable=False),
     Column("collected_at", DateTime(timezone=True), nullable=False),
 )
@@ -929,6 +977,185 @@ budget = Table(
     Column("collected_at", DateTime(timezone=True), nullable=False),
 )
 
+
+#: FEAT-076, migration 0031. FOCUS 1.4's Billing Period dataset: one row per tenant and month,
+#: Closed once an invoice for it has been issued and Open until then. Payer wide, ADR-0025.
+billing_period = Table(
+    "billing_period",
+    metadata,
+    Column("billing_period_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("billing_period_start", Date, nullable=False),
+    Column("billing_period_end", Date, nullable=False),
+    #: Open or Closed, in FOCUS's own capitalisation.
+    Column("billing_period_status", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
+#: FEAT-076, migration 0031. FOCUS 1.4's Invoice Detail dataset at the grain AWS gives, one row
+#: per whole invoice or credit memo, so `invoice_detail_id` is the `invoice_id`. Stored as read:
+#: Meter's own sum and the difference are computed when read, TASK-P10-004. Payer wide.
+invoice_detail = Table(
+    "invoice_detail",
+    metadata,
+    Column("invoice_detail_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("invoice_id", Text, nullable=False),
+    Column("invoice_detail_id", Text, nullable=False),
+    #: INVOICE or CREDIT_MEMO. A credit memo names the invoice it corrects.
+    Column("invoice_type", Text, nullable=False),
+    Column("original_invoice_id", Text),
+    Column("billing_account_id", Text, nullable=False),
+    Column("billing_period_start", Date, nullable=False),
+    Column("billing_period_end", Date, nullable=False),
+    #: Not always AWS: Marketplace charges are invoiced by another entity.
+    Column("invoice_issuer_name", Text, nullable=False),
+    Column("billing_currency", Text, nullable=False),
+    Column("billed_cost_before_tax", Numeric(20, 10), nullable=False),
+    Column("tax", Numeric(20, 10), nullable=False),
+    Column("billed_cost", Numeric(20, 10), nullable=False),
+    Column("issued_at", DateTime(timezone=True), nullable=False),
+    Column("due_date", Date),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+
+# --- the price catalog, P9, migration 0033 -------------------------------------------------
+#
+# AWS's own prices and descriptions, per tenant as every table is, under the guard's tenant rule.
+# Every invariant is a constraint in the migration; these mirror the columns.
+
+#: One publication of one service's prices in one Region. `as_of` is its publication.
+price_list_version = Table(
+    "price_list_version",
+    metadata,
+    Column("version_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("service_code", Text, nullable=False),
+    Column("region", Text, nullable=False),
+    Column("version", Text, nullable=False),
+    Column("row_count", Integer, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+#: One offer term: on demand, or a reservation of one length, payment option and class. Its
+#: recurring price and upfront fee are never both nought, spec section 5.3 as corrected.
+price = Table(
+    "price",
+    metadata,
+    Column("price_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("service_code", Text, nullable=False),
+    Column("region", Text, nullable=False),
+    Column("sku", Text, nullable=False),
+    Column("sku_price_id", Text, nullable=False),
+    Column("sku_meter", Text, nullable=False),
+    Column("pricing_unit", Text, nullable=False),
+    Column("pricing_category", Text, nullable=False),
+    Column("currency", Text, nullable=False),
+    Column("recurring_unit_price", Numeric(20, 10), nullable=False),
+    Column("upfront_fee", Numeric(20, 10), nullable=False),
+    Column("lease_years", SmallInteger),
+    Column("purchase_option", Text),
+    Column("offering_class", Text),
+    Column("sku_price_details", JSONB, nullable=False),
+    Column("effective_date", Date, nullable=False),
+    Column("version", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+#: An instance type as AWS describes it in one Region, for EC2 and the four managed services.
+instance_type_spec = Table(
+    "instance_type_spec",
+    metadata,
+    Column("spec_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("service_code", Text, nullable=False),
+    Column("region", Text, nullable=False),
+    Column("instance_type", Text, nullable=False),
+    Column("family", Text, nullable=False),
+    Column("current_generation", Boolean, nullable=False),
+    Column("architectures", ARRAY(Text), nullable=False),
+    Column("burstable", Boolean, nullable=False),
+    #: A burstable type's baseline share of a vCPU and its credit ceiling, from the EC2 guide's
+    #: table, TASK-P9-005, with where it came from.
+    Column("baseline_cpu", Numeric(6, 4)),
+    Column("maximum_credits", Numeric(10, 2)),
+    Column("baseline_source", Text),
+    Column("vcpus", Integer, nullable=False),
+    Column("memory_mib", BigInteger, nullable=False),
+    Column("network_performance", Text, nullable=False),
+    Column("network_baseline_gbps", Numeric(8, 3)),
+    Column("network_peak_gbps", Numeric(8, 3)),
+    Column("ebs_baseline_mbps", Integer),
+    Column("ebs_maximum_mbps", Integer),
+    Column("gpu_count", Integer, nullable=False),
+    Column("offered", Boolean, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+#: An EBS volume type's included and maximum performance, with its source.
+volume_type_spec = Table(
+    "volume_type_spec",
+    metadata,
+    Column("volume_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("volume_type", Text, nullable=False),
+    Column("baseline_iops", Integer),
+    Column("baseline_throughput_mibps", Integer),
+    Column("maximum_iops", Integer, nullable=False),
+    Column("maximum_throughput_mibps", Integer, nullable=False),
+    Column("iops_per_gib", Numeric(8, 3)),
+    Column("source", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+#: The latest spot price in each pool, replaced each run, OPEN-18.
+spot_price = Table(
+    "spot_price",
+    metadata,
+    Column("spot_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("region", Text, nullable=False),
+    Column("availability_zone", Text, nullable=False),
+    Column("instance_type", Text, nullable=False),
+    Column("product_description", Text, nullable=False),
+    Column("price", Numeric(20, 10), nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+#: Each pool's lowest and highest reading in a day, kept 90 days, OPEN-18.
+spot_price_daily = Table(
+    "spot_price_daily",
+    metadata,
+    Column("spot_day_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("region", Text, nullable=False),
+    Column("availability_zone", Text, nullable=False),
+    Column("instance_type", Text, nullable=False),
+    Column("product_description", Text, nullable=False),
+    Column("day", Date, nullable=False),
+    Column("low", Numeric(20, 10), nullable=False),
+    Column("high", Numeric(20, 10), nullable=False),
+    Column("readings", Integer, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
 
 query_adhoc = Table(
     "query_adhoc",

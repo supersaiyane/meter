@@ -65,6 +65,7 @@ PY_PACKAGES = (
     "finops_api",
     "finops_mcp",
     "finops_query",
+    "finops_relay",
 )
 
 # Allowed direction. A layer may import anything below it, never above.
@@ -81,6 +82,7 @@ LAYERS = [
     "finops_ingest",
     "finops_query",
     "finops_providers",
+    "finops_relay",
     "finops_core",
 ]
 LAYER_RANK = {name: index for index, name in enumerate(LAYERS)}

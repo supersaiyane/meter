@@ -74,6 +74,113 @@ READS: dict[tuple[str, str], set[str]] = {
     },
     # FEAT-057, ISS-209. The state file, one object read.
     ("s3", "GetObject"): {"Body"},
+    # FEAT-076, TASK-P10-003. The payer's invoices, one paginated list per billing period.
+    ("invoicing", "ListInvoiceSummaries"): {
+        "InvoiceSummaries",
+        "AccountId",
+        "InvoiceId",
+        "IssuedDate",
+        "DueDate",
+        "Entity",
+        "InvoicingEntity",
+        "BillingPeriod",
+        "Month",
+        "Year",
+        "InvoiceType",
+        "OriginalInvoiceId",
+        "BaseCurrencyAmount",
+        "TotalAmount",
+        "TotalAmountBeforeTax",
+        "CurrencyCode",
+        "AmountBreakdown",
+        "Taxes",
+        "NextToken",
+    },
+    # FEAT-071, TASK-P9-004. The price list: its versions, then each version's products. A product
+    # is a JSON string, so what is read inside it is held to the API reference's sample instead,
+    # tests/providers/aws/test_price_list.py.
+    ("pricing", "ListPriceLists"): {
+        "PriceLists",
+        "PriceListArn",
+        "RegionCode",
+        "CurrencyCode",
+        "NextToken",
+    },
+    ("pricing", "GetProducts"): {"PriceList", "NextToken"},
+    # FEAT-071, TASK-P9-012. Savings Plans rates, through the relay, which follows the token.
+    ("savingsplans", "DescribeSavingsPlansOfferingRates"): {
+        "searchResults",
+        "savingsPlanOffering",
+        "offeringId",
+        "paymentOption",
+        "planType",
+        "durationSeconds",
+        "currency",
+        "rate",
+        "unit",
+        "productType",
+        "serviceCode",
+        "usageType",
+        "operation",
+        "properties",
+        "name",
+        "value",
+        "nextToken",
+    },
+    # FEAT-071, TASK-P9-013. Spot readings, through the relay, botocore's own paginator.
+    ("ec2", "DescribeSpotPriceHistory"): {
+        "SpotPriceHistory",
+        "AvailabilityZone",
+        "InstanceType",
+        "ProductDescription",
+        "SpotPrice",
+        "Timestamp",
+        "NextToken",
+    },
+    # TASK-P9-006. Compute Optimizer, a Region and an account at a time, every ranked option.
+    ("compute-optimizer", "GetEC2InstanceRecommendations"): {
+        "instanceRecommendations",
+        "instanceArn",
+        "finding",
+        "currentInstanceType",
+        "lookBackPeriodInDays",
+        "recommendationOptions",
+        "instanceType",
+        "rank",
+        "performanceRisk",
+        "migrationEffort",
+        "platformDifferences",
+        "savingsOpportunity",
+        "estimatedMonthlySavings",
+        "value",
+        "nextToken",
+    },
+    # FEAT-072, TASK-P9-005. EC2's description of its types, every figure the spec stores.
+    ("ec2", "DescribeInstanceTypes"): {
+        "InstanceTypes",
+        "InstanceType",
+        "CurrentGeneration",
+        "ProcessorInfo",
+        "SupportedArchitectures",
+        "BurstablePerformanceSupported",
+        "VCpuInfo",
+        "DefaultVCpus",
+        "MemoryInfo",
+        "SizeInMiB",
+        "NetworkInfo",
+        "NetworkPerformance",
+        "NetworkCards",
+        "BaselineBandwidthInGbps",
+        "PeakBandwidthInGbps",
+        "EbsInfo",
+        "EbsOptimizedInfo",
+        "BaselineBandwidthInMbps",
+        "MaximumBandwidthInMbps",
+        "GpuInfo",
+        "Gpus",
+        "Count",
+        "NextToken",
+    },
     # FEAT-060, ISS-211. The budgets, one paginated describe.
     ("budgets", "DescribeBudgets"): {
         "Budgets",
@@ -169,6 +276,11 @@ TOKENS: dict[tuple[str, str], str] = {
     ("ec2", "DescribeVpcEndpointConnections"): "NextToken",
     ("iam", "ListRoles"): "Marker",
     ("budgets", "DescribeBudgets"): "NextToken",
+    ("invoicing", "ListInvoiceSummaries"): "NextToken",
+    ("pricing", "ListPriceLists"): "NextToken",
+    ("pricing", "GetProducts"): "NextToken",
+    ("ec2", "DescribeInstanceTypes"): "NextToken",
+    ("ec2", "DescribeSpotPriceHistory"): "NextToken",
     ("service-quotas", "ListServices"): "NextToken",
     ("service-quotas", "ListServiceQuotas"): "NextToken",
     ("service-quotas", "ListRequestedServiceQuotaChangeHistory"): "NextToken",
@@ -270,6 +382,25 @@ SENDS: dict[tuple[str, str], set[str]] = {
     ("iam", "ListRoles"): set(),
     ("s3", "GetObject"): {"Bucket", "Key"},
     ("budgets", "DescribeBudgets"): {"AccountId"},
+    ("invoicing", "ListInvoiceSummaries"): {"Selector", "Filter"},
+    ("pricing", "ListPriceLists"): {"ServiceCode", "EffectiveDate", "CurrencyCode"},
+    ("pricing", "GetProducts"): {"ServiceCode", "FormatVersion", "Filters"},
+    ("savingsplans", "DescribeSavingsPlansOfferingRates"): {
+        "savingsPlanTypes",
+        "savingsPlanPaymentOptions",
+        "products",
+        "filters",
+        "maxResults",
+    },
+    # The window's two ends, and every zone and product description.
+    ("ec2", "DescribeSpotPriceHistory"): {"StartTime", "EndTime", "MaxResults"},
+    # One account a request, and Graviton asked for through the architecture preference.
+    ("compute-optimizer", "GetEC2InstanceRecommendations"): {
+        "accountIds",
+        "recommendationPreferences",
+    },
+    # Every type, unfiltered: the hub's Region describes all it supports.
+    ("ec2", "DescribeInstanceTypes"): set(),
     ("service-quotas", "ListServices"): set(),
     ("service-quotas", "ListServiceQuotas"): {"ServiceCode"},
     ("service-quotas", "ListRequestedServiceQuotaChangeHistory"): set(),
@@ -334,6 +465,33 @@ FALLS_THROUGH: dict[tuple[str, str], set[str]] = {
         "InvalidParameterException",
         "NotFoundException",
     },
+    # The Invoicing API refuses as AccessDeniedException and throttles as ThrottlingException,
+    # both mapped. What is left is our own request being wrong, a payer the API does not know,
+    # and the service failing, SchemaDrift for now as ISS-215 records for every adapter here.
+    ("invoicing", "ListInvoiceSummaries"): {
+        "InternalServerException",
+        "ResourceNotFoundException",
+        "ValidationException",
+    },
+    # The Price List API refuses as AccessDeniedException and throttles as ThrottlingException,
+    # both mapped. What is left is a page token that expired or is wrong, our own request being
+    # wrong, a service or price list the API does not know, and the service failing: SchemaDrift
+    # for now, as ISS-215 records for every adapter here.
+    ("pricing", "ListPriceLists"): {
+        "ExpiredNextTokenException",
+        "InternalErrorException",
+        "InvalidNextTokenException",
+        "InvalidParameterException",
+        "NotFoundException",
+        "ResourceNotFoundException",
+    },
+    ("pricing", "GetProducts"): {
+        "ExpiredNextTokenException",
+        "InternalErrorException",
+        "InvalidNextTokenException",
+        "InvalidParameterException",
+        "NotFoundException",
+    },
     # Service Quotas throttles as TooManyRequestsException and refuses as
     # AccessDeniedException, both of which translate maps. What is left is our own request
     # being wrong, a page token that expired, and the service failing: SchemaDrift for the
@@ -366,8 +524,26 @@ FALLS_THROUGH: dict[tuple[str, str], set[str]] = {
     # SchemaDrift in the reason sentence rather than as NotOptedIn.
     ("support", "DescribeTrustedAdvisorChecks"): {"InternalServerError"},
     ("support", "DescribeTrustedAdvisorCheckResult"): {"InternalServerError"},
-    # EC2 declares no modelled errors at all for either counter.
+    # Savings Plans declares two, both our request or the service failing: SchemaDrift for now,
+    # ISS-215. It throttles and refuses with codes it does not declare, which translate maps.
+    ("savingsplans", "DescribeSavingsPlansOfferingRates"): {
+        "InternalServerException",
+        "ValidationException",
+    },
+    # Compute Optimizer's not enabled codes become NotOptedIn in the adapter itself, ISS-004;
+    # what is left here reaches translate as SchemaDrift, ISS-215.
+    ("compute-optimizer", "GetEC2InstanceRecommendations"): {
+        "InternalServerException",
+        "InvalidParameterValueException",
+        "MissingAuthenticationToken",
+        "OptInRequiredException",
+        "ResourceNotFoundException",
+        "ServiceUnavailableException",
+    },
+    # EC2 declares no modelled errors at all for either counter, nor for its instance types.
     ("ec2", "DescribeVpcs"): set(),
+    ("ec2", "DescribeInstanceTypes"): set(),
+    ("ec2", "DescribeSpotPriceHistory"): set(),
     ("ec2", "DescribeAddresses"): set(),
 }
 
@@ -437,3 +613,16 @@ def test_the_request_status_vocabulary_is_the_one_the_service_model_declares(
         f"declared: {sorted({s.value for s in RequestStatus} - declared)}. Widening this "
         f"needs a migration: the vocabulary is a check constraint in 0020 as well."
     )
+
+
+def test_the_relay_follows_the_token_savings_plans_uses(loader: botocore.session.Session) -> None:
+    """TASK-P9-012. botocore has no paginator for the rates, so `TOKENS` cannot hold them and the
+    relay follows the token by hand. The name it follows must be the one the model declares on
+    both sides, or the relay reads the first page forever."""
+    from finops_relay.relay import _TOKENS
+
+    model = loader.get_service_model("savingsplans").operation_model(
+        "DescribeSavingsPlansOfferingRates"
+    )
+    shared = set(model.input_shape.members) & set(model.output_shape.members)
+    assert shared & set(_TOKENS) == {"nextToken"}

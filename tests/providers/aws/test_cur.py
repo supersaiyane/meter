@@ -315,3 +315,62 @@ class TestFindingThePeriods:
         # The port's distinction: present and empty, versus missing. A caller
         # that collapsed them reports a configuration fault as an empty bill.
         assert export(settings, s3=StubS3([])).latest_available_period() is None
+
+
+FOCUS_1_2 = {
+    "billingaccountname": "Payer",
+    "billingcurrency": "USD",
+    "chargeclass": "",
+    "pricingunit": "Hours",
+    "invoiceid": "EUINGB26-0001",
+}
+
+
+def page_with(rows: list[dict[str, str]]) -> dict[str, Any]:
+    """A page whose columns are the first row's, so an export can carry more than ROW does."""
+    columns = sorted(rows[0])
+    data = [{"Data": [{"VarCharValue": name} for name in columns]}]
+    data.extend({"Data": [{"VarCharValue": row.get(name, "")} for name in columns]} for row in rows)
+    return {
+        "ResultSet": {
+            "ResultSetMetadata": {"ColumnInfo": [{"Name": name} for name in columns]},
+            "Rows": data,
+        }
+    }
+
+
+class TestFocusOneTwoColumns:
+    """TASK-P10-002: read where the export carries them, null where it does not, P10 spec 5.2."""
+
+    def test_an_export_carrying_them_is_read_and_the_providers_follow(
+        self, settings: Settings
+    ) -> None:
+        athena = StubAthena([page_with([{**ROW, **FOCUS_1_2}])])
+        row = next(iter(export(settings, athena=athena).read_period(AUGUST, SEPTEMBER)))
+        assert (row.billing_account_name, row.billing_currency, row.pricing_unit) == (
+            "Payer",
+            "USD",
+            "Hours",
+        )
+        assert row.charge_class is None
+        assert (row.invoice_id, row.invoice_detail_id) == ("EUINGB26-0001", "EUINGB26-0001")
+        assert (row.service_provider_name, row.host_provider_name) == ("AWS", "AWS")
+        assert "billingcurrency" in _period_query(athena)
+
+    def test_an_older_export_reads_as_before_with_them_null(self, settings: Settings) -> None:
+        athena = StubAthena([page_for([ROW])])
+        row = next(iter(export(settings, athena=athena).read_period(AUGUST, SEPTEMBER)))
+        assert (row.billing_currency, row.invoice_id, row.billing_account_name) == (
+            None,
+            None,
+            None,
+        )
+        assert row.service_provider_name == "AWS"
+        assert "billingcurrency" not in _period_query(athena)
+
+    def test_a_currency_that_is_not_iso_4217_is_drift_and_never_written(
+        self, settings: Settings
+    ) -> None:
+        athena = StubAthena([page_with([{**ROW, **FOCUS_1_2, "billingcurrency": "usd"}])])
+        with pytest.raises(errors.SchemaDrift, match="ISO 4217"):
+            list(export(settings, athena=athena).read_period(AUGUST, SEPTEMBER))

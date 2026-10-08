@@ -94,6 +94,13 @@ tests outside the gate, and both ISS-175 and ISS-177 lived in exactly that gap.
 reports coverage, because a fraction of the suite measured against the whole
 suite's threshold is a number that cannot be read.
 
+A change that touches documents alone, Markdown, text, and anything under `docs/` or
+`tasks/`, may be gated by `make verify-docs BASE=<the branch it merges into>` instead. It
+runs the writing rules, the generated documents and the memory gate, which is everything a
+document can fail, and it first refuses any change holding another file, naming it, because
+the shortcut is only safe while no code changed. Approved by the owner on 2026-10-07,
+CHG-0123: a thirteen line change to `project_map.md` had cost about fifteen minutes of tests.
+
 ## Architectural constraints
 
 These are not style preferences. Breaking them costs a rewrite.
@@ -101,8 +108,9 @@ These are not style preferences. Breaking them costs a rewrite.
 1. **`finops_core` never imports boto3.** No cloud SDK, no framework, no
    HTTP client. Domain and ports only. This is what makes GCP and Azure a
    connector instead of a rewrite.
-2. **The canonical cost schema is FOCUS 1.1.** Do not invent a cost schema.
-   Normalize at ingest.
+2. **The canonical cost schema is FOCUS 1.4.** Its mandatory Cost and Usage
+   columns and the two that tie a row to its invoice, ADR-0034. Do not invent a
+   cost schema. Normalize at ingest.
 3. **Scope is enforced in two places**, a request dependency and a repository
    guard. A route that forgets the dependency must still not be able to read
    out of scope data.

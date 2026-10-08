@@ -223,6 +223,7 @@ export function entityFixture(nodeId: string): ApiEnvelope<ApiEntity> {
     // recommendations screen counts. A fixture where everything had an owner would never
     // show the screen what it looks like.
     owner: null,
+    suggested_owner: null,
     ticket_reference: null,
     rationale: 'The volume is gp2 and gp3 delivers the same baseline for less.',
     reversible: true,

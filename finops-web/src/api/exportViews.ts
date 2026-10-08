@@ -23,6 +23,8 @@ export type ExportFormat = 'xlsx' | 'csv';
  */
 export const EXPORT_TITLES: Readonly<Partial<Record<string, string>>> = {
   '/api/v1/accounts': 'Accounts',
+  '/api/v1/catalog/instance-types': 'Instance types',
+  '/api/v1/catalog/prices': 'Prices',
   '/api/v1/assistant/exchanges': 'Assistant questions',
   '/api/v1/assistant/digests': 'Assistant digests',
   '/api/v1/assistant/redactions': 'Assistant redactions',
@@ -38,6 +40,7 @@ export const EXPORT_TITLES: Readonly<Partial<Record<string, string>>> = {
   '/api/v1/cost/showback': 'Showback',
   '/api/v1/cost/explore': 'Cost Explorer',
   '/api/v1/cost/forecast': 'Spend forecast',
+  '/api/v1/cost/reconciliation': 'Invoice reconciliation',
   '/api/v1/ingest/runs': 'Collector runs',
   '/api/v1/health/freshness': 'Freshness',
   '/api/v1/inventory/resources': 'Resources',
@@ -52,6 +55,7 @@ export const EXPORT_TITLES: Readonly<Partial<Record<string, string>>> = {
   '/api/v1/governance/quotas': 'Quotas',
   '/api/v1/governance/quotas/requests': 'Quota requests',
   '/api/v1/waste/recommendations': 'Recommendations',
+  '/api/v1/waste/recommendations/{recommendation_id}/alternatives': 'Alternatives',
   '/api/v1/waste/refusals': 'Refusals',
   '/api/v1/waste/savings': 'Realized savings',
   '/api/v1/waste/score': 'Waste score',

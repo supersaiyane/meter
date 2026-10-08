@@ -251,6 +251,12 @@ class WasteParkingCollector:
                 "days": settings.parking_observation_days,
                 "rationale": self._rationale(candidate, shape, saving),
                 "now": now,
+                # Parking changes when an instance runs, not what it runs as: no target.
+                "current": None,
+                "target_type": None,
+                "target": None,
+                "version": None,
+                "added": None,
             },
         )
         context.connection.execute(

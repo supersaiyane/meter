@@ -111,6 +111,8 @@ HOURLY = 3600
 #: Six hours. The interval the P2 specification asks for, named rather than
 #: written as a multiplication at the call site.
 SIX_HOURLY = 21600
+#: Eight hours, the interval the P9 specification's section 14.4 asks the catalog collectors for.
+EIGHT_HOURLY = 28800
 #: Twelve hours, the interval the P5 specification's section 7 asks for.
 TWELVE_HOURLY = 43200
 DAILY = 86400
@@ -323,6 +325,82 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
             "DescribeBudgets at the payer and costs nothing. ADR-0012 and constraint 9."
         ),
         est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="invoices",
+        cadence_seconds=DAILY,
+        reason=(
+            "Daily, because AWS issues an invoice once a month and a credit memo rarely, so a "
+            "daily read finds each within a day of its issue. A run is one ListInvoiceSummaries "
+            "per billing period at the payer, modelled at no cost until a real bill shows "
+            "otherwise. ADR-0012, constraint 9 and FEAT-076."
+        ),
+        est_cost_per_run="0",
+    ),
+    # FEAT-071, TASK-P9-004. Migration 0034 installs the same row for every tenant before it.
+    ScheduleEntry(
+        collector="price_catalog",
+        cadence_seconds=EIGHT_HOURLY,
+        reason=(
+            "Every 8 hours, P9 specification section 14.4. A run asks each of five services for "
+            "its current price list version in every Region and loads only a version it does not "
+            "hold, so a run that finds nothing new is five ListPriceLists calls and writes "
+            "nothing, and a faster cadence would only repeat them. A version AWS publishes is "
+            "loaded within 8 hours, so a saving is never quoted from superseded prices for longer "
+            "than that. The Price List API makes no charge; a load costs the hub's endpoint "
+            "processing its pages at 0.01 USD a GB, AWS's published rate, and a full load of all "
+            "five services in every Region is modelled at under one GB, so the figure below "
+            "bounds a full load and a quiet run costs nothing. ADR-0012, ADR-0035, constraint 9 "
+            "and FEAT-071."
+        ),
+        est_cost_per_run="0.01",
+    ),
+    # FEAT-072, TASK-P9-005. Migration 0035 installs the same row for every tenant before it.
+    ScheduleEntry(
+        collector="instance_catalog",
+        cadence_seconds=EIGHT_HOURLY,
+        reason=(
+            "Every 8 hours, P9 specification section 14.4, beside the price catalog whose "
+            "Regions it places EC2's types in. A run is one DescribeInstanceTypes in the hub's "
+            "Region, one in the Region it is compared with, and GetProducts only for a managed "
+            "service whose price list changed since its classes were read, so a faster cadence "
+            "would read the same descriptions again. A type AWS starts selling is described "
+            "within 8 hours of being priced. Neither API makes a charge; the cost is the hub's "
+            "endpoints processing the pages, modelled at a tenth of a cent a run. ADR-0012, "
+            "ADR-0035, constraint 9 and FEAT-072."
+        ),
+        est_cost_per_run="0.001",
+    ),
+    # FEAT-071, TASK-P9-012. Migration 0036 installs the same row for every tenant before it.
+    ScheduleEntry(
+        collector="savings_plan_rates",
+        cadence_seconds=EIGHT_HOURLY,
+        reason=(
+            "Every 8 hours, with the other catalog collectors, P9 specification section 14.4. "
+            "Savings Plans rates carry no published version, so every Region is read each run "
+            "and a Region whose rates have not moved is stored as nothing. A run is six relay "
+            "calls a Region, one per plan type and payment option, so no answer outgrows the "
+            "relay; about 180 calls a run across 30 Regions (modelled), inside the Lambda free "
+            "allowance, and an S3 write each at 0.005 USD a thousand, AWS's published rate. "
+            "ADR-0012, ADR-0035, constraint 9, FEAT-071 and OPEN-19."
+        ),
+        est_cost_per_run="0.001",
+    ),
+    # FEAT-071, TASK-P9-013. Migration 0037 installs the same row for every tenant before it.
+    ScheduleEntry(
+        collector="spot_prices",
+        cadence_seconds=EIGHT_HOURLY,
+        reason=(
+            "Every 8 hours, with the other catalog collectors, P9 specification section 14.4. "
+            "Each run reads every Region's window since its last read, one relay call a Region "
+            "because DescribeSpotPriceHistory pages with botocore's own paginator: about 2,700 "
+            "calls a month across 30 Regions (modelled), the figure spec section 14.5 gave, "
+            "inside the Lambda free allowance and an S3 write each at 0.005 USD a thousand, "
+            "AWS's published rate. Spot moves within hours, so a slower cadence would miss the "
+            "daily low and high OPEN-18 keeps, and a faster one would only repeat the same "
+            "prices. ADR-0012, ADR-0035, constraint 9, FEAT-071 and OPEN-18."
+        ),
+        est_cost_per_run="0.0002",
     ),
     ScheduleEntry(
         collector="iac_state",

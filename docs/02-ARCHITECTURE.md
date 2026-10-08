@@ -75,6 +75,7 @@ from `finops_core.errors`, and that no signature mentions an ARN or boto.
 | `PROVIDER_PORTS` | What a cloud provider implements. `FakeProvider` in `finops_fakes/provider.py` implements every one |
 | `SURFACE_PORTS` | Not about a cloud: a tool that holds saved queries which cost money when they run. `FakeQuerySurface` in `finops_fakes/surface.py` implements every one |
 | `MODEL_PORTS` | The model behind the assistant, ADR-0028. Neither the cloud fake nor a query surface implements it, so it has a group of its own |
+| `CATALOG_PORTS` | What AWS sells rather than an estate: its price list and its description of instance types, P9. `FakePriceCatalog` and `FakeInstanceCatalog` in `finops_fakes/catalog.py` implement them |
 | No group | Every other protocol in the package. Each is imported from its own module, and the per port checks in `tests/core/test_ports.py` never reach it, ISS-239 |
 
 ### Every port
@@ -98,6 +99,9 @@ port.
 | `RefreshFloor` | `query.py` | Surface | Read and set the smallest refresh interval an instance accepts from anybody | The same `AmgQuerySurface` |
 | `PanelRewrite` | `query.py` | Surface | Read and replace one element's stored definition | Fake only, ISS-240 |
 | `LlmProvider` | `llm.py` | Model | Complete a conversation, asking for tools along the way | `aws/bedrock.py` `BedrockModel`, over the Bedrock Converse API |
+| `PriceCatalog` | `catalog.py` | Catalog | Read the current version of a service's price list in every Region it is sold in, and every on demand and reserved price in one version | Fake only until TASK-P9-004 |
+| `InstanceCatalog` | `catalog.py` | Catalog | Read EC2's own description of every instance type in a Region | Fake only until TASK-P9-005 |
+| `InvoiceSource` | `invoice.py` | None | Read the payer's invoices and credit memos for a span of billing periods, FEAT-076 | `aws/invoices.py` `AwsInvoices`, over the Invoicing API through the relay, ADR-0035 |
 | `BudgetSource` | `budget.py` | None | Read the payer's budgets | `aws/budgets.py` `AwsBudgets`, over AWS Budgets |
 | `CloudWatchEstate` | `cloudwatch_estate.py` | None | Read what CloudWatch holds, its alarms, log groups and storage price, rather than the values in it | Fake only, ISS-240 |
 | `CommitmentReport` | `commitment.py` | None | Read utilization per commitment and coverage per dimension | `aws/commitment.py` `CostExplorerCommitmentReport`, over Cost Explorer |
@@ -123,11 +127,20 @@ Adding a provider means writing an adapter for each port in `PROVIDER_PORTS`, an
 other port that provider can serve. It does not mean touching the domain, the API, or the
 frontend.
 
-## Canonical cost schema: FOCUS 1.1
+## Canonical cost schema: FOCUS 1.4
 
 The FinOps Open Cost and Usage Specification is the canonical internal cost
 schema. It is not invented here. AWS Data Exports emits FOCUS natively, and
 GCP and Azure both publish FOCUS exports.
+
+Since P10, ADR-0034, the row carries every column FOCUS 1.4 makes mandatory for
+Cost and Usage and the two that tie a row to its invoice: `BillingAccountName`,
+`BillingCurrency`, `ChargeClass`, `PricingUnit`, `ServiceProviderName`,
+`HostProviderName`, `InvoiceId` and `InvoiceDetailId` beside the columns below.
+Each is read from AWS's FOCUS 1.2 export where its table has it, and null where it
+does not. Invoices and billing periods are FOCUS 1.4 datasets of their own,
+`invoice_detail` and `billing_period`, and FEAT-076 compares each invoice with
+the rows carrying its id.
 
 Core columns carried: `BillingAccountId`, `SubAccountId`, `ChargePeriodStart`,
 `ChargePeriodEnd`, `BillingPeriodStart`, `BillingPeriodEnd`, `ServiceName`,

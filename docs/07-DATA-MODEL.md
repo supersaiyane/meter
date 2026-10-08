@@ -3,7 +3,7 @@
 Last updated: 2026-08-23
 Update trigger: any schema change, in the same commit as the migration
 Migrations: Alembic. See "Migration workflow" below
-Canonical cost schema: FOCUS 1.1, ADR-0002
+Canonical cost schema: FOCUS 1.4, ADR-0002 and ADR-0034
 
 This document is the schema of record. A table that is not here does not exist,
 and a column added without updating this document is an incomplete change.
@@ -330,7 +330,7 @@ CREATE TABLE sync_error (
 `remediation` is `NOT NULL`. An error a user cannot act on without reading logs
 is an error that stays unfixed.
 
-### Cost, FOCUS 1.1
+### Cost, FOCUS 1.4
 
 ```sql
 CREATE TABLE cost_focus_daily (
@@ -386,6 +386,20 @@ CREATE TABLE cost_focus_daily (
     commitment_discount_type    TEXT,
     commitment_discount_status  TEXT,
     tags                        JSONB          NOT NULL DEFAULT '{}'::jsonb,
+
+    -- FOCUS 1.4, P10 and ADR-0034, migration 0030: the six mandatory columns 1.1 lacked and
+    -- the two that tie a row to its invoice. Nullable, because an export older than FOCUS 1.2
+    -- carries none of them. service_provider_name replaced provider_name in FOCUS 1.3 and
+    -- host_provider_name equals it unless a host is exposed; both are provider_name until an
+    -- export carries them. provider_name and publisher_name stay until a later release.
+    billing_account_name        TEXT,
+    billing_currency            TEXT           CHECK (billing_currency ~ '^[A-Z]{3}$'),
+    charge_class                TEXT,
+    pricing_unit                TEXT,
+    service_provider_name       TEXT,
+    host_provider_name          TEXT,
+    invoice_id                  TEXT,
+    invoice_detail_id           TEXT,
 
     PRIMARY KEY (tenant_id, billing_period_start, source_fingerprint)
 ) PARTITION BY RANGE (billing_period_start);
@@ -865,6 +879,153 @@ statuses, a typed cause on a failure and on nothing else, a key on a file kept o
 key nor a schedule on a file streamed to whoever exported it, and a finish never before the
 making. The guard reads `report_schedule` through `ByPrincipal` on its owner. No retention job
 reads it and `erase_principal` does not reach it, ISS-256.
+
+### Billing periods and invoices, P10
+
+FEAT-076, migration 0031. FOCUS 1.4's Billing Period and Invoice Detail datasets at the grain
+AWS gives, one row per whole invoice. Stored as read: Meter's own sum over the cost rows and
+the difference are computed when read, TASK-P10-004. Both are payer wide, ADR-0025.
+
+```sql
+CREATE TABLE billing_period (
+    billing_period_pk     UUID PRIMARY KEY,
+    tenant_id             UUID NOT NULL REFERENCES tenant(tenant_id),
+    ingest_run_id         UUID NOT NULL,
+    billing_period_start  DATE NOT NULL,
+    billing_period_end    DATE NOT NULL,
+    billing_period_status TEXT NOT NULL,       -- 'Open' or 'Closed', FOCUS 1.4's words
+    as_of                 TIMESTAMPTZ NOT NULL, -- first invoice issued, or now while open
+    collected_at          TIMESTAMPTZ NOT NULL,
+    UNIQUE (tenant_id, billing_period_start),
+    CHECK (billing_period_end > billing_period_start),
+    CHECK (collected_at >= as_of)
+);
+
+CREATE TABLE invoice_detail (
+    invoice_detail_pk      UUID PRIMARY KEY,
+    tenant_id              UUID NOT NULL REFERENCES tenant(tenant_id),
+    ingest_run_id          UUID NOT NULL,
+    invoice_id             TEXT NOT NULL,
+    invoice_detail_id      TEXT NOT NULL,      -- the invoice_id, at AWS's grain
+    invoice_type           TEXT NOT NULL,      -- 'INVOICE' or 'CREDIT_MEMO'
+    original_invoice_id    TEXT,               -- required on a credit memo
+    billing_account_id     TEXT NOT NULL,
+    billing_period_start   DATE NOT NULL,
+    billing_period_end     DATE NOT NULL,
+    invoice_issuer_name    TEXT NOT NULL,      -- not always AWS: Marketplace
+    billing_currency       TEXT NOT NULL,      -- ISO 4217, '^[A-Z]{3}$'
+    billed_cost_before_tax NUMERIC(20,10) NOT NULL,
+    tax                    NUMERIC(20,10) NOT NULL,
+    billed_cost            NUMERIC(20,10) NOT NULL,
+    issued_at              TIMESTAMPTZ NOT NULL,
+    due_date               DATE,
+    as_of                  TIMESTAMPTZ NOT NULL, -- the issue time
+    collected_at           TIMESTAMPTZ NOT NULL,
+    UNIQUE (tenant_id, invoice_id)
+);
+```
+
+The amounts are not constrained to add up: AWS documents the total and the amount before
+tax but not the arithmetic between them once fees and discounts are in the breakdown, and a
+constraint could refuse a real invoice.
+
+### The price catalog, P9
+
+Migration 0033, TASK-P9-003. AWS's own prices and descriptions, per tenant as every table is,
+under the guard's tenant rule and nothing narrower, because they are public and about no account.
+Every invariant is a constraint and `tests/db/test_price_catalog_constraints.py` writes a row
+breaking each.
+
+```sql
+CREATE TABLE price_list_version (          -- one publication, one service, one Region
+    service_code, region, version TEXT NOT NULL, row_count INTEGER NOT NULL >= 0,
+    as_of TIMESTAMPTZ,                     -- the publication date
+    collected_at TIMESTAMPTZ >= as_of,
+    UNIQUE (tenant_id, service_code, region, version)
+);
+
+CREATE TABLE price (                       -- one offer term, spec 5.3 as corrected 2026-10-08
+    service_code, region, sku, sku_price_id, sku_meter, pricing_unit TEXT NOT NULL,
+    pricing_category TEXT IN ('Standard', 'Committed'),
+    currency TEXT ~ '^[A-Z]{3}$',
+    recurring_unit_price, upfront_fee NUMERIC(20,10) >= 0, not both nought,
+    lease_years SMALLINT IN (1, 3), purchase_option, offering_class,
+                                           -- present together exactly on a reservation
+    sku_price_details JSONB object, effective_date DATE, version TEXT,
+    as_of, collected_at >= as_of,
+    UNIQUE (tenant_id, region, sku_price_id, version),
+    FOREIGN KEY (tenant_id, service_code, region, version) REFERENCES price_list_version
+);
+
+CREATE TABLE instance_type_spec (          -- EC2 and the four managed services
+    service_code, region, instance_type, family TEXT, current_generation BOOLEAN,
+    architectures TEXT[] not empty, burstable BOOLEAN,
+    baseline_cpu NUMERIC in (0, 1], maximum_credits, baseline_source,
+                                           -- required of a burstable type
+    vcpus INTEGER > 0, memory_mib BIGINT > 0, network_performance TEXT,
+    network_baseline_gbps <= network_peak_gbps, ebs_baseline_mbps <= ebs_maximum_mbps,
+    gpu_count >= 0, offered BOOLEAN,
+    UNIQUE (tenant_id, service_code, region, instance_type)
+);
+
+CREATE TABLE volume_type_spec (            -- included and maximum performance, sourced
+    volume_type TEXT, baseline_iops <= maximum_iops > 0,
+    baseline_throughput_mibps <= maximum_throughput_mibps > 0, iops_per_gib,
+    source TEXT not blank, UNIQUE (tenant_id, volume_type)
+);
+
+CREATE TABLE spot_price (                  -- the latest per pool, replaced each run, OPEN-18
+    region, availability_zone, instance_type, product_description TEXT,
+    price > 0, as_of (the reading), collected_at >= as_of,
+    UNIQUE (tenant_id, region, availability_zone, instance_type, product_description)
+);
+
+CREATE TABLE spot_price_daily (            -- a pool's daily low and high, kept 90 days
+    the pool, day DATE, low <= high, both > 0, readings > 0,
+    UNIQUE (the pool, day)
+);
+```
+
+The recommendation gains four nullable columns, `current_sku_price_id`,
+`target_instance_type`, `target_sku_price_id` and `price_version`: a target is named with its
+price and version or not at all, and each price id is held by a composite foreign key to a price
+of the same tenant, Region and version, so a saving is quoted only from two prices that exist
+together. TASK-P9-006 writes them for Compute Optimizer's findings, from the first ranked
+option and the instance's current type; TASK-P9-007 for Meter's own.
+
+`volume_type_spec` is written by the instance catalog collector from TASK-P9-009: gp2 and gp3,
+two rows rewritten in place each run, from the EBS user guide read on 2026-10-08 and named in
+`source`, because no AWS call describes a volume type's limits. gp2's baseline depends on its size,
+so its baseline columns are null and `iops_per_gib` is the rate it grows by; gp3's `iops_per_gib`
+is the most that may be provisioned. The figures are the ones `finops_query/volumes.py` prices a
+gp3 move from, so the table shows what the rule used.
+
+`recommendation_option` also holds Meter's own alternatives from TASK-P9-010: every type its sizing
+rule found to fit, cheapest first, the chosen one ranked first, rewritten each run. Compute
+Optimizer scores its options' performance risk from 0 to 4 and Meter's rule gives none, so
+migration 0040 lets `performance_risk` be null, meaning the source gave no score; the 0 to 4 check
+still holds every score given. OPEN-24.
+
+```sql
+CREATE TABLE recommendation_option (       -- every target a provider ranked, migration 0038
+    recommendation_id REFERENCES recommendation, region TEXT, rank >= 1, instance_type TEXT,
+    performance_risk 0 to 4, provider_monthly_saving (any sign), migration_effort,
+    platform_differences TEXT[],
+    sku_price_id, price_version, hourly_price > 0,    -- all three, from one recorded price
+    unpriced_reason,                                  -- or this instead, never both
+    FOREIGN KEY (tenant_id, region, sku_price_id, price_version) REFERENCES price,
+    UNIQUE (recommendation_id, rank)
+);
+```
+
+An option is priced from a recorded price, with its version and hourly price beside it, or it
+names why it could not be, never both and never neither, so an unpriced option is never a price
+of nought. Price pruning spares a price an option quotes, as it spares one a recommendation
+quotes. Scoped through its recommendation, as `recommendation_event` is. OPEN-23.
+
+The recommendation also gains `added_monthly_cost`, migration 0039, TASK-P9-008: an
+`UPSIZE_INSTANCE` row has one above nought and a saving of nought, and no other row has one, so an
+Upsize states what it adds to the bill and no total of savings can fall because of it.
 
 ## Migration workflow, Alembic
 

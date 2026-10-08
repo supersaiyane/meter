@@ -49,6 +49,7 @@ PACKAGES = (
     "finops_api",
     "finops_mcp",
     "finops_query",
+    "finops_relay",
 )
 
 EXEMPT_FILES = {

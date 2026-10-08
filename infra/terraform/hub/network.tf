@@ -22,17 +22,39 @@ locals {
   private_cidrs = [for i, _ in var.availability_zones : cidrsubnet(var.vpc_cidr, 4, i)]
   public_cidrs  = [for i, _ in var.availability_zones : cidrsubnet(var.vpc_cidr, 6, i + 8)]
 
-  # Every AWS service the tasks call. Cost Explorer is `ce`, which is only
-  # available in us-east-1 as a global endpoint, so it is not in this list: the
-  # collector reaches it through the same path as any other global service.
+  # Every AWS service the tasks call in the hub's own Region. This list once said it was
+  # every service the tasks call, and held six, while the collectors called about fifteen
+  # more, ISS-242. The services that answer only in us-east-1, Cost Explorer among them, are
+  # reached through the endpoint VPC there, and calls into the other collection Region through
+  # the one there, both in endpoints.tf. Budgets, Support and Invoicing have no interface
+  # endpoint at all and go through the relay, relay.tf. ADR-0035.
+  # `tests/contract/test_network_paths.py` holds every service the adapters call to one of
+  # those paths, so a collector that calls something new fails a test, not a deploy.
   interface_endpoints = [
+    # The tasks themselves.
     "sts",
     "sqs",
     "secretsmanager",
     "logs",
     "ecr.api",
     "ecr.dkr",
+    # The collectors, TASK-P9-001.
+    "ec2",
+    "monitoring",
+    "cloudtrail",
+    "servicequotas",
+    "compute-optimizer",
+    "athena",
+    "config",
+    "grafana",
+    "bedrock-runtime",
+    # The relay is invoked through this one, so the hub still has no route out.
+    "lambda",
   ]
+
+  # Where the relay writes its answers in the data bucket. Equal to `PREFIX` in
+  # finops_relay/relay.py, held by the same test.
+  relay_prefix = "relay"
 }
 
 resource "aws_vpc" "hub" {
@@ -192,7 +214,11 @@ data "aws_iam_policy_document" "flow_logs" {
       "logs:DescribeLogStreams",
     ]
 
-    resources = ["${aws_cloudwatch_log_group.flow_logs.arn}:*"]
+    resources = [
+      "${aws_cloudwatch_log_group.flow_logs.arn}:*",
+      "${module.global_endpoints.flow_log_group_arn}:*",
+      "${module.second_endpoints.flow_log_group_arn}:*",
+    ]
   }
 }
 

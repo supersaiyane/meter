@@ -192,6 +192,8 @@ describe('HomeScreen', () => {
       '/api/v1/cost/explore',
       // `useCostForecast`, the forecast screen's own hook.
       '/api/v1/cost/forecast',
+      // `useReconciliation`, the invoice reconciliation screen's own hook, FEAT-076.
+      '/api/v1/cost/reconciliation',
       '/api/v1/platform/cost',
       // `useSchedules`, the Scheduled screen's own hook.
       '/api/v1/reports/schedules',

@@ -475,6 +475,50 @@ export interface ApiBudgets {
   readonly unsupported: number;
 }
 
+/**
+ * One invoice beside Meter's billed cost for it. FEAT-076.
+ *
+ * The invoice's amounts are the provider's and always present. Meter's and the differences are
+ * null whenever the state is not a comparison, and null there is not zero. A difference is
+ * Meter's figure less the invoice's.
+ */
+export interface ApiInvoiceComparison {
+  readonly invoice_id: string;
+  /** INVOICE or CREDIT_MEMO. */
+  readonly invoice_type: string;
+  readonly original_invoice_id: string | null;
+  readonly invoice_issuer_name: string;
+  readonly billing_currency: string;
+  readonly invoice_before_tax: string;
+  readonly invoice_tax: string;
+  readonly invoice_billed_cost: string;
+  readonly meter_before_tax: string | null;
+  readonly meter_tax: string | null;
+  readonly difference_before_tax: string | null;
+  readonly difference_tax: string | null;
+  /** Matched, Mismatched, No rows or Currency differs. */
+  readonly state: string;
+  readonly issued_at: string;
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
+/** A billing period's invoices, each compared with Meter's billed cost. FEAT-076. */
+export interface ApiReconciliation {
+  readonly period: string;
+  /** Open or Closed, as FOCUS 1.4 names them. */
+  readonly period_status: string;
+  /** Period open or Not readable when there is no invoice to compare, null when there is. */
+  readonly state: string | null;
+  /** The typed cause of the failed read behind Not readable. */
+  readonly cause: string | null;
+  /** The share of an invoice amount a difference may be and still match, modelled. */
+  readonly tolerance: string;
+  /** The least difference that counts, because an invoice is stated in cents. */
+  readonly minimum_difference: string;
+  readonly invoices: readonly ApiInvoiceComparison[];
+}
+
 export interface ApiCostAnomaly {
   readonly account_id: string;
   readonly service_name: string;
@@ -555,6 +599,8 @@ export interface ApiRecommendation {
   readonly lifecycle: string;
   /** Null where nobody owns it, which ISS-021 says is how a finding dies. */
   readonly owner: string | null;
+  /** The resource's team tag, from its inventory node, while nobody owns it. ISS-021. */
+  readonly suggested_owner: string | null;
   readonly ticket_reference: string | null;
   readonly rationale: string;
   /**
@@ -569,6 +615,50 @@ export interface ApiRecommendation {
   readonly is_no_regret: boolean;
   /** The sentence. A flag with no sentence behind it is one a reader cannot argue with. */
   readonly risk_why: string;
+  /**
+   * TASK-P9-010. The type a rightsizing moves from and to, both list prices an hour from one
+   * price list version, and what an Upsize adds a month, modelled. Null where the finding names
+   * no target. The saving above is the price difference already scaled to the bill.
+   */
+  readonly current_instance_type?: string | null;
+  readonly target_instance_type?: string | null;
+  readonly current_hourly_price?: string | null;
+  readonly target_hourly_price?: string | null;
+  readonly price_version?: string | null;
+  readonly added_monthly_cost?: string | null;
+}
+
+/**
+ * One type a rightsizing could move to, TASK-P9-010, as its source ranked it: Compute
+ * Optimizer's options with its performance risk, or the types Meter's rule found to fit, which
+ * carry none. Every price is list and every saving modelled.
+ */
+export interface ApiAlternative {
+  readonly rank: number;
+  readonly instance_type: string;
+  /** The one the recommendation names. The server puts it first. */
+  readonly chosen: boolean;
+  /** Null where the catalog does not describe the type in this Region. */
+  readonly vcpus: number | null;
+  readonly memory_mib: number | null;
+  readonly network_baseline_gbps: string | null;
+  readonly hourly_price: string | null;
+  readonly monthly_price: string | null;
+  /** The current type's monthly list price less this one's. Negative for a larger type. */
+  readonly monthly_saving: string | null;
+  /** Compute Optimizer's 0 to 4. Null where the source gives none, which is not nought. */
+  readonly performance_risk: string | null;
+  readonly platform_differences: readonly string[];
+  /** Why no price is shown, where none is. */
+  readonly unpriced_reason: string | null;
+}
+
+export interface ApiAlternatives {
+  readonly recommendation_id: string;
+  readonly current_instance_type: string | null;
+  readonly current_hourly_price: string | null;
+  readonly price_version: string | null;
+  readonly alternatives: readonly ApiAlternative[];
 }
 
 export interface ApiRecommendations {

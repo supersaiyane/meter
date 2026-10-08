@@ -134,6 +134,15 @@ data "aws_iam_policy_document" "task" {
     resources = [aws_secretsmanager_secret.external_id.arn]
   }
 
+  # TASK-P9-001, ADR-0035. The relay outside the VPC, for the calls no endpoint carries. Its
+  # answers are read back under UseTheBucket below.
+  statement {
+    sid       = "InvokeTheRelay"
+    effect    = "Allow"
+    actions   = ["lambda:InvokeFunction"]
+    resources = [aws_lambda_function.relay.arn]
+  }
+
   statement {
     sid    = "UseTheBucket"
     effect = "Allow"
@@ -173,6 +182,33 @@ data "aws_iam_policy_document" "task" {
       "ce:GetTags",
     ]
 
+    resources = ["*"]
+  }
+
+  # AWS's public prices, FEAT-071, TASK-P9-004: finops_providers/aws/price_list.py reads the
+  # list's versions and its products through the endpoint in us-east-1, ADR-0035. The Price
+  # List API has no resource level permissions, so this is a wildcard AWS will not let us
+  # narrow. Read only, constraint 6.
+  statement {
+    sid    = "ReadAwsPrices"
+    effect = "Allow"
+
+    actions = [
+      "pricing:ListPriceLists",
+      "pricing:GetProducts",
+    ]
+
+    resources = ["*"]
+  }
+
+  # EC2's description of its instance types, FEAT-072, TASK-P9-005:
+  # finops_providers/aws/instance_types.py reads it in the hub's Region and the Region it is
+  # compared with, through the endpoints there, ADR-0035. A describe call takes no resource
+  # level permission. Read only, constraint 6.
+  statement {
+    sid       = "DescribeInstanceTypes"
+    effect    = "Allow"
+    actions   = ["ec2:DescribeInstanceTypes"]
     resources = ["*"]
   }
 

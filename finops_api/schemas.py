@@ -361,6 +361,10 @@ class RecommendationOut(BaseModel):
     lifecycle: str
     #: Null is a reported condition, not a gap. An unowned finding is never fixed.
     owner: str | None
+    #: The resource's team tag, TEAM_TAG, from the inventory node naming it, ISS-021. A
+    #: suggestion of whom to ask, never stored and never an owner: null when no node in the
+    #: reader's access names the resource, or its tag is missing or empty.
+    suggested_owner: str | None = None
     ticket_reference: str | None
     #: The working, so a reader can disagree with the verdict.
     rationale: str
@@ -375,6 +379,128 @@ class RecommendationOut(BaseModel):
     is_no_regret: bool
     #: The sentence. A flag with no sentence behind it is one a reader cannot argue with.
     risk_why: str
+    #: TASK-P9-010, spec section 8. The type a rightsizing moves from and to, both prices an hour
+    #: at list from one price list version, and what an Upsize adds a month. Null where the
+    #: finding names no target. The saving above is the price difference already scaled to the
+    #: bill, never up; these are the list prices it was worked out from.
+    current_instance_type: str | None = None
+    target_instance_type: str | None = None
+    current_hourly_price: Decimal | None = None
+    target_hourly_price: Decimal | None = None
+    price_version: str | None = None
+    #: An Upsize's cost, modelled. Never a saving, and never added to one.
+    added_monthly_cost: Decimal | None = None
+
+
+class AlternativeOut(BaseModel):
+    """One type a rightsizing could move to, as its source ranked it. TASK-P9-010.
+
+    Compute Optimizer's options with its performance risk, or the types Meter's own rule found to
+    fit the demand it measured, which carry no risk score. Every price is list, an hour from the
+    recommendation's price list version, and a month at 730 hours; both modelled.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    rank: int
+    instance_type: str
+    #: The one the recommendation names. It leads the list.
+    chosen: bool
+    vcpus: int | None
+    memory_mib: int | None
+    network_baseline_gbps: Decimal | None
+    hourly_price: Decimal | None
+    monthly_price: Decimal | None
+    #: The current type's monthly list price less this one's. Negative for a larger type.
+    monthly_saving: Decimal | None
+    #: Compute Optimizer's 0 to 4 score; null where the source gives none, as Meter's rule does.
+    performance_risk: Decimal | None
+    platform_differences: list[str]
+    #: Why no price is shown, where none is.
+    unpriced_reason: str | None
+
+
+class AlternativesOut(BaseModel):
+    """What a rightsizing was compared with, the chosen type first."""
+
+    model_config = ConfigDict(frozen=True)
+
+    recommendation_id: UUID
+    current_instance_type: str | None
+    current_hourly_price: Decimal | None
+    price_version: str | None
+    alternatives: list[AlternativeOut]
+
+
+class InstanceTypeOut(BaseModel):
+    """One type as the catalog describes it in one Region. FEAT-072, TASK-P9-010."""
+
+    model_config = ConfigDict(frozen=True)
+
+    service_code: str
+    region: str
+    instance_type: str
+    family: str | None
+    current_generation: bool | None
+    architectures: list[str]
+    burstable: bool
+    #: A burstable type's baseline share of each vCPU, from the source it names.
+    baseline_cpu: Decimal | None
+    vcpus: int
+    memory_mib: int
+    network_performance: str | None
+    network_baseline_gbps: Decimal | None
+    ebs_baseline_mbps: int | None
+    gpu_count: int | None
+    #: False once the Region stops listing it. Kept, because a recommendation may still name it.
+    offered: bool
+    as_of: datetime
+    collected_at: datetime
+
+
+class InstanceTypesOut(BaseModel):
+    """The types that match, and whether the limit cut the list short."""
+
+    model_config = ConfigDict(frozen=True)
+
+    instance_types: list[InstanceTypeOut]
+    #: True when as many rows came back as were allowed, so more may match.
+    limit_reached: bool
+
+
+class PriceOut(BaseModel):
+    """One price from AWS's price list, as the catalog holds it. FEAT-071, TASK-P9-010."""
+
+    model_config = ConfigDict(frozen=True)
+
+    sku_price_id: str
+    sku: str
+    service_code: str
+    region: str
+    #: The price list version, which is its publication time. Every price says which list it is.
+    version: str
+    pricing_category: str
+    pricing_unit: str
+    currency: str
+    recurring_unit_price: Decimal
+    upfront_fee: Decimal
+    lease_years: int | None
+    purchase_option: str | None
+    offering_class: str | None
+    #: The attributes that tell two prices for one product apart, as the price list names them.
+    details: dict[str, str]
+    effective_date: date
+    as_of: datetime
+    collected_at: datetime
+
+
+class PricesOut(BaseModel):
+    """The prices that match, and whether the limit cut the list short."""
+
+    model_config = ConfigDict(frozen=True)
+
+    prices: list[PriceOut]
+    limit_reached: bool
 
 
 class RecommendationEventOut(BaseModel):
@@ -652,6 +778,63 @@ class BudgetsOut(BaseModel):
     #: estate with ten budgets over tag expressions is not an estate with no budgets, and a
     #: screen showing two greens out of twelve budgets would be saying the wrong thing.
     unsupported: int
+
+
+class InvoiceComparisonOut(BaseModel):
+    """One invoice beside Meter's billed cost for it. FEAT-076, TASK-P10-004.
+
+    The invoice's amounts are the provider's and always present. Meter's and the differences are
+    null whenever the state is not a comparison, No rows or Currency differs, and null there is
+    not zero. A difference is Meter's figure less the invoice's, so a negative one is a charge
+    the invoice carries and Meter's rows do not.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    invoice_id: str
+    #: INVOICE or CREDIT_MEMO.
+    invoice_type: str
+    #: The invoice a credit memo corrects, and null on an invoice.
+    original_invoice_id: str | None
+    #: Who issued it, which is not always the provider: Marketplace charges are invoiced apart.
+    invoice_issuer_name: str
+    billing_currency: str
+    invoice_before_tax: Decimal
+    invoice_tax: Decimal
+    invoice_billed_cost: Decimal
+    meter_before_tax: Decimal | None
+    meter_tax: Decimal | None
+    difference_before_tax: Decimal | None
+    difference_tax: Decimal | None
+    #: Matched, Mismatched, No rows or Currency differs.
+    state: str
+    issued_at: datetime
+    as_of: datetime
+    collected_at: datetime
+
+
+class ReconciliationOut(BaseModel):
+    """A billing period's invoices, each compared with Meter's billed cost. FEAT-076.
+
+    Measured on both sides: the invoice is read from the provider and Meter's figure is summed
+    from the collected rows. The tolerance is the one modelled figure, and it travels on the
+    payload so a reader can check a Matched rather than take it.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    period: date
+    #: Open or Closed, as FOCUS 1.4 names them.
+    period_status: str
+    #: Period open or Not readable when there is no invoice to compare, and null when there is.
+    state: str | None
+    #: The typed cause of the failed read behind Not readable, and null otherwise.
+    cause: str | None
+    #: The share of an invoice amount a difference may be and still match, modelled.
+    tolerance: Decimal
+    #: The least difference that counts, because an invoice is stated in cents.
+    minimum_difference: Decimal
+    invoices: tuple[InvoiceComparisonOut, ...]
 
 
 class CommitmentActionOut(BaseModel):

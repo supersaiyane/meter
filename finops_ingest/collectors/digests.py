@@ -31,6 +31,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import column, table, text
 
+from finops_core.constants import TEAM_TAG
 from finops_core.domain.insight import Answer
 from finops_core.domain.platform import UNALLOCATED
 from finops_ingest.registry import CollectorContext, CollectorOutcome
@@ -50,7 +51,7 @@ COMPOSE_FAILED_REMEDIATION = (
 )
 
 #: The tag value a team digest is grouped by, with untagged spend named as such.
-_TEAM = f"coalesce(tags->>'team', '{UNALLOCATED}')"
+_TEAM = f"coalesce(tags->>'{TEAM_TAG}', '{UNALLOCATED}')"
 
 _WINDOW = "tenant_id = :t AND charge_period_start >= :start AND charge_period_start < :end"
 

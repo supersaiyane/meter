@@ -24,11 +24,20 @@ is a comfortable lie.
 **A money field that cannot be parsed is `SchemaDrift`, never zero.** A
 recommendation reported as saving nothing is one nobody acts on, and it looks
 exactly like a recommendation that genuinely saves nothing.
+
+**Compute Optimizer is read Region by Region and account by account**, TASK-P9-006,
+P9 spec section 5.5. It answers per Region, takes one member account a request, pages
+by `nextToken` with no botocore paginator, and is asked for Graviton through its CPU
+architecture preference. Every ranked option is kept, with its rank, its performance
+risk and its own saving. One account or Region that cannot be read is returned as a
+refusal beside what was read, `ScopedFindings`, so the collector records it and
+withdraws nothing it could not see, constraint 5.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
+from dataclasses import replace
 from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
 from typing import Any
@@ -39,8 +48,15 @@ from botocore.exceptions import BotoCoreError, ClientError
 
 from finops_core.config import Settings
 from finops_core.domain.observation import MINIMUM_HISTORY
-from finops_core.domain.waste import Lifecycle, Recommendation, Source, WasteClass
-from finops_core.errors import NotOptedIn, SchemaDrift
+from finops_core.domain.waste import (
+    Lifecycle,
+    RankedOption,
+    Recommendation,
+    ScopedFindings,
+    Source,
+    WasteClass,
+)
+from finops_core.errors import CollectionError, NotOptedIn, SchemaDrift
 from finops_providers.aws.client import botocore_config, translate
 
 COLLECTOR = "recommendations"
@@ -58,6 +74,13 @@ COMPUTE_OPTIMIZER_CLASSES: dict[str, WasteClass] = {
     "Underprovisioned": WasteClass.RIGHTSIZE_INSTANCE,
     "Idle": WasteClass.IDLE_INSTANCE,
 }
+
+#: Asked of Compute Optimizer for every instance: Graviton as well as the current architecture,
+#: P9 spec section 5.5.
+ARCHITECTURES: dict[str, list[str]] = {"cpuVendorArchitectures": ["AWS_ARM64", "CURRENT"]}
+#: The most pages one account in one Region is followed for. Compute Optimizer returns up to
+#: 1,000 instances a page by default, so this is far past any estate.
+MAX_PAGES = 100
 
 #: Trusted Advisor check identifiers we read. There are dozens; these are the ones
 #: whose money is unambiguous.
@@ -107,6 +130,8 @@ class CostRecommendationSource:
         severity_of: Callable[[Decimal], str],
         client_factory: Callable[[str], Any] | None = None,
         clock: Callable[[], datetime] | None = None,
+        accounts: Callable[[], Iterable[str]] | None = None,
+        regional_client_factory: Callable[[str, str], Any] | None = None,
     ) -> None:
         self._settings = settings
         self._tenant_id = tenant_id
@@ -117,9 +142,22 @@ class CostRecommendationSource:
         self._config = botocore_config(settings)
         self._factory = client_factory or self._default_client
         self._clock = clock or (lambda: datetime.now(UTC))
+        # The member accounts Compute Optimizer is asked about, one a request. From the
+        # organization tree at composition; none means the caller's own account only.
+        self._accounts = accounts or (lambda: ())
+        if regional_client_factory is not None:
+            self._regional = regional_client_factory
+        elif client_factory is not None:
+            # A single client stands for every Region, as the recorded responses do.
+            self._regional = lambda service, _region: client_factory(service)
+        else:
+            self._regional = self._default_regional_client
 
     def _default_client(self, service: str) -> Any:
         return boto3.client(service, region_name=HOME_REGION, config=self._config)
+
+    def _default_regional_client(self, service: str, region: str) -> Any:
+        return boto3.client(service, region_name=region, config=self._config)
 
     def _call(self, service: str, name: str, **kwargs: Any) -> Any:
         try:
@@ -172,52 +210,109 @@ class CostRecommendationSource:
 
     # -- the port ----------------------------------------------------------
 
-    def compute_optimizer(self) -> Iterable[Recommendation]:
-        response = self._call(
-            "compute-optimizer",
-            "get_ec2_instance_recommendations",
-            accountIds=[],
+    def compute_optimizer(self) -> ScopedFindings:
+        accounts: tuple[str | None, ...] = tuple(self._accounts()) or (None,)
+        found: dict[str, Recommendation] = {}
+        read: set[tuple[str, str]] = set()
+        refused: list[CollectionError] = []
+        for region in self._settings.region_list:
+            client = self._regional("compute-optimizer", region)
+            for account in accounts:
+                try:
+                    items = [
+                        rec
+                        for raw in self._instance_recommendations(client, region, account)
+                        if (rec := self._optimizer_recommendation(raw, region)) is not None
+                    ]
+                except CollectionError as failure:
+                    refused.append(failure)
+                    continue
+                # An account read is a scope; the caller's own account, unnamed, is every
+                # account the call answered for in that Region.
+                read.add((account or "*", region))
+                for rec in items:
+                    found.setdefault(rec.source_reference, rec)
+        if refused and not read:
+            raise refused[0]
+        return ScopedFindings(
+            found=tuple(found.values()), read=frozenset(read), refused=tuple(refused)
         )
-        found: list[Recommendation] = []
-        for item in response.get("instanceRecommendations", []):
-            finding = str(item.get("finding", ""))
-            waste_class = COMPUTE_OPTIMIZER_CLASSES.get(finding)
-            if waste_class is None:
-                # Skipped rather than guessed. A finding type mapped to the wrong
-                # class is worse than one absent, because the absent one is
-                # countable and the wrong one is believed.
-                continue
-            options = item.get("recommendationOptions") or []
-            if not options:
-                continue
-            best = options[0]
-            saving = _money(
-                (best.get("savingsOpportunity") or {})
-                .get("estimatedMonthlySavings", {})
-                .get("value"),
-                "savingsOpportunity.estimatedMonthlySavings.value",
-            )
-            arn = str(item.get("instanceArn", ""))
-            found.append(
-                self._build(
-                    source=Source.COMPUTE_OPTIMIZER,
-                    reference=arn,
-                    waste_class=waste_class,
-                    resource_id=arn,
-                    region_id=_region_of(arn),
-                    saving=saving,
-                    # Compute Optimizer's own lookback, which it reports per
-                    # recommendation. Defaulted to the floor rather than to zero,
-                    # because a zero would be refused by the entity and a
-                    # recommendation would be silently lost.
-                    observation_days=int(item.get("lookBackPeriodInDays", MINIMUM_HISTORY)),
-                    rationale=(
-                        f"Compute Optimizer finding {finding}, recommending "
-                        f"{best.get('instanceType', 'a smaller size')}"
-                    ),
-                )
-            )
-        return tuple(found)
+
+    def _instance_recommendations(
+        self, client: Any, region: str, account: str | None
+    ) -> Iterable[Any]:
+        """Every instance recommendation for one account in one Region, every page."""
+        scope = f"{account or 'own'}:{region}"
+        request: dict[str, Any] = {"recommendationPreferences": ARCHITECTURES}
+        if account is not None:
+            request["accountIds"] = [account]
+        items: list[Any] = []
+        for _ in range(MAX_PAGES):
+            page = self._optimizer_call(client, scope, **request)
+            items.extend(page.get("instanceRecommendations") or ())
+            token = page.get("nextToken")
+            if not token:
+                return items
+            request = {**request, "nextToken": token}
+        raise SchemaDrift(
+            scope_key=scope,
+            collector=COLLECTOR,
+            detail=f"more than {MAX_PAGES} pages of instance recommendations",
+        )
+
+    def _optimizer_call(self, client: Any, scope: str, **request: Any) -> Any:
+        try:
+            return client.get_ec2_instance_recommendations(**request)
+        except ClientError as error:
+            code = error.response.get("Error", {}).get("Code", "")
+            if code in NOT_ENABLED_CODES:
+                raise NotOptedIn(
+                    scope_key=scope,
+                    collector=COLLECTOR,
+                    detail=f"compute-optimizer is not enabled here: {code}",
+                ) from error
+            raise translate(error, scope_key=scope, collector=COLLECTOR) from error
+        except BotoCoreError as error:
+            raise translate(error, scope_key=scope, collector=COLLECTOR) from error
+
+    def _optimizer_recommendation(self, item: Any, region: str) -> Recommendation | None:
+        finding = str(item.get("finding", ""))
+        waste_class = COMPUTE_OPTIMIZER_CLASSES.get(finding)
+        if waste_class is None:
+            # Skipped rather than guessed. A finding type mapped to the wrong class is
+            # worse than one absent, because the absent one is countable and the wrong
+            # one is believed.
+            return None
+        options = _ranked(item.get("recommendationOptions") or [])
+        if not options:
+            return None
+        best = min(item.get("recommendationOptions") or [], key=_rank_of)
+        saving = _money(
+            (best.get("savingsOpportunity") or {}).get("estimatedMonthlySavings", {}).get("value"),
+            "savingsOpportunity.estimatedMonthlySavings.value",
+        )
+        arn = str(item.get("instanceArn", ""))
+        current = str(item.get("currentInstanceType") or "") or None
+        return replace(
+            self._build(
+                source=Source.COMPUTE_OPTIMIZER,
+                reference=arn,
+                waste_class=waste_class,
+                resource_id=arn,
+                region_id=_region_of(arn) or region,
+                saving=saving,
+                # Compute Optimizer's own lookback, which it reports per recommendation.
+                # Defaulted to the floor rather than to zero, because a zero would be
+                # refused by the entity and a recommendation would be silently lost.
+                observation_days=int(item.get("lookBackPeriodInDays", MINIMUM_HISTORY)),
+                rationale=(
+                    f"Compute Optimizer finding {finding}, recommending "
+                    f"{options[0].instance_type} first of {len(options)} ranked options"
+                ),
+            ),
+            current_instance_type=current,
+            options=options,
+        )
 
     def cost_optimization_hub(self) -> Iterable[Recommendation]:
         response = self._call("cost-optimization-hub", "list_recommendations")
@@ -272,6 +367,43 @@ class CostRecommendationSource:
                     )
                 )
         return tuple(found)
+
+
+def _rank_of(raw: Any) -> int:
+    try:
+        return int(raw.get("rank") or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _ranked(raw_options: list[Any]) -> tuple[RankedOption, ...]:
+    """Every option as Compute Optimizer ranked it, best first, or SchemaDrift."""
+    found: list[RankedOption] = []
+    for index, raw in enumerate(sorted(raw_options, key=_rank_of), start=1):
+        risk = raw.get("performanceRisk")
+        saving = ((raw.get("savingsOpportunity") or {}).get("estimatedMonthlySavings") or {}).get(
+            "value"
+        )
+        try:
+            found.append(
+                RankedOption(
+                    rank=_rank_of(raw) or index,
+                    instance_type=str(raw.get("instanceType") or ""),
+                    performance_risk=_money(risk, "recommendationOptions.performanceRisk"),
+                    provider_monthly_saving=None if saving is None else _money(saving, "saving"),
+                    migration_effort=raw.get("migrationEffort") or None,
+                    platform_differences=tuple(
+                        str(d) for d in raw.get("platformDifferences") or ()
+                    ),
+                )
+            )
+        except ValueError as failure:
+            raise SchemaDrift(
+                scope_key=SCOPE,
+                collector=COLLECTOR,
+                detail=f"a ranked option this cannot read: {failure}",
+            ) from failure
+    return tuple(found)
 
 
 def _hub_class(action_type: str) -> WasteClass:

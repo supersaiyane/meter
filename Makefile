@@ -40,7 +40,7 @@ PLATFORM      ?= linux/amd64
 # One line, and it has to stay one line: tests/scripts/test_lint_scope.py reads
 # this assignment with a single line regex, which is how it catches a package
 # that quietly leaves the linter's sight.
-PY_PKGS := finops_core finops_providers finops_fakes finops_ingest finops_api finops_mcp finops_query
+PY_PKGS := finops_core finops_providers finops_fakes finops_ingest finops_api finops_mcp finops_query finops_relay
 # scripts/ and migrations/ are here because they were outside the linter for
 # long enough to accumulate 10 ruff findings and 36 mypy errors that nothing
 # ever reported. Two of those were real: a list annotated flat while holding
@@ -212,6 +212,10 @@ api-reference: ## Generate the API reference from docstrings into docs/api
 .PHONY: check-memory
 check-memory: ## Fail if a resume vector, a cited commit or a lesson has rotted
 	@$(DOCPY) scripts/ci/check_memory.py
+
+.PHONY: check-docs-only
+check-docs-only: ## Fail unless documents alone differ from BASE, default main. CLAUDE.md
+	@$(DOCPY) scripts/ci/check_docs_only.py --base $(or $(BASE),main)
 
 .PHONY: lesson
 lesson: ## Append a lesson skeleton. Usage: make lesson m="short name"
@@ -598,6 +602,10 @@ buildx-push: ecr-login ## Build for $(PLATFORM) and push in one step, no local l
 
 # ---------------------------------------------------------------- terraform
 
+.PHONY: build-relay
+build-relay: ## Zip finops_relay for the relay function, ADR-0035. Deterministic, so equal code is an equal hash
+	@$(PY) scripts/deploy/build_relay.py --out build/relay.zip
+
 .PHONY: tf-init
 tf-init: ## Initialise the hub stack for TF_ENV, default dev
 	$(TF) -chdir=infra/terraform/hub init -backend-config=envs/$(TF_ENV).backend.hcl
@@ -621,6 +629,12 @@ tf-member: ## Apply the member account StackSet. Needs management account creden
 .PHONY: verify
 verify: lint check-writing check-docs check-docstrings check-memory test test-web test-e2e security-scan ## Everything CI runs on a merge request
 	@echo "verify passed"
+
+# Every check a document can fail, for a change that is documents alone. check-docs-only runs
+# first and refuses anything else by name, so a code change can never take this path.
+.PHONY: verify-docs
+verify-docs: check-docs-only check-writing check-docs check-memory ## A change to documents alone. Refuses any other change
+	@echo "verify-docs passed"
 
 # Kept as a name rather than removed, because the pipeline and two scripts say
 # `make ci`. It has nothing left to add: `verify` runs the integration tests now.

@@ -546,6 +546,17 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         "iac_state",
         # FEAT-060, added with the collector.
         "budgets",
+        # FEAT-076, added with the collector in TASK-P10-003.
+        "invoices",
+        # FEAT-071, added with the collector in TASK-P9-004. Eight hourly, and never run, so it is
+        # due at `AT`.
+        "price_catalog",
+        # FEAT-072, added with the collector in TASK-P9-005.
+        "instance_catalog",
+        # FEAT-071, added with the collector in TASK-P9-012.
+        "savings_plan_rates",
+        # FEAT-071, added with the collector in TASK-P9-013.
+        "spot_prices",
         # FEAT-033 and FEAT-034, added with the collector in TASK-P5-004. Twelve hourly, so it
         # is due at `AT` like everything else here. Declared for the same reason as the four
         # above: the list is exhaustive, so a collector with a schedule row and no declaration

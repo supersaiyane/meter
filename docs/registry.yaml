@@ -81,12 +81,23 @@ subprojects:
   depends_on: P1, P2, P3, P4, P5, P6, P7
 - id: P9
   name: Price catalog and rightsizing targets
-  status: Specified, planned and approved by the owner 2026-10-05, not started, TASK-P9-001 next.
-    EC2 and EBS list prices from AWS, rightsizing down and up to a named and priced target, and gp2
-    to gp3, once the hub reaches AWS by the path chosen in OPEN-16
+  status: Delivered on 2026-10-08 against fakes, TASK-P9-001 to TASK-P9-013. EC2 and EBS list prices,
+    Savings Plans rates and spot prices for every commercial Region, the instance types they price,
+    rightsizing down and up to a named and priced target with its alternatives, and gp2 to gp3, each
+    figure modelled from a recorded price list version. The hub reaches every API it calls, ADR-0035;
+    reading a real price list and real Compute Optimizer answers waits on ISS-002
   spec: specs/2026-10-05-p9-price-catalog-design.md
   plan: plans/P9-implementation-plan.md
   depends_on: P3
+- id: P10
+  name: 'Proven numbers: FOCUS 1.4 and invoice reconciliation'
+  status: Delivered on 2026-10-08 against fakes, TASK-P10-001 to TASK-P10-006. The cost row carries
+    FOCUS 1.4's mandatory and invoice columns, each AWS invoice is read and compared with Meter's billed
+    cost on a screen and the FinOps practitioner's Overview, and constraint 2 names FOCUS 1.4. The comparison
+    against a real invoice waits on ISS-002, ISS-003 and TASK-P9-001
+  spec: specs/2026-10-07-p10-proven-numbers-design.md
+  plan: plans/P10-implementation-plan.md
+  depends_on: P1
 features:
 - id: FEAT-001
   name: Account onboarding and organization topology, parent to child map
@@ -107,7 +118,7 @@ features:
   detail: '[architecture](docs/02-ARCHITECTURE.md) section "Ports"'
   doc: docs/features/FEAT-003-provider-port-abstraction.md
 - id: FEAT-004
-  name: FOCUS 1.1 canonical cost schema
+  name: FOCUS canonical cost schema
   subproject: P0
   status: In build
   detail: '[ADR-0002](docs/adr/ADR-0002-focus-canonical-schema.md)'
@@ -221,15 +232,15 @@ features:
   detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md) section 9'
   doc: docs/features/FEAT-022-allocation-and-showback.md
 - id: FEAT-023
-  name: Anomaly detection and ingest of AWS Cost Anomaly Detection
+  name: Cost anomaly detection, deterministic, its working on the screen
   subproject: P1
-  status: Specified
+  status: Delivered
   detail: '[roadmap](docs/01-ROADMAP.md) P1'
   doc: docs/features/FEAT-023-cost-anomaly-detection.md
 - id: FEAT-024
   name: Savings Plan and Reserved Instance utilization and coverage
   subproject: P1
-  status: Specified
+  status: Delivered
   detail: '[roadmap](docs/01-ROADMAP.md) P1'
   doc: docs/features/FEAT-024-commitment-coverage.md
 - id: FEAT-025
@@ -516,25 +527,25 @@ features:
 - id: FEAT-071
   name: Price catalog from AWS for EC2, EBS, RDS, ElastiCache, Redshift and OpenSearch, every Region and price type, versioned and FOCUS shaped
   subproject: P9
-  status: Planned
+  status: Delivered
   detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.2, 5.3, 7 and 14, [P9 plan](docs/plans/P9-implementation-plan.md)'
   doc: docs/features/FEAT-071-price-catalog.md
 - id: FEAT-072
   name: Instance capability catalog for EC2, RDS, ElastiCache, Redshift and OpenSearch
   subproject: P9
-  status: Planned
+  status: Delivered
   detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.4, 7 and 14, [P9 plan](docs/plans/P9-implementation-plan.md)'
   doc: docs/features/FEAT-072-instance-capability-catalog.md
 - id: FEAT-073
   name: Rightsizing to a named, priced target, down and up
   subproject: P9
-  status: Planned
+  status: Delivered
   detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.5 to 5.7, [P9 plan](docs/plans/P9-implementation-plan.md)'
   doc: docs/features/FEAT-073-rightsizing-to-a-priced-target.md
 - id: FEAT-074
   name: gp2 to gp3 migration, priced from measured IOPS and throughput
   subproject: P9
-  status: Planned
+  status: Delivered
   detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) section 5.8, [P9 plan](docs/plans/P9-implementation-plan.md)'
   doc: docs/features/FEAT-074-gp2-to-gp3-migration.md
 - id: FEAT-075
@@ -544,6 +555,12 @@ features:
   detail: 'Requested by the owner on 2026-10-05 for an estate of 1,399 accounts, and widened on 2026-10-06 to find services and resources as well. [P8 plan](docs/plans/P8-implementation-plan.md), TASK-P8-016'
   doc: docs/features/FEAT-075-account-picker.md
 
+- id: FEAT-076
+  name: Invoice reconciliation, Meter's billed cost against the provider's invoice
+  subproject: P10
+  status: Delivered
+  detail: '[P10 spec](docs/specs/2026-10-07-p10-proven-numbers-design.md) sections 5.3 to 5.5, 6, 7'
+  doc: docs/features/FEAT-076-invoice-reconciliation.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -681,6 +698,14 @@ adrs:
   status: Accepted
   doc: docs/adr/ADR-0033-scheduled-reports-render-in-the-api.md
 
+- id: ADR-0034
+  decision: The canonical cost schema follows FOCUS 1.4, and each ratified version after it
+  status: Accepted
+  doc: docs/adr/ADR-0034-canonical-cost-schema-follows-focus-1-4.md
+- id: ADR-0035
+  decision: The hub reaches AWS through endpoints, and through a relay for what has none
+  status: Accepted
+  doc: docs/adr/ADR-0035-hub-network-path-endpoints-and-relay.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'
@@ -689,12 +714,14 @@ changes:
     lessons, project map, checkpoint
   commit: f6d7603 to 9adb1aa
   detail: '[docs/checkpoint.md](docs/checkpoint.md)'
+
 - id: CHG-0002
   date: '2026-08-23'
   type: Process
   what: Checkpoint log and project map moved to the paths the session enforcement script requires
   commit: a3ea1cf
   detail: '[docs/checkpoint.md](docs/checkpoint.md)'
+
 - id: CHG-0003
   date: '2026-08-23'
   type: Infrastructure
@@ -702,12 +729,14 @@ changes:
     deployment document'
   commit: 9f9e5ff
   detail: '[docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md)'
+
 - id: CHG-0004
   date: '2026-08-23'
   type: Process
   what: This index, the change control process, five document templates, and the index consistency checker
   commit: 3c531e0
   detail: '[docs/03-CHANGE-CONTROL.md](docs/03-CHANGE-CONTROL.md)'
+
 - id: CHG-0005
   date: '2026-08-23'
   type: Design
@@ -715,12 +744,14 @@ changes:
     fields
   commit: 7e5525a
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0006
   date: '2026-08-23'
   type: Design
   what: MCP server added as a facade over the HTTP API, not a replacement. FEAT-042 assistant bot added
   commit: 7e4cc01
   detail: '[ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md)'
+
 - id: CHG-0007
   date: '2026-08-23'
   type: Infrastructure
@@ -728,6 +759,7 @@ changes:
     to the ALB
   commit: 2e22413
   detail: '[ADR-0010](docs/adr/ADR-0010-minimus-zero-cve-base-images.md)'
+
 - id: CHG-0008
   date: '2026-08-23'
   type: Process
@@ -735,6 +767,7 @@ changes:
     auto fix, nightly posture scan
   commit: 0c87ae5
   detail: '[docs/05-SECURITY.md](docs/05-SECURITY.md)'
+
 - id: CHG-0009
   date: '2026-08-23'
   type: Process
@@ -742,6 +775,7 @@ changes:
     generation added as pipeline stages
   commit: 7e4cc01
   detail: '[ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md)'
+
 - id: CHG-0010
   date: '2026-08-23'
   type: Design
@@ -749,6 +783,7 @@ changes:
     switch event driven
   commit: 7e4cc01
   detail: '[docs/06-DATA-FRESHNESS.md](docs/06-DATA-FRESHNESS.md)'
+
 - id: CHG-0011
   date: '2026-08-23'
   type: Process
@@ -756,18 +791,21 @@ changes:
     scripts consolidated under scripts/
   commit: 02eca11
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0012
   date: '2026-08-23'
   type: Infrastructure
   what: Platform pinned to linux/amd64 at five points, because a push never converts an arm64 image
   commit: 3591a1f
   detail: '[docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md)'
+
 - id: CHG-0013
   date: '2026-08-23'
   type: Design
   what: Database schema documented in full, with Alembic migration rules and constraint level invariants
   commit: 0f0f1e9
   detail: '[docs/07-DATA-MODEL.md](docs/07-DATA-MODEL.md)'
+
 - id: CHG-0014
   date: '2026-08-23'
   type: Process
@@ -775,12 +813,14 @@ changes:
     from a prior project
   commit: 3d93f76
   detail: '[ADR-0013](docs/adr/ADR-0013-seven-rung-ladder-and-disqualification.md)'
+
 - id: CHG-0015
   date: '2026-08-23'
   type: Process
   what: Derived documentation generated from docs/registry.yaml instead of hand maintained in four places
   commit: 5355ac3
   detail: '[ADR-0014](docs/adr/ADR-0014-generated-documentation.md)'
+
 - id: CHG-0016
   date: '2026-08-23'
   type: Process
@@ -788,6 +828,7 @@ changes:
     security gates, the remediation path, and a gotchas table'
   commit: aaf6a6a
   detail: '[README.md](README.md)'
+
 - id: CHG-0017
   date: '2026-08-23'
   type: Process
@@ -795,6 +836,7 @@ changes:
     profile for local scanning, and provenance verification before every deploy'
   commit: 061c351
   detail: '[docs/05-SECURITY.md](docs/05-SECURITY.md)'
+
 - id: CHG-0018
   date: '2026-08-23'
   type: Process
@@ -802,6 +844,7 @@ changes:
     commands
   commit: 403c57b
   detail: '[README.md](README.md)'
+
 - id: CHG-0019
   date: '2026-08-23'
   type: Process
@@ -809,6 +852,7 @@ changes:
     its limits stated
   commit: f3b5aef
   detail: '[README.md](README.md)'
+
 - id: CHG-0020
   date: '2026-08-23'
   type: Process
@@ -816,6 +860,7 @@ changes:
     promotion rule. 18 findings promoted to the issue register
   commit: eca070d
   detail: '[AUDIT-001](audits/AUDIT-001-2026-08-23-full-project.md)'
+
 - id: CHG-0021
   date: '2026-08-23'
   type: Correction
@@ -824,6 +869,7 @@ changes:
     dead graph output, the context index generator and the duplicated roadmap table'
   commit: ef23f8a
   detail: '[REMEDIATION-LOG](audits/REMEDIATION-LOG.md)'
+
 - id: CHG-0022
   date: '2026-08-23'
   type: Design
@@ -831,6 +877,7 @@ changes:
     root email column removed from the schema as a result
   commit: 3a16bd0
   detail: '[docs/08-THREAT-MODEL.md](docs/08-THREAT-MODEL.md)'
+
 - id: CHG-0023
   date: '2026-08-23'
   type: Design
@@ -838,6 +885,7 @@ changes:
     exit criteria and the performance budget. All 18 findings now closed'
   commit: 6cceaa8
   detail: '[REMEDIATION-LOG](audits/REMEDIATION-LOG.md)'
+
 - id: CHG-0024
   date: '2026-08-23'
   type: Process
@@ -845,6 +893,7 @@ changes:
     stats reports
   commit: a92ae60
   detail: '[README.md](README.md), "Starting a coding session"'
+
 - id: CHG-0025
   date: '2026-08-23'
   type: Scope
@@ -852,6 +901,7 @@ changes:
     four capabilities explicitly rejected
   commit: c7f45f0
   detail: '[Competitive review](docs/11-COMPETITIVE-REVIEW.md)'
+
 - id: CHG-0026
   date: '2026-08-23'
   type: Design
@@ -860,6 +910,7 @@ changes:
     and London. Management account taken off the critical path via LocalStack'
   commit: 5a78798
   detail: '[ADR-0017](docs/adr/ADR-0017-configuration-and-feature-flags.md)'
+
 - id: CHG-0027
   date: '2026-08-23'
   type: Design
@@ -867,6 +918,7 @@ changes:
     levels and three write levels behind per tenant flags, both defaulting safe
   commit: ee3ea68
   detail: '[P2 spec](docs/specs/2026-08-23-p2-query-cost-governance-design.md)'
+
 - id: CHG-0028
   date: '2026-08-23'
   type: Design
@@ -874,6 +926,7 @@ changes:
     before anything touches it
   commit: 80a0ac3
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+
 - id: CHG-0029
   date: '2026-08-23'
   type: Correction
@@ -882,6 +935,7 @@ changes:
     image can meet the original
   commit: 9754a59
   detail: '[ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md)'
+
 - id: CHG-0030
   date: '2026-08-23'
   type: Design
@@ -890,6 +944,7 @@ changes:
     as ADR-0019
   commit: d904e7d
   detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md)'
+
 - id: CHG-0031
   date: '2026-08-23'
   type: Process
@@ -897,6 +952,7 @@ changes:
     name their own source
   commit: d20d35c
   detail: '[tasks/STATUS.md](tasks/STATUS.md)'
+
 - id: CHG-0032
   date: '2026-08-23'
   type: Correction
@@ -904,6 +960,7 @@ changes:
     package names that also appeared in CLAUDE.md
   commit: a9ef75c
   detail: '[project_map.md](project_map.md)'
+
 - id: CHG-0033
   date: '2026-08-23'
   type: Correction
@@ -911,6 +968,7 @@ changes:
     and the dependency admission gate missed by TASK-P0-029 was run
   commit: a699d3c
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0034
   date: '2026-08-24'
   type: Process
@@ -919,6 +977,7 @@ changes:
     command
   commit: a7e44b7
   detail: '[docs/checkpoint.md](docs/checkpoint.md)'
+
 - id: CHG-0035
   date: '2026-08-24'
   type: Process
@@ -926,6 +985,7 @@ changes:
     why it exists and a grade of A, B or C, so the scaffolding can be lifted into a new project
   commit: 798dda0
   detail: '[scripts/README.md](scripts/README.md)'
+
 - id: CHG-0036
   date: '2026-08-24'
   type: Feature
@@ -933,6 +993,7 @@ changes:
     gate raised back to 80 now that there is a module to cover
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0037
   date: '2026-08-24'
   type: Feature
@@ -940,6 +1001,7 @@ changes:
     place, no defaults in code except a flag, and a startup that refuses a bad configuration
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0038
   date: '2026-08-24'
   type: Feature
@@ -947,6 +1009,7 @@ changes:
     and a Fact base class that makes the two timestamp rule structural rather than a habit
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0039
   date: '2026-08-24'
   type: Feature
@@ -954,6 +1017,7 @@ changes:
     and a test fails the build when one does not
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0040
   date: '2026-08-24'
   type: Feature
@@ -961,6 +1025,7 @@ changes:
     plannable for any scope, and a fixture organization that never moves between runs
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0041
   date: '2026-08-24'
   type: Feature
@@ -968,6 +1033,7 @@ changes:
     error type parity as the assertion it exists for. Wave B complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0042
   date: '2026-08-24'
   type: Feature
@@ -975,6 +1041,7 @@ changes:
     invariants are constraints rather than conventions, proved against a real PostgreSQL
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0043
   date: '2026-08-24'
   type: Feature
@@ -982,6 +1049,7 @@ changes:
     enforcement points, plus an audit row on every read. ISS-109 closed
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0044
   date: '2026-08-24'
   type: Feature
@@ -990,6 +1058,7 @@ changes:
     Wave C complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0045
   date: '2026-08-24'
   type: Feature
@@ -997,6 +1066,7 @@ changes:
     refreshed before expiry, and every provider code mapped to one of the six causes
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0046
   date: '2026-08-24'
   type: Feature
@@ -1004,6 +1074,7 @@ changes:
     dropped, and the contract suite live across both providers with no skips
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0047
   date: '2026-08-24'
   type: Feature
@@ -1011,6 +1082,7 @@ changes:
     a deployment probe rather than by guessing at an error message. Wave E complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0048
   date: '2026-08-24'
   type: Feature
@@ -1018,6 +1090,7 @@ changes:
     move forward, and run uniqueness scoped to the tenant after a collision was found
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0049
   date: '2026-08-24'
   type: Feature
@@ -1025,6 +1098,7 @@ changes:
     caught, and the two spec section 11 tests passing
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0050
   date: '2026-08-24'
   type: Feature
@@ -1032,6 +1106,7 @@ changes:
     rows that make the hourly refresh data rather than a claim
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0051
   date: '2026-08-27'
   type: Feature
@@ -1039,6 +1114,7 @@ changes:
     cost named rather than dropped, and the metering charge owned. Wave F complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0052
   date: '2026-08-27'
   type: Feature
@@ -1046,6 +1122,7 @@ changes:
     with the adversarial test that proves a forgetful route cannot leak
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0053
   date: '2026-08-27'
   type: Feature
@@ -1053,6 +1130,7 @@ changes:
     typed errors with remediation, freshness per collector cadence. Wave G complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0054
   date: '2026-08-27'
   type: Chore
@@ -1060,6 +1138,7 @@ changes:
     and tests, with no component library and no state library yet
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0055
   date: '2026-08-27'
   type: Feature
@@ -1067,6 +1146,7 @@ changes:
     requires its provenance and its freshness, and no formatter is exported at all
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0056
   date: '2026-08-27'
   type: Feature
@@ -1074,6 +1154,7 @@ changes:
     the worst panel, and the API client refuses a response with no envelope
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0057
   date: '2026-08-27'
   type: Feature
@@ -1081,6 +1162,7 @@ changes:
     click, the tree is the default, and unreachable branches are drawn and marked
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0058
   date: '2026-08-27'
   type: Chore
@@ -1088,6 +1170,7 @@ changes:
     rejection of the banned dash by the local hook. Wave A complete
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0059
   date: '2026-08-27'
   type: Feature
@@ -1095,6 +1178,7 @@ changes:
     budgets measured. The restore drill is not performed and is recorded as open
   commit: pending
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+
 - id: CHG-0060
   date: '2026-08-27'
   type: Feature
@@ -1104,6 +1188,7 @@ changes:
     then drops whole partitions
   commit: 'b5750f3'
   detail: '[Data classification](docs/09-DATA-CLASSIFICATION.md)'
+
 - id: CHG-0061
   date: '2026-08-27'
   type: Feature
@@ -1112,6 +1197,7 @@ changes:
     never have started, because its command named a symbol that has never existed
   commit: '2d6982c'
   detail: '[ADR-0009](docs/adr/ADR-0009-mcp-alongside-http-api.md)'
+
 - id: CHG-0062
   date: '2026-08-28'
   type: Chore
@@ -1120,6 +1206,7 @@ changes:
     three of its eight checks, and that a duplicate job name silently deletes a job
   commit: '46147cc'
   detail: '[ADR-0011](docs/adr/ADR-0011-minimal-code-decision-ladder.md)'
+
 - id: CHG-0063
   date: '2026-08-29'
   type: Feature
@@ -1128,6 +1215,7 @@ changes:
     scheduler. No NAT Gateway, no ReadOnlyAccess, and no fifth image for the MCP server
   commit: 'eb8a507'
   detail: '[Deployment](docs/04-DEPLOYMENT.md)'
+
 - id: CHG-0064
   date: '2026-08-29'
   type: Feature
@@ -1136,6 +1224,7 @@ changes:
     says four
   commit: 'eb8a507'
   detail: '[Observability](docs/10-OBSERVABILITY.md)'
+
 - id: CHG-0065
   date: '2026-08-31'
   type: Fix
@@ -1144,6 +1233,7 @@ changes:
     deliberate ones accepted with a reachability argument
   commit: '74e9d28'
   detail: '[ADR-0018](docs/adr/ADR-0018-zero-fixable-not-zero-findings.md)'
+
 - id: CHG-0066
   date: '2026-09-02'
   type: Chore
@@ -1152,6 +1242,7 @@ changes:
     the gates. A test now asks the filesystem rather than trusting the list
   commit: '045b5b8'
   detail: '[Change control](docs/03-CHANGE-CONTROL.md)'
+
 - id: CHG-0067
   date: '2026-09-02'
   type: Decision
@@ -1160,6 +1251,7 @@ changes:
     and ISS-024 closed as by design rather than fixed
   commit: 'a2304cf'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+
 - id: CHG-0068
   date: '2026-09-02'
   type: Feature
@@ -1168,6 +1260,7 @@ changes:
     own switches rather than through mocks
   commit: 'a2304cf'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+
 - id: CHG-0069
   date: '2026-09-03'
   type: Refactor
@@ -1176,6 +1269,7 @@ changes:
     diverges, the em dash the writing rules forbid, and it is enumerated rather than absorbed
   commit: '70da3ae'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+
 - id: CHG-0070
   date: '2026-09-04'
   type: Refactor
@@ -1185,6 +1279,7 @@ changes:
     empty list on failure
   commit: 'f3f0758'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+
 - id: CHG-0071
   date: '2026-09-05'
   type: Feature
@@ -1194,6 +1289,7 @@ changes:
     ports of one kind
   commit: 'd86bfe1'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md)'
+
 - id: CHG-0072
   date: '2026-09-06'
   type: Process
@@ -1204,6 +1300,7 @@ changes:
     is visible while it is being built rather than after
   commit: '9687fd7'
   detail: '[docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md)'
+
 - id: CHG-0073
   date: '2026-09-06'
   type: Process
@@ -1213,6 +1310,7 @@ changes:
     screen as such, so P2 is reviewable while it is being built rather than at task 21 of 22
   commit: '9687fd7'
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md), [P2 plan](docs/plans/P2-implementation-plan.md)'
+
 - id: CHG-0074
   date: '2026-09-07'
   type: Feature
@@ -1222,6 +1320,7 @@ changes:
     react-router admitted at rung two of ADR-0013. AppShell lost its section and onSelect props
   commit: '295f032'
   detail: '[ADR-0020](docs/adr/ADR-0020-seven-fixed-navigation-groups.md)'
+
 - id: CHG-0075
   date: '2026-09-09'
   type: Feature
@@ -1232,6 +1331,7 @@ changes:
     the build when one becomes a live route, discovering route modules rather than listing them
   commit: 'bf90690'
   detail: '[docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md) section 11'
+
 - id: CHG-0076
   date: '2026-09-11'
   type: Feature
@@ -1242,6 +1342,7 @@ changes:
     P0 reaches 38 of 38 tasks, which is not the same as P0 being signed off
   commit: '623b2a3'
   detail: '[docs/13-UI-ARCHITECTURE.md](docs/13-UI-ARCHITECTURE.md) section 6'
+
 - id: CHG-0077
   date: '2026-09-13'
   type: Feature
@@ -1252,6 +1353,7 @@ changes:
     does not overclaim. Scanned volume reported in MiB after GiB rounded a real scan to zero
   commit: '29676ef'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-022'
+
 - id: CHG-0078
   date: '2026-09-15'
   type: Feature
@@ -1263,6 +1365,7 @@ changes:
     declared template and the fetched path differ
   commit: '1f34786'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-023'
+
 - id: CHG-0079
   date: '2026-09-17'
   type: Feature
@@ -1273,6 +1376,7 @@ changes:
     008 and a fixture claiming them would show an estate that cannot exist
   commit: '92e2eea'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-024'
+
 - id: CHG-0080
   date: '2026-09-19'
   type: Feature
@@ -1284,6 +1388,7 @@ changes:
     floor and the undo from TASK-P2-017 and 019, which this task never depended on
   commit: 'a9ac9d7'
   detail: '[P2 plan](docs/plans/P2-implementation-plan.md) TASK-P2-025'
+
 - id: CHG-0081
   date: '2026-09-21'
   type: Feature
@@ -1294,6 +1399,7 @@ changes:
     a colour. ROW_HEIGHT moved from 28 to 32 to agree with the CSS. P0 reaches 39 of 39 tasks
   commit: 'd5c8cdc'
   detail: '[ADR-0021](docs/adr/ADR-0021-plain-css-over-a-utility-framework.md)'
+
 - id: CHG-0082
   date: '2026-09-18'
   type: Design
@@ -1302,6 +1408,7 @@ changes:
     the export. The schema it writes to was already migrated by P0, so it adds no migration
   commit: '0000929'
   detail: '[P1 spec](docs/specs/2026-09-18-p1-cost-intelligence-design.md)'
+
 - id: CHG-0083
   date: '2026-09-18'
   type: Design
@@ -1310,6 +1417,7 @@ changes:
     not mention P1, so it is derived from the plan files present now and a test holds it there
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md)'
+
 - id: CHG-0084
   date: '2026-09-18'
   type: Correction
@@ -1318,6 +1426,7 @@ changes:
     period end is exclusive, which the fixtures assumed and nothing had written down
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-001'
+
 - id: CHG-0085
   date: '2026-09-18'
   type: Design
@@ -1328,6 +1437,7 @@ changes:
     fake and the collector cannot disagree about a line item's identity
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-002'
+
 - id: CHG-0086
   date: '2026-09-18'
   type: Design
@@ -1338,6 +1448,7 @@ changes:
     collector could never produce
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-003'
+
 - id: CHG-0087
   date: '2026-09-18'
   type: Design
@@ -1348,6 +1459,7 @@ changes:
     around
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-004'
+
 - id: CHG-0088
   date: '2026-09-18'
   type: Design
@@ -1358,6 +1470,7 @@ changes:
     can actually see the ordering was added
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-005'
+
 - id: CHG-0089
   date: '2026-09-19'
   type: Design
@@ -1366,6 +1479,7 @@ changes:
     and a seeded estate. The cost surface is live end to end against a fake export
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) waves B to D'
+
 - id: CHG-0090
   date: '2026-09-19'
   type: Design
@@ -1376,6 +1490,7 @@ changes:
     than allowlisted. P1's cost surface is 13 of 13
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-013'
+
 - id: CHG-0091
   date: 2026-09-20
   type: Feature
@@ -1385,6 +1500,7 @@ changes:
     baseline makes every departure infinitely many deviations
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-014, TASK-P1-015'
+
 - id: CHG-0092
   date: 2026-09-20
   type: Design
@@ -1395,6 +1511,7 @@ changes:
     have served a narrowed viewer the payer whole commitment position. Migration 0009
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-016, TASK-P1-017'
+
 - id: CHG-0093
   date: 2026-09-20
   type: Feature
@@ -1404,6 +1521,7 @@ changes:
     coverage appearing as columns on every row
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-018'
+
 - id: CHG-0094
   date: 2026-09-20
   type: Correction
@@ -1413,6 +1531,7 @@ changes:
     obliging zero dollars at any clock but its own. Adds the demo runbook and its journey
   commit: pending
   detail: '[P1 plan](docs/plans/P1-implementation-plan.md) TASK-P1-019 to TASK-P1-021'
+
 - id: CHG-0095
   date: 2026-09-20
   type: Design
@@ -1423,6 +1542,7 @@ changes:
     than returning a low one
   commit: pending
   detail: '[P3 plan](docs/plans/P3-implementation-plan.md)'
+
 - id: CHG-0096
   date: 2026-09-20
   type: Design
@@ -1433,6 +1553,7 @@ changes:
     estimated monthly cost written into the task before it is applied
   commit: pending
   detail: '[P4 plan](docs/plans/P4-implementation-plan.md)'
+
 - id: CHG-0097
   date: 2026-09-20
   type: Design
@@ -1444,6 +1565,7 @@ changes:
     source reports limit known and usage unknown, never zero, enforced by a database constraint
   commit: pending
   detail: '[P5 plan](docs/plans/P5-implementation-plan.md)'
+
 - id: CHG-0098
   date: 2026-09-20
   type: Design
@@ -1456,6 +1578,7 @@ changes:
     check could not be made
   commit: pending
   detail: '[P6 plan](docs/plans/P6-implementation-plan.md)'
+
 - id: CHG-0099
   date: 2026-09-20
   type: Correction
@@ -1464,6 +1587,7 @@ changes:
     promising what the product will not do is one that will be quoted back
   commit: pending
   detail: '[P5 spec](docs/specs/2026-09-20-p5-quotas-and-limits-design.md) section 6'
+
 - id: CHG-0100
   date: 2026-09-28
   type: Design
@@ -1475,6 +1599,7 @@ changes:
     model cites figures rather than emitting them, so there is nowhere in a sentence for a
     hallucinated number to live, and that its tools are the MCP tools which are the HTTP API,
     so scope is not reimplemented'
+
 - id: CHG-0101
   date: 2026-09-28
   type: Decision
@@ -1484,6 +1609,7 @@ changes:
     consequences bought with a narrower model choice. No seventh trust boundary, token spend on
     the bill self metering already reads, and FEAT-046 as defence in depth rather than a
     prerequisite of every other P7 feature'
+
 - id: CHG-0102
   date: 2026-09-28
   type: Correction
@@ -1494,6 +1620,7 @@ changes:
     named three routes under a containers prefix, which breaks ADR-0020 of 2026-09-06: that
     decision fixes seven top level groups and containers is not one of them. Caught before any
     route existed, so it is a correction rather than a migration of every URL and bookmark'
+
 - id: CHG-0103
   date: 2026-09-28
   type: Correction
@@ -1503,6 +1630,7 @@ changes:
   detail: 'The External dependencies table in tasks/STATUS.md says its rows are tracked in
     tasks/ISSUES.md and these three were not, so a reader chasing ISS-003 from the P6 plan,
     which names it as that sub project blocker, found nothing'
+
 - id: CHG-0104
   date: 2026-09-28
   type: Correction
@@ -1513,6 +1641,7 @@ changes:
     FEAT-058 and ISS-208. The two features are one digit apart in a project that also has an
     ISS-029 about the same subject, which is how it survived. Found while planning P7, whose
     own features include the number being misused'
+
 - id: CHG-0105
   date: 2026-09-28
   type: Process
@@ -1526,6 +1655,7 @@ changes:
     correctly and means something else, which was the FEAT-041 half of CHG-0104, and the
     docstring says so. Its own test file is the single exemption, because it has to cite
     unresolvable ids to watch the check fail'
+
 - id: CHG-0106
   date: 2026-10-04
   type: Feature
@@ -1537,6 +1667,7 @@ changes:
     into P3''s table, Fargate snapped up to the orderable matrix with the saving taken from the
     snapped size, and forecast as a third provenance with guards that nothing produces one. FEAT-035
     and FEAT-036 Delivered, FEAT-037 In build because the adapter reads no ECS, ISS-224'
+
 - id: CHG-0107
   date: 2026-10-04
   type: Correction
@@ -1548,6 +1679,7 @@ changes:
     anchored to the estate clock, the misattribution is corrected in two code comments and the
     lesson, and the first of month emptiness it was confused with is ISS-221, separate and
     still open for the make seed half'
+
 - id: CHG-0108
   date: 2026-10-04
   type: Feature
@@ -1561,6 +1693,7 @@ changes:
     redacted or blocked before anything else. Digests are composed weekly and kept unsent until
     OPEN-11. FEAT-038, FEAT-041, FEAT-042 and FEAT-046 Delivered, FEAT-039 and FEAT-040 In
     build, ISS-227 and ISS-228. The Bedrock adapter has never run against AWS, ISS-002'
+
 - id: CHG-0109
   date: 2026-10-04
   type: Design
@@ -1571,6 +1704,7 @@ changes:
     redaction_event to the person who asked. It is checked ahead of the global case, so a payer
     wide entitlement does not widen it. The month''s token sum is the one read across people,
     and it returns a number'
+
 - id: CHG-0110
   date: 2026-10-04
   type: Refactor
@@ -1580,6 +1714,7 @@ changes:
     MCP server publishes, and the API may not import the facade in front of it. The MCP server
     now imports the table from the API, its drift gate covers every router from P0 to P5, and
     ISS-148 names the new path'
+
 - id: CHG-0111
   date: 2026-10-04
   type: Design
@@ -1591,6 +1726,7 @@ changes:
     the documentation commit after the migrations rather than with them, as the routing rule
     asks. None of the three has a retention job yet and erasure does not reach them, ISS-226
     and OPEN-14'
+
 - id: CHG-0112
   date: 2026-10-05
   type: Fix
@@ -1604,6 +1740,7 @@ changes:
     called. Every cited figure carries the unit its tool declares, held by an exhaustive test
     over the tool table. ADR-0028 is amended, because its consequence that the model would be
     tagged with no work was wrong. Unverified against an account, ISS-002'
+
 - id: CHG-0113
   date: 2026-10-06
   type: Process
@@ -1614,6 +1751,7 @@ changes:
     --require-hashes and then pip check. The move to the new releases came with it: 92
     annotations to SQLAlchemy 2.1, two counts read through Any, one DISTINCT ON through
     distinct_on. Measured on the lock: mypy clean over 451 files and 3,007 backend tests passed'
+
 - id: CHG-0114
   date: 2026-10-07
   type: Fix
@@ -1625,6 +1763,7 @@ changes:
     under an amd64 label. Both builders now build for TARGETPLATFORM, and make verify-platform
     checks every ELF file inside each image against the platform with
     scripts/ci/check_image_arch.py, as well as the label'
+
 - id: CHG-0115
   date: 2026-10-07
   type: Scope
@@ -1635,6 +1774,7 @@ changes:
     own database and kept current by polling AWS. Decided the same day: every commercial Region;
     on demand, reserved, Savings Plans and spot; EC2 with EBS, RDS, ElastiCache, Redshift and
     OpenSearch; every 8 hours. P9 spec section 14, two tasks added, OPEN-17 and OPEN-18 raised'
+
 - id: CHG-0116
   date: 2026-10-07
   type: Decision
@@ -1644,6 +1784,7 @@ changes:
     endpoint in every Region. About 2,700 runs a month inside the Lambda always free allowance,
     under 1 USD a month with its writes and logs (modelled), against roughly 440 USD a month for
     endpoints (modelled). The hub keeps no route out. P9 spec section 14.5'
+
 - id: CHG-0117
   date: 2026-10-07
   type: Decision
@@ -1697,6 +1838,302 @@ changes:
     six widths that replaced the read only summary it first proposed, and the P8 components. docs/13-UI-ARCHITECTURE.md
     routes the library and the scheduled screen and adds search, the account choice, saving a view and
     scheduling one to its cross screen patterns. FEAT-063 is Delivered, and P8 with it, 18 of 18 tasks
+
+- id: CHG-0122
+  date: '2026-10-07'
+  type: Scope
+  what: Market research and nine proposals recorded in next-in-scope.txt; priorities 1 to 3 approved
+  commit: pending
+  detail: 'Research of 2026-10-07 across AWS, IBM, Flexera, Vantage, the FinOps Foundation and the State
+    of FinOps 2026, with nine proposals in priority order and a timeline. The owner approved priorities
+    1 to 3 the same day, to run in sequence: the one day wins, the FOCUS 1.4 upgrade with invoice reconciliation,
+    and P9, which lifts the hold placed on P9 that morning. Proposals 2 to 9 wait on OPEN-20'
+
+- id: CHG-0123
+  date: '2026-10-07'
+  type: Process
+  what: 'make verify-docs: a gate for a change to documents alone, priority 1 of next-in-scope.txt'
+  commit: pending
+  detail: A change touching only Markdown, text, docs/ and tasks/ runs the writing rules, the generated
+    documents and the memory gate instead of every suite. scripts/ci/check_docs_only.py decides that from
+    git, committed, staged, unstaged and untracked, links aside, and refuses any other file by name. Approved
+    by the owner on 2026-10-07 after a thirteen line documentation change had cost about fifteen minutes
+    of tests
+
+- id: CHG-0124
+  date: '2026-10-07'
+  type: Correction
+  what: FEAT-023 and FEAT-024 marked Delivered, and FEAT-023 renamed, priority 1 item 2
+  commit: pending
+  detail: Both were built by P1 on 2026-09-20, TASK-P1-014 to TASK-P1-017, and the registry still said
+    Specified. FEAT-023's name promised the ingest of AWS Cost Anomaly Detection, which its own document
+    rules out, so it is renamed for what it does. next-in-scope.txt gains section 8, the features taken
+    from other tools, and loses a claim that FOCUS 1.4 carries token fields, which arrive with 1.5
+
+- id: CHG-0125
+  date: '2026-10-07'
+  type: Design
+  what: 'P10 specified and planned: FOCUS 1.4 and invoice reconciliation, priority 1 item 3 and priority
+    2'
+  commit: pending
+  detail: 'The FOCUS 1.4 gap, measured: Meter''s row lacks 6 of the 21 mandatory Cost and Usage columns
+    and both invoice columns, and still stores the two 1.4 removes. P10 adds them, reads AWS invoices
+    through ListInvoiceSummaries, and compares each with Meter''s billed cost before tax and tax apart,
+    every comparison a typed state. ADR-0034 moves the canonical schema to FOCUS 1.4; OPEN-21 asks whether
+    to read AWS''s FOCUS export. Six tasks, FEAT-076'
+
+- id: CHG-0126
+  date: '2026-10-07'
+  type: Feature
+  what: A recommendation's suggested owner from its resource's team tag, priority 1 item 4, ISS-021's
+    first slice
+  commit: pending
+  detail: The recommendations route returns suggested_owner, the team tag of the inventory node naming
+    the resource in the same account, confined by the node table's own scope rule and never stored. The
+    waste screen's Owner cell says whom the tag names while nobody owns a finding. TEAM_TAG in finops_core.constants
+    is now the one key showback, the weekly digest and the suggestion read
+
+- id: CHG-0127
+  date: '2026-10-07'
+  type: Chore
+  what: TASK-P10-001, two digit sub projects in the memory gate and the generated task table
+  commit: pending
+  detail: check_memory.py took one digit after P, so a citation of TASK-P10-001 was never checked, and
+    sync.py sorted plan files as text, which put P10 between P1 and P2. The pattern takes one or more
+    digits and plans sort by number, each held by a test that failed on the old behaviour
+
+- id: CHG-0128
+  date: '2026-10-07'
+  type: Correction
+  what: 'P10''s design corrected: Meter reads AWS''s FOCUS export, and the service provider replaces ProviderName'
+  commit: pending
+  detail: 'The P10 spec, plan, ADR-0034 and FEAT-076 said Meter normalised raw CUR 2.0 and would map the
+    new columns itself; finops_providers/aws/cur.py already reads AWS''s FOCUS export by FOCUS names.
+    They also backfilled ServiceProviderName from PublisherName, where FOCUS introduced it to replace
+    ProviderName. Corrected before any code: five columns are read where the export has them, both provider
+    columns derive from ProviderName, and OPEN-21 is withdrawn'
+
+
+- id: CHG-0129
+  date: '2026-10-07'
+  type: Feature
+  what: TASK-P10-002, FOCUS 1.4's mandatory and invoice columns on the cost row, FEAT-004
+  commit: pending
+  detail: Migration 0030 adds billing_account_name, billing_currency, charge_class, pricing_unit, service_provider_name,
+    host_provider_name, invoice_id and invoice_detail_id, nullable, with the currency held to ISO 4217
+    by a constraint and a partial index for the sum over one invoice. The adapter reads the five AWS's
+    FOCUS 1.2 export carries where its table has them, found by the probe the split columns use, and refuses
+    a currency that is not ISO 4217 as SchemaDrift. The record derives both provider columns from provider_name
+    as FOCUS defines, for every source. A test holds all 21 FOCUS 1.4 mandatory columns to the record
+    and the table
+- id: CHG-0130
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P10-003, billing periods and invoices read from the payer, FEAT-076
+  commit: pending
+  detail: An Invoice entity and an InvoiceSource port; a fake built from the bill's rows, with one period
+    matching, one 2.50 over beside a Marketplace invoice and the running month open; an AWS adapter
+    calling ListInvoiceSummaries one billing period at a time, with anything unreadable as SchemaDrift;
+    migration 0031 with billing_period and invoice_detail, their constraints and the invoices cadence
+    row; a collector storing both as read; both tables PayerWide before any route reads them; the demo
+    seeded with the invoices; and invoicing:ListInvoiceSummaries on the management account's reader
+    role. Three acceptance criteria were reworded to what is true, recorded in the plan. Two red checks
+    found tests that could not fail, a surcharge compared with the fake's own constant and no test that
+    the tables are payer wide, and both were fixed
+- id: CHG-0131
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P10-004, each invoice compared with Meter's billed cost and the route that serves it,
+    FEAT-076
+  commit: pending
+  detail: A pure comparison in finops_core with the six states of spec section 5.4, before tax and
+    tax apart, rows in another currency never converted, and no figure on a state that is not a comparison;
+    GET /api/v1/cost/reconciliation, exportable, refusing a narrowed reader with a 403 before any read,
+    reading the newest closed period by default and answering 404 for a period never read. Two decisions
+    recorded in the spec and the plan, the tolerance's one cent floor and the period as a date like every
+    other cost route. Three red checks proved the refusal, the tax split and the currency rule are held
+- id: CHG-0132
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P10-005, the Invoice reconciliation screen and the Matches the invoice tile, FEAT-076
+  commit: pending
+  detail: A screen at /report/reconciliation on the Report group of the rail, every state in words
+    with the difference signed and labelled measured, the route's 403 and 404 shown in its own words;
+    a tile on the FinOps practitioner's Overview with the matched share of the invoiced amount; the
+    screen in SCREEN_PATHS and migration 0032 admitting it as a saved view's screen, whose downgrade
+    refuses rather than deletes a view; and a journey. The journey found the screen printing a 403's raw
+    JSON body, which unit tests built with a bare sentence had missed, fixed with the client's reasonOf
+- id: CHG-0133
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P10-006, P10's proof and documents; constraint 2 and FOCUS_VERSION name FOCUS 1.4
+  commit: pending
+  detail: Each exit criterion of the P10 spec's section 12 met with its evidence in the plan. Constraint
+    2 in CLAUDE.md, FOCUS_VERSION, the architecture and data model documents, README and the docstrings
+    that state the schema now name FOCUS 1.4, ADR-0034; ADR-0002's decision stands and its version is
+    amended. A test now proves criterion 2, which no test held before, that a row written before migration
+    0030 arrives with its provider pair backfilled, and the release before P10 still writes after it,
+    shown red without the backfill. FEAT-076 and P10 are Delivered against fakes
+- id: CHG-0134
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-001, the hub reaches every AWS API it calls, ADR-0035
+  commit: pending
+  detail: Ten interface endpoints added in the hub's Region, endpoint VPCs in us-east-1 and eu-west-2
+    peered to the hub with a private hosted zone per service, and a relay outside the VPC, finops_relay,
+    for Budgets, Support and Invoicing and for spot prices and Savings Plans rates. The relay makes only
+    six allow listed read calls, as the role the list names, narrowed by a session policy, and imports
+    nothing of Meter's; the existing adapters read through it unchanged. The member and payer roles trust
+    it by name, and the payer role gains budgets:ViewBudget, closing ISS-259. A test reads every service
+    the adapters call from the code and holds each to its path; four red checks failed it. Endpoint prices
+    measured from the AWS price list; about 338 USD a month in all, modelled. Validated offline against
+    installed providers. ISS-242 closed, ISS-260 found
+- id: CHG-0135
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-002, the price and instance type ports and their fakes, shaped by AWS's real data
+  commit: pending
+  detail: PriceCatalog and InstanceCatalog in a group of their own, CATALOG_PORTS, with Price,
+    PriceListVersion and InstanceTypeSpec in the domain. The fakes take their structure from real
+    extracts kept in tests/providers/aws/extracts, an ElastiCache price list for eu-west-1 and AWS's
+    published DescribeInstanceTypes example, and their prices from the estate's own table. Reading the
+    real list corrected the spec, section 5.3, the same day, that an All Upfront reservation is nought an
+    hour beside its fee, so a price row is a term with both and only a term nought in both is refused,
+    and that SkuPriceId is the SKU with its term. A contract test the adapters of TASK-P9-004 and
+    TASK-P9-005 join; three red checks
+- id: CHG-0136
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-003, the price catalog's tables, every invariant a constraint
+  commit: pending
+  detail: Migration 0033 adds price_list_version, price, instance_type_spec, volume_type_spec, spot_price
+    and spot_price_daily, and four nullable target columns on the recommendation. A price is an offer term
+    whose two prices are never negative and never both nought, belongs to a recorded version by a foreign
+    key, and names its lease and payment exactly when it is a reservation; a burstable type carries its
+    baseline and its source; a spot day's low is never above its high; and a recommendation's target is a
+    recorded price of the same Region and version. Per tenant like every table, so the guard needs no new
+    rule. A test per constraint, two red checks
+- id: CHG-0137
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-004, AWS's prices for five services in every commercial Region, on demand and reserved
+  commit: pending
+  detail: The Price List adapter reads ListPriceLists for each service's versions, the version and its
+    publication read from the ARN, and GetProducts a page at a time as a generator, EC2 narrowed at the
+    source to the comparable instance price and EBS storage. A nought term, a missing price or an unreadable
+    product is SchemaDrift. The price_catalog collector runs every 8 hours, loads only a version it does not
+    hold, one savepoint per service and Region with failures to sync_error, and prunes superseded prices
+    except those a recommendation quotes. Migration 0034 seeds its schedule row; the hub role gains the two
+    Pricing reads. Held to AWS's own samples and the real ElastiCache list; the row count and a real EC2
+    instance product wait on ISS-261
+- id: CHG-0138
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-005, what each instance type is, in every Region it is sold in
+  commit: pending
+  detail: AwsInstanceCatalog pages DescribeInstanceTypes, network figures summed over the cards and None
+    where unpublished; PriceListInstanceCatalog reads RDS, ElastiCache, Redshift and OpenSearch classes from
+    their products, only those carrying vCPUs and memory. Burstable baselines are the EC2 guide's credit table,
+    held as data with its URL and checked against the guide's formulas on import. The instance_catalog
+    collector runs every 8 hours, describes EC2 in the hub's Region and stores each type where the price list
+    sells it, compares a second Region when one is configured, reads a managed service only where its price
+    list changed, and marks withdrawn types not offered. Migration 0035 seeds its schedule; the hub role gains
+    ec2:DescribeInstanceTypes. The domain now refuses an empty architecture list and a peak below its baseline
+- id: CHG-0139
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-012, Savings Plans rates for EC2 in every Region the price list sells EC2 in
+  commit: pending
+  detail: AwsSavingsPlansRates reads DescribeSavingsPlansOfferingRates through the relay, one call per plan
+    type and payment option, EC2 in shared tenancy, and returns a PriceSheet whose version is a digest of its
+    rates, because the API publishes none. The relay follows nextToken itself for a call botocore cannot page,
+    up to 200 pages, and refuses a longer one whole. The savings_plan_rates collector runs every 8 hours,
+    reads the Regions the price catalog holds EC2 for, and stores a sheet only when its version is new,
+    through store and prune steps now shared with the price catalog collector. Migration 0036 seeds its
+    schedule. A third catalog port, SavingsPlansRates, with a fake and a contract
+- id: CHG-0140
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-013, spot prices in every Region, the latest per pool and 90 days of daily ranges
+  commit: pending
+  detail: AwsSpotPrices reads DescribeSpotPriceHistory through the relay for the window since a Region's last
+    read, one invocation a Region, every zone and product description; a reading of nought or outside its
+    Region is SchemaDrift and a Region not opted into NotOptedIn. The spot_prices collector replaces the
+    latest price per pool only with a reading at least as new, merges each day's low and high with the price
+    in effect at the close counted towards its day, and removes daily rows older than 90 days, OPEN-18.
+    Migration 0037 seeds its schedule. A fourth catalog port, SpotPrices, with a fake and a contract
+- id: CHG-0141
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-006, Compute Optimizer in every Region and account, every ranked option kept and priced
+  commit: pending
+  detail: The Compute Optimizer read asks each Region about each member account alone, follows nextToken,
+    and asks for Graviton through the architecture preference; every option is a RankedOption with its rank,
+    performance risk and the provider's own saving. One scope failing comes back as ScopedFindings beside
+    what was read, recorded in sync_error, and only findings in scopes read can be withdrawn. Migration 0038
+    adds recommendation_option, each option priced from a recorded catalog price or saying why not, and
+    price pruning now spares a price an option quotes. The recommendation's current and target prices are
+    set from one version
+- id: CHG-0142
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-007, Meter's own rightsizing names the cheapest type that fits and quotes the price difference
+  commit: pending
+  detail: finops_query/targets.py chooses from the same family one or two sizes down and the newer generations
+    with their AMD and Graviton variants, offered and priced in the Region, holding CPU p99 with 30 percent
+    headroom, memory peak with 15 or 25, and network and EBS p99 to the target's baselines; without an agent
+    only one size down within the family. waste_compute reads network and EBS bytes, puts each CPU
+    rightsizing through the rule against the catalog, and quotes the price difference for the hours run at
+    list and as the bill pays, never scaled up, with both prices and the version. The planted m5.2xlarge at 7
+    percent names m5.xlarge and saves about half its cost. The comparable price is now one shared read,
+    catalog_reads, for the recommendation and waste collectors alike
+- id: CHG-0143
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-008, an instance under pressure is an Upsize with an added monthly cost
+  commit: pending
+  detail: CPU or memory p95 above 90 percent, or network at its baseline, after a refused shrink names the
+    cheapest larger type that fits, the next size or a newer generation, or more memory per vCPU where memory
+    is the pressure. The recommendation is UPSIZE_INSTANCE with a saving of nought and added_monthly_cost,
+    the list price difference for the hours run scaled to the bill, held together by migration 0039; its
+    severity reads from the added cost. The Overview's savings by category leaves Upsizes out, so no total of
+    savings falls. The planted c6i.2xlarge above 90 percent is an Upsize to c6i.4xlarge
+- id: CHG-0144
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-009, a gp2 volume is priced as the gp3 that does its work
+  commit: pending
+  detail: finops_query/volumes.py gives gp3 the larger of what gp2 gives and the measured p99, for IOPS and
+    throughput, and costs it as storage plus IOPS above 3,000 plus MiB/s above 125, inside the EBS user
+    guide's limits read on 2026-10-08, 80,000 IOPS, 2,000 MiB/s, 500 IOPS per GiB and 0.25 MiB/s per IOPS.
+    The price list adapter reads gp3's IOPS and throughput families, allowed to come back empty;
+    waste_compute prices attached gp2 volumes in the same batch through waste_volumes, with the working in
+    the rationale; the instance catalog collector stores gp2's and gp3's figures with their source in
+    volume_type_spec. The planted 1,000 GiB gp2 volume saves 15.00 a month (modelled). ISS-265
+- id: CHG-0145
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-010, the catalog routes and the Alternatives table
+  commit: pending
+  detail: GET /catalog/instance-types, filtered by service, Region, family, architecture, vCPUs and memory,
+    and GET /catalog/prices, filtered by service, Region, SKU, instance type, pricing category and version,
+    each Region's newest by default; both exportable, every row carrying its version and as_of, and coverage
+    counted in Regions. Recommendations carry the current and target types, both list prices an hour from
+    their version, and an Upsize's added cost. GET /waste/recommendations/{id}/alternatives lists what a
+    rightsizing was compared with, the chosen type first, priced a month at 730 hours, and the screen shows
+    it under one finding. Meter's own alternatives are the types its rule found to fit, written when it
+    judged them, with no risk score, migration 0040; OPEN-24
+- id: CHG-0146
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-011, P9's exit criteria proved against the demo estate, and P9 delivered
+  commit: pending
+  detail: tests/scripts/test_p9_exit_criteria.py seeds the demo with every collector and holds criterion 2,
+    every rightsizing from Meter and Compute Optimizer names an offered target with both prices and the
+    version, criterion 3, the three planted cases, and criterion 4, no price is nought and none was
+    collected before it was true. Criterion 3 failed at first, ISS-266, and the seed now judges every
+    account that holds instances or attached volumes. FEAT-071 to FEAT-074 delivered, the evidence in
+    the plan
 issues:
 - id: ISS-189
   severity: LOW
@@ -2612,7 +3049,10 @@ issues:
   severity: HIGH
   summary: No owner attribution, and an unowned finding is never fixed
   status: OPEN
-  detail: FEAT-016
+  detail: 'FEAT-016. First slice 2026-10-07, CHG-0126: a recommendation suggests the owner its resource''s
+    team tag names, read from the inventory node within the reader''s scope and never stored, beside the
+    owner a person assigns. Still open: a setting for a tenant whose owners live under another key, owners
+    from the service catalogue and from CloudTrail creators, and owners on query findings and anomalies.'
 - id: ISS-022
   severity: HIGH
   summary: The cost model is never back tested against the bill
@@ -3876,7 +4316,7 @@ issues:
     describe 2026-08-24 and are right as records
 - id: ISS-242
   severity: HIGH
-  status: OPEN
+  status: FIXED
   summary: The hub's private subnets reach six AWS services, and its collectors call about
     fifteen more, several only in us-east-1 or in eu-west-2
   detail: '`infra/terraform/hub/network.tf` has interface endpoints for `sts`, `sqs`,
@@ -3900,7 +4340,11 @@ issues:
     2026-10-05, A plus C: interface endpoints for every service that has one, and two functions outside the
     VPC for Budgets and Support. It stays OPEN until TASK-P9-001 builds that path. Numbered 236
     on branch p9-plan, in commit d85410d, and renumbered before the merge because main had
-    registered that number first'
+    registered that number first. Fixed 2026-10-08 by TASK-P9-001, ADR-0035: an endpoint in the
+    hub''s Region for each service called there, peered endpoint VPCs in us-east-1 and eu-west-2,
+    and a relay outside the VPC for Budgets, Support and Invoicing, held by
+    tests/contract/test_network_paths.py, which reads every service the adapters call from the
+    code. Not yet applied, ISS-002'
 - id: ISS-243
   severity: MEDIUM
   status: FIXED
@@ -4091,6 +4535,104 @@ issues:
     HomeScreen.test.tsx passed over it before the change, and both fail over it after. Fixed the same
     day: the panel lists the reader''s schedules, and both patterns end on not a digit and cover P8.'
 
+- id: ISS-259
+  severity: MEDIUM
+  status: FIXED
+  summary: No stack grants the budgets read the budgets adapter calls
+  detail: 'Found 2026-10-08 while adding the invoice read to the management account''s reader role,
+    TASK-P10-003. finops_providers/aws/budgets.py calls DescribeBudgets at the payer, which needs
+    budgets:ViewBudget, and no file under infra/ grants it, so the first live run of the budgets
+    collector would read AccessDenied. Recorded rather than fixed in P10 because it is FEAT-060''s
+    and a grant belongs in the change that proves it against a real payer, ISS-002 and ISS-003. The
+    fix is one action in the org_read document of infra/terraform/management/main.tf, beside the
+    invoice read. Fixed 2026-10-08 by TASK-P9-001, which built the path the call takes: the relay
+    makes DescribeBudgets as the organization reader, and budgets:ViewBudget is granted there,
+    held by tests/contract/test_network_paths.py'
+
+- id: ISS-261
+  severity: MEDIUM
+  status: OPEN
+  summary: The price catalog's size and its EC2 instance attribute names are not yet measured against AWS
+  detail: 'Found 2026-10-08 by TASK-P9-004, whose plan asks for both. The tables are sized for the ten
+    million price rows spec section 14.4 models, and only one service in one Region is measured, the
+    ElastiCache list for eu-west-1 with 506 products and 1,850 terms. The adapter filters EC2 instances by
+    tenancy, capacitystatus and preInstalledSw and keeps instanceType and operatingSystem, names from the
+    price list documentation that no real EC2 instance product in this repository confirms; the EBS sample
+    and the ElastiCache products agree with every name they share. Either a real account, ISS-002, or the
+    owner''s permission to download the public EC2 offer file for one Region (eu-west-1 is 441,439,512 bytes,
+    measured on 2026-10-05) settles both: count the comparable rows, and save one instance product as an
+    extract. Until then a wrong EC2 attribute name is NoData for the Region in sync_error, because each EC2
+    query that finds no product is NoData, and never a price of nought or a Region of volumes alone.'
+- id: ISS-262
+  severity: MEDIUM
+  status: OPEN
+  summary: The instance catalog's two Region comparison and three services' attribute names are not yet proved against AWS
+  detail: 'Found 2026-10-08 by TASK-P9-005. The spec asks for two Regions'' descriptions of EC2 types to be
+    compared so that one description standing for every Region is held rather than trusted. The collector
+    compares them on every run when a second Region is configured and the tests prove a difference is
+    caught, but no two real descriptions have been compared, and no composition passes the second Region
+    yet; eu-west-2 is the one the hub reaches, ADR-0035. The RDS, Redshift and OpenSearch classes are read
+    from attributes named vcpu, memory, memoryGib, networkPerformance, currentGeneration and
+    physicalProcessor, which only the real ElastiCache list confirms. A wrong name reads as a class with no
+    size, so the Region stores nothing for it, never a wrong size. A real account, ISS-002, settles both.'
+- id: ISS-263
+  severity: MEDIUM
+  status: OPEN
+  summary: The Savings Plans rates are read from a shape no real answer has confirmed
+  detail: 'Found 2026-10-08 by TASK-P9-012. The adapter asks DescribeSavingsPlansOfferingRates for products
+    EC2 with the filters region and tenancy shared, and reads the plan from savingsPlanOffering and the type
+    from the properties instanceType, instanceFamily, productDescription and tenancy. The names are the
+    botocore 1.43.108 model''s, held by test_response_shapes.py, but the filter value shared and the property
+    values are not shown by the model, and no real answer is saved in this repository. The size of one call,
+    about 13,000 rates (modelled), is what keeps it inside the relay''s 256 MB. A wrong filter value reads as
+    NoData for every Region in sync_error, never as a rate of nought. A real account, ISS-002, settles it.'
+- id: ISS-264
+  severity: LOW
+  status: OPEN
+  summary: The size of a Region's spot window is modelled, and the relay answers it in one object
+  detail: 'Found 2026-10-08 by TASK-P9-013. DescribeSpotPriceHistory answers a window with every pool''s
+    price when it opened, so a Region with about 700 types in 3 to 6 zones and several product descriptions
+    is on the order of 20,000 readings a run (modelled), about 20 pages, answered by the relay as one S3
+    object the hub holds in memory while it folds the window. No real answer is saved here. If a measured
+    Region outgrows the relay''s 256 MB, split the call by product description, as the Savings Plans
+    adapter splits by plan type. A real account, ISS-002, settles it.'
+- id: ISS-265
+  severity: MEDIUM
+  status: OPEN
+  summary: The unit of gp3's throughput price in the real price list is not confirmed
+  detail: 'Found 2026-10-08 by TASK-P9-009. gp3 throughput above 125 MiB/s is priced from the AmazonEC2
+    price list''s Provisioned Throughput family, and catalog_reads reads its price as per MiB/s a month
+    whether the unit says MiBps-Mo or GiBps-mo, never dividing by 1,024. The published list price is per
+    MiB/s a month, but no real product is saved in this repository, and the one public page found that
+    discusses the unit, a re:Post question naming a bug in that product, refused to be read. If the list
+    states a price per GiB/s, every gp3 move that needs throughput reads as dearer than gp2 and is refused
+    with that sum: a lost recommendation, never an overstated saving. A unit outside GB-Mo, IOPS-Mo,
+    MiBps-Mo and GiBps-mo is not read at all, and the move says which price is missing. A real account,
+    ISS-002, or one saved GetProducts answer settles it.'
+- id: ISS-266
+  severity: LOW
+  status: FIXED
+  summary: The demo never priced its planted gp2 volume, because the seed judged only accounts with instances
+  detail: 'Found 2026-10-08 by TASK-P9-011''s criterion 3 test, against the seeded demo. TASK-P9-009 passed
+    each account''s attached volumes to the waste run it seeds per account, but the loop ran over the
+    accounts that hold standalone EC2 instances, and fake-platform-b holds the gp2 volume and no instance,
+    so the volume was never judged and the demo had no gp2 to gp3 recommendation. Its own tests passed,
+    because they drove the collector with every volume. Fixed the same day: the loop runs over every
+    account with instances or attached volumes, and test_p9_exit_criteria.py holds the demo to it.'
+- id: ISS-260
+  severity: MEDIUM
+  status: OPEN
+  summary: The deploy jobs may apply the wrong plan, or none
+  detail: 'Found 2026-10-08 by reading .gitlab-ci.yml while adding the relay build, TASK-P9-001, and
+    not verified, because there is no remote and no pipeline has run. terraform-plan is a parallel
+    matrix over dev and prod, and both write infra/terraform/hub/tfplan as an artifact. deploy:dev
+    needs terraform-plan, so it downloads both into one path and applies whichever arrived last.
+    deploy:prod needs only deploy:dev, which publishes no artifact, so it would find no tfplan at all.
+    A plan saved for one backend applied after an init of the other should be refused by Terraform
+    rather than applied, so the likely outcome is a failed deploy, not a wrong one. The fix is a plan
+    file named per environment, or needs that select the matching matrix job. ISS-250 is the same
+    pipeline on the first push'
+
 open_questions:
 - id: OPEN-07
   question: What does the cost screen show for a tenant whose first ingest has not run, an
@@ -4247,3 +4789,57 @@ open_questions:
   status: ANSWERED
   blocks: nothing
   detail: Set in METER_REGIONS, see .env.example section 3
+- id: OPEN-20
+  question: Which of proposals 2 to 9 in next-in-scope.txt are approved, and in what order?
+  status: OPEN
+  blocks: Every proposal after P9
+  detail: 'Raised 2026-10-07 with the market research. Priorities 1 to 3 were approved the same day. The
+    rest are FinOps for AI, owners and a savings ledger, graded autonomy through pull requests, commitments,
+    costing before deployment, performance aware rightsizing, more providers through FOCUS, and carbon
+    beside cost. Recommended: the order in section 7 of next-in-scope.txt, owners and the savings ledger
+    first because ISS-021 blocks every action after it.'
+- id: OPEN-21
+  question: 'Should Meter read AWS''s FOCUS export instead of normalising CUR 2.0 itself? WITHDRAWN 2026-10-07:
+    Meter already reads AWS''s FOCUS export, so the question rested on a wrong premise'
+  status: ANSWERED
+  blocks: nothing
+  detail: Raised and withdrawn 2026-10-07 with P10. The P10 draft said Meter normalised raw CUR 2.0; finops_providers/aws/cur.py
+    already reads AWS's FOCUS export through Athena by FOCUS column names. P10 spec section 5.2 now reads
+    the new columns where the export carries them. CHG-0128.
+- id: OPEN-22
+  question: 'Savings Plans rates: read every Region every 8 hours, about 16,200 relay calls a month, or
+    read them daily?'
+  status: OPEN
+  blocks: nothing
+  detail: 'Raised 2026-10-08 by TASK-P9-012. Spec section 14.5 modelled about 2,700 relay runs a month for
+    spot and Savings Plans together, one a Region a poll. The Savings Plans API has no paginator, no
+    version and about 77,000 EC2 rates a Region (modelled), so the adapter makes six calls a Region to keep
+    each answer inside the relay''s 256 MB, and must read every Region to learn whether anything moved:
+    about 180 calls a run, 16,200 a month at 8 hours (modelled). That is inside the Lambda free allowance of
+    1 million requests and costs about 0.08 USD a month in S3 writes (modelled), so it is built as asked.
+    Recommended: keep 8 hours, since the cost is negligible and the cadence is a schedule row that can be
+    changed without code; revisit if ISS-263 measures a larger answer.'
+- id: OPEN-23
+  question: 'Where are Compute Optimizer''s ranked options kept: a table of their own, or a JSON column on
+    the recommendation? BUILT 2026-10-08 as recommended, a table'
+  status: OPEN
+  blocks: nothing
+  detail: 'Raised 2026-10-08 by TASK-P9-006. The spec asks for every ranked option to be kept and priced,
+    and its data model gave the recommendation one target. Recommended and built: a table,
+    recommendation_option, migration 0038, because constraint 11 makes an option''s rules database
+    constraints, priced from a recorded price by a foreign key or naming why not, ranks unique, risk on
+    its scale, and a JSON column could hold none of them. The cost is one more table scoped through its
+    recommendation. Reversing it is a migration that folds the rows into a column; the owner may say so.'
+- id: OPEN-24
+  question: 'Are Meter''s own alternatives written when its rule judges them, beside Compute Optimizer''s,
+    or worked out again when the screen asks? BUILT 2026-10-08 as recommended, written'
+  status: OPEN
+  blocks: nothing
+  detail: 'Raised 2026-10-08 by TASK-P9-010. FEAT-073 said the screen would work Meter''s alternatives out
+    again from the rule and the catalog. It cannot: the rule needs the demand it measured, CPU, memory,
+    network and EBS, and nothing stores it, so a list worked out later could not say which types fit.
+    Recommended and built: the rule keeps every priced type that fits, cheapest first, and waste_compute
+    writes them to recommendation_option each run, replacing the last run''s. Compute Optimizer scores its
+    options'' risk from 0 to 4 and Meter''s rule gives none, so migration 0040 lets that column be null
+    rather than invent a nought that would read as no risk. The cost is a write per targeted finding.
+    Reversing it is storing the demand on the recommendation instead; the owner may say so.'

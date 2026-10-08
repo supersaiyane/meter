@@ -135,6 +135,15 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOr
     "cloud_account": ByAccount("account_id", "provider"),
     "org_node": None,
     "ingest_run": None,
+    # P9, migration 0033. AWS's own prices and descriptions, public and about no account, so the
+    # tenant rule and nothing narrower: a reader granted one account sees the same price list as
+    # one granted all of them.
+    "price_list_version": None,
+    "price": None,
+    "instance_type_spec": None,
+    "volume_type_spec": None,
+    "spot_price": None,
+    "spot_price_daily": None,
     "ingest_watermark": None,
     "sync_error": None,
     # P1. Every charge names the account it was incurred in, so a caller
@@ -172,6 +181,11 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOr
     # inherits that scoping the way commitment coverage does, per ADR-0025. The cost is real
     # and is ISS-212: an account scoped budget is invisible to the team that owns the account.
     "budget": PayerWide(),
+    # FEAT-076, TASK-P10-003. An invoice totals every account under the payer, and a period is
+    # closed by an invoice, so both are payer wide like a budget, P10 spec section 5.5. A
+    # narrowed reader gets nothing rather than a total including accounts they cannot see.
+    "billing_period": PayerWide(),
+    "invoice_detail": PayerWide(),
     # FEAT-055, and the reason the table exists. A finding derived from a payer wide fact is
     # payer wide, so it inherits the scoping of the coverage it was computed from rather than
     # the scoping of the findings table it resembles. ADR-0025.
@@ -193,6 +207,8 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOr
     # uses: a denormalised account column here would be a second copy of a fact
     # and therefore a second chance to disagree with the first.
     "recommendation_event": Through("recommendation", "recommendation_id", "recommendation_id"),
+    # TASK-P9-006. The targets a finding was compared with are as visible as the finding.
+    "recommendation_option": Through("recommendation", "recommendation_id", "recommendation_id"),
     # A realized saving belongs to the recommendation it verifies, and inherits
     # its account for the same reason the event does.
     "realized_saving": Through("recommendation", "recommendation_id", "recommendation_id"),

@@ -151,6 +151,12 @@ keeps no route out, which ADR-0028 relies on, and B is not built. About 20 endpo
 14.7 USD a month each is roughly 290 USD a month (modelled); the ADR that TASK-P9-001 writes
 measures it. OPEN-16 is answered.
 
+**Built on 2026-10-08, ADR-0035.** As chosen, with one service the owner's rule reaches that the
+choice did not name: Invoicing, added by P10, has no interface endpoint either (measured against
+the same list on 2026-10-08), so it takes the relay beside Budgets and Support. The two functions
+are one relay with an allow list. 21 endpoints are added, at prices measured from the AWS price
+list, about 338 USD a month in all (modelled).
+
 ### 5.2 Prices come from AWS, never from a third party
 
 The Price List Query API, filtered to the two Regions in OPEN-06, for on demand EC2 and
@@ -165,6 +171,16 @@ Constraint 2. Every price row carries `SkuId`, `SkuPriceId` (the AWS RateCode),
 currency and `SkuPriceDetails`: operating system, tenancy, capacity status, preinstalled
 software and licence. A version is the offer file's publication, and `as_of` is its
 `publicationDate`. A zero or missing price is refused with a typed cause, never stored.
+
+**Corrected 2026-10-08, TASK-P9-002, from AWS's own price list.** A real ElastiCache price list
+read that day lists a three year All Upfront reservation of `cache.m5.large` at exactly 0.00 an
+hour beside an upfront fee of 1631.20, and every All Upfront reservation has that shape. A price
+row is therefore one offer term holding its recurring price and its upfront fee, and the refusal
+is of a term whose every price is nought, so a nought hourly rate beside a fee is kept. And
+`SkuPriceId` is the SKU with its offer term, `RPVSXBK67RKQZAHJ.NQ3QZPMQV9`, not a RateCode,
+because a reservation's term carries one rate code per price and the term is what a
+recommendation names. The same file carries Extended Support products beside the ordinary ones,
+which TASK-P9-004's filter must name. The extracts are in `tests/providers/aws/extracts`.
 
 ### 5.4 Capabilities from EC2's own description of itself
 
@@ -217,7 +233,7 @@ Every invariant a constraint, constraint 11, and every migration additive, const
 | Table | Holds | Key constraints |
 | --- | --- | --- |
 | `price_list_version` | provider, service code, Region, version, `as_of` (publication date), `collected_at`, row count | unique per service, Region and version |
-| `price` | provider, service name and category, Region, SKU, `sku_price_id`, `sku_meter`, `pricing_unit`, `list_unit_price`, currency, `pricing_category`, `sku_price_details`, effective date, version, `as_of`, `collected_at` | `list_unit_price > 0`; `collected_at >= as_of`; unique per Region, `sku_price_id` and version |
+| `price` | provider, service name and category, Region, SKU, `sku_price_id`, `sku_meter`, `pricing_unit`, the recurring price and the upfront fee, currency, `pricing_category`, the lease, purchase option and offering class of a reservation, `sku_price_details`, effective date, version, `as_of`, `collected_at` | neither price negative and not both nought, section 5.3 as corrected on 2026-10-08; `collected_at >= as_of`; unique per Region, `sku_price_id` and version |
 | `instance_type_spec` | Region, instance type, family, generation, current generation, architectures, burstable, baseline CPU and maximum credits with their source, vCPUs, memory, network baseline and peak, EBS baseline and maximum, GPU count, offered, `as_of`, `collected_at` | positive vCPUs and memory; a burstable type has a baseline |
 | `volume_type_spec` | volume type, included IOPS and throughput, maxima, IOPS per GiB, source, `as_of` | |
 | `recommendation`, added | nullable current `sku_price_id`, target instance type, target `sku_price_id`, price version | a target names a price from the same version |

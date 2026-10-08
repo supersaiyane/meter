@@ -39,7 +39,8 @@ P0 Foundation
 | ID | Name | Features | Specified | Planned |
 | --- | --- | --- | --- | --- |
 | P0 | Foundation | 12 | 0 | 0 |
-| P1 | Cost Intelligence | 8 | 2 | 0 |
+| P1 | Cost Intelligence | 8 | 0 | 0 |
+| P10 | Proven numbers: FOCUS 1.4 and invoice reconciliation | 1 | 0 | 0 |
 | P2 | Query Cost Governance | 10 | 9 | 1 |
 | P3 | Utilization and Rightsizing | 10 | 0 | 0 |
 | P4 | Inventory and Topology | 7 | 0 | 0 |
@@ -47,7 +48,7 @@ P0 Foundation
 | P6 | Containers | 6 | 2 | 1 |
 | P7 | Insight and LLM layer | 6 | 0 | 0 |
 | P8 | Experience and reporting | 9 | 0 | 0 |
-| P9 | Price catalog and rightsizing targets | 4 | 0 | 4 |
+| P9 | Price catalog and rightsizing targets | 4 | 0 | 0 |
 
 <!-- generated:roadmap-status end -->
 
@@ -103,7 +104,8 @@ rather than that one saving happened.
 | ID | Name | Status | Features | Spec | Plan | Depends on |
 | --- | --- | --- | --- | --- | --- | --- |
 | P0 | Foundation | Spec approved, in build | 12 (0 specified) | [spec](specs/2026-08-23-p0-foundation-design.md) | [plan](plans/P0-implementation-plan.md) | none |
-| P1 | Cost Intelligence | Cost surface delivered. Anomalies, commitments, budgets and the export all built | 8 (2 specified) | [spec](specs/2026-09-18-p1-cost-intelligence-design.md) | [plan](plans/P1-implementation-plan.md) | P0 |
+| P1 | Cost Intelligence | Cost surface delivered. Anomalies, commitments, budgets and the export all built | 8 (0 specified) | [spec](specs/2026-09-18-p1-cost-intelligence-design.md) | [plan](plans/P1-implementation-plan.md) | P0 |
+| P10 | Proven numbers: FOCUS 1.4 and invoice reconciliation | Delivered on 2026-10-08 against fakes, TASK-P10-001 to TASK-P10-006. The cost row carries FOCUS 1.4's mandatory and invoice columns, each AWS invoice is read and compared with Meter's billed cost on a screen and the FinOps practitioner's Overview, and constraint 2 names FOCUS 1.4. The comparison against a real invoice waits on ISS-002, ISS-003 and TASK-P9-001 | 1 (0 specified) | [spec](specs/2026-10-07-p10-proven-numbers-design.md) | [plan](plans/P10-implementation-plan.md) | P1 |
 | P2 | Query Cost Governance | Delivered. Findings, surfaces, ad hoc queries and enforcement all have screens | 10 (9 specified) | [spec](specs/2026-08-23-p2-query-cost-governance-design.md) | [plan](plans/P2-implementation-plan.md) | P0 |
 | P3 | Utilization and Rightsizing | Delivered, 19 of 20 tasks. TASK-P3-020 was unblocked by P4 and is done | 10 (0 specified) | not written | not written | P0, P1 |
 | P4 | Inventory and Topology | Delivered | 7 (0 specified) | [spec](specs/2026-09-20-p4-inventory-and-topology-design.md) | [plan](plans/P4-implementation-plan.md) | P0 |
@@ -111,7 +113,7 @@ rather than that one saving happened.
 | P6 | Containers | Delivered, 12 of 12 tasks in its first cut. Cost by cluster, namespace and workload, request against use, sizing into P3's table, Fargate snapped to sizes that can be ordered, and forecast as a third provenance before anything forecasts. FEAT-037 is In build because the AWS adapter reads EKS and never ECS, ISS-224 | 6 (2 specified) | [spec](specs/2026-09-20-p6-containers-design.md) | [plan](plans/P6-implementation-plan.md) | P0, P1 |
 | P7 | Insight and LLM layer | Delivered, 14 of 14 tasks in its first cut. A question answered from the routes the screens read, every figure cited from a tool result and never written by the model, refusals and failures as shapes of their own, a monthly token budget, secrets redacted or blocked before any prompt is built, and weekly digests composed whether or not anything can send them. FEAT-039 and FEAT-040 are In build because nothing reads change history or opens a pull request yet, ISS-227 and ISS-228. Bedrock spend is tagged for the platform cost screen through an inference profile per model, unverified against an account, ISS-002 | 6 (0 specified) | [spec](specs/2026-09-28-p7-insight-and-llm-layer-design.md) | [plan](plans/P7-implementation-plan.md) | P1, P2, P3 |
 | P8 | Experience and reporting | Delivered, 18 of 18 tasks. Two themes of one glass design system, navigation by the FinOps Framework, Cost Explorer and the spend forecast, Excel and CSV reports behind the scope guard, saved views and scheduled reports rendered for each recipient, three persona dashboards and the account picker. Nothing is sent until OPEN-11 and nothing deleted until OPEN-15 | 9 (0 specified) | [spec](specs/2026-10-05-p8-experience-and-reporting-design.md) | [plan](plans/P8-implementation-plan.md) | P1, P2, P3, P4, P5, P6, P7 |
-| P9 | Price catalog and rightsizing targets | Specified, planned and approved by the owner 2026-10-05, not started, TASK-P9-001 next. EC2 and EBS list prices from AWS, rightsizing down and up to a named and priced target, and gp2 to gp3, once the hub reaches AWS by the path chosen in OPEN-16 | 4 (0 specified) | [spec](specs/2026-10-05-p9-price-catalog-design.md) | [plan](plans/P9-implementation-plan.md) | P3 |
+| P9 | Price catalog and rightsizing targets | Delivered on 2026-10-08 against fakes, TASK-P9-001 to TASK-P9-013. EC2 and EBS list prices, Savings Plans rates and spot prices for every commercial Region, the instance types they price, rightsizing down and up to a named and priced target with its alternatives, and gp2 to gp3, each figure modelled from a recorded price list version. The hub reaches every API it calls, ADR-0035; reading a real price list and real Compute Optimizer answers waits on ISS-002 | 4 (0 specified) | [spec](specs/2026-10-05-p9-price-catalog-design.md) | [plan](plans/P9-implementation-plan.md) | P3 |
 
 <!-- generated:subprojects end -->
 

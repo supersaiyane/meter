@@ -18,6 +18,7 @@ arguments on purpose, so neither can see the other's input.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
@@ -26,6 +27,7 @@ from uuid import UUID
 
 from finops_core.domain.fact import Fact
 from finops_core.domain.observation import MINIMUM_HISTORY
+from finops_core.errors import CollectionError
 
 
 class Confidence(StrEnum):
@@ -97,6 +99,9 @@ class WasteClass(StrEnum):
     CONTAINER_RIGHTSIZE = "CONTAINER_RIGHTSIZE"
     PARKABLE_WINDOW = "PARKABLE_WINDOW"
     COMMITMENT_UNCOVERED = "COMMITMENT_UNCOVERED"
+    #: TASK-P9-008. An instance that needs a larger type. Its own kind, with an added monthly
+    #: cost and a saving of nought, so no total of savings can fall because of one.
+    UPSIZE_INSTANCE = "UPSIZE_INSTANCE"
 
 
 #: Where confidence steps up. Two weeks is the floor for existing at all, a month
@@ -117,6 +122,40 @@ def confidence_of(observation_days: int) -> Confidence:
     if observation_days >= CONFIDENT_DAYS:
         return Confidence.MEDIUM
     return Confidence.LOW
+
+
+#: Compute Optimizer's performance risk runs from none to very high.
+LEAST_RISK = Decimal(0)
+MOST_RISK = Decimal(4)
+
+
+@dataclass(frozen=True, kw_only=True)
+class RankedOption:
+    """One target a provider ranked for a recommendation, as it ranked it. TASK-P9-006.
+
+    P9 spec section 5.5: every ranked option is kept, not only the first, so a reader can see
+    what was passed over and why. The price is not here: it is the catalog's, looked up when the
+    option is stored, and an option the catalog cannot price is kept and says so.
+    """
+
+    rank: int
+    instance_type: str
+    #: The provider's own risk that the target underperforms, 0 to 4.
+    performance_risk: Decimal
+    #: The provider's own monthly figure, where it gives one. Modelled, and kept beside the
+    #: catalog's price rather than replaced by it.
+    provider_monthly_saving: Decimal | None = None
+    migration_effort: str | None = None
+    #: What changes on the way, in the provider's words: architecture, hypervisor, storage.
+    platform_differences: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if self.rank < 1:
+            raise ValueError(f"an option ranked {self.rank} is not ranked")
+        if not self.instance_type:
+            raise ValueError("an option names the type it would move to")
+        if not LEAST_RISK <= self.performance_risk <= MOST_RISK:
+            raise ValueError(f"a performance risk of {self.performance_risk} is off the scale")
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -148,8 +187,24 @@ class Recommendation(Fact):
     ticket_reference: str | None
     #: The working, so a reader can disagree with it.
     rationale: str
+    #: The type the resource runs as now, where the source names one. TASK-P9-006.
+    current_instance_type: str | None = None
+    #: Every target the source ranked, best first. TASK-P9-006.
+    options: tuple[RankedOption, ...] = ()
+    #: What an Upsize adds to the bill a month, modelled. Only an Upsize has one. TASK-P9-008.
+    added_monthly_cost: Decimal | None = None
 
     def __post_init__(self) -> None:
+        ranks = [option.rank for option in self.options]
+        if len(set(ranks)) != len(ranks):
+            raise ValueError("two options share a rank, so neither is the one ranked there")
+        upsize = self.waste_class is WasteClass.UPSIZE_INSTANCE
+        if upsize != (self.added_monthly_cost is not None):
+            raise ValueError("an Upsize states its added cost, and nothing else has one")
+        if upsize and (self.added_monthly_cost or 0) <= 0:
+            raise ValueError("an Upsize adds to the bill, so its added cost is above nought")
+        if upsize and self.estimated_monthly_saving != 0:
+            raise ValueError("an Upsize saves nothing, so no total of savings can fall by it")
         if isinstance(self.estimated_monthly_saving, float):
             raise TypeError("money is Decimal. A float saving rounds differently on two screens.")
         if self.estimated_monthly_saving < 0:
@@ -210,3 +265,21 @@ class RealizedSaving(Fact):
     @property
     def realized_monthly_saving(self) -> Decimal:
         return self.cost_before - self.cost_after
+
+
+@dataclass(frozen=True)
+class ScopedFindings:
+    """What a source found in the scopes it could read, and why it could not read the rest.
+
+    TASK-P9-006, constraint 5. A source read one account and one Region at a time can lose some
+    and not others. Iterating gives the findings, so a caller that knows nothing of scopes reads
+    it as before; a caller that does records each refusal and withdraws nothing it could not see.
+    """
+
+    found: tuple[Recommendation, ...]
+    #: Every (account, Region) read in full.
+    read: frozenset[tuple[str, str]]
+    refused: tuple[CollectionError, ...] = ()
+
+    def __iter__(self) -> Iterator[Recommendation]:
+        return iter(self.found)

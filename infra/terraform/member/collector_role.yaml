@@ -26,6 +26,13 @@ Parameters:
     Default: FinOpsHubTaskRole
     Description: The exact role in the hub account that may assume this one.
 
+  RelayRoleName:
+    Type: String
+    Default: FinOpsRelayRole
+    Description: >-
+      The relay in the hub account, which makes Support's Trusted Advisor reads outside the
+      hub's VPC, ADR-0035. Assumes this role narrowed by a session policy to the one action.
+
   ExternalId:
     Type: String
     NoEcho: true
@@ -69,7 +76,9 @@ Resources:
             Effect: Allow
             Action: sts:AssumeRole
             Principal:
-              AWS: !Sub "arn:${AWS::Partition}:iam::${HubAccountId}:role/${HubTaskRoleName}"
+              AWS:
+                - !Sub "arn:${AWS::Partition}:iam::${HubAccountId}:role/${HubTaskRoleName}"
+                - !Sub "arn:${AWS::Partition}:iam::${HubAccountId}:role/${RelayRoleName}"
             Condition:
               StringEquals:
                 sts:ExternalId: !Ref ExternalId
