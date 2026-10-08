@@ -82,6 +82,15 @@ RISK_OF: Mapping[WasteClass, Risk] = {
             "type can be set back afterwards."
         ),
     ),
+    # TASK-P9-008. Growing is a resize like any other, in the other direction.
+    WasteClass.UPSIZE_INSTANCE: Risk(
+        reversible=True,
+        disturbs_running_work=True,
+        why=(
+            "A resize to a larger type needs a stop and a start, so the workload is interrupted "
+            "once to relieve the pressure. The instance type can be set back afterwards."
+        ),
+    ),
     WasteClass.IDLE_INSTANCE: Risk(
         reversible=False,
         disturbs_running_work=True,

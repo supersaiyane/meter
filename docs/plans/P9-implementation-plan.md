@@ -323,7 +323,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 5.7, FEAT-073 |
 | Delivers | FEAT-073, with TASK-P9-007 |
 | Depends on | TASK-P9-007 |
@@ -331,11 +331,11 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 **Acceptance criteria.**
 
-- [ ] CPU or memory p95 above 90 percent, or bandwidth at its baseline, recommends the next
+- [x] CPU or memory p95 above 90 percent, or bandwidth at its baseline, recommends the next
       size or a family with more memory per vCPU
-- [ ] An Upsize is its own kind with an added monthly cost, migration included
-- [ ] No total of savings falls because of an Upsize, tested
-- [ ] The planted c6i.2xlarge above 90 percent comes out as an Upsize
+- [x] An Upsize is its own kind with an added monthly cost, migration included: 0039
+- [x] No total of savings falls because of an Upsize, tested in the database and on the Overview
+- [x] The planted c6i.2xlarge above 90 percent comes out as an Upsize, to c6i.4xlarge
 
 ---
 

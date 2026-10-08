@@ -33,9 +33,9 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Playwright journeys | 52 in 19 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 30 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 38 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 209 | test_*.py under tests/ |
-| Test functions | 2750 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 39 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 210 | test_*.py under tests/ |
+| Test functions | 2764 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1469,6 +1469,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0039_upsize_added_cost.py  TASK-P9-008. An Upsize's added monthly cost,
+│       │                      held to the kind, with a saving of nought
 │       ├── 0038_recommendation_option.py  TASK-P9-006. Every target a provider
 │       │                      ranked, priced from a recorded price or saying why not
 │       ├── 0037_spot_prices_schedule.py  TASK-P9-013. The spot prices' 8 hourly

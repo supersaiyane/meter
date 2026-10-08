@@ -99,6 +99,9 @@ class WasteClass(StrEnum):
     CONTAINER_RIGHTSIZE = "CONTAINER_RIGHTSIZE"
     PARKABLE_WINDOW = "PARKABLE_WINDOW"
     COMMITMENT_UNCOVERED = "COMMITMENT_UNCOVERED"
+    #: TASK-P9-008. An instance that needs a larger type. Its own kind, with an added monthly
+    #: cost and a saving of nought, so no total of savings can fall because of one.
+    UPSIZE_INSTANCE = "UPSIZE_INSTANCE"
 
 
 #: Where confidence steps up. Two weeks is the floor for existing at all, a month
@@ -188,11 +191,20 @@ class Recommendation(Fact):
     current_instance_type: str | None = None
     #: Every target the source ranked, best first. TASK-P9-006.
     options: tuple[RankedOption, ...] = ()
+    #: What an Upsize adds to the bill a month, modelled. Only an Upsize has one. TASK-P9-008.
+    added_monthly_cost: Decimal | None = None
 
     def __post_init__(self) -> None:
         ranks = [option.rank for option in self.options]
         if len(set(ranks)) != len(ranks):
             raise ValueError("two options share a rank, so neither is the one ranked there")
+        upsize = self.waste_class is WasteClass.UPSIZE_INSTANCE
+        if upsize != (self.added_monthly_cost is not None):
+            raise ValueError("an Upsize states its added cost, and nothing else has one")
+        if upsize and (self.added_monthly_cost or 0) <= 0:
+            raise ValueError("an Upsize adds to the bill, so its added cost is above nought")
+        if upsize and self.estimated_monthly_saving != 0:
+            raise ValueError("an Upsize saves nothing, so no total of savings can fall by it")
         if isinstance(self.estimated_monthly_saving, float):
             raise TypeError("money is Decimal. A float saving rounds differently on two screens.")
         if self.estimated_monthly_saving < 0:

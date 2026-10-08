@@ -183,14 +183,14 @@ a duplicate.
 | `Lifecycle` | class | `finops_core/domain/waste.py:41` | Where a recommendation is. The event log is what says how it got there. | `finops_api/lifecycle.py`, `finops_ingest/collectors/score.py` |
 | `Source` | class | `finops_core/domain/waste.py:70` | Who found it. One table holds all of them. | nothing in this tree |
 | `WasteClass` | class | `finops_core/domain/waste.py:79` | The closed list. A free text class is one no screen can label and no score | `finops_api/routes/waste.py` |
-| `confidence_of` | function | `finops_core/domain/waste.py:110` | How sure the estimate is, from how long it watched. | `finops_ingest/collectors/commitment_actions.py`, `finops_ingest/collectors/container_usage.py`, `finops_ingest/collectors/waste_cloudwatch.py`, `finops_ingest/collectors/waste_compute.py`, and 1 more |
-| `RankedOption` | class | `finops_core/domain/waste.py:130` | One target a provider ranked for a recommendation, as it ranked it. TASK-P9-006. | `finops_providers/aws/recommendations.py` |
-| `Recommendation` | class | `finops_core/domain/waste.py:159` | One thing worth changing, whatever found it. | `finops_providers/aws/recommendations.py` |
-| `Recommendation.confidence` | method | `finops_core/domain/waste.py:212` |  | nothing in this tree |
-| `Recommendation.may_move_to` | method | `finops_core/domain/waste.py:215` |  | nothing in this tree |
-| `RealizedSaving` | class | `finops_core/domain/waste.py:220` | What actually appeared in the bill, and what it can honestly claim. | nothing in this tree |
-| `RealizedSaving.realized_monthly_saving` | method | `finops_core/domain/waste.py:254` |  | nothing in this tree |
-| `ScopedFindings` | class | `finops_core/domain/waste.py:259` | What a source found in the scopes it could read, and why it could not read the rest. | `finops_providers/aws/recommendations.py` |
+| `confidence_of` | function | `finops_core/domain/waste.py:113` | How sure the estimate is, from how long it watched. | `finops_ingest/collectors/commitment_actions.py`, `finops_ingest/collectors/container_usage.py`, `finops_ingest/collectors/waste_cloudwatch.py`, `finops_ingest/collectors/waste_compute.py`, and 1 more |
+| `RankedOption` | class | `finops_core/domain/waste.py:133` | One target a provider ranked for a recommendation, as it ranked it. TASK-P9-006. | `finops_providers/aws/recommendations.py` |
+| `Recommendation` | class | `finops_core/domain/waste.py:162` | One thing worth changing, whatever found it. | `finops_providers/aws/recommendations.py` |
+| `Recommendation.confidence` | method | `finops_core/domain/waste.py:224` |  | nothing in this tree |
+| `Recommendation.may_move_to` | method | `finops_core/domain/waste.py:227` |  | nothing in this tree |
+| `RealizedSaving` | class | `finops_core/domain/waste.py:232` | What actually appeared in the bill, and what it can honestly claim. | nothing in this tree |
+| `RealizedSaving.realized_monthly_saving` | method | `finops_core/domain/waste.py:266` |  | nothing in this tree |
+| `ScopedFindings` | class | `finops_core/domain/waste.py:271` | What a source found in the scopes it could read, and why it could not read the rest. | `finops_providers/aws/recommendations.py` |
 | `CollectionError` | class | `finops_core/errors.py:27` | Abstract parent of the six causes. Never raised, never constructed. | nothing in this tree |
 | `CollectionError.remediation` | method | `finops_core/errors.py:53` | What the person reading the failure should actually do next. | nothing in this tree |
 | `AccessDenied` | class | `finops_core/errors.py:62` | The credential was refused, so the answer is unknown rather than zero. | `finops_api/exports/scheduled.py`, `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/aws/client.py`, and 1 more |
@@ -483,8 +483,8 @@ a duplicate.
 | `CompositeTopologySource.enrolled_slices` | method | `finops_ingest/collectors/topology.py:106` | The union, in the order the first source gave them. | nothing in this tree |
 | `CompositeTopologySource.read_slice` | method | `finops_ingest/collectors/topology.py:120` | Every source's answer for one slice, merged. | `finops_ingest/collectors/inventory.py` |
 | `WasteCloudWatchCollector` | class | `finops_ingest/collectors/waste_cloudwatch.py:89` | FEAT-027. The module with no instances to size. | nothing in this tree |
-| `Candidate` | class | `finops_ingest/collectors/waste_compute.py:91` | One thing the collector was asked to look at. | nothing in this tree |
-| `WasteComputeCollector` | class | `finops_ingest/collectors/waste_compute.py:172` | Our own findings, from metrics the provider publishes. | nothing in this tree |
+| `Candidate` | class | `finops_ingest/collectors/waste_compute.py:110` | One thing the collector was asked to look at. | nothing in this tree |
+| `WasteComputeCollector` | class | `finops_ingest/collectors/waste_compute.py:191` | Our own findings, from metrics the provider publishes. | nothing in this tree |
 | `Parkable` | class | `finops_ingest/collectors/waste_parking.py:77` | A resource worth asking the parking question about. | nothing in this tree |
 | `WasteParkingCollector` | class | `finops_ingest/collectors/waste_parking.py:93` | Findings that say keep this and stop paying for the nights. | nothing in this tree |
 | `enrol` | function | `finops_ingest/coverage.py:81` | Give every enrolled slice an UNREAD row, and leave existing rows alone. | `finops_ingest/collectors/inventory.py` |

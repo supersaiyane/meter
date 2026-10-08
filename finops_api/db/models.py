@@ -634,6 +634,8 @@ recommendation = Table(
     Column("target_instance_type", Text),
     Column("target_sku_price_id", Text),
     Column("price_version", Text),
+    #: An Upsize's added monthly cost, modelled, and nothing else's. Migration 0039.
+    Column("added_monthly_cost", Numeric(20, 10)),
 )
 
 

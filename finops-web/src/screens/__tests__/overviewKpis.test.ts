@@ -212,4 +212,19 @@ describe('rankings', () => {
       { label: 'Idle instance', value: 70 },
     ]);
   });
+
+  it('never lets an Upsize lower a total of savings or appear as a category of nought', () => {
+    const open = [
+      {
+        waste_class: 'RIGHTSIZE_INSTANCE',
+        estimated_monthly_saving: '100.00',
+        lifecycle: 'OPEN',
+      },
+    ] as ApiRecommendation[];
+    const withUpsize = [
+      ...open,
+      { waste_class: 'UPSIZE_INSTANCE', estimated_monthly_saving: '0', lifecycle: 'OPEN' },
+    ] as ApiRecommendation[];
+    expect(savingsByCategory(withUpsize)).toEqual(savingsByCategory(open));
+  });
 });

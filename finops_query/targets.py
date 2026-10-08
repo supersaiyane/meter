@@ -20,6 +20,12 @@ needs, so the only candidate is the same family one size down, and the rationale
 
 **Snap to the cheapest fit.** Among the candidates that fit, the one with the lowest price.
 
+**Growing, TASK-P9-008, spec section 5.7.** CPU or memory p95 above 90 percent, or network p99
+at the type's baseline, is pressure. The candidates are the next size up in the family or a
+newer generation of it, and, where memory is the pressure, a type of the same size with more
+memory per vCPU; the cheapest that fits the demand with the same headroom is chosen, and what it
+adds is a cost, never a negative saving.
+
 **The saving is a price difference.** The current type's price less the target's, for the hours
 the instance runs, at list, and scaled by what the bill shows for those hours, never scaled up:
 a bill line above list for the same hours is carrying something else, and multiplying by it would
@@ -35,6 +41,9 @@ from decimal import Decimal
 from typing import Final
 
 from finops_query.waste import CPU_HEADROOM, MEMORY_HEADROOM, MEMORY_HEADROOM_AFTER_OOM
+
+#: At or above this p95, CPU or memory is under pressure and the instance needs room. TASK-P9-008.
+PRESSURE_PERCENT: Final = Decimal(90)
 
 #: AWS's own month for a monthly figure from an hourly price: 8,760 hours over twelve.
 HOURS_PER_MONTH: Final = Decimal(8760) / Decimal(12)
@@ -73,6 +82,9 @@ class Demand:
     oom_killed: bool | None = None
     network_p99_gbps: Decimal | None = None
     ebs_p99_mbps: Decimal | None = None
+    #: The p95s pressure is judged on, TASK-P9-008. None where unmeasured.
+    cpu_p95_percent: Decimal | None = None
+    memory_p95_percent: Decimal | None = None
 
 
 @dataclass(frozen=True)
@@ -216,6 +228,83 @@ def _notes(current: TypeOffer, target: TypeOffer, demand: Demand) -> tuple[str, 
     return tuple(notes)
 
 
+def pressure(current: TypeOffer, demand: Demand) -> str | None:
+    """What the instance is short of, in words, or None if nothing is under pressure."""
+    short: list[str] = []
+    if demand.cpu_p95_percent is not None and demand.cpu_p95_percent > PRESSURE_PERCENT:
+        short.append(f"CPU p95 of {demand.cpu_p95_percent:.1f} percent")
+    if demand.memory_p95_percent is not None and demand.memory_p95_percent > PRESSURE_PERCENT:
+        short.append(f"memory p95 of {demand.memory_p95_percent:.1f} percent")
+    baseline = current.network_baseline_gbps
+    if (
+        demand.network_p99_gbps is not None
+        and baseline is not None
+        and demand.network_p99_gbps >= baseline
+    ):
+        short.append(f"network p99 at its {baseline} Gbps baseline")
+    return " and ".join(short) or None
+
+
+def larger(current: TypeOffer, offered: Iterable[TypeOffer], demand: Demand) -> list[TypeOffer]:
+    """The types worth growing into, by the rule in this module's docstring."""
+    mine = family_of(current.instance_type)
+    if mine is None:
+        return []
+    memory_short = (
+        demand.memory_p95_percent is not None and demand.memory_p95_percent > PRESSURE_PERCENT
+    )
+    per_vcpu = Decimal(current.memory_mib) / current.vcpus
+    found: list[TypeOffer] = []
+    for offer in offered:
+        theirs = family_of(offer.instance_type)
+        if theirs is None or offer.burstable != current.burstable:
+            continue
+        same_processor = theirs.processor == mine.processor
+        next_size = (
+            theirs.series == mine.series
+            and theirs.generation >= mine.generation
+            and theirs.features == mine.features
+            and same_processor
+            and offer.vcpus == current.vcpus * 2
+        )
+        more_memory = (
+            memory_short
+            and same_processor
+            and offer.vcpus == current.vcpus
+            and Decimal(offer.memory_mib) / offer.vcpus > per_vcpu
+        )
+        if next_size or more_memory:
+            found.append(offer)
+    return found
+
+
+def grow(current: TypeOffer, offered: Sequence[TypeOffer], demand: Demand) -> Target | str:
+    """The cheapest larger type that fits, or why there is none."""
+    if current.hourly_price is None:
+        return f"the catalog holds no price for {current.instance_type}, so no cost can be quoted"
+    priced = [o for o in larger(current, offered, demand) if o.hourly_price is not None]
+    if not priced:
+        return "the catalog offers no larger type of this line in this Region"
+    fitting = [offer for offer in priced if misfit(current, offer, demand) is None]
+    if not fitting:
+        return "no larger type fits: " + "; ".join(
+            str(misfit(current, offer, demand)) for offer in sorted(priced, key=_price)
+        )
+    best = min(fitting, key=_price)
+    return Target(
+        offer=best,
+        needed_vcpus=demand.cpu_p99_percent / 100 * current.vcpus * CPU_HEADROOM,
+        notes=_notes(current, best, demand),
+    )
+
+
+def added_cost(
+    *, current_hourly: Decimal, target_hourly: Decimal, hours: Decimal, paid_monthly: Decimal
+) -> Saving:
+    """What growing adds a month, at list and as the bill pays: the mirror of `saving`."""
+    return _scaled(target_hourly - current_hourly, current_hourly, hours, paid_monthly)
+
+
 @dataclass(frozen=True)
 class Saving:
     """A price difference for the hours run, at list and as paid. Both modelled."""
@@ -239,9 +328,17 @@ def saving(
     *, current_hourly: Decimal, target_hourly: Decimal, hours: Decimal, paid_monthly: Decimal
 ) -> Saving:
     """The difference of two list prices over `hours`, and the same scaled to the bill."""
+    return _scaled(current_hourly - target_hourly, current_hourly, hours, paid_monthly)
+
+
+def _scaled(
+    difference: Decimal, current_hourly: Decimal, hours: Decimal, paid_monthly: Decimal
+) -> Saving:
+    """An hourly difference over `hours`, at list and scaled by what the bill shows over list
+    for the current type in those hours, never scaled up."""
     at_list_cost = current_hourly * hours
     ratio = min(Decimal(1), paid_monthly / at_list_cost) if at_list_cost > 0 else Decimal(1)
-    at_list = (current_hourly - target_hourly) * hours
+    at_list = difference * hours
     return Saving(
         hours_per_month=hours,
         at_list=at_list.quantize(_CENT),

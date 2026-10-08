@@ -32,6 +32,14 @@ No cheaper type that fits is a refusal with the reason, never a recommendation. 
 the type or the catalog is missing, the old estimate stands, the unused share of the
 bill, and its rationale says why no target is named. The batch reads network and EBS
 bytes beside CPU and memory so the fit can hold a target to its baselines.
+
+**An instance under pressure is an Upsize**, TASK-P9-008, spec section 5.7. Where the
+shrink was refused and CPU or memory p95 is above 90 percent, or network sits at its
+baseline, the rule names the cheapest larger type that fits, and the recommendation is
+`UPSIZE_INSTANCE` with what it adds to the bill a month and a saving of nought, so no
+total of savings falls because of it. Its severity is read from that added cost, the
+money at stake. Without a type or a catalog, or with no larger type that fits, the
+refusal says the instance is under pressure and why nothing could be named.
 """
 
 from __future__ import annotations
@@ -47,12 +55,23 @@ from sqlalchemy import text
 
 from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.metrics import MetricPoint
+from finops_core.domain.observation import MINIMUM_HISTORY
 from finops_core.domain.waste import Source, WasteClass, confidence_of
 from finops_core.ports.metrics import MetricRequest
 from finops_ingest.collectors.catalog_reads import LINUX, latest_version, offers
 from finops_ingest.registry import CollectorContext, CollectorOutcome
 from finops_query.severity import severity_for, thresholds_from
-from finops_query.targets import Demand, Target, TypeOffer, choose, hours_per_month, saving
+from finops_query.targets import (
+    Demand,
+    Target,
+    TypeOffer,
+    added_cost,
+    choose,
+    grow,
+    hours_per_month,
+    pressure,
+    saving,
+)
 from finops_query.waste import FLOOR_USD, Estimate, idle, percentile, rightsize_cpu
 
 COLLECTOR = "waste_compute"
@@ -111,16 +130,16 @@ WRITE = text(
     "source_reference, waste_class, resource_id, region_id, estimated_monthly_saving, "
     "confidence, severity, observation_days, lifecycle, owner, ticket_reference, "
     "rationale, as_of, collected_at, current_sku_price_id, target_instance_type, "
-    "target_sku_price_id, price_version) "
+    "target_sku_price_id, price_version, added_monthly_cost) "
     "VALUES (:id, :tenant, :account, :source, :reference, :waste_class, :resource, :region, "
     ":saving, :confidence, :severity, :days, 'OPEN', NULL, NULL, :rationale, :now, :now, "
-    ":current, :target_type, :target, :version) "
+    ":current, :target_type, :target, :version, :added) "
     "ON CONFLICT (tenant_id, source, source_reference) DO UPDATE SET "
     "estimated_monthly_saving = EXCLUDED.estimated_monthly_saving, "
     "current_sku_price_id = EXCLUDED.current_sku_price_id, "
     "target_instance_type = EXCLUDED.target_instance_type, "
     "target_sku_price_id = EXCLUDED.target_sku_price_id, "
-    "price_version = EXCLUDED.price_version, "
+    "price_version = EXCLUDED.price_version, added_monthly_cost = EXCLUDED.added_monthly_cost, "
     "waste_class = EXCLUDED.waste_class, confidence = EXCLUDED.confidence, "
     "severity = EXCLUDED.severity, observation_days = EXCLUDED.observation_days, "
     "rationale = EXCLUDED.rationale, as_of = EXCLUDED.as_of, "
@@ -290,6 +309,18 @@ class WasteComputeCollector:
                     ebs_p99_mbps=_p99_rate(series, EBS_KEY, EBS, candidate, MEGABIT),
                 )
                 estimate, prices = self._priced(context, candidate, estimate, demand, len(values))
+            elif _may_grow(candidate, estimate):
+                demand = Demand(
+                    cpu_p99_percent=percentile(values, 99),
+                    memory_peak_percent=peak,
+                    network_p99_gbps=_p99_rate(series, NETWORK_KEY, NETWORK, candidate, GIGABIT),
+                    ebs_p99_mbps=_p99_rate(series, EBS_KEY, EBS, candidate, MEGABIT),
+                    cpu_p95_percent=percentile(values, 95),
+                    memory_p95_percent=(
+                        percentile([point.value for point in memory], 95) if memory else None
+                    ),
+                )
+                estimate, prices = self._grown(context, candidate, estimate, demand, len(values))
             if not estimate.is_worth_acting_on:
                 # Examined and cleared. Recorded so a reader can see the rule looked, and
                 # never as a recommendation: it has no saving, and a zero in a list ranked by
@@ -430,6 +461,71 @@ class WasteComputeCollector:
             "version": version,
         }
 
+    def _grown(
+        self,
+        context: CollectorContext,
+        candidate: Candidate,
+        refusal: Estimate,
+        demand: Demand,
+        points: int,
+    ) -> tuple[Estimate, dict[str, str | None] | None]:
+        """An Upsize for an instance under pressure, or the refusal it already was."""
+        tenant, region = context.unit.tenant_id, candidate.region_id
+        version = latest_version(context.connection, tenant, region)
+        offered = (
+            offers(context.connection, tenant, region, version, candidate.operating_system)
+            if version is not None
+            else {}
+        )
+        current = offered.get(candidate.instance_type or "")
+        short = pressure(current, demand) if current is not None else _short(demand)
+        if short is None:
+            return refusal, None
+        upsize = WasteClass.UPSIZE_INSTANCE
+        if current is None or version is None:
+            why = (
+                "the instance's type is not known"
+                if candidate.instance_type is None
+                else f"the catalog holds no description or price of {candidate.instance_type} "
+                f"in {region}"
+            )
+            return _refused(
+                upsize, f"Under pressure, {short}, and no larger type is named because {why}"
+            ), None
+        chosen = grow(current, list(offered.values()), demand)
+        if isinstance(chosen, str):
+            return _refused(upsize, f"Under pressure, {short}, and {chosen}"), None
+        target = chosen.offer
+        if current.hourly_price is None or target.hourly_price is None:
+            return _refused(upsize, f"Under pressure, {short}, and the pair has no price"), None
+        cost = added_cost(
+            current_hourly=current.hourly_price,
+            target_hourly=target.hourly_price,
+            hours=hours_per_month(points, candidate.observation_days),
+            paid_monthly=candidate.monthly_cost,
+        )
+        sentence = (
+            f"Under pressure, {short}. Grow {candidate.instance_type} to "
+            f"{target.instance_type}: {current.hourly_price} to {target.hourly_price} USD an "
+            f"hour at list, for {cost.hours_per_month:.0f} hours a month, adds {cost.at_list} USD "
+            f"a month at list and {cost.as_paid} as the bill pays (modelled), price list version "
+            f"{version}" + "".join(f". {note[0].upper()}{note[1:]}" for note in chosen.notes)
+        )
+        if cost.as_paid <= 0:
+            return _refused(upsize, f"{sentence}. It costs no more, so it is not an Upsize"), None
+        return Estimate(
+            is_worth_acting_on=True,
+            waste_class=upsize,
+            monthly_saving=Decimal(0),
+            reason=sentence,
+            added_monthly_cost=cost.as_paid,
+        ), {
+            "current": current.sku_price_id,
+            "target_type": target.instance_type,
+            "target": target.sku_price_id,
+            "version": version,
+        }
+
     def _write_refusal(
         self,
         context: CollectorContext,
@@ -485,7 +581,10 @@ class WasteComputeCollector:
                 "region": candidate.region_id,
                 "saving": estimate.monthly_saving,
                 "confidence": confidence_of(candidate.observation_days).value,
-                "severity": severity_for(estimate.monthly_saving, thresholds),
+                # An Upsize's money at stake is what it adds; everything else's is its saving.
+                "severity": severity_for(
+                    estimate.added_monthly_cost or estimate.monthly_saving, thresholds
+                ),
                 "days": candidate.observation_days,
                 "rationale": estimate.reason,
                 "now": now,
@@ -494,6 +593,7 @@ class WasteComputeCollector:
                 "target_type": (prices or {}).get("target_type"),
                 "target": (prices or {}).get("target"),
                 "version": (prices or {}).get("version"),
+                "added": estimate.added_monthly_cost,
             },
         )
         context.connection.execute(
@@ -540,3 +640,35 @@ def _p99_rate(
     if not hourly:
         return None
     return percentile([value * 8 / SECONDS_PER_HOUR / unit for value in hourly.values()], 99)
+
+
+def _may_grow(candidate: Candidate, estimate: Estimate) -> bool:
+    """A refused shrink worth asking about growth: old enough, and not a burstable at ease."""
+    return (
+        not estimate.is_worth_acting_on
+        and estimate.waste_class is WasteClass.RIGHTSIZE_INSTANCE
+        and candidate.observation_days >= MINIMUM_HISTORY
+        and candidate.credit_balance is None
+    )
+
+
+def _short(demand: Demand) -> str | None:
+    """Pressure judged without the type's baselines, which the catalog could not supply."""
+    unknown = TypeOffer(
+        instance_type="",
+        vcpus=1,
+        memory_mib=1,
+        architectures=("x86_64",),
+        burstable=False,
+        hourly_price=None,
+    )
+    return pressure(unknown, demand)
+
+
+def _refused(waste_class: WasteClass, reason: str) -> Estimate:
+    return Estimate(
+        is_worth_acting_on=False,
+        waste_class=waste_class,
+        monthly_saving=Decimal(0),
+        reason=reason,
+    )
