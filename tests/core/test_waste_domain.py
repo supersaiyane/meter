@@ -244,3 +244,44 @@ class TestScopedFindings:
         )
         assert tuple(scoped) == (found,)
         assert scoped.refused == (refusal,)
+
+
+# --- an Upsize, TASK-P9-008 ------------------------------------------------------------------
+
+
+class TestUpsize:
+    def test_an_upsize_states_its_added_cost_and_saves_nothing(self) -> None:
+        upsize = a_recommendation(
+            waste_class=WasteClass.UPSIZE_INSTANCE,
+            estimated_monthly_saving=Decimal(0),
+            added_monthly_cost=Decimal("181.04"),
+        )
+        assert upsize.added_monthly_cost == Decimal("181.04")
+
+    @pytest.mark.parametrize(
+        ("overrides", "says"),
+        [
+            (
+                {"waste_class": WasteClass.UPSIZE_INSTANCE, "estimated_monthly_saving": Decimal(0)},
+                "states its added cost",
+            ),
+            ({"added_monthly_cost": Decimal("10")}, "states its added cost"),
+            (
+                {
+                    "waste_class": WasteClass.UPSIZE_INSTANCE,
+                    "estimated_monthly_saving": Decimal(0),
+                    "added_monthly_cost": Decimal(0),
+                },
+                "above nought",
+            ),
+            (
+                {"waste_class": WasteClass.UPSIZE_INSTANCE, "added_monthly_cost": Decimal("10")},
+                "saves nothing",
+            ),
+        ],
+    )
+    def test_an_upsize_that_is_not_one_is_refused(
+        self, overrides: dict[str, object], says: str
+    ) -> None:
+        with pytest.raises(ValueError, match=says):
+            a_recommendation(**overrides)

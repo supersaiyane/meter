@@ -294,15 +294,23 @@ export function openRecommendations(
   return recommendations.filter((one) => one.lifecycle === OPEN);
 }
 
+/** An instance that needs a larger type: an added cost, never a saving. TASK-P9-008. */
+export const UPSIZE = 'UPSIZE_INSTANCE';
+
 /**
  * Open recommendations' estimated monthly savings by category, largest first. Modelled, and
- * never added to what was realized, which has its own screen.
+ * never added to what was realized, which has its own screen. An Upsize is left out: it saves
+ * nothing, and a category at nought in a list ranked by money reads as the least valuable action
+ * rather than as a cost.
  */
 export function savingsByCategory(
   recommendations: readonly ApiRecommendation[],
 ): readonly Ranked[] {
   const totals = new Map<string, number>();
   for (const one of openRecommendations(recommendations)) {
+    if (one.waste_class === UPSIZE) {
+      continue;
+    }
     const name = wasteClassName(one.waste_class);
     totals.set(name, (totals.get(name) ?? 0) + Number(one.estimated_monthly_saving));
   }

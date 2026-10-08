@@ -192,3 +192,74 @@ def test_a_target_that_stops_fitting_is_cleared_on_the_next_run(
     assert found is not None
     assert found["target_instance_type"] is None
     assert found["price_version"] is None
+
+
+# --- growing, TASK-P9-008 ----------------------------------------------------------------
+
+PRESSED = next(p.subjects[0] for p in planted.PLANTED if p.code == "EC2_OVER_UTILIZED")
+
+
+def recommendation_of(engine: Engine, tenant: UUID, resource: str) -> dict[str, Any] | None:
+    with engine.connect() as connection:
+        row = (
+            connection.execute(
+                text(
+                    "SELECT * FROM recommendation WHERE tenant_id = :t AND source = 'METER' "
+                    "AND resource_id = :r"
+                ),
+                {"t": tenant, "r": resource},
+            )
+            .mappings()
+            .first()
+        )
+    return None if row is None else dict(row)
+
+
+def test_the_planted_c6i_2xlarge_above_ninety_percent_is_an_upsize(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    catalogued(engine, tenant_id)
+    collect(engine, tenant_id, settings, candidates())
+    found = recommendation_of(engine, tenant_id, PRESSED)
+    assert found is not None
+    assert found["waste_class"] == "UPSIZE_INSTANCE"
+    assert found["estimated_monthly_saving"] == 0
+    assert found["added_monthly_cost"] > 0
+    assert found["target_instance_type"] == "c6i.4xlarge"
+    assert found["price_version"] == VERSION
+    assert "Under pressure, CPU p95" in found["rationale"]
+    assert "Grow c6i.2xlarge to c6i.4xlarge" in found["rationale"]
+
+
+def test_an_upsize_never_lowers_the_total_of_savings(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    catalogued(engine, tenant_id)
+    collect(engine, tenant_id, settings, candidates())
+    with engine.connect() as connection:
+        every, without = connection.execute(
+            text(
+                "SELECT sum(estimated_monthly_saving), "
+                "sum(estimated_monthly_saving) FILTER (WHERE waste_class <> 'UPSIZE_INSTANCE') "
+                "FROM recommendation WHERE tenant_id = :t"
+            ),
+            {"t": tenant_id},
+        ).one()
+    assert every == without
+
+
+def test_without_a_catalog_pressure_is_a_refusal_saying_why(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    collect(engine, tenant_id, settings, candidates())
+    assert recommendation_of(engine, tenant_id, PRESSED) is None
+    with engine.connect() as connection:
+        reason = connection.execute(
+            text(
+                "SELECT reason FROM sizing_refusal WHERE tenant_id = :t AND resource_id = :r "
+                "AND waste_class = 'UPSIZE_INSTANCE'"
+            ),
+            {"t": tenant_id, "r": PRESSED},
+        ).scalar_one()
+    assert "Under pressure" in reason
+    assert "no description or price of c6i.2xlarge" in reason

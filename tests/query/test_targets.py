@@ -16,11 +16,15 @@ from finops_query.targets import (
     Demand,
     Target,
     TypeOffer,
+    added_cost,
     candidates,
     choose,
     family_of,
+    grow,
     hours_per_month,
+    larger,
     misfit,
+    pressure,
     saving,
 )
 
@@ -257,3 +261,84 @@ def test_the_saving_is_the_price_difference_scaled_to_the_bill_never_up() -> Non
     )
     assert above.paid_ratio == 1
     assert above.as_paid == above.at_list
+
+
+# --- growing, TASK-P9-008 ------------------------------------------------------------------
+
+C6I_2XL = offer("c6i.2xlarge", 8, 16, "0.3447", network="3.125")
+GROWABLE = (
+    C6I_2XL,
+    offer("c6i.4xlarge", 16, 32, "0.6894"),
+    offer("c7i.4xlarge", 16, 32, "0.7238"),
+    offer("m6i.2xlarge", 8, 32, "0.4056"),
+    offer("r6i.2xlarge", 8, 64, "0.5300"),
+    offer("c6g.4xlarge", 16, 32, "0.5500", arm=True),
+    offer("c6i.xlarge", 4, 8, "0.1724"),
+)
+
+
+def test_pressure_is_cpu_or_memory_p95_above_ninety_or_network_at_its_baseline() -> None:
+    assert pressure(C6I_2XL, Demand(Decimal(50), cpu_p95_percent=Decimal(85))) is None
+    assert "CPU p95 of 94.0" in str(
+        pressure(C6I_2XL, Demand(Decimal(97), cpu_p95_percent=Decimal(94)))
+    )
+    assert "memory p95" in str(
+        pressure(C6I_2XL, Demand(Decimal(50), Decimal(95), memory_p95_percent=Decimal(93)))
+    )
+    assert "3.125 Gbps baseline" in str(
+        pressure(C6I_2XL, Demand(Decimal(50), network_p99_gbps=Decimal("3.125")))
+    )
+
+
+def test_cpu_pressure_grows_to_the_next_size_in_the_line() -> None:
+    demand = Demand(Decimal(97), Decimal(60), cpu_p95_percent=Decimal(94))
+    found = {o.instance_type for o in larger(C6I_2XL, GROWABLE, demand)}
+    # The next size of the family or a newer generation, same processor; not Graviton, not wider.
+    assert found == {"c6i.4xlarge", "c7i.4xlarge"}
+    chosen = grow(C6I_2XL, GROWABLE, demand)
+    assert isinstance(chosen, Target)
+    assert chosen.offer.instance_type == "c6i.4xlarge"
+
+
+def test_memory_pressure_may_also_move_to_more_memory_per_vcpu() -> None:
+    demand = Demand(Decimal(40), Decimal(95), memory_p95_percent=Decimal(93))
+    found = {o.instance_type for o in larger(C6I_2XL, GROWABLE, demand)}
+    assert {"m6i.2xlarge", "r6i.2xlarge"} <= found
+    chosen = grow(C6I_2XL, GROWABLE, demand)
+    assert isinstance(chosen, Target)
+    # 16 GiB peaking at 95 percent needs 17.5 GiB: m6i.2xlarge's 32 GiB is the cheapest fit.
+    assert chosen.offer.instance_type == "m6i.2xlarge"
+
+
+@pytest.mark.parametrize(
+    ("current", "offered", "says"),
+    [
+        (offer("c6i.2xlarge", 8, 16, None), GROWABLE, "no price for c6i.2xlarge"),
+        (C6I_2XL, (C6I_2XL,), "no larger type of this line"),
+    ],
+)
+def test_no_larger_type_is_a_sentence_saying_why(
+    current: TypeOffer, offered: tuple[TypeOffer, ...], says: str
+) -> None:
+    chosen = grow(current, offered, Demand(Decimal(97), cpu_p95_percent=Decimal(94)))
+    assert isinstance(chosen, str)
+    assert says in chosen
+
+
+def test_a_larger_type_that_still_does_not_fit_says_so() -> None:
+    # 16 GiB at 99 percent needs 18.2 GiB with headroom; a 32 vCPU type would fit, a 16 does.
+    tight = (C6I_2XL, offer("c6i.4xlarge", 16, 17, "0.69"))
+    chosen = grow(C6I_2XL, tight, Demand(Decimal(97), Decimal(99), cpu_p95_percent=Decimal(94)))
+    assert isinstance(chosen, str)
+    assert "no larger type fits" in chosen
+
+
+def test_growing_is_an_added_cost_at_list_and_as_paid() -> None:
+    cost = added_cost(
+        current_hourly=Decimal("0.3447"),
+        target_hourly=Decimal("0.6894"),
+        hours=HOURS_PER_MONTH,
+        paid_monthly=Decimal("0.3447") * HOURS_PER_MONTH * Decimal("0.9"),
+    )
+    assert cost.at_list == Decimal("251.63")
+    assert cost.as_paid == Decimal("226.47")

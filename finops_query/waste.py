@@ -80,6 +80,8 @@ class Estimate:
     waste_class: WasteClass
     monthly_saving: Decimal
     reason: str
+    #: What acting adds to the bill a month, for an Upsize only. TASK-P9-008.
+    added_monthly_cost: Decimal | None = None
 
 
 def percentile(values: Sequence[Decimal], p: int) -> Decimal:

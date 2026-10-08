@@ -256,6 +256,7 @@ class WasteParkingCollector:
                 "target_type": None,
                 "target": None,
                 "version": None,
+                "added": None,
             },
         )
         context.connection.execute(

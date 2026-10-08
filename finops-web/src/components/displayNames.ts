@@ -30,6 +30,7 @@ export const WASTE_CLASS_NAMES: Names = {
   CONTAINER_RIGHTSIZE: 'Kubernetes rightsizing',
   PARKABLE_WINDOW: 'Off hours scheduling',
   COMMITMENT_UNCOVERED: 'Not covered by a commitment',
+  UPSIZE_INSTANCE: 'Needs a larger type',
 };
 
 export const LIFECYCLE_NAMES: Names = {

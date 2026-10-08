@@ -5,7 +5,7 @@
 | Sub project | P9 |
 | Status | In build |
 | Specification | [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.5 to 5.7 |
-| Tasks | TASK-P9-006, Compute Optimizer's targets kept and priced, and TASK-P9-007, Meter's own downsizing target, done 2026-10-08. TASK-P9-008 to come. TASK-P9-010 adds the Alternatives table |
+| Tasks | TASK-P9-006, Compute Optimizer's targets kept and priced, TASK-P9-007, Meter's own downsizing target, and TASK-P9-008, the Upsize, done 2026-10-08. TASK-P9-010 adds the Alternatives table |
 
 ## What it does
 
@@ -21,7 +21,9 @@ rank, its performance risk, its own monthly saving, the migration effort and the
 differences, and each priced from the catalog or kept saying why not. A Compute Optimizer
 recommendation names its first ranked option as its target, with both prices from one catalog
 version. Built in TASK-P9-007: Meter's own rightsizing names the cheapest type that fits and quotes
-the price difference. The Upsize, TASK-P9-008, is still to come.
+the price difference. Built in TASK-P9-008: an instance under pressure is an Upsize, a
+recommendation of its own kind naming the cheapest larger type that fits, with what it adds to the
+bill a month and a saving of nought.
 
 ## Why it exists
 
@@ -70,6 +72,18 @@ percent CPU with no agent is offered m5.xlarge and saves about half its cost (mo
 90.9 percent of it. Across a generation or an architecture the rationale says vCPUs are not
 equivalent, and a Graviton target that arm64 builds are needed.
 
+**The Upsize**, TASK-P9-008, spec section 5.7. Where a shrink is refused and the instance has
+history enough and no burstable credits to lean on, CPU or memory p95 above 90 percent, or network
+p99 at the type's baseline, is pressure. `finops_query/targets.py` takes the next size up in the
+family, or a newer generation of it, with the same processor, and where memory is the pressure a
+type of the same size with more memory per vCPU, and names the cheapest that fits the demand with
+the same headroom as a shrink. The recommendation is `UPSIZE_INSTANCE`, its saving nought and its
+`added_monthly_cost` the two list prices' difference for the hours run, scaled to the bill, both
+modelled; its severity is read from that added cost. The database holds the kind and the cost
+together, migration 0039, and the Overview's savings by category leaves an Upsize out, so no total
+of savings falls because of one. The planted c6i.2xlarge above 90 percent CPU is an Upsize to
+c6i.4xlarge.
+
 ## Failure behaviour
 
 One account or Region that cannot be read is recorded in `sync_error` under `recommendations` by
@@ -83,7 +97,9 @@ rightsizing, no cheaper type that fits is a refusal recorded in `sizing_refusal`
 never a recommendation; a saving under the 5 USD floor is refused the same way. Where the
 instance's type is not known, the catalog does not describe it, or the catalog holds no prices for
 the Region, the old estimate stands, the unused share of the bill, and its rationale says why no
-target is named. A target that stops fitting is cleared on the next run.
+target is named. A target that stops fitting is cleared on the next run. An instance under
+pressure with no type, no catalog or no larger type that fits is recorded in `sizing_refusal` as
+an `UPSIZE_INSTANCE` refusal saying what it is short of and why nothing could be named.
 
 ## Security considerations
 
@@ -104,7 +120,8 @@ so the fake and any caller that knows nothing of scopes read it as before.
 - Pricing Compute Optimizer's options at the instance's own operating system, which it does not
   name; they are quoted at Linux. Meter's own targets are quoted at the operating system the
   candidate carries, Linux where the inventory names none.
-- The Upsize, TASK-P9-008.
+- Scaling out an Auto Scaling group instead of growing a type; a group is sized at group level,
+  FEAT-047.
 - Writing Meter's alternatives as rows; TASK-P9-010 computes them for the screen from the same
   rule and the catalog.
 - Writing to Compute Optimizer: its preferences are asked per request and never stored at AWS,
@@ -119,7 +136,8 @@ yet, ISS-182.
 
 ## Status of this document
 
-In build. TASK-P9-006 and TASK-P9-007 were built on 2026-10-08. Specified in the
+In build. TASK-P9-006 to TASK-P9-008 were built on 2026-10-08; the screen's Alternatives table is
+TASK-P9-010. Specified in the
 [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.5 to 5.7, and planned in the
 [P9 plan](../plans/P9-implementation-plan.md).
 

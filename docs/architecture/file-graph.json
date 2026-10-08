@@ -611,6 +611,7 @@
     "migrations/versions/0036_savings_plan_rates_schedule.py",
     "migrations/versions/0037_spot_prices_schedule.py",
     "migrations/versions/0038_recommendation_option.py",
+    "migrations/versions/0039_upsize_added_cost.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -731,6 +732,7 @@
     "tests/db/test_recommendation_option_constraints.py",
     "tests/db/test_schema.py",
     "tests/db/test_scope_guard.py",
+    "tests/db/test_upsize_constraints.py",
     "tests/ingest/__init__.py",
     "tests/ingest/collectors/__init__.py",
     "tests/ingest/collectors/test_account_health.py",
@@ -9646,6 +9648,11 @@
     {
       "s": "finops_ingest/collectors/waste_compute.py",
       "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/waste_compute.py",
+      "t": "finops_core/domain/observation.py",
       "k": "python"
     },
     {

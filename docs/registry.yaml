@@ -82,7 +82,7 @@ subprojects:
 - id: P9
   name: Price catalog and rightsizing targets
   status: Specified, planned and approved by the owner 2026-10-05, in build from 2026-10-08 as priority 3,
-    TASK-P9-001 to TASK-P9-007, TASK-P9-012 and TASK-P9-013 done, TASK-P9-008 next. EC2 and EBS list prices from AWS, rightsizing down
+    TASK-P9-001 to TASK-P9-008, TASK-P9-012 and TASK-P9-013 done, TASK-P9-009 next. EC2 and EBS list prices from AWS, rightsizing down
     and up to a named and priced target, and gp2 to gp3. The hub now reaches every API it calls, ADR-0035
   spec: specs/2026-10-05-p9-price-catalog-design.md
   plan: plans/P9-implementation-plan.md
@@ -2085,6 +2085,17 @@ changes:
     list and as the bill pays, never scaled up, with both prices and the version. The planted m5.2xlarge at 7
     percent names m5.xlarge and saves about half its cost. The comparable price is now one shared read,
     catalog_reads, for the recommendation and waste collectors alike
+- id: CHG-0143
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-008, an instance under pressure is an Upsize with an added monthly cost
+  commit: pending
+  detail: CPU or memory p95 above 90 percent, or network at its baseline, after a refused shrink names the
+    cheapest larger type that fits, the next size or a newer generation, or more memory per vCPU where memory
+    is the pressure. The recommendation is UPSIZE_INSTANCE with a saving of nought and added_monthly_cost,
+    the list price difference for the hours run scaled to the bill, held together by migration 0039; its
+    severity reads from the added cost. The Overview's savings by category leaves Upsizes out, so no total of
+    savings falls. The planted c6i.2xlarge above 90 percent is an Upsize to c6i.4xlarge
 issues:
 - id: ISS-189
   severity: LOW

@@ -1010,6 +1010,10 @@ names why it could not be, never both and never neither, so an unpriced option i
 of nought. Price pruning spares a price an option quotes, as it spares one a recommendation
 quotes. Scoped through its recommendation, as `recommendation_event` is. OPEN-23.
 
+The recommendation also gains `added_monthly_cost`, migration 0039, TASK-P9-008: an
+`UPSIZE_INSTANCE` row has one above nought and a saving of nought, and no other row has one, so an
+Upsize states what it adds to the bill and no total of savings can fall because of it.
+
 ## Migration workflow, Alembic
 
 Alembic is the only way the schema changes. A manual `ALTER TABLE` against any
