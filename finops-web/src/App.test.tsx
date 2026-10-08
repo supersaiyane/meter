@@ -73,6 +73,42 @@ describe('App', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Query findings' })).toBeInTheDocument();
   });
 
+  it('opens only the section holding the current screen', () => {
+    // The point of the accordion. Seven groups fully expanded is a wall of
+    // links; one open group is a menu pointing at where the reader is.
+    open('/governance/queries');
+    const governance = screen.getByTestId('group-Governance');
+    expect(governance).toHaveAttribute('open');
+    for (const label of ['Cost', 'Waste', 'Inventory', 'Platform']) {
+      expect(screen.getByTestId(`group-${label}`)).not.toHaveAttribute('open');
+    }
+  });
+
+  it('opens the section a detail page was reached from', () => {
+    open('/governance/queries/abc-123');
+    expect(screen.getByTestId('group-Governance')).toHaveAttribute('open');
+  });
+
+  it('draws Home as a link rather than a section holding only itself', () => {
+    open('/');
+    expect(screen.getByTestId('nav-self-link')).toHaveTextContent('Home');
+    expect(screen.queryByTestId('group-Home')).toBeNull();
+  });
+
+  it('keeps every screen in the document, open section or not', () => {
+    // In the document, which is not the same as reachable. A real browser takes
+    // a closed details element out of the accessibility tree, so these links
+    // are one expansion away rather than tabbable where they stand, and jsdom
+    // does not model that. What this holds is that a closed section never
+    // removes a screen from the page: the unbuilt ones are listed on purpose,
+    // and dropping them would hide the roadmap. The journey asserts the
+    // browser's own behaviour, which is the part this cannot see.
+    open('/');
+    for (const href of ['/cost', '/waste', '/inventory/accounts', '/governance/queries']) {
+      expect(document.querySelector(`nav[aria-label='Sections'] a[href='${href}']`)).not.toBeNull();
+    }
+  });
+
   it('collapses the navigation, and takes it out of the tab order with it', () => {
     open('/');
     const toggle = screen.getByTestId('nav-toggle');

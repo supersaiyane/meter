@@ -276,7 +276,9 @@ meter/
 │       ├── shell/AppShell.tsx the frame. Trust strip, the page heading, and a
 │       │                      navigation column that collapses to 56 px, hidden
 │       │                      rather than covered, remembered per browser
-│       ├── shell/sections.ts  the seven navigation groups, and screenTitleFor,
+│       ├── shell/sections.ts  the seven navigation groups, one matchFor behind
+│       │                      screenTitleFor and activeGroupFor so the heading
+│       │                      and the open accordion cannot disagree, and
 │       │                      the one place a screen's name is decided, so the
 │       │                      heading and the menu cannot disagree
 │       ├── layout.css         where things sit. Element selectors, because

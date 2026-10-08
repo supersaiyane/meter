@@ -112,28 +112,51 @@ export function screenFor(path: string): ScreenDef | undefined {
 }
 
 /**
- * What to call the page at this path. The navigation is the only list of screen
- * names, so the heading is taken from it rather than restated: two lists of
- * names is how a page ends up titled one thing in the menu and another at the
- * top of itself.
+ * The screen this path belongs to, and the group that holds it.
  *
- * A detail path resolves to the screen it was reached from, by longest matching
- * prefix, because a finding detail is not in the navigation and the screen
- * itself names the finding underneath.
+ * One matcher, because the page heading and the open navigation group are two
+ * answers to the same question, and two matchers is how a page ends up titled
+ * by one screen while the menu highlights another. A detail path resolves to
+ * the screen it was reached from, by longest matching prefix.
  */
-export function screenTitleFor(pathname: string): string {
-  let best: ScreenDef | null = null;
+function matchFor(pathname: string): { group: GroupDef; screen: ScreenDef } | null {
+  let best: { group: GroupDef; screen: ScreenDef } | null = null;
   for (const group of GROUPS) {
     for (const screen of group.screens) {
       const exact = screen.path === pathname;
       const child = screen.path !== '/' && pathname.startsWith(`${screen.path}/`);
       if (!exact && !child) continue;
-      if (best === null || screen.path.length > best.path.length) {
-        best = screen;
+      if (best === null || screen.path.length > best.screen.path.length) {
+        best = { group, screen };
       }
     }
   }
+  return best;
+}
+
+/**
+ * What to call the page at this path. The navigation is the only list of screen
+ * names, so the heading is taken from it rather than restated.
+ */
+export function screenTitleFor(pathname: string): string {
   // An unrouted path is still a page and still needs naming. Saying it is not
   // built is truer than leaving the heading empty.
-  return best?.label ?? 'Not built yet';
+  return matchFor(pathname)?.screen.label ?? 'Not built yet';
+}
+
+/**
+ * Which group to open. Null for a path in none of them, where opening nothing
+ * is right: a wrong address should not make a section look current.
+ */
+export function activeGroupFor(pathname: string): string | null {
+  return matchFor(pathname)?.group.label ?? null;
+}
+
+/**
+ * A group that is only itself, like Home, whose single screen is the group's
+ * own route. Drawing that as an accordion produces a section named Home holding
+ * one link named Home, so it is drawn as a plain link instead.
+ */
+export function isSelfGroup(group: GroupDef): boolean {
+  return group.screens.length === 1 && group.screens[0]?.path === group.path;
 }

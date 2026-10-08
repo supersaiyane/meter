@@ -134,13 +134,33 @@ body {
 
 /* ------------------------------------------------------------- navigation */
 
-nav[aria-label='Sections'] h2 {
+/* Each group is a details element, so the disclosure state, the keyboard
+   handling and the expanded semantics come from the browser rather than from a
+   div pretending to be a button. Only the group holding the current screen
+   starts open, which is what keeps the menu short. */
+nav[aria-label='Sections'] summary {
   font-size: var(--font-size-1);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
-  margin: var(--space-4) 0 var(--space-1);
+  margin: var(--space-3) 0 var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+nav[aria-label='Sections'] summary:hover {
+  color: var(--text);
+  background: var(--surface-sunken);
+}
+
+/* The one group that is only itself. It sits at the top as a plain link and is
+   spaced to match a summary, so the list does not start with a jolt. */
+nav[aria-label='Sections'] > [data-testid='nav-self-link'] {
+  margin-bottom: var(--space-2);
+  font-weight: 600;
 }
 
 nav[aria-label='Sections'] ul {

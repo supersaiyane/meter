@@ -7,7 +7,7 @@ import { TypedError } from '../components/TypedError';
 import type { Cause } from '../components/provenance';
 import { useAggregateMeta } from './metaRegistry';
 import { readStored, writeStored } from '../storage';
-import { GROUPS, screenTitleFor } from './sections';
+import { GROUPS, activeGroupFor, isSelfGroup, screenTitleFor } from './sections';
 
 /**
  * The shell. Coverage and freshness live here rather than on each screen,
@@ -56,6 +56,19 @@ export function AppShell({ children, now }: AppShellProps) {
   const title = screenTitleFor(pathname);
   const [navOpen, setNavOpen] = useState(() => !navWasCollapsed());
 
+  // Only the section holding the current screen is open, so the menu is short
+  // and points at where the reader already is.
+  //
+  // Derived rather than synchronised. Holding an open set and correcting it in
+  // an effect on every navigation sets state during render, which cascades, and
+  // it keeps two facts where one will do. What is stored is only what the
+  // reader explicitly chose; everything else follows the route, so navigating
+  // into a section opens it and leaves a section the reader opened on purpose
+  // alone.
+  const activeGroup = activeGroupFor(pathname);
+  const [choices, setChoices] = useState<ReadonlyMap<string, boolean>>(() => new Map());
+  const isGroupOpen = (label: string): boolean => choices.get(label) ?? label === activeGroup;
+
   useEffect(() => {
     writeStored(NAV_KEY, navOpen ? 'expanded' : 'collapsed');
   }, [navOpen]);
@@ -98,31 +111,55 @@ export function AppShell({ children, now }: AppShellProps) {
           Meter
         </p>
         <nav id="sections" aria-label="Sections" hidden={!navOpen}>
-          {GROUPS.map((group) => (
-            <div key={group.label} data-testid={`group-${group.label}`}>
-              <h2>{group.label}</h2>
-              <ul>
-                {group.screens.map((screen) => (
-                  <li key={screen.path}>
-                    {/* An unbuilt screen is listed and reachable, never hidden.
-                        Hiding it would make the product look smaller than it is
-                        and would hide the roadmap. */}
-                    <NavLink
-                      to={screen.path}
-                      end
-                      {...(screen.arrives ? { 'data-arrives': screen.arrives } : {})}
-                    >
-                      {screen.label}
-                      {screen.arrives ? (
-                        <span className="meter-arrives"> arrives with {screen.arrives}</span>
-                      ) : null}
-                    </NavLink>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {GROUPS.map((group) =>
+            isSelfGroup(group) ? (
+              // Home is its own only screen. An accordion here would be a
+              // section named Home containing one link named Home.
+              <NavLink key={group.path} to={group.path} end data-testid="nav-self-link">
+                {group.label}
+              </NavLink>
+            ) : (
+              <details
+                key={group.label}
+                data-testid={`group-${group.label}`}
+                open={isGroupOpen(group.label)}
+                onToggle={(event) => {
+                  const nowOpen = event.currentTarget.open;
+                  setChoices((made) =>
+                    made.get(group.label) === nowOpen
+                      ? made
+                      : new Map(made).set(group.label, nowOpen),
+                  );
+                }}
+              >
+                {/* summary carries its own expanded state and keyboard
+                    handling. Reimplementing that on a div is how a menu ends up
+                    unreachable by keyboard. */}
+                <summary>{group.label}</summary>
+                <ul>
+                  {group.screens.map((screen) => (
+                    <li key={screen.path}>
+                      {/* An unbuilt screen is listed and reachable, never
+                          hidden. Hiding it would make the product look smaller
+                          than it is and would hide the roadmap. */}
+                      <NavLink
+                        to={screen.path}
+                        end
+                        {...(screen.arrives ? { 'data-arrives': screen.arrives } : {})}
+                      >
+                        {screen.label}
+                        {screen.arrives ? (
+                          <span className="meter-arrives"> arrives with {screen.arrives}</span>
+                        ) : null}
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ),
+          )}
         </nav>
+
       </header>
 
       {/* One band, full width, above everything. Section 8 of
