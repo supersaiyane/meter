@@ -50,7 +50,7 @@ from finops_fakes import cur, fixtures, prices, utilization
 from finops_fakes import estate_shape as shape
 from finops_fakes import quotas as quota_estate
 from finops_fakes.budgets import FakeBudgets
-from finops_fakes.catalog import FakePriceCatalog
+from finops_fakes.catalog import FakeInstanceCatalog, FakePriceCatalog
 from finops_fakes.cloudwatch_estate import FakeCloudWatchEstate
 from finops_fakes.commitment import FakeCommitmentReport
 from finops_fakes.cur import FakeCostExport, estate
@@ -73,6 +73,7 @@ from finops_ingest.collectors.container_usage import ContainerUsageCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
 from finops_ingest.collectors.iac_state import IacStateCollector
+from finops_ingest.collectors.instance_catalog import InstanceCatalogCollector
 from finops_ingest.collectors.inventory import InventoryCollector
 from finops_ingest.collectors.invoices import InvoiceCollector
 from finops_ingest.collectors.org_tree import OrgTreeCollector
@@ -616,6 +617,17 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
             connection,
             unit(scope_key="catalog:prices"),
             "price_catalog",
+        )
+        # FEAT-072, after the prices it places EC2's types by: every type the estate prices,
+        # described in the first Region and stored in each Region the fake sells it in.
+        written += _through_the_ledger(
+            ledger,
+            InstanceCatalogCollector(
+                FakeInstanceCatalog(), hub_region=shape.REGIONS[0], clock=lambda: now
+            ),
+            connection,
+            unit(scope_key="catalog:instances"),
+            "instance_catalog",
         )
         # FEAT-055, immediately after the coverage it reads. Turning the gaps into findings in
         # the same seed run is what makes the commitments screen show the actions rather than

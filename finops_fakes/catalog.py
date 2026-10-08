@@ -10,7 +10,9 @@ generates, and a demo cannot show a saving and a bill that disagree for a reason
 The reservation discounts are invented too, and round on purpose.
 
 **The planted cases' types.** Every type the estate prices is described, at the vCPUs and memory
-the EC2 documentation gives for it, so a downsizing candidate always has a target to name. EC2's
+the EC2 documentation gives for it, so a downsizing candidate always has a target to name. A
+burstable type carries the baseline the EC2 guide's credit table gives it, read from the same table
+the adapter reads, `finops_providers/aws/burstable.py`, TASK-P9-005. EC2's
 product attribute names, `operatingSystem` and the rest, are the price list documentation's;
 TASK-P9-004 holds them to a real EC2 extract when it reads one.
 
@@ -36,6 +38,7 @@ from finops_core.domain.catalog import (
 from finops_core.errors import CollectionError, NoData, NotOptedIn
 from finops_fakes import fixtures, prices
 from finops_fakes.estate_shape import REGIONS
+from finops_providers.aws.burstable import baseline_of
 
 EC2: Final = "AmazonEC2"
 COLLECTOR: Final = "price_catalog"
@@ -109,6 +112,18 @@ def sku_for(region: str, instance_type: str) -> str:
     """A SKU in the price list's form, sixteen capitals, the same every time for one product."""
     digest = hashlib.sha256(f"{region}:{instance_type}".encode()).hexdigest().upper()
     return "".join(ch for ch in digest if ch.isalpha())[:16].ljust(16, "X")
+
+
+def _baseline(instance_type: str) -> dict[str, Any]:
+    found = baseline_of(instance_type)
+    if found is None:
+        raise ValueError(f"{instance_type} is burstable and the credit table has no row for it")
+    row, source = found
+    return {
+        "baseline_cpu": row.per_vcpu,
+        "maximum_credits": row.maximum_credits,
+        "baseline_source": source,
+    }
 
 
 class FakePriceCatalog:
@@ -248,6 +263,7 @@ class FakeInstanceCatalog:
                 gpu_count=gpus,
                 as_of=PUBLISHED,
                 collected_at=fixtures.COLLECTED_AT,
+                **(_baseline(instance_type) if burstable else {}),
             )
             for instance_type, (
                 family,

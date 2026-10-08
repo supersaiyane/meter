@@ -355,6 +355,22 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         ),
         est_cost_per_run="0.01",
     ),
+    # FEAT-072, TASK-P9-005. Migration 0035 installs the same row for every tenant before it.
+    ScheduleEntry(
+        collector="instance_catalog",
+        cadence_seconds=EIGHT_HOURLY,
+        reason=(
+            "Every 8 hours, P9 specification section 14.4, beside the price catalog whose "
+            "Regions it places EC2's types in. A run is one DescribeInstanceTypes in the hub's "
+            "Region, one in the Region it is compared with, and GetProducts only for a managed "
+            "service whose price list changed since its classes were read, so a faster cadence "
+            "would read the same descriptions again. A type AWS starts selling is described "
+            "within 8 hours of being priced. Neither API makes a charge; the cost is the hub's "
+            "endpoints processing the pages, modelled at a tenth of a cent a run. ADR-0012, "
+            "ADR-0035, constraint 9 and FEAT-072."
+        ),
+        est_cost_per_run="0.001",
+    ),
     ScheduleEntry(
         collector="iac_state",
         cadence_seconds=DAILY,

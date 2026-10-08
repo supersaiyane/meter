@@ -173,20 +173,57 @@ def test_a_real_instance_description_is_an_instance_type() -> None:
     assert spec.network_baseline_gbps is None
 
 
+def spec(**overrides: Any) -> InstanceTypeSpec:
+    fields: dict[str, Any] = {
+        "service_code": "AmazonEC2",
+        "region": "eu-west-1",
+        "instance_type": "x.large",
+        "family": "x",
+        "current_generation": True,
+        "architectures": ("x86_64",),
+        "burstable": False,
+        "vcpus": 2,
+        "memory_mib": 1024,
+        "network_performance": "High",
+        "as_of": AT,
+        "collected_at": AT,
+    }
+    return InstanceTypeSpec(**{**fields, **overrides})
+
+
 @pytest.mark.parametrize(("vcpus", "memory"), [(0, 1024), (1, 0)])
 def test_an_instance_type_with_no_vcpus_or_memory_is_refused(vcpus: int, memory: int) -> None:
     with pytest.raises(ValueError, match="no vCPUs or no memory"):
-        InstanceTypeSpec(
-            service_code="AmazonEC2",
-            region="eu-west-1",
-            instance_type="x.large",
-            family="x",
-            current_generation=True,
-            architectures=("x86_64",),
-            burstable=False,
-            vcpus=vcpus,
-            memory_mib=memory,
-            network_performance="High",
-            as_of=AT,
-            collected_at=AT,
-        )
+        spec(vcpus=vcpus, memory_mib=memory)
+
+
+@pytest.mark.parametrize(
+    ("overrides", "says"),
+    [
+        ({"gpu_count": -1}, "negative GPU count"),
+        ({"architectures": ()}, "no architecture"),
+        ({"baseline_cpu": Decimal("1.5"), "baseline_source": "guide"}, "share of a vCPU"),
+        ({"baseline_cpu": Decimal(0), "baseline_source": "guide"}, "share of a vCPU"),
+        ({"baseline_cpu": Decimal("0.3")}, "go together"),
+        ({"baseline_source": "guide"}, "go together"),
+        ({"maximum_credits": Decimal("-1")}, "negative credit limit"),
+        (
+            {"network_baseline_gbps": Decimal(10), "network_peak_gbps": Decimal(5)},
+            "network peak is below",
+        ),
+        ({"ebs_baseline_mbps": 4750, "ebs_maximum_mbps": 1000}, "EBS maximum is below"),
+    ],
+)
+def test_an_instance_type_that_is_not_one_is_refused(overrides: dict[str, Any], says: str) -> None:
+    with pytest.raises(ValueError, match=says):
+        spec(**overrides)
+
+
+def test_a_burstable_type_holds_its_baseline_with_its_source() -> None:
+    held = spec(
+        burstable=True,
+        baseline_cpu=Decimal("0.30"),
+        maximum_credits=Decimal(864),
+        baseline_source="the EC2 guide",
+    )
+    assert (held.baseline_cpu, held.maximum_credits) == (Decimal("0.30"), Decimal(864))

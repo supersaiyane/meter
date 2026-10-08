@@ -2,8 +2,8 @@
 
 P9 spec sections 5.3, 5.4 and 14. The fakes pass it, and so does the AWS price list adapter,
 TASK-P9-004, over a stubbed client serving the fake's own prices in GetProducts' shape; TASK-P9-005
-adds the instance catalog's adapter the same way. A contract one implementation is held to and
-another is not is a description of the first.
+adds the instance catalog's EC2 adapter the same way, over a stubbed DescribeInstanceTypes. A
+contract one implementation is held to and another is not is a description of the first.
 """
 
 from __future__ import annotations
@@ -20,12 +20,16 @@ from finops_core.ports import InstanceCatalog, PriceCatalog
 from finops_fakes.catalog import FakeInstanceCatalog, FakePriceCatalog
 from finops_fakes.estate_shape import REGIONS
 from finops_fakes.prices import INSTANCE_USD
+from tests.providers.aws.ec2_types import fake_backed as instances_over_ec2
 from tests.providers.aws.pricing import fake_backed
 
 EC2 = "AmazonEC2"
 
 PRICE_CATALOGS: dict[str, Callable[..., Any]] = {"fake": FakePriceCatalog, "aws": fake_backed}
-INSTANCE_CATALOGS: dict[str, Callable[..., Any]] = {"fake": FakeInstanceCatalog}
+INSTANCE_CATALOGS: dict[str, Callable[..., Any]] = {
+    "fake": FakeInstanceCatalog,
+    "aws": instances_over_ec2,
+}
 
 
 @pytest.fixture(params=sorted(PRICE_CATALOGS))
@@ -160,6 +164,19 @@ def test_each_type_is_described_once_with_its_size(make_instances: Callable[...,
 def test_a_region_not_opted_into_is_not_opted_in(make_instances: Callable[..., Any]) -> None:
     with pytest.raises(NotOptedIn):
         tuple(make_instances(not_opted_in=["eu-fake-1"]).instance_types("eu-fake-1"))
+
+
+def test_a_refused_description_is_raised_by_its_cause(make_instances: Callable[..., Any]) -> None:
+    with pytest.raises(AccessDenied):
+        tuple(make_instances(failure=AccessDenied).instance_types(REGIONS[0]))
+
+
+def test_a_burstable_type_carries_its_baseline_and_its_source(
+    make_instances: Callable[..., Any],
+) -> None:
+    burstable = [s for s in make_instances().instance_types(REGIONS[0]) if s.burstable]
+    assert burstable
+    assert all(s.baseline_cpu is not None and s.baseline_source for s in burstable)
 
 
 def test_every_type_the_estate_bills_is_described() -> None:

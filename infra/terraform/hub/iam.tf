@@ -201,6 +201,17 @@ data "aws_iam_policy_document" "task" {
     resources = ["*"]
   }
 
+  # EC2's description of its instance types, FEAT-072, TASK-P9-005:
+  # finops_providers/aws/instance_types.py reads it in the hub's Region and the Region it is
+  # compared with, through the endpoints there, ADR-0035. A describe call takes no resource
+  # level permission. Read only, constraint 6.
+  statement {
+    sid       = "DescribeInstanceTypes"
+    effect    = "Allow"
+    actions   = ["ec2:DescribeInstanceTypes"]
+    resources = ["*"]
+  }
+
   # Metrics the collectors publish about themselves. Restricted to the Meter
   # namespace, so a bug cannot overwrite another team's metrics.
   statement {

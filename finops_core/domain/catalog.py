@@ -138,9 +138,31 @@ class InstanceTypeSpec(Fact):
     ebs_baseline_mbps: int | None = None
     ebs_maximum_mbps: int | None = None
     gpu_count: int = 0
+    #: A burstable type's baseline, the share of each vCPU it may use and earn back its credits,
+    #: from the EC2 guide's credit table, TASK-P9-005. 0.30 for a t3.large. None for any other
+    #: type, and for a burstable type the table does not list, which is never stored.
+    baseline_cpu: Decimal | None = None
+    #: The most credits it can accrue, the same table's figure.
+    maximum_credits: Decimal | None = None
+    #: Where the baseline was read, so a figure copied from a document says which one.
+    baseline_source: str | None = None
 
     def __post_init__(self) -> None:
         if self.vcpus <= 0 or self.memory_mib <= 0:
             raise ValueError(f"{self.instance_type} has no vCPUs or no memory")
         if self.gpu_count < 0:
             raise ValueError(f"{self.instance_type} has a negative GPU count")
+        if not self.architectures:
+            raise ValueError(f"{self.instance_type} names no architecture")
+        if self.baseline_cpu is not None and not 0 < self.baseline_cpu <= 1:
+            raise ValueError(f"{self.instance_type}'s baseline is not a share of a vCPU")
+        if (self.baseline_cpu is None) != (self.baseline_source is None):
+            raise ValueError(f"{self.instance_type}'s baseline and its source go together")
+        if self.maximum_credits is not None and self.maximum_credits < 0:
+            raise ValueError(f"{self.instance_type} has a negative credit limit")
+        peak, base = self.network_peak_gbps, self.network_baseline_gbps
+        if peak is not None and base is not None and peak < base:
+            raise ValueError(f"{self.instance_type}'s network peak is below its baseline")
+        ebs_max, ebs_base = self.ebs_maximum_mbps, self.ebs_baseline_mbps
+        if ebs_max is not None and ebs_base is not None and ebs_max < ebs_base:
+            raise ValueError(f"{self.instance_type}'s EBS maximum is below its baseline")
