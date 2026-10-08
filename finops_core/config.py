@@ -163,6 +163,11 @@ class Settings(BaseSettings):
     #: The attribute an AppRegistry application's attribute group names its owner under,
     #: TASK-P11-003.
     catalogue_owner_key: str = "owner"
+    #: How many resources one ownership run asks CloudTrail about, TASK-P11-004. The adapter
+    #: holds the documented two requests a second; this bounds how long a first run over a large
+    #: estate spends asking. 200 lookups of one or two pages each is 100 to 200 seconds in one
+    #: account and Region (modelled), and the rest are asked on the next day's run.
+    creator_lookups_per_run: int = Field(default=200, ge=1)
 
     # Blast radius, FEAT-044. How many reachable resources count as wide. A number in code
     # deciding what is wide is a number nobody can argue with, which is ADR-0012's argument

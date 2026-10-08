@@ -105,7 +105,7 @@ port.
 | `SavingsPlansRates` | `catalog.py` | Catalog | Read every Savings Plans rate for EC2 in a Region, versioned by their own digest | `aws/savings_plans.py` `AwsSavingsPlansRates`, through the relay, TASK-P9-012 |
 | `SpotPrices` | `catalog.py` | Catalog | Read every spot price reading in a Region's window | `aws/spot.py` `AwsSpotPrices`, through the relay, TASK-P9-013 |
 | `ServiceCatalogue` | `ownership.py` | Ownership | Read an account's applications, the owner each names, and the tags that mark its resources | `aws/appregistry.py` `AwsServiceCatalogue`, over AWS AppRegistry, TASK-P11-003 |
-| `ResourceCreators` | `ownership.py` | Ownership | Read who created a resource, or that it predates the record | Fake only until TASK-P11-004 |
+| `ResourceCreators` | `ownership.py` | Ownership | Read who created a resource, or that it predates the record | `aws/cloudtrail_creators.py` `AwsResourceCreators`, over CloudTrail's event history, TASK-P11-004 |
 | `InvoiceSource` | `invoice.py` | None | Read the payer's invoices and credit memos for a span of billing periods, FEAT-076 | `aws/invoices.py` `AwsInvoices`, over the Invoicing API through the relay, ADR-0035 |
 | `BudgetSource` | `budget.py` | None | Read the payer's budgets | `aws/budgets.py` `AwsBudgets`, over AWS Budgets |
 | `CloudWatchEstate` | `cloudwatch_estate.py` | None | Read what CloudWatch holds, its alarms, log groups and storage price, rather than the values in it | Fake only, ISS-240 |

@@ -210,6 +210,8 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOr
     # TASK-P9-006. The targets a finding was compared with are as visible as the finding.
     # P11, FEAT-077. Who an estate says owns a resource is about that resource, so its account.
     "resource_owner": ByAccount("sub_account_id"),
+    # P11, FEAT-077. Which resources CloudTrail was asked about, by the resource's account.
+    "creator_lookup": ByAccount("sub_account_id"),
     "recommendation_option": Through("recommendation", "recommendation_id", "recommendation_id"),
     # A realized saving belongs to the recommendation it verifies, and inherits
     # its account for the same reason the event does.

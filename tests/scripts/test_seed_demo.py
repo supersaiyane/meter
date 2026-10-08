@@ -106,6 +106,8 @@ class Settings:
     # FEAT-077's one, which the ownership collector refuses to run without. Same value as
     # `.env.example`; the seed widens it to name the demo's second key.
     owner_tag_keys = "team"
+    # TASK-P11-004, the default: the demo estate is far smaller.
+    creator_lookups_per_run = 200
 
     @property
     def owner_tag_key_list(self) -> tuple[str, ...]:
@@ -698,5 +700,33 @@ def test_the_seeded_estate_names_owners_from_its_tags(engine: object) -> None:
             ("amazonec2/fake-product-b/0004", "payments", "checkout"),
             ("amazonrds/fake-product-b/0001", "analytics", "reporting"),
         }
+        with engine.connect() as connection:  # type: ignore[attr-defined]
+            created = {
+                (row.resource_id, row.owner, row.owner_kind)
+                for row in connection.execute(
+                    sql(
+                        "SELECT resource_id, owner, owner_kind FROM resource_owner "
+                        "WHERE tenant_id = :t AND source = 'CREATOR'"
+                    ),
+                    {"t": DEMO_TENANT},
+                )
+            }
+            asked = dict(
+                connection.execute(
+                    sql(
+                        "SELECT outcome, count(*) FROM creator_lookup "
+                        "WHERE tenant_id = :t GROUP BY outcome"
+                    ),
+                    {"t": DEMO_TENANT},
+                ).all()
+            )
+        # TASK-P11-004. The two the fake event history saw made, a person and a pipeline; every
+        # other unnamed resource is older than the history, and says so.
+        assert created == {
+            ("amazonec2/fake-product-b/0003", "dev.lead@fake.example", "PERSON"),
+            ("amazonvpc/fake-product-b/nat-0001", "deploy-pipeline", "AUTOMATION"),
+        }
+        assert asked["FOUND"] == 2
+        assert asked["BEFORE_HISTORY"] > 0
     finally:
         seed_demo.remove(engine)

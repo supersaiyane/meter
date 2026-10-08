@@ -122,6 +122,9 @@ Resources:
                   - servicecatalog:ListAssociatedResources
                   - servicecatalog:ListAttributeGroupsForApplication
                   - servicecatalog:GetAttributeGroup
+                  # P11 ownership, TASK-P11-004. Who created a resource, from CloudTrail's
+                  # 90 days of event history. A read: it returns events, it changes nothing.
+                  - cloudtrail:LookupEvents
                   # P5 quotas. Every entry is a read, and the absence is deliberate:
                   # servicequotas:RequestServiceQuotaIncrease is NOT granted. Constraint 6
                   # and P5 spec section 6, Meter drafts a quota increase and hands it to a

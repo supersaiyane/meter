@@ -25,10 +25,12 @@ from finops_fakes.ownership import (
     FakeServiceCatalogue,
 )
 from tests.providers.aws.test_appregistry import catalogue_backed
+from tests.providers.aws.test_cloudtrail_creators import creators_backed
 
 #: TASK-P11-003 adds the AppRegistry adapter, one per account over a stub, to the same contract.
 CATALOGUES: dict[str, Callable[..., Any]] = {"fake": FakeServiceCatalogue, "aws": catalogue_backed}
-CREATORS: dict[str, Callable[..., Any]] = {"fake": FakeResourceCreators}
+#: TASK-P11-004 adds the CloudTrail adapter, one per account over a stub, to the same contract.
+CREATORS: dict[str, Callable[..., Any]] = {"fake": FakeResourceCreators, "aws": creators_backed}
 
 UNTAGGED = AccountKey(provider=Provider.AWS, account_id="fake-product-b")
 TAGGED = AccountKey(provider=Provider.AWS, account_id="fake-platform-a")

@@ -33,9 +33,9 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Playwright journeys | 53 in 19 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 32 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 41 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 221 | test_*.py under tests/ |
-| Test functions | 2855 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 42 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 223 | test_*.py under tests/ |
+| Test functions | 2877 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -568,6 +568,8 @@ meter/
 │   │   │                      one window a Region, every zone. ISS-264
 │   │   ├── appregistry.py     FEAT-077, TASK-P11-003. AWS AppRegistry's applications,
 │   │   │                      their owners and the tags that mark their resources
+│   │   ├── cloudtrail_creators.py  FEAT-077, TASK-P11-004. Who created a resource,
+│   │   │                      from CloudTrail's event history, paced and asked once
 │   │   ├── savings_plans.py   FEAT-071, TASK-P9-012. Savings Plans rates through the
 │   │   │                      relay, six calls a Region, versioned by their digest.
 │   │   │                      Unproved, ISS-263
@@ -1172,8 +1174,9 @@ meter/
 │       ├── topology.py        the edges between them, four APIs. ISS-202, same footing
 │       ├── waste_compute.py   the bespoke candidates, which are the ones carrying an
 │       │                      ARN and therefore the ones that join to a node
-│       ├── ownership.py       FEAT-077, TASK-P11-002. Daily; each resource's suggested
-│       │                      owners into resource_owner, tags from the inventory first
+│       ├── ownership.py       FEAT-077, TASK-P11-002 to 004. Daily; each resource's
+│       │                      suggested owners into resource_owner: tags, the catalogue,
+│       │                      and the creator of the unnamed, asked once, creator_lookup
 │       ├── waste_volumes.py   FEAT-074, TASK-P9-009. waste_compute's gp2 volume pass:
 │       │                      EBS operations and bytes in the same batch, priced as gp3
 │       ├── waste_cloudwatch.py  log retention and alarms that have never fired
@@ -1496,6 +1499,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0042_creator_lookup.py  TASK-P11-004. Each resource CloudTrail was asked
+│       │                      about, found or older than the history, asked once
 │       ├── 0041_resource_owner.py  TASK-P11-002. Each resource's suggested owners,
 │       │                      one row per source, and the ownership schedule row
 │       ├── 0040_option_risk_optional.py  TASK-P9-010. An option's performance risk may

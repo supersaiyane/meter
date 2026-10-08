@@ -104,7 +104,7 @@ days.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | Spec section 5.4, OPEN-26 |
 | Delivers | FEAT-077 |
 | Depends on | TASK-P11-002 |
@@ -112,11 +112,11 @@ days.
 
 **Acceptance criteria.**
 
-- [ ] `LookupEvents` by `ResourceName` for the creating event, with the documented window and
+- [x] `LookupEvents` by `ResourceName` for the creating event, with the documented window and
       rate cited and held
-- [ ] A role session named as automation with its role; a resource older than the window said to
+- [x] A role session named as automation with its role; a resource older than the window said to
       be, never guessed
-- [ ] Each resource looked up once: never again once it has a creator row or a "before the
+- [x] Each resource looked up once: never again once it has a creator row or a "before the
       window" row
 
 ---
