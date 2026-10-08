@@ -223,6 +223,56 @@ def ec2_candidates(*, at: datetime = fixtures.AS_OF) -> tuple[EstateCandidate, .
     return tuple(found)
 
 
+@dataclass(frozen=True)
+class EstateVolume:
+    """One attached EBS volume from the estate, as the gp2 to gp3 pass needs it. TASK-P9-009.
+
+    A plain record for the reason `EstateCandidate` is one.
+    """
+
+    resource_id: str
+    account_id: str
+    region_id: str
+    observation_days: int
+    monthly_cost: Decimal
+    size_gib: int
+    volume_type: str
+
+
+def volume_candidates(*, at: datetime = fixtures.AS_OF) -> tuple[EstateVolume, ...]:
+    """Every attached volume in the estate, of every type.
+
+    An unattached volume is not here. It publishes nothing, and what it needs is deleting, which
+    the unattached rule says from its configuration, not a cheaper type.
+    """
+    window_start, window_end = shape.window(at)
+    found: list[EstateVolume] = []
+    for spec in utilization.SPECS:
+        if spec.kind != "volume" or spec.config.get("attached_to") is None:
+            continue
+        launched = utilization.launched_at(spec, at)
+        found.append(
+            EstateVolume(
+                resource_id=spec.resource_id,
+                account_id=spec.account_id,
+                region_id=spec.region_id,
+                observation_days=max((window_end - max(launched, window_start)).days, 0),
+                monthly_cost=monthly_cost(spec),
+                size_gib=_size_of(spec),
+                volume_type=str(spec.config["volume_type"]),
+            )
+        )
+    return tuple(found)
+
+
+def _size_of(spec: utilization.Spec) -> int:
+    """A volume's size in GiB. A volume the estate gives no size is a fixture error, said loudly."""
+    size = spec.config.get("size_gib")
+    if not isinstance(size, int) or isinstance(size, bool):
+        raise ValueError(f"{spec.resource_id} is a volume with no size in GiB")
+    return size
+
+
 def _type_of(spec: utilization.Spec) -> str | None:
     """The instance type the estate configured, or None where it names none."""
     value = spec.config.get("instance_type")

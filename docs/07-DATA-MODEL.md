@@ -993,6 +993,13 @@ of the same tenant, Region and version, so a saving is quoted only from two pric
 together. TASK-P9-006 writes them for Compute Optimizer's findings, from the first ranked
 option and the instance's current type; TASK-P9-007 for Meter's own.
 
+`volume_type_spec` is written by the instance catalog collector from TASK-P9-009: gp2 and gp3,
+two rows rewritten in place each run, from the EBS user guide read on 2026-10-08 and named in
+`source`, because no AWS call describes a volume type's limits. gp2's baseline depends on its size,
+so its baseline columns are null and `iops_per_gib` is the rate it grows by; gp3's `iops_per_gib`
+is the most that may be provisioned. The figures are the ones `finops_query/volumes.py` prices a
+gp3 move from, so the table shows what the rule used.
+
 ```sql
 CREATE TABLE recommendation_option (       -- every target a provider ranked, migration 0038
     recommendation_id REFERENCES recommendation, region TEXT, rank >= 1, instance_type TEXT,

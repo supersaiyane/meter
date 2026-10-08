@@ -343,7 +343,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 5.8, FEAT-074 |
 | Delivers | FEAT-074 |
 | Depends on | TASK-P9-004 |
@@ -351,9 +351,9 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 **Acceptance criteria.**
 
-- [ ] Needed IOPS is the larger of the gp2 baseline and the measured p99; gp3 cost is
+- [x] Needed IOPS is the larger of the gp2 baseline and the measured p99; gp3 cost is
       storage plus IOPS above 3,000 plus throughput above 125 MiB/s
-- [ ] The planted 1000 GiB gp2 volume priced as gp3, with the working shown
+- [x] The planted 1000 GiB gp2 volume priced as gp3, with the working shown
 
 ---
 

@@ -82,7 +82,7 @@ subprojects:
 - id: P9
   name: Price catalog and rightsizing targets
   status: Specified, planned and approved by the owner 2026-10-05, in build from 2026-10-08 as priority 3,
-    TASK-P9-001 to TASK-P9-008, TASK-P9-012 and TASK-P9-013 done, TASK-P9-009 next. EC2 and EBS list prices from AWS, rightsizing down
+    TASK-P9-001 to TASK-P9-009, TASK-P9-012 and TASK-P9-013 done, TASK-P9-010 next. EC2 and EBS list prices from AWS, rightsizing down
     and up to a named and priced target, and gp2 to gp3. The hub now reaches every API it calls, ADR-0035
   spec: specs/2026-10-05-p9-price-catalog-design.md
   plan: plans/P9-implementation-plan.md
@@ -543,7 +543,7 @@ features:
 - id: FEAT-074
   name: gp2 to gp3 migration, priced from measured IOPS and throughput
   subproject: P9
-  status: Planned
+  status: In build
   detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) section 5.8, [P9 plan](docs/plans/P9-implementation-plan.md)'
   doc: docs/features/FEAT-074-gp2-to-gp3-migration.md
 - id: FEAT-075
@@ -2096,6 +2096,18 @@ changes:
     the list price difference for the hours run scaled to the bill, held together by migration 0039; its
     severity reads from the added cost. The Overview's savings by category leaves Upsizes out, so no total of
     savings falls. The planted c6i.2xlarge above 90 percent is an Upsize to c6i.4xlarge
+- id: CHG-0144
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-009, a gp2 volume is priced as the gp3 that does its work
+  commit: pending
+  detail: finops_query/volumes.py gives gp3 the larger of what gp2 gives and the measured p99, for IOPS and
+    throughput, and costs it as storage plus IOPS above 3,000 plus MiB/s above 125, inside the EBS user
+    guide's limits read on 2026-10-08, 80,000 IOPS, 2,000 MiB/s, 500 IOPS per GiB and 0.25 MiB/s per IOPS.
+    The price list adapter reads gp3's IOPS and throughput families, allowed to come back empty;
+    waste_compute prices attached gp2 volumes in the same batch through waste_volumes, with the working in
+    the rationale; the instance catalog collector stores gp2's and gp3's figures with their source in
+    volume_type_spec. The planted 1,000 GiB gp2 volume saves 15.00 a month (modelled). ISS-265
 issues:
 - id: ISS-189
   severity: LOW
@@ -4558,6 +4570,19 @@ issues:
     object the hub holds in memory while it folds the window. No real answer is saved here. If a measured
     Region outgrows the relay''s 256 MB, split the call by product description, as the Savings Plans
     adapter splits by plan type. A real account, ISS-002, settles it.'
+- id: ISS-265
+  severity: MEDIUM
+  status: OPEN
+  summary: The unit of gp3's throughput price in the real price list is not confirmed
+  detail: 'Found 2026-10-08 by TASK-P9-009. gp3 throughput above 125 MiB/s is priced from the AmazonEC2
+    price list''s Provisioned Throughput family, and catalog_reads reads its price as per MiB/s a month
+    whether the unit says MiBps-Mo or GiBps-mo, never dividing by 1,024. The published list price is per
+    MiB/s a month, but no real product is saved in this repository, and the one public page found that
+    discusses the unit, a re:Post question naming a bug in that product, refused to be read. If the list
+    states a price per GiB/s, every gp3 move that needs throughput reads as dearer than gp2 and is refused
+    with that sum: a lost recommendation, never an overstated saving. A unit outside GB-Mo, IOPS-Mo,
+    MiBps-Mo and GiBps-mo is not read at all, and the move says which price is missing. A real account,
+    ISS-002, or one saved GetProducts answer settles it.'
 - id: ISS-260
   severity: MEDIUM
   status: OPEN

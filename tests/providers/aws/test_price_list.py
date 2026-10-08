@@ -235,13 +235,20 @@ def test_the_real_get_products_sample_is_one_ebs_price() -> None:
     assert (price.pricing_unit, price.recurring_unit_price) == ("GB-Mo", Decimal("0.138"))
     assert price.sku_meter == "CAN1-EBS:VolumeUsage.piops"
     assert price.effective_date == date(2017, 8, 1)
-    assert price.details == {"volumeType": "Provisioned IOPS", "storageMedia": "SSD-backed"}
+    assert price.details == {
+        "volumeType": "Provisioned IOPS",
+        "storageMedia": "SSD-backed",
+        "productFamily": "Storage",
+    }
     assert price.as_of == datetime(2017, 9, 1, 18, 22, 1, tzinfo=UTC)
     asked = [request["Filters"] for _, request in client.requests]
     region = {"Type": "TERM_MATCH", "Field": "regionCode", "Value": "ca-central-1"}
     assert asked == [
         [region, *({"Type": "TERM_MATCH", "Field": f, "Value": v} for f, v in COMPARABLE.items())],
-        [region, {"Type": "TERM_MATCH", "Field": "productFamily", "Value": "Storage"}],
+        *(
+            [region, {"Type": "TERM_MATCH", "Field": "productFamily", "Value": family}]
+            for family in ("Storage", "System Operation", "Provisioned Throughput")
+        ),
     ]
     assert all(r["FormatVersion"] == "aws_v1" for _, r in client.requests)
 
@@ -368,6 +375,64 @@ def test_an_ec2_region_with_volumes_and_no_instance_is_no_data_not_volumes_alone
     found, _ = catalog(products={f"{EC2}:ca-central-1": sample["PriceList"]})
     with pytest.raises(NoData, match="tenancy Shared, capacitystatus Used"):
         list(found.prices(version_of(EC2, "ca-central-1", "20170901182201")))
+
+
+def gp3_term(sku: str, family: str, unit: str, *, named: bool = True) -> str:
+    """gp3's IOPS or throughput, a product of its own as the real list sells it. Price invented."""
+    item = json.loads(
+        product(
+            sku,
+            family=family,
+            attributes={"usagetype": f"EBS:{family}.gp3", "volumeApiName": "gp3"},
+            dimensions={
+                f"{sku}.JRTCKXETXF.6YS6EN2CT7": {"unit": unit, "pricePerUnit": {"USD": "0.005"}}
+            },
+        )
+    )
+    fields = item["product"]["attributes"]
+    for name in (
+        "instanceType",
+        "operatingSystem",
+        *COMPARABLE,
+        *(() if named else ("volumeApiName",)),
+    ):
+        del fields[name]
+    return json.dumps(item)
+
+
+def test_gp3_iops_and_throughput_are_read_from_their_own_families() -> None:
+    items = [
+        product(),
+        volume("eu-west-1"),
+        gp3_term("I" * 16, "System Operation", "IOPS-Mo"),
+        gp3_term("T" * 16, "Provisioned Throughput", "MiBps-Mo"),
+    ]
+    found, _ = catalog(products={f"{EC2}:eu-west-1": items})
+    read = list(found.prices(version_of(EC2, "eu-west-1", "20260917190528")))
+    gp3 = {
+        (p.details["productFamily"], p.pricing_unit)
+        for p in read
+        if p.details.get("volumeApiName") == "gp3"
+    }
+    assert gp3 == {
+        ("Storage", "GB-Mo"),
+        ("System Operation", "IOPS-Mo"),
+        ("Provisioned Throughput", "MiBps-Mo"),
+    }
+
+
+def test_a_region_selling_no_gp3_iops_or_throughput_still_loads() -> None:
+    # Only the gp2 to gp3 comparison needs them, and it says so when they are missing.
+    found, _ = catalog(products={f"{EC2}:eu-west-1": [product(), volume("eu-west-1")]})
+    read = list(found.prices(version_of(EC2, "eu-west-1", "20260917190528")))
+    assert {p.pricing_unit for p in read} == {"Hrs", "GB-Mo"}
+
+
+def test_an_operation_price_for_no_volume_type_is_left_out() -> None:
+    nameless = gp3_term("N" * 16, "System Operation", "IOPS-Mo", named=False)
+    found, _ = catalog(products={f"{EC2}:eu-west-1": [product(), volume("eu-west-1"), nameless]})
+    read = list(found.prices(version_of(EC2, "eu-west-1", "20260917190528")))
+    assert all(p.sku != "N" * 16 for p in read)
 
 
 # --- how it reads ---------------------------------------------------------------------------

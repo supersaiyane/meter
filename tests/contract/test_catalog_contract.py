@@ -158,8 +158,14 @@ def test_the_fake_prices_every_type_the_estate_bills_in_every_region() -> None:
     catalog = FakePriceCatalog()
     assert {v.region for v in catalog.versions(EC2)} == set(REGIONS)
     version = next(iter(catalog.versions(EC2)))
-    priced = {p.details["instanceType"] for p in catalog.prices(version)}
+    sold = tuple(catalog.prices(version))
+    priced = {p.details["instanceType"] for p in sold if "instanceType" in p.details}
     assert priced == set(INSTANCE_USD)
+    # And gp2 to gp3's four terms, TASK-P9-009: what each sells by the month is its unit.
+    volumes = {
+        (p.details["volumeApiName"], p.pricing_unit) for p in sold if "volumeApiName" in p.details
+    }
+    assert volumes == {("gp2", "GB-Mo"), ("gp3", "GB-Mo"), ("gp3", "IOPS-Mo"), ("gp3", "MiBps-Mo")}
 
 
 def test_the_fake_holds_no_other_service() -> None:

@@ -26,6 +26,11 @@ than deleted, because a recommendation written last week may still name it.
 
 **One Region or service failing does not fail the run**, constraint 5: it is recorded in
 `sync_error` by its typed cause. Only a run that read nothing at all fails.
+
+**gp2 and gp3 are the guide's**, TASK-P9-009. No AWS call describes a volume type's included
+and maximum IOPS and throughput, so every run stores the EBS user guide's figures, the ones
+`finops_query.volumes` prices a gp3 move from, in `volume_type_spec` with the page and the day it
+was read. Two rows, rewritten in place.
 """
 
 from __future__ import annotations
@@ -42,6 +47,7 @@ from finops_core.domain.catalog import InstanceTypeSpec
 from finops_core.errors import CollectionError, NoData, SchemaDrift
 from finops_core.ports.catalog import InstanceCatalog
 from finops_ingest.registry import CollectorContext, CollectorOutcome
+from finops_query.volumes import READ_AT, SOURCE, VOLUME_TYPES
 
 COLLECTOR = "instance_catalog"
 EC2: Final = "AmazonEC2"
@@ -86,6 +92,20 @@ WRITE = text(
     "ebs_baseline_mbps = EXCLUDED.ebs_baseline_mbps, "
     "ebs_maximum_mbps = EXCLUDED.ebs_maximum_mbps, gpu_count = EXCLUDED.gpu_count, "
     "offered = true, as_of = EXCLUDED.as_of, collected_at = EXCLUDED.collected_at"
+)
+
+#: A volume type's figures, as the guide gives them. TASK-P9-009.
+VOLUME_WRITE = text(
+    "INSERT INTO volume_type_spec (volume_pk, tenant_id, volume_type, baseline_iops, "
+    "baseline_throughput_mibps, maximum_iops, maximum_throughput_mibps, iops_per_gib, source, "
+    "as_of, collected_at) VALUES (:pk, :t, :type, :iops, :mibps, :max_iops, :max_mibps, "
+    ":per_gib, :source, :as_of, :collected) "
+    "ON CONFLICT (tenant_id, volume_type) DO UPDATE SET baseline_iops = EXCLUDED.baseline_iops, "
+    "baseline_throughput_mibps = EXCLUDED.baseline_throughput_mibps, "
+    "maximum_iops = EXCLUDED.maximum_iops, "
+    "maximum_throughput_mibps = EXCLUDED.maximum_throughput_mibps, "
+    "iops_per_gib = EXCLUDED.iops_per_gib, source = EXCLUDED.source, as_of = EXCLUDED.as_of, "
+    "collected_at = EXCLUDED.collected_at"
 )
 
 WITHDRAW = text(
@@ -235,6 +255,7 @@ class InstanceCatalogCollector:
         self._describe_ec2(run)
         for service, catalog in sorted(self._managed.items()):
             self._describe_managed(run, service, catalog)
+        _store_volume_types(run)
         if run.failures and not run.read:
             raise run.failures[0]
         return CollectorOutcome(items_written=run.written)
@@ -337,3 +358,27 @@ class InstanceCatalogCollector:
                 )
             )
         return unbounded
+
+
+def _store_volume_types(run: _Run) -> None:
+    """gp2's and gp3's figures, with their source. Written, not read, so `run.read` is unchanged."""
+    rows = [
+        {
+            "pk": uuid4(),
+            "t": run.context.unit.tenant_id,
+            "type": figures.volume_type,
+            "iops": figures.baseline_iops,
+            "mibps": figures.baseline_mibps,
+            "max_iops": figures.maximum_iops,
+            "max_mibps": figures.maximum_mibps,
+            "per_gib": figures.iops_per_gib,
+            "source": SOURCE,
+            "as_of": READ_AT,
+            # A clock behind the day the page was read would otherwise store a fact before it
+            # was true, as `price_list.py` guards a list read before its publication.
+            "collected": max(run.now, READ_AT),
+        }
+        for figures in VOLUME_TYPES
+    ]
+    run.context.connection.execute(VOLUME_WRITE, rows)
+    run.written += len(rows)

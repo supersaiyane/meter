@@ -18,6 +18,10 @@ TASK-P9-004 holds them to a real EC2 extract when it reads one.
 
 Only EC2 is faked. Another service's versions are none, and its prices are NoData.
 
+**EBS prices**, TASK-P9-009, in every Region: gp2 and gp3 storage at the estate's own per GiB
+prices, and gp3's IOPS and throughput above what it includes, invented, so the planted gp2 volume
+has a gp3 to be priced against.
+
 **Savings Plans rates**, TASK-P9-012, for every type the estate prices, Linux and shared tenancy,
 both plan types, both lengths and every payment option. The discounts are invented and round, as
 the reservations' are; the shape, an offering id, a usage type and a rate per hour, is the
@@ -112,6 +116,25 @@ SPECS: Final[dict[str, tuple[str, int, int, bool, str, int, str]]] = {
     "g4dn.xlarge": ("g4dn", 4, 16384, False, "x86_64", 1, "Up to 25 Gigabit"),
 }
 
+#: Invented, at the size of AWS's published list prices: gp3's IOPS above 3,000 and its MiB/s
+#: above 125, by the month. The storage prices are the estate's own, so the planted gp2 volume's
+#: saving agrees with its bill.
+GP3_IOPS_MONTH: Final = Decimal("0.005")
+GP3_MIBPS_MONTH: Final = Decimal("0.04")
+#: The EBS prices every fake Region sells: volume type, product family, usage type, unit, price.
+VOLUMES: Final[tuple[tuple[str, str, str, str, Decimal], ...]] = (
+    ("gp2", "Storage", "EBS:VolumeUsage.gp2", "GB-Mo", prices.VOLUME_USD_PER_GIB["gp2"]),
+    ("gp3", "Storage", "EBS:VolumeUsage.gp3", "GB-Mo", prices.VOLUME_USD_PER_GIB["gp3"]),
+    ("gp3", "System Operation", "EBS:VolumeP-IOPS.gp3", "IOPS-Mo", GP3_IOPS_MONTH),
+    (
+        "gp3",
+        "Provisioned Throughput",
+        "EBS:VolumeP-Throughput.gp3",
+        "MiBps-Mo",
+        GP3_MIBPS_MONTH,
+    ),
+)
+
 _HOURLY = Decimal("0.0001")
 _CENT = Decimal("0.01")
 
@@ -178,7 +201,29 @@ class FakePriceCatalog:
         found: list[Price] = []
         for instance_type in sorted(prices.INSTANCE_USD):
             found.extend(self._terms(version.region, instance_type))
+        found.extend(self._volumes(version.region))
         return tuple(found)
+
+    def _volumes(self, region: str) -> list[Price]:
+        return [
+            Price(
+                sku_price_id=f"{sku_for(region, meter)}.{ON_DEMAND_TERM}",
+                service_code=EC2,
+                region=region,
+                sku=sku_for(region, meter),
+                sku_meter=meter,
+                pricing_category=PricingCategory.STANDARD,
+                pricing_unit=unit,
+                recurring_unit_price=price,
+                currency=CURRENCY,
+                details={"volumeApiName": volume, "productFamily": family},
+                effective_date=EFFECTIVE,
+                version=VERSION,
+                as_of=PUBLISHED,
+                collected_at=fixtures.COLLECTED_AT,
+            )
+            for volume, family, meter, unit, price in VOLUMES
+        ]
 
     def _terms(self, region: str, instance_type: str) -> list[Price]:
         sku = sku_for(region, instance_type)

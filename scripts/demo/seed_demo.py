@@ -33,7 +33,7 @@ from __future__ import annotations
 import argparse
 import sys
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any
@@ -59,7 +59,7 @@ from finops_fakes.catalog import (
 from finops_fakes.cloudwatch_estate import FakeCloudWatchEstate
 from finops_fakes.commitment import FakeCommitmentReport
 from finops_fakes.cur import FakeCostExport, estate
-from finops_fakes.estate_metrics import EstateMetrics, ec2_candidates
+from finops_fakes.estate_metrics import EstateMetrics, ec2_candidates, volume_candidates
 from finops_fakes.evidence import FakeQueryEvidence
 from finops_fakes.health import FakeRoleHealth
 from finops_fakes.invoices import FakeInvoices
@@ -101,6 +101,7 @@ from finops_ingest.collectors.spot_prices import SpotPricesCollector
 from finops_ingest.collectors.waste_cloudwatch import WasteCloudWatchCollector
 from finops_ingest.collectors.waste_compute import Candidate, WasteComputeCollector
 from finops_ingest.collectors.waste_parking import Parkable, WasteParkingCollector
+from finops_ingest.collectors.waste_volumes import VolumeCandidate
 from finops_ingest.ledger import RunLedger
 from finops_ingest.registry import CollectorContext, install_default_schedule
 from finops_query.parser import GrafanaQueryParser
@@ -727,6 +728,15 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
                     EstateMetrics(at=ESTATE_AT),
                     _always(chosen),
                     clock=lambda: ESTATE_AT,
+                    # The account's attached volumes, so the planted gp2 one is priced as gp3
+                    # in the same run as its instance, TASK-P9-009.
+                    volumes=_always(
+                        [
+                            VolumeCandidate(**asdict(v))
+                            for v in volume_candidates(at=ESTATE_AT)
+                            if v.account_id == judged
+                        ]
+                    ),
                 ),
                 connection,
                 unit(scope_key=f"aws:{judged}:{chosen[0].region_id}"),

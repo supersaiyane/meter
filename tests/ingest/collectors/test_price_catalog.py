@@ -17,7 +17,7 @@ from sqlalchemy import Engine, text
 
 from finops_core.domain.catalog import Price, PriceListVersion
 from finops_core.errors import AccessDenied, CollectionError, SchemaDrift, Throttled
-from finops_fakes.catalog import EC2, VERSION, FakePriceCatalog
+from finops_fakes.catalog import EC2, VERSION, VOLUMES, FakePriceCatalog
 from finops_fakes.estate_shape import REGIONS
 from finops_fakes.prices import INSTANCE_USD
 from finops_ingest.collectors import price_catalog
@@ -26,8 +26,9 @@ from finops_ingest.dispatcher import WorkUnit
 from finops_ingest.registry import CollectorContext, CollectorOutcome
 
 AT = datetime(2026, 10, 8, 6, 0, tzinfo=UTC)
-#: Every price the fake sells in one Region: each type on demand and in six reservations.
-PER_REGION = len(INSTANCE_USD) * 7
+#: Every price the fake sells in one Region: each type on demand and in six reservations, and the
+#: EBS prices gp2 to gp3 is worked out from.
+PER_REGION = len(INSTANCE_USD) * 7 + len(VOLUMES)
 LATER = "20260821000000"
 
 pytestmark = pytest.mark.integration

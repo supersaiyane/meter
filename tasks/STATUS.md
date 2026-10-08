@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 76 total, 11 specified, 16 in build, 45 delivered |
+| Features | 76 total, 11 specified, 17 in build, 45 delivered |
 | Decisions | 35 architecture decision records |
-| Changes | 143 recorded |
-| Issues | 156 fixed, 105 open, 0 parked |
+| Changes | 144 recorded |
+| Issues | 156 fixed, 106 open, 0 parked |
 | Open questions | 23 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -63,8 +63,11 @@ why not, in a table of its own put to the owner as OPEN-23. TASK-P9-007 made Met
 rightsizing name the cheapest type that fits and quote the price difference: the planted m5.2xlarge
 at 7 percent now names m5.xlarge and saves about half its cost (modelled). TASK-P9-008 made an
 instance under pressure an Upsize of its own kind, an added cost with a saving of nought, so no
-total of savings falls: the planted c6i.2xlarge grows to c6i.4xlarge. TASK-P9-009, gp2 to gp3,
-is next. The repository has no git remote, so nothing has been pushed.
+total of savings falls: the planted c6i.2xlarge grows to c6i.4xlarge. TASK-P9-009 priced a gp2
+volume as the gp3 that does its work, inside the EBS guide's limits read on 2026-10-08: the planted
+1,000 GiB volume saves 15.00 a month (modelled), and the unit of a real gp3 throughput price is
+ISS-265. TASK-P9-010, the routes and the Alternatives table, is next. The repository has no git
+remote, so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -237,7 +240,7 @@ ISS-003.
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 | P8 | 18 | 0 | 0 | 0 | 0 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
-| P9 | 10 | 0 | 0 | 0 | 3 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
+| P9 | 11 | 0 | 0 | 0 | 2 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -471,6 +474,7 @@ ISS-003.
 | `TASK-P9-006` | Done 2026-10-08 | Compute Optimizer, every Region, every account, every option |
 | `TASK-P9-007` | Done 2026-10-08 | downsizing to a named, priced target |
 | `TASK-P9-008` | Done 2026-10-08 | upsizing, as an added cost |
+| `TASK-P9-009` | Done 2026-10-08 | gp2 to gp3, priced |
 
 **P10, not in the default state**
 

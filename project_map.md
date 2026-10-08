@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 28 of 30 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 52 in 19 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 30 | modules in finops_ingest/collectors, excluding __init__ |
+| Collectors | 31 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 39 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 210 | test_*.py under tests/ |
-| Test functions | 2764 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 213 | test_*.py under tests/ |
+| Test functions | 2789 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1159,6 +1159,8 @@ meter/
 │       ├── topology.py        the edges between them, four APIs. ISS-202, same footing
 │       ├── waste_compute.py   the bespoke candidates, which are the ones carrying an
 │       │                      ARN and therefore the ones that join to a node
+│       ├── waste_volumes.py   FEAT-074, TASK-P9-009. waste_compute's gp2 volume pass:
+│       │                      EBS operations and bytes in the same batch, priced as gp3
 │       ├── waste_cloudwatch.py  log retention and alarms that have never fired
 │       ├── waste_parking.py   FEAT-054. A workload quiet on the same hours every week,
 │       │                      judged per hour and never per estate, because a window
@@ -1185,14 +1187,16 @@ meter/
 │       │                       and counts the budgets whose scope it cannot reproduce
 │       │                       on sync_error rather than dropping them
 │       ├── catalog_reads.py   TASK-P9-007. The comparable price and a Region's
-│       │                      offers, read one way by every collector that prices
+│       │                      offers, read one way by every collector that prices;
+│       │                      gp2's and gp3's four EBS prices, TASK-P9-009
 │       ├── spot_prices.py     FEAT-071, TASK-P9-013. Every 8 hours; the latest per
 │       │                      pool and each day's low and high, 90 days kept
 │       ├── savings_plan_rates.py  FEAT-071, TASK-P9-012. Every 8 hours; every Region
 │       │                      the prices are held for, a sheet stored when it moves
 │       ├── instance_catalog.py  FEAT-072, TASK-P9-005. Every 8 hours; EC2 described
 │       │                      in the hub's Region and stored where it is sold,
-│       │                      checked against a second Region; withdrawn types kept
+│       │                      checked against a second Region; withdrawn types kept;
+│       │                      gp2's and gp3's guide figures in volume_type_spec
 │       ├── price_catalog.py   FEAT-071, TASK-P9-004. Every 8 hours; loads only a
 │       │                      version it does not hold, one savepoint per service
 │       │                      and Region, and prunes superseded prices except the
@@ -1636,6 +1640,8 @@ meter/
 │   ├── targets.py             FEAT-073, TASK-P9-007. A smaller type that still
 │   │                          fits, named and priced: candidates, fit, the cheapest,
 │   │                          and the saving as a price difference for the hours run
+│   ├── volumes.py             FEAT-074, TASK-P9-009. A gp2 volume priced as the gp3
+│   │                          that does its work, inside the EBS guide's limits
 │   ├── containers.py          FEAT-036, TASK-P6-007. Container sizing, composed
 │   │                          onto waste.py rather than beside it: the memory
 │   │                          margins, the fourteen day floor and the saving floor
