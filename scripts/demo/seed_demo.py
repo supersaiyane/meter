@@ -708,7 +708,13 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
         # single global run would leave every account unscored but one. And a run per
         # account is what the dispatcher actually does, so seeding it any other way
         # would be a demo of an arrangement that does not exist.
-        for judged in sorted({c.account_id for c in ec2_candidates(at=ESTATE_AT)}):
+        instances = ec2_candidates(at=ESTATE_AT)
+        volumes = volume_candidates(at=ESTATE_AT)
+        # Every account with something to judge, instances or attached volumes. An account
+        # holding only volumes, as fake-platform-b does, was skipped until TASK-P9-011 found its
+        # planted gp2 volume never priced in the demo.
+        for judged in sorted({c.account_id for c in instances} | {v.account_id for v in volumes}):
+            attached = [VolumeCandidate(**asdict(v)) for v in volumes if v.account_id == judged]
             chosen = [
                 Candidate(
                     resource_id=c.resource_id,
@@ -719,9 +725,10 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
                     credit_balance=c.credit_balance,
                     instance_type=c.instance_type,
                 )
-                for c in ec2_candidates(at=ESTATE_AT)
+                for c in instances
                 if c.account_id == judged
             ]
+            region = chosen[0].region_id if chosen else attached[0].region_id
             written += _through_the_ledger(
                 ledger,
                 WasteComputeCollector(
@@ -729,17 +736,11 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
                     _always(chosen),
                     clock=lambda: ESTATE_AT,
                     # The account's attached volumes, so the planted gp2 one is priced as gp3
-                    # in the same run as its instance, TASK-P9-009.
-                    volumes=_always(
-                        [
-                            VolumeCandidate(**asdict(v))
-                            for v in volume_candidates(at=ESTATE_AT)
-                            if v.account_id == judged
-                        ]
-                    ),
+                    # in the same run as its instances, TASK-P9-009.
+                    volumes=_always(attached),
                 ),
                 connection,
-                unit(scope_key=f"aws:{judged}:{chosen[0].region_id}"),
+                unit(scope_key=f"aws:{judged}:{region}"),
                 "waste_compute",
                 settings=settings,
             )

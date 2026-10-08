@@ -382,7 +382,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec sections 9 and 13 |
 | Delivers | The exit criteria, measured, and the record |
 | Depends on | TASK-P9-001 to TASK-P9-010, TASK-P9-012 and TASK-P9-013 |
@@ -390,9 +390,49 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 **Acceptance criteria.**
 
-- [ ] Every exit criterion in spec section 13 met, each with its evidence
-- [ ] FEAT-071 to FEAT-074 carry as built sections; the register, `project_map.md` and the
+- [x] Every exit criterion in spec section 13 met, each with its evidence
+- [x] FEAT-071 to FEAT-074 carry as built sections; the register, `project_map.md` and the
       checkpoint updated, and `make check-docs` clean
+
+**Delivered 2026-10-08.** The spec's section 13, each criterion with its evidence. The test
+counts are measured, from the full gate on TASK-P9-010's branch on 2026-10-08: 3831 backend
+tests, 946 frontend unit tests and 66 journeys passing. Every figure the criteria name is
+modelled from a recorded price list version; a real price list waits on ISS-002.
+
+1. The hub reaches every AWS API an adapter calls, by the path ADR-0035 chose:
+   `tests/contract/test_network_paths.py`, whose `test_the_scan_finds_what_the_adapters_call`
+   reads every adapter and `test_every_service_called_has_a_path` holds each service it finds to
+   a path from the hub, the relayed ones included. TASK-P9-001 and TASK-P9-012.
+2. Every rightsizing names an offered target with both prices and the version:
+   `tests/scripts/test_p9_exit_criteria.py` seeds the demo with every collector and finds no
+   rightsizing or Upsize, from Meter or from Compute Optimizer, without an offered target, both
+   price ids and the version. Per collector, `tests/ingest/collectors/test_waste_targets.py` and
+   `tests/ingest/collectors/test_recommendation_options.py`, and on the wire
+   `tests/api/test_recommendation_alternatives.py`. Where the inventory names no type, the
+   finding keeps the old estimate and says why no target is named, FEAT-073,
+   `test_without_a_type_no_target_is_named_and_it_says_why`. TASK-P9-006 to TASK-P9-010.
+3. The three planted cases come out as section 9 says, in the seeded estate,
+   `test_the_three_planted_cases_come_out_as_section_9_says`: the m5.2xlarge at 7 percent names
+   m5.xlarge and saves the price difference, the c6i.2xlarge above 90 percent is an Upsize to
+   c6i.4xlarge with an added cost, and the 1000 GiB gp2 volume is priced as gp3, 15.00 a month on
+   the fake catalog's prices, with the spec's own eu-west-2 example, 17.40, in
+   `tests/query/test_volumes.py`. No total of savings falls because of an Upsize,
+   `test_an_upsize_never_lowers_the_total_of_savings` and `overviewKpis.test.ts`. This criterion
+   failed at first in the seeded estate: the seed never judged the gp2 volume's account, ISS-266,
+   fixed in the same change.
+4. Every price carries its version, `as_of` and `collected_at`, and none is nought: migration
+   0033's constraints, held by `tests/db/test_price_catalog_constraints.py`; the adapter refuses
+   a nought term as SchemaDrift, `tests/providers/aws/test_price_list.py`; and
+   `test_every_price_carries_its_version_and_both_times_and_none_is_nought` counts none in the
+   seeded estate.
+5. Every commercial Region, the five services and the four price types, and a run that finds
+   nothing newly published does no work: `tests/ingest/collectors/test_price_catalog.py`,
+   `test_a_first_run_loads_every_region_and_counts_what_it_stored` and
+   `test_an_unchanged_version_does_no_work`; Regions kept by their commercial shape,
+   `test_only_a_commercial_region_is_kept_by_its_shape`; Savings Plans rates and spot prices,
+   `tests/ingest/collectors/test_savings_plan_rates.py` and
+   `tests/ingest/collectors/test_spot_prices.py`; a burstable type the table lacks fails,
+   `test_a_burstable_type_the_table_lacks_is_named_and_not_stored`.
 
 ---
 

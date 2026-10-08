@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P9 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.5 to 5.7 |
 | Tasks | TASK-P9-006, Compute Optimizer's targets kept and priced, TASK-P9-007, Meter's own downsizing target, and TASK-P9-008, the Upsize, and TASK-P9-010, the Alternatives table, done 2026-10-08 |
 
@@ -145,8 +145,8 @@ yet, ISS-182.
 
 ## Status of this document
 
-In build. TASK-P9-006 to TASK-P9-008 and TASK-P9-010 were built on 2026-10-08; TASK-P9-011 proves
-it end to end. Specified in the
+Delivered on 2026-10-08 against fakes. TASK-P9-006 to TASK-P9-008 and TASK-P9-010 built it that
+day, and TASK-P9-011 proved it across the whole demo estate. Specified in the
 [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.5 to 5.7, and planned in the
 [P9 plan](../plans/P9-implementation-plan.md).
 

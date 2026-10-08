@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P9 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.2, 5.3, 7 and 14 |
 | Tasks | TASK-P9-004, on demand and reserved, TASK-P9-012, Savings Plans rates, and TASK-P9-013, spot, done 2026-10-08. TASK-P9-010 serves it as `GET /catalog/prices`, done 2026-10-08 |
 | Refresh cadence | Every 8 hours, the catalog collectors, each loading only what AWS has published since the last run |
@@ -164,7 +164,8 @@ the real ElastiCache product and the EBS sample agree with every name they share
 
 ## Status of this document
 
-In build. On demand and reserved prices for the five services were built on 2026-10-08 by
+Delivered on 2026-10-08 against fakes, proven by TASK-P9-011. On demand and reserved prices for
+the five services were built that day by
 TASK-P9-004, against stubs and AWS's own samples, Savings Plans rates the same day by
 TASK-P9-012, and spot prices by TASK-P9-013, against stubs in the shape the botocore model gives. Specified in the
 [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.2, 5.3, 7 and 14, and planned in

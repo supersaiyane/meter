@@ -3,9 +3,9 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P9 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), section 5.8 |
-| Tasks | TASK-P9-009, done 2026-10-08. TASK-P9-011 proves it end to end |
+| Tasks | TASK-P9-009, done 2026-10-08, and TASK-P9-011, its proof, done 2026-10-08 |
 
 ## What it does
 
@@ -94,11 +94,14 @@ TASK-P9-010's catalog routes may serve.
 
 The unit of gp3's throughput price in a real price list, ISS-265. The EBS series are read through
 the same GetMetricData batch as the instances', whose real answers are recorded rather than live,
-ISS-002. No production inventory names the estate's volumes yet; the demo seed and the tests do.
+ISS-002. No production inventory names the estate's volumes yet; the demo seed and the tests do,
+and the seed judges every account that holds an attached volume, ISS-266.
 
 ## Status of this document
 
-In build. TASK-P9-009 was built on 2026-10-08, and TASK-P9-011 proves it end to end. Specified in
+Delivered on 2026-10-08 against fakes. TASK-P9-009 built it that day, and TASK-P9-011 proved it
+across the demo estate, where it found the seed never judged the volume's account, ISS-266.
+Specified in
 the [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), section 5.8, and planned in the
 [P9 plan](../plans/P9-implementation-plan.md).
 

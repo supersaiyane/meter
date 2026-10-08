@@ -81,9 +81,11 @@ subprojects:
   depends_on: P1, P2, P3, P4, P5, P6, P7
 - id: P9
   name: Price catalog and rightsizing targets
-  status: Specified, planned and approved by the owner 2026-10-05, in build from 2026-10-08 as priority 3,
-    TASK-P9-001 to TASK-P9-010, TASK-P9-012 and TASK-P9-013 done, TASK-P9-011 next. EC2 and EBS list prices from AWS, rightsizing down
-    and up to a named and priced target, and gp2 to gp3. The hub now reaches every API it calls, ADR-0035
+  status: Delivered on 2026-10-08 against fakes, TASK-P9-001 to TASK-P9-013. EC2 and EBS list prices,
+    Savings Plans rates and spot prices for every commercial Region, the instance types they price,
+    rightsizing down and up to a named and priced target with its alternatives, and gp2 to gp3, each
+    figure modelled from a recorded price list version. The hub reaches every API it calls, ADR-0035;
+    reading a real price list and real Compute Optimizer answers waits on ISS-002
   spec: specs/2026-10-05-p9-price-catalog-design.md
   plan: plans/P9-implementation-plan.md
   depends_on: P3
@@ -525,25 +527,25 @@ features:
 - id: FEAT-071
   name: Price catalog from AWS for EC2, EBS, RDS, ElastiCache, Redshift and OpenSearch, every Region and price type, versioned and FOCUS shaped
   subproject: P9
-  status: In build
+  status: Delivered
   detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.2, 5.3, 7 and 14, [P9 plan](docs/plans/P9-implementation-plan.md)'
   doc: docs/features/FEAT-071-price-catalog.md
 - id: FEAT-072
   name: Instance capability catalog for EC2, RDS, ElastiCache, Redshift and OpenSearch
   subproject: P9
-  status: In build
+  status: Delivered
   detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.4, 7 and 14, [P9 plan](docs/plans/P9-implementation-plan.md)'
   doc: docs/features/FEAT-072-instance-capability-catalog.md
 - id: FEAT-073
   name: Rightsizing to a named, priced target, down and up
   subproject: P9
-  status: In build
+  status: Delivered
   detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) sections 5.5 to 5.7, [P9 plan](docs/plans/P9-implementation-plan.md)'
   doc: docs/features/FEAT-073-rightsizing-to-a-priced-target.md
 - id: FEAT-074
   name: gp2 to gp3 migration, priced from measured IOPS and throughput
   subproject: P9
-  status: In build
+  status: Delivered
   detail: '[P9 spec](docs/specs/2026-10-05-p9-price-catalog-design.md) section 5.8, [P9 plan](docs/plans/P9-implementation-plan.md)'
   doc: docs/features/FEAT-074-gp2-to-gp3-migration.md
 - id: FEAT-075
@@ -2121,6 +2123,17 @@ changes:
     rightsizing was compared with, the chosen type first, priced a month at 730 hours, and the screen shows
     it under one finding. Meter's own alternatives are the types its rule found to fit, written when it
     judged them, with no risk score, migration 0040; OPEN-24
+- id: CHG-0146
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-011, P9's exit criteria proved against the demo estate, and P9 delivered
+  commit: pending
+  detail: tests/scripts/test_p9_exit_criteria.py seeds the demo with every collector and holds criterion 2,
+    every rightsizing from Meter and Compute Optimizer names an offered target with both prices and the
+    version, criterion 3, the three planted cases, and criterion 4, no price is nought and none was
+    collected before it was true. Criterion 3 failed at first, ISS-266, and the seed now judges every
+    account that holds instances or attached volumes. FEAT-071 to FEAT-074 delivered, the evidence in
+    the plan
 issues:
 - id: ISS-189
   severity: LOW
@@ -4596,6 +4609,16 @@ issues:
     with that sum: a lost recommendation, never an overstated saving. A unit outside GB-Mo, IOPS-Mo,
     MiBps-Mo and GiBps-mo is not read at all, and the move says which price is missing. A real account,
     ISS-002, or one saved GetProducts answer settles it.'
+- id: ISS-266
+  severity: LOW
+  status: FIXED
+  summary: The demo never priced its planted gp2 volume, because the seed judged only accounts with instances
+  detail: 'Found 2026-10-08 by TASK-P9-011''s criterion 3 test, against the seeded demo. TASK-P9-009 passed
+    each account''s attached volumes to the waste run it seeds per account, but the loop ran over the
+    accounts that hold standalone EC2 instances, and fake-platform-b holds the gp2 volume and no instance,
+    so the volume was never judged and the demo had no gp2 to gp3 recommendation. Its own tests passed,
+    because they drove the collector with every volume. Fixed the same day: the loop runs over every
+    account with instances or attached volumes, and test_p9_exit_criteria.py holds the demo to it.'
 - id: ISS-260
   severity: MEDIUM
   status: OPEN
