@@ -82,7 +82,7 @@ subprojects:
 - id: P9
   name: Price catalog and rightsizing targets
   status: Specified, planned and approved by the owner 2026-10-05, in build from 2026-10-08 as priority 3,
-    TASK-P9-001 to TASK-P9-005 and TASK-P9-012 done, TASK-P9-013 next. EC2 and EBS list prices from AWS, rightsizing down
+    TASK-P9-001 to TASK-P9-005, TASK-P9-012 and TASK-P9-013 done, TASK-P9-006 next. EC2 and EBS list prices from AWS, rightsizing down
     and up to a named and priced target, and gp2 to gp3. The hub now reaches every API it calls, ADR-0035
   spec: specs/2026-10-05-p9-price-catalog-design.md
   plan: plans/P9-implementation-plan.md
@@ -2049,6 +2049,17 @@ changes:
     reads the Regions the price catalog holds EC2 for, and stores a sheet only when its version is new,
     through store and prune steps now shared with the price catalog collector. Migration 0036 seeds its
     schedule. A third catalog port, SavingsPlansRates, with a fake and a contract
+- id: CHG-0140
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-013, spot prices in every Region, the latest per pool and 90 days of daily ranges
+  commit: pending
+  detail: AwsSpotPrices reads DescribeSpotPriceHistory through the relay for the window since a Region's last
+    read, one invocation a Region, every zone and product description; a reading of nought or outside its
+    Region is SchemaDrift and a Region not opted into NotOptedIn. The spot_prices collector replaces the
+    latest price per pool only with a reading at least as new, merges each day's low and high with the price
+    in effect at the close counted towards its day, and removes daily rows older than 90 days, OPEN-18.
+    Migration 0037 seeds its schedule. A fourth catalog port, SpotPrices, with a fake and a contract
 issues:
 - id: ISS-189
   severity: LOW
@@ -4501,6 +4512,16 @@ issues:
     values are not shown by the model, and no real answer is saved in this repository. The size of one call,
     about 13,000 rates (modelled), is what keeps it inside the relay''s 256 MB. A wrong filter value reads as
     NoData for every Region in sync_error, never as a rate of nought. A real account, ISS-002, settles it.'
+- id: ISS-264
+  severity: LOW
+  status: OPEN
+  summary: The size of a Region's spot window is modelled, and the relay answers it in one object
+  detail: 'Found 2026-10-08 by TASK-P9-013. DescribeSpotPriceHistory answers a window with every pool''s
+    price when it opened, so a Region with about 700 types in 3 to 6 zones and several product descriptions
+    is on the order of 20,000 readings a run (modelled), about 20 pages, answered by the relay as one S3
+    object the hub holds in memory while it folds the window. No real answer is saved here. If a measured
+    Region outgrows the relay''s 256 MB, split the call by product description, as the Savings Plans
+    adapter splits by plan type. A real account, ISS-002, settles it.'
 - id: ISS-260
   severity: MEDIUM
   status: OPEN

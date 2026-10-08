@@ -127,6 +127,16 @@ READS: dict[tuple[str, str], set[str]] = {
         "value",
         "nextToken",
     },
+    # FEAT-071, TASK-P9-013. Spot readings, through the relay, botocore's own paginator.
+    ("ec2", "DescribeSpotPriceHistory"): {
+        "SpotPriceHistory",
+        "AvailabilityZone",
+        "InstanceType",
+        "ProductDescription",
+        "SpotPrice",
+        "Timestamp",
+        "NextToken",
+    },
     # FEAT-072, TASK-P9-005. EC2's description of its types, every figure the spec stores.
     ("ec2", "DescribeInstanceTypes"): {
         "InstanceTypes",
@@ -252,6 +262,7 @@ TOKENS: dict[tuple[str, str], str] = {
     ("pricing", "ListPriceLists"): "NextToken",
     ("pricing", "GetProducts"): "NextToken",
     ("ec2", "DescribeInstanceTypes"): "NextToken",
+    ("ec2", "DescribeSpotPriceHistory"): "NextToken",
     ("service-quotas", "ListServices"): "NextToken",
     ("service-quotas", "ListServiceQuotas"): "NextToken",
     ("service-quotas", "ListRequestedServiceQuotaChangeHistory"): "NextToken",
@@ -363,6 +374,8 @@ SENDS: dict[tuple[str, str], set[str]] = {
         "filters",
         "maxResults",
     },
+    # The window's two ends, and every zone and product description.
+    ("ec2", "DescribeSpotPriceHistory"): {"StartTime", "EndTime", "MaxResults"},
     # Every type, unfiltered: the hub's Region describes all it supports.
     ("ec2", "DescribeInstanceTypes"): set(),
     ("service-quotas", "ListServices"): set(),
@@ -497,6 +510,7 @@ FALLS_THROUGH: dict[tuple[str, str], set[str]] = {
     # EC2 declares no modelled errors at all for either counter, nor for its instance types.
     ("ec2", "DescribeVpcs"): set(),
     ("ec2", "DescribeInstanceTypes"): set(),
+    ("ec2", "DescribeSpotPriceHistory"): set(),
     ("ec2", "DescribeAddresses"): set(),
 }
 

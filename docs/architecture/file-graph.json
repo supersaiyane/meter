@@ -462,6 +462,7 @@
     "finops_ingest/collectors/retention.py",
     "finops_ingest/collectors/savings_plan_rates.py",
     "finops_ingest/collectors/score.py",
+    "finops_ingest/collectors/spot_prices.py",
     "finops_ingest/collectors/topology.py",
     "finops_ingest/collectors/waste_cloudwatch.py",
     "finops_ingest/collectors/waste_compute.py",
@@ -500,6 +501,7 @@
     "finops_providers/aws/relay_client.py",
     "finops_providers/aws/report_store.py",
     "finops_providers/aws/savings_plans.py",
+    "finops_providers/aws/spot.py",
     "finops_providers/aws/terraform_state.py",
     "finops_providers/aws/topology.py",
     "finops_providers/aws/waste.py",
@@ -605,6 +607,7 @@
     "migrations/versions/0034_price_catalog_schedule.py",
     "migrations/versions/0035_instance_catalog_schedule.py",
     "migrations/versions/0036_savings_plan_rates_schedule.py",
+    "migrations/versions/0037_spot_prices_schedule.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -749,6 +752,7 @@
     "tests/ingest/collectors/test_retention.py",
     "tests/ingest/collectors/test_savings_plan_rates.py",
     "tests/ingest/collectors/test_score.py",
+    "tests/ingest/collectors/test_spot_prices.py",
     "tests/ingest/collectors/test_waste_against_the_estate.py",
     "tests/ingest/collectors/test_waste_cloudwatch.py",
     "tests/ingest/collectors/test_waste_compute.py",
@@ -792,6 +796,7 @@
     "tests/providers/aws/test_report_store.py",
     "tests/providers/aws/test_response_shapes.py",
     "tests/providers/aws/test_savings_plans.py",
+    "tests/providers/aws/test_spot.py",
     "tests/providers/aws/test_terraform_state.py",
     "tests/providers/aws/test_translate.py",
     "tests/providers/aws/test_waste_metrics.py",
@@ -9547,6 +9552,31 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/spot_prices.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/spot_prices.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/spot_prices.py",
+      "t": "finops_core/ports/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/spot_prices.py",
+      "t": "finops_ingest/collectors/price_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/spot_prices.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/topology.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -10122,6 +10152,21 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/spot.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/spot.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/spot.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/terraform_state.py",
       "t": "finops_core/domain/iac.py",
       "k": "python"
@@ -10524,6 +10569,11 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/score.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/spot_prices.py",
       "k": "python"
     },
     {
@@ -12752,6 +12802,36 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_spot_prices.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_spot_prices.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_spot_prices.py",
+      "t": "finops_ingest/collectors/price_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_spot_prices.py",
+      "t": "finops_ingest/collectors/spot_prices.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_spot_prices.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_spot_prices.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_waste_against_the_estate.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -13094,6 +13174,11 @@
     {
       "s": "tests/providers/aws/ec2_types.py",
       "t": "finops_providers/aws/instance_types.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/ec2_types.py",
+      "t": "finops_providers/aws/spot.py",
       "k": "python"
     },
     {
@@ -13529,6 +13614,16 @@
     {
       "s": "tests/providers/aws/test_savings_plans.py",
       "t": "finops_providers/aws/savings_plans.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_spot.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_spot.py",
+      "t": "finops_providers/aws/spot.py",
       "k": "python"
     },
     {

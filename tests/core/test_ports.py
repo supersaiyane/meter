@@ -56,6 +56,8 @@ EXPECTED_PORTS = {
     # P9, TASK-P9-012. Savings Plans rates, read through the relay rather than the price list,
     # and versioned by their own digest.
     "SavingsPlansRates",
+    # P9, TASK-P9-013. Spot price readings, through the relay into every Region.
+    "SpotPrices",
 }
 
 FORBIDDEN_IMPORTS = {"boto3", "botocore", "fastapi", "sqlalchemy", "httpx", "requests"}
@@ -78,8 +80,8 @@ def port_methods(port: type) -> list[tuple[str, object]]:
 # --- shape -------------------------------------------------------------------
 
 
-def test_there_are_exactly_sixteen_ports() -> None:
-    """The provider ports, the three P2 surface ports, the P7 model port, the three P9 catalog
+def test_there_are_exactly_seventeen_ports() -> None:
+    """The provider ports, the three P2 surface ports, the P7 model port, the four P9 catalog
     ports.
 
     `__all__` also carries the two grouping tuples, so the comparison is against
@@ -110,7 +112,7 @@ def test_the_four_groups_together_are_every_port() -> None:
     assert len(ports.PROVIDER_PORTS) == 9
     assert len(ports.SURFACE_PORTS) == 3
     assert len(ports.MODEL_PORTS) == 1
-    assert len(ports.CATALOG_PORTS) == 3
+    assert len(ports.CATALOG_PORTS) == 4
 
 
 def test_all_ports_are_protocols() -> None:

@@ -5,7 +5,7 @@
 | Sub project | P9 |
 | Status | In build |
 | Specification | [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.2, 5.3, 7 and 14 |
-| Tasks | TASK-P9-004, on demand and reserved, and TASK-P9-012, Savings Plans rates, done 2026-10-08. TASK-P9-013, spot, to come. TASK-P9-010 serves it as `GET /catalog/prices` |
+| Tasks | TASK-P9-004, on demand and reserved, TASK-P9-012, Savings Plans rates, and TASK-P9-013, spot, done 2026-10-08. TASK-P9-010 serves it as `GET /catalog/prices` |
 | Refresh cadence | Every 8 hours, the catalog collectors, each loading only what AWS has published since the last run |
 
 ## What it does
@@ -24,9 +24,10 @@ row's `as_of`, and every row carries `collected_at` beside it, constraint 10.
 Built in TASK-P9-004: the adapter, the collector, its schedule, and the reserved terms. Built in
 TASK-P9-012: Savings Plans rates for EC2, Compute and EC2 Instance plans, read by the relay
 function outside the VPC, the owner's answer to OPEN-17 on 2026-10-07, and stored as `price` rows
-under `ComputeSavingsPlans`, Committed, with the plan type as the offering class. Spot prices,
-TASK-P9-013, are still to come, kept as the latest price per pool plus each day's low and high for
-90 days, OPEN-18, spec section 14.7.
+under `ComputeSavingsPlans`, Committed, with the plan type as the offering class. Built in
+TASK-P9-013: spot prices in every Region the price list sells EC2 in, every zone and product
+description, kept as the latest price per pool plus each day's low and high for 90 days, OPEN-18,
+spec section 14.7.
 
 ## Why it exists
 
@@ -84,6 +85,18 @@ every 8 hours from its schedule row, migration 0036, and stores a sheet only whe
 through the same store and prune steps as the price catalog, so a rate a recommendation quotes
 outlives its sheet the same way.
 
+**Spot prices**, TASK-P9-013. `finops_providers/aws/spot.py`, `AwsSpotPrices`, reads
+`DescribeSpotPriceHistory` through the relay for a window, one invocation a Region because botocore
+pages the call itself: about 2,700 a month across 30 Regions at three runs a day (modelled), the
+figure spec section 14.5 gave. EC2 answers a window with each pool's price when it opened and every
+change inside it, so every pool arrives each run with the reading's own time as `as_of`.
+`finops_ingest/collectors/spot_prices.py` asks each Region for the window since its last read, or
+8 hours on a first read, replaces `spot_price` with the newest reading per pool and never with an
+older one, and merges each day's low and high into `spot_price_daily`: a reading counts towards the
+day it was in effect on, and the price still in effect at the close counts towards that day too.
+Daily rows older than 90 days are removed each run and counted in `items_removed`; the schedule row
+is migration 0037.
+
 ## Failure behaviour
 
 Partial failure is first class, constraint 5. One service in one Region failing rolls back that one
@@ -97,7 +110,10 @@ price is nought, a product with no price, a currency other than USD, a term with
 recurring price, an unreadable product, ARN or version, or a product priced for another Region.
 A Savings Plans rate of nought, a plan length other than one or three years, a currency other
 than USD, a rate with no unit, or a rate for another Region is SchemaDrift for that Region's sheet,
-and the sheet already held stays. A call with more pages than the relay follows is refused whole,
+and the sheet already held stays. A spot reading of nought, with an unreadable price or time, or in a
+zone outside its Region is SchemaDrift for that Region; a Region not opted into is NotOptedIn,
+recorded and never a price of nought, constraint 5. A call with more pages than the relay follows is
+refused whole,
 `RelayPageLimit`, never answered with the pages it reached. `AccessDeniedException` and
 `ThrottlingException` are AccessDenied and Throttled; the codes the
 Pricing model declares beyond those fall through to SchemaDrift and are pinned in
@@ -116,14 +132,15 @@ recorded in migration 0033.
 ## Interface
 
 No route yet; TASK-P9-010 serves the catalog as `GET /catalog/prices`. The collectors write
-`price_list_version` and `price`, migration 0033, and `sync_error`. The `PriceCatalog` and
-`SavingsPlansRates` ports, `finops_core/ports/catalog.py`, are held by
+`price_list_version` and `price`, migration 0033, and `sync_error`. The `PriceCatalog`,
+`SavingsPlansRates` and `SpotPrices` ports, `finops_core/ports/catalog.py`, are held by
 `tests/contract/test_catalog_contract.py` to the same assertions for each fake and each adapter over
 a stubbed client.
 
 ## Not doing
 
-- Spot prices, which are TASK-P9-013.
+- Every spot reading kept. The owner chose the latest per pool and a daily low and high for 90
+  days, OPEN-18, because every reading in every pool grows without limit.
 - Savings Plans rates for Fargate, Lambda, SageMaker and the database plans, which no P9 target
   is priced against.
 - Dedicated tenancy, capacity reservations and preinstalled software prices, which are not the
@@ -136,7 +153,7 @@ a stubbed client.
 
 Proved offline only, against AWS's own samples: the two responses in the API reference and the
 real ElastiCache list for eu-west-1, saved in `tests/providers/aws/extracts`. The Savings Plans rates are
-unproved against the API, ISS-263. Two things the plan
+unproved against the API, ISS-263, and so is the size of a Region's spot window, ISS-264. Two things the plan
 asks for wait on an account or on the owner, ISS-261: the number of rows a full load stores,
 against the ten million spec section 14.4 models, and a real EC2 instance product to hold the EC2
 attribute names to. The attribute names used for EC2 instances are the price list documentation's;
@@ -145,8 +162,8 @@ the real ElastiCache product and the EBS sample agree with every name they share
 ## Status of this document
 
 In build. On demand and reserved prices for the five services were built on 2026-10-08 by
-TASK-P9-004, against stubs and AWS's own samples, and Savings Plans rates the same day by
-TASK-P9-012, against stubs in the shape the botocore model gives. Specified in the
+TASK-P9-004, against stubs and AWS's own samples, Savings Plans rates the same day by
+TASK-P9-012, and spot prices by TASK-P9-013, against stubs in the shape the botocore model gives. Specified in the
 [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.2, 5.3, 7 and 14, and planned in
 the [P9 plan](../plans/P9-implementation-plan.md).
 

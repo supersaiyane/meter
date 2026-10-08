@@ -9,16 +9,18 @@ to the contract by reading the fake's own types through the shape EC2 sends them
 from __future__ import annotations
 
 from collections.abc import Iterable, Iterator
+from datetime import datetime, timedelta
 from typing import Any
 
 from botocore.exceptions import ClientError
 
-from finops_core.domain.catalog import InstanceTypeSpec
+from finops_core.domain.catalog import InstanceTypeSpec, SpotPrice
 from finops_core.errors import CollectionError
 from finops_fakes import fixtures
-from finops_fakes.catalog import FakeInstanceCatalog
+from finops_fakes.catalog import FakeInstanceCatalog, FakeSpotPrices
 from finops_fakes.estate_shape import REGIONS
 from finops_providers.aws.instance_types import AwsInstanceCatalog
+from finops_providers.aws.spot import AwsSpotPrices
 
 #: The code EC2 answers each cause with.
 CODES: dict[str, str] = {
@@ -88,3 +90,73 @@ def fake_backed(
         return StubEc2(types, failure="NotOptedIn" if region in refusing else None)
 
     return AwsInstanceCatalog(client_for=client_for, clock=lambda: fixtures.COLLECTED_AT)
+
+
+# --- spot prices, TASK-P9-013 ---------------------------------------------------------------
+
+
+def spot_entry(reading: SpotPrice) -> dict[str, Any]:
+    """One `SpotPriceHistory` entry, in EC2's own shape."""
+    return {
+        "AvailabilityZone": reading.availability_zone,
+        "InstanceType": reading.instance_type,
+        "ProductDescription": reading.product_description,
+        "SpotPrice": f"{reading.price:.6f}",
+        "Timestamp": reading.as_of,
+    }
+
+
+class StubSpot:
+    """Answers `get_paginator("describe_spot_price_history").paginate(...)` a page at a time."""
+
+    def __init__(
+        self, entries: Iterable[dict[str, Any]], *, failure: str | None = None, page_size: int = 25
+    ) -> None:
+        self._entries = list(entries)
+        self._failure = failure
+        self._page_size = page_size
+        self.requests: list[dict[str, Any]] = []
+
+    def get_paginator(self, operation: str) -> StubSpot:
+        assert operation == "describe_spot_price_history"
+        return self
+
+    def paginate(self, **request: Any) -> Iterator[dict[str, Any]]:
+        self.requests.append(request)
+        if self._failure is not None:
+            code = CODES[self._failure]
+            raise ClientError({"Error": {"Code": code, "Message": "stubbed"}}, "DescribeSpot")
+        for start in range(0, max(len(self._entries), 1), self._page_size):
+            yield {"SpotPriceHistory": self._entries[start : start + self._page_size]}
+
+
+def fake_spot_backed(
+    *,
+    not_opted_in: Iterable[str] = (),
+    failure: type[CollectionError] | None = None,
+) -> AwsSpotPrices:
+    """The AWS adapter over stubs serving the fake's readings in each Region, for the contract."""
+    refusing = frozenset(not_opted_in)
+    fake = FakeSpotPrices()
+    clock = SpotClock()
+
+    def client_for(region: str) -> StubSpot:
+        if failure is not None:
+            return StubSpot((), failure=failure.cause)
+        if region in refusing:
+            return StubSpot((), failure="NotOptedIn")
+        if region not in REGIONS:
+            return StubSpot(())
+        since = clock.since
+        return StubSpot(spot_entry(r) for r in fake.prices(region, since))
+
+    return AwsSpotPrices(client_for=client_for, clock=clock)
+
+
+class SpotClock:
+    """The read's clock, two hours after the window the contract asks for opens."""
+
+    since = fixtures.COLLECTED_AT
+
+    def __call__(self) -> datetime:
+        return self.since + timedelta(hours=2)

@@ -386,6 +386,22 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         ),
         est_cost_per_run="0.001",
     ),
+    # FEAT-071, TASK-P9-013. Migration 0037 installs the same row for every tenant before it.
+    ScheduleEntry(
+        collector="spot_prices",
+        cadence_seconds=EIGHT_HOURLY,
+        reason=(
+            "Every 8 hours, with the other catalog collectors, P9 specification section 14.4. "
+            "Each run reads every Region's window since its last read, one relay call a Region "
+            "because DescribeSpotPriceHistory pages with botocore's own paginator: about 2,700 "
+            "calls a month across 30 Regions (modelled), the figure spec section 14.5 gave, "
+            "inside the Lambda free allowance and an S3 write each at 0.005 USD a thousand, "
+            "AWS's published rate. Spot moves within hours, so a slower cadence would miss the "
+            "daily low and high OPEN-18 keeps, and a faster one would only repeat the same "
+            "prices. ADR-0012, ADR-0035, constraint 9, FEAT-071 and OPEN-18."
+        ),
+        est_cost_per_run="0.0002",
+    ),
     ScheduleEntry(
         collector="iac_state",
         cadence_seconds=DAILY,
