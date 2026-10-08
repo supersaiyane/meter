@@ -440,6 +440,7 @@
     "finops_ingest/collectors/__init__.py",
     "finops_ingest/collectors/account_health.py",
     "finops_ingest/collectors/budgets.py",
+    "finops_ingest/collectors/catalog_reads.py",
     "finops_ingest/collectors/commitment.py",
     "finops_ingest/collectors/commitment_actions.py",
     "finops_ingest/collectors/container_usage.py",
@@ -532,6 +533,7 @@
     "finops_query/remediation.py",
     "finops_query/score.py",
     "finops_query/severity.py",
+    "finops_query/targets.py",
     "finops_query/waste.py",
     "finops_relay/__init__.py",
     "finops_relay/relay.py",
@@ -760,6 +762,7 @@
     "tests/ingest/collectors/test_waste_cloudwatch.py",
     "tests/ingest/collectors/test_waste_compute.py",
     "tests/ingest/collectors/test_waste_parking.py",
+    "tests/ingest/collectors/test_waste_targets.py",
     "tests/ingest/test_coverage.py",
     "tests/ingest/test_dispatcher.py",
     "tests/ingest/test_ledger.py",
@@ -846,6 +849,7 @@
     "tests/query/test_remediation.py",
     "tests/query/test_score.py",
     "tests/query/test_severity.py",
+    "tests/query/test_targets.py",
     "tests/query/test_waste.py",
     "tests/scripts/__init__.py",
     "tests/scripts/test_backup_retention.py",
@@ -9155,6 +9159,11 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/catalog_reads.py",
+      "t": "finops_query/targets.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/commitment.py",
       "t": "finops_core/errors.py",
       "k": "python"
@@ -9496,6 +9505,11 @@
     },
     {
       "s": "finops_ingest/collectors/recommendations.py",
+      "t": "finops_ingest/collectors/catalog_reads.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/recommendations.py",
       "t": "finops_ingest/collectors/price_catalog.py",
       "k": "python"
     },
@@ -9631,6 +9645,11 @@
     },
     {
       "s": "finops_ingest/collectors/waste_compute.py",
+      "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/waste_compute.py",
       "t": "finops_core/domain/waste.py",
       "k": "python"
     },
@@ -9641,12 +9660,22 @@
     },
     {
       "s": "finops_ingest/collectors/waste_compute.py",
+      "t": "finops_ingest/collectors/catalog_reads.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/waste_compute.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {
       "s": "finops_ingest/collectors/waste_compute.py",
       "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/waste_compute.py",
+      "t": "finops_query/targets.py",
       "k": "python"
     },
     {
@@ -10427,6 +10456,11 @@
     {
       "s": "finops_query/score.py",
       "t": "finops_query/realized.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/targets.py",
+      "t": "finops_query/waste.py",
       "k": "python"
     },
     {
@@ -12975,6 +13009,41 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_waste_targets.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_waste_targets.py",
+      "t": "finops_ingest/collectors/instance_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_waste_targets.py",
+      "t": "finops_ingest/collectors/price_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_waste_targets.py",
+      "t": "finops_ingest/collectors/waste_compute.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_waste_targets.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_waste_targets.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_waste_targets.py",
+      "t": "finops_query/targets.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/test_coverage.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -14202,6 +14271,11 @@
     {
       "s": "tests/query/test_severity.py",
       "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_targets.py",
+      "t": "finops_query/targets.py",
       "k": "python"
     },
     {

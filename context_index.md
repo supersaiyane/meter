@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-990 public symbols across 5 packages.
+993 public symbols across 5 packages.
 
 ## finops_core
 
@@ -424,6 +424,9 @@ a duplicate.
 | --- | --- | --- | --- | --- |
 | `AccountHealthCollector` | class | `finops_ingest/collectors/account_health.py:34` | Checks one account's collector role and records the answer. | nothing in this tree |
 | `BudgetCollector` | class | `finops_ingest/collectors/budgets.py:70` | The payer's budgets, stored as read. | nothing in this tree |
+| `latest_version` | function | `finops_ingest/collectors/catalog_reads.py:62` |  | `finops_ingest/collectors/recommendations.py`, `finops_ingest/collectors/waste_compute.py` |
+| `price_of` | function | `finops_ingest/collectors/catalog_reads.py:67` | A type's comparable price in one version, as its price id and hourly figure. | `finops_ingest/collectors/recommendations.py` |
+| `offers` | function | `finops_ingest/collectors/catalog_reads.py:90` | Every type offered in the Region, by name, priced from `version` where it can be. | `finops_ingest/collectors/waste_compute.py` |
 | `CommitmentCollector` | class | `finops_ingest/collectors/commitment.py:103` | Reads a month of commitment utilization and coverage, and writes both. | nothing in this tree |
 | `CommitmentActionsCollector` | class | `finops_ingest/collectors/commitment_actions.py:90` | A coverage gap, as something somebody is accountable for closing. | nothing in this tree |
 | `ContainerUsageCollector` | class | `finops_ingest/collectors/container_usage.py:171` | Clusters and reservations for one account in one region. | nothing in this tree |
@@ -462,7 +465,7 @@ a duplicate.
 | `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:136` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
 | `QuotaCollector` | class | `finops_ingest/collectors/quotas.py:134` | Quotas and increase requests for one account in one region. | nothing in this tree |
 | `RealizedSavingsCollector` | class | `finops_ingest/collectors/realized_savings.py:174` | The north star metric, measured rather than modelled. | nothing in this tree |
-| `RecommendationCollector` | class | `finops_ingest/collectors/recommendations.py:175` | Reads three services and writes one table. | nothing in this tree |
+| `RecommendationCollector` | class | `finops_ingest/collectors/recommendations.py:156` | Reads three services and writes one table. | nothing in this tree |
 | `hashed_subject` | function | `finops_ingest/collectors/retention.py:66` | A stable, non reversible stand in, so a duplicate sign in is still one row. | nothing in this tree |
 | `retention_principal` | function | `finops_ingest/collectors/retention.py:75` | Anonymise principals unseen past the window. Never removes a row. | nothing in this tree |
 | `retention_operational` | function | `finops_ingest/collectors/retention.py:97` | Remove run history, resolved errors and dead watermarks past the window. | nothing in this tree |
@@ -480,8 +483,8 @@ a duplicate.
 | `CompositeTopologySource.enrolled_slices` | method | `finops_ingest/collectors/topology.py:106` | The union, in the order the first source gave them. | nothing in this tree |
 | `CompositeTopologySource.read_slice` | method | `finops_ingest/collectors/topology.py:120` | Every source's answer for one slice, merged. | `finops_ingest/collectors/inventory.py` |
 | `WasteCloudWatchCollector` | class | `finops_ingest/collectors/waste_cloudwatch.py:89` | FEAT-027. The module with no instances to size. | nothing in this tree |
-| `Candidate` | class | `finops_ingest/collectors/waste_compute.py:69` | One thing the collector was asked to look at. | nothing in this tree |
-| `WasteComputeCollector` | class | `finops_ingest/collectors/waste_compute.py:139` | Our own findings, from metrics the provider publishes. | nothing in this tree |
+| `Candidate` | class | `finops_ingest/collectors/waste_compute.py:91` | One thing the collector was asked to look at. | nothing in this tree |
+| `WasteComputeCollector` | class | `finops_ingest/collectors/waste_compute.py:172` | Our own findings, from metrics the provider publishes. | nothing in this tree |
 | `Parkable` | class | `finops_ingest/collectors/waste_parking.py:77` | A resource worth asking the parking question about. | nothing in this tree |
 | `WasteParkingCollector` | class | `finops_ingest/collectors/waste_parking.py:93` | Findings that say keep this and stop paying for the nights. | nothing in this tree |
 | `enrol` | function | `finops_ingest/coverage.py:81` | Give every enrolled slice an UNREAD row, and leave existing rows alone. | `finops_ingest/collectors/inventory.py` |

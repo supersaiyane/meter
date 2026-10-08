@@ -716,6 +716,7 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
                     observation_days=c.observation_days,
                     monthly_cost=c.monthly_cost,
                     credit_balance=c.credit_balance,
+                    instance_type=c.instance_type,
                 )
                 for c in ec2_candidates(at=ESTATE_AT)
                 if c.account_id == judged

@@ -300,7 +300,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec sections 5.5 and 5.6, FEAT-073 |
 | Delivers | FEAT-073, with TASK-P9-008 |
 | Depends on | TASK-P9-006 |
@@ -308,14 +308,14 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 **Acceptance criteria.**
 
-- [ ] Candidates, fit and snapping as in spec section 5.5, where Compute Optimizer has no
-      answer
-- [ ] The metrics batch gains network and EBS series, so the fit can check them
-- [ ] The saving is the price difference for the hours run, shown at list and scaled to
+- [x] Candidates, fit and snapping as in spec section 5.5, where Compute Optimizer has no
+      answer, `finops_query/targets.py`
+- [x] The metrics batch gains network and EBS series, so the fit can check them
+- [x] The saving is the price difference for the hours run, shown at list and scaled to
       the bill's effective to list ratio, both modelled, with the price version
-- [ ] Across a generation or an architecture, the rationale says vCPUs are not equivalent
-- [ ] The planted m5.2xlarge at 7 percent names a target and saves its price difference,
-      no longer 90.9 percent of its cost
+- [x] Across a generation or an architecture, the rationale says vCPUs are not equivalent
+- [x] The planted m5.2xlarge at 7 percent names a target and saves its price difference,
+      no longer 90.9 percent of its cost: m5.xlarge, about half its cost (modelled)
 
 ---
 
