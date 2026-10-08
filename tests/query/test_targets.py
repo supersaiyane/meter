@@ -19,6 +19,7 @@ from finops_query.targets import (
     added_cost,
     candidates,
     choose,
+    differences,
     family_of,
     grow,
     hours_per_month,
@@ -342,3 +343,38 @@ def test_growing_is_an_added_cost_at_list_and_as_paid() -> None:
     )
     assert cost.at_list == Decimal("251.63")
     assert cost.as_paid == Decimal("226.47")
+
+
+# --- the alternatives, TASK-P9-010 -----------------------------------------------------------
+
+
+def test_every_cheaper_type_that_fits_is_kept_cheapest_first_the_choice_leading() -> None:
+    chosen = choose(
+        M5_2XL, OFFERED, Demand(cpu_p99_percent=Decimal(7), memory_peak_percent=Decimal(10))
+    )
+    assert isinstance(chosen, Target)
+    # m6g.large fits too, and has no price, so it is no alternative a reader could price.
+    assert [o.instance_type for o in chosen.fitting] == [
+        "m5.large",
+        "m6g.xlarge",
+        "m6a.xlarge",
+        "m5.xlarge",
+        "m6i.xlarge",
+    ]
+    assert chosen.fitting[0] == chosen.offer
+
+
+def test_a_growth_keeps_its_fitting_types_too() -> None:
+    demand = Demand(Decimal(97), Decimal(60), cpu_p95_percent=Decimal(94))
+    chosen = grow(C6I_2XL, GROWABLE, demand)
+    assert isinstance(chosen, Target)
+    assert chosen.fitting[0] == chosen.offer
+    assert {o.instance_type for o in chosen.fitting} <= {"c6i.4xlarge", "c7i.4xlarge"}
+
+
+def test_an_option_names_its_platform_differences_whatever_the_demand() -> None:
+    assert differences(M5_2XL, offer("m6g.xlarge", 4, 16, "0.16", arm=True)) == (
+        "vCPUs are not equivalent across a generation or an architecture",
+        "Graviton needs arm64 builds of everything the instance runs",
+    )
+    assert differences(M5_2XL, offer("m5.xlarge", 4, 16, "0.19")) == ()

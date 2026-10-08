@@ -24,6 +24,7 @@ from finops_api.db.repositories.containers import (
 from finops_api.db.repositories.waste import (
     RealizedSavingRepository,
     RecommendationEventRepository,
+    RecommendationOptionRepository,
     RecommendationRepository,
     RefusalRepository,
     ScoreComponentRepository,
@@ -34,6 +35,8 @@ from finops_api.exports import ExportSpec, exportable, rows_in
 from finops_api.lifecycle import TransitionRefusedError, move
 from finops_api.routes import API_PREFIX, build_meta
 from finops_api.schemas import (
+    AlternativeOut,
+    AlternativesOut,
     ClusterUsageOut,
     ContainerUsageRowOut,
     ContainerWasteOut,
@@ -55,6 +58,7 @@ from finops_core.domain.containers import OomStatus
 from finops_core.domain.tenant import Scope
 from finops_core.domain.waste import Lifecycle, WasteClass
 from finops_query.actions import risk_of
+from finops_query.targets import HOURS_PER_MONTH
 
 router = APIRouter(prefix=API_PREFIX, tags=["waste"])
 
@@ -62,6 +66,7 @@ router = APIRouter(prefix=API_PREFIX, tags=["waste"])
 #: not exist; an empty list would say the estate has no waste, which is a claim
 #: nobody has earned the right to make about an estate nobody has looked at.
 NO_RECOMMENDATIONS = "No recommendation has been collected for this tenant yet."
+_CENT = Decimal("0.01")
 
 
 def _maybe(value: Any) -> Decimal | None:
@@ -107,6 +112,43 @@ def recommendation_out(row: Any) -> RecommendationOut:
         disturbs_running_work=risk.disturbs_running_work,
         is_no_regret=risk.is_no_regret,
         risk_why=risk.why,
+        # TASK-P9-010. The price columns are the recommendation repository's, absent from a row
+        # read elsewhere, and the rest are the row's own.
+        current_instance_type=row._mapping.get("current_instance_type"),
+        target_instance_type=row._mapping.get("target_instance_type"),
+        current_hourly_price=_maybe(row._mapping.get("current_hourly_price")),
+        target_hourly_price=_maybe(row._mapping.get("target_hourly_price")),
+        price_version=row._mapping.get("price_version"),
+        added_monthly_cost=_maybe(row._mapping.get("added_monthly_cost")),
+    )
+
+
+def _monthly(hourly: Decimal | None) -> Decimal | None:
+    """An hourly list price for AWS's month, 730 hours. Modelled."""
+    return None if hourly is None else (hourly * HOURS_PER_MONTH).quantize(_CENT)
+
+
+def alternative_out(
+    option: Any, target: str | None, current_hourly: Decimal | None
+) -> AlternativeOut:
+    """One option on the wire, priced a month and against the current type."""
+    hourly = _maybe(option.hourly_price)
+    monthly, current_monthly = _monthly(hourly), _monthly(current_hourly)
+    return AlternativeOut(
+        rank=option.rank,
+        instance_type=option.instance_type,
+        chosen=option.instance_type == target,
+        vcpus=option.vcpus,
+        memory_mib=option.memory_mib,
+        network_baseline_gbps=_maybe(option.network_baseline_gbps),
+        hourly_price=hourly,
+        monthly_price=monthly,
+        monthly_saving=(
+            None if monthly is None or current_monthly is None else current_monthly - monthly
+        ),
+        performance_risk=_maybe(option.performance_risk),
+        platform_differences=list(option.platform_differences or ()),
+        unpriced_reason=option.unpriced_reason,
     )
 
 
@@ -188,6 +230,63 @@ def recommendation_detail(
     )
     meta = build_meta(connection, scope, context, visible=1, rows=[row])
     return Envelope(data=found, meta=meta)
+
+
+@router.get(
+    "/waste/recommendations/{recommendation_id}/alternatives",
+    response_model=Envelope[AlternativesOut],
+)
+@exportable(
+    ExportSpec(
+        title="Alternatives",
+        row_model=AlternativeOut,
+        rows=rows_in("alternatives"),
+        metric="Monthly saving at list",
+    )
+)
+def recommendation_alternatives(
+    recommendation_id: UUID,
+    connection: Connection = Depends(get_connection),
+    scope: Scope = Depends(get_scope),
+    context: AccessContext = Depends(get_access_context),
+) -> Envelope[AlternativesOut]:
+    """What a rightsizing was compared with, the chosen type first. TASK-P9-010.
+
+    Compute Optimizer's ranked options, or the types Meter's own rule found to fit the demand it
+    measured, each at list from the recommendation's price list version. Empty where the finding
+    names no target, which is a statement about the finding rather than about the estate.
+    """
+    row = RecommendationRepository(connection, context).one(scope, recommendation_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail=NO_RECOMMENDATIONS)
+    found = recommendation_out(row)
+    options = RecommendationOptionRepository(connection, context).ranked(scope, recommendation_id)
+    alternatives = sorted(
+        (
+            alternative_out(option, found.target_instance_type, found.current_hourly_price)
+            for option in options
+        ),
+        key=lambda alternative: (not alternative.chosen, alternative.rank),
+    )
+    data = AlternativesOut(
+        recommendation_id=recommendation_id,
+        current_instance_type=found.current_instance_type,
+        current_hourly_price=found.current_hourly_price,
+        price_version=found.price_version,
+        alternatives=alternatives,
+    )
+    # One recommendation, shown whole. Counted in accounts it would read as 1 of the
+    # organization's, a partial view, which it is not.
+    meta = build_meta(
+        connection,
+        scope,
+        context,
+        visible=1,
+        rows=[row],
+        coverage=(1, 1),
+        coverage_unit="recommendations",
+    )
+    return Envelope(data=data, meta=meta)
 
 
 def _transition(

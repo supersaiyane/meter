@@ -263,3 +263,43 @@ def test_without_a_catalog_pressure_is_a_refusal_saying_why(
         ).scalar_one()
     assert "Under pressure" in reason
     assert "no description or price of c6i.2xlarge" in reason
+
+
+def options(engine: Engine, tenant: UUID) -> list[dict[str, Any]]:
+    with engine.connect() as connection:
+        found = connection.execute(
+            text(
+                "SELECT o.* FROM recommendation_option o JOIN recommendation r "
+                "ON r.recommendation_id = o.recommendation_id "
+                "WHERE r.tenant_id = :t AND r.resource_id = :r ORDER BY o.rank"
+            ),
+            {"t": tenant, "r": OVERSIZED},
+        )
+        return [dict(row) for row in found.mappings()]
+
+
+def test_the_types_the_rule_found_to_fit_are_its_alternatives_the_target_first(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    # TASK-P9-010. With no agent the rule may only step once in the family, so one type fits.
+    catalogued(engine, tenant_id)
+    collect(engine, tenant_id, settings, candidates())
+    (only,) = options(engine, tenant_id)
+    assert (only["rank"], only["instance_type"]) == (1, "m5.xlarge")
+    # The rule gives no risk score, and a nought would read as Compute Optimizer's "no risk".
+    assert only["performance_risk"] is None
+    assert only["price_version"] == VERSION
+    found = oversized(engine, tenant_id)
+    assert found is not None
+    assert only["sku_price_id"] == found["target_sku_price_id"]
+    assert only["hourly_price"] == on_demand_hourly("m5.xlarge")
+    assert only["platform_differences"] == []
+
+
+def test_alternatives_go_when_the_target_does(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    catalogued(engine, tenant_id)
+    collect(engine, tenant_id, settings, candidates())
+    collect(engine, tenant_id, settings, candidates(instance_type=None))
+    assert options(engine, tenant_id) == []

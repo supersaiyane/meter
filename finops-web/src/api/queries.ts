@@ -23,6 +23,7 @@ import {
 } from './fixtures/cost';
 import {
   recommendationsFixture,
+  alternativesFixture,
   refusalsFixture,
   realizedSavingsFixture,
   scoresFixture,
@@ -89,6 +90,7 @@ import type {
   ApiQueryFindingDetail,
   ApiRealizedSavings,
   ApiRecommendations,
+  ApiAlternatives,
   ApiRefusals,
   ApiScores,
   ApiEnforcementAction,
@@ -445,6 +447,19 @@ export function useRecommendations() {
     '/api/v1/waste/recommendations',
     '/api/v1/waste/recommendations',
     recommendationsFixture,
+  );
+}
+
+/**
+ * What one rightsizing was compared with, TASK-P9-010. The declared template is FastAPI's, the
+ * fetched path names the recommendation, as `useQueryFinding` does.
+ */
+export function useAlternatives(recommendationId: string) {
+  return useQuerySurface<ApiAlternatives>(
+    ['waste-alternatives', recommendationId],
+    '/api/v1/waste/recommendations/{recommendation_id}/alternatives',
+    `/api/v1/waste/recommendations/${recommendationId}/alternatives`,
+    () => alternativesFixture(recommendationId),
   );
 }
 

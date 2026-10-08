@@ -180,6 +180,7 @@
     "finops-web/src/screens/QuerySurfacesScreen.tsx",
     "finops-web/src/screens/QuotaDetailScreen.tsx",
     "finops-web/src/screens/QuotasScreen.tsx",
+    "finops-web/src/screens/RecommendationAlternatives.tsx",
     "finops-web/src/screens/ReconciliationScreen.tsx",
     "finops-web/src/screens/RemediationControls.tsx",
     "finops-web/src/screens/ReportLibraryScreen.tsx",
@@ -218,6 +219,7 @@
     "finops-web/src/screens/__tests__/QuerySurfacesScreen.test.tsx",
     "finops-web/src/screens/__tests__/QuotaDetailScreen.test.tsx",
     "finops-web/src/screens/__tests__/QuotasScreen.test.tsx",
+    "finops-web/src/screens/__tests__/RecommendationAlternatives.test.tsx",
     "finops-web/src/screens/__tests__/ReconciliationScreen.test.tsx",
     "finops-web/src/screens/__tests__/RemediationControls.test.tsx",
     "finops-web/src/screens/__tests__/ReportLibraryScreen.test.tsx",
@@ -306,6 +308,7 @@
     "finops_api/db/repositories/accounts.py",
     "finops_api/db/repositories/assistant.py",
     "finops_api/db/repositories/base.py",
+    "finops_api/db/repositories/catalog.py",
     "finops_api/db/repositories/containers.py",
     "finops_api/db/repositories/cost.py",
     "finops_api/db/repositories/explore.py",
@@ -339,6 +342,7 @@
     "finops_api/routes/__init__.py",
     "finops_api/routes/accounts.py",
     "finops_api/routes/assistant.py",
+    "finops_api/routes/catalog.py",
     "finops_api/routes/cost.py",
     "finops_api/routes/explore.py",
     "finops_api/routes/forecast.py",
@@ -614,6 +618,7 @@
     "migrations/versions/0037_spot_prices_schedule.py",
     "migrations/versions/0038_recommendation_option.py",
     "migrations/versions/0039_upsize_added_cost.py",
+    "migrations/versions/0040_option_risk_optional.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -648,6 +653,7 @@
     "tests/api/test_assistant_redaction.py",
     "tests/api/test_assistant_remediation.py",
     "tests/api/test_assistant_routes.py",
+    "tests/api/test_catalog_routes.py",
     "tests/api/test_container_routes.py",
     "tests/api/test_cost_budgets.py",
     "tests/api/test_cost_commitments.py",
@@ -671,6 +677,7 @@
     "tests/api/test_lifecycle.py",
     "tests/api/test_query_routes.py",
     "tests/api/test_quota_routes.py",
+    "tests/api/test_recommendation_alternatives.py",
     "tests/api/test_recommendation_owner.py",
     "tests/api/test_reconciliation.py",
     "tests/api/test_report_schedules.py",
@@ -4301,6 +4308,41 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/RecommendationAlternatives.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/RecommendationAlternatives.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/RecommendationAlternatives.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/RecommendationAlternatives.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/RecommendationAlternatives.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/RecommendationAlternatives.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/RecommendationAlternatives.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/ReconciliationScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
@@ -4753,6 +4795,11 @@
     {
       "s": "finops-web/src/screens/WasteScreen.tsx",
       "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/WasteScreen.tsx",
+      "t": "finops-web/src/screens/RecommendationAlternatives.tsx",
       "k": "typescript"
     },
     {
@@ -5658,6 +5705,36 @@
     {
       "s": "finops-web/src/screens/__tests__/QuotasScreen.test.tsx",
       "t": "finops-web/src/screens/__tests__/sortEveryColumn.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationAlternatives.test.tsx",
+      "t": "finops-web/src/api/fixtures/waste.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationAlternatives.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationAlternatives.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationAlternatives.test.tsx",
+      "t": "finops-web/src/screens/WasteScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationAlternatives.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/RecommendationAlternatives.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
       "k": "typescript"
     },
     {
@@ -6981,6 +7058,26 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/catalog.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/catalog.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/catalog.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/catalog.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/containers.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -7696,6 +7793,46 @@
       "k": "python"
     },
     {
+      "s": "finops_api/routes/catalog.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/catalog.py",
+      "t": "finops_api/db/repositories/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/catalog.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/catalog.py",
+      "t": "finops_api/exports/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/catalog.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/catalog.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/catalog.py",
+      "t": "finops_core/domain/catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/catalog.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/routes/cost.py",
       "t": "finops_api/db/repositories/__init__.py",
       "k": "python"
@@ -8383,6 +8520,11 @@
     {
       "s": "finops_api/routes/waste.py",
       "t": "finops_query/actions.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/waste.py",
+      "t": "finops_query/targets.py",
       "k": "python"
     },
     {
@@ -9692,6 +9834,11 @@
     },
     {
       "s": "finops_ingest/collectors/waste_compute.py",
+      "t": "finops_ingest/collectors/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/waste_compute.py",
       "t": "finops_ingest/collectors/waste_volumes.py",
       "k": "python"
     },
@@ -10946,6 +11093,11 @@
       "k": "python"
     },
     {
+      "s": "tests/api/test_catalog_routes.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
       "s": "tests/api/test_container_routes.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -11428,6 +11580,16 @@
     {
       "s": "tests/api/test_quota_routes.py",
       "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_recommendation_alternatives.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_recommendation_alternatives.py",
+      "t": "finops_query/targets.py",
       "k": "python"
     },
     {

@@ -1000,6 +1000,12 @@ so its baseline columns are null and `iops_per_gib` is the rate it grows by; gp3
 is the most that may be provisioned. The figures are the ones `finops_query/volumes.py` prices a
 gp3 move from, so the table shows what the rule used.
 
+`recommendation_option` also holds Meter's own alternatives from TASK-P9-010: every type its sizing
+rule found to fit, cheapest first, the chosen one ranked first, rewritten each run. Compute
+Optimizer scores its options' performance risk from 0 to 4 and Meter's rule gives none, so
+migration 0040 lets `performance_risk` be null, meaning the source gave no score; the 0 to 4 check
+still holds every score given. OPEN-24.
+
 ```sql
 CREATE TABLE recommendation_option (       -- every target a provider ranked, migration 0038
     recommendation_id REFERENCES recommendation, region TEXT, rank >= 1, instance_type TEXT,

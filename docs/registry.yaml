@@ -82,7 +82,7 @@ subprojects:
 - id: P9
   name: Price catalog and rightsizing targets
   status: Specified, planned and approved by the owner 2026-10-05, in build from 2026-10-08 as priority 3,
-    TASK-P9-001 to TASK-P9-009, TASK-P9-012 and TASK-P9-013 done, TASK-P9-010 next. EC2 and EBS list prices from AWS, rightsizing down
+    TASK-P9-001 to TASK-P9-010, TASK-P9-012 and TASK-P9-013 done, TASK-P9-011 next. EC2 and EBS list prices from AWS, rightsizing down
     and up to a named and priced target, and gp2 to gp3. The hub now reaches every API it calls, ADR-0035
   spec: specs/2026-10-05-p9-price-catalog-design.md
   plan: plans/P9-implementation-plan.md
@@ -2108,6 +2108,19 @@ changes:
     waste_compute prices attached gp2 volumes in the same batch through waste_volumes, with the working in
     the rationale; the instance catalog collector stores gp2's and gp3's figures with their source in
     volume_type_spec. The planted 1,000 GiB gp2 volume saves 15.00 a month (modelled). ISS-265
+- id: CHG-0145
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-010, the catalog routes and the Alternatives table
+  commit: pending
+  detail: GET /catalog/instance-types, filtered by service, Region, family, architecture, vCPUs and memory,
+    and GET /catalog/prices, filtered by service, Region, SKU, instance type, pricing category and version,
+    each Region's newest by default; both exportable, every row carrying its version and as_of, and coverage
+    counted in Regions. Recommendations carry the current and target types, both list prices an hour from
+    their version, and an Upsize's added cost. GET /waste/recommendations/{id}/alternatives lists what a
+    rightsizing was compared with, the chosen type first, priced a month at 730 hours, and the screen shows
+    it under one finding. Meter's own alternatives are the types its rule found to fit, written when it
+    judged them, with no risk score, migration 0040; OPEN-24
 issues:
 - id: ISS-189
   severity: LOW
@@ -4794,3 +4807,16 @@ open_questions:
     constraints, priced from a recorded price by a foreign key or naming why not, ranks unique, risk on
     its scale, and a JSON column could hold none of them. The cost is one more table scoped through its
     recommendation. Reversing it is a migration that folds the rows into a column; the owner may say so.'
+- id: OPEN-24
+  question: 'Are Meter''s own alternatives written when its rule judges them, beside Compute Optimizer''s,
+    or worked out again when the screen asks? BUILT 2026-10-08 as recommended, written'
+  status: OPEN
+  blocks: nothing
+  detail: 'Raised 2026-10-08 by TASK-P9-010. FEAT-073 said the screen would work Meter''s alternatives out
+    again from the rule and the catalog. It cannot: the rule needs the demand it measured, CPU, memory,
+    network and EBS, and nothing stores it, so a list worked out later could not say which types fit.
+    Recommended and built: the rule keeps every priced type that fits, cheapest first, and waste_compute
+    writes them to recommendation_option each run, replacing the last run''s. Compute Optimizer scores its
+    options'' risk from 0 to 4 and Meter''s rule gives none, so migration 0040 lets that column be null
+    rather than invent a nought that would read as no risk. The cost is a write per targeted finding.
+    Reversing it is storing the demand on the recommendation instead; the owner may say so.'

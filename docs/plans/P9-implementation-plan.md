@@ -361,7 +361,7 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | P9 spec section 8 |
 | Delivers | The catalog routes and the Alternatives table |
 | Depends on | TASK-P9-007, TASK-P9-008, TASK-P9-009 |
@@ -369,12 +369,12 @@ Added 2026-10-07 at the owner's request, spec section 14.
 
 **Acceptance criteria.**
 
-- [ ] `GET /catalog/instance-types` and `GET /catalog/prices`, with version and `as_of`,
+- [x] `GET /catalog/instance-types` and `GET /catalog/prices`, with version and `as_of`,
       filtered by service, Region and pricing category as well. Widened 2026-10-07
-- [ ] Recommendations return the target, both prices, the version and the scaled saving
-- [ ] The recommendation's screen shows an Alternatives table, the chosen target first,
+- [x] Recommendations return the target, both prices, the version and the scaled saving
+- [x] The recommendation's screen shows an Alternatives table, the chosen target first,
       in P8's design system if it has landed
-- [ ] Exportable through P8's export responder where it exists
+- [x] Exportable through P8's export responder where it exists
 
 ---
 

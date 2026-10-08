@@ -275,6 +275,17 @@ def p8_routers() -> tuple[APIRouter, ...]:
     return (explore.router, forecast.router, views.router, schedules.router)
 
 
+def p9_routers() -> tuple[APIRouter, ...]:
+    """The price catalog's routes, from the P9 spec's section 8.
+
+    The instance types and the prices the catalog holds, TASK-P9-010: reads of what the catalog
+    collectors stored, never a call to AWS.
+    """
+    from finops_api.routes import catalog
+
+    return (catalog.router,)
+
+
 def p10_routers() -> tuple[APIRouter, ...]:
     """The proven numbers routes, from the P10 spec's section 7 list.
 
@@ -387,6 +398,7 @@ def create_app(
         *(p5_routers() if include_p0_routes else ()),
         *(p7_routers() if include_p0_routes else ()),
         *(p8_routers() if include_p0_routes else ()),
+        *(p9_routers() if include_p0_routes else ()),
         *(p10_routers() if include_p0_routes else ()),
         *extra_routers,
     )

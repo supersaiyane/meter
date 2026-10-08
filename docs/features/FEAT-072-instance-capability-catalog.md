@@ -5,7 +5,7 @@
 | Sub project | P9 |
 | Status | In build |
 | Specification | [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.4, 7 and 14 |
-| Tasks | TASK-P9-005, done 2026-10-08. TASK-P9-010 serves it as `GET /catalog/instance-types` |
+| Tasks | TASK-P9-005, done 2026-10-08. TASK-P9-010 serves it as `GET /catalog/instance-types`, done 2026-10-08 |
 | Refresh cadence | Every 8 hours, the `instance_catalog` collector |
 
 ## What it does
@@ -85,7 +85,9 @@ guard's tenant rule like every table, migration 0033.
 
 ## Interface
 
-No route yet; TASK-P9-010 serves it as `GET /catalog/instance-types`. The collector writes
+`GET /catalog/instance-types`, TASK-P9-010, filtered by service, Region, family, architecture,
+vCPUs and memory, offered types only unless asked, with a type's baseline and its source. Coverage
+is counted in Regions and the route is exportable. The collector writes
 `instance_type_spec` and `sync_error`. The `InstanceCatalog` port, `finops_core/ports/catalog.py`,
 is held by `tests/contract/test_catalog_contract.py` to the same assertions for the fake and for
 `AwsInstanceCatalog` over a stubbed client.
