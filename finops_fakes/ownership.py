@@ -3,9 +3,11 @@
 Planted where the estate needs them most, in `fake-product-b`, the account whose resources carry
 no team tag, the same hole the bill has:
 
-- **The service catalogue** names `payments` for the oversized instance `fake-product-b/0004`, in
-  the application `checkout`; the application `reporting` names nobody and holds the account's
-  database, so a catalogue that was read and says nobody is a case too.
+- **The service catalogue**, AWS AppRegistry, holds three applications, and each marks its
+  resources as AppRegistry and CloudFormation do, TASK-P11-003: `checkout` names `payments` and
+  carries the oversized instance `fake-product-b/0004` by its `awsApplication` tag; `reporting`
+  names `analytics` and carries the account's database by the stack that made it; and `sandbox`
+  names nobody, so a catalogue that was read and says nobody is a case too.
 - **CloudTrail's record** names a person for `fake-product-b/0003`, created nine days before the
   estate's clock as its launch says, and the role `deploy-pipeline`, a pipeline and never a person,
   for the account's NAT gateway, re-created thirty days before.
@@ -26,7 +28,7 @@ from datetime import timedelta
 from typing import Final
 
 from finops_core.domain.account import AccountKey
-from finops_core.domain.ownership import BeforeHistory, CatalogueEntry, Creator, OwnerKind
+from finops_core.domain.ownership import BeforeHistory, CatalogueApplication, Creator, OwnerKind
 from finops_core.errors import CollectionError
 from finops_fakes import fixtures
 
@@ -34,10 +36,45 @@ COLLECTOR: Final = "ownership"
 #: How far back CloudTrail's event history reaches, as AWS documents it.
 HISTORY_DAYS: Final = 90
 
-#: Account, Region, resource, application, and the owner it names or None.
-CATALOGUE: Final[tuple[tuple[str, str, str, str, str | None], ...]] = (
-    ("fake-product-b", "us-fake-1", "amazonec2/fake-product-b/0004", "checkout", "payments"),
-    ("fake-product-b", "us-fake-1", "amazonrds/fake-product-b/0001", "reporting", None),
+#: The tag AppRegistry marks an application's resources with, and the one CloudFormation marks a
+#: stack's resources with, as AWS names them.
+APPLICATION_TAG: Final = "awsApplication"
+STACK_TAG: Final = "aws:cloudformation:stack-id"
+#: Each application's `awsApplication` value and the stack, in the forms AWS gives them.
+CHECKOUT: Final = (
+    "arn:aws:resource-groups:us-fake-1:fake-product-b:group/checkout/fake-app-checkout"
+)
+SANDBOX: Final = "arn:aws:resource-groups:us-fake-1:fake-product-b:group/sandbox/fake-app-sandbox"
+REPORTING_STACK: Final = (
+    "arn:aws:cloudformation:us-fake-1:fake-product-b:stack/reporting/fake-stack-reporting"
+)
+
+#: Account, Region, name, id, the owner it names or None, and the tags that mark its resources.
+CATALOGUE: Final[tuple[tuple[str, str, str, str, str | None, frozenset[tuple[str, str]]], ...]] = (
+    (
+        "fake-product-b",
+        "us-fake-1",
+        "checkout",
+        "fake-app-checkout",
+        "payments",
+        frozenset({(APPLICATION_TAG, CHECKOUT)}),
+    ),
+    (
+        "fake-product-b",
+        "us-fake-1",
+        "reporting",
+        "fake-app-reporting",
+        "analytics",
+        frozenset({(STACK_TAG, REPORTING_STACK)}),
+    ),
+    (
+        "fake-product-b",
+        "us-fake-1",
+        "sandbox",
+        "fake-app-sandbox",
+        None,
+        frozenset({(APPLICATION_TAG, SANDBOX)}),
+    ),
 )
 
 #: Resource, the principal that created it, what it is, and how many days before the clock.
@@ -82,19 +119,20 @@ class FakeServiceCatalogue(_Failing):
     ) -> None:
         super().__init__(failure, frozenset(accounts))
 
-    def entries(self, account: AccountKey, region: str) -> Iterable[CatalogueEntry]:
+    def applications(self, account: AccountKey, region: str) -> Iterable[CatalogueApplication]:
         self._fail(account)
         return tuple(
-            CatalogueEntry(
+            CatalogueApplication(
                 account_key=account,
                 region_id=region,
-                resource_id=resource,
-                application=application,
+                name=name,
+                application_id=application_id,
                 owner=owner,
+                marks=marks,
                 as_of=fixtures.AS_OF,
                 collected_at=fixtures.COLLECTED_AT,
             )
-            for held, where, resource, application, owner in CATALOGUE
+            for held, where, name, application_id, owner, marks in CATALOGUE
             if held == account.account_id and where == region
         )
 

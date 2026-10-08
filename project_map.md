@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 32 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 41 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 220 | test_*.py under tests/ |
-| Test functions | 2841 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 221 | test_*.py under tests/ |
+| Test functions | 2855 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -431,7 +431,7 @@ meter/
 │       ├── catalog.py         Price, PriceListVersion and InstanceTypeSpec, P9. A
 │       │                      price is one offer term, its recurring price and its
 │       │                      upfront fee; a term nought in both is refused
-│       ├── ownership.py       OwnerSuggestion, CatalogueEntry, Creator and
+│       ├── ownership.py       OwnerSuggestion, CatalogueApplication, Creator and
 │       │                      BeforeHistory, P11. A suggestion says its source,
 │       │                      and a tag is a team, a creator never one
 │       ├── cost.py            CostRecord, FOCUS 1.4 names, Decimal money.
@@ -566,6 +566,8 @@ meter/
 │   │   │                      SchemaDrift, never a zero. Unproved, ISS-002, ISS-003
 │   │   ├── spot.py            FEAT-071, TASK-P9-013. Spot readings through the relay,
 │   │   │                      one window a Region, every zone. ISS-264
+│   │   ├── appregistry.py     FEAT-077, TASK-P11-003. AWS AppRegistry's applications,
+│   │   │                      their owners and the tags that mark their resources
 │   │   ├── savings_plans.py   FEAT-071, TASK-P9-012. Savings Plans rates through the
 │   │   │                      relay, six calls a Region, versioned by their digest.
 │   │   │                      Unproved, ISS-263

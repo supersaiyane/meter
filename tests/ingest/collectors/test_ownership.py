@@ -12,6 +12,16 @@ import pytest
 from sqlalchemy import Engine, text
 
 from finops_core.config import Settings
+from finops_core.domain.ownership import CatalogueApplication
+from finops_core.errors import AccessDenied
+from finops_fakes.ownership import (
+    APPLICATION_TAG,
+    CHECKOUT,
+    REPORTING_STACK,
+    SANDBOX,
+    STACK_TAG,
+    FakeServiceCatalogue,
+)
 from finops_ingest.collectors.ownership import OwnershipCollector, team_of
 from finops_ingest.registry import CollectorContext, CollectorOutcome
 
@@ -185,3 +195,134 @@ def test_the_first_key_with_a_value_wins(
     tags: dict[str, Any], keys: tuple[str, ...], named: tuple[str, str] | None
 ) -> None:
     assert team_of(tags, keys) == named
+
+
+# --- the catalogue, TASK-P11-003 ---------------------------------------------------------
+
+
+PLANTED = "fake-product-b"
+REGION = "us-fake-1"
+
+
+def catalogue_nodes(engine: Engine, tenant: UUID, *found: tuple[str, dict[str, str]]) -> None:
+    run = uuid4()
+    with engine.begin() as connection:
+        connection.execute(INSERT_RUN, {"run": run, "t": tenant, "key": str(run), "at": AT})
+        for provider, tags in found:
+            connection.execute(
+                INSERT_NODE,
+                {
+                    "node": uuid4(),
+                    "t": tenant,
+                    "run": run,
+                    "account": PLANTED,
+                    "provider": provider,
+                    "region": REGION,
+                    "tags": json.dumps(tags),
+                    "at": AT,
+                },
+            )
+
+
+def catalogued(
+    engine: Engine, tenant: UUID, settings: Settings, catalogue: Any
+) -> CollectorOutcome:
+    with engine.begin() as connection:
+        return OwnershipCollector(clock=lambda: NOW, catalogue=catalogue)(
+            CollectorContext(
+                unit=Unit(tenant_id=tenant),
+                connection=connection,
+                run_id=uuid4(),
+                settings=settings,
+            )
+        )
+
+
+def from_catalogue(engine: Engine, tenant: UUID) -> dict[str, tuple[str, str, str]]:
+    return {
+        resource: (row["owner"], row["owner_kind"], row["detail"])
+        for resource, row in owners(engine, tenant).items()
+        if row["source"] == "CATALOGUE"
+    }
+
+
+MARKED: tuple[tuple[str, dict[str, str]], ...] = (
+    ("i-checkout", {APPLICATION_TAG: CHECKOUT}),
+    ("db-reporting", {STACK_TAG: REPORTING_STACK}),
+    ("i-sandbox", {APPLICATION_TAG: SANDBOX}),
+    ("i-unmarked", {}),
+)
+
+
+def test_an_application_naming_an_owner_suggests_it_for_the_resources_it_marks(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    catalogue_nodes(engine, tenant_id, *MARKED)
+    outcome = catalogued(engine, tenant_id, settings, FakeServiceCatalogue())
+    # By the application's own tag, and by the stack's; `sandbox` names nobody, so says nothing.
+    assert from_catalogue(engine, tenant_id) == {
+        "i-checkout": ("payments", "TEAM", "checkout"),
+        "db-reporting": ("analytics", "TEAM", "reporting"),
+    }
+    assert outcome.items_written == 2
+
+
+class _Addressed:
+    """A catalogue whose one application names a person by address."""
+
+    def applications(self, account: Any, region: str) -> tuple[CatalogueApplication, ...]:
+        return (
+            CatalogueApplication(
+                account_key=account,
+                region_id=region,
+                name="checkout",
+                application_id="app-1",
+                owner="a.person@fake.example",
+                marks=frozenset({(APPLICATION_TAG, CHECKOUT)}),
+                as_of=AT,
+                collected_at=AT,
+            ),
+        )
+
+
+def test_an_owner_named_by_address_is_a_person(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    catalogue_nodes(engine, tenant_id, *MARKED)
+    catalogued(engine, tenant_id, settings, _Addressed())
+    assert from_catalogue(engine, tenant_id)["i-checkout"][:2] == (
+        "a.person@fake.example",
+        "PERSON",
+    )
+
+
+def test_a_refused_catalogue_is_typed_and_keeps_what_was_known(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    catalogue_nodes(engine, tenant_id, *MARKED)
+    catalogued(engine, tenant_id, settings, FakeServiceCatalogue())
+    catalogued(engine, tenant_id, settings, FakeServiceCatalogue(failure=AccessDenied))
+    assert set(from_catalogue(engine, tenant_id)) == {"i-checkout", "db-reporting"}
+    with engine.connect() as connection:
+        cause = connection.execute(
+            text(
+                "SELECT error_type FROM sync_error WHERE tenant_id = :t AND collector = 'ownership'"
+            ),
+            {"t": tenant_id},
+        ).scalar_one()
+    assert cause == "AccessDenied"
+
+
+def test_a_resource_no_longer_marked_loses_its_suggestion(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    catalogue_nodes(engine, tenant_id, *MARKED)
+    catalogued(engine, tenant_id, settings, FakeServiceCatalogue())
+    with engine.begin() as connection:
+        connection.execute(
+            text("UPDATE topology_node SET tags = '{}' WHERE tenant_id = :t AND provider_id = :p"),
+            {"t": tenant_id, "p": "i-checkout"},
+        )
+    outcome = catalogued(engine, tenant_id, settings, FakeServiceCatalogue())
+    assert set(from_catalogue(engine, tenant_id)) == {"db-reporting"}
+    assert outcome.items_removed == 1

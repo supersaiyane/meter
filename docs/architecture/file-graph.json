@@ -490,6 +490,7 @@
     "finops_providers/__init__.py",
     "finops_providers/aws/__init__.py",
     "finops_providers/aws/accounts.py",
+    "finops_providers/aws/appregistry.py",
     "finops_providers/aws/bedrock.py",
     "finops_providers/aws/budgets.py",
     "finops_providers/aws/burstable.py",
@@ -804,6 +805,7 @@
     "tests/providers/aws/ec2_types.py",
     "tests/providers/aws/pricing.py",
     "tests/providers/aws/test_accounts.py",
+    "tests/providers/aws/test_appregistry.py",
     "tests/providers/aws/test_aws_topology.py",
     "tests/providers/aws/test_bedrock.py",
     "tests/providers/aws/test_bedrock_permissions.py",
@@ -9599,6 +9601,16 @@
     },
     {
       "s": "finops_ingest/collectors/ownership.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/ownership.py",
+      "t": "finops_core/ports/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/ownership.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
@@ -10124,6 +10136,26 @@
     },
     {
       "s": "finops_providers/aws/accounts.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/appregistry.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/appregistry.py",
+      "t": "finops_core/domain/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/appregistry.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/appregistry.py",
       "t": "finops_providers/aws/client.py",
       "k": "python"
     },
@@ -12984,6 +13016,16 @@
     },
     {
       "s": "tests/ingest/collectors/test_ownership.py",
+      "t": "finops_core/domain/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ownership.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ownership.py",
       "t": "finops_ingest/collectors/ownership.py",
       "k": "python"
     },
@@ -13750,6 +13792,26 @@
     {
       "s": "tests/providers/aws/test_accounts.py",
       "t": "finops_providers/aws/accounts.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_appregistry.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_appregistry.py",
+      "t": "finops_core/domain/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_appregistry.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_appregistry.py",
+      "t": "finops_providers/aws/appregistry.py",
       "k": "python"
     },
     {

@@ -682,5 +682,21 @@ def test_the_seeded_estate_names_owners_from_its_tags(engine: object) -> None:
         assert ("amazonec2/fake-product-a/0003", "product", "team") in found
         untagged = {one for one in found if "/fake-product-b/" in one[0]}
         assert untagged == {("amazonebs/fake-product-b/0001", "data-platform", "owner")}
+        with engine.connect() as connection:  # type: ignore[attr-defined]
+            catalogued = {
+                (row.resource_id, row.owner, row.detail)
+                for row in connection.execute(
+                    sql(
+                        "SELECT resource_id, owner, detail FROM resource_owner "
+                        "WHERE tenant_id = :t AND source = 'CATALOGUE'"
+                    ),
+                    {"t": DEMO_TENANT},
+                )
+            }
+        # TASK-P11-003. AppRegistry's owners, by the application's tag and by the stack's.
+        assert catalogued == {
+            ("amazonec2/fake-product-b/0004", "payments", "checkout"),
+            ("amazonrds/fake-product-b/0001", "analytics", "reporting"),
+        }
     finally:
         seed_demo.remove(engine)

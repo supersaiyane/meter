@@ -47,6 +47,7 @@ locals {
     "cloudtrail",
     "servicequotas",
     "compute-optimizer",
+    "servicecatalog-appregistry",
   ]
   second_endpoints = {
     for service in local.collection_services : service => {

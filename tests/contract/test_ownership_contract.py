@@ -18,14 +18,16 @@ from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.ownership import BeforeHistory, Creator, OwnerKind
 from finops_core.errors import AccessDenied, CollectionError, NotOptedIn, Throttled
 from finops_core.ports import ResourceCreators, ServiceCatalogue
-from finops_fakes import fixtures
+from finops_fakes import fixtures, utilization
 from finops_fakes.ownership import (
     HISTORY_DAYS,
     FakeResourceCreators,
     FakeServiceCatalogue,
 )
+from tests.providers.aws.test_appregistry import catalogue_backed
 
-CATALOGUES: dict[str, Callable[..., Any]] = {"fake": FakeServiceCatalogue}
+#: TASK-P11-003 adds the AppRegistry adapter, one per account over a stub, to the same contract.
+CATALOGUES: dict[str, Callable[..., Any]] = {"fake": FakeServiceCatalogue, "aws": catalogue_backed}
 CREATORS: dict[str, Callable[..., Any]] = {"fake": FakeResourceCreators}
 
 UNTAGGED = AccountKey(provider=Provider.AWS, account_id="fake-product-b")
@@ -51,29 +53,41 @@ def test_it_is_a_service_catalogue(make_catalogue: Callable[..., Any]) -> None:
     assert isinstance(make_catalogue(), ServiceCatalogue)
 
 
-def test_each_application_names_its_resources_and_their_owner_or_nobody(
+def test_each_application_names_its_owner_or_nobody(make_catalogue: Callable[..., Any]) -> None:
+    found = {(one.name, one.owner) for one in make_catalogue().applications(UNTAGGED, REGION)}
+    assert found == {("checkout", "payments"), ("reporting", "analytics"), ("sandbox", None)}
+
+
+@pytest.mark.parametrize(
+    ("application", "resource"),
+    [
+        # By the application's own tag, and by the tag of the stack that made the resource.
+        ("checkout", "amazonec2/fake-product-b/0004"),
+        ("reporting", "amazonrds/fake-product-b/0001"),
+        ("sandbox", "amazonec2/fake-product-b/0001"),
+    ],
+)
+def test_an_application_holds_the_resources_its_marks_are_on(
+    make_catalogue: Callable[..., Any], application: str, resource: str
+) -> None:
+    by_name = {one.name: one for one in make_catalogue().applications(UNTAGGED, REGION)}
+    tags = utilization.tags_of(resource)
+    assert by_name[application].holds(tags)
+    assert [name for name, one in by_name.items() if one.holds(tags)] == [application]
+
+
+def test_an_account_with_no_applications_has_none(
     make_catalogue: Callable[..., Any],
 ) -> None:
-    found = {
-        (entry.resource_id, entry.application, entry.owner)
-        for entry in make_catalogue().entries(UNTAGGED, REGION)
-    }
-    assert found == {
-        ("amazonec2/fake-product-b/0004", "checkout", "payments"),
-        ("amazonrds/fake-product-b/0001", "reporting", None),
-    }
+    assert tuple(make_catalogue().applications(TAGGED, REGION)) == ()
 
 
-def test_an_account_with_no_applications_has_no_entries(
+def test_every_application_was_true_before_it_was_read(
     make_catalogue: Callable[..., Any],
 ) -> None:
-    assert tuple(make_catalogue().entries(TAGGED, REGION)) == ()
-
-
-def test_every_entry_was_true_before_it_was_read(make_catalogue: Callable[..., Any]) -> None:
-    for entry in make_catalogue().entries(UNTAGGED, REGION):
-        assert entry.as_of <= entry.collected_at
-        assert entry.account_key == UNTAGGED and entry.region_id == REGION
+    for one in make_catalogue().applications(UNTAGGED, REGION):
+        assert one.as_of <= one.collected_at
+        assert one.account_key == UNTAGGED and one.region_id == REGION
 
 
 @pytest.mark.parametrize("cause", CAUSES)
@@ -81,7 +95,7 @@ def test_a_refused_catalogue_read_is_raised_by_its_cause(
     make_catalogue: Callable[..., Any], cause: type[CollectionError]
 ) -> None:
     with pytest.raises(cause):
-        tuple(make_catalogue(failure=cause).entries(UNTAGGED, REGION))
+        tuple(make_catalogue(failure=cause).applications(UNTAGGED, REGION))
 
 
 def test_one_account_refusing_leaves_the_others_readable(
@@ -89,8 +103,8 @@ def test_one_account_refusing_leaves_the_others_readable(
 ) -> None:
     catalogue = make_catalogue(failure=AccessDenied, accounts=[TAGGED.account_id])
     with pytest.raises(AccessDenied):
-        tuple(catalogue.entries(TAGGED, REGION))
-    assert len(tuple(catalogue.entries(UNTAGGED, REGION))) == 2
+        tuple(catalogue.applications(TAGGED, REGION))
+    assert len(tuple(catalogue.applications(UNTAGGED, REGION))) == 3
 
 
 # --- the creators --------------------------------------------------------------------

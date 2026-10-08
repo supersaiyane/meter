@@ -48,6 +48,9 @@ locals {
     "config",
     "grafana",
     "bedrock-runtime",
+    # Owners from AWS AppRegistry, read in each member account, TASK-P11-003. AWS lists it
+    # among the PrivateLink services as com.amazonaws.<region>.servicecatalog-appregistry.
+    "servicecatalog-appregistry",
     # The relay is invoked through this one, so the hub still has no route out.
     "lambda",
   ]

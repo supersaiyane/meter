@@ -160,6 +160,9 @@ class Settings(BaseSettings):
     # like `regions`. `team` by default, so a deployment that sets nothing reads what it read
     # before; one whose owners live under `owner` or `cost-center` names those here.
     owner_tag_keys: str = "team"
+    #: The attribute an AppRegistry application's attribute group names its owner under,
+    #: TASK-P11-003.
+    catalogue_owner_key: str = "owner"
 
     # Blast radius, FEAT-044. How many reachable resources count as wide. A number in code
     # deciding what is wide is a number nobody can argue with, which is ADR-0012's argument

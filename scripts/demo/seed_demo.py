@@ -63,6 +63,7 @@ from finops_fakes.estate_metrics import EstateMetrics, ec2_candidates, volume_ca
 from finops_fakes.evidence import FakeQueryEvidence
 from finops_fakes.health import FakeRoleHealth
 from finops_fakes.invoices import FakeInvoices
+from finops_fakes.ownership import FakeServiceCatalogue
 from finops_fakes.platform_cost import FakePlatformCost
 from finops_fakes.provider import FakeProvider
 from finops_fakes.recommendations import FakeRecommendationSource
@@ -847,7 +848,8 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
         # tag, in the account with no team tags, shows the case; a deployment names its own.
         written += _through_the_ledger(
             ledger,
-            OwnershipCollector(clock=lambda: now),
+            # And the fake AppRegistry, whose applications mark resources by tag, TASK-P11-003.
+            OwnershipCollector(clock=lambda: now, catalogue=FakeServiceCatalogue()),
             connection,
             unit(scope_key="ownership"),
             "ownership",

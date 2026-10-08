@@ -101,7 +101,7 @@ subprojects:
 - id: P11
   name: Owners and a savings ledger
   status: Approved by the owner on 2026-10-08 with OPEN-25 to OPEN-27 as recommended, in build, TASK-P11-001
-    and TASK-P11-002 done. Chosen as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
+    to TASK-P11-003 done. Chosen as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
     AppRegistry and CloudTrail as suggestions beside the assigned owner, and a ledger crediting each
     verified saving to its owner and team for every month the bill shows it held
   spec: specs/2026-10-08-p11-owners-and-savings-ledger-design.md
@@ -2189,6 +2189,18 @@ changes:
     from the inventory''s nodes with no AWS call and removes those it no longer finds, and refuses to run
     without settings rather than guess the keys. The fake inventory''s estate nodes now carry their own
     tags, and the demo names owner as a second key so the planted volume shows'
+- id: CHG-0150
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P11-003, owners from AWS AppRegistry
+  commit: pending
+  detail: 'AppRegistry associates stacks and a tag value with an application rather than listing its
+    resources, so the catalogue port now returns each application with its owner and the tags that mark
+    its resources, awsApplication and the stack tag, and the ownership collector matches the inventory''s
+    nodes by them; spec section 5.3 amended. AwsServiceCatalogue reads five calls per account and Region,
+    every list through botocore''s paginators, held to the model''s shapes; the hub reaches
+    servicecatalog-appregistry through an interface endpoint in every collection Region, and the member
+    role gains its five servicecatalog reads. A refused catalogue is typed and keeps its account''s rows'
 issues:
 - id: ISS-189
   severity: LOW

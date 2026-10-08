@@ -83,7 +83,7 @@ days.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | Spec section 5.3, OPEN-25 |
 | Delivers | FEAT-077 |
 | Depends on | TASK-P11-002 |
@@ -91,11 +91,12 @@ days.
 
 **Acceptance criteria.**
 
-- [ ] The adapter reads applications, their associated resources and the owner under
-      `catalogue_owner_key`, paging every list, held to the botocore model's shapes
-- [ ] CATALOGUE rows written by the collector; a refused or throttled account is typed in
+- [x] The adapter reads applications, the tags that mark their resources and the owner under
+      `catalogue_owner_key`, paging every list, held to the botocore model's shapes. Amended:
+      AppRegistry associates stacks and a tag value, not resources, spec section 5.3
+- [x] CATALOGUE rows written by the collector; a refused or throttled account is typed in
       `sync_error` and the other sources' rows stand
-- [ ] The hub's path to the AppRegistry API, held by `tests/contract/test_network_paths.py`
+- [x] The hub's path to the AppRegistry API, held by `tests/contract/test_network_paths.py`
 
 ---
 
