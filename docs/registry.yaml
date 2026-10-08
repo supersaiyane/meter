@@ -82,7 +82,7 @@ subprojects:
 - id: P9
   name: Price catalog and rightsizing targets
   status: Specified, planned and approved by the owner 2026-10-05, in build from 2026-10-08 as priority 3,
-    TASK-P9-001 to TASK-P9-006, TASK-P9-012 and TASK-P9-013 done, TASK-P9-007 next. EC2 and EBS list prices from AWS, rightsizing down
+    TASK-P9-001 to TASK-P9-007, TASK-P9-012 and TASK-P9-013 done, TASK-P9-008 next. EC2 and EBS list prices from AWS, rightsizing down
     and up to a named and priced target, and gp2 to gp3. The hub now reaches every API it calls, ADR-0035
   spec: specs/2026-10-05-p9-price-catalog-design.md
   plan: plans/P9-implementation-plan.md
@@ -2072,6 +2072,19 @@ changes:
     adds recommendation_option, each option priced from a recorded catalog price or saying why not, and
     price pruning now spares a price an option quotes. The recommendation's current and target prices are
     set from one version
+- id: CHG-0142
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P9-007, Meter's own rightsizing names the cheapest type that fits and quotes the price difference
+  commit: pending
+  detail: finops_query/targets.py chooses from the same family one or two sizes down and the newer generations
+    with their AMD and Graviton variants, offered and priced in the Region, holding CPU p99 with 30 percent
+    headroom, memory peak with 15 or 25, and network and EBS p99 to the target's baselines; without an agent
+    only one size down within the family. waste_compute reads network and EBS bytes, puts each CPU
+    rightsizing through the rule against the catalog, and quotes the price difference for the hours run at
+    list and as the bill pays, never scaled up, with both prices and the version. The planted m5.2xlarge at 7
+    percent names m5.xlarge and saves about half its cost. The comparable price is now one shared read,
+    catalog_reads, for the recommendation and waste collectors alike
 issues:
 - id: ISS-189
   severity: LOW

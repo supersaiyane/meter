@@ -5,7 +5,7 @@
 | Sub project | P9 |
 | Status | In build |
 | Specification | [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.5 to 5.7 |
-| Tasks | TASK-P9-006, Compute Optimizer's targets kept and priced, done 2026-10-08. TASK-P9-007 and TASK-P9-008 to come. TASK-P9-010 adds the Alternatives table |
+| Tasks | TASK-P9-006, Compute Optimizer's targets kept and priced, and TASK-P9-007, Meter's own downsizing target, done 2026-10-08. TASK-P9-008 to come. TASK-P9-010 adds the Alternatives table |
 
 ## What it does
 
@@ -20,8 +20,8 @@ Built in TASK-P9-006: Compute Optimizer's findings carry every option it ranked,
 rank, its performance risk, its own monthly saving, the migration effort and the platform
 differences, and each priced from the catalog or kept saying why not. A Compute Optimizer
 recommendation names its first ranked option as its target, with both prices from one catalog
-version. Meter's own rule where Compute Optimizer has no answer, TASK-P9-007, and the Upsize,
-TASK-P9-008, are still to come.
+version. Built in TASK-P9-007: Meter's own rightsizing names the cheapest type that fits and quotes
+the price difference. The Upsize, TASK-P9-008, is still to come.
 
 ## Why it exists
 
@@ -49,8 +49,26 @@ catalog cannot price is kept with the reason, either no price list for the Regio
 price in it. The recommendation's `current_sku_price_id`, `target_instance_type`,
 `target_sku_price_id` and `price_version` are set from the same version, the target being the
 first ranked option, so a saving can only be the difference of two prices that exist together.
-The recommendation's own saving stays Compute Optimizer's figure for its first option until
-TASK-P9-007 quotes the price difference.
+The recommendation's own saving stays Compute Optimizer's figure for its first option.
+
+**Meter's own target**, TASK-P9-007, where Compute Optimizer has no answer.
+`finops_query/targets.py` holds the rule, pure: candidates are the same family one or two sizes
+down, and the newer generations of the same series with their AMD and Graviton variants at the
+same size or one or two down, offered in the Region and priced; a burstable type is only replaced
+by a burstable one. A candidate fits when CPU p99 times 1.30 is within its vCPUs, the memory peak
+times 1.15, or 1.25 after an out of memory kill, within its memory, and network and EBS p99 within
+its baselines, never its burst; a baseline the target does not publish is not checked and the
+rationale says so. Without an agent there is no memory figure, so only one size down within the
+family is offered, and the rationale says why. The cheapest fit is chosen.
+`finops_ingest/collectors/waste_compute.py` reads network and EBS bytes beside CPU and memory, puts
+each CPU rightsizing through the rule against the catalog's offers for its Region and operating
+system, `finops_ingest/collectors/catalog_reads.py`, and quotes the saving as the two list prices'
+difference for the hours the instance runs, counted from its hourly points, and as the bill pays,
+scaled by what the bill shows over list for those hours and never scaled up. Both are modelled, and
+the rationale names both prices, the hours and the price version. The planted m5.2xlarge at 7
+percent CPU with no agent is offered m5.xlarge and saves about half its cost (modelled), no longer
+90.9 percent of it. Across a generation or an architecture the rationale says vCPUs are not
+equivalent, and a Graviton target that arm64 builds are needed.
 
 ## Failure behaviour
 
@@ -60,7 +78,12 @@ withdrawn: a finding in an account that timed out stays open rather than being d
 constraint 5. Every scope failing raises the cause, and NotOptedIn everywhere is the service not
 being enabled, ISS-004, recorded as nothing to withdraw. More than 100 pages for one account in
 one Region is SchemaDrift for that scope. An unpriced option is never a price of nought: the
-database refuses an option with neither a price nor a reason, migration 0038.
+database refuses an option with neither a price nor a reason, migration 0038. For Meter's own
+rightsizing, no cheaper type that fits is a refusal recorded in `sizing_refusal` with the reason,
+never a recommendation; a saving under the 5 USD floor is refused the same way. Where the
+instance's type is not known, the catalog does not describe it, or the catalog holds no prices for
+the Region, the old estimate stands, the unused share of the bill, and its rationale says why no
+target is named. A target that stops fitting is cleared on the next run.
 
 ## Security considerations
 
@@ -78,10 +101,12 @@ so the fake and any caller that knows nothing of scopes read it as before.
 
 ## Not doing
 
-- Pricing at the instance's own operating system. Linux is the comparable price until
-  TASK-P9-007 reads the instance's own from its bill line.
-- Meter's own targets where Compute Optimizer has no answer, TASK-P9-007, and the Upsize,
-  TASK-P9-008.
+- Pricing Compute Optimizer's options at the instance's own operating system, which it does not
+  name; they are quoted at Linux. Meter's own targets are quoted at the operating system the
+  candidate carries, Linux where the inventory names none.
+- The Upsize, TASK-P9-008.
+- Writing Meter's alternatives as rows; TASK-P9-010 computes them for the screen from the same
+  rule and the catalog.
 - Writing to Compute Optimizer: its preferences are asked per request and never stored at AWS,
   constraint 6.
 
@@ -94,7 +119,7 @@ yet, ISS-182.
 
 ## Status of this document
 
-In build. TASK-P9-006 was built on 2026-10-08. Specified in the
+In build. TASK-P9-006 and TASK-P9-007 were built on 2026-10-08. Specified in the
 [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.5 to 5.7, and planned in the
 [P9 plan](../plans/P9-implementation-plan.md).
 

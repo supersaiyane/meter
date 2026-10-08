@@ -24,7 +24,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 76 total, 11 specified, 16 in build, 45 delivered |
 | Decisions | 35 architecture decision records |
-| Changes | 141 recorded |
+| Changes | 142 recorded |
 | Issues | 156 fixed, 105 open, 0 parked |
 | Open questions | 23 awaiting a decision |
 
@@ -59,7 +59,10 @@ TASK-P9-012 added Savings Plans rates through the relay, versioned by their own 
 call volume put to the owner as OPEN-22. TASK-P9-013 added spot prices, the latest per pool and
 each day's low and high for 90 days. The catalog is complete. TASK-P9-006 read Compute Optimizer
 in every Region and account and kept every ranked option, each priced from the catalog or saying
-why not, in a table of its own put to the owner as OPEN-23. TASK-P9-007, downsizing, is next. The repository has no git remote, so nothing has been pushed.
+why not, in a table of its own put to the owner as OPEN-23. TASK-P9-007 made Meter's own
+rightsizing name the cheapest type that fits and quote the price difference: the planted m5.2xlarge
+at 7 percent now names m5.xlarge and saves about half its cost (modelled). TASK-P9-008, upsizing,
+is next. The repository has no git remote, so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -232,7 +235,7 @@ ISS-003.
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 | P8 | 18 | 0 | 0 | 0 | 0 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
-| P9 | 8 | 0 | 0 | 0 | 5 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
+| P9 | 9 | 0 | 0 | 0 | 4 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -464,6 +467,7 @@ ISS-003.
 | `TASK-P9-012` | Done 2026-10-08 | Savings Plans rates, every Region |
 | `TASK-P9-013` | Done 2026-10-08 | spot prices, every Region and zone |
 | `TASK-P9-006` | Done 2026-10-08 | Compute Optimizer, every Region, every account, every option |
+| `TASK-P9-007` | Done 2026-10-08 | downsizing to a named, priced target |
 
 **P10, not in the default state**
 

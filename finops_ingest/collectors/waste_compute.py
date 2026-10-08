@@ -22,12 +22,22 @@ than an estate with no waste.
 binding rule. Twenty identical instances behind one group produce one
 recommendation naming the group, because twenty rows telling somebody the same
 thing is how a screen gets ignored.
+
+**A rightsizing names its target and quotes a price difference**, TASK-P9-007, P9 spec
+sections 5.5 and 5.6. Where the instance's type is known and the catalog holds its
+Region, `finops_query.targets` chooses the cheapest type that fits from the types
+offered there, and the saving is the two prices' difference for the hours the
+instance runs, scaled to what the bill shows, both modelled, with the price version.
+No cheaper type that fits is a refusal with the reason, never a recommendation. Where
+the type or the catalog is missing, the old estimate stands, the unused share of the
+bill, and its rationale says why no target is named. The batch reads network and EBS
+bytes beside CPU and memory so the fit can hold a target to its baselines.
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any
@@ -36,11 +46,14 @@ from uuid import uuid4
 from sqlalchemy import text
 
 from finops_core.domain.account import AccountKey, Provider
-from finops_core.domain.waste import Source, confidence_of
+from finops_core.domain.metrics import MetricPoint
+from finops_core.domain.waste import Source, WasteClass, confidence_of
 from finops_core.ports.metrics import MetricRequest
+from finops_ingest.collectors.catalog_reads import LINUX, latest_version, offers
 from finops_ingest.registry import CollectorContext, CollectorOutcome
 from finops_query.severity import severity_for, thresholds_from
-from finops_query.waste import Estimate, idle, rightsize_cpu
+from finops_query.targets import Demand, Target, TypeOffer, choose, hours_per_month, saving
+from finops_query.waste import FLOOR_USD, Estimate, idle, percentile, rightsize_cpu
 
 COLLECTOR = "waste_compute"
 SCOPE = "billing"
@@ -57,6 +70,15 @@ MEMORY = "mem_used_percent"
 #: How a memory request is keyed, so it cannot collide with the CPU request for
 #: the same instance in a batch the port returns as one mapping.
 MEMORY_KEY = "memory:"
+
+#: Bytes an hour, in and out, which the fit holds against a target's baselines. TASK-P9-007.
+NETWORK = ("NetworkIn", "NetworkOut")
+EBS = ("EBSReadBytes", "EBSWriteBytes")
+NETWORK_KEY = "network:"
+EBS_KEY = "ebs:"
+SECONDS_PER_HOUR = Decimal(3600)
+GIGABIT = Decimal(10) ** 9
+MEGABIT = Decimal(10) ** 6
 
 Clock = Callable[[], datetime]
 
@@ -77,17 +99,28 @@ class Candidate:
     credit_balance: Decimal | None = None
     #: Where the instance belongs to a group, the group is what gets recommended.
     scaling_group: str | None = None
+    #: The type it runs as, which the target is chosen against. None where the
+    #: inventory does not say, and then no target is named. TASK-P9-007.
+    instance_type: str | None = None
+    #: The operating system its prices are quoted for, as the price list words it.
+    operating_system: str = LINUX
 
 
 WRITE = text(
     "INSERT INTO recommendation (recommendation_id, tenant_id, sub_account_id, source, "
     "source_reference, waste_class, resource_id, region_id, estimated_monthly_saving, "
     "confidence, severity, observation_days, lifecycle, owner, ticket_reference, "
-    "rationale, as_of, collected_at) "
+    "rationale, as_of, collected_at, current_sku_price_id, target_instance_type, "
+    "target_sku_price_id, price_version) "
     "VALUES (:id, :tenant, :account, :source, :reference, :waste_class, :resource, :region, "
-    ":saving, :confidence, :severity, :days, 'OPEN', NULL, NULL, :rationale, :now, :now) "
+    ":saving, :confidence, :severity, :days, 'OPEN', NULL, NULL, :rationale, :now, :now, "
+    ":current, :target_type, :target, :version) "
     "ON CONFLICT (tenant_id, source, source_reference) DO UPDATE SET "
     "estimated_monthly_saving = EXCLUDED.estimated_monthly_saving, "
+    "current_sku_price_id = EXCLUDED.current_sku_price_id, "
+    "target_instance_type = EXCLUDED.target_instance_type, "
+    "target_sku_price_id = EXCLUDED.target_sku_price_id, "
+    "price_version = EXCLUDED.price_version, "
     "waste_class = EXCLUDED.waste_class, confidence = EXCLUDED.confidence, "
     "severity = EXCLUDED.severity, observation_days = EXCLUDED.observation_days, "
     "rationale = EXCLUDED.rationale, as_of = EXCLUDED.as_of, "
@@ -200,6 +233,20 @@ class WasteComputeCollector:
                     statistic="Maximum",
                 )
                 for candidate in candidates
+            ]
+            + [
+                MetricRequest(
+                    key=f"{prefix}{metric}:{candidate.resource_id}",
+                    account=AccountKey(provider=Provider.AWS, account_id=candidate.account_id),
+                    region=candidate.region_id,
+                    namespace=NAMESPACE,
+                    metric_name=metric,
+                    dimensions={"InstanceId": candidate.resource_id},
+                    statistic="Sum",
+                )
+                for candidate in candidates
+                for prefix, metrics in ((NETWORK_KEY, NETWORK), (EBS_KEY, EBS))
+                for metric in metrics
             ],
             window_start,
             window_end,
@@ -231,13 +278,25 @@ class WasteComputeCollector:
             estimate = self._judge(candidate, values, peak)
             if estimate is None:
                 continue
+            prices: dict[str, str | None] | None = None
+            if (
+                estimate.is_worth_acting_on
+                and estimate.waste_class is WasteClass.RIGHTSIZE_INSTANCE
+            ):
+                demand = Demand(
+                    cpu_p99_percent=percentile(values, 99),
+                    memory_peak_percent=peak,
+                    network_p99_gbps=_p99_rate(series, NETWORK_KEY, NETWORK, candidate, GIGABIT),
+                    ebs_p99_mbps=_p99_rate(series, EBS_KEY, EBS, candidate, MEGABIT),
+                )
+                estimate, prices = self._priced(context, candidate, estimate, demand, len(values))
             if not estimate.is_worth_acting_on:
                 # Examined and cleared. Recorded so a reader can see the rule looked, and
                 # never as a recommendation: it has no saving, and a zero in a list ranked by
                 # money reads as the least valuable action rather than the absence of one.
                 self._write_refusal(context, candidate, estimate, now)
                 continue
-            self._write(context, candidate, estimate, thresholds, now)
+            self._write(context, candidate, estimate, thresholds, now, prices)
             written += 1
 
         if unobserved:
@@ -302,6 +361,75 @@ class WasteComputeCollector:
         # this, and its docstring says so.
         return smaller
 
+    def _priced(
+        self,
+        context: CollectorContext,
+        candidate: Candidate,
+        estimate: Estimate,
+        demand: Demand,
+        points: int,
+    ) -> tuple[Estimate, dict[str, str | None] | None]:
+        """The estimate with a named target and a price difference, or why there is none."""
+        if candidate.instance_type is None:
+            return _unnamed(estimate, "the instance's type is not known"), None
+        tenant, region = context.unit.tenant_id, candidate.region_id
+        version = latest_version(context.connection, tenant, region)
+        if version is None:
+            return _unnamed(estimate, f"the catalog holds no EC2 prices for {region} yet"), None
+        offered = offers(context.connection, tenant, region, version, candidate.operating_system)
+        current = offered.get(candidate.instance_type)
+        if current is None:
+            reason = f"the catalog does not describe {candidate.instance_type} in {region}"
+            return _unnamed(estimate, reason), None
+        chosen = choose(current, list(offered.values()), demand)
+        if isinstance(chosen, str):
+            return replace(
+                estimate,
+                is_worth_acting_on=False,
+                monthly_saving=Decimal(0),
+                reason=f"{estimate.reason}. No target: {chosen}",
+            ), None
+        return self._quoted(candidate, estimate, current, chosen, version, points)
+
+    def _quoted(
+        self,
+        candidate: Candidate,
+        estimate: Estimate,
+        current: TypeOffer,
+        chosen: Target,
+        version: str,
+        points: int,
+    ) -> tuple[Estimate, dict[str, str | None] | None]:
+        target, current_hourly = chosen.offer, current.hourly_price
+        if current_hourly is None or target.hourly_price is None:
+            return _unnamed(estimate, "the catalog holds no price for the pair"), None
+        money = saving(
+            current_hourly=current_hourly,
+            target_hourly=target.hourly_price,
+            hours=hours_per_month(points, candidate.observation_days),
+            paid_monthly=candidate.monthly_cost,
+        )
+        sentence = (
+            f"{estimate.reason}. Move {candidate.instance_type} to {target.instance_type}: "
+            f"{current_hourly} to {target.hourly_price} USD an hour at list, for "
+            f"{money.hours_per_month:.0f} hours a month, saves {money.at_list} USD a month at "
+            f"list and {money.as_paid} as the bill pays (modelled), price list version {version}"
+            + "".join(f". {note[0].upper()}{note[1:]}" for note in chosen.notes)
+        )
+        if money.as_paid < FLOOR_USD:
+            return replace(
+                estimate,
+                is_worth_acting_on=False,
+                monthly_saving=Decimal(0),
+                reason=f"{sentence}. {money.as_paid} is under the {FLOOR_USD} floor",
+            ), None
+        return replace(estimate, monthly_saving=money.as_paid, reason=sentence), {
+            "current": current.sku_price_id,
+            "target_type": target.instance_type,
+            "target": target.sku_price_id,
+            "version": version,
+        }
+
     def _write_refusal(
         self,
         context: CollectorContext,
@@ -340,6 +468,7 @@ class WasteComputeCollector:
         estimate: Estimate,
         thresholds: Any,
         now: datetime,
+        prices: Mapping[str, str | None] | None = None,
     ) -> None:
         target = candidate.scaling_group or candidate.resource_id
         reference = f"meter:{target}:{estimate.waste_class.value}"
@@ -360,6 +489,11 @@ class WasteComputeCollector:
                 "days": candidate.observation_days,
                 "rationale": estimate.reason,
                 "now": now,
+                # Every run says what it chose, so a target that stopped fitting is cleared.
+                "current": (prices or {}).get("current"),
+                "target_type": (prices or {}).get("target_type"),
+                "target": (prices or {}).get("target"),
+                "version": (prices or {}).get("version"),
             },
         )
         context.connection.execute(
@@ -373,3 +507,36 @@ class WasteComputeCollector:
                 "now": now,
             },
         )
+
+
+def _unnamed(estimate: Estimate, why: str) -> Estimate:
+    """The estimate as it stood, saying why it names no target."""
+    return replace(
+        estimate,
+        reason=f"{estimate.reason}. No target is named because {why}, so the saving is the "
+        "unused share of the bill rather than a price difference",
+    )
+
+
+def _p99_rate(
+    series: Mapping[str, Sequence[MetricPoint]],
+    prefix: str,
+    metrics: Sequence[str],
+    candidate: Candidate,
+    unit: Decimal,
+) -> Decimal | None:
+    """The 99th percentile of bits a second across `metrics` together, or None if unobserved.
+
+    Each point is the bytes moved in its hour; in and out, or read and write, are summed per
+    hour before the percentile, because a baseline bounds the two together.
+    """
+    streams = [series.get(f"{prefix}{metric}:{candidate.resource_id}") for metric in metrics]
+    if any(stream is None for stream in streams):
+        return None
+    hourly: dict[datetime, Decimal] = {}
+    for stream in streams:
+        for point in stream or ():
+            hourly[point.at] = hourly.get(point.at, Decimal(0)) + point.value
+    if not hourly:
+        return None
+    return percentile([value * 8 / SECONDS_PER_HOUR / unit for value in hourly.values()], 99)

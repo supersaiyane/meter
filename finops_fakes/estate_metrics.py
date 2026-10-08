@@ -170,6 +170,8 @@ class EstateCandidate:
     #: None where the instance is not burstable, which is not the same as a
     #: burstable one whose credits have run out.
     credit_balance: Decimal | None
+    #: The type it runs as, which a rightsizing names its target against. TASK-P9-007.
+    instance_type: str | None = None
 
 
 #: The estate kinds P3's per instance CPU rule may look at. Scaling groups are
@@ -215,9 +217,16 @@ def ec2_candidates(*, at: datetime = fixtures.AS_OF) -> tuple[EstateCandidate, .
                 observation_days=max(days, 0),
                 monthly_cost=monthly_cost(spec),
                 credit_balance=_credits(spec, window_end, at),
+                instance_type=_type_of(spec),
             )
         )
     return tuple(found)
+
+
+def _type_of(spec: utilization.Spec) -> str | None:
+    """The instance type the estate configured, or None where it names none."""
+    value = spec.config.get("instance_type")
+    return value if isinstance(value, str) else None
 
 
 def _credits(spec: utilization.Spec, window_end: datetime, at: datetime) -> Decimal | None:

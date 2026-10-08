@@ -25,8 +25,9 @@ account that timed out keeps its findings rather than seeing them dismissed.
 option is priced at the catalog's newest EC2 version for its Region, at the Linux on
 demand comparable price, or kept with the reason it could not be. The recommendation's
 current and target prices are set from that same version, so a saving is only ever
-the difference of two prices that exist together. The operating system is Linux until
-the instance's own is read from its bill line, which TASK-P9-007 does.
+the difference of two prices that exist together. Compute Optimizer names no operating
+system, so its options are quoted at Linux; Meter's own targets are quoted at the
+operating system the candidate carries, TASK-P9-007.
 """
 
 from __future__ import annotations
@@ -40,6 +41,7 @@ from sqlalchemy import text
 
 from finops_core.domain.waste import Lifecycle, RankedOption, Recommendation, ScopedFindings, Source
 from finops_core.errors import CollectionError, NotOptedIn
+from finops_ingest.collectors.catalog_reads import latest_version, price_of
 from finops_ingest.collectors.price_catalog import refuse
 from finops_ingest.registry import CollectorContext, CollectorOutcome
 
@@ -133,27 +135,6 @@ WITHDRAW_EVENT = text(
 )
 
 
-#: The newest EC2 price list version the catalog holds for a Region.
-LATEST_VERSION = text(
-    "SELECT version FROM price_list_version WHERE tenant_id = :t AND service_code = 'AmazonEC2' "
-    "AND region = :r ORDER BY as_of DESC LIMIT 1"
-)
-#: A type's comparable on demand price in one version: Linux, shared tenancy, used capacity,
-#: nothing preinstalled, no licence, and not an Extended Support surcharge, FEAT-071.
-PRICE_OF = text(
-    "SELECT sku_price_id, recurring_unit_price FROM price "
-    "WHERE tenant_id = :t AND service_code = 'AmazonEC2' AND region = :r AND version = :v "
-    "AND pricing_category = 'Standard' AND pricing_unit = 'Hrs' "
-    "AND sku_price_details ->> 'instanceType' = :type "
-    "AND sku_price_details ->> 'operatingSystem' = 'Linux' "
-    "AND coalesce(sku_price_details ->> 'tenancy', 'Shared') = 'Shared' "
-    "AND coalesce(sku_price_details ->> 'capacitystatus', 'Used') = 'Used' "
-    "AND coalesce(sku_price_details ->> 'preInstalledSw', 'NA') = 'NA' "
-    "AND coalesce(sku_price_details ->> 'licenseModel', 'No License required') "
-    "= 'No License required' "
-    "AND (sku_price_details ->> 'extendedSupport') IS NULL "
-    "ORDER BY sku_price_id LIMIT 1"
-)
 CLEAR_OPTIONS = text(
     "DELETE FROM recommendation_option WHERE tenant_id = :t AND recommendation_id = :id"
 )
@@ -271,16 +252,13 @@ class RecommendationCollector:
         """Replace a recommendation's options, each priced from one catalog version or not."""
         tenant, region = context.unit.tenant_id, item.region_id
         connection = context.connection
-        version = connection.execute(LATEST_VERSION, {"t": tenant, "r": region}).scalar()
+        version = latest_version(connection, tenant, region)
         connection.execute(CLEAR_OPTIONS, {"t": tenant, "id": recommendation_id})
 
         def priced(instance_type: str | None) -> tuple[str, object] | None:
             if version is None or not instance_type:
                 return None
-            row = connection.execute(
-                PRICE_OF, {"t": tenant, "r": region, "v": version, "type": instance_type}
-            ).first()
-            return None if row is None else (str(row[0]), row[1])
+            return price_of(connection, tenant, region, version, instance_type)
 
         prices: dict[int, tuple[str, object] | None] = {}
         for option in item.options:
