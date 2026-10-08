@@ -58,6 +58,10 @@ EXPECTED_PORTS = {
     "SavingsPlansRates",
     # P9, TASK-P9-013. Spot price readings, through the relay into every Region.
     "SpotPrices",
+    # P11, TASK-P11-001. Where an estate names a resource's owners beyond its tags: the service
+    # catalogue and who created it, read from different places and failing apart.
+    "ServiceCatalogue",
+    "ResourceCreators",
 }
 
 FORBIDDEN_IMPORTS = {"boto3", "botocore", "fastapi", "sqlalchemy", "httpx", "requests"}
@@ -80,9 +84,9 @@ def port_methods(port: type) -> list[tuple[str, object]]:
 # --- shape -------------------------------------------------------------------
 
 
-def test_there_are_exactly_seventeen_ports() -> None:
+def test_there_are_exactly_nineteen_ports() -> None:
     """The provider ports, the three P2 surface ports, the P7 model port, the four P9 catalog
-    ports.
+    ports and the two P11 ownership ports.
 
     `__all__` also carries the two grouping tuples, so the comparison is against
     the protocols rather than against every name the package exports. Adding a
@@ -94,7 +98,7 @@ def test_there_are_exactly_seventeen_ports() -> None:
     assert exported == EXPECTED_PORTS
 
 
-def test_the_four_groups_together_are_every_port() -> None:
+def test_the_five_groups_together_are_every_port() -> None:
     """The groups exist so a test can ask for provider ports without filtering
     by hand, and a port left out of all of them would be invisible to every
     caller that uses them."""
@@ -105,6 +109,7 @@ def test_the_four_groups_together_are_every_port() -> None:
             *ports.SURFACE_PORTS,
             *ports.MODEL_PORTS,
             *ports.CATALOG_PORTS,
+            *ports.OWNERSHIP_PORTS,
         )
     }
 
@@ -113,6 +118,7 @@ def test_the_four_groups_together_are_every_port() -> None:
     assert len(ports.SURFACE_PORTS) == 3
     assert len(ports.MODEL_PORTS) == 1
     assert len(ports.CATALOG_PORTS) == 4
+    assert len(ports.OWNERSHIP_PORTS) == 2
 
 
 def test_all_ports_are_protocols() -> None:

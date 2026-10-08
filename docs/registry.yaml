@@ -100,8 +100,8 @@ subprojects:
   depends_on: P1
 - id: P11
   name: Owners and a savings ledger
-  status: Specified and planned 2026-10-08, waiting for the owner's approval to build. Chosen by the owner
-    on 2026-10-08 as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
+  status: Approved by the owner on 2026-10-08 with OPEN-25 to OPEN-27 as recommended, in build, TASK-P11-001
+    done. Chosen as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
     AppRegistry and CloudTrail as suggestions beside the assigned owner, and a ledger crediting each
     verified saving to its owner and team for every month the bill shows it held
   spec: specs/2026-10-08-p11-owners-and-savings-ledger-design.md
@@ -573,7 +573,7 @@ features:
 - id: FEAT-077
   name: Owners from tags, the service catalogue and CloudTrail
   subproject: P11
-  status: Planned
+  status: In build
   detail: '[P11 spec](docs/specs/2026-10-08-p11-owners-and-savings-ledger-design.md) sections 5.1 to 5.4, [P11 plan](docs/plans/P11-implementation-plan.md)'
   doc: docs/features/FEAT-077-owners-from-tags-catalogue-and-cloudtrail.md
 - id: FEAT-078
@@ -2167,6 +2167,17 @@ changes:
     tasks, about eight and a half working days (modelled). OPEN-25 to OPEN-27 put the catalogue, the
     CloudTrail store and whether individuals are ranked, each with its recommendation. Waiting for the
     owner''s approval to build'
+- id: CHG-0148
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P11-001, owner sources as ports and the fake estate's owners, with P11 approved
+  commit: pending
+  detail: 'The owner approved P11 on 2026-10-08 with OPEN-25 to OPEN-27 as recommended: AWS AppRegistry,
+    CloudTrail''s event history, teams only. finops_core gains OwnerSuggestion, CatalogueEntry, Creator and
+    BeforeHistory with their invariants, and the ServiceCatalogue and ResourceCreators ports as a fifth
+    group; the fakes plant an application owner, an application naming nobody, a person and a pipeline as
+    creators and resources older than the 90 day record in fake-product-b, and the estate carries an owner
+    under a second tag key. A contract test holds every implementation to them'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4878,18 +4889,18 @@ open_questions:
     rather than invent a nought that would read as no risk. The cost is a write per targeted finding.
     Reversing it is storing the demand on the recommendation instead; the owner may say so.'
 - id: OPEN-25
-  question: Which service catalogue names owners, AWS AppRegistry, a Backstage catalogue, or a list kept in
-    Meter?
-  status: OPEN
+  question: 'Which service catalogue names owners, AWS AppRegistry, a Backstage catalogue, or a list kept in
+    Meter? ANSWERED 2026-10-08 as recommended: AWS AppRegistry'
+  status: ANSWERED
   blocks: TASK-P11-003
   detail: 'Raised 2026-10-08 by the P11 spec, section 5.3. Recommended: AWS AppRegistry, the store behind
     myApplications, read only through four calls in the botocore 1.43.108 model, the owner read from the
     application''s attribute group under a configurable key. Backstage waits on OPEN-13, the code host;
     a list kept in Meter would be a second source of truth.'
 - id: OPEN-26
-  question: Are creators read from CloudTrail's event history, or from CloudTrail Lake or the organization
-    trail through Athena?
-  status: OPEN
+  question: 'Are creators read from CloudTrail''s event history, or from CloudTrail Lake or the organization
+    trail through Athena? ANSWERED 2026-10-08 as recommended: the event history'
+  status: ANSWERED
   blocks: TASK-P11-004
   detail: 'Raised 2026-10-08 by the P11 spec, section 5.4. Recommended: the event history through
     LookupEvents by resource name, which needs no new infrastructure and reuses the paging the query
@@ -4897,8 +4908,9 @@ open_questions:
     organization trail reach further back and need infrastructure no account has yet, ISS-122, and either
     can replace the adapter behind the same port.'
 - id: OPEN-27
-  question: May the savings ledger rank individual engineers, or teams only?
-  status: OPEN
+  question: 'May the savings ledger rank individual engineers, or teams only? ANSWERED 2026-10-08 as
+    recommended: teams only'
+  status: ANSWERED
   blocks: TASK-P11-008
   detail: 'Raised 2026-10-08 by the P11 spec, section 5.6. Recommended: teams only, a person named only as
     the owner on a team''s credits, because a leaderboard of named engineers is a performance review

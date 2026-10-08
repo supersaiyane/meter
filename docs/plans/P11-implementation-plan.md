@@ -1,7 +1,7 @@
 # P11 Owners and a savings ledger: implementation plan
 
 Date: 2026-10-08
-Status: Planned 2026-10-08, waiting for the owner's approval to build. Chosen by the owner on 2026-10-08 as the next priority, proposal 3 of `next-in-scope.txt`, OPEN-20
+Status: Approved by the owner on 2026-10-08 with OPEN-25 to OPEN-27 as recommended, in build. Chosen as the next priority, proposal 3 of `next-in-scope.txt`, OPEN-20
 Spec: `docs/specs/2026-10-08-p11-owners-and-savings-ledger-design.md`
 Depends on: P3 and P4 delivered. Proof against a real estate waits on ISS-002
 Tasks: 9
@@ -43,7 +43,7 @@ days.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | Spec sections 5.1 to 5.4 |
 | Delivers | `finops_core` types and ports, `finops_fakes` |
 | Depends on | This plan approved |
@@ -51,12 +51,12 @@ days.
 
 **Acceptance criteria.**
 
-- [ ] `OwnerSuggestion`, its source and kind, and the order of section 5.1, in `finops_core`,
+- [x] `OwnerSuggestion`, its source and kind, and the order of section 5.1, in `finops_core`,
       with no cloud SDK, constraint 1
-- [ ] `ServiceCatalogue` and `ResourceCreators` ports, and fakes that plant: a resource tagged
+- [x] `ServiceCatalogue` and `ResourceCreators` ports, and fakes that plant: a resource tagged
       under a second key, one in an application with an owner, one created by a person, one by
       a pipeline's role, and one created before CloudTrail's window
-- [ ] Contract tests every fake and adapter is held to
+- [x] Contract tests every fake and adapter is held to
 
 ---
 

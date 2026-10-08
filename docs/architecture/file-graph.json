@@ -381,6 +381,7 @@
     "finops_core/domain/metrics.py",
     "finops_core/domain/observation.py",
     "finops_core/domain/org.py",
+    "finops_core/domain/ownership.py",
     "finops_core/domain/platform.py",
     "finops_core/domain/query.py",
     "finops_core/domain/quota.py",
@@ -406,6 +407,7 @@
     "finops_core/ports/invoice.py",
     "finops_core/ports/llm.py",
     "finops_core/ports/metrics.py",
+    "finops_core/ports/ownership.py",
     "finops_core/ports/pull_requests.py",
     "finops_core/ports/query.py",
     "finops_core/ports/quotas.py",
@@ -426,6 +428,7 @@
     "finops_fakes/health.py",
     "finops_fakes/invoices.py",
     "finops_fakes/llm.py",
+    "finops_fakes/ownership.py",
     "finops_fakes/planted.py",
     "finops_fakes/platform_cost.py",
     "finops_fakes/prices.py",
@@ -706,6 +709,7 @@
     "tests/contract/test_network_paths.py",
     "tests/contract/test_no_llm_writes.py",
     "tests/contract/test_no_quota_writes.py",
+    "tests/contract/test_ownership_contract.py",
     "tests/contract/test_partial_graph_consumers.py",
     "tests/contract/test_quota_source.py",
     "tests/contract/test_topology_source.py",
@@ -723,6 +727,7 @@
     "tests/core/test_insight.py",
     "tests/core/test_invoice.py",
     "tests/core/test_llm_port.py",
+    "tests/core/test_ownership_domain.py",
     "tests/core/test_ports.py",
     "tests/core/test_quota.py",
     "tests/core/test_reconciliation.py",
@@ -8719,6 +8724,16 @@
       "k": "python"
     },
     {
+      "s": "finops_core/domain/ownership.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/ownership.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/domain/platform.py",
       "t": "finops_core/domain/fact.py",
       "k": "python"
@@ -8830,6 +8845,11 @@
     },
     {
       "s": "finops_core/ports/__init__.py",
+      "t": "finops_core/ports/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/__init__.py",
       "t": "finops_core/ports/query.py",
       "k": "python"
     },
@@ -8921,6 +8941,16 @@
     {
       "s": "finops_core/ports/metrics.py",
       "t": "finops_core/domain/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/ownership.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/ownership.py",
+      "t": "finops_core/domain/ownership.py",
       "k": "python"
     },
     {
@@ -9116,6 +9146,21 @@
     {
       "s": "finops_fakes/llm.py",
       "t": "finops_core/ports/llm.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/ownership.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/ownership.py",
+      "t": "finops_core/domain/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/ownership.py",
+      "t": "finops_core/errors.py",
       "k": "python"
     },
     {
@@ -12144,6 +12189,26 @@
       "k": "python"
     },
     {
+      "s": "tests/contract/test_ownership_contract.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_ownership_contract.py",
+      "t": "finops_core/domain/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_ownership_contract.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/contract/test_ownership_contract.py",
+      "t": "finops_core/ports/__init__.py",
+      "k": "python"
+    },
+    {
       "s": "tests/contract/test_partial_graph_consumers.py",
       "t": "finops_api/routes/__init__.py",
       "k": "python"
@@ -12331,6 +12396,16 @@
     {
       "s": "tests/core/test_llm_port.py",
       "t": "finops_core/ports/llm.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_ownership_domain.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_ownership_domain.py",
+      "t": "finops_core/domain/ownership.py",
       "k": "python"
     },
     {

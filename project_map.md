@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 31 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 40 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 216 | test_*.py under tests/ |
-| Test functions | 2813 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 218 | test_*.py under tests/ |
+| Test functions | 2829 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -431,6 +431,9 @@ meter/
 │       ├── catalog.py         Price, PriceListVersion and InstanceTypeSpec, P9. A
 │       │                      price is one offer term, its recurring price and its
 │       │                      upfront fee; a term nought in both is refused
+│       ├── ownership.py       OwnerSuggestion, CatalogueEntry, Creator and
+│       │                      BeforeHistory, P11. A suggestion says its source,
+│       │                      and a tag is a team, a creator never one
 │       ├── cost.py            CostRecord, FOCUS 1.4 names, Decimal money.
 │       │                      Also CommitmentUse and CommitmentCoverage, kept
 │       │                      apart for the reason the port keeps its methods
@@ -472,6 +475,7 @@ meter/
 │       ├── budget.py          BudgetSource, the payer's budgets
 │       ├── catalog.py         PriceCatalog and InstanceCatalog, CATALOG_PORTS, P9
 │       ├── invoice.py         InvoiceSource, the payer's invoices, FEAT-076
+│       ├── ownership.py       ServiceCatalogue and ResourceCreators, OWNERSHIP_PORTS, P11
 │       ├── cloudwatch_estate.py
 │       │                      CloudWatchEstate, what CloudWatch holds rather than
 │       │                      the values in it. A fake and no adapter, ISS-240
@@ -1077,6 +1081,9 @@ meter/
 │   ├── catalog.py         AWS's price list and instance types for the estate:
 │   │                      structure from the real extracts, prices from the
 │   │                      estate's own table, so a saving and the bill agree
+│   ├── ownership.py       owners beyond the tags, planted in fake-product-b:
+│   │                      an application owner, a person and a pipeline as
+│   │                      creators, and resources older than the 90 day record
 │   ├── invoices.py        the payer's invoices, built from the rows of the bill:
 │   │                      the newest closed period matches, the oldest is 2.50
 │   │                      over beside a Marketplace invoice, the running month

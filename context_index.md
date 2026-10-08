@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-1020 public symbols across 5 packages.
+1031 public symbols across 5 packages.
 
 ## finops_core
 
@@ -133,6 +133,13 @@ a duplicate.
 | `MetricPoint` | class | `finops_core/domain/metrics.py:20` | One statistic of one metric, at one instant, for one account. | `finops_providers/aws/waste.py` |
 | `OrgNodeType` | class | `finops_core/domain/org.py:18` |  | `finops_ingest/collectors/org_tree.py` |
 | `OrgNode` | class | `finops_core/domain/org.py:25` | One node of the organization tree at `as_of`. | `finops_providers/aws/accounts.py` |
+| `OwnerSource` | class | `finops_core/domain/ownership.py:31` | Where a suggested owner came from. | nothing in this tree |
+| `OwnerKind` | class | `finops_core/domain/ownership.py:43` | What a suggested owner is, which decides whether a person can be asked. | nothing in this tree |
+| `OwnerSuggestion` | class | `finops_core/domain/ownership.py:65` | One source's answer to who owns a resource. | nothing in this tree |
+| `strongest_first` | function | `finops_core/domain/ownership.py:88` | The suggestions in the order of spec section 5.1, a source's own order kept within it. | nothing in this tree |
+| `CatalogueEntry` | class | `finops_core/domain/ownership.py:94` | A resource an application is associated with, and the owner the application names. | nothing in this tree |
+| `Creator` | class | `finops_core/domain/ownership.py:114` | The principal of the event that created a resource. | nothing in this tree |
+| `BeforeHistory` | class | `finops_core/domain/ownership.py:137` | A resource created before the event history begins, so its creator cannot be read. | nothing in this tree |
 | `PlatformCost` | class | `finops_core/domain/platform.py:26` | One day of one module's spend on one service. | nothing in this tree |
 | `SurfaceKind` | class | `finops_core/domain/query.py:28` | What kind of tool holds the queries. | nothing in this tree |
 | `QueryOrigin` | class | `finops_core/domain/query.py:45` | Why the query runs, which decides how often it runs. | nothing in this tree |
@@ -266,6 +273,10 @@ a duplicate.
 | `MetricSource` | class | `finops_core/ports/metrics.py:45` | Reads observed values for a resource over a window. | nothing in this tree |
 | `MetricSource.read_series` | method | `finops_core/ports/metrics.py:48` | Every point for the metric over the window. | nothing in this tree |
 | `MetricSource.read_many` | method | `finops_core/ports/metrics.py:73` | Every point for many series, keyed by each request's own `key`. | `finops_ingest/collectors/waste_compute.py`, `finops_ingest/collectors/waste_parking.py` |
+| `ServiceCatalogue` | class | `finops_core/ports/ownership.py:20` | The applications an account declares, the resources in each, and who owns each one. | nothing in this tree |
+| `ServiceCatalogue.entries` | method | `finops_core/ports/ownership.py:23` | Every resource an application in this account and Region is associated with. | nothing in this tree |
+| `ResourceCreators` | class | `finops_core/ports/ownership.py:40` | Who created a resource, from the provider's record of the event that did. | nothing in this tree |
+| `ResourceCreators.creator` | method | `finops_core/ports/ownership.py:43` | The principal that created the resource, or that it predates the record. | nothing in this tree |
 | `FileChange` | class | `finops_core/ports/pull_requests.py:21` | One file the pull request adds, at a path relative to the repository root. | nothing in this tree |
 | `PullRequestDraft` | class | `finops_core/ports/pull_requests.py:29` | A pull request, written in full before anything is sent anywhere. | nothing in this tree |
 | `PullRequestSink` | class | `finops_core/ports/pull_requests.py:42` | A code host where a person reviews a change before anything happens. | nothing in this tree |
@@ -1126,12 +1137,12 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `Failure.from_error` in `finops_core/domain/insight.py:332`
 - `BillingPeriodStatus` in `finops_core/domain/invoice.py:39`
 - `Invoice.invoice_detail_id` in `finops_core/domain/invoice.py:77`
+- `OwnerSource` in `finops_core/domain/ownership.py:31`
+- `OwnerKind` in `finops_core/domain/ownership.py:43`
+- `OwnerSuggestion` in `finops_core/domain/ownership.py:65`
+- `strongest_first` in `finops_core/domain/ownership.py:88`
+- `CatalogueEntry` in `finops_core/domain/ownership.py:94`
+- `Creator` in `finops_core/domain/ownership.py:114`
+- `BeforeHistory` in `finops_core/domain/ownership.py:137`
 - `PlatformCost` in `finops_core/domain/platform.py:26`
 - `SurfaceKind` in `finops_core/domain/query.py:28`
-- `QueryOrigin` in `finops_core/domain/query.py:45`
-- `ControlAction` in `finops_core/domain/query.py:62`
-- `ControlRequest` in `finops_core/domain/query.py:208`
-- `UsageSource` in `finops_core/domain/quota.py:38`
-- `QuotaUsage.headroom` in `finops_core/domain/quota.py:134`
-- `QuotaUsage.is_measurable` in `finops_core/domain/quota.py:152`
-- `ReconciliationState` in `finops_core/domain/reconciliation.py:26`
