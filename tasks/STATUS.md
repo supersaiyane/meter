@@ -24,9 +24,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 76 total, 11 specified, 17 in build, 45 delivered |
 | Decisions | 35 architecture decision records |
-| Changes | 144 recorded |
+| Changes | 145 recorded |
 | Issues | 156 fixed, 106 open, 0 parked |
-| Open questions | 23 awaiting a decision |
+| Open questions | 24 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
 
@@ -66,8 +66,11 @@ instance under pressure an Upsize of its own kind, an added cost with a saving o
 total of savings falls: the planted c6i.2xlarge grows to c6i.4xlarge. TASK-P9-009 priced a gp2
 volume as the gp3 that does its work, inside the EBS guide's limits read on 2026-10-08: the planted
 1,000 GiB volume saves 15.00 a month (modelled), and the unit of a real gp3 throughput price is
-ISS-265. TASK-P9-010, the routes and the Alternatives table, is next. The repository has no git
-remote, so nothing has been pushed.
+ISS-265. TASK-P9-010 served the catalog as GET /catalog/prices and GET /catalog/instance-types,
+gave every recommendation its target and both list prices, and showed what a rightsizing was
+compared with in an Alternatives table under one finding; Meter's own alternatives are written when
+its rule judges them, with no risk score, OPEN-24. TASK-P9-011, the proof and the documents, is
+next. The repository has no git remote, so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -240,7 +243,7 @@ ISS-003.
 | P6 | 12 | 0 | 0 | 0 | 0 | 12 | [plan](../docs/plans/P6-implementation-plan.md) |
 | P7 | 14 | 0 | 0 | 0 | 0 | 14 | [plan](../docs/plans/P7-implementation-plan.md) |
 | P8 | 18 | 0 | 0 | 0 | 0 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
-| P9 | 11 | 0 | 0 | 0 | 2 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
+| P9 | 12 | 0 | 0 | 0 | 1 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 
 **P0, not in the default state**
@@ -475,6 +478,7 @@ ISS-003.
 | `TASK-P9-007` | Done 2026-10-08 | downsizing to a named, priced target |
 | `TASK-P9-008` | Done 2026-10-08 | upsizing, as an added cost |
 | `TASK-P9-009` | Done 2026-10-08 | gp2 to gp3, priced |
+| `TASK-P9-010` | Done 2026-10-08 | routes and the Alternatives table |
 
 **P10, not in the default state**
 

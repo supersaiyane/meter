@@ -13,6 +13,7 @@ import { Link } from '../shell/links';
 import { useReportMeta } from '../shell/metaRegistry';
 import { RECOMMENDATION_FILTERS } from '../shell/sections';
 import { ALLOCATION_TAG } from './overviewKpis';
+import { RecommendationAlternatives } from './RecommendationAlternatives';
 import { severityLevel } from './querySeverity';
 import { surfaceStateFor } from './surfaceStateFor';
 import type { ApiRecommendation, ApiRefusal } from '../api/types';
@@ -156,6 +157,25 @@ export function WasteScreen() {
       render: (row) => `${wasteClassName(row.waste_class)} ${row.resource_id}`,
     },
     {
+      // TASK-P9-010. The type a rightsizing names, and a way to what it was compared with.
+      key: 'target',
+      header: 'Target',
+      render: (row) =>
+        row.target_instance_type == null ? (
+          'none named'
+        ) : (
+          <span data-testid={`target-${row.recommendation_id}`}>
+            {row.current_instance_type ?? 'its type'} to {row.target_instance_type}
+            {values.finding === '' ? (
+              <>
+                {' '}
+                <Link to={`/optimize?finding=${row.recommendation_id}`}>Alternatives</Link>
+              </>
+            ) : null}
+          </span>
+        ),
+    },
+    {
       key: 'where',
       header: 'Where',
       render: (row) => `${row.account_id} ${row.region_id}`,
@@ -211,6 +231,9 @@ export function WasteScreen() {
   ];
 
   const unowned = found?.unowned ?? 0;
+  // One finding named by a link, with a target: the recommendation's own view, and the place
+  // its Alternatives table belongs. TASK-P9-010.
+  const one = values.finding !== '' && rows.length === 1 ? rows[0] : undefined;
 
   return (
     <section aria-label="Recommendations">
@@ -259,6 +282,10 @@ export function WasteScreen() {
           }, biggest saving first`}
         />
       </StateBoundary>
+
+      {one?.target_instance_type == null ? null : (
+        <RecommendationAlternatives recommendationId={one.recommendation_id} />
+      )}
 
       {/* What the rules looked at and declined. ADR-0027: Meter cannot honestly say a
           workload is starved, because it cannot verify a performance finding and verification

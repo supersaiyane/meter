@@ -5,7 +5,7 @@
 | Sub project | P9 |
 | Status | In build |
 | Specification | [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.2, 5.3, 7 and 14 |
-| Tasks | TASK-P9-004, on demand and reserved, TASK-P9-012, Savings Plans rates, and TASK-P9-013, spot, done 2026-10-08. TASK-P9-010 serves it as `GET /catalog/prices` |
+| Tasks | TASK-P9-004, on demand and reserved, TASK-P9-012, Savings Plans rates, and TASK-P9-013, spot, done 2026-10-08. TASK-P9-010 serves it as `GET /catalog/prices`, done 2026-10-08 |
 | Refresh cadence | Every 8 hours, the catalog collectors, each loading only what AWS has published since the last run |
 
 ## What it does
@@ -131,7 +131,10 @@ recorded in migration 0033.
 
 ## Interface
 
-No route yet; TASK-P9-010 serves the catalog as `GET /catalog/prices`. The collectors write
+`GET /catalog/prices`, TASK-P9-010, filtered by service, Region, SKU, instance type, pricing
+category and version, each Region's newest version unless one is named. Every row carries its
+version, `as_of` and `collected_at`; the envelope counts coverage in Regions, because the catalog
+is about no account, and the route is exportable. The collectors write
 `price_list_version` and `price`, migration 0033, and `sync_error`. The `PriceCatalog`,
 `SavingsPlansRates` and `SpotPrices` ports, `finops_core/ports/catalog.py`, are held by
 `tests/contract/test_catalog_contract.py` to the same assertions for each fake and each adapter over

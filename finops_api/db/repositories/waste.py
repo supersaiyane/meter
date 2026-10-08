@@ -11,13 +11,16 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any, ClassVar
 
-from sqlalchemy import Row, ScalarSelect, Select, Table, func, select
+from sqlalchemy import ColumnElement, Row, ScalarSelect, Select, Table, and_, func, select
 
 from finops_api.db import models
 from finops_api.db.repositories.base import ScopedRepository
 from finops_api.guards import scope_predicate
 from finops_core.constants import TEAM_TAG
 from finops_core.domain.tenant import Scope
+
+#: The service an option is an instance type of.
+EC2 = "AmazonEC2"
 
 
 def _fetch(
@@ -92,6 +95,37 @@ class RecommendationRepository(ScopedRepository):
             .scalar_subquery()
         )
 
+    def _priced(self, scope: Scope) -> list[Any]:
+        """Both prices an hour at list and the current type, from the recommendation's own price
+        list version. TASK-P9-010.
+
+        Read through the price table's own scope rule, the tenant's, and keyed as the composite
+        foreign key keys them, tenant, Region, price id and version, so the price shown is the one
+        the saving was worked out from and never a newer one.
+        """
+        price = models.price
+
+        def of(sku: ColumnElement[Any], value: ColumnElement[Any]) -> ScalarSelect[Any]:
+            return (
+                select(value)
+                .where(price.c.tenant_id == self.table.c.tenant_id)
+                .where(price.c.region == self.table.c.region_id)
+                .where(price.c.version == self.table.c.price_version)
+                .where(price.c.sku_price_id == sku)
+                .where(scope_predicate(price, scope))
+                .correlate(self.table)
+                .scalar_subquery()
+            )
+
+        current, target = self.table.c.current_sku_price_id, self.table.c.target_sku_price_id
+        return [
+            of(current, price.c.recurring_unit_price).label("current_hourly_price"),
+            of(target, price.c.recurring_unit_price).label("target_hourly_price"),
+            of(current, price.c.sku_price_details["instanceType"].astext).label(
+                "current_instance_type"
+            ),
+        ]
+
     def worst_first(
         self,
         scope: Scope,
@@ -108,7 +142,7 @@ class RecommendationRepository(ScopedRepository):
         thousand, and only one of those is worth a morning.
         """
         statement = self.scoped_select(scope).add_columns(
-            self._suggested_owner(scope).label("suggested_owner")
+            self._suggested_owner(scope).label("suggested_owner"), *self._priced(scope)
         )
         if lifecycle is not None:
             statement = statement.where(self.table.c.lifecycle == lifecycle)
@@ -127,7 +161,9 @@ class RecommendationRepository(ScopedRepository):
             self,
             scope,
             self.scoped_select(scope)
-            .add_columns(self._suggested_owner(scope).label("suggested_owner"))
+            .add_columns(
+                self._suggested_owner(scope).label("suggested_owner"), *self._priced(scope)
+            )
             .where(self.table.c.recommendation_id == recommendation_id),
         )
         return rows[0] if rows else None
@@ -158,6 +194,40 @@ class RecommendationRepository(ScopedRepository):
         )
         rows = _fetch(self, scope, statement)
         return int(rows[0][0] or 0) if rows else 0
+
+
+class RecommendationOptionRepository(ScopedRepository):
+    """What a rightsizing was compared with, by its source's rank. TASK-P9-010.
+
+    Scoped through its recommendation, as the guard says, so a reader who may not see a finding
+    cannot see what it was compared with.
+    """
+
+    table: ClassVar[Table] = models.recommendation_option
+    resource: ClassVar[str] = "recommendation_option"
+
+    def ranked(self, scope: Scope, recommendation_id: Any) -> Sequence[Row[*tuple[Any, ...]]]:
+        """The options by rank, each sized from the catalog's description of it in its Region.
+
+        A type the catalog does not describe there keeps its row, with its size null, rather than
+        being dropped: the option was offered whether or not the catalog has caught up.
+        """
+        spec = models.instance_type_spec
+        described = and_(
+            spec.c.tenant_id == self.table.c.tenant_id,
+            spec.c.service_code == EC2,
+            spec.c.region == self.table.c.region,
+            spec.c.instance_type == self.table.c.instance_type,
+            scope_predicate(spec, scope),
+        )
+        statement = (
+            self.scoped_select(scope)
+            .outerjoin(spec, described)
+            .add_columns(spec.c.vcpus, spec.c.memory_mib, spec.c.network_baseline_gbps)
+            .where(self.table.c.recommendation_id == recommendation_id)
+            .order_by(self.table.c.rank)
+        )
+        return _fetch(self, scope, statement)
 
 
 class RecommendationEventRepository(ScopedRepository):

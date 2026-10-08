@@ -615,6 +615,50 @@ export interface ApiRecommendation {
   readonly is_no_regret: boolean;
   /** The sentence. A flag with no sentence behind it is one a reader cannot argue with. */
   readonly risk_why: string;
+  /**
+   * TASK-P9-010. The type a rightsizing moves from and to, both list prices an hour from one
+   * price list version, and what an Upsize adds a month, modelled. Null where the finding names
+   * no target. The saving above is the price difference already scaled to the bill.
+   */
+  readonly current_instance_type?: string | null;
+  readonly target_instance_type?: string | null;
+  readonly current_hourly_price?: string | null;
+  readonly target_hourly_price?: string | null;
+  readonly price_version?: string | null;
+  readonly added_monthly_cost?: string | null;
+}
+
+/**
+ * One type a rightsizing could move to, TASK-P9-010, as its source ranked it: Compute
+ * Optimizer's options with its performance risk, or the types Meter's rule found to fit, which
+ * carry none. Every price is list and every saving modelled.
+ */
+export interface ApiAlternative {
+  readonly rank: number;
+  readonly instance_type: string;
+  /** The one the recommendation names. The server puts it first. */
+  readonly chosen: boolean;
+  /** Null where the catalog does not describe the type in this Region. */
+  readonly vcpus: number | null;
+  readonly memory_mib: number | null;
+  readonly network_baseline_gbps: string | null;
+  readonly hourly_price: string | null;
+  readonly monthly_price: string | null;
+  /** The current type's monthly list price less this one's. Negative for a larger type. */
+  readonly monthly_saving: string | null;
+  /** Compute Optimizer's 0 to 4. Null where the source gives none, which is not nought. */
+  readonly performance_risk: string | null;
+  readonly platform_differences: readonly string[];
+  /** Why no price is shown, where none is. */
+  readonly unpriced_reason: string | null;
+}
+
+export interface ApiAlternatives {
+  readonly recommendation_id: string;
+  readonly current_instance_type: string | null;
+  readonly current_hourly_price: string | null;
+  readonly price_version: string | null;
+  readonly alternatives: readonly ApiAlternative[];
 }
 
 export interface ApiRecommendations {

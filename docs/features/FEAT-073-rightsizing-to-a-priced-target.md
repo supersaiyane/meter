@@ -5,7 +5,7 @@
 | Sub project | P9 |
 | Status | In build |
 | Specification | [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.5 to 5.7 |
-| Tasks | TASK-P9-006, Compute Optimizer's targets kept and priced, TASK-P9-007, Meter's own downsizing target, and TASK-P9-008, the Upsize, done 2026-10-08. TASK-P9-010 adds the Alternatives table |
+| Tasks | TASK-P9-006, Compute Optimizer's targets kept and priced, TASK-P9-007, Meter's own downsizing target, and TASK-P9-008, the Upsize, and TASK-P9-010, the Alternatives table, done 2026-10-08 |
 
 ## What it does
 
@@ -110,8 +110,17 @@ see a finding cannot see what it was compared with.
 
 ## Interface
 
-No route yet; TASK-P9-010 adds the Alternatives table and the target on the recommendation's
-screen. The collector writes `recommendation_option` and the recommendation's four price columns.
+Every recommendation carries `current_instance_type`, `target_instance_type`, both list prices
+an hour from its `price_version`, and an Upsize's `added_monthly_cost`, TASK-P9-010; its saving is
+the difference already scaled to the bill. `GET /waste/recommendations/{id}/alternatives` lists what
+it was compared with, the chosen type first, each sized from the catalog and priced an hour and a
+month at 730 hours, at list and modelled, or saying why it has no price; it is exportable. The
+recommendations screen names the target in its Target column and shows the Alternatives table under
+one finding. Compute Optimizer's options come from its ranking; Meter's are every type its rule
+found to fit the demand it measured, cheapest first, written by `waste_compute` when it judges
+them, because the demand is not stored and a list worked out later could not say which types fit,
+OPEN-24. They carry no performance risk, which migration 0040 allows rather than inventing a
+nought. The collectors write `recommendation_option` and the recommendation's four price columns.
 `RecommendationSource.compute_optimizer` returns `ScopedFindings`, which iterates as its findings,
 so the fake and any caller that knows nothing of scopes read it as before.
 
@@ -122,8 +131,8 @@ so the fake and any caller that knows nothing of scopes read it as before.
   candidate carries, Linux where the inventory names none.
 - Scaling out an Auto Scaling group instead of growing a type; a group is sized at group level,
   FEAT-047.
-- Writing Meter's alternatives as rows; TASK-P9-010 computes them for the screen from the same
-  rule and the catalog.
+- Listing a type Meter's rule found not to fit as an alternative; the rationale names why the
+  cheaper ones were refused when none fits.
 - Writing to Compute Optimizer: its preferences are asked per request and never stored at AWS,
   constraint 6.
 
@@ -136,8 +145,8 @@ yet, ISS-182.
 
 ## Status of this document
 
-In build. TASK-P9-006 to TASK-P9-008 were built on 2026-10-08; the screen's Alternatives table is
-TASK-P9-010. Specified in the
+In build. TASK-P9-006 to TASK-P9-008 and TASK-P9-010 were built on 2026-10-08; TASK-P9-011 proves
+it end to end. Specified in the
 [P9 spec](../specs/2026-10-05-p9-price-catalog-design.md), sections 5.5 to 5.7, and planned in the
 [P9 plan](../plans/P9-implementation-plan.md).
 

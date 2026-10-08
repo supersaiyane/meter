@@ -65,6 +65,7 @@ from finops_core.domain.waste import Source, WasteClass, confidence_of
 from finops_core.ports.metrics import MetricRequest
 from finops_ingest.collectors import waste_volumes
 from finops_ingest.collectors.catalog_reads import LINUX, latest_version, offers
+from finops_ingest.collectors.recommendations import CLEAR_OPTIONS, WRITE_OPTION
 from finops_ingest.collectors.waste_volumes import VolumeCandidate
 from finops_ingest.registry import CollectorContext, CollectorOutcome
 from finops_query.severity import severity_for, thresholds_from
@@ -74,6 +75,7 @@ from finops_query.targets import (
     TypeOffer,
     added_cost,
     choose,
+    differences,
     grow,
     hours_per_month,
     pressure,
@@ -132,6 +134,17 @@ class Candidate:
     operating_system: str = LINUX
 
 
+@dataclass(frozen=True)
+class Quote:
+    """The prices a named target is quoted from, and every type judged to fit beside it."""
+
+    current: TypeOffer
+    target: TypeOffer
+    version: str
+    #: Cheapest first, the target leading: the alternatives a reader is shown. TASK-P9-010.
+    fitting: tuple[TypeOffer, ...]
+
+
 WRITE = text(
     "INSERT INTO recommendation (recommendation_id, tenant_id, sub_account_id, source, "
     "source_reference, waste_class, resource_id, region_id, estimated_monthly_saving, "
@@ -152,7 +165,8 @@ WRITE = text(
     "rationale = EXCLUDED.rationale, as_of = EXCLUDED.as_of, "
     "collected_at = EXCLUDED.collected_at, "
     "lifecycle = CASE WHEN recommendation.lifecycle IN ('OPEN', 'DISMISSED') "
-    "THEN 'OPEN' ELSE recommendation.lifecycle END"
+    "THEN 'OPEN' ELSE recommendation.lifecycle END "
+    "RETURNING recommendation_id"
 )
 
 FIRST_EVENT = text(
@@ -313,7 +327,7 @@ class WasteComputeCollector:
             estimate = self._judge(candidate, values, peak)
             if estimate is None:
                 continue
-            prices: dict[str, str | None] | None = None
+            quote: Quote | None = None
             if (
                 estimate.is_worth_acting_on
                 and estimate.waste_class is WasteClass.RIGHTSIZE_INSTANCE
@@ -324,7 +338,7 @@ class WasteComputeCollector:
                     network_p99_gbps=_p99_rate(series, NETWORK_KEY, NETWORK, candidate, GIGABIT),
                     ebs_p99_mbps=_p99_rate(series, EBS_KEY, EBS, candidate, MEGABIT),
                 )
-                estimate, prices = self._priced(context, candidate, estimate, demand, len(values))
+                estimate, quote = self._priced(context, candidate, estimate, demand, len(values))
             elif _may_grow(candidate, estimate):
                 demand = Demand(
                     cpu_p99_percent=percentile(values, 99),
@@ -336,14 +350,14 @@ class WasteComputeCollector:
                         percentile([point.value for point in memory], 95) if memory else None
                     ),
                 )
-                estimate, prices = self._grown(context, candidate, estimate, demand, len(values))
+                estimate, quote = self._grown(context, candidate, estimate, demand, len(values))
             if not estimate.is_worth_acting_on:
                 # Examined and cleared. Recorded so a reader can see the rule looked, and
                 # never as a recommendation: it has no saving, and a zero in a list ranked by
                 # money reads as the least valuable action rather than the absence of one.
                 self._write_refusal(context, candidate, estimate, now)
                 continue
-            self._write(context, candidate, estimate, thresholds, now, prices)
+            self._write(context, candidate, estimate, thresholds, now, quote)
             written += 1
 
         volumes_written, volumes_unobserved = self._volume_pass(
@@ -421,7 +435,7 @@ class WasteComputeCollector:
         estimate: Estimate,
         demand: Demand,
         points: int,
-    ) -> tuple[Estimate, dict[str, str | None] | None]:
+    ) -> tuple[Estimate, Quote | None]:
         """The estimate with a named target and a price difference, or why there is none."""
         if candidate.instance_type is None:
             return _unnamed(estimate, "the instance's type is not known"), None
@@ -452,7 +466,7 @@ class WasteComputeCollector:
         chosen: Target,
         version: str,
         points: int,
-    ) -> tuple[Estimate, dict[str, str | None] | None]:
+    ) -> tuple[Estimate, Quote | None]:
         target, current_hourly = chosen.offer, current.hourly_price
         if current_hourly is None or target.hourly_price is None:
             return _unnamed(estimate, "the catalog holds no price for the pair"), None
@@ -476,12 +490,9 @@ class WasteComputeCollector:
                 monthly_saving=Decimal(0),
                 reason=f"{sentence}. {money.as_paid} is under the {FLOOR_USD} floor",
             ), None
-        return replace(estimate, monthly_saving=money.as_paid, reason=sentence), {
-            "current": current.sku_price_id,
-            "target_type": target.instance_type,
-            "target": target.sku_price_id,
-            "version": version,
-        }
+        return replace(estimate, monthly_saving=money.as_paid, reason=sentence), Quote(
+            current, target, version, chosen.fitting or (target,)
+        )
 
     def _grown(
         self,
@@ -490,7 +501,7 @@ class WasteComputeCollector:
         refusal: Estimate,
         demand: Demand,
         points: int,
-    ) -> tuple[Estimate, dict[str, str | None] | None]:
+    ) -> tuple[Estimate, Quote | None]:
         """An Upsize for an instance under pressure, or the refusal it already was."""
         tenant, region = context.unit.tenant_id, candidate.region_id
         version = latest_version(context.connection, tenant, region)
@@ -541,12 +552,7 @@ class WasteComputeCollector:
             monthly_saving=Decimal(0),
             reason=sentence,
             added_monthly_cost=cost.as_paid,
-        ), {
-            "current": current.sku_price_id,
-            "target_type": target.instance_type,
-            "target": target.sku_price_id,
-            "version": version,
-        }
+        ), Quote(current, target, version, chosen.fitting or (target,))
 
     def _volume_pass(
         self,
@@ -620,11 +626,11 @@ class WasteComputeCollector:
         estimate: Estimate,
         thresholds: Any,
         now: datetime,
-        prices: Mapping[str, str | None] | None = None,
+        quote: Quote | None = None,
     ) -> None:
         target = candidate.scaling_group or candidate.resource_id
         reference = f"meter:{target}:{estimate.waste_class.value}"
-        context.connection.execute(
+        written = context.connection.execute(
             WRITE,
             {
                 "id": uuid4(),
@@ -645,13 +651,14 @@ class WasteComputeCollector:
                 "rationale": estimate.reason,
                 "now": now,
                 # Every run says what it chose, so a target that stopped fitting is cleared.
-                "current": (prices or {}).get("current"),
-                "target_type": (prices or {}).get("target_type"),
-                "target": (prices or {}).get("target"),
-                "version": (prices or {}).get("version"),
+                "current": quote.current.sku_price_id if quote else None,
+                "target_type": quote.target.instance_type if quote else None,
+                "target": quote.target.sku_price_id if quote else None,
+                "version": quote.version if quote else None,
                 "added": estimate.added_monthly_cost,
             },
-        )
+        ).scalar_one()
+        self._write_options(context, written, candidate.region_id, quote, now)
         context.connection.execute(
             FIRST_EVENT,
             {
@@ -662,6 +669,46 @@ class WasteComputeCollector:
                 "actor": f"collector:{COLLECTOR}",
                 "now": now,
             },
+        )
+
+    def _write_options(
+        self,
+        context: CollectorContext,
+        recommendation_id: Any,
+        region: str,
+        quote: Quote | None,
+        now: datetime,
+    ) -> None:
+        """Every type the rule judged to fit, replacing the last run's, so one that stopped fitting
+        goes. TASK-P9-010. No performance risk: the rule gives none, and a nought would read as
+        Compute Optimizer's "no risk", migration 0040."""
+        tenant = context.unit.tenant_id
+        context.connection.execute(CLEAR_OPTIONS, {"t": tenant, "id": recommendation_id})
+        if quote is None:
+            return
+        context.connection.execute(
+            WRITE_OPTION,
+            [
+                {
+                    "pk": uuid4(),
+                    "t": tenant,
+                    "id": recommendation_id,
+                    "r": region,
+                    "rank": rank,
+                    "type": offer.instance_type,
+                    "risk": None,
+                    "saving": None,
+                    "effort": None,
+                    "differences": list(differences(quote.current, offer)),
+                    "sku": offer.sku_price_id,
+                    "v": quote.version,
+                    "hourly": offer.hourly_price,
+                    "reason": None,
+                    "as_of": now,
+                    "now": now,
+                }
+                for rank, offer in enumerate(quote.fitting, start=1)
+            ],
         )
 
 

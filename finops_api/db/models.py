@@ -679,7 +679,8 @@ recommendation_option = Table(
     Column("region", Text, nullable=False),
     Column("rank", SmallInteger, nullable=False),
     Column("instance_type", Text, nullable=False),
-    Column("performance_risk", Numeric(3, 1), nullable=False),
+    # Null where the source gives no risk, as Meter's own rule does not, migration 0040.
+    Column("performance_risk", Numeric(3, 1), nullable=True),
     Column("provider_monthly_saving", Numeric(20, 10)),
     Column("migration_effort", Text),
     Column("platform_differences", ARRAY(Text), nullable=False, server_default=text("'{}'")),

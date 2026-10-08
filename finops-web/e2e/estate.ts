@@ -16,6 +16,9 @@ const META = {
   failures: [],
 };
 
+/** The rightsizing the journeys open, with a target and its alternatives. TASK-P9-010. */
+export const RIGHTSIZED = '2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f';
+
 const PAYER_META = {
   ...META,
   scope_coverage: { visible: 1, total: 1, is_partial: false, unit: 'payer' },
@@ -356,7 +359,7 @@ export async function demoEstate(page: Page): Promise<void> {
     data: {
       recommendations: [
         {
-          recommendation_id: '2f3c1d4e-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
+          recommendation_id: RIGHTSIZED,
           account_id: 'fake-product-a',
           source: 'METER',
           waste_class: 'RIGHTSIZE_INSTANCE',
@@ -373,11 +376,77 @@ export async function demoEstate(page: Page): Promise<void> {
           suggested_owner: 'platform',
           ticket_reference: null,
           rationale: 'p99 CPU of 11.4 percent against 4 vCPU over 15 days, so 1 vCPU',
+          // TASK-P9-010. The type it names and both list prices, from one version.
+          current_instance_type: 'm5.xlarge',
+          target_instance_type: 'm6i.large',
+          current_hourly_price: '0.1947',
+          target_hourly_price: '0.1014',
+          price_version: '20260820000000',
+          added_monthly_cost: null,
         },
       ],
       unowned: 1,
     },
     meta: META,
+  });
+
+  // What that rightsizing was compared with: the chosen type first, an option the catalog
+  // cannot price kept with its reason, and one with no risk score, which is not nought.
+  await stub(page, `/api/v1/waste/recommendations/${RIGHTSIZED}/alternatives`, {
+    data: {
+      recommendation_id: RIGHTSIZED,
+      current_instance_type: 'm5.xlarge',
+      current_hourly_price: '0.1947',
+      price_version: '20260820000000',
+      alternatives: [
+        {
+          rank: 1,
+          instance_type: 'm6i.large',
+          chosen: true,
+          vcpus: 2,
+          memory_mib: 8192,
+          network_baseline_gbps: '0.781',
+          hourly_price: '0.1014',
+          monthly_price: '74.02',
+          monthly_saving: '68.11',
+          performance_risk: '1.0',
+          platform_differences: [],
+          unpriced_reason: null,
+        },
+        {
+          rank: 2,
+          instance_type: 'm6g.large',
+          chosen: false,
+          vcpus: null,
+          memory_mib: null,
+          network_baseline_gbps: null,
+          hourly_price: null,
+          monthly_price: null,
+          monthly_saving: null,
+          performance_risk: '1.5',
+          platform_differences: ['Architecture'],
+          unpriced_reason: 'the catalog holds no Linux price for m6g.large in eu-west-1',
+        },
+        {
+          rank: 3,
+          instance_type: 'm5.large',
+          chosen: false,
+          vcpus: 2,
+          memory_mib: 8192,
+          network_baseline_gbps: null,
+          hourly_price: '0.0974',
+          monthly_price: '71.10',
+          monthly_saving: '71.03',
+          performance_risk: null,
+          platform_differences: [],
+          unpriced_reason: null,
+        },
+      ],
+    },
+    meta: {
+      ...META,
+      scope_coverage: { visible: 1, total: 1, is_partial: false, unit: 'recommendations' },
+    },
   });
 
   await stub(page, '/api/v1/waste/savings', {

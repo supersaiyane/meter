@@ -1,4 +1,5 @@
 import type {
+  ApiAlternatives,
   ApiEnvelope,
   ApiRealizedSavings,
   ApiRecommendations,
@@ -363,6 +364,71 @@ export function refusalsFixture(): ApiEnvelope<ApiRefusals> {
       scope_coverage: { visible: 4, total: 5, is_partial: true, unit: 'accounts' },
       degraded: false,
       failures: [],
+    },
+  };
+}
+
+/**
+ * What one rightsizing was compared with, TASK-P9-010. Carries the rows its table exists to
+ * render honestly: the chosen type first, a Graviton type the catalog neither prices nor
+ * describes, kept with the reason rather than dropped, and a type with no risk score, which is
+ * not a score of nought.
+ */
+export function alternativesFixture(recommendationId: string): ApiEnvelope<ApiAlternatives> {
+  return {
+    data: {
+      recommendation_id: recommendationId,
+      current_instance_type: 'm5.xlarge',
+      current_hourly_price: '0.1947',
+      price_version: '20260820000000',
+      alternatives: [
+        {
+          rank: 1,
+          instance_type: 'm6i.large',
+          chosen: true,
+          vcpus: 2,
+          memory_mib: 8192,
+          network_baseline_gbps: '0.781',
+          hourly_price: '0.1014',
+          monthly_price: '74.02',
+          monthly_saving: '68.11',
+          performance_risk: '1.0',
+          platform_differences: [],
+          unpriced_reason: null,
+        },
+        {
+          rank: 2,
+          instance_type: 'm6g.large',
+          chosen: false,
+          vcpus: null,
+          memory_mib: null,
+          network_baseline_gbps: null,
+          hourly_price: null,
+          monthly_price: null,
+          monthly_saving: null,
+          performance_risk: '1.5',
+          platform_differences: ['Architecture'],
+          unpriced_reason: 'the catalog holds no Linux price for m6g.large in eu-west-1',
+        },
+        {
+          rank: 3,
+          instance_type: 'm5.large',
+          chosen: false,
+          vcpus: 2,
+          memory_mib: 8192,
+          network_baseline_gbps: null,
+          hourly_price: '0.0974',
+          monthly_price: '71.10',
+          monthly_saving: '71.03',
+          performance_risk: null,
+          platform_differences: [],
+          unpriced_reason: null,
+        },
+      ],
+    },
+    meta: {
+      ...meta(1),
+      scope_coverage: { visible: 1, total: 1, is_partial: false, unit: 'recommendations' },
     },
   };
 }

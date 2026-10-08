@@ -30,12 +30,12 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Counted | Now | Derived from |
 | --- | --- | --- |
 | Screens built | 28 of 30 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 52 in 19 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Playwright journeys | 53 in 19 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 31 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 39 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 213 | test_*.py under tests/ |
-| Test functions | 2789 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 40 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 215 | test_*.py under tests/ |
+| Test functions | 2810 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -758,6 +758,10 @@ meter/
 │   │                          cluster, both better high so neither ramp inverts.
 │   │                          A missing figure says why, and an unreadable fleet and
 │   │                          a Fargate cluster with none are different sentences
+│   ├── screens/RecommendationAlternatives.tsx  FEAT-073, TASK-P9-010. What one
+│   │                          rightsizing was compared with, under that finding on
+│   │                          WasteScreen: the chosen type first, an unpriced option
+│   │                          kept with its reason, no risk score said in words
 │   ├── screens/ContainerWasteScreen.tsx  FEAT-036. Request beside use, two
 │   │                          figures and never one percentage, because twenty
 │   │                          percent can mean over requesting or idle. A cluster
@@ -1302,6 +1306,10 @@ meter/
 │   │   ├── forecast.py        FEAT-066's GET /cost/forecast: the month end and three
 │   │   │                      months ahead, each a range or the reason, the method
 │   │   │                      named and its backtest published beside it
+│   │   ├── catalog.py         FEAT-071 and FEAT-072, TASK-P9-010. GET /catalog/prices
+│   │   │                      and GET /catalog/instance-types: the catalog as stored,
+│   │   │                      each row with its version and as_of, coverage in Regions.
+│   │   │                      waste.py adds GET /waste/recommendations/{id}/alternatives
 │   │   ├── reconciliation.py  FEAT-076's GET /cost/reconciliation: each invoice
 │   │   │                      beside Meter's billed cost under it, before tax and
 │   │   │                      tax apart. A narrowed reader is refused 403 before
@@ -1400,6 +1408,10 @@ meter/
 │                              redaction repositories, and tokens_spent, the one
 │                              read across people: a tenant wide sum for the
 │                              budget, which returns a number and never a row.
+│                              catalog.py reads the price list, its versions and
+│                              the instance types under the tenant rule alone,
+│                              TASK-P9-010; waste.py's option repository reads a
+│                              recommendation's alternatives through it.
 │                              explore.py is Cost Explorer's: every read derived
 │                              from scoped_select, the ranking a window count and
 │                              the tag keys a function in the FROM clause, because
@@ -1473,6 +1485,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0040_option_risk_optional.py  TASK-P9-010. An option's performance risk may
+│       │                      be null, for Meter's own alternatives, OPEN-24
 │       ├── 0039_upsize_added_cost.py  TASK-P9-008. An Upsize's added monthly cost,
 │       │                      held to the kind, with a saving of nought
 │       ├── 0038_recommendation_option.py  TASK-P9-006. Every target a provider

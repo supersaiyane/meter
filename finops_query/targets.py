@@ -94,6 +94,9 @@ class Target:
     offer: TypeOffer
     needed_vcpus: Decimal
     notes: tuple[str, ...]
+    #: Every priced candidate that fits, cheapest first, so the chosen one leads: the
+    #: alternatives a reader is shown, each judged against the same demand. TASK-P9-010.
+    fitting: tuple[TypeOffer, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -194,11 +197,12 @@ def choose(current: TypeOffer, offered: Sequence[TypeOffer], demand: Demand) -> 
         return "no cheaper type fits: " + "; ".join(
             str(misfit(current, offer, demand)) for offer in sorted(cheaper, key=_price)
         )
-    best = min(fitting, key=_price)
+    ranked = tuple(sorted(fitting, key=_price))
     return Target(
-        offer=best,
+        offer=ranked[0],
         needed_vcpus=demand.cpu_p99_percent / 100 * current.vcpus * CPU_HEADROOM,
-        notes=_notes(current, best, demand),
+        notes=_notes(current, ranked[0], demand),
+        fitting=ranked,
     )
 
 
@@ -206,7 +210,9 @@ def _price(offer: TypeOffer) -> tuple[Decimal, str]:
     return (offer.hourly_price or Decimal(0), offer.instance_type)
 
 
-def _notes(current: TypeOffer, target: TypeOffer, demand: Demand) -> tuple[str, ...]:
+def differences(current: TypeOffer, target: TypeOffer) -> tuple[str, ...]:
+    """What is not equivalent between two types, whatever the demand: an option's platform
+    differences, as Compute Optimizer names its own. TASK-P9-010."""
     notes: list[str] = []
     mine, theirs = family_of(current.instance_type), family_of(target.instance_type)
     if (
@@ -217,6 +223,11 @@ def _notes(current: TypeOffer, target: TypeOffer, demand: Demand) -> tuple[str, 
         notes.append("vCPUs are not equivalent across a generation or an architecture")
     if "arm64" in target.architectures and "arm64" not in current.architectures:
         notes.append("Graviton needs arm64 builds of everything the instance runs")
+    return tuple(notes)
+
+
+def _notes(current: TypeOffer, target: TypeOffer, demand: Demand) -> tuple[str, ...]:
+    notes = list(differences(current, target))
     if demand.memory_peak_percent is None:
         notes.append(
             "no agent publishes memory, so only one size down within the family is offered"
@@ -290,11 +301,12 @@ def grow(current: TypeOffer, offered: Sequence[TypeOffer], demand: Demand) -> Ta
         return "no larger type fits: " + "; ".join(
             str(misfit(current, offer, demand)) for offer in sorted(priced, key=_price)
         )
-    best = min(fitting, key=_price)
+    ranked = tuple(sorted(fitting, key=_price))
     return Target(
-        offer=best,
+        offer=ranked[0],
         needed_vcpus=demand.cpu_p99_percent / 100 * current.vcpus * CPU_HEADROOM,
-        notes=_notes(current, best, demand),
+        notes=_notes(current, ranked[0], demand),
+        fitting=ranked,
     )
 
 
