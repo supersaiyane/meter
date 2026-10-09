@@ -167,14 +167,14 @@ a duplicate.
 | `FakeProvider.list_quotas` | method | `finops_providers/fake/provider.py:180` |  | nothing in this tree |
 | `FakeProvider.authenticate` | method | `finops_providers/fake/provider.py:186` |  | nothing in this tree |
 | `FakeProvider.resolve` | method | `finops_providers/fake/provider.py:199` |  | `finops_api/deps.py`, `finops_ingest/collectors/org_tree.py` |
-| `FakeQuerySurface` | class | `finops_providers/fake/surface.py:178` | `QuerySurface` in memory. Every failure is asked for, never incidental. | nothing in this tree |
-| `FakeQuerySurface.discover` | method | `finops_providers/fake/surface.py:233` |  | `finops_ingest/collectors/query_audit.py` |
-| `FakeQuerySurface.list_queries` | method | `finops_providers/fake/surface.py:242` |  | `finops_ingest/collectors/query_audit.py` |
-| `FakeQuerySurface.read_refresh_floor` | method | `finops_providers/fake/surface.py:256` |  | `finops_ingest/collectors/query_audit.py` |
-| `FakeQuerySurface.set_refresh_floor` | method | `finops_providers/fake/surface.py:260` | Raise the floor, returning what it was. None means it had none. | `finops_ingest/remediation.py` |
-| `FakeQuerySurface.read_element` | method | `finops_providers/fake/surface.py:272` |  | `finops_ingest/remediation.py` |
-| `FakeQuerySurface.write_element` | method | `finops_providers/fake/surface.py:283` | Store it, unless this instance is planned to drop writes. | `finops_ingest/remediation.py` |
-| `FakeQuerySurface.apply_control` | method | `finops_providers/fake/surface.py:297` |  | nothing in this tree |
+| `FakeQuerySurface` | class | `finops_providers/fake/surface.py:201` | `QuerySurface` in memory. Every failure is asked for, never incidental. | nothing in this tree |
+| `FakeQuerySurface.discover` | method | `finops_providers/fake/surface.py:256` |  | `finops_ingest/collectors/query_audit.py` |
+| `FakeQuerySurface.list_queries` | method | `finops_providers/fake/surface.py:265` |  | `finops_ingest/collectors/query_audit.py` |
+| `FakeQuerySurface.read_refresh_floor` | method | `finops_providers/fake/surface.py:279` |  | `finops_ingest/collectors/query_audit.py` |
+| `FakeQuerySurface.set_refresh_floor` | method | `finops_providers/fake/surface.py:283` | Raise the floor, returning what it was. None means it had none. | `finops_ingest/remediation.py` |
+| `FakeQuerySurface.read_element` | method | `finops_providers/fake/surface.py:295` |  | `finops_ingest/remediation.py` |
+| `FakeQuerySurface.write_element` | method | `finops_providers/fake/surface.py:306` | Store it, unless this instance is planned to drop writes. | `finops_ingest/remediation.py` |
+| `FakeQuerySurface.apply_control` | method | `finops_providers/fake/surface.py:320` |  | nothing in this tree |
 | `Scope` | class | `finops_providers/grafana/amg.py:54` | One account and region pair to look for workspaces in. | `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, `finops_providers/fake/provider.py` |
 | `Scope.key` | method | `finops_providers/grafana/amg.py:61` |  | nothing in this tree |
 | `AmgQuerySurface` | class | `finops_providers/grafana/amg.py:84` | `QuerySurface` over Amazon Managed Grafana, read only. | nothing in this tree |

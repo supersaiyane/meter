@@ -142,6 +142,29 @@ QUERIES: Mapping[str, tuple[QueryDefinition, ...]] = {
             refresh_seconds=60,
             window_seconds=86400,
         ),
+        # The expensive one. Every other finding in this estate lands in the
+        # bottom three severity bands, so the top of the ramp was never drawn
+        # and a reader could not tell what critical looks like. An alert rule
+        # re-reading thirty days of logs every thirty seconds is the shape that
+        # produces one: it is not a mistake anybody makes deliberately, it is
+        # what a wide dashboard panel becomes when somebody promotes it to an
+        # alert without changing its window.
+        _query(
+            "ws-4e5f6a7b",
+            "fp-alert-0004",
+            origin=QueryOrigin.ALERT,
+            element="Security audit, all regions",
+            query=(
+                "fields @timestamp, @message, sourceIPAddress, userIdentity.arn "
+                "| filter eventSource like /iam|sts|kms/ | stats count() by userIdentity.arn"
+            ),
+            # Every half hour over a seven day window. Thirty seconds over
+            # thirty days was the first attempt and priced at $648,000 a month,
+            # which is arithmetically correct and reads as a broken demo. This
+            # is a cadence somebody would actually set.
+            refresh_seconds=1800,
+            window_seconds=604800,
+        ),
     ),
     # Eight panels on one dashboard, one per team, all built from the same
     # template and all cheap on their own. This is the estate ADR-0016 is about:
