@@ -657,7 +657,7 @@ changes:
   type: Correction
   what: TASK-P0-001 workspace and quality gates. The import contracts were found to have never worked,
     and the dependency admission gate missed by TASK-P0-029 was run
-  commit: pending
+  commit: a699d3c
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
 issues:
 - id: ISS-001

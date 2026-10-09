@@ -234,7 +234,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0030 | 2026-08-23 | Design | UI design specification written, closing the gap where the product honesty guarantees were enforced in the database and undesigned at the pixel. Component library decided against written requirements as ADR-0019 | `d904e7d` | [docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) |
 | CHG-0031 | 2026-08-23 | Process | Task status generated from the plan files rather than copied into STATUS.md, and generated blocks name their own source | `d20d35c` | [tasks/STATUS.md](tasks/STATUS.md) |
 | CHG-0032 | 2026-08-23 | Correction | project_map.md verified against the tree and four errors corrected, including hyphenated Python package names that also appeared in CLAUDE.md | `a9ef75c` | [project_map.md](project_map.md) |
-| CHG-0033 | 2026-08-23 | Correction | TASK-P0-001 workspace and quality gates. The import contracts were found to have never worked, and the dependency admission gate missed by TASK-P0-029 was run | `pending` | [P0 plan](docs/plans/P0-implementation-plan.md) |
+| CHG-0033 | 2026-08-23 | Correction | TASK-P0-001 workspace and quality gates. The import contracts were found to have never worked, and the dependency admission gate missed by TASK-P0-029 was run | `a699d3c` | [P0 plan](docs/plans/P0-implementation-plan.md) |
 
 <!-- generated:changes end -->
 
