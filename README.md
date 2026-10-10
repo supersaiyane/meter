@@ -187,6 +187,22 @@ make psql           # database shell
 make down           # stop, keep data.  make nuke  deletes the volume
 ```
 
+**Seeing the data once it is running.** There is no login screen. The interface
+reads a session token from `localStorage` and nothing puts one there, so a
+browser opened on the local stack shows an empty dashboard while every request
+answers 401, which looks exactly like a seeding failure and is not one.
+Production identity is OPEN-01 and parked. Locally:
+
+```bash
+make seed           # a demo estate written through the real collectors
+make token          # prints the one line to paste into the browser console
+```
+
+`make token` mints for `auditor@example.local`, the global user in
+`local-auth.yaml`. The other user there, `dev@example.local`, is scoped to two
+account ids the seed never creates, so it authenticates and then shows an empty
+estate, which is the more confusing of the two failures.
+
 **What LocalStack is doing in the stack.** It emulates the AWS APIs Meter
 calls: STS, SQS, S3, Secrets Manager, Organizations, Cost Explorer, Logs and
 CloudWatch. Without it, running the ingestion loop locally needs a real AWS

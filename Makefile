@@ -306,6 +306,30 @@ restore-drill: ## Restore into a scratch database and prove it works. TASK-P0-02
 	    --dump-command "$(COMPOSE) exec -T postgres pg_dump" \
 	    --dump-url "postgresql+psycopg://meter:meter_local_only@localhost:5432/meter"
 
+# There is no login. The application reads meter.token from localStorage and
+# nothing puts it there, so a browser opened on the local stack shows an empty
+# dashboard and every request answers 401. This mints one and prints the line
+# to paste into the browser console. Three separate sessions have lost time to
+# this, which is what makes it a target rather than a note.
+.PHONY: token
+token: ## Mint a demo session token and print how to use it
+	@$(COMPOSE) run --rm -T api python -c "\
+from uuid import UUID; \
+from finops_core.config import load_settings; \
+from finops_api.identity.session import SessionSigner; \
+from finops_core.domain.tenant import Scope; \
+s = load_settings(); \
+t = SessionSigner(s.session_signing_key, s.session_ttl_hours).issue( \
+  'auditor@example.local', 'auditor@example.local', \
+  Scope(tenant_id=UUID('5eeded00-0000-4000-8000-000000000001'), is_global=True, accounts=frozenset())); \
+print(); \
+print('Paste this into the browser console at the app, then reload:'); \
+print(); \
+print(f\"localStorage.setItem('meter.token', '{t}'); location.reload()\"); \
+print(); \
+print(f'Valid for {s.session_ttl_hours} hours. Subject auditor@example.local, the global user in local-auth.yaml.'); \
+print('dev@example.local is scoped to two account ids the seed never creates, and shows an empty estate that looks like a bug.')"
+
 .PHONY: unseed
 unseed: ## Clear the demo estate. Every row it wrote, in one command
 	$(COMPOSE) run --rm api python scripts/ops/seed_demo.py --remove
