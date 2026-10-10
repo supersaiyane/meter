@@ -6,14 +6,15 @@ rebuilt from source rather than worked around.
 
 Last updated: 2026-08-23
 Master index: `INDEX.md`
-Verified against the tree: 2026-10-05
+Verified against the tree: 2026-10-09
 Update trigger: any new module, moved module, or changed responsibility.
 
 ## Current reality
 
 P0 is in build. The Python packages now exist as empty namespaces, created at
 TASK-P0-029 so the policy checks have something to scan. They carry no
-application code yet. `PLANNED` means the module has no working code. Five of
+application code yet beyond the workspace itself. `PLANNED` means the module
+has no working code. Five of
 them now have a directory and an `__init__.py`, created by TASK-P0-029 because
 the policy checks needed something to scan,
 so the map is never mistaken for a description of what exists.
@@ -107,6 +108,9 @@ meter/
 │   │                          check_forbidden_imports.py, refresh_base_images.py, flag and hardcoding checks,
 │   │                          forbidden imports, base image resolver
 │   └── deploy/                migration task runner
+│
+├── tests/                     the suite. conftest.py refuses to run against a
+│                              real AWS account when no endpoint override is set
 │
 ├── finops_core/               PLANNED  domain and ports. No boto3, no framework
 │                              Directory exists, __init__.py only

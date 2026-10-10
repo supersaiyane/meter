@@ -54,6 +54,8 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-08-23 | Stop STATUS.md keeping a second copy of the task list | Done | It hand maintained a copy of the plan's tasks and had already drifted, still showing 31 tasks and TASK-P0-029 as not started after it was finished. The task table is now generated from the plan files, and each generated block names its own source rather than all of them claiming the registry | `tasks/STATUS.md`, `scripts/docs/sync.py` |
 | 2026-08-23 | Session close, context cleared | Done | No code change. 65 commits, tree clean, all 8 gates green. P0 is 1 done and 1 partly done of 35, P2 is 0 of 22. Handoff written below | This table, then the cold start section |
 | 2026-08-23 | Verify project_map.md against the tree | Done | Four errors. The Python packages were named with hyphens in both the map and CLAUDE.md, so a reader would look for a directory that cannot exist. The map claimed PLANNED modules had no directory, untrue since TASK-P0-029. The feature count said 42 against an actual 50. Nine files were missing from the listing | `project_map.md`, `CLAUDE.md`. ISS-108, CHG-0032 |
+| 2026-10-07 | Close the dependency admission gap left by TASK-P0-029 | Done | The task was marked done without running `make dep-check`, one of its own acceptance criteria. Run against the full resolved tree rather than package by package: grype 0 findings across 97 packages, pip-audit 0 advisories across 113. All 19 declared dependencies admitted | `docs/plans/P0-implementation-plan.md`, TASK-P0-029 evidence. ISS-111 |
+| 2026-10-08 | TASK-P0-001, the workspace and quality gates | Done | Editable install, `tests/__init__.py`, `tests/conftest.py`, coverage parked at 0 with its restoration owned by TASK-P0-005. **Found that the import linter contracts had never worked**: `include_external_packages` was unset, so every contract forbidding boto3, fastapi or sqlalchemy passed because it never saw those imports. CLAUDE.md constraint 1 had been documented as machine enforced since the first week and was enforced by nothing | `pyproject.toml`, commit `a699d3c`. ISS-110, ISS-109. CHG-0033 |
 
 ## Next action
 
@@ -77,77 +79,57 @@ P0.
 | Where a change gets recorded | `docs/03-CHANGE-CONTROL.md` |
 | Rules binding every change | `CLAUDE.md` |
 
-### Cold start, as of 2026-10-04
+### Cold start, as of 2026-10-09
 
-A fresh session with no memory of this one should be able to work from this
-section alone.
+A fresh session with no memory of this one should work from this section alone.
 
-**Read these three, in order, and nothing else to begin with.**
-
-1. `INDEX.md`, the entry point. Every feature, decision, change, issue and open
-   question, each pointing at its detail.
-2. `CLAUDE.md`, the binding rules. No em dashes, the seven rung ladder, the
-   security gate, and thirteen architectural constraints.
-3. `docs/plans/P0-implementation-plan.md`, the work.
+**Read three things, in order.** `INDEX.md`, then `CLAUDE.md`, then
+`docs/plans/P0-implementation-plan.md`.
 
 **Position.**
 
 | What | Where |
 | --- | --- |
-| Git | `main`, 65 commits, working tree clean |
-| P0 specification | **Approved.** In build |
-| P0 tasks | **1 done, 1 partly done, 33 remaining of 35** |
+| Git | `main`, 70 commits, working tree clean |
+| Gates | 8 of 8 green: `make check-docs && make check-writing` |
+| P0 | Approved, in build. **2 done, 33 remaining of 35** |
 | P2 | Specified and planned, 22 tasks. Built after P0 |
-| P1 to P7 | Roadmapped only. Each gets its own spec, then plan, then build. ADR-0001 |
-| Application code | **None exists yet** |
+| P1 to P7 | Roadmapped only. Spec, then plan, then build, per ADR-0001 |
+| Application code | The workspace only. No domain code yet |
 
-**Done so far.** TASK-P0-029 only: the toolchain verified, base images chosen
-by measurement and pinned by digest, the security threshold corrected, and the
-first real posture. TASK-P0-001 is partly done because 029 needed the Python
-packages and the virtualenv to exist.
+**Done.** TASK-P0-029 base images and posture. TASK-P0-001 workspace and gates.
 
-**The next action.** Finish TASK-P0-001. The packages and `.venv` are there.
-Missing: the editable install, `tests/conftest.py`, and the pytest harness.
+**Next.** TASK-P0-002, the frontend workspace. Then 003, 034, 031, 004.
 
-Then 002, 003, 034, 031, 004, in that order.
+**After 002, start TASK-P0-035 in parallel.** The component layer depends only
+on the frontend workspace. Treating it as though it follows the API compresses
+the interface work into the end of the project.
 
-**Do not queue TASK-P0-035 behind the backend.** The component layer depends
-only on TASK-P0-002, the frontend workspace. Treating it as though it follows
-the API compresses all the interface work into the end of the project, which is
-where interface work always goes badly.
+**Six things that are easy to get wrong.**
 
-**Five things that are easy to get wrong.**
-
-1. Run doc and policy scripts with `.venv/bin/python`, not `python3`. They need
-   pyyaml, a system interpreter lacks it, and PEP 668 blocks adding it there.
-2. The interpreter is python3.13, pinned to match the runtime image. A venv on
-   a newer interpreter passes tests that fail in the container.
+1. Run doc and policy scripts with `.venv/bin/python`. They need pyyaml, a
+   system interpreter lacks it, and PEP 668 blocks adding it there.
+2. The interpreter is python3.13, pinned to match the runtime image.
 3. Never edit a generated block. Change `docs/registry.yaml` or the plan, then
-   `make doc-sync`. `make check-docs` fails on a hand edit.
-4. The security threshold is **zero findings that have a published fix**, not
-   zero findings. ADR-0018. Three unfixable CPython findings are accepted on a
-   reachability argument that `check_forbidden_imports.py` enforces.
-5. No screen formats a number. Everything goes through the `Figure` component,
-   which requires provenance and freshness. `docs/12-UI-DESIGN.md`.
+   `make doc-sync`.
+4. The security threshold is zero findings **that have a published fix**, not
+   zero findings. ADR-0018.
+5. No screen formats a number. Everything goes through `Figure`.
+   `docs/12-UI-DESIGN.md`.
+6. **Confirm a guard by making it fail**, not by reading it. The import
+   contracts passed for weeks while enforcing nothing. TASK-P0-011 and
+   TASK-P0-024 each carry a probe for the two contract targets still inert.
 
-**Verify everything with one command.**
-
-```bash
-make check-docs && make check-writing
-```
-
-Eight checks. All green at this commit.
-
-**Waiting on a person, not on engineering.**
+**Waiting on a person.**
 
 | | Blocks | Tracker |
 | --- | --- | --- |
-| Is there a regulatory retention floor above 37 months for cost data | TASK-P0-010, the schema. **Chase this first** | ISS-078 |
-| Real names for flag owners, CODEOWNERS and `accepted.yaml` | Becomes a hard build failure before the first merge request | ISS-087 |
-| Management account access | Only live verification at the end of wave E, not the build | ISS-002 |
-| Sign off on the `audit_event` non erasure position | Before the first production deployment | ISS-079 |
+| Regulatory retention floor above 37 months for cost data | TASK-P0-010, the schema. **Chase first** | ISS-078 |
+| Real names for flag owners, CODEOWNERS, `accepted.yaml` | Hard build failure before the first merge request | ISS-087 |
+| Management account access | Live verification at the end of wave E only | ISS-002 |
+| Sign off on `audit_event` non erasure | Before first production deployment | ISS-079 |
 
-**Next audit due** at the P0 boundary, scope `code`. See `audits/README.md`.
+**Next audit** at the P0 boundary, scope `code`.
 
 ### Earlier resume vector, as of 2026-09-29
 
