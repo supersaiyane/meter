@@ -101,7 +101,7 @@ subprojects:
 - id: P11
   name: Owners and a savings ledger
   status: Approved by the owner on 2026-10-08 with OPEN-25 to OPEN-27 as recommended, in build, TASK-P11-001
-    to TASK-P11-007 done. Chosen as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
+    to TASK-P11-008 done. Chosen as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
     AppRegistry and CloudTrail as suggestions beside the assigned owner, and a ledger crediting each
     verified saving to its owner and team for every month the bill shows it held
   spec: specs/2026-10-08-p11-owners-and-savings-ledger-design.md
@@ -2249,6 +2249,17 @@ changes:
     removes a month it no longer judges before its credit. Spec 5.5 amended: a resource absent from a
     month the account was billed for cost nothing, as FEAT-029 reads it, and only a month with no
     bill at all is unobserved. ISS-268 logged'
+- id: CHG-0155
+  date: '2026-10-11'
+  type: Feature
+  what: TASK-P11-008, the savings ledger's routes and screen
+  commit: pending
+  detail: 'GET /savings/ledger ranks teams by the saving their months held, with no person named;
+    GET /savings/ledger/credits lists credits with their owner, closer and months, one team, the
+    unnamed team or every credit; both exportable, read through each table''s own scope, coverage in
+    accounts. The Savings ledger screen under Optimize ranks teams, shows a chosen team''s credits,
+    labels every figure measured and says a month the bill holds nothing for as not observed;
+    migration 0045 admits /optimize/ledger as a saved view''s screen; a journey proves it'
 issues:
 - id: ISS-189
   severity: LOW

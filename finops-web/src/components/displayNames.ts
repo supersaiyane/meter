@@ -151,6 +151,17 @@ export function verdictName(code: string): string {
   return named(VERDICT_NAMES, code);
 }
 
+/** A month after a credited saving verified, FEAT-078: held, regressed, or not observed. */
+export const MONTH_STATE_NAMES: Names = {
+  HELD: 'Held',
+  REGRESSED: 'Regressed',
+  UNOBSERVED: 'Not observed',
+};
+
+export function monthStateName(code: string): string {
+  return named(MONTH_STATE_NAMES, code);
+}
+
 export function runStatusName(code: string): string {
   return named(RUN_STATUS_NAMES, code);
 }

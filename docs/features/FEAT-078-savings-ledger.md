@@ -5,7 +5,7 @@
 | Sub project | P11 |
 | Status | Planned |
 | Specification | [P11 spec](../specs/2026-10-08-p11-owners-and-savings-ledger-design.md), sections 5.5 and 5.6 |
-| Tasks | TASK-P11-006 to TASK-P11-008; TASK-P11-006 and TASK-P11-007 done 2026-10-11 |
+| Tasks | TASK-P11-006 to TASK-P11-008, done 2026-10-11 |
 
 ## What it does
 
@@ -66,9 +66,14 @@ and never individuals, OPEN-27.
 
 ## Interface
 
-The `savings_credit` table now, read by the ledger's routes and screen in TASK-P11-008:
-`GET /savings/ledger` and `GET /savings/ledger/credits`, both exportable, and a Savings ledger
-screen under Optimize with every figure labelled measured.
+`GET /savings/ledger` ranks teams by the saving their months held, each with its credits,
+months held, credits a regression stopped and latest month, and no person's name in it.
+`GET /savings/ledger/credits` lists credits with their owner, closer and months: `team` names one
+team, an empty `team` the credits no source named a team for, and no `team` every credit. Both are
+exportable, read through each table's own scope, and count coverage in accounts. The Savings ledger
+screen under Optimize, `/optimize/ledger`, ranks the teams and shows a team's credits once a reader
+chooses it, every figure labelled measured and each month in words, a month the bill holds nothing
+for said as not observed. TASK-P11-008 built both, with `e2e/ledger.spec.ts`.
 
 ## Not doing
 
@@ -80,8 +85,8 @@ screen under Optimize with every figure labelled measured.
 ## Status of this document
 
 In build. Approved by the owner on 2026-10-08 with teams only. TASK-P11-006 built the credits on
-2026-10-11 and the months they held, TASK-P11-007, the same day; the ledger's routes and screen,
-TASK-P11-008, follow. Specified in the [P11 spec](../specs/2026-10-08-p11-owners-and-savings-ledger-design.md)
+2026-10-11, the months they held, TASK-P11-007, and the ledger's routes and screen,
+TASK-P11-008, the same day. TASK-P11-009 proves it against the seeded demo. Specified in the [P11 spec](../specs/2026-10-08-p11-owners-and-savings-ledger-design.md)
 and planned in the [P11 plan](../plans/P11-implementation-plan.md).
 
 See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P11.

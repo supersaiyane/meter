@@ -32,6 +32,7 @@ SCREEN_PATHS: Final[tuple[str, ...]] = (
     "/optimize",
     "/optimize/commitments",
     "/optimize/savings",
+    "/optimize/ledger",
     "/govern/query-cost",
     "/govern/query-cost/surfaces",
     "/govern/query-cost/adhoc",

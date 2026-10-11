@@ -28,6 +28,7 @@ import {
   realizedSavingsFixture,
   scoresFixture,
 } from './fixtures/waste';
+import { ledgerCreditsFixture, ledgerFixture } from './fixtures/ledger';
 import {
   blastRadiusFixture,
   entityFixture,
@@ -98,6 +99,8 @@ import type {
   Freshness,
   PlatformCost,
   Run,
+  ApiLedger,
+  ApiLedgerCredits,
 } from './types';
 import type { FlatNode } from '../components/orgNodes';
 
@@ -469,6 +472,29 @@ export function useRealizedSavings() {
     '/api/v1/waste/savings',
     '/api/v1/waste/savings',
     realizedSavingsFixture,
+  );
+}
+
+/**
+ * The savings ledger: teams by the savings they hold, FEAT-078, TASK-P11-008. Teams, never
+ * people, OPEN-27; every figure measured, the months the bill showed a saving held.
+ */
+export function useLedger() {
+  return useQuerySurface<ApiLedger>(
+    ['savings-ledger'],
+    '/api/v1/savings/ledger',
+    '/api/v1/savings/ledger',
+    ledgerFixture,
+  );
+}
+
+/** Every credit the reader can see, each with its months; the screen shows one team's. */
+export function useLedgerCredits() {
+  return useQuerySurface<ApiLedgerCredits>(
+    ['savings-ledger-credits'],
+    '/api/v1/savings/ledger/credits',
+    '/api/v1/savings/ledger/credits',
+    ledgerCreditsFixture,
   );
 }
 

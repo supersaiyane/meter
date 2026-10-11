@@ -1555,3 +1555,60 @@ export interface ScheduleChange {
   readonly cadence?: ReportCadence;
   readonly recipients?: readonly string[];
 }
+
+/** One closed month after a credited saving verified. FEAT-078, TASK-P11-008. */
+export interface ApiLedgerMonth {
+  /** The first of the month judged. */
+  readonly month: string;
+  readonly state: 'HELD' | 'REGRESSED' | 'UNOBSERVED';
+  /** Measured. Null exactly when the month is unobserved, never a zero. */
+  readonly cost: string | null;
+  readonly saving: string | null;
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
+/** One verified saving, credited to its owner and team, with the months it held. FEAT-078. */
+export interface ApiLedgerCredit {
+  readonly credit_id: string;
+  readonly recommendation_id: string;
+  readonly account_id: string;
+  readonly resource_id: string | null;
+  readonly team: string | null;
+  readonly owner: string;
+  readonly closed_by: string;
+  /** Measured: FEAT-029's before less after. */
+  readonly verified_monthly_saving: string;
+  readonly verified_on: string;
+  /** Measured: the held months summed, never a projection. */
+  readonly saving_held: string;
+  readonly months_held: number;
+  readonly regressed: boolean;
+  readonly months: readonly ApiLedgerMonth[];
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
+export interface ApiLedgerCredits {
+  readonly team: string | null;
+  readonly every_team: boolean;
+  readonly credits: readonly ApiLedgerCredit[];
+}
+
+/** A team by the savings it holds. A team, never a person, OPEN-27. */
+export interface ApiLedgerTeam {
+  /** Null for the credits no source named a team for. */
+  readonly team: string | null;
+  readonly credits: number;
+  /** Measured: every held month of every credit, summed. */
+  readonly saving_held: string;
+  readonly months_held: number;
+  readonly regressed: number;
+  readonly latest_month: string | null;
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
+export interface ApiLedger {
+  readonly teams: readonly ApiLedgerTeam[];
+}

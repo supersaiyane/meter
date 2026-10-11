@@ -29,13 +29,13 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 28 of 30 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 53 in 19 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Screens built | 29 of 31 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 55 in 20 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 33 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 44 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 229 | test_*.py under tests/ |
-| Test functions | 2917 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 45 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 230 | test_*.py under tests/ |
+| Test functions | 2925 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -750,6 +750,9 @@ meter/
 │   │                          forecast, always a range beside its accuracy, or the
 │   │                          reason where the figure would be. forecastModel.ts
 │   │                          holds its rules
+│   ├── screens/LedgerScreen.tsx  The savings ledger, FEAT-078, TASK-P11-008:
+│   │                          teams by the saving their months held, measured; a
+│   │                          team's credits and months once chosen, nobody ranked
 │   ├── screens/ReconciliationScreen.tsx  Invoice reconciliation, FEAT-076: each
 │   │                          invoice beside Meter's billed cost, every state in
 │   │                          words, the difference signed, labelled measured; the
@@ -1329,6 +1332,8 @@ meter/
 │   │   │                      and GET /catalog/instance-types: the catalog as stored,
 │   │   │                      each row with its version and as_of, coverage in Regions.
 │   │   │                      waste.py adds GET /waste/recommendations/{id}/alternatives
+│   │   ├── ledger.py          FEAT-078, TASK-P11-008. GET /savings/ledger, teams by
+│   │   │                      the saving held, and GET /savings/ledger/credits
 │   │   ├── reconciliation.py  FEAT-076's GET /cost/reconciliation: each invoice
 │   │   │                      beside Meter's billed cost under it, before tax and
 │   │   │                      tax apart. A narrowed reader is refused 403 before
@@ -1504,6 +1509,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0045_ledger_screen.py  TASK-P11-008. /optimize/ledger admitted as a
+│       │                      saved view's screen
 │       ├── 0044_savings_credit_month.py  TASK-P11-007. Each closed month after a
 │       │                      saving verified: held, regressed or unobserved
 │       ├── 0043_savings_credit.py  TASK-P11-006. One credit per verified saving, to

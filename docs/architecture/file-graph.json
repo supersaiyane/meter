@@ -30,6 +30,7 @@
     "finops-web/e2e/filters.spec.ts",
     "finops-web/e2e/forecast.spec.ts",
     "finops-web/e2e/journey.spec.ts",
+    "finops-web/e2e/ledger.spec.ts",
     "finops-web/e2e/library.spec.ts",
     "finops-web/e2e/motion.spec.ts",
     "finops-web/e2e/overview.spec.ts",
@@ -58,6 +59,7 @@
     "finops-web/src/api/fixtures/assistant.ts",
     "finops-web/src/api/fixtures/containers.ts",
     "finops-web/src/api/fixtures/cost.ts",
+    "finops-web/src/api/fixtures/ledger.ts",
     "finops-web/src/api/fixtures/query.ts",
     "finops-web/src/api/fixtures/quotas.ts",
     "finops-web/src/api/fixtures/topology.ts",
@@ -169,6 +171,7 @@
     "finops-web/src/screens/GeographyTile.tsx",
     "finops-web/src/screens/HomeScreen.tsx",
     "finops-web/src/screens/IngestScreen.tsx",
+    "finops-web/src/screens/LedgerScreen.tsx",
     "finops-web/src/screens/OrganizationScreen.tsx",
     "finops-web/src/screens/OverviewEngineering.tsx",
     "finops-web/src/screens/OverviewExecutive.tsx",
@@ -212,6 +215,7 @@
     "finops-web/src/screens/__tests__/Harness.tsx",
     "finops-web/src/screens/__tests__/HomeScreen.test.tsx",
     "finops-web/src/screens/__tests__/IngestScreen.test.tsx",
+    "finops-web/src/screens/__tests__/LedgerScreen.test.tsx",
     "finops-web/src/screens/__tests__/OrganizationScreen.test.tsx",
     "finops-web/src/screens/__tests__/OverviewViews.test.tsx",
     "finops-web/src/screens/__tests__/PlatformScreen.test.tsx",
@@ -318,6 +322,7 @@
     "finops_api/db/repositories/freshness.py",
     "finops_api/db/repositories/ingest.py",
     "finops_api/db/repositories/invoices.py",
+    "finops_api/db/repositories/ledger.py",
     "finops_api/db/repositories/org.py",
     "finops_api/db/repositories/query.py",
     "finops_api/db/repositories/quotas.py",
@@ -350,6 +355,7 @@
     "finops_api/routes/forecast.py",
     "finops_api/routes/ingest.py",
     "finops_api/routes/inventory.py",
+    "finops_api/routes/ledger.py",
     "finops_api/routes/me.py",
     "finops_api/routes/org.py",
     "finops_api/routes/platform.py",
@@ -633,6 +639,7 @@
     "migrations/versions/0042_creator_lookup.py",
     "migrations/versions/0043_savings_credit.py",
     "migrations/versions/0044_savings_credit_month.py",
+    "migrations/versions/0045_ledger_screen.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -688,6 +695,7 @@
     "tests/api/test_identity_local.py",
     "tests/api/test_inventory_geography.py",
     "tests/api/test_inventory_routes.py",
+    "tests/api/test_ledger_routes.py",
     "tests/api/test_lifecycle.py",
     "tests/api/test_owner_suggestions.py",
     "tests/api/test_query_routes.py",
@@ -1061,6 +1069,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/e2e/ledger.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/e2e/overview.spec.ts",
       "t": "finops-web/e2e/estate.ts",
       "k": "typescript"
@@ -1208,6 +1221,11 @@
     {
       "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/IngestScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/LedgerScreen.tsx",
       "k": "typescript"
     },
     {
@@ -1401,6 +1419,16 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/api/fixtures/ledger.ts",
+      "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/fixtures/ledger.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/api/fixtures/query.ts",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -1458,6 +1486,11 @@
     {
       "s": "finops-web/src/api/queries.ts",
       "t": "finops-web/src/api/fixtures/cost.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/queries.ts",
+      "t": "finops-web/src/api/fixtures/ledger.ts",
       "k": "typescript"
     },
     {
@@ -3596,6 +3629,51 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/LedgerScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/LedgerScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/LedgerScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/LedgerScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/LedgerScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/LedgerScreen.tsx",
+      "t": "finops-web/src/components/displayNames.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/LedgerScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/LedgerScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/LedgerScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/OrganizationScreen.tsx",
       "t": "finops-web/src/api/queries.ts",
       "k": "typescript"
@@ -5506,6 +5584,31 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/LedgerScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/ledger.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/LedgerScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/LedgerScreen.test.tsx",
+      "t": "finops-web/src/screens/LedgerScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/LedgerScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/LedgerScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/OrganizationScreen.test.tsx",
       "t": "finops-web/src/screens/OrganizationScreen.tsx",
       "k": "typescript"
@@ -7286,6 +7389,26 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/ledger.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/ledger.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/ledger.py",
+      "t": "finops_api/guards.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/ledger.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/org.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -8178,6 +8301,41 @@
     {
       "s": "finops_api/routes/inventory.py",
       "t": "finops_query/graph.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ledger.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ledger.py",
+      "t": "finops_api/db/repositories/ledger.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ledger.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ledger.py",
+      "t": "finops_api/exports/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ledger.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ledger.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ledger.py",
+      "t": "finops_core/domain/tenant.py",
       "k": "python"
     },
     {
@@ -11718,6 +11876,11 @@
     {
       "s": "tests/api/test_inventory_routes.py",
       "t": "finops_core/domain/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_ledger_routes.py",
+      "t": "finops_core/config.py",
       "k": "python"
     },
     {
