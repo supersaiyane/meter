@@ -565,6 +565,10 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         # FEAT-041, added with the collector in TASK-P7-012. Weekly, and never run, so it is
         # due at `AT`. Missed when the collector landed and caught here by the full suite.
         "team_digests",
+        # FEAT-077, added with the collector in TASK-P11-002. Daily, and never run, so due at
+        # `AT`; declared here because the list is exhaustive.
+        "ownership",
+        "savings_ledger",
     }
 
 

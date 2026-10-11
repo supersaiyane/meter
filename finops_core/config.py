@@ -155,6 +155,20 @@ class Settings(BaseSettings):
     #: reported as unmanaged, confidently and wrongly.
     iac_exhaustive_accounts: str = ""
 
+    # Owners, FEAT-077 and P11 spec section 5.2. The tag keys a deployment names its owners
+    # under, in order: the first a resource carries with a value names its team. Comma separated
+    # like `regions`. `team` by default, so a deployment that sets nothing reads what it read
+    # before; one whose owners live under `owner` or `cost-center` names those here.
+    owner_tag_keys: str = "team"
+    #: The attribute an AppRegistry application's attribute group names its owner under,
+    #: TASK-P11-003.
+    catalogue_owner_key: str = "owner"
+    #: How many resources one ownership run asks CloudTrail about, TASK-P11-004. The adapter
+    #: holds the documented two requests a second; this bounds how long a first run over a large
+    #: estate spends asking. 200 lookups of one or two pages each is 100 to 200 seconds in one
+    #: account and Region (modelled), and the rest are asked on the next day's run.
+    creator_lookups_per_run: int = Field(default=200, ge=1)
+
     # Blast radius, FEAT-044. How many reachable resources count as wide. A number in code
     # deciding what is wide is a number nobody can argue with, which is ADR-0012's argument
     # about cadence applied to a judgement rather than to an interval.
@@ -275,6 +289,11 @@ class Settings(BaseSettings):
         collector then reads nothing and every resource reads as not determined, which is true.
         """
         return tuple(part.strip() for part in self.iac_state_locations.split(",") if part.strip())
+
+    @property
+    def owner_tag_key_list(self) -> tuple[str, ...]:
+        """The owner tag keys, split, in the order a resource's tags are tried."""
+        return tuple(part.strip() for part in self.owner_tag_keys.split(",") if part.strip())
 
     @property
     def iac_exhaustive(self) -> frozenset[str]:

@@ -98,6 +98,15 @@ subprojects:
   spec: specs/2026-10-07-p10-proven-numbers-design.md
   plan: plans/P10-implementation-plan.md
   depends_on: P1
+- id: P11
+  name: Owners and a savings ledger
+  status: Delivered on 2026-10-11 against fakes, proven by TASK-P11-009. Approved by the owner on 2026-10-08
+    with OPEN-25 to OPEN-27 as recommended. Chosen as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
+    AppRegistry and CloudTrail as suggestions beside the assigned owner, and a ledger crediting each
+    verified saving to its owner and team for every month the bill shows it held
+  spec: specs/2026-10-08-p11-owners-and-savings-ledger-design.md
+  plan: plans/P11-implementation-plan.md
+  depends_on: P3
 features:
 - id: FEAT-001
   name: Account onboarding and organization topology, parent to child map
@@ -561,6 +570,18 @@ features:
   status: Delivered
   detail: '[P10 spec](docs/specs/2026-10-07-p10-proven-numbers-design.md) sections 5.3 to 5.5, 6, 7'
   doc: docs/features/FEAT-076-invoice-reconciliation.md
+- id: FEAT-077
+  name: Owners from tags, the service catalogue and CloudTrail
+  subproject: P11
+  status: Delivered
+  detail: '[P11 spec](docs/specs/2026-10-08-p11-owners-and-savings-ledger-design.md) sections 5.1 to 5.4, [P11 plan](docs/plans/P11-implementation-plan.md)'
+  doc: docs/features/FEAT-077-owners-from-tags-catalogue-and-cloudtrail.md
+- id: FEAT-078
+  name: The savings ledger, verified savings credited and re-measured
+  subproject: P11
+  status: Delivered
+  detail: '[P11 spec](docs/specs/2026-10-08-p11-owners-and-savings-ledger-design.md) sections 5.5 and 5.6, [P11 plan](docs/plans/P11-implementation-plan.md)'
+  doc: docs/features/FEAT-078-savings-ledger.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -2134,6 +2155,130 @@ changes:
     collected before it was true. Criterion 3 failed at first, ISS-266, and the seed now judges every
     account that holds instances or attached volumes. FEAT-071 to FEAT-074 delivered, the evidence in
     the plan
+- id: CHG-0147
+  date: '2026-10-08'
+  type: Scope
+  what: P11, owners and a savings ledger, specified and planned as the next priority
+  commit: pending
+  detail: 'The owner chose proposal 3 of next-in-scope.txt as the next priority on 2026-10-08, answering
+    OPEN-20 for it. The spec reads owners from tags under configurable keys, AWS AppRegistry and the
+    CloudTrail event that created a resource, shows them as suggestions beside the assigned owner, and
+    credits each verified saving to its owner and team for every month the bill shows it held. Nine
+    tasks, about eight and a half working days (modelled). OPEN-25 to OPEN-27 put the catalogue, the
+    CloudTrail store and whether individuals are ranked, each with its recommendation. Waiting for the
+    owner''s approval to build'
+- id: CHG-0148
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P11-001, owner sources as ports and the fake estate's owners, with P11 approved
+  commit: pending
+  detail: 'The owner approved P11 on 2026-10-08 with OPEN-25 to OPEN-27 as recommended: AWS AppRegistry,
+    CloudTrail''s event history, teams only. finops_core gains OwnerSuggestion, CatalogueEntry, Creator and
+    BeforeHistory with their invariants, and the ServiceCatalogue and ResourceCreators ports as a fifth
+    group; the fakes plant an application owner, an application naming nobody, a person and a pipeline as
+    creators and resources older than the 90 day record in fake-product-b, and the estate carries an owner
+    under a second tag key. A contract test holds every implementation to them'
+- id: CHG-0149
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P11-002, owners from tags and the ownership collector
+  commit: pending
+  detail: 'resource_owner, migration 0041, one row per resource per source with the domain''s rules as
+    constraints and scoped by account, and the ownership collector''s daily schedule row. The
+    owner_tag_keys setting, team by default, names the keys tried in order; the collector writes TAG rows
+    from the inventory''s nodes with no AWS call and removes those it no longer finds, and refuses to run
+    without settings rather than guess the keys. The fake inventory''s estate nodes now carry their own
+    tags, and the demo names owner as a second key so the planted volume shows'
+- id: CHG-0150
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P11-003, owners from AWS AppRegistry
+  commit: pending
+  detail: 'AppRegistry associates stacks and a tag value with an application rather than listing its
+    resources, so the catalogue port now returns each application with its owner and the tags that mark
+    its resources, awsApplication and the stack tag, and the ownership collector matches the inventory''s
+    nodes by them; spec section 5.3 amended. AwsServiceCatalogue reads five calls per account and Region,
+    every list through botocore''s paginators, held to the model''s shapes; the hub reaches
+    servicecatalog-appregistry through an interface endpoint in every collection Region, and the member
+    role gains its five servicecatalog reads. A refused catalogue is typed and keeps its account''s rows'
+- id: CHG-0151
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P11-004, creators from CloudTrail's event history
+  commit: pending
+  detail: 'AwsResourceCreators asks LookupEvents by the ARN''s own id and then the whole ARN, paced to
+    the two requests a second AWS documents, and names the earliest event that created the resource,
+    its verb a creating one and its noun the type the ARN names, so a later CreateTags is never taken
+    for its creation; a session under an IAM Identity Center role is a person and any other role
+    automation. creator_lookup, migration 0042, keeps each resource asked, found or older than the 90
+    days, so none is asked twice, and the collector asks at most creator_lookups_per_run of the
+    resources no tag or catalogue names. The member role gains cloudtrail:LookupEvents; spec 5.4
+    amended'
+- id: CHG-0152
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P11-005, owner suggestions on every recommendation
+  commit: pending
+  detail: 'Recommendations carry owner_suggestions, every resource_owner row for the resource read
+    through that table''s own scope rule, strongest first with its source, detail and both dates, and
+    created_before where CloudTrail found the resource older than its history; suggested_owner is now
+    the strongest team, failing which the node''s team tag as before, and never a creator. The
+    recommendations screen lists them under the owner cell, owned or not. A test over the source text
+    holds that no owner source writes recommendation.owner and that the only update setting it is the
+    lifecycle move with the owner a person named'
+- id: CHG-0153
+  date: '2026-10-11'
+  type: Feature
+  what: TASK-P11-006, a credit for every verified saving
+  commit: pending
+  detail: 'savings_credit, migration 0043, with its constraints, a non cascading link to the
+    verification and ByAccount; the daily savings_ledger collector and its schedule row credit each
+    VERIFIED saving with an owner to that owner, the strongest team named for the resource and the
+    actor who moved it to DONE, at FEAT-029''s measured before less after; names fixed at first
+    write, the figure refreshed, and a credit withdrawn when its saving stops verifying. INCONCLUSIVE
+    and REGRESSED earn nothing; the demo credits its one verified saving'
+- id: CHG-0154
+  date: '2026-10-11'
+  type: Feature
+  what: TASK-P11-007, the months a saving held
+  commit: pending
+  detail: 'savings_credit_month, migration 0044, with its constraints and ByAccount; finops_query.ledger
+    judges each closed month after verification against the cost before the change at FEAT-029''s
+    daily rate: HELD with its measured saving, REGRESSED, which stops the accrual, or UNOBSERVED, with
+    neither cost nor saving. The savings_ledger collector judges every month again each run and
+    removes a month it no longer judges before its credit. Spec 5.5 amended: a resource absent from a
+    month the account was billed for cost nothing, as FEAT-029 reads it, and only a month with no
+    bill at all is unobserved. ISS-268 logged'
+- id: CHG-0155
+  date: '2026-10-11'
+  type: Feature
+  what: TASK-P11-008, the savings ledger's routes and screen
+  commit: pending
+  detail: 'GET /savings/ledger ranks teams by the saving their months held, with no person named;
+    GET /savings/ledger/credits lists credits with their owner, closer and months, one team, the
+    unnamed team or every credit; both exportable, read through each table''s own scope, coverage in
+    accounts. The Savings ledger screen under Optimize ranks teams, shows a chosen team''s credits,
+    labels every figure measured and says a month the bill holds nothing for as not observed;
+    migration 0045 admits /optimize/ledger as a saved view''s screen; a journey proves it'
+- id: CHG-0156
+  date: '2026-10-11'
+  type: Feature
+  what: TASK-P11-009, P11 proved and delivered
+  commit: pending
+  detail: 'tests/scripts/test_p11_exit_criteria.py seeds the demo and holds all five exit criteria of
+    spec section 13 across the whole estate, among them a run with the catalogue refused and the event
+    history throttled that keeps every row; FEAT-077 and FEAT-078 and P11 delivered, the evidence per
+    criterion in the plan; ISS-021 narrowed to query findings and anomalies'
+- id: CHG-0157
+  date: '2026-10-11'
+  type: Fix
+  what: source-map-js 1.2.2, and npm's fix read as npm states it, ISS-269
+  commit: pending
+  detail: 'source-map-js moves from 1.2.1 to 1.2.2, which fixes GHSA-68fv-2mgg-jv7q, admitted through
+    make dep-check; npm audit reports no vulnerability. The scan report now reads npm''s fixAvailable of
+    true as a fix that exists, with npm update as its remedy, so a fixable finding fails the gate rather
+    than being absorbed by an acceptance. The acceptance is withdrawn, and check_dev_only.py keeps no
+    rule, since no accepted npm finding depends on a package never shipping'
 issues:
 - id: ISS-189
   severity: LOW
@@ -3051,8 +3196,10 @@ issues:
   status: OPEN
   detail: 'FEAT-016. First slice 2026-10-07, CHG-0126: a recommendation suggests the owner its resource''s
     team tag names, read from the inventory node within the reader''s scope and never stored, beside the
-    owner a person assigns. Still open: a setting for a tenant whose owners live under another key, owners
-    from the service catalogue and from CloudTrail creators, and owners on query findings and anomalies.'
+    owner a person assigns. P11 delivered the rest of the recommendation side on 2026-10-11: owner tag keys
+    as a setting, owners from AWS AppRegistry and from CloudTrail creators, every source listed on every
+    recommendation strongest first, and a ledger crediting verified savings to owners and teams. Still
+    open: owners on query findings and anomalies, which keep FEAT-016''s.'
 - id: ISS-022
   severity: HIGH
   summary: The cost model is never back tested against the bill
@@ -4619,6 +4766,39 @@ issues:
     so the volume was never judged and the demo had no gp2 to gp3 recommendation. Its own tests passed,
     because they drove the collector with every volume. Fixed the same day: the loop runs over every
     account with instances or attached volumes, and test_p9_exit_criteria.py holds the demo to it.'
+- id: ISS-267
+  severity: LOW
+  status: OPEN
+  summary: The healthz test fails when ingest tests run before it in the same session
+  detail: 'Found 2026-10-11 while checking TASK-P11-006. Running tests/ingest before
+    tests/api/test_scope_enforcement.py in one pytest session makes
+    test_healthz_reports_a_recent_collection_as_healthy report degraded, on next-build''s code as well
+    as P11-006''s, so it is not that change. /healthz reports the worst tenant across every tenant''s
+    collector_schedule rows, and an earlier ingest test leaves a tenant with schedule rows and no run
+    for some collector. make verify runs tests/api first and passes. The fix is a test that scopes its
+    assertion to its own tenant, or fixtures that leave no schedule behind; not yet chosen.'
+- id: ISS-268
+  severity: LOW
+  status: OPEN
+  summary: Two retention tests fail when the demo seed tests run before them in the same session
+  detail: 'Found 2026-10-11 while checking TASK-P11-007, and reproduced on next-build''s code, so it
+    predates P11. Running tests/scripts/test_seed_demo.py before tests/ingest/collectors/test_retention.py
+    in one pytest session fails test_maintenance_creates_the_months_and_is_then_a_no_op and
+    test_a_partition_holding_any_day_inside_the_window_survives: the seed leaves a cost_focus_daily
+    partition, cost_focus_daily_p202606, that the retention tests count. make verify runs tests/ingest
+    before tests/scripts and passes. The fix is the seed tests giving their partitions back through
+    partition_sandbox, as the collector tests do; ISS-267 is the same kind of leak.'
+- id: ISS-269
+  severity: MEDIUM
+  status: FIXED
+  summary: The scan report read an npm fix with no named version as no fix
+  detail: 'Found 2026-10-11 reading the posture after P11. npm audit marked source-map-js, high,
+    GHSA-68fv-2mgg-jv7q, as fixable, but npm says a fix exists as true when updating within the declared
+    ranges reaches it, and parse_npm_audit read only a named version. The finding was recorded as
+    unfixable and the acceptance written on 2026-10-06, before 1.2.2 was published, absorbed it, so the
+    gate passed over a fixable high. Fixed the same day, CHG-0157: npm_fix reads true as a fix, the
+    package moved to 1.2.2, and the acceptance was withdrawn. tests/scripts/test_security_report.py
+    holds that an acceptance cannot absorb a finding with a fix.'
 - id: ISS-260
   severity: MEDIUM
   status: OPEN
@@ -4790,7 +4970,8 @@ open_questions:
   blocks: nothing
   detail: Set in METER_REGIONS, see .env.example section 3
 - id: OPEN-20
-  question: Which of proposals 2 to 9 in next-in-scope.txt are approved, and in what order?
+  question: Which of proposals 2 to 9 in next-in-scope.txt are approved, and in what order? ANSWERED IN PART
+    2026-10-08, proposal 3, owners and a savings ledger, is next, as P11; the rest stay open
   status: OPEN
   blocks: Every proposal after P9
   detail: 'Raised 2026-10-07 with the market research. Priorities 1 to 3 were approved the same day. The
@@ -4843,3 +5024,31 @@ open_questions:
     options'' risk from 0 to 4 and Meter''s rule gives none, so migration 0040 lets that column be null
     rather than invent a nought that would read as no risk. The cost is a write per targeted finding.
     Reversing it is storing the demand on the recommendation instead; the owner may say so.'
+- id: OPEN-25
+  question: 'Which service catalogue names owners, AWS AppRegistry, a Backstage catalogue, or a list kept in
+    Meter? ANSWERED 2026-10-08 as recommended: AWS AppRegistry'
+  status: ANSWERED
+  blocks: TASK-P11-003
+  detail: 'Raised 2026-10-08 by the P11 spec, section 5.3. Recommended: AWS AppRegistry, the store behind
+    myApplications, read only through four calls in the botocore 1.43.108 model, the owner read from the
+    application''s attribute group under a configurable key. Backstage waits on OPEN-13, the code host;
+    a list kept in Meter would be a second source of truth.'
+- id: OPEN-26
+  question: 'Are creators read from CloudTrail''s event history, or from CloudTrail Lake or the organization
+    trail through Athena? ANSWERED 2026-10-08 as recommended: the event history'
+  status: ANSWERED
+  blocks: TASK-P11-004
+  detail: 'Raised 2026-10-08 by the P11 spec, section 5.4. Recommended: the event history through
+    LookupEvents by resource name, which needs no new infrastructure and reuses the paging the query
+    evidence adapter has, read once per resource; a resource older than the history says so. Lake or the
+    organization trail reach further back and need infrastructure no account has yet, ISS-122, and either
+    can replace the adapter behind the same port.'
+- id: OPEN-27
+  question: 'May the savings ledger rank individual engineers, or teams only? ANSWERED 2026-10-08 as
+    recommended: teams only'
+  status: ANSWERED
+  blocks: TASK-P11-008
+  detail: 'Raised 2026-10-08 by the P11 spec, section 5.6. Recommended: teams only, a person named only as
+    the owner on a team''s credits, because a leaderboard of named engineers is a performance review
+    nobody asked Meter to run. Ranking individuals is a change to the screen and its route, not to the
+    data.'

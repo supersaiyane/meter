@@ -58,6 +58,8 @@ export const EXPORT_TITLES: Readonly<Partial<Record<string, string>>> = {
   '/api/v1/waste/recommendations/{recommendation_id}/alternatives': 'Alternatives',
   '/api/v1/waste/refusals': 'Refusals',
   '/api/v1/waste/savings': 'Realized savings',
+  '/api/v1/savings/ledger': 'Savings ledger',
+  '/api/v1/savings/ledger/credits': 'Savings ledger credits',
   '/api/v1/waste/score': 'Waste score',
   '/api/v1/waste/containers': 'Container usage',
 };

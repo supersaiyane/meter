@@ -33,10 +33,10 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 ACCEPTED = ROOT / "security" / "policy" / "accepted.yaml"
 FRONTEND = ROOT / "finops-web"
 
-# package -> the advisory whose acceptance depends on the package never shipping
-DEVELOPMENT_ONLY = {
-    "source-map-js": "1241209",
-}
+# package -> the advisory whose acceptance depends on the package never shipping. Empty since
+# 2026-10-11, when source-map-js 1.2.2 fixed the one advisory accepted this way; an npm entry
+# added to accepted.yaml again adds its rule here.
+DEVELOPMENT_ONLY: dict[str, str] = {}
 
 Tree = Mapping[str, Any]
 

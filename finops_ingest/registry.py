@@ -552,6 +552,32 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0.000005",
         runs_in="api",
     ),
+    # FEAT-077, TASK-P11-002. Migration 0041 installs the same row for every tenant before it.
+    ScheduleEntry(
+        collector="ownership",
+        cadence_seconds=DAILY,
+        reason=(
+            "Daily, P11 specification section 7. Tags are read from the inventory Meter already "
+            "holds, with no AWS call; the service catalogue, AWS AppRegistry, is read once per "
+            "account and Region; CloudTrail's event history is asked once for each resource that "
+            "has no creator yet, and never again. Owners change when teams reorganise, not by the "
+            "hour, so a daily read keeps a suggestion at most a day behind. ADR-0012, constraint 9 "
+            "and FEAT-077."
+        ),
+        est_cost_per_run="0.0005",
+    ),
+    # FEAT-078, TASK-P11-006. Migration 0043 installs the same row for every tenant before it.
+    ScheduleEntry(
+        collector="savings_ledger",
+        cadence_seconds=DAILY,
+        reason=(
+            "Daily, P11 specification section 7. Reads only what Meter already holds, FEAT-029's "
+            "verdicts, the recommendations' owners and the bill's daily cost, with no AWS call. A "
+            "verdict is reached at most once a day, so a daily read credits a verified saving at "
+            "most a day after it verifies. ADR-0012, constraint 9 and FEAT-078."
+        ),
+        est_cost_per_run="0",
+    ),
 )
 
 

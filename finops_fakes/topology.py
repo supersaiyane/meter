@@ -531,7 +531,9 @@ def _domain_node(node: Node, account: AccountKey) -> DomainNode:
         region_id=region_of(node),
         availability_zone=node.availability_zone,
         name=node.name,
-        tags={"finops:module": "fixture"},
+        # An estate resource carries its own tags, its team among them, so owners read from the
+        # inventory, FEAT-077, find what the bill's rows find; every other node the fixture tag.
+        tags={"finops:module": "fixture", **utilization.tags_of(node.node_id)},
         as_of=fixtures.AS_OF,
         collected_at=fixtures.COLLECTED_AT,
     )

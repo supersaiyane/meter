@@ -41,6 +41,7 @@ from finops_api.schemas import (
     ContainerUsageRowOut,
     ContainerWasteOut,
     Envelope,
+    OwnerSuggestionOut,
     RealizedSavingOut,
     RealizedSavingsOut,
     RecommendationDetailOut,
@@ -106,6 +107,13 @@ def recommendation_out(row: Any) -> RecommendationOut:
         owner=row.owner,
         # Absent from rows read outside the recommendation repository, a resource page's own.
         suggested_owner=row._mapping.get("suggested_owner"),
+        # TASK-P11-005. Every source's suggestion, strongest first, and absent from rows read
+        # elsewhere like the suggested owner; null where no source names anybody.
+        owner_suggestions=[
+            OwnerSuggestionOut.model_validate(one)
+            for one in row._mapping.get("owner_suggestions") or ()
+        ],
+        created_before=row._mapping.get("created_before"),
         ticket_reference=row.ticket_reference,
         rationale=row.rationale,
         reversible=risk.reversible,

@@ -63,6 +63,7 @@ from finops_fakes.estate_metrics import EstateMetrics, ec2_candidates, volume_ca
 from finops_fakes.evidence import FakeQueryEvidence
 from finops_fakes.health import FakeRoleHealth
 from finops_fakes.invoices import FakeInvoices
+from finops_fakes.ownership import FakeResourceCreators, FakeServiceCatalogue
 from finops_fakes.platform_cost import FakePlatformCost
 from finops_fakes.provider import FakeProvider
 from finops_fakes.recommendations import FakeRecommendationSource
@@ -82,6 +83,7 @@ from finops_ingest.collectors.instance_catalog import InstanceCatalogCollector
 from finops_ingest.collectors.inventory import InventoryCollector
 from finops_ingest.collectors.invoices import InvoiceCollector
 from finops_ingest.collectors.org_tree import OrgTreeCollector
+from finops_ingest.collectors.ownership import OwnershipCollector
 from finops_ingest.collectors.partitions import ensure_partition, partition_maintenance
 from finops_ingest.collectors.platform_cost import PlatformCostCollector
 from finops_ingest.collectors.price_catalog import PriceCatalogCollector
@@ -95,6 +97,7 @@ from finops_ingest.collectors.realized_savings import (
     RealizedSavingsCollector,
 )
 from finops_ingest.collectors.recommendations import RecommendationCollector
+from finops_ingest.collectors.savings_ledger import SavingsLedgerCollector
 from finops_ingest.collectors.savings_plan_rates import SavingsPlanRatesCollector
 from finops_ingest.collectors.score import ScoreCollector
 from finops_ingest.collectors.spot_prices import SpotPricesCollector
@@ -140,6 +143,11 @@ DEMO_TABLES = (
     # Within the three: the edges reference the nodes, so the edges go first.
     "topology_edge",
     "topology_node",
+    # P11, FEAT-077. Owners read from the nodes above; no foreign key, so anywhere above
+    # the tenant would do, and beside the nodes is where a reader looks for it.
+    "resource_owner",
+    # TASK-P11-004. Which resources CloudTrail was asked about; no foreign key either.
+    "creator_lookup",
     "graph_coverage",
     # P6, FEAT-035 and FEAT-036. Above `ingest_run` like the P4 and P5 tables,
     # because both carry the run that wrote them. Neither references the other, so
@@ -189,6 +197,10 @@ DEMO_TABLES = (
     # P3, FEAT-025 and FEAT-029. Both of these reference `recommendation`, so
     # both go before it: the measured verdict and the lifecycle log first, the
     # finding they are about second.
+    # P11, FEAT-078. A month references its credit, and a credit the verification and the
+    # recommendation, so these go first.
+    "savings_credit_month",
+    "savings_credit",
     "realized_saving",
     "recommendation_event",
     # Before the recommendations it hangs off and the prices it quotes. TASK-P9-006.
@@ -836,6 +848,33 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
             connection,
             unit(),
             "inventory",
+        )
+
+        # P11, FEAT-077. Owners from the nodes' tags, after the inventory because it reads them.
+        # The demo names `owner` as a second key so the planted volume that carries only that
+        # tag, in the account with no team tags, shows the case; a deployment names its own.
+        written += _through_the_ledger(
+            ledger,
+            # And the fake AppRegistry, whose applications mark resources by tag, TASK-P11-003,
+            # and the fake event history, which saw two of the unnamed resources made, P11-004.
+            OwnershipCollector(
+                clock=lambda: now,
+                catalogue=FakeServiceCatalogue(),
+                creators=FakeResourceCreators(),
+            ),
+            connection,
+            unit(scope_key="ownership"),
+            "ownership",
+            settings=settings.model_copy(update={"owner_tag_keys": "team,owner"}),
+        )
+        # FEAT-078, TASK-P11-006. After the owners, because a credit names the team they
+        # suggest, and after the verdicts above, because it credits only a VERIFIED one.
+        written += _through_the_ledger(
+            ledger,
+            SavingsLedgerCollector(clock=lambda: now),
+            connection,
+            unit(scope_key="savings_ledger"),
+            "savings_ledger",
         )
 
         # FEAT-057. Seeded after the inventory on purpose, because it joins to it: the

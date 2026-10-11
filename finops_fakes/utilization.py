@@ -47,7 +47,7 @@ from finops_core.domain.account import AccountKey, Provider
 from finops_core.domain.metrics import MetricPoint
 from finops_core.domain.resource import ResourceRef
 from finops_core.errors import AccessDenied, NotOptedIn
-from finops_fakes import containers, cur, fixtures
+from finops_fakes import containers, cur, fixtures, ownership
 from finops_fakes import estate_shape as shape
 from finops_fakes.containers import SeriesPoint
 
@@ -684,6 +684,8 @@ SPECS: tuple[Spec, ...] = (
         mem=("steady", 45, 20),
         disk=("fill", 0.07, 0.08),
         planted="DEV_BOX_IDLE_AT_NIGHT",
+        # TASK-P11-003. The `sandbox` application, which names no owner.
+        extra_tags={ownership.APPLICATION_TAG: ownership.SANDBOX},
     ),
     Spec(
         "amazonebs/fake-product-b/0001",
@@ -703,6 +705,9 @@ SPECS: tuple[Spec, ...] = (
         "VolumeId",
         disk=("fill", 0.07, 0.08),
         planted="EBS_OVERSIZED",
+        # TASK-P11-001. An owner under a second tag key, in the account that carries no team tag:
+        # a deployment naming `owner` among its owner tag keys finds this team, P11 spec 5.2.
+        extra_tags={"owner": "data-platform"},
     ),
     Spec(
         "amazonec2/fake-product-b/0002",
@@ -768,6 +773,8 @@ SPECS: tuple[Spec, ...] = (
         mem=None,
         disk=None,
         planted="OVERSIZED_MEMORY_UNOBSERVED",
+        # TASK-P11-003. AppRegistry's application `checkout`, by its awsApplication tag.
+        extra_tags={ownership.APPLICATION_TAG: ownership.CHECKOUT},
     ),
     Spec(
         "amazonrds/fake-product-b/0001",
@@ -792,6 +799,8 @@ SPECS: tuple[Spec, ...] = (
         disk=("fill", 0.20, 0.21),
         idle_since_days=47,
         planted="RDS_IDLE",
+        # TASK-P11-003. The `reporting` application's, by the stack that made it.
+        extra_tags={ownership.STACK_TAG: ownership.REPORTING_STACK},
     ),
     Spec(
         "amazonvpc/fake-product-b/nat-0001",
@@ -859,11 +868,21 @@ def spec(resource_id: str) -> Spec:
 
 
 def _tags(s: Spec) -> Mapping[str, str]:
-    """The same tagging holes the bill has: `fake-product-b` carries nothing."""
+    """The same tagging holes the bill has: `fake-product-b` carries no team tag.
+
+    A resource's own extra tags survive the hole, so the one planted under a second owner key,
+    TASK-P11-001, carries it with no `team` beside it.
+    """
     owner = cur.OWNERS.get(s.account_id)
     if owner is None:
-        return MappingProxyType({})
+        return MappingProxyType(dict(s.extra_tags))
     return MappingProxyType({"team": owner, "finops:module": "fixture", **s.extra_tags})
+
+
+def tags_of(resource_id: str) -> Mapping[str, str]:
+    """A resource's tags as the inventory reads them, none for one the estate does not hold."""
+    found = _BY_ID.get(resource_id)
+    return _tags(found) if found is not None else MappingProxyType({})
 
 
 def launched_at(s: Spec, at: datetime = fixtures.AS_OF) -> datetime:

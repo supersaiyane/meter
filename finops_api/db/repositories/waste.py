@@ -11,12 +11,14 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any, ClassVar
 
-from sqlalchemy import ColumnElement, Row, ScalarSelect, Select, Table, and_, func, select
+from sqlalchemy import ColumnElement, Row, ScalarSelect, Select, Table, and_, case, func, select
+from sqlalchemy.dialects.postgresql import aggregate_order_by
 
 from finops_api.db import models
 from finops_api.db.repositories.base import ScopedRepository
 from finops_api.guards import scope_predicate
 from finops_core.constants import TEAM_TAG
+from finops_core.domain.ownership import ORDER, OwnerKind
 from finops_core.domain.tenant import Scope
 
 #: The service an option is an instance type of.
@@ -75,25 +77,72 @@ class RecommendationRepository(ScopedRepository):
     table: ClassVar[Table] = models.recommendation
     resource: ClassVar[str] = "recommendation"
 
-    def _suggested_owner(self, scope: Scope) -> ScalarSelect[Any]:
-        """The resource's team tag, from the inventory node naming it, as a suggestion. ISS-021.
+    def _of_resource(self, table: Table, scope: Scope) -> list[ColumnElement[bool]]:
+        """A table's rows about the recommendation's resource, through that table's scope rule.
 
-        Joined on the provider's own identifier within the account, as `findings_for` joins, and
-        confined by the node table's own scope rule, so a node outside the reader's access never
-        suggests anything. Never stored: an owner is a person's decision, and a tag only says
-        whom to ask. An empty tag suggests nobody. At most one node can match, because
-        `uq_topology_node__provider_id` holds one node per resource in a tenant.
+        Joined on the provider's own identifier within the account, as `findings_for` joins, so
+        a row outside the reader's access, or in another account sharing the identifier, never
+        suggests anything.
         """
-        node = models.topology_node
-        return (
-            select(func.nullif(node.c.tags[TEAM_TAG].astext, ""))
-            .where(node.c.tenant_id == self.table.c.tenant_id)
-            .where(node.c.sub_account_id == self.table.c.sub_account_id)
-            .where(node.c.provider_id == self.table.c.resource_id)
-            .where(scope_predicate(node, scope))
+        resource = table.c.provider_id if table is models.topology_node else table.c.resource_id
+        return [
+            table.c.tenant_id == self.table.c.tenant_id,
+            table.c.sub_account_id == self.table.c.sub_account_id,
+            resource == self.table.c.resource_id,
+            scope_predicate(table, scope),
+        ]
+
+    def _owners(self, scope: Scope) -> list[Any]:
+        """Whom to ask about the resource, from every source, as suggestions. ISS-021, FEAT-077.
+
+        `owner_suggestions` is each `resource_owner` row, strongest first, P11 spec section 5.1.
+        `suggested_owner` is the strongest team among them, and failing one the inventory node's
+        team tag, read as it was before TASK-P11-005; an empty tag suggests nobody, and at most one
+        node matches, `uq_topology_node__provider_id`. `created_before` is where CloudTrail's
+        history began when it found the resource older. None is stored on the recommendation: an
+        owner is a person's decision, and a suggestion only says whom to ask.
+        """
+        node, owner, asked = models.topology_node, models.resource_owner, models.creator_lookup
+        rank = case({source.value: at for at, source in enumerate(ORDER)}, value=owner.c.source)
+        team = (
+            select(owner.c.owner)
+            .where(*self._of_resource(owner, scope), owner.c.owner_kind == OwnerKind.TEAM.value)
+            .order_by(rank)
+            .limit(1)
             .correlate(self.table)
             .scalar_subquery()
         )
+        tagged = (
+            select(func.nullif(node.c.tags[TEAM_TAG].astext, ""))
+            .where(*self._of_resource(node, scope))
+            .correlate(self.table)
+            .scalar_subquery()
+        )
+        item = func.jsonb_build_object(
+            "owner", owner.c.owner,
+            "kind", owner.c.owner_kind,
+            "source", owner.c.source,
+            "detail", owner.c.detail,
+            "as_of", owner.c.as_of,
+            "collected_at", owner.c.collected_at,
+        )  # fmt: skip
+        listed = (
+            select(func.jsonb_agg(aggregate_order_by(item, rank, owner.c.owner)))
+            .where(*self._of_resource(owner, scope))
+            .correlate(self.table)
+            .scalar_subquery()
+        )
+        before = (
+            select(asked.c.history_starts)
+            .where(*self._of_resource(asked, scope), asked.c.outcome == "BEFORE_HISTORY")
+            .correlate(self.table)
+            .scalar_subquery()
+        )
+        return [
+            func.coalesce(team, tagged).label("suggested_owner"),
+            listed.label("owner_suggestions"),
+            before.label("created_before"),
+        ]
 
     def _priced(self, scope: Scope) -> list[Any]:
         """Both prices an hour at list and the current type, from the recommendation's own price
@@ -142,7 +191,7 @@ class RecommendationRepository(ScopedRepository):
         thousand, and only one of those is worth a morning.
         """
         statement = self.scoped_select(scope).add_columns(
-            self._suggested_owner(scope).label("suggested_owner"), *self._priced(scope)
+            *self._owners(scope), *self._priced(scope)
         )
         if lifecycle is not None:
             statement = statement.where(self.table.c.lifecycle == lifecycle)
@@ -161,9 +210,7 @@ class RecommendationRepository(ScopedRepository):
             self,
             scope,
             self.scoped_select(scope)
-            .add_columns(
-                self._suggested_owner(scope).label("suggested_owner"), *self._priced(scope)
-            )
+            .add_columns(*self._owners(scope), *self._priced(scope))
             .where(self.table.c.recommendation_id == recommendation_id),
         )
         return rows[0] if rows else None

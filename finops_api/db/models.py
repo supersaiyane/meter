@@ -1157,6 +1157,93 @@ spot_price_daily = Table(
     Column("collected_at", DateTime(timezone=True), nullable=False),
 )
 
+#: Who an estate says owns each resource, one row per resource per source, migration 0041,
+#: FEAT-077. A suggestion, never an owner: `recommendation.owner` is a person's to write.
+resource_owner = Table(
+    "resource_owner",
+    metadata,
+    Column("owner_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column("region_id", Text),
+    Column("resource_id", Text, nullable=False),
+    Column("source", Text, nullable=False),
+    Column("owner", Text, nullable=False),
+    Column("owner_kind", Text, nullable=False),
+    Column("detail", Text, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+#: Which resources CloudTrail has been asked about, found or older than its history, so none is
+#: asked twice, migration 0042, FEAT-077.
+creator_lookup = Table(
+    "creator_lookup",
+    metadata,
+    Column("lookup_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column("region_id", Text, nullable=False),
+    Column("resource_id", Text, nullable=False),
+    Column("outcome", Text, nullable=False),
+    Column("history_starts", DateTime(timezone=True)),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+#: One credit per verified saving, to the owner, team and closer, migration 0043, FEAT-078.
+savings_credit = Table(
+    "savings_credit",
+    metadata,
+    Column("credit_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column(
+        "recommendation_id",
+        UUID(as_uuid=True),
+        ForeignKey("recommendation.recommendation_id"),
+        nullable=False,
+    ),
+    Column(
+        "realized_id",
+        UUID(as_uuid=True),
+        ForeignKey("realized_saving.realized_id"),
+        nullable=False,
+        unique=True,
+    ),
+    Column("owner", Text, nullable=False),
+    Column("team", Text),
+    Column("closed_by", Text, nullable=False),
+    #: Measured: FEAT-029's before window's cost less its after window's, thirty days each.
+    Column("verified_monthly_saving", Numeric(20, 10), nullable=False),
+    Column("verified_on", Date, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
+#: Each closed month after a credit's saving verified, migration 0044, FEAT-078.
+savings_credit_month = Table(
+    "savings_credit_month",
+    metadata,
+    Column("month_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column("credit_id", UUID(as_uuid=True), ForeignKey("savings_credit.credit_id"), nullable=False),
+    #: The first of the month judged.
+    Column("month", Date, nullable=False),
+    #: HELD, REGRESSED or UNOBSERVED. Cost and saving are null exactly when UNOBSERVED.
+    Column("state", Text, nullable=False),
+    #: Measured, from cost_focus_daily.
+    Column("cost", Numeric(20, 10)),
+    Column("saving", Numeric(20, 10)),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
 query_adhoc = Table(
     "query_adhoc",
     metadata,

@@ -296,6 +296,17 @@ def p10_routers() -> tuple[APIRouter, ...]:
     return (reconciliation.router,)
 
 
+def p11_routers() -> tuple[APIRouter, ...]:
+    """The savings ledger's routes, from the P11 spec's section 8.
+
+    Teams by the savings they hold, and each team's credits with their months, TASK-P11-008:
+    reads of what the `savings_ledger` collector stored.
+    """
+    from finops_api.routes import ledger
+
+    return (ledger.router,)
+
+
 def _assistant(app: FastAPI, settings: Settings, model: Any) -> Any:
     """The assistant this application answers with, or None where no model was given.
 
@@ -400,6 +411,7 @@ def create_app(
         *(p8_routers() if include_p0_routes else ()),
         *(p9_routers() if include_p0_routes else ()),
         *(p10_routers() if include_p0_routes else ()),
+        *(p11_routers() if include_p0_routes else ()),
         *extra_routers,
     )
     # Checked before anything is registered, so a broken contract fails at

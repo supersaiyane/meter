@@ -67,9 +67,103 @@ export function reconciliationOf(invoices: readonly unknown[], period = '2026-08
   };
 }
 
+/** One closed month after a credited saving verified, FEAT-078. */
+function ledgerMonth(month: string, state: string, cost: string | null, saving: string | null) {
+  return {
+    month,
+    state,
+    cost,
+    saving,
+    as_of: '2026-12-01T00:00:00Z',
+    collected_at: '2026-12-02T06:00:00Z',
+  };
+}
+
+const LEDGER_AT = { as_of: '2026-12-01T00:00:00Z', collected_at: '2026-12-02T06:00:00Z' };
+
+/**
+ * The savings ledger, FEAT-078, shaped as `/api/v1/savings/ledger/credits`: platform's saving
+ * held two months, payments' month the bill holds nothing for, and nobody ranked.
+ */
+export const LEDGER_CREDITS = [
+  {
+    credit_id: 'credit-held',
+    recommendation_id: 'recommendation-held',
+    account_id: 'fake-platform-a',
+    resource_id: 'amazonec2/fake-platform-a/0002',
+    team: 'platform',
+    owner: 'platform@example.local',
+    closed_by: 'alice',
+    verified_monthly_saving: '40.00',
+    verified_on: '2026-09-20',
+    saving_held: '143.00',
+    months_held: 2,
+    regressed: false,
+    months: [
+      ledgerMonth('2026-10-01', 'HELD', '40.00', '53.00'),
+      ledgerMonth('2026-11-01', 'HELD', '0.00', '90.00'),
+    ],
+    ...LEDGER_AT,
+  },
+  {
+    credit_id: 'credit-unobserved',
+    recommendation_id: 'recommendation-unobserved',
+    account_id: 'fake-product-b',
+    resource_id: 'amazonrds/fake-product-b/0001',
+    team: 'payments',
+    owner: 'payments@example.local',
+    closed_by: 'carol',
+    verified_monthly_saving: '18.00',
+    verified_on: '2026-09-20',
+    saving_held: '0',
+    months_held: 0,
+    regressed: false,
+    months: [ledgerMonth('2026-10-01', 'UNOBSERVED', null, null)],
+    ...LEDGER_AT,
+  },
+];
+
+/** The same credits by team, shaped as `/api/v1/savings/ledger`. */
+export const LEDGER_TEAMS = [
+  {
+    team: 'platform',
+    credits: 1,
+    saving_held: '143.00',
+    months_held: 2,
+    regressed: 0,
+    latest_month: '2026-11-01',
+    ...LEDGER_AT,
+  },
+  {
+    team: 'payments',
+    credits: 1,
+    saving_held: '0',
+    months_held: 0,
+    regressed: 0,
+    latest_month: '2026-10-01',
+    ...LEDGER_AT,
+  },
+];
+
+const LEDGER_META = {
+  ...LEDGER_AT,
+  scope_coverage: { visible: 2, total: 2, is_partial: false, unit: 'accounts' },
+  degraded: false,
+  failures: [],
+};
+
 export async function demoEstate(page: Page): Promise<void> {
   await page.addInitScript(() => {
     window.localStorage.setItem('meter.token', 'a-session-token');
+  });
+
+  await stub(page, '/api/v1/savings/ledger', {
+    data: { teams: LEDGER_TEAMS },
+    meta: LEDGER_META,
+  });
+  await stub(page, '/api/v1/savings/ledger/credits', {
+    data: { team: null, every_team: true, credits: LEDGER_CREDITS },
+    meta: LEDGER_META,
   });
 
   await stub(page, '/api/v1/cost/reconciliation', {
@@ -374,6 +468,8 @@ export async function demoEstate(page: Page): Promise<void> {
           lifecycle: 'OPEN',
           owner: null,
           suggested_owner: 'platform',
+          owner_suggestions: [],
+          created_before: null,
           ticket_reference: null,
           rationale: 'p99 CPU of 11.4 percent against 4 vCPU over 15 days, so 1 vCPU',
           // TASK-P9-010. The type it names and both list prices, from one version.

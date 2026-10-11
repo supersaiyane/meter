@@ -263,6 +263,31 @@ READS: dict[tuple[str, str], set[str]] = {
         "inputTokens",
         "outputTokens",
     },
+    # FEAT-077, TASK-P11-003. AppRegistry's applications, the tag and stacks that mark their
+    # resources, and the owner their attribute groups name.
+    ("servicecatalog-appregistry", "ListApplications"): {"applications", "id", "name", "nextToken"},
+    ("servicecatalog-appregistry", "GetApplication"): {"applicationTag"},
+    ("servicecatalog-appregistry", "ListAssociatedResources"): {
+        "resources",
+        "resourceType",
+        "arn",
+        "nextToken",
+    },
+    ("servicecatalog-appregistry", "ListAttributeGroupsForApplication"): {
+        "attributeGroupsDetails",
+        "id",
+        "nextToken",
+    },
+    ("servicecatalog-appregistry", "GetAttributeGroup"): {"attributes"},
+    # FEAT-077, TASK-P11-004. The event that created a resource and who made the call.
+    ("cloudtrail", "LookupEvents"): {
+        "Events",
+        "EventId",
+        "EventName",
+        "EventTime",
+        "CloudTrailEvent",
+        "NextToken",
+    },
 }
 
 #: Which key carries the continuation token, per operation. Separate from the reads because this
@@ -286,6 +311,7 @@ TOKENS: dict[tuple[str, str], str] = {
     ("service-quotas", "ListRequestedServiceQuotaChangeHistory"): "NextToken",
     ("cloudwatch", "GetMetricData"): "NextToken",
     ("ec2", "DescribeVpcs"): "NextToken",
+    ("cloudtrail", "LookupEvents"): "NextToken",
 }
 
 
@@ -410,6 +436,14 @@ SENDS: dict[tuple[str, str], set[str]] = {
     ("support", "DescribeTrustedAdvisorCheckResult"): {"checkId", "language"},
     ("ec2", "DescribeVpcs"): set(),
     ("ec2", "DescribeAddresses"): set(),
+    # Every application, then each one by its id.
+    ("servicecatalog-appregistry", "ListApplications"): set(),
+    ("servicecatalog-appregistry", "GetApplication"): {"application"},
+    ("servicecatalog-appregistry", "ListAssociatedResources"): {"application"},
+    ("servicecatalog-appregistry", "ListAttributeGroupsForApplication"): {"application"},
+    ("servicecatalog-appregistry", "GetAttributeGroup"): {"attributeGroup"},
+    # By resource name inside the documented window; the service requires nothing.
+    ("cloudtrail", "LookupEvents"): set(),
 }
 
 
@@ -545,6 +579,45 @@ FALLS_THROUGH: dict[tuple[str, str], set[str]] = {
     ("ec2", "DescribeInstanceTypes"): set(),
     ("ec2", "DescribeSpotPriceHistory"): set(),
     ("ec2", "DescribeAddresses"): set(),
+    # AppRegistry. An application deleted between the list and the read is ResourceNotFound and
+    # fails the account and Region as SchemaDrift, loud and never an owner of nobody, ISS-215.
+    ("servicecatalog-appregistry", "ListApplications"): {
+        "InternalServerException",
+        "ValidationException",
+    },
+    ("servicecatalog-appregistry", "GetApplication"): {
+        "ConflictException",
+        "InternalServerException",
+        "ResourceNotFoundException",
+        "ValidationException",
+    },
+    ("servicecatalog-appregistry", "ListAssociatedResources"): {
+        "InternalServerException",
+        "ResourceNotFoundException",
+        "ValidationException",
+    },
+    ("servicecatalog-appregistry", "ListAttributeGroupsForApplication"): {
+        "InternalServerException",
+        "ResourceNotFoundException",
+        "ValidationException",
+    },
+    ("servicecatalog-appregistry", "GetAttributeGroup"): {
+        "ConflictException",
+        "InternalServerException",
+        "ResourceNotFoundException",
+        "ValidationException",
+    },
+    # CloudTrail's event history. Each is a request this adapter builds wrong or a trail the
+    # account cannot look up in, and fails the account and Region loud, never as nobody.
+    ("cloudtrail", "LookupEvents"): {
+        "InvalidEventCategoryException",
+        "InvalidLookupAttributesException",
+        "InvalidMaxResultsException",
+        "InvalidNextTokenException",
+        "InvalidTimeRangeException",
+        "OperationNotPermittedException",
+        "UnsupportedOperationException",
+    },
 }
 
 

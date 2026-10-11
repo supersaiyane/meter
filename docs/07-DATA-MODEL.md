@@ -1006,6 +1006,61 @@ Optimizer scores its options' performance risk from 0 to 4 and Meter's rule give
 migration 0040 lets `performance_risk` be null, meaning the source gave no score; the 0 to 4 check
 still holds every score given. OPEN-24.
 
+```
+CREATE TABLE resource_owner (            -- P11, FEAT-077: one row per resource per source
+    sub_account_id, region_id NULL for a global resource, resource_id not blank,
+    source in (CATALOGUE, TAG, CREATOR), owner and detail not blank,
+    owner_kind in (TEAM, PERSON, AUTOMATION), a TAG row a TEAM, a CREATOR row never one,
+    collected_at >= as_of, UNIQUE (tenant_id, sub_account_id, resource_id, source)
+);
+```
+
+A suggestion of whom to ask, never an owner: `recommendation.owner` stays a person's to write.
+Written by the `ownership` collector, migration 0041, which replaces the tag and catalogue rows
+each run, so a tag taken off a resource stops suggesting its team, and keeps a creator's row, which
+cannot change. Scoped by account, `ByAccount`.
+
+```
+CREATE TABLE creator_lookup (            -- P11, FEAT-077: one row per resource ever asked about
+    sub_account_id, region_id, resource_id not blank, outcome in (FOUND, BEFORE_HISTORY),
+    history_starts set exactly when the outcome is BEFORE_HISTORY, collected_at >= as_of,
+    UNIQUE (tenant_id, sub_account_id, resource_id)
+);
+```
+
+Which resources CloudTrail's event history was asked who created them, migration 0042, so none is
+asked twice: a FOUND resource has its CREATOR row in `resource_owner`, and one older than the
+history keeps where the history began. Never replaced, since the answer cannot change. Scoped by
+account, `ByAccount`.
+
+```
+CREATE TABLE savings_credit (            -- P11, FEAT-078: one per verified saving
+    sub_account_id, recommendation_id REFERENCES recommendation,
+    realized_id REFERENCES realized_saving, never cascading, UNIQUE,
+    owner and closed_by not blank, team named or null, verified_monthly_saving > 0,
+    verified_on DATE, collected_at >= as_of
+);
+```
+
+A credit for a saving FEAT-029 verified, migration 0043: the owner, the team named for the
+resource and the person who closed it, fixed when first written, and the verified monthly saving,
+measured. Written by the daily `savings_ledger` collector, which withdraws a credit whose saving no
+longer verifies. Scoped by account, `ByAccount`.
+
+```
+CREATE TABLE savings_credit_month (      -- P11, FEAT-078: each closed month after verification
+    credit_id REFERENCES savings_credit, never cascading, month DATE the first of a month,
+    state in (HELD, REGRESSED, UNOBSERVED), cost and saving null exactly when UNOBSERVED,
+    saving > 0 when HELD and <= 0 when REGRESSED, cost >= 0, collected_at >= as_of,
+    UNIQUE (credit_id, month)
+);
+```
+
+Each closed month after a credited saving verified, migration 0044, judged against the cost before
+the change at FEAT-029's daily rate. A month's `as_of` is the moment it closed. The collector
+judges every month again each run and removes a month it no longer judges, after a regression or
+under a withdrawn credit, before the credit. Scoped by account, `ByAccount`.
+
 ```sql
 CREATE TABLE recommendation_option (       -- every target a provider ranked, migration 0038
     recommendation_id REFERENCES recommendation, region TEXT, rank >= 1, instance_type TEXT,

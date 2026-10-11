@@ -337,6 +337,22 @@ class CostAnomaliesOut(BaseModel):
     days_needed: int
 
 
+class OwnerSuggestionOut(BaseModel):
+    """Whom one source says to ask about a resource. A suggestion, never an owner. FEAT-077."""
+
+    model_config = ConfigDict(frozen=True)
+
+    owner: str
+    #: TEAM, PERSON or AUTOMATION. A creator is never a team, and a pipeline is never a person.
+    kind: str
+    #: CATALOGUE, TAG or CREATOR, the order a recommendation lists them in.
+    source: str
+    #: What a reader checks it against: the application, the tag key, or the creating event.
+    detail: str
+    as_of: datetime
+    collected_at: datetime
+
+
 class RecommendationOut(BaseModel):
     """One thing worth changing.
 
@@ -361,10 +377,17 @@ class RecommendationOut(BaseModel):
     lifecycle: str
     #: Null is a reported condition, not a gap. An unowned finding is never fixed.
     owner: str | None
-    #: The resource's team tag, TEAM_TAG, from the inventory node naming it, ISS-021. A
-    #: suggestion of whom to ask, never stored and never an owner: null when no node in the
-    #: reader's access names the resource, or its tag is missing or empty.
+    #: The strongest team any source names, ISS-021: the catalogue's, then the owner tags', and
+    #: failing both the inventory node's TEAM_TAG, read as it was before TASK-P11-005. A
+    #: suggestion of whom to ask, never an owner: null when nothing in the reader's access names
+    #: a team. A creator is never a team, so it is never this.
     suggested_owner: str | None = None
+    #: TASK-P11-005. Every source's suggestion, strongest first: the catalogue, the tags, the
+    #: creator. Whom to ask, never an owner, ISS-021; empty where no source names anybody.
+    owner_suggestions: list[OwnerSuggestionOut] = Field(default_factory=list)
+    #: Where CloudTrail's event history began when it was asked who created the resource and
+    #: found it older: created before CloudTrail's 90 days. Null when not asked, or found.
+    created_before: datetime | None = None
     ticket_reference: str | None
     #: The working, so a reader can disagree with the verdict.
     rationale: str
@@ -2415,3 +2438,87 @@ class ReportRunOut(BaseModel):
     finished_at: datetime | None
     as_of: datetime | None
     collected_at: datetime | None
+
+
+class LedgerMonthOut(BaseModel):
+    """One closed month after a credited saving verified. FEAT-078, TASK-P11-008."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: The first of the month judged.
+    month: date
+    #: HELD, REGRESSED or UNOBSERVED.
+    state: str
+    #: Measured. Both absent exactly when the month is unobserved, never a zero.
+    cost: Decimal | None
+    saving: Decimal | None
+    as_of: datetime
+    collected_at: datetime
+
+
+class LedgerCreditOut(BaseModel):
+    """One verified saving, credited to its owner and team, with the months it held. FEAT-078.
+
+    The owner and the person who closed it are named on their own credits and nowhere ranked:
+    the ledger ranks teams, OPEN-27.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    credit_id: UUID
+    recommendation_id: UUID
+    account_id: str
+    #: Null where the reader cannot see the recommendation's resource.
+    resource_id: str | None
+    #: The strongest team named for the resource when the credit was written, or none.
+    team: str | None
+    owner: str
+    closed_by: str
+    #: Measured, FEAT-029's before less after, thirty days each.
+    verified_monthly_saving: Decimal
+    verified_on: date
+    #: Measured: the sum of the held months, never a projection.
+    saving_held: Decimal
+    months_held: int
+    #: True once a month regressed, which stops the credit.
+    regressed: bool
+    months: list[LedgerMonthOut] = Field(default_factory=list)
+    as_of: datetime
+    collected_at: datetime
+
+
+class LedgerCreditsOut(BaseModel):
+    """One team's credits, or every credit the reader can see. FEAT-078."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: The team asked for; null with `every_team` when none was named.
+    team: str | None
+    every_team: bool
+    credits: list[LedgerCreditOut]
+
+
+class LedgerTeamOut(BaseModel):
+    """A team by the savings it holds. FEAT-078. A team, never a person, OPEN-27."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: Null for the credits whose resource no source named a team for.
+    team: str | None
+    credits: int
+    #: Measured: every held month of every credit, summed.
+    saving_held: Decimal
+    months_held: int
+    #: How many of its credits a month regressed.
+    regressed: int
+    latest_month: date | None
+    as_of: datetime
+    collected_at: datetime
+
+
+class LedgerOut(BaseModel):
+    """Teams by the savings they hold, most first. FEAT-078, TASK-P11-008."""
+
+    model_config = ConfigDict(frozen=True)
+
+    teams: list[LedgerTeamOut]

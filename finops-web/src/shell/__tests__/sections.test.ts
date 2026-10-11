@@ -91,7 +91,7 @@ describe('navigation groups', () => {
         'Clusters',
       ],
       Plan: ['Budgets', 'Forecasts', 'FinOps Score', 'Unit Economics'],
-      Optimize: ['Recommendations', 'Commitments', 'Realized Savings'],
+      Optimize: ['Recommendations', 'Commitments', 'Realized Savings', 'Savings ledger'],
       Govern: ['Query Cost', 'Quotas', 'Policies'],
       Inventory: ['Accounts', 'Resources', 'Topology'],
       Report: ['Report Library', 'Scheduled', 'Exports', 'Invoice reconciliation'],

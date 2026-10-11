@@ -103,6 +103,16 @@ class Settings:
     def iac_exhaustive(self) -> frozenset[str]:
         return frozenset(p.strip() for p in self.iac_exhaustive_accounts.split(",") if p.strip())
 
+    # FEAT-077's one, which the ownership collector refuses to run without. Same value as
+    # `.env.example`; the seed widens it to name the demo's second key.
+    owner_tag_keys = "team"
+    # TASK-P11-004, the default: the demo estate is far smaller.
+    creator_lookups_per_run = 200
+
+    @property
+    def owner_tag_key_list(self) -> tuple[str, ...]:
+        return tuple(p.strip() for p in self.owner_tag_keys.split(",") if p.strip())
+
     def model_copy(self, *, update: dict[str, object] | None = None) -> Settings:
         """The stub's own copy, because the seed uses it to override the state locations.
 
@@ -405,7 +415,21 @@ def test_the_seed_produces_all_three_verdicts(engine: object) -> None:
                 ),
                 {"t": seed_demo.DEMO_TENANT},
             ).scalar_one()
+            credited = connection.execute(
+                sql(
+                    "SELECT s.verdict, c.owner, c.verified_monthly_saving "
+                    "FROM savings_credit c JOIN realized_saving s ON s.realized_id = c.realized_id "
+                    "WHERE c.tenant_id = :t"
+                ),
+                {"t": seed_demo.DEMO_TENANT},
+            ).all()
         assert verdicts == {"VERIFIED": 1, "REGRESSED": 1, "INCONCLUSIVE": 1}, verdicts
+        # TASK-P11-006. The verified saving is credited to the owner who closed the work, and
+        # the regressed and inconclusive ones earn nothing.
+        assert [(row.verdict, row.owner) for row in credited] == [
+            ("VERIFIED", "platform@example.local")
+        ]
+        assert credited[0].verified_monthly_saving > 0
         # At least one account carrying most of the available weight, so the score
         # screen has a substantial card to show. Not all hundred, and that is the
         # estate being honest rather than the seed being thin: the fourth component
@@ -645,5 +669,78 @@ def test_the_seed_produces_the_container_estate(engine: object) -> None:
         assert states == {True, False, None}, states
         assert recommended >= 1, "no container recommendation reached P3's list"
         assert costed >= 1, "the seeded bill carries no container grain"
+    finally:
+        seed_demo.remove(engine)
+
+
+def test_the_seeded_estate_names_owners_from_its_tags(engine: object) -> None:
+    """FEAT-077. Every tagged resource's team, and the planted volume under the second key.
+
+    `fake-product-b` carries no team tag, so its only owner from tags is the volume that carries
+    `owner`, which the demo names as its second key.
+    """
+    from sqlalchemy import text as sql
+
+    seed_demo.seed(engine, Settings(), _now())
+    try:
+        with engine.connect() as connection:  # type: ignore[attr-defined]
+            found = {
+                (row.resource_id, row.owner, row.detail)
+                for row in connection.execute(
+                    sql(
+                        "SELECT resource_id, owner, detail FROM resource_owner "
+                        "WHERE tenant_id = :t AND source = 'TAG'"
+                    ),
+                    {"t": DEMO_TENANT},
+                )
+            }
+        assert ("amazonebs/fake-product-b/0001", "data-platform", "owner") in found
+        assert ("amazonec2/fake-product-a/0003", "product", "team") in found
+        untagged = {one for one in found if "/fake-product-b/" in one[0]}
+        assert untagged == {("amazonebs/fake-product-b/0001", "data-platform", "owner")}
+        with engine.connect() as connection:  # type: ignore[attr-defined]
+            catalogued = {
+                (row.resource_id, row.owner, row.detail)
+                for row in connection.execute(
+                    sql(
+                        "SELECT resource_id, owner, detail FROM resource_owner "
+                        "WHERE tenant_id = :t AND source = 'CATALOGUE'"
+                    ),
+                    {"t": DEMO_TENANT},
+                )
+            }
+        # TASK-P11-003. AppRegistry's owners, by the application's tag and by the stack's.
+        assert catalogued == {
+            ("amazonec2/fake-product-b/0004", "payments", "checkout"),
+            ("amazonrds/fake-product-b/0001", "analytics", "reporting"),
+        }
+        with engine.connect() as connection:  # type: ignore[attr-defined]
+            created = {
+                (row.resource_id, row.owner, row.owner_kind)
+                for row in connection.execute(
+                    sql(
+                        "SELECT resource_id, owner, owner_kind FROM resource_owner "
+                        "WHERE tenant_id = :t AND source = 'CREATOR'"
+                    ),
+                    {"t": DEMO_TENANT},
+                )
+            }
+            asked = dict(
+                connection.execute(
+                    sql(
+                        "SELECT outcome, count(*) FROM creator_lookup "
+                        "WHERE tenant_id = :t GROUP BY outcome"
+                    ),
+                    {"t": DEMO_TENANT},
+                ).all()
+            )
+        # TASK-P11-004. The two the fake event history saw made, a person and a pipeline; every
+        # other unnamed resource is older than the history, and says so.
+        assert created == {
+            ("amazonec2/fake-product-b/0003", "dev.lead@fake.example", "PERSON"),
+            ("amazonvpc/fake-product-b/nat-0001", "deploy-pipeline", "AUTOMATION"),
+        }
+        assert asked["FOUND"] == 2
+        assert asked["BEFORE_HISTORY"] > 0
     finally:
         seed_demo.remove(engine)

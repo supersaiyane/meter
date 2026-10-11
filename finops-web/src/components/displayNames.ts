@@ -8,6 +8,8 @@
  * the rendered text of every screen holds the rest.
  */
 
+import type { ApiOwnerSuggestion } from '../api/types';
+
 type Names = Readonly<Record<string, string>>;
 
 export const WASTE_CLASS_NAMES: Names = {
@@ -149,6 +151,17 @@ export function verdictName(code: string): string {
   return named(VERDICT_NAMES, code);
 }
 
+/** A month after a credited saving verified, FEAT-078: held, regressed, or not observed. */
+export const MONTH_STATE_NAMES: Names = {
+  HELD: 'Held',
+  REGRESSED: 'Regressed',
+  UNOBSERVED: 'Not observed',
+};
+
+export function monthStateName(code: string): string {
+  return named(MONTH_STATE_NAMES, code);
+}
+
 export function runStatusName(code: string): string {
   return named(RUN_STATUS_NAMES, code);
 }
@@ -159,4 +172,18 @@ export function commitmentTypeName(code: string): string {
 
 export function collectorName(code: string): string {
   return named(COLLECTOR_NAMES, code);
+}
+
+/** One owner suggestion in words: whom, and why its source names them. TASK-P11-005. */
+export function suggestionText(one: ApiOwnerSuggestion): string {
+  switch (one.source) {
+    case 'CATALOGUE':
+      return `${one.owner}, the catalogue's ${one.detail} application`;
+    case 'TAG':
+      return `${one.owner}, its ${one.detail} tag`;
+    case 'CREATOR':
+      return one.kind === 'AUTOMATION'
+        ? `${one.owner}, the pipeline that created it`
+        : `${one.owner}, who created it`;
+  }
 }

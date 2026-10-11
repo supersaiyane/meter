@@ -75,7 +75,8 @@ from `finops_core.errors`, and that no signature mentions an ARN or boto.
 | `PROVIDER_PORTS` | What a cloud provider implements. `FakeProvider` in `finops_fakes/provider.py` implements every one |
 | `SURFACE_PORTS` | Not about a cloud: a tool that holds saved queries which cost money when they run. `FakeQuerySurface` in `finops_fakes/surface.py` implements every one |
 | `MODEL_PORTS` | The model behind the assistant, ADR-0028. Neither the cloud fake nor a query surface implements it, so it has a group of its own |
-| `CATALOG_PORTS` | What AWS sells rather than an estate: its price list and its description of instance types, P9. `FakePriceCatalog` and `FakeInstanceCatalog` in `finops_fakes/catalog.py` implement them |
+| `CATALOG_PORTS` | What AWS sells rather than an estate: its price list, its description of instance types, Savings Plans rates and spot prices, P9. Their fakes are in `finops_fakes/catalog.py` |
+| `OWNERSHIP_PORTS` | Where an estate names a resource's owners beyond its tags: the service catalogue and who created it, P11. `FakeServiceCatalogue` and `FakeResourceCreators` in `finops_fakes/ownership.py` implement them |
 | No group | Every other protocol in the package. Each is imported from its own module, and the per port checks in `tests/core/test_ports.py` never reach it, ISS-239 |
 
 ### Every port
@@ -99,8 +100,12 @@ port.
 | `RefreshFloor` | `query.py` | Surface | Read and set the smallest refresh interval an instance accepts from anybody | The same `AmgQuerySurface` |
 | `PanelRewrite` | `query.py` | Surface | Read and replace one element's stored definition | Fake only, ISS-240 |
 | `LlmProvider` | `llm.py` | Model | Complete a conversation, asking for tools along the way | `aws/bedrock.py` `BedrockModel`, over the Bedrock Converse API |
-| `PriceCatalog` | `catalog.py` | Catalog | Read the current version of a service's price list in every Region it is sold in, and every on demand and reserved price in one version | Fake only until TASK-P9-004 |
-| `InstanceCatalog` | `catalog.py` | Catalog | Read EC2's own description of every instance type in a Region | Fake only until TASK-P9-005 |
+| `PriceCatalog` | `catalog.py` | Catalog | Read the current version of a service's price list in every Region it is sold in, and every on demand and reserved price in one version | `aws/price_list.py` `AwsPriceCatalog`, TASK-P9-004 |
+| `InstanceCatalog` | `catalog.py` | Catalog | Read EC2's own description of every instance type in a Region | `aws/instance_types.py` `AwsInstanceCatalog`, TASK-P9-005 |
+| `SavingsPlansRates` | `catalog.py` | Catalog | Read every Savings Plans rate for EC2 in a Region, versioned by their own digest | `aws/savings_plans.py` `AwsSavingsPlansRates`, through the relay, TASK-P9-012 |
+| `SpotPrices` | `catalog.py` | Catalog | Read every spot price reading in a Region's window | `aws/spot.py` `AwsSpotPrices`, through the relay, TASK-P9-013 |
+| `ServiceCatalogue` | `ownership.py` | Ownership | Read an account's applications, the owner each names, and the tags that mark its resources | `aws/appregistry.py` `AwsServiceCatalogue`, over AWS AppRegistry, TASK-P11-003 |
+| `ResourceCreators` | `ownership.py` | Ownership | Read who created a resource, or that it predates the record | `aws/cloudtrail_creators.py` `AwsResourceCreators`, over CloudTrail's event history, TASK-P11-004 |
 | `InvoiceSource` | `invoice.py` | None | Read the payer's invoices and credit memos for a span of billing periods, FEAT-076 | `aws/invoices.py` `AwsInvoices`, over the Invoicing API through the relay, ADR-0035 |
 | `BudgetSource` | `budget.py` | None | Read the payer's budgets | `aws/budgets.py` `AwsBudgets`, over AWS Budgets |
 | `CloudWatchEstate` | `cloudwatch_estate.py` | None | Read what CloudWatch holds, its alarms, log groups and storage price, rather than the values in it | Fake only, ISS-240 |

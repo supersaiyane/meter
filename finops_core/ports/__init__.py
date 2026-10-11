@@ -29,6 +29,7 @@ from finops_core.ports.identity import EntitlementResolver, IdentityProvider
 from finops_core.ports.inventory import ResourceInventory
 from finops_core.ports.llm import LlmProvider
 from finops_core.ports.metrics import MetricSource
+from finops_core.ports.ownership import ResourceCreators, ServiceCatalogue
 from finops_core.ports.query import PanelRewrite, QuerySurface, RefreshFloor
 from finops_core.ports.quotas import QuotaSource
 
@@ -66,9 +67,15 @@ MODEL_PORTS = (LlmProvider,)
 #: them, and their fakes are built from the estate's own prices in `finops_fakes/catalog.py`.
 CATALOG_PORTS = (PriceCatalog, InstanceCatalog, SavingsPlansRates, SpotPrices)
 
+#: Where an estate names a resource's owners beyond its tags, P11 and TASK-P11-001. Their own
+#: group, because the cloud fake does not implement them: their fakes plant the owner cases in
+#: `finops_fakes/ownership.py`.
+OWNERSHIP_PORTS = (ServiceCatalogue, ResourceCreators)
+
 __all__ = [
     "CATALOG_PORTS",
     "MODEL_PORTS",
+    "OWNERSHIP_PORTS",
     "PROVIDER_PORTS",
     "SURFACE_PORTS",
     "AccountDiscovery",
@@ -85,8 +92,10 @@ __all__ = [
     "QuerySurface",
     "QuotaSource",
     "RefreshFloor",
+    "ResourceCreators",
     "ResourceInventory",
     "SavingsPlansRates",
+    "ServiceCatalogue",
     "SpotPrices",
 ]
 # `ProviderSession` is deliberately absent. It is a supporting type for

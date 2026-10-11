@@ -30,6 +30,16 @@ spec.loader.exec_module(check_dev_only)
 ADVISORY = "1241209"
 
 
+@pytest.fixture(autouse=True)
+def a_rule(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The rule the check enforced until 2026-10-11, held here so the check is still watched.
+
+    The committed rules are empty since source-map-js 1.2.2 fixed the advisory, and a check with
+    no rule to fail on proves nothing, so each test gives it this one.
+    """
+    monkeypatch.setattr(check_dev_only, "DEVELOPMENT_ONLY", {"source-map-js": ADVISORY})
+
+
 def accepted(tmp_path: Path, ids: list[str]) -> Path:
     path = tmp_path / "accepted.yaml"
     entries = [{"id": advisory, "package": "source-map-js"} for advisory in ids]
@@ -99,7 +109,12 @@ def test_the_tree_is_read_from_what_npm_prints(
             check_dev_only.production_tree()
 
 
-def test_every_rule_has_its_acceptance_in_the_committed_policy() -> None:
+def test_every_committed_rule_has_its_acceptance_in_the_committed_policy() -> None:
     committed = check_dev_only.accepted_ids(check_dev_only.ACCEPTED)
+    # A fresh load, because every other test here sets the rule the check enforces.
+    fresh = importlib.util.spec_from_file_location("check_dev_only_committed", SCRIPT)
+    assert fresh and fresh.loader
+    rules = importlib.util.module_from_spec(fresh)
+    fresh.loader.exec_module(rules)
 
-    assert set(check_dev_only.DEVELOPMENT_ONLY.values()) <= committed
+    assert set(rules.DEVELOPMENT_ONLY.values()) <= committed

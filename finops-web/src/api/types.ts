@@ -579,6 +579,19 @@ export interface ApiRefusals {
   readonly examined: number;
 }
 
+/** Whom one source says to ask about a resource, TASK-P11-005. Never an owner, ISS-021. */
+export interface ApiOwnerSuggestion {
+  readonly owner: string;
+  /** A pipeline is never a person, and a creator is never a team. */
+  readonly kind: 'TEAM' | 'PERSON' | 'AUTOMATION';
+  /** Strongest first: the catalogue, then the tags, then the creator. */
+  readonly source: 'CATALOGUE' | 'TAG' | 'CREATOR';
+  /** What to check it by: the application, the tag key, or the creating event. */
+  readonly detail: string;
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
 export interface ApiRecommendation {
   readonly recommendation_id: string;
   readonly account_id: string;
@@ -599,8 +612,12 @@ export interface ApiRecommendation {
   readonly lifecycle: string;
   /** Null where nobody owns it, which ISS-021 says is how a finding dies. */
   readonly owner: string | null;
-  /** The resource's team tag, from its inventory node, while nobody owns it. ISS-021. */
+  /** The strongest team any source names, ISS-021: the catalogue's, then a tag's. */
   readonly suggested_owner: string | null;
+  /** TASK-P11-005. Every source's suggestion, strongest first. Never an owner. */
+  readonly owner_suggestions: readonly ApiOwnerSuggestion[];
+  /** Where CloudTrail's history began when it found the resource older, or null. */
+  readonly created_before: string | null;
   readonly ticket_reference: string | null;
   readonly rationale: string;
   /**
@@ -1537,4 +1554,61 @@ export interface ScheduleChange {
   readonly format?: ReportFormat;
   readonly cadence?: ReportCadence;
   readonly recipients?: readonly string[];
+}
+
+/** One closed month after a credited saving verified. FEAT-078, TASK-P11-008. */
+export interface ApiLedgerMonth {
+  /** The first of the month judged. */
+  readonly month: string;
+  readonly state: 'HELD' | 'REGRESSED' | 'UNOBSERVED';
+  /** Measured. Null exactly when the month is unobserved, never a zero. */
+  readonly cost: string | null;
+  readonly saving: string | null;
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
+/** One verified saving, credited to its owner and team, with the months it held. FEAT-078. */
+export interface ApiLedgerCredit {
+  readonly credit_id: string;
+  readonly recommendation_id: string;
+  readonly account_id: string;
+  readonly resource_id: string | null;
+  readonly team: string | null;
+  readonly owner: string;
+  readonly closed_by: string;
+  /** Measured: FEAT-029's before less after. */
+  readonly verified_monthly_saving: string;
+  readonly verified_on: string;
+  /** Measured: the held months summed, never a projection. */
+  readonly saving_held: string;
+  readonly months_held: number;
+  readonly regressed: boolean;
+  readonly months: readonly ApiLedgerMonth[];
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
+export interface ApiLedgerCredits {
+  readonly team: string | null;
+  readonly every_team: boolean;
+  readonly credits: readonly ApiLedgerCredit[];
+}
+
+/** A team by the savings it holds. A team, never a person, OPEN-27. */
+export interface ApiLedgerTeam {
+  /** Null for the credits no source named a team for. */
+  readonly team: string | null;
+  readonly credits: number;
+  /** Measured: every held month of every credit, summed. */
+  readonly saving_held: string;
+  readonly months_held: number;
+  readonly regressed: number;
+  readonly latest_month: string | null;
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
+export interface ApiLedger {
+  readonly teams: readonly ApiLedgerTeam[];
 }
