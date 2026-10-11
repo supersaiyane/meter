@@ -536,6 +536,7 @@
     "finops_query/gate.py",
     "finops_query/graph.py",
     "finops_query/insight.py",
+    "finops_query/ledger.py",
     "finops_query/narration.py",
     "finops_query/ownership.py",
     "finops_query/parking.py",
@@ -631,6 +632,7 @@
     "migrations/versions/0041_resource_owner.py",
     "migrations/versions/0042_creator_lookup.py",
     "migrations/versions/0043_savings_credit.py",
+    "migrations/versions/0044_savings_credit_month.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -758,6 +760,7 @@
     "tests/db/test_recommendation_option_constraints.py",
     "tests/db/test_resource_owner_constraints.py",
     "tests/db/test_savings_credit_constraints.py",
+    "tests/db/test_savings_credit_month_constraints.py",
     "tests/db/test_schema.py",
     "tests/db/test_scope_guard.py",
     "tests/db/test_upsize_constraints.py",
@@ -874,6 +877,7 @@
     "tests/query/test_graph.py",
     "tests/query/test_insight_budget.py",
     "tests/query/test_insight_loop.py",
+    "tests/query/test_ledger.py",
     "tests/query/test_narration.py",
     "tests/query/test_ownership.py",
     "tests/query/test_parking.py",
@@ -9837,6 +9841,11 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/savings_ledger.py",
+      "t": "finops_query/ledger.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/savings_plan_rates.py",
       "t": "finops_core/domain/catalog.py",
       "k": "python"
@@ -13343,12 +13352,22 @@
     },
     {
       "s": "tests/ingest/collectors/test_savings_ledger.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_savings_ledger.py",
       "t": "finops_ingest/collectors/savings_ledger.py",
       "k": "python"
     },
     {
       "s": "tests/ingest/collectors/test_savings_ledger.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_savings_ledger.py",
+      "t": "finops_query/ledger.py",
       "k": "python"
     },
     {
@@ -14744,6 +14763,11 @@
     {
       "s": "tests/query/test_insight_loop.py",
       "t": "finops_query/insight.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_ledger.py",
+      "t": "finops_query/ledger.py",
       "k": "python"
     },
     {

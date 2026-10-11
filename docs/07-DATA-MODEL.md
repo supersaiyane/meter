@@ -1047,6 +1047,20 @@ resource and the person who closed it, fixed when first written, and the verifie
 measured. Written by the daily `savings_ledger` collector, which withdraws a credit whose saving no
 longer verifies. Scoped by account, `ByAccount`.
 
+```
+CREATE TABLE savings_credit_month (      -- P11, FEAT-078: each closed month after verification
+    credit_id REFERENCES savings_credit, never cascading, month DATE the first of a month,
+    state in (HELD, REGRESSED, UNOBSERVED), cost and saving null exactly when UNOBSERVED,
+    saving > 0 when HELD and <= 0 when REGRESSED, cost >= 0, collected_at >= as_of,
+    UNIQUE (credit_id, month)
+);
+```
+
+Each closed month after a credited saving verified, migration 0044, judged against the cost before
+the change at FEAT-029's daily rate. A month's `as_of` is the moment it closed. The collector
+judges every month again each run and removes a month it no longer judges, after a regression or
+under a withdrawn credit, before the credit. Scoped by account, `ByAccount`.
+
 ```sql
 CREATE TABLE recommendation_option (       -- every target a provider ranked, migration 0038
     recommendation_id REFERENCES recommendation, region TEXT, rank >= 1, instance_type TEXT,

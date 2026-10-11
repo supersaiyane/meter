@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 78 total, 11 specified, 14 in build, 49 delivered |
 | Decisions | 35 architecture decision records |
-| Changes | 153 recorded |
-| Issues | 157 fixed, 107 open, 0 parked |
+| Changes | 154 recorded |
+| Issues | 157 fixed, 108 open, 0 parked |
 | Open questions | 27 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -80,7 +80,8 @@ built the owner types, the two ownership ports and the fakes that plant each cas
 TASK-P11-003 owners from AWS AppRegistry, matched by the tags its applications mark resources with;
 TASK-P11-004 creators from CloudTrail's event history, each resource asked once; TASK-P11-005 the
 suggestions on every recommendation and under the screen's owner cell; TASK-P11-006, on 2026-10-11,
-a credit for every verified saving, to its owner, team and closer. The repository has no git remote, so nothing has been pushed.
+a credit for every verified saving, to its owner, team and closer; TASK-P11-007 every closed month
+after it, held, regressed or unobserved. The repository has no git remote, so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -255,7 +256,7 @@ ISS-003.
 | P8 | 18 | 0 | 0 | 0 | 0 | 18 | [plan](../docs/plans/P8-implementation-plan.md) |
 | P9 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
-| P11 | 6 | 0 | 0 | 0 | 3 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
+| P11 | 7 | 0 | 0 | 0 | 2 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -513,6 +514,7 @@ ISS-003.
 | `TASK-P11-004` | Done 2026-10-08 | creators from CloudTrail |
 | `TASK-P11-005` | Done 2026-10-08 | suggestions on every recommendation |
 | `TASK-P11-006` | Done 2026-10-11 | a credit for every verified saving |
+| `TASK-P11-007` | Done 2026-10-11 | the months a saving held |
 
 <!-- generated:task-status end -->
 

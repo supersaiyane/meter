@@ -197,7 +197,9 @@ DEMO_TABLES = (
     # P3, FEAT-025 and FEAT-029. Both of these reference `recommendation`, so
     # both go before it: the measured verdict and the lifecycle log first, the
     # finding they are about second.
-    # P11, FEAT-078. A credit references the verification and the recommendation, so first.
+    # P11, FEAT-078. A month references its credit, and a credit the verification and the
+    # recommendation, so these go first.
+    "savings_credit_month",
     "savings_credit",
     "realized_saving",
     "recommendation_event",

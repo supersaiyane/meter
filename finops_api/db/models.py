@@ -1224,6 +1224,26 @@ savings_credit = Table(
     Column("collected_at", DateTime(timezone=True), nullable=False),
 )
 
+#: Each closed month after a credit's saving verified, migration 0044, FEAT-078.
+savings_credit_month = Table(
+    "savings_credit_month",
+    metadata,
+    Column("month_pk", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column("credit_id", UUID(as_uuid=True), ForeignKey("savings_credit.credit_id"), nullable=False),
+    #: The first of the month judged.
+    Column("month", Date, nullable=False),
+    #: HELD, REGRESSED or UNOBSERVED. Cost and saving are null exactly when UNOBSERVED.
+    Column("state", Text, nullable=False),
+    #: Measured, from cost_focus_daily.
+    Column("cost", Numeric(20, 10)),
+    Column("saving", Numeric(20, 10)),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
 query_adhoc = Table(
     "query_adhoc",
     metadata,

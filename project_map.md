@@ -33,9 +33,9 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Playwright journeys | 53 in 19 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 33 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 43 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 227 | test_*.py under tests/ |
-| Test functions | 2900 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 44 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 229 | test_*.py under tests/ |
+| Test functions | 2917 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1176,8 +1176,9 @@ meter/
 │       ├── topology.py        the edges between them, four APIs. ISS-202, same footing
 │       ├── waste_compute.py   the bespoke candidates, which are the ones carrying an
 │       │                      ARN and therefore the ones that join to a node
-│       ├── savings_ledger.py  FEAT-078, TASK-P11-006. Daily; a credit per verified
-│       │                      saving, names fixed, withdrawn if it stops verifying
+│       ├── savings_ledger.py  FEAT-078, TASK-P11-006 and 007. Daily; a credit per
+│       │                      verified saving, names fixed, and every closed month
+│       │                      after it judged held, regressed or unobserved
 │       ├── ownership.py       FEAT-077, TASK-P11-002 to 004. Daily; each resource's
 │       │                      suggested owners into resource_owner: tags, the catalogue,
 │       │                      and the creator of the unnamed, asked once, creator_lookup
@@ -1503,6 +1504,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0044_savings_credit_month.py  TASK-P11-007. Each closed month after a
+│       │                      saving verified: held, regressed or unobserved
 │       ├── 0043_savings_credit.py  TASK-P11-006. One credit per verified saving, to
 │       │                      its owner, team and closer, and its schedule row
 │       ├── 0042_creator_lookup.py  TASK-P11-004. Each resource CloudTrail was asked
