@@ -32,6 +32,7 @@ import { QuotaDetailScreen } from './screens/QuotaDetailScreen';
 import { QuotasScreen } from './screens/QuotasScreen';
 import { WasteScreen } from './screens/WasteScreen';
 import { WasteSavingsScreen } from './screens/WasteSavingsScreen';
+import { LedgerScreen } from './screens/LedgerScreen';
 import { WasteScoreScreen } from './screens/WasteScoreScreen';
 import { ContainerWasteScreen } from './screens/ContainerWasteScreen';
 import { ContainerCostScreen } from './screens/ContainerCostScreen';
@@ -130,6 +131,7 @@ export function App({
                 <Route path="/optimize" element={<WasteScreen />} />
                 <Route path="/optimize/commitments" element={<CostCommitmentsScreen />} />
                 <Route path="/optimize/savings" element={<WasteSavingsScreen />} />
+                <Route path="/optimize/ledger" element={<LedgerScreen />} />
 
                 <Route path="/govern/query-cost" element={<QueryFindingsScreen />} />
                 <Route

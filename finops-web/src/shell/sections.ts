@@ -138,6 +138,7 @@ export const GROUPS: readonly GroupDef[] = [
       },
       { path: '/optimize/commitments', label: 'Commitments', arrives: null },
       { path: '/optimize/savings', label: 'Realized Savings', arrives: null },
+      { path: '/optimize/ledger', label: 'Savings ledger', arrives: null },
     ],
   },
   {

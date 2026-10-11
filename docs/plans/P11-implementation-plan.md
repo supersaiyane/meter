@@ -182,7 +182,7 @@ days.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-11 |
 | Implements | Spec sections 5.6 and 8 |
 | Delivers | FEAT-078 |
 | Depends on | TASK-P11-007 |
@@ -190,11 +190,11 @@ days.
 
 **Acceptance criteria.**
 
-- [ ] `GET /savings/ledger`, teams by the savings they hold, and `GET /savings/ledger/credits`,
+- [x] `GET /savings/ledger`, teams by the savings they hold, and `GET /savings/ledger/credits`,
       one team's credits with their months, both exportable and scoped by account
-- [ ] A Savings ledger screen under Optimize, figures labelled measured, no ranking of
+- [x] A Savings ledger screen under Optimize, figures labelled measured, no ranking of
       individuals, with a journey
-- [ ] A reader narrowed to one account sees only that account's credits
+- [x] A reader narrowed to one account sees only that account's credits
 
 ---
 
