@@ -2269,6 +2269,16 @@ changes:
     spec section 13 across the whole estate, among them a run with the catalogue refused and the event
     history throttled that keeps every row; FEAT-077 and FEAT-078 and P11 delivered, the evidence per
     criterion in the plan; ISS-021 narrowed to query findings and anomalies'
+- id: CHG-0157
+  date: '2026-10-11'
+  type: Fix
+  what: source-map-js 1.2.2, and npm's fix read as npm states it, ISS-269
+  commit: pending
+  detail: 'source-map-js moves from 1.2.1 to 1.2.2, which fixes GHSA-68fv-2mgg-jv7q, admitted through
+    make dep-check; npm audit reports no vulnerability. The scan report now reads npm''s fixAvailable of
+    true as a fix that exists, with npm update as its remedy, so a fixable finding fails the gate rather
+    than being absorbed by an acceptance. The acceptance is withdrawn, and check_dev_only.py keeps no
+    rule, since no accepted npm finding depends on a package never shipping'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4778,6 +4788,17 @@ issues:
     partition, cost_focus_daily_p202606, that the retention tests count. make verify runs tests/ingest
     before tests/scripts and passes. The fix is the seed tests giving their partitions back through
     partition_sandbox, as the collector tests do; ISS-267 is the same kind of leak.'
+- id: ISS-269
+  severity: MEDIUM
+  status: FIXED
+  summary: The scan report read an npm fix with no named version as no fix
+  detail: 'Found 2026-10-11 reading the posture after P11. npm audit marked source-map-js, high,
+    GHSA-68fv-2mgg-jv7q, as fixable, but npm says a fix exists as true when updating within the declared
+    ranges reaches it, and parse_npm_audit read only a named version. The finding was recorded as
+    unfixable and the acceptance written on 2026-10-06, before 1.2.2 was published, absorbed it, so the
+    gate passed over a fixable high. Fixed the same day, CHG-0157: npm_fix reads true as a fix, the
+    package moved to 1.2.2, and the acceptance was withdrawn. tests/scripts/test_security_report.py
+    holds that an acceptance cannot absorb a finding with a fix.'
 - id: ISS-260
   severity: MEDIUM
   status: OPEN

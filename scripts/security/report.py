@@ -46,6 +46,10 @@ import yaml
 SEVERITY_ORDER = ["Critical", "High", "Medium", "Low", "Negligible", "Unknown"]
 SEVERITY_RANK = {name: index for index, name in enumerate(SEVERITY_ORDER)}
 
+#: A finding's fix where npm says one exists and names no version: npm's own remedy, which
+#: moves the package to a fixed version inside the ranges that already ask for it.
+NPM_UPDATE = "npm update"
+
 
 # ------------------------------------------------------------------ parsing
 
@@ -165,20 +169,32 @@ def parse_pip_audit(path: Path) -> list[dict[str, Any]]:
     return findings
 
 
+def npm_fix(fix: object) -> str:
+    """The version npm names, its own remedy where it says a fix exists and names none, or "".
+
+    `fixAvailable` is an object naming the version when the fix moves a direct dependency,
+    `true` when updating within the ranges already declared reaches a fixed version, and
+    `false` when nothing can. Reading `true` as no fix recorded a fixable finding as unfixable,
+    so a stale acceptance absorbed it under ADR-0018: source-map-js, found on 2026-10-11.
+    """
+    if isinstance(fix, dict):
+        return str(fix.get("version") or "")
+    return NPM_UPDATE if fix is True else ""
+
+
 def parse_npm_audit(path: Path) -> list[dict[str, Any]]:
     data = json.loads(path.read_text() or "{}")
     findings = []
     for name, item in (data.get("vulnerabilities") or {}).items():
         via = item.get("via") or []
         detail = next((v for v in via if isinstance(v, dict)), {})
-        fix = item.get("fixAvailable")
         findings.append(
             {
                 "id": str(detail.get("source", detail.get("url", "NPM-ADVISORY"))),
                 "severity": _norm_sev(item.get("severity")),
                 "package": name,
                 "installed": item.get("range", ""),
-                "fixed_in": fix.get("version", "") if isinstance(fix, dict) else "",
+                "fixed_in": npm_fix(item.get("fixAvailable")),
                 "ecosystem": "npm",
                 "target": "frontend-dependencies",
                 "scanner": "npm-audit",
@@ -318,6 +334,9 @@ def suggest_fix(finding: dict[str, Any]) -> str:
     if finding["ecosystem"] in ("python", "python-pkg"):
         return f"Pin `{package}>={fixed}` in pyproject.toml, then `make setup`."
     if finding["ecosystem"] in ("npm", "node-pkg"):
+        if fixed == NPM_UPDATE:
+            # npm names no version, only that one within the declared ranges is fixed.
+            return f"`cd finops-web && npm update {package}`, then `npm audit` to confirm it"
         return f"`cd finops-web && npm install {package}@{fixed}`"
     return (
         f"Upgrade `{package}` to {fixed}. If it comes from the base image, "
