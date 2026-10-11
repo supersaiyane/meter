@@ -129,7 +129,7 @@ a duplicate.
 | `BillingPeriodStatus` | class | `finops_core/domain/invoice.py:39` | FOCUS 1.4's two states, in FOCUS's own words. | nothing in this tree |
 | `Invoice` | class | `finops_core/domain/invoice.py:49` | One invoice as the provider issued it. `as_of` is the issue time. | `finops_providers/aws/invoices.py` |
 | `Invoice.invoice_detail_id` | method | `finops_core/domain/invoice.py:77` | FOCUS 1.4's detail id, which is the invoice's own at the grain AWS gives. | nothing in this tree |
-| `next_month` | function | `finops_core/domain/invoice.py:82` | The first day of the month after `month`'s, which is where its billing period ends. | `finops_ingest/collectors/cost_focus.py`, `finops_ingest/collectors/invoices.py`, `finops_ingest/collectors/partitions.py`, `finops_providers/aws/invoices.py` |
+| `next_month` | function | `finops_core/domain/invoice.py:82` | The first day of the month after `month`'s, which is where its billing period ends. | `finops_ingest/collectors/cost_focus.py`, `finops_ingest/collectors/invoices.py`, `finops_ingest/collectors/partitions.py`, `finops_ingest/collectors/savings_ledger.py`, and 1 more |
 | `months` | function | `finops_core/domain/invoice.py:87` | The first day of every month from `start`'s up to, not including, `end`. | `finops_ingest/collectors/invoices.py`, `finops_providers/aws/invoices.py` |
 | `MetricPoint` | class | `finops_core/domain/metrics.py:20` | One statistic of one metric, at one instant, for one account. | `finops_providers/aws/waste.py` |
 | `OrgNodeType` | class | `finops_core/domain/org.py:18` |  | `finops_ingest/collectors/org_tree.py` |
@@ -466,7 +466,7 @@ a duplicate.
 | `team_of` | function | `finops_ingest/collectors/ownership.py:124` | The first owner tag key a resource carries with a value, and that value, or None. | nothing in this tree |
 | `OwnershipCollector` | class | `finops_ingest/collectors/ownership.py:133` | Every resource's suggested owners, from each source it is given. | nothing in this tree |
 | `month_floor` | function | `finops_ingest/collectors/partitions.py:55` |  | `finops_ingest/collectors/retention.py` |
-| `next_month` | function | `finops_ingest/collectors/partitions.py:59` |  | `finops_core/domain/invoice.py`, `finops_ingest/collectors/cost_focus.py`, `finops_ingest/collectors/invoices.py`, `finops_providers/aws/invoices.py` |
+| `next_month` | function | `finops_ingest/collectors/partitions.py:59` |  | `finops_core/domain/invoice.py`, `finops_ingest/collectors/cost_focus.py`, `finops_ingest/collectors/invoices.py`, `finops_ingest/collectors/savings_ledger.py`, and 1 more |
 | `months_from` | function | `finops_ingest/collectors/partitions.py:65` | `count` consecutive month starts, beginning at the month containing `start`. | nothing in this tree |
 | `partition_name` | function | `finops_ingest/collectors/partitions.py:73` |  | nothing in this tree |
 | `month_of` | function | `finops_ingest/collectors/partitions.py:77` | The month a partition name encodes, or None if it is not one of ours. | nothing in this tree |
@@ -478,7 +478,7 @@ a duplicate.
 | `PlatformCostCollector` | class | `finops_ingest/collectors/platform_cost.py:58` | One grouped request a day, written by module and service. | nothing in this tree |
 | `total` | function | `finops_ingest/collectors/platform_cost.py:106` | What the platform cost over the set, for a caller that wants one figure. | nothing in this tree |
 | `PriceCatalogCollector` | class | `finops_ingest/collectors/price_catalog.py:118` | Each service's current prices in every Region, loaded when AWS publishes new ones. | nothing in this tree |
-| `held` | function | `finops_ingest/collectors/price_catalog.py:163` | Every (Region, version) of a service already stored. | `finops_ingest/collectors/savings_plan_rates.py` |
+| `held` | function | `finops_ingest/collectors/price_catalog.py:163` | Every (Region, version) of a service already stored. | `finops_ingest/collectors/savings_ledger.py`, `finops_ingest/collectors/savings_plan_rates.py` |
 | `store` | function | `finops_ingest/collectors/price_catalog.py:169` | A version and its prices, written `BATCH` at a time. Returns the rows stored. | `finops_ingest/collectors/instance_catalog.py`, `finops_ingest/collectors/savings_plan_rates.py` |
 | `prune` | function | `finops_ingest/collectors/price_catalog.py:194` | The service and Region's earlier versions and their prices, except those quoted. | `finops_ingest/collectors/savings_plan_rates.py` |
 | `refuse` | function | `finops_ingest/collectors/price_catalog.py:202` | A typed failure recorded in `sync_error`, and returned for the run to count. | `finops_ingest/collectors/instance_catalog.py`, `finops_ingest/collectors/recommendations.py`, `finops_ingest/collectors/savings_plan_rates.py`, `finops_ingest/collectors/spot_prices.py` |
@@ -495,7 +495,7 @@ a duplicate.
 | `retention_cost` | function | `finops_ingest/collectors/retention.py:142` | Aggregate line items past the window to month, account, service and region, | nothing in this tree |
 | `retention_scope_cache` | function | `finops_ingest/collectors/retention.py:177` | Remove expired entitlement cache rows. It is a cache, so this costs nothing. | nothing in this tree |
 | `register_retention` | function | `finops_ingest/collectors/retention.py:211` | Add the five to a registry. Returns how many, so a caller can assert on it. | nothing in this tree |
-| `SavingsLedgerCollector` | class | `finops_ingest/collectors/savings_ledger.py:90` | One credit per verified saving, kept while it verifies. | nothing in this tree |
+| `SavingsLedgerCollector` | class | `finops_ingest/collectors/savings_ledger.py:133` | One credit per verified saving, kept while it verifies. | nothing in this tree |
 | `SavingsPlanRatesCollector` | class | `finops_ingest/collectors/savings_plan_rates.py:48` | Each Region's Savings Plans rates, stored when they move. | nothing in this tree |
 | `ScoreCollector` | class | `finops_ingest/collectors/score.py:159` | One score per account, with its components, every run. | nothing in this tree |
 | `daily` | function | `finops_ingest/collectors/spot_prices.py:90` | The readings each pool's day is made of, by the rule in this module's docstring. | `finops_api/routes/cost.py`, `finops_api/routes/forecast.py`, `finops_ingest/collectors/commitment.py` |
@@ -817,10 +817,10 @@ a duplicate.
 | `PayerWide` | class | `finops_api/guards.py:66` | The row describes the whole payer and belongs to no account. | nothing in this tree |
 | `ByPrincipal` | class | `finops_api/guards.py:85` | The row belongs to a person, and only that person reads it. ADR-0029. | nothing in this tree |
 | `OwnedOrShared` | class | `finops_api/guards.py:97` | The row belongs to a person until they share it with the tenant. ADR-0032. | nothing in this tree |
-| `require_scope` | function | `finops_api/guards.py:297` | Refuse anything that is not a scope, including None. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/cost.py`, `finops_api/db/repositories/ingest.py`, and 4 more |
-| `scope_predicate` | function | `finops_api/guards.py:313` | The WHERE clause that confines a read to what the scope permits. | `finops_api/db/repositories/catalog.py`, `finops_api/db/repositories/ingest.py`, `finops_api/db/repositories/query.py`, `finops_api/db/repositories/schedules.py`, and 3 more |
-| `scoped_select` | function | `finops_api/guards.py:400` | The only constructor of a select against a scoped table. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/assistant.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/catalog.py`, and 15 more |
-| `assert_scoped` | function | `finops_api/guards.py:410` | Backstop. Refuse to run a select that did not come from `scoped_select`. | `finops_api/db/repositories/base.py` |
+| `require_scope` | function | `finops_api/guards.py:298` | Refuse anything that is not a scope, including None. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/cost.py`, `finops_api/db/repositories/ingest.py`, and 4 more |
+| `scope_predicate` | function | `finops_api/guards.py:314` | The WHERE clause that confines a read to what the scope permits. | `finops_api/db/repositories/catalog.py`, `finops_api/db/repositories/ingest.py`, `finops_api/db/repositories/query.py`, `finops_api/db/repositories/schedules.py`, and 3 more |
+| `scoped_select` | function | `finops_api/guards.py:401` | The only constructor of a select against a scoped table. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/assistant.py`, `finops_api/db/repositories/base.py`, `finops_api/db/repositories/catalog.py`, and 15 more |
+| `assert_scoped` | function | `finops_api/guards.py:411` | Backstop. Refuse to run a select that did not come from `scoped_select`. | `finops_api/db/repositories/base.py` |
 | `ScopeCoverage` | class | `finops_api/identity/coverage.py:19` | Visible accounts against every account the organization holds. | nothing in this tree |
 | `ScopeCoverage.is_partial` | method | `finops_api/identity/coverage.py:36` | True when the figures on the page describe part of the organization. | nothing in this tree |
 | `ScopeCoverage.fraction` | method | `finops_api/identity/coverage.py:41` | Visible share, between 0 and 1. An empty organization is fully covered. | nothing in this tree |

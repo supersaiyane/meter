@@ -101,7 +101,7 @@ subprojects:
 - id: P11
   name: Owners and a savings ledger
   status: Approved by the owner on 2026-10-08 with OPEN-25 to OPEN-27 as recommended, in build, TASK-P11-001
-    to TASK-P11-006 done. Chosen as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
+    to TASK-P11-007 done. Chosen as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
     AppRegistry and CloudTrail as suggestions beside the assigned owner, and a ledger crediting each
     verified saving to its owner and team for every month the bill shows it held
   spec: specs/2026-10-08-p11-owners-and-savings-ledger-design.md
@@ -2237,6 +2237,18 @@ changes:
     actor who moved it to DONE, at FEAT-029''s measured before less after; names fixed at first
     write, the figure refreshed, and a credit withdrawn when its saving stops verifying. INCONCLUSIVE
     and REGRESSED earn nothing; the demo credits its one verified saving'
+- id: CHG-0154
+  date: '2026-10-11'
+  type: Feature
+  what: TASK-P11-007, the months a saving held
+  commit: pending
+  detail: 'savings_credit_month, migration 0044, with its constraints and ByAccount; finops_query.ledger
+    judges each closed month after verification against the cost before the change at FEAT-029''s
+    daily rate: HELD with its measured saving, REGRESSED, which stops the accrual, or UNOBSERVED, with
+    neither cost nor saving. The savings_ledger collector judges every month again each run and
+    removes a month it no longer judges before its credit. Spec 5.5 amended: a resource absent from a
+    month the account was billed for cost nothing, as FEAT-029 reads it, and only a month with no
+    bill at all is unobserved. ISS-268 logged'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4733,6 +4745,17 @@ issues:
     collector_schedule rows, and an earlier ingest test leaves a tenant with schedule rows and no run
     for some collector. make verify runs tests/api first and passes. The fix is a test that scopes its
     assertion to its own tenant, or fixtures that leave no schedule behind; not yet chosen.'
+- id: ISS-268
+  severity: LOW
+  status: OPEN
+  summary: Two retention tests fail when the demo seed tests run before them in the same session
+  detail: 'Found 2026-10-11 while checking TASK-P11-007, and reproduced on next-build''s code, so it
+    predates P11. Running tests/scripts/test_seed_demo.py before tests/ingest/collectors/test_retention.py
+    in one pytest session fails test_maintenance_creates_the_months_and_is_then_a_no_op and
+    test_a_partition_holding_any_day_inside_the_window_survives: the seed leaves a cost_focus_daily
+    partition, cost_focus_daily_p202606, that the retention tests count. make verify runs tests/ingest
+    before tests/scripts and passes. The fix is the seed tests giving their partitions back through
+    partition_sandbox, as the collector tests do; ISS-267 is the same kind of leak.'
 - id: ISS-260
   severity: MEDIUM
   status: OPEN

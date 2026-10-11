@@ -5,7 +5,7 @@
 | Sub project | P11 |
 | Status | Planned |
 | Specification | [P11 spec](../specs/2026-10-08-p11-owners-and-savings-ledger-design.md), sections 5.5 and 5.6 |
-| Tasks | TASK-P11-006 to TASK-P11-008; TASK-P11-006 done 2026-10-11 |
+| Tasks | TASK-P11-006 to TASK-P11-008; TASK-P11-006 and TASK-P11-007 done 2026-10-11 |
 
 ## What it does
 
@@ -39,13 +39,23 @@ window's end. The names are fixed when the credit is first written and later run
 figure and its dates, so a reorganisation does not move a past saving to another team. TASK-P11-006
 built the table and the collector, run by the demo seed after the owners.
 
+Every closed month after verification is then judged, `finops_query.ledger`, into
+`savings_credit_month`, migration 0044: the resource's cost that month against the cost before the
+change at FEAT-029's daily rate, the before window's cost over its thirty days. A month the account
+was billed and the resource cost less is HELD with the difference, measured, and a resource absent
+from a billed month cost nothing; one that cost as much or more is REGRESSED and the credit stops
+there; a month the account's bill holds nothing for is UNOBSERVED. A credit's total is the sum of
+its held months. TASK-P11-007 built this, spec section 5.5 as amended on 2026-10-11.
+
 ## Failure behaviour
 
 A verdict that stops being VERIFIED, because late rows in the bill moved a window, withdraws its
 credit rather than leaving it standing. A saving whose recommendation has no owner is credited to
 nobody, since the ledger credits only an owner a person assigned. A verification cannot be deleted
-while a credit rests on it. The collector reads the database only, so it has no account to fail
-on; a run that cannot write fails whole and is retried, never half written.
+while a credit rests on it, nor a credit while a month does: a withdrawn credit's months go first.
+An unobserved month carries no figure, never a zero, and late rows in the bill correct a month on
+the next run. The collector reads the database only, so it has no account to fail on; a run that
+cannot write fails whole and is retried, never half written.
 
 ## Security considerations
 
@@ -63,14 +73,15 @@ screen under Optimize with every figure labelled measured.
 ## Not doing
 
 - Crediting an INCONCLUSIVE or REGRESSED verdict, or a saving nobody owned.
-- Projecting a saving forward: a credit totals the months the bill showed it held, TASK-P11-007.
+- Projecting a saving forward: a credit totals the months the bill showed it held.
+- Judging a month before it has closed, or after the credit regressed.
 - Ranking individuals, OPEN-27.
 
 ## Status of this document
 
 In build. Approved by the owner on 2026-10-08 with teams only. TASK-P11-006 built the credits on
-2026-10-11; the months they held, TASK-P11-007, and the ledger's routes and screen, TASK-P11-008,
-follow. Specified in the [P11 spec](../specs/2026-10-08-p11-owners-and-savings-ledger-design.md)
+2026-10-11 and the months they held, TASK-P11-007, the same day; the ledger's routes and screen,
+TASK-P11-008, follow. Specified in the [P11 spec](../specs/2026-10-08-p11-owners-and-savings-ledger-design.md)
 and planned in the [P11 plan](../plans/P11-implementation-plan.md).
 
 See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P11.

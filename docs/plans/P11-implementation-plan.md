@@ -163,7 +163,7 @@ days.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-11 |
 | Implements | Spec section 5.5 |
 | Delivers | FEAT-078 |
 | Depends on | TASK-P11-006 |
@@ -171,10 +171,10 @@ days.
 
 **Acceptance criteria.**
 
-- [ ] `savings_credit_month`, its migration and constraints: HELD with a saving above nought,
+- [x] `savings_credit_month`, its migration and constraints: HELD with a saving above nought,
       REGRESSED, or UNOBSERVED with neither cost nor saving
-- [ ] Each closed month measured against the cost before the change at FEAT-029's daily rate
-- [ ] A regressed month stops the accrual and says so; an unobserved month is never a zero
+- [x] Each closed month measured against the cost before the change at FEAT-029's daily rate
+- [x] A regressed month stops the accrual and says so; an unobserved month is never a zero
 
 ---
 

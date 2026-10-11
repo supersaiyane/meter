@@ -138,6 +138,14 @@ measured; a month where it did not is REGRESSED and the credit stops accruing, s
 with no cost rows for the resource is UNOBSERVED, never nought. A credit's total is the sum of its
 held months: what the bill shows the change kept saving, never a figure projected forward.
 
+Amended 2026-10-11, TASK-P11-007. "No cost rows for the resource" is read as no rows in the
+account's bill for that month at all. FEAT-029 reads a missing charge as a measured zero, the
+resource billed nothing, and the commonest saving, a deleted resource, has no charge ever again: a
+month with the account billed and the resource absent is therefore HELD with the whole expected
+cost saved, and only a month the account's bill holds nothing for is UNOBSERVED, still never
+nought. A month is judged once it has closed, the first whole month after the after window ends,
+and every run judges every month again, so late rows correct one.
+
 ### 5.6 Who sees the ledger, OPEN-27
 
 Credits are scoped by the account of the resource, as recommendations are, so a reader sees the

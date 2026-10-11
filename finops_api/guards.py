@@ -213,6 +213,7 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOr
     # P11, FEAT-077. Which resources CloudTrail was asked about, by the resource's account.
     "creator_lookup": ByAccount("sub_account_id"),
     "savings_credit": ByAccount("sub_account_id"),
+    "savings_credit_month": ByAccount("sub_account_id"),
     "recommendation_option": Through("recommendation", "recommendation_id", "recommendation_id"),
     # A realized saving belongs to the recommendation it verifies, and inherits
     # its account for the same reason the event does.
