@@ -914,6 +914,7 @@
     "tests/scripts/test_local_bucket.py",
     "tests/scripts/test_local_token.py",
     "tests/scripts/test_observability.py",
+    "tests/scripts/test_p11_exit_criteria.py",
     "tests/scripts/test_p9_exit_criteria.py",
     "tests/scripts/test_pipeline.py",
     "tests/scripts/test_restore_drill.py",
@@ -15081,6 +15082,36 @@
     {
       "s": "tests/query/test_waste.py",
       "t": "finops_query/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p11_exit_criteria.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p11_exit_criteria.py",
+      "t": "finops_core/domain/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p11_exit_criteria.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p11_exit_criteria.py",
+      "t": "finops_ingest/collectors/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p11_exit_criteria.py",
+      "t": "finops_ingest/collectors/savings_ledger.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p11_exit_criteria.py",
+      "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {

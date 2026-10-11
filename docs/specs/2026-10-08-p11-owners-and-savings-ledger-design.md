@@ -1,7 +1,7 @@
 # P11 Owners and a savings ledger: design specification
 
 Date: 2026-10-08
-Status: Approved by the owner on 2026-10-08, in build. Chosen the same day as the next priority, proposal 3 of `next-in-scope.txt`, answering OPEN-20 for it. OPEN-25 to OPEN-27 were answered as recommended: AWS AppRegistry, CloudTrail's event history, and teams only
+Status: Delivered on 2026-10-11 against fakes, proven by TASK-P11-009. Approved by the owner on 2026-10-08. Chosen the same day as the next priority, proposal 3 of `next-in-scope.txt`, answering OPEN-20 for it. OPEN-25 to OPEN-27 were answered as recommended: AWS AppRegistry, CloudTrail's event history, and teams only
 Sub project: P11
 Features: FEAT-077, FEAT-078, and a change to FEAT-028
 Depends on: P3 delivered, for the lifecycle and realized savings, and P4 delivered, for the inventory's tags. Proof against a real estate waits on ISS-002, an AWS account

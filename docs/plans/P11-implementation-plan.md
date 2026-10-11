@@ -202,7 +202,7 @@ days.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-11 |
 | Implements | Spec section 13 |
 | Delivers | The exit criteria, measured, and the record |
 | Depends on | TASK-P11-001 to TASK-P11-008 |
@@ -210,6 +210,38 @@ days.
 
 **Acceptance criteria.**
 
-- [ ] Every exit criterion in spec section 13 met, each with its evidence, against the seeded demo
-- [ ] FEAT-077, FEAT-078 and FEAT-028 say what was built; ISS-021 updated; the register,
+- [x] Every exit criterion in spec section 13 met, each with its evidence, against the seeded demo
+- [x] FEAT-077, FEAT-078 and FEAT-028 say what was built; ISS-021 updated; the register,
       `project_map.md` and the checkpoint updated, and `make check-docs` clean
+
+**Delivered 2026-10-11.** The spec's section 13, each criterion with its evidence. The test
+counts are measured, from the full gate on TASK-P11-006's branch on 2026-10-11: 4025 backend tests,
+952 frontend unit tests and 66 journeys passing, coverage 96.73 percent. Every figure the criteria
+name is measured from the seeded demo's bill or planted by the fakes; a real estate waits on
+ISS-002.
+
+1. Every source is read on its planted case, and a failing one is typed and stands alone:
+   `tests/scripts/test_p11_exit_criteria.py`,
+   `test_every_source_reads_its_planted_case_and_a_failing_one_stands_alone`, finds the catalogue's
+   two owners, the tag under the second key and the two creators, a person and a pipeline, in the
+   seeded estate, then runs the collector with the catalogue refused and the event history
+   throttled and finds both typed in `sync_error` with no row lost. Per source,
+   `tests/ingest/collectors/test_ownership.py` and the contract test. TASK-P11-002 to TASK-P11-004.
+2. Every recommendation shows its suggestions with their sources, and none is ever written as an
+   owner: `test_every_recommendation_lists_its_suggestions_and_none_becomes_an_owner` holds every
+   recommendation on the wire to its rows strongest first, and only the seed's finished work
+   carries an owner; `tests/contract/test_suggestions_never_owners.py` holds the source text to it.
+   TASK-P11-005.
+3. Every verified saving in the seeded demo has one credit naming an owner, a team where one is
+   known, and who closed it: `test_every_verified_saving_has_one_credit_naming_its_owner_team_and_closer`.
+   TASK-P11-006.
+4. Every credit's months are HELD, REGRESSED or UNOBSERVED, measured, and none is a zero for a month
+   nobody observed: `test_every_month_is_held_regressed_or_unobserved_and_none_unseen_is_a_zero`
+   judges the demo a season ahead, so months close past the bill's last day and come out
+   unobserved. TASK-P11-007, with spec section 5.5 as amended on 2026-10-11.
+5. The ledger ranks teams, never individuals, within the reader's scope, and is exportable:
+   `test_the_ledger_ranks_teams_never_people_within_scope_and_exports`, with
+   `tests/api/test_ledger_routes.py` and `e2e/ledger.spec.ts`. TASK-P11-008.
+
+Open after P11: ISS-021 for owners on query findings and anomalies, and ISS-267 and ISS-268, two
+test order leaks found while proving this.

@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P11 |
-| Status | Planned |
+| Status | Delivered |
 | Specification | [P11 spec](../specs/2026-10-08-p11-owners-and-savings-ledger-design.md), sections 5.5 and 5.6 |
 | Tasks | TASK-P11-006 to TASK-P11-008, done 2026-10-11 |
 
@@ -84,7 +84,8 @@ for said as not observed. TASK-P11-008 built both, with `e2e/ledger.spec.ts`.
 
 ## Status of this document
 
-In build. Approved by the owner on 2026-10-08 with teams only. TASK-P11-006 built the credits on
+Delivered on 2026-10-11 against fakes, proven by TASK-P11-009 against the seeded demo, exit
+criteria 3 to 5. Approved by the owner on 2026-10-08 with teams only. TASK-P11-006 built the credits on
 2026-10-11, the months they held, TASK-P11-007, and the ledger's routes and screen,
 TASK-P11-008, the same day. TASK-P11-009 proves it against the seeded demo. Specified in the [P11 spec](../specs/2026-10-08-p11-owners-and-savings-ledger-design.md)
 and planned in the [P11 plan](../plans/P11-implementation-plan.md).
