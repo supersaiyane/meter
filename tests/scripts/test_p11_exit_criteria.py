@@ -31,6 +31,12 @@ from tests.scripts.test_seed_demo import DEMO_TENANT, _now, seed_demo
 
 pytestmark = pytest.mark.integration
 
+
+@pytest.fixture(autouse=True, scope="module")
+def _partitions(partition_sandbox: None) -> None:
+    """The seed bills months into partitions, so this module gives them back. ISS-268."""
+
+
 LEDGER = "/api/v1/savings/ledger"
 STRONGEST = [source.value for source in ORDER]
 

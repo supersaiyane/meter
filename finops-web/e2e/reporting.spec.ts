@@ -35,9 +35,12 @@ const ME = {
   accounts_in_scope: 2,
 };
 
+/** The grouping an address names when it names none, and the values it answers with. */
+const SERVICE = ['AmazonEC2', 'AmazonRDS'] as const;
+
 /** Two values for each grouping the journey uses, and what each pair cost. */
 const VALUES: Readonly<Record<string, readonly [string, string]>> = {
-  service: ['AmazonEC2', 'AmazonRDS'],
+  service: SERVICE,
   region: ['eu-west-1', 'us-east-1'],
   account: ['111122223333', '444455556666'],
 };
@@ -48,7 +51,8 @@ const PREVIOUS_PERIOD = ['2400.0000', '1703.2200'] as const;
 function explored(asked: URLSearchParams) {
   const first = asked.get('group_by') ?? 'service';
   const second = asked.get('then_by');
-  const firsts = VALUES[first] ?? VALUES.service;
+  // A named fallback, because an index into a Record may be undefined, its own key included.
+  const firsts = VALUES[first] ?? SERVICE;
   const seconds = second === null ? null : (VALUES[second] ?? null);
   return {
     metric: 'effective_cost',

@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 78 total, 11 specified, 13 in build, 51 delivered |
 | Decisions | 35 architecture decision records |
-| Changes | 157 recorded |
-| Issues | 158 fixed, 108 open, 0 parked |
+| Changes | 158 recorded |
+| Issues | 161 fixed, 106 open, 0 parked |
 | Open questions | 27 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -85,7 +85,8 @@ after it, held, regressed or unobserved; TASK-P11-008 the ledger's two routes an
 Optimize, teams ranked and nobody named in the ranking; TASK-P11-009 the proof, all five exit
 criteria held against the seeded demo, and P11 delivered on 2026-10-11. The same day source-map-js
 moved to 1.2.2, fixing the one high advisory the scan had accepted, and the scan report now reads an
-npm fix with no named version as a fix, ISS-269. The repository has no git remote, so nothing has been pushed.
+npm fix with no named version as a fix, ISS-269; and two test order leaks and the reporting
+journey's types were fixed, ISS-267, ISS-268 and ISS-270. The repository has no git remote, so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were

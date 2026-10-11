@@ -30,6 +30,19 @@ sys.modules["seed_demo"] = seed_demo
 _spec.loader.exec_module(seed_demo)
 
 DEMO_TENANT = seed_demo.DEMO_TENANT
+
+
+@pytest.fixture(autouse=True)
+def _partitions(request: pytest.FixtureRequest) -> None:
+    """The seed bills months into partitions, so a test that seeds gives them back. ISS-268.
+
+    Only where the test already has the database: the offline tests in this module must not start
+    the container just to clean up after nothing.
+    """
+    if "engine" in request.fixturenames:
+        request.getfixturevalue("partition_sandbox")
+
+
 LOCAL_HOSTS = seed_demo.LOCAL_HOSTS
 NotLocalError = seed_demo.NotLocalError
 main = seed_demo.main
