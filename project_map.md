@@ -267,7 +267,6 @@ meter/
 ├── security/                  everything a scan produces, and the policy
 │   ├── POSTURE.md             current posture, generated, never hand edited
 │   ├── policy/                grype.yaml, trivy.yaml, allowlist.yaml,
-│   │                          accepted.yaml for unfixable findings. ADR-0018,
 │   │                          accepted.yaml for unfixable findings, ADR-0018
 │   ├── reports/               one directory per scan. `latest` is a committed
 │   │                          symlink and is relative, because an absolute one
@@ -289,7 +288,9 @@ meter/
 │                              the gates, and were outside the linter until then
 │   ├── README.md              what each script does and how it is run
 │   ├── security/              scan, admission gate, pre commit deps, report,
-│   │                          auto fix, allowlist validation
+│   │                          auto fix, allowlist validation. The report counts
+│   │                          an npm fix with no named version as a fix, so an
+│   │                          acceptance never covers a fixable finding, ISS-269
 │   ├── docs/                  sync.py, check_index.py, check_feature_docs.py,
 │   │                          check_map_counts.py, check_identifiers.py,
 │   │                          build_file_graph.py, build_context_index.py,
