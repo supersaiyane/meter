@@ -2279,6 +2279,14 @@ changes:
     true as a fix that exists, with npm update as its remedy, so a fixable finding fails the gate rather
     than being absorbed by an acceptance. The acceptance is withdrawn, and check_dev_only.py keeps no
     rule, since no accepted npm finding depends on a package never shipping'
+- id: CHG-0158
+  date: '2026-10-11'
+  type: Fix
+  what: Two test order leaks and the reporting journey's types, ISS-267, ISS-268, ISS-270
+  commit: pending
+  detail: 'The healthz healthy path test pauses other tenants'' schedules while it runs, the modules that
+    seed the demo give their partitions back, and the reporting journey typechecks on its own project.
+    Both orders that failed now pass, and tsc over tsconfig.e2e.json exits 0'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4768,7 +4776,7 @@ issues:
     account with instances or attached volumes, and test_p9_exit_criteria.py holds the demo to it.'
 - id: ISS-267
   severity: LOW
-  status: OPEN
+  status: FIXED
   summary: The healthz test fails when ingest tests run before it in the same session
   detail: 'Found 2026-10-11 while checking TASK-P11-006. Running tests/ingest before
     tests/api/test_scope_enforcement.py in one pytest session makes
@@ -4776,10 +4784,12 @@ issues:
     as P11-006''s, so it is not that change. /healthz reports the worst tenant across every tenant''s
     collector_schedule rows, and an earlier ingest test leaves a tenant with schedule rows and no run
     for some collector. make verify runs tests/api first and passes. The fix is a test that scopes its
-    assertion to its own tenant, or fixtures that leave no schedule behind; not yet chosen.'
+    assertion to its own tenant, or fixtures that leave no schedule behind. Fixed 2026-10-11,
+    CHG-0158: the healthy path test pauses every other tenant''s schedule while it runs and gives each
+    back, since /healthz is meant to report the worst tenant and the test is what must stand alone.'
 - id: ISS-268
   severity: LOW
-  status: OPEN
+  status: FIXED
   summary: Two retention tests fail when the demo seed tests run before them in the same session
   detail: 'Found 2026-10-11 while checking TASK-P11-007, and reproduced on next-build''s code, so it
     predates P11. Running tests/scripts/test_seed_demo.py before tests/ingest/collectors/test_retention.py
@@ -4787,7 +4797,9 @@ issues:
     test_a_partition_holding_any_day_inside_the_window_survives: the seed leaves a cost_focus_daily
     partition, cost_focus_daily_p202606, that the retention tests count. make verify runs tests/ingest
     before tests/scripts and passes. The fix is the seed tests giving their partitions back through
-    partition_sandbox, as the collector tests do; ISS-267 is the same kind of leak.'
+    partition_sandbox, as the collector tests do; ISS-267 is the same kind of leak. Fixed 2026-10-11,
+    CHG-0158: every module that seeds the demo now gives its partitions back through partition_sandbox,
+    test_seed_demo.py only for the tests that already use the database.'
 - id: ISS-269
   severity: MEDIUM
   status: FIXED
@@ -4799,6 +4811,15 @@ issues:
     gate passed over a fixable high. Fixed the same day, CHG-0157: npm_fix reads true as a fix, the
     package moved to 1.2.2, and the acceptance was withdrawn. tests/scripts/test_security_report.py
     holds that an acceptance cannot absorb a finding with a fix.'
+- id: ISS-270
+  severity: LOW
+  status: FIXED
+  summary: The reporting journey did not typecheck on its own project
+  detail: 'Found 2026-10-08 while checking TASK-P11-008 and logged 2026-10-11. tsc over
+    tsconfig.e2e.json failed three times in e2e/reporting.spec.ts: under strict indexed access a lookup
+    into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
+    No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
+    a named SERVICE constant, and tsc over the e2e project exits 0.'
 - id: ISS-260
   severity: MEDIUM
   status: OPEN
