@@ -1033,6 +1033,20 @@ asked twice: a FOUND resource has its CREATOR row in `resource_owner`, and one o
 history keeps where the history began. Never replaced, since the answer cannot change. Scoped by
 account, `ByAccount`.
 
+```
+CREATE TABLE savings_credit (            -- P11, FEAT-078: one per verified saving
+    sub_account_id, recommendation_id REFERENCES recommendation,
+    realized_id REFERENCES realized_saving, never cascading, UNIQUE,
+    owner and closed_by not blank, team named or null, verified_monthly_saving > 0,
+    verified_on DATE, collected_at >= as_of
+);
+```
+
+A credit for a saving FEAT-029 verified, migration 0043: the owner, the team named for the
+resource and the person who closed it, fixed when first written, and the verified monthly saving,
+measured. Written by the daily `savings_ledger` collector, which withdraws a credit whose saving no
+longer verifies. Scoped by account, `ByAccount`.
+
 ```sql
 CREATE TABLE recommendation_option (       -- every target a provider ranked, migration 0038
     recommendation_id REFERENCES recommendation, region TEXT, rank >= 1, instance_type TEXT,

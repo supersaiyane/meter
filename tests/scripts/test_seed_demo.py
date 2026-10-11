@@ -415,7 +415,21 @@ def test_the_seed_produces_all_three_verdicts(engine: object) -> None:
                 ),
                 {"t": seed_demo.DEMO_TENANT},
             ).scalar_one()
+            credited = connection.execute(
+                sql(
+                    "SELECT s.verdict, c.owner, c.verified_monthly_saving "
+                    "FROM savings_credit c JOIN realized_saving s ON s.realized_id = c.realized_id "
+                    "WHERE c.tenant_id = :t"
+                ),
+                {"t": seed_demo.DEMO_TENANT},
+            ).all()
         assert verdicts == {"VERIFIED": 1, "REGRESSED": 1, "INCONCLUSIVE": 1}, verdicts
+        # TASK-P11-006. The verified saving is credited to the owner who closed the work, and
+        # the regressed and inconclusive ones earn nothing.
+        assert [(row.verdict, row.owner) for row in credited] == [
+            ("VERIFIED", "platform@example.local")
+        ]
+        assert credited[0].verified_monthly_saving > 0
         # At least one account carrying most of the available weight, so the score
         # screen has a substantial card to show. Not all hundred, and that is the
         # estate being honest rather than the seed being thin: the fourth component

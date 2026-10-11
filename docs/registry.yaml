@@ -101,7 +101,7 @@ subprojects:
 - id: P11
   name: Owners and a savings ledger
   status: Approved by the owner on 2026-10-08 with OPEN-25 to OPEN-27 as recommended, in build, TASK-P11-001
-    to TASK-P11-005 done. Chosen as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
+    to TASK-P11-006 done. Chosen as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
     AppRegistry and CloudTrail as suggestions beside the assigned owner, and a ledger crediting each
     verified saving to its owner and team for every month the bill shows it held
   spec: specs/2026-10-08-p11-owners-and-savings-ledger-design.md
@@ -2226,6 +2226,17 @@ changes:
     recommendations screen lists them under the owner cell, owned or not. A test over the source text
     holds that no owner source writes recommendation.owner and that the only update setting it is the
     lifecycle move with the owner a person named'
+- id: CHG-0153
+  date: '2026-10-11'
+  type: Feature
+  what: TASK-P11-006, a credit for every verified saving
+  commit: pending
+  detail: 'savings_credit, migration 0043, with its constraints, a non cascading link to the
+    verification and ByAccount; the daily savings_ledger collector and its schedule row credit each
+    VERIFIED saving with an owner to that owner, the strongest team named for the resource and the
+    actor who moved it to DONE, at FEAT-029''s measured before less after; names fixed at first
+    write, the figure refreshed, and a credit withdrawn when its saving stops verifying. INCONCLUSIVE
+    and REGRESSED earn nothing; the demo credits its one verified saving'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4711,6 +4722,17 @@ issues:
     so the volume was never judged and the demo had no gp2 to gp3 recommendation. Its own tests passed,
     because they drove the collector with every volume. Fixed the same day: the loop runs over every
     account with instances or attached volumes, and test_p9_exit_criteria.py holds the demo to it.'
+- id: ISS-267
+  severity: LOW
+  status: OPEN
+  summary: The healthz test fails when ingest tests run before it in the same session
+  detail: 'Found 2026-10-11 while checking TASK-P11-006. Running tests/ingest before
+    tests/api/test_scope_enforcement.py in one pytest session makes
+    test_healthz_reports_a_recent_collection_as_healthy report degraded, on next-build''s code as well
+    as P11-006''s, so it is not that change. /healthz reports the worst tenant across every tenant''s
+    collector_schedule rows, and an earlier ingest test leaves a tenant with schedule rows and no run
+    for some collector. make verify runs tests/api first and passes. The fix is a test that scopes its
+    assertion to its own tenant, or fixtures that leave no schedule behind; not yet chosen.'
 - id: ISS-260
   severity: MEDIUM
   status: OPEN

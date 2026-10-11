@@ -566,6 +566,18 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         ),
         est_cost_per_run="0.0005",
     ),
+    # FEAT-078, TASK-P11-006. Migration 0043 installs the same row for every tenant before it.
+    ScheduleEntry(
+        collector="savings_ledger",
+        cadence_seconds=DAILY,
+        reason=(
+            "Daily, P11 specification section 7. Reads only what Meter already holds, FEAT-029's "
+            "verdicts, the recommendations' owners and the bill's daily cost, with no AWS call. A "
+            "verdict is reached at most once a day, so a daily read credits a verified saving at "
+            "most a day after it verifies. ADR-0012, constraint 9 and FEAT-078."
+        ),
+        est_cost_per_run="0",
+    ),
 )
 
 

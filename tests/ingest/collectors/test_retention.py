@@ -568,6 +568,7 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         # FEAT-077, added with the collector in TASK-P11-002. Daily, and never run, so due at
         # `AT`; declared here because the list is exhaustive.
         "ownership",
+        "savings_ledger",
     }
 
 
