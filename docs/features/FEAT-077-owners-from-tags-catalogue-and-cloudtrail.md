@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P11 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P11 spec](../specs/2026-10-08-p11-owners-and-savings-ledger-design.md), sections 5.1 to 5.4 |
 | Tasks | TASK-P11-001 to TASK-P11-005; TASK-P11-001 to TASK-P11-005 done 2026-10-08 |
 
@@ -99,8 +99,9 @@ where CloudTrail found the resource older than its history. The ports are
 
 ## Status of this document
 
-In build. Approved by the owner on 2026-10-08 with AppRegistry, CloudTrail's event history and
-teams only. TASK-P11-001 built the owner types, the `ServiceCatalogue` and `ResourceCreators` ports
+Delivered on 2026-10-11 against fakes, proven by TASK-P11-009 against the seeded demo, exit
+criteria 1 and 2. Approved by the owner on 2026-10-08 with AppRegistry, CloudTrail's event history
+and teams only. TASK-P11-001 built the owner types, the `ServiceCatalogue` and `ResourceCreators` ports
 and the fakes that plant each case; TASK-P11-002 to TASK-P11-004 the tags, the catalogue and the
 creators behind them; TASK-P11-005 the suggestions on every recommendation. Specified in the
 [P11 spec](../specs/2026-10-08-p11-owners-and-savings-ledger-design.md) and planned in the

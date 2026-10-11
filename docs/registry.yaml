@@ -100,8 +100,8 @@ subprojects:
   depends_on: P1
 - id: P11
   name: Owners and a savings ledger
-  status: Approved by the owner on 2026-10-08 with OPEN-25 to OPEN-27 as recommended, in build, TASK-P11-001
-    to TASK-P11-008 done. Chosen as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
+  status: Delivered on 2026-10-11 against fakes, proven by TASK-P11-009. Approved by the owner on 2026-10-08
+    with OPEN-25 to OPEN-27 as recommended. Chosen as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
     AppRegistry and CloudTrail as suggestions beside the assigned owner, and a ledger crediting each
     verified saving to its owner and team for every month the bill shows it held
   spec: specs/2026-10-08-p11-owners-and-savings-ledger-design.md
@@ -573,13 +573,13 @@ features:
 - id: FEAT-077
   name: Owners from tags, the service catalogue and CloudTrail
   subproject: P11
-  status: In build
+  status: Delivered
   detail: '[P11 spec](docs/specs/2026-10-08-p11-owners-and-savings-ledger-design.md) sections 5.1 to 5.4, [P11 plan](docs/plans/P11-implementation-plan.md)'
   doc: docs/features/FEAT-077-owners-from-tags-catalogue-and-cloudtrail.md
 - id: FEAT-078
   name: The savings ledger, verified savings credited and re-measured
   subproject: P11
-  status: Planned
+  status: Delivered
   detail: '[P11 spec](docs/specs/2026-10-08-p11-owners-and-savings-ledger-design.md) sections 5.5 and 5.6, [P11 plan](docs/plans/P11-implementation-plan.md)'
   doc: docs/features/FEAT-078-savings-ledger.md
 adrs:
@@ -2260,6 +2260,15 @@ changes:
     accounts. The Savings ledger screen under Optimize ranks teams, shows a chosen team''s credits,
     labels every figure measured and says a month the bill holds nothing for as not observed;
     migration 0045 admits /optimize/ledger as a saved view''s screen; a journey proves it'
+- id: CHG-0156
+  date: '2026-10-11'
+  type: Feature
+  what: TASK-P11-009, P11 proved and delivered
+  commit: pending
+  detail: 'tests/scripts/test_p11_exit_criteria.py seeds the demo and holds all five exit criteria of
+    spec section 13 across the whole estate, among them a run with the catalogue refused and the event
+    history throttled that keeps every row; FEAT-077 and FEAT-078 and P11 delivered, the evidence per
+    criterion in the plan; ISS-021 narrowed to query findings and anomalies'
 issues:
 - id: ISS-189
   severity: LOW
@@ -3177,8 +3186,10 @@ issues:
   status: OPEN
   detail: 'FEAT-016. First slice 2026-10-07, CHG-0126: a recommendation suggests the owner its resource''s
     team tag names, read from the inventory node within the reader''s scope and never stored, beside the
-    owner a person assigns. Still open: a setting for a tenant whose owners live under another key, owners
-    from the service catalogue and from CloudTrail creators, and owners on query findings and anomalies.'
+    owner a person assigns. P11 delivered the rest of the recommendation side on 2026-10-11: owner tag keys
+    as a setting, owners from AWS AppRegistry and from CloudTrail creators, every source listed on every
+    recommendation strongest first, and a ledger crediting verified savings to owners and teams. Still
+    open: owners on query findings and anomalies, which keep FEAT-016''s.'
 - id: ISS-022
   severity: HIGH
   summary: The cost model is never back tested against the bill
