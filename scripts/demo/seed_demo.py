@@ -97,6 +97,7 @@ from finops_ingest.collectors.realized_savings import (
     RealizedSavingsCollector,
 )
 from finops_ingest.collectors.recommendations import RecommendationCollector
+from finops_ingest.collectors.savings_ledger import SavingsLedgerCollector
 from finops_ingest.collectors.savings_plan_rates import SavingsPlanRatesCollector
 from finops_ingest.collectors.score import ScoreCollector
 from finops_ingest.collectors.spot_prices import SpotPricesCollector
@@ -196,6 +197,8 @@ DEMO_TABLES = (
     # P3, FEAT-025 and FEAT-029. Both of these reference `recommendation`, so
     # both go before it: the measured verdict and the lifecycle log first, the
     # finding they are about second.
+    # P11, FEAT-078. A credit references the verification and the recommendation, so first.
+    "savings_credit",
     "realized_saving",
     "recommendation_event",
     # Before the recommendations it hangs off and the prices it quotes. TASK-P9-006.
@@ -861,6 +864,15 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
             unit(scope_key="ownership"),
             "ownership",
             settings=settings.model_copy(update={"owner_tag_keys": "team,owner"}),
+        )
+        # FEAT-078, TASK-P11-006. After the owners, because a credit names the team they
+        # suggest, and after the verdicts above, because it credits only a VERIFIED one.
+        written += _through_the_ledger(
+            ledger,
+            SavingsLedgerCollector(clock=lambda: now),
+            connection,
+            unit(scope_key="savings_ledger"),
+            "savings_ledger",
         )
 
         # FEAT-057. Seeded after the inventory on purpose, because it joins to it: the

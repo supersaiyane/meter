@@ -144,7 +144,7 @@ days.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-11 |
 | Implements | Spec section 5.5 |
 | Delivers | FEAT-078 |
 | Depends on | TASK-P11-005 |
@@ -152,10 +152,10 @@ days.
 
 **Acceptance criteria.**
 
-- [ ] `savings_credit`, its migration, constraints and guard entry
-- [ ] The `savings_ledger` collector, daily, its schedule row: one credit per VERIFIED saving, its
+- [x] `savings_credit`, its migration, constraints and guard entry
+- [x] The `savings_ledger` collector, daily, its schedule row: one credit per VERIFIED saving, its
       owner at DONE, its team, who closed it and the verified monthly saving
-- [ ] An INCONCLUSIVE or REGRESSED verdict earns no credit
+- [x] An INCONCLUSIVE or REGRESSED verdict earns no credit
 
 ---
 

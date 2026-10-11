@@ -471,6 +471,7 @@
     "finops_ingest/collectors/realized_savings.py",
     "finops_ingest/collectors/recommendations.py",
     "finops_ingest/collectors/retention.py",
+    "finops_ingest/collectors/savings_ledger.py",
     "finops_ingest/collectors/savings_plan_rates.py",
     "finops_ingest/collectors/score.py",
     "finops_ingest/collectors/spot_prices.py",
@@ -629,6 +630,7 @@
     "migrations/versions/0040_option_risk_optional.py",
     "migrations/versions/0041_resource_owner.py",
     "migrations/versions/0042_creator_lookup.py",
+    "migrations/versions/0043_savings_credit.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -755,6 +757,7 @@
     "tests/db/test_price_catalog_constraints.py",
     "tests/db/test_recommendation_option_constraints.py",
     "tests/db/test_resource_owner_constraints.py",
+    "tests/db/test_savings_credit_constraints.py",
     "tests/db/test_schema.py",
     "tests/db/test_scope_guard.py",
     "tests/db/test_upsize_constraints.py",
@@ -783,6 +786,7 @@
     "tests/ingest/collectors/test_recommendation_options.py",
     "tests/ingest/collectors/test_recommendations.py",
     "tests/ingest/collectors/test_retention.py",
+    "tests/ingest/collectors/test_savings_ledger.py",
     "tests/ingest/collectors/test_savings_plan_rates.py",
     "tests/ingest/collectors/test_score.py",
     "tests/ingest/collectors/test_spot_prices.py",
@@ -9818,6 +9822,21 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/savings_ledger.py",
+      "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/savings_ledger.py",
+      "t": "finops_core/domain/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/savings_ledger.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/savings_plan_rates.py",
       "t": "finops_core/domain/catalog.py",
       "k": "python"
@@ -10990,6 +11009,11 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/savings_ledger.py",
       "k": "python"
     },
     {
@@ -13314,6 +13338,16 @@
     },
     {
       "s": "tests/ingest/collectors/test_retention.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_savings_ledger.py",
+      "t": "finops_ingest/collectors/savings_ledger.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_savings_ledger.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },

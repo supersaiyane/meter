@@ -1193,6 +1193,37 @@ creator_lookup = Table(
     Column("collected_at", DateTime(timezone=True), nullable=False),
 )
 
+#: One credit per verified saving, to the owner, team and closer, migration 0043, FEAT-078.
+savings_credit = Table(
+    "savings_credit",
+    metadata,
+    Column("credit_id", UUID(as_uuid=True), primary_key=True),
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), nullable=False),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("sub_account_id", Text, nullable=False),
+    Column(
+        "recommendation_id",
+        UUID(as_uuid=True),
+        ForeignKey("recommendation.recommendation_id"),
+        nullable=False,
+    ),
+    Column(
+        "realized_id",
+        UUID(as_uuid=True),
+        ForeignKey("realized_saving.realized_id"),
+        nullable=False,
+        unique=True,
+    ),
+    Column("owner", Text, nullable=False),
+    Column("team", Text),
+    Column("closed_by", Text, nullable=False),
+    #: Measured: FEAT-029's before window's cost less its after window's, thirty days each.
+    Column("verified_monthly_saving", Numeric(20, 10), nullable=False),
+    Column("verified_on", Date, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+)
+
 query_adhoc = Table(
     "query_adhoc",
     metadata,
