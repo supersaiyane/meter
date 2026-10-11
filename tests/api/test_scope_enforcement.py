@@ -12,6 +12,7 @@ Friday.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
@@ -398,7 +399,36 @@ def test_healthz_is_not_a_liveness_probe(
     assert all(entry["is_stale"] for entry in payload["collectors"])
 
 
+@pytest.fixture
+def scheduled_alone(engine: Engine, tenant_id: UUID) -> Iterator[None]:
+    """This tenant's collectors the only ones scheduled while the test runs. ISS-267.
+
+    `/healthz` reports the worst tenant in the database, and the database is shared by the run: a
+    tenant another suite left with a schedule and no run made this test degraded, depending only on
+    which file pytest reached first. The other tenants' schedules are paused and given back.
+    """
+    with engine.begin() as connection:
+        paused = connection.execute(
+            text(
+                "UPDATE collector_schedule SET is_enabled = false "
+                "WHERE tenant_id <> :t AND is_enabled RETURNING tenant_id, collector"
+            ),
+            {"t": tenant_id},
+        ).all()
+    yield
+    if paused:
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "UPDATE collector_schedule SET is_enabled = true "
+                    "WHERE tenant_id = :t AND collector = :c"
+                ),
+                [{"t": row.tenant_id, "c": row.collector} for row in paused],
+            )
+
+
 @pytest.mark.integration
+@pytest.mark.usefixtures("scheduled_alone")
 def test_healthz_reports_a_recent_collection_as_healthy(
     engine: Engine, tenant_id: UUID, settings: Settings
 ) -> None:
