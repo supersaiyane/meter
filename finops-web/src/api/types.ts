@@ -579,6 +579,19 @@ export interface ApiRefusals {
   readonly examined: number;
 }
 
+/** Whom one source says to ask about a resource, TASK-P11-005. Never an owner, ISS-021. */
+export interface ApiOwnerSuggestion {
+  readonly owner: string;
+  /** A pipeline is never a person, and a creator is never a team. */
+  readonly kind: 'TEAM' | 'PERSON' | 'AUTOMATION';
+  /** Strongest first: the catalogue, then the tags, then the creator. */
+  readonly source: 'CATALOGUE' | 'TAG' | 'CREATOR';
+  /** What to check it by: the application, the tag key, or the creating event. */
+  readonly detail: string;
+  readonly as_of: string;
+  readonly collected_at: string;
+}
+
 export interface ApiRecommendation {
   readonly recommendation_id: string;
   readonly account_id: string;
@@ -599,8 +612,12 @@ export interface ApiRecommendation {
   readonly lifecycle: string;
   /** Null where nobody owns it, which ISS-021 says is how a finding dies. */
   readonly owner: string | null;
-  /** The resource's team tag, from its inventory node, while nobody owns it. ISS-021. */
+  /** The strongest team any source names, ISS-021: the catalogue's, then a tag's. */
   readonly suggested_owner: string | null;
+  /** TASK-P11-005. Every source's suggestion, strongest first. Never an owner. */
+  readonly owner_suggestions: readonly ApiOwnerSuggestion[];
+  /** Where CloudTrail's history began when it found the resource older, or null. */
+  readonly created_before: string | null;
   readonly ticket_reference: string | null;
   readonly rationale: string;
   /**

@@ -101,7 +101,7 @@ subprojects:
 - id: P11
   name: Owners and a savings ledger
   status: Approved by the owner on 2026-10-08 with OPEN-25 to OPEN-27 as recommended, in build, TASK-P11-001
-    to TASK-P11-003 done. Chosen as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
+    to TASK-P11-005 done. Chosen as the next priority, proposal 3 of next-in-scope.txt, OPEN-20. Owners from tags, AWS
     AppRegistry and CloudTrail as suggestions beside the assigned owner, and a ledger crediting each
     verified saving to its owner and team for every month the bill shows it held
   spec: specs/2026-10-08-p11-owners-and-savings-ledger-design.md
@@ -2214,6 +2214,18 @@ changes:
     days, so none is asked twice, and the collector asks at most creator_lookups_per_run of the
     resources no tag or catalogue names. The member role gains cloudtrail:LookupEvents; spec 5.4
     amended'
+- id: CHG-0152
+  date: '2026-10-08'
+  type: Feature
+  what: TASK-P11-005, owner suggestions on every recommendation
+  commit: pending
+  detail: 'Recommendations carry owner_suggestions, every resource_owner row for the resource read
+    through that table''s own scope rule, strongest first with its source, detail and both dates, and
+    created_before where CloudTrail found the resource older than its history; suggested_owner is now
+    the strongest team, failing which the node''s team tag as before, and never a creator. The
+    recommendations screen lists them under the owner cell, owned or not. A test over the source text
+    holds that no owner source writes recommendation.owner and that the only update setting it is the
+    lifecycle move with the owner a person named'
 issues:
 - id: ISS-189
   severity: LOW

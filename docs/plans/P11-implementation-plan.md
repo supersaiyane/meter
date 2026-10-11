@@ -125,7 +125,7 @@ days.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-08 |
 | Implements | Spec sections 5.1 and 8 |
 | Delivers | FEAT-077, the change to FEAT-028 |
 | Depends on | TASK-P11-002 |
@@ -133,10 +133,10 @@ days.
 
 **Acceptance criteria.**
 
-- [ ] Recommendations carry `owner_suggestions`, strongest first, each with its source, detail and
+- [x] Recommendations carry `owner_suggestions`, strongest first, each with its source, detail and
       `as_of`, read through `resource_owner`'s guard; `suggested_owner` kept
-- [ ] The recommendations screen lists them under the owner cell, with their sources
-- [ ] A test that no source and no route writes `recommendation.owner`
+- [x] The recommendations screen lists them under the owner cell, with their sources
+- [x] A test that no source and no route writes `recommendation.owner`
 
 ---
 

@@ -374,6 +374,8 @@ export async function demoEstate(page: Page): Promise<void> {
           lifecycle: 'OPEN',
           owner: null,
           suggested_owner: 'platform',
+          owner_suggestions: [],
+          created_before: null,
           ticket_reference: null,
           rationale: 'p99 CPU of 11.4 percent against 4 vCPU over 15 days, so 1 vCPU',
           // TASK-P9-010. The type it names and both list prices, from one version.

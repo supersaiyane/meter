@@ -5,7 +5,7 @@
 | Sub project | P11 |
 | Status | In build |
 | Specification | [P11 spec](../specs/2026-10-08-p11-owners-and-savings-ledger-design.md), sections 5.1 to 5.4 |
-| Tasks | TASK-P11-001 to TASK-P11-005; TASK-P11-001 to TASK-P11-004 done 2026-10-08 |
+| Tasks | TASK-P11-001 to TASK-P11-005; TASK-P11-001 to TASK-P11-005 done 2026-10-08 |
 
 ## What it does
 
@@ -60,6 +60,8 @@ the collector's catalogue pass, which keeps an account's rows when its catalogue
 TASK-P11-004 built the CloudTrail adapter, `finops_providers/aws/cloudtrail_creators.py`,
 `creator_lookup`, migration 0042, the member role's `cloudtrail:LookupEvents`, and the collector's
 creator pass, which keeps a creator's row since who created a resource does not change.
+TASK-P11-005 put them on every recommendation, read through each table's own scope rule, and
+listed them on the recommendations screen under the owner cell, `OwnerSuggestions`.
 
 ## Failure behaviour
 
@@ -80,8 +82,9 @@ as such; a pipeline's role is never shown as a person.
 
 ## Interface
 
-`owner_suggestions` on every recommendation, each with its source, kind, detail and `as_of`,
-strongest first; `suggested_owner` stays, the strongest team. The ports are
+`owner_suggestions` on every recommendation, each with its source, kind, detail, `as_of` and
+`collected_at`, strongest first; `suggested_owner` stays, the strongest team; `created_before`
+where CloudTrail found the resource older than its history. The ports are
 `finops_core/ports/ownership.py`, held by `tests/contract/test_ownership_contract.py`.
 
 ## Not doing
@@ -99,7 +102,7 @@ strongest first; `suggested_owner` stays, the strongest team. The ports are
 In build. Approved by the owner on 2026-10-08 with AppRegistry, CloudTrail's event history and
 teams only. TASK-P11-001 built the owner types, the `ServiceCatalogue` and `ResourceCreators` ports
 and the fakes that plant each case; TASK-P11-002 to TASK-P11-004 the tags, the catalogue and the
-creators behind them. Specified in the
+creators behind them; TASK-P11-005 the suggestions on every recommendation. Specified in the
 [P11 spec](../specs/2026-10-08-p11-owners-and-savings-ledger-design.md) and planned in the
 [P11 plan](../plans/P11-implementation-plan.md). The sections a built feature carries are written as
 its tasks build it.
