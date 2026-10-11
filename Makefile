@@ -1,3 +1,4 @@
+
 # Meter. One entry point for every routine task.
 # Run `make` or `make help` for the list.
 
@@ -105,13 +106,23 @@ doc-sync: ## Regenerate every derived document from docs/registry.yaml and the s
 session-end: doc-sync ## Run at the end of every work session
 	@$(DOCPY) scripts/docs/check_index.py
 	@$(DOCPY) scripts/docs/check_feature_docs.py
+	@$(DOCPY) scripts/docs/rotate_checkpoint.py
 	@$(MAKE) check-writing
+	@$(DOCPY) scripts/ci/check_memory.py
 	@echo
 	@echo "Remaining, by hand:"
 	@echo "  1. Add a row to docs/checkpoint.md with a resume vector"
 	@echo "  2. Update tasks/STATUS.md if a task changed state"
-	@echo "  3. Add a lesson to tasks/lessons.md if you were corrected"
+	@echo "  3. Were you corrected? make lesson m=\"short name\""
 	@echo "  4. Commit. The generated files are already updated." 
+
+.PHONY: check-memory
+check-memory: ## Fail if a resume vector, a cited commit or a lesson has rotted
+	@$(DOCPY) scripts/ci/check_memory.py
+
+.PHONY: lesson
+lesson: ## Append a lesson skeleton. Usage: make lesson m="short name"
+	@$(DOCPY) scripts/docs/add_lesson.py "$(m)"
 
 .PHONY: graph
 graph: ## Rebuild the file dependency graph and check the layering
@@ -422,7 +433,7 @@ tf-member: ## Apply the member account StackSet. Needs management account creden
 # ---------------------------------------------------------------- gates
 
 .PHONY: verify
-verify: lint check-writing check-docs test security-scan ## Everything CI runs on a merge request
+verify: lint check-writing check-docs check-memory test security-scan ## Everything CI runs on a merge request
 	@echo "verify passed"
 
 .PHONY: ci

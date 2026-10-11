@@ -24,7 +24,7 @@ in. See ADR-0014.
 | Feature document header tables | Feature document bodies |
 | `docs/architecture/file-graph.md` | ADRs, specs, plans |
 | `security/POSTURE.md` | `docs/05-SECURITY.md`, `docs/07-DATA-MODEL.md` |
-| `context_index.md` | `tasks/lessons.md`, `docs/checkpoint.md` |
+| `context_index.md`, `docs/checkpoint_archive.md` | `tasks/lessons.md`, `docs/checkpoint.md` |
 
 A status change is **one line in `docs/registry.yaml` plus `make doc-sync`**.
 It is never fifteen minutes of finding every place the old status was written.
@@ -46,6 +46,7 @@ Read the change, answer the first question that applies, and stop.
 | Deployment or pipeline | `docs/04-DEPLOYMENT.md` | Add a CHG row in `INDEX.md` |
 | A feature, decision, change, issue or open question status | `docs/registry.yaml` | Run `make doc-sync`. Nothing else |
 | Progress on existing work | `tasks/STATUS.md` task lists | Nothing else |
+| A correction received from the user | `tasks/lessons.md`, via `make lesson` | Nothing else. `make check-memory` stays red while the skeleton is unfilled |
 | A database schema change | `docs/07-DATA-MODEL.md`, in the same commit as the migration | Add a CHG row to the registry |
 | A rung disqualification | An ADR with the full trail | See ADR-0013 |
 | A correction you received | `tasks/lessons.md` | Nothing else |

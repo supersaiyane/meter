@@ -1,3 +1,4 @@
+
 meta:
   note: Single source of truth for features, decisions, changes, issues and open questions. INDEX.md,
     the roadmap status table and the feature document headers are GENERATED from this file by scripts/docs/sync.py.
@@ -659,6 +660,14 @@ changes:
     and the dependency admission gate missed by TASK-P0-029 was run
   commit: a699d3c
   detail: '[P0 plan](docs/plans/P0-implementation-plan.md)'
+- id: CHG-0034
+  date: '2026-08-24'
+  type: Process
+  what: The memory layer given a validity gate. Resume vectors, cited commits and identifiers
+    are checked, the checkpoint archive rule became a script, and recording a lesson became one
+    command
+  commit: pending
+  detail: '[docs/checkpoint.md](docs/checkpoint.md)'
 issues:
 - id: ISS-001
   severity: CRITICAL

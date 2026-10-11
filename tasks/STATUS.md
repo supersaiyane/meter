@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 2026-08-23
+Last updated: 2026-08-24
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -15,7 +15,7 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 50 total, 20 specified, 0 in build, 0 delivered |
 | Decisions | 19 architecture decision records |
-| Changes | 33 recorded |
+| Changes | 34 recorded |
 | Issues | 73 fixed, 35 open, 0 parked |
 | Open questions | 6 awaiting a decision |
 

@@ -103,14 +103,18 @@ meter/
 │   ├── security/              scan, admission gate, pre commit deps, report,
 │   │                          auto fix, allowlist validation
 │   ├── docs/                  sync.py, check_index.py, check_feature_docs.py,
-│   │                          build_file_graph.py, build_context_index.py
+│   │                          build_file_graph.py, build_context_index.py,
+│   │                          rotate_checkpoint.py, add_lesson.py
 │   ├── ci/                    code_review.py, check_flags.py, check_hardcoded.py,
-│   │                          check_forbidden_imports.py, refresh_base_images.py, flag and hardcoding checks,
-│   │                          forbidden imports, base image resolver
+│   │                          check_forbidden_imports.py, check_memory.py,
+│   │                          refresh_base_images.py, flag and hardcoding checks,
+│   │                          forbidden imports, the memory gate, base image resolver
 │   └── deploy/                migration task runner
 │
 ├── tests/                     the suite. conftest.py refuses to run against a
-│                              real AWS account when no endpoint override is set
+│                              real AWS account when no endpoint override is set.
+│                              test_checkpoint_rotation.py covers the only script
+│                              that deletes rows from the memory log
 │
 ├── finops_core/               PLANNED  domain and ports. No boto3, no framework
 │                              Directory exists, __init__.py only

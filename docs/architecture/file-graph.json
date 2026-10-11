@@ -22,13 +22,19 @@
     "scripts/ci/check_flags.py",
     "scripts/ci/check_forbidden_imports.py",
     "scripts/ci/check_hardcoded.py",
+    "scripts/ci/check_memory.py",
     "scripts/ci/code_review.py",
     "scripts/ci/refresh_base_images.py",
+    "scripts/docs/add_lesson.py",
     "scripts/docs/build_context_index.py",
     "scripts/docs/build_file_graph.py",
     "scripts/docs/check_feature_docs.py",
     "scripts/docs/check_index.py",
-    "scripts/docs/sync.py"
+    "scripts/docs/rotate_checkpoint.py",
+    "scripts/docs/sync.py",
+    "tests/__init__.py",
+    "tests/conftest.py",
+    "tests/test_checkpoint_rotation.py"
   ],
   "edges": [
     {

@@ -6,8 +6,8 @@ executable lives outside this directory.
 | Directory | Contents |
 | --- | --- |
 | `security/` | Scanning, the dependency admission gate, the HTML report, the auto fix |
-| `docs/` | Index consistency, feature document completeness, the file graph |
-| `ci/` | Pipeline helpers, including the automated code review |
+| `docs/` | Index consistency, feature document completeness, the file graph, checkpoint rotation |
+| `ci/` | Pipeline helpers, including the automated code review and the memory gate |
 | `deploy/` | Deployment helpers, including the migration task runner |
 
 | Script | Entry point | Purpose |
@@ -21,12 +21,15 @@ executable lives outside this directory.
 | `docs/check_feature_docs.py` | `make check-docs` | Fails when a feature has no document, or a document has no feature |
 | `docs/build_file_graph.py` | `make graph` | Builds the file dependency graph and checks the layering |
 | `docs/build_context_index.py` | `make doc-sync` | Generates `context_index.md` from the source, which rung two of the ladder depends on |
+| `docs/rotate_checkpoint.py` | `make session-end` | Moves the oldest checkpoint entries to the archive at 50, keeping the latest 20. The archive rule was written on day one and never executed, because it had no mechanism |
+| `docs/add_lesson.py` | `make lesson m="x"` | Appends a lesson skeleton. Recording a correction was losing to friction, so the friction was removed |
 | `docs/sync.py` | `make doc-sync` | Regenerates every derived document from `docs/registry.yaml` |
 | `security/pre_commit_deps.sh` | pre commit hook | Runs the admission gate when a dependency manifest changes |
 | `ci/code_review.py` | `make review` | Deterministic checks first, then the review checklist |
 | `ci/check_flags.py` | `make check-docs` | Fails on an expired feature flag, or one missing an owner, reason or removal plan |
 | `ci/check_hardcoded.py` | `make check-docs` | Fails on a region, account id, ARN, URL, role name or bare threshold written into application code |
 | `ci/check_forbidden_imports.py` | `make check-docs` | Enforces the reachability claims in `security/policy/accepted.yaml`. Importing a module an acceptance depends on not importing fails the build |
+| `ci/check_memory.py` | `make check-memory` | Fails when a resume vector points at a path that does not exist, a cited commit does not resolve, an identifier is defined nowhere, or a lesson is unfinished. Reports the lesson harvest rate every run |
 | `ci/refresh_base_images.py` | `make base-images` | Re resolves the Minimus tags to digests and rewrites `docker/base-images.lock` |
 | `deploy/run_migration_task.sh` | GitLab pipeline | Runs migrations as a one off ECS task before rollout |
 
