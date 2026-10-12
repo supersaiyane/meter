@@ -142,6 +142,13 @@ PROBES: Final[tuple[Probe, ...]] = (
         lambda c, _t: c.list_metrics(Namespace="AWS/EC2", RecentlyActive="PT3H"),
     ),
     Probe(
+        "Bedrock's invocation logging configuration",
+        "bedrock_invocations",
+        "member",
+        "bedrock",
+        lambda c, _t: c.get_model_invocation_logging_configuration(),
+    ),
+    Probe(
         "AppRegistry",
         "ownership",
         "member",

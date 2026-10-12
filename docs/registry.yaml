@@ -613,13 +613,13 @@ features:
 - id: FEAT-081
   name: Bedrock cost by model, token type, application and IAM principal, from the bill
   subproject: P13
-  status: Specified
+  status: In build
   detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) sections 5.2, 5.3 and 5.7, [P13 plan](docs/plans/P13-implementation-plan.md)'
   doc: docs/features/FEAT-081-bedrock-cost-from-the-bill.md
 - id: FEAT-082
   name: Bedrock usage per caller from invocation logs
   subproject: P13
-  status: Specified
+  status: In build
   detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) section 5.4, [P13 plan](docs/plans/P13-implementation-plan.md)'
   doc: docs/features/FEAT-082-bedrock-usage-per-caller.md
 - id: FEAT-083
@@ -2496,6 +2496,18 @@ changes:
   what: TASK-P13-001, a NAT gateway the worker alone may use, ADR-0036
   commit: pending
   detail: 'infra/terraform/hub/network.tf adds one NAT gateway with an Elastic IP in the first public subnet and the private route table''s one default route to it, tagged finops:module ai so the platform''s own cost shows it; alb.tf adds worker_internet, one egress rule, TCP 443 to anywhere, and ecs.tf gives it to the worker service alone. tests/contract/test_network_paths.py, which held that there was no NAT, now holds one gateway, three private routes, one rule to the internet in the hub and one service carrying it, and fails on any host outside AWS in the production code but the two providers''. trivy''s AWS-0104 on the rule is accepted with that enforcement, and AWS-0053''s argument no longer says no task has a route out. docs/04-DEPLOYMENT.md and docs/05-SECURITY.md amended. Modelled at about 38.69 USD a month; nothing applied, ISS-002'
+- id: CHG-0174
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P13-002, the bill's AI columns and each source restating only its own rows
+  commit: pending
+  detail: 'Migration 0047 adds ingest_source and five x_ columns to cost_focus_daily, x_usage_type, x_iam_principal, x_ai_model, x_ai_token_type and x_ai_tokens, with constraints holding a token count to its type and a type to its model. finops_providers/aws/bedrock_usage.py reads the model and token type from a Bedrock usage type, in Bedrock''s own form and the marketplace form, and yields nothing for one it does not recognise; the export applies it as it reads a row. It began in finops_core and ADR-0028''s test, which keeps every vendor''s name out of that package, moved it; the token types alone stay there. finops_providers/aws/cur.py asks the catalog for x_usagetype and line_item_iam_principal with the split and FOCUS 1.2 columns. The cost collector writes them and its restatement now keys on ingest_source, so the bill''s run cannot remove an AI provider''s rows, and it refuses a row that is not the bill''s. The fake export carries two Bedrock features opt in, ai=True. Every mapping is checkable only against a real export, ISS-002'
+- id: CHG-0175
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P13-003, Bedrock usage per caller from invocation logs, read as aggregates only
+  commit: pending
+  detail: 'Migration 0048 creates ai_usage_daily, tokens and requests per day, model, caller and application, class P and kept 13 months by retention_ai_usage. The InvocationLogs port, in a new AI_PORTS group, and finops_providers/aws/bedrock_invocations.py: the account''s invocation logging configuration, then one Logs Insights stats query a day whose every output is a count or a sum, held to that by a test; no CloudWatch Logs group is NotOptedIn with the step. The collector is scheduled daily and composed in both modes, with a fake of three accounts, read, S3 only and nowhere. The member role gains the configuration read and GetQueryResults, and StartQuery only on the log groups the new StackSet parameter InvocationLogGroupPattern names; StopQuery is not granted. A Bedrock interface endpoint in each collection Region, modelled at 16.06 USD a month each. The setting is ai_request_metadata_key, ADR-0028 keeping vendors out of finops_core'
 issues:
 - id: ISS-189
   severity: LOW

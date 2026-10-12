@@ -26,6 +26,8 @@ resource "aws_cloudformation_stack_set" "collector" {
     ExternalId      = var.external_id
     OrganizationId  = var.organization_id
     RoleName        = var.collector_role_name
+    # The log groups the role may query, P13 and FEAT-082.
+    InvocationLogGroupPattern = var.invocation_log_group_pattern
   }
 
   auto_deployment {

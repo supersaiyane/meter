@@ -340,6 +340,9 @@ CREATE TABLE cost_focus_daily (
     source_fingerprint          TEXT           NOT NULL,
     as_of                       TIMESTAMPTZ    NOT NULL,
     collected_at                TIMESTAMPTZ    NOT NULL,
+    -- Which collector wrote the row, P13 and migration 0047. Each restates only its own.
+    ingest_source               TEXT           NOT NULL DEFAULT 'aws_export'
+        CHECK (ingest_source IN ('aws_export', 'openai', 'anthropic')),
 
     -- Split cost allocation, FEAT-035. Meter columns and not FOCUS ones: FOCUS 1.1
     -- has no column for a pod, so these are the vendor extension that carries one.
@@ -401,6 +404,21 @@ CREATE TABLE cost_focus_daily (
     invoice_id                  TEXT,
     invoice_detail_id           TEXT,
 
+    -- What a line of AI spend bought, P13 and migration 0047, FEAT-081. FOCUS reserves x_ for
+    -- a producer's own columns; these stand in for the token fields FOCUS 1.5 is expected to
+    -- name, OPEN-34, and are renamed by add, backfill and drop when it does. Null on every row
+    -- that is not AI, which is nearly all of them.
+    x_usage_type                TEXT,
+    x_iam_principal             TEXT,
+    x_ai_model                  TEXT,
+    x_ai_token_type             TEXT
+        CHECK (x_ai_token_type IN ('input', 'output', 'cache_read', 'cache_write')),
+    x_ai_tokens                 NUMERIC(30, 10) CHECK (x_ai_tokens >= 0),
+    CONSTRAINT ck_cost_focus_daily__tokens_have_a_type
+        CHECK (x_ai_tokens IS NULL OR x_ai_token_type IS NOT NULL),
+    CONSTRAINT ck_cost_focus_daily__token_type_has_a_model
+        CHECK (x_ai_token_type IS NULL OR x_ai_model IS NOT NULL),
+
     PRIMARY KEY (tenant_id, billing_period_start, source_fingerprint)
 ) PARTITION BY RANGE (billing_period_start);
 
@@ -426,6 +444,17 @@ CREATE TABLE cost_provider_extra (
 what makes the restatement upsert work: CUR is rewritten throughout the month,
 so ingest is `INSERT ... ON CONFLICT DO UPDATE` keyed on the primary key, and
 re reading a period never double counts. ISS-008.
+
+`ingest_source` exists because the restatement delete is the one destructive
+thing ingest does, and it removes every row of a period its run did not write.
+From P13 the OpenAI and Anthropic collectors write to this table too, so each
+collector's delete keys on its own source, and the bill's run never removes a
+provider's rows. Every row before P13 is the bill's, which the default says.
+
+The `x_` columns are filled for Bedrock from the usage type, which encodes the
+model and token type, by `finops_providers/aws/bedrock_usage.py`, and given directly by the
+OpenAI and Anthropic cost reports. A usage type the parser does not recognise
+leaves them null: the cost counts, as Bedrock with no model, never as a guess.
 
 `effective_cost` is the amortized measure and is the default everywhere in the
 product. `billed_cost` is retained for invoice reconciliation only and is never
@@ -1085,6 +1114,51 @@ quotes. Scoped through its recommendation, as `recommendation_event` is. OPEN-23
 The recommendation also gains `added_monthly_cost`, migration 0039, TASK-P9-008: an
 `UPSIZE_INSTANCE` row has one above nought and a saving of nought, and no other row has one, so an
 Upsize states what it adds to the bill and no total of savings can fall because of it.
+
+### AI usage per caller, P13
+
+```sql
+-- P13, FEAT-082, migration 0048. Tokens and requests per day, model and caller, from every AI
+-- source: the Bedrock invocation logs now, OpenAI's and Anthropic's usage reports from
+-- TASK-P13-004 and 005. An empty string in a key column means the source does not report that
+-- dimension, which a NULL cannot say inside a primary key.
+CREATE TABLE ai_usage_daily (
+    tenant_id          UUID        NOT NULL REFERENCES tenant(tenant_id),
+    ingest_run_id      UUID        NOT NULL,
+    provider           TEXT        NOT NULL,   -- bedrock | openai | anthropic
+    account_id         TEXT        NOT NULL,   -- a cloud account, or the provider's organization
+    usage_date         DATE        NOT NULL,
+    model              TEXT        NOT NULL,   -- as the source names it
+    workspace          TEXT        NOT NULL DEFAULT '',  -- the Region, the project or the workspace
+    api_key_id         TEXT        NOT NULL DEFAULT '',
+    caller             TEXT        NOT NULL DEFAULT '',  -- class P: an IAM ARN or a user
+    application        TEXT        NOT NULL DEFAULT '',  -- the request metadata key's value
+    input_tokens       BIGINT      NOT NULL,
+    output_tokens      BIGINT      NOT NULL,
+    cache_read_tokens  BIGINT      NOT NULL,
+    cache_write_tokens BIGINT      NOT NULL,
+    requests           BIGINT,                 -- null where a source counts tokens only
+    as_of              TIMESTAMPTZ NOT NULL,
+    collected_at       TIMESTAMPTZ NOT NULL,
+    CONSTRAINT pk_ai_usage_daily PRIMARY KEY (tenant_id, provider, account_id, usage_date,
+        model, workspace, api_key_id, caller, application),
+    CONSTRAINT ck_ai_usage_daily__provider
+        CHECK (provider IN ('bedrock', 'openai', 'anthropic')),
+    CONSTRAINT ck_ai_usage_daily__model_named CHECK (model <> ''),
+    CONSTRAINT ck_ai_usage_daily__tokens_not_negative CHECK (
+        input_tokens >= 0 AND output_tokens >= 0
+        AND cache_read_tokens >= 0 AND cache_write_tokens >= 0),
+    CONSTRAINT ck_ai_usage_daily__requests_not_negative CHECK (requests >= 0),
+    CONSTRAINT ck_ai_usage_daily__collected_after_true CHECK (collected_at >= as_of)
+);
+CREATE INDEX ix_ai_usage_daily__tenant_date ON ai_usage_daily (tenant_id, usage_date);
+```
+
+Never a cost. What a caller's tokens cost is modelled when it is read, from the bill's unit cost
+for the same model and day, because only the bill knows the price that was paid. A source's
+rerun of a window removes that window's rows it no longer reports, keyed on the provider, the
+account, the dates and, for Bedrock, the Region, and on the run id like the bill's restatement.
+Kept 13 months by `retention_ai_usage`, because a caller can name a person.
 
 ## Migration workflow, Alembic
 

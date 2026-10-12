@@ -374,3 +374,52 @@ class TestFocusOneTwoColumns:
         athena = StubAthena([page_with([{**ROW, **FOCUS_1_2, "billingcurrency": "usd"}])])
         with pytest.raises(errors.SchemaDrift, match="ISO 4217"):
             list(export(settings, athena=athena).read_period(AUGUST, SEPTEMBER))
+
+
+BEDROCK_LINE = {
+    **ROW,
+    "servicename": "Amazon Bedrock",
+    "servicecategory": "AI and Machine Learning",
+    "resourceid": "",
+    "consumedquantity": "1500",
+    "consumedunit": "Tokens",
+    "x_usagetype": "EUW1-NovaPro-output-tokens",
+    "line_item_iam_principal": "arn:aws:iam::444455556666:role/summaries",
+}
+
+
+class TestAiColumns:
+    """TASK-P13-002, P13 spec 5.2: read where the export carries them, null where it does not."""
+
+    def test_a_bedrock_line_names_its_model_token_type_tokens_and_principal(
+        self, settings: Settings
+    ) -> None:
+        athena = StubAthena([page_with([BEDROCK_LINE])])
+        row = next(iter(export(settings, athena=athena).read_period(AUGUST, SEPTEMBER)))
+        assert (row.x_usage_type, row.x_ai_model, row.x_ai_token_type, row.x_ai_tokens) == (
+            "EUW1-NovaPro-output-tokens",
+            "NovaPro",
+            "output",
+            Decimal("1500"),
+        )
+        assert row.x_iam_principal == "arn:aws:iam::444455556666:role/summaries"
+        query = _period_query(athena)
+        assert "x_usagetype" in query and "line_item_iam_principal" in query
+
+    def test_an_export_without_them_reads_as_before_with_them_null(
+        self, settings: Settings
+    ) -> None:
+        athena = StubAthena([page_for([ROW])])
+        row = next(iter(export(settings, athena=athena).read_period(AUGUST, SEPTEMBER)))
+        assert (row.x_usage_type, row.x_iam_principal, row.x_ai_model) == (None, None, None)
+        query = _period_query(athena)
+        assert "x_usagetype" not in query and "line_item_iam_principal" not in query
+
+    def test_a_usage_type_nobody_documented_keeps_its_cost_and_names_no_model(
+        self, settings: Settings
+    ) -> None:
+        line = {**BEDROCK_LINE, "x_usagetype": "EUW1-ProvisionedThroughput-ModelUnits"}
+        athena = StubAthena([page_with([line])])
+        row = next(iter(export(settings, athena=athena).read_period(AUGUST, SEPTEMBER)))
+        assert row.effective_cost == Decimal("11.0000")
+        assert (row.x_ai_model, row.x_ai_token_type, row.x_ai_tokens) == (None, None, None)

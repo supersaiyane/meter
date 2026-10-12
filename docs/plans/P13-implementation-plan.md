@@ -72,7 +72,7 @@ ISS-002.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-12 |
 | Implements | Spec sections 5.2 and 5.3, OPEN-34 |
 | Delivers | FEAT-081 |
 | Depends on | Nothing |
@@ -80,14 +80,25 @@ ISS-002.
 
 **Acceptance criteria.**
 
-- [ ] A migration adds `ingest_source` and the five `x_` columns to `cost_focus_daily`, with their
+- [x] A migration adds `ingest_source` and the five `x_` columns to `cost_focus_daily`, with their
       constraints, additive only
-- [ ] A pure usage type parser in `finops_core` reads model and token type from every Bedrock
+- [x] A pure usage type parser reads model and token type from every Bedrock
       suffix AWS documents, and returns nothing for a usage type it does not recognise
-- [ ] `cur.py` reads `x_usagetype` and `line_item_iam_principal` where the catalog has them, and an
+- [x] `cur.py` reads `x_usagetype` and `line_item_iam_principal` where the catalog has them, and an
       export without them is read with the SQL it always was
-- [ ] The cost collector writes the new columns and its restatement delete keys on `aws_export`
-- [ ] The fake export carries Bedrock token line items
+- [x] The cost collector writes the new columns and its restatement delete keys on `aws_export`
+- [x] The fake export carries Bedrock token line items
+
+**Delivered 2026-10-12.** Migration `0047_cost_ai_columns`; the parser in
+`finops_providers/aws/bedrock_usage.py`, applied by the export as it reads a row, and not in
+`finops_core`, because ADR-0028's test keeps every vendor's name out of that package; the token
+types alone are in `finops_core/domain/ai.py`; `AI_COLUMNS` in
+`finops_providers/aws/cur.py`; and the cost collector's restatement keyed on `ingest_source`, with a
+row from another source refused. The fake export's two Bedrock features are opt in, `ai=True`, so no
+earlier figure moves; the demo and the local stack take them in TASK-P13-009, with the journeys.
+Tests: `tests/core/test_ai.py`, `TestAiColumns` in `tests/providers/aws/test_cur.py`, and
+`tests/ingest/collectors/test_cost_focus_sources.py`, which proves a provider's row survives the
+bill's restatement and the table refuses each broken combination of the token columns.
 
 ---
 
@@ -95,7 +106,7 @@ ISS-002.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-12 |
 | Implements | Spec section 5.4, OPEN-32 |
 | Delivers | FEAT-082 |
 | Depends on | TASK-P13-002 |
@@ -103,14 +114,25 @@ ISS-002.
 
 **Acceptance criteria.**
 
-- [ ] A migration creates `ai_usage_daily`
-- [ ] An adapter reads each account and Region's invocation logging configuration and, where it
+- [x] A migration creates `ai_usage_daily`
+- [x] An adapter reads each account and Region's invocation logging configuration and, where it
       names a CloudWatch log group, runs one aggregate Logs Insights query for the day before
-- [ ] A test fails if the query names a body field or returns anything but aggregates
-- [ ] No CloudWatch log group is NotOptedIn with the step that enables it
-- [ ] The collector role gains the logging configuration read and a query start scoped to
+- [x] A test fails if the query names a body field or returns anything but aggregates
+- [x] No CloudWatch log group is NotOptedIn with the step that enables it
+- [x] The collector role gains the logging configuration read and a query start scoped to
       `InvocationLogGroupPattern`
-- [ ] The collector is scheduled, composed in both modes and has a fake
+- [x] The collector is scheduled, composed in both modes and has a fake
+
+**Delivered 2026-10-12.** Migration `0048_ai_usage_daily`; the `InvocationLogs` port in a new
+`AI_PORTS` group; `finops_providers/aws/bedrock_invocations.py`, which reads the logging
+configuration and runs one Logs Insights `stats` query a day, every page of its answer;
+`finops_ingest/collectors/ai_usage.py`, whose writer and restatement TASK-P13-004 and 005 share;
+`FakeInvocationLogs` with the three cases, read, S3 only and nowhere; the schedule entry, both
+compositions, and `retention_ai_usage` at 13 months. The role gains the configuration read and
+`logs:GetQueryResults`, and `logs:StartQuery` only on `InvocationLogGroupPattern`;
+`tests/contract/test_no_llm_writes.py` names StartQuery as a read, which IAM classes it as, and
+StopQuery is not granted. The hub gains a Bedrock endpoint in each collection Region, as ADR-0035
+requires, modelled at 16.06 USD a month each. The setting is `ai_request_metadata_key`, ADR-0028.
 
 ---
 

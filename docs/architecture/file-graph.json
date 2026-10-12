@@ -375,6 +375,7 @@
     "finops_core/constants.py",
     "finops_core/domain/__init__.py",
     "finops_core/domain/account.py",
+    "finops_core/domain/ai.py",
     "finops_core/domain/budget.py",
     "finops_core/domain/catalog.py",
     "finops_core/domain/containers.py",
@@ -405,6 +406,7 @@
     "finops_core/logs.py",
     "finops_core/ports/__init__.py",
     "finops_core/ports/accounts.py",
+    "finops_core/ports/ai.py",
     "finops_core/ports/budget.py",
     "finops_core/ports/catalog.py",
     "finops_core/ports/cloudwatch_estate.py",
@@ -426,6 +428,7 @@
     "finops_core/ports/reports.py",
     "finops_core/ports/tickets.py",
     "finops_fakes/__init__.py",
+    "finops_fakes/ai.py",
     "finops_fakes/budgets.py",
     "finops_fakes/catalog.py",
     "finops_fakes/cloudwatch_estate.py",
@@ -462,6 +465,7 @@
     "finops_ingest/aws_bindings.py",
     "finops_ingest/collectors/__init__.py",
     "finops_ingest/collectors/account_health.py",
+    "finops_ingest/collectors/ai_usage.py",
     "finops_ingest/collectors/budgets.py",
     "finops_ingest/collectors/catalog_reads.py",
     "finops_ingest/collectors/commitment.py",
@@ -512,6 +516,8 @@
     "finops_providers/aws/accounts.py",
     "finops_providers/aws/appregistry.py",
     "finops_providers/aws/bedrock.py",
+    "finops_providers/aws/bedrock_invocations.py",
+    "finops_providers/aws/bedrock_usage.py",
     "finops_providers/aws/budgets.py",
     "finops_providers/aws/burstable.py",
     "finops_providers/aws/client.py",
@@ -654,6 +660,8 @@
     "migrations/versions/0044_savings_credit_month.py",
     "migrations/versions/0045_ledger_screen.py",
     "migrations/versions/0046_redaction_found_in.py",
+    "migrations/versions/0047_cost_ai_columns.py",
+    "migrations/versions/0048_ai_usage_daily.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -754,6 +762,7 @@
     "tests/core/test_catalog.py",
     "tests/core/test_config.py",
     "tests/core/test_containers_domain.py",
+    "tests/core/test_cost_ai_columns.py",
     "tests/core/test_cost_domain.py",
     "tests/core/test_domain.py",
     "tests/core/test_errors.py",
@@ -791,12 +800,14 @@
     "tests/ingest/__init__.py",
     "tests/ingest/collectors/__init__.py",
     "tests/ingest/collectors/test_account_health.py",
+    "tests/ingest/collectors/test_ai_usage.py",
     "tests/ingest/collectors/test_commitment.py",
     "tests/ingest/collectors/test_commitment_actions.py",
     "tests/ingest/collectors/test_container_usage.py",
     "tests/ingest/collectors/test_cost_anomaly.py",
     "tests/ingest/collectors/test_cost_focus.py",
     "tests/ingest/collectors/test_cost_focus_restatement.py",
+    "tests/ingest/collectors/test_cost_focus_sources.py",
     "tests/ingest/collectors/test_cost_rollup.py",
     "tests/ingest/collectors/test_digests.py",
     "tests/ingest/collectors/test_iac_state.py",
@@ -853,7 +864,9 @@
     "tests/providers/aws/test_appregistry.py",
     "tests/providers/aws/test_aws_topology.py",
     "tests/providers/aws/test_bedrock.py",
+    "tests/providers/aws/test_bedrock_invocations.py",
     "tests/providers/aws/test_bedrock_permissions.py",
+    "tests/providers/aws/test_bedrock_usage.py",
     "tests/providers/aws/test_burstable.py",
     "tests/providers/aws/test_cloudtrail_creators.py",
     "tests/providers/aws/test_commitment.py",
@@ -8899,6 +8912,11 @@
       "k": "python"
     },
     {
+      "s": "finops_core/domain/ai.py",
+      "t": "finops_core/domain/fact.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/domain/budget.py",
       "t": "finops_core/domain/fact.py",
       "k": "python"
@@ -8916,6 +8934,11 @@
     {
       "s": "finops_core/domain/containers.py",
       "t": "finops_core/domain/observation.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/domain/cost.py",
+      "t": "finops_core/domain/ai.py",
       "k": "python"
     },
     {
@@ -9075,6 +9098,11 @@
     },
     {
       "s": "finops_core/ports/__init__.py",
+      "t": "finops_core/ports/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/__init__.py",
       "t": "finops_core/ports/catalog.py",
       "k": "python"
     },
@@ -9136,6 +9164,16 @@
     {
       "s": "finops_core/ports/accounts.py",
       "t": "finops_core/domain/org.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/ai.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/ports/ai.py",
+      "t": "finops_core/domain/ai.py",
       "k": "python"
     },
     {
@@ -9244,6 +9282,21 @@
       "k": "python"
     },
     {
+      "s": "finops_fakes/ai.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/ai.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/ai.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
       "s": "finops_fakes/budgets.py",
       "t": "finops_core/domain/budget.py",
       "k": "python"
@@ -9286,6 +9339,11 @@
     {
       "s": "finops_fakes/composition.py",
       "t": "finops_ingest/collectors/account_health.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/ai_usage.py",
       "k": "python"
     },
     {
@@ -9456,6 +9514,11 @@
     {
       "s": "finops_fakes/containers.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/cur.py",
+      "t": "finops_core/domain/ai.py",
       "k": "python"
     },
     {
@@ -9795,6 +9858,11 @@
     },
     {
       "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/ai_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
       "t": "finops_ingest/collectors/budgets.py",
       "k": "python"
     },
@@ -9886,6 +9954,11 @@
     {
       "s": "finops_ingest/aws_bindings.py",
       "t": "finops_providers/aws/accounts.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/bedrock_invocations.py",
       "k": "python"
     },
     {
@@ -10010,6 +10083,26 @@
     },
     {
       "s": "finops_ingest/collectors/account_health.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/ai_usage.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/ai_usage.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/ai_usage.py",
+      "t": "finops_core/ports/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/ai_usage.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
@@ -10989,6 +11082,36 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/aws/bedrock_invocations.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/bedrock_invocations.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/bedrock_invocations.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/bedrock_invocations.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/bedrock_invocations.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/bedrock_usage.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/budgets.py",
       "t": "finops_core/domain/budget.py",
       "k": "python"
@@ -11131,6 +11254,11 @@
     {
       "s": "finops_providers/aws/cur.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/cur.py",
+      "t": "finops_providers/aws/bedrock_usage.py",
       "k": "python"
     },
     {
@@ -13249,6 +13377,16 @@
       "k": "python"
     },
     {
+      "s": "tests/core/test_cost_ai_columns.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_cost_ai_columns.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
       "s": "tests/core/test_cost_domain.py",
       "t": "finops_core/domain/cost.py",
       "k": "python"
@@ -13564,6 +13702,41 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/collectors/test_ai_usage.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_usage.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_usage.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_usage.py",
+      "t": "finops_ingest/collectors/ai_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_usage.py",
+      "t": "finops_ingest/collectors/retention.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_usage.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_usage.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/collectors/test_commitment.py",
       "t": "finops_core/errors.py",
       "k": "python"
@@ -13710,6 +13883,26 @@
     },
     {
       "s": "tests/ingest/collectors/test_cost_focus_restatement.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus_sources.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus_sources.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus_sources.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_cost_focus_sources.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
@@ -14964,6 +15157,26 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/aws/test_bedrock_invocations.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_bedrock_invocations.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_bedrock_invocations.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_bedrock_invocations.py",
+      "t": "finops_providers/aws/bedrock_invocations.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/aws/test_bedrock_permissions.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -14976,6 +15189,16 @@
     {
       "s": "tests/providers/aws/test_bedrock_permissions.py",
       "t": "finops_core/domain/platform.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_bedrock_usage.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_bedrock_usage.py",
+      "t": "finops_providers/aws/bedrock_usage.py",
       "k": "python"
     },
     {

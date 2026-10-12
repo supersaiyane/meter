@@ -58,7 +58,7 @@ def test_the_environment_states_every_window() -> None:
     empty set, which is the way a check like this dies without anybody noticing.
     """
     windows = retention_windows()
-    assert set(windows) == {"principal", "operational", "assistant", "audit", "cost"}
+    assert set(windows) == {"principal", "operational", "assistant", "ai_usage", "audit", "cost"}
     assert all(days > 0 for days in windows.values())
 
 
