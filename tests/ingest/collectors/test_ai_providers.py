@@ -259,7 +259,7 @@ def test_a_providers_run_leaves_the_bills_rows_and_anthropic_lands_beside_openai
     run(engine, tenant_id)
 
     with engine.connect() as connection:
-        by_source = dict(
+        by_source: dict[str, int] = dict(
             connection.execute(
                 text(
                     "SELECT ingest_source, count(*) FROM cost_focus_daily WHERE tenant_id = :t "
