@@ -453,6 +453,7 @@
     "finops_fakes/utilization.py",
     "finops_fakes/waste.py",
     "finops_ingest/__init__.py",
+    "finops_ingest/aws_bindings.py",
     "finops_ingest/collectors/__init__.py",
     "finops_ingest/collectors/account_health.py",
     "finops_ingest/collectors/budgets.py",
@@ -520,6 +521,7 @@
     "finops_providers/aws/price_list.py",
     "finops_providers/aws/query_evidence.py",
     "finops_providers/aws/quotas.py",
+    "finops_providers/aws/reach.py",
     "finops_providers/aws/recommendations.py",
     "finops_providers/aws/relay_client.py",
     "finops_providers/aws/report_store.py",
@@ -810,6 +812,7 @@
     "tests/ingest/collectors/test_waste_targets.py",
     "tests/ingest/collectors/test_waste_volumes.py",
     "tests/ingest/collectors/test_waste_volumes_judged.py",
+    "tests/ingest/test_aws_bindings.py",
     "tests/ingest/test_composition.py",
     "tests/ingest/test_coverage.py",
     "tests/ingest/test_dispatcher.py",
@@ -847,6 +850,7 @@
     "tests/providers/aws/test_price_list.py",
     "tests/providers/aws/test_query_evidence.py",
     "tests/providers/aws/test_quotas.py",
+    "tests/providers/aws/test_reach.py",
     "tests/providers/aws/test_recommendations.py",
     "tests/providers/aws/test_relay.py",
     "tests/providers/aws/test_report_store.py",
@@ -9709,6 +9713,226 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/account_health.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/budgets.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/container_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/iac_state.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/instance_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/invoices.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/org_tree.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/platform_cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/price_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/quotas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/savings_plan_rates.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/spot_prices.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/accounts.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/budgets.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/cloudtrail_creators.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/config_inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/container_insights.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/credentials.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/cur.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/health.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/instance_types.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/invoices.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/platform_cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/price_list.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/quotas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/reach.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/relay_client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/savings_plans.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/spot.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/terraform_state.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_query/severity.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/account_health.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -10410,6 +10634,11 @@
     },
     {
       "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/aws_bindings.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
       "t": "finops_ingest/collectors/commitment_actions.py",
       "k": "python"
     },
@@ -10421,11 +10650,6 @@
     {
       "s": "finops_ingest/composition.py",
       "t": "finops_ingest/collectors/digests.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_ingest/composition.py",
-      "t": "finops_ingest/collectors/ownership.py",
       "k": "python"
     },
     {
@@ -10906,6 +11130,36 @@
     {
       "s": "finops_providers/aws/quotas.py",
       "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/reach.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/reach.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/reach.py",
+      "t": "finops_providers/aws/appregistry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/reach.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/reach.py",
+      "t": "finops_providers/aws/credentials.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/reach.py",
+      "t": "finops_providers/aws/relay_client.py",
       "k": "python"
     },
     {
@@ -13989,6 +14243,46 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_ingest/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_ingest/aws_bindings.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_ingest/composition.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/test_composition.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -14651,6 +14945,26 @@
     {
       "s": "tests/providers/aws/test_quotas.py",
       "t": "finops_providers/aws/quotas.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_reach.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_reach.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_reach.py",
+      "t": "finops_providers/aws/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_reach.py",
+      "t": "finops_providers/aws/reach.py",
       "k": "python"
     },
     {

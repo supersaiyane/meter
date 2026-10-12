@@ -2328,6 +2328,17 @@ changes:
     Misconfigured until TASK-P12-002; finops_fakes/composition.py binds the same from the fakes on a clock it
     is handed, for the local stack only, ADR-0022, so METER_PROVIDERS is not needed and spec 5.1 is amended.
     The fakes'' no clock test walked a directory gone since 2026-09-21 and now walks finops_fakes, ISS-271'
+- id: CHG-0161
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-002, the AWS binders
+  commit: pending
+  detail: 'finops_ingest/aws_bindings.py builds 17 collectors from their AWS adapters for each unit, through
+    finops_providers/aws/reach.py: hub clients made on first use, the assumed session of an account scoped
+    unit, member accounts through the credential broker, the relay for Budgets, Invoicing, spot prices and
+    Savings Plans rates, and the payer from the org reader role ARN. Settings gained relay_function_name and
+    config_aggregator, empty by default and failing typed when empty. Four stay failing typed, ISS-240 and
+    ISS-272. ISS-273 found: a role the worker cannot assume never reaches the account health collector'
 issues:
 - id: ISS-189
   severity: LOW
@@ -2631,7 +2642,8 @@ issues:
   detail: '`finops_ingest/registry.py`, `finops_ingest/dispatcher.py`, `finops_ingest/worker.py`
     and `scripts/demo/seed_demo.py`. Half closed 2026-10-12, TASK-P12-001: finops_ingest/composition.py
     binds every collector the worker runs for a deployment, and finops_fakes/composition.py the same from
-    the fakes for the local stack; the entry points that call them follow in TASK-P12-004'
+    the fakes for the local stack; the entry points that call them follow in TASK-P12-004. TASK-P12-002 on
+    the same day built 17 of them from their AWS adapters, finops_ingest/aws_bindings.py'
 - id: ISS-181
   severity: MEDIUM
   summary: AthenaCostExport materializes a whole billing period before returning it, so a large
@@ -4863,6 +4875,26 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-273
+  severity: MEDIUM
+  status: OPEN
+  summary: A member role that cannot be assumed never reaches the account health collector, so role_health
+    is not set to what is wrong
+  detail: 'Found 2026-10-12 while building TASK-P12-002. account_health is account scoped, so the worker assumes
+    the collector role through the broker before the collector runs, finops_ingest/worker.py _session_for. When
+    that assumption fails the unit is recorded as AccessDenied in sync_error and AccountHealthCollector, which
+    exists to write role_health and role_health_error on cloud_account and checks the role through its own
+    broker, never runs. The freshness screen shows the failure; the account screen keeps its last role_health.
+    A fix lets a collector declare it needs no assumed session, and needs a decision on which screen owns it'
+- id: ISS-272
+  severity: LOW
+  status: OPEN
+  summary: query_audit cannot be built for AWS, because no setting names the Grafana workspaces it searches
+  detail: 'Found 2026-10-12 while building TASK-P12-002. AmgQuerySurface takes the account and Region pairs to
+    list workspaces in, an HTTP timeout, a token lifetime and optional secret names, and the settings model has
+    none of them. The deployment binds query_audit to fail each run as Misconfigured naming this issue, so it is
+    on the freshness screen. Closing it needs those settings, or a decision that the workspaces are found in
+    every enrolled account and Region, which is a list call per pair'
 - id: ISS-271
   severity: MEDIUM
   status: FIXED

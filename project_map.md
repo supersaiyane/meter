@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 33 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 45 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 233 | test_*.py under tests/ |
-| Test functions | 2943 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 235 | test_*.py under tests/ |
+| Test functions | 2961 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -583,6 +583,10 @@ meter/
 │   │   │                      GetProducts a page at a time for the prices, EC2
 │   │   │                      narrowed at the source; a nought or unreadable term
 │   │   │                      is SchemaDrift. Unproved, ISS-002, ISS-261
+│   │   ├── reach.py           TASK-P12-002. How the hub reaches AWS for a collector:
+│   │   │                      its own clients made on first use, an assumed session,
+│   │   │                      a member account through the broker, the relay, and the
+│   │   │                      payer from the org reader role ARN
 │   │   ├── relay_client.py    ADR-0035. A boto3 client in shape that reaches its
 │   │   │                      service through the relay, so an adapter reads
 │   │   │                      through it unchanged; AWS's error codes kept
@@ -1129,6 +1133,10 @@ meter/
 │   │                          runs, bound per unit for a deployment: the ones
 │   │                          reading only Meter for real, the rest failing typed
 │   │                          as Misconfigured until TASK-P12-002. ISS-182
+│   ├── aws_bindings.py        TASK-P12-002. 17 collectors built from their AWS
+│   │                          adapters per unit, four failing typed, UNBUILT,
+│   │                          ISS-240 and ISS-272. Reads cloud_account for the
+│   │                          inventory's enrolled slices
 │   ├── dispatcher.py          one message per unit, keyed like the ledger claim
 │   ├── remediation.py         the only two writes Meter makes, both gated on
 │   │                          query_write_level and both recording what they

@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-1063 public symbols across 5 packages.
+1072 public symbols across 5 packages.
 
 ## finops_core
 
@@ -32,15 +32,15 @@ a duplicate.
 | --- | --- | --- | --- | --- |
 | `ConfigurationError` | class | `finops_core/config.py:40` | The process cannot start with the configuration it was given. | nothing in this tree |
 | `Settings` | class | `finops_core/config.py:44` | Every `METER_` variable in `.env.example`, typed, with no hidden defaults. | nothing in this tree |
-| `Settings.iac_locations` | method | `finops_core/config.py:283` | The configured state locations, split. | nothing in this tree |
-| `Settings.owner_tag_key_list` | method | `finops_core/config.py:294` | The owner tag keys, split, in the order a resource's tags are tried. | nothing in this tree |
-| `Settings.iac_exhaustive` | method | `finops_core/config.py:299` | Accounts whose infrastructure as code the configured backends wholly describe. | nothing in this tree |
-| `Settings.region_list` | method | `finops_core/config.py:346` | `regions` is held as text because a comma separated list from the | nothing in this tree |
-| `load_settings` | function | `finops_core/config.py:366` | Build the settings, or refuse to start and say which variable is at fault. | `finops_api/deps.py`, `finops_api/main.py` |
+| `Settings.iac_locations` | method | `finops_core/config.py:290` | The configured state locations, split. | nothing in this tree |
+| `Settings.owner_tag_key_list` | method | `finops_core/config.py:301` | The owner tag keys, split, in the order a resource's tags are tried. | nothing in this tree |
+| `Settings.iac_exhaustive` | method | `finops_core/config.py:306` | Accounts whose infrastructure as code the configured backends wholly describe. | nothing in this tree |
+| `Settings.region_list` | method | `finops_core/config.py:353` | `regions` is held as text because a comma separated list from the | nothing in this tree |
+| `load_settings` | function | `finops_core/config.py:373` | Build the settings, or refuse to start and say which variable is at fault. | `finops_api/deps.py`, `finops_api/main.py` |
 | `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | `finops_api/deps.py`, `finops_api/identity/session.py`, `finops_api/routes/accounts.py`, `finops_ingest/collectors/org_tree.py` |
 | `AccountStatus` | class | `finops_core/domain/account.py:26` | What the provider says about the account, not what we infer. | nothing in this tree |
 | `RoleHealth` | class | `finops_core/domain/account.py:47` | Whether the collector role in a member account is actually usable. | `finops_ingest/collectors/account_health.py` |
-| `AccountKey` | class | `finops_core/domain/account.py:69` | The only way an account is referred to anywhere in the domain. | `finops_api/db/repositories/topology.py`, `finops_api/deps.py`, `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, and 7 more |
+| `AccountKey` | class | `finops_core/domain/account.py:69` | The only way an account is referred to anywhere in the domain. | `finops_api/db/repositories/topology.py`, `finops_api/deps.py`, `finops_api/identity/local_config.py`, `finops_api/identity/session.py`, and 9 more |
 | `CloudAccount` | class | `finops_core/domain/account.py:80` | One account, as the provider described it at `as_of`. | `finops_providers/aws/accounts.py` |
 | `CloudAccount.provider` | method | `finops_core/domain/account.py:90` |  | nothing in this tree |
 | `AccountHealth` | class | `finops_core/domain/account.py:95` | Whether we could actually use the collector role, and why not if not. | `finops_providers/aws/health.py` |
@@ -207,8 +207,8 @@ a duplicate.
 | `NotOptedIn` | class | `finops_core/errors.py:80` | The service exists but this organization has never enabled it. | `finops_providers/aws/bedrock.py`, `finops_providers/aws/client.py`, `finops_providers/aws/quotas.py`, `finops_providers/aws/recommendations.py`, and 1 more |
 | `NoData` | class | `finops_core/errors.py:89` | The source holds nothing for this scope and period, and that is the truth. | `finops_api/exports/scheduled.py`, `finops_ingest/collectors/cost_focus.py`, `finops_ingest/collectors/instance_catalog.py`, `finops_ingest/collectors/org_tree.py`, and 7 more |
 | `Unreachable` | class | `finops_core/errors.py:99` | The endpoint did not answer at all. | `finops_api/exports/scheduled.py`, `finops_providers/aws/bedrock.py`, `finops_providers/aws/client.py`, `finops_providers/aws/cur.py`, and 2 more |
-| `Misconfigured` | class | `finops_core/errors.py:108` | A value this deployment set is wrong, and no retry will change that. | `finops_api/exports/scheduled.py`, `finops_ingest/composition.py`, `finops_providers/aws/bedrock.py`, `finops_providers/aws/client.py`, and 1 more |
-| `SchemaDrift` | class | `finops_core/errors.py:136` | The response did not match the shape this adapter expects. | `finops_api/exports/scheduled.py`, `finops_api/identity/local_config.py`, `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/container_usage.py`, and 18 more |
+| `Misconfigured` | class | `finops_core/errors.py:108` | A value this deployment set is wrong, and no retry will change that. | `finops_api/exports/scheduled.py`, `finops_ingest/aws_bindings.py`, `finops_ingest/composition.py`, `finops_providers/aws/bedrock.py`, and 2 more |
+| `SchemaDrift` | class | `finops_core/errors.py:136` | The response did not match the shape this adapter expects. | `finops_api/exports/scheduled.py`, `finops_api/identity/local_config.py`, `finops_ingest/aws_bindings.py`, `finops_ingest/collectors/account_health.py`, and 19 more |
 | `AccountDiscovery` | class | `finops_core/ports/accounts.py:19` | Reads which accounts exist and how they are arranged. | nothing in this tree |
 | `AccountDiscovery.list_accounts` | method | `finops_core/ports/accounts.py:22` | Every account this organization contains. | `finops_ingest/collectors/org_tree.py` |
 | `AccountDiscovery.describe_organization` | method | `finops_core/ports/accounts.py:35` | Every node of the organization tree, roots and units included. | `finops_ingest/collectors/org_tree.py` |
@@ -242,7 +242,7 @@ a duplicate.
 | `ProviderSession` | class | `finops_core/ports/credentials.py:23` | An authenticated handle for one account and one region. Opaque by design. | nothing in this tree |
 | `ProviderSession.expires_at` | method | `finops_core/ports/credentials.py:27` | When this handle stops working, so a long run can renew before it does. | nothing in this tree |
 | `CredentialBroker` | class | `finops_core/ports/credentials.py:33` | Produces a scoped session for a target account. | nothing in this tree |
-| `CredentialBroker.session_for` | method | `finops_core/ports/credentials.py:36` | Assume into `account` in `region` and return a session. | `finops_ingest/worker.py`, `finops_providers/aws/health.py` |
+| `CredentialBroker.session_for` | method | `finops_core/ports/credentials.py:36` | Assume into `account` in `region` and return a session. | `finops_ingest/worker.py`, `finops_providers/aws/health.py`, `finops_providers/aws/reach.py` |
 | `StateSource` | class | `finops_core/ports/iac.py:25` | Reads the resources named by the configured infrastructure as code state. | nothing in this tree |
 | `StateSource.read` | method | `finops_core/ports/iac.py:28` | Every resource the given state locations own, and the ones that refused. | `finops_ingest/collectors/iac_state.py`, `finops_ingest/collectors/recommendations.py`, `finops_providers/aws/relay_client.py`, `finops_providers/aws/report_store.py`, and 1 more |
 | `StateSource.locations` | method | `finops_core/ports/iac.py:47` | The configured locations, so a caller can report the denominator. | nothing in this tree |
@@ -276,7 +276,7 @@ a duplicate.
 | `MetricSource.read_series` | method | `finops_core/ports/metrics.py:48` | Every point for the metric over the window. | nothing in this tree |
 | `MetricSource.read_many` | method | `finops_core/ports/metrics.py:73` | Every point for many series, keyed by each request's own `key`. | `finops_ingest/collectors/waste_compute.py`, `finops_ingest/collectors/waste_parking.py` |
 | `ServiceCatalogue` | class | `finops_core/ports/ownership.py:20` | The applications an account declares, who owns each, and the tags that mark its resources. | nothing in this tree |
-| `ServiceCatalogue.applications` | method | `finops_core/ports/ownership.py:23` | Every application in this account and Region. | `finops_ingest/collectors/ownership.py` |
+| `ServiceCatalogue.applications` | method | `finops_core/ports/ownership.py:23` | Every application in this account and Region. | `finops_ingest/collectors/ownership.py`, `finops_providers/aws/reach.py` |
 | `ResourceCreators` | class | `finops_core/ports/ownership.py:40` | Who created a resource, from the provider's record of the event that did. | nothing in this tree |
 | `ResourceCreators.creator` | method | `finops_core/ports/ownership.py:43` | The principal that created the resource, or that it predates the record. | `finops_ingest/collectors/ownership.py` |
 | `FileChange` | class | `finops_core/ports/pull_requests.py:21` | One file the pull request adds, at a path relative to the repository root. | nothing in this tree |
@@ -328,92 +328,100 @@ a duplicate.
 
 | Symbol | Kind | Location | Purpose | Called by |
 | --- | --- | --- | --- | --- |
-| `AwsAccountDiscovery` | class | `finops_providers/aws/accounts.py:55` | Reads which accounts exist and how they are arranged. | nothing in this tree |
-| `AwsAccountDiscovery.client` | method | `finops_providers/aws/accounts.py:81` |  | `finops_providers/aws/bedrock.py`, `finops_providers/aws/commitment.py`, `finops_providers/aws/container_insights.py`, `finops_providers/aws/credentials.py`, and 5 more |
+| `AwsAccountDiscovery` | class | `finops_providers/aws/accounts.py:55` | Reads which accounts exist and how they are arranged. | `finops_ingest/aws_bindings.py` |
+| `AwsAccountDiscovery.client` | method | `finops_providers/aws/accounts.py:81` |  | `finops_providers/aws/bedrock.py`, `finops_providers/aws/commitment.py`, `finops_providers/aws/container_insights.py`, `finops_providers/aws/credentials.py`, and 6 more |
 | `AwsAccountDiscovery.list_accounts` | method | `finops_providers/aws/accounts.py:88` |  | `finops_ingest/collectors/org_tree.py` |
 | `AwsAccountDiscovery.describe_organization` | method | `finops_providers/aws/accounts.py:91` |  | `finops_ingest/collectors/org_tree.py` |
-| `AwsServiceCatalogue` | class | `finops_providers/aws/appregistry.py:52` | The applications AppRegistry holds in one account, Region by Region. | nothing in this tree |
-| `AwsServiceCatalogue.applications` | method | `finops_providers/aws/appregistry.py:66` |  | `finops_ingest/collectors/ownership.py` |
+| `AwsServiceCatalogue` | class | `finops_providers/aws/appregistry.py:52` | The applications AppRegistry holds in one account, Region by Region. | `finops_providers/aws/reach.py` |
+| `AwsServiceCatalogue.applications` | method | `finops_providers/aws/appregistry.py:66` |  | `finops_ingest/collectors/ownership.py`, `finops_providers/aws/reach.py` |
 | `BedrockModel` | class | `finops_providers/aws/bedrock.py:105` | An `LlmProvider` over Converse, for the one model this deployment names. | `finops_providers/aws/language_model.py` |
 | `BedrockModel.complete` | method | `finops_providers/aws/bedrock.py:125` | One Converse call. | `finops_api/exports/scheduled.py`, `finops_ingest/worker.py` |
 | `scope_of` | function | `finops_providers/aws/budgets.py:51` | What a budget is drawn around, and what it names. | `finops_ingest/composition.py` |
-| `AwsBudgets` | class | `finops_providers/aws/budgets.py:76` | The payer's budgets, read and never written. | nothing in this tree |
+| `AwsBudgets` | class | `finops_providers/aws/budgets.py:76` | The payer's budgets, read and never written. | `finops_ingest/aws_bindings.py` |
 | `AwsBudgets.budgets` | method | `finops_providers/aws/budgets.py:85` |  | `finops_ingest/collectors/budgets.py` |
 | `Baseline` | class | `finops_providers/aws/burstable.py:42` |  | nothing in this tree |
 | `counterpart` | function | `finops_providers/aws/burstable.py:101` | The EC2 type a managed service's class is named after: `db.t3.micro` is `t3.micro`. | `finops_providers/aws/instance_types.py` |
 | `is_burstable_name` | function | `finops_providers/aws/burstable.py:111` | Whether a type's family is one of the burstable ones, by its name. | `finops_providers/aws/instance_types.py` |
 | `baseline_of` | function | `finops_providers/aws/burstable.py:116` | The guide's row for a type, with the source to store beside it. None if it has none. | `finops_providers/aws/instance_types.py` |
-| `botocore_config` | function | `finops_providers/aws/client.py:88` | Bounded timeouts and a bounded retry policy, both from configuration. | `finops_providers/aws/accounts.py`, `finops_providers/aws/bedrock.py`, `finops_providers/aws/commitment.py`, `finops_providers/aws/container_insights.py`, and 5 more |
+| `botocore_config` | function | `finops_providers/aws/client.py:88` | Bounded timeouts and a bounded retry policy, both from configuration. | `finops_providers/aws/accounts.py`, `finops_providers/aws/bedrock.py`, `finops_providers/aws/commitment.py`, `finops_providers/aws/container_insights.py`, and 6 more |
 | `partition_for` | function | `finops_providers/aws/client.py:97` | The partition a region belongs to. | `finops_providers/aws/topology.py` |
 | `role_arn` | function | `finops_providers/aws/client.py:115` | The collector role in a member account. Built, never stored. | `finops_providers/aws/credentials.py` |
 | `error_code` | function | `finops_providers/aws/client.py:120` |  | `finops_providers/aws/bedrock.py`, `finops_providers/aws/report_store.py` |
 | `translate` | function | `finops_providers/aws/client.py:146` | Turn a provider exception into exactly one of the six causes. | `finops_providers/aws/accounts.py`, `finops_providers/aws/appregistry.py`, `finops_providers/aws/bedrock.py`, `finops_providers/aws/budgets.py`, and 20 more |
-| `AwsResourceCreators` | class | `finops_providers/aws/cloudtrail_creators.py:77` | CloudTrail's record of who created each resource, account by account and Region by Region. | nothing in this tree |
+| `AwsResourceCreators` | class | `finops_providers/aws/cloudtrail_creators.py:77` | CloudTrail's record of who created each resource, account by account and Region by Region. | `finops_ingest/aws_bindings.py` |
 | `AwsResourceCreators.creator` | method | `finops_providers/aws/cloudtrail_creators.py:96` |  | `finops_ingest/collectors/ownership.py` |
 | `names_of` | function | `finops_providers/aws/cloudtrail_creators.py:192` | The names CloudTrail may record a resource under, the likelier first. | nothing in this tree |
 | `type_of` | function | `finops_providers/aws/cloudtrail_creators.py:204` | The service and resource type an ARN names, or None for an id that is not an ARN. | nothing in this tree |
-| `CostExplorerCommitmentReport` | class | `finops_providers/aws/commitment.py:170` | `CommitmentReport` over Cost Explorer. Unproved, ISS-122. | nothing in this tree |
+| `CostExplorerCommitmentReport` | class | `finops_providers/aws/commitment.py:170` | `CommitmentReport` over Cost Explorer. Unproved, ISS-122. | `finops_ingest/aws_bindings.py` |
 | `CostExplorerCommitmentReport.utilization` | method | `finops_providers/aws/commitment.py:217` |  | `finops_ingest/collectors/commitment.py` |
 | `CostExplorerCommitmentReport.coverage` | method | `finops_providers/aws/commitment.py:230` |  | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_api/routes/quotas.py`, `finops_ingest/collectors/commitment.py` |
 | `CostExplorerCommitmentReport.daily` | method | `finops_providers/aws/commitment.py:405` | Each kind's use and coverage per day, four requests for the whole window. | `finops_api/routes/cost.py`, `finops_api/routes/forecast.py`, `finops_ingest/collectors/commitment.py`, `finops_ingest/collectors/spot_prices.py` |
-| `ConfigAggregatorInventory` | class | `finops_providers/aws/config_inventory.py:236` | One aggregator query per slice, paginated, with a bounded retry. | nothing in this tree |
+| `ConfigAggregatorInventory` | class | `finops_providers/aws/config_inventory.py:236` | One aggregator query per slice, paginated, with a bounded retry. | `finops_ingest/aws_bindings.py` |
 | `ConfigAggregatorInventory.enrolled_slices` | method | `finops_providers/aws/config_inventory.py:272` | Every slice this source is expected to read, from configuration. | nothing in this tree |
 | `ConfigAggregatorInventory.read_slice` | method | `finops_providers/aws/config_inventory.py:281` | One account and region of the graph, with what was missed named. | `finops_ingest/collectors/inventory.py`, `finops_ingest/collectors/topology.py` |
-| `ContainerInsightsSource` | class | `finops_providers/aws/container_insights.py:135` | `ContainerSource` over CloudWatch. Reads only, per constraint 6. | nothing in this tree |
+| `ContainerInsightsSource` | class | `finops_providers/aws/container_insights.py:135` | `ContainerSource` over CloudWatch. Reads only, per constraint 6. | `finops_ingest/aws_bindings.py` |
 | `ContainerInsightsSource.list_clusters` | method | `finops_providers/aws/container_insights.py:179` | Every cluster publishing container metrics in this account and region. | `finops_ingest/collectors/container_usage.py` |
 | `ContainerInsightsSource.reservations` | method | `finops_providers/aws/container_insights.py:250` | Requested against used per workload, with requests where published. | `finops_api/routes/waste.py`, `finops_ingest/collectors/container_usage.py` |
 | `AwsSession` | class | `finops_providers/aws/credentials.py:44` | An assumed role session. Satisfies `ProviderSession`, opaque to the domain. | nothing in this tree |
-| `AwsCredentialBroker` | class | `finops_providers/aws/credentials.py:53` | Produces a scoped session for a target account, and caches it sensibly. | nothing in this tree |
+| `AwsCredentialBroker` | class | `finops_providers/aws/credentials.py:53` | Produces a scoped session for a target account, and caches it sensibly. | `finops_ingest/aws_bindings.py`, `finops_providers/aws/reach.py` |
 | `AwsCredentialBroker.external_id` | method | `finops_providers/aws/credentials.py:72` | Read the ExternalId once. Never logged, never put in an error detail. | nothing in this tree |
-| `AwsCredentialBroker.session_for` | method | `finops_providers/aws/credentials.py:89` |  | `finops_ingest/worker.py`, `finops_providers/aws/health.py` |
-| `AthenaCostExport` | class | `finops_providers/aws/cur.py:166` | `CostExport` over a Data Exports table. Never yet run against AWS. | nothing in this tree |
+| `AwsCredentialBroker.session_for` | method | `finops_providers/aws/credentials.py:89` |  | `finops_ingest/worker.py`, `finops_providers/aws/health.py`, `finops_providers/aws/reach.py` |
+| `AthenaCostExport` | class | `finops_providers/aws/cur.py:166` | `CostExport` over a Data Exports table. Never yet run against AWS. | `finops_ingest/aws_bindings.py` |
 | `AthenaCostExport.latest_available_period` | method | `finops_providers/aws/cur.py:197` | The newest partition the export actually holds. | `finops_ingest/collectors/cost_focus.py` |
 | `AthenaCostExport.read_period` | method | `finops_providers/aws/cur.py:211` | Every charge row in the period, or an exception. Never a short list. | `finops_ingest/collectors/cost_focus.py` |
 | `AthenaCostExport.split_cost_available` | method | `finops_providers/aws/cur.py:338` | Whether this export carries the container grain at all. | nothing in this tree |
-| `AccountHealthCheck` | class | `finops_providers/aws/health.py:54` | Assumes the role and makes one cheap call, then names what went wrong. | nothing in this tree |
+| `AccountHealthCheck` | class | `finops_providers/aws/health.py:54` | Assumes the role and makes one cheap call, then names what went wrong. | `finops_ingest/aws_bindings.py` |
 | `AccountHealthCheck.check` | method | `finops_providers/aws/health.py:67` |  | `finops_api/routes/accounts.py`, `finops_ingest/collectors/account_health.py` |
-| `AwsInstanceCatalog` | class | `finops_providers/aws/instance_types.py:76` | EC2's own description of its instance types, one Region at a time. | nothing in this tree |
+| `AwsInstanceCatalog` | class | `finops_providers/aws/instance_types.py:76` | EC2's own description of its instance types, one Region at a time. | `finops_ingest/aws_bindings.py` |
 | `AwsInstanceCatalog.instance_types` | method | `finops_providers/aws/instance_types.py:89` |  | `finops_ingest/collectors/instance_catalog.py` |
 | `PriceListInstanceCatalog` | class | `finops_providers/aws/instance_types.py:140` | One managed service's instance classes, from its price list products' attributes. | nothing in this tree |
 | `PriceListInstanceCatalog.instance_types` | method | `finops_providers/aws/instance_types.py:155` |  | `finops_ingest/collectors/instance_catalog.py` |
-| `AwsInvoices` | class | `finops_providers/aws/invoices.py:45` | The payer's invoices and credit memos, read and never written. | nothing in this tree |
+| `AwsInvoices` | class | `finops_providers/aws/invoices.py:45` | The payer's invoices and credit memos, read and never written. | `finops_ingest/aws_bindings.py` |
 | `AwsInvoices.invoices` | method | `finops_providers/aws/invoices.py:56` |  | `finops_ingest/collectors/invoices.py` |
 | `language_model` | function | `finops_providers/aws/language_model.py:18` | The configured model, or None where none is. | `finops_api/main.py` |
 | `ModuleCharge` | class | `finops_providers/aws/platform_cost.py:38` | One day, one module tag value, one service, as the provider reported it. | nothing in this tree |
-| `AwsPlatformCostSource` | class | `finops_providers/aws/platform_cost.py:48` | Reads the platform's own spend, grouped, in a single request. | nothing in this tree |
+| `AwsPlatformCostSource` | class | `finops_providers/aws/platform_cost.py:48` | Reads the platform's own spend, grouped, in a single request. | `finops_ingest/aws_bindings.py` |
 | `AwsPlatformCostSource.daily_by_module` | method | `finops_providers/aws/platform_cost.py:65` | Every module and service charge between start and end. | `finops_ingest/collectors/platform_cost.py` |
 | `commercial` | function | `finops_providers/aws/price_list.py:112` | Whether a price list's Region code is a commercial Region's. | nothing in this tree |
 | `published` | function | `finops_providers/aws/price_list.py:117` | The publication time a version names. ValueError for a version not in that form. | nothing in this tree |
-| `AwsPriceCatalog` | class | `finops_providers/aws/price_list.py:126` | AWS's on demand and reserved prices for one service in one Region at a time. | nothing in this tree |
+| `AwsPriceCatalog` | class | `finops_providers/aws/price_list.py:126` | AWS's on demand and reserved prices for one service in one Region at a time. | `finops_ingest/aws_bindings.py` |
 | `AwsPriceCatalog.versions` | method | `finops_providers/aws/price_list.py:134` |  | `finops_ingest/collectors/price_catalog.py` |
 | `AwsPriceCatalog.prices` | method | `finops_providers/aws/price_list.py:151` |  | `finops_ingest/collectors/price_catalog.py`, `finops_ingest/collectors/spot_prices.py` |
 | `CloudTrailQueryEvidence` | class | `finops_providers/aws/query_evidence.py:99` | `QueryEvidence` over CloudTrail and CloudWatch Logs query history. | nothing in this tree |
 | `CloudTrailQueryEvidence.observations` | method | `finops_providers/aws/query_evidence.py:120` |  | `finops_ingest/collectors/query_audit.py` |
 | `normalise` | function | `finops_providers/aws/quotas.py:131` | A display name reduced to something two providers might agree on. | `finops_ingest/collectors/query_audit.py`, `finops_providers/aws/query_evidence.py` |
-| `AwsQuotas` | class | `finops_providers/aws/quotas.py:197` | Every quota in one account and region, with usage where anything publishes it. | nothing in this tree |
+| `AwsQuotas` | class | `finops_providers/aws/quotas.py:197` | Every quota in one account and region, with usage where anything publishes it. | `finops_ingest/aws_bindings.py` |
 | `AwsQuotas.list_quotas` | method | `finops_providers/aws/quotas.py:216` | Every quota for the account and region, with usage where published. | `finops_ingest/collectors/quotas.py` |
 | `AwsQuotas.requests` | method | `finops_providers/aws/quotas.py:239` | Every increase request AWS has a record of, whatever became of it. | `finops_ingest/collectors/quotas.py`, `finops_ingest/collectors/waste_compute.py` |
-| `CostRecommendationSource` | class | `finops_providers/aws/recommendations.py:122` | `RecommendationSource` over three AWS services. Unproved, ISS-122. | nothing in this tree |
+| `LazyClient` | class | `finops_providers/aws/reach.py:38` | A client made the first time anything is asked of it, and once. | nothing in this tree |
+| `hub_client` | function | `finops_providers/aws/reach.py:51` | A client on the hub's own credentials, in `region` or the hub's own when None. | `finops_ingest/aws_bindings.py` |
+| `session_clients` | function | `finops_providers/aws/reach.py:58` | Clients on one assumed session, the one the worker resolved for an account scoped unit. | `finops_ingest/aws_bindings.py` |
+| `member_clients` | function | `finops_providers/aws/reach.py:67` | Clients in any member account, each on the role the broker assumes there. | `finops_ingest/aws_bindings.py` |
+| `relay` | function | `finops_providers/aws/reach.py:83` | A client in shape for a service the hub reaches only through the relay, ADR-0035. | `finops_ingest/aws_bindings.py` |
+| `payer_of` | function | `finops_providers/aws/reach.py:98` | The payer account: the management account, where the org reader role lives. | `finops_ingest/aws_bindings.py` |
+| `PerAccountCatalogue` | class | `finops_providers/aws/reach.py:111` | The AppRegistry catalogue of whichever account is asked, on that account's role. | `finops_ingest/aws_bindings.py` |
+| `PerAccountCatalogue.applications` | method | `finops_providers/aws/reach.py:123` |  | `finops_ingest/collectors/ownership.py` |
+| `CostRecommendationSource` | class | `finops_providers/aws/recommendations.py:122` | `RecommendationSource` over three AWS services. Unproved, ISS-122. | `finops_ingest/aws_bindings.py` |
 | `CostRecommendationSource.compute_optimizer` | method | `finops_providers/aws/recommendations.py:213` |  | nothing in this tree |
 | `CostRecommendationSource.cost_optimization_hub` | method | `finops_providers/aws/recommendations.py:317` |  | nothing in this tree |
 | `CostRecommendationSource.trusted_advisor` | method | `finops_providers/aws/recommendations.py:340` |  | nothing in this tree |
-| `RelayClient` | class | `finops_providers/aws/relay_client.py:42` | One service, in one Region, about one account, reached through the relay. | nothing in this tree |
+| `RelayClient` | class | `finops_providers/aws/relay_client.py:42` | One service, in one Region, about one account, reached through the relay. | `finops_providers/aws/reach.py` |
 | `RelayClient.get_paginator` | method | `finops_providers/aws/relay_client.py:60` |  | `finops_providers/aws/accounts.py`, `finops_providers/aws/appregistry.py`, `finops_providers/aws/budgets.py`, `finops_providers/aws/cloudtrail_creators.py`, and 8 more |
-| `lambda_invoke` | function | `finops_providers/aws/relay_client.py:101` | The relay invoked through the Lambda endpoint. A function error is the relay failing. | nothing in this tree |
-| `s3_fetch` | function | `finops_providers/aws/relay_client.py:115` | An answer read back through the S3 gateway endpoint. | nothing in this tree |
+| `lambda_invoke` | function | `finops_providers/aws/relay_client.py:101` | The relay invoked through the Lambda endpoint. A function error is the relay failing. | `finops_providers/aws/reach.py` |
+| `s3_fetch` | function | `finops_providers/aws/relay_client.py:115` | An answer read back through the S3 gateway endpoint. | `finops_providers/aws/reach.py` |
 | `S3ReportStore` | class | `finops_providers/aws/report_store.py:30` | Report files in one bucket, one object per file. | nothing in this tree |
 | `S3ReportStore.from_settings` | method | `finops_providers/aws/report_store.py:38` | The store the API writes to: the data bucket the hub stack names. | `finops_api/main.py` |
 | `S3ReportStore.put` | method | `finops_providers/aws/report_store.py:42` |  | `finops_api/exports/scheduled.py` |
 | `S3ReportStore.get` | method | `finops_providers/aws/report_store.py:50` |  | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 76 more |
-| `AwsSavingsPlansRates` | class | `finops_providers/aws/savings_plans.py:97` | Compute and EC2 Instance Savings Plans rates for EC2, one Region at a time. | nothing in this tree |
+| `AwsSavingsPlansRates` | class | `finops_providers/aws/savings_plans.py:97` | Compute and EC2 Instance Savings Plans rates for EC2, one Region at a time. | `finops_ingest/aws_bindings.py` |
 | `AwsSavingsPlansRates.rates` | method | `finops_providers/aws/savings_plans.py:105` |  | `finops_ingest/collectors/savings_plan_rates.py` |
-| `AwsSpotPrices` | class | `finops_providers/aws/spot.py:41` | Every spot pool's readings over a window, one Region at a time. | nothing in this tree |
+| `AwsSpotPrices` | class | `finops_providers/aws/spot.py:41` | Every spot pool's readings over a window, one Region at a time. | `finops_ingest/aws_bindings.py` |
 | `AwsSpotPrices.prices` | method | `finops_providers/aws/spot.py:54` |  | `finops_ingest/collectors/price_catalog.py`, `finops_ingest/collectors/spot_prices.py`, `finops_providers/aws/price_list.py` |
 | `address_of` | function | `finops_providers/aws/terraform_state.py:53` | The Terraform address of one resource instance. | nothing in this tree |
-| `S3TerraformState` | class | `finops_providers/aws/terraform_state.py:75` | Terraform state read from S3 objects an operator named. | nothing in this tree |
+| `S3TerraformState` | class | `finops_providers/aws/terraform_state.py:75` | Terraform state read from S3 objects an operator named. | `finops_ingest/aws_bindings.py` |
 | `S3TerraformState.locations` | method | `finops_providers/aws/terraform_state.py:90` |  | nothing in this tree |
 | `S3TerraformState.read` | method | `finops_providers/aws/terraform_state.py:93` | Every resource the given locations own, and the ones that refused. | `finops_ingest/collectors/iac_state.py`, `finops_ingest/collectors/recommendations.py`, `finops_providers/aws/relay_client.py`, `finops_providers/aws/report_store.py` |
-| `AwsEdgeSupplement` | class | `finops_providers/aws/topology.py:182` | The four APIs Config does not cover, each guarded on its own. | nothing in this tree |
+| `AwsEdgeSupplement` | class | `finops_providers/aws/topology.py:182` | The four APIs Config does not cover, each guarded on its own. | `finops_ingest/aws_bindings.py` |
 | `AwsEdgeSupplement.enrolled_slices` | method | `finops_providers/aws/topology.py:213` |  | nothing in this tree |
 | `AwsEdgeSupplement.read_slice` | method | `finops_providers/aws/topology.py:216` | Four reads, and a result that says which of them fell short. | `finops_ingest/collectors/inventory.py`, `finops_ingest/collectors/topology.py` |
 | `CloudWatchWasteMetrics` | class | `finops_providers/aws/waste.py:48` | Batched `GetMetricData`. Unproved, ISS-122. | nothing in this tree |
@@ -441,30 +449,31 @@ a duplicate.
 
 | Symbol | Kind | Location | Purpose | Called by |
 | --- | --- | --- | --- | --- |
-| `AccountHealthCollector` | class | `finops_ingest/collectors/account_health.py:34` | Checks one account's collector role and records the answer. | nothing in this tree |
-| `BudgetCollector` | class | `finops_ingest/collectors/budgets.py:70` | The payer's budgets, stored as read. | nothing in this tree |
+| `enrolled` | function | `finops_ingest/aws_bindings.py:135` | The tenant's active accounts, each in every configured Region and globally. | nothing in this tree |
+| `AccountHealthCollector` | class | `finops_ingest/collectors/account_health.py:34` | Checks one account's collector role and records the answer. | `finops_ingest/aws_bindings.py` |
+| `BudgetCollector` | class | `finops_ingest/collectors/budgets.py:70` | The payer's budgets, stored as read. | `finops_ingest/aws_bindings.py` |
 | `latest_version` | function | `finops_ingest/collectors/catalog_reads.py:84` |  | `finops_ingest/collectors/recommendations.py`, `finops_ingest/collectors/waste_compute.py`, `finops_ingest/collectors/waste_volumes.py` |
 | `price_of` | function | `finops_ingest/collectors/catalog_reads.py:89` | A type's comparable price in one version, as its price id and hourly figure. | `finops_ingest/collectors/recommendations.py` |
 | `volume_prices` | function | `finops_ingest/collectors/catalog_reads.py:112` | The four prices gp2 to gp3 is worked out from, or which of them the catalog lacks. | `finops_ingest/collectors/waste_volumes.py` |
 | `offers` | function | `finops_ingest/collectors/catalog_reads.py:126` | Every type offered in the Region, by name, priced from `version` where it can be. | `finops_ingest/collectors/waste_compute.py` |
-| `CommitmentCollector` | class | `finops_ingest/collectors/commitment.py:103` | Reads a month of commitment utilization and coverage, and writes both. | nothing in this tree |
+| `CommitmentCollector` | class | `finops_ingest/collectors/commitment.py:103` | Reads a month of commitment utilization and coverage, and writes both. | `finops_ingest/aws_bindings.py` |
 | `CommitmentActionsCollector` | class | `finops_ingest/collectors/commitment_actions.py:90` | A coverage gap, as something somebody is accountable for closing. | nothing in this tree |
-| `ContainerUsageCollector` | class | `finops_ingest/collectors/container_usage.py:171` | Clusters and reservations for one account in one region. | nothing in this tree |
+| `ContainerUsageCollector` | class | `finops_ingest/collectors/container_usage.py:171` | Clusters and reservations for one account in one region. | `finops_ingest/aws_bindings.py` |
 | `CostAnomalyCollector` | class | `finops_ingest/collectors/cost_anomaly.py:92` | Judges the most recent day of each account and service pair. | nothing in this tree |
-| `CostFocusCollector` | class | `finops_ingest/collectors/cost_focus.py:173` | Reads one billing period, writes it, and removes what was withdrawn. | nothing in this tree |
+| `CostFocusCollector` | class | `finops_ingest/collectors/cost_focus.py:173` | Reads one billing period, writes it, and removes what was withdrawn. | `finops_ingest/aws_bindings.py` |
 | `roll_up_period` | function | `finops_ingest/collectors/cost_rollup.py:66` | Recompute one month from its line items, and drop what is no longer there. | `finops_ingest/collectors/cost_focus.py` |
 | `roll_up_before` | function | `finops_ingest/collectors/cost_rollup.py:85` | Aggregate every month older than the boundary, ahead of dropping them. | `finops_ingest/collectors/retention.py` |
 | `DigestCollector` | class | `finops_ingest/collectors/digests.py:107` | Composes the last complete week's digests for one tenant. | `finops_ingest/composition.py` |
-| `IacStateCollector` | class | `finops_ingest/collectors/iac_state.py:90` | The addresses that own our resources, from the state an operator configured. | nothing in this tree |
-| `InstanceCatalogCollector` | class | `finops_ingest/collectors/instance_catalog.py:233` | EC2's types placed in every Region they are sold, and the managed services' classes. | nothing in this tree |
+| `IacStateCollector` | class | `finops_ingest/collectors/iac_state.py:90` | The addresses that own our resources, from the state an operator configured. | `finops_ingest/aws_bindings.py` |
+| `InstanceCatalogCollector` | class | `finops_ingest/collectors/instance_catalog.py:233` | EC2's types placed in every Region they are sold, and the managed services' classes. | `finops_ingest/aws_bindings.py` |
 | `scope_key` | function | `finops_ingest/collectors/inventory.py:161` | The slice, as `docs/07-DATA-MODEL.md` spells a scope key. | nothing in this tree |
-| `InventoryCollector` | class | `finops_ingest/collectors/inventory.py:170` | Reads every enrolled slice, writes what it found, and records what it missed. | nothing in this tree |
+| `InventoryCollector` | class | `finops_ingest/collectors/inventory.py:170` | Reads every enrolled slice, writes what it found, and records what it missed. | `finops_ingest/aws_bindings.py` |
 | `months_before` | function | `finops_ingest/collectors/invoices.py:82` | The first day of the month `count` months before `month`'s. | `finops_api/routes/forecast.py` |
-| `InvoiceCollector` | class | `finops_ingest/collectors/invoices.py:88` | The payer's invoices and the periods they close, stored as read. | nothing in this tree |
+| `InvoiceCollector` | class | `finops_ingest/collectors/invoices.py:88` | The payer's invoices and the periods they close, stored as read. | `finops_ingest/aws_bindings.py` |
 | `compute_paths` | function | `finops_ingest/collectors/org_tree.py:45` | The materialised path and depth of every node. | nothing in this tree |
-| `OrgTreeCollector` | class | `finops_ingest/collectors/org_tree.py:79` | Reads the organization and writes it, whole, in one transaction. | nothing in this tree |
+| `OrgTreeCollector` | class | `finops_ingest/collectors/org_tree.py:79` | Reads the organization and writes it, whole, in one transaction. | `finops_ingest/aws_bindings.py` |
 | `team_of` | function | `finops_ingest/collectors/ownership.py:124` | The first owner tag key a resource carries with a value, and that value, or None. | nothing in this tree |
-| `OwnershipCollector` | class | `finops_ingest/collectors/ownership.py:133` | Every resource's suggested owners, from each source it is given. | nothing in this tree |
+| `OwnershipCollector` | class | `finops_ingest/collectors/ownership.py:133` | Every resource's suggested owners, from each source it is given. | `finops_ingest/aws_bindings.py` |
 | `month_floor` | function | `finops_ingest/collectors/partitions.py:55` |  | `finops_ingest/collectors/retention.py` |
 | `next_month` | function | `finops_ingest/collectors/partitions.py:59` |  | `finops_core/domain/invoice.py`, `finops_ingest/collectors/cost_focus.py`, `finops_ingest/collectors/invoices.py`, `finops_ingest/collectors/savings_ledger.py`, and 1 more |
 | `months_from` | function | `finops_ingest/collectors/partitions.py:65` | `count` consecutive month starts, beginning at the month containing `start`. | nothing in this tree |
@@ -475,9 +484,9 @@ a duplicate.
 | `detach_partitions_before` | function | `finops_ingest/collectors/partitions.py:116` | Remove partitions whose whole month is before `cutoff`. Returns their names. | `finops_ingest/collectors/retention.py` |
 | `partition_maintenance` | function | `finops_ingest/collectors/partitions.py:135` | Create the current month and the next few, for every partitioned table. | nothing in this tree |
 | `attribute` | function | `finops_ingest/collectors/platform_cost.py:51` | Name the module a charge belongs to. Never returns an empty string. | nothing in this tree |
-| `PlatformCostCollector` | class | `finops_ingest/collectors/platform_cost.py:58` | One grouped request a day, written by module and service. | nothing in this tree |
+| `PlatformCostCollector` | class | `finops_ingest/collectors/platform_cost.py:58` | One grouped request a day, written by module and service. | `finops_ingest/aws_bindings.py` |
 | `total` | function | `finops_ingest/collectors/platform_cost.py:106` | What the platform cost over the set, for a caller that wants one figure. | nothing in this tree |
-| `PriceCatalogCollector` | class | `finops_ingest/collectors/price_catalog.py:118` | Each service's current prices in every Region, loaded when AWS publishes new ones. | nothing in this tree |
+| `PriceCatalogCollector` | class | `finops_ingest/collectors/price_catalog.py:118` | Each service's current prices in every Region, loaded when AWS publishes new ones. | `finops_ingest/aws_bindings.py` |
 | `held` | function | `finops_ingest/collectors/price_catalog.py:163` | Every (Region, version) of a service already stored. | `finops_ingest/collectors/savings_ledger.py`, `finops_ingest/collectors/savings_plan_rates.py` |
 | `store` | function | `finops_ingest/collectors/price_catalog.py:169` | A version and its prices, written `BATCH` at a time. Returns the rows stored. | `finops_ingest/collectors/instance_catalog.py`, `finops_ingest/collectors/savings_plan_rates.py` |
 | `prune` | function | `finops_ingest/collectors/price_catalog.py:194` | The service and Region's earlier versions and their prices, except those quoted. | `finops_ingest/collectors/savings_plan_rates.py` |
@@ -485,9 +494,9 @@ a duplicate.
 | `rates_from` | function | `finops_ingest/collectors/query_audit.py:78` | Build the model's rates from configuration. | nothing in this tree |
 | `default_ingest_rate` | function | `finops_ingest/collectors/query_audit.py:113` | The fallback used when ingestion cannot be measured for a log group. | nothing in this tree |
 | `QueryAuditCollector` | class | `finops_ingest/collectors/query_audit.py:136` | Surveys every instance, writes its definitions, and prices them. | nothing in this tree |
-| `QuotaCollector` | class | `finops_ingest/collectors/quotas.py:134` | Quotas and increase requests for one account in one region. | nothing in this tree |
+| `QuotaCollector` | class | `finops_ingest/collectors/quotas.py:134` | Quotas and increase requests for one account in one region. | `finops_ingest/aws_bindings.py` |
 | `RealizedSavingsCollector` | class | `finops_ingest/collectors/realized_savings.py:174` | The north star metric, measured rather than modelled. | nothing in this tree |
-| `RecommendationCollector` | class | `finops_ingest/collectors/recommendations.py:156` | Reads three services and writes one table. | nothing in this tree |
+| `RecommendationCollector` | class | `finops_ingest/collectors/recommendations.py:156` | Reads three services and writes one table. | `finops_ingest/aws_bindings.py` |
 | `hashed_subject` | function | `finops_ingest/collectors/retention.py:66` | A stable, non reversible stand in, so a duplicate sign in is still one row. | nothing in this tree |
 | `retention_principal` | function | `finops_ingest/collectors/retention.py:75` | Anonymise principals unseen past the window. Never removes a row. | nothing in this tree |
 | `retention_operational` | function | `finops_ingest/collectors/retention.py:97` | Remove run history, resolved errors and dead watermarks past the window. | nothing in this tree |
@@ -496,13 +505,13 @@ a duplicate.
 | `retention_scope_cache` | function | `finops_ingest/collectors/retention.py:177` | Remove expired entitlement cache rows. It is a cache, so this costs nothing. | nothing in this tree |
 | `register_retention` | function | `finops_ingest/collectors/retention.py:211` | Add the five to a registry. Returns how many, so a caller can assert on it. | `finops_ingest/composition.py` |
 | `SavingsLedgerCollector` | class | `finops_ingest/collectors/savings_ledger.py:133` | One credit per verified saving, kept while it verifies. | nothing in this tree |
-| `SavingsPlanRatesCollector` | class | `finops_ingest/collectors/savings_plan_rates.py:48` | Each Region's Savings Plans rates, stored when they move. | nothing in this tree |
+| `SavingsPlanRatesCollector` | class | `finops_ingest/collectors/savings_plan_rates.py:48` | Each Region's Savings Plans rates, stored when they move. | `finops_ingest/aws_bindings.py` |
 | `ScoreCollector` | class | `finops_ingest/collectors/score.py:159` | One score per account, with its components, every run. | nothing in this tree |
 | `daily` | function | `finops_ingest/collectors/spot_prices.py:90` | The readings each pool's day is made of, by the rule in this module's docstring. | `finops_api/routes/cost.py`, `finops_api/routes/forecast.py`, `finops_ingest/collectors/commitment.py` |
 | `newest` | function | `finops_ingest/collectors/spot_prices.py:105` | Each pool's newest reading, the one in effect when the window closed. | nothing in this tree |
-| `SpotPricesCollector` | class | `finops_ingest/collectors/spot_prices.py:115` | Each Region's spot window, folded into the latest price and the daily low and high. | nothing in this tree |
+| `SpotPricesCollector` | class | `finops_ingest/collectors/spot_prices.py:115` | Each Region's spot window, folded into the latest price and the daily low and high. | `finops_ingest/aws_bindings.py` |
 | `merge` | function | `finops_ingest/collectors/topology.py:45` | One `SliceRead` from several of the same slice, the earliest source winning. | nothing in this tree |
-| `CompositeTopologySource` | class | `finops_ingest/collectors/topology.py:89` | Every source of one slice, behind the one port a collector talks to. | nothing in this tree |
+| `CompositeTopologySource` | class | `finops_ingest/collectors/topology.py:89` | Every source of one slice, behind the one port a collector talks to. | `finops_ingest/aws_bindings.py` |
 | `CompositeTopologySource.enrolled_slices` | method | `finops_ingest/collectors/topology.py:106` | The union, in the order the first source gave them. | nothing in this tree |
 | `CompositeTopologySource.read_slice` | method | `finops_ingest/collectors/topology.py:120` | Every source's answer for one slice, merged. | `finops_ingest/collectors/inventory.py` |
 | `WasteCloudWatchCollector` | class | `finops_ingest/collectors/waste_cloudwatch.py:89` | FEAT-027. The module with no instances to size. | nothing in this tree |
@@ -517,14 +526,14 @@ a duplicate.
 | `hourly_p99` | function | `finops_ingest/collectors/waste_volumes.py:84` | The 99th percentile of what the streams moved together in an hour, None if unobserved. | nothing in this tree |
 | `demand` | function | `finops_ingest/collectors/waste_volumes.py:99` | IOPS and MiB/s at p99, each None where the volume published nothing to measure it by. | `finops_ingest/collectors/waste_compute.py` |
 | `judged` | function | `finops_ingest/collectors/waste_volumes.py:111` | A gp2 to gp3 recommendation for one volume, or the refusal saying why there is none. | `finops_ingest/collectors/waste_compute.py` |
-| `Binding` | class | `finops_ingest/composition.py:62` | One collector: its name, what one unit of it covers, and how it is built for a unit. | nothing in this tree |
-| `scope_of` | function | `finops_ingest/composition.py:74` |  | `finops_providers/aws/budgets.py` |
-| `worker_collectors` | function | `finops_ingest/composition.py:78` | The collectors the schedule says run in the worker, retention among them. | nothing in this tree |
-| `per_unit` | function | `finops_ingest/composition.py:83` | A runner that builds its collector for each unit, then runs it on that unit. | nothing in this tree |
-| `compose` | function | `finops_ingest/composition.py:92` | A registry of the bindings and the retention jobs, which need nothing to be built. | nothing in this tree |
-| `unbuilt` | function | `finops_ingest/composition.py:101` | A collector with no AWS adapter yet: every run fails typed, naming what it lacks. | nothing in this tree |
-| `production_bindings` | function | `finops_ingest/composition.py:154` | Every collector the worker runs, bound for a deployed environment. | nothing in this tree |
-| `production_registry` | function | `finops_ingest/composition.py:165` | The registry a deployed dispatcher and worker run. | nothing in this tree |
+| `Binding` | class | `finops_ingest/composition.py:63` | One collector: its name, what one unit of it covers, and how it is built for a unit. | nothing in this tree |
+| `scope_of` | function | `finops_ingest/composition.py:75` |  | `finops_providers/aws/budgets.py` |
+| `worker_collectors` | function | `finops_ingest/composition.py:79` | The collectors the schedule says run in the worker, retention among them. | nothing in this tree |
+| `per_unit` | function | `finops_ingest/composition.py:84` | A runner that builds its collector for each unit, then runs it on that unit. | nothing in this tree |
+| `compose` | function | `finops_ingest/composition.py:93` | A registry of the bindings and the retention jobs, which need nothing to be built. | nothing in this tree |
+| `unbuilt` | function | `finops_ingest/composition.py:102` | A collector that cannot be built for AWS yet: every run fails typed, naming why. | nothing in this tree |
+| `production_bindings` | function | `finops_ingest/composition.py:131` | Every collector the worker runs, bound for a deployed environment. | nothing in this tree |
+| `production_registry` | function | `finops_ingest/composition.py:141` | The registry a deployed dispatcher and worker run. | nothing in this tree |
 | `enrol` | function | `finops_ingest/coverage.py:81` | Give every enrolled slice an UNREAD row, and leave existing rows alone. | `finops_ingest/collectors/inventory.py` |
 | `record` | function | `finops_ingest/coverage.py:123` | Write what one read of one slice found, overwriting whatever was there. | `finops_ingest/collectors/inventory.py` |
 | `refused` | function | `finops_ingest/coverage.py:153` | Write a PARTIAL row for a slice no read ever got to. | `finops_ingest/collectors/inventory.py` |
@@ -1120,10 +1129,10 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 
 - `ConfigurationError` in `finops_core/config.py:40`
 - `Settings` in `finops_core/config.py:44`
-- `Settings.iac_locations` in `finops_core/config.py:283`
-- `Settings.owner_tag_key_list` in `finops_core/config.py:294`
-- `Settings.iac_exhaustive` in `finops_core/config.py:299`
-- `Settings.region_list` in `finops_core/config.py:346`
+- `Settings.iac_locations` in `finops_core/config.py:290`
+- `Settings.owner_tag_key_list` in `finops_core/config.py:301`
+- `Settings.iac_exhaustive` in `finops_core/config.py:306`
+- `Settings.region_list` in `finops_core/config.py:353`
 - `AccountStatus` in `finops_core/domain/account.py:26`
 - `CloudAccount.provider` in `finops_core/domain/account.py:90`
 - `AccountHealth.is_usable` in `finops_core/domain/account.py:105`

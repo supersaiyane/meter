@@ -76,6 +76,13 @@ class Settings(BaseSettings):
     # P8, FEAT-069. The hub stack already passes it to every task. Empty turns rendering off, and
     # the Scheduled screen says so rather than listing schedules that would never run.
     s3_bucket: str = ""
+    # The relay, ADR-0035: the Lambda the hub invokes for the calls its VPC has no endpoint for,
+    # answering into `s3_bucket`. Empty by default, and then each collector that reads through
+    # it fails typed as Misconfigured naming this setting, TASK-P12-002.
+    relay_function_name: str = ""
+    # The AWS Config aggregator the inventory reads, the name the config stack outputs. Empty by
+    # default, and then the inventory fails typed as Misconfigured naming this setting.
+    config_aggregator: str = ""
 
     # Anomaly detection. P1, FEAT-023. Both are here rather than in code so
     # meeting a real estate is a change of a number rather than a release.

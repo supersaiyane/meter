@@ -75,6 +75,15 @@ first written would also have run a deployed environment on fakes before an acco
 the fakes out of the runtime image, and the owner chose the same day to keep it so: fakes run only
 in the local stack, and `METER_PROVIDERS` is not needed.
 
+Amended 2026-10-12, TASK-P12-002. The AWS builders live in `finops_ingest/aws_bindings.py` and reach
+AWS through `finops_providers/aws/reach.py`: the hub's own clients, an account's assumed session,
+a member account through the credential broker, and the relay. Two reads needed a setting no
+model field held, so two were added, `relay_function_name` and `config_aggregator`, empty by
+default and failing the read typed when empty; the config stack already told operators to set
+`METER_CONFIG_AGGREGATOR`. The payer is the account in the org reader role's ARN. Four collectors
+stay failing typed: three whose port has no AWS adapter, ISS-240, and `query_audit`, because no
+setting names the Grafana workspaces it searches, ISS-272.
+
 ### 5.2 Two processes with entry points
 
 The dispatcher is a one shot process, run on the schedule the hub's EventBridge rule already sets:
