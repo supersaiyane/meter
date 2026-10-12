@@ -320,6 +320,7 @@ export function redactionsFixture(): ApiEnvelope<ApiRedaction[]> {
       rule_id: 'aws-access-token',
       action: 'BLOCKED',
       occurred_at: '2026-10-04T06:55:00Z',
+      found_in: 'question',
     },
   ];
   return { data, meta: ownWorkMeta(data.length, data.length, 'redactions') };

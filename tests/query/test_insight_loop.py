@@ -9,6 +9,7 @@ model wrote is repeated back into a detail that will be stored.
 from __future__ import annotations
 
 import ast
+import dataclasses
 from collections.abc import Mapping
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -530,3 +531,37 @@ def test_the_loop_imports_nothing_from_the_api_or_a_database() -> None:
         name for name in imported if name.split(".")[0] in {"finops_api", "sqlalchemy", "httpx"}
     )
     assert reached == []
+
+
+# --- what leaves for the model, ISS-085 ------------------------------------------------
+
+#: A key shaped as gitleaks' aws-access-token rule finds, the sample `test_redaction.py` uses.
+KEY = "AKIA" + "Z7QW2XK4M6R3TP5B"
+
+
+def test_a_secret_in_what_a_tool_returned_is_replaced_before_the_model_reads_it() -> None:
+    leaky = dataclasses.replace(SERVICES, text=f"a tag on the instance holds {KEY}")
+    exchange, model = run(
+        call("t1", "services"), refuse("tool", "Nothing here answers it."), services=leaky
+    )
+
+    (result,) = model.received[1].messages[-1].tool_results
+    assert KEY not in result.content
+    assert "[redacted: aws-access-token]" in result.content
+    assert [(hit.rule_id, hit.action.value) for hit in exchange.withheld] == [
+        ("aws-access-token", "BLOCKED")
+    ]
+    assert exchange.redactions == (), "the question held nothing, and is not blamed for the tag"
+    assert isinstance(exchange.outcome, Refusal), "the asker is not refused for a tag's contents"
+
+
+def test_a_failing_tools_message_is_screened_too() -> None:
+    exchange, model = run(
+        call("t1", "services"),
+        refuse("tool", "Nothing here answers it."),
+        services=ToolUnavailableError(f"the route refused the key {KEY}"),
+    )
+
+    (result,) = model.received[1].messages[-1].tool_results
+    assert KEY not in result.content and result.is_error
+    assert [hit.rule_id for hit in exchange.withheld] == ["aws-access-token"]

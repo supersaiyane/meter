@@ -2414,6 +2414,24 @@ changes:
     runs every collector the demo schedule dispatches through the local stack''s entry points and finds each
     recorded, succeeded or typed, in 68 seconds (measured). P12, FEAT-079 and FEAT-080 delivered; a first
     deployment waits on ISS-279, ISS-280 and ISS-283'
+- id: CHG-0169
+  date: '2026-10-12'
+  type: Fix
+  what: ISS-085, what the tools return is screened before the model reads it
+  commit: pending
+  detail: 'The question was screened for secrets since TASK-P7-013 and the data the tools returned with it was
+    not, so a key typed into a tag reached the model. finops_query/insight.py now screens every tool result and
+    failing tool message by the same gitleaks rules, replaces each hit with its rule''s name, and returns the hits
+    as withheld; finops_api records them in redaction_event with found_in tool_result, migration 0046, and the
+    redactions route says where each was found. FEAT-046''s Not doing amended'
+- id: CHG-0170
+  date: '2026-10-12'
+  type: Fix
+  what: ISS-136 closed, a failed request states no coverage figure
+  commit: pending
+  detail: 'The interface pass, 514ae5e, already dropped coverage lines counting nothing, so a failed request''s 0
+    of 0 reads Coverage not yet reported rather than Showing all 0 accounts. Nothing held it. A components test
+    now renders that case beside its failure, and fails when the filter is removed'
 issues:
 - id: ISS-189
   severity: LOW
@@ -3204,8 +3222,11 @@ issues:
     docs/12-UI-DESIGN.md requires complete coverage to say so, and section 4 requires an unknown
     state to suppress the figure rather than default it. Observed on 2026-09-06 running the P0
     frontend with no API reachable
-  status: OPEN
-  detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) sections 4 and 6, `finops-web/src/shell/AppShell.tsx`'
+  status: FIXED
+  detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) sections 4 and 6, `finops-web/src/shell/AppShell.tsx`.
+    Fixed by the interface pass, 514ae5e: a coverage line counting nothing is dropped, and an empty banner says
+    Coverage not yet reported. Pinned 2026-10-12 by a test that renders a failed request''s 0 of 0 beside its
+    failure and fails if the filter goes'
 - id: ISS-001
   severity: CRITICAL
   summary: Nine requirement areas as one project would produce a shallow scaffold of everything
@@ -3734,10 +3755,13 @@ issues:
   detail: FEAT-044
 - id: ISS-085
   severity: HIGH
-  status: OPEN
+  status: FIXED
   summary: Nothing scans what leaves for the language model provider, so a secret could be sent outbound
     in a prompt
-  detail: FEAT-046. Seven scanners cover what comes in and none cover what goes out
+  detail: 'FEAT-046. Seven scanners cover what comes in and none cover what goes out. TASK-P7-013 screened the
+    question on 2026-10-04 and left what the tools return out on purpose. Fixed 2026-10-12: every tool result,
+    and every failing tool''s message, is screened by the same rules before the model reads it, each hit
+    replaced and recorded in redaction_event with found_in tool_result, migration 0046'
 - id: ISS-086
   severity: MEDIUM
   status: OPEN

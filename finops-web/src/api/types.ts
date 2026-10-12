@@ -1327,6 +1327,8 @@ export interface ApiRedaction {
   readonly rule_id: string;
   readonly action: 'BLOCKED' | 'REDACTED';
   readonly occurred_at: string;
+  /** Where the rule fired: the question typed, or what a tool returned to the model. ISS-085. */
+  readonly found_in: 'question' | 'tool_result';
 }
 
 /** FEAT-065. What one Cost Explorer axis groups by: a FOCUS column, or `tag` and a key. */

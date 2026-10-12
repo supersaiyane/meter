@@ -229,6 +229,7 @@ def redactions(
                 rule_id=row.rule_id,
                 action=row.action,
                 occurred_at=row.occurred_at,
+                found_in=row.found_in,
             )
             for row in rows
         ],

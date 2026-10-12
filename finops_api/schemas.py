@@ -2002,6 +2002,8 @@ class RedactionOut(BaseModel):
     rule_id: str
     action: Literal["BLOCKED", "REDACTED"]
     occurred_at: datetime
+    #: Where the rule fired: the question typed, or what a tool returned to the model. ISS-085.
+    found_in: Literal["question", "tool_result"] = "question"
 
 
 class ExploreGroupingOut(BaseModel):
