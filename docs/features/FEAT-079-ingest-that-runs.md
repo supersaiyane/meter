@@ -34,7 +34,8 @@ the runtime image, so they run only in the local stack and no setting is needed.
 ## How it works
 
 Built so far: the two compositions, TASK-P12-001, the AWS binders, TASK-P12-002, the queue,
-TASK-P12-003, the two processes, TASK-P12-004, and the local stack end to end, TASK-P12-005.
+TASK-P12-003, the two processes, TASK-P12-004, the local stack end to end, TASK-P12-005, and the
+first contact, TASK-P12-008.
 
 - `finops_ingest/composition.py` declares a `Binding` per collector: its name, its scope, and a
   builder that constructs it from one unit's context. `compose` registers each binding behind a
@@ -69,6 +70,10 @@ TASK-P12-003, the two processes, TASK-P12-004, and the local stack end to end, T
   checkout, against LocalStack's queue, which a ready hook makes with its dead letter queue as the
   hub's is shaped; `make dispatch` dispatches again. `docs/runbooks/local-collection.md` says how
   to watch each step. Both processes log one JSON object per line with each unit's fields.
+- `make first-contact ENV=<env> ACCOUNT=<id> REGION=<region>` makes each AWS read a collector
+  depends on once, 19 of them, through the same paths the deployed worker takes, with the
+  deployed settings read from SSM, and reports each answered, typed or not tried. It refuses
+  without credentials and writes nothing. `docs/runbooks/first-account.md` is the order around it.
 - `finops_fakes/composition.py` binds the same 27 collectors from the fakes, on a clock it is
   handed rather than one it reads, and hands a per account collector only the candidates of the
   unit's own account, as the demo seed does. `fake_registry(clock)` is what the local stack's
@@ -131,8 +136,8 @@ TASK-P12-003, the two processes, TASK-P12-004, and the local stack end to end, T
 
 ## Status of this document
 
-In build. TASK-P12-001 to TASK-P12-005 built the compositions, the AWS binders, the queue, the
-two processes and the local stack end to end on 2026-10-12; the first account's runbook and
-`make first-contact` follow in TASK-P12-008.
+In build. TASK-P12-001 to TASK-P12-005 and TASK-P12-008 built the compositions, the AWS binders,
+the queue, the two processes, the local stack end to end and the first contact on 2026-10-12;
+TASK-P12-009 proves them. No account is connected yet, ISS-002.
 
 See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P12.

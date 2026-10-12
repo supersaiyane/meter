@@ -30,6 +30,7 @@ same question.
 | Restore the database, and the drill that proves the procedure works | `restore.md` |
 | Demonstrate the product, and say which parts are fake | `demo.md` |
 | Watch the local stack dispatch, queue, run and record collection | `local-collection.md` |
+| Connect the first AWS account, each step with its check, and first contact | `first-account.md` |
 
 Nothing pages for a restore, because by the time one is needed somebody already
 knows. It is here because a restore that has never been rehearsed is a
