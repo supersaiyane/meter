@@ -15,7 +15,8 @@ from datetime import datetime
 from typing import Protocol, runtime_checkable
 
 from finops_core.domain.account import AccountKey
-from finops_core.domain.ai import AiUsage
+from finops_core.domain.ai import AiUsage, ProviderAccount
+from finops_core.domain.cost import CostRecord
 
 
 @runtime_checkable
@@ -34,5 +35,34 @@ class InvocationLogs(Protocol):
         configuration names does not exist or the application key is not a key; Throttled when
         Logs Insights refuses another query; and SchemaDrift when a result row lacks a field the
         aggregate names.
+        """
+        ...
+
+
+@runtime_checkable
+class AiProviderReports(Protocol):
+    """An AI provider's own reports of what one organization spent and used, TASK-P13-004.
+
+    One adapter per provider, each reached with that organization's admin key, read at run time
+    and never kept. Cost becomes FOCUS rows beside the cloud bill; usage becomes `AiUsage`.
+    """
+
+    def costs(
+        self, account: ProviderAccount, start: datetime, end: datetime
+    ) -> Iterable[CostRecord]:
+        """Every daily cost line in `[start, end)`, as FOCUS rows naming the provider's source.
+
+        Raises AccessDenied when the key is refused, Throttled when the provider keeps asking to
+        slow down after the adapter's bounded retries, Unreachable when it cannot be reached or
+        fails on its side, Misconfigured when the key cannot be read from where the account
+        says it is, and SchemaDrift when a report lacks a field the mapping needs.
+        """
+        ...
+
+    def usage(self, account: ProviderAccount, start: datetime, end: datetime) -> Iterable[AiUsage]:
+        """Tokens and requests per day, model, project or workspace, key and user in `[start, end)`.
+
+        Raises the same causes as `costs`: AccessDenied, Throttled, Unreachable, Misconfigured
+        and SchemaDrift.
         """
         ...

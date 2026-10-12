@@ -508,6 +508,19 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0",
     ),
     ScheduleEntry(
+        collector="openai_usage",
+        cadence_seconds=DAILY,
+        reason=(
+            "OpenAI's cost and usage for each connected organization, P13 spec section 5.5. "
+            "Daily, rereading the billing period to date: the reports are in daily buckets and "
+            "OpenAI revises recent ones, so reading more often adds nothing and reading less "
+            "often leaves the month's figure behind the bill. The reports are not billed, so a "
+            "run costs the NAT gateway's per GB charge on a few kilobytes. ADR-0012 and "
+            "constraint 9."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
         collector="bedrock_invocations",
         cadence_seconds=DAILY,
         reason=(

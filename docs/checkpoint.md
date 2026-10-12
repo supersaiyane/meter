@@ -95,6 +95,7 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-12 | TASK-P13-001, a NAT gateway the worker alone may use, CHG-0173 | Done | NAT gateway, Elastic IP and default route in network.tf; worker_internet group with one 443 rule, on the worker service only; network contract tests hold one route out, the worker's, and no host outside AWS but the two providers'; AWS-0104 accepted with that enforcement | infra/terraform/hub/network.tf:154, infra/terraform/hub/alb.tf:110, tests/contract/test_network_paths.py:228, security/policy/accepted.yaml:124 |
 | 2026-10-12 | TASK-P13-002, the bill's AI columns, CHG-0174 | Done | Migration 0047 adds ingest_source and five x_ columns; a pure usage type parser beside the AWS export, ADR-0028 keeping vendors out of finops_core; cur.py reads x_usagetype and line_item_iam_principal where present; the cost collector's restatement keys on its source; the fake export's Bedrock lines are opt in | migrations/versions/0047_cost_ai_columns.py:1, finops_providers/aws/bedrock_usage.py:74, finops_ingest/collectors/cost_focus.py:178, tests/ingest/collectors/test_cost_focus_sources.py:1 |
 | 2026-10-12 | TASK-P13-003, Bedrock usage per caller from invocation logs, CHG-0175 | Done | ai_usage_daily, migration 0048; InvocationLogs port; one aggregate Logs Insights query a day, held to aggregates by a test; NotOptedIn where logs do not reach CloudWatch Logs; StartQuery scoped to InvocationLogGroupPattern; retention_ai_usage at 13 months; Bedrock endpoints in both Regions | finops_providers/aws/bedrock_invocations.py:74, finops_ingest/collectors/ai_usage.py:139, tests/providers/aws/test_bedrock_invocations.py:116, infra/terraform/member/collector_role.yaml:164 |
+| 2026-10-12 | TASK-P13-004, provider accounts and OpenAI, CHG-0176 | Done | ai_provider_account, migration 0049; AiProviderReports port; shared paged client; OpenAI adapter; key reader refusing any path but meter/<env>/ai/; provider collector restating per organization; connect script; migration 0050 installs four cadences for existing tenants, ISS-287 fixed; ISS-286 raised | finops_providers/openai/reports.py:53, finops_ingest/collectors/ai_providers.py:61, scripts/ops/connect_ai_provider.py:74, migrations/versions/0050_ai_collector_schedules.py:1 |
 
 ## Next action
 
@@ -103,7 +104,7 @@ answered: `docs/specs/2026-10-12-p13-finops-for-ai-design.md` and `docs/plans/P1
 nine tasks, each on its own branch from `next-build` in a worktree, merged once `make verify` is green.
 The owner asked for the tasks to run one after another without stopping, except for an owner decision.
 
-1. **TASK-P13-004**, provider accounts and OpenAI, then 005 to 009 in order. TASK-P13-001 to 003 are done; 001 is merged.
+1. **TASK-P13-005**, Anthropic, then 006 to 009 in order. TASK-P13-001 to 004 are done; 001 is merged.
 2. Never read a prompt or a response from an invocation log, and never let a provider key leave
    Secrets Manager: the plan's two rules, each held by a test.
 

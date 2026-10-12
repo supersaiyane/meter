@@ -77,7 +77,7 @@ from `finops_core.errors`, and that no signature mentions an ARN or boto.
 | `MODEL_PORTS` | The model behind the assistant, ADR-0028. Neither the cloud fake nor a query surface implements it, so it has a group of its own |
 | `CATALOG_PORTS` | What AWS sells rather than an estate: its price list, its description of instance types, Savings Plans rates and spot prices, P9. Their fakes are in `finops_fakes/catalog.py` |
 | `OWNERSHIP_PORTS` | Where an estate names a resource's owners beyond its tags: the service catalogue and who created it, P11. `FakeServiceCatalogue` and `FakeResourceCreators` in `finops_fakes/ownership.py` implement them |
-| `AI_PORTS` | Who spent tokens on which model, P13. Read as aggregates, never a prompt or a response. `FakeInvocationLogs` in `finops_fakes/ai.py` implements them |
+| `AI_PORTS` | Who spent tokens on which model, and what an AI provider billed, P13. Read as aggregates, never a prompt or a response. `FakeInvocationLogs` and `FakeProviderReports` in `finops_fakes/ai.py` implement them |
 | No group | Every other protocol in the package. Each is imported from its own module, and the per port checks in `tests/core/test_ports.py` never reach it, ISS-239 |
 
 ### Every port
@@ -107,6 +107,7 @@ port.
 | `SpotPrices` | `catalog.py` | Catalog | Read every spot price reading in a Region's window | `aws/spot.py` `AwsSpotPrices`, through the relay, TASK-P9-013 |
 | `ServiceCatalogue` | `ownership.py` | Ownership | Read an account's applications, the owner each names, and the tags that mark its resources | `aws/appregistry.py` `AwsServiceCatalogue`, over AWS AppRegistry, TASK-P11-003 |
 | `ResourceCreators` | `ownership.py` | Ownership | Read who created a resource, or that it predates the record | `aws/cloudtrail_creators.py` `AwsResourceCreators`, over CloudTrail's event history, TASK-P11-004 |
+| `AiProviderReports` | `ai.py` | AI | Read one AI provider organization's daily cost lines and its usage per model, project, key and user | `openai/reports.py` `OpenAiReports`, over OpenAI's organization API through the NAT gateway, TASK-P13-004 |
 | `InvocationLogs` | `ai.py` | AI | Read requests and tokens per day, caller, model and application in one account and Region | `aws/bedrock_invocations.py` `BedrockInvocationLogs`, one aggregate Logs Insights query a day over the Bedrock invocation logs, TASK-P13-003 |
 | `InvoiceSource` | `invoice.py` | None | Read the payer's invoices and credit memos for a span of billing periods, FEAT-076 | `aws/invoices.py` `AwsInvoices`, over the Invoicing API through the relay, ADR-0035 |
 | `BudgetSource` | `budget.py` | None | Read the payer's budgets | `aws/budgets.py` `AwsBudgets`, over AWS Budgets |

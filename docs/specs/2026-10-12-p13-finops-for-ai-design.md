@@ -132,8 +132,13 @@ on 2026-10-12: invocation logs where enabled.
 ### 5.5 OpenAI and Anthropic through their admin APIs
 
 Each provider organization a tenant connects is a row of `ai_provider_account`, naming the Secrets
-Manager secret that holds its admin key, under `meter/<env>/ai/`, which is the only path the
-worker's role may read. The key never reaches a setting, a log or the database. A run reads the
+Manager secret that holds its admin key, under `meter/<env>/ai/`, the only path the hub's task role
+may read for a key. The key never reaches a setting, a log or the database. Amended 2026-10-12,
+TASK-P13-004: the task role is shared by the API and the worker, so both may read the path, and
+only the worker can reach a provider with it, ISS-286. An organization is connected by
+`scripts/ops/connect_ai_provider.py` once its key has read a day of costs, and migration 0050
+installs the new collectors' cadences for the tenants that already exist, which found the same gap
+in `retention_assistant`, ISS-287. A run reads the
 billing period to date from each provider's cost report, daily buckets, and writes it to
 `cost_focus_daily` as FOCUS rows with `provider_name` OpenAI or Anthropic, the organization as the
 billing account, the project or workspace as the sub account, and the model and token type in the

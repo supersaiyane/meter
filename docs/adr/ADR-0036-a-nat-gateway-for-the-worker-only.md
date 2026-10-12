@@ -58,5 +58,7 @@ does not apply.
 - `tests/contract/test_network_paths.py` holds the two provider hosts to this path, as it holds
   every AWS service to its endpoint or the relay.
 - The admin keys live in Secrets Manager under `meter/<env>/ai/`, reached through the existing
-  endpoint, and the worker's role reads only that path.
+  endpoint. The hub has one task role, shared by the API and the worker, so both may read that
+  path; only the worker can reach a provider with what it reads. A role the worker alone holds is
+  ISS-286, and needs every member account's trust policy to name it, so it is not done here.
 - Nothing here has been applied. The first apply waits on an AWS account, ISS-002.

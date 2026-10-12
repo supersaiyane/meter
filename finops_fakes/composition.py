@@ -21,7 +21,7 @@ from decimal import Decimal
 from typing import Any, Final
 
 from finops_fakes import estate_shape as shape
-from finops_fakes.ai import FakeInvocationLogs
+from finops_fakes.ai import FAKE_OPENAI, FakeInvocationLogs, FakeProviderReports
 from finops_fakes.budgets import FakeBudgets
 from finops_fakes.catalog import (
     FakeInstanceCatalog,
@@ -58,6 +58,7 @@ from finops_ingest.collectors.iac_state import IacStateCollector
 from finops_ingest.collectors.instance_catalog import InstanceCatalogCollector
 from finops_ingest.collectors.inventory import InventoryCollector
 from finops_ingest.collectors.invoices import InvoiceCollector
+from finops_ingest.collectors.openai_usage import openai_collector
 from finops_ingest.collectors.org_tree import OrgTreeCollector
 from finops_ingest.collectors.ownership import OwnershipCollector
 from finops_ingest.collectors.platform_cost import PlatformCostCollector
@@ -176,6 +177,12 @@ def builders(clock: Clock) -> dict[str, Callable[[CollectorContext], Any]]:
         ),
         "inventory": lambda _c: InventoryCollector(FakeTopologySource(), clock=clock),
         "invoices": lambda _c: InvoiceCollector(FakeInvoices(), clock=clock),
+        # The local stack's one connected organization, so it runs without a seeded row.
+        "openai_usage": lambda _c: openai_collector(
+            lambda _context, _account: FakeProviderReports(at=clock()),
+            accounts=lambda _connection, _tenant: (FAKE_OPENAI,),
+            clock=clock,
+        ),
         "org_tree": lambda _c: OrgTreeCollector(FakeProvider(at=clock()), clock=clock),
         "ownership": lambda _c: OwnershipCollector(
             clock=clock, catalogue=FakeServiceCatalogue(), creators=FakeResourceCreators()
