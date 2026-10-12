@@ -178,25 +178,29 @@ def test_the_assistant_is_a_module_of_its_own() -> None:
 def test_the_api_records_the_model_and_calls_through_the_profile() -> None:
     """Only the API builds the model. It is told the model's identifier, which an exchange
     records, and the profile's ARN, which it calls, because only that call is tagged and
-    the ARN names an account a screen has no reason to show."""
-    ecs = _hub("ecs.tf")
+    the ARN names an account a screen has no reason to show.
+
+    Since TASK-P12-006 every setting is an SSM parameter and every Python task is given every
+    one, because each loads the whole settings model; the worker and the dispatcher share the
+    API's task role, so withholding the two values from them was never a boundary. What keeps
+    the model the API's is that nothing else builds one, which the last assertion holds."""
+    settings = _hub("settings.tf")
     model = f"{ENV_PREFIX}ASSISTANT_MODEL_ID"
     profile = f"{ENV_PREFIX}ASSISTANT_INFERENCE_PROFILE_ARN"
     assert {"assistant_model_id", "assistant_inference_profile_arn"} <= set(Settings.model_fields)
-    assert "value = var.assistant_model_in_use }" in _enclosing_block(ecs, f'"{model}"', "{")
-    told = _enclosing_block(ecs, f'"{profile}"', "{")
-    assert "aws_bedrock_inference_profile.assistant[var.assistant_model_in_use].arn" in told
-    # Once each, after the shared list has closed, so the worker and the dispatcher are not
-    # told either.
-    api = ecs.index("api_environment = concat(local.common_environment, [")
-    for setting in (model, profile):
-        assert ecs.count(f'"{setting}"') == 1
-        assert ecs.index("common_environment = [") < api < ecs.index(f'"{setting}"')
-        assert setting not in _hub("scheduler.tf")
-    assert re.findall(r"environment\s*=\s*local\.(\w+)", ecs) == [
-        "api_environment",
-        "common_environment",
-    ]
+    assert re.search(rf"{model}\s+=\s+var\.assistant_model_in_use\n", settings)
+    told = re.search(rf"{profile}\s+=\s+(.+)\n", settings)
+    assert told and "aws_bedrock_inference_profile.assistant[var.assistant_model_in_use].arn" in (
+        told.group(1)
+    )
+    assert settings.count(model) == 1 and settings.count(profile) == 1
+    builders = sorted(
+        str(path.relative_to(ROOT))
+        for package in ROOT.glob("finops_*")
+        for path in package.rglob("*.py")
+        if "language_model(" in path.read_text() and path.name != "language_model.py"
+    )
+    assert builders == ["finops_api/main.py"]
 
 
 def test_the_model_in_use_is_one_that_was_named() -> None:
