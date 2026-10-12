@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 80 total, 11 specified, 13 in build, 53 delivered |
 | Decisions | 35 architecture decision records |
-| Changes | 170 recorded |
-| Issues | 173 fixed, 108 open, 0 parked |
+| Changes | 171 recorded |
+| Issues | 177 fixed, 104 open, 0 parked |
 | Open questions | 30 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -114,7 +114,9 @@ owner decisions, ISS-279, ISS-280 and ISS-283. Next, in the owner's order: the s
 correctness highs, ISS-085, ISS-136 and the erasure gaps ISS-226, ISS-249, ISS-255 and ISS-256,
 then the next proposal in next-in-scope.txt. ISS-085 is fixed: what the tools return is screened for
 secrets before the model reads it, as the question already was. ISS-136 is closed: the interface pass
-had fixed it, and a test now holds it.
+had fixed it, and a test now holds it. The erasure gaps are closed, as the owner decided on 2026-10-12:
+a person's questions and exports are tombstoned and kept, their private views removed and shared ones kept
+unowned, their schedules paused and their name taken off every recipient list; questions are kept 90 days.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were

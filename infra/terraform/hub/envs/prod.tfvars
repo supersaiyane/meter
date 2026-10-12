@@ -105,6 +105,7 @@ settings = {
   METER_ASSISTANT_MAX_CONCURRENT_QUESTIONS            = "8"
   METER_RETENTION_PRINCIPAL_DAYS                      = "90"
   METER_RETENTION_OPERATIONAL_DAYS                    = "90"
+  METER_RETENTION_ASSISTANT_DAYS                      = "90"
   METER_RETENTION_AUDIT_DAYS                          = "395"
   METER_RETENTION_COST_DAYS                           = "1126"
   METER_FEATURE_MCP_SERVER                            = "false"

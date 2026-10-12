@@ -192,6 +192,15 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0",
     ),
     ScheduleEntry(
+        collector="retention_assistant",
+        cadence_seconds=DAILY,
+        reason=(
+            "A person's questions to the assistant are kept 90 days, OPEN-14. Daily, so a "
+            "question leaves within a day of its window rather than within a week."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
         collector="retention_audit",
         cadence_seconds=DAILY,
         reason=(

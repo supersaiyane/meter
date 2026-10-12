@@ -94,8 +94,8 @@ with `=`, `+`, `-`, `@`, a tab or a carriage return is led by an apostrophe. Bot
 each character, and a negative number stays a number.
 
 Every file is answered with `Cache-Control: no-store`, and each `report_run` row is confined to
-its person by the guard's `ByPrincipal` rule, ADR-0029. No retention job reads the record yet
-and `erase_principal` does not reach it, ISS-249.
+its person by the guard's `ByPrincipal` rule, ADR-0029. No retention job reads the record yet;
+`erase_principal` hashes its identifier and keeps the row, ISS-249, decided 2026-10-12.
 
 ## Interface
 

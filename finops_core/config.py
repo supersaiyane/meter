@@ -266,6 +266,9 @@ class Settings(BaseSettings):
     # Retention, in days. docs/09-DATA-CLASSIFICATION.md.
     retention_principal_days: int = Field(ge=1)
     retention_operational_days: int = Field(ge=1)
+    #: How long a person's questions to the assistant, and their redaction records, are kept.
+    #: Decided by the owner on 2026-10-12, OPEN-14: 90 days. ISS-226.
+    retention_assistant_days: int = Field(ge=1)
     retention_audit_days: int = Field(ge=1)
     retention_cost_days: int = Field(ge=1)
 
