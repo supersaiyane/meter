@@ -595,6 +595,7 @@
     "infra/terraform/hub/queue.tf",
     "infra/terraform/hub/relay.tf",
     "infra/terraform/hub/scheduler.tf",
+    "infra/terraform/hub/settings.tf",
     "infra/terraform/hub/storage.tf",
     "infra/terraform/hub/variables.tf",
     "infra/terraform/hub/versions.tf",
@@ -930,6 +931,7 @@
     "tests/scripts/test_check_identifiers.py",
     "tests/scripts/test_check_image_arch.py",
     "tests/scripts/test_check_index.py",
+    "tests/scripts/test_deployed_settings.py",
     "tests/scripts/test_images.py",
     "tests/scripts/test_layer_agreement.py",
     "tests/scripts/test_lint_scope.py",
@@ -15870,6 +15872,16 @@
     {
       "s": "tests/query/test_waste.py",
       "t": "finops_query/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_deployed_settings.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_deployed_settings.py",
+      "t": "finops_core/constants.py",
       "k": "python"
     },
     {

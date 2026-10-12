@@ -22,7 +22,7 @@ away, and as a wrong number rather than an error.
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import Literal
+from typing import Final, Literal
 from uuid import UUID
 
 from pydantic import Field, ValidationError, field_validator, model_validator
@@ -39,6 +39,12 @@ from finops_core.domain.query import WriteLevel
 
 class ConfigurationError(RuntimeError):
     """The process cannot start with the configuration it was given."""
+
+
+#: What Terraform puts in a secret parameter until the owner sets it, in
+#: infra/terraform/hub/settings.tf. A process refuses to start on it rather than sign sessions
+#: with a published string.
+UNSET_SECRET: Final = "unset: the owner sets this parameter once, docs/runbooks/deploy.md"
 
 
 class Settings(BaseSettings):
@@ -322,6 +328,16 @@ class Settings(BaseSettings):
             raise ValueError(
                 "METER_REGIONS must list at least one region. A collector with no "
                 "region to read returns nothing, and nothing looks like zero."
+            )
+        return value
+
+    @field_validator("session_signing_key")
+    @classmethod
+    def _not_the_placeholder(cls, value: str) -> str:
+        if value == UNSET_SECRET:
+            raise ValueError(
+                "METER_SESSION_SIGNING_KEY is still the placeholder Terraform created. Set the "
+                "parameter once, as docs/runbooks/deploy.md says, then start the task again."
             )
         return value
 

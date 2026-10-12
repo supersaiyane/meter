@@ -760,3 +760,21 @@ harmless in this one, and the rule still holds everywhere else.
 
 **Triggers:** Formatting, linting or type checking a few files quickly. A tool that prints
 "Installed N packages". Errors in files nobody changed.
+
+## 2026-10-12: stopped after each task when asked to run a sequence automatically
+
+**Mistake:** The owner said "go ahead with job 4 and do automated way". I built TASK-P12-004,
+merged it, reported and waited; built TASK-P12-005 when asked, merged it, reported and waited
+again. Each of the remaining tasks needed the owner to come back and say go.
+
+**Correction:** The owner said: "go ahead with job 6 and how many are remaining ? i asked you to
+do in an automated way".
+
+**Rule:** When the owner asks for a sequence of planned tasks to be done in an automated way, take
+each task through its gate and its merge and start the next in the same turn. Stop only at the
+end of the sequence, at a failure I cannot fix, or at a decision that is the owner's to make. Say
+where things stand in one line between tasks, never as a stopping point.
+
+**Triggers:** "automated way", "do it automatically", "go ahead with the rest", a plan with tasks
+left after a merge, the pull to summarise and wait once a gate goes green.
+

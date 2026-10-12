@@ -154,7 +154,7 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-12 |
 | Implements | Spec section 5.4, OPEN-29, ISS-250 |
 | Delivers | FEAT-080 |
 | Depends on | TASK-P12-001 |
@@ -162,13 +162,19 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 **Acceptance criteria.**
 
-- [ ] One parameter per setting under `/meter/<env>/`, the values that are not secret from a
-      committed map per environment, the secret ones created with a placeholder and never managed
-- [ ] Every task definition reads its settings through `secrets` with `valueFrom`, and the
-      execution role reads only its own environment's path
-- [ ] A test holds every field of the settings model to a parameter, among them
+- [x] One parameter per setting under `/meter/<env>/`, the values that are not secret from a
+      committed map per environment, the secret ones created with a placeholder and never managed:
+      `infra/terraform/hub/settings.tf`, 13 derived, 79 mapped and 1 secret of 93 settings (measured)
+- [x] Every task definition reads its settings through `secrets` with `valueFrom`, and the
+      execution role reads only its own environment's path; an empty setting, which SSM refuses,
+      is an empty environment value from the same map
+- [x] A test holds every field of the settings model to a parameter, among them
       `METER_RELAY_FUNCTION_NAME` from the hub's relay and `METER_CONFIG_AGGREGATOR` from the config
       stack's output, which TASK-P12-002 added
+- [x] Found and fixed on the way: the tasks asked the RDS managed secret for a key it does not
+      have, ISS-278, and the dispatcher's command ran the interpreter as a module, ISS-277. Found
+      and left for the owner: password rotation, ISS-279, and no production identity provider,
+      ISS-280
 
 ---
 
