@@ -29,13 +29,13 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 29 of 31 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 55 in 20 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Screens built | 30 of 32 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 58 in 21 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 38 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 52 | files in migrations/versions, all of which are listed below in this file |
+| Migration revisions | 53 | files in migrations/versions, all of which are listed below in this file |
 | Test files | 261 | test_*.py under tests/ |
-| Test functions | 3144 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test functions | 3145 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -806,6 +806,11 @@ meter/
 │   ├── screens/LedgerScreen.tsx  The savings ledger, FEAT-078, TASK-P11-008:
 │   │                          teams by the saving their months held, measured; a
 │   │                          team's credits and months once chosen, nobody ranked
+│   ├── screens/AiSpendScreen.tsx  AI spend, FEAT-085, TASK-P13-008: spend by
+│   │                          provider, model, token type, feature or caller, who
+│   │                          called which model and the GPU fleet, three panels each
+│   │                          with its own freshness; every figure measured or
+│   │                          modelled, and an absence said in words
 │   ├── screens/ReconciliationScreen.tsx  Invoice reconciliation, FEAT-076: each
 │   │                          invoice beside Meter's billed cost, every state in
 │   │                          words, the difference signed, labelled measured; the
@@ -1613,6 +1618,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0053_ai_spend_screen.py  TASK-P13-008. /analyze/ai admitted as a saved
+│       │                      view's screen
 │       ├── 0052_gpu_utilization_daily.py  TASK-P13-006. A day's GPU utilization per
 │       │                      instance, and the collector's cadence
 │       ├── 0051_anthropic_schedule.py  TASK-P13-005. anthropic_usage's cadence for

@@ -31,6 +31,7 @@ from sqlalchemy import Row, Select, Table, func, select
 from finops_api.db import models
 from finops_api.db.repositories.base import ScopedRepository
 from finops_api.guards import require_scope, scoped_select
+from finops_core.domain.cost import AWS_EXPORT
 from finops_core.domain.platform import UNALLOCATED
 from finops_core.domain.tenant import Scope
 
@@ -111,11 +112,17 @@ class CostRepository(ScopedRepository):
         part of an estate, so the number beside the word accounts has to be
         accounts. The line item count went there first and rendered as
         "showing all 450 accounts" on an estate with five.
+
+        The cloud bill's lines only: an AI provider's sub account is a project or a workspace, and
+        counting those as accounts would say an estate of five showed seven. ISS-288.
         """
         statement = (
             self.scoped_select(scope)
             .with_only_columns(func.count(func.distinct(self.table.c.sub_account_id)))
-            .where(self.table.c.billing_period_start == period)
+            .where(
+                self.table.c.billing_period_start == period,
+                self.table.c.ingest_source == AWS_EXPORT,
+            )
         )
         rows = _fetch(self, scope, statement)
         return int(rows[0][0] or 0) if rows else 0

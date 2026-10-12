@@ -25,6 +25,7 @@ from finops_api.db.repositories.ai import (
     AiUsageRepository,
     GpuUtilizationRepository,
 )
+from finops_api.db.repositories.cost import CostRepository
 from finops_api.deps import get_access_context, get_connection, get_scope, get_settings
 from finops_api.exports import ExportSpec, exportable, rows_in
 from finops_api.routes import API_PREFIX, build_meta
@@ -108,6 +109,15 @@ def _usage(rows: Sequence[Any]) -> list[ai.Usage]:
     ]
 
 
+def _accounts(connection: Connection, context: AccessContext, scope: Scope, period: date) -> int:
+    """The accounts this reader sees spending in the period, so coverage counts accounts.
+
+    Not the accounts holding AI spend: a reader who sees every account, two of which use a model,
+    is seeing all of the estate, and counting two would draw the screen as a partial view. ISS-288.
+    """
+    return CostRepository(connection, context).accounts_in(scope, period)
+
+
 def _self_billed(connected: Sequence[Any], lines: Sequence[ai.Line]) -> set[str]:
     """The sources that bill themselves: every connected provider, and any the bill shows."""
     shown = {line.source for line in lines if line.source != ai.CLOUD_BILL}
@@ -164,7 +174,7 @@ def ai_spend(
         rows=[AiSpendRowOut(**vars(row)) for row in grouped],
         connected=links,
     )
-    visible = len({line.account for line in lines})
+    visible = _accounts(connection, context, scope, chosen)
     return Envelope(
         data=found, meta=build_meta(connection, scope, context, visible=visible, rows=rows)
     )
@@ -212,7 +222,7 @@ def ai_callers(
             for row in rows
         ],
     )
-    visible = len({row.account_id for row in used})
+    visible = _accounts(connection, context, scope, chosen)
     return Envelope(
         data=found, meta=build_meta(connection, scope, context, visible=visible, rows=used)
     )
@@ -299,7 +309,7 @@ def ai_gpu(
         connection,
         scope,
         context,
-        visible=len({row.account for row in rows}),
+        visible=_accounts(connection, context, scope, chosen),
         rows=[*billed, *published],
     )
     return Envelope(data=found, meta=meta)

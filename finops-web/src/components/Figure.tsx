@@ -24,10 +24,20 @@ import { rendersAsNumeral, type FigureValue, type Freshness } from './provenance
  * weaken because one context displays them somewhere else, and a figure outside
  * a table still shows them.
  */
+export type FigureUnit = 'usd' | 'usd-unit' | 'count';
+
+/** The most places a unit price is drawn to: a millionth of a dollar, as the API returns it. */
+const UNIT_PRICE_PLACES = 6;
+
 export interface FigureProps {
   readonly value: FigureValue;
   readonly freshness: Freshness;
-  readonly unit?: 'usd' | 'count';
+  /**
+   * `usd-unit` is a price per unit, a thousand tokens or a request, drawn to as many as six places
+   * where it needs them. Money is drawn to the cent, and a cost of $0.003 per thousand tokens
+   * drawn to the cent is $0.00, a nought that is not one. FEAT-085.
+   */
+  readonly unit?: FigureUnit;
   /**
    * The most decimal places a count is drawn to. Zero when left out, which is right for a count
    * of whole things. A count that need not be whole, runs per day as the assistant cites it,
@@ -41,7 +51,7 @@ export interface FigureProps {
   readonly actionLabel?: string;
 }
 
-function formatAmount(amount: number, unit: 'usd' | 'count', fractionDigits = 0): string {
+function formatAmount(amount: number, unit: FigureUnit, fractionDigits = 0): string {
   // Fixed decimal places including trailing zeros, so a column aligns and a
   // value that happens to be round does not read as less precise.
   if (unit === 'count') {
@@ -58,7 +68,7 @@ function formatAmount(amount: number, unit: 'usd' | 'count', fractionDigits = 0)
     // that tabular numerals exist to give.
     currencyDisplay: 'narrowSymbol',
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: unit === 'usd-unit' ? UNIT_PRICE_PLACES : 2,
   }).format(amount);
 }
 

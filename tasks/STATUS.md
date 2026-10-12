@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 85 total, 11 specified, 18 in build, 53 delivered |
 | Decisions | 36 architecture decision records |
-| Changes | 179 recorded |
-| Issues | 178 fixed, 106 open, 0 parked |
+| Changes | 180 recorded |
+| Issues | 179 fixed, 106 open, 0 parked |
 | Open questions | 34 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -131,7 +131,9 @@ connected OpenAI: provider accounts, its cost beside the bill and its usage besi
 from the AI path and never kept; it found ISS-287, a retention job that never ran for existing tenants, and fixed it. On 2026-10-13
 TASK-P13-005 added Anthropic beside OpenAI, its cents read as cents and its missing request count as missing. TASK-P13-006 read
 GPU utilization for the GPU instances the bill names, and an instance that publishes nothing reads as not published. TASK-P13-007
-added the three AI endpoints, every figure saying whether it is measured or modelled.
+added the three AI endpoints, every figure saying whether it is measured or modelled. TASK-P13-008
+added the AI spend screen under Analyze, where tokens nobody counted, a caller nobody priced and a GPU
+that never published are words, and found ISS-288, a provider's projects counted as accounts.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were

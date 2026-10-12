@@ -25,6 +25,7 @@ SCREEN_PATHS: Final[tuple[str, ...]] = (
     "/analyze/kubernetes-cost",
     "/analyze/kubernetes-rightsizing",
     "/analyze/clusters",
+    "/analyze/ai",
     "/plan/budgets",
     "/plan/forecasts",
     "/plan/score",

@@ -262,7 +262,20 @@ AI lines for its accounts and nothing of a provider's, which no grant names.
 ### TASK-P13-008: the AI spend screen
 
 | Field | Value |
-| --- | --- |
+| 
+
+**Delivered 2026-10-13.** `finops-web/src/screens/AiSpendScreen.tsx` at `/analyze/ai`, under
+Analyze, with `group_by` and `period` in the address; three panels, spend, callers and the GPU fleet,
+each its own read with its own freshness and state. Tokens, requests and the two unit costs carry
+their basis; a unit cost is drawn past the cent by `Figure`'s new `usd-unit`, because $0.003 drawn to
+the cent is $0.00. Tokens nobody counted, a caller nobody priced and an agent that never published
+are words, never nought. Migration `0053_ai_spend_screen` admits the path as a saved view's screen.
+Building it found ISS-288: the AI routes, and the cost routes once a provider's lines arrived,
+counted a provider's projects as accounts, so a whole estate could read as partial; coverage now
+counts the cloud bill's accounts. Thirteen screen tests, a `Figure` test and three journeys in
+`e2e/ai.spec.ts` on the demo estate.
+
+--- | --- |
 | Status | Not started |
 | Implements | Spec section 8 |
 | Delivers | FEAT-085 |

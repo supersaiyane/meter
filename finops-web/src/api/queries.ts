@@ -45,7 +45,12 @@ import {
   containerWasteFixture,
 } from './fixtures/containers';
 import { digestsFixture, exchangesFixture, redactionsFixture } from './fixtures/assistant';
+import { aiCallersFixture, aiGpuFixture, aiSpendFixture } from './fixtures/ai';
 import type {
+  ApiAiCallers,
+  ApiAiGpuFleet,
+  ApiAiGrouping,
+  ApiAiSpend,
   ApiCommitmentDay,
   ApiReportRun,
   ApiSchedule,
@@ -485,6 +490,43 @@ export function useLedger() {
     '/api/v1/savings/ledger',
     '/api/v1/savings/ledger',
     ledgerFixture,
+  );
+}
+
+/**
+ * The AI spend surfaces, FEAT-081 to 085. A billing period's first day, or the newest the bill
+ * holds when none is asked for, which is what the route reads too.
+ */
+function periodQuery(period: string, first: boolean): string {
+  return period === '' ? '' : `${first ? '?' : '&'}period=${encodeURIComponent(period)}`;
+}
+
+export function useAiSpend(groupBy: ApiAiGrouping, period = '') {
+  return useQuerySurface<ApiAiSpend>(
+    ['ai-spend', groupBy, period],
+    '/api/v1/ai/spend',
+    `/api/v1/ai/spend?group_by=${groupBy}${periodQuery(period, false)}`,
+    () => aiSpendFixture(groupBy),
+  );
+}
+
+/** Who called which model. A separate read, because a caller can have usage the bill never priced. */
+export function useAiCallers(period = '') {
+  return useQuerySurface<ApiAiCallers>(
+    ['ai-callers', period],
+    '/api/v1/ai/callers',
+    `/api/v1/ai/callers${periodQuery(period, true)}`,
+    aiCallersFixture,
+  );
+}
+
+/** The GPU instances the bill names and how busy each agent said it was. */
+export function useAiGpu(period = '') {
+  return useQuerySurface<ApiAiGpuFleet>(
+    ['ai-gpu', period],
+    '/api/v1/ai/gpu',
+    `/api/v1/ai/gpu${periodQuery(period, true)}`,
+    aiGpuFixture,
   );
 }
 

@@ -1614,3 +1614,86 @@ export interface ApiLedgerTeam {
 export interface ApiLedger {
   readonly teams: readonly ApiLedgerTeam[];
 }
+
+/**
+ * The AI spend surfaces, FEAT-081 to 085, TASK-P13-007. Decimals arrive as strings, as every money
+ * figure does, and a null is a figure nothing counted: unknown, never nought.
+ */
+export type ApiBasis = 'measured' | 'modelled';
+
+/** One group of the bill's AI lines, each figure with how it was arrived at. */
+export interface ApiAiSpendRow {
+  readonly name: string;
+  /** The provider of the group's lines, or `(several)` where they come from more than one. */
+  readonly provider: string;
+  /** Measured: the bill's effective cost. */
+  readonly cost: string;
+  readonly tokens: string | null;
+  readonly tokens_basis: ApiBasis | null;
+  readonly requests: number | null;
+  readonly cost_per_1k_tokens: string | null;
+  readonly cost_per_1k_tokens_basis: ApiBasis | null;
+  readonly cost_per_request: string | null;
+  readonly cost_per_request_basis: ApiBasis | null;
+}
+
+/** A provider organization the tenant connected. Never its key or the key's name. */
+export interface ApiAiConnection {
+  readonly provider: string;
+  readonly organization_id: string;
+  readonly name: string;
+}
+
+export type ApiAiGrouping = 'provider' | 'model' | 'token_type' | 'feature' | 'caller';
+
+export interface ApiAiSpend {
+  /** Null where the bill holds no AI line this reader can see. */
+  readonly period: string | null;
+  readonly group_by: ApiAiGrouping;
+  /** Measured. Null with the period: no AI spend seen, never nought. */
+  readonly total_cost: string | null;
+  readonly rows: readonly ApiAiSpendRow[];
+  readonly connected: readonly ApiAiConnection[];
+}
+
+/** One caller's tokens and requests on one model, and what they cost, modelled. */
+export interface ApiAiCaller {
+  readonly source: string;
+  readonly account_id: string;
+  readonly caller: string;
+  readonly application: string;
+  readonly model: string;
+  readonly tokens: number;
+  readonly requests: number | null;
+  /** Null where the bill priced none of the caller's tokens: unknown, never free. */
+  readonly modelled_cost: string | null;
+  readonly modelled_cost_basis: ApiBasis;
+}
+
+export interface ApiAiCallers {
+  readonly period: string | null;
+  readonly callers: readonly ApiAiCaller[];
+}
+
+export type ApiGpuUtilization = 'published' | 'partly published' | 'not published';
+
+/** One GPU instance's hours and cost from the bill, and how busy the agent said it was. */
+export interface ApiAiGpu {
+  readonly account_id: string;
+  readonly region_id: string | null;
+  readonly instance_id: string;
+  readonly instance_type: string;
+  readonly hours: string;
+  readonly cost: string;
+  readonly days_billed: number;
+  readonly days_published: number;
+  /** Null where the agent published nothing: not published, never nought percent. */
+  readonly average_percent: string | null;
+  readonly peak_percent: string | null;
+  readonly utilization: ApiGpuUtilization;
+}
+
+export interface ApiAiGpuFleet {
+  readonly period: string | null;
+  readonly instances: readonly ApiAiGpu[];
+}

@@ -125,6 +125,23 @@ describe('Figure', () => {
     expect(container.textContent).toContain('forecast');
   });
 
+  it('unit_price_is_drawn_past_the_cent_so_a_small_price_is_never_nought', () => {
+    // FEAT-085. A cost per thousand tokens of $0.003 drawn to the cent is $0.00, which reads as
+    // free. Money stays to the cent; a unit price keeps the places it needs and no more.
+    const drawn = (amount: number, unit: 'usd' | 'usd-unit') => {
+      const { container, unmount } = render(
+        <Figure value={{ kind: 'measured', amount }} freshness={FRESH} unit={unit} now={NOW} />,
+      );
+      const text = container.querySelector('.meter-numeral')?.textContent ?? '';
+      unmount();
+      return text;
+    };
+    expect(drawn(0.003, 'usd-unit')).toBe('$0.003');
+    expect(drawn(0.5, 'usd-unit')).toBe('$0.50');
+    expect(drawn(0.0042424, 'usd-unit')).toBe('$0.004242');
+    expect(drawn(0.003, 'usd')).toBe('$0.00');
+  });
+
   it('all_three_provenances_are_distinguishable', () => {
     // TASK-P6-012. Each encoding that can carry provenance has to tell all three apart: the
     // attribute tests and styles key off, the fill class, the word, and the numeral. A pair
