@@ -53,16 +53,13 @@ cache:
   id_tokens:
     GITLAB_OIDC_TOKEN:
       aud: https://gitlab.com
+  # The role is assumed by whatever calls AWS, from the token file: the Terraform S3 backend and
+  # provider, the AWS CLI and boto3 all read these three variables. It used to be assumed here with
+  # `aws sts`, which no image these jobs run has, so every AWS job failed before its script. ISS-281.
   before_script:
-    - >
-      export $(aws sts assume-role-with-web-identity
-      --role-arn "${AWS_DEPLOY_ROLE_ARN}"
-      --role-session-name "gitlab-${CI_PIPELINE_ID}"
-      --web-identity-token "${GITLAB_OIDC_TOKEN}"
-      --duration-seconds 3600
-      --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]'
-      --output text
-      | awk '{print "AWS_ACCESS_KEY_ID="$1" AWS_SECRET_ACCESS_KEY="$2" AWS_SESSION_TOKEN="$3}')
+    - export AWS_WEB_IDENTITY_TOKEN_FILE="$(mktemp)"
+    - printf '%s' "${GITLAB_OIDC_TOKEN}" > "${AWS_WEB_IDENTITY_TOKEN_FILE}"
+    - export AWS_ROLE_ARN="${AWS_DEPLOY_ROLE_ARN}" AWS_ROLE_SESSION_NAME="gitlab-${CI_PIPELINE_ID}"
 
 # python:slim is Debian without build tools, so neither `make` nor git is in it.
 # Every job below that invokes a Makefile target or the test suite needs this
@@ -427,7 +424,10 @@ verify-provenance:
 
 # ------------------------------------------------------------------ plan
 
-terraform-plan:
+# One plan per environment, each in a file named for it, and each deploy needs its own plan job, so
+# it can download no other. The two used to be one matrix writing one `tfplan`, which deploy:dev
+# received twice and deploy:prod not at all. ISS-260, TASK-P12-007.
+.terraform-plan: &terraform_plan
   <<: *aws_oidc
   stage: plan
   image:
@@ -439,20 +439,27 @@ terraform-plan:
       terraform -chdir=${TF_ROOT} plan
       -var-file=envs/${TF_ENV}.tfvars
       -var="image_tag=${IMAGE_TAG}"
-      -out=tfplan
-    - terraform -chdir=${TF_ROOT} show -no-color tfplan > plan.txt
+      -out=tfplan-${TF_ENV}
+    - terraform -chdir=${TF_ROOT} show -no-color tfplan-${TF_ENV} > plan-${TF_ENV}.txt
   artifacts:
     paths:
-      - infra/terraform/hub/tfplan
-      - infra/terraform/hub/plan.txt
+      - infra/terraform/hub/tfplan-${TF_ENV}
+      - infra/terraform/hub/plan-${TF_ENV}.txt
     expire_in: 7 days
-  parallel:
-    matrix:
-      - TF_ENV: [dev, prod]
+
+terraform-plan:dev:
+  <<: *terraform_plan
+  variables:
+    TF_ENV: dev
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      variables:
-        TF_ENV: dev
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+terraform-plan:prod:
+  <<: *terraform_plan
+  variables:
+    TF_ENV: prod
+  rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # ------------------------------------------------------------------ deploy
@@ -460,7 +467,8 @@ terraform-plan:
 # The apply is the deploy. Terraform writes a new ECS task definition revision
 # carrying the new image tag, and ECS performs a rolling replacement behind the
 # ALB. The container health check gates the rollout, so a container that cannot
-# reach its database never receives traffic.
+# reach its database never receives traffic. Terraform waits for each service to
+# be stable itself, wait_for_steady_state, so the job fails with the apply.
 .deploy: &deploy
   <<: *aws_oidc
   stage: deploy
@@ -469,11 +477,7 @@ terraform-plan:
     entrypoint: [""]
   script:
     - terraform -chdir=${TF_ROOT} init -backend-config=envs/${TF_ENV}.backend.hcl
-    - terraform -chdir=${TF_ROOT} apply -auto-approve tfplan
-    - >
-      aws ecs wait services-stable
-      --cluster "meter-${TF_ENV}"
-      --services "meter-api-${TF_ENV}" "meter-worker-${TF_ENV}" "meter-web-${TF_ENV}"
+    - terraform -chdir=${TF_ROOT} apply -auto-approve tfplan-${TF_ENV}
   environment:
     name: ${TF_ENV}
 
@@ -481,7 +485,7 @@ deploy:dev:
   <<: *deploy
   variables:
     TF_ENV: dev
-  needs: ["verify-provenance", "terraform-plan", "build:relay"]
+  needs: ["verify-provenance", "terraform-plan:dev", "build:relay"]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
@@ -489,7 +493,7 @@ deploy:prod:
   <<: *deploy
   variables:
     TF_ENV: prod
-  needs: ["deploy:dev", "build:relay"]
+  needs: ["deploy:dev", "terraform-plan:prod", "build:relay"]
   when: manual
   allow_failure: false
   rules:
@@ -506,7 +510,9 @@ migrate:dev:
     TF_ENV: dev
   script:
     - pip install awscli
-    - ./scripts/run_migration_task.sh "${TF_ENV}" "${IMAGE_TAG}"
+    # Cannot apply this release's migrations yet, ISS-283: there is no migrate task definition,
+    # and run-task cannot change a task's image. The owner chooses how migrations run.
+    - bash scripts/deploy/run_migration_task.sh "${TF_ENV}" "${IMAGE_TAG}"
   needs: ["build:api"]
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

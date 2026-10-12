@@ -130,6 +130,13 @@ The plan job writes one plan file per environment, and each deploy job needs the
 own environment. A test reads `.gitlab-ci.yml` and fails if two jobs share a plan path or a deploy
 needs a job that publishes no plan. ISS-260.
 
+Amended 2026-10-12, TASK-P12-007. The plan is two jobs, `terraform-plan:dev` and
+`terraform-plan:prod`, rather than a matrix, so a deploy can need exactly one. Every job that
+reaches AWS assumes its role from the OIDC token through the web identity environment variables,
+which the Terraform backend and provider, the AWS CLI and boto3 all read, because the images have
+no CLI to call `aws sts` with, ISS-281. The deploy waits through Terraform's
+`wait_for_steady_state`, set on the api, web and worker services, ISS-282.
+
 ### 5.6 The first account
 
 `docs/runbooks/first-account.md` lists the owner's steps in order, each with its check: trusted

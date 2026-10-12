@@ -289,10 +289,13 @@ resource "aws_ecs_task_definition" "worker" {
 }
 
 resource "aws_ecs_service" "worker" {
-  name            = "${local.name}-worker"
-  cluster         = aws_ecs_cluster.hub.id
-  task_definition = aws_ecs_task_definition.worker.arn
-  desired_count   = var.worker_min_count
+  name = "${local.name}-worker"
+  # The deploy job waits on the apply, as for the api and the web, so a worker that cannot start
+  # fails the deploy instead of passing it. TASK-P12-007.
+  wait_for_steady_state = true
+  cluster               = aws_ecs_cluster.hub.id
+  task_definition       = aws_ecs_task_definition.worker.arn
+  desired_count         = var.worker_min_count
 
   capacity_provider_strategy {
     capacity_provider = "FARGATE_SPOT"

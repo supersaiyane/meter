@@ -182,7 +182,7 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-12 |
 | Implements | Spec section 5.5, ISS-260 |
 | Delivers | FEAT-080 |
 | Depends on | Nothing |
@@ -190,9 +190,16 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 **Acceptance criteria.**
 
-- [ ] One plan file per environment, and each deploy job needs its own environment's plan job
-- [ ] A test reads `.gitlab-ci.yml` and fails if two jobs share a plan path or a deploy needs a
-      job that publishes no plan
+- [x] One plan file per environment, and each deploy job needs its own environment's plan job:
+      `terraform-plan:dev` and `terraform-plan:prod` publish `tfplan-<env>`, and each deploy
+      applies its own
+- [x] A test reads `.gitlab-ci.yml` and fails if two jobs share a plan path or a deploy needs a
+      job that publishes no plan: `tests/scripts/test_pipeline.py`, which fails on the pipeline
+      as it was in four places
+- [x] Found and fixed on the way: every AWS job assumed its role with `aws sts` in images that
+      have no AWS CLI, ISS-281, and the deploy waited on misnamed services with that same missing
+      CLI, ISS-282. Found and left for the owner: deployed migrations cannot run, ISS-283, and the
+      provenance job's image may have no shell, ISS-284
 
 ---
 
