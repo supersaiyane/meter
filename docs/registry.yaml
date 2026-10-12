@@ -117,6 +117,12 @@ subprojects:
   spec: specs/2026-10-12-p12-deployment-readiness-design.md
   plan: plans/P12-implementation-plan.md
   depends_on: P11
+- id: P13
+  name: FinOps for AI
+  status: 'In build. Approved by the owner on 2026-10-12 with OPEN-31 to OPEN-34 answered, and chosen the same day as the next priority, proposal 2 of next-in-scope.txt. Bedrock by model, token type, application and caller; OpenAI and Anthropic cost and usage through a NAT gateway only the worker can use; GPU hours, cost and utilization; and one screen for cost per token, per request and per feature'
+  spec: specs/2026-10-12-p13-finops-for-ai-design.md
+  plan: plans/P13-implementation-plan.md
+  depends_on: P12
 features:
 - id: FEAT-001
   name: Account onboarding and organization topology, parent to child map
@@ -604,6 +610,36 @@ features:
   status: Delivered
   detail: '[P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.4 and 5.5, [P12 plan](docs/plans/P12-implementation-plan.md)'
   doc: docs/features/FEAT-080-deployed-settings.md
+- id: FEAT-081
+  name: Bedrock cost by model, token type, application and IAM principal, from the bill
+  subproject: P13
+  status: Specified
+  detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) sections 5.2, 5.3 and 5.7, [P13 plan](docs/plans/P13-implementation-plan.md)'
+  doc: docs/features/FEAT-081-bedrock-cost-from-the-bill.md
+- id: FEAT-082
+  name: Bedrock usage per caller from invocation logs
+  subproject: P13
+  status: Specified
+  detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) section 5.4, [P13 plan](docs/plans/P13-implementation-plan.md)'
+  doc: docs/features/FEAT-082-bedrock-usage-per-caller.md
+- id: FEAT-083
+  name: OpenAI and Anthropic cost and usage beside the AWS bill
+  subproject: P13
+  status: Specified
+  detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) sections 5.1, 5.3 and 5.5, [P13 plan](docs/plans/P13-implementation-plan.md)'
+  doc: docs/features/FEAT-083-openai-and-anthropic.md
+- id: FEAT-084
+  name: GPU hours, cost and utilization
+  subproject: P13
+  status: Specified
+  detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) section 5.6, [P13 plan](docs/plans/P13-implementation-plan.md)'
+  doc: docs/features/FEAT-084-gpu-hours-cost-and-utilization.md
+- id: FEAT-085
+  name: The AI spend screen, cost per token, per request and per feature
+  subproject: P13
+  status: Specified
+  detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) sections 5.7 and 8, [P13 plan](docs/plans/P13-implementation-plan.md)'
+  doc: docs/features/FEAT-085-ai-spend-screen.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -749,6 +785,10 @@ adrs:
   decision: The hub reaches AWS through endpoints, and through a relay for what has none
   status: Accepted
   doc: docs/adr/ADR-0035-hub-network-path-endpoints-and-relay.md
+- id: ADR-0036
+  decision: The worker reaches the AI providers through a NAT gateway, and nothing else does
+  status: Accepted
+  doc: docs/adr/ADR-0036-a-nat-gateway-for-the-worker-only.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'
@@ -2444,6 +2484,12 @@ changes:
     removes a question older than 90 days with its redactions, METER_RETENTION_ASSISTANT_DAYS. Testing the script''s
     main found that a person the tenant does not have failed on its own audit record''s foreign key rather than
     saying so; the person is now checked first'
+- id: CHG-0172
+  date: '2026-10-12'
+  type: Design
+  what: The P13 spec and plan, FinOps for AI, with OPEN-31 to OPEN-34 answered and ADR-0036
+  commit: pending
+  detail: 'Chosen by the owner on 2026-10-12, proposal 2 of next-in-scope.txt. docs/specs/2026-10-12-p13-finops-for-ai-design.md and docs/plans/P13-implementation-plan.md, nine tasks, FEAT-081 to FEAT-085. The owner chose a NAT gateway to reach OpenAI and Anthropic, OPEN-31, recorded in ADR-0036 with the gateway usable by the worker only; Bedrock per user and agent from invocation logs where enabled, OPEN-32; GPU utilization as well as hours and cost, OPEN-33; and x_ columns for token fields until FOCUS 1.5, OPEN-34. Reading the cost collector found its restatement delete would remove any second source''s rows, so cost_focus_daily gains ingest_source. ISS-285 raised: the provider adapters are unverified until a key exists'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4989,6 +5035,11 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-285
+  severity: MEDIUM
+  status: OPEN
+  summary: The OpenAI and Anthropic adapters are unverified until an admin key exists
+  detail: 'Raised 2026-10-12 by the P13 spec, section 10. The adapters are written to each provider''s published reference for its cost and usage reports, read on 2026-10-12, and tested against recorded shapes through a mock transport. No call has reached either provider, because no organization has given Meter an admin key. A field the reference names and the live API does not return reads as SchemaDrift rather than a zero. Closed by make first-contact against one organization of each provider'
 - id: ISS-284
   severity: MEDIUM
   status: OPEN
@@ -5406,3 +5457,23 @@ open_questions:
   detail: 'Raised 2026-10-12 by the P12 spec, section 3. The pipeline is written for GitLab, .gitlab-ci.yml,
     and has never run because the repository has no remote. Choosing the host and adding the remote is the
     owner''s; the first push runs the pipeline for the first time, and a push to main runs deploy:dev.'
+- id: OPEN-31
+  question: 'How does a deployed Meter reach OpenAI and Anthropic, which have no VPC endpoint? ANSWERED 2026-10-12: a NAT gateway'
+  status: ANSWERED
+  blocks: TASK-P13-001
+  detail: 'Raised 2026-10-12 by the P13 spec, section 5.1. The choices were a NAT gateway, the relay of ADR-0035, or Network Firewall with a domain allow list. The owner chose a NAT gateway; ADR-0036 records it, with only the worker''s security group allowed to use it.'
+- id: OPEN-32
+  question: 'Where does Bedrock cost per user and agent come from? ANSWERED 2026-10-12 as recommended: invocation logs where enabled'
+  status: ANSWERED
+  blocks: TASK-P13-003
+  detail: 'Raised 2026-10-12 by the P13 spec, section 5.4. The bill names the IAM principal, usually a shared role. Invocation logs name the caller and the request metadata, and hold the prompt and response, so Meter reads them through an aggregate query only, where an account sends them to CloudWatch Logs, and reads NotOptedIn where it does not.'
+- id: OPEN-33
+  question: 'What does GPU spend show? ANSWERED 2026-10-12: utilization as well as hours and cost'
+  status: ANSWERED
+  blocks: TASK-P13-006
+  detail: 'Raised 2026-10-12 by the P13 spec, section 5.6. Hours and cost come from the bill. The owner added utilization, read from the CloudWatch agent''s NVIDIA metrics where an instance publishes them, and shown as not published, never zero, where it does not.'
+- id: OPEN-34
+  question: 'How are token fields stored before FOCUS 1.5 names them? ANSWERED 2026-10-12 as recommended: x_ columns now, renamed when FOCUS 1.5 lands'
+  status: ANSWERED
+  blocks: TASK-P13-002
+  detail: 'Raised 2026-10-12 by the P13 spec, section 5.2. FOCUS reserves the x_ prefix for a producer''s own columns. The rename follows constraint 12: add the new columns, backfill, and drop the x_ ones a release later.'
