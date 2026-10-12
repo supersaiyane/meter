@@ -21,7 +21,7 @@ from decimal import Decimal
 from typing import Any, Final
 
 from finops_fakes import estate_shape as shape
-from finops_fakes.ai import FAKE_OPENAI, FakeInvocationLogs, FakeProviderReports
+from finops_fakes.ai import FAKE_ANTHROPIC, FAKE_OPENAI, FakeInvocationLogs, FakeProviderReports
 from finops_fakes.budgets import FakeBudgets
 from finops_fakes.catalog import (
     FakeInstanceCatalog,
@@ -47,6 +47,7 @@ from finops_fakes.terraform_state import FakeTerraformState
 from finops_fakes.topology import FakeTopologySource
 from finops_ingest.collectors.account_health import AccountHealthCollector
 from finops_ingest.collectors.ai_usage import BedrockInvocationsCollector
+from finops_ingest.collectors.anthropic_usage import anthropic_collector
 from finops_ingest.collectors.budgets import BudgetCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
 from finops_ingest.collectors.commitment_actions import CommitmentActionsCollector
@@ -158,6 +159,12 @@ def builders(clock: Clock) -> dict[str, Callable[[CollectorContext], Any]]:
     return {
         "account_health": lambda _c: AccountHealthCollector(
             FakeRoleHealth(at=clock()), clock=clock
+        ),
+        # The local stack's connected Anthropic organization, like the OpenAI one below.
+        "anthropic_usage": lambda _c: anthropic_collector(
+            lambda _context, _account: FakeProviderReports(at=clock()),
+            accounts=lambda _connection, _tenant: (FAKE_ANTHROPIC,),
+            clock=clock,
         ),
         "bedrock_invocations": lambda _c: BedrockInvocationsCollector(
             FakeInvocationLogs(at=clock()), clock=clock

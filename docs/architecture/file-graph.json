@@ -469,6 +469,7 @@
     "finops_ingest/collectors/account_health.py",
     "finops_ingest/collectors/ai_providers.py",
     "finops_ingest/collectors/ai_usage.py",
+    "finops_ingest/collectors/anthropic_usage.py",
     "finops_ingest/collectors/budgets.py",
     "finops_ingest/collectors/catalog_reads.py",
     "finops_ingest/collectors/commitment.py",
@@ -517,6 +518,8 @@
     "finops_mcp/server.py",
     "finops_providers/__init__.py",
     "finops_providers/ai_reports.py",
+    "finops_providers/anthropic/__init__.py",
+    "finops_providers/anthropic/reports.py",
     "finops_providers/aws/__init__.py",
     "finops_providers/aws/accounts.py",
     "finops_providers/aws/appregistry.py",
@@ -672,6 +675,7 @@
     "migrations/versions/0048_ai_usage_daily.py",
     "migrations/versions/0049_ai_provider_account.py",
     "migrations/versions/0050_ai_collector_schedules.py",
+    "migrations/versions/0051_anthropic_schedule.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -912,6 +916,7 @@
     "tests/providers/fake/test_utilization_estates.py",
     "tests/providers/test_ai_reports.py",
     "tests/providers/test_amg_surface.py",
+    "tests/providers/test_anthropic_reports.py",
     "tests/providers/test_fake.py",
     "tests/providers/test_fake_surface.py",
     "tests/providers/test_grafana_client.py",
@@ -9374,6 +9379,11 @@
     },
     {
       "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/anthropic_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
       "t": "finops_ingest/collectors/budgets.py",
       "k": "python"
     },
@@ -9884,12 +9894,22 @@
     },
     {
       "s": "finops_ingest/ai_bindings.py",
+      "t": "finops_ingest/collectors/anthropic_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/ai_bindings.py",
       "t": "finops_ingest/collectors/openai_usage.py",
       "k": "python"
     },
     {
       "s": "finops_ingest/ai_bindings.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/ai_bindings.py",
+      "t": "finops_providers/anthropic/reports.py",
       "k": "python"
     },
     {
@@ -10215,6 +10235,11 @@
     {
       "s": "finops_ingest/collectors/ai_usage.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/anthropic_usage.py",
+      "t": "finops_ingest/collectors/ai_providers.py",
       "k": "python"
     },
     {
@@ -11115,6 +11140,26 @@
     {
       "s": "finops_providers/ai_reports.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/anthropic/reports.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/anthropic/reports.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/anthropic/reports.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/anthropic/reports.py",
+      "t": "finops_providers/ai_reports.py",
       "k": "python"
     },
     {
@@ -12135,6 +12180,11 @@
     {
       "s": "scripts/ops/connect_ai_provider.py",
       "t": "finops_core/ports/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/connect_ai_provider.py",
+      "t": "finops_providers/anthropic/reports.py",
       "k": "python"
     },
     {
@@ -13905,6 +13955,16 @@
     {
       "s": "tests/ingest/collectors/test_ai_providers.py",
       "t": "finops_ingest/collectors/ai_providers.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_providers.py",
+      "t": "finops_ingest/collectors/anthropic_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_providers.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
       "k": "python"
     },
     {
@@ -15945,6 +16005,21 @@
     {
       "s": "tests/providers/test_amg_surface.py",
       "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_anthropic_reports.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_anthropic_reports.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_anthropic_reports.py",
+      "t": "finops_providers/anthropic/reports.py",
       "k": "python"
     },
     {

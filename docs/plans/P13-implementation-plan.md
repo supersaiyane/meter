@@ -174,7 +174,7 @@ shared with the API, ISS-286.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec section 5.5 |
 | Delivers | FEAT-083 |
 | Depends on | TASK-P13-004 |
@@ -182,10 +182,19 @@ shared with the API, ISS-286.
 
 **Acceptance criteria.**
 
-- [ ] An httpx adapter reads Anthropic's cost report and messages usage report, paginated, every
+- [x] An httpx adapter reads Anthropic's cost report and messages usage report, paginated, every
       failure typed
-- [ ] The collector writes FOCUS rows with `ingest_source` anthropic and usage rows, the same way
-- [ ] An AWS cost run leaves both providers' rows, and each provider's run leaves the bill's
+- [x] The collector writes FOCUS rows with `ingest_source` anthropic and usage rows, the same way
+- [x] An AWS cost run leaves both providers' rows, and each provider's run leaves the bill's
+
+**Delivered 2026-10-13.** `finops_providers/anthropic/reports.py`: the cost report's amounts are in
+cents and are divided by a hundred, its model and token type are fields of their own rather than
+read out of the description, and the messages usage report counts no requests, so a row's
+`requests` is None and never a zero. The default workspace, which the report names with no id,
+reads as the empty workspace. `anthropic_usage` in both compositions over the shared provider
+collector; the connect script takes `--provider anthropic`; migration `0051_anthropic_schedule`
+installs its cadence for existing tenants. A test runs the bill, OpenAI and Anthropic into one
+period and finds each source's rows intact after the others' runs.
 
 ---
 

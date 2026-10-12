@@ -508,6 +508,19 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0",
     ),
     ScheduleEntry(
+        collector="anthropic_usage",
+        cadence_seconds=DAILY,
+        reason=(
+            "Anthropic's cost and usage for each connected organization, P13 spec section 5.5. "
+            "Daily, rereading the billing period to date: the cost report is in daily buckets "
+            "and recent ones are revised, so reading more often adds nothing and reading less "
+            "often leaves the month's figure behind the bill. The Admin API's reports are not "
+            "billed, so a run costs the NAT gateway's per GB charge on a few kilobytes. ADR-0012 "
+            "and constraint 9."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
         collector="openai_usage",
         cadence_seconds=DAILY,
         reason=(

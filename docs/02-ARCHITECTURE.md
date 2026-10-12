@@ -107,7 +107,7 @@ port.
 | `SpotPrices` | `catalog.py` | Catalog | Read every spot price reading in a Region's window | `aws/spot.py` `AwsSpotPrices`, through the relay, TASK-P9-013 |
 | `ServiceCatalogue` | `ownership.py` | Ownership | Read an account's applications, the owner each names, and the tags that mark its resources | `aws/appregistry.py` `AwsServiceCatalogue`, over AWS AppRegistry, TASK-P11-003 |
 | `ResourceCreators` | `ownership.py` | Ownership | Read who created a resource, or that it predates the record | `aws/cloudtrail_creators.py` `AwsResourceCreators`, over CloudTrail's event history, TASK-P11-004 |
-| `AiProviderReports` | `ai.py` | AI | Read one AI provider organization's daily cost lines and its usage per model, project, key and user | `openai/reports.py` `OpenAiReports`, over OpenAI's organization API through the NAT gateway, TASK-P13-004 |
+| `AiProviderReports` | `ai.py` | AI | Read one AI provider organization's daily cost lines and its usage per model, project, key and user | `openai/reports.py` `OpenAiReports` and `anthropic/reports.py` `AnthropicReports`, over each provider's organization API through the NAT gateway, TASK-P13-004 and 005 |
 | `InvocationLogs` | `ai.py` | AI | Read requests and tokens per day, caller, model and application in one account and Region | `aws/bedrock_invocations.py` `BedrockInvocationLogs`, one aggregate Logs Insights query a day over the Bedrock invocation logs, TASK-P13-003 |
 | `InvoiceSource` | `invoice.py` | None | Read the payer's invoices and credit memos for a span of billing periods, FEAT-076 | `aws/invoices.py` `AwsInvoices`, over the Invoicing API through the relay, ADR-0035 |
 | `BudgetSource` | `budget.py` | None | Read the payer's budgets | `aws/budgets.py` `AwsBudgets`, over AWS Budgets |

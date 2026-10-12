@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 29 of 31 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 55 in 20 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 36 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 50 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 255 | test_*.py under tests/ |
-| Test functions | 3099 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 37 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 51 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 256 | test_*.py under tests/ |
+| Test functions | 3105 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -631,6 +631,10 @@ meter/
 │   │                          providers share: has_more and next_page, bounded
 │   │                          retries, every failure typed, and a refused key's
 │   │                          message never kept, so the key is in no detail
+│   ├── anthropic/
+│   │   └── reports.py         FEAT-083, TASK-P13-005. Anthropic's cost report, amounts
+│   │                          in cents, and messages usage, which counts no requests,
+│   │                          for one organization
 │   ├── openai/
 │   │   └── reports.py         FEAT-083. OpenAI's costs and completions usage for one
 │   │                          organization: costs as FOCUS rows of source openai,
@@ -1144,8 +1148,8 @@ meter/
 │   ├── ai.py              the estate's invocation logs, P13: fake-platform-a read,
 │   │                      fake-product-a to S3 only and the rest nowhere, both
 │   │                      NotOptedIn; three callers of the support assistant;
-│   │                      and the fake OpenAI organization's daily cost and
-│   │                      usage for two projects, FakeProviderReports
+│   │                      and the fake OpenAI and Anthropic organizations' daily
+│   │                      cost and usage, FakeProviderReports
 │   ├── ownership.py       owners beyond the tags, planted in fake-product-b:
 │   │                      an application owner, a person and a pipeline as
 │   │                      creators, and resources older than the 90 day record
@@ -1267,6 +1271,7 @@ meter/
 │       ├── ai_providers.py    FEAT-083, TASK-P13-004. A provider's cost and usage for
 │       │                      each connected organization, the period to date; one
 │       │                      failing typed under its own scope, never another
+│       ├── anthropic_usage.py the provider collector named for Anthropic, daily
 │       ├── openai_usage.py    the provider collector named for OpenAI, daily
 │       ├── ownership.py       FEAT-077, TASK-P11-002 to 004. Daily; each resource's
 │       │                      suggested owners into resource_owner: tags, the catalogue,
@@ -1596,6 +1601,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0051_anthropic_schedule.py  TASK-P13-005. anthropic_usage's cadence for
+│       │                      existing tenants
 │       ├── 0050_ai_collector_schedules.py  TASK-P13-004. Four cadences for existing
 │       │                      tenants, retention_assistant's among them, ISS-287
 │       ├── 0049_ai_provider_account.py  TASK-P13-004. The AI provider organizations a

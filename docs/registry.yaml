@@ -2514,6 +2514,12 @@ changes:
   what: TASK-P13-004, provider accounts and OpenAI's cost and usage beside the bill
   commit: pending
   detail: 'Migration 0049 creates ai_provider_account, an organization per row naming the Secrets Manager secret of its admin key, held under meter/<env>/ai/ by a constraint. The AiProviderReports port; finops_providers/ai_reports.py, the paged client OpenAI and Anthropic share, retries bounded, every failure typed and a refused key''s message never kept; finops_providers/openai/reports.py over the costs and completions usage reports, line items read into model and token type and cached input counted once; finops_providers/aws/secrets.py; finops_ingest/collectors/ai_providers.py, writing FOCUS rows of source openai and usage rows, each organization read and restated on its own and one failing typed in sync_error without failing another; scripts/ops/connect_ai_provider.py, which connects an organization only once its key reads a day of costs. The task role may read the AI path, shared with the API, ISS-286. Migration 0050 installs the cadences of bedrock_invocations, retention_ai_usage and openai_usage for existing tenants and found retention_assistant had none, ISS-287'
+- id: CHG-0177
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P13-005, Anthropic's cost and usage beside the bill and OpenAI's
+  commit: pending
+  detail: 'finops_providers/anthropic/reports.py reads the Admin API''s cost report, whose amounts are in cents and are divided by a hundred, and its messages usage report, which counts tokens and not requests, so requests is None and never a zero; the model and token type come from the report''s own fields. The anthropic_usage collector over the shared provider collector, in both compositions, with a fake organization of two workspaces, the default one among them. The connect script takes --provider anthropic, and migration 0051 installs the cadence for existing tenants. A test runs the bill, OpenAI and Anthropic into one period and finds each source''s rows intact'
 issues:
 - id: ISS-189
   severity: LOW

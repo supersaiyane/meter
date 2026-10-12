@@ -20,9 +20,12 @@ from sqlalchemy import Engine, text
 from finops_core.domain.ai import AiUsage, ProviderAccount
 from finops_core.domain.cost import CostRecord
 from finops_core.errors import AccessDenied, Unreachable
-from finops_fakes.ai import FAKE_OPENAI, FakeProviderReports
+from finops_fakes.ai import FAKE_ANTHROPIC, FAKE_OPENAI, FakeProviderReports
+from finops_fakes.cur import ESTATE, FakeCostExport
 from finops_ingest.ai_accounts import connected
 from finops_ingest.collectors.ai_providers import AiProviderCollector, period_of
+from finops_ingest.collectors.anthropic_usage import anthropic_collector
+from finops_ingest.collectors.cost_focus import CostFocusCollector
 from finops_ingest.collectors.partitions import ensure_partition
 from finops_ingest.dispatcher import WorkUnit
 from finops_ingest.registry import CollectorContext, CollectorOutcome
@@ -232,3 +235,48 @@ def test_a_key_outside_the_ai_path_cannot_be_recorded(
             ),
             {"o": f"org-{tenant_id}", "t": tenant_id, "s": secret, "now": NOW},
         )
+
+
+def test_a_providers_run_leaves_the_bills_rows_and_anthropic_lands_beside_openai(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    """TASK-P13-005. The bill's rows survive a provider's restatement, and two providers' sit
+    side by side, each under its own source."""
+    bill = tuple(row for row in ESTATE if row.billing_period_start == period_of(END))
+    with engine.begin() as connection:
+        ensure_partition(connection, "cost_focus_daily", period_of(END))
+        CostFocusCollector(FakeCostExport(rows=bill), clock=lambda: NOW)(
+            CollectorContext(unit=unit(tenant_id), connection=connection, run_id=uuid4())
+        )
+    run(engine, tenant_id)
+    anthropic = anthropic_collector(
+        lambda _c, _a: FakeProviderReports(at=NOW),
+        accounts=lambda _connection, _tenant: (FAKE_ANTHROPIC,),
+        clock=lambda: NOW,
+    )
+    with engine.begin() as connection:
+        anthropic(CollectorContext(unit=unit(tenant_id), connection=connection, run_id=uuid4()))
+    run(engine, tenant_id)
+
+    with engine.connect() as connection:
+        by_source = dict(
+            connection.execute(
+                text(
+                    "SELECT ingest_source, count(*) FROM cost_focus_daily WHERE tenant_id = :t "
+                    "GROUP BY ingest_source"
+                ),
+                {"t": tenant_id},
+            ).all()
+        )
+        workspaces = set(
+            connection.execute(
+                text(
+                    "SELECT workspace FROM ai_usage_daily WHERE tenant_id = :t "
+                    "AND provider = 'anthropic'"
+                ),
+                {"t": tenant_id},
+            ).scalars()
+        )
+    assert by_source["aws_export"] == len(bill)
+    assert by_source["openai"] > 0 and by_source["anthropic"] > 0
+    assert workspaces == {"wrkspc-fake-agents", ""}, "the default workspace reads as no id"
