@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P12 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P12 spec](../specs/2026-10-12-p12-deployment-readiness-design.md), sections 5.1 to 5.3 and 5.6 |
 | Tasks | TASK-P12-001 to TASK-P12-005 and TASK-P12-008 |
 
@@ -136,8 +136,7 @@ first contact, TASK-P12-008.
 
 ## Status of this document
 
-In build. TASK-P12-001 to TASK-P12-005 and TASK-P12-008 built the compositions, the AWS binders,
-the queue, the two processes, the local stack end to end and the first contact on 2026-10-12;
-TASK-P12-009 proves them. No account is connected yet, ISS-002.
+Delivered on 2026-10-12, proven by TASK-P12-009 against the fakes and stubbed AWS clients. No
+account is connected yet, ISS-002, and a first deployment waits on ISS-279, ISS-280 and ISS-283.
 
 See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P12.

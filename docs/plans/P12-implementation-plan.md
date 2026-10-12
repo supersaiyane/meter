@@ -230,7 +230,7 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-12 |
 | Implements | Spec section 13 |
 | Delivers | The exit criteria, measured, and the record |
 | Depends on | TASK-P12-001 to TASK-P12-008 |
@@ -238,6 +238,35 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 **Acceptance criteria.**
 
-- [ ] Every exit criterion in spec section 13 met, each with its evidence
-- [ ] FEAT-079 and FEAT-080 say what was built; ISS-182, ISS-250 and ISS-260 closed or updated;
+- [x] Every exit criterion in spec section 13 met, each with its evidence
+- [x] FEAT-079 and FEAT-080 say what was built; ISS-182, ISS-250 and ISS-260 closed or updated;
       the register, `project_map.md` and the checkpoint updated, and `make check-docs` clean
+
+**Delivered 2026-10-12.** The spec's section 13, each criterion with its evidence. The test counts
+are measured, from the full gate on TASK-P12-007's branch on 2026-10-12: 4202 backend tests, 958
+frontend unit tests and 68 journeys passing, coverage 96.89 percent. Everything here runs against
+the fakes or stubbed AWS clients; a real account waits on ISS-002.
+
+1. Every scheduled collector is in the composition in both modes, and one runs end to end on the
+   local stack: `tests/ingest/test_composition.py` holds both compositions to the 33 collectors the
+   schedule runs in the worker; `tests/ingest/test_process_mains.py` runs one from dispatch to
+   `ingest_run` through the local entry points; and `tests/scripts/test_p12_exit_criteria.py` runs
+   every collector the demo schedule dispatches the same way and finds each recorded, succeeded or
+   failed with a typed cause, in 68 seconds (measured). By hand on the Docker stack on 2026-10-12,
+   52 runs over 34 collectors were recorded in 39 seconds with the queue drained (measured).
+   TASK-P12-001 to TASK-P12-005.
+2. Every setting reaches a deployed task from SSM Parameter Store, held by a test:
+   `tests/scripts/test_deployed_settings.py` holds the derived names, each environment's map and
+   the secret to all 93 fields of the settings model, and the api, worker and dispatcher to reading
+   them. TASK-P12-006, ISS-250 closed.
+3. Each deploy job applies the plan of its own environment, held by a test:
+   `tests/scripts/test_pipeline.py`, which failed on the pipeline as it was in four places.
+   TASK-P12-007, ISS-260 closed.
+4. The first account's steps are a runbook, and `make first-contact` refuses without credentials
+   and reports each adapter's first call, typed: `docs/runbooks/first-account.md` and
+   `tests/scripts/test_first_contact.py`. TASK-P12-008.
+
+Found on the way and fixed: ISS-274, ISS-275, ISS-277, ISS-278, ISS-281 and ISS-282, each HIGH and
+each a fault that would have stopped a first deployment. Found and left for the owner, because each
+is a choice: ISS-279, the database password's rotation; ISS-280, an identity provider a deployed
+environment can use; ISS-283, how a deployment migrates. Each stops a first deployment.

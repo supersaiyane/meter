@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P12 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P12 spec](../specs/2026-10-12-p12-deployment-readiness-design.md), sections 5.4 and 5.5 |
 | Tasks | TASK-P12-006 and TASK-P12-007 |
 
@@ -77,8 +77,7 @@ Built so far: the settings, TASK-P12-006, and the pipeline's plans, TASK-P12-007
 
 ## Status of this document
 
-In build. TASK-P12-006 built the deployed settings and TASK-P12-007 the pipeline's plans on
-2026-10-12; TASK-P12-009 proves them. No pipeline has run, ISS-179, so what the pipeline does is
-read from the file and held by tests rather than observed.
+Delivered on 2026-10-12, proven by TASK-P12-009. No pipeline has run, ISS-179, so what the
+pipeline does is read from the file and held by tests rather than observed.
 
 See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P12.
