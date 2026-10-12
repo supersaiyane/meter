@@ -107,6 +107,14 @@ subprojects:
   spec: specs/2026-10-08-p11-owners-and-savings-ledger-design.md
   plan: plans/P11-implementation-plan.md
   depends_on: P3
+- id: P12
+  name: Deployment readiness
+  status: Approved by the owner on 2026-10-12 with OPEN-28 and OPEN-29 answered, in build. One composition of
+    every scheduled collector, fake or AWS by a setting, a dispatcher and a worker that run, deployed settings
+    in SSM Parameter Store, a pipeline that applies its own plan, and the owner's steps for the first account
+  spec: specs/2026-10-12-p12-deployment-readiness-design.md
+  plan: plans/P12-implementation-plan.md
+  depends_on: P11
 features:
 - id: FEAT-001
   name: Account onboarding and organization topology, parent to child map
@@ -582,6 +590,18 @@ features:
   status: Delivered
   detail: '[P11 spec](docs/specs/2026-10-08-p11-owners-and-savings-ledger-design.md) sections 5.5 and 5.6, [P11 plan](docs/plans/P11-implementation-plan.md)'
   doc: docs/features/FEAT-078-savings-ledger.md
+- id: FEAT-079
+  name: Ingest that runs, one composition and the dispatcher and worker processes
+  subproject: P12
+  status: Planned
+  detail: '[P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.1 to 5.3 and 5.6, [P12 plan](docs/plans/P12-implementation-plan.md)'
+  doc: docs/features/FEAT-079-ingest-that-runs.md
+- id: FEAT-080
+  name: Deployed settings from SSM Parameter Store, and a pipeline that applies its own plan
+  subproject: P12
+  status: Planned
+  detail: '[P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.4 and 5.5, [P12 plan](docs/plans/P12-implementation-plan.md)'
+  doc: docs/features/FEAT-080-deployed-settings.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -2287,6 +2307,17 @@ changes:
   detail: 'The healthz healthy path test pauses other tenants'' schedules while it runs, the modules that
     seed the demo give their partitions back, and the reporting journey typechecks on its own project.
     Both orders that failed now pass, and tsc over tsconfig.e2e.json exits 0'
+- id: CHG-0159
+  date: '2026-10-12'
+  type: Scope
+  what: P12, deployment readiness, specified and planned
+  commit: pending
+  detail: 'The owner chose deployment readiness as the next priority, then the security and correctness
+    highs, then the rest of next-in-scope.txt. The spec makes the platform run outside its tests: one
+    composition of the 33 scheduled collectors, fake or AWS by METER_PROVIDERS, OPEN-28; a dispatcher and a
+    worker with entry points over SQS; the local stack end to end; deployed settings in SSM Parameter Store,
+    OPEN-29, ISS-250; a deploy that applies its own plan, ISS-260; and the first account''s runbook with
+    make first-contact. Nine tasks; FEAT-079 and FEAT-080 planned; OPEN-30 open'
 issues:
 - id: ISS-189
   severity: LOW
@@ -5073,3 +5104,26 @@ open_questions:
     the owner on a team''s credits, because a leaderboard of named engineers is a performance review
     nobody asked Meter to run. Ranking individuals is a change to the screen and its route, not to the
     data.'
+- id: OPEN-28
+  question: 'What do the dispatcher and worker run against before an AWS account is connected? ANSWERED
+    2026-10-12 as recommended: fakes by a setting'
+  status: ANSWERED
+  blocks: TASK-P12-001
+  detail: 'Raised 2026-10-12 by the P12 spec, section 5.1. Recommended: METER_PROVIDERS, fake or aws with no
+    default, so the local stack and any deploy before an account run end to end on the fakes and a deployed
+    environment says aws. The alternative, AWS only, would leave the local stack unable to run end to end.'
+- id: OPEN-29
+  question: 'Where do a deployed Meter''s settings live? ANSWERED 2026-10-12: SSM Parameter Store'
+  status: ANSWERED
+  blocks: TASK-P12-006
+  detail: 'Raised 2026-10-12 by the P12 spec, section 5.4, for ISS-250. Recommended was a Terraform map per
+    environment written into the task definitions with secrets in Secrets Manager; the owner chose SSM
+    Parameter Store, one parameter per setting under /meter/<env>/, injected through each task definition''s
+    secrets, the secret ones created with a placeholder and set by the owner.'
+- id: OPEN-30
+  question: Which git host takes the remote, and so where does the first pipeline run happen?
+  status: OPEN
+  blocks: ISS-179
+  detail: 'Raised 2026-10-12 by the P12 spec, section 3. The pipeline is written for GitLab, .gitlab-ci.yml,
+    and has never run because the repository has no remote. Choosing the host and adding the remote is the
+    owner''s; the first push runs the pipeline for the first time, and a push to main runs deploy:dev.'

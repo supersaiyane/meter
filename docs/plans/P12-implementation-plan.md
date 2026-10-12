@@ -1,0 +1,204 @@
+# P12 Deployment readiness: implementation plan
+
+Date: 2026-10-12
+Status: Approved by the owner on 2026-10-12 with OPEN-28 and OPEN-29 answered, in build
+Spec: `docs/specs/2026-10-12-p12-deployment-readiness-design.md`
+Depends on: P0 to P11 delivered against fakes. Proof against a real estate waits on ISS-002
+Tasks: 9
+
+Every sub project is delivered against fakes, and a deployed Meter would still collect nothing.
+This sub project makes the platform run outside its tests: one composition of every collector,
+a dispatcher and a worker that run, the deployed settings in SSM Parameter Store, a pipeline that
+applies its own plan, and the owner's steps for the first account.
+
+## How to work this plan
+
+Same contract as P0 through P11. One task, one commit, `make verify` green before a merge.
+
+**Three rules specific to P12.**
+
+1. **No guessing a mode.** `METER_PROVIDERS` is `fake` or `aws` and has no default; a process
+   without it refuses to start.
+2. **A collector with no AWS adapter fails typed, never on a fake.** In AWS mode it is registered
+   and every run is Misconfigured, naming the missing adapter, ISS-240.
+3. **No secret in git or in the Terraform state.** Secret parameters are created with a placeholder
+   and their values are set by the owner.
+
+## Wave overview
+
+| Wave | Tasks | Delivers | Can start when |
+| --- | --- | --- | --- |
+| A. The composition | 001, 002 | Every collector registered, fake and AWS | This plan approved |
+| B. The processes | 003, 004, 005 | The queue, the two entry points, the local stack end to end | A |
+| C. The deploy | 006, 007 | Settings in SSM, each deploy its own plan | Any time |
+| D. The first account | 008 | The runbook and `make first-contact` | A |
+| E. Proof and documents | 009 | Exit criteria measured and the documents | All |
+
+Modelled at the pace of P11: eight tasks of size M and one of size S, about eight working days.
+
+---
+
+### TASK-P12-001: the providers setting, and the fake composition
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | Spec section 5.1, OPEN-28 |
+| Delivers | FEAT-079 |
+| Depends on | Nothing |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [ ] `METER_PROVIDERS` in the settings, `fake` or `aws`, required, in `.env.example`
+- [ ] `finops_ingest/composition.py` registers every scheduled collector and the retention jobs,
+      each built per unit from the fakes in fake mode
+- [ ] A test fails when a scheduled collector is missing from the composition
+
+---
+
+### TASK-P12-002: the AWS binders
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | Spec section 5.1 |
+| Delivers | FEAT-079 |
+| Depends on | TASK-P12-001 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [ ] In AWS mode each collector is built from the AWS adapters on the unit's session
+- [ ] A collector whose port has no AWS adapter fails each run as Misconfigured, naming it, ISS-240
+- [ ] A test builds every collector in AWS mode over a stubbed session and finds no fake in it
+
+---
+
+### TASK-P12-003: the queue, published and consumed
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | Spec section 5.3 |
+| Delivers | FEAT-079 |
+| Depends on | Nothing |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [ ] An SQS publisher for the dispatcher and a consumer for the worker, over boto3
+- [ ] A unit survives the round trip unchanged, tested under moto
+- [ ] A message the worker cannot decode is left for the redrive and logged, never dropped
+
+---
+
+### TASK-P12-004: the dispatcher and the worker as processes
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | Spec section 5.2 |
+| Delivers | FEAT-079 |
+| Depends on | TASK-P12-001, TASK-P12-003 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [ ] `python -m finops_ingest.dispatcher` publishes each tenant's due units, then exits
+- [ ] `python -m finops_ingest.worker` long polls, runs each batch, deletes what succeeded, and
+      stops between batches on SIGTERM
+- [ ] Both refuse to start without `METER_PROVIDERS`, tested by running the entry points
+
+---
+
+### TASK-P12-005: the local stack, end to end
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | Spec sections 2 and 5.2 |
+| Delivers | FEAT-079 |
+| Depends on | TASK-P12-004 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [ ] `make up` runs the dispatcher and the worker on fakes against LocalStack's queue
+- [ ] A test proves one collector dispatched, queued, claimed, run and recorded in `ingest_run`
+- [ ] The runbook for the local stack says how to watch it
+
+---
+
+### TASK-P12-006: deployed settings in SSM Parameter Store
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | Spec section 5.4, OPEN-29, ISS-250 |
+| Delivers | FEAT-080 |
+| Depends on | TASK-P12-001 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [ ] One parameter per setting under `/meter/<env>/`, the values that are not secret from a
+      committed map per environment, the secret ones created with a placeholder and never managed
+- [ ] Every task definition reads its settings through `secrets` with `valueFrom`, and the
+      execution role reads only its own environment's path
+- [ ] A test holds every field of the settings model to a parameter
+
+---
+
+### TASK-P12-007: each deploy applies its own plan
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | Spec section 5.5, ISS-260 |
+| Delivers | FEAT-080 |
+| Depends on | Nothing |
+| Estimate | S |
+
+**Acceptance criteria.**
+
+- [ ] One plan file per environment, and each deploy job needs its own environment's plan job
+- [ ] A test reads `.gitlab-ci.yml` and fails if two jobs share a plan path or a deploy needs a
+      job that publishes no plan
+
+---
+
+### TASK-P12-008: the first account, a runbook and a first contact
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | Spec section 5.6, ISS-002, ISS-122, ISS-111, ISS-179 |
+| Delivers | FEAT-079 |
+| Depends on | TASK-P12-002 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [ ] `docs/runbooks/first-account.md`: the owner's steps in order, each with its check
+- [ ] `make first-contact` makes each AWS adapter's cheapest read once and reports each answered
+      or failed, typed; it refuses without credentials
+- [ ] A test runs it over stubbed clients, one answering, one refusing, and with no credentials
+
+---
+
+### TASK-P12-009: proof and documents
+
+| Field | Value |
+| --- | --- |
+| Status | Not started |
+| Implements | Spec section 13 |
+| Delivers | The exit criteria, measured, and the record |
+| Depends on | TASK-P12-001 to TASK-P12-008 |
+| Estimate | S |
+
+**Acceptance criteria.**
+
+- [ ] Every exit criterion in spec section 13 met, each with its evidence
+- [ ] FEAT-079 and FEAT-080 say what was built; ISS-182, ISS-250 and ISS-260 closed or updated;
+      the register, `project_map.md` and the checkpoint updated, and `make check-docs` clean
