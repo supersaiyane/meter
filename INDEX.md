@@ -89,7 +89,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-80 features across 13 sub projects. 11 specified, 3 planned, 15 in build, 51 delivered.
+80 features across 13 sub projects. 11 specified, 3 planned, 13 in build, 53 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -155,8 +155,8 @@ block is caught by `make check-docs`. See
 
 | ID | Feature | Status | Detail |
 | --- | --- | --- | --- |
-| [FEAT-079](docs/features/FEAT-079-ingest-that-runs.md) | Ingest that runs, one composition and the dispatcher and worker processes | In build | [P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.1 to 5.3 and 5.6, [P12 plan](docs/plans/P12-implementation-plan.md) |
-| [FEAT-080](docs/features/FEAT-080-deployed-settings.md) | Deployed settings from SSM Parameter Store, and a pipeline that applies its own plan | In build | [P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.4 and 5.5, [P12 plan](docs/plans/P12-implementation-plan.md) |
+| [FEAT-079](docs/features/FEAT-079-ingest-that-runs.md) | Ingest that runs, one composition and the dispatcher and worker processes | Delivered | [P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.1 to 5.3 and 5.6, [P12 plan](docs/plans/P12-implementation-plan.md) |
+| [FEAT-080](docs/features/FEAT-080-deployed-settings.md) | Deployed settings from SSM Parameter Store, and a pipeline that applies its own plan | Delivered | [P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.4 and 5.5, [P12 plan](docs/plans/P12-implementation-plan.md) |
 
 ### P3 Utilization and Rightsizing
 
@@ -465,6 +465,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0165 | 2026-10-12 | Feature | TASK-P12-006, deployed settings in SSM Parameter Store | `pending` | infra/terraform/hub/settings.tf makes one SSM parameter per setting under /meter/<env>/: 13 the stack derives, 79 from a committed map per environment and 1 SecureString made with a placeholder the settings refuse, of 93 (measured). The api, worker and dispatcher read them through secrets, the execution role only its own path; an empty setting is an empty environment value. A test holds them to the settings model. Closes ISS-250 and fixes ISS-277 and ISS-278; opens ISS-279 and ISS-280 |
 | CHG-0166 | 2026-10-12 | Feature | TASK-P12-007, each deploy applies its own plan | `pending` | terraform-plan:dev and terraform-plan:prod each write tfplan-<env>, and each deploy needs and applies its own, ISS-260. Every AWS job assumes its role from the OIDC token file, which the images can do and aws sts in them could not, ISS-281. The deploy waits through wait_for_steady_state on the api, web and worker services rather than a CLI its image lacks, ISS-282. The migrate job calls the script where it is. Opened ISS-283, deployed migrations cannot run, and ISS-284, the provenance image may have no shell |
 | CHG-0167 | 2026-10-12 | Feature | TASK-P12-008, the first account, a runbook and a first contact | `pending` | scripts/ops/first_contact.py, make first-contact: each of 19 AWS reads the collectors depend on, once, against one account and Region, through the deployed composition's own paths, with the settings read from SSM; each reported answered, typed as a collector's failure would be, or not tried naming the empty setting. It refuses without credentials and writes nothing. docs/runbooks/first-account.md orders the owner's steps with a check each and names the three issues that stop a deployment first |
+| CHG-0168 | 2026-10-12 | Feature | TASK-P12-009, P12 proven and delivered | `pending` | The spec's four exit criteria, each with its evidence in the plan. tests/scripts/test_p12_exit_criteria.py runs every collector the demo schedule dispatches through the local stack's entry points and finds each recorded, succeeded or typed, in 68 seconds (measured). P12, FEAT-079 and FEAT-080 delivered; a first deployment waits on ISS-279, ISS-280 and ISS-283 |
 
 <!-- generated:changes end -->
 

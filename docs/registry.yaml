@@ -109,9 +109,11 @@ subprojects:
   depends_on: P3
 - id: P12
   name: Deployment readiness
-  status: Approved by the owner on 2026-10-12 with OPEN-28 and OPEN-29 answered, in build. One composition of
-    every scheduled collector, fake or AWS by a setting, a dispatcher and a worker that run, deployed settings
-    in SSM Parameter Store, a pipeline that applies its own plan, and the owner's steps for the first account
+  status: 'Delivered on 2026-10-12 against fakes and stubbed AWS clients, proven by TASK-P12-009. Every
+    collector the worker runs is composed for a deployment and the local stack and runs end to end on the
+    local stack; every setting reaches a deployed task from SSM Parameter Store; each deploy applies its own
+    plan; and make first-contact proves the first account. A first deployment waits on three owner decisions,
+    ISS-279, ISS-280 and ISS-283, and a real account on ISS-002'
   spec: specs/2026-10-12-p12-deployment-readiness-design.md
   plan: plans/P12-implementation-plan.md
   depends_on: P11
@@ -593,13 +595,13 @@ features:
 - id: FEAT-079
   name: Ingest that runs, one composition and the dispatcher and worker processes
   subproject: P12
-  status: In build
+  status: Delivered
   detail: '[P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.1 to 5.3 and 5.6, [P12 plan](docs/plans/P12-implementation-plan.md)'
   doc: docs/features/FEAT-079-ingest-that-runs.md
 - id: FEAT-080
   name: Deployed settings from SSM Parameter Store, and a pipeline that applies its own plan
   subproject: P12
-  status: In build
+  status: Delivered
   detail: '[P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.4 and 5.5, [P12 plan](docs/plans/P12-implementation-plan.md)'
   doc: docs/features/FEAT-080-deployed-settings.md
 adrs:
@@ -2403,6 +2405,15 @@ changes:
     SSM; each reported answered, typed as a collector''s failure would be, or not tried naming the empty
     setting. It refuses without credentials and writes nothing. docs/runbooks/first-account.md orders the
     owner''s steps with a check each and names the three issues that stop a deployment first'
+- id: CHG-0168
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-009, P12 proven and delivered
+  commit: pending
+  detail: 'The spec''s four exit criteria, each with its evidence in the plan. tests/scripts/test_p12_exit_criteria.py
+    runs every collector the demo schedule dispatches through the local stack''s entry points and finds each
+    recorded, succeeded or typed, in 68 seconds (measured). P12, FEAT-079 and FEAT-080 delivered; a first
+    deployment waits on ISS-279, ISS-280 and ISS-283'
 issues:
 - id: ISS-189
   severity: LOW

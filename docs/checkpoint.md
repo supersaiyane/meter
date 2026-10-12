@@ -87,39 +87,28 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-12 | TASK-P12-006, deployed settings in SSM Parameter Store, CHG-0165 | Done | settings.tf: one parameter per setting under /meter/<env>/, 13 derived, 79 from envs/<env>.tfvars, 1 SecureString placeholder the model refuses; api, worker and dispatcher read them through secrets; execution role scoped to its path. Fixed ISS-277 (dispatcher command) and ISS-278 (RDS secret key, now PGPASSWORD); opened ISS-279 (rotation) and ISS-280 (no prod identity provider) | infra/terraform/hub/settings.tf:18, tests/scripts/test_deployed_settings.py:70, docs/plans/P12-implementation-plan.md TASK-P12-007 |
 | 2026-10-12 | TASK-P12-007, each deploy applies its own plan, CHG-0166 | Done | .gitlab-ci.yml: terraform-plan:dev and :prod write tfplan-<env>, each deploy needs and applies its own (ISS-260); roles assumed from the OIDC token file (ISS-281); deploy waits via wait_for_steady_state (ISS-282); migrate script path. Opened ISS-283 (deployed migrations cannot run) and ISS-284 (cosign image shell) | .gitlab-ci.yml:430, tests/scripts/test_pipeline.py:130, docs/plans/P12-implementation-plan.md TASK-P12-008 |
 | 2026-10-12 | TASK-P12-008, the first account, a runbook and a first contact, CHG-0167 | Done | scripts/ops/first_contact.py and make first-contact: 19 AWS reads once each through the deployed paths, settings from SSM, typed outcomes, refuses without credentials; docs/runbooks/first-account.md with a check per step and the blockers ISS-279, ISS-280, ISS-283 | scripts/ops/first_contact.py:240, tests/scripts/test_first_contact.py:90, docs/plans/P12-implementation-plan.md TASK-P12-009 |
+| 2026-10-12 | TASK-P12-009, P12 proven and delivered, CHG-0168 | Done | The four exit criteria, each with evidence in the plan; tests/scripts/test_p12_exit_criteria.py runs every dispatched collector end to end on the local stack, 68 s (measured). P12, FEAT-079 and FEAT-080 delivered. Waiting on the owner: ISS-279, ISS-280, ISS-283 | docs/plans/P12-implementation-plan.md TASK-P12-009, tests/scripts/test_p12_exit_criteria.py:80, docs/registry.yaml ISS-085 |
 
 ## Next action
 
-**Priorities 1 and 2 of `next-in-scope.txt` are delivered on `next-build`, and priority 3, P9, is in
-build.** P10 was delivered on 2026-10-08 against fakes. P9 continues from TASK-P9-004, each task on its
-own branch merged into `next-build`, which merges into main at the end. TASK-P9-001 gave the hub a
-path to every AWS API it calls, ADR-0035, and closed ISS-242.
+**P12, deployment readiness, is delivered on `next-build`**, 2026-10-12, against the fakes and stubbed
+AWS clients. Every collector is composed and runs end to end on the local stack, every setting reaches a
+deployed task from SSM, each deploy applies its own plan, and `make first-contact` proves the first
+account. Merge `next-build` into main when the owner asks.
+
+**Three owner decisions stand between this and a first deployment**, each recorded with its options:
+ISS-280, an identity provider a deployed environment can use; ISS-283, how a deployment runs its
+migrations; ISS-279, how the tasks follow the database password's rotation. ISS-002, a real account,
+is still the single thing that would close the most, and `docs/runbooks/first-account.md` is its order.
 
 **Pushing needs a remote first.** The repository has none. Once one exists, a push to main runs
-`deploy:dev`, a `terraform apply`, on its own, and ISS-250 still stands: the hub's task
-definition does not pass the settings the API needs. ISS-260 says the deploy jobs may also pick
-the wrong plan, or none, by reading alone.
+`deploy:dev`, a `terraform apply`, on its own.
 
-The candidates, in the order they would pay:
+Next, in the order the owner set on 2026-10-12:
 
-1. **ISS-002, a real account.** Still the single thing that would close the most. Every adapter
-   here, P7's Bedrock adapter and P10's invoice reader included, has been checked against
-   published shapes and never against a call, and the network path of ADR-0035 has been
-   validated and never applied. OPEN-10 has to name a model before the assistant answers
-   anything. The first thing to confirm there is that `bedrock:InferenceProfileArn` is set for an
-   application profile, because the assistant's grant depends on it.
-2. **The P7 decisions waiting on the owner.** OPEN-14, how long a person's questions are kept
-   and whether erasure deletes or tombstones them, after which ISS-226 is a small change, and
-   which also decides whether envelopes are stored, ISS-232. OPEN-13, the code host, after
-   which FEAT-040 is one adapter, and a change history collector for FEAT-039, ISS-227.
-3. **ISS-224, reading ECS.** FEAT-037 is built and produces nothing against AWS, because the
-   container adapter discovers clusters through EKS's Container Insights metrics only.
-4. **ISS-221, the make seed half.** On the first of a month the seeded estate is a month thinner
-   than the collectors need, and what `make seed` should do that day is a decision.
-5. **ISS-239, the protocols the ports test never reaches.** Grouping them, or widening
-   `tests/core/test_ports.py` to every protocol in `finops_core/ports/`, puts the failure
-   contract on all of them. `TopologySource.read_slice` and `QueryParser` name no typed cause,
-   so each needs its causes written down, or an exemption that says why, first.
+1. **The security and correctness highs.** ISS-085 and ISS-136, then the erasure gaps ISS-226,
+   ISS-249, ISS-255 and ISS-256.
+2. **The next proposal in `next-in-scope.txt`.**
 
 ### Where the project is, as of 2026-10-05
 
