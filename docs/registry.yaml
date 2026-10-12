@@ -637,7 +637,7 @@ features:
 - id: FEAT-085
   name: The AI spend screen, cost per token, per request and per feature
   subproject: P13
-  status: Specified
+  status: In build
   detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) sections 5.7 and 8, [P13 plan](docs/plans/P13-implementation-plan.md)'
   doc: docs/features/FEAT-085-ai-spend-screen.md
 adrs:
@@ -2526,6 +2526,12 @@ changes:
   what: TASK-P13-006, GPU utilization from the CloudWatch agent's NVIDIA metrics
   commit: pending
   detail: 'Migration 0052 creates gpu_utilization_daily, an instance''s accelerators'' average, peak and readings per day, constrained to percentages and at least one reading, and installs the gpu_utilization cadence for existing tenants. accelerated_instance_type reads the p, g, gr, trn, inf and dl families from a usage type, SageMaker''s ml. form among them. The GpuMetrics port and finops_providers/aws/gpu_metrics.py, which lists each instance''s nvidia_smi_utilization_gpu metrics before reading three statistics of each. The collector asks only about the accelerated instances the bill names in the account and Region, so an instance nobody paid for is never asked about and no new permission is needed; one that publishes nothing has no row, read as not published. METER_GPU_METRICS_NAMESPACE names the agent''s namespace, CWAgent by default. The fake bill carries two GPU instances, one publishing and one not'
+- id: CHG-0179
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P13-007, the AI endpoints, spend, callers and the GPU fleet
+  commit: pending
+  detail: 'GET /ai/spend groups the bill''s AI lines by provider, model, token type, feature or caller, every figure with its basis: cost measured; tokens measured where the bill line counts them and modelled from the provider''s usage report where it does not; a cost per request modelled always. GET /ai/callers prices each caller''s tokens at the bill''s unit cost for the same source, account, model, token type and day, modelled, None where nothing priced them. GET /ai/gpu lists each GPU instance the bill names with hours, cost and published, partly published or not published. finops_query/ai.py holds the arithmetic and model_key, which matches a log''s model identifier to the bill''s name; a usage source is matched to its bill through the connected providers, so neither package names a vendor, ADR-0028. ai_usage_daily and gpu_utilization_daily are scoped by account and ai_provider_account payer wide, so a provider''s spend is visible at global scope only'
 issues:
 - id: ISS-189
   severity: LOW

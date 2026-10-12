@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 38 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 52 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 259 | test_*.py under tests/ |
-| Test functions | 3119 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 261 | test_*.py under tests/ |
+| Test functions | 3144 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1431,6 +1431,9 @@ meter/
 │   │   │                      and GET /catalog/instance-types: the catalog as stored,
 │   │   │                      each row with its version and as_of, coverage in Regions.
 │   │   │                      waste.py adds GET /waste/recommendations/{id}/alternatives
+│   │   ├── ai.py              FEAT-081 to 085, TASK-P13-007. GET /ai/spend, grouped by
+│   │   │                      provider, model, token type, feature or caller; GET
+│   │   │                      /ai/callers; GET /ai/gpu. Every figure with its basis
 │   │   ├── ledger.py          FEAT-078, TASK-P11-008. GET /savings/ledger, teams by
 │   │   │                      the saving held, and GET /savings/ledger/credits
 │   │   ├── reconciliation.py  FEAT-076's GET /cost/reconciliation: each invoice
@@ -1517,6 +1520,8 @@ meter/
 │       │                      description of the schema, and the drift test is
 │       │                      what stops the two disagreeing
 │       └── repositories/      the only path to a scoped table, audited on read.
+│                              ai.py holds P13's: the bill's AI and GPU lines, AI
+│                              usage, GPU utilization and the connected providers.
 │                              latest_audit_only confines a read to the newest
 │                              audit of each thing, per table, because every
 │                              audit table is keyed on the day and a list that
@@ -1767,6 +1772,10 @@ meter/
 │   │                          Imports nothing of Meter's, a contract in pyproject
 │   └── relay.py               the allow list, the codec, the handler
 ├── finops_query/              IN BUILD  P2 query cost governance, P3 waste, P4 graph
+│   ├── ai.py                  FEAT-081 to 085, TASK-P13-007. AI spend's arithmetic: a
+│   │                          model named in a log matched to the bill's name, tokens
+│   │                          measured from the bill or modelled from a usage report,
+│   │                          a caller's cost at the bill's unit cost, the GPU fleet
 │   ├── forecast.py            FEAT-066, TASK-P8-008. A weekday profile forecast of
 │   │                          this month and the next three, each a range from its
 │   │                          own backtest or the sentence saying why it is

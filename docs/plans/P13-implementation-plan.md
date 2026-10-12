@@ -232,7 +232,7 @@ setting; a fake bill with two GPU instances, one publishing and one not; and bot
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec sections 5.5, 5.7 and 8 |
 | Delivers | FEAT-081, FEAT-082, FEAT-084 |
 | Depends on | TASK-P13-002 to TASK-P13-006 |
@@ -240,11 +240,22 @@ setting; a fake bill with two GPU instances, one publishing and one not; and bot
 
 **Acceptance criteria.**
 
-- [ ] `GET /v1/ai/spend`, `GET /v1/ai/callers` and `GET /v1/ai/gpu`, each through the scope
+- [x] `GET /v1/ai/spend`, `GET /v1/ai/callers` and `GET /v1/ai/gpu`, each through the scope
       dependency and the repository guard, each figure with its basis and both timestamps
-- [ ] A provider row is visible at global scope only, held by a test
-- [ ] Cost per thousand tokens and per request are measured where cost and count come from the
+- [x] A provider row is visible at global scope only, held by a test
+- [x] Cost per thousand tokens and per request are measured where cost and count come from the
       same rows and modelled where they do not
+
+**Delivered 2026-10-13.** `finops_query/ai.py`, pure: spend grouped five ways, tokens measured from
+the bill where its line counts them and modelled from the provider's usage report where it does
+not, each line's share of a shared count split by cost so a count is never doubled; a caller's
+cost at the bill's unit cost for the same source, account, model, token type and day; and the GPU
+fleet. `model_key` matches a log's model identifier to the bill's usage type name. A usage source
+is matched to its bill through the connected providers, so nothing in the query or the API names a
+vendor, ADR-0028. `finops_api/db/repositories/ai.py`, every read scoped and audited, with
+`ai_usage_daily` and `gpu_utilization_daily` scoped by account and `ai_provider_account` payer
+wide; `finops_api/routes/ai.py`, three routes, each exportable. A narrowed reader sees the bill's
+AI lines for its accounts and nothing of a provider's, which no grant names.
 
 ---
 

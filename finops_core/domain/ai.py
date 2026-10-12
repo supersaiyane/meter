@@ -93,7 +93,10 @@ class AiUsage(Fact):
 #: An accelerated instance type: the p and g families of GPUs, gr for graphics, trn and inf for
 #: AWS's own training and inference chips, and dl for Gaudi, P13 spec section 5.6. Read from the
 #: type's family, so a size AWS adds next year is still recognised, `p5e.48xlarge` as `p4d`.
-_ACCELERATED: Final = re.compile(r"(?:ml\.)?((?:p|g|gr|trn|inf|dl)\d+[a-z]*\.[0-9a-z]+)")
+ACCELERATED_FAMILIES: Final = ("p", "g", "gr", "trn", "inf", "dl")
+_ACCELERATED: Final = re.compile(
+    r"(?:ml\.)?((?:" + "|".join(ACCELERATED_FAMILIES) + r")\d+[a-z]*\.[0-9a-z]+)"
+)
 
 
 def accelerated_instance_type(usage_type: str | None) -> str | None:

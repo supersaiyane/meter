@@ -22,8 +22,8 @@ did any work. Utilization is the number that says whether the spend bought anyth
 
 ## How it works
 
-Built so far: the utilization, TASK-P13-006. Hours and cost from the bill, and the endpoint, follow
-in TASK-P13-007.
+Built so far: the utilization, TASK-P13-006, and `GET /ai/gpu`, TASK-P13-007: each GPU instance the
+bill names with its hours and cost, and published, partly published or not published.
 
 Hours and cost are a query over `cost_focus_daily` for usage types naming a `p`, `g`, `trn`, `inf`
 or `dl` instance type. The `gpu_utilization` collector reads `nvidia_smi_utilization_gpu` for each
