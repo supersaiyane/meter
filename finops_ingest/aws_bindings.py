@@ -17,10 +17,9 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any, Final
 
-from sqlalchemy import text
-
-from finops_core.domain.account import AccountKey, AccountStatus, Provider
+from finops_core.domain.account import AccountKey
 from finops_core.errors import Misconfigured, SchemaDrift
+from finops_ingest.accounts import active_accounts
 from finops_ingest.collectors.account_health import AccountHealthCollector
 from finops_ingest.collectors.budgets import BudgetCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
@@ -73,13 +72,6 @@ from finops_query.parser import GrafanaQueryParser
 from finops_query.severity import severity_for, thresholds_from
 
 Build = Callable[[CollectorContext], CollectorRunner]
-
-#: The tenant's accounts the inventory reads, every Region of each and its global slice.
-ENROLLED: Final = (
-    "SELECT account_id FROM cloud_account"
-    " WHERE tenant_id = :tenant AND provider = :provider AND status = :status"
-    " ORDER BY account_id"
-)
 
 #: The collectors that cannot be built for AWS in this release, and why.
 UNBUILT: Final[dict[str, str]] = {
@@ -134,18 +126,10 @@ def _assumed(context: CollectorContext, collector: str) -> Any:
 
 def enrolled(context: CollectorContext) -> tuple[tuple[AccountKey, str | None], ...]:
     """The tenant's active accounts, each in every configured Region and globally."""
-    rows = context.connection.execute(
-        text(ENROLLED),
-        {
-            "tenant": context.unit.tenant_id,
-            "provider": Provider.AWS.value,
-            "status": AccountStatus.ACTIVE.value,
-        },
-    ).scalars()
     regions: tuple[str | None, ...] = (*context.settings.region_list, None)
     return tuple(
-        (AccountKey(provider=Provider.AWS, account_id=account_id), region)
-        for account_id in rows
+        (account, region)
+        for account in active_accounts(context.connection, context.unit.tenant_id)
         for region in regions
     )
 

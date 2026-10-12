@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 33 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 45 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 236 | test_*.py under tests/ |
-| Test functions | 2970 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 241 | test_*.py under tests/ |
+| Test functions | 2986 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -403,6 +403,8 @@ meter/
 ├── finops_core/               IN BUILD  domain and ports. No boto3, no framework
 │   ├── errors.py              the six typed failure causes, closed set, no catch all
 │   ├── config.py              every METER_ variable, typed. No defaults except flags.
+│   ├── flags.py               flag resolution, tenant then environment then declared,
+│   │                          ADR-0017. Moved from finops_api in TASK-P12-004
 │   │                          Six are the assistant's: the model id, empty until
 │   │                          OPEN-10 names one, the inference profile ARN the hub
 │   │                          stack sets so a call is tagged, ISS-230, the input
@@ -1046,6 +1048,8 @@ meter/
 │   │                          builds, each from its fake on a clock it is handed,
 │   │                          for the local stack's own entry points, never a
 │   │                          deployment. fake_registry(clock)
+│   ├── dispatcher.py          TASK-P12-004. python -m finops_fakes.dispatcher, the
+│   ├── worker.py              local stack's processes on the fake composition
 │                              No network and no clock, enforced by a test that walks
 │                              the syntax tree refusing any name that reads like one
 │   ├── cur.py             the estate's bill. One line per estate resource, so a
@@ -1148,7 +1152,13 @@ meter/
 │   │                          if it did not take, and records nothing when it
 │   │                          does, because a change row claims the estate
 │   │                          changed and stayed changed
-│   ├── worker.py              one transaction per unit. Only the six are caught
+│   ├── worker.py              one transaction per unit. Only the six are caught.
+│   │                          python -m finops_ingest.worker, TASK-P12-004
+│   ├── processes.py           TASK-P12-004. The dispatcher, one shot with windows
+│   │                          aligned to the cadence, and the worker loop, settling
+│   │                          what it ran and stopping between units on SIGTERM
+│   ├── accounts.py            a tenant's active accounts, one query for the
+│   │                          dispatcher and the inventory binder
 │   └── collectors/
 │       ├── container_usage.py  FEAT-036, account scoped so one cluster that
 │       │                      cannot be read records a typed failure against
@@ -1312,7 +1322,8 @@ meter/
 │                              names. It also pins which declared errors fall
 │                              through to SchemaDrift, which is ISS-215
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
-│   ├── flags.py               flag resolution, tenant then environment then declared
+│   ├── flags.py               re-exports finops_core.flags, where the resolver moved
+│   │                          in TASK-P12-004 so the dispatcher shares it
 │   ├── main.py                app factory. Refuses to start on a bare route
 │   ├── deps.py                the first scope point. Scope comes from the resolver
 │   ├── middleware.py          request id on every line and back on the response

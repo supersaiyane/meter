@@ -87,6 +87,7 @@ COPY finops_ingest/     ./finops_ingest/
 COPY finops_api/        ./finops_api/
 COPY finops_mcp/        ./finops_mcp/
 COPY finops_query/      ./finops_query/
+COPY finops_relay/      ./finops_relay/
 # Operational tooling that is run by a person against a live database, so it has
 # to exist in the image that person runs it in. erase_principal.py, the erasure
 # procedure docs/09-DATA-CLASSIFICATION.md commits to, was not in any image

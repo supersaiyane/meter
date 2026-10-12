@@ -102,6 +102,20 @@ def test_one_dispatch_never_sends_the_same_unit_twice(queue: SimpleNamespace) ->
     assert waiting(queue, queue.url) == 2
 
 
+def test_two_tenants_with_the_same_unit_are_both_sent(queue: SimpleNamespace) -> None:
+    other = WorkUnit(
+        tenant_id=UUID("6f1c2b0e-0000-4000-8000-000000000002"),
+        collector=ORGANIZATION.collector,
+        window_start=START,
+        window_end=END,
+    )
+    assert other.dedup_key == ORGANIZATION.dedup_key, "the ledger's key holds no tenant"
+    publisher = SqsPublisher(queue.client, queue.url)
+    assert publisher.publish(ORGANIZATION)
+    assert publisher.publish(other), "ISS-275: refused as a duplicate of another tenant's"
+    assert waiting(queue, queue.url) == 2
+
+
 def test_a_settled_delivery_is_deleted(queue: SimpleNamespace) -> None:
     SqsPublisher(queue.client, queue.url).publish(ACCOUNT)
     reader = consumer(queue)

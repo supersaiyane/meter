@@ -83,6 +83,7 @@ COPY finops_ingest/     ./finops_ingest/
 COPY finops_api/        ./finops_api/
 COPY finops_mcp/        ./finops_mcp/
 COPY finops_query/      ./finops_query/
+COPY finops_relay/      ./finops_relay/
 COPY alembic.ini       ./
 COPY migrations/       ./migrations/
 

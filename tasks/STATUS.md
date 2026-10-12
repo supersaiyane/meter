@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 80 total, 11 specified, 14 in build, 51 delivered |
 | Decisions | 35 architecture decision records |
-| Changes | 162 recorded |
-| Issues | 162 fixed, 108 open, 0 parked |
+| Changes | 163 recorded |
+| Issues | 165 fixed, 107 open, 0 parked |
 | Open questions | 30 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -95,7 +95,9 @@ OPEN-28 was amended to need no setting, ADR-0022. TASK-P12-002 built 17 collecto
 added the relay and Config aggregator settings, and left four failing typed, ISS-240 and ISS-272; it found
 ISS-273, a role the worker cannot assume never reaching the account health collector. TASK-P12-003 put the
 units on SQS: a versioned message, a publisher and a consumer that leaves what it cannot decode for the
-redrive. The repository has no git remote, so nothing has been pushed.
+redrive. TASK-P12-004 made the dispatcher and the worker processes, closing ISS-182, and fixed two HIGH
+issues it found: the images lacked finops_relay, ISS-274, and a dispatch dropped every tenant after the first,
+ISS-275. The repository has no git remote, so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -271,7 +273,7 @@ ISS-003.
 | P9 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 | P11 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
-| P12 | 3 | 0 | 0 | 0 | 6 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
+| P12 | 4 | 0 | 0 | 0 | 5 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -540,6 +542,7 @@ ISS-003.
 | `TASK-P12-001` | Done 2026-10-12 | the two compositions |
 | `TASK-P12-002` | Done 2026-10-12 | the AWS binders |
 | `TASK-P12-003` | Done 2026-10-12 | the queue, published and consumed |
+| `TASK-P12-004` | Done 2026-10-12 | the dispatcher and the worker as processes |
 
 <!-- generated:task-status end -->
 

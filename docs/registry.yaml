@@ -2349,6 +2349,18 @@ changes:
     in batches of ten and returns what SQS refused. A message it cannot decode is logged and left for the
     redrive, proven under moto to reach the dead letter queue intact. The dispatcher docstrings said the queue
     deduplicates within a window; the hub queue is standard, so they now say the ledger claim does'
+- id: CHG-0163
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-004, the dispatcher and the worker as processes
+  commit: pending
+  detail: 'finops_ingest/processes.py: the one shot dispatcher, windows aligned to each cadence, a failed tenant
+    logged and the rest dispatched, exit 1; the worker loop, settling DONE, SKIPPED and RECORDED_FAILURE and
+    leaving the rest for the redrive, stopping between units on SIGTERM; exit 78 on incomplete settings.
+    python -m finops_ingest.dispatcher and .worker run them on the production composition, finops_fakes
+    dispatcher and worker on the fakes. The flag resolver moved to finops_core; the worker stop timeout is 120
+    seconds. Fixed ISS-274, the images missing finops_relay, and ISS-275, publishers deduplicating across
+    tenants. ISS-182 closed'
 issues:
 - id: ISS-189
   severity: LOW
@@ -2647,13 +2659,15 @@ issues:
     and has never run end to end outside a test. Found 2026-09-18 while looking for where to
     register the cost collector, which is why TASK-P1-004 deliberately registers nothing rather
     than adding a line nobody reads. Pre existing and not caused by P1
-  status: OPEN
+  status: FIXED
   blocks: 'Running ingestion in a deployed task. Not the local stack, which seeds directly'
   detail: '`finops_ingest/registry.py`, `finops_ingest/dispatcher.py`, `finops_ingest/worker.py`
     and `scripts/demo/seed_demo.py`. Half closed 2026-10-12, TASK-P12-001: finops_ingest/composition.py
     binds every collector the worker runs for a deployment, and finops_fakes/composition.py the same from
     the fakes for the local stack; the entry points that call them follow in TASK-P12-004. TASK-P12-002 on
-    the same day built 17 of them from their AWS adapters, finops_ingest/aws_bindings.py'
+    the same day built 17 of them from their AWS adapters, finops_ingest/aws_bindings.py, and TASK-P12-004 gave
+    the dispatcher and the worker entry points, finops_ingest/processes.py. Fixed 2026-10-12; the run end to end
+    on the local stack is TASK-P12-005'
 - id: ISS-181
   severity: MEDIUM
   summary: AthenaCostExport materializes a whole billing period before returning it, so a large
@@ -4885,6 +4899,28 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-275
+  severity: HIGH
+  status: FIXED
+  summary: A dispatch refused every tenant's organization wide units after the first tenant's, as duplicates
+  detail: 'Found 2026-10-12 building TASK-P12-004, when a test that dispatched for its own tenant saw nothing
+    published half the time. WorkUnit.dedup_key is the ledger''s idempotency key, which holds no tenant because
+    the ledger is one tenant''s and ingest_run is unique on (tenant_id, idempotency_key). InMemoryPublisher, and
+    SqsPublisher after it, refused a unit whose dedup_key it had seen, so in one dispatch over several tenants
+    the second tenant''s organization wide unit, or an account unit for an account id two tenants share, was
+    dropped as a duplicate of the first''s, and that tenant would never collect it. Fixed the same day: both
+    publishers key on WorkUnit.publish_key, the tenant and the dedup key, and a test publishes the same unit for
+    two tenants'
+- id: ISS-274
+  severity: HIGH
+  status: FIXED
+  summary: The worker and API images did not carry finops_relay, so a deployed worker would fail at import
+  detail: 'Found 2026-10-12 building TASK-P12-004. docker/Dockerfile.worker and Dockerfile.api copy Meter''s packages
+    one by one and pip install the copy; finops_relay was never copied, and pip install . said nothing about a
+    package it could not find. finops_providers/aws/relay_client.py imports finops_relay, and since TASK-P12-002
+    the production composition imports relay_client, so the worker would have failed to start. Fixed the same
+    day: both images copy it, and tests/scripts/test_images.py imports every module of the packages each image
+    runs and fails when the image does not copy one of the packages that pulls in'
 - id: ISS-273
   severity: MEDIUM
   status: OPEN

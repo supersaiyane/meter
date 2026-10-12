@@ -33,8 +33,8 @@ the runtime image, so they run only in the local stack and no setting is needed.
 
 ## How it works
 
-Built so far: the two compositions, TASK-P12-001, the AWS binders, TASK-P12-002, and the queue,
-TASK-P12-003.
+Built so far: the two compositions, TASK-P12-001, the AWS binders, TASK-P12-002, the queue,
+TASK-P12-003, and the two processes, TASK-P12-004.
 
 - `finops_ingest/composition.py` declares a `Binding` per collector: its name, its scope, and a
   builder that constructs it from one unit's context. `compose` registers each binding behind a
@@ -58,6 +58,13 @@ TASK-P12-003.
   long polls up to ten, reports each unit with how often it has been received, and deletes what
   was settled. The hub's queue is a standard queue, so a unit sent twice by two dispatches, or
   delivered twice, is made free by the ledger's claim on the same key.
+- `finops_ingest/processes.py` is the two processes. The dispatcher, one shot on the hub's
+  schedule, reads each tenant's due collectors and active accounts and publishes their units,
+  each window the cadence period that ended last, so a second dispatch in the same period is a
+  skip. The worker long polls, runs each unit as the delivery it arrived as, deletes what it
+  settled and leaves the rest for the redrive. `python -m finops_ingest.dispatcher` and
+  `.worker` run them on the production composition, `python -m finops_fakes.dispatcher` and
+  `.worker` on the fakes, for the local stack.
 - `finops_fakes/composition.py` binds the same 27 collectors from the fakes, on a clock it is
   handed rather than one it reads, and hands a per account collector only the candidates of the
   unit's own account, as the demo seed does. `fake_registry(clock)` is what the local stack's
@@ -75,6 +82,12 @@ TASK-P12-003.
   its id and receive count and left on the queue, so the redrive moves it to the dead letter queue
   after the hub's three receives. A delete SQS refuses is logged and returned; the unit comes back
   and its claim makes the second run a skip.
+- A process whose settings are incomplete exits 78 before doing anything, naming each missing
+  variable. A dispatch in which a tenant failed logs it with its traceback, dispatches the other
+  tenants, and exits 1. A unit whose collector raised something unexpected is logged with its
+  traceback and left for the redrive, never deleted as done.
+- SIGTERM stops the worker between units: the unit in hand finishes its transaction, the rest
+  stay on the queue. The worker's ECS stop timeout is 120 seconds.
 - A collector missing from either composition, or bound twice, fails
   `tests/ingest/test_composition.py`, which holds both to the collectors the schedule runs in the
   worker.
@@ -100,6 +113,8 @@ TASK-P12-003.
 - `finops_ingest.aws_bindings.AWS_BUILDERS` and `UNBUILT`
 - `finops_ingest.sqs.SqsPublisher(client, queue_url)` and `SqsConsumer(client, queue_url)`, message
   version 1
+- `python -m finops_ingest.dispatcher` and `.worker`; `python -m finops_fakes.dispatcher` and
+  `.worker`, exit 0, 1 for a dispatch with a failed tenant, 78 for incomplete settings
 - Settings `relay_function_name` (`METER_RELAY_FUNCTION_NAME`) and `config_aggregator`
   (`METER_CONFIG_AGGREGATOR`), empty by default
 
@@ -112,8 +127,7 @@ TASK-P12-003.
 
 ## Status of this document
 
-In build. TASK-P12-001 built the two compositions, TASK-P12-002 the AWS binders and TASK-P12-003
-the queue on 2026-10-12; the entry points and the local stack end to end follow in TASK-P12-004
-and TASK-P12-005.
+In build. TASK-P12-001 to TASK-P12-004 built the compositions, the AWS binders, the queue and the
+two processes on 2026-10-12; the local stack end to end follows in TASK-P12-005.
 
 See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P12.
