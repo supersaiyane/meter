@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-1100 public symbols across 5 packages.
+1104 public symbols across 5 packages.
 
 ## finops_core
 
@@ -75,21 +75,21 @@ a duplicate.
 | `ReservationVsUse.cpu_efficiency` | method | `finops_core/domain/containers.py:249` | Used over requested, or None where that is not a number. | nothing in this tree |
 | `ReservationVsUse.memory_efficiency` | method | `finops_core/domain/containers.py:260` | Used over requested, or None where that is not a number. | nothing in this tree |
 | `ReservationVsUse.supports_recommendation` | method | `finops_core/domain/containers.py:265` | Whether there is enough history, and enough read, to size this workload. | nothing in this tree |
-| `CostMeasure` | class | `finops_core/domain/cost.py:31` | Which number a total is. FOCUS names these and this does not improve on them. | nothing in this tree |
-| `source_fingerprint` | function | `finops_core/domain/cost.py:50` | The identity of a line item, as a sha256 hex digest. | `finops_providers/aws/cur.py` |
-| `BillingPeriod` | class | `finops_core/domain/cost.py:100` | A billing interval, start inclusive and end exclusive. | `finops_api/routes/cost.py` |
-| `BillingPeriod.covers` | method | `finops_core/domain/cost.py:124` | Whether a day falls inside the period. | nothing in this tree |
-| `BillingPeriod.is_open` | method | `finops_core/domain/cost.py:128` | Whether charges can still land in this period at that moment. | `finops_api/routes/cost.py` |
-| `CostTotal` | class | `finops_core/domain/cost.py:145` | An aggregate of cost, which always says which measure it is. | nothing in this tree |
-| `CostRecord` | class | `finops_core/domain/cost.py:170` | A FOCUS charge row. Field names are the specification's. | `finops_providers/aws/cur.py` |
-| `CommitmentUse` | class | `finops_core/domain/cost.py:274` | What one commitment obliged us to pay, and how much of it was consumed. | `finops_providers/aws/commitment.py` |
-| `CommitmentUse.utilization` | method | `finops_core/domain/cost.py:329` | How much of what we paid for was consumed, as a fraction. | `finops_ingest/collectors/commitment.py` |
-| `CommitmentUse.is_expired` | method | `finops_core/domain/cost.py:341` |  | nothing in this tree |
-| `CommitmentCoverage` | class | `finops_core/domain/cost.py:346` | How much of the eligible estate was on a commitment, for one dimension. | `finops_providers/aws/commitment.py` |
-| `CommitmentCoverage.coverage` | method | `finops_core/domain/cost.py:393` | The covered fraction, or None where nothing was eligible. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_api/routes/quotas.py`, `finops_ingest/collectors/commitment.py` |
-| `CommitmentDay` | class | `finops_core/domain/cost.py:405` | One kind of commitment on one day: what it obliged, used and covered. TASK-P8-013. | `finops_providers/aws/commitment.py` |
-| `CommitmentDay.utilization` | method | `finops_core/domain/cost.py:451` | Used over committed, or None on a day nothing was committed. | `finops_ingest/collectors/commitment.py` |
-| `CommitmentDay.coverage` | method | `finops_core/domain/cost.py:458` | Covered over eligible, or None on a day nothing was eligible. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_api/routes/quotas.py`, `finops_ingest/collectors/commitment.py` |
+| `CostMeasure` | class | `finops_core/domain/cost.py:32` | Which number a total is. FOCUS names these and this does not improve on them. | nothing in this tree |
+| `source_fingerprint` | function | `finops_core/domain/cost.py:51` | The identity of a line item, as a sha256 hex digest. | `finops_providers/aws/cur.py` |
+| `BillingPeriod` | class | `finops_core/domain/cost.py:101` | A billing interval, start inclusive and end exclusive. | `finops_api/routes/cost.py` |
+| `BillingPeriod.covers` | method | `finops_core/domain/cost.py:125` | Whether a day falls inside the period. | nothing in this tree |
+| `BillingPeriod.is_open` | method | `finops_core/domain/cost.py:129` | Whether charges can still land in this period at that moment. | `finops_api/routes/cost.py` |
+| `CostTotal` | class | `finops_core/domain/cost.py:146` | An aggregate of cost, which always says which measure it is. | nothing in this tree |
+| `CostRecord` | class | `finops_core/domain/cost.py:179` | A FOCUS charge row. Field names are the specification's. | `finops_providers/aws/cur.py` |
+| `CommitmentUse` | class | `finops_core/domain/cost.py:301` | What one commitment obliged us to pay, and how much of it was consumed. | `finops_providers/aws/commitment.py` |
+| `CommitmentUse.utilization` | method | `finops_core/domain/cost.py:356` | How much of what we paid for was consumed, as a fraction. | `finops_ingest/collectors/commitment.py` |
+| `CommitmentUse.is_expired` | method | `finops_core/domain/cost.py:368` |  | nothing in this tree |
+| `CommitmentCoverage` | class | `finops_core/domain/cost.py:373` | How much of the eligible estate was on a commitment, for one dimension. | `finops_providers/aws/commitment.py` |
+| `CommitmentCoverage.coverage` | method | `finops_core/domain/cost.py:420` | The covered fraction, or None where nothing was eligible. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_api/routes/quotas.py`, `finops_ingest/collectors/commitment.py` |
+| `CommitmentDay` | class | `finops_core/domain/cost.py:432` | One kind of commitment on one day: what it obliged, used and covered. TASK-P8-013. | `finops_providers/aws/commitment.py` |
+| `CommitmentDay.utilization` | method | `finops_core/domain/cost.py:478` | Used over committed, or None on a day nothing was committed. | `finops_ingest/collectors/commitment.py` |
+| `CommitmentDay.coverage` | method | `finops_core/domain/cost.py:485` | Covered over eligible, or None on a day nothing was eligible. | `finops_api/routes/ingest.py`, `finops_api/routes/query.py`, `finops_api/routes/quotas.py`, `finops_ingest/collectors/commitment.py` |
 | `PeriodError` | class | `finops_core/domain/explore.py:38` | A period that cannot be drawn, carrying the sentence that says why. | nothing in this tree |
 | `Window` | class | `finops_core/domain/explore.py:43` | A run of days, inclusive at both ends. | `finops_ingest/collectors/realized_savings.py` |
 | `Window.days` | method | `finops_core/domain/explore.py:50` | How many days the window holds, both ends counted. | nothing in this tree |
@@ -341,6 +341,10 @@ a duplicate.
 | `AwsServiceCatalogue.applications` | method | `finops_providers/aws/appregistry.py:66` |  | `finops_ingest/collectors/ownership.py`, `finops_providers/aws/reach.py` |
 | `BedrockModel` | class | `finops_providers/aws/bedrock.py:105` | An `LlmProvider` over Converse, for the one model this deployment names. | `finops_providers/aws/language_model.py` |
 | `BedrockModel.complete` | method | `finops_providers/aws/bedrock.py:125` | One Converse call. | `finops_api/exports/scheduled.py`, `finops_ingest/worker.py` |
+| `TokenLine` | class | `finops_providers/aws/bedrock_usage.py:57` | The model and token type one usage type names. Never partial: both, or no line. | nothing in this tree |
+| `is_bedrock` | function | `finops_providers/aws/bedrock_usage.py:64` | Whether a row is Bedrock's, by the service name every Bedrock line carries. | nothing in this tree |
+| `parse_usage_type` | function | `finops_providers/aws/bedrock_usage.py:74` | The model and token type a Bedrock usage type names, or None when it names neither. | `finops_providers/aws/cur.py` |
+| `tokens_from` | function | `finops_providers/aws/bedrock_usage.py:99` | A token count from a consumed quantity and its unit, or None without a quantity. | `finops_providers/aws/cur.py` |
 | `scope_of` | function | `finops_providers/aws/budgets.py:51` | What a budget is drawn around, and what it names. | `finops_ingest/composition.py` |
 | `AwsBudgets` | class | `finops_providers/aws/budgets.py:76` | The payer's budgets, read and never written. | `finops_ingest/aws_bindings.py` |
 | `AwsBudgets.budgets` | method | `finops_providers/aws/budgets.py:85` |  | `finops_ingest/collectors/budgets.py` |
@@ -371,10 +375,10 @@ a duplicate.
 | `AwsCredentialBroker` | class | `finops_providers/aws/credentials.py:53` | Produces a scoped session for a target account, and caches it sensibly. | `finops_ingest/aws_bindings.py`, `finops_providers/aws/reach.py` |
 | `AwsCredentialBroker.external_id` | method | `finops_providers/aws/credentials.py:72` | Read the ExternalId once. Never logged, never put in an error detail. | nothing in this tree |
 | `AwsCredentialBroker.session_for` | method | `finops_providers/aws/credentials.py:89` |  | `finops_ingest/worker.py`, `finops_providers/aws/health.py`, `finops_providers/aws/reach.py` |
-| `AthenaCostExport` | class | `finops_providers/aws/cur.py:166` | `CostExport` over a Data Exports table. Never yet run against AWS. | `finops_ingest/aws_bindings.py` |
-| `AthenaCostExport.latest_available_period` | method | `finops_providers/aws/cur.py:197` | The newest partition the export actually holds. | `finops_ingest/collectors/cost_focus.py` |
-| `AthenaCostExport.read_period` | method | `finops_providers/aws/cur.py:211` | Every charge row in the period, or an exception. Never a short list. | `finops_ingest/collectors/cost_focus.py` |
-| `AthenaCostExport.split_cost_available` | method | `finops_providers/aws/cur.py:338` | Whether this export carries the container grain at all. | nothing in this tree |
+| `AthenaCostExport` | class | `finops_providers/aws/cur.py:180` | `CostExport` over a Data Exports table. Never yet run against AWS. | `finops_ingest/aws_bindings.py` |
+| `AthenaCostExport.latest_available_period` | method | `finops_providers/aws/cur.py:213` | The newest partition the export actually holds. | `finops_ingest/collectors/cost_focus.py` |
+| `AthenaCostExport.read_period` | method | `finops_providers/aws/cur.py:227` | Every charge row in the period, or an exception. Never a short list. | `finops_ingest/collectors/cost_focus.py` |
+| `AthenaCostExport.split_cost_available` | method | `finops_providers/aws/cur.py:360` | Whether this export carries the container grain at all. | nothing in this tree |
 | `AccountHealthCheck` | class | `finops_providers/aws/health.py:54` | Assumes the role and makes one cheap call, then names what went wrong. | `finops_ingest/aws_bindings.py` |
 | `AccountHealthCheck.check` | method | `finops_providers/aws/health.py:67` |  | `finops_api/routes/accounts.py`, `finops_ingest/collectors/account_health.py` |
 | `AwsInstanceCatalog` | class | `finops_providers/aws/instance_types.py:76` | EC2's own description of its instance types, one Region at a time. | `finops_ingest/aws_bindings.py` |
@@ -467,7 +471,7 @@ a duplicate.
 | `CommitmentActionsCollector` | class | `finops_ingest/collectors/commitment_actions.py:90` | A coverage gap, as something somebody is accountable for closing. | nothing in this tree |
 | `ContainerUsageCollector` | class | `finops_ingest/collectors/container_usage.py:171` | Clusters and reservations for one account in one region. | `finops_ingest/aws_bindings.py` |
 | `CostAnomalyCollector` | class | `finops_ingest/collectors/cost_anomaly.py:92` | Judges the most recent day of each account and service pair. | nothing in this tree |
-| `CostFocusCollector` | class | `finops_ingest/collectors/cost_focus.py:173` | Reads one billing period, writes it, and removes what was withdrawn. | `finops_ingest/aws_bindings.py` |
+| `CostFocusCollector` | class | `finops_ingest/collectors/cost_focus.py:184` | Reads one billing period, writes it, and removes what was withdrawn. | `finops_ingest/aws_bindings.py` |
 | `roll_up_period` | function | `finops_ingest/collectors/cost_rollup.py:66` | Recompute one month from its line items, and drop what is no longer there. | `finops_ingest/collectors/cost_focus.py` |
 | `roll_up_before` | function | `finops_ingest/collectors/cost_rollup.py:85` | Aggregate every month older than the boundary, ahead of dropping them. | `finops_ingest/collectors/retention.py` |
 | `DigestCollector` | class | `finops_ingest/collectors/digests.py:107` | Composes the last complete week's digests for one tenant. | `finops_ingest/composition.py` |
@@ -1180,10 +1184,10 @@ Each is an entry point, part of a public interface, or dead. Check each one, and
 - `ReservationVsUse.cpu_efficiency` in `finops_core/domain/containers.py:249`
 - `ReservationVsUse.memory_efficiency` in `finops_core/domain/containers.py:260`
 - `ReservationVsUse.supports_recommendation` in `finops_core/domain/containers.py:265`
-- `CostMeasure` in `finops_core/domain/cost.py:31`
-- `BillingPeriod.covers` in `finops_core/domain/cost.py:124`
-- `CostTotal` in `finops_core/domain/cost.py:145`
-- `CommitmentUse.is_expired` in `finops_core/domain/cost.py:341`
+- `CostMeasure` in `finops_core/domain/cost.py:32`
+- `BillingPeriod.covers` in `finops_core/domain/cost.py:125`
+- `CostTotal` in `finops_core/domain/cost.py:146`
+- `CommitmentUse.is_expired` in `finops_core/domain/cost.py:368`
 - `PeriodError` in `finops_core/domain/explore.py:38`
 - `Window.days` in `finops_core/domain/explore.py:50`
 - `Fact` in `finops_core/domain/fact.py:27`

@@ -25,6 +25,7 @@ from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from types import MappingProxyType
 
+from finops_core.domain.ai import CACHE_READ, CACHE_WRITE, INPUT, OUTPUT
 from finops_core.domain.cost import CostRecord, source_fingerprint
 from finops_core.errors import CollectionError, NoData
 from finops_fakes import containers, fixtures, prices, utilization
@@ -706,6 +707,179 @@ ESTATE: tuple[CostRecord, ...] = estate()
 #: the reason above, but nothing was ever shown to break when these rows were in.
 SPLIT_LINES: tuple[CostRecord, ...] = split_rows(ESTATE)
 
+
+#: Bedrock's half of the bill, P13, TASK-P13-002, and like the split lines **not** part of
+#: `ESTATE`: opt in with `FakeCostExport(ai=True)`, so every earlier fixture reads the bill it
+#: always read. Each feature is one account's application calling one model every day, billed
+#: per token type in the usage type form AWS documents, `<Region>-<model>-input-tokens`.
+#:
+#: `support-assistant` calls through an application inference profile, so its lines name the
+#: profile as the resource; `search-summaries` calls the model directly, so its lines name none,
+#: which is the case a feature can then only be told apart by its tag and its principal.
+@dataclass(frozen=True, kw_only=True)
+class BedrockFeature:
+    account: str
+    feature: str
+    model: str
+    profile: bool
+    #: Tokens a day by token type, before the drift every line of the estate carries.
+    tokens: Mapping[str, Decimal]
+
+
+#: USD per token by model and token type. The fake's, shaped like a price list rather than
+#: copied from one, so no figure here is mistaken for a real price.
+BEDROCK_PRICE: Mapping[str, Mapping[str, Decimal]] = MappingProxyType(
+    {
+        "ClaudeSonnet4": MappingProxyType(
+            {
+                "input-tokens": Decimal("0.000003"),
+                "output-tokens": Decimal("0.000015"),
+                "cache-read-input-token-count": Decimal("0.0000003"),
+            }
+        ),
+        "NovaPro": MappingProxyType(
+            {"input-tokens": Decimal("0.0000008"), "output-tokens": Decimal("0.0000032")}
+        ),
+    }
+)
+
+BEDROCK_FEATURES: tuple[BedrockFeature, ...] = (
+    BedrockFeature(
+        account="fake-platform-a",
+        feature="support-assistant",
+        model="ClaudeSonnet4",
+        profile=True,
+        tokens=MappingProxyType(
+            {
+                "input-tokens": Decimal("1200000"),
+                "output-tokens": Decimal("240000"),
+                "cache-read-input-token-count": Decimal("3000000"),
+            }
+        ),
+    ),
+    BedrockFeature(
+        account="fake-product-a",
+        feature="search-summaries",
+        model="NovaPro",
+        profile=False,
+        tokens=MappingProxyType(
+            {"input-tokens": Decimal("4000000"), "output-tokens": Decimal("600000")}
+        ),
+    ),
+)
+
+BEDROCK_SERVICE = "AmazonBedrock"
+#: What each usage type suffix means, as the AWS adapter reads it, written down here rather than
+#: imported so the fake estate depends on nothing but the domain.
+BEDROCK_TOKEN_TYPE: Mapping[str, str] = MappingProxyType(
+    {
+        "input-tokens": INPUT,
+        "output-tokens": OUTPUT,
+        "cache-read-input-token-count": CACHE_READ,
+        "cache-write-input-token-count": CACHE_WRITE,
+    }
+)
+#: The Region code the fake's usage types start with, for `fixtures.REGION`.
+BEDROCK_REGION_CODE = "USF1"
+
+
+def bedrock_principal(feature: BedrockFeature) -> str:
+    """The IAM principal the bill names for a feature's calls: its service's role."""
+    return f"arn:aws:iam::{feature.account}:role/{feature.feature}-service"
+
+
+def bedrock_profile(feature: BedrockFeature) -> str | None:
+    """The application inference profile a feature calls through, or None if it calls direct."""
+    if not feature.profile:
+        return None
+    return (
+        f"arn:aws:bedrock:{fixtures.REGION}:{feature.account}:"
+        f"application-inference-profile/{feature.feature}"
+    )
+
+
+def bedrock_rows(base: Iterable[CostRecord]) -> tuple[CostRecord, ...]:
+    """Every feature's token lines, on every day the given bill has a line for.
+
+    Derived from the bill being exported, as the split lines are, so the AI half always covers
+    the same days and periods as the rest of whatever bill it joins.
+    """
+    days = sorted({(row.billing_period_start, row.charge_period_start) for row in base})
+    out: list[CostRecord] = []
+    for period, start in days:
+        drift = DRIFT_CEILING + Decimal((start.date() - fixtures.AS_OF.date()).days) / DRIFT_DIVISOR
+        for feature in BEDROCK_FEATURES:
+            for suffix, daily in feature.tokens.items():
+                out.append(_bedrock_line(feature, suffix, daily * drift, period, start))
+    return tuple(out)
+
+
+def _bedrock_line(
+    feature: BedrockFeature, suffix: str, tokens: Decimal, period: date, start: datetime
+) -> CostRecord:
+    end = start + timedelta(days=1)
+    usage_type = f"{BEDROCK_REGION_CODE}-{feature.model}-{suffix}"
+    quantity = tokens.quantize(Decimal("1"))
+    effective = (quantity * BEDROCK_PRICE[feature.model][suffix]).quantize(Decimal("0.0001"))
+    resource = bedrock_profile(feature)
+    tags = dict(_tags(feature.account, BEDROCK_SERVICE))
+    tags["feature"] = feature.feature
+    return CostRecord(
+        tenant_id=fixtures.TENANT_ID,
+        ingest_run_id=fixtures.INGEST_RUN_ID,
+        source_fingerprint=source_fingerprint(
+            billing_account_id=fixtures.ACCOUNT_IDS[0],
+            sub_account_id=feature.account,
+            charge_period_start=start,
+            charge_period_end=end,
+            service_name=BEDROCK_SERVICE,
+            resource_id=resource,
+            sku_id=usage_type,
+            charge_category="Usage",
+            commitment_discount_id=None,
+        ),
+        as_of=end,
+        collected_at=fixtures.COLLECTED_AT,
+        billing_account_id=fixtures.ACCOUNT_IDS[0],
+        sub_account_id=feature.account,
+        billing_period_start=period,
+        billing_period_end=_period_end(period),
+        charge_period_start=start,
+        charge_period_end=end,
+        provider_name="Fake",
+        publisher_name="Fake",
+        invoice_issuer_name="Fake",
+        service_name=BEDROCK_SERVICE,
+        service_category="AI and Machine Learning",
+        resource_id=resource,
+        resource_name=feature.feature if resource else None,
+        region_id=fixtures.REGION,
+        availability_zone=None,
+        charge_category="Usage",
+        charge_description=f"{feature.model} {suffix}",
+        sku_id=usage_type,
+        pricing_quantity=quantity,
+        consumed_quantity=quantity,
+        consumed_unit="Tokens",
+        billed_cost=effective,
+        effective_cost=effective,
+        list_cost=effective,
+        contracted_cost=None,
+        commitment_discount_id=None,
+        commitment_discount_type=None,
+        commitment_discount_status=None,
+        tags=tags,
+        billing_account_name="Fake payer",
+        billing_currency=CURRENCY,
+        pricing_unit="Tokens",
+        x_usage_type=usage_type,
+        x_iam_principal=bedrock_principal(feature),
+        x_ai_model=feature.model,
+        x_ai_token_type=BEDROCK_TOKEN_TYPE[suffix],
+        x_ai_tokens=quantity,
+    )
+
+
 #: The line item AWS retracts when the closed period is restated, and the one
 #: it corrects. Named so a test can assert on them rather than on a position in
 #: a list that changes the moment a service is added.
@@ -750,8 +924,12 @@ class FakeCostExport:
         failure: type[CollectionError] | None = None,
         restated: bool = False,
         split: bool = False,
+        ai: bool = False,
     ) -> None:
         base = ESTATE if rows is None else rows
+        if ai:
+            # Opt in, as the split lines are, and derived from the same bill so its days match.
+            base = (*base, *bedrock_rows(base))
         if split:
             # Derived from the rows actually being exported, so the split lines always
             # re-attribute charges this bill really carries, whatever clock it was built

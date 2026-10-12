@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P13 |
-| Status | Specified |
+| Status | In build |
 | Specification | [P13 spec](../specs/2026-10-12-p13-finops-for-ai-design.md), sections 5.2, 5.3 and 5.7 |
 | Tasks | TASK-P13-002 and TASK-P13-007 |
 | Decisions | OPEN-34 |
@@ -24,9 +24,14 @@ the fields that would give one.
 
 ## How it works
 
+Built so far: the columns, TASK-P13-002. The endpoint and the screen follow in TASK-P13-007 and
+TASK-P13-008.
+
 `finops_providers/aws/cur.py` asks the export's catalog for `x_usagetype` and
 `line_item_iam_principal` the way it asks for the split cost columns, and reads them where they
-exist. A pure parser in `finops_core` reads the model and token type from the usage type's suffix.
+exist. A pure parser beside it, `finops_providers/aws/bedrock_usage.py`, reads the model and token
+type from the usage type's suffix; it is AWS's knowledge, and ADR-0028 keeps vendors out of
+`finops_core`.
 The cost collector writes them to five nullable `x_` columns of `cost_focus_daily`, beside a Meter
 column `ingest_source` that keeps each source's restatement to its own rows.
 

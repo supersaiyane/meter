@@ -72,7 +72,7 @@ ISS-002.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-12 |
 | Implements | Spec sections 5.2 and 5.3, OPEN-34 |
 | Delivers | FEAT-081 |
 | Depends on | Nothing |
@@ -80,14 +80,25 @@ ISS-002.
 
 **Acceptance criteria.**
 
-- [ ] A migration adds `ingest_source` and the five `x_` columns to `cost_focus_daily`, with their
+- [x] A migration adds `ingest_source` and the five `x_` columns to `cost_focus_daily`, with their
       constraints, additive only
-- [ ] A pure usage type parser in `finops_core` reads model and token type from every Bedrock
+- [x] A pure usage type parser reads model and token type from every Bedrock
       suffix AWS documents, and returns nothing for a usage type it does not recognise
-- [ ] `cur.py` reads `x_usagetype` and `line_item_iam_principal` where the catalog has them, and an
+- [x] `cur.py` reads `x_usagetype` and `line_item_iam_principal` where the catalog has them, and an
       export without them is read with the SQL it always was
-- [ ] The cost collector writes the new columns and its restatement delete keys on `aws_export`
-- [ ] The fake export carries Bedrock token line items
+- [x] The cost collector writes the new columns and its restatement delete keys on `aws_export`
+- [x] The fake export carries Bedrock token line items
+
+**Delivered 2026-10-12.** Migration `0047_cost_ai_columns`; the parser in
+`finops_providers/aws/bedrock_usage.py`, applied by the export as it reads a row, and not in
+`finops_core`, because ADR-0028's test keeps every vendor's name out of that package; the token
+types alone are in `finops_core/domain/ai.py`; `AI_COLUMNS` in
+`finops_providers/aws/cur.py`; and the cost collector's restatement keyed on `ingest_source`, with a
+row from another source refused. The fake export's two Bedrock features are opt in, `ai=True`, so no
+earlier figure moves; the demo and the local stack take them in TASK-P13-009, with the journeys.
+Tests: `tests/core/test_ai.py`, `TestAiColumns` in `tests/providers/aws/test_cur.py`, and
+`tests/ingest/collectors/test_cost_focus_sources.py`, which proves a provider's row survives the
+bill's restatement and the table refuses each broken combination of the token columns.
 
 ---
 

@@ -340,6 +340,9 @@ CREATE TABLE cost_focus_daily (
     source_fingerprint          TEXT           NOT NULL,
     as_of                       TIMESTAMPTZ    NOT NULL,
     collected_at                TIMESTAMPTZ    NOT NULL,
+    -- Which collector wrote the row, P13 and migration 0047. Each restates only its own.
+    ingest_source               TEXT           NOT NULL DEFAULT 'aws_export'
+        CHECK (ingest_source IN ('aws_export', 'openai', 'anthropic')),
 
     -- Split cost allocation, FEAT-035. Meter columns and not FOCUS ones: FOCUS 1.1
     -- has no column for a pod, so these are the vendor extension that carries one.
@@ -401,6 +404,21 @@ CREATE TABLE cost_focus_daily (
     invoice_id                  TEXT,
     invoice_detail_id           TEXT,
 
+    -- What a line of AI spend bought, P13 and migration 0047, FEAT-081. FOCUS reserves x_ for
+    -- a producer's own columns; these stand in for the token fields FOCUS 1.5 is expected to
+    -- name, OPEN-34, and are renamed by add, backfill and drop when it does. Null on every row
+    -- that is not AI, which is nearly all of them.
+    x_usage_type                TEXT,
+    x_iam_principal             TEXT,
+    x_ai_model                  TEXT,
+    x_ai_token_type             TEXT
+        CHECK (x_ai_token_type IN ('input', 'output', 'cache_read', 'cache_write')),
+    x_ai_tokens                 NUMERIC(30, 10) CHECK (x_ai_tokens >= 0),
+    CONSTRAINT ck_cost_focus_daily__tokens_have_a_type
+        CHECK (x_ai_tokens IS NULL OR x_ai_token_type IS NOT NULL),
+    CONSTRAINT ck_cost_focus_daily__token_type_has_a_model
+        CHECK (x_ai_token_type IS NULL OR x_ai_model IS NOT NULL),
+
     PRIMARY KEY (tenant_id, billing_period_start, source_fingerprint)
 ) PARTITION BY RANGE (billing_period_start);
 
@@ -426,6 +444,17 @@ CREATE TABLE cost_provider_extra (
 what makes the restatement upsert work: CUR is rewritten throughout the month,
 so ingest is `INSERT ... ON CONFLICT DO UPDATE` keyed on the primary key, and
 re reading a period never double counts. ISS-008.
+
+`ingest_source` exists because the restatement delete is the one destructive
+thing ingest does, and it removes every row of a period its run did not write.
+From P13 the OpenAI and Anthropic collectors write to this table too, so each
+collector's delete keys on its own source, and the bill's run never removes a
+provider's rows. Every row before P13 is the bill's, which the default says.
+
+The `x_` columns are filled for Bedrock from the usage type, which encodes the
+model and token type, by `finops_providers/aws/bedrock_usage.py`, and given directly by the
+OpenAI and Anthropic cost reports. A usage type the parser does not recognise
+leaves them null: the cost counts, as Bedrock with no model, never as a guess.
 
 `effective_cost` is the amortized measure and is the default everywhere in the
 product. `billed_cost` is retained for invoice reconciliation only and is never

@@ -366,6 +366,13 @@ cost_focus_daily = Table(
     Column("host_provider_name", Text),
     Column("invoice_id", Text),
     Column("invoice_detail_id", Text),
+    # Which collector wrote the row, and what a line of AI spend bought, migration 0047, P13.
+    Column("ingest_source", Text, nullable=False, server_default="aws_export"),
+    Column("x_usage_type", Text),
+    Column("x_iam_principal", Text),
+    Column("x_ai_model", Text),
+    Column("x_ai_token_type", Text),
+    Column("x_ai_tokens", Numeric(30, 10)),
     postgresql_partition_by="RANGE (billing_period_start)",
 )
 

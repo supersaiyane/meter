@@ -93,6 +93,7 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-12 | Erasure gaps closed, OPEN-14 answered, CHG-0171 | Done | erase_principal tombstones questions, redactions and exports, removes private views and keeps shared ones by hash, pauses owned schedules and unlists the person; retention_assistant keeps questions 90 days, METER_RETENTION_ASSISTANT_DAYS | scripts/ops/erase_principal.py:170, finops_ingest/collectors/retention.py:200, tests/ingest/collectors/test_retention.py:690 |
 | 2026-10-12 | P13 FinOps for AI specified and planned, OPEN-31 to OPEN-34 answered, CHG-0172 | Done | Spec, plan of nine tasks, ADR-0036 for a NAT gateway the worker alone may use, FEAT-081 to FEAT-085, ISS-285; cost_focus_daily gains ingest_source because the cost collector's delete would remove a second source's rows | docs/specs/2026-10-12-p13-finops-for-ai-design.md:1, docs/plans/P13-implementation-plan.md:42, finops_ingest/collectors/cost_focus.py:167, finops_providers/aws/cur.py:110 |
 | 2026-10-12 | TASK-P13-001, a NAT gateway the worker alone may use, CHG-0173 | Done | NAT gateway, Elastic IP and default route in network.tf; worker_internet group with one 443 rule, on the worker service only; network contract tests hold one route out, the worker's, and no host outside AWS but the two providers'; AWS-0104 accepted with that enforcement | infra/terraform/hub/network.tf:154, infra/terraform/hub/alb.tf:110, tests/contract/test_network_paths.py:228, security/policy/accepted.yaml:124 |
+| 2026-10-12 | TASK-P13-002, the bill's AI columns, CHG-0174 | Done | Migration 0047 adds ingest_source and five x_ columns; a pure usage type parser beside the AWS export, ADR-0028 keeping vendors out of finops_core; cur.py reads x_usagetype and line_item_iam_principal where present; the cost collector's restatement keys on its source; the fake export's Bedrock lines are opt in | migrations/versions/0047_cost_ai_columns.py:1, finops_providers/aws/bedrock_usage.py:74, finops_ingest/collectors/cost_focus.py:178, tests/ingest/collectors/test_cost_focus_sources.py:1 |
 
 ## Next action
 
@@ -101,7 +102,7 @@ answered: `docs/specs/2026-10-12-p13-finops-for-ai-design.md` and `docs/plans/P1
 nine tasks, each on its own branch from `next-build` in a worktree, merged once `make verify` is green.
 The owner asked for the tasks to run one after another without stopping, except for an owner decision.
 
-1. **TASK-P13-002**, the bill's AI columns, then 003 to 009 in order. TASK-P13-001 is done.
+1. **TASK-P13-003**, Bedrock usage per caller from invocation logs, then 004 to 009 in order. TASK-P13-001 and 002 are done.
 2. Never read a prompt or a response from an invocation log, and never let a provider key leave
    Secrets Manager: the plan's two rules, each held by a test.
 

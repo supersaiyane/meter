@@ -35,7 +35,7 @@ from uuid import uuid4
 
 from sqlalchemy import column, table, text
 
-from finops_core.domain.cost import CostRecord
+from finops_core.domain.cost import AWS_EXPORT, CostRecord
 from finops_core.errors import NoData
 from finops_ingest.collectors.cost_rollup import roll_up_period
 from finops_ingest.collectors.partitions import next_month
@@ -43,6 +43,9 @@ from finops_ingest.registry import CollectorContext, CollectorOutcome
 
 COLLECTOR = "cost_focus"
 SCOPE = "billing"
+#: The rows this collector writes and the only ones its restatement may remove, P13 spec
+#: section 5.3. OpenAI's and Anthropic's rows share the table and are not this run's to judge.
+SOURCE = AWS_EXPORT
 
 #: Rows per statement. Large enough that a month is a handful of round trips,
 #: small enough that one statement's parameters stay a readable size in a log.
@@ -110,6 +113,14 @@ COLUMNS = (
     "split_usage",
     "split_usage_ratio",
     "unused_cost",
+    # Which collector wrote the row, and what a line of AI spend bought, TASK-P13-002. The x_
+    # columns are null on every row that is not Bedrock's, which is nearly all of them.
+    "ingest_source",
+    "x_usage_type",
+    "x_iam_principal",
+    "x_ai_model",
+    "x_ai_token_type",
+    "x_ai_tokens",
 )
 
 #: Everything except the key. A restated row changes any of these, including
@@ -166,7 +177,7 @@ _SYNC_ERROR = table(
 
 RETRACT = text(
     "DELETE FROM cost_focus_daily WHERE tenant_id = :tenant "
-    "AND billing_period_start = :period AND ingest_run_id <> :run"
+    "AND billing_period_start = :period AND ingest_source = :source AND ingest_run_id <> :run"
 )
 
 
@@ -307,20 +318,31 @@ class CostFocusCollector:
         clock, so a `collected_at` predicate either removes nothing or removes
         both runs' work, depending on which way the comparison leans.
 
-        All three predicates are load bearing. Without the tenant, one tenant's
+        All four predicates are load bearing. Without the tenant, one tenant's
         ingest removes another's rows. Without the period, ingesting August
         removes every earlier month in one statement, which is the worst
-        outcome available to this file and the easiest to write.
+        outcome available to this file and the easiest to write. Without the
+        source, the bill's run removes every OpenAI and Anthropic row in the
+        period, because this run never sees them, P13 spec section 5.3.
         """
         result = context.connection.execute(
             RETRACT,
-            {"tenant": context.unit.tenant_id, "period": period, "run": context.run_id},
+            {
+                "tenant": context.unit.tenant_id,
+                "period": period,
+                "source": SOURCE,
+                "run": context.run_id,
+            },
         )
         return int(result.rowcount or 0)
 
     def _parameters(
         self, row: CostRecord, context: CollectorContext, at: datetime
     ) -> dict[str, Any]:
+        if row.ingest_source != SOURCE:
+            # The export is the bill's. A row claiming another source would be written where
+            # this run's restatement can never remove it, so it is refused rather than kept.
+            raise ValueError(f"cost_focus writes {SOURCE} rows, not {row.ingest_source!r}")
         values = {column: getattr(row, column) for column in COLUMNS}
         # The tenant and the run are this run's, not whatever the adapter put on
         # the record. An adapter has no way to know which tenant it is reading

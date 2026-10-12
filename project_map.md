@@ -33,9 +33,9 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Playwright journeys | 55 in 20 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 33 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 46 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 245 | test_*.py under tests/ |
-| Test functions | 3028 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 47 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 248 | test_*.py under tests/ |
+| Test functions | 3046 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -567,6 +567,10 @@ meter/
 │   │   │                     with no quota code in it, so a figure is matched on service
 │   │   │                     and quota name, and names are somebody else's display
 │   │   │                     strings. Said in the docstring rather than buried
+│   │   ├── bedrock_usage.py   FEAT-081. The model and token type a Bedrock usage type
+│   │   │                      encodes, read back out, and a token count from a quantity in
+│   │   │                      its unit. One it does not recognise names nothing, so the
+│   │   │                      cost counts as Bedrock with no model, never as a guess
 │   │   ├── bedrock.py         BedrockModel, the Converse API in the hub account
 │   │   │                      with the model id from configuration, OPEN-10, called
 │   │   │                      through its tagged inference profile where the hub
@@ -1553,6 +1557,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0047_cost_ai_columns.py  TASK-P13-002. ingest_source and the five x_ columns
+│       │                      on cost_focus_daily: what a line of AI spend bought
 │       ├── 0046_redaction_found_in.py  ISS-085. Where a redaction fired: the
 │       │                      question, or what a tool returned to the model
 │       ├── 0045_ledger_screen.py  TASK-P11-008. /optimize/ledger admitted as a
@@ -1797,6 +1803,9 @@ meter/
 │   │                          stale. A word and never a coordinate, because where
 │   │                          a compass point lands in a picture is the picture's
 │   │                          business
+│   ├── ai.py                  FEAT-081, in finops_core/domain/. The four token types a
+│   │                          cost row can carry, input, output, cache read and cache
+│   │                          write, and nothing that names a vendor, ADR-0028
 │   ├── iac.py                 FEAT-057, in finops_core/domain/. Three answers to what
 │   │                          manages a resource, and the default is the honest one.
 │   │                          Reading state tells you what is managed and never what is

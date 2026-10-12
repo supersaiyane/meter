@@ -95,7 +95,8 @@ the new ones, backfill, and drop the `x_` ones a release later. Answered by the 
 
 The bill's AI columns are optional at the source, like the split and FOCUS 1.2 columns, and asked
 of the catalog the same way: an export without them is read with the SQL it always was. The usage
-type parser is pure and lives in `finops_core`; it reads the model and token type from the
+type parser is pure and lives with the AWS adapters, `finops_providers/aws/bedrock_usage.py`,
+because ADR-0028 keeps every vendor's name out of `finops_core`; it reads the model and token type from the
 suffixes AWS documents for Bedrock, `-input-tokens`, `-output-tokens`,
 `-cache-read-input-token-count` and `-cache-write-input-token-count` and their marketplace forms,
 and leaves every column null for a usage type it does not recognise, rather than guessing.

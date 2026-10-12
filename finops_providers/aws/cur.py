@@ -36,6 +36,7 @@ from botocore.exceptions import BotoCoreError, ClientError
 from finops_core.config import Settings
 from finops_core.domain.cost import CostRecord, source_fingerprint
 from finops_core.errors import CollectionError, NoData, SchemaDrift, Throttled, Unreachable
+from finops_providers.aws.bedrock_usage import parse_usage_type, tokens_from
 from finops_providers.aws.client import botocore_config, translate
 
 COLLECTOR = "cost_focus"
@@ -130,6 +131,19 @@ FOCUS_1_2_COLUMNS: dict[str, str] = {
     "invoiceid": "invoice_id",
 }
 
+#: The columns that say what a line of AI spend bought, P13 spec section 5.2, FEAT-081. Optional
+#: at the source for the same reason as the two sets above, and asked of the catalog with them.
+#:
+#: `x_usagetype` is AWS's own extension column in its FOCUS export, which carries the usage type
+#: Bedrock encodes the model and token type in; `CostRecord` reads them out of it.
+#: `line_item_iam_principal` is CUR 2.0's name for the IAM principal that made a request, which
+#: AWS documents for Bedrock and which, like the split columns, is checkable only against a real
+#: export, ISS-002.
+AI_COLUMNS: dict[str, str] = {
+    "x_usagetype": "x_usage_type",
+    "line_item_iam_principal": "x_iam_principal",
+}
+
 #: The form FOCUS 1.4 mandates for a currency: an ISO 4217 code, three capital letters.
 CURRENCY = re.compile(r"[A-Z]{3}")
 
@@ -188,6 +202,8 @@ class AthenaCostExport:
     _split_columns: dict[str, str] | None = None
     #: The FOCUS 1.2 columns present, filled by the same probe as the split columns.
     _focus_columns: dict[str, str] | None = None
+    #: The AI columns present, P13, filled by the same probe.
+    _ai_columns: dict[str, str] | None = None
 
     def _default_client(self, service: str) -> Any:
         return boto3.client(service, config=self._config)
@@ -309,7 +325,7 @@ class AthenaCostExport:
                 for row in page["ResultSet"]["Rows"]:
                     for cell in row["Data"]:
                         name = (cell.get("VarCharValue") or "").lower()
-                        if name in SPLIT_COLUMNS or name in FOCUS_1_2_COLUMNS:
+                        if name in SPLIT_COLUMNS or name in FOCUS_1_2_COLUMNS or name in AI_COLUMNS:
                             found.add(name)
         except (CollectionError, BotoCoreError, ClientError, KeyError):
             # An unreadable catalog leaves the export looking like one without split
@@ -327,12 +343,18 @@ class AthenaCostExport:
         self._focus_columns = {
             name: FOCUS_1_2_COLUMNS[name] for name in sorted(found) if name in FOCUS_1_2_COLUMNS
         }
+        self._ai_columns = {name: AI_COLUMNS[name] for name in sorted(found) if name in AI_COLUMNS}
         return self._split_columns
 
     def _present_focus_columns(self) -> dict[str, str]:
         """The FOCUS 1.2 columns this export has, from the probe the split columns run."""
         self._present_split_columns()
         return self._focus_columns or {}
+
+    def _present_ai_columns(self) -> dict[str, str]:
+        """The AI columns this export has, from the same probe."""
+        self._present_split_columns()
+        return self._ai_columns or {}
 
     @property
     def split_cost_available(self) -> bool:
@@ -355,7 +377,14 @@ class AthenaCostExport:
         same SQL it was always read with.
         """
         columns = ", ".join(
-            sorted([*COLUMNS, *self._present_split_columns(), *self._present_focus_columns()])
+            sorted(
+                [
+                    *COLUMNS,
+                    *self._present_split_columns(),
+                    *self._present_focus_columns(),
+                    *self._present_ai_columns(),
+                ]
+            )
         )
         return (
             f"SELECT {columns} "
@@ -414,6 +443,7 @@ class AthenaCostExport:
             *COLUMNS.items(),
             *SPLIT_COLUMNS.items(),
             *FOCUS_1_2_COLUMNS.items(),
+            *AI_COLUMNS.items(),
         ):
             # Every split column is read through `row.get`, so one absent from the
             # projection lands as None rather than raising. That is the whole of
@@ -438,6 +468,16 @@ class AthenaCostExport:
                 scope_key=SCOPE,
                 collector=COLLECTOR,
                 detail=f"required columns absent or unparseable: {', '.join(missing)}",
+            )
+
+        # What a Bedrock line bought, read from its usage type, P13 spec section 5.2. A usage type
+        # nobody documented names nothing, and the row is written with its cost and no model.
+        line = parse_usage_type(fields["x_usage_type"], fields["service_name"])
+        if line is not None:
+            fields["x_ai_model"] = line.model
+            fields["x_ai_token_type"] = line.token_type
+            fields["x_ai_tokens"] = tokens_from(
+                fields["consumed_quantity"], fields["consumed_unit"]
             )
 
         return CostRecord(
