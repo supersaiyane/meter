@@ -67,16 +67,16 @@ def test_both_compositions_agree_on_what_one_unit_covers() -> None:
     )
 
 
-def test_a_collector_with_no_aws_adapter_fails_typed_naming_what_it_lacks() -> None:
-    quotas = production_registry().get("quotas")
-    with pytest.raises(Misconfigured, match="Service Quotas") as raised:
-        quotas.run(context())
+def test_a_collector_with_no_aws_adapter_fails_typed_naming_why() -> None:
+    estate = production_registry().get("waste_cloudwatch")
+    with pytest.raises(Misconfigured, match="ISS-240") as raised:
+        estate.run(context())
     assert raised.value.scope_key == UNIT.scope_key
 
 
 def test_a_collector_that_reads_only_meter_is_built_for_real_in_a_deployment() -> None:
     built = {one.name: one.build for one in production_bindings()}
-    for name in ("savings_ledger", "finops_score", "realized_savings", "ownership"):
+    for name in ("savings_ledger", "finops_score", "realized_savings", "commitment_actions"):
         assert callable(built[name](context()))
 
 

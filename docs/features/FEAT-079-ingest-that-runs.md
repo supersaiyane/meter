@@ -33,7 +33,7 @@ the runtime image, so they run only in the local stack and no setting is needed.
 
 ## How it works
 
-Built so far: the two compositions, TASK-P12-001.
+Built so far: the two compositions, TASK-P12-001, and the AWS binders, TASK-P12-002.
 
 - `finops_ingest/composition.py` declares a `Binding` per collector: its name, its scope, and a
   builder that constructs it from one unit's context. `compose` registers each binding behind a
@@ -44,8 +44,14 @@ Built so far: the two compositions, TASK-P12-001.
   test holds them equal.
 - In a deployment the six collectors that read only Meter's own tables (commitment actions, cost
   anomaly, the score, realized savings, the savings ledger, team digests) are built for real, and
-  ownership is built on tags alone. The twenty that need an AWS adapter are bound until
-  TASK-P12-002 to a builder that fails each run typed.
+  17 more are built from their AWS adapters, `finops_ingest/aws_bindings.py`: per account ones on
+  the session the worker assumed, organization wide ones on the hub's own credentials, a member
+  account through the credential broker, and Budgets, Invoicing, spot prices and Savings Plans
+  rates through the relay. The payer is the account in the org reader role's ARN. Four cannot be
+  built for AWS yet and fail each run typed: three ports with no adapter, ISS-240, and
+  `query_audit`, ISS-272.
+- `finops_providers/aws/reach.py` makes every client on the adapter's first call, so building a
+  collector makes none, and a failure arrives where the adapter types it.
 - `finops_fakes/composition.py` binds the same 27 collectors from the fakes, on a clock it is
   handed rather than one it reads, and hands a per account collector only the candidates of the
   unit's own account, as the demo seed does. `fake_registry(clock)` is what the local stack's
@@ -53,8 +59,10 @@ Built so far: the two compositions, TASK-P12-001.
 
 ## Failure behaviour
 
-- A collector with no AWS adapter yet raises `Misconfigured` on every run, carrying the unit's
-  scope key and a detail naming what it reads and the task that binds it. The worker records it
+- A collector that cannot be built for AWS raises `Misconfigured` on every run, carrying the
+  unit's scope key and a detail naming the issue that says why. A read whose setting is empty,
+  `METER_RELAY_FUNCTION_NAME`, `METER_S3_BUCKET`, `METER_CONFIG_AGGREGATOR`, or an org reader
+  setting that is not a role ARN, fails the same way naming the setting. The worker records it
   as a typed failure in `sync_error`, so it shows on the freshness screen and never as zero.
 - A builder that raises fails only its own unit; the worker's per unit isolation is unchanged.
 - A collector missing from either composition, or bound twice, fails
@@ -66,8 +74,11 @@ Built so far: the two compositions, TASK-P12-001.
 - No production package imports `finops_fakes`, enforced by the import contract of ADR-0022, and
   the runtime images do not copy it. A deployed process therefore cannot be switched onto fakes by
   any setting, because there is no setting.
-- The compositions add no credential path: an AWS builder will build on `context.session`, the
-  session the credential broker already resolved for that unit's account.
+- The binders add no credential path. An account scoped collector reads on the session the
+  worker resolved for that unit; an organization wide one reaches a member account through the
+  same credential broker, so it assumes the role the worker would have. Nothing is written.
+- A role the worker cannot assume fails the account health unit before the collector runs, so
+  `role_health` keeps its last value, ISS-273.
 
 ## Interface
 
@@ -76,6 +87,9 @@ Built so far: the two compositions, TASK-P12-001.
 - `finops_ingest.composition.worker_collectors() -> frozenset[str]`
 - `finops_fakes.composition.fake_registry(clock) -> CollectorRegistry`
 - `finops_fakes.composition.fake_bindings(clock) -> tuple[Binding, ...]`
+- `finops_ingest.aws_bindings.AWS_BUILDERS` and `UNBUILT`
+- Settings `relay_function_name` (`METER_RELAY_FUNCTION_NAME`) and `config_aggregator`
+  (`METER_CONFIG_AGGREGATOR`), empty by default
 
 ## Not doing
 
@@ -86,7 +100,8 @@ Built so far: the two compositions, TASK-P12-001.
 
 ## Status of this document
 
-In build. TASK-P12-001 built the two compositions on 2026-10-12; the AWS binders, the queue, the
-entry points and the local stack end to end follow in TASK-P12-002 to TASK-P12-005.
+In build. TASK-P12-001 built the two compositions and TASK-P12-002 the AWS binders on 2026-10-12;
+the queue, the entry points and the local stack end to end follow in TASK-P12-003 to
+TASK-P12-005.
 
 See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P12.

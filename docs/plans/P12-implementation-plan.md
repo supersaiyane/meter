@@ -62,7 +62,7 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-12 |
 | Implements | Spec section 5.1 |
 | Delivers | FEAT-079 |
 | Depends on | TASK-P12-001 |
@@ -70,9 +70,13 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 **Acceptance criteria.**
 
-- [ ] In AWS mode each collector is built from the AWS adapters on the unit's session
-- [ ] A collector whose port has no AWS adapter fails each run as Misconfigured, naming it, ISS-240
-- [ ] A test builds every collector in AWS mode over a stubbed session and finds no fake in it
+- [x] In AWS mode each collector is built from the AWS adapters on the unit's session: 17 of them,
+      in `finops_ingest/aws_bindings.py`, through `finops_providers/aws/reach.py`
+- [x] A collector that cannot be built for AWS fails each run as Misconfigured, naming why: three
+      ports with no adapter, ISS-240, and `query_audit`, which no setting can configure, ISS-272;
+      a read whose setting is not set names the setting
+- [x] A test builds every collector in AWS mode over a stubbed session and finds no fake in it,
+      and building makes no AWS client
 
 ---
 
@@ -147,7 +151,9 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
       committed map per environment, the secret ones created with a placeholder and never managed
 - [ ] Every task definition reads its settings through `secrets` with `valueFrom`, and the
       execution role reads only its own environment's path
-- [ ] A test holds every field of the settings model to a parameter
+- [ ] A test holds every field of the settings model to a parameter, among them
+      `METER_RELAY_FUNCTION_NAME` from the hub's relay and `METER_CONFIG_AGGREGATOR` from the config
+      stack's output, which TASK-P12-002 added
 
 ---
 

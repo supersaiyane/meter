@@ -8,9 +8,10 @@ nothing outside the tests assembled a registry, ISS-182.
 **Production bindings only.** This module never reaches a fake: the fakes stay out of the runtime
 image, ADR-0022, and the local stack composes the same collectors from them in
 `finops_fakes.composition`, through entry points of its own. A collector that reads only what Meter
-already holds is bound here for real. One that needs an AWS adapter fails each run typed, as
-Misconfigured and naming what it lacks, until TASK-P12-002 gives it one, so it shows on the
-freshness screen rather than nowhere, and never runs on something invented.
+already holds is bound here for real, and one that reads AWS is built from its adapters,
+`finops_ingest.aws_bindings`, TASK-P12-002. One that cannot be built for AWS yet fails each run
+typed, as Misconfigured and naming why, so it shows on the freshness screen rather than nowhere,
+and never runs on something invented.
 
 A test holds the bindings equal to the collectors the schedule says run in the worker.
 """
@@ -23,10 +24,10 @@ from datetime import UTC, datetime
 from typing import Final
 
 from finops_core.errors import Misconfigured
+from finops_ingest.aws_bindings import AWS_BUILDERS, UNBUILT
 from finops_ingest.collectors.commitment_actions import CommitmentActionsCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.digests import DigestCollector
-from finops_ingest.collectors.ownership import OwnershipCollector
 from finops_ingest.collectors.realized_savings import RealizedSavingsCollector
 from finops_ingest.collectors.retention import RETENTION_COLLECTORS, register_retention
 from finops_ingest.collectors.savings_ledger import SavingsLedgerCollector
@@ -98,14 +99,14 @@ def compose(bindings: Iterable[Binding]) -> CollectorRegistry:
     return registry
 
 
-def unbuilt(name: str, needs: str) -> Build:
-    """A collector with no AWS adapter yet: every run fails typed, naming what it lacks."""
+def unbuilt(name: str, why: str) -> Build:
+    """A collector that cannot be built for AWS yet: every run fails typed, naming why."""
 
     def build(context: CollectorContext) -> CollectorRunner:
         raise Misconfigured(
             scope_key=context.unit.scope_key,
             collector=name,
-            detail=f"{name} has no AWS adapter for {needs} in this release, TASK-P12-002",
+            detail=f"{name} cannot be built for AWS in this release: {why}",
         )
 
     return build
@@ -126,38 +127,13 @@ _FROM_METER: Final[dict[str, Callable[[], CollectorRunner]]] = {
     "team_digests": lambda: DigestCollector(clock=_now),
 }
 
-#: The collectors that need an AWS adapter, and what it reads, until TASK-P12-002.
-_NEEDS_AWS: Final[dict[str, str]] = {
-    "account_health": "the collector role's health check",
-    "budgets": "AWS Budgets",
-    "commitment": "Savings Plans and Reserved Instance utilization",
-    "container_usage": "EKS and Container Insights",
-    "cost_focus": "the CUR 2.0 export",
-    "iac_state": "Terraform state in S3",
-    "instance_catalog": "EC2 instance types",
-    "inventory": "AWS Config",
-    "invoices": "the Invoicing API",
-    "org_tree": "AWS Organizations",
-    "platform_cost": "Cost Explorer for the hub",
-    "price_catalog": "the Price List API",
-    "query_audit": "Amazon Managed Grafana",
-    "quotas": "Service Quotas",
-    "recommendations": "Compute Optimizer, Cost Optimization Hub and Trusted Advisor",
-    "savings_plan_rates": "the Savings Plans rates",
-    "spot_prices": "the spot price history",
-    "waste_cloudwatch": "CloudWatch alarms and log groups",
-    "waste_compute": "CloudWatch metrics and the inventory's candidates",
-    "waste_parking": "CloudWatch metrics and the inventory's candidates",
-}
-
 
 def production_bindings() -> tuple[Binding, ...]:
     """Every collector the worker runs, bound for a deployed environment."""
     bindings = [Binding(name, scope_of(name), _built(make)) for name, make in _FROM_METER.items()]
-    # Tags alone until TASK-P12-002 gives it the catalogue and the creators.
-    bindings.append(Binding("ownership", scope_of("ownership"), _built(OwnershipCollector)))
+    bindings.extend(Binding(name, scope_of(name), build) for name, build in AWS_BUILDERS.items())
     bindings.extend(
-        Binding(name, scope_of(name), unbuilt(name, needs)) for name, needs in _NEEDS_AWS.items()
+        Binding(name, scope_of(name), unbuilt(name, why)) for name, why in UNBUILT.items()
     )
     return tuple(sorted(bindings, key=lambda one: one.name))
 
