@@ -19,7 +19,8 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Iterable
-from datetime import UTC, date, datetime, time, timedelta
+from datetime import UTC, date, datetime, timedelta
+from datetime import time as time_of_day
 from decimal import Decimal
 
 from finops_core.domain.cost import CostRecord
@@ -113,7 +114,9 @@ def _invoice(
     before_tax: Decimal,
     tax: Decimal,
 ) -> Invoice:
-    issued = datetime.combine(period_end + timedelta(days=ISSUED_AFTER_DAYS), time(6, 0), UTC)
+    issued = datetime.combine(
+        period_end + timedelta(days=ISSUED_AFTER_DAYS), time_of_day(6, 0), UTC
+    )
     return Invoice(
         invoice_id=invoice_id,
         invoice_type=InvoiceType.INVOICE,

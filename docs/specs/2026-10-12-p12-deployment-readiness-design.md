@@ -20,8 +20,8 @@ the first one written down and a check that proves each adapter's first real cal
 
 ## 2. Definition of done
 
-- One composition registers every scheduled collector, with fake adapters or AWS adapters chosen
-  by a setting, and a test fails when a scheduled collector is missing from either.
+- One composition registers every collector the worker runs, with AWS adapters for a deployment
+  and fake adapters for the local stack, and a test fails when one is missing from either.
 - `python -m finops_ingest.dispatcher` enumerates what is due and publishes it to the queue, and
   `python -m finops_ingest.worker` consumes the queue and runs each unit, each a real process.
 - The local stack, `make up`, runs a collector end to end on fakes: dispatched, queued, claimed,
@@ -43,8 +43,9 @@ the first one written down and a check that proves each adapter's first real cal
 
 ## 4. The gap, measured on 2026-10-12
 
-- `finops_ingest/registry.py` declares 33 scheduled collectors (measured). `CollectorRegistry.register`
-  is called by tests and by `register_retention`, and by nothing that runs in a deployed process.
+- `finops_ingest/registry.py` declares 34 scheduled collectors (measured): 33 run in the worker, and
+  `report_schedules` runs in the API, where it is already wired. `CollectorRegistry.register` is
+  called by tests and by `register_retention`, and by nothing that runs in a deployed process.
 - `docker/Dockerfile.worker` runs `python -m finops_ingest.worker`, and the hub's scheduler runs
   `python -m finops_ingest.dispatcher`; neither module has a `__main__` block, so both exit at once,
   locally and in AWS.
@@ -57,17 +58,22 @@ the first one written down and a check that proves each adapter's first real cal
 
 ## 5. Decisions
 
-### 5.1 One composition, two provider sets, OPEN-28
+### 5.1 One composition for a deployment, one for the local stack, OPEN-28
 
-`finops_ingest/composition.py` builds the registry every process uses. Each collector is registered
-with a binder that constructs it for one unit of work: in fake mode from the fakes the demo seed
-uses, in AWS mode from the AWS adapters built on the unit's session. The setting is
-`METER_PROVIDERS`, `fake` or `aws`, with no default: a deployed environment says `aws`, the local
-stack says `fake`, and a process with neither refuses to start rather than guessing. A collector
-whose port has no AWS adapter yet, ISS-240, is still registered, and in AWS mode each run fails
-typed as Misconfigured, naming the missing adapter, so it appears in `sync_error` and on the
-freshness screen rather than nowhere. Answered by the owner on 2026-10-12 as recommended: fakes
-by a setting until an account is connected.
+Each collector is registered with a builder that constructs it for one unit of work, from that
+unit's context. `finops_ingest/composition.py` holds the bindings a deployment runs, with AWS
+adapters built on the unit's session, and never reaches a fake. `finops_fakes/composition.py` binds
+the same collectors from the fakes, on a clock it is handed, and the local stack reaches it
+through entry points of its own from a development image. The entry point decides, so no setting
+can switch a deployed process onto fakes. A collector that reads only Meter's own tables is bound
+for real in both; one whose AWS adapter is not yet bound, ISS-240 or TASK-P12-002, fails each run
+typed as Misconfigured, naming what it lacks, so it appears in `sync_error` and on the freshness
+screen rather than nowhere.
+
+Amended 2026-10-12, TASK-P12-001. The owner answered OPEN-28 with fakes by a setting, which as
+first written would also have run a deployed environment on fakes before an account. ADR-0022 keeps
+the fakes out of the runtime image, and the owner chose the same day to keep it so: fakes run only
+in the local stack, and `METER_PROVIDERS` is not needed.
 
 ### 5.2 Two processes with entry points
 
@@ -120,7 +126,7 @@ deployed processes for the first time.
 
 ## 8. Interface
 
-- `METER_PROVIDERS`, `fake` or `aws`, a required setting.
+- `finops_ingest.composition.production_registry` and `finops_fakes.composition.fake_registry`.
 - `python -m finops_ingest.dispatcher` and `python -m finops_ingest.worker`.
 - `make first-contact`, and `docs/runbooks/first-account.md`.
 

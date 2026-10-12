@@ -593,7 +593,7 @@ features:
 - id: FEAT-079
   name: Ingest that runs, one composition and the dispatcher and worker processes
   subproject: P12
-  status: Planned
+  status: In build
   detail: '[P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.1 to 5.3 and 5.6, [P12 plan](docs/plans/P12-implementation-plan.md)'
   doc: docs/features/FEAT-079-ingest-that-runs.md
 - id: FEAT-080
@@ -2318,6 +2318,16 @@ changes:
     worker with entry points over SQS; the local stack end to end; deployed settings in SSM Parameter Store,
     OPEN-29, ISS-250; a deploy that applies its own plan, ISS-260; and the first account''s runbook with
     make first-contact. Nine tasks; FEAT-079 and FEAT-080 planned; OPEN-30 open'
+- id: CHG-0160
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-001, the two compositions
+  commit: pending
+  detail: 'finops_ingest/composition.py binds the 33 collectors the worker runs for a deployment: the six
+    that read only Meter for real, ownership on tags, and the twenty that need AWS failing each run typed as
+    Misconfigured until TASK-P12-002; finops_fakes/composition.py binds the same from the fakes on a clock it
+    is handed, for the local stack only, ADR-0022, so METER_PROVIDERS is not needed and spec 5.1 is amended.
+    The fakes'' no clock test walked a directory gone since 2026-09-21 and now walks finops_fakes, ISS-271'
 issues:
 - id: ISS-189
   severity: LOW
@@ -2619,7 +2629,9 @@ issues:
   status: OPEN
   blocks: 'Running ingestion in a deployed task. Not the local stack, which seeds directly'
   detail: '`finops_ingest/registry.py`, `finops_ingest/dispatcher.py`, `finops_ingest/worker.py`
-    and `scripts/demo/seed_demo.py`'
+    and `scripts/demo/seed_demo.py`. Half closed 2026-10-12, TASK-P12-001: finops_ingest/composition.py
+    binds every collector the worker runs for a deployment, and finops_fakes/composition.py the same from
+    the fakes for the local stack; the entry points that call them follow in TASK-P12-004'
 - id: ISS-181
   severity: MEDIUM
   summary: AthenaCostExport materializes a whole billing period before returning it, so a large
@@ -4851,6 +4863,16 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-271
+  severity: MEDIUM
+  status: FIXED
+  summary: The fakes' no clock test scanned a directory that no longer exists, so it checked nothing
+  detail: 'Found 2026-10-12 while building TASK-P12-001. tests/providers/test_fake.py walks FAKE_PACKAGE for
+    any name that reads the clock or randomness, and FAKE_PACKAGE still named finops_providers/fake, where the
+    fakes lived before ADR-0022 moved them to finops_fakes on 2026-09-21. The walk found no files and the test
+    passed over nothing for three weeks. Fixed the same day: it walks finops_fakes, the fake composition takes
+    its clock as an argument, and two names it caught that were not clocks, a local list called today and the
+    time of day an invoice is issued, were renamed.'
 - id: ISS-260
   severity: MEDIUM
   status: OPEN
@@ -5111,7 +5133,9 @@ open_questions:
   blocks: TASK-P12-001
   detail: 'Raised 2026-10-12 by the P12 spec, section 5.1. Recommended: METER_PROVIDERS, fake or aws with no
     default, so the local stack and any deploy before an account run end to end on the fakes and a deployed
-    environment says aws. The alternative, AWS only, would leave the local stack unable to run end to end.'
+    environment says aws. The alternative, AWS only, would leave the local stack unable to run end to end.
+    Amended 2026-10-12, TASK-P12-001: ADR-0022 keeps fakes out of the runtime image and the owner chose to
+    keep it so, so fakes run only in the local stack through their own entry points and no setting is needed.'
 - id: OPEN-29
   question: 'Where do a deployed Meter''s settings live? ANSWERED 2026-10-12: SSM Parameter Store'
   status: ANSWERED

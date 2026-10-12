@@ -17,8 +17,8 @@ Same contract as P0 through P11. One task, one commit, `make verify` green befor
 
 **Three rules specific to P12.**
 
-1. **No guessing a mode.** `METER_PROVIDERS` is `fake` or `aws` and has no default; a process
-   without it refuses to start.
+1. **No fake in a deployment.** The fakes run only in the local stack, through their own entry
+   points, ADR-0022; nothing a deployed process can set switches it onto them.
 2. **A collector with no AWS adapter fails typed, never on a fake.** In AWS mode it is registered
    and every run is Misconfigured, naming the missing adapter, ISS-240.
 3. **No secret in git or in the Terraform state.** Secret parameters are created with a placeholder
@@ -28,7 +28,7 @@ Same contract as P0 through P11. One task, one commit, `make verify` green befor
 
 | Wave | Tasks | Delivers | Can start when |
 | --- | --- | --- | --- |
-| A. The composition | 001, 002 | Every collector registered, fake and AWS | This plan approved |
+| A. The composition | 001, 002 | Every collector registered, for a deployment and the local stack | This plan approved |
 | B. The processes | 003, 004, 005 | The queue, the two entry points, the local stack end to end | A |
 | C. The deploy | 006, 007 | Settings in SSM, each deploy its own plan | Any time |
 | D. The first account | 008 | The runbook and `make first-contact` | A |
@@ -38,11 +38,11 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 ---
 
-### TASK-P12-001: the providers setting, and the fake composition
+### TASK-P12-001: the two compositions
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-12 |
 | Implements | Spec section 5.1, OPEN-28 |
 | Delivers | FEAT-079 |
 | Depends on | Nothing |
@@ -50,10 +50,11 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 **Acceptance criteria.**
 
-- [ ] `METER_PROVIDERS` in the settings, `fake` or `aws`, required, in `.env.example`
-- [ ] `finops_ingest/composition.py` registers every scheduled collector and the retention jobs,
-      each built per unit from the fakes in fake mode
-- [ ] A test fails when a scheduled collector is missing from the composition
+- [x] `finops_ingest/composition.py` binds every collector the worker runs for a deployment, the
+      ones that read only Meter for real and the rest failing typed until TASK-P12-002
+- [x] `finops_fakes/composition.py` binds the same collectors from the fakes, on a clock it is
+      handed, for the local stack only
+- [x] A test fails when a collector the worker runs is missing from either
 
 ---
 
