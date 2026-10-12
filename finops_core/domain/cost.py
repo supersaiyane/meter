@@ -25,6 +25,7 @@ from hashlib import sha256
 from types import MappingProxyType
 from uuid import UUID
 
+from finops_core.domain.ai import TOKEN_TYPES
 from finops_core.domain.fact import Fact
 
 
@@ -166,6 +167,14 @@ class CostTotal(Fact):
             )
 
 
+#: Which collector wrote a cost row, P13 spec section 5.3. Each restates only its own, because
+#: a restatement removes what its run did not see and one source never sees another's rows. The
+#: bill's is named here because every row before P13 was the bill's; the others are named by
+#: their collectors, and the table's constraint holds the vocabulary, ADR-0028 keeping a vendor's
+#: name out of this package.
+AWS_EXPORT = "aws_export"
+
+
 @dataclass(frozen=True, kw_only=True)
 class CostRecord(Fact):
     """A FOCUS charge row. Field names are the specification's.
@@ -241,6 +250,20 @@ class CostRecord(Fact):
     #: The cluster's unallocated remainder. Arrives on rows with no workload at all,
     #: which is why nothing requires a dimension beside a measure.
     unused_cost: Decimal | None = None
+    #: Which collector wrote the row, a Meter column. The bill's unless a provider's adapter
+    #: says otherwise, which is what every row written before P13 was.
+    ingest_source: str = AWS_EXPORT
+    #: FOCUS reserves `x_` for a producer's own columns, and these stand in for the token
+    #: fields FOCUS 1.5 is expected to name, OPEN-34. All null on a row that is not AI.
+    #: The provider's usage type as billed, AWS's `x_UsageType`.
+    x_usage_type: str | None = None
+    #: The IAM principal that made the request, CUR 2.0's `line_item_iam_principal`.
+    x_iam_principal: str | None = None
+    #: Read by the source's adapter: from the usage type on the AWS bill, from a provider's own
+    #: cost report otherwise. Never guessed: a source that cannot say leaves them null.
+    x_ai_model: str | None = None
+    x_ai_token_type: str | None = None
+    x_ai_tokens: Decimal | None = None
 
     def __post_init__(self) -> None:
         # Frozen stops the attribute being rebound. It does not stop the dict
@@ -255,6 +278,10 @@ class CostRecord(Fact):
             object.__setattr__(self, "host_provider_name", self.service_provider_name)
         if self.invoice_detail_id is None and self.invoice_id is not None:
             object.__setattr__(self, "invoice_detail_id", self.invoice_id)
+        if not self.ingest_source:
+            raise ValueError("a cost row names the collector that wrote it")
+        if self.x_ai_token_type is not None and self.x_ai_token_type not in TOKEN_TYPES:
+            raise ValueError(f"unknown token type {self.x_ai_token_type!r}")
 
 
 #: A commitment whose term has not started. AWS queues a Savings Plan to begin on

@@ -15,6 +15,9 @@ adapter, and each is held to the path the owner chose on 2026-10-05 in P9 spec s
   Plans rates, the owner's answer to OPEN-17.
 
 A collector that calls something new fails here rather than on its first call in a deployment.
+
+And one path that is not AWS: OpenAI's and Anthropic's report APIs, through the NAT gateway the
+owner chose on 2026-10-12, OPEN-31, which only the worker's security group may use, ADR-0036.
 """
 
 from __future__ import annotations
@@ -53,6 +56,9 @@ NO_ENDPOINT = frozenset({"budgets", "support", "invoicing"})
 #: Savings Plans rates, OPEN-17 as answered on 2026-10-07, TASK-P9-012. Spot prices are an ec2
 #: call, which has an endpoint in the hub and is relayed into the other Regions.
 RELAYED = frozenset({"savingsplans"})
+#: The hosts outside AWS the worker reaches through the NAT gateway, ADR-0036. Nothing else in
+#: the production code names a host outside AWS, which `test_no_host_outside_aws_but_these` holds.
+INTERNET_HOSTS = frozenset({"api.openai.com", "api.anthropic.com"})
 #: What the collectors call in each member account, in every collection Region.
 PER_COLLECTION_REGION = frozenset(
     {
@@ -64,6 +70,8 @@ PER_COLLECTION_REGION = frozenset(
         "compute-optimizer",
         # FEAT-077, TASK-P11-003. Applications live in each member account.
         "servicecatalog-appregistry",
+        # FEAT-082, TASK-P13-003. Where each account's invocation logs go.
+        "bedrock",
     }
 )
 
@@ -219,23 +227,75 @@ def test_the_roles_the_relay_assumes_trust_it_by_name() -> None:
 # --- no way out but these -------------------------------------------------------
 
 
-def test_there_is_no_nat_and_no_internet_gateway_on_a_private_path() -> None:
+def test_the_one_nat_gateway_is_the_workers_in_a_public_subnet() -> None:
+    """ADR-0036. One gateway, in a public subnet, and none in an endpoint VPC."""
     every = "\n".join(text(path) for path in HUB.rglob("*.tf"))
-    assert "aws_nat_gateway" not in every
+    gateways = re.findall(r'resource "aws_nat_gateway" "([a-z_]+)" \{(.*?)\n\}', every, re.DOTALL)
+    assert [name for name, _ in gateways] == ["providers"]
+    assert "aws_subnet.public[0].id" in gateways[0][1]
     assert "aws_internet_gateway" not in text(MODULE / "main.tf")
+    assert "aws_nat_gateway" not in text(MODULE / "main.tf")
 
 
-def test_the_private_route_table_leads_only_to_the_endpoint_vpcs() -> None:
+def test_the_private_route_table_leads_to_the_endpoint_vpcs_and_the_nat_gateway() -> None:
     network = text(HUB / "network.tf")
     private = re.search(r'resource "aws_route_table" "private" \{(.*?)\n\}', network, re.DOTALL)
     assert private is not None and "route {" not in private.group(1)
     every = "\n".join(text(path) for path in HUB.glob("*.tf"))
     routes = re.findall(r'resource "aws_route" "[a-z_]+" \{(.*?)\n\}', every, re.DOTALL)
     to_private = [route for route in routes if "aws_route_table.private.id" in route]
-    assert len(to_private) == 2
-    for route in to_private:
-        assert "vpc_peering_connection_id" in route
+    assert len(to_private) == 3
+    peered = [route for route in to_private if "vpc_peering_connection_id" in route]
+    assert len(peered) == 2
+    for route in peered:
         assert "0.0.0.0/0" not in route and "gateway_id" not in route
+    (out,) = [route for route in to_private if route not in peered]
+    assert "aws_nat_gateway.providers.id" in out and '"0.0.0.0/0"' in out
+
+
+def egress_rules() -> list[str]:
+    every = "\n".join(text(path) for path in HUB.glob("*.tf"))
+    return re.findall(
+        r'resource "aws_vpc_security_group_egress_rule" "[a-z_]+" \{(.*?)\n\}', every, re.DOTALL
+    )
+
+
+def test_only_the_workers_group_may_reach_the_internet_and_only_on_443() -> None:
+    """ADR-0036. A route out exists for every task; one group's one rule lets a task use it."""
+    every = "\n".join(text(path) for path in HUB.glob("*.tf"))
+    outward = [rule for rule in egress_rules() if "0.0.0.0/0" in rule or "::/0" in rule]
+    assert len(outward) == 1
+    (rule,) = outward
+    assert "aws_security_group.worker_internet.id" in rule
+    assert re.search(r"from_port\s*=\s*443", rule) and re.search(r"to_port\s*=\s*443", rule)
+    assert '"tcp"' in rule
+    inline = re.findall(r"egress \{(.*?)\}", every, re.DOTALL)
+    assert not [block for block in inline if "0.0.0.0/0" in block or "::/0" in block]
+
+
+def test_only_the_worker_service_carries_the_internet_group() -> None:
+    every = "\n".join(text(path) for path in HUB.glob("*.tf"))
+    users = re.findall(r'resource "([a-z_]+)" "([a-z_]+)" \{(.*?)\n\}', every, re.DOTALL)
+    carrying = [
+        (kind, name)
+        for kind, name, body in users
+        if "aws_security_group.worker_internet.id" in body and "security_groups" in body
+    ]
+    assert carrying == [("aws_ecs_service", "worker")]
+
+
+def test_no_host_outside_aws_but_these() -> None:
+    """A production module that names a new host outside AWS fails here, not in a deployment."""
+    hosts: set[str] = set()
+    for package in CALLERS:
+        for path in (ROOT / package).rglob("*.py"):
+            for node in ast.walk(ast.parse(path.read_text())):
+                if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                    hosts.update(re.findall(r"https://([a-z0-9.-]+\.[a-z]{2,})", node.value))
+    # docs.aws.amazon.com is named in remediation text for a person to read, never called.
+    aws = ("amazonaws.com", "aws.amazon.com")
+    outside = {host for host in hosts if not host.endswith(aws)}
+    assert outside <= INTERNET_HOSTS
 
 
 def test_an_endpoint_vpcs_one_route_leads_back_to_the_hub() -> None:

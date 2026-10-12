@@ -319,6 +319,38 @@ real account until it does, ISS-224. And the bill's container grain needs split 
 switched on in the Data Export, ISS-003; without it the cost screen says so rather than showing
 clusters that cost nothing.
 
+## P13, AI spend, and the absences it says in words
+
+One screen, `/analyze/ai` under Analyze, in three panels, each with its own freshness, because the
+bill, the providers' reports and the GPU agent arrive on their own schedules. The seed lays down
+every source from fakes, `finops_fakes/cur.py` and `finops_fakes/ai.py`.
+
+**The bill's model lines and two providers, side by side.** Two Bedrock features are billed:
+`support-assistant` in `fake-platform-a`, calling `ClaudeSonnet4` through an application inference
+profile, and `search-summaries` in `fake-product-a`, calling `NovaPro` directly. A fake OpenAI and
+a fake Anthropic organization are connected and report their own cost and usage. Group by provider
+and point at the tokens column: the bill's tokens say measured, because its own line counted them,
+and a provider's say modelled, because its usage report counted them and its cost report did not.
+A cost per request is modelled everywhere, and says so.
+
+**A unit price is drawn past the cent.** A cost per thousand tokens of a few tenths of a cent is
+shown to the places it needs. Drawn to the cent it would read as nothing.
+
+**Who called which model, and an account that cannot say.** `fake-platform-a` sends its invocation
+logs to CloudWatch Logs, so its callers are listed with their tokens and requests, and a caller's
+cost is modelled from the bill's unit cost. `fake-product-a` sends its logs to S3 only, which Meter
+does not read, so it reads `NotOptedIn` on Data Freshness and has no callers rather than callers
+of nothing.
+
+**A GPU that never published.** `fake-platform-a` runs two GPU instances. `i-fakegpu0001`, a
+`g5.xlarge`, publishes through the CloudWatch agent and shows its average and peak and how many of
+its billed days were covered. `i-fakegpu0002`, a `p4d.24xlarge`, publishes nothing and reads
+**not published**, never nought percent, beside the hours and cost the bill still charged.
+
+**What is not real here, and should be said if asked.** No provider has been called and no
+invocation log read, ISS-285 and ISS-002. `docs/runbooks/ai-providers.md` is how a real source is
+connected.
+
 ## Questions that will be asked
 
 **"Is this our data?"** No. See the first section.

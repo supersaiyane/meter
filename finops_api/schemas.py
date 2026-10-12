@@ -2524,3 +2524,120 @@ class LedgerOut(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     teams: list[LedgerTeamOut]
+
+
+# --- FinOps for AI, P13 ----------------------------------------------------------------------
+
+#: How a figure was arrived at, P13 spec section 5.7: read from a report, or derived from two.
+Basis = Literal["measured", "modelled"]
+
+
+class AiSpendRowOut(BaseModel):
+    """One group of the bill's AI lines, every figure with how it was arrived at. FEAT-085."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: The provider, model, token type, feature or caller the group is, as asked.
+    name: str
+    #: The provider of the group's lines, or `(several)` where they come from more than one.
+    provider: str
+    #: Measured: the bill's effective cost.
+    cost: Decimal
+    #: Null where nothing counted the group's tokens, which is unknown and never none.
+    tokens: Decimal | None
+    tokens_basis: Basis | None
+    #: Null where no usage report or invocation log counted the group's requests.
+    requests: int | None
+    cost_per_1k_tokens: Decimal | None
+    cost_per_1k_tokens_basis: Basis | None
+    #: Modelled, always: the cost is the bill's and the requests are another report's.
+    cost_per_request: Decimal | None
+    cost_per_request_basis: Basis | None
+
+
+class AiConnectionOut(BaseModel):
+    """An AI provider organization the tenant connected. Never its key or the key's name."""
+
+    model_config = ConfigDict(frozen=True)
+
+    provider: str
+    organization_id: str
+    name: str
+
+
+class AiSpendOut(BaseModel):
+    """AI spend for a billing period, grouped as asked. FEAT-081, 083 and 085, TASK-P13-007."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: Null where the bill holds no AI line this reader can see.
+    period: date | None
+    group_by: str
+    #: Measured. Null with the period, which is no AI spend seen and never nought.
+    total_cost: Decimal | None
+    rows: list[AiSpendRowOut]
+    connected: list[AiConnectionOut]
+
+
+class AiCallerOut(BaseModel):
+    """One caller's tokens and requests on one model, and what they cost. FEAT-082."""
+
+    model_config = ConfigDict(frozen=True)
+
+    source: str
+    account_id: str
+    #: The Region for the invocation logs; a provider's project or workspace, empty for its default.
+    workspace: str
+    #: A provider's key, by its id and never the key; empty for the invocation logs.
+    api_key_id: str
+    #: An IAM ARN or a provider's user, either of which can name a person: class P. Empty where
+    #: the source names no one, which a provider's key then stands for.
+    caller: str
+    application: str
+    model: str
+    tokens: int
+    requests: int | None
+    #: Modelled: the bill's unit cost for the same model, token type and day, spread over the
+    #: caller's tokens. Null where the bill priced none of them, which is unknown, never free.
+    modelled_cost: Decimal | None
+    modelled_cost_basis: Basis
+
+
+class AiCallersOut(BaseModel):
+    """Who called which model in a billing period. FEAT-082, TASK-P13-007."""
+
+    model_config = ConfigDict(frozen=True)
+
+    period: date | None
+    callers: list[AiCallerOut]
+
+
+class AiGpuOut(BaseModel):
+    """One GPU instance's hours and cost, and how busy it was. FEAT-084, TASK-P13-007."""
+
+    model_config = ConfigDict(frozen=True)
+
+    account_id: str
+    region_id: str | None
+    instance_id: str
+    instance_type: str
+    #: Measured, from the bill.
+    hours: Decimal
+    cost: Decimal
+    days_billed: int
+    days_published: int
+    #: Measured, from the agent: the mean of the published days' averages and the highest peak.
+    #: Null where the agent published nothing, which is not published and never nought percent.
+    average_percent: Decimal | None
+    peak_percent: Decimal | None
+    #: published, partly published or not published.
+    utilization: str
+
+
+class AiGpuFleetOut(BaseModel):
+    """The GPU instances the bill names in a billing period. FEAT-084, TASK-P13-007."""
+
+    model_config = ConfigDict(frozen=True)
+
+    period: date | None
+    instances: list[AiGpuOut]

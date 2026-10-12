@@ -132,6 +132,28 @@ def test_the_migration_installs_the_cadence_the_registry_declares(
     assert installed == declared
 
 
+@pytest.mark.parametrize(
+    "revision",
+    ["0050_ai_collector_schedules", "0051_anthropic_schedule", "0052_gpu_utilization_daily"],
+)
+def test_a_migration_installing_several_cadences_copies_each_from_the_registry(
+    revision: str,
+) -> None:
+    """The P13 form of the test above: one migration, several collectors, each a copy, ISS-287."""
+    import importlib.util
+
+    migration = Path(__file__).resolve().parents[2] / f"migrations/versions/{revision}.py"
+    spec = importlib.util.spec_from_file_location(f"migration_{revision}", migration)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    by_name = {entry.collector: entry for entry in DEFAULT_SCHEDULE}
+    assert module._SCHEDULE
+    for collector, installed in module._SCHEDULE.items():
+        entry = by_name[collector]
+        assert installed == (entry.cadence_seconds, entry.reason, entry.est_cost_per_run), collector
+
+
 @pytest.mark.parametrize("entry", DEFAULT_SCHEDULE, ids=lambda e: e.collector)
 def test_every_cadence_explains_itself(entry: ScheduleEntry) -> None:
     """ADR-0012 and constraint 9.

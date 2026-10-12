@@ -757,3 +757,53 @@ def test_the_seeded_estate_names_owners_from_its_tags(engine: object) -> None:
         assert asked["BEFORE_HISTORY"] > 0
     finally:
         seed_demo.remove(engine)
+
+
+@pytest.mark.integration
+def test_the_demo_carries_ai_spend_from_every_source(engine: object) -> None:
+    """P13, TASK-P13-009: the bill's model lines, both providers, the logs and the GPU agent.
+
+    The AI spend screen on the local stack shows what this seeded, so each source is asserted by
+    name, and so are the two absences the screen exists to say: an account whose invocation logs
+    go to S3 only, NotOptedIn, and a GPU instance whose agent publishes nothing.
+    """
+    from sqlalchemy import text as sql
+
+    seed_demo.seed(engine, Settings(), _now())
+    tenant = {"t": DEMO_TENANT}
+    with engine.connect() as connection:  # type: ignore[attr-defined]
+        sources = set(
+            connection.execute(
+                sql(
+                    "SELECT DISTINCT ingest_source FROM cost_focus_daily WHERE tenant_id = :t "
+                    "AND (ingest_source <> 'aws_export' OR x_ai_model IS NOT NULL)"
+                ),
+                tenant,
+            ).scalars()
+        )
+        assert sources == {"aws_export", "openai", "anthropic"}
+        usage = set(
+            connection.execute(
+                sql("SELECT DISTINCT provider FROM ai_usage_daily WHERE tenant_id = :t"), tenant
+            ).scalars()
+        )
+        assert usage == {"bedrock", "openai", "anthropic"}
+        published = set(
+            connection.execute(
+                sql("SELECT DISTINCT instance_id FROM gpu_utilization_daily WHERE tenant_id = :t"),
+                tenant,
+            ).scalars()
+        )
+        assert published == {"i-fakegpu0001"}, "the second instance's agent publishes nothing"
+        connected = connection.execute(
+            sql("SELECT count(*) FROM ai_provider_account WHERE tenant_id = :t AND active"), tenant
+        ).scalar_one()
+        assert connected == 2
+        refused = connection.execute(
+            sql(
+                "SELECT error_type FROM sync_error WHERE tenant_id = :t "
+                "AND collector = 'bedrock_invocations'"
+            ),
+            tenant,
+        ).scalars()
+        assert "NotOptedIn" in set(refused)

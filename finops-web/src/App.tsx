@@ -37,6 +37,7 @@ import { WasteScoreScreen } from './screens/WasteScoreScreen';
 import { ContainerWasteScreen } from './screens/ContainerWasteScreen';
 import { ContainerCostScreen } from './screens/ContainerCostScreen';
 import { ClustersScreen } from './screens/ClustersScreen';
+import { AiSpendScreen } from './screens/AiSpendScreen';
 import { PlatformScreen } from './screens/PlatformScreen';
 import { AssistantScreen } from './screens/AssistantScreen';
 import { DigestsScreen } from './screens/DigestsScreen';
@@ -123,6 +124,7 @@ export function App({
                   element={<ContainerWasteScreen />}
                 />
                 <Route path="/analyze/clusters" element={<ClustersScreen />} />
+                <Route path="/analyze/ai" element={<AiSpendScreen />} />
 
                 <Route path="/plan/budgets" element={<BudgetsScreen />} />
                 <Route path="/plan/forecasts" element={<ForecastScreen />} />

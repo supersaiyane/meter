@@ -103,6 +103,27 @@ resource "aws_vpc_security_group_egress_rule" "tasks_internal" {
   ip_protocol                  = "-1"
 }
 
+# The one group that may leave the VPC, ADR-0036. The worker alone carries it, beside the
+# shared group, because the worker alone reads OpenAI's and Anthropic's usage reports, which
+# have no endpoint. HTTPS only. A second rule to the internet, on this group or any other,
+# fails tests/contract/test_network_paths.py.
+resource "aws_security_group" "worker_internet" {
+  name        = "${local.name}-worker-internet"
+  description = "The worker's HTTPS to the AI providers through the NAT gateway. No ingress."
+  vpc_id      = aws_vpc.hub.id
+
+  tags = { Name = "${local.name}-worker-internet" }
+}
+
+resource "aws_vpc_security_group_egress_rule" "worker_internet_https" {
+  security_group_id = aws_security_group.worker_internet.id
+  description       = "HTTPS to the AI providers' report APIs, through the NAT gateway."
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+}
+
 # Development may serve over HTTP. Production may not, and the refusal is here
 # rather than in a review checklist, because "we will add TLS before we go live"
 # is a sentence that survives going live.

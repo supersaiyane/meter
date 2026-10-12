@@ -201,6 +201,15 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0",
     ),
     ScheduleEntry(
+        collector="retention_ai_usage",
+        cadence_seconds=DAILY,
+        reason=(
+            "Tokens and requests per caller are kept 13 months, P13 spec section 6, because a "
+            "caller can name a person. Daily, so a day's usage leaves within a day of its window."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
         collector="retention_audit",
         cadence_seconds=DAILY,
         reason=(
@@ -497,6 +506,60 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
             "and it reads rows already in the database, so that costs nothing."
         ),
         est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="anthropic_usage",
+        cadence_seconds=DAILY,
+        reason=(
+            "Anthropic's cost and usage for each connected organization, P13 spec section 5.5. "
+            "Daily, rereading the billing period to date: the cost report is in daily buckets "
+            "and recent ones are revised, so reading more often adds nothing and reading less "
+            "often leaves the month's figure behind the bill. The Admin API's reports are not "
+            "billed, so a run costs the NAT gateway's per GB charge on a few kilobytes. ADR-0012 "
+            "and constraint 9."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="openai_usage",
+        cadence_seconds=DAILY,
+        reason=(
+            "OpenAI's cost and usage for each connected organization, P13 spec section 5.5. "
+            "Daily, rereading the billing period to date: the reports are in daily buckets and "
+            "OpenAI revises recent ones, so reading more often adds nothing and reading less "
+            "often leaves the month's figure behind the bill. The reports are not billed, so a "
+            "run costs the NAT gateway's per GB charge on a few kilobytes. ADR-0012 and "
+            "constraint 9."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="gpu_utilization",
+        cadence_seconds=DAILY,
+        reason=(
+            "How busy each GPU instance's accelerators were, P13 spec section 5.6. Daily, for the "
+            "day before: the table holds a day's average and peak, so reading more often reads "
+            "the same day again. The cost is GetMetricData's, USD 0.01 per 1,000 metrics at the "
+            "list price, three a day for each accelerator of each GPU instance the bill names: "
+            "modelled at 0.001 USD a run for one instance of eight accelerators, and not measured "
+            "until an account is read, ISS-002. ADR-0012 and constraint 9."
+        ),
+        est_cost_per_run="0.001",
+    ),
+    ScheduleEntry(
+        collector="bedrock_invocations",
+        cadence_seconds=DAILY,
+        reason=(
+            "Who called which Bedrock model, from the invocation logs, P13 spec section 5.4. "
+            "Daily, for the day before: the logs are complete for a day once it has ended, a "
+            "cost per caller is modelled from the bill, which is itself daily, and reading more "
+            "often would scan the same log events again. The cost is the bytes Logs Insights "
+            "scans in the member account, USD 0.005 per GB at the list price, and the logs hold "
+            "every prompt and response, so a busy account's day can be gigabytes: modelled at two "
+            "GB a run, 0.01 USD, and not measured until an account is read, ISS-002. ADR-0012 "
+            "and constraint 9."
+        ),
+        est_cost_per_run="0.01",
     ),
     ScheduleEntry(
         collector="container_usage",

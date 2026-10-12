@@ -117,6 +117,12 @@ subprojects:
   spec: specs/2026-10-12-p12-deployment-readiness-design.md
   plan: plans/P12-implementation-plan.md
   depends_on: P11
+- id: P13
+  name: FinOps for AI
+  status: 'Delivered on 2026-10-13 against fakes, proven by TASK-P13-009 against the seeded demo through the API. Approved by the owner on 2026-10-12 with OPEN-31 to OPEN-34 answered, and chosen the same day as the next priority, proposal 2 of next-in-scope.txt. No provider has been called and no invocation log read, ISS-285 and ISS-002. Bedrock by model, token type, application and caller; OpenAI and Anthropic cost and usage through a NAT gateway only the worker can use; GPU hours, cost and utilization; and one screen for cost per token, per request and per feature'
+  spec: specs/2026-10-12-p13-finops-for-ai-design.md
+  plan: plans/P13-implementation-plan.md
+  depends_on: P12
 features:
 - id: FEAT-001
   name: Account onboarding and organization topology, parent to child map
@@ -604,6 +610,36 @@ features:
   status: Delivered
   detail: '[P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.4 and 5.5, [P12 plan](docs/plans/P12-implementation-plan.md)'
   doc: docs/features/FEAT-080-deployed-settings.md
+- id: FEAT-081
+  name: Bedrock cost by model, token type, application and IAM principal, from the bill
+  subproject: P13
+  status: Delivered
+  detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) sections 5.2, 5.3 and 5.7, [P13 plan](docs/plans/P13-implementation-plan.md)'
+  doc: docs/features/FEAT-081-bedrock-cost-from-the-bill.md
+- id: FEAT-082
+  name: Bedrock usage per caller from invocation logs
+  subproject: P13
+  status: Delivered
+  detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) section 5.4, [P13 plan](docs/plans/P13-implementation-plan.md)'
+  doc: docs/features/FEAT-082-bedrock-usage-per-caller.md
+- id: FEAT-083
+  name: OpenAI and Anthropic cost and usage beside the AWS bill
+  subproject: P13
+  status: Delivered
+  detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) sections 5.1, 5.3 and 5.5, [P13 plan](docs/plans/P13-implementation-plan.md)'
+  doc: docs/features/FEAT-083-openai-and-anthropic.md
+- id: FEAT-084
+  name: GPU hours, cost and utilization
+  subproject: P13
+  status: Delivered
+  detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) section 5.6, [P13 plan](docs/plans/P13-implementation-plan.md)'
+  doc: docs/features/FEAT-084-gpu-hours-cost-and-utilization.md
+- id: FEAT-085
+  name: The AI spend screen, cost per token, per request and per feature
+  subproject: P13
+  status: Delivered
+  detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) sections 5.7 and 8, [P13 plan](docs/plans/P13-implementation-plan.md)'
+  doc: docs/features/FEAT-085-ai-spend-screen.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -749,6 +785,10 @@ adrs:
   decision: The hub reaches AWS through endpoints, and through a relay for what has none
   status: Accepted
   doc: docs/adr/ADR-0035-hub-network-path-endpoints-and-relay.md
+- id: ADR-0036
+  decision: The worker reaches the AI providers through a NAT gateway, and nothing else does
+  status: Accepted
+  doc: docs/adr/ADR-0036-a-nat-gateway-for-the-worker-only.md
 changes:
 - id: CHG-0001
   date: '2026-08-23'
@@ -2444,6 +2484,66 @@ changes:
     removes a question older than 90 days with its redactions, METER_RETENTION_ASSISTANT_DAYS. Testing the script''s
     main found that a person the tenant does not have failed on its own audit record''s foreign key rather than
     saying so; the person is now checked first'
+- id: CHG-0172
+  date: '2026-10-12'
+  type: Design
+  what: The P13 spec and plan, FinOps for AI, with OPEN-31 to OPEN-34 answered and ADR-0036
+  commit: pending
+  detail: 'Chosen by the owner on 2026-10-12, proposal 2 of next-in-scope.txt. docs/specs/2026-10-12-p13-finops-for-ai-design.md and docs/plans/P13-implementation-plan.md, nine tasks, FEAT-081 to FEAT-085. The owner chose a NAT gateway to reach OpenAI and Anthropic, OPEN-31, recorded in ADR-0036 with the gateway usable by the worker only; Bedrock per user and agent from invocation logs where enabled, OPEN-32; GPU utilization as well as hours and cost, OPEN-33; and x_ columns for token fields until FOCUS 1.5, OPEN-34. Reading the cost collector found its restatement delete would remove any second source''s rows, so cost_focus_daily gains ingest_source. ISS-285 raised: the provider adapters are unverified until a key exists'
+- id: CHG-0173
+  date: '2026-10-12'
+  type: Infrastructure
+  what: TASK-P13-001, a NAT gateway the worker alone may use, ADR-0036
+  commit: pending
+  detail: 'infra/terraform/hub/network.tf adds one NAT gateway with an Elastic IP in the first public subnet and the private route table''s one default route to it, tagged finops:module ai so the platform''s own cost shows it; alb.tf adds worker_internet, one egress rule, TCP 443 to anywhere, and ecs.tf gives it to the worker service alone. tests/contract/test_network_paths.py, which held that there was no NAT, now holds one gateway, three private routes, one rule to the internet in the hub and one service carrying it, and fails on any host outside AWS in the production code but the two providers''. trivy''s AWS-0104 on the rule is accepted with that enforcement, and AWS-0053''s argument no longer says no task has a route out. docs/04-DEPLOYMENT.md and docs/05-SECURITY.md amended. Modelled at about 38.69 USD a month; nothing applied, ISS-002'
+- id: CHG-0174
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P13-002, the bill's AI columns and each source restating only its own rows
+  commit: pending
+  detail: 'Migration 0047 adds ingest_source and five x_ columns to cost_focus_daily, x_usage_type, x_iam_principal, x_ai_model, x_ai_token_type and x_ai_tokens, with constraints holding a token count to its type and a type to its model. finops_providers/aws/bedrock_usage.py reads the model and token type from a Bedrock usage type, in Bedrock''s own form and the marketplace form, and yields nothing for one it does not recognise; the export applies it as it reads a row. It began in finops_core and ADR-0028''s test, which keeps every vendor''s name out of that package, moved it; the token types alone stay there. finops_providers/aws/cur.py asks the catalog for x_usagetype and line_item_iam_principal with the split and FOCUS 1.2 columns. The cost collector writes them and its restatement now keys on ingest_source, so the bill''s run cannot remove an AI provider''s rows, and it refuses a row that is not the bill''s. The fake export carries two Bedrock features opt in, ai=True. Every mapping is checkable only against a real export, ISS-002'
+- id: CHG-0175
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P13-003, Bedrock usage per caller from invocation logs, read as aggregates only
+  commit: pending
+  detail: 'Migration 0048 creates ai_usage_daily, tokens and requests per day, model, caller and application, class P and kept 13 months by retention_ai_usage. The InvocationLogs port, in a new AI_PORTS group, and finops_providers/aws/bedrock_invocations.py: the account''s invocation logging configuration, then one Logs Insights stats query a day whose every output is a count or a sum, held to that by a test; no CloudWatch Logs group is NotOptedIn with the step. The collector is scheduled daily and composed in both modes, with a fake of three accounts, read, S3 only and nowhere. The member role gains the configuration read and GetQueryResults, and StartQuery only on the log groups the new StackSet parameter InvocationLogGroupPattern names; StopQuery is not granted. A Bedrock interface endpoint in each collection Region, modelled at 16.06 USD a month each. The setting is ai_request_metadata_key, ADR-0028 keeping vendors out of finops_core'
+- id: CHG-0176
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P13-004, provider accounts and OpenAI's cost and usage beside the bill
+  commit: pending
+  detail: 'Migration 0049 creates ai_provider_account, an organization per row naming the Secrets Manager secret of its admin key, held under meter/<env>/ai/ by a constraint. The AiProviderReports port; finops_providers/ai_reports.py, the paged client OpenAI and Anthropic share, retries bounded, every failure typed and a refused key''s message never kept; finops_providers/openai/reports.py over the costs and completions usage reports, line items read into model and token type and cached input counted once; finops_providers/aws/secrets.py; finops_ingest/collectors/ai_providers.py, writing FOCUS rows of source openai and usage rows, each organization read and restated on its own and one failing typed in sync_error without failing another; scripts/ops/connect_ai_provider.py, which connects an organization only once its key reads a day of costs. The task role may read the AI path, shared with the API, ISS-286. Migration 0050 installs the cadences of bedrock_invocations, retention_ai_usage and openai_usage for existing tenants and found retention_assistant had none, ISS-287'
+- id: CHG-0177
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P13-005, Anthropic's cost and usage beside the bill and OpenAI's
+  commit: pending
+  detail: 'finops_providers/anthropic/reports.py reads the Admin API''s cost report, whose amounts are in cents and are divided by a hundred, and its messages usage report, which counts tokens and not requests, so requests is None and never a zero; the model and token type come from the report''s own fields. The anthropic_usage collector over the shared provider collector, in both compositions, with a fake organization of two workspaces, the default one among them. The connect script takes --provider anthropic, and migration 0051 installs the cadence for existing tenants. A test runs the bill, OpenAI and Anthropic into one period and finds each source''s rows intact'
+- id: CHG-0178
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P13-006, GPU utilization from the CloudWatch agent's NVIDIA metrics
+  commit: pending
+  detail: 'Migration 0052 creates gpu_utilization_daily, an instance''s accelerators'' average, peak and readings per day, constrained to percentages and at least one reading, and installs the gpu_utilization cadence for existing tenants. accelerated_instance_type reads the p, g, gr, trn, inf and dl families from a usage type, SageMaker''s ml. form among them. The GpuMetrics port and finops_providers/aws/gpu_metrics.py, which lists each instance''s nvidia_smi_utilization_gpu metrics before reading three statistics of each. The collector asks only about the accelerated instances the bill names in the account and Region, so an instance nobody paid for is never asked about and no new permission is needed; one that publishes nothing has no row, read as not published. METER_GPU_METRICS_NAMESPACE names the agent''s namespace, CWAgent by default. The fake bill carries two GPU instances, one publishing and one not'
+- id: CHG-0179
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P13-007, the AI endpoints, spend, callers and the GPU fleet
+  commit: pending
+  detail: 'GET /ai/spend groups the bill''s AI lines by provider, model, token type, feature or caller, every figure with its basis: cost measured; tokens measured where the bill line counts them and modelled from the provider''s usage report where it does not; a cost per request modelled always. GET /ai/callers prices each caller''s tokens at the bill''s unit cost for the same source, account, model, token type and day, modelled, None where nothing priced them. GET /ai/gpu lists each GPU instance the bill names with hours, cost and published, partly published or not published. finops_query/ai.py holds the arithmetic and model_key, which matches a log''s model identifier to the bill''s name; a usage source is matched to its bill through the connected providers, so neither package names a vendor, ADR-0028. ai_usage_daily and gpu_utilization_daily are scoped by account and ai_provider_account payer wide, so a provider''s spend is visible at global scope only'
+- id: CHG-0180
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P13-008, the AI spend screen
+  commit: pending
+  detail: 'finops-web/src/screens/AiSpendScreen.tsx at /analyze/ai, under Analyze, with group_by and period in the address. Spend by provider, model, token type, feature or caller with its measured total and the connected providers; who called which model; the GPU instances. Each panel is its own read with its own state and freshness. Tokens, requests and the two unit costs carry their basis, and Figure gains usd-unit, which draws a unit price to as many as six places, because $0.003 drawn to the cent is $0.00. Tokens nobody counted, a caller nobody priced and an agent that never published are said in words. Migration 0053 admits the path as a saved view''s screen. Coverage on the AI and cost routes counts the cloud bill''s accounts, ISS-288'
+- id: CHG-0181
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P13-009, AI spend on the local stack, first contact for each source, and P13's proof
+  commit: pending
+  detail: 'The demo seed bills the Bedrock and GPU lines in the one bill its cost rows and invoices are built from, through finops_fakes.cur.with_ai, connects a fake OpenAI and a fake Anthropic organization and runs both provider collectors, the invocation logs in each Bedrock account, one of which reads NotOptedIn, and the GPU agent; the local stack''s composition bills the same lines. make first-contact reads the GPU agent''s metrics and, when a key''s secret is named, a provider''s day of costs through the worker''s own key reader; a provider not named is not read and the report says so. docs/runbooks/ai-providers.md has the owner''s steps for a provider key, invocation logging and the GPU agent. The callers endpoint and screen carry a provider''s project or workspace and its key, ISS-289. tests/scripts/test_p13_exit_criteria.py reads the exit criteria through the API over the seeded demo'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4989,6 +5089,31 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-289
+  severity: MEDIUM
+  status: FIXED
+  summary: A provider's usage reached the callers panel with no name, its project and key dropped
+  detail: 'Found 2026-10-13 proving P13''s third exit criterion. An OpenAI or Anthropic usage row names its project or workspace and the key it was made with, and names a user only sometimes; Anthropic names none. GET /ai/callers grouped by caller and application alone, so a provider''s usage arrived as one row with a blank caller and a blank application, and the screen drew a name that was not there. Fixed the same day, CHG-0181: finops_query.ai.callers groups by workspace and key as well, the endpoint returns both, and the screen names a caller by its key where the provider names no one, beside its project, workspace or Region. Held by tests/query/test_ai.py and tests/scripts/test_p13_exit_criteria.py'
+- id: ISS-288
+  severity: MEDIUM
+  status: FIXED
+  summary: A provider's projects counted as accounts, so a whole estate could read as partial
+  detail: 'Found 2026-10-13 building TASK-P13-008. The AI routes counted the accounts holding AI spend as the visible accounts, so a reader who sees every account, two of which use a model, was drawn a partial view of the estate. The cost routes counted every sub account in the period, and since TASK-P13-004 a provider''s line names a project or workspace there, so a global reader''s estate of five could read as seven. Fixed the same day, CHG-0180: CostRepository.accounts_in counts the cloud bill''s lines only and the AI routes use it, held by tests/api/test_ai_routes.py'
+- id: ISS-287
+  severity: MEDIUM
+  status: FIXED
+  summary: retention_assistant never ran for a tenant that existed before it
+  detail: 'Found 2026-10-12 writing migration 0050 for TASK-P13-004. install_default_schedule gives a new tenant every collector in DEFAULT_SCHEDULE and nothing gives one to an existing tenant, so each new collector installs its own row, as 0043 did for savings_ledger. retention_assistant, added with the erasure fixes on 2026-10-12, CHG-0171, had no such migration, so for any tenant that existed before it a person''s questions would never have been removed at 90 days. Fixed by 0050_ai_collector_schedules, which installs it with P13''s three, and held by tests/ingest/test_registry.py'
+- id: ISS-286
+  severity: LOW
+  status: OPEN
+  summary: The API may read the AI providers' admin keys because it shares the worker's task role
+  detail: 'Raised 2026-10-12 by TASK-P13-004. The hub has one task role, FinOpsHubTaskRole, held by the API and the worker, and every member account''s collector role trusts it by name. Granting the worker the read of meter/<env>/ai/* grants it to the API too. The API never reads a key and cannot reach a provider, because only the worker''s security group leads to the internet, ADR-0036, so a key read in the API would reach nowhere; the residual risk is a compromised API task reading a key and returning it in a response. A role the worker alone holds needs every member StackSet''s trust policy to name it, a redeploy across the organization, so it is left for the owner to weigh'
+- id: ISS-285
+  severity: MEDIUM
+  status: OPEN
+  summary: The OpenAI and Anthropic adapters are unverified until an admin key exists
+  detail: 'Raised 2026-10-12 by the P13 spec, section 10. The adapters are written to each provider''s published reference for its cost and usage reports, read on 2026-10-12, and tested against recorded shapes through a mock transport. No call has reached either provider, because no organization has given Meter an admin key. A field the reference names and the live API does not return reads as SchemaDrift rather than a zero. Closed by make first-contact against one organization of each provider'
 - id: ISS-284
   severity: MEDIUM
   status: OPEN
@@ -5406,3 +5531,23 @@ open_questions:
   detail: 'Raised 2026-10-12 by the P12 spec, section 3. The pipeline is written for GitLab, .gitlab-ci.yml,
     and has never run because the repository has no remote. Choosing the host and adding the remote is the
     owner''s; the first push runs the pipeline for the first time, and a push to main runs deploy:dev.'
+- id: OPEN-31
+  question: 'How does a deployed Meter reach OpenAI and Anthropic, which have no VPC endpoint? ANSWERED 2026-10-12: a NAT gateway'
+  status: ANSWERED
+  blocks: TASK-P13-001
+  detail: 'Raised 2026-10-12 by the P13 spec, section 5.1. The choices were a NAT gateway, the relay of ADR-0035, or Network Firewall with a domain allow list. The owner chose a NAT gateway; ADR-0036 records it, with only the worker''s security group allowed to use it.'
+- id: OPEN-32
+  question: 'Where does Bedrock cost per user and agent come from? ANSWERED 2026-10-12 as recommended: invocation logs where enabled'
+  status: ANSWERED
+  blocks: TASK-P13-003
+  detail: 'Raised 2026-10-12 by the P13 spec, section 5.4. The bill names the IAM principal, usually a shared role. Invocation logs name the caller and the request metadata, and hold the prompt and response, so Meter reads them through an aggregate query only, where an account sends them to CloudWatch Logs, and reads NotOptedIn where it does not.'
+- id: OPEN-33
+  question: 'What does GPU spend show? ANSWERED 2026-10-12: utilization as well as hours and cost'
+  status: ANSWERED
+  blocks: TASK-P13-006
+  detail: 'Raised 2026-10-12 by the P13 spec, section 5.6. Hours and cost come from the bill. The owner added utilization, read from the CloudWatch agent''s NVIDIA metrics where an instance publishes them, and shown as not published, never zero, where it does not.'
+- id: OPEN-34
+  question: 'How are token fields stored before FOCUS 1.5 names them? ANSWERED 2026-10-12 as recommended: x_ columns now, renamed when FOCUS 1.5 lands'
+  status: ANSWERED
+  blocks: TASK-P13-002
+  detail: 'Raised 2026-10-12 by the P13 spec, section 5.2. FOCUS reserves the x_ prefix for a producer''s own columns. The rename follows constraint 12: add the new columns, backfill, and drop the x_ ones a release later.'

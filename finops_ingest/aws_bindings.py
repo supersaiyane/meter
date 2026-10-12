@@ -21,10 +21,12 @@ from finops_core.domain.account import AccountKey
 from finops_core.errors import Misconfigured, SchemaDrift
 from finops_ingest.accounts import active_accounts
 from finops_ingest.collectors.account_health import AccountHealthCollector
+from finops_ingest.collectors.ai_usage import BedrockInvocationsCollector
 from finops_ingest.collectors.budgets import BudgetCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
 from finops_ingest.collectors.container_usage import ContainerUsageCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
+from finops_ingest.collectors.gpu_utilization import GpuUtilizationCollector
 from finops_ingest.collectors.iac_state import IacStateCollector
 from finops_ingest.collectors.instance_catalog import InstanceCatalogCollector
 from finops_ingest.collectors.inventory import InventoryCollector
@@ -40,6 +42,7 @@ from finops_ingest.collectors.spot_prices import SpotPricesCollector
 from finops_ingest.collectors.topology import CompositeTopologySource
 from finops_ingest.registry import CollectorContext, CollectorRunner
 from finops_providers.aws.accounts import AwsAccountDiscovery
+from finops_providers.aws.bedrock_invocations import BedrockInvocationLogs
 from finops_providers.aws.budgets import AwsBudgets
 from finops_providers.aws.cloudtrail_creators import AwsResourceCreators
 from finops_providers.aws.commitment import CostExplorerCommitmentReport
@@ -47,6 +50,7 @@ from finops_providers.aws.config_inventory import ConfigAggregatorInventory
 from finops_providers.aws.container_insights import ContainerInsightsSource
 from finops_providers.aws.credentials import AwsCredentialBroker
 from finops_providers.aws.cur import AthenaCostExport
+from finops_providers.aws.gpu_metrics import CloudWatchGpuMetrics
 from finops_providers.aws.health import AccountHealthCheck
 from finops_providers.aws.instance_types import AwsInstanceCatalog
 from finops_providers.aws.invoices import AwsInvoices
@@ -138,6 +142,12 @@ def _account_health(context: CollectorContext) -> CollectorRunner:
     return AccountHealthCollector(AccountHealthCheck(AwsCredentialBroker(context.settings)))
 
 
+def _bedrock_invocations(context: CollectorContext) -> CollectorRunner:
+    session = _assumed(context, "bedrock_invocations")
+    logs = BedrockInvocationLogs(context.settings, context.unit.tenant_id, session=session)
+    return BedrockInvocationsCollector(logs)
+
+
 def _budgets(context: CollectorContext) -> CollectorRunner:
     payer = _payer(context, "budgets")
     client = _relayed(context, "budgets", service="budgets", region=GLOBAL_REGION, account=payer)
@@ -158,6 +168,12 @@ def _container_usage(context: CollectorContext) -> CollectorRunner:
 def _cost_focus(context: CollectorContext) -> CollectorRunner:
     export = AthenaCostExport(context.settings, context.unit.tenant_id, context.run_id)
     return CostFocusCollector(export)
+
+
+def _gpu_utilization(context: CollectorContext) -> CollectorRunner:
+    session = _assumed(context, "gpu_utilization")
+    metrics = CloudWatchGpuMetrics(context.settings, context.unit.tenant_id, session=session)
+    return GpuUtilizationCollector(metrics)
 
 
 def _iac_state(context: CollectorContext) -> CollectorRunner:
@@ -259,10 +275,12 @@ def _spot_prices(context: CollectorContext) -> CollectorRunner:
 #: Each collector the worker runs that has an AWS composition, built from its adapters.
 AWS_BUILDERS: Final[dict[str, Build]] = {
     "account_health": _account_health,
+    "bedrock_invocations": _bedrock_invocations,
     "budgets": _budgets,
     "commitment": _commitment,
     "container_usage": _container_usage,
     "cost_focus": _cost_focus,
+    "gpu_utilization": _gpu_utilization,
     "iac_state": _iac_state,
     "instance_catalog": _instance_catalog,
     "inventory": _inventory,

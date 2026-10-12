@@ -91,27 +91,38 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-12 | ISS-085, tool results screened before the model reads them, CHG-0169 | Done | finops_query/insight.py screens every tool result and failing tool message with the gitleaks rules, replaces hits, returns them as withheld; recorded in redaction_event with found_in tool_result, migration 0046; route and web type carry found_in | finops_query/insight.py:300, migrations/versions/0046_redaction_found_in.py:1, tests/query/test_insight_loop.py, docs/registry.yaml ISS-136 |
 | 2026-10-12 | ISS-136 closed, a failed request states no coverage figure, CHG-0170 | Done | Already fixed by 514ae5e (coverage lines counting nothing dropped); pinned by a components test that fails without the filter | finops-web/src/components/__tests__/shell.test.tsx, finops-web/src/shell/metaStore.ts:149, docs/registry.yaml OPEN-14 |
 | 2026-10-12 | Erasure gaps closed, OPEN-14 answered, CHG-0171 | Done | erase_principal tombstones questions, redactions and exports, removes private views and keeps shared ones by hash, pauses owned schedules and unlists the person; retention_assistant keeps questions 90 days, METER_RETENTION_ASSISTANT_DAYS | scripts/ops/erase_principal.py:170, finops_ingest/collectors/retention.py:200, tests/ingest/collectors/test_retention.py:690 |
+| 2026-10-12 | P13 FinOps for AI specified and planned, OPEN-31 to OPEN-34 answered, CHG-0172 | Done | Spec, plan of nine tasks, ADR-0036 for a NAT gateway the worker alone may use, FEAT-081 to FEAT-085, ISS-285; cost_focus_daily gains ingest_source because the cost collector's delete would remove a second source's rows | docs/specs/2026-10-12-p13-finops-for-ai-design.md:1, docs/plans/P13-implementation-plan.md:42, finops_ingest/collectors/cost_focus.py:167, finops_providers/aws/cur.py:110 |
+| 2026-10-12 | TASK-P13-001, a NAT gateway the worker alone may use, CHG-0173 | Done | NAT gateway, Elastic IP and default route in network.tf; worker_internet group with one 443 rule, on the worker service only; network contract tests hold one route out, the worker's, and no host outside AWS but the two providers'; AWS-0104 accepted with that enforcement | infra/terraform/hub/network.tf:154, infra/terraform/hub/alb.tf:110, tests/contract/test_network_paths.py:228, security/policy/accepted.yaml:124 |
+| 2026-10-12 | TASK-P13-002, the bill's AI columns, CHG-0174 | Done | Migration 0047 adds ingest_source and five x_ columns; a pure usage type parser beside the AWS export, ADR-0028 keeping vendors out of finops_core; cur.py reads x_usagetype and line_item_iam_principal where present; the cost collector's restatement keys on its source; the fake export's Bedrock lines are opt in | migrations/versions/0047_cost_ai_columns.py:1, finops_providers/aws/bedrock_usage.py:74, finops_ingest/collectors/cost_focus.py:178, tests/ingest/collectors/test_cost_focus_sources.py:1 |
+| 2026-10-12 | TASK-P13-003, Bedrock usage per caller from invocation logs, CHG-0175 | Done | ai_usage_daily, migration 0048; InvocationLogs port; one aggregate Logs Insights query a day, held to aggregates by a test; NotOptedIn where logs do not reach CloudWatch Logs; StartQuery scoped to InvocationLogGroupPattern; retention_ai_usage at 13 months; Bedrock endpoints in both Regions | finops_providers/aws/bedrock_invocations.py:74, finops_ingest/collectors/ai_usage.py:139, tests/providers/aws/test_bedrock_invocations.py:116, infra/terraform/member/collector_role.yaml:164 |
+| 2026-10-12 | TASK-P13-004, provider accounts and OpenAI, CHG-0176 | Done | ai_provider_account, migration 0049; AiProviderReports port; shared paged client; OpenAI adapter; key reader refusing any path but meter/<env>/ai/; provider collector restating per organization; connect script; migration 0050 installs four cadences for existing tenants, ISS-287 fixed; ISS-286 raised | finops_providers/openai/reports.py:53, finops_ingest/collectors/ai_providers.py:61, scripts/ops/connect_ai_provider.py:74, migrations/versions/0050_ai_collector_schedules.py:1 |
+| 2026-10-13 | TASK-P13-005, Anthropic, CHG-0177 | Done | Anthropic adapter: cents divided by a hundred, model and token type from the report's fields, no request count; anthropic_usage collector and fake; connect script and migration 0051 | finops_providers/anthropic/reports.py:62, finops_ingest/collectors/anthropic_usage.py:24, migrations/versions/0051_anthropic_schedule.py:1, tests/providers/test_anthropic_reports.py:78 |
+| 2026-10-13 | TASK-P13-006, GPU utilization, CHG-0178 | Done | gpu_utilization_daily and its cadence, migration 0052; accelerated_instance_type; GpuMetrics port; CloudWatch adapter listing then reading each accelerator; collector asking only about billed GPU instances; fake bill with one publishing and one silent | finops_providers/aws/gpu_metrics.py:48, finops_ingest/collectors/gpu_utilization.py:64, finops_core/domain/ai.py:99, migrations/versions/0052_gpu_utilization_daily.py:1 |
+| 2026-10-13 | TASK-P13-007, the AI endpoints, CHG-0179 | Done | finops_query/ai.py: spend five ways with each figure's basis, callers at the bill's unit cost, the GPU fleet, model_key; repositories scoped and audited; three exportable routes; provider spend global only | finops_query/ai.py:218, finops_api/routes/ai.py:127, finops_api/db/repositories/ai.py:42, tests/api/test_ai_routes.py:108 |
+| 2026-10-13 | TASK-P13-008, the AI spend screen, CHG-0180 | Done | /analyze/ai under Analyze: spend five ways, callers and the GPU fleet, each panel its own freshness; Figure usd-unit draws a unit price past the cent; absences in words; migration 0053; coverage counts cloud accounts, ISS-288 fixed | finops-web/src/screens/AiSpendScreen.tsx:1, finops-web/src/components/Figure.tsx:30, finops_api/db/repositories/cost.py:107, finops-web/e2e/ai.spec.ts:1 |
+| 2026-10-13 | TASK-P13-009, the local stack, first contact and P13's proof, CHG-0181 | Done | Demo and local stack bill Bedrock and GPU lines through cur.with_ai, connect fake OpenAI and Anthropic, run every AI collector; first contact reads the GPU agent and a named provider key; runbook ai-providers.md; exit criteria through the API over the demo; ISS-289 fixed, callers carry project and key | scripts/demo/seed_demo.py:369, scripts/ops/first_contact.py:120, tests/scripts/test_p13_exit_criteria.py:1, finops_query/ai.py:345, docs/runbooks/ai-providers.md:1 |
 
 ## Next action
 
-**P12, deployment readiness, is delivered on `next-build`**, 2026-10-12, against the fakes and stubbed
-AWS clients. Every collector is composed and runs end to end on the local stack, every setting reaches a
-deployed task from SSM, each deploy applies its own plan, and `make first-contact` proves the first
-account. Merge `next-build` into main when the owner asks.
+**P13, FinOps for AI, is delivered against fakes**, nine tasks on 2026-10-12 and 2026-10-13, each
+merged into `next-build` once `make verify` was green. Its exit criteria are read through the API
+over the seeded demo by `tests/scripts/test_p13_exit_criteria.py`. No provider has been called and no
+invocation log read: ISS-285 closes with `make first-contact` against one organization of each
+provider, by the owner's steps in `docs/runbooks/ai-providers.md`.
 
-**Three owner decisions stand between this and a first deployment**, each recorded with its options:
+1. **The owner chooses the next sub project.** Proposals 1 to 3 of `next-in-scope.txt` are built, P10,
+   P13 and P11. Proposal 4, graded autonomy through pull requests, waits on OPEN-13; proposal 5,
+   commitments, does not.
+2. Never read a prompt or a response from an invocation log, and never let a provider key leave
+   Secrets Manager: P13's two rules, each held by a test.
+
+**Three owner decisions stand between P12 and a first deployment**, each recorded with its options:
 ISS-280, an identity provider a deployed environment can use; ISS-283, how a deployment runs its
 migrations; ISS-279, how the tasks follow the database password's rotation. ISS-002, a real account,
 is still the single thing that would close the most, and `docs/runbooks/first-account.md` is its order.
 
 **Pushing needs a remote first.** The repository has none. Once one exists, a push to main runs
 `deploy:dev`, a `terraform apply`, on its own.
-
-Next, in the order the owner set on 2026-10-12:
-
-1. **The next proposal in `next-in-scope.txt`**: priority 2, FinOps for AI, Bedrock by app, agent
-   and user, and the OpenAI and Anthropic API bills. A new sub project, so it waits on the owner's
-   go ahead.
 
 ### Where the project is, as of 2026-10-05
 

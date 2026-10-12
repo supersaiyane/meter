@@ -243,9 +243,11 @@ rather than scanning controls.
 | --- | --- |
 | Read only into member accounts, no write API call | ADR-0004 |
 | Curated 40 action policy, never `ReadOnlyAccess` | ADR-0004, ISS-010 |
+| An AI provider's admin key is read from Secrets Manager under `meter/<env>/ai/` when a request is about to be made, refused from any other path, and in no setting, log, error or row; the task role is granted that path only, held by `tests/providers/aws/test_secrets.py`, and a provider's message about a refused key is never kept, `tests/providers/test_ai_reports.py` | P13 spec 5.5, FEAT-083, ISS-286 |
+| The Bedrock invocation logs, which hold every prompt and response, are read by one aggregate Logs Insights query a day; `logs:StartQuery` is granted only on the groups the StackSet parameter `InvocationLogGroupPattern` names, and the query is held to aggregates by `tests/providers/aws/test_bedrock_invocations.py` | P13 spec 5.4, FEAT-082 |
 | ExternalId plus `aws:PrincipalOrgID` on every trust | ADR-0004 |
 | Two principals trusted by name, the task role and the relay, each needing the ExternalId; every role the relay assumes narrowed by a session policy to its one allow listed action | ADR-0035 |
-| No route out of the hub's VPC: endpoints, peered endpoint VPCs and the relay, held by `tests/contract/test_network_paths.py` | ADR-0028, ADR-0035 |
+| Every AWS call through endpoints, peered endpoint VPCs and the relay; only the worker may leave the VPC, HTTPS through one NAT gateway to the AI providers' report APIs; held by `tests/contract/test_network_paths.py` | ADR-0028, ADR-0035, ADR-0036 |
 | Scope enforced at two independent points | P0 spec section 8, ISS-009 |
 | A chosen account only narrows a scope, and one outside it or absent answers the same 404 | FEAT-075 |
 | Audit event on every scope evaluation | P0 spec section 5.5, ISS-031 |

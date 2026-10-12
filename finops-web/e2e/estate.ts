@@ -152,10 +152,180 @@ const LEDGER_META = {
   failures: [],
 };
 
+/**
+ * AI spend, FEAT-085, shaped as `/api/v1/ai/spend`, `/callers` and `/gpu` answer for the demo's
+ * newest closed period. The bill's own Bedrock line counts its tokens, measured; the fake OpenAI
+ * organization's tokens come from its usage report, modelled. One model line counted no tokens and
+ * one GPU agent never published, so the journey sees both absences said in words.
+ */
+const AI_META = META;
+
+function aiRow(
+  name: string,
+  provider: string,
+  cost: string,
+  extra: Record<string, unknown> = {},
+) {
+  return {
+    name,
+    provider,
+    cost,
+    tokens: null,
+    tokens_basis: null,
+    requests: null,
+    cost_per_1k_tokens: null,
+    cost_per_1k_tokens_basis: null,
+    cost_per_request: null,
+    cost_per_request_basis: null,
+    ...extra,
+  };
+}
+
+const MEASURED_TOKENS = {
+  tokens: '41200000',
+  tokens_basis: 'measured',
+  requests: 9600,
+  cost_per_1k_tokens: '0.004467',
+  cost_per_1k_tokens_basis: 'measured',
+  cost_per_request: '0.019169',
+  cost_per_request_basis: 'modelled',
+};
+
+const MODELLED_TOKENS = {
+  tokens: '8800000',
+  tokens_basis: 'modelled',
+  requests: 4100,
+  cost_per_1k_tokens: '0.006993',
+  cost_per_1k_tokens_basis: 'modelled',
+  cost_per_request: '0.015010',
+  cost_per_request_basis: 'modelled',
+};
+
+export const AI_SPEND: Readonly<Record<string, readonly unknown[]>> = {
+  provider: [
+    aiRow('Fake', 'Fake', '184.03', MEASURED_TOKENS),
+    aiRow('OpenAI', 'OpenAI', '61.54', MODELLED_TOKENS),
+  ],
+  model: [
+    aiRow('ClaudeSonnet4', 'Fake', '161.20', MEASURED_TOKENS),
+    aiRow('gpt-4o-2024-08-06', 'OpenAI', '61.54', MODELLED_TOKENS),
+    aiRow('NovaCanvas', 'Fake', '22.83'),
+  ],
+  token_type: [aiRow('output', '(several)', '149.07'), aiRow('input', '(several)', '96.50')],
+  feature: [aiRow('support-bot', 'Fake', '129.00'), aiRow('not named', '(several)', '116.57')],
+  caller: [aiRow('not named', '(several)', '245.57')],
+};
+
+const AI_CALLERS = [
+  {
+    source: 'openai',
+    account_id: 'org-fake-openai',
+    workspace: 'proj-fake-research',
+    api_key_id: 'key-fake-research',
+    caller: '',
+    application: '',
+    model: 'gpt-4o-2024-08-06',
+    tokens: 8800000,
+    requests: 4100,
+    modelled_cost: '61.54',
+    modelled_cost_basis: 'modelled',
+  },
+  {
+    source: 'bedrock',
+    account_id: 'fake-platform-a',
+    workspace: 'us-fake-1',
+    api_key_id: '',
+    caller: 'arn:aws:sts::fake-platform-a:assumed-role/support/triage',
+    application: 'support',
+    model: 'publisher.claude-sonnet-4-20250514-v1:0',
+    tokens: 30000000,
+    requests: 7000,
+    modelled_cost: '129.00',
+    modelled_cost_basis: 'modelled',
+  },
+  {
+    source: 'bedrock',
+    account_id: 'fake-platform-a',
+    workspace: 'us-fake-1',
+    api_key_id: '',
+    caller: 'arn:aws:sts::fake-platform-a:assumed-role/batch/nightly',
+    application: '',
+    model: 'publisher.embed-v4:0',
+    tokens: 120000,
+    requests: 40,
+    modelled_cost: null,
+    modelled_cost_basis: 'modelled',
+  },
+];
+
+const AI_GPU = [
+  {
+    account_id: 'fake-platform-a',
+    region_id: 'us-fake-1',
+    instance_id: 'i-fakegpu0002',
+    instance_type: 'p4d.24xlarge',
+    hours: '744',
+    cost: '24380.14',
+    days_billed: 31,
+    days_published: 0,
+    average_percent: null,
+    peak_percent: null,
+    utilization: 'not published',
+  },
+  {
+    account_id: 'fake-platform-a',
+    region_id: 'us-fake-1',
+    instance_id: 'i-fakegpu0001',
+    instance_type: 'g5.xlarge',
+    hours: '744',
+    cost: '748.46',
+    days_billed: 31,
+    days_published: 1,
+    average_percent: '18.50',
+    peak_percent: '71.00',
+    utilization: 'partly published',
+  },
+];
+
+async function stubAi(page: Page): Promise<void> {
+  await page.route('**/api/v1/ai/spend*', async (route) => {
+    const groupBy = new URL(route.request().url()).searchParams.get('group_by') ?? 'provider';
+    const rows = AI_SPEND[groupBy] ?? [];
+    const total = rows.reduce(
+      (sum: number, one) => sum + Number((one as { cost: string }).cost),
+      0,
+    );
+    await route.fulfill({
+      json: {
+        data: {
+          period: '2026-08-01',
+          group_by: groupBy,
+          total_cost: total.toFixed(2),
+          rows,
+          connected: [
+            { provider: 'openai', organization_id: 'org-fake-openai', name: 'Fake OpenAI' },
+          ],
+        },
+        meta: AI_META,
+      },
+    });
+  });
+  await stub(page, '/api/v1/ai/callers', {
+    data: { period: '2026-08-01', callers: AI_CALLERS },
+    meta: AI_META,
+  });
+  await stub(page, '/api/v1/ai/gpu', {
+    data: { period: '2026-08-01', instances: AI_GPU },
+    meta: AI_META,
+  });
+}
+
 export async function demoEstate(page: Page): Promise<void> {
   await page.addInitScript(() => {
     window.localStorage.setItem('meter.token', 'a-session-token');
   });
+
+  await stubAi(page);
 
   await stub(page, '/api/v1/savings/ledger', {
     data: { teams: LEDGER_TEAMS },

@@ -1,0 +1,64 @@
+# FEAT-085: The AI spend screen: cost per token, per request and per feature
+
+| Field | Value |
+| --- | --- |
+| Sub project | P13 |
+| Status | Delivered |
+| Specification | [P13 spec](../specs/2026-10-12-p13-finops-for-ai-design.md), sections 5.7 and 8 |
+| Tasks | TASK-P13-007 and TASK-P13-008 |
+| Decisions | OPEN-31 to OPEN-34 |
+| Issues addressed | None yet |
+| Refresh cadence | Reads what the collectors wrote |
+
+## What it does
+
+One screen for AI spend: totals by provider, the breakdown by model, token type, feature and
+caller, cost per thousand tokens and per request, and the GPU fleet with its utilization.
+
+## Why it exists
+
+Each source answers part of the question, and a person asking what the AI spend bought needs the
+parts side by side, each figure saying how it was arrived at.
+
+## How it works
+
+Built: the three endpoints, TASK-P13-007, and the screen, TASK-P13-008, at `/analyze/ai` under
+Analyze. The grouping and the billing period live in the address, so a link lands on the same view
+and a saved view can hold it. Three panels, each its own read with its own state and freshness:
+spend by the chosen grouping with its measured total and the connected providers, who called which
+model, and the GPU instances. A cost per thousand tokens or per request is drawn to as many as six
+places, because a price of $0.003 drawn to the cent would read as nought. A caller is named by its key
+where the provider names no user, beside its project, workspace or Region, ISS-289.
+
+The screen reads `GET /v1/ai/spend`, `GET /v1/ai/callers` and `GET /v1/ai/gpu`. Each figure carries
+its basis, measured or modelled, and each panel its freshness from `as_of` and `collected_at`.
+
+## Data sources and freshness
+
+| Source | Cadence | Best possible freshness |
+| --- | --- | --- |
+| The three AI endpoints | On load | As fresh as the collectors behind them |
+
+## Measured or modelled
+
+Cost per thousand tokens is measured where cost and tokens come from the same rows. Cost per
+request is modelled where cost and requests come from different sources, and cost per caller from
+invocation logs is modelled.
+
+## Failure behaviour
+
+A source that failed shows its typed cause and its last good figures with their age. Not published
+and not connected read as words, never as zero.
+
+## Security considerations
+
+Every figure comes through the API's scope dependency and repository guard. A provider's cost is
+visible at global scope only.
+
+## Interface
+
+The AI spend screen in the web interface, reached from the navigation.
+
+## Not doing
+
+Editing anything, setting a cap, or comparing models' quality.

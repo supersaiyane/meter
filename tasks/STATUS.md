@@ -9,7 +9,7 @@
      own content rather than scaffolding, and is not tagged.
 -->
 
-Last updated: 2026-10-08
+Last updated: 2026-10-12
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -22,11 +22,11 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 80 total, 11 specified, 13 in build, 53 delivered |
-| Decisions | 35 architecture decision records |
-| Changes | 171 recorded |
-| Issues | 177 fixed, 104 open, 0 parked |
-| Open questions | 30 awaiting a decision |
+| Features | 85 total, 11 specified, 13 in build, 58 delivered |
+| Decisions | 36 architecture decision records |
+| Changes | 181 recorded |
+| Issues | 180 fixed, 106 open, 0 parked |
+| Open questions | 34 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
 
@@ -116,7 +116,28 @@ then the next proposal in next-in-scope.txt. ISS-085 is fixed: what the tools re
 secrets before the model reads it, as the question already was. ISS-136 is closed: the interface pass
 had fixed it, and a test now holds it. The erasure gaps are closed, as the owner decided on 2026-10-12:
 a person's questions and exports are tombstoned and kept, their private views removed and shared ones kept
-unowned, their schedules paused and their name taken off every recipient list; questions are kept 90 days.
+unowned, their schedules paused and their name taken off every recipient list; questions are kept 90 days. next-build
+was merged into main as 1299f36. The owner then chose FinOps for AI as P13, proposal 2 of
+next-in-scope.txt, and answered OPEN-31 to OPEN-34: a NAT gateway for the worker only, ADR-0036;
+Bedrock per caller from invocation logs where enabled; GPU utilization as well as hours and cost; and
+x_ columns for token fields until FOCUS 1.5. P13 is specified and planned, nine tasks, FEAT-081 to
+FEAT-085. Reading the cost collector found its restatement delete would remove a second source's rows,
+so `cost_focus_daily` gains `ingest_source`. ISS-285 raised: the provider adapters are unverified until
+a key exists. TASK-P13-001 added the NAT gateway the worker alone may use, held by the network contract tests. TASK-P13-002 read
+the bill's AI columns into five `x_` columns, model and token type parsed from Bedrock's usage type, and keyed the
+cost collector's restatement on its source. TASK-P13-003 read Bedrock usage per caller from the
+invocation logs, through one aggregate query a day that never names a prompt or a response. TASK-P13-004
+connected OpenAI: provider accounts, its cost beside the bill and its usage beside Bedrock's, the key read only
+from the AI path and never kept; it found ISS-287, a retention job that never ran for existing tenants, and fixed it. On 2026-10-13
+TASK-P13-005 added Anthropic beside OpenAI, its cents read as cents and its missing request count as missing. TASK-P13-006 read
+GPU utilization for the GPU instances the bill names, and an instance that publishes nothing reads as not published. TASK-P13-007
+added the three AI endpoints, every figure saying whether it is measured or modelled. TASK-P13-008
+added the AI spend screen under Analyze, where tokens nobody counted, a caller nobody priced and a GPU
+that never published are words, and found ISS-288, a provider's projects counted as accounts. TASK-P13-009
+seeded every AI source into the demo and the local stack, taught first contact the GPU agent and each
+provider's key, wrote the owner's runbook, and proved the six exit criteria through the API over the
+seeded demo; proving them found ISS-289, a provider's usage reaching the callers panel unnamed, and
+fixed it. P13 is delivered against fakes; ISS-285 closes with a real key.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -293,6 +314,7 @@ ISS-003.
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 | P11 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
 | P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
+| P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -567,6 +589,20 @@ ISS-003.
 | `TASK-P12-007` | Done 2026-10-12 | each deploy applies its own plan |
 | `TASK-P12-008` | Done 2026-10-12 | the first account, a runbook and a first contact |
 | `TASK-P12-009` | Done 2026-10-12 | proof and documents |
+
+**P13, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P13-001` | Done 2026-10-12 | the NAT gateway, for the worker only |
+| `TASK-P13-002` | Done 2026-10-12 | the bill's AI columns |
+| `TASK-P13-003` | Done 2026-10-12 | Bedrock usage per caller from invocation logs |
+| `TASK-P13-004` | Done 2026-10-12 | provider accounts and OpenAI |
+| `TASK-P13-005` | Done 2026-10-13 | Anthropic |
+| `TASK-P13-006` | Done 2026-10-13 | GPU utilization |
+| `TASK-P13-007` | Done 2026-10-13 | the AI endpoints |
+| `TASK-P13-008` | Done 2026-10-13 | the AI spend screen |
+| `TASK-P13-009` | Done 2026-10-13 | the local stack, first contact, proof and documents |
 
 <!-- generated:task-status end -->
 

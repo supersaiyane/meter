@@ -143,6 +143,18 @@ data "aws_iam_policy_document" "task" {
     resources = [aws_secretsmanager_secret.external_id.arn]
   }
 
+  # P13, TASK-P13-004, FEAT-083. Each AI provider organization's admin key, one secret each under
+  # this environment's AI path and nowhere else, read by the worker when a request is about to be
+  # made. The role is shared with the API, which never reads one and cannot reach a provider:
+  # only the worker's security group leads to the internet, ADR-0036. ISS-286 is a role the
+  # worker alone holds. The trailing wildcard covers the suffix Secrets Manager adds to a name.
+  statement {
+    sid       = "ReadTheAiProviderKeys"
+    effect    = "Allow"
+    actions   = ["secretsmanager:GetSecretValue"]
+    resources = ["arn:${data.aws_partition.current.partition}:secretsmanager:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:secret:meter/${var.env}/ai/*"]
+  }
+
   # TASK-P9-001, ADR-0035. The relay outside the VPC, for the calls no endpoint carries. Its
   # answers are read back under UseTheBucket below.
   statement {

@@ -159,6 +159,13 @@ SCOPED_TABLES: dict[str, ByAccount | Through | PayerWide | ByPrincipal | OwnedOr
     # can attribute to an account is not one a caller restricted to two
     # accounts has been given.
     "cost_focus_daily": ByAccount("sub_account_id"),
+    # P13, FEAT-082 and 083. Tokens per caller name the account they were spent in; a provider's
+    # account is its organization, which no grant names, so its rows are visible at global scope.
+    "ai_usage_daily": ByAccount("account_id"),
+    # P13, FEAT-084. A GPU instance's day belongs to its account.
+    "gpu_utilization_daily": ByAccount("account_id"),
+    # P13, FEAT-083. The AI provider organizations a tenant connected belong to no account.
+    "ai_provider_account": PayerWide(),
     "cost_focus_monthly": ByAccount("sub_account_id"),
     # No account column and none reachable. It holds the provider's own fields
     # for a line item, keyed by fingerprint, so the tenant filter is the whole

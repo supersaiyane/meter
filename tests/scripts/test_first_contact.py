@@ -20,7 +20,10 @@ import pytest
 from botocore.exceptions import ClientError
 
 from finops_core.config import Settings
+from finops_core.errors import AccessDenied
+from finops_ingest.ai_bindings import AI_PROVIDER_BUILDERS
 from finops_ingest.aws_bindings import AWS_BUILDERS
+from finops_providers.anthropic.reports import AnthropicReports
 from finops_providers.aws.reach import LazyClient
 from finops_providers.aws.relay_client import RelayClient
 
@@ -142,7 +145,8 @@ def test_it_exits_zero_only_when_every_read_answered(
         )
         == status
     )
-    total = len(first_contact.PROBES)
+    # No key's secret was named, so neither AI provider was read, and nothing counts against it.
+    total = len([one for one in first_contact.PROBES if one.reach != "provider"])
     shown = capsys.readouterr().out
     assert f"{total - (0 if answers else 1)} of {total} reads answered." in shown
 
@@ -188,3 +192,76 @@ def test_the_settings_are_the_deployed_parameters_and_an_absent_one_is_empty(
     assert built.queue_url == settings.queue_url
     assert built.s3_bucket == "", "a setting with no parameter is the empty one the task is given"
     assert built.session_signing_key == first_contact.UNUSED_SECRET
+
+
+# --- the AI providers, P13, TASK-P13-009 ----------------------------------------------------------
+
+SECRET = "meter/dev/ai/openai-platform"
+
+
+class Reports:
+    """A provider's reports that answer with nothing, or refuse with a typed cause."""
+
+    def __init__(self, refuse: Exception | None = None) -> None:
+        self._refuse = refuse
+
+    def costs(self, *_args: Any) -> Any:
+        if self._refuse is not None:
+            raise self._refuse
+        return iter(())
+
+
+def test_every_ai_provider_collector_has_a_read() -> None:
+    named = " ".join(one.collectors for one in first_contact.PROBES)
+    assert {name for name in AI_PROVIDER_BUILDERS if name not in named} == set()
+
+
+def test_a_provider_is_read_only_when_its_keys_secret_is_named(
+    deployed: Settings, capsys: pytest.CaptureFixture[str]
+) -> None:
+    asked: list[str] = []
+
+    def client_for(one: Any, _target: Any) -> Any:
+        asked.append(one.service)
+        return Reports() if one.reach == "provider" else Answering()
+
+    status = first_contact.main(
+        ["--env", "dev", "--account", ACCOUNT, "--region", "eu-west-1", "--openai-secret", SECRET],
+        credentials=lambda: True,
+        settings_for=lambda _env: deployed,
+        client_for=client_for,
+    )
+    assert status == first_contact.ANSWERED_ALL
+    assert "openai" in asked and "anthropic" not in asked
+    shown = capsys.readouterr().out
+    assert "AI providers not read, no key's secret named: anthropic." in shown
+    assert SECRET not in shown, "the report never names a secret"
+
+
+def test_a_refused_key_is_reported_by_its_typed_cause(deployed: Settings) -> None:
+    refused = AccessDenied(scope_key="openai:x", collector="openai_usage", detail="key revoked")
+    where = first_contact.Target(
+        deployed, ACCOUNT, "eu-west-1", date(2026, 10, 12), ai_secrets={"openai": SECRET}
+    )
+    (answer,) = first_contact.contact(
+        [probe("OpenAI's cost report, with the key named")],
+        where,
+        lambda _one, _target: Reports(refused),
+    )
+    assert answer.outcome == "AccessDenied"
+
+
+def test_a_providers_client_reads_its_key_only_when_the_request_is_made(
+    deployed: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def refuse(*_args: Any, **_kwargs: Any) -> Any:
+        raise AssertionError("a client was made before it was used")
+
+    monkeypatch.setattr(boto3, "client", refuse)
+    where = first_contact.Target(
+        deployed, ACCOUNT, "eu-west-1", date(2026, 10, 12), ai_secrets={"anthropic": SECRET}
+    )
+    built = first_contact.clients(where)(
+        probe("Anthropic's cost report, with the key named"), where
+    )
+    assert isinstance(built, AnthropicReports)

@@ -1,6 +1,6 @@
-# Private subnets and interface endpoints. No NAT Gateway.
+# Private subnets and interface endpoints, and one NAT gateway that only the worker may use.
 #
-# `docs/04-DEPLOYMENT.md` records that this was once justified on cost and that
+# `docs/04-DEPLOYMENT.md` records that the NAT gateway was once refused on cost and that
 # the justification was wrong: NAT is cheaper below roughly 1,560 GB per month
 # and Meter's egress is nowhere near that. The reasoning was corrected and the
 # conclusion kept, on two grounds that do hold.
@@ -10,9 +10,13 @@
 # the internet cannot exfiltrate to it. Endpoints also have no single point of
 # failure per zone, which a NAT Gateway is.
 #
-# The consequence is real and worth stating: adding a dependency that talks to a
-# non AWS endpoint means adding an endpoint or a proxy, not just writing the
-# call. That is a design question worth being forced to answer.
+# The consequence was stated here: adding a dependency that talks to a non AWS
+# endpoint means adding an endpoint or a proxy, not just writing the call. P13 is
+# that dependency, OpenAI's and Anthropic's usage reports, and the owner answered
+# it on 2026-10-12, OPEN-31: a NAT gateway, ADR-0036. The route it adds is on the
+# private route table, so every task has it, and only the worker's security group,
+# `worker_internet` in alb.tf, lets a connection use it. Every other task still
+# reaches nothing outside AWS, and the flow logs record any attempt.
 
 locals {
   name = "meter-${var.env}"
@@ -48,10 +52,13 @@ locals {
     "config",
     "grafana",
     "bedrock-runtime",
+    # Where each member account's Bedrock invocation logs go, P13 and TASK-P13-003. The control
+    # plane, which bedrock-runtime above is not.
+    "bedrock",
     # Owners from AWS AppRegistry, read in each member account, TASK-P11-003. AWS lists it
     # among the PrivateLink services as com.amazonaws.<region>.servicecatalog-appregistry.
     "servicecatalog-appregistry",
-    # The relay is invoked through this one, so the hub still has no route out.
+    # The relay is invoked through this one, so a relayed call never needs the NAT gateway.
     "lambda",
   ]
 
@@ -116,8 +123,9 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-# The private route table has no default route, deliberately. Everything the
-# tasks reach, they reach through an endpoint in this file.
+# The private route table has no default route of its own. Everything the tasks reach
+# in AWS, they reach through an endpoint in this file; the one default route is
+# `to_the_providers` below, and only the worker's security group lets a task use it.
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.hub.id
   tags   = { Name = "${local.name}-private" }
@@ -128,6 +136,36 @@ resource "aws_route_table_association" "private" {
 
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private.id
+}
+
+# --- the worker's route out, ADR-0036 ------------------------------------------
+#
+# One gateway rather than one per zone. A lost zone stops the two providers' daily reads,
+# typed Unreachable, and the next run catches up because each run rereads the billing
+# period to date; a second gateway would double a cost that buys nothing else.
+#
+# Modelled, not measured, from eu-west-1's list prices: USD 0.048 an hour for the gateway,
+# USD 0.005 an hour for its address, and USD 0.048 per GB processed, about USD 38.69 a month
+# at a few kilobytes of reports a day. Tagged as its own module, so the platform's cost on
+# the front page shows what reading the AI providers costs. Constraint 7.
+
+resource "aws_eip" "nat" {
+  domain = "vpc"
+  tags   = { Name = "${local.name}-nat", "finops:module" = "ai" }
+}
+
+resource "aws_nat_gateway" "providers" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public[0].id
+  tags          = { Name = "${local.name}-nat", "finops:module" = "ai" }
+
+  depends_on = [aws_internet_gateway.hub]
+}
+
+resource "aws_route" "to_the_providers" {
+  route_table_id         = aws_route_table.private.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.providers.id
 }
 
 # --- endpoints ---------------------------------------------------------------

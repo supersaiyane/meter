@@ -21,6 +21,13 @@ from decimal import Decimal
 from typing import Any, Final
 
 from finops_fakes import estate_shape as shape
+from finops_fakes.ai import (
+    FAKE_ANTHROPIC,
+    FAKE_OPENAI,
+    FakeGpuMetrics,
+    FakeInvocationLogs,
+    FakeProviderReports,
+)
 from finops_fakes.budgets import FakeBudgets
 from finops_fakes.catalog import (
     FakeInstanceCatalog,
@@ -31,7 +38,7 @@ from finops_fakes.catalog import (
 from finops_fakes.cloudwatch_estate import FakeCloudWatchEstate
 from finops_fakes.commitment import FakeCommitmentReport
 from finops_fakes.containers import FakeContainerSource
-from finops_fakes.cur import FakeCostExport
+from finops_fakes.cur import ESTATE, FakeCostExport, with_ai
 from finops_fakes.estate_metrics import EstateMetrics, ec2_candidates, volume_candidates
 from finops_fakes.evidence import FakeQueryEvidence
 from finops_fakes.health import FakeRoleHealth
@@ -45,6 +52,8 @@ from finops_fakes.surface import FakeQuerySurface
 from finops_fakes.terraform_state import FakeTerraformState
 from finops_fakes.topology import FakeTopologySource
 from finops_ingest.collectors.account_health import AccountHealthCollector
+from finops_ingest.collectors.ai_usage import BedrockInvocationsCollector
+from finops_ingest.collectors.anthropic_usage import anthropic_collector
 from finops_ingest.collectors.budgets import BudgetCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
 from finops_ingest.collectors.commitment_actions import CommitmentActionsCollector
@@ -52,10 +61,12 @@ from finops_ingest.collectors.container_usage import ContainerUsageCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
 from finops_ingest.collectors.digests import DigestCollector
+from finops_ingest.collectors.gpu_utilization import GpuUtilizationCollector
 from finops_ingest.collectors.iac_state import IacStateCollector
 from finops_ingest.collectors.instance_catalog import InstanceCatalogCollector
 from finops_ingest.collectors.inventory import InventoryCollector
 from finops_ingest.collectors.invoices import InvoiceCollector
+from finops_ingest.collectors.openai_usage import openai_collector
 from finops_ingest.collectors.org_tree import OrgTreeCollector
 from finops_ingest.collectors.ownership import OwnershipCollector
 from finops_ingest.collectors.platform_cost import PlatformCostCollector
@@ -156,6 +167,15 @@ def builders(clock: Clock) -> dict[str, Callable[[CollectorContext], Any]]:
         "account_health": lambda _c: AccountHealthCollector(
             FakeRoleHealth(at=clock()), clock=clock
         ),
+        # The local stack's connected Anthropic organization, like the OpenAI one below.
+        "anthropic_usage": lambda _c: anthropic_collector(
+            lambda _context, _account: FakeProviderReports(at=clock()),
+            accounts=lambda _connection, _tenant: (FAKE_ANTHROPIC,),
+            clock=clock,
+        ),
+        "bedrock_invocations": lambda _c: BedrockInvocationsCollector(
+            FakeInvocationLogs(at=clock()), clock=clock
+        ),
         "budgets": lambda _c: BudgetCollector(FakeBudgets(), clock=clock),
         "commitment": lambda _c: CommitmentCollector(FakeCommitmentReport(at=clock()), clock=clock),
         "commitment_actions": lambda _c: CommitmentActionsCollector(clock=clock),
@@ -163,14 +183,25 @@ def builders(clock: Clock) -> dict[str, Callable[[CollectorContext], Any]]:
             FakeContainerSource(at=clock()), clock=clock
         ),
         "cost_anomaly": lambda _c: CostAnomalyCollector(clock=clock),
-        "cost_focus": lambda _c: CostFocusCollector(FakeCostExport(), clock=clock),
+        # The bill with its Bedrock and GPU lines, P13, so a scheduled run on the local stack keeps
+        # the AI spend the demo seeded rather than restating it away.
+        "cost_focus": lambda _c: CostFocusCollector(FakeCostExport(ai=True), clock=clock),
         "finops_score": lambda _c: ScoreCollector(clock=clock),
+        "gpu_utilization": lambda _c: GpuUtilizationCollector(
+            FakeGpuMetrics(at=clock()), clock=clock
+        ),
         "iac_state": lambda _c: IacStateCollector(FakeTerraformState(), clock=clock),
         "instance_catalog": lambda _c: InstanceCatalogCollector(
             FakeInstanceCatalog(), hub_region=shape.REGIONS[0], clock=clock
         ),
         "inventory": lambda _c: InventoryCollector(FakeTopologySource(), clock=clock),
-        "invoices": lambda _c: InvoiceCollector(FakeInvoices(), clock=clock),
+        "invoices": lambda _c: InvoiceCollector(FakeInvoices(rows=with_ai(ESTATE)), clock=clock),
+        # The local stack's one connected organization, so it runs without a seeded row.
+        "openai_usage": lambda _c: openai_collector(
+            lambda _context, _account: FakeProviderReports(at=clock()),
+            accounts=lambda _connection, _tenant: (FAKE_OPENAI,),
+            clock=clock,
+        ),
         "org_tree": lambda _c: OrgTreeCollector(FakeProvider(at=clock()), clock=clock),
         "ownership": lambda _c: OwnershipCollector(
             clock=clock, catalogue=FakeServiceCatalogue(), creators=FakeResourceCreators()

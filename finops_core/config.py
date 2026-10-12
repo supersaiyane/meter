@@ -182,6 +182,15 @@ class Settings(BaseSettings):
     #: account and Region (modelled), and the rest are asked on the next day's run.
     creator_lookups_per_run: int = Field(default=200, ge=1)
 
+    # FinOps for AI, P13 spec section 5.4. The request metadata key a deployment's
+    # applications name themselves under, which the invocation logs query groups by. Empty by
+    # default, and usage is grouped by caller and model only. Checked to be a key, letters,
+    # digits, hyphens and underscores, before it is written into a query.
+    ai_request_metadata_key: str = ""
+    #: The CloudWatch namespace the agent publishes NVIDIA metrics in, P13 spec section 5.6. The
+    #: agent's own default; a deployment whose agents are configured otherwise names theirs here.
+    gpu_metrics_namespace: str = "CWAgent"
+
     # Blast radius, FEAT-044. How many reachable resources count as wide. A number in code
     # deciding what is wide is a number nobody can argue with, which is ADR-0012's argument
     # about cadence applied to a judgement rather than to an interval.
@@ -269,6 +278,9 @@ class Settings(BaseSettings):
     #: How long a person's questions to the assistant, and their redaction records, are kept.
     #: Decided by the owner on 2026-10-12, OPEN-14: 90 days. ISS-226.
     retention_assistant_days: int = Field(ge=1)
+    #: How long tokens and requests per caller are kept, P13 spec section 6: 13 months, as a
+    #: query's measured cost per day is, because a caller can name a person.
+    retention_ai_usage_days: int = Field(ge=1)
     retention_audit_days: int = Field(ge=1)
     retention_cost_days: int = Field(ge=1)
 

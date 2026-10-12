@@ -57,6 +57,7 @@ _INGEST_RUN = table("ingest_run", column("tenant_id"), column("started_at"))
 _SYNC_ERROR = table("sync_error", column("tenant_id"), column("last_seen_at"))
 _WATERMARK = table("ingest_watermark", column("tenant_id"), column("updated_at"))
 _AUDIT_EVENT = table("audit_event", column("tenant_id"), column("occurred_at"))
+_AI_USAGE = table("ai_usage_daily", column("tenant_id"), column("usage_date"))
 
 
 def _system_clock() -> datetime:
@@ -224,10 +225,27 @@ def retention_assistant(
     return CollectorOutcome(items_written=(redactions or 0) + (exchanges or 0))
 
 
+def retention_ai_usage(context: CollectorContext, clock: Clock = _system_clock) -> CollectorOutcome:
+    """Remove tokens and requests per caller past their window, P13 spec section 6.
+
+    A caller is an IAM ARN or a provider's user identifier, either of which can name a person, so
+    the rows are class P and kept 13 months, as a query's measured cost per day is. By the day the
+    usage was for rather than the day it was read, because that is the day the row describes.
+    """
+    cutoff = _cutoff(clock, context.settings.retention_ai_usage_days).date()
+    result = context.connection.execute(
+        _AI_USAGE.delete().where(
+            _AI_USAGE.c.tenant_id == context.unit.tenant_id, _AI_USAGE.c.usage_date < cutoff
+        )
+    )
+    return CollectorOutcome(items_written=result.rowcount or 0)
+
+
 RETENTION_COLLECTORS: tuple[Collector, ...] = (
     Collector("retention_principal", CollectorScope.ORGANIZATION, retention_principal),
     Collector("retention_operational", CollectorScope.ORGANIZATION, retention_operational),
     Collector("retention_assistant", CollectorScope.ORGANIZATION, retention_assistant),
+    Collector("retention_ai_usage", CollectorScope.ORGANIZATION, retention_ai_usage),
     Collector("retention_audit", CollectorScope.ORGANIZATION, retention_audit),
     Collector("retention_cost", CollectorScope.ORGANIZATION, retention_cost),
     Collector("partition_maintenance", CollectorScope.ORGANIZATION, partition_maintenance),

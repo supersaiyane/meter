@@ -29,13 +29,13 @@ Update trigger: any new module, moved module, or changed responsibility.
 
 | Counted | Now | Derived from |
 | --- | --- | --- |
-| Screens built | 29 of 31 | `arrives: null` in finops-web/src/shell/sections.ts |
-| Playwright journeys | 55 in 20 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
+| Screens built | 30 of 32 | `arrives: null` in finops-web/src/shell/sections.ts |
+| Playwright journeys | 58 in 21 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 33 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 46 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 245 | test_*.py under tests/ |
-| Test functions | 3025 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 38 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 53 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 262 | test_*.py under tests/ |
+| Test functions | 3156 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -349,6 +349,11 @@ meter/
 │   │                          views and schedules too, 2026-10-12.
 │   │                          first_contact.py makes each AWS read once against
 │   │                          one account, TASK-P12-008, make first-contact.
+│   │                          It reads the GPU agent and, when a key's secret is
+│   │                          named, an AI provider's day of costs, TASK-P13-009.
+│   │                          connect_ai_provider.py records an AI provider
+│   │                          organization for a tenant once its key has read a
+│   │                          day of costs, TASK-P13-004
 │   │                          restore_drill.py restores a copy into a scratch
 │   │                          database, migrates it, starts the application
 │   │                          against it and reads the freshness route. Refuses
@@ -357,6 +362,8 @@ meter/
 │   │                          in `scripts/ops`. Split out 2026-09-21 with
 │   │                          ADR-0022, so what the image contains follows from
 │   │                          where a file lives rather than from a comment.
+│   │                          seed_demo.py bills the Bedrock and GPU lines and
+│   │                          runs every AI collector, TASK-P13-009.
 │   │                          seed_demo.py fills a local database by running the
 │   │                          real collectors against the fake adapters and
 │   │                          through the real run ledger, so seeded rows cannot
@@ -486,6 +493,10 @@ meter/
 │       │                      groups tests/core/test_ports.py checks. A protocol
 │       │                      in no group is imported from its own module, and
 │       │                      that test never reaches it, ISS-239
+│       ├── ai.py              InvocationLogs, AiProviderReports and GpuMetrics,
+│       │                      AI_PORTS, P13. Who spent tokens on which model, read as
+│       │                      aggregates and never a prompt, what a provider billed,
+│       │                      and how busy each GPU instance was
 │       ├── accounts.py        AccountDiscovery
 │       ├── budget.py          BudgetSource, the payer's budgets
 │       ├── catalog.py         PriceCatalog and InstanceCatalog, CATALOG_PORTS, P9
@@ -567,6 +578,10 @@ meter/
 │   │   │                     with no quota code in it, so a figure is matched on service
 │   │   │                     and quota name, and names are somebody else's display
 │   │   │                     strings. Said in the docstring rather than buried
+│   │   ├── bedrock_usage.py   FEAT-081. The model and token type a Bedrock usage type
+│   │   │                      encodes, read back out, and a token count from a quantity in
+│   │   │                      its unit. One it does not recognise names nothing, so the
+│   │   │                      cost counts as Bedrock with no model, never as a guess
 │   │   ├── bedrock.py         BedrockModel, the Converse API in the hub account
 │   │   │                      with the model id from configuration, OPEN-10, called
 │   │   │                      through its tagged inference profile where the hub
@@ -583,8 +598,15 @@ meter/
 │   │   │                      one window a Region, every zone. ISS-264
 │   │   ├── appregistry.py     FEAT-077, TASK-P11-003. AWS AppRegistry's applications,
 │   │   │                      their owners and the tags that mark their resources
+│   │   ├── bedrock_invocations.py  FEAT-082, TASK-P13-003. Who called which Bedrock
+│   │   │                      model, from the invocation logs: the logging configuration,
+│   │   │                      then one Logs Insights stats query a day, every output a
+│   │   │                      count or a sum. No CloudWatch Logs group is NotOptedIn
 │   │   ├── cloudtrail_creators.py  FEAT-077, TASK-P11-004. Who created a resource,
 │   │   │                      from CloudTrail's event history, paced and asked once
+│   │   ├── secrets.py         FEAT-083, TASK-P13-004. An AI provider's admin key,
+│   │   │                      read when needed from meter/<env>/ai/ only, any other
+│   │   │                      name refused before a call
 │   │   ├── savings_plans.py   FEAT-071, TASK-P9-012. Savings Plans rates through the
 │   │   │                      relay, six calls a Region, versioned by their digest.
 │   │   │                      Unproved, ISS-263
@@ -597,6 +619,9 @@ meter/
 │   │   │                      GetProducts a page at a time for the prices, EC2
 │   │   │                      narrowed at the source; a nought or unreadable term
 │   │   │                      is SchemaDrift. Unproved, ISS-002, ISS-261
+│   │   ├── gpu_metrics.py     FEAT-084, TASK-P13-006. Each instance's NVIDIA metrics
+│   │   │                      listed, then read: the mean of its accelerators'
+│   │   │                      averages and the highest peak, per day
 │   │   ├── reach.py           TASK-P12-002. How the hub reaches AWS for a collector:
 │   │   │                      its own clients made on first use, an assumed session,
 │   │   │                      a member account through the broker, the relay, and the
@@ -610,6 +635,19 @@ meter/
 │   │                          whole or raises, never short, because short and
 │   │                          retracted look identical to the collector's
 │   │                          delete. That buys a memory ceiling, ISS-181
+│   ├── ai_reports.py          FEAT-083, TASK-P13-004. The paged HTTPS client the AI
+│   │                          providers share: has_more and next_page, bounded
+│   │                          retries, every failure typed, and a refused key's
+│   │                          message never kept, so the key is in no detail
+│   ├── anthropic/
+│   │   └── reports.py         FEAT-083, TASK-P13-005. Anthropic's cost report, amounts
+│   │                          in cents, and messages usage, which counts no requests,
+│   │                          for one organization
+│   ├── openai/
+│   │   └── reports.py         FEAT-083. OpenAI's costs and completions usage for one
+│   │                          organization: costs as FOCUS rows of source openai,
+│   │                          line items read into model and token type, cached
+│   │                          input counted once
 │   ├── grafana/               AMG only, per OPEN-04 re answered 2026-09-02
 │   │   ├── client.py          raises a typed cause. A workspace it cannot read
 │   │   │                      must not report zero dashboards
@@ -772,6 +810,11 @@ meter/
 │   ├── screens/LedgerScreen.tsx  The savings ledger, FEAT-078, TASK-P11-008:
 │   │                          teams by the saving their months held, measured; a
 │   │                          team's credits and months once chosen, nobody ranked
+│   ├── screens/AiSpendScreen.tsx  AI spend, FEAT-085, TASK-P13-008: spend by
+│   │                          provider, model, token type, feature or caller, who
+│   │                          called which model and the GPU fleet, three panels each
+│   │                          with its own freshness; every figure measured or
+│   │                          modelled, and an absence said in words
 │   ├── screens/ReconciliationScreen.tsx  Invoice reconciliation, FEAT-076: each
 │   │                          invoice beside Meter's billed cost, every state in
 │   │                          words, the difference signed, labelled measured; the
@@ -1115,6 +1158,12 @@ meter/
 │   ├── catalog.py         AWS's price list and instance types for the estate:
 │   │                      structure from the real extracts, prices from the
 │   │                      estate's own table, so a saving and the bill agree
+│   ├── ai.py              the estate's invocation logs, P13: fake-platform-a read,
+│   │                      fake-product-a to S3 only and the rest nowhere, both
+│   │                      NotOptedIn; three callers of the support assistant;
+│   │                      the fake OpenAI and Anthropic organizations' daily
+│   │                      cost and usage, FakeProviderReports; and the fake bill's
+│   │                      two GPU instances, one publishing, FakeGpuMetrics
 │   ├── ownership.py       owners beyond the tags, planted in fake-product-b:
 │   │                      an application owner, a person and a pipeline as
 │   │                      creators, and resources older than the 90 day record
@@ -1149,6 +1198,11 @@ meter/
 │   │                          runs, bound per unit for a deployment: the ones
 │   │                          reading only Meter for real, the rest failing typed
 │   │                          as Misconfigured until TASK-P12-002. ISS-182
+│   ├── ai_bindings.py         FEAT-083, TASK-P13-004. The AI provider collectors for a
+│   │                          deployment, each organization's key read from Secrets
+│   │                          Manager when a request is about to be made
+│   ├── ai_accounts.py         the AI provider organizations a tenant connected and
+│   │                          left active, read on every run
 │   ├── aws_bindings.py        TASK-P12-002. 17 collectors built from their AWS
 │   │                          adapters per unit, four failing typed, UNBUILT,
 │   │                          ISS-240 and ISS-272. Reads cloud_account for the
@@ -1225,6 +1279,16 @@ meter/
 │       ├── savings_ledger.py  FEAT-078, TASK-P11-006 and 007. Daily; a credit per
 │       │                      verified saving, names fixed, and every closed month
 │       │                      after it judged held, regressed or unobserved
+│       ├── ai_usage.py        FEAT-082, TASK-P13-003. Daily per account and Region;
+│       │                      tokens and requests per caller into ai_usage_daily, a
+│       │                      rerun restating only its own window, Region and source
+│       ├── ai_providers.py    FEAT-083, TASK-P13-004. A provider's cost and usage for
+│       │                      each connected organization, the period to date; one
+│       │                      failing typed under its own scope, never another
+│       ├── anthropic_usage.py the provider collector named for Anthropic, daily
+│       ├── gpu_utilization.py FEAT-084, TASK-P13-006. Daily per account and Region; the
+│       │                      GPU instances the bill names, and none it does not
+│       ├── openai_usage.py    the provider collector named for OpenAI, daily
 │       ├── ownership.py       FEAT-077, TASK-P11-002 to 004. Daily; each resource's
 │       │                      suggested owners into resource_owner: tags, the catalogue,
 │       │                      and the creator of the unnamed, asked once, creator_lookup
@@ -1376,6 +1440,9 @@ meter/
 │   │   │                      and GET /catalog/instance-types: the catalog as stored,
 │   │   │                      each row with its version and as_of, coverage in Regions.
 │   │   │                      waste.py adds GET /waste/recommendations/{id}/alternatives
+│   │   ├── ai.py              FEAT-081 to 085, TASK-P13-007. GET /ai/spend, grouped by
+│   │   │                      provider, model, token type, feature or caller; GET
+│   │   │                      /ai/callers; GET /ai/gpu. Every figure with its basis
 │   │   ├── ledger.py          FEAT-078, TASK-P11-008. GET /savings/ledger, teams by
 │   │   │                      the saving held, and GET /savings/ledger/credits
 │   │   ├── reconciliation.py  FEAT-076's GET /cost/reconciliation: each invoice
@@ -1462,6 +1529,8 @@ meter/
 │       │                      description of the schema, and the drift test is
 │       │                      what stops the two disagreeing
 │       └── repositories/      the only path to a scoped table, audited on read.
+│                              ai.py holds P13's: the bill's AI and GPU lines, AI
+│                              usage, GPU utilization and the connected providers.
 │                              latest_audit_only confines a read to the newest
 │                              audit of each thing, per table, because every
 │                              audit table is keyed on the day and a list that
@@ -1553,6 +1622,20 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0053_ai_spend_screen.py  TASK-P13-008. /analyze/ai admitted as a saved
+│       │                      view's screen
+│       ├── 0052_gpu_utilization_daily.py  TASK-P13-006. A day's GPU utilization per
+│       │                      instance, and the collector's cadence
+│       ├── 0051_anthropic_schedule.py  TASK-P13-005. anthropic_usage's cadence for
+│       │                      existing tenants
+│       ├── 0050_ai_collector_schedules.py  TASK-P13-004. Four cadences for existing
+│       │                      tenants, retention_assistant's among them, ISS-287
+│       ├── 0049_ai_provider_account.py  TASK-P13-004. The AI provider organizations a
+│       │                      tenant connected; a key's secret name, never a key
+│       ├── 0048_ai_usage_daily.py  TASK-P13-003. Tokens and requests per day, model and
+│       │                      caller, from every AI source; class P, 13 months
+│       ├── 0047_cost_ai_columns.py  TASK-P13-002. ingest_source and the five x_ columns
+│       │                      on cost_focus_daily: what a line of AI spend bought
 │       ├── 0046_redaction_found_in.py  ISS-085. Where a redaction fired: the
 │       │                      question, or what a tool returned to the model
 │       ├── 0045_ledger_screen.py  TASK-P11-008. /optimize/ledger admitted as a
@@ -1700,6 +1783,10 @@ meter/
 │   │                          Imports nothing of Meter's, a contract in pyproject
 │   └── relay.py               the allow list, the codec, the handler
 ├── finops_query/              IN BUILD  P2 query cost governance, P3 waste, P4 graph
+│   ├── ai.py                  FEAT-081 to 085, TASK-P13-007. AI spend's arithmetic: a
+│   │                          model named in a log matched to the bill's name, tokens
+│   │                          measured from the bill or modelled from a usage report,
+│   │                          a caller's cost at the bill's unit cost, the GPU fleet
 │   ├── forecast.py            FEAT-066, TASK-P8-008. A weekday profile forecast of
 │   │                          this month and the next three, each a range from its
 │   │                          own backtest or the sentence saying why it is
@@ -1797,6 +1884,10 @@ meter/
 │   │                          stale. A word and never a coordinate, because where
 │   │                          a compass point lands in a picture is the picture's
 │   │                          business
+│   ├── ai.py                  FEAT-081, in finops_core/domain/. The four token types a
+│   │                          cost row can carry, and nothing that names a vendor,
+│   │                          ADR-0028; AiUsage, ProviderAccount, GpuUtilization; and
+│   │                          accelerated_instance_type, read from the family
 │   ├── iac.py                 FEAT-057, in finops_core/domain/. Three answers to what
 │   │                          manages a resource, and the default is the honest one.
 │   │                          Reading state tells you what is managed and never what is

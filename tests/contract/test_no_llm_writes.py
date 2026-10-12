@@ -74,6 +74,10 @@ SPAWNERS = frozenset(
 
 #: The verbs a read only role's actions may start with.
 READ_VERBS = ("Describe", "Get", "List", "Select", "BatchGet", "Search", "Lookup")
+#: Reads whose verb is not one of the above, each with the reason it changes nothing. IAM's service
+#: authorization reference classes logs:StartQuery as Read: it runs a Logs Insights query over
+#: events already written and creates, changes and removes no resource. TASK-P13-003, FEAT-082.
+READS_BY_ANOTHER_VERB = frozenset({"logs:StartQuery"})
 
 
 def spawned(source: str) -> Iterator[str]:
@@ -124,7 +128,7 @@ def test_the_member_role_grants_reads_and_nothing_else() -> None:
     what Meter could ever do there."""
     actions = _actions_in(member_role())
     assert actions, "no IAM actions were found in the member template, so this proves nothing"
-    granted = actions - {"sts:AssumeRole"}
+    granted = actions - {"sts:AssumeRole"} - READS_BY_ANOTHER_VERB
     writes = sorted(a for a in granted if not a.split(":")[-1].startswith(READ_VERBS))
     assert writes == [], f"the member role grants more than reads: {writes}"
     assert "*" not in actions and not any(a.endswith(":*") for a in actions)
