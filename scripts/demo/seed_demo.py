@@ -49,6 +49,13 @@ from finops_fakes import containers as container_estate
 from finops_fakes import cur, fixtures, prices, utilization
 from finops_fakes import estate_shape as shape
 from finops_fakes import quotas as quota_estate
+from finops_fakes.ai import (
+    FAKE_ANTHROPIC,
+    FAKE_OPENAI,
+    FakeGpuMetrics,
+    FakeInvocationLogs,
+    FakeProviderReports,
+)
 from finops_fakes.budgets import FakeBudgets
 from finops_fakes.catalog import (
     FakeInstanceCatalog,
@@ -72,16 +79,20 @@ from finops_fakes.terraform_state import LOCATIONS as FAKE_STATE_LOCATIONS
 from finops_fakes.terraform_state import FakeTerraformState
 from finops_fakes.topology import FakeTopologySource
 from finops_ingest.collectors.account_health import AccountHealthCollector
+from finops_ingest.collectors.ai_usage import BedrockInvocationsCollector
+from finops_ingest.collectors.anthropic_usage import anthropic_collector
 from finops_ingest.collectors.budgets import BudgetCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
 from finops_ingest.collectors.commitment_actions import CommitmentActionsCollector
 from finops_ingest.collectors.container_usage import ContainerUsageCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
+from finops_ingest.collectors.gpu_utilization import GpuUtilizationCollector
 from finops_ingest.collectors.iac_state import IacStateCollector
 from finops_ingest.collectors.instance_catalog import InstanceCatalogCollector
 from finops_ingest.collectors.inventory import InventoryCollector
 from finops_ingest.collectors.invoices import InvoiceCollector
+from finops_ingest.collectors.openai_usage import openai_collector
 from finops_ingest.collectors.org_tree import OrgTreeCollector
 from finops_ingest.collectors.ownership import OwnershipCollector
 from finops_ingest.collectors.partitions import ensure_partition, partition_maintenance
@@ -345,6 +356,65 @@ def _through_the_ledger(
     return int(outcome.items_written)
 
 
+#: The fake providers the demo connects, as `scripts/ops/connect_ai_provider.py` connects one.
+DEMO_AI_PROVIDERS = (FAKE_OPENAI, FAKE_ANTHROPIC)
+
+CONNECT_PROVIDER = text(
+    "INSERT INTO ai_provider_account (provider, organization_id, tenant_id, name, "
+    "key_secret_name, enrolled_at) VALUES (:provider, :organization, :tenant, :name, :key, :at) "
+    "ON CONFLICT (provider, organization_id) DO NOTHING"
+)
+
+
+def _seed_ai(ledger: RunLedger, connection: Any, unit: Callable[..., Unit], now: datetime) -> int:
+    """AI spend from every source, P13: both providers, the invocation logs and the GPU agent.
+
+    After the bill, whose Bedrock and GPU lines these are read beside. The providers are connected
+    first, so their collectors find them the way a deployment's do, through the table rather than a
+    fixed list. One account with Bedrock features sends its logs to S3 only and reads NotOptedIn,
+    and one GPU instance publishes nothing, so the screen has both absences to say.
+    """
+    for account in DEMO_AI_PROVIDERS:
+        connection.execute(
+            CONNECT_PROVIDER,
+            {
+                "provider": account.provider,
+                "organization": account.organization_id,
+                "tenant": DEMO_TENANT,
+                "name": account.name,
+                "key": account.key_secret_name,
+                "at": now,
+            },
+        )
+    written = 0
+    for name, build in (
+        ("openai_usage", openai_collector),
+        ("anthropic_usage", anthropic_collector),
+    ):
+        provider = build(lambda _context, _account: FakeProviderReports(at=now), clock=lambda: now)
+        written += _through_the_ledger(ledger, provider, connection, unit(scope_key=name), name)
+    per_account = (
+        ("bedrock_invocations", {feature.account for feature in cur.BEDROCK_FEATURES}),
+        ("gpu_utilization", {gpu.account for gpu in cur.GPU_INSTANCES}),
+    )
+    for name, accounts in per_account:
+        for account_id in sorted(accounts):
+            key = AccountKey(provider=Provider.AWS, account_id=account_id)
+            collector: Any = (
+                BedrockInvocationsCollector(FakeInvocationLogs(at=now), clock=lambda: now)
+                if name == "bedrock_invocations"
+                else GpuUtilizationCollector(FakeGpuMetrics(at=now), clock=lambda: now)
+            )
+            written += _through_the_ledger(
+                ledger,
+                collector,
+                connection,
+                unit(scope_key=f"{key}:{fixtures.REGION}", account=key, region=fixtures.REGION),
+                name,
+            )
+    return written
+
+
 #: The account and region the seeded verifications sit in. Named rather than
 #: repeated, because three functions read them and a typo in one would produce a
 #: recommendation whose resource never joins to a charge.
@@ -572,6 +642,9 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
         # after it, which is ninety days of history and does not fit in three
         # calendar months with any margin at all.
         bill = estate(at=now, periods=BILL_PERIODS)
+        # P13, FEAT-081 and FEAT-084: the bill's Bedrock lines and its GPU instances, in the one
+        # bill the cost rows and the invoices are both built from, so the invoices still match.
+        bill = cur.with_ai(bill)
         # `partition_maintenance` creates the current month and the ones ahead,
         # which is right for a running system and wrong for a seed: this estate
         # reaches two months back, and those partitions will never be created by
@@ -950,6 +1023,8 @@ def seed(engine: Any, settings: Any, now: datetime, latest: datetime | None = No
                 ),
                 "container_usage",
             )
+
+        written += _seed_ai(ledger, connection, unit, now)
 
         counts = {
             name: connection.execute(

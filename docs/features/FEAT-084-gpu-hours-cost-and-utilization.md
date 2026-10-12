@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P13 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P13 spec](../specs/2026-10-12-p13-finops-for-ai-design.md), section 5.6 |
 | Tasks | TASK-P13-006 and TASK-P13-007 |
 | Decisions | OPEN-33 |
@@ -22,8 +22,10 @@ did any work. Utilization is the number that says whether the spend bought anyth
 
 ## How it works
 
-Built so far: the utilization, TASK-P13-006, and `GET /ai/gpu`, TASK-P13-007: each GPU instance the
+Built: the utilization, TASK-P13-006, and `GET /ai/gpu`, TASK-P13-007: each GPU instance the
 bill names with its hours and cost, and published, partly published or not published.
+The screen's GPU panel shows each instance, TASK-P13-008, and `make first-contact` reads the
+agent's metrics in the configured namespace, TASK-P13-009.
 
 Hours and cost are a query over `cost_focus_daily` for usage types naming a `p`, `g`, `trn`, `inf`
 or `dl` instance type. The `gpu_utilization` collector reads `nvidia_smi_utilization_gpu` for each

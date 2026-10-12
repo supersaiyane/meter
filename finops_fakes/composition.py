@@ -38,7 +38,7 @@ from finops_fakes.catalog import (
 from finops_fakes.cloudwatch_estate import FakeCloudWatchEstate
 from finops_fakes.commitment import FakeCommitmentReport
 from finops_fakes.containers import FakeContainerSource
-from finops_fakes.cur import FakeCostExport
+from finops_fakes.cur import ESTATE, FakeCostExport, with_ai
 from finops_fakes.estate_metrics import EstateMetrics, ec2_candidates, volume_candidates
 from finops_fakes.evidence import FakeQueryEvidence
 from finops_fakes.health import FakeRoleHealth
@@ -183,7 +183,9 @@ def builders(clock: Clock) -> dict[str, Callable[[CollectorContext], Any]]:
             FakeContainerSource(at=clock()), clock=clock
         ),
         "cost_anomaly": lambda _c: CostAnomalyCollector(clock=clock),
-        "cost_focus": lambda _c: CostFocusCollector(FakeCostExport(), clock=clock),
+        # The bill with its Bedrock and GPU lines, P13, so a scheduled run on the local stack keeps
+        # the AI spend the demo seeded rather than restating it away.
+        "cost_focus": lambda _c: CostFocusCollector(FakeCostExport(ai=True), clock=clock),
         "finops_score": lambda _c: ScoreCollector(clock=clock),
         "gpu_utilization": lambda _c: GpuUtilizationCollector(
             FakeGpuMetrics(at=clock()), clock=clock
@@ -193,7 +195,7 @@ def builders(clock: Clock) -> dict[str, Callable[[CollectorContext], Any]]:
             FakeInstanceCatalog(), hub_region=shape.REGIONS[0], clock=clock
         ),
         "inventory": lambda _c: InventoryCollector(FakeTopologySource(), clock=clock),
-        "invoices": lambda _c: InvoiceCollector(FakeInvoices(), clock=clock),
+        "invoices": lambda _c: InvoiceCollector(FakeInvoices(rows=with_ai(ESTATE)), clock=clock),
         # The local stack's one connected organization, so it runs without a seeded row.
         "openai_usage": lambda _c: openai_collector(
             lambda _context, _account: FakeProviderReports(at=clock()),

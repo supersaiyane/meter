@@ -72,6 +72,8 @@ export const EXPLORER_FILTERS = [
   'tag_key',
   'tag_value',
 ] as const;
+/** The AI spend screen's grouping and billing period, the route's own names. FEAT-085. */
+export const AI_FILTERS = ['group_by', 'period'] as const;
 export const ACCOUNT_FILTERS = ['status'] as const;
 export const RESOURCE_FILTERS = ['account', 'region', 'geography', 'kind', 'type'] as const;
 
@@ -110,6 +112,8 @@ export const GROUPS: readonly GroupDef[] = [
         arrives: null,
       },
       { path: '/analyze/clusters', label: 'Clusters', arrives: null },
+      // FinOps for AI, P13: model spend, its callers and the GPU fleet. FEAT-085.
+      { path: '/analyze/ai', label: 'AI spend', arrives: null, filters: AI_FILTERS },
     ],
   },
   {

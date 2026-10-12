@@ -99,17 +99,22 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-13 | TASK-P13-005, Anthropic, CHG-0177 | Done | Anthropic adapter: cents divided by a hundred, model and token type from the report's fields, no request count; anthropic_usage collector and fake; connect script and migration 0051 | finops_providers/anthropic/reports.py:62, finops_ingest/collectors/anthropic_usage.py:24, migrations/versions/0051_anthropic_schedule.py:1, tests/providers/test_anthropic_reports.py:78 |
 | 2026-10-13 | TASK-P13-006, GPU utilization, CHG-0178 | Done | gpu_utilization_daily and its cadence, migration 0052; accelerated_instance_type; GpuMetrics port; CloudWatch adapter listing then reading each accelerator; collector asking only about billed GPU instances; fake bill with one publishing and one silent | finops_providers/aws/gpu_metrics.py:48, finops_ingest/collectors/gpu_utilization.py:64, finops_core/domain/ai.py:99, migrations/versions/0052_gpu_utilization_daily.py:1 |
 | 2026-10-13 | TASK-P13-007, the AI endpoints, CHG-0179 | Done | finops_query/ai.py: spend five ways with each figure's basis, callers at the bill's unit cost, the GPU fleet, model_key; repositories scoped and audited; three exportable routes; provider spend global only | finops_query/ai.py:218, finops_api/routes/ai.py:127, finops_api/db/repositories/ai.py:42, tests/api/test_ai_routes.py:108 |
+| 2026-10-13 | TASK-P13-008, the AI spend screen, CHG-0180 | Done | /analyze/ai under Analyze: spend five ways, callers and the GPU fleet, each panel its own freshness; Figure usd-unit draws a unit price past the cent; absences in words; migration 0053; coverage counts cloud accounts, ISS-288 fixed | finops-web/src/screens/AiSpendScreen.tsx:1, finops-web/src/components/Figure.tsx:30, finops_api/db/repositories/cost.py:107, finops-web/e2e/ai.spec.ts:1 |
+| 2026-10-13 | TASK-P13-009, the local stack, first contact and P13's proof, CHG-0181 | Done | Demo and local stack bill Bedrock and GPU lines through cur.with_ai, connect fake OpenAI and Anthropic, run every AI collector; first contact reads the GPU agent and a named provider key; runbook ai-providers.md; exit criteria through the API over the demo; ISS-289 fixed, callers carry project and key | scripts/demo/seed_demo.py:369, scripts/ops/first_contact.py:120, tests/scripts/test_p13_exit_criteria.py:1, finops_query/ai.py:345, docs/runbooks/ai-providers.md:1 |
 
 ## Next action
 
-**P13, FinOps for AI, is in build**, specified and planned on 2026-10-12 with OPEN-31 to OPEN-34
-answered: `docs/specs/2026-10-12-p13-finops-for-ai-design.md` and `docs/plans/P13-implementation-plan.md`,
-nine tasks, each on its own branch from `next-build` in a worktree, merged once `make verify` is green.
-The owner asked for the tasks to run one after another without stopping, except for an owner decision.
+**P13, FinOps for AI, is delivered against fakes**, nine tasks on 2026-10-12 and 2026-10-13, each
+merged into `next-build` once `make verify` was green. Its exit criteria are read through the API
+over the seeded demo by `tests/scripts/test_p13_exit_criteria.py`. No provider has been called and no
+invocation log read: ISS-285 closes with `make first-contact` against one organization of each
+provider, by the owner's steps in `docs/runbooks/ai-providers.md`.
 
-1. **TASK-P13-008**, the AI spend screen, then 009. TASK-P13-001 to 007 are done; 001 to 004 are merged.
+1. **The owner chooses the next sub project.** Proposals 1 to 3 of `next-in-scope.txt` are built, P10,
+   P13 and P11. Proposal 4, graded autonomy through pull requests, waits on OPEN-13; proposal 5,
+   commitments, does not.
 2. Never read a prompt or a response from an invocation log, and never let a provider key leave
-   Secrets Manager: the plan's two rules, each held by a test.
+   Secrets Manager: P13's two rules, each held by a test.
 
 **Three owner decisions stand between P12 and a first deployment**, each recorded with its options:
 ISS-280, an identity provider a deployed environment can use; ISS-283, how a deployment runs its

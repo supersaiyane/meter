@@ -89,6 +89,8 @@ describe('navigation groups', () => {
         'Kubernetes cost',
         'Kubernetes rightsizing',
         'Clusters',
+        // P13, FEAT-085: inside Analyze, which ADR-0030 lets a sub project add to.
+        'AI spend',
       ],
       Plan: ['Budgets', 'Forecasts', 'FinOps Score', 'Unit Economics'],
       Optimize: ['Recommendations', 'Commitments', 'Realized Savings', 'Savings ledger'],

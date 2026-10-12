@@ -119,7 +119,7 @@ subprojects:
   depends_on: P11
 - id: P13
   name: FinOps for AI
-  status: 'In build. Approved by the owner on 2026-10-12 with OPEN-31 to OPEN-34 answered, and chosen the same day as the next priority, proposal 2 of next-in-scope.txt. Bedrock by model, token type, application and caller; OpenAI and Anthropic cost and usage through a NAT gateway only the worker can use; GPU hours, cost and utilization; and one screen for cost per token, per request and per feature'
+  status: 'Delivered on 2026-10-13 against fakes, proven by TASK-P13-009 against the seeded demo through the API. Approved by the owner on 2026-10-12 with OPEN-31 to OPEN-34 answered, and chosen the same day as the next priority, proposal 2 of next-in-scope.txt. No provider has been called and no invocation log read, ISS-285 and ISS-002. Bedrock by model, token type, application and caller; OpenAI and Anthropic cost and usage through a NAT gateway only the worker can use; GPU hours, cost and utilization; and one screen for cost per token, per request and per feature'
   spec: specs/2026-10-12-p13-finops-for-ai-design.md
   plan: plans/P13-implementation-plan.md
   depends_on: P12
@@ -613,31 +613,31 @@ features:
 - id: FEAT-081
   name: Bedrock cost by model, token type, application and IAM principal, from the bill
   subproject: P13
-  status: In build
+  status: Delivered
   detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) sections 5.2, 5.3 and 5.7, [P13 plan](docs/plans/P13-implementation-plan.md)'
   doc: docs/features/FEAT-081-bedrock-cost-from-the-bill.md
 - id: FEAT-082
   name: Bedrock usage per caller from invocation logs
   subproject: P13
-  status: In build
+  status: Delivered
   detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) section 5.4, [P13 plan](docs/plans/P13-implementation-plan.md)'
   doc: docs/features/FEAT-082-bedrock-usage-per-caller.md
 - id: FEAT-083
   name: OpenAI and Anthropic cost and usage beside the AWS bill
   subproject: P13
-  status: In build
+  status: Delivered
   detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) sections 5.1, 5.3 and 5.5, [P13 plan](docs/plans/P13-implementation-plan.md)'
   doc: docs/features/FEAT-083-openai-and-anthropic.md
 - id: FEAT-084
   name: GPU hours, cost and utilization
   subproject: P13
-  status: In build
+  status: Delivered
   detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) section 5.6, [P13 plan](docs/plans/P13-implementation-plan.md)'
   doc: docs/features/FEAT-084-gpu-hours-cost-and-utilization.md
 - id: FEAT-085
   name: The AI spend screen, cost per token, per request and per feature
   subproject: P13
-  status: In build
+  status: Delivered
   detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) sections 5.7 and 8, [P13 plan](docs/plans/P13-implementation-plan.md)'
   doc: docs/features/FEAT-085-ai-spend-screen.md
 adrs:
@@ -2532,6 +2532,18 @@ changes:
   what: TASK-P13-007, the AI endpoints, spend, callers and the GPU fleet
   commit: pending
   detail: 'GET /ai/spend groups the bill''s AI lines by provider, model, token type, feature or caller, every figure with its basis: cost measured; tokens measured where the bill line counts them and modelled from the provider''s usage report where it does not; a cost per request modelled always. GET /ai/callers prices each caller''s tokens at the bill''s unit cost for the same source, account, model, token type and day, modelled, None where nothing priced them. GET /ai/gpu lists each GPU instance the bill names with hours, cost and published, partly published or not published. finops_query/ai.py holds the arithmetic and model_key, which matches a log''s model identifier to the bill''s name; a usage source is matched to its bill through the connected providers, so neither package names a vendor, ADR-0028. ai_usage_daily and gpu_utilization_daily are scoped by account and ai_provider_account payer wide, so a provider''s spend is visible at global scope only'
+- id: CHG-0180
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P13-008, the AI spend screen
+  commit: pending
+  detail: 'finops-web/src/screens/AiSpendScreen.tsx at /analyze/ai, under Analyze, with group_by and period in the address. Spend by provider, model, token type, feature or caller with its measured total and the connected providers; who called which model; the GPU instances. Each panel is its own read with its own state and freshness. Tokens, requests and the two unit costs carry their basis, and Figure gains usd-unit, which draws a unit price to as many as six places, because $0.003 drawn to the cent is $0.00. Tokens nobody counted, a caller nobody priced and an agent that never published are said in words. Migration 0053 admits the path as a saved view''s screen. Coverage on the AI and cost routes counts the cloud bill''s accounts, ISS-288'
+- id: CHG-0181
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P13-009, AI spend on the local stack, first contact for each source, and P13's proof
+  commit: pending
+  detail: 'The demo seed bills the Bedrock and GPU lines in the one bill its cost rows and invoices are built from, through finops_fakes.cur.with_ai, connects a fake OpenAI and a fake Anthropic organization and runs both provider collectors, the invocation logs in each Bedrock account, one of which reads NotOptedIn, and the GPU agent; the local stack''s composition bills the same lines. make first-contact reads the GPU agent''s metrics and, when a key''s secret is named, a provider''s day of costs through the worker''s own key reader; a provider not named is not read and the report says so. docs/runbooks/ai-providers.md has the owner''s steps for a provider key, invocation logging and the GPU agent. The callers endpoint and screen carry a provider''s project or workspace and its key, ISS-289. tests/scripts/test_p13_exit_criteria.py reads the exit criteria through the API over the seeded demo'
 issues:
 - id: ISS-189
   severity: LOW
@@ -5077,6 +5089,16 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-289
+  severity: MEDIUM
+  status: FIXED
+  summary: A provider's usage reached the callers panel with no name, its project and key dropped
+  detail: 'Found 2026-10-13 proving P13''s third exit criterion. An OpenAI or Anthropic usage row names its project or workspace and the key it was made with, and names a user only sometimes; Anthropic names none. GET /ai/callers grouped by caller and application alone, so a provider''s usage arrived as one row with a blank caller and a blank application, and the screen drew a name that was not there. Fixed the same day, CHG-0181: finops_query.ai.callers groups by workspace and key as well, the endpoint returns both, and the screen names a caller by its key where the provider names no one, beside its project, workspace or Region. Held by tests/query/test_ai.py and tests/scripts/test_p13_exit_criteria.py'
+- id: ISS-288
+  severity: MEDIUM
+  status: FIXED
+  summary: A provider's projects counted as accounts, so a whole estate could read as partial
+  detail: 'Found 2026-10-13 building TASK-P13-008. The AI routes counted the accounts holding AI spend as the visible accounts, so a reader who sees every account, two of which use a model, was drawn a partial view of the estate. The cost routes counted every sub account in the period, and since TASK-P13-004 a provider''s line names a project or workspace there, so a global reader''s estate of five could read as seven. Fixed the same day, CHG-0180: CostRepository.accounts_in counts the cloud bill''s lines only and the AI routes use it, held by tests/api/test_ai_routes.py'
 - id: ISS-287
   severity: MEDIUM
   status: FIXED

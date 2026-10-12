@@ -211,3 +211,13 @@ def test_collected_at_is_after_as_of_on_every_route(
         as_of = datetime.fromisoformat(meta["as_of"]).astimezone(UTC)
         collected = datetime.fromisoformat(meta["collected_at"]).astimezone(UTC)
         assert collected >= as_of, path
+
+
+def test_coverage_counts_the_cloud_accounts_and_never_a_providers_project(
+    engine: Engine, settings: Settings, planted: UUID
+) -> None:
+    """ISS-288: a global reader sees the whole estate, whichever accounts happen to use a model."""
+    accounts = len({row.sub_account_id for row in CLOSED})
+    for path in (SPEND, CALLERS, GPU, "/api/v1/cost/summary"):
+        coverage = read(engine, settings, planted, path)["meta"]["scope_coverage"]
+        assert coverage["visible"] == accounts, path

@@ -31,6 +31,7 @@ same question.
 | Demonstrate the product, and say which parts are fake | `demo.md` |
 | Watch the local stack dispatch, queue, run and record collection | `local-collection.md` |
 | Connect the first AWS account, each step with its check, and first contact | `first-account.md` |
+| Give Meter each AI spend source: a provider's key, invocation logging, the GPU agent | `ai-providers.md` |
 
 Nothing pages for a restore, because by the time one is needed somebody already
 knows. It is here because a restore that has never been rehearsed is a

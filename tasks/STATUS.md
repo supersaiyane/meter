@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 85 total, 11 specified, 18 in build, 53 delivered |
+| Features | 85 total, 11 specified, 13 in build, 58 delivered |
 | Decisions | 36 architecture decision records |
-| Changes | 179 recorded |
-| Issues | 178 fixed, 106 open, 0 parked |
+| Changes | 181 recorded |
+| Issues | 180 fixed, 106 open, 0 parked |
 | Open questions | 34 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -131,7 +131,13 @@ connected OpenAI: provider accounts, its cost beside the bill and its usage besi
 from the AI path and never kept; it found ISS-287, a retention job that never ran for existing tenants, and fixed it. On 2026-10-13
 TASK-P13-005 added Anthropic beside OpenAI, its cents read as cents and its missing request count as missing. TASK-P13-006 read
 GPU utilization for the GPU instances the bill names, and an instance that publishes nothing reads as not published. TASK-P13-007
-added the three AI endpoints, every figure saying whether it is measured or modelled.
+added the three AI endpoints, every figure saying whether it is measured or modelled. TASK-P13-008
+added the AI spend screen under Analyze, where tokens nobody counted, a caller nobody priced and a GPU
+that never published are words, and found ISS-288, a provider's projects counted as accounts. TASK-P13-009
+seeded every AI source into the demo and the local stack, taught first contact the GPU agent and each
+provider's key, wrote the owner's runbook, and proved the six exit criteria through the API over the
+seeded demo; proving them found ISS-289, a provider's usage reaching the callers panel unnamed, and
+fixed it. P13 is delivered against fakes; ISS-285 closes with a real key.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -308,7 +314,7 @@ ISS-003.
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 | P11 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
 | P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
-| P13 | 7 | 0 | 0 | 0 | 2 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
+| P13 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -595,6 +601,8 @@ ISS-003.
 | `TASK-P13-005` | Done 2026-10-13 | Anthropic |
 | `TASK-P13-006` | Done 2026-10-13 | GPU utilization |
 | `TASK-P13-007` | Done 2026-10-13 | the AI endpoints |
+| `TASK-P13-008` | Done 2026-10-13 | the AI spend screen |
+| `TASK-P13-009` | Done 2026-10-13 | the local stack, first contact, proof and documents |
 
 <!-- generated:task-status end -->
 

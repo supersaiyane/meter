@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P13 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P13 spec](../specs/2026-10-12-p13-finops-for-ai-design.md), sections 5.2, 5.3 and 5.7 |
 | Tasks | TASK-P13-002 and TASK-P13-007 |
 | Decisions | OPEN-34 |
@@ -24,8 +24,9 @@ the fields that would give one.
 
 ## How it works
 
-Built so far: the columns, TASK-P13-002, and `GET /ai/spend`, TASK-P13-007, which groups the bill's
-AI lines by model, token type, feature or IAM principal. The screen follows in TASK-P13-008.
+Built: the columns, TASK-P13-002; `GET /ai/spend`, TASK-P13-007, which groups the bill's AI lines
+by model, token type, feature or IAM principal; and the AI spend screen, TASK-P13-008. The demo
+bills two Bedrock features, TASK-P13-009.
 
 `finops_providers/aws/cur.py` asks the export's catalog for `x_usagetype` and
 `line_item_iam_principal` the way it asks for the split cost columns, and reads them where they

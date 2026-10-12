@@ -22,6 +22,7 @@
     "docker/scripts/ops",
     "finops-web/e2e/a11y.spec.ts",
     "finops-web/e2e/account.spec.ts",
+    "finops-web/e2e/ai.spec.ts",
     "finops-web/e2e/assistant.spec.ts",
     "finops-web/e2e/containers.spec.ts",
     "finops-web/e2e/cost.spec.ts",
@@ -57,6 +58,7 @@
     "finops-web/src/api/client.ts",
     "finops-web/src/api/exportViews.ts",
     "finops-web/src/api/fixtureSeam.ts",
+    "finops-web/src/api/fixtures/ai.ts",
     "finops-web/src/api/fixtures/assistant.ts",
     "finops-web/src/api/fixtures/containers.ts",
     "finops-web/src/api/fixtures/cost.ts",
@@ -151,6 +153,7 @@
     "finops-web/src/main.tsx?raw",
     "finops-web/src/queryClient.ts",
     "finops-web/src/screens/AccountsScreen.tsx",
+    "finops-web/src/screens/AiSpendScreen.tsx",
     "finops-web/src/screens/AssistantScreen.tsx",
     "finops-web/src/screens/BudgetsScreen.tsx",
     "finops-web/src/screens/ClustersScreen.tsx",
@@ -197,6 +200,7 @@
     "finops-web/src/screens/WasteScoreScreen.tsx",
     "finops-web/src/screens/WasteScreen.tsx",
     "finops-web/src/screens/__tests__/AccountsScreen.test.tsx",
+    "finops-web/src/screens/__tests__/AiSpendScreen.test.tsx",
     "finops-web/src/screens/__tests__/AssistantScreen.test.tsx",
     "finops-web/src/screens/__tests__/BudgetsScreen.test.tsx",
     "finops-web/src/screens/__tests__/ClustersScreen.test.tsx",
@@ -682,6 +686,7 @@
     "migrations/versions/0050_ai_collector_schedules.py",
     "migrations/versions/0051_anthropic_schedule.py",
     "migrations/versions/0052_gpu_utilization_daily.py",
+    "migrations/versions/0053_ai_spend_screen.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -988,6 +993,7 @@
     "tests/scripts/test_observability.py",
     "tests/scripts/test_p11_exit_criteria.py",
     "tests/scripts/test_p12_exit_criteria.py",
+    "tests/scripts/test_p13_exit_criteria.py",
     "tests/scripts/test_p9_exit_criteria.py",
     "tests/scripts/test_pipeline.py",
     "tests/scripts/test_restore_drill.py",
@@ -1149,6 +1155,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/e2e/ai.spec.ts",
+      "t": "finops-web/e2e/estate.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/e2e/demo.spec.ts",
       "t": "finops-web/e2e/estate.ts",
       "k": "typescript"
@@ -1216,6 +1227,11 @@
     {
       "s": "finops-web/src/App.tsx",
       "t": "finops-web/src/screens/AccountsScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/App.tsx",
+      "t": "finops-web/src/screens/AiSpendScreen.tsx",
       "k": "typescript"
     },
     {
@@ -1489,6 +1505,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/api/fixtures/ai.ts",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/api/fixtures/assistant.ts",
       "t": "finops-web/src/api/types.ts",
       "k": "typescript"
@@ -1556,6 +1577,11 @@
     {
       "s": "finops-web/src/api/queries.ts",
       "t": "finops-web/src/api/fixtureSeam.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/api/queries.ts",
+      "t": "finops-web/src/api/fixtures/ai.ts",
       "k": "typescript"
     },
     {
@@ -2625,6 +2651,71 @@
     },
     {
       "s": "finops-web/src/screens/AccountsScreen.tsx",
+      "t": "finops-web/src/shell/sections.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AiSpendScreen.tsx",
+      "t": "finops-web/src/api/queries.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AiSpendScreen.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AiSpendScreen.tsx",
+      "t": "finops-web/src/components/DataTable.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AiSpendScreen.tsx",
+      "t": "finops-web/src/components/Figure.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AiSpendScreen.tsx",
+      "t": "finops-web/src/components/FixtureBand.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AiSpendScreen.tsx",
+      "t": "finops-web/src/components/PercentCell.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AiSpendScreen.tsx",
+      "t": "finops-web/src/components/StateBoundary.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AiSpendScreen.tsx",
+      "t": "finops-web/src/components/surfaceState.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AiSpendScreen.tsx",
+      "t": "finops-web/src/components/tableConfig.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AiSpendScreen.tsx",
+      "t": "finops-web/src/screens/surfaceStateFor.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AiSpendScreen.tsx",
+      "t": "finops-web/src/shell/filters.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AiSpendScreen.tsx",
+      "t": "finops-web/src/shell/metaRegistry.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/AiSpendScreen.tsx",
       "t": "finops-web/src/shell/sections.ts",
       "k": "typescript"
     },
@@ -5089,6 +5180,36 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/screens/__tests__/AiSpendScreen.test.tsx",
+      "t": "finops-web/src/api/fixtures/ai.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/AiSpendScreen.test.tsx",
+      "t": "finops-web/src/api/types.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/AiSpendScreen.test.tsx",
+      "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/AiSpendScreen.test.tsx",
+      "t": "finops-web/src/screens/AiSpendScreen.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/AiSpendScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/Harness.tsx",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/screens/__tests__/AiSpendScreen.test.tsx",
+      "t": "finops-web/src/screens/__tests__/fixtures.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/screens/__tests__/AssistantScreen.test.tsx",
       "t": "finops-web/src/api/client.ts",
       "k": "typescript"
@@ -7385,6 +7506,11 @@
     },
     {
       "s": "finops_api/db/repositories/cost.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/cost.py",
       "t": "finops_core/domain/platform.py",
       "k": "python"
     },
@@ -8051,6 +8177,11 @@
     {
       "s": "finops_api/routes/ai.py",
       "t": "finops_api/db/repositories/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ai.py",
+      "t": "finops_api/db/repositories/cost.py",
       "k": "python"
     },
     {
@@ -12165,6 +12296,16 @@
     },
     {
       "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/ai_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/anthropic_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/budgets.py",
       "k": "python"
     },
@@ -12195,6 +12336,11 @@
     },
     {
       "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/gpu_utilization.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/iac_state.py",
       "k": "python"
     },
@@ -12211,6 +12357,11 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/invoices.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/openai_usage.py",
       "k": "python"
     },
     {
@@ -12355,7 +12506,22 @@
     },
     {
       "s": "scripts/ops/first_contact.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
+      "t": "finops_core/ports/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
+      "t": "finops_providers/anthropic/reports.py",
       "k": "python"
     },
     {
@@ -12365,7 +12531,22 @@
     },
     {
       "s": "scripts/ops/first_contact.py",
+      "t": "finops_providers/aws/gpu_metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
       "t": "finops_providers/aws/reach.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
+      "t": "finops_providers/aws/secrets.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
+      "t": "finops_providers/openai/reports.py",
       "k": "python"
     },
     {
@@ -16755,7 +16936,22 @@
     },
     {
       "s": "tests/scripts/test_first_contact.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_first_contact.py",
+      "t": "finops_ingest/ai_bindings.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_first_contact.py",
       "t": "finops_ingest/aws_bindings.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_first_contact.py",
+      "t": "finops_providers/anthropic/reports.py",
       "k": "python"
     },
     {
@@ -16826,6 +17022,11 @@
     {
       "s": "tests/scripts/test_p12_exit_criteria.py",
       "t": "finops_ingest/sqs.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p13_exit_criteria.py",
+      "t": "finops_core/config.py",
       "k": "python"
     },
     {

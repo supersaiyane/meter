@@ -2586,7 +2586,12 @@ class AiCallerOut(BaseModel):
 
     source: str
     account_id: str
-    #: An IAM ARN or a provider's user, either of which can name a person: class P.
+    #: The Region for the invocation logs; a provider's project or workspace, empty for its default.
+    workspace: str
+    #: A provider's key, by its id and never the key; empty for the invocation logs.
+    api_key_id: str
+    #: An IAM ARN or a provider's user, either of which can name a person: class P. Empty where
+    #: the source names no one, which a provider's key then stands for.
     caller: str
     application: str
     model: str

@@ -224,6 +224,19 @@ def test_a_self_billed_providers_unit_cost_spreads_its_bill_over_its_usage() -> 
     assert {row.caller: row.requests for row in rows}["u2"] is None
 
 
+def test_a_providers_callers_are_told_apart_by_project_and_key() -> None:
+    """ISS-289: a provider names no user for most usage, so its project and key say who called."""
+    shared = {"source": "p", "account": "o", "model": "m", "caller": "", "application": ""}
+    bill = line(source="p", account="o", workspace="w", model="m", tokens=None, cost=Decimal("4"))
+    one = used(**shared, workspace="proj-a", api_key="key-a", tokens={"input": 1000})
+    two = used(**shared, workspace="proj-b", api_key="key-b", tokens={"input": 3000})
+    rows = ai.callers([bill], [one, two], self_billed={"p"})
+    assert sorted((row.workspace, row.api_key) for row in rows) == [
+        ("proj-a", "key-a"),
+        ("proj-b", "key-b"),
+    ]
+
+
 def test_a_usage_source_that_does_not_bill_itself_is_priced_from_the_cloud_bill() -> None:
     assert ai.bill_source("logs", {"p"}) == ai.CLOUD_BILL
     assert ai.bill_source("p", {"p"}) == "p"

@@ -15,6 +15,13 @@ every read as failed for a reason that is not the account's.
 
 Cost Explorer charges for each request, USD 0.01 at AWS's published price (modelled), and the relay
 reads each start one Lambda invocation. Everything else here is free to call.
+
+An AI provider is read too, P13, when its key's secret is named: `--openai-secret` and
+`--anthropic-secret`, each under `meter/<env>/ai/`. The key is read through the worker's own reader
+and asked for one day of costs, the read `scripts/ops/connect_ai_provider.py` proves before it
+connects an organization. A provider whose secret is not named is not read, and the report says
+so, so an estate with no AI provider can still answer every read. The key is never printed.
+`docs/runbooks/ai-providers.md` has the owner's steps.
 """
 
 from __future__ import annotations
@@ -22,17 +29,23 @@ from __future__ import annotations
 import argparse
 import sys
 from collections.abc import Callable, Iterable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
 from typing import Any, Final
 from urllib.parse import urlsplit
+from uuid import uuid4
 
 import boto3
 
 from finops_core.config import Settings
 from finops_core.constants import ENV_PREFIX
+from finops_core.domain.ai import ProviderAccount
 from finops_core.errors import CollectionError
+from finops_core.ports.ai import AiProviderReports
+from finops_providers.anthropic.reports import COLLECTOR as ANTHROPIC_COLLECTOR
+from finops_providers.anthropic.reports import AnthropicReports
 from finops_providers.aws.client import translate
+from finops_providers.aws.gpu_metrics import METRIC as GPU_METRIC
 from finops_providers.aws.reach import (
     GLOBAL_REGION,
     hub_client,
@@ -40,6 +53,9 @@ from finops_providers.aws.reach import (
     payer_of,
     relay,
 )
+from finops_providers.aws.secrets import AiKeyReader
+from finops_providers.openai.reports import COLLECTOR as OPENAI_COLLECTOR
+from finops_providers.openai.reports import OpenAiReports
 
 #: Exit statuses: every read answered, at least one did not, or the run was refused.
 ANSWERED_ALL: Final = 0
@@ -62,6 +78,8 @@ class Target:
     account: str
     region: str
     today: date
+    #: Each AI provider's key secret, by provider, P13. A provider not named here is not tried.
+    ai_secrets: dict[str, str] = field(default_factory=dict)
 
     @property
     def payer(self) -> str | None:
@@ -105,6 +123,30 @@ def _first_state(target: Target) -> dict[str, str]:
 
 RELAYED: Final = ("relay_function_name", "s3_bucket")
 
+#: How each AI provider's reports are made from its key, and the collector a failure is named for.
+ReportsFor = Callable[[Callable[[], str]], AiProviderReports]
+PROVIDER_REPORTS: Final[dict[str, tuple[ReportsFor, str]]] = {
+    "anthropic": (lambda key: AnthropicReports(uuid4(), uuid4(), key), ANTHROPIC_COLLECTOR),
+    "openai": (lambda key: OpenAiReports(uuid4(), uuid4(), key), OPENAI_COLLECTOR),
+}
+
+
+def _a_day_of_costs(provider: str) -> Callable[[AiProviderReports, Target], Any]:
+    """One day of a provider's costs, the read connecting an organization proves."""
+
+    def read(reports: AiProviderReports, target: Target) -> Any:
+        account = ProviderAccount(
+            provider=provider,
+            organization_id="first-contact",
+            name="first contact",
+            key_secret_name=target.ai_secrets[provider],
+        )
+        end = datetime(target.today.year, target.today.month, target.today.day, tzinfo=UTC)
+        return tuple(reports.costs(account, end - timedelta(days=1), end))
+
+    return read
+
+
 PROBES: Final[tuple[Probe, ...]] = (
     Probe(
         "the hub's own credentials",
@@ -136,10 +178,19 @@ PROBES: Final[tuple[Probe, ...]] = (
     ),
     Probe(
         "CloudWatch metrics",
-        "container_usage and gpu_utilization",
+        "container_usage",
         "member",
         "cloudwatch",
         lambda c, _t: c.list_metrics(Namespace="AWS/EC2", RecentlyActive="PT3H"),
+    ),
+    Probe(
+        "the GPU agent's metrics",
+        "gpu_utilization",
+        "member",
+        "cloudwatch",
+        lambda c, t: c.list_metrics(
+            Namespace=t.settings.gpu_metrics_namespace, MetricName=GPU_METRIC, RecentlyActive="PT3H"
+        ),
     ),
     Probe(
         "Bedrock's invocation logging configuration",
@@ -266,6 +317,20 @@ PROBES: Final[tuple[Probe, ...]] = (
         needs=RELAYED,
         region=GLOBAL_REGION,
     ),
+    Probe(
+        "OpenAI's cost report, with the key named",
+        "openai_usage",
+        "provider",
+        "openai",
+        _a_day_of_costs("openai"),
+    ),
+    Probe(
+        "Anthropic's cost report, with the key named",
+        "anthropic_usage",
+        "provider",
+        "anthropic",
+        _a_day_of_costs("anthropic"),
+    ),
 )
 
 ClientFor = Callable[[Probe, Target], Any]
@@ -277,6 +342,14 @@ def clients(target: Target) -> ClientFor:
 
     def client_for(probe: Probe, where: Target) -> Any:
         region = probe.region or where.region
+        if probe.reach == "provider":
+            # The worker's path: the key read from the AI path when the request is made.
+            make, collector = PROVIDER_REPORTS[probe.service]
+            keys = AiKeyReader(where.settings.env, hub_client(where.settings, "secretsmanager"))
+            secret = where.ai_secrets[probe.service]
+            return make(
+                keys.reader(secret, scope_key=f"{probe.service}:{secret}", collector=collector)
+            )
         if probe.reach == "member":
             return member(probe.service, where.account, region)
         if probe.reach == "relay":
@@ -288,9 +361,11 @@ def clients(target: Target) -> ClientFor:
 
 
 def _missing(probe: Probe, target: Target) -> str | None:
-    for field in probe.needs:
-        if not getattr(target.settings, field):
-            return f"{ENV_PREFIX}{field.upper()} is empty"
+    if probe.reach == "provider" and probe.service not in target.ai_secrets:
+        return f"--{probe.service}-secret was not given"
+    for name in probe.needs:
+        if not getattr(target.settings, name):
+            return f"{ENV_PREFIX}{name.upper()} is empty"
     if probe.service in {"budgets", "invoicing"} and target.payer is None:
         return f"{ENV_PREFIX}ORG_READER_ROLE_ARN names no payer"
     return None
@@ -362,6 +437,12 @@ def main(
     parser.add_argument("--env", required=True, help="whose settings: dev, staging or prod")
     parser.add_argument("--account", required=True, help="the 12 digit account to read")
     parser.add_argument("--region", required=True, help="the Region to read it in")
+    for provider in sorted(PROVIDER_REPORTS):
+        parser.add_argument(
+            f"--{provider}-secret",
+            default="",
+            help=f"the secret holding a {provider} organization's admin key, under meter/<env>/ai/",
+        )
     arguments = parser.parse_args(argv)
     if not credentials():
         print(
@@ -375,9 +456,18 @@ def main(
         account=arguments.account,
         region=arguments.region,
         today=datetime.now(UTC).date(),
+        ai_secrets={
+            provider: secret
+            for provider in PROVIDER_REPORTS
+            if (secret := getattr(arguments, f"{provider}_secret"))
+        },
     )
-    answers = contact(PROBES, target, client_for or clients(target))
+    asked = [one for one in PROBES if one.reach != "provider" or one.service in target.ai_secrets]
+    answers = contact(asked, target, client_for or clients(target))
     print(report(answers))
+    unread = sorted(set(PROVIDER_REPORTS) - set(target.ai_secrets))
+    if unread:
+        print(f"AI providers not read, no key's secret named: {', '.join(unread)}.")
     return ANSWERED_ALL if all(one.outcome == ANSWERED for one in answers) else NOT_ALL_ANSWERED
 
 
