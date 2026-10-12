@@ -41,7 +41,7 @@ Modelled at the pace of P12: seven tasks of size M and two of size S, about eigh
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-12 |
 | Implements | Spec section 5.1, OPEN-31, ADR-0036 |
 | Delivers | FEAT-083 |
 | Depends on | Nothing |
@@ -49,12 +49,22 @@ Modelled at the pace of P12: seven tasks of size M and two of size S, about eigh
 
 **Acceptance criteria.**
 
-- [ ] One NAT gateway with an Elastic IP in the first public subnet, and a default route to it from
-      the private route table, tagged like the rest of the hub
-- [ ] The worker service has a security group of its own allowing TCP 443 to anywhere, and no other
+- [x] One NAT gateway with an Elastic IP in the first public subnet, and a default route to it from
+      the private route table, tagged `finops:module = ai`
+- [x] The worker service has a security group of its own allowing TCP 443 to anywhere, and no other
       group egresses to the internet, held by a test of the Terraform
-- [ ] `tests/contract/test_network_paths.py` holds the two provider hosts to the NAT path
-- [ ] `docs/04-DEPLOYMENT.md` and `network.tf`'s header say what changed and why
+- [x] `tests/contract/test_network_paths.py` holds the two provider hosts to the NAT path
+- [x] `docs/04-DEPLOYMENT.md` and `network.tf`'s header say what changed and why
+
+**Delivered 2026-10-12.** `infra/terraform/hub/network.tf` adds `aws_eip.nat`,
+`aws_nat_gateway.providers` in `aws_subnet.public[0]` and `aws_route.to_the_providers`; `alb.tf` adds
+`worker_internet` with its one rule, TCP 443 to `0.0.0.0/0`, and `ecs.tf` gives it to the worker
+service alone. `tests/contract/test_network_paths.py` replaces its two tests that there is no NAT with
+four: one gateway, the worker's, in a public subnet; the private route table's three routes; one
+egress rule to the internet in the whole hub, the worker's on 443; and the worker service the only
+one carrying the group. A fifth reads every string in the production code and fails on a host
+outside AWS that is not one of the two providers', so a new host is a failed test. Nothing applied,
+ISS-002.
 
 ---
 

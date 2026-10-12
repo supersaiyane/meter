@@ -303,8 +303,9 @@ resource "aws_ecs_service" "worker" {
   }
 
   network_configuration {
-    subnets          = aws_subnet.private[*].id
-    security_groups  = [aws_security_group.tasks.id]
+    subnets = aws_subnet.private[*].id
+    # The shared group, and the one group that may reach the internet, ADR-0036.
+    security_groups  = [aws_security_group.tasks.id, aws_security_group.worker_internet.id]
     assign_public_ip = false
   }
 

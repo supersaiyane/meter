@@ -245,7 +245,7 @@ rather than scanning controls.
 | Curated 40 action policy, never `ReadOnlyAccess` | ADR-0004, ISS-010 |
 | ExternalId plus `aws:PrincipalOrgID` on every trust | ADR-0004 |
 | Two principals trusted by name, the task role and the relay, each needing the ExternalId; every role the relay assumes narrowed by a session policy to its one allow listed action | ADR-0035 |
-| No route out of the hub's VPC: endpoints, peered endpoint VPCs and the relay, held by `tests/contract/test_network_paths.py` | ADR-0028, ADR-0035 |
+| Every AWS call through endpoints, peered endpoint VPCs and the relay; only the worker may leave the VPC, HTTPS through one NAT gateway to the AI providers' report APIs; held by `tests/contract/test_network_paths.py` | ADR-0028, ADR-0035, ADR-0036 |
 | Scope enforced at two independent points | P0 spec section 8, ISS-009 |
 | A chosen account only narrows a scope, and one outside it or absent answers the same 404 | FEAT-075 |
 | Audit event on every scope evaluation | P0 spec section 5.5, ISS-031 |
