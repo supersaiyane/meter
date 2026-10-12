@@ -427,6 +427,7 @@
     "finops_fakes/catalog.py",
     "finops_fakes/cloudwatch_estate.py",
     "finops_fakes/commitment.py",
+    "finops_fakes/composition.py",
     "finops_fakes/containers.py",
     "finops_fakes/cur.py",
     "finops_fakes/estate_metrics.py",
@@ -486,6 +487,7 @@
     "finops_ingest/collectors/waste_compute.py",
     "finops_ingest/collectors/waste_parking.py",
     "finops_ingest/collectors/waste_volumes.py",
+    "finops_ingest/composition.py",
     "finops_ingest/coverage.py",
     "finops_ingest/dispatcher.py",
     "finops_ingest/ledger.py",
@@ -808,6 +810,7 @@
     "tests/ingest/collectors/test_waste_targets.py",
     "tests/ingest/collectors/test_waste_volumes.py",
     "tests/ingest/collectors/test_waste_volumes_judged.py",
+    "tests/ingest/test_composition.py",
     "tests/ingest/test_coverage.py",
     "tests/ingest/test_dispatcher.py",
     "tests/ingest/test_ledger.py",
@@ -9236,6 +9239,161 @@
       "k": "python"
     },
     {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/account_health.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/budgets.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/commitment_actions.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/container_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/cost_anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/digests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/iac_state.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/instance_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/invoices.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/org_tree.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/platform_cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/price_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/query_audit.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/quotas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/realized_savings.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/savings_ledger.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/savings_plan_rates.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/score.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/spot_prices.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/waste_cloudwatch.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/waste_compute.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/waste_parking.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/waste_volumes.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/composition.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
       "s": "finops_fakes/containers.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -10243,6 +10401,56 @@
     {
       "s": "finops_ingest/collectors/waste_volumes.py",
       "t": "finops_query/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/commitment_actions.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/cost_anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/digests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/realized_savings.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/retention.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/savings_ledger.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/score.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {
@@ -13778,6 +13986,36 @@
     {
       "s": "tests/ingest/collectors/test_waste_volumes_judged.py",
       "t": "finops_query/volumes.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_composition.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_composition.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_composition.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_composition.py",
+      "t": "finops_ingest/composition.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_composition.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_composition.py",
+      "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {

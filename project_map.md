@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 33 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 45 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 232 | test_*.py under tests/ |
-| Test functions | 2935 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 233 | test_*.py under tests/ |
+| Test functions | 2943 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1038,6 +1038,10 @@ meter/
 │                              checked to the same standard as production code,
 │                              because a fake nobody checks drifts from its port.
 │                              ADR-0022. Imported by the tests and by scripts/demo/.
+│   ├── composition.py         FEAT-079, TASK-P12-001. The 27 collectors the worker
+│   │                          builds, each from its fake on a clock it is handed,
+│   │                          for the local stack's own entry points, never a
+│   │                          deployment. fake_registry(clock)
 │                              No network and no clock, enforced by a test that walks
 │                              the syntax tree refusing any name that reads like one
 │   ├── cur.py             the estate's bill. One line per estate resource, so a
@@ -1121,6 +1125,10 @@ meter/
 │   ├── registry.py            what a collector is. Cadence lives in the database,
 │   │                          seeded from DEFAULT_SCHEDULE, every row with a
 │   │                          reason and a cost. team_digests is weekly, FEAT-041
+│   ├── composition.py         FEAT-079, TASK-P12-001. Every collector the worker
+│   │                          runs, bound per unit for a deployment: the ones
+│   │                          reading only Meter for real, the rest failing typed
+│   │                          as Misconfigured until TASK-P12-002. ISS-182
 │   ├── dispatcher.py          one message per unit, keyed like the ledger claim
 │   ├── remediation.py         the only two writes Meter makes, both gated on
 │   │                          query_write_level and both recording what they
