@@ -2432,6 +2432,18 @@ changes:
   detail: 'The interface pass, 514ae5e, already dropped coverage lines counting nothing, so a failed request''s 0
     of 0 reads Coverage not yet reported rather than Showing all 0 accounts. Nothing held it. A components test
     now renders that case beside its failure, and fails when the filter is removed'
+- id: CHG-0171
+  date: '2026-10-12'
+  type: Fix
+  what: The erasure gaps closed, ISS-226, ISS-249, ISS-255 and ISS-256, with OPEN-14 answered
+  commit: pending
+  detail: 'Decided by the owner on 2026-10-12. scripts/ops/erase_principal.py now tombstones a person''s questions
+    to the assistant and their redaction records and hashes the identifier on their exports, keeping the rows;
+    removes their private views and keeps shared ones owned by the hash; pauses the schedules they own and takes
+    them off every recipient list, a schedule left with none going to its owner, paused. retention_assistant
+    removes a question older than 90 days with its redactions, METER_RETENTION_ASSISTANT_DAYS. Testing the script''s
+    main found that a person the tenant does not have failed on its own audit record''s foreign key rather than
+    saying so; the person is now checked first'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4430,7 +4442,7 @@ issues:
     anyio pool. Still no load test'
 - id: ISS-226
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: A person's questions to the assistant survive an erasure request, and no P7 table
     has a retention job
   detail: 'scripts/ops/erase_principal.py tombstones the principal and deletes its
@@ -4731,7 +4743,7 @@ issues:
     names the verdict through `verdictName`.'
 - id: ISS-249
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: An export record names the person who made it, and no retention job or erasure
     reaches report_run
   detail: '`report_run`, FEAT-067, holds the principal of every export file. It is classified
@@ -4803,7 +4815,7 @@ issues:
 
 - id: ISS-255
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: A saved view names its owner, and no retention job or erasure reaches saved_view
   detail: '`saved_view`, FEAT-068, holds the principal who saved each view and the names they chose.
     It is classified personal in `docs/09-DATA-CLASSIFICATION.md`, but `scripts/ops/erase_principal.py`
@@ -4813,7 +4825,7 @@ issues:
 
 - id: ISS-256
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: A report schedule names its owner and its recipients, and erasure does not reach report_schedule
   detail: '`report_schedule`, FEAT-069, holds the principal who owns each schedule and the principals
     it renders for. It is classified personal in `docs/09-DATA-CLASSIFICATION.md`, but `scripts/ops/erase_principal.py`
@@ -5216,11 +5228,12 @@ open_questions:
 - id: OPEN-14
   question: How long are a person's questions to the assistant kept, and does erasing a person
     delete their exchanges or tombstone them
-  status: OPEN
+  status: ANSWERED
   blocks: 'ISS-226, a retention job and erasure for assistant_exchange and redaction_event'
-  detail: '[docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md). Deleting takes
-    the person''s spend out of the month''s token budget sum. Tombstoning the question and the
-    identifier keeps the spend counted'
+  detail: '[docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md). Deleting takes the person''s spend out of
+    the month''s token budget sum. Tombstoning the question and the identifier keeps the spend counted. Answered by
+    the owner on 2026-10-12: kept 90 days, retention_assistant, and an erasure tombstones the questions and keeps
+    the rows'
 - id: OPEN-15
   question: How long are generated report runs and their files kept
   status: OPEN

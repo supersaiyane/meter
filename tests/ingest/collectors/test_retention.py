@@ -38,6 +38,7 @@ from finops_ingest.collectors.partitions import (
 )
 from finops_ingest.collectors.retention import (
     TOMBSTONE,
+    retention_assistant,
     retention_audit,
     retention_cost,
     retention_operational,
@@ -45,6 +46,7 @@ from finops_ingest.collectors.retention import (
     retention_scope_cache,
 )
 from finops_ingest.registry import CollectorContext
+from tests.db.test_p7_constraints import an_exchange
 
 ROOT = Path(__file__).resolve().parents[3]
 _spec = importlib.util.spec_from_file_location(
@@ -505,6 +507,7 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
     assert set(everything) - set(without) == {
         "retention_principal",
         "retention_operational",
+        "retention_assistant",
         "retention_audit",
         "retention_cost",
         "retention_scope_cache",
@@ -612,3 +615,264 @@ def test_a_disabled_schedule_row_is_never_due(engine: Engine, tenant_id: UUID) -
         due = due_collectors(connection, tenant_id, all_on, AT)
 
     assert "platform_cost" not in due
+
+
+# --- the person's questions, exports, views and schedules, ISS-226, ISS-249, ISS-255, ISS-256 ---
+
+
+def a_redaction(connection: Any, tenant: UUID, exchange: UUID, who: str, at: datetime) -> None:
+    connection.execute(
+        text(
+            "INSERT INTO redaction_event (event_id, tenant_id, exchange_id, principal_id, rule_id, "
+            "action, occurred_at) VALUES (:e, :t, :x, :w, 'aws-access-token', 'BLOCKED', :at)"
+        ),
+        {"e": uuid4(), "t": tenant, "x": exchange, "w": who, "at": at},
+    )
+
+
+def an_export(connection: Any, tenant: UUID, who: str) -> None:
+    connection.execute(
+        text(
+            "INSERT INTO report_run (run_id, tenant_id, principal_id, view_path, view_query, "
+            "scope_global, scope_accounts, format, row_count, byte_count, truncated, made_at) "
+            "VALUES (:r, :t, :w, '/', '', true, ARRAY[]::text[], 'csv', 1, 10, false, :at)"
+        ),
+        {"r": uuid4(), "t": tenant, "w": who, "at": AT},
+    )
+
+
+def a_view(connection: Any, tenant: UUID, owner: str, visibility: str) -> UUID:
+    view = uuid4()
+    connection.execute(
+        text(
+            "INSERT INTO saved_view (view_id, tenant_id, owner_id, name, screen_path, query, "
+            "visibility, created_at, updated_at) "
+            "VALUES (:v, :t, :o, 'Month to date', '/', CAST('{}' AS JSONB), :vis, :at, :at)"
+        ),
+        {"v": view, "t": tenant, "o": owner, "vis": visibility, "at": AT},
+    )
+    return view
+
+
+def a_schedule(connection: Any, tenant: UUID, owner: str, recipients: list[str]) -> UUID:
+    schedule = uuid4()
+    connection.execute(
+        text(
+            "INSERT INTO report_schedule (schedule_id, tenant_id, owner_id, view_id, export_path, "
+            "format, cadence, recipients, enabled, next_run_at, created_at, updated_at) VALUES "
+            "(:s, :t, :o, NULL, '/api/v1/cost/summary', 'csv', 'WEEKLY', :r, true, :at, :at, :at)"
+        ),
+        {"s": schedule, "t": tenant, "o": owner, "r": recipients, "at": AT},
+    )
+    return schedule
+
+
+def test_an_erasure_reaches_the_persons_questions_exports_views_and_schedules(
+    engine: Engine, tenant_id: UUID
+) -> None:
+    """As the owner decided on 2026-10-12: questions and exports tombstoned and kept, private
+    views removed and shared ones left unowned, the person's schedules paused, and their name
+    off every recipient list."""
+    other = "someone-else"
+    with engine.begin() as connection:
+        principal = insert_principal(connection, tenant_id, AT)
+        who = str(principal)
+        answered = an_exchange(
+            connection, tenant_id, who=who, question="What did Priya's team spend?"
+        )
+        an_exchange(
+            connection,
+            tenant_id,
+            who=who,
+            question="Forecast Priya's spend",
+            outcome="REFUSED",
+            answer=None,
+            gap="tool",
+            reason="There is no tool that forecasts spend.",
+            citations=[],
+        )
+        a_redaction(connection, tenant_id, answered, who, AT)
+        an_export(connection, tenant_id, who)
+        private = a_view(connection, tenant_id, who, "PRIVATE")
+        shared = a_view(connection, tenant_id, who, "SHARED")
+        theirs = a_schedule(connection, tenant_id, who, [who, other])
+        only_them = a_schedule(connection, tenant_id, other, [who])
+        among = a_schedule(connection, tenant_id, other, [other, who])
+
+        report = erase_principal.erase(
+            connection, tenant_id, principal, "operator-1", "ticket-10", clock=at
+        )
+
+        def rows(sql: str) -> list[Any]:
+            return list(connection.execute(text(sql), {"t": tenant_id}).all())
+
+        exchanges = rows(
+            "SELECT principal_id, question, answer, refusal_reason, input_tokens "
+            "FROM assistant_exchange WHERE tenant_id = :t"
+        )
+        views = {
+            row.view_id: row.owner_id
+            for row in rows("SELECT view_id, owner_id FROM saved_view WHERE tenant_id = :t")
+        }
+        schedules = {
+            row.schedule_id: row
+            for row in rows(
+                "SELECT schedule_id, owner_id, recipients, enabled FROM report_schedule "
+                "WHERE tenant_id = :t"
+            )
+        }
+        mentions = sum(
+            connection.execute(text(sql), {"t": tenant_id, "w": who}).scalar_one()
+            for sql in (
+                "SELECT count(*) FROM assistant_exchange "
+                "WHERE tenant_id = :t AND principal_id = :w",
+                "SELECT count(*) FROM redaction_event WHERE tenant_id = :t AND principal_id = :w",
+                "SELECT count(*) FROM report_run WHERE tenant_id = :t AND principal_id = :w",
+                "SELECT count(*) FROM saved_view WHERE tenant_id = :t AND owner_id = :w",
+                "SELECT count(*) FROM report_schedule WHERE tenant_id = :t "
+                "AND (owner_id = :w OR :w = ANY(recipients))",
+            )
+        )
+
+    assert (
+        report.exchanges_tombstoned,
+        report.redactions_tombstoned,
+        report.exports_tombstoned,
+        report.private_views_removed,
+        report.shared_views_unowned,
+        report.schedules_paused,
+        report.recipient_lists_changed,
+    ) == (2, 1, 1, 1, 1, 1, 3)
+    assert mentions == 0, "nothing names the person"
+    assert len(exchanges) == 2, "kept, so the month's token spend stays true"
+    assert sum(row.input_tokens for row in exchanges) == 2 * 812
+    assert not any("Priya" in str(value) for row in exchanges for value in row)
+    assert private not in views and shared in views
+    assert (schedules[theirs].enabled, list(schedules[theirs].recipients)) == (False, [other])
+    assert (schedules[only_them].enabled, list(schedules[only_them].recipients)) == (False, [other])
+    assert (schedules[among].enabled, list(schedules[among].recipients)) == (True, [other])
+
+
+def test_a_question_past_ninety_days_goes_with_its_redactions_and_a_newer_one_stays(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """OPEN-14, 90 days, ISS-226."""
+    assert settings.retention_assistant_days == 90
+    with engine.begin() as connection:
+        old = an_exchange(
+            connection,
+            tenant_id,
+            asked=AT - timedelta(days=91),
+            answered=AT - timedelta(days=91),
+        )
+        recent = an_exchange(
+            connection,
+            tenant_id,
+            asked=AT - timedelta(days=89),
+            answered=AT - timedelta(days=89),
+        )
+        a_redaction(connection, tenant_id, old, "principal-a", AT - timedelta(days=91))
+        outcome = retention_assistant(context(connection, tenant_id, settings), clock=at)
+        kept = set(
+            connection.execute(
+                text("SELECT exchange_id FROM assistant_exchange WHERE tenant_id = :t"),
+                {"t": tenant_id},
+            ).scalars()
+        )
+        redactions = connection.execute(
+            text("SELECT count(*) FROM redaction_event WHERE tenant_id = :t"), {"t": tenant_id}
+        ).scalar_one()
+
+    assert kept == {recent}
+    assert redactions == 0
+    assert outcome.items_written == 2
+
+
+# --- the script as an operator runs it -------------------------------------------------------
+
+
+def run_erasure(
+    engine: Engine,
+    monkeypatch: pytest.MonkeyPatch,
+    tenant: UUID,
+    principal: UUID,
+    *extra: str,
+) -> int:
+    url = engine.url.render_as_string(hide_password=False)
+    monkeypatch.setenv("METER_DATABASE_URL", url)
+    status: int = erase_principal.main(
+        [
+            "--tenant",
+            str(tenant),
+            "--principal",
+            str(principal),
+            "--requested-by",
+            "operator-1",
+            "--request-id",
+            "ticket-11",
+            *extra,
+        ]
+    )
+    return status
+
+
+def display_name(engine: Engine, principal: UUID) -> str:
+    with engine.connect() as connection:
+        found: str = connection.execute(
+            text("SELECT display_name FROM principal WHERE principal_id = :p"), {"p": principal}
+        ).scalar_one()
+    return found
+
+
+def test_without_a_database_url_the_script_refuses(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.delenv("METER_DATABASE_URL", raising=False)
+    status = erase_principal.main(
+        [
+            "--tenant",
+            str(uuid4()),
+            "--principal",
+            str(uuid4()),
+            "--requested-by",
+            "o",
+            "--request-id",
+            "t",
+        ]
+    )
+    assert status == 2
+    assert "METER_DATABASE_URL is not set" in capsys.readouterr().err
+
+
+def test_a_dry_run_reports_every_table_and_changes_nothing(
+    engine: Engine,
+    tenant_id: UUID,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with engine.begin() as connection:
+        principal = insert_principal(connection, tenant_id, AT)
+    assert run_erasure(engine, monkeypatch, tenant_id, principal) == 0
+    shown = capsys.readouterr().out
+    assert "assistant questions tombstoned" in shown and "recipient lists changed" in shown
+    assert "dry run, rolled back" in shown
+    assert display_name(engine, principal) == "A Person"
+
+
+def test_with_commit_the_erasure_is_applied(
+    engine: Engine, tenant_id: UUID, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    with engine.begin() as connection:
+        principal = insert_principal(connection, tenant_id, AT)
+    assert run_erasure(engine, monkeypatch, tenant_id, principal, "--commit") == 0
+    assert display_name(engine, principal) == TOMBSTONE
+
+
+def test_a_person_the_tenant_does_not_have_is_said_so_and_nothing_is_kept(
+    engine: Engine,
+    tenant_id: UUID,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    assert run_erasure(engine, monkeypatch, tenant_id, uuid4(), "--commit") == 3
+    assert "no principal" in capsys.readouterr().err

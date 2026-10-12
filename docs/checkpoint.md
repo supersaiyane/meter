@@ -90,6 +90,7 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-12 | TASK-P12-009, P12 proven and delivered, CHG-0168 | Done | The four exit criteria, each with evidence in the plan; tests/scripts/test_p12_exit_criteria.py runs every dispatched collector end to end on the local stack, 68 s (measured). P12, FEAT-079 and FEAT-080 delivered. Waiting on the owner: ISS-279, ISS-280, ISS-283 | docs/plans/P12-implementation-plan.md TASK-P12-009, tests/scripts/test_p12_exit_criteria.py:80, docs/registry.yaml ISS-085 |
 | 2026-10-12 | ISS-085, tool results screened before the model reads them, CHG-0169 | Done | finops_query/insight.py screens every tool result and failing tool message with the gitleaks rules, replaces hits, returns them as withheld; recorded in redaction_event with found_in tool_result, migration 0046; route and web type carry found_in | finops_query/insight.py:300, migrations/versions/0046_redaction_found_in.py:1, tests/query/test_insight_loop.py, docs/registry.yaml ISS-136 |
 | 2026-10-12 | ISS-136 closed, a failed request states no coverage figure, CHG-0170 | Done | Already fixed by 514ae5e (coverage lines counting nothing dropped); pinned by a components test that fails without the filter | finops-web/src/components/__tests__/shell.test.tsx, finops-web/src/shell/metaStore.ts:149, docs/registry.yaml OPEN-14 |
+| 2026-10-12 | Erasure gaps closed, OPEN-14 answered, CHG-0171 | Done | erase_principal tombstones questions, redactions and exports, removes private views and keeps shared ones by hash, pauses owned schedules and unlists the person; retention_assistant keeps questions 90 days, METER_RETENTION_ASSISTANT_DAYS | scripts/ops/erase_principal.py:170, finops_ingest/collectors/retention.py:200, tests/ingest/collectors/test_retention.py:690 |
 
 ## Next action
 
@@ -108,10 +109,9 @@ is still the single thing that would close the most, and `docs/runbooks/first-ac
 
 Next, in the order the owner set on 2026-10-12:
 
-1. **The erasure gaps**, ISS-226, ISS-249, ISS-255 and ISS-256, which wait on the owner's decisions,
-   OPEN-14 among them: delete or tombstone, and what erasing a person does to views and schedules
-   others share.
-2. **The next proposal in `next-in-scope.txt`.**
+1. **The next proposal in `next-in-scope.txt`**: priority 2, FinOps for AI, Bedrock by app, agent
+   and user, and the OpenAI and Anthropic API bills. A new sub project, so it waits on the owner's
+   go ahead.
 
 ### Where the project is, as of 2026-10-05
 
