@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 33 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 45 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 241 | test_*.py under tests/ |
-| Test functions | 2986 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 242 | test_*.py under tests/ |
+| Test functions | 2993 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -261,8 +261,12 @@ meter/
 │                              reports a real one. ADR-0022
 │   └── base-images.lock       pinned digests, chosen by measurement. ADR-0010
 │   └── base-images.lock       pinned digests, resolved by measurement at TASK-P0-029
+│   └── localstack/ready.d/    TASK-P12-005. Makes the local work queue and its dead
+│                              letter queue once LocalStack is ready
 ├── docker-compose.yml         local stack, plus a `security` profile of one shot
-│                              scanners that does NOT start with `make up`
+│                              scanners that does NOT start with `make up`. The
+│                              dispatcher and worker run the deployed image on
+│                              finops_fakes mounted from the checkout, TASK-P12-005
 │
 ├── security/                  everything a scan produces, and the policy
 │   ├── POSTURE.md             current posture, generated, never hand edited
@@ -403,6 +407,8 @@ meter/
 ├── finops_core/               IN BUILD  domain and ports. No boto3, no framework
 │   ├── errors.py              the six typed failure causes, closed set, no catch all
 │   ├── config.py              every METER_ variable, typed. No defaults except flags.
+│   ├── logs.py                TASK-P12-005. One JSON object per log line, the
+│   │                          caller's extra fields as keys
 │   ├── flags.py               flag resolution, tenant then environment then declared,
 │   │                          ADR-0017. Moved from finops_api in TASK-P12-004
 │   │                          Six are the assistant's: the model id, empty until

@@ -106,3 +106,47 @@ def test_the_local_worker_runs_a_unit_settles_it_and_stops_on_sigterm(
             {"t": wired.tenant},
         ).scalar_one()
     assert status == "SUCCEEDED"
+
+
+class StopsWhenEmpty(SqsConsumer):
+    """A consumer that sends this process SIGTERM the first time the queue comes back empty."""
+
+    def receive(self, max_messages: int = 10) -> Any:
+        received = super().receive(max_messages)
+        if not received.deliveries:
+            os.kill(os.getpid(), signal.SIGTERM)
+        return received
+
+
+def test_one_collector_is_dispatched_queued_claimed_run_and_recorded(
+    wired: SimpleNamespace, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """TASK-P12-005: the local stack's chain, end to end, for one collector."""
+    with wired.engine.begin() as connection:
+        install_default_schedule(connection, wired.tenant, "test")
+        connection.execute(
+            text(
+                "UPDATE collector_schedule SET is_enabled = false "
+                "WHERE tenant_id = :t AND collector <> 'finops_score'"
+            ),
+            {"t": wired.tenant},
+        )
+
+    assert fake_dispatcher.main() == 0
+    queued = wired.client.get_queue_attributes(
+        QueueUrl=wired.url, AttributeNames=["ApproximateNumberOfMessages"]
+    )["Attributes"]["ApproximateNumberOfMessages"]
+    assert queued == "1", "one collector, organization wide, is one message"
+
+    monkeypatch.setattr(
+        processes, "SqsConsumer", lambda client, url: StopsWhenEmpty(client, url, wait_seconds=0)
+    )
+    assert fake_worker.main() == 0
+
+    with wired.engine.connect() as connection:
+        runs = connection.execute(
+            text("SELECT collector, status FROM ingest_run WHERE tenant_id = :t"),
+            {"t": wired.tenant},
+        ).all()
+    assert [tuple(run) for run in runs] == [("finops_score", "SUCCEEDED")]
+    assert SqsConsumer(wired.client, wired.url, wait_seconds=0).receive().deliveries == ()

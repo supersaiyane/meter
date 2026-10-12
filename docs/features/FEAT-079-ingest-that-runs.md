@@ -34,7 +34,7 @@ the runtime image, so they run only in the local stack and no setting is needed.
 ## How it works
 
 Built so far: the two compositions, TASK-P12-001, the AWS binders, TASK-P12-002, the queue,
-TASK-P12-003, and the two processes, TASK-P12-004.
+TASK-P12-003, the two processes, TASK-P12-004, and the local stack end to end, TASK-P12-005.
 
 - `finops_ingest/composition.py` declares a `Binding` per collector: its name, its scope, and a
   builder that constructs it from one unit's context. `compose` registers each binding behind a
@@ -65,6 +65,10 @@ TASK-P12-003, and the two processes, TASK-P12-004.
   settled and leaves the rest for the redrive. `python -m finops_ingest.dispatcher` and
   `.worker` run them on the production composition, `python -m finops_fakes.dispatcher` and
   `.worker` on the fakes, for the local stack.
+- On the local stack `make up` runs the deployed image with `finops_fakes` mounted from the
+  checkout, against LocalStack's queue, which a ready hook makes with its dead letter queue as the
+  hub's is shaped; `make dispatch` dispatches again. `docs/runbooks/local-collection.md` says how
+  to watch each step. Both processes log one JSON object per line with each unit's fields.
 - `finops_fakes/composition.py` binds the same 27 collectors from the fakes, on a clock it is
   handed rather than one it reads, and hands a per account collector only the candidates of the
   unit's own account, as the demo seed does. `fake_registry(clock)` is what the local stack's
@@ -127,7 +131,8 @@ TASK-P12-003, and the two processes, TASK-P12-004.
 
 ## Status of this document
 
-In build. TASK-P12-001 to TASK-P12-004 built the compositions, the AWS binders, the queue and the
-two processes on 2026-10-12; the local stack end to end follows in TASK-P12-005.
+In build. TASK-P12-001 to TASK-P12-005 built the compositions, the AWS binders, the queue, the
+two processes and the local stack end to end on 2026-10-12; the first account's runbook and
+`make first-contact` follow in TASK-P12-008.
 
 See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P12.
