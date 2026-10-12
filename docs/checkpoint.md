@@ -91,27 +91,26 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-12 | ISS-085, tool results screened before the model reads them, CHG-0169 | Done | finops_query/insight.py screens every tool result and failing tool message with the gitleaks rules, replaces hits, returns them as withheld; recorded in redaction_event with found_in tool_result, migration 0046; route and web type carry found_in | finops_query/insight.py:300, migrations/versions/0046_redaction_found_in.py:1, tests/query/test_insight_loop.py, docs/registry.yaml ISS-136 |
 | 2026-10-12 | ISS-136 closed, a failed request states no coverage figure, CHG-0170 | Done | Already fixed by 514ae5e (coverage lines counting nothing dropped); pinned by a components test that fails without the filter | finops-web/src/components/__tests__/shell.test.tsx, finops-web/src/shell/metaStore.ts:149, docs/registry.yaml OPEN-14 |
 | 2026-10-12 | Erasure gaps closed, OPEN-14 answered, CHG-0171 | Done | erase_principal tombstones questions, redactions and exports, removes private views and keeps shared ones by hash, pauses owned schedules and unlists the person; retention_assistant keeps questions 90 days, METER_RETENTION_ASSISTANT_DAYS | scripts/ops/erase_principal.py:170, finops_ingest/collectors/retention.py:200, tests/ingest/collectors/test_retention.py:690 |
+| 2026-10-12 | P13 FinOps for AI specified and planned, OPEN-31 to OPEN-34 answered, CHG-0172 | Done | Spec, plan of nine tasks, ADR-0036 for a NAT gateway the worker alone may use, FEAT-081 to FEAT-085, ISS-285; cost_focus_daily gains ingest_source because the cost collector's delete would remove a second source's rows | docs/specs/2026-10-12-p13-finops-for-ai-design.md:1, docs/plans/P13-implementation-plan.md:42, finops_ingest/collectors/cost_focus.py:167, finops_providers/aws/cur.py:110 |
 
 ## Next action
 
-**P12, deployment readiness, is delivered on `next-build`**, 2026-10-12, against the fakes and stubbed
-AWS clients. Every collector is composed and runs end to end on the local stack, every setting reaches a
-deployed task from SSM, each deploy applies its own plan, and `make first-contact` proves the first
-account. Merge `next-build` into main when the owner asks.
+**P13, FinOps for AI, is in build**, specified and planned on 2026-10-12 with OPEN-31 to OPEN-34
+answered: `docs/specs/2026-10-12-p13-finops-for-ai-design.md` and `docs/plans/P13-implementation-plan.md`,
+nine tasks, each on its own branch from `next-build` in a worktree, merged once `make verify` is green.
+The owner asked for the tasks to run one after another without stopping, except for an owner decision.
 
-**Three owner decisions stand between this and a first deployment**, each recorded with its options:
+1. **TASK-P13-001**, the NAT gateway the worker alone may use, ADR-0036, then 002 to 009 in order.
+2. Never read a prompt or a response from an invocation log, and never let a provider key leave
+   Secrets Manager: the plan's two rules, each held by a test.
+
+**Three owner decisions stand between P12 and a first deployment**, each recorded with its options:
 ISS-280, an identity provider a deployed environment can use; ISS-283, how a deployment runs its
 migrations; ISS-279, how the tasks follow the database password's rotation. ISS-002, a real account,
 is still the single thing that would close the most, and `docs/runbooks/first-account.md` is its order.
 
 **Pushing needs a remote first.** The repository has none. Once one exists, a push to main runs
 `deploy:dev`, a `terraform apply`, on its own.
-
-Next, in the order the owner set on 2026-10-12:
-
-1. **The next proposal in `next-in-scope.txt`**: priority 2, FinOps for AI, Bedrock by app, agent
-   and user, and the OpenAI and Anthropic API bills. A new sub project, so it waits on the owner's
-   go ahead.
 
 ### Where the project is, as of 2026-10-05
 

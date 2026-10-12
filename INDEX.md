@@ -89,7 +89,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-80 features across 13 sub projects. 11 specified, 3 planned, 13 in build, 53 delivered.
+85 features across 14 sub projects. 16 specified, 3 planned, 13 in build, 53 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -157,6 +157,16 @@ block is caught by `make check-docs`. See
 | --- | --- | --- | --- |
 | [FEAT-079](docs/features/FEAT-079-ingest-that-runs.md) | Ingest that runs, one composition and the dispatcher and worker processes | Delivered | [P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.1 to 5.3 and 5.6, [P12 plan](docs/plans/P12-implementation-plan.md) |
 | [FEAT-080](docs/features/FEAT-080-deployed-settings.md) | Deployed settings from SSM Parameter Store, and a pipeline that applies its own plan | Delivered | [P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.4 and 5.5, [P12 plan](docs/plans/P12-implementation-plan.md) |
+
+### P13 FinOps for AI
+
+| ID | Feature | Status | Detail |
+| --- | --- | --- | --- |
+| [FEAT-081](docs/features/FEAT-081-bedrock-cost-from-the-bill.md) | Bedrock cost by model, token type, application and IAM principal, from the bill | Specified | [P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) sections 5.2, 5.3 and 5.7, [P13 plan](docs/plans/P13-implementation-plan.md) |
+| [FEAT-082](docs/features/FEAT-082-bedrock-usage-per-caller.md) | Bedrock usage per caller from invocation logs | Specified | [P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) section 5.4, [P13 plan](docs/plans/P13-implementation-plan.md) |
+| [FEAT-083](docs/features/FEAT-083-openai-and-anthropic.md) | OpenAI and Anthropic cost and usage beside the AWS bill | Specified | [P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) sections 5.1, 5.3 and 5.5, [P13 plan](docs/plans/P13-implementation-plan.md) |
+| [FEAT-084](docs/features/FEAT-084-gpu-hours-cost-and-utilization.md) | GPU hours, cost and utilization | Specified | [P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) section 5.6, [P13 plan](docs/plans/P13-implementation-plan.md) |
+| [FEAT-085](docs/features/FEAT-085-ai-spend-screen.md) | The AI spend screen, cost per token, per request and per feature | Specified | [P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) sections 5.7 and 8, [P13 plan](docs/plans/P13-implementation-plan.md) |
 
 ### P3 Utilization and Rightsizing
 
@@ -284,6 +294,7 @@ block is caught by `make check-docs`. See
 | ADR-0033 | Scheduled reports render inside the API, as each recipient | Accepted | [ADR-0033](docs/adr/ADR-0033-scheduled-reports-render-in-the-api.md) |
 | ADR-0034 | The canonical cost schema follows FOCUS 1.4, and each ratified version after it | Accepted | [ADR-0034](docs/adr/ADR-0034-canonical-cost-schema-follows-focus-1-4.md) |
 | ADR-0035 | The hub reaches AWS through endpoints, and through a relay for what has none | Accepted | [ADR-0035](docs/adr/ADR-0035-hub-network-path-endpoints-and-relay.md) |
+| ADR-0036 | The worker reaches the AI providers through a NAT gateway, and nothing else does | Accepted | [ADR-0036](docs/adr/ADR-0036-a-nat-gateway-for-the-worker-only.md) |
 
 Index of records: [docs/adr/README.md](docs/adr/README.md)
 
@@ -469,6 +480,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0169 | 2026-10-12 | Fix | ISS-085, what the tools return is screened before the model reads it | `pending` | The question was screened for secrets since TASK-P7-013 and the data the tools returned with it was not, so a key typed into a tag reached the model. finops_query/insight.py now screens every tool result and failing tool message by the same gitleaks rules, replaces each hit with its rule's name, and returns the hits as withheld; finops_api records them in redaction_event with found_in tool_result, migration 0046, and the redactions route says where each was found. FEAT-046's Not doing amended |
 | CHG-0170 | 2026-10-12 | Fix | ISS-136 closed, a failed request states no coverage figure | `pending` | The interface pass, 514ae5e, already dropped coverage lines counting nothing, so a failed request's 0 of 0 reads Coverage not yet reported rather than Showing all 0 accounts. Nothing held it. A components test now renders that case beside its failure, and fails when the filter is removed |
 | CHG-0171 | 2026-10-12 | Fix | The erasure gaps closed, ISS-226, ISS-249, ISS-255 and ISS-256, with OPEN-14 answered | `pending` | Decided by the owner on 2026-10-12. scripts/ops/erase_principal.py now tombstones a person's questions to the assistant and their redaction records and hashes the identifier on their exports, keeping the rows; removes their private views and keeps shared ones owned by the hash; pauses the schedules they own and takes them off every recipient list, a schedule left with none going to its owner, paused. retention_assistant removes a question older than 90 days with its redactions, METER_RETENTION_ASSISTANT_DAYS. Testing the script's main found that a person the tenant does not have failed on its own audit record's foreign key rather than saying so; the person is now checked first |
+| CHG-0172 | 2026-10-12 | Design | The P13 spec and plan, FinOps for AI, with OPEN-31 to OPEN-34 answered and ADR-0036 | `pending` | Chosen by the owner on 2026-10-12, proposal 2 of next-in-scope.txt. docs/specs/2026-10-12-p13-finops-for-ai-design.md and docs/plans/P13-implementation-plan.md, nine tasks, FEAT-081 to FEAT-085. The owner chose a NAT gateway to reach OpenAI and Anthropic, OPEN-31, recorded in ADR-0036 with the gateway usable by the worker only; Bedrock per user and agent from invocation logs where enabled, OPEN-32; GPU utilization as well as hours and cost, OPEN-33; and x_ columns for token fields until FOCUS 1.5, OPEN-34. Reading the cost collector found its restatement delete would remove any second source's rows, so cost_focus_daily gains ingest_source. ISS-285 raised: the provider adapters are unverified until a key exists |
 
 <!-- generated:changes end -->
 
@@ -479,7 +491,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 <!-- generated:issues start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-**177 FIXED, 104 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
+**177 FIXED, 105 OPEN, 0 PARKED.** Full detail with evidence in [tasks/ISSUES.md](tasks/ISSUES.md).
 
 FIXED means the design decision is recorded, not that code exists. Implementation status lives only in [tasks/STATUS.md](tasks/STATUS.md).
 
@@ -712,6 +724,7 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | ISS-273 | MEDIUM | A member role that cannot be assumed never reaches the account health collector, so role_health is not set to what is wrong | OPEN | Found 2026-10-12 while building TASK-P12-002. account_health is account scoped, so the worker assumes the collector role through the broker before the collector runs, finops_ingest/worker.py _session_for. When that assumption fails the unit is recorded as AccessDenied in sync_error and AccountHealthCollector, which exists to write role_health and role_health_error on cloud_account and checks the role through its own broker, never runs. The freshness screen shows the failure; the account screen keeps its last role_health. A fix lets a collector declare it needs no assumed session, and needs a decision on which screen owns it |
 | ISS-276 | MEDIUM | The API and the MCP server write plain text logs, where the observability document says JSON | OPEN | Found 2026-10-12 running the local stack for TASK-P12-005. docs/10-OBSERVABILITY.md lists structured JSON logs in CloudWatch, and nothing configured them: the dispatcher and the worker wrote the message alone and dropped every field passed in extra, so a line never said which collector or account it meant. Both processes log through finops_core/logs.py since that task. The API and the MCP server still log through uvicorn's default text format, and need a log config that uses the same formatter |
 | ISS-284 | MEDIUM | The provenance job may run in an image with no shell, so its script would not run | OPEN | Found 2026-10-12 reading .gitlab-ci.yml for TASK-P12-007, and not verified, because no pipeline has run, ISS-179. verify-provenance runs gcr.io/projectsigstore/cosign:v2.4.1 with an empty entrypoint and a shell script, and that image is built without a shell as far as is known here. If so, the job fails before its first command and every deploy:dev, which needs it, waits on it. The kaniko jobs use the debug image for the same reason. Checking the image, then choosing a cosign image with a shell or installing cosign in one that has one, is a small change once a pipeline can be watched |
+| ISS-285 | MEDIUM | The OpenAI and Anthropic adapters are unverified until an admin key exists | OPEN | Raised 2026-10-12 by the P13 spec, section 10. The adapters are written to each provider's published reference for its cost and usage reports, read on 2026-10-12, and tested against recorded shapes through a mock transport. No call has reached either provider, because no organization has given Meter an admin key. A field the reference names and the live API does not return reads as SchemaDrift rather than a zero. Closed by make first-contact against one organization of each provider |
 | ISS-019 | LOW | A NAT Gateway for chatty cross account calls is billed per gigabyte | FIXED | [docs/04-DEPLOYMENT.md](docs/04-DEPLOYMENT.md) |
 | ISS-026 | LOW | 2,740 lines in one file, against the 800 line ceiling | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
 | ISS-027 | LOW | No automated tests in the prototype | OPEN | [roadmap](docs/01-ROADMAP.md) P2 |
@@ -810,6 +823,10 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | OPEN-28 | What do the dispatcher and worker run against before an AWS account is connected? ANSWERED 2026-10-12 as recommended: fakes by a setting | ANSWERED | TASK-P12-001 | Raised 2026-10-12 by the P12 spec, section 5.1. Recommended: METER_PROVIDERS, fake or aws with no default, so the local stack and any deploy before an account run end to end on the fakes and a deployed environment says aws. The alternative, AWS only, would leave the local stack unable to run end to end. Amended 2026-10-12, TASK-P12-001: ADR-0022 keeps fakes out of the runtime image and the owner chose to keep it so, so fakes run only in the local stack through their own entry points and no setting is needed. |
 | OPEN-29 | Where do a deployed Meter's settings live? ANSWERED 2026-10-12: SSM Parameter Store | ANSWERED | TASK-P12-006 | Raised 2026-10-12 by the P12 spec, section 5.4, for ISS-250. Recommended was a Terraform map per environment written into the task definitions with secrets in Secrets Manager; the owner chose SSM Parameter Store, one parameter per setting under /meter/<env>/, injected through each task definition's secrets, the secret ones created with a placeholder and set by the owner. |
 | OPEN-30 | Which git host takes the remote, and so where does the first pipeline run happen? | OPEN | ISS-179 | Raised 2026-10-12 by the P12 spec, section 3. The pipeline is written for GitLab, .gitlab-ci.yml, and has never run because the repository has no remote. Choosing the host and adding the remote is the owner's; the first push runs the pipeline for the first time, and a push to main runs deploy:dev. |
+| OPEN-31 | How does a deployed Meter reach OpenAI and Anthropic, which have no VPC endpoint? ANSWERED 2026-10-12: a NAT gateway | ANSWERED | TASK-P13-001 | Raised 2026-10-12 by the P13 spec, section 5.1. The choices were a NAT gateway, the relay of ADR-0035, or Network Firewall with a domain allow list. The owner chose a NAT gateway; ADR-0036 records it, with only the worker's security group allowed to use it. |
+| OPEN-32 | Where does Bedrock cost per user and agent come from? ANSWERED 2026-10-12 as recommended: invocation logs where enabled | ANSWERED | TASK-P13-003 | Raised 2026-10-12 by the P13 spec, section 5.4. The bill names the IAM principal, usually a shared role. Invocation logs name the caller and the request metadata, and hold the prompt and response, so Meter reads them through an aggregate query only, where an account sends them to CloudWatch Logs, and reads NotOptedIn where it does not. |
+| OPEN-33 | What does GPU spend show? ANSWERED 2026-10-12: utilization as well as hours and cost | ANSWERED | TASK-P13-006 | Raised 2026-10-12 by the P13 spec, section 5.6. Hours and cost come from the bill. The owner added utilization, read from the CloudWatch agent's NVIDIA metrics where an instance publishes them, and shown as not published, never zero, where it does not. |
+| OPEN-34 | How are token fields stored before FOCUS 1.5 names them? ANSWERED 2026-10-12 as recommended: x_ columns now, renamed when FOCUS 1.5 lands | ANSWERED | TASK-P13-002 | Raised 2026-10-12 by the P13 spec, section 5.2. FOCUS reserves the x_ prefix for a producer's own columns. The rename follows constraint 12: add the new columns, backfill, and drop the x_ ones a release later. |
 
 <!-- generated:open-questions end -->
 

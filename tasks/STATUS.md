@@ -9,7 +9,7 @@
      own content rather than scaffolding, and is not tagged.
 -->
 
-Last updated: 2026-10-08
+Last updated: 2026-10-12
 Update trigger: end of every work session
 Master index: `INDEX.md`
 
@@ -22,11 +22,11 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 80 total, 11 specified, 13 in build, 53 delivered |
-| Decisions | 35 architecture decision records |
-| Changes | 171 recorded |
-| Issues | 177 fixed, 104 open, 0 parked |
-| Open questions | 30 awaiting a decision |
+| Features | 85 total, 16 specified, 13 in build, 53 delivered |
+| Decisions | 36 architecture decision records |
+| Changes | 172 recorded |
+| Issues | 177 fixed, 105 open, 0 parked |
+| Open questions | 34 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
 
@@ -116,7 +116,14 @@ then the next proposal in next-in-scope.txt. ISS-085 is fixed: what the tools re
 secrets before the model reads it, as the question already was. ISS-136 is closed: the interface pass
 had fixed it, and a test now holds it. The erasure gaps are closed, as the owner decided on 2026-10-12:
 a person's questions and exports are tombstoned and kept, their private views removed and shared ones kept
-unowned, their schedules paused and their name taken off every recipient list; questions are kept 90 days.
+unowned, their schedules paused and their name taken off every recipient list; questions are kept 90 days. next-build
+was merged into main as 1299f36. The owner then chose FinOps for AI as P13, proposal 2 of
+next-in-scope.txt, and answered OPEN-31 to OPEN-34: a NAT gateway for the worker only, ADR-0036;
+Bedrock per caller from invocation logs where enabled; GPU utilization as well as hours and cost; and
+x_ columns for token fields until FOCUS 1.5. P13 is specified and planned, nine tasks, FEAT-081 to
+FEAT-085. Reading the cost collector found its restatement delete would remove a second source's rows,
+so `cost_focus_daily` gains `ingest_source`. ISS-285 raised: the provider adapters are unverified until
+a key exists.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -293,6 +300,7 @@ ISS-003.
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 | P11 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
 | P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
+| P13 | 0 | 0 | 0 | 0 | 9 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
 
 **P0, not in the default state**
 
