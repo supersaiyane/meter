@@ -187,6 +187,12 @@ Run as a one off ECS task, before the service rolls:
 scripts/deploy/run_migration_task.sh
 ```
 
+**Not yet runnable, ISS-283.** No Terraform stack makes the `meter-<env>-migrate`
+task definition, the two network parameters or the log group the script reads,
+and `run-task` cannot change a task's image, so the script would apply the
+previous release's migrations. How a deployment migrates is yours to choose;
+the issue lists the options. Until then a first deploy has an empty schema.
+
 Migrations are backward compatible by constraint 12, so old and new task
 definitions run against the same schema during the rollout.
 

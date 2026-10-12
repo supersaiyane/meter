@@ -22,10 +22,10 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 80 total, 11 specified, 14 in build, 51 delivered |
+| Features | 80 total, 11 specified, 15 in build, 51 delivered |
 | Decisions | 35 architecture decision records |
-| Changes | 165 recorded |
-| Issues | 168 fixed, 109 open, 0 parked |
+| Changes | 166 recorded |
+| Issues | 171 fixed, 110 open, 0 parked |
 | Open questions | 30 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -105,7 +105,9 @@ has been pushed.
 TASK-P12-006 put every deployed setting in SSM Parameter Store, closing ISS-250, and fixed two HIGH issues it
 found: the tasks asked the RDS secret for a key it does not have, ISS-278, and the scheduled dispatcher ran the
 interpreter as a module, ISS-277. It opened two the owner decides: password rotation, ISS-279, and no production
-identity provider, ISS-280.
+identity provider, ISS-280. TASK-P12-007 gave each environment its own plan and each deploy its own,
+ISS-260, and fixed two HIGH pipeline faults: AWS roles assumed with a CLI no image has, ISS-281, and a deploy
+waiting on misnamed services, ISS-282. It opened ISS-283, deployed migrations cannot run, for the owner.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -281,7 +283,7 @@ ISS-003.
 | P9 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 | P11 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
-| P12 | 6 | 0 | 0 | 0 | 3 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
+| P12 | 7 | 0 | 0 | 0 | 2 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -553,6 +555,7 @@ ISS-003.
 | `TASK-P12-004` | Done 2026-10-12 | the dispatcher and the worker as processes |
 | `TASK-P12-005` | Done 2026-10-12 | the local stack, end to end |
 | `TASK-P12-006` | Done 2026-10-12 | deployed settings in SSM Parameter Store |
+| `TASK-P12-007` | Done 2026-10-12 | each deploy applies its own plan |
 
 <!-- generated:task-status end -->
 

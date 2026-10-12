@@ -35,7 +35,7 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Collectors | 33 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 45 | files in migrations/versions, all of which are listed below in this file |
 | Test files | 243 | test_*.py under tests/ |
-| Test functions | 3000 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test functions | 3006 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -87,7 +87,9 @@ meter/
 │                              test job runs both suites against the PostgreSQL
 │                              service beside it, through METER_TEST_DATABASE_URL.
 │                              **Never executed**: the repository has no remote,
-│                              so nothing here is a result. ISS-178, ISS-179
+│                              so nothing here is a result. ISS-178, ISS-179.
+│                              A plan per environment, deploys applying their own,
+│                              roles assumed from the token file, TASK-P12-007
 ├── .env.example               every value, what it does, which file reads it
 ├── .pre-commit-config.yaml    local gates: secrets, writing rules, lint, doc drift,
 │                              dependency admission on manifest change. Pre push

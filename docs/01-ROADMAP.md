@@ -42,7 +42,7 @@ P0 Foundation
 | P1 | Cost Intelligence | 8 | 0 | 0 |
 | P10 | Proven numbers: FOCUS 1.4 and invoice reconciliation | 1 | 0 | 0 |
 | P11 | Owners and a savings ledger | 2 | 0 | 0 |
-| P12 | Deployment readiness | 2 | 0 | 1 |
+| P12 | Deployment readiness | 2 | 0 | 0 |
 | P2 | Query Cost Governance | 10 | 9 | 1 |
 | P3 | Utilization and Rightsizing | 10 | 0 | 0 |
 | P4 | Inventory and Topology | 7 | 0 | 0 |

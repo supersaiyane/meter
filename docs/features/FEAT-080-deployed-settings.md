@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P12 |
-| Status | Planned |
+| Status | In build |
 | Specification | [P12 spec](../specs/2026-10-12-p12-deployment-readiness-design.md), sections 5.4 and 5.5 |
 | Tasks | TASK-P12-006 and TASK-P12-007 |
 
@@ -28,7 +28,7 @@ answered 2026-10-12: SSM Parameter Store.
 
 ## How it works
 
-Built so far: the settings, TASK-P12-006.
+Built so far: the settings, TASK-P12-006, and the pipeline's plans, TASK-P12-007.
 
 - `infra/terraform/hub/settings.tf` makes one SSM parameter per setting under `/meter/<env>/`
   from three sources: the names the stack derives from what it creates, such as the queue URL,
@@ -38,6 +38,9 @@ Built so far: the settings, TASK-P12-006.
   `secrets`, which the execution role resolves at start. A setting that is empty on purpose
   cannot be a parameter, because SSM refuses an empty value, so it reaches the task as an empty
   environment value from the same map.
+- The pipeline plans each environment in a job of its own, `terraform-plan:dev` and
+  `terraform-plan:prod`, into `tfplan-<env>`, and each deploy needs and applies its own plan.
+  Every AWS job assumes the deploy role from its OIDC token through the web identity variables.
 - The database URL names the host and the user and no password. Each task is given the password
   RDS manages as `PGPASSWORD`, from the managed secret's `password` key, and libpq reads it.
 
@@ -47,6 +50,8 @@ Built so far: the settings, TASK-P12-006.
   which holds the three sources to every field of `Settings` for each environment.
 - A task whose signing key is still the placeholder refuses to start, naming the setting and the
   runbook step that sets it.
+- A deploy whose services do not reach a steady state fails with the apply.
+- A deployment cannot run its migrations yet, ISS-283; a first deploy has an empty schema.
 - A production environment cannot start yet: the local identity provider is refused in prod and
   no other is built, ISS-280.
 
@@ -72,7 +77,8 @@ Built so far: the settings, TASK-P12-006.
 
 ## Status of this document
 
-In build. TASK-P12-006 built the deployed settings on 2026-10-12; each deploy applying its own
-plan follows in TASK-P12-007.
+In build. TASK-P12-006 built the deployed settings and TASK-P12-007 the pipeline's plans on
+2026-10-12; TASK-P12-009 proves them. No pipeline has run, ISS-179, so what the pipeline does is
+read from the file and held by tests rather than observed.
 
 See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P12.

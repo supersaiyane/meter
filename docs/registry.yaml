@@ -599,7 +599,7 @@ features:
 - id: FEAT-080
   name: Deployed settings from SSM Parameter Store, and a pipeline that applies its own plan
   subproject: P12
-  status: Planned
+  status: In build
   detail: '[P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.4 and 5.5, [P12 plan](docs/plans/P12-implementation-plan.md)'
   doc: docs/features/FEAT-080-deployed-settings.md
 adrs:
@@ -2383,6 +2383,16 @@ changes:
     refuse, of 93 (measured). The api, worker and dispatcher read them through secrets, the execution role only
     its own path; an empty setting is an empty environment value. A test holds them to the settings model.
     Closes ISS-250 and fixes ISS-277 and ISS-278; opens ISS-279 and ISS-280'
+- id: CHG-0166
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-007, each deploy applies its own plan
+  commit: pending
+  detail: 'terraform-plan:dev and terraform-plan:prod each write tfplan-<env>, and each deploy needs and applies its
+    own, ISS-260. Every AWS job assumes its role from the OIDC token file, which the images can do and aws sts
+    in them could not, ISS-281. The deploy waits through wait_for_steady_state on the api, web and worker
+    services rather than a CLI its image lacks, ISS-282. The migrate job calls the script where it is. Opened
+    ISS-283, deployed migrations cannot run, and ISS-284, the provenance image may have no shell'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4922,6 +4932,48 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-284
+  severity: MEDIUM
+  status: OPEN
+  summary: The provenance job may run in an image with no shell, so its script would not run
+  detail: 'Found 2026-10-12 reading .gitlab-ci.yml for TASK-P12-007, and not verified, because no pipeline has
+    run, ISS-179. verify-provenance runs gcr.io/projectsigstore/cosign:v2.4.1 with an empty entrypoint and a shell
+    script, and that image is built without a shell as far as is known here. If so, the job fails before its
+    first command and every deploy:dev, which needs it, waits on it. The kaniko jobs use the debug image for the
+    same reason. Checking the image, then choosing a cosign image with a shell or installing cosign in one that
+    has one, is a small change once a pipeline can be watched'
+- id: ISS-283
+  severity: HIGH
+  status: OPEN
+  summary: A deployment cannot run its migrations, so a first deploy has an empty schema and a later one the
+    previous release's
+  detail: 'Found 2026-10-12 building TASK-P12-007. migrate:dev ran ./scripts/run_migration_task.sh, which is at
+    scripts/deploy/, and the script runs the meter-<env>-migrate task definition with network settings read
+    from /meter/<env>/private_subnet_ids and app_security_group_id and logs from /ecs/meter-migrate-<env>. No
+    stack makes any of the four, and run-task cannot change a task definition''s image, so even with them it
+    would run the previous release''s migrations. deploy:dev does not wait for it, and there is no migrate:prod.
+    The path is fixed; the rest is the owner''s choice of how a deployment migrates. Options: a Terraform migrate
+    task definition the deploy registers at the new image and runs before the services roll, which keeps one
+    job owning the release and is the recommendation; migrations at the API''s start under an advisory lock,
+    simplest but racing the worker; or the pipeline registering a revision itself from a template Terraform
+    outputs'
+- id: ISS-282
+  severity: HIGH
+  status: FIXED
+  summary: The deploy waited on misnamed services with an AWS CLI its image does not have
+  detail: 'Found 2026-10-12 building TASK-P12-007. After the apply, the deploy ran aws ecs wait services-stable for
+    meter-api-<env> and the like, in hashicorp/terraform, which has no AWS CLI, and ecs.tf names the services
+    meter-<env>-api. Fixed the same day: the step is gone and the api, web and worker services set
+    wait_for_steady_state, so Terraform waits and the apply fails if a service does not settle'
+- id: ISS-281
+  severity: HIGH
+  status: FIXED
+  summary: Every job that reaches AWS assumed its role with aws sts in an image that has no AWS CLI
+  detail: 'Found 2026-10-12 building TASK-P12-007. The .aws_oidc before_script exchanged the OIDC token with aws sts
+    assume-role-with-web-identity, and the plan, deploy, provenance and migrate jobs run hashicorp/terraform,
+    cosign and python:slim, none of which has the CLI, so each would have failed before its script. Fixed the
+    same day: the token is written to a file and AWS_ROLE_ARN and AWS_WEB_IDENTITY_TOKEN_FILE exported, which the
+    Terraform backend and provider, the AWS CLI and boto3 all assume the role from'
 - id: ISS-280
   severity: HIGH
   status: OPEN
@@ -5019,7 +5071,7 @@ issues:
     time of day an invoice is issued, were renamed.'
 - id: ISS-260
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: The deploy jobs may apply the wrong plan, or none
   detail: 'Found 2026-10-08 by reading .gitlab-ci.yml while adding the relay build, TASK-P9-001, and
     not verified, because there is no remote and no pipeline has run. terraform-plan is a parallel
@@ -5029,7 +5081,8 @@ issues:
     A plan saved for one backend applied after an init of the other should be refused by Terraform
     rather than applied, so the likely outcome is a failed deploy, not a wrong one. The fix is a plan
     file named per environment, or needs that select the matching matrix job. ISS-250 is the same
-    pipeline on the first push'
+    pipeline on the first push. Fixed 2026-10-12, TASK-P12-007: a plan job per environment, each writing
+    tfplan-<env>, and each deploy needing and applying its own'
 
 open_questions:
 - id: OPEN-07
