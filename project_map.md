@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 33 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 45 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 243 | test_*.py under tests/ |
-| Test functions | 3006 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 244 | test_*.py under tests/ |
+| Test functions | 3014 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -345,6 +345,8 @@ meter/
 │   │                          API route. local_token.py mints a session.
 │   │                          local_bucket.py makes the data bucket in LocalStack
 │   │                          for make up, and refuses any other endpoint
+│   │                          first_contact.py makes each AWS read once against
+│   │                          one account, TASK-P12-008, make first-contact.
 │   │                          restore_drill.py restores a copy into a scratch
 │   │                          database, migrates it, starts the application
 │   │                          against it and reads the freshness route. Refuses

@@ -207,7 +207,7 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-12 |
 | Implements | Spec section 5.6, ISS-002, ISS-122, ISS-111, ISS-179 |
 | Delivers | FEAT-079 |
 | Depends on | TASK-P12-002 |
@@ -215,10 +215,14 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 **Acceptance criteria.**
 
-- [ ] `docs/runbooks/first-account.md`: the owner's steps in order, each with its check
-- [ ] `make first-contact` makes each AWS adapter's cheapest read once and reports each answered
-      or failed, typed; it refuses without credentials
-- [ ] A test runs it over stubbed clients, one answering, one refusing, and with no credentials
+- [x] `docs/runbooks/first-account.md`: the owner's steps in order, each with its check, and the
+      three open issues that stop a deployment before any step, ISS-279, ISS-280 and ISS-283
+- [x] `make first-contact` makes each AWS adapter's cheapest read once and reports each answered
+      or failed, typed; it refuses without credentials: `scripts/ops/first_contact.py`, 19 reads
+      through the deployed composition's own paths, the settings from SSM, a read whose setting is
+      empty reported as not tried
+- [x] A test runs it over stubbed clients, one answering, one refusing, and with no credentials:
+      `tests/scripts/test_first_contact.py`, and every collector built from AWS has a read
 
 ---
 

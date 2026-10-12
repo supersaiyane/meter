@@ -341,6 +341,11 @@ local-auth.yaml:
 	@cp local-auth.example.yaml local-auth.yaml
 	@echo "Created local-auth.yaml from the example. It is gitignored."
 
+.PHONY: first-contact
+first-contact: ## Make each AWS read once: ENV=dev ACCOUNT=<12 digits> REGION=<region>. TASK-P12-008
+	@test -n "$(ACCOUNT)" && test -n "$(REGION)" || { echo "usage: make first-contact ENV=dev ACCOUNT=<12 digits> REGION=<region>"; exit 2; }
+	PYTHONPATH="$(PWD)" $(BIN)/python scripts/ops/first_contact.py --env $(or $(ENV),dev) --account $(ACCOUNT) --region $(REGION)
+
 .PHONY: dispatch
 dispatch: ## Dispatch every tenant's due collectors once, on the local stack's fakes. TASK-P12-005
 	$(COMPOSE) run --rm -T dispatcher

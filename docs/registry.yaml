@@ -2393,6 +2393,16 @@ changes:
     in them could not, ISS-281. The deploy waits through wait_for_steady_state on the api, web and worker
     services rather than a CLI its image lacks, ISS-282. The migrate job calls the script where it is. Opened
     ISS-283, deployed migrations cannot run, and ISS-284, the provenance image may have no shell'
+- id: CHG-0167
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-008, the first account, a runbook and a first contact
+  commit: pending
+  detail: 'scripts/ops/first_contact.py, make first-contact: each of 19 AWS reads the collectors depend on, once,
+    against one account and Region, through the deployed composition''s own paths, with the settings read from
+    SSM; each reported answered, typed as a collector''s failure would be, or not tried naming the empty
+    setting. It refuses without credentials and writes nothing. docs/runbooks/first-account.md orders the
+    owner''s steps with a check each and names the three issues that stop a deployment first'
 issues:
 - id: ISS-189
   severity: LOW
