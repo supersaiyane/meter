@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 38 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 53 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 261 | test_*.py under tests/ |
-| Test functions | 3145 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 262 | test_*.py under tests/ |
+| Test functions | 3156 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -349,6 +349,8 @@ meter/
 │   │                          views and schedules too, 2026-10-12.
 │   │                          first_contact.py makes each AWS read once against
 │   │                          one account, TASK-P12-008, make first-contact.
+│   │                          It reads the GPU agent and, when a key's secret is
+│   │                          named, an AI provider's day of costs, TASK-P13-009.
 │   │                          connect_ai_provider.py records an AI provider
 │   │                          organization for a tenant once its key has read a
 │   │                          day of costs, TASK-P13-004
@@ -360,6 +362,8 @@ meter/
 │   │                          in `scripts/ops`. Split out 2026-09-21 with
 │   │                          ADR-0022, so what the image contains follows from
 │   │                          where a file lives rather than from a comment.
+│   │                          seed_demo.py bills the Bedrock and GPU lines and
+│   │                          runs every AI collector, TASK-P13-009.
 │   │                          seed_demo.py fills a local database by running the
 │   │                          real collectors against the fake adapters and
 │   │                          through the real run ledger, so seeded rows cannot

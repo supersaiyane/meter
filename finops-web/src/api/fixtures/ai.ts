@@ -172,8 +172,10 @@ export function aiCallersFixture(): ApiEnvelope<ApiAiCallers> {
       period: PERIOD,
       callers: [
         {
-          source: 'logs',
+          source: 'bedrock',
           account_id: '111122223333',
+          workspace: 'eu-west-1',
+          api_key_id: '',
           caller: 'arn:aws:sts::111122223333:assumed-role/support/triage',
           application: 'support',
           model: 'publisher.claude-sonnet-4-20250514-v1:0',
@@ -185,8 +187,10 @@ export function aiCallersFixture(): ApiEnvelope<ApiAiCallers> {
         {
           source: 'openai',
           account_id: 'org-fake-openai',
-          caller: 'user-fake-analyst',
-          application: 'proj-research',
+          workspace: 'proj-research',
+          api_key_id: 'key-fake-research',
+          caller: '',
+          application: '',
           model: 'gpt-4o-2024-08-06',
           tokens: 88000000,
           requests: null,
@@ -195,8 +199,10 @@ export function aiCallersFixture(): ApiEnvelope<ApiAiCallers> {
         },
         // A model the bill priced none of: unknown, never free.
         {
-          source: 'logs',
+          source: 'bedrock',
           account_id: '111122223333',
+          workspace: 'eu-west-1',
+          api_key_id: '',
           caller: 'arn:aws:sts::111122223333:assumed-role/batch/nightly',
           application: '',
           model: 'publisher.embed-v4:0',

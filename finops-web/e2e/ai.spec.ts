@@ -61,14 +61,19 @@ test('grouping by model lands in the address and says a line nothing counted', a
   await expect(silent.getByTestId('ai-per-1k').getByTestId('figure')).toHaveCount(0);
 });
 
-test('a caller nobody priced and a GPU that never published are said, not counted', async ({
+test('a caller nobody priced, one named by its key, and a GPU that never published', async ({
   page,
 }) => {
   await demoEstate(page);
   await page.goto('/analyze/ai');
 
   const callers = page.getByTestId('ai-callers');
-  await expect(callers.getByTestId('ai-caller-row')).toHaveCount(2);
+  await expect(callers.getByTestId('ai-caller-row')).toHaveCount(3);
+  // A provider names no user for most usage, so its key and project say who called.
+  const keyed = callers
+    .getByTestId('ai-caller-row')
+    .filter({ hasText: 'key key-fake-research' });
+  await expect(keyed.getByTestId('ai-caller-workspace')).toHaveText('proj-fake-research');
   await expect(
     callers.getByTestId('ai-caller-cost').filter({ hasText: 'not priced' }),
   ).toHaveCount(1);

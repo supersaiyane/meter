@@ -1,7 +1,7 @@
 # P13 FinOps for AI: implementation plan
 
 Date: 2026-10-12
-Status: Approved by the owner on 2026-10-12 with OPEN-31 to OPEN-34 answered, in build
+Status: Approved by the owner on 2026-10-12 with OPEN-31 to OPEN-34 answered; delivered on 2026-10-13 against fakes
 Spec: `docs/specs/2026-10-12-p13-finops-for-ai-design.md`
 Depends on: P1, P3 and P12. Proof against a real estate waits on ISS-002 and ISS-285
 Tasks: 9
@@ -262,7 +262,20 @@ AI lines for its accounts and nothing of a provider's, which no grant names.
 ### TASK-P13-008: the AI spend screen
 
 | Field | Value |
-| 
+| --- | --- |
+| Status | Done 2026-10-13 |
+| Implements | Spec section 8 |
+| Delivers | FEAT-085 |
+| Depends on | TASK-P13-007 |
+| Estimate | M |
+
+**Acceptance criteria.**
+
+- [x] A screen, reached from the navigation, shows AI spend by provider, model, token type, feature
+      and caller, cost per thousand tokens and per request, and the GPU fleet
+- [x] Every figure says measured or modelled, every panel shows freshness, a failure is never zero,
+      and not published reads as not published
+- [x] Unit tests and a Playwright journey on the seeded demo
 
 **Delivered 2026-10-13.** `finops-web/src/screens/AiSpendScreen.tsx` at `/analyze/ai`, under
 Analyze, with `group_by` and `period` in the address; three panels, spend, callers and the GPU fleet,
@@ -275,28 +288,13 @@ counted a provider's projects as accounts, so a whole estate could read as parti
 counts the cloud bill's accounts. Thirteen screen tests, a `Figure` test and three journeys in
 `e2e/ai.spec.ts` on the demo estate.
 
---- | --- |
-| Status | Not started |
-| Implements | Spec section 8 |
-| Delivers | FEAT-085 |
-| Depends on | TASK-P13-007 |
-| Estimate | M |
-
-**Acceptance criteria.**
-
-- [ ] A screen, reached from the navigation, shows AI spend by provider, model, token type, feature
-      and caller, cost per thousand tokens and per request, and the GPU fleet
-- [ ] Every figure says measured or modelled, every panel shows freshness, a failure is never zero,
-      and not published reads as not published
-- [ ] Unit tests and a Playwright journey on the seeded demo
-
 ---
 
 ### TASK-P13-009: the local stack, first contact, proof and documents
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec section 13 |
 | Delivers | The exit criteria, measured, and the record |
 | Depends on | TASK-P13-001 to TASK-P13-008 |
@@ -304,9 +302,30 @@ counts the cloud bill's accounts. Thirteen screen tests, a `Figure` test and thr
 
 **Acceptance criteria.**
 
-- [ ] The seeded demo and the local stack carry AI spend from every source
-- [ ] `make first-contact` probes each new read, and the runbook names the owner's steps for a
+- [x] The seeded demo and the local stack carry AI spend from every source
+- [x] `make first-contact` probes each new read, and the runbook names the owner's steps for a
       provider key and for invocation logging
-- [ ] Every exit criterion in spec section 13 met, each with its evidence
-- [ ] FEAT-081 to FEAT-085 say what was built; the register, `project_map.md` and the checkpoint
+- [x] Every exit criterion in spec section 13 met, each with its evidence
+- [x] FEAT-081 to FEAT-085 say what was built; the register, `project_map.md` and the checkpoint
       updated, and `make check-docs` clean
+
+**Delivered 2026-10-13.** The demo seed bills the Bedrock and GPU lines in the one bill its cost
+rows and invoices come from, `finops_fakes.cur.with_ai`, connects a fake OpenAI and a fake
+Anthropic organization, and runs both provider collectors, the invocation logs in each Bedrock
+account and the GPU agent; the local stack's composition bills the same lines. `make
+first-contact` reads the GPU agent's metrics and, when a key's secret is named, a provider's day of
+costs; `docs/runbooks/ai-providers.md` has the owner's steps. Proving the third criterion found
+ISS-289, a provider's usage reaching the callers panel with no name, fixed the same day.
+
+| Exit criterion, spec section 13 | Evidence |
+| --- | --- |
+| 1. A Bedrock line lands with its model, token type, tokens and principal, and spend groups by each | `tests/scripts/test_p13_exit_criteria.py::test_1_...`, over the seeded demo through the API; `tests/ingest/collectors/test_cost_focus_sources.py` |
+| 2. Usage per caller from an aggregate query where logs reach CloudWatch Logs, NotOptedIn where not | `test_2_...` over the demo; the query held to aggregates by `tests/providers/aws/test_bedrock_invocations.py` |
+| 3. OpenAI and Anthropic cost lands as FOCUS rows, survives an AWS cost run, usage per model, project or workspace, and key | `test_3_...` over the demo; the survival by `tests/ingest/collectors/test_ai_providers.py` |
+| 4. GPU hours and cost, utilization where published, not published otherwise | `test_4_...` over the demo; `tests/api/test_ai_routes.py` |
+| 5. Only the worker reaches the internet | `tests/contract/test_network_paths.py`, over the Terraform |
+| 6. The screen shows cost per token, per request and per feature, each measured or modelled, on the local stack | `test_6_...` over the demo; `AiSpendScreen.test.tsx`; `finops-web/e2e/ai.spec.ts` |
+
+Each holds against fakes and stubbed clients. No provider has been called and no invocation log
+read: ISS-285 closes with first contact against one organization of each provider, and ISS-002 with
+a real account.

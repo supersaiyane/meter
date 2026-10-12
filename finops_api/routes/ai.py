@@ -104,6 +104,7 @@ def _usage(rows: Sequence[Any]) -> list[ai.Usage]:
             application=row.application,
             tokens={kind: int(getattr(row, column)) for kind, column in TOKEN_COLUMNS.items()},
             requests=row.requests,
+            api_key=row.api_key_id,
         )
         for row in rows
     ]
@@ -211,6 +212,8 @@ def ai_callers(
             AiCallerOut(
                 source=row.source,
                 account_id=row.account,
+                workspace=row.workspace,
+                api_key_id=row.api_key,
                 caller=row.caller,
                 application=row.application,
                 model=row.model,

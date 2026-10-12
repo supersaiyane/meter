@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P13 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P13 spec](../specs/2026-10-12-p13-finops-for-ai-design.md), sections 5.7 and 8 |
 | Tasks | TASK-P13-007 and TASK-P13-008 |
 | Decisions | OPEN-31 to OPEN-34 |
@@ -27,7 +27,8 @@ Analyze. The grouping and the billing period live in the address, so a link land
 and a saved view can hold it. Three panels, each its own read with its own state and freshness:
 spend by the chosen grouping with its measured total and the connected providers, who called which
 model, and the GPU instances. A cost per thousand tokens or per request is drawn to as many as six
-places, because a price of $0.003 drawn to the cent would read as nought.
+places, because a price of $0.003 drawn to the cent would read as nought. A caller is named by its key
+where the provider names no user, beside its project, workspace or Region, ISS-289.
 
 The screen reads `GET /v1/ai/spend`, `GET /v1/ai/callers` and `GET /v1/ai/gpu`. Each figure carries
 its basis, measured or modelled, and each panel its freshness from `as_of` and `collected_at`.

@@ -3,8 +3,9 @@
 Beside `aws_bindings.py` rather than in it, because these reach a provider over the internet
 through the NAT gateway only the worker may use, ADR-0036, and not AWS through an endpoint: the
 only AWS call they make is reading each organization's admin key from Secrets Manager, through
-the endpoint, when a request is about to be made. `make first-contact` probes the AWS reads; a
-provider's first call is proved by `scripts/ops/connect_ai_provider.py` when it is connected.
+the endpoint, when a request is about to be made. `make first-contact` makes a provider's first
+call when its key's secret is named, and `scripts/ops/connect_ai_provider.py` proves the same call
+before it connects an organization.
 """
 
 from __future__ import annotations

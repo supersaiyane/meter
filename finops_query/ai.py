@@ -108,6 +108,7 @@ class Usage:
 
     source: str
     account: str
+    #: The Region, the project or the workspace, whichever the source divides usage by.
     workspace: str
     day: date
     model: str
@@ -115,6 +116,8 @@ class Usage:
     application: str
     tokens: Mapping[str, int]
     requests: int | None
+    #: The provider's key the usage was made with, by its id; empty for the invocation logs.
+    api_key: str = ""
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -135,6 +138,10 @@ class SpendRow:
 class CallerRow:
     source: str
     account: str
+    #: The Region for the invocation logs; a provider's project or workspace.
+    workspace: str
+    #: A provider's key, by its id, which is who called where a provider names no user.
+    api_key: str
     caller: str
     application: str
     model: str
@@ -335,15 +342,20 @@ def _row(name: str, group: _Group) -> SpendRow:
 # -- callers ----------------------------------------------------------------------------------
 
 
+#: Who called, as each source says it: source, account, workspace, key, caller, application, model.
+CallerKey = tuple[str, str, str, str, str, str, str]
+
+
 def callers(
     lines: Sequence[Line], usage: Sequence[Usage], *, self_billed: Iterable[str] = ()
 ) -> list[CallerRow]:
     """Each caller's tokens and requests, priced at the bill's unit cost. Modelled, always."""
     billers = set(self_billed)
     price = _unit_costs(lines, usage, billers)
-    grouped: dict[tuple[str, str, str, str, str], list[Usage]] = defaultdict(list)
+    grouped: dict[CallerKey, list[Usage]] = defaultdict(list)
     for one in usage:
-        grouped[(one.source, one.account, one.caller, one.application, one.model)].append(one)
+        key = (one.source, one.account, one.workspace, one.api_key, one.caller, one.application)
+        grouped[(*key, one.model)].append(one)
     rows = [_caller(key, used, price, billers) for key, used in grouped.items()]
     return sorted(
         rows,
@@ -352,12 +364,12 @@ def callers(
 
 
 def _caller(
-    key: tuple[str, str, str, str, str],
+    key: CallerKey,
     used: Sequence[Usage],
     price: Mapping[tuple[str, str, str, date, str], Decimal],
     billers: set[str],
 ) -> CallerRow:
-    source, account, caller, application, model = key
+    source, account, workspace, api_key, caller, application, model = key
     cost: Decimal | None = Decimal(0)
     for one in used:
         billed = bill_source(one.source, billers)
@@ -370,6 +382,8 @@ def _caller(
     return CallerRow(
         source=source,
         account=account,
+        workspace=workspace,
+        api_key=api_key,
         caller=caller,
         application=application,
         model=model,

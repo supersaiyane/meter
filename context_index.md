@@ -972,10 +972,10 @@ a duplicate.
 | `to_out` | function | `finops_api/routes/accounts.py:27` |  | nothing in this tree |
 | `list_accounts` | function | `finops_api/routes/accounts.py:43` |  | `finops_ingest/collectors/org_tree.py` |
 | `recheck` | function | `finops_api/routes/accounts.py:56` | Force a role health recheck. A read only call, per constraint 6. | nothing in this tree |
-| `ai_spend` | function | `finops_api/routes/ai.py:137` | AI spend for a billing period, grouped as asked, worst first. | nothing in this tree |
-| `ai_callers` | function | `finops_api/routes/ai.py:192` | Who called which model, most costly first; a caller the bill priced nothing for, last. | nothing in this tree |
-| `utilization_of` | function | `finops_api/routes/ai.py:231` | Whether an instance's agent published for every day it was billed, some, or none. | nothing in this tree |
-| `ai_gpu` | function | `finops_api/routes/ai.py:249` | Each GPU instance the bill names, most costly first, how busy it was or not published. | nothing in this tree |
+| `ai_spend` | function | `finops_api/routes/ai.py:138` | AI spend for a billing period, grouped as asked, worst first. | nothing in this tree |
+| `ai_callers` | function | `finops_api/routes/ai.py:193` | Who called which model, most costly first; a caller the bill priced nothing for, last. | nothing in this tree |
+| `utilization_of` | function | `finops_api/routes/ai.py:234` | Whether an instance's agent published for every day it was billed, some, or none. | nothing in this tree |
+| `ai_gpu` | function | `finops_api/routes/ai.py:252` | Each GPU instance the bill names, most costly first, how busy it was or not published. | nothing in this tree |
 | `ask` | function | `finops_api/routes/assistant.py:115` | Ask a question, and get an answer, a refusal or a typed failure. Writes one row. | `finops_api/assistant.py` |
 | `exchanges` | function | `finops_api/routes/assistant.py:152` | What the asker has asked and what came back, newest first. Their own and no one else's. | nothing in this tree |
 | `digests` | function | `finops_api/routes/assistant.py:173` | The weekly digests, newest first, each saying whether it was sent. FEAT-041. | nothing in this tree |
@@ -1192,9 +1192,9 @@ a duplicate.
 | `AiConnectionOut` | class | `finops_api/schemas.py:2558` | An AI provider organization the tenant connected. Never its key or the key's name. | `finops_api/routes/ai.py` |
 | `AiSpendOut` | class | `finops_api/schemas.py:2568` | AI spend for a billing period, grouped as asked. FEAT-081, 083 and 085, TASK-P13-007. | `finops_api/routes/ai.py` |
 | `AiCallerOut` | class | `finops_api/schemas.py:2582` | One caller's tokens and requests on one model, and what they cost. FEAT-082. | `finops_api/routes/ai.py` |
-| `AiCallersOut` | class | `finops_api/schemas.py:2601` | Who called which model in a billing period. FEAT-082, TASK-P13-007. | `finops_api/routes/ai.py` |
-| `AiGpuOut` | class | `finops_api/schemas.py:2610` | One GPU instance's hours and cost, and how busy it was. FEAT-084, TASK-P13-007. | `finops_api/routes/ai.py` |
-| `AiGpuFleetOut` | class | `finops_api/schemas.py:2632` | The GPU instances the bill names in a billing period. FEAT-084, TASK-P13-007. | `finops_api/routes/ai.py` |
+| `AiCallersOut` | class | `finops_api/schemas.py:2606` | Who called which model in a billing period. FEAT-082, TASK-P13-007. | `finops_api/routes/ai.py` |
+| `AiGpuOut` | class | `finops_api/schemas.py:2615` | One GPU instance's hours and cost, and how busy it was. FEAT-084, TASK-P13-007. | `finops_api/routes/ai.py` |
+| `AiGpuFleetOut` | class | `finops_api/schemas.py:2637` | The GPU instances the bill names in a billing period. FEAT-084, TASK-P13-007. | `finops_api/routes/ai.py` |
 | `Transport` | class | `finops_api/toolbox.py:33` | What the toolbox needs of an HTTP client, and nothing more. | nothing in this tree |
 | `Transport.get` | method | `finops_api/toolbox.py:36` |  | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 83 more |
 | `ApiToolbox` | class | `finops_api/toolbox.py:39` | The asker's tools, each one a route called with the asker's token. | `finops_api/main.py` |

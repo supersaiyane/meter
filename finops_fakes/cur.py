@@ -911,6 +911,15 @@ GPU_INSTANCES: tuple[GpuInstance, ...] = (
 )
 
 
+def with_ai(base: tuple[CostRecord, ...]) -> tuple[CostRecord, ...]:
+    """A bill with its Bedrock and GPU lines, P13.
+
+    One definition, because the cost rows and the invoices of the same estate have to be built
+    from the same bill, or the reconciliation reports a difference the fake invented.
+    """
+    return (*base, *bedrock_rows(base), *gpu_rows(base))
+
+
 def gpu_rows(base: Iterable[CostRecord]) -> tuple[CostRecord, ...]:
     """Each GPU instance's hours, on every day the given bill has a line for."""
     days = sorted({(row.billing_period_start, row.charge_period_start) for row in base})
@@ -1024,7 +1033,7 @@ class FakeCostExport:
         base = ESTATE if rows is None else rows
         if ai:
             # Opt in, as the split lines are, and derived from the same bill so its days match.
-            base = (*base, *bedrock_rows(base), *gpu_rows(base))
+            base = with_ai(base)
         if split:
             # Derived from the rows actually being exported, so the split lines always
             # re-attribute charges this bill really carries, whatever clock it was built

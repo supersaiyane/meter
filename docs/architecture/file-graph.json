@@ -993,6 +993,7 @@
     "tests/scripts/test_observability.py",
     "tests/scripts/test_p11_exit_criteria.py",
     "tests/scripts/test_p12_exit_criteria.py",
+    "tests/scripts/test_p13_exit_criteria.py",
     "tests/scripts/test_p9_exit_criteria.py",
     "tests/scripts/test_pipeline.py",
     "tests/scripts/test_restore_drill.py",
@@ -12295,6 +12296,16 @@
     },
     {
       "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/ai_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/anthropic_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/budgets.py",
       "k": "python"
     },
@@ -12325,6 +12336,11 @@
     },
     {
       "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/gpu_utilization.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/iac_state.py",
       "k": "python"
     },
@@ -12341,6 +12357,11 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_ingest/collectors/invoices.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/demo/seed_demo.py",
+      "t": "finops_ingest/collectors/openai_usage.py",
       "k": "python"
     },
     {
@@ -12485,7 +12506,22 @@
     },
     {
       "s": "scripts/ops/first_contact.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
+      "t": "finops_core/ports/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
+      "t": "finops_providers/anthropic/reports.py",
       "k": "python"
     },
     {
@@ -12495,7 +12531,22 @@
     },
     {
       "s": "scripts/ops/first_contact.py",
+      "t": "finops_providers/aws/gpu_metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
       "t": "finops_providers/aws/reach.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
+      "t": "finops_providers/aws/secrets.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
+      "t": "finops_providers/openai/reports.py",
       "k": "python"
     },
     {
@@ -16885,7 +16936,22 @@
     },
     {
       "s": "tests/scripts/test_first_contact.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_first_contact.py",
+      "t": "finops_ingest/ai_bindings.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_first_contact.py",
       "t": "finops_ingest/aws_bindings.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_first_contact.py",
+      "t": "finops_providers/anthropic/reports.py",
       "k": "python"
     },
     {
@@ -16956,6 +17022,11 @@
     {
       "s": "tests/scripts/test_p12_exit_criteria.py",
       "t": "finops_ingest/sqs.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p13_exit_criteria.py",
+      "t": "finops_core/config.py",
       "k": "python"
     },
     {

@@ -218,8 +218,23 @@ export const AI_SPEND: Readonly<Record<string, readonly unknown[]>> = {
 
 const AI_CALLERS = [
   {
-    source: 'logs',
+    source: 'openai',
+    account_id: 'org-fake-openai',
+    workspace: 'proj-fake-research',
+    api_key_id: 'key-fake-research',
+    caller: '',
+    application: '',
+    model: 'gpt-4o-2024-08-06',
+    tokens: 8800000,
+    requests: 4100,
+    modelled_cost: '61.54',
+    modelled_cost_basis: 'modelled',
+  },
+  {
+    source: 'bedrock',
     account_id: 'fake-platform-a',
+    workspace: 'us-fake-1',
+    api_key_id: '',
     caller: 'arn:aws:sts::fake-platform-a:assumed-role/support/triage',
     application: 'support',
     model: 'publisher.claude-sonnet-4-20250514-v1:0',
@@ -229,8 +244,10 @@ const AI_CALLERS = [
     modelled_cost_basis: 'modelled',
   },
   {
-    source: 'logs',
+    source: 'bedrock',
     account_id: 'fake-platform-a',
+    workspace: 'us-fake-1',
+    api_key_id: '',
     caller: 'arn:aws:sts::fake-platform-a:assumed-role/batch/nightly',
     application: '',
     model: 'publisher.embed-v4:0',

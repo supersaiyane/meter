@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P13 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P13 spec](../specs/2026-10-12-p13-finops-for-ai-design.md), sections 5.1, 5.3 and 5.5 |
 | Tasks | TASK-P13-001, TASK-P13-004 and TASK-P13-005 |
 | Decisions | ADR-0036, OPEN-31 |
@@ -23,13 +23,16 @@ shows a fraction of the money.
 
 ## How it works
 
-Built so far: the path, TASK-P13-001, and OpenAI, TASK-P13-004: `ai_provider_account`, the key
+Built: the path, TASK-P13-001, and OpenAI, TASK-P13-004: `ai_provider_account`, the key
 reader, `finops_providers/openai/reports.py` over the costs and completions usage reports, the
 `openai_usage` collector and `scripts/ops/connect_ai_provider.py`; and Anthropic, TASK-P13-005:
 `finops_providers/anthropic/reports.py` over the cost report, whose amounts are cents, and the
 messages usage report, which counts no requests, and the `anthropic_usage` collector. One NAT gateway in the hub's first public subnet is the
 private route table's one default route, and only the worker's security group, `worker_internet`,
 has a rule that uses it, HTTPS to anywhere. Every other task still reaches nothing outside AWS.
+`make first-contact` reads a provider's day of costs when its key's secret is named, and
+`docs/runbooks/ai-providers.md` has the owner's steps; the demo connects a fake organization of
+each provider, TASK-P13-009.
 
 `ai_provider_account` names each organization a tenant connects and the Secrets Manager secret,
 under `meter/<env>/ai/`, that holds its admin key. An httpx adapter per provider reads the period

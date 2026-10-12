@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P13 |
-| Status | In build |
+| Status | Delivered |
 | Specification | [P13 spec](../specs/2026-10-12-p13-finops-for-ai-design.md), section 5.4 |
 | Tasks | TASK-P13-003 and TASK-P13-007 |
 | Decisions | OPEN-32 |
@@ -24,10 +24,13 @@ attaches, which is where an application or an agent names itself.
 
 ## How it works
 
-Built so far: the collection, TASK-P13-003, and `GET /ai/callers`, TASK-P13-007, each caller's tokens
+Built: the collection, TASK-P13-003, and `GET /ai/callers`, TASK-P13-007, each caller's tokens
 priced at the bill's unit cost for the same model, token type and day, matched by
 `finops_query.ai.model_key` because a log names a model by its identifier and the bill by its
 usage type.
+The screen's callers panel shows each, TASK-P13-008, and a provider's usage is named by its project
+or workspace and its key where the provider names no user, ISS-289. The demo's logs reach
+CloudWatch Logs in one account and S3 alone in another, which reads NotOptedIn, TASK-P13-009.
 
 For each account and collection Region the collector reads the invocation logging configuration.
 Where it names a CloudWatch log group, it runs one Logs Insights query whose every output is an

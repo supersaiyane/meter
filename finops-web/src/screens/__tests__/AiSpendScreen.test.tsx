@@ -169,6 +169,21 @@ describe('AiSpendScreen, callers', () => {
   });
 });
 
+describe('AiSpendScreen, provider callers', () => {
+  it('names a provider caller by its key where it names no one, beside its project', async () => {
+    renderScreen();
+    const panel = await screen.findByTestId('ai-callers');
+    const rows = await within(panel).findAllByTestId('ai-caller-row');
+    const keyed = present(
+      rows.find((row) => row.textContent.includes('key key-fake-research')),
+      'the provider row',
+    );
+    expect(within(keyed).getByTestId('ai-caller-workspace').textContent).toBe('proj-research');
+    const logged = present(rows[0], 'the logs row');
+    expect(within(logged).getByTestId('ai-caller-workspace').textContent).toBe('eu-west-1');
+  });
+});
+
 describe('AiSpendScreen, GPU instances', () => {
   it('says not published for an agent that published nothing, never nought percent', async () => {
     renderScreen();

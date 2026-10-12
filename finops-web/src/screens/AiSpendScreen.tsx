@@ -48,7 +48,7 @@ const GROUPINGS: readonly { readonly value: ApiAiGrouping; readonly label: strin
 
 /** What a usage source is called on the screen. A source not named here shows as it arrived. */
 const SOURCE_NAMES: Readonly<Record<string, string>> = {
-  logs: 'Invocation logs',
+  bedrock: 'Bedrock invocation logs',
   openai: 'OpenAI',
   anthropic: 'Anthropic',
 };
@@ -252,19 +252,33 @@ function SpendPanel({
   );
 }
 
+/** Who called, as the source can say it: a caller, or a provider's key where it names no one. */
+function callerOf(row: ApiAiCaller): string {
+  if (row.caller !== '') return row.caller;
+  return row.api_key_id === '' ? 'not named' : `key ${row.api_key_id}`;
+}
+
 function callerColumns(freshness: Freshness): readonly Column<ApiAiCaller>[] {
   return [
     {
       key: 'caller',
       header: 'Caller',
       rowHeader: true,
-      render: (row) => <strong>{row.caller}</strong>,
-      sortValue: (row) => row.caller,
+      cellTestId: 'ai-caller-name',
+      render: (row) => <strong>{callerOf(row)}</strong>,
+      sortValue: callerOf,
     },
     {
       key: 'application',
       header: 'Application',
       render: (row) => (row.application === '' ? 'not named' : row.application),
+    },
+    {
+      key: 'workspace',
+      header: 'Region, project or workspace',
+      cellTestId: 'ai-caller-workspace',
+      // A provider's default workspace has no id, which is a workspace and not a missing one.
+      render: (row) => (row.workspace === '' ? 'default' : row.workspace),
     },
     { key: 'model', header: 'Model', render: (row) => row.model },
     {
@@ -331,7 +345,7 @@ function CallersPanel({ period }: { readonly period: string }) {
             rows={callers}
             columns={callerColumns(freshnessOf(envelope?.meta))}
             rowKey={(row) =>
-              `${row.source}/${row.account_id}/${row.caller}/${row.application}/${row.model}`
+              `${row.source}/${row.account_id}/${row.workspace}/${row.api_key_id}/${row.caller}/${row.application}/${row.model}`
             }
             caption="Callers, the most costly first; a caller the bill priced nothing for, last"
             rowAttributes={() => ({ 'data-testid': 'ai-caller-row' })}

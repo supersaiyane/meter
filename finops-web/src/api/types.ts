@@ -1660,6 +1660,11 @@ export interface ApiAiSpend {
 export interface ApiAiCaller {
   readonly source: string;
   readonly account_id: string;
+  /** The Region for the invocation logs; a provider's project or workspace, empty for its default. */
+  readonly workspace: string;
+  /** A provider's key, by its id and never the key; empty for the invocation logs. */
+  readonly api_key_id: string;
+  /** Empty where the source names no one, which a provider's key then stands for. */
   readonly caller: string;
   readonly application: string;
   readonly model: string;
