@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { aggregate } from '../../shell/metaStore';
 import { CoverageBanner } from '../CoverageBanner';
 import { FreshnessIndicator } from '../FreshnessIndicator';
 import { SeverityBadge } from '../SeverityBadge';
@@ -41,6 +42,35 @@ describe('CoverageBanner', () => {
   it('says nothing has reported rather than implying full coverage', () => {
     render(<CoverageBanner coverage={[]} />);
     expect(screen.getByText('Coverage not yet reported')).toBeInTheDocument();
+  });
+
+  it('states no figure beside a failure that reported none, ISS-136', () => {
+    // A request that failed reports 0 of 0, and the shell once read that as confident
+    // complete coverage of an empty estate: "Showing all 0 accounts" beside the failure.
+    // UI design sections 4 and 6: an unknown state suppresses the figure.
+    const failed = aggregate([
+      {
+        as_of: null,
+        collected_at: null,
+        scope_coverage: { visible: 0, total: 0, is_partial: false, unit: 'accounts' },
+        degraded: true,
+        failures: [
+          {
+            scope_key: 'organization',
+            collector: 'cost_focus',
+            cause: 'Unreachable',
+            remediation: 'Check the route to the API.',
+            occurrences: 1,
+            last_seen_at: '2026-10-12T06:00:00Z',
+          },
+        ],
+      },
+    ]);
+    render(<CoverageBanner coverage={failed.coverage} />);
+    const banner = screen.getByTestId('coverage');
+    expect(banner).toHaveTextContent('Coverage not yet reported');
+    expect(banner).not.toHaveTextContent(/all 0|0 of 0/);
+    expect(failed.failures).toHaveLength(1);
   });
 
   it('offers no way to dismiss it', () => {

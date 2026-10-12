@@ -15,6 +15,7 @@
     "docker/finops_mcp",
     "docker/finops_providers",
     "docker/finops_query",
+    "docker/finops_relay",
     "docker/migrations",
     "docker/pyproject.toml",
     "docker/requirements/runtime.lock",
@@ -400,6 +401,8 @@
     "finops_core/domain/topology.py",
     "finops_core/domain/waste.py",
     "finops_core/errors.py",
+    "finops_core/flags.py",
+    "finops_core/logs.py",
     "finops_core/ports/__init__.py",
     "finops_core/ports/accounts.py",
     "finops_core/ports/budget.py",
@@ -427,8 +430,10 @@
     "finops_fakes/catalog.py",
     "finops_fakes/cloudwatch_estate.py",
     "finops_fakes/commitment.py",
+    "finops_fakes/composition.py",
     "finops_fakes/containers.py",
     "finops_fakes/cur.py",
+    "finops_fakes/dispatcher.py",
     "finops_fakes/estate_metrics.py",
     "finops_fakes/estate_shape.py",
     "finops_fakes/evidence.py",
@@ -451,7 +456,10 @@
     "finops_fakes/topology.py",
     "finops_fakes/utilization.py",
     "finops_fakes/waste.py",
+    "finops_fakes/worker.py",
     "finops_ingest/__init__.py",
+    "finops_ingest/accounts.py",
+    "finops_ingest/aws_bindings.py",
     "finops_ingest/collectors/__init__.py",
     "finops_ingest/collectors/account_health.py",
     "finops_ingest/collectors/budgets.py",
@@ -486,12 +494,15 @@
     "finops_ingest/collectors/waste_compute.py",
     "finops_ingest/collectors/waste_parking.py",
     "finops_ingest/collectors/waste_volumes.py",
+    "finops_ingest/composition.py",
     "finops_ingest/coverage.py",
     "finops_ingest/dispatcher.py",
     "finops_ingest/ledger.py",
     "finops_ingest/metrics.py",
+    "finops_ingest/processes.py",
     "finops_ingest/registry.py",
     "finops_ingest/remediation.py",
+    "finops_ingest/sqs.py",
     "finops_ingest/worker.py",
     "finops_mcp/__init__.py",
     "finops_mcp/api.py",
@@ -518,6 +529,7 @@
     "finops_providers/aws/price_list.py",
     "finops_providers/aws/query_evidence.py",
     "finops_providers/aws/quotas.py",
+    "finops_providers/aws/reach.py",
     "finops_providers/aws/recommendations.py",
     "finops_providers/aws/relay_client.py",
     "finops_providers/aws/report_store.py",
@@ -583,6 +595,7 @@
     "infra/terraform/hub/queue.tf",
     "infra/terraform/hub/relay.tf",
     "infra/terraform/hub/scheduler.tf",
+    "infra/terraform/hub/settings.tf",
     "infra/terraform/hub/storage.tf",
     "infra/terraform/hub/variables.tf",
     "infra/terraform/hub/versions.tf",
@@ -640,6 +653,7 @@
     "migrations/versions/0043_savings_credit.py",
     "migrations/versions/0044_savings_credit_month.py",
     "migrations/versions/0045_ledger_screen.py",
+    "migrations/versions/0046_redaction_found_in.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -664,6 +678,7 @@
     "scripts/docs/rotate_checkpoint.py",
     "scripts/docs/sync.py",
     "scripts/ops/erase_principal.py",
+    "scripts/ops/first_contact.py",
     "scripts/ops/local_bucket.py",
     "scripts/ops/local_token.py",
     "scripts/ops/restore_drill.py",
@@ -748,6 +763,7 @@
     "tests/core/test_insight.py",
     "tests/core/test_invoice.py",
     "tests/core/test_llm_port.py",
+    "tests/core/test_logs.py",
     "tests/core/test_ownership_domain.py",
     "tests/core/test_ports.py",
     "tests/core/test_quota.py",
@@ -808,13 +824,20 @@
     "tests/ingest/collectors/test_waste_targets.py",
     "tests/ingest/collectors/test_waste_volumes.py",
     "tests/ingest/collectors/test_waste_volumes_judged.py",
+    "tests/ingest/test_aws_bindings.py",
+    "tests/ingest/test_composition.py",
     "tests/ingest/test_coverage.py",
     "tests/ingest/test_dispatcher.py",
+    "tests/ingest/test_dispatcher_tenants.py",
+    "tests/ingest/test_entry_points.py",
     "tests/ingest/test_ledger.py",
     "tests/ingest/test_metrics.py",
+    "tests/ingest/test_process_mains.py",
+    "tests/ingest/test_processes.py",
     "tests/ingest/test_query_audit.py",
     "tests/ingest/test_registry.py",
     "tests/ingest/test_remediation.py",
+    "tests/ingest/test_sqs.py",
     "tests/ingest/test_worker.py",
     "tests/mcp/__init__.py",
     "tests/mcp/test_contract.py",
@@ -844,6 +867,7 @@
     "tests/providers/aws/test_price_list.py",
     "tests/providers/aws/test_query_evidence.py",
     "tests/providers/aws/test_quotas.py",
+    "tests/providers/aws/test_reach.py",
     "tests/providers/aws/test_recommendations.py",
     "tests/providers/aws/test_relay.py",
     "tests/providers/aws/test_report_store.py",
@@ -909,12 +933,16 @@
     "tests/scripts/test_check_identifiers.py",
     "tests/scripts/test_check_image_arch.py",
     "tests/scripts/test_check_index.py",
+    "tests/scripts/test_deployed_settings.py",
+    "tests/scripts/test_first_contact.py",
+    "tests/scripts/test_images.py",
     "tests/scripts/test_layer_agreement.py",
     "tests/scripts/test_lint_scope.py",
     "tests/scripts/test_local_bucket.py",
     "tests/scripts/test_local_token.py",
     "tests/scripts/test_observability.py",
     "tests/scripts/test_p11_exit_criteria.py",
+    "tests/scripts/test_p12_exit_criteria.py",
     "tests/scripts/test_p9_exit_criteria.py",
     "tests/scripts/test_pipeline.py",
     "tests/scripts/test_restore_drill.py",
@@ -958,6 +986,11 @@
     {
       "s": "docker/Dockerfile.api",
       "t": "docker/finops_query",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.api",
+      "t": "docker/finops_relay",
       "k": "docker"
     },
     {
@@ -1038,6 +1071,11 @@
     {
       "s": "docker/Dockerfile.worker",
       "t": "docker/finops_query",
+      "k": "docker"
+    },
+    {
+      "s": "docker/Dockerfile.worker",
+      "t": "docker/finops_relay",
       "k": "docker"
     },
     {
@@ -2163,6 +2201,11 @@
     {
       "s": "finops-web/src/components/__tests__/shell.test.tsx",
       "t": "finops-web/src/components/__tests__/axe.ts",
+      "k": "typescript"
+    },
+    {
+      "s": "finops-web/src/components/__tests__/shell.test.tsx",
+      "t": "finops-web/src/shell/metaStore.ts",
       "k": "typescript"
     },
     {
@@ -7742,12 +7785,7 @@
     },
     {
       "s": "finops_api/flags.py",
-      "t": "finops_core/config.py",
-      "k": "python"
-    },
-    {
-      "s": "finops_api/flags.py",
-      "t": "finops_core/constants.py",
+      "t": "finops_core/flags.py",
       "k": "python"
     },
     {
@@ -9021,6 +9059,16 @@
       "k": "python"
     },
     {
+      "s": "finops_core/flags.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_core/flags.py",
+      "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
       "s": "finops_core/ports/__init__.py",
       "t": "finops_core/ports/accounts.py",
       "k": "python"
@@ -9236,6 +9284,161 @@
       "k": "python"
     },
     {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/account_health.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/budgets.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/commitment_actions.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/container_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/cost_anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/digests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/iac_state.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/instance_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/invoices.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/org_tree.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/platform_cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/price_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/query_audit.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/quotas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/realized_savings.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/savings_ledger.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/savings_plan_rates.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/score.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/spot_prices.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/waste_cloudwatch.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/waste_compute.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/waste_parking.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/waste_volumes.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/composition.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
       "s": "finops_fakes/containers.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -9263,6 +9466,11 @@
     {
       "s": "finops_fakes/cur.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/dispatcher.py",
+      "t": "finops_ingest/processes.py",
       "k": "python"
     },
     {
@@ -9548,6 +9756,246 @@
     {
       "s": "finops_fakes/waste.py",
       "t": "finops_core/ports/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/worker.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/worker.py",
+      "t": "finops_ingest/processes.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/accounts.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/accounts.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/account_health.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/budgets.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/container_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/iac_state.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/instance_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/invoices.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/org_tree.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/ownership.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/platform_cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/price_catalog.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/quotas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/savings_plan_rates.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/spot_prices.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/accounts.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/budgets.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/cloudtrail_creators.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/commitment.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/config_inventory.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/container_insights.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/credentials.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/cur.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/health.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/instance_types.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/invoices.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/platform_cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/price_list.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/quotas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/reach.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/recommendations.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/relay_client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/savings_plans.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/spot.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/terraform_state.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/topology.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_query/severity.py",
       "k": "python"
     },
     {
@@ -10246,6 +10694,56 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/aws_bindings.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/commitment_actions.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/cost_anomaly.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/digests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/realized_savings.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/retention.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/savings_ledger.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/collectors/score.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/composition.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/coverage.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -10267,6 +10765,11 @@
     },
     {
       "s": "finops_ingest/dispatcher.py",
+      "t": "finops_ingest/processes.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/dispatcher.py",
       "t": "finops_ingest/registry.py",
       "k": "python"
     },
@@ -10281,6 +10784,61 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/processes.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/processes.py",
+      "t": "finops_core/flags.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/processes.py",
+      "t": "finops_core/logs.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/processes.py",
+      "t": "finops_ingest/accounts.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/processes.py",
+      "t": "finops_ingest/composition.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/processes.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/processes.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/processes.py",
+      "t": "finops_ingest/sqs.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/processes.py",
+      "t": "finops_ingest/worker.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/processes.py",
+      "t": "finops_providers/aws/credentials.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/processes.py",
+      "t": "finops_providers/aws/reach.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/remediation.py",
       "t": "finops_core/domain/query.py",
       "k": "python"
@@ -10288,6 +10846,16 @@
     {
       "s": "finops_ingest/remediation.py",
       "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/sqs.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/sqs.py",
+      "t": "finops_ingest/dispatcher.py",
       "k": "python"
     },
     {
@@ -10308,6 +10876,11 @@
     {
       "s": "finops_ingest/worker.py",
       "t": "finops_ingest/ledger.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/worker.py",
+      "t": "finops_ingest/processes.py",
       "k": "python"
     },
     {
@@ -10698,6 +11271,36 @@
     {
       "s": "finops_providers/aws/quotas.py",
       "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/reach.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/reach.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/reach.py",
+      "t": "finops_providers/aws/appregistry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/reach.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/reach.py",
+      "t": "finops_providers/aws/credentials.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/reach.py",
+      "t": "finops_providers/aws/relay_client.py",
       "k": "python"
     },
     {
@@ -11233,6 +11836,31 @@
     {
       "s": "scripts/demo/seed_demo.py",
       "t": "finops_query/parser.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
+      "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/first_contact.py",
+      "t": "finops_providers/aws/reach.py",
       "k": "python"
     },
     {
@@ -12726,6 +13354,11 @@
       "k": "python"
     },
     {
+      "s": "tests/core/test_logs.py",
+      "t": "finops_core/logs.py",
+      "k": "python"
+    },
+    {
       "s": "tests/core/test_ownership_domain.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -13781,6 +14414,76 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_ingest/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_ingest/aws_bindings.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_ingest/composition.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_aws_bindings.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_composition.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_composition.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_composition.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_composition.py",
+      "t": "finops_ingest/composition.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_composition.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_composition.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/test_coverage.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -13816,6 +14519,16 @@
       "k": "python"
     },
     {
+      "s": "tests/ingest/test_dispatcher_tenants.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_entry_points.py",
+      "t": "finops_ingest/processes.py",
+      "k": "python"
+    },
+    {
       "s": "tests/ingest/test_ledger.py",
       "t": "finops_core/errors.py",
       "k": "python"
@@ -13828,6 +14541,76 @@
     {
       "s": "tests/ingest/test_metrics.py",
       "t": "finops_ingest/metrics.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_process_mains.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_process_mains.py",
+      "t": "finops_ingest/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_process_mains.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_process_mains.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_process_mains.py",
+      "t": "finops_ingest/sqs.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_processes.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_processes.py",
+      "t": "finops_core/flags.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_processes.py",
+      "t": "finops_ingest/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_processes.py",
+      "t": "finops_ingest/composition.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_processes.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_processes.py",
+      "t": "finops_ingest/processes.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_processes.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_processes.py",
+      "t": "finops_ingest/sqs.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_processes.py",
+      "t": "finops_ingest/worker.py",
       "k": "python"
     },
     {
@@ -13878,6 +14661,26 @@
     {
       "s": "tests/ingest/test_remediation.py",
       "t": "finops_ingest/remediation.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_sqs.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_sqs.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_sqs.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_sqs.py",
+      "t": "finops_ingest/sqs.py",
       "k": "python"
     },
     {
@@ -14413,6 +15216,26 @@
     {
       "s": "tests/providers/aws/test_quotas.py",
       "t": "finops_providers/aws/quotas.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_reach.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_reach.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_reach.py",
+      "t": "finops_providers/aws/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_reach.py",
+      "t": "finops_providers/aws/reach.py",
       "k": "python"
     },
     {
@@ -15086,6 +15909,36 @@
       "k": "python"
     },
     {
+      "s": "tests/scripts/test_deployed_settings.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_deployed_settings.py",
+      "t": "finops_core/constants.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_first_contact.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_first_contact.py",
+      "t": "finops_ingest/aws_bindings.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_first_contact.py",
+      "t": "finops_providers/aws/reach.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_first_contact.py",
+      "t": "finops_providers/aws/relay_client.py",
+      "k": "python"
+    },
+    {
       "s": "tests/scripts/test_p11_exit_criteria.py",
       "t": "finops_core/config.py",
       "k": "python"
@@ -15113,6 +15966,36 @@
     {
       "s": "tests/scripts/test_p11_exit_criteria.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p12_exit_criteria.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p12_exit_criteria.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p12_exit_criteria.py",
+      "t": "finops_core/flags.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p12_exit_criteria.py",
+      "t": "finops_ingest/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p12_exit_criteria.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/scripts/test_p12_exit_criteria.py",
+      "t": "finops_ingest/sqs.py",
       "k": "python"
     },
     {

@@ -139,6 +139,15 @@ def ask(
             hits=screened.hits,
             at=asked_at,
         )
+        record_redactions(
+            connection,
+            tenant_id=tenant_id,
+            principal_id=principal_id,
+            exchange_id=exchange_id,
+            hits=exchange.withheld,
+            at=asked_at,
+            found_in="tool_result",
+        )
     return Asked(
         exchange_id=exchange_id,
         exchange=exchange,

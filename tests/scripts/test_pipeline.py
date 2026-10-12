@@ -124,3 +124,90 @@ def test_the_review_covers_the_branch_everything_deploys_from() -> None:
     rules = yaml.safe_dump(loaded()["code-review"]["rules"])
 
     assert "CI_DEFAULT_BRANCH" in rules
+
+
+# --- the plan and the deploy, TASK-P12-007, ISS-260, ISS-281, ISS-282 -------------------------
+
+
+def runnable() -> dict[str, dict[str, Any]]:
+    return {
+        name: job
+        for name, job in loaded().items()
+        if isinstance(job, dict) and "script" in job and not name.startswith(".")
+    }
+
+
+def expanded(job: dict[str, Any], text: str) -> str:
+    """`text` with the job's own variables in place, as GitLab expands an artifact path."""
+    for name, value in (job.get("variables") or {}).items():
+        text = text.replace(f"${{{name}}}", str(value))
+    return text
+
+
+def published(job: dict[str, Any]) -> set[str]:
+    return {expanded(job, path) for path in (job.get("artifacts") or {}).get("paths", [])}
+
+
+def joined(steps: list[Any]) -> str:
+    return "\n".join(str(step) for step in steps)
+
+
+def test_no_job_needs_two_jobs_that_publish_the_same_file() -> None:
+    """A job that needs two jobs publishing one file gets whichever arrived last, which is how
+    deploy:dev received both environments' plans. A directory several jobs write their own files
+    into, `security/sbom/`, is not a collision, and neither are two jobs that never meet."""
+    jobs = runnable()
+    for name, job in jobs.items():
+        seen: dict[str, str] = {}
+        for needed in job.get("needs") or []:
+            needed = needed if isinstance(needed, str) else needed["job"]
+            for path in (one for one in published(jobs[needed]) if not one.endswith("/")):
+                assert path not in seen, f"{name} needs {needed} and {seen.get(path)}: {path}"
+                seen[path] = needed
+
+
+def test_every_job_a_job_needs_exists() -> None:
+    jobs = runnable()
+    for name, job in jobs.items():
+        for needed in job.get("needs") or []:
+            assert (needed if isinstance(needed, str) else needed["job"]) in jobs, (name, needed)
+
+
+def test_a_deploy_applies_the_plan_its_own_environments_plan_job_published() -> None:
+    jobs = runnable()
+    deploys = sorted(name for name in jobs if name.startswith("deploy:"))
+    assert deploys == ["deploy:dev", "deploy:prod"]
+    for deploy in deploys:
+        job = jobs[deploy]
+        environment = job["variables"]["TF_ENV"]
+        plan = f"infra/terraform/hub/tfplan-{environment}"
+        assert f"apply -auto-approve tfplan-{environment}" in expanded(job, joined(job["script"]))
+        makers = [name for name in job["needs"] if plan in published(jobs[name])]
+        assert makers == [f"terraform-plan:{environment}"], (deploy, job["needs"])
+
+
+def test_every_aws_job_assumes_its_role_from_the_token_file() -> None:
+    """The role used to be assumed with `aws sts`, which no image these jobs run has."""
+    aws = {name: job for name, job in runnable().items() if "id_tokens" in job}
+    assert {"terraform-plan:dev", "terraform-plan:prod", "deploy:dev", "deploy:prod"} <= set(aws)
+    for name, job in aws.items():
+        before = joined(job["before_script"])
+        assert "AWS_WEB_IDENTITY_TOKEN_FILE" in before and "AWS_ROLE_ARN" in before, name
+        assert "aws sts" not in before, f"{name}: ISS-281"
+
+
+def test_a_deploy_waits_through_terraform_not_a_cli_its_image_lacks() -> None:
+    jobs = runnable()
+    for deploy in ("deploy:dev", "deploy:prod"):
+        assert "aws ecs wait" not in joined(jobs[deploy]["script"]), "ISS-282"
+    ecs = (ROOT / "infra" / "terraform" / "hub" / "ecs.tf").read_text()
+    for service in ("api", "web", "worker"):
+        start = ecs.index(f'resource "aws_ecs_service" "{service}" {{')
+        body = ecs[start : ecs.index("\n}\n", start)]
+        assert re.search(r"wait_for_steady_state\s+=\s+true", body), service
+
+
+def test_every_script_a_job_runs_exists() -> None:
+    for name, job in runnable().items():
+        for path in re.findall(r"(?:bash |\./)(scripts/\S+\.sh)", joined(job["script"])):
+            assert (ROOT / path).is_file(), (name, path)

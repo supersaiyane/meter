@@ -386,3 +386,12 @@ variable "relay_role_name" {
   default     = "FinOpsRelayRole"
 }
 
+variable "settings" {
+  description = <<-EOT
+    Every setting the Python services read that this stack does not derive, by its METER_ name.
+    Each becomes an SSM parameter under /meter/<env>/, settings.tf, or an empty environment value
+    when it is empty. A test holds this map, the derived names and the secret ones to every field
+    of finops_core.config.Settings. TASK-P12-006, ISS-250.
+  EOT
+  type        = map(string)
+}

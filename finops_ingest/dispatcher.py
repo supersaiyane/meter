@@ -4,10 +4,11 @@ The dispatcher enumerates units and publishes them. It does no collection and
 holds no credentials, which is what keeps a fan out over three hundred accounts
 cheap and what stops a bug here from being able to read anything.
 
-The dedup key is the same key the run ledger claims on. That matters: it means a
-redispatch inside the same window is a no operation at both ends, once at the
-queue and once at the database, and neither end has to trust the other to have
-got it right.
+The dedup key is the same key the run ledger claims on. That matters: a unit
+published twice in one dispatch is refused by the publisher, and a unit sent
+again by a later dispatch, or delivered twice by the queue, is a no operation at
+the database, so neither end has to trust the other to have got it right. The
+hub's queue is a standard SQS queue and deduplicates nothing itself.
 """
 
 from __future__ import annotations
@@ -53,6 +54,17 @@ class WorkUnit:
         """Identical to the key the ledger claims on, deliberately."""
         return idempotency_key(self.collector, self.scope_key, self.window_start, self.window_end)
 
+    @property
+    def publish_key(self) -> tuple[UUID, str]:
+        """What a publisher refuses a second of: the tenant, and the ledger's key.
+
+        The ledger's key holds no tenant because the ledger is one tenant's, unique on
+        (tenant_id, idempotency_key). A publisher sees every tenant in one dispatch, and keyed on
+        `dedup_key` alone it refused a second tenant's organization wide unit as a duplicate of
+        the first's, ISS-275.
+        """
+        return self.tenant_id, self.dedup_key
+
 
 class Publisher(Protocol):
     """Somewhere to put a unit of work.
@@ -66,20 +78,21 @@ class Publisher(Protocol):
 class InMemoryPublisher:
     """A publisher for the local stack and for tests.
 
-    It remembers the dedup keys it has seen, which is what a FIFO queue does
-    inside its deduplication window. The real queue is configured with the same
-    window, so behaviour here and in deployment differ in durability rather than
-    in semantics.
+    It remembers the dedup keys it has seen, as `finops_ingest.sqs.SqsPublisher`
+    does for one dispatch, so behaviour here and in deployment differ in
+    durability rather than in semantics. Neither is the queue deduplicating: the
+    hub's is a standard queue, and the ledger's claim is what makes a unit sent
+    twice free.
     """
 
     def __init__(self) -> None:
         self.published: list[WorkUnit] = []
-        self._seen: set[str] = set()
+        self._seen: set[tuple[UUID, str]] = set()
 
     def publish(self, unit: WorkUnit) -> bool:
-        if unit.dedup_key in self._seen:
+        if unit.publish_key in self._seen:
             return False
-        self._seen.add(unit.dedup_key)
+        self._seen.add(unit.publish_key)
         self.published.append(unit)
         return True
 
@@ -141,3 +154,9 @@ class Dispatcher:
             else:
                 deduplicated += 1
         return DispatchResult(published=published, deduplicated=deduplicated)
+
+
+if __name__ == "__main__":  # pragma: no cover - run as a process, and tested as one
+    from finops_ingest.processes import dispatcher_main
+
+    raise SystemExit(dispatcher_main())

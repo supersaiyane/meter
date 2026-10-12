@@ -33,9 +33,9 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Playwright journeys | 55 in 20 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 33 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 45 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 232 | test_*.py under tests/ |
-| Test functions | 2935 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Migration revisions | 46 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 245 | test_*.py under tests/ |
+| Test functions | 3025 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -87,7 +87,9 @@ meter/
 │                              test job runs both suites against the PostgreSQL
 │                              service beside it, through METER_TEST_DATABASE_URL.
 │                              **Never executed**: the repository has no remote,
-│                              so nothing here is a result. ISS-178, ISS-179
+│                              so nothing here is a result. ISS-178, ISS-179.
+│                              A plan per environment, deploys applying their own,
+│                              roles assumed from the token file, TASK-P12-007
 ├── .env.example               every value, what it does, which file reads it
 ├── .pre-commit-config.yaml    local gates: secrets, writing rules, lint, doc drift,
 │                              dependency admission on manifest change. Pre push
@@ -261,8 +263,12 @@ meter/
 │                              reports a real one. ADR-0022
 │   └── base-images.lock       pinned digests, chosen by measurement. ADR-0010
 │   └── base-images.lock       pinned digests, resolved by measurement at TASK-P0-029
+│   └── localstack/ready.d/    TASK-P12-005. Makes the local work queue and its dead
+│                              letter queue once LocalStack is ready
 ├── docker-compose.yml         local stack, plus a `security` profile of one shot
-│                              scanners that does NOT start with `make up`
+│                              scanners that does NOT start with `make up`. The
+│                              dispatcher and worker run the deployed image on
+│                              finops_fakes mounted from the checkout, TASK-P12-005
 │
 ├── security/                  everything a scan produces, and the policy
 │   ├── POSTURE.md             current posture, generated, never hand edited
@@ -339,6 +345,10 @@ meter/
 │   │                          API route. local_token.py mints a session.
 │   │                          local_bucket.py makes the data bucket in LocalStack
 │   │                          for make up, and refuses any other endpoint
+│   │                          erase_principal.py reaches questions, exports,
+│   │                          views and schedules too, 2026-10-12.
+│   │                          first_contact.py makes each AWS read once against
+│   │                          one account, TASK-P12-008, make first-contact.
 │   │                          restore_drill.py restores a copy into a scratch
 │   │                          database, migrates it, starts the application
 │   │                          against it and reads the freshness route. Refuses
@@ -403,6 +413,10 @@ meter/
 ├── finops_core/               IN BUILD  domain and ports. No boto3, no framework
 │   ├── errors.py              the six typed failure causes, closed set, no catch all
 │   ├── config.py              every METER_ variable, typed. No defaults except flags.
+│   ├── logs.py                TASK-P12-005. One JSON object per log line, the
+│   │                          caller's extra fields as keys
+│   ├── flags.py               flag resolution, tenant then environment then declared,
+│   │                          ADR-0017. Moved from finops_api in TASK-P12-004
 │   │                          Six are the assistant's: the model id, empty until
 │   │                          OPEN-10 names one, the inference profile ARN the hub
 │   │                          stack sets so a call is tagged, ISS-230, the input
@@ -583,6 +597,10 @@ meter/
 │   │   │                      GetProducts a page at a time for the prices, EC2
 │   │   │                      narrowed at the source; a nought or unreadable term
 │   │   │                      is SchemaDrift. Unproved, ISS-002, ISS-261
+│   │   ├── reach.py           TASK-P12-002. How the hub reaches AWS for a collector:
+│   │   │                      its own clients made on first use, an assumed session,
+│   │   │                      a member account through the broker, the relay, and the
+│   │   │                      payer from the org reader role ARN
 │   │   ├── relay_client.py    ADR-0035. A boto3 client in shape that reaches its
 │   │   │                      service through the relay, so an adapter reads
 │   │   │                      through it unchanged; AWS's error codes kept
@@ -1038,6 +1056,12 @@ meter/
 │                              checked to the same standard as production code,
 │                              because a fake nobody checks drifts from its port.
 │                              ADR-0022. Imported by the tests and by scripts/demo/.
+│   ├── composition.py         FEAT-079, TASK-P12-001. The 27 collectors the worker
+│   │                          builds, each from its fake on a clock it is handed,
+│   │                          for the local stack's own entry points, never a
+│   │                          deployment. fake_registry(clock)
+│   ├── dispatcher.py          TASK-P12-004. python -m finops_fakes.dispatcher, the
+│   ├── worker.py              local stack's processes on the fake composition
 │                              No network and no clock, enforced by a test that walks
 │                              the syntax tree refusing any name that reads like one
 │   ├── cur.py             the estate's bill. One line per estate resource, so a
@@ -1121,14 +1145,32 @@ meter/
 │   ├── registry.py            what a collector is. Cadence lives in the database,
 │   │                          seeded from DEFAULT_SCHEDULE, every row with a
 │   │                          reason and a cost. team_digests is weekly, FEAT-041
+│   ├── composition.py         FEAT-079, TASK-P12-001. Every collector the worker
+│   │                          runs, bound per unit for a deployment: the ones
+│   │                          reading only Meter for real, the rest failing typed
+│   │                          as Misconfigured until TASK-P12-002. ISS-182
+│   ├── aws_bindings.py        TASK-P12-002. 17 collectors built from their AWS
+│   │                          adapters per unit, four failing typed, UNBUILT,
+│   │                          ISS-240 and ISS-272. Reads cloud_account for the
+│   │                          inventory's enrolled slices
 │   ├── dispatcher.py          one message per unit, keyed like the ledger claim
+│   ├── sqs.py                 TASK-P12-003. The queue over SQS, handed its client:
+│   │                          versioned messages, a publisher that refuses a unit
+│   │                          sent twice in one dispatch, a consumer that leaves
+│   │                          what it cannot decode for the redrive
 │   ├── remediation.py         the only two writes Meter makes, both gated on
 │   │                          query_write_level and both recording what they
 │   │                          replaced. A rewrite reads back and reverts itself
 │   │                          if it did not take, and records nothing when it
 │   │                          does, because a change row claims the estate
 │   │                          changed and stayed changed
-│   ├── worker.py              one transaction per unit. Only the six are caught
+│   ├── worker.py              one transaction per unit. Only the six are caught.
+│   │                          python -m finops_ingest.worker, TASK-P12-004
+│   ├── processes.py           TASK-P12-004. The dispatcher, one shot with windows
+│   │                          aligned to the cadence, and the worker loop, settling
+│   │                          what it ran and stopping between units on SIGTERM
+│   ├── accounts.py            a tenant's active accounts, one query for the
+│   │                          dispatcher and the inventory binder
 │   └── collectors/
 │       ├── container_usage.py  FEAT-036, account scoped so one cluster that
 │       │                      cannot be read records a typed failure against
@@ -1292,7 +1334,8 @@ meter/
 │                              names. It also pins which declared errors fall
 │                              through to SchemaDrift, which is ISS-215
 ├── finops_api/                IN BUILD  FastAPI, scope enforcement, routes
-│   ├── flags.py               flag resolution, tenant then environment then declared
+│   ├── flags.py               re-exports finops_core.flags, where the resolver moved
+│   │                          in TASK-P12-004 so the dispatcher shares it
 │   ├── main.py                app factory. Refuses to start on a bare route
 │   ├── deps.py                the first scope point. Scope comes from the resolver
 │   ├── middleware.py          request id on every line and back on the response
@@ -1510,6 +1553,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0046_redaction_found_in.py  ISS-085. Where a redaction fired: the
+│       │                      question, or what a tool returned to the model
 │       ├── 0045_ledger_screen.py  TASK-P11-008. /optimize/ledger admitted as a
 │       │                      saved view's screen
 │       ├── 0044_savings_credit_month.py  TASK-P11-007. Each closed month after a
@@ -1826,6 +1871,9 @@ meter/
     │                          modelled 1,440 USD a month and says which assumption is
     │                          least certain. Validated, never planned. ISS-203
     └── hub/                   the VPC with no NAT, Aurora, SQS, ECR, ECS, ALB, alarms.
+                               settings.tf, TASK-P12-006: every setting an SSM
+                               parameter under /meter/<env>/, from the derived names,
+                               envs/<env>.tfvars and one placeholder secret.
                                cost_exports.tf is P1's export bucket, Glue database
                                and Athena workgroup. The workgroup carries the result
                                location and a bytes scanned cutoff, which is what

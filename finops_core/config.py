@@ -22,7 +22,7 @@ away, and as a wrong number rather than an error.
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import Literal
+from typing import Final, Literal
 from uuid import UUID
 
 from pydantic import Field, ValidationError, field_validator, model_validator
@@ -39,6 +39,12 @@ from finops_core.domain.query import WriteLevel
 
 class ConfigurationError(RuntimeError):
     """The process cannot start with the configuration it was given."""
+
+
+#: What Terraform puts in a secret parameter until the owner sets it, in
+#: infra/terraform/hub/settings.tf. A process refuses to start on it rather than sign sessions
+#: with a published string.
+UNSET_SECRET: Final = "unset: the owner sets this parameter once, docs/runbooks/deploy.md"
 
 
 class Settings(BaseSettings):
@@ -76,6 +82,13 @@ class Settings(BaseSettings):
     # P8, FEAT-069. The hub stack already passes it to every task. Empty turns rendering off, and
     # the Scheduled screen says so rather than listing schedules that would never run.
     s3_bucket: str = ""
+    # The relay, ADR-0035: the Lambda the hub invokes for the calls its VPC has no endpoint for,
+    # answering into `s3_bucket`. Empty by default, and then each collector that reads through
+    # it fails typed as Misconfigured naming this setting, TASK-P12-002.
+    relay_function_name: str = ""
+    # The AWS Config aggregator the inventory reads, the name the config stack outputs. Empty by
+    # default, and then the inventory fails typed as Misconfigured naming this setting.
+    config_aggregator: str = ""
 
     # Anomaly detection. P1, FEAT-023. Both are here rather than in code so
     # meeting a real estate is a change of a number rather than a release.
@@ -253,6 +266,9 @@ class Settings(BaseSettings):
     # Retention, in days. docs/09-DATA-CLASSIFICATION.md.
     retention_principal_days: int = Field(ge=1)
     retention_operational_days: int = Field(ge=1)
+    #: How long a person's questions to the assistant, and their redaction records, are kept.
+    #: Decided by the owner on 2026-10-12, OPEN-14: 90 days. ISS-226.
+    retention_assistant_days: int = Field(ge=1)
     retention_audit_days: int = Field(ge=1)
     retention_cost_days: int = Field(ge=1)
 
@@ -315,6 +331,16 @@ class Settings(BaseSettings):
             raise ValueError(
                 "METER_REGIONS must list at least one region. A collector with no "
                 "region to read returns nothing, and nothing looks like zero."
+            )
+        return value
+
+    @field_validator("session_signing_key")
+    @classmethod
+    def _not_the_placeholder(cls, value: str) -> str:
+        if value == UNSET_SECRET:
+            raise ValueError(
+                "METER_SESSION_SIGNING_KEY is still the placeholder Terraform created. Set the "
+                "parameter once, as docs/runbooks/deploy.md says, then start the task again."
             )
         return value
 

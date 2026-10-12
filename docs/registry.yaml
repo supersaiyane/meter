@@ -107,6 +107,16 @@ subprojects:
   spec: specs/2026-10-08-p11-owners-and-savings-ledger-design.md
   plan: plans/P11-implementation-plan.md
   depends_on: P3
+- id: P12
+  name: Deployment readiness
+  status: 'Delivered on 2026-10-12 against fakes and stubbed AWS clients, proven by TASK-P12-009. Every
+    collector the worker runs is composed for a deployment and the local stack and runs end to end on the
+    local stack; every setting reaches a deployed task from SSM Parameter Store; each deploy applies its own
+    plan; and make first-contact proves the first account. A first deployment waits on three owner decisions,
+    ISS-279, ISS-280 and ISS-283, and a real account on ISS-002'
+  spec: specs/2026-10-12-p12-deployment-readiness-design.md
+  plan: plans/P12-implementation-plan.md
+  depends_on: P11
 features:
 - id: FEAT-001
   name: Account onboarding and organization topology, parent to child map
@@ -582,6 +592,18 @@ features:
   status: Delivered
   detail: '[P11 spec](docs/specs/2026-10-08-p11-owners-and-savings-ledger-design.md) sections 5.5 and 5.6, [P11 plan](docs/plans/P11-implementation-plan.md)'
   doc: docs/features/FEAT-078-savings-ledger.md
+- id: FEAT-079
+  name: Ingest that runs, one composition and the dispatcher and worker processes
+  subproject: P12
+  status: Delivered
+  detail: '[P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.1 to 5.3 and 5.6, [P12 plan](docs/plans/P12-implementation-plan.md)'
+  doc: docs/features/FEAT-079-ingest-that-runs.md
+- id: FEAT-080
+  name: Deployed settings from SSM Parameter Store, and a pipeline that applies its own plan
+  subproject: P12
+  status: Delivered
+  detail: '[P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.4 and 5.5, [P12 plan](docs/plans/P12-implementation-plan.md)'
+  doc: docs/features/FEAT-080-deployed-settings.md
 adrs:
 - id: ADR-0001
   decision: Decompose into eight sub projects, build P0 then P2 then P1
@@ -2287,6 +2309,141 @@ changes:
   detail: 'The healthz healthy path test pauses other tenants'' schedules while it runs, the modules that
     seed the demo give their partitions back, and the reporting journey typechecks on its own project.
     Both orders that failed now pass, and tsc over tsconfig.e2e.json exits 0'
+- id: CHG-0159
+  date: '2026-10-12'
+  type: Scope
+  what: P12, deployment readiness, specified and planned
+  commit: pending
+  detail: 'The owner chose deployment readiness as the next priority, then the security and correctness
+    highs, then the rest of next-in-scope.txt. The spec makes the platform run outside its tests: one
+    composition of the 33 scheduled collectors, fake or AWS by METER_PROVIDERS, OPEN-28; a dispatcher and a
+    worker with entry points over SQS; the local stack end to end; deployed settings in SSM Parameter Store,
+    OPEN-29, ISS-250; a deploy that applies its own plan, ISS-260; and the first account''s runbook with
+    make first-contact. Nine tasks; FEAT-079 and FEAT-080 planned; OPEN-30 open'
+- id: CHG-0160
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-001, the two compositions
+  commit: pending
+  detail: 'finops_ingest/composition.py binds the 33 collectors the worker runs for a deployment: the six
+    that read only Meter for real, ownership on tags, and the twenty that need AWS failing each run typed as
+    Misconfigured until TASK-P12-002; finops_fakes/composition.py binds the same from the fakes on a clock it
+    is handed, for the local stack only, ADR-0022, so METER_PROVIDERS is not needed and spec 5.1 is amended.
+    The fakes'' no clock test walked a directory gone since 2026-09-21 and now walks finops_fakes, ISS-271'
+- id: CHG-0161
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-002, the AWS binders
+  commit: pending
+  detail: 'finops_ingest/aws_bindings.py builds 17 collectors from their AWS adapters for each unit, through
+    finops_providers/aws/reach.py: hub clients made on first use, the assumed session of an account scoped
+    unit, member accounts through the credential broker, the relay for Budgets, Invoicing, spot prices and
+    Savings Plans rates, and the payer from the org reader role ARN. Settings gained relay_function_name and
+    config_aggregator, empty by default and failing typed when empty. Four stay failing typed, ISS-240 and
+    ISS-272. ISS-273 found: a role the worker cannot assume never reaches the account health collector'
+- id: CHG-0162
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-003, the queue published and consumed
+  commit: pending
+  detail: 'finops_ingest/sqs.py: SqsPublisher sends one versioned JSON message per unit and refuses one it already
+    sent in the dispatch; SqsConsumer long polls up to ten, reports each unit with its receive count, deletes
+    in batches of ten and returns what SQS refused. A message it cannot decode is logged and left for the
+    redrive, proven under moto to reach the dead letter queue intact. The dispatcher docstrings said the queue
+    deduplicates within a window; the hub queue is standard, so they now say the ledger claim does'
+- id: CHG-0163
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-004, the dispatcher and the worker as processes
+  commit: pending
+  detail: 'finops_ingest/processes.py: the one shot dispatcher, windows aligned to each cadence, a failed tenant
+    logged and the rest dispatched, exit 1; the worker loop, settling DONE, SKIPPED and RECORDED_FAILURE and
+    leaving the rest for the redrive, stopping between units on SIGTERM; exit 78 on incomplete settings.
+    python -m finops_ingest.dispatcher and .worker run them on the production composition, finops_fakes
+    dispatcher and worker on the fakes. The flag resolver moved to finops_core; the worker stop timeout is 120
+    seconds. Fixed ISS-274, the images missing finops_relay, and ISS-275, publishers deduplicating across
+    tenants. ISS-182 closed'
+- id: CHG-0164
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-005, the local stack end to end
+  commit: pending
+  detail: 'make up runs the deployed dispatcher and worker image with finops_fakes mounted from the checkout,
+    against LocalStack''s queue, made with its dead letter queue by a ready hook as the hub''s is shaped; one
+    dispatch after the migrations, make dispatch for more. Run on 2026-10-12 after make seed: the queue drained
+    and 52 runs over 34 collectors were recorded in 39 seconds, one a planted Throttled (measured). A test runs
+    one collector from dispatch to ingest_run through the local entry points. finops_core/logs.py makes both
+    processes log JSON with each unit''s fields; the API and MCP server do not yet, ISS-276. Runbook
+    docs/runbooks/local-collection.md'
+- id: CHG-0165
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-006, deployed settings in SSM Parameter Store
+  commit: pending
+  detail: 'infra/terraform/hub/settings.tf makes one SSM parameter per setting under /meter/<env>/: 13 the stack
+    derives, 79 from a committed map per environment and 1 SecureString made with a placeholder the settings
+    refuse, of 93 (measured). The api, worker and dispatcher read them through secrets, the execution role only
+    its own path; an empty setting is an empty environment value. A test holds them to the settings model.
+    Closes ISS-250 and fixes ISS-277 and ISS-278; opens ISS-279 and ISS-280'
+- id: CHG-0166
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-007, each deploy applies its own plan
+  commit: pending
+  detail: 'terraform-plan:dev and terraform-plan:prod each write tfplan-<env>, and each deploy needs and applies its
+    own, ISS-260. Every AWS job assumes its role from the OIDC token file, which the images can do and aws sts
+    in them could not, ISS-281. The deploy waits through wait_for_steady_state on the api, web and worker
+    services rather than a CLI its image lacks, ISS-282. The migrate job calls the script where it is. Opened
+    ISS-283, deployed migrations cannot run, and ISS-284, the provenance image may have no shell'
+- id: CHG-0167
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-008, the first account, a runbook and a first contact
+  commit: pending
+  detail: 'scripts/ops/first_contact.py, make first-contact: each of 19 AWS reads the collectors depend on, once,
+    against one account and Region, through the deployed composition''s own paths, with the settings read from
+    SSM; each reported answered, typed as a collector''s failure would be, or not tried naming the empty
+    setting. It refuses without credentials and writes nothing. docs/runbooks/first-account.md orders the
+    owner''s steps with a check each and names the three issues that stop a deployment first'
+- id: CHG-0168
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-009, P12 proven and delivered
+  commit: pending
+  detail: 'The spec''s four exit criteria, each with its evidence in the plan. tests/scripts/test_p12_exit_criteria.py
+    runs every collector the demo schedule dispatches through the local stack''s entry points and finds each
+    recorded, succeeded or typed, in 68 seconds (measured). P12, FEAT-079 and FEAT-080 delivered; a first
+    deployment waits on ISS-279, ISS-280 and ISS-283'
+- id: CHG-0169
+  date: '2026-10-12'
+  type: Fix
+  what: ISS-085, what the tools return is screened before the model reads it
+  commit: pending
+  detail: 'The question was screened for secrets since TASK-P7-013 and the data the tools returned with it was
+    not, so a key typed into a tag reached the model. finops_query/insight.py now screens every tool result and
+    failing tool message by the same gitleaks rules, replaces each hit with its rule''s name, and returns the hits
+    as withheld; finops_api records them in redaction_event with found_in tool_result, migration 0046, and the
+    redactions route says where each was found. FEAT-046''s Not doing amended'
+- id: CHG-0170
+  date: '2026-10-12'
+  type: Fix
+  what: ISS-136 closed, a failed request states no coverage figure
+  commit: pending
+  detail: 'The interface pass, 514ae5e, already dropped coverage lines counting nothing, so a failed request''s 0
+    of 0 reads Coverage not yet reported rather than Showing all 0 accounts. Nothing held it. A components test
+    now renders that case beside its failure, and fails when the filter is removed'
+- id: CHG-0171
+  date: '2026-10-12'
+  type: Fix
+  what: The erasure gaps closed, ISS-226, ISS-249, ISS-255 and ISS-256, with OPEN-14 answered
+  commit: pending
+  detail: 'Decided by the owner on 2026-10-12. scripts/ops/erase_principal.py now tombstones a person''s questions
+    to the assistant and their redaction records and hashes the identifier on their exports, keeping the rows;
+    removes their private views and keeps shared ones owned by the hash; pauses the schedules they own and takes
+    them off every recipient list, a schedule left with none going to its owner, paused. retention_assistant
+    removes a question older than 90 days with its redactions, METER_RETENTION_ASSISTANT_DAYS. Testing the script''s
+    main found that a person the tenant does not have failed on its own audit record''s foreign key rather than
+    saying so; the person is now checked first'
 issues:
 - id: ISS-189
   severity: LOW
@@ -2585,10 +2742,15 @@ issues:
     and has never run end to end outside a test. Found 2026-09-18 while looking for where to
     register the cost collector, which is why TASK-P1-004 deliberately registers nothing rather
     than adding a line nobody reads. Pre existing and not caused by P1
-  status: OPEN
+  status: FIXED
   blocks: 'Running ingestion in a deployed task. Not the local stack, which seeds directly'
   detail: '`finops_ingest/registry.py`, `finops_ingest/dispatcher.py`, `finops_ingest/worker.py`
-    and `scripts/demo/seed_demo.py`'
+    and `scripts/demo/seed_demo.py`. Half closed 2026-10-12, TASK-P12-001: finops_ingest/composition.py
+    binds every collector the worker runs for a deployment, and finops_fakes/composition.py the same from
+    the fakes for the local stack; the entry points that call them follow in TASK-P12-004. TASK-P12-002 on
+    the same day built 17 of them from their AWS adapters, finops_ingest/aws_bindings.py, and TASK-P12-004 gave
+    the dispatcher and the worker entry points, finops_ingest/processes.py. Fixed 2026-10-12; the run end to end
+    on the local stack is TASK-P12-005'
 - id: ISS-181
   severity: MEDIUM
   summary: AthenaCostExport materializes a whole billing period before returning it, so a large
@@ -3072,8 +3234,11 @@ issues:
     docs/12-UI-DESIGN.md requires complete coverage to say so, and section 4 requires an unknown
     state to suppress the figure rather than default it. Observed on 2026-09-06 running the P0
     frontend with no API reachable
-  status: OPEN
-  detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) sections 4 and 6, `finops-web/src/shell/AppShell.tsx`'
+  status: FIXED
+  detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) sections 4 and 6, `finops-web/src/shell/AppShell.tsx`.
+    Fixed by the interface pass, 514ae5e: a coverage line counting nothing is dropped, and an empty banner says
+    Coverage not yet reported. Pinned 2026-10-12 by a test that renders a failed request''s 0 of 0 beside its
+    failure and fails if the filter goes'
 - id: ISS-001
   severity: CRITICAL
   summary: Nine requirement areas as one project would produce a shallow scaffold of everything
@@ -3602,10 +3767,13 @@ issues:
   detail: FEAT-044
 - id: ISS-085
   severity: HIGH
-  status: OPEN
+  status: FIXED
   summary: Nothing scans what leaves for the language model provider, so a secret could be sent outbound
     in a prompt
-  detail: FEAT-046. Seven scanners cover what comes in and none cover what goes out
+  detail: 'FEAT-046. Seven scanners cover what comes in and none cover what goes out. TASK-P7-013 screened the
+    question on 2026-10-04 and left what the tools return out on purpose. Fixed 2026-10-12: every tool result,
+    and every failing tool''s message, is screened by the same rules before the model reads it, each hit
+    replaced and recorded in redaction_event with found_in tool_result, migration 0046'
 - id: ISS-086
   severity: MEDIUM
   status: OPEN
@@ -4274,7 +4442,7 @@ issues:
     anyio pool. Still no load test'
 - id: ISS-226
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: A person's questions to the assistant survive an erasure request, and no P7 table
     has a retention job
   detail: 'scripts/ops/erase_principal.py tombstones the principal and deletes its
@@ -4575,7 +4743,7 @@ issues:
     names the verdict through `verdictName`.'
 - id: ISS-249
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: An export record names the person who made it, and no retention job or erasure
     reaches report_run
   detail: '`report_run`, FEAT-067, holds the principal of every export file. It is classified
@@ -4584,7 +4752,7 @@ issues:
     P7 tables. Found 2026-10-05 while classifying the table.'
 - id: ISS-250
   severity: HIGH
-  status: OPEN
+  status: FIXED
   summary: The hub's task definitions pass 6 of the 74 settings the API requires, so a deployed
     API refuses to start
   detail: '`finops_core/config.py` reads every setting from the environment, with no defaults
@@ -4596,7 +4764,8 @@ issues:
     from TASK-P8-009 among them. `.env.example` is the one complete description and `make up`
     holds a local `.env` to it; nothing holds the hub to it. Found while checking where the
     export row limit would come from in AWS. Where deployed settings live is a decision for the
-    owner.'
+    owner. Fixed 2026-10-12, TASK-P12-006: every setting is an SSM parameter, settings.tf, and a test holds
+    them to the settings model'
 - id: ISS-251
   severity: LOW
   status: OPEN
@@ -4646,7 +4815,7 @@ issues:
 
 - id: ISS-255
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: A saved view names its owner, and no retention job or erasure reaches saved_view
   detail: '`saved_view`, FEAT-068, holds the principal who saved each view and the names they chose.
     It is classified personal in `docs/09-DATA-CLASSIFICATION.md`, but `scripts/ops/erase_principal.py`
@@ -4656,7 +4825,7 @@ issues:
 
 - id: ISS-256
   severity: MEDIUM
-  status: OPEN
+  status: FIXED
   summary: A report schedule names its owner and its recipients, and erasure does not reach report_schedule
   detail: '`report_schedule`, FEAT-069, holds the principal who owns each schedule and the principals
     it renders for. It is classified personal in `docs/09-DATA-CLASSIFICATION.md`, but `scripts/ops/erase_principal.py`
@@ -4820,9 +4989,146 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
-- id: ISS-260
+- id: ISS-284
   severity: MEDIUM
   status: OPEN
+  summary: The provenance job may run in an image with no shell, so its script would not run
+  detail: 'Found 2026-10-12 reading .gitlab-ci.yml for TASK-P12-007, and not verified, because no pipeline has
+    run, ISS-179. verify-provenance runs gcr.io/projectsigstore/cosign:v2.4.1 with an empty entrypoint and a shell
+    script, and that image is built without a shell as far as is known here. If so, the job fails before its
+    first command and every deploy:dev, which needs it, waits on it. The kaniko jobs use the debug image for the
+    same reason. Checking the image, then choosing a cosign image with a shell or installing cosign in one that
+    has one, is a small change once a pipeline can be watched'
+- id: ISS-283
+  severity: HIGH
+  status: OPEN
+  summary: A deployment cannot run its migrations, so a first deploy has an empty schema and a later one the
+    previous release's
+  detail: 'Found 2026-10-12 building TASK-P12-007. migrate:dev ran ./scripts/run_migration_task.sh, which is at
+    scripts/deploy/, and the script runs the meter-<env>-migrate task definition with network settings read
+    from /meter/<env>/private_subnet_ids and app_security_group_id and logs from /ecs/meter-migrate-<env>. No
+    stack makes any of the four, and run-task cannot change a task definition''s image, so even with them it
+    would run the previous release''s migrations. deploy:dev does not wait for it, and there is no migrate:prod.
+    The path is fixed; the rest is the owner''s choice of how a deployment migrates. Options: a Terraform migrate
+    task definition the deploy registers at the new image and runs before the services roll, which keeps one
+    job owning the release and is the recommendation; migrations at the API''s start under an advisory lock,
+    simplest but racing the worker; or the pipeline registering a revision itself from a template Terraform
+    outputs'
+- id: ISS-282
+  severity: HIGH
+  status: FIXED
+  summary: The deploy waited on misnamed services with an AWS CLI its image does not have
+  detail: 'Found 2026-10-12 building TASK-P12-007. After the apply, the deploy ran aws ecs wait services-stable for
+    meter-api-<env> and the like, in hashicorp/terraform, which has no AWS CLI, and ecs.tf names the services
+    meter-<env>-api. Fixed the same day: the step is gone and the api, web and worker services set
+    wait_for_steady_state, so Terraform waits and the apply fails if a service does not settle'
+- id: ISS-281
+  severity: HIGH
+  status: FIXED
+  summary: Every job that reaches AWS assumed its role with aws sts in an image that has no AWS CLI
+  detail: 'Found 2026-10-12 building TASK-P12-007. The .aws_oidc before_script exchanged the OIDC token with aws sts
+    assume-role-with-web-identity, and the plan, deploy, provenance and migrate jobs run hashicorp/terraform,
+    cosign and python:slim, none of which has the CLI, so each would have failed before its script. Fixed the
+    same day: the token is written to a file and AWS_ROLE_ARN and AWS_WEB_IDENTITY_TOKEN_FILE exported, which the
+    Terraform backend and provider, the AWS CLI and boto3 all assume the role from'
+- id: ISS-280
+  severity: HIGH
+  status: OPEN
+  summary: No identity provider can run in a deployed environment, so a deployed API authenticates nobody
+  detail: 'Found 2026-10-12 writing the per environment settings for TASK-P12-006. finops_api/main.py refuses any
+    identity provider but local_config, TASK-P0-012 built that one only, and the settings model refuses
+    local_config and local auth in prod, ISS-017. So prod cannot start, and a deployed dev task would look for
+    /app/local-auth.yaml, which no image carries. envs/prod.tfvars names this rather than inventing a provider.
+    Choosing one, SSO through IAM Identity Center or another OIDC provider, is the owner''s decision'
+- id: ISS-279
+  severity: HIGH
+  status: OPEN
+  summary: RDS rotates the managed database password, and a password injected at task start does not follow it
+  detail: 'Found 2026-10-12 building TASK-P12-006. database.tf sets manage_master_user_password, and RDS rotates a
+    managed master secret every seven days by default. The tasks are given the password once, as PGPASSWORD, when
+    they start, so after a rotation every new connection a running task opens is refused until the task is
+    replaced. The fix is one of: IAM database authentication, a connection that reads the secret when it
+    connects, or a deploy that follows each rotation; which is the owner''s choice'
+- id: ISS-278
+  severity: HIGH
+  status: FIXED
+  summary: Every deployed Python task asked the RDS managed secret for a METER_DATABASE_URL key it does not have
+  detail: 'Found 2026-10-12 building TASK-P12-006. The api, worker and dispatcher task definitions set
+    METER_DATABASE_URL from the cluster''s master_user_secret with the JSON key METER_DATABASE_URL. RDS writes that
+    secret itself, with a username and a password and nothing else, so ECS would have failed every task at start.
+    Fixed the same day: the URL is derived without a password and the password is injected as PGPASSWORD from the
+    password key, which libpq reads'
+- id: ISS-277
+  severity: HIGH
+  status: FIXED
+  summary: The scheduled dispatcher ran python -m /opt/venv/bin/python, so no dispatch would ever have run
+  detail: 'Found 2026-10-12 building TASK-P12-006. The worker image''s entrypoint is python -m, and the dispatcher
+    task definition in scheduler.tf set its command to the interpreter, -m and the module, so ECS ran the
+    interpreter''s path as a module name. Fixed the same day: the command is the module alone, and a test holds it'
+- id: ISS-276
+  severity: MEDIUM
+  status: OPEN
+  summary: The API and the MCP server write plain text logs, where the observability document says JSON
+  detail: 'Found 2026-10-12 running the local stack for TASK-P12-005. docs/10-OBSERVABILITY.md lists structured
+    JSON logs in CloudWatch, and nothing configured them: the dispatcher and the worker wrote the message alone
+    and dropped every field passed in extra, so a line never said which collector or account it meant. Both
+    processes log through finops_core/logs.py since that task. The API and the MCP server still log through
+    uvicorn''s default text format, and need a log config that uses the same formatter'
+- id: ISS-275
+  severity: HIGH
+  status: FIXED
+  summary: A dispatch refused every tenant's organization wide units after the first tenant's, as duplicates
+  detail: 'Found 2026-10-12 building TASK-P12-004, when a test that dispatched for its own tenant saw nothing
+    published half the time. WorkUnit.dedup_key is the ledger''s idempotency key, which holds no tenant because
+    the ledger is one tenant''s and ingest_run is unique on (tenant_id, idempotency_key). InMemoryPublisher, and
+    SqsPublisher after it, refused a unit whose dedup_key it had seen, so in one dispatch over several tenants
+    the second tenant''s organization wide unit, or an account unit for an account id two tenants share, was
+    dropped as a duplicate of the first''s, and that tenant would never collect it. Fixed the same day: both
+    publishers key on WorkUnit.publish_key, the tenant and the dedup key, and a test publishes the same unit for
+    two tenants'
+- id: ISS-274
+  severity: HIGH
+  status: FIXED
+  summary: The worker and API images did not carry finops_relay, so a deployed worker would fail at import
+  detail: 'Found 2026-10-12 building TASK-P12-004. docker/Dockerfile.worker and Dockerfile.api copy Meter''s packages
+    one by one and pip install the copy; finops_relay was never copied, and pip install . said nothing about a
+    package it could not find. finops_providers/aws/relay_client.py imports finops_relay, and since TASK-P12-002
+    the production composition imports relay_client, so the worker would have failed to start. Fixed the same
+    day: both images copy it, and tests/scripts/test_images.py imports every module of the packages each image
+    runs and fails when the image does not copy one of the packages that pulls in'
+- id: ISS-273
+  severity: MEDIUM
+  status: OPEN
+  summary: A member role that cannot be assumed never reaches the account health collector, so role_health
+    is not set to what is wrong
+  detail: 'Found 2026-10-12 while building TASK-P12-002. account_health is account scoped, so the worker assumes
+    the collector role through the broker before the collector runs, finops_ingest/worker.py _session_for. When
+    that assumption fails the unit is recorded as AccessDenied in sync_error and AccountHealthCollector, which
+    exists to write role_health and role_health_error on cloud_account and checks the role through its own
+    broker, never runs. The freshness screen shows the failure; the account screen keeps its last role_health.
+    A fix lets a collector declare it needs no assumed session, and needs a decision on which screen owns it'
+- id: ISS-272
+  severity: LOW
+  status: OPEN
+  summary: query_audit cannot be built for AWS, because no setting names the Grafana workspaces it searches
+  detail: 'Found 2026-10-12 while building TASK-P12-002. AmgQuerySurface takes the account and Region pairs to
+    list workspaces in, an HTTP timeout, a token lifetime and optional secret names, and the settings model has
+    none of them. The deployment binds query_audit to fail each run as Misconfigured naming this issue, so it is
+    on the freshness screen. Closing it needs those settings, or a decision that the workspaces are found in
+    every enrolled account and Region, which is a list call per pair'
+- id: ISS-271
+  severity: MEDIUM
+  status: FIXED
+  summary: The fakes' no clock test scanned a directory that no longer exists, so it checked nothing
+  detail: 'Found 2026-10-12 while building TASK-P12-001. tests/providers/test_fake.py walks FAKE_PACKAGE for
+    any name that reads the clock or randomness, and FAKE_PACKAGE still named finops_providers/fake, where the
+    fakes lived before ADR-0022 moved them to finops_fakes on 2026-09-21. The walk found no files and the test
+    passed over nothing for three weeks. Fixed the same day: it walks finops_fakes, the fake composition takes
+    its clock as an argument, and two names it caught that were not clocks, a local list called today and the
+    time of day an invoice is issued, were renamed.'
+- id: ISS-260
+  severity: MEDIUM
+  status: FIXED
   summary: The deploy jobs may apply the wrong plan, or none
   detail: 'Found 2026-10-08 by reading .gitlab-ci.yml while adding the relay build, TASK-P9-001, and
     not verified, because there is no remote and no pipeline has run. terraform-plan is a parallel
@@ -4832,7 +5138,8 @@ issues:
     A plan saved for one backend applied after an init of the other should be refused by Terraform
     rather than applied, so the likely outcome is a failed deploy, not a wrong one. The fix is a plan
     file named per environment, or needs that select the matching matrix job. ISS-250 is the same
-    pipeline on the first push'
+    pipeline on the first push. Fixed 2026-10-12, TASK-P12-007: a plan job per environment, each writing
+    tfplan-<env>, and each deploy needing and applying its own'
 
 open_questions:
 - id: OPEN-07
@@ -4921,11 +5228,12 @@ open_questions:
 - id: OPEN-14
   question: How long are a person's questions to the assistant kept, and does erasing a person
     delete their exchanges or tombstone them
-  status: OPEN
+  status: ANSWERED
   blocks: 'ISS-226, a retention job and erasure for assistant_exchange and redaction_event'
-  detail: '[docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md). Deleting takes
-    the person''s spend out of the month''s token budget sum. Tombstoning the question and the
-    identifier keeps the spend counted'
+  detail: '[docs/09-DATA-CLASSIFICATION.md](docs/09-DATA-CLASSIFICATION.md). Deleting takes the person''s spend out of
+    the month''s token budget sum. Tombstoning the question and the identifier keeps the spend counted. Answered by
+    the owner on 2026-10-12: kept 90 days, retention_assistant, and an erasure tombstones the questions and keeps
+    the rows'
 - id: OPEN-15
   question: How long are generated report runs and their files kept
   status: OPEN
@@ -5073,3 +5381,28 @@ open_questions:
     the owner on a team''s credits, because a leaderboard of named engineers is a performance review
     nobody asked Meter to run. Ranking individuals is a change to the screen and its route, not to the
     data.'
+- id: OPEN-28
+  question: 'What do the dispatcher and worker run against before an AWS account is connected? ANSWERED
+    2026-10-12 as recommended: fakes by a setting'
+  status: ANSWERED
+  blocks: TASK-P12-001
+  detail: 'Raised 2026-10-12 by the P12 spec, section 5.1. Recommended: METER_PROVIDERS, fake or aws with no
+    default, so the local stack and any deploy before an account run end to end on the fakes and a deployed
+    environment says aws. The alternative, AWS only, would leave the local stack unable to run end to end.
+    Amended 2026-10-12, TASK-P12-001: ADR-0022 keeps fakes out of the runtime image and the owner chose to
+    keep it so, so fakes run only in the local stack through their own entry points and no setting is needed.'
+- id: OPEN-29
+  question: 'Where do a deployed Meter''s settings live? ANSWERED 2026-10-12: SSM Parameter Store'
+  status: ANSWERED
+  blocks: TASK-P12-006
+  detail: 'Raised 2026-10-12 by the P12 spec, section 5.4, for ISS-250. Recommended was a Terraform map per
+    environment written into the task definitions with secrets in Secrets Manager; the owner chose SSM
+    Parameter Store, one parameter per setting under /meter/<env>/, injected through each task definition''s
+    secrets, the secret ones created with a placeholder and set by the owner.'
+- id: OPEN-30
+  question: Which git host takes the remote, and so where does the first pipeline run happen?
+  status: OPEN
+  blocks: ISS-179
+  detail: 'Raised 2026-10-12 by the P12 spec, section 3. The pipeline is written for GitLab, .gitlab-ci.yml,
+    and has never run because the repository has no remote. Choosing the host and adding the remote is the
+    owner''s; the first push runs the pipeline for the first time, and a push to main runs deploy:dev.'

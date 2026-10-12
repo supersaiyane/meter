@@ -78,39 +78,40 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-11 | source-map-js 1.2.2 and the npm fix reading, CHG-0157 | Done | source-map-js 1.2.1 to 1.2.2 through make dep-check, npm audit clean; report.py npm_fix reads fixAvailable true as a fix with npm update as its remedy, so an acceptance cannot absorb a fixable finding; the acceptance withdrawn and check_dev_only.py left with no rule; ISS-269 found and fixed. Next: the owner's call on merging next-build into main | `scripts/security/report.py:1`, `security/policy/accepted.yaml:1`, `tests/scripts/test_security_report.py:1` |
 | 2026-10-11 | Test order leaks and the reporting journey's types, CHG-0158 | Done | test_healthz_reports_a_recent_collection_as_healthy pauses other tenants' schedules, scheduled_alone, ISS-267; test_seed_demo, test_p9_exit_criteria and test_p11_exit_criteria give their partitions back through partition_sandbox, ISS-268; reporting.spec.ts falls back to a named SERVICE, ISS-270. Both failing orders now pass. Next: the owner's call on the next priority | `tests/api/test_scope_enforcement.py:1`, `tests/scripts/test_seed_demo.py:1`, `finops-web/e2e/reporting.spec.ts:1` |
 | 2026-10-11 | Worktree cleanup and the map brought up to date | Done | The 12 finished worktrees, meter-p11 to meter-p11-009, meter-sec-smj and meter-hygiene, removed after checking each branch merged and clean, branches kept; project_map.md now says what the scan report does with an npm fix that names no version, ISS-269. next-build is 3 commits ahead of main, the owner's call. Next: the owner's call on the next priority | `project_map.md:267`, `project_map.md:290` |
+| 2026-10-12 | P12 deployment readiness specified and planned, CHG-0159 | Done | The owner chose deployment readiness, then the security and correctness highs, then next-in-scope.txt. The spec: one composition of the 33 collectors, fake or AWS by METER_PROVIDERS, OPEN-28; dispatcher and worker entry points over SQS; the local stack end to end; settings in SSM Parameter Store, OPEN-29, ISS-250; each deploy its own plan, ISS-260; the first account runbook and make first-contact. Nine tasks. Next TASK-P12-001 | `docs/specs/2026-10-12-p12-deployment-readiness-design.md:1`, `docs/plans/P12-implementation-plan.md:1` |
+| 2026-10-12 | TASK-P12-001, the two compositions, CHG-0160 | Done | finops_ingest/composition.py binds the 33 collectors the worker runs for a deployment: six reading only Meter for real, ownership on tags, twenty failing typed as Misconfigured until TASK-P12-002, and the six retention jobs. finops_fakes/composition.py binds the same from the fakes on a handed clock, local stack only, so OPEN-28 needs no METER_PROVIDERS, ADR-0022; spec 5.1 and plan rule 1 amended. The fakes' no clock test walked a directory gone since 2026-09-21, ISS-271, fixed | finops_ingest/composition.py:154, finops_fakes/composition.py:153, tests/ingest/test_composition.py:46, docs/plans/P12-implementation-plan.md TASK-P12-002 |
+| 2026-10-12 | TASK-P12-002, the AWS binders, CHG-0161 | Done | finops_ingest/aws_bindings.py builds 17 collectors from their AWS adapters per unit through finops_providers/aws/reach.py: lazy hub clients, the assumed session, member accounts via the broker, the relay for Budgets, Invoicing, spot and Savings Plans rates, the payer from the org reader ARN. Settings relay_function_name and config_aggregator added. Four fail typed, ISS-240 and ISS-272; ISS-273 found | finops_ingest/aws_bindings.py:252, finops_providers/aws/reach.py:68, tests/ingest/test_aws_bindings.py:135, docs/plans/P12-implementation-plan.md TASK-P12-003 |
+| 2026-10-12 | TASK-P12-003, the queue published and consumed, CHG-0162 | Done | finops_ingest/sqs.py: versioned JSON per unit, SqsPublisher refusing a unit sent twice in one dispatch, SqsConsumer long polling ten with receive counts, batch deletes returning refusals, undecodable messages logged and left for the redrive, proven under moto to reach the DLQ. Dispatcher docstrings corrected: the hub queue is standard, the ledger claim deduplicates | finops_ingest/sqs.py:140, tests/ingest/test_sqs.py:104, docs/plans/P12-implementation-plan.md TASK-P12-004 |
+| 2026-10-12 | TASK-P12-004, the dispatcher and the worker as processes, CHG-0163 | Done | finops_ingest/processes.py: one shot dispatcher with cadence aligned windows and per tenant isolation, worker loop settling what it ran and stopping between units on SIGTERM, exit 78 on incomplete settings; entry points in finops_ingest and finops_fakes; flag resolver moved to finops_core; worker stopTimeout 120. Fixed ISS-274 (images lacked finops_relay) and ISS-275 (publishers deduplicated across tenants); ISS-182 closed | finops_ingest/processes.py:150, finops_fakes/worker.py:20, tests/scripts/test_images.py:55, docs/plans/P12-implementation-plan.md TASK-P12-005 |
+| 2026-10-12 | TASK-P12-005, the local stack end to end, CHG-0164 | Done | docker-compose.yml runs the deployed dispatcher and worker image on finops_fakes mounted from the checkout; LocalStack ready hook makes meter-ingest and its DLQ; make up dispatches once, make dispatch again. Real run: 52 runs over 34 collectors in 39 s, queue drained (measured). finops_core/logs.py JSON logs; ISS-276 opened for the API. Runbook docs/runbooks/local-collection.md | docker-compose.yml:205, docker/localstack/ready.d/10-meter-queues.sh:1, tests/ingest/test_process_mains.py:105, docs/plans/P12-implementation-plan.md TASK-P12-006 |
+| 2026-10-12 | TASK-P12-006, deployed settings in SSM Parameter Store, CHG-0165 | Done | settings.tf: one parameter per setting under /meter/<env>/, 13 derived, 79 from envs/<env>.tfvars, 1 SecureString placeholder the model refuses; api, worker and dispatcher read them through secrets; execution role scoped to its path. Fixed ISS-277 (dispatcher command) and ISS-278 (RDS secret key, now PGPASSWORD); opened ISS-279 (rotation) and ISS-280 (no prod identity provider) | infra/terraform/hub/settings.tf:18, tests/scripts/test_deployed_settings.py:70, docs/plans/P12-implementation-plan.md TASK-P12-007 |
+| 2026-10-12 | TASK-P12-007, each deploy applies its own plan, CHG-0166 | Done | .gitlab-ci.yml: terraform-plan:dev and :prod write tfplan-<env>, each deploy needs and applies its own (ISS-260); roles assumed from the OIDC token file (ISS-281); deploy waits via wait_for_steady_state (ISS-282); migrate script path. Opened ISS-283 (deployed migrations cannot run) and ISS-284 (cosign image shell) | .gitlab-ci.yml:430, tests/scripts/test_pipeline.py:130, docs/plans/P12-implementation-plan.md TASK-P12-008 |
+| 2026-10-12 | TASK-P12-008, the first account, a runbook and a first contact, CHG-0167 | Done | scripts/ops/first_contact.py and make first-contact: 19 AWS reads once each through the deployed paths, settings from SSM, typed outcomes, refuses without credentials; docs/runbooks/first-account.md with a check per step and the blockers ISS-279, ISS-280, ISS-283 | scripts/ops/first_contact.py:240, tests/scripts/test_first_contact.py:90, docs/plans/P12-implementation-plan.md TASK-P12-009 |
+| 2026-10-12 | TASK-P12-009, P12 proven and delivered, CHG-0168 | Done | The four exit criteria, each with evidence in the plan; tests/scripts/test_p12_exit_criteria.py runs every dispatched collector end to end on the local stack, 68 s (measured). P12, FEAT-079 and FEAT-080 delivered. Waiting on the owner: ISS-279, ISS-280, ISS-283 | docs/plans/P12-implementation-plan.md TASK-P12-009, tests/scripts/test_p12_exit_criteria.py:80, docs/registry.yaml ISS-085 |
+| 2026-10-12 | ISS-085, tool results screened before the model reads them, CHG-0169 | Done | finops_query/insight.py screens every tool result and failing tool message with the gitleaks rules, replaces hits, returns them as withheld; recorded in redaction_event with found_in tool_result, migration 0046; route and web type carry found_in | finops_query/insight.py:300, migrations/versions/0046_redaction_found_in.py:1, tests/query/test_insight_loop.py, docs/registry.yaml ISS-136 |
+| 2026-10-12 | ISS-136 closed, a failed request states no coverage figure, CHG-0170 | Done | Already fixed by 514ae5e (coverage lines counting nothing dropped); pinned by a components test that fails without the filter | finops-web/src/components/__tests__/shell.test.tsx, finops-web/src/shell/metaStore.ts:149, docs/registry.yaml OPEN-14 |
+| 2026-10-12 | Erasure gaps closed, OPEN-14 answered, CHG-0171 | Done | erase_principal tombstones questions, redactions and exports, removes private views and keeps shared ones by hash, pauses owned schedules and unlists the person; retention_assistant keeps questions 90 days, METER_RETENTION_ASSISTANT_DAYS | scripts/ops/erase_principal.py:170, finops_ingest/collectors/retention.py:200, tests/ingest/collectors/test_retention.py:690 |
 
 ## Next action
 
-**Priorities 1 and 2 of `next-in-scope.txt` are delivered on `next-build`, and priority 3, P9, is in
-build.** P10 was delivered on 2026-10-08 against fakes. P9 continues from TASK-P9-004, each task on its
-own branch merged into `next-build`, which merges into main at the end. TASK-P9-001 gave the hub a
-path to every AWS API it calls, ADR-0035, and closed ISS-242.
+**P12, deployment readiness, is delivered on `next-build`**, 2026-10-12, against the fakes and stubbed
+AWS clients. Every collector is composed and runs end to end on the local stack, every setting reaches a
+deployed task from SSM, each deploy applies its own plan, and `make first-contact` proves the first
+account. Merge `next-build` into main when the owner asks.
+
+**Three owner decisions stand between this and a first deployment**, each recorded with its options:
+ISS-280, an identity provider a deployed environment can use; ISS-283, how a deployment runs its
+migrations; ISS-279, how the tasks follow the database password's rotation. ISS-002, a real account,
+is still the single thing that would close the most, and `docs/runbooks/first-account.md` is its order.
 
 **Pushing needs a remote first.** The repository has none. Once one exists, a push to main runs
-`deploy:dev`, a `terraform apply`, on its own, and ISS-250 still stands: the hub's task
-definition does not pass the settings the API needs. ISS-260 says the deploy jobs may also pick
-the wrong plan, or none, by reading alone.
+`deploy:dev`, a `terraform apply`, on its own.
 
-The candidates, in the order they would pay:
+Next, in the order the owner set on 2026-10-12:
 
-1. **ISS-002, a real account.** Still the single thing that would close the most. Every adapter
-   here, P7's Bedrock adapter and P10's invoice reader included, has been checked against
-   published shapes and never against a call, and the network path of ADR-0035 has been
-   validated and never applied. OPEN-10 has to name a model before the assistant answers
-   anything. The first thing to confirm there is that `bedrock:InferenceProfileArn` is set for an
-   application profile, because the assistant's grant depends on it.
-2. **The P7 decisions waiting on the owner.** OPEN-14, how long a person's questions are kept
-   and whether erasure deletes or tombstones them, after which ISS-226 is a small change, and
-   which also decides whether envelopes are stored, ISS-232. OPEN-13, the code host, after
-   which FEAT-040 is one adapter, and a change history collector for FEAT-039, ISS-227.
-3. **ISS-224, reading ECS.** FEAT-037 is built and produces nothing against AWS, because the
-   container adapter discovers clusters through EKS's Container Insights metrics only.
-4. **ISS-221, the make seed half.** On the first of a month the seeded estate is a month thinner
-   than the collectors need, and what `make seed` should do that day is a decision.
-5. **ISS-239, the protocols the ports test never reaches.** Grouping them, or widening
-   `tests/core/test_ports.py` to every protocol in `finops_core/ports/`, puts the failure
-   contract on all of them. `TopologySource.read_slice` and `QueryParser` name no typed cause,
-   so each needs its causes written down, or an exemption that says why, first.
+1. **The next proposal in `next-in-scope.txt`**: priority 2, FinOps for AI, Bedrock by app, agent
+   and user, and the OpenAI and Anthropic API bills. A new sub project, so it waits on the owner's
+   go ahead.
 
 ### Where the project is, as of 2026-10-05
 

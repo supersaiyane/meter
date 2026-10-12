@@ -22,11 +22,11 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 78 total, 11 specified, 13 in build, 51 delivered |
+| Features | 80 total, 11 specified, 13 in build, 53 delivered |
 | Decisions | 35 architecture decision records |
-| Changes | 158 recorded |
-| Issues | 161 fixed, 106 open, 0 parked |
-| Open questions | 27 awaiting a decision |
+| Changes | 171 recorded |
+| Issues | 177 fixed, 104 open, 0 parked |
+| Open questions | 30 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
 
@@ -86,7 +86,37 @@ Optimize, teams ranked and nobody named in the ranking; TASK-P11-009 the proof, 
 criteria held against the seeded demo, and P11 delivered on 2026-10-11. The same day source-map-js
 moved to 1.2.2, fixing the one high advisory the scan had accepted, and the scan report now reads an
 npm fix with no named version as a fix, ISS-269; and two test order leaks and the reporting
-journey's types were fixed, ISS-267, ISS-268 and ISS-270. The repository has no git remote, so nothing has been pushed.
+journey's types were fixed, ISS-267, ISS-268 and ISS-270. On 2026-10-12 the owner chose deployment readiness
+as P12, then the security and correctness highs, then the rest of next-in-scope.txt; P12 is specified and
+planned, nine tasks, with OPEN-28 and OPEN-29 answered. TASK-P12-001 built the two compositions: every
+collector the worker runs is bound for a deployment, the six that read only Meter for real and the twenty
+needing AWS failing typed until TASK-P12-002, and the same from the fakes for the local stack only, so
+OPEN-28 was amended to need no setting, ADR-0022. TASK-P12-002 built 17 collectors from their AWS adapters,
+added the relay and Config aggregator settings, and left four failing typed, ISS-240 and ISS-272; it found
+ISS-273, a role the worker cannot assume never reaching the account health collector. TASK-P12-003 put the
+units on SQS: a versioned message, a publisher and a consumer that leaves what it cannot decode for the
+redrive. TASK-P12-004 made the dispatcher and the worker processes, closing ISS-182, and fixed two HIGH
+issues it found: the images lacked finops_relay, ISS-274, and a dispatch dropped every tenant after the first,
+ISS-275. TASK-P12-005 ran it end to end on the local stack: the deployed image on mounted fakes against
+LocalStack's queue, 52 runs over 34 collectors recorded in 39 seconds (measured), JSON logs for both
+processes, and ISS-276 opened for the API's plain text logs. The repository has no git remote, so nothing
+has been pushed.
+
+TASK-P12-006 put every deployed setting in SSM Parameter Store, closing ISS-250, and fixed two HIGH issues it
+found: the tasks asked the RDS secret for a key it does not have, ISS-278, and the scheduled dispatcher ran the
+interpreter as a module, ISS-277. It opened two the owner decides: password rotation, ISS-279, and no production
+identity provider, ISS-280. TASK-P12-007 gave each environment its own plan and each deploy its own,
+ISS-260, and fixed two HIGH pipeline faults: AWS roles assumed with a CLI no image has, ISS-281, and a deploy
+waiting on misnamed services, ISS-282. It opened ISS-283, deployed migrations cannot run, for the owner. TASK-P12-008 wrote the
+first account's runbook and `make first-contact`, 19 AWS reads made once each and reported typed.
+TASK-P12-009 proved the four exit criteria and P12 is delivered. A first deployment waits on three
+owner decisions, ISS-279, ISS-280 and ISS-283. Next, in the owner's order: the security and
+correctness highs, ISS-085, ISS-136 and the erasure gaps ISS-226, ISS-249, ISS-255 and ISS-256,
+then the next proposal in next-in-scope.txt. ISS-085 is fixed: what the tools return is screened for
+secrets before the model reads it, as the question already was. ISS-136 is closed: the interface pass
+had fixed it, and a test now holds it. The erasure gaps are closed, as the owner decided on 2026-10-12:
+a person's questions and exports are tombstoned and kept, their private views removed and shared ones kept
+unowned, their schedules paused and their name taken off every recipient list; questions are kept 90 days.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -262,6 +292,7 @@ ISS-003.
 | P9 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 | P11 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
+| P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -522,6 +553,20 @@ ISS-003.
 | `TASK-P11-007` | Done 2026-10-11 | the months a saving held |
 | `TASK-P11-008` | Done 2026-10-11 | the ledger's routes and screen |
 | `TASK-P11-009` | Done 2026-10-11 | proof and documents |
+
+**P12, not in the default state**
+
+| Task | Status | Title |
+| --- | --- | --- |
+| `TASK-P12-001` | Done 2026-10-12 | the two compositions |
+| `TASK-P12-002` | Done 2026-10-12 | the AWS binders |
+| `TASK-P12-003` | Done 2026-10-12 | the queue, published and consumed |
+| `TASK-P12-004` | Done 2026-10-12 | the dispatcher and the worker as processes |
+| `TASK-P12-005` | Done 2026-10-12 | the local stack, end to end |
+| `TASK-P12-006` | Done 2026-10-12 | deployed settings in SSM Parameter Store |
+| `TASK-P12-007` | Done 2026-10-12 | each deploy applies its own plan |
+| `TASK-P12-008` | Done 2026-10-12 | the first account, a runbook and a first contact |
+| `TASK-P12-009` | Done 2026-10-12 | proof and documents |
 
 <!-- generated:task-status end -->
 

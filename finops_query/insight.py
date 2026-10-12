@@ -207,6 +207,10 @@ class Exchange:
     usage: TokenUsage
     #: Which rules found a secret in the question, and what each did. Nothing of the secret.
     redactions: tuple[Hit, ...] = ()
+    #: Which rules found a secret in what a tool returned, replaced before the model read it.
+    #: ISS-085: the question was screened and the data sent with it was not, so a key someone
+    #: typed into a tag reached the model. Nothing of the secret, as for the question.
+    withheld: tuple[Hit, ...] = ()
 
 
 # --- the loop ---------------------------------------------------------------------
@@ -234,6 +238,7 @@ def ask(question: str, *, model: LlmProvider, toolbox: Toolbox) -> Exchange:
     conversation: list[Message] = [Message(role=Role.USER, text=question)]
     returned: dict[str, tuple[str, ToolOutput]] = {}
     records: list[ToolCallRecord] = []
+    withheld: list[Hit] = []
     spent = TokenUsage(input_tokens=0, output_tokens=0)
 
     def ended(outcome: Answer | Refusal | Failure) -> Exchange:
@@ -243,6 +248,7 @@ def ask(question: str, *, model: LlmProvider, toolbox: Toolbox) -> Exchange:
             tool_calls=tuple(records),
             usage=spent,
             redactions=screened.hits,
+            withheld=tuple(withheld),
         )
 
     for _ in range(MAX_TOOL_ROUNDS):
@@ -273,7 +279,7 @@ def ask(question: str, *, model: LlmProvider, toolbox: Toolbox) -> Exchange:
         if unknown:
             records.extend(_record(call, returned=False) for call in calls)
             return ended(_no_such_tool(unknown[0].name))
-        results = tuple(_run(call, toolbox, records, returned) for call in calls)
+        results = tuple(_run(call, toolbox, records, returned, withheld) for call in calls)
         conversation.append(completion.message)
         conversation.append(Message(role=Role.USER, tool_results=results))
     return ended(_drift(f"the model asked for tools {MAX_TOOL_ROUNDS} times without finishing"))
@@ -284,15 +290,28 @@ def _run(
     toolbox: Toolbox,
     records: list[ToolCallRecord],
     returned: dict[str, tuple[str, ToolOutput]],
+    withheld: list[Hit],
 ) -> ToolResult:
+    """One tool's result, as the model will read it: with every secret in it replaced.
+
+    The asker's own screen shows what the tool returned, kept whole in `returned`. What the
+    model reads leaves Meter, so it is screened by the rules the question is, ISS-085, and every
+    hit is replaced whatever the rule's action: a credential in an estate's data is not the
+    asker's to rotate, and blocking their question for it would refuse them for someone else's
+    tag.
+    """
     try:
         output = toolbox.call(call.name, call.arguments)
     except ToolUnavailableError as unavailable:
         records.append(_record(call, returned=False))
-        return ToolResult(call_id=call.call_id, content=str(unavailable), is_error=True)
+        screened = redaction.scan(str(unavailable))
+        withheld.extend(screened.hits)
+        return ToolResult(call_id=call.call_id, content=screened.text, is_error=True)
     records.append(_record(call, returned=True))
     returned[call.call_id] = (call.name, output)
-    return ToolResult(call_id=call.call_id, content=output.text)
+    screened = redaction.scan(output.text)
+    withheld.extend(screened.hits)
+    return ToolResult(call_id=call.call_id, content=screened.text)
 
 
 def _record(call: ToolCall, *, returned: bool) -> ToolCallRecord:

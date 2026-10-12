@@ -65,8 +65,9 @@ configuration: no column of `saved_view` carries a figure. A shared view does no
 it is shared with who saved it, and the answer says only whether the reader owns it. Scope is
 enforced twice, by `get_scope` and the guard, and the writes add the owner to the guard's
 predicate, constraint 3. The table holds a person's identifier and the names they chose, and is
-classified personal in `docs/09-DATA-CLASSIFICATION.md`. No retention job reads it and
-`erase_principal` does not reach it, ISS-255.
+classified personal in `docs/09-DATA-CLASSIFICATION.md`. No retention job reads it.
+`erase_principal` removes a person's private views and keeps their shared ones for the people
+they were shared with, owned by a hash, ISS-255, decided 2026-10-12.
 
 ## Interface
 

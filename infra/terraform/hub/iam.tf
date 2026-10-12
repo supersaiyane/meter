@@ -65,6 +65,15 @@ data "aws_iam_policy_document" "execution_extra" {
     actions   = ["secretsmanager:GetSecretValue"]
     resources = [aws_rds_cluster.hub.master_user_secret[0].secret_arn]
   }
+
+  # Every setting, settings.tf, and only this environment's: a dev task cannot be started on
+  # production's parameters. The SecureString ones are encrypted with the storage key above.
+  statement {
+    sid       = "ReadOwnSettings"
+    effect    = "Allow"
+    actions   = ["ssm:GetParameters"]
+    resources = ["arn:${data.aws_partition.current.partition}:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter/meter/${var.env}/*"]
+  }
 }
 
 resource "aws_iam_role_policy" "execution_extra" {

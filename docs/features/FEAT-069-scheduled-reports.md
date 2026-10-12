@@ -69,7 +69,8 @@ narrowed is refused with a sentence saying why, and the schedule's next run make
 within the access they hold then. A schedule names people and never accounts; its owner sees the
 recipients they named, and a recipient sees their own runs and never the schedule.
 `report_schedule` holds people's identifiers and is classified personal. No retention job reads
-it and `erase_principal` does not reach it, ISS-256.
+it. `erase_principal` pauses the schedules a person owns, for an administrator to reassign, and
+takes them off every recipient list, ISS-256, decided 2026-10-12.
 
 ## Interface
 

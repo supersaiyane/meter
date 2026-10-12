@@ -198,9 +198,36 @@ def retention_scope_cache(
 #: Two lists of the same five things is exactly how a job ends up implemented and
 #: never scheduled, which reads in production as a retention policy that quietly
 #: never ran.
+def retention_assistant(
+    context: CollectorContext, clock: Clock = _system_clock
+) -> CollectorOutcome:
+    """Remove a person's questions to the assistant past the window, and their redactions.
+
+    OPEN-14, decided by the owner on 2026-10-12: 90 days, ISS-226. A question can hold a name
+    even after redaction, which removes secrets and not personal data. The redaction records go
+    first, because each names its exchange.
+    """
+    cutoff = _cutoff(clock, context.settings.retention_assistant_days)
+    values = {"tenant": context.unit.tenant_id, "cutoff": cutoff}
+    redactions = context.connection.execute(
+        text(
+            "DELETE FROM redaction_event WHERE tenant_id = :tenant AND exchange_id IN ("
+            "SELECT exchange_id FROM assistant_exchange "
+            "WHERE tenant_id = :tenant AND asked_at < :cutoff)"
+        ),
+        values,
+    ).rowcount
+    exchanges = context.connection.execute(
+        text("DELETE FROM assistant_exchange WHERE tenant_id = :tenant AND asked_at < :cutoff"),
+        values,
+    ).rowcount
+    return CollectorOutcome(items_written=(redactions or 0) + (exchanges or 0))
+
+
 RETENTION_COLLECTORS: tuple[Collector, ...] = (
     Collector("retention_principal", CollectorScope.ORGANIZATION, retention_principal),
     Collector("retention_operational", CollectorScope.ORGANIZATION, retention_operational),
+    Collector("retention_assistant", CollectorScope.ORGANIZATION, retention_assistant),
     Collector("retention_audit", CollectorScope.ORGANIZATION, retention_audit),
     Collector("retention_cost", CollectorScope.ORGANIZATION, retention_cost),
     Collector("partition_maintenance", CollectorScope.ORGANIZATION, partition_maintenance),

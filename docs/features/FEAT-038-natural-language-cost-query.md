@@ -81,7 +81,8 @@ refuses a wildcard, and only through each model's inference profile tagged
 `finops:module = assistant`, ISS-230. Prompt injection is a test set,
 `tests/query/insight/test_injection_set.py`. An exchange is readable only by the person who
 asked, ADR-0029, and a question holding a credential never reaches the model, FEAT-046. The
-exchanges have no retention job and no erasure yet, ISS-226.
+exchanges are kept 90 days, `retention_assistant`, and erasure tombstones them, ISS-226, both
+decided by the owner on 2026-10-12, OPEN-14.
 
 ## Interface
 

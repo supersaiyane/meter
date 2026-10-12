@@ -25,7 +25,7 @@ from finops_fakes import fixtures
 from finops_fakes.provider import FakeProvider
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-FAKE_PACKAGE = ROOT / "finops_providers" / "fake"
+FAKE_PACKAGE = ROOT / "finops_fakes"
 
 # The eight provider ports, from the group rather than from `__all__`. The
 # package also exports `QuerySurface`, which describes a tool holding saved

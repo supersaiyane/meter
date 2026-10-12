@@ -45,6 +45,15 @@ token is redacted. And the record is a `redaction_event` row rather than an `aud
 because the event belongs to the exchange it was found in and to the person who typed it,
 ADR-0029.
 
+**Amended 2026-10-12, ISS-085.** What the tools return is screened too, by the same rules,
+before the model reads it: `finops_query/insight.py` replaces each secret in a tool's result, or
+in a failing tool's message, with its rule's name, and records the hit on the exchange as
+`withheld`. Every hit there is replaced, whatever the rule's action, because a credential in the
+estate's data is not the asker's to rotate and their question is not refused for someone else's
+tag. The asker's own screen still shows what the tool returned; only what leaves for the model is
+screened. Each hit is recorded in `redaction_event` with `found_in = 'tool_result'`, migration
+0046, beside the question's own hits, `found_in = 'question'`.
+
 ## Failure behaviour
 
 A secret in a format none of the seven rules knows passes through. That is the residual
@@ -65,7 +74,9 @@ screen.
 
 ## Not doing
 
-**Scanning what the tools return.** It is Meter's own data under the asker's scope. **The
-rest of gitleaks' rules**, which are written for repositories rather than for questions.
+**The rest of gitleaks' rules**, which are written for repositories rather than for questions.
+Scanning what the tools return was here until 2026-10-12, on the ground that it is Meter's own
+data under the asker's scope; ISS-085 held that it still leaves Meter, and a key typed into a tag
+is a key, so it is screened now.
 
 See [docs/11-COMPETITIVE-REVIEW.md](../11-COMPETITIVE-REVIEW.md) for where this came from.

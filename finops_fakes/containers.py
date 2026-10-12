@@ -836,7 +836,7 @@ class FakeContainerSource:
 
         out: list[ClusterSlice] = []
         for cluster in self._clusters_for(account, region):
-            today = [
+            latest_rows = [
                 row
                 for row in rows
                 if row["cluster_name"] == cluster.name and str(row["usage_date"]) == latest
@@ -844,9 +844,10 @@ class FakeContainerSource:
             node_count: int | None = None
             spot: Decimal | None = None
             packing: Decimal | None = None
-            if today:
+            if latest_rows:
                 counts = {
-                    str(row["capacity_type"]): Decimal(str(row["node_count_avg"])) for row in today
+                    str(row["capacity_type"]): Decimal(str(row["node_count_avg"]))
+                    for row in latest_rows
                 }
                 total = sum(counts.values(), Decimal(0))
                 if total > 0:
@@ -859,7 +860,7 @@ class FakeContainerSource:
                 allocatable = Decimal(0)
                 requested = Decimal(0)
                 readable = True
-                for row in today:
+                for row in latest_rows:
                     asked = row["requested_cpu_millicores"]
                     if asked is None:
                         readable = False

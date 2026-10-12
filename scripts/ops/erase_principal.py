@@ -58,6 +58,17 @@ class ErasureReport:
     scope_rows_removed: int
     schedule_rows_reattributed: int
     audit_events_written: int
+    #: The tables ISS-226, ISS-249, ISS-255 and ISS-256 found erasure did not reach, decided by the
+    #: owner on 2026-10-12: the person's questions and exports tombstoned and kept, their private
+    #: views removed and shared ones kept unowned, their schedules paused, and their name taken off
+    #: every recipient list.
+    exchanges_tombstoned: int = 0
+    redactions_tombstoned: int = 0
+    exports_tombstoned: int = 0
+    private_views_removed: int = 0
+    shared_views_unowned: int = 0
+    schedules_paused: int = 0
+    recipient_lists_changed: int = 0
     #: Always zero. Present so the report says out loud what was left alone,
     #: rather than leaving the reader to infer it from an absence.
     audit_events_removed: int = 0
@@ -68,6 +79,13 @@ class ErasureReport:
             f"  principal rows anonymised      {self.principals_anonymised}",
             f"  entitlement cache rows removed {self.scope_rows_removed}",
             f"  schedule rows reattributed     {self.schedule_rows_reattributed}",
+            f"  assistant questions tombstoned {self.exchanges_tombstoned}",
+            f"  redaction records tombstoned   {self.redactions_tombstoned}",
+            f"  export records tombstoned      {self.exports_tombstoned}",
+            f"  private views removed          {self.private_views_removed}",
+            f"  shared views left unowned      {self.shared_views_unowned}",
+            f"  report schedules paused        {self.schedules_paused}",
+            f"  recipient lists changed        {self.recipient_lists_changed}",
             f"  audit events written           {self.audit_events_written}",
             f"  audit events removed           {self.audit_events_removed}"
             " (never removed, by design)",
@@ -119,6 +137,21 @@ def erase(
     record of which half.
     """
     at = clock()
+    # Checked first, because the audit event names the principal by a foreign key: an erasure
+    # of a person the tenant does not have would otherwise fail on its own audit record instead
+    # of saying so, and the caller's "no principal" answer could never be reached.
+    exists = connection.execute(
+        text("SELECT 1 FROM principal WHERE tenant_id = :tenant AND principal_id = :principal"),
+        {"tenant": tenant_id, "principal": principal_id},
+    ).first()
+    if exists is None:
+        return ErasureReport(
+            principal_id=principal_id,
+            principals_anonymised=0,
+            scope_rows_removed=0,
+            schedule_rows_reattributed=0,
+            audit_events_written=0,
+        )
     _audit(connection, tenant_id, principal_id, "erasure.requested", request_id, requested_by, at)
 
     anonymised = connection.execute(
@@ -152,6 +185,8 @@ def erase(
         {"tombstone": TOMBSTONE, "tenant": tenant_id, "who": str(principal_id)},
     ).rowcount
 
+    reached = _reach_personal_tables(connection, tenant_id, str(principal_id))
+
     _audit(connection, tenant_id, principal_id, "erasure.completed", request_id, requested_by, at)
 
     return ErasureReport(
@@ -160,7 +195,65 @@ def erase(
         scope_rows_removed=scope_rows or 0,
         schedule_rows_reattributed=schedule_rows or 0,
         audit_events_written=2,
+        **reached,
     )
+
+
+#: What a refused question's reason becomes: the constraint wants twelve characters or more.
+ERASED_TEXT = "anonymised on erasure"
+
+
+def _reach_personal_tables(connection: Any, tenant_id: UUID, who: str) -> dict[str, int]:
+    """The person's questions, exports, views and schedules, as the owner decided on 2026-10-12.
+
+    A question and an export are kept and tombstoned, so the month's token spend and the export
+    counts stay true; the text and the person's identifier go. A private view goes with the
+    person; a shared one stays for the people it was shared with, owned by nobody nameable. A
+    schedule they own is paused for an administrator to reassign, and their name comes off
+    every list it was on; a schedule left with no recipient goes to its owner and is paused,
+    because the table requires one recipient and nobody chose that schedule's new reader.
+    """
+    erased = f"{TOMBSTONE}:{sha256(who.encode()).hexdigest()}"
+    values = {"tenant": tenant_id, "who": who, "erased": erased, "text": ERASED_TEXT}
+
+    def run(sql: str) -> int:
+        return int(connection.execute(text(sql), values).rowcount or 0)
+
+    return {
+        "redactions_tombstoned": run(
+            "UPDATE redaction_event SET principal_id = :erased "
+            "WHERE tenant_id = :tenant AND principal_id = :who"
+        ),
+        "exchanges_tombstoned": run(
+            "UPDATE assistant_exchange SET principal_id = :erased, question = :text, "
+            "answer = CASE WHEN answer IS NULL THEN NULL ELSE :text END, "
+            "refusal_reason = CASE WHEN refusal_reason IS NULL THEN NULL ELSE :text END "
+            "WHERE tenant_id = :tenant AND principal_id = :who"
+        ),
+        "exports_tombstoned": run(
+            "UPDATE report_run SET principal_id = :erased "
+            "WHERE tenant_id = :tenant AND principal_id = :who"
+        ),
+        "private_views_removed": run(
+            "DELETE FROM saved_view "
+            "WHERE tenant_id = :tenant AND owner_id = :who AND visibility = 'PRIVATE'"
+        ),
+        "shared_views_unowned": run(
+            "UPDATE saved_view SET owner_id = :erased "
+            "WHERE tenant_id = :tenant AND owner_id = :who AND visibility = 'SHARED'"
+        ),
+        "schedules_paused": run(
+            "UPDATE report_schedule SET owner_id = :erased, enabled = false "
+            "WHERE tenant_id = :tenant AND owner_id = :who"
+        ),
+        "recipient_lists_changed": run(
+            "UPDATE report_schedule SET "
+            "recipients = CASE WHEN recipients = ARRAY[:who]::text[] THEN ARRAY[owner_id] "
+            "ELSE array_remove(recipients, :who) END, "
+            "enabled = CASE WHEN recipients = ARRAY[:who]::text[] THEN false ELSE enabled END "
+            "WHERE tenant_id = :tenant AND :who = ANY(recipients)"
+        ),
+    }
 
 
 def main(argv: list[str] | None = None) -> int:

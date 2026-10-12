@@ -6,31 +6,9 @@
 locals {
   registry = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com"
 
-  # Every task gets these. The database password is not here: it is injected as
-  # a secret by the execution role, so the running process never holds the
-  # permission to read it again.
-  common_environment = [
-    { name = "METER_ENV", value = var.env },
-    { name = "METER_REGION", value = var.region },
-    { name = "METER_QUEUE_URL", value = aws_sqs_queue.work.url },
-    { name = "METER_EXTERNAL_ID_SECRET", value = aws_secretsmanager_secret.external_id.name },
-    { name = "METER_COLLECTOR_ROLE_NAME", value = var.collector_role_name },
-    { name = "METER_ORG_READER_ROLE_ARN", value = var.org_reader_role_arn },
-    { name = "METER_S3_BUCKET", value = aws_s3_bucket.data.id },
-  ]
-
-  # The API is the one service that calls the model, so it is the one told which, twice.
-  # The model identifier is what every exchange records and the screen shows. The profile
-  # ARN is what the adapter calls: only a call through the profile carries finops:module
-  # onto the bill, and the task role may reach the model no other way. Both are empty
-  # until a model is in use, and the assistant then says it is not enabled. ISS-230.
-  api_environment = concat(local.common_environment, [
-    { name = "METER_ASSISTANT_MODEL_ID", value = var.assistant_model_in_use },
-    {
-      name  = "METER_ASSISTANT_INFERENCE_PROFILE_ARN"
-      value = var.assistant_model_in_use == "" ? "" : aws_bedrock_inference_profile.assistant[var.assistant_model_in_use].arn
-    },
-  ])
+  # The api, worker and dispatcher tasks read every setting from SSM Parameter Store and the
+  # database password from the secret RDS manages, all injected by the execution role at task
+  # start, settings.tf. The running process never holds the permission to read them again.
 }
 
 resource "aws_ecs_cluster" "hub" {
@@ -81,13 +59,8 @@ resource "aws_ecs_task_definition" "api" {
       essential = true
 
       portMappings = [{ containerPort = 8000, protocol = "tcp" }]
-      environment  = local.api_environment
-      secrets = [
-        {
-          name      = "METER_DATABASE_URL"
-          valueFrom = "${aws_rds_cluster.hub.master_user_secret[0].secret_arn}:METER_DATABASE_URL::"
-        },
-      ]
+      environment  = local.setting_environment
+      secrets      = local.setting_secrets
 
       logConfiguration = {
         logDriver = "awslogs"
@@ -295,14 +268,13 @@ resource "aws_ecs_task_definition" "worker" {
       name      = "worker"
       image     = "${local.registry}/meter-worker:${var.image_tag}"
       essential = true
+      # The worker stops between units on SIGTERM, TASK-P12-004. ECS waits 30 seconds by
+      # default before it kills the task, less than one Athena backed unit can take, so it
+      # waits the most Fargate allows and the unit in hand finishes its transaction.
+      stopTimeout = 120
 
-      environment = local.common_environment
-      secrets = [
-        {
-          name      = "METER_DATABASE_URL"
-          valueFrom = "${aws_rds_cluster.hub.master_user_secret[0].secret_arn}:METER_DATABASE_URL::"
-        },
-      ]
+      environment = local.setting_environment
+      secrets     = local.setting_secrets
 
       logConfiguration = {
         logDriver = "awslogs"
@@ -317,10 +289,13 @@ resource "aws_ecs_task_definition" "worker" {
 }
 
 resource "aws_ecs_service" "worker" {
-  name            = "${local.name}-worker"
-  cluster         = aws_ecs_cluster.hub.id
-  task_definition = aws_ecs_task_definition.worker.arn
-  desired_count   = var.worker_min_count
+  name = "${local.name}-worker"
+  # The deploy job waits on the apply, as for the api and the web, so a worker that cannot start
+  # fails the deploy instead of passing it. TASK-P12-007.
+  wait_for_steady_state = true
+  cluster               = aws_ecs_cluster.hub.id
+  task_definition       = aws_ecs_task_definition.worker.arn
+  desired_count         = var.worker_min_count
 
   capacity_provider_strategy {
     capacity_provider = "FARGATE_SPOT"

@@ -735,7 +735,8 @@ CREATE TABLE redaction_event (
     principal_id    TEXT         NOT NULL,
     rule_id         TEXT         NOT NULL,      -- the gitleaks rule identifier
     action          TEXT         NOT NULL,      -- BLOCKED or REDACTED
-    occurred_at     TIMESTAMPTZ  NOT NULL
+    occurred_at     TIMESTAMPTZ  NOT NULL,
+    found_in        TEXT         NOT NULL DEFAULT 'question'  -- or tool_result, 0046, ISS-085
 );
 ```
 
@@ -766,8 +767,10 @@ has no cascade, so the question cannot be deleted from under the record of what
 was found in it.
 
 Two of the three tables hold a person's identifier, and the guard confines them
-to that person through the `ByPrincipal` rule, ADR-0029. None of the three has
-a retention job yet, and `erase_principal` does not reach them, ISS-226.
+to that person through the `ByPrincipal` rule, ADR-0029. `retention_assistant`
+removes a question older than 90 days with its redaction records, OPEN-14, and
+`erase_principal` tombstones a person's questions and hashes their identifier,
+ISS-226. `team_digest` holds no personal data and has no retention job yet.
 
 ### Export records, P8
 
@@ -799,8 +802,8 @@ person is named and the view is a path, and a global scope names no accounts. Th
 a list rather than a count, because a count says how much was taken and the list says what,
 which is the question an audit asks. The guard confines the table to its person through
 `ByPrincipal`, ADR-0029, so a reader lists their own runs and nobody else's, which the
-Scheduled screen does, FEAT-069. No retention job reads it and `erase_principal` does not reach it,
-ISS-249.
+Scheduled screen does, FEAT-069. No retention job reads it; `erase_principal` hashes the
+identifier and keeps the row, ISS-249.
 
 ### Saved views, P8
 
@@ -832,8 +835,8 @@ never changed before it was made. A screen added to the navigation widens the sc
 in a migration of its own, and `tests/api/test_saved_views.py` reads the constraint back out of
 the database to hold it to the list. The guard reads the table through `OwnedOrShared`,
 ADR-0032: the owner reads their views, everybody in the tenant reads the shared ones, and only
-the owner's writes change a row. No retention job reads it and `erase_principal` does not reach
-it, ISS-255.
+the owner's writes change a row. No retention job reads it; `erase_principal` removes a person's
+private views and keeps their shared ones, owned by a hash, ISS-255.
 
 ### Report schedules and what a run records, P8
 
@@ -878,7 +881,8 @@ runner records why for each recipient once and pauses them. A run's checks hold 
 statuses, a typed cause on a failure and on nothing else, a key on a file kept or sent, neither a
 key nor a schedule on a file streamed to whoever exported it, and a finish never before the
 making. The guard reads `report_schedule` through `ByPrincipal` on its owner. No retention job
-reads it and `erase_principal` does not reach it, ISS-256.
+reads it; `erase_principal` pauses a person's schedules and takes them off every recipient
+list, ISS-256.
 
 ### Billing periods and invoices, P10
 

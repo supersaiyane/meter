@@ -152,6 +152,21 @@ as real.
 `image_tag` is never written into a tfvars file, because a stale default
 quietly deploys the wrong image.
 
+Every setting the services read is an SSM parameter under `/meter/<env>/`, made
+by this apply from `settings.tf` and the `settings` map in `envs/<env>.tfvars`,
+TASK-P12-006. Review that map before the first apply: the CUR export prefix and
+table name, the Regions to collect and the thresholds are yours to set. One
+parameter is a secret, created with a placeholder the API refuses to start on.
+Set it once, then start the tasks again:
+
+```bash
+aws ssm put-parameter --overwrite --type SecureString --key-id alias/meter-dev-storage --name /meter/dev/METER_SESSION_SIGNING_KEY --value "$(openssl rand -base64 48)"
+```
+
+Terraform never reads that value back or overwrites it, so it is in neither git
+nor the state. The database password is not a parameter: each task is given the
+password RDS manages, as `PGPASSWORD`, and the URL names no password at all.
+
 ### 7. Images
 
 The pipeline builds and pushes on every commit to the default branch. To do it
@@ -171,6 +186,12 @@ Run as a one off ECS task, before the service rolls:
 ```bash
 scripts/deploy/run_migration_task.sh
 ```
+
+**Not yet runnable, ISS-283.** No Terraform stack makes the `meter-<env>-migrate`
+task definition, the two network parameters or the log group the script reads,
+and `run-task` cannot change a task's image, so the script would apply the
+previous release's migrations. How a deployment migrates is yours to choose;
+the issue lists the options. Until then a first deploy has an empty schema.
 
 Migrations are backward compatible by constraint 12, so old and new task
 definitions run against the same schema during the rollout.

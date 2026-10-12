@@ -8,14 +8,16 @@ person sees their own events and nobody else's.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from uuid import UUID
 
 import pytest
 from sqlalchemy import Engine, text
+from sqlalchemy.exc import IntegrityError
 
 from finops_api.db import models
 from finops_api.db.repositories import AccessContext
-from finops_api.db.repositories.assistant import RedactionRepository
+from finops_api.db.repositories.assistant import RedactionRepository, record_redactions
 from finops_api.guards import SCOPED_TABLES, ByPrincipal
 from finops_core.config import Settings
 from finops_core.domain.tenant import Scope
@@ -147,4 +149,45 @@ def test_the_event_table_has_no_column_a_secret_could_go_in() -> None:
         "rule_id",
         "action",
         "occurred_at",
+        "found_in",
     }
+
+
+def test_a_secret_found_in_a_tools_result_is_recorded_as_found_there(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    """ISS-085. A hit in the estate's data is listed with the asker's own, and says where it
+    was, so nobody reads a key in a tag as something the asker typed."""
+    scope = everything(tenant_id)
+    client, signer = application(engine, settings, scope)
+    asked(client, as_person(signer, "p2", scope), BLOCKED_QUESTION)
+    with engine.begin() as connection:
+        exchange_id = connection.execute(
+            text("SELECT exchange_id FROM assistant_exchange WHERE tenant_id = :t"),
+            {"t": tenant_id},
+        ).scalar_one()
+        record_redactions(
+            connection,
+            tenant_id=tenant_id,
+            principal_id="p2",
+            exchange_id=exchange_id,
+            hits=scan(f"a tag holds {SECRET}").hits,
+            at=datetime.now(UTC),
+            found_in="tool_result",
+        )
+
+    mine = client.get(REDACTIONS, headers=as_person(signer, "p2", scope)).json()["data"]
+    assert sorted(event["found_in"] for event in mine) == ["question", "tool_result"]
+
+
+def test_a_redaction_is_found_in_the_question_or_a_tools_result_and_nowhere_else(
+    engine: Engine, tenant_id: UUID, settings: Settings
+) -> None:
+    scope = everything(tenant_id)
+    client, signer = application(engine, settings, scope)
+    asked(client, as_person(signer, "p2", scope), BLOCKED_QUESTION)
+    with pytest.raises(IntegrityError, match="ck_redaction_event__found_in"), engine.begin() as c:
+        c.execute(
+            text("UPDATE redaction_event SET found_in = 'elsewhere' WHERE tenant_id = :t"),
+            {"t": tenant_id},
+        )

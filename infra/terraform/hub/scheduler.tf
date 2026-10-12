@@ -88,15 +88,12 @@ resource "aws_ecs_task_definition" "dispatcher" {
       name      = "dispatcher"
       image     = "${local.registry}/meter-worker:${var.image_tag}"
       essential = true
-      command   = ["/opt/venv/bin/python", "-m", "finops_ingest.dispatcher"]
+      # The image's entrypoint is already `python -m`, so the command is the module alone. It
+      # was the interpreter, `-m` and the module, which ran `python -m /opt/venv/bin/python`. ISS-277.
+      command = ["finops_ingest.dispatcher"]
 
-      environment = local.common_environment
-      secrets = [
-        {
-          name      = "METER_DATABASE_URL"
-          valueFrom = "${aws_rds_cluster.hub.master_user_secret[0].secret_arn}:METER_DATABASE_URL::"
-        },
-      ]
+      environment = local.setting_environment
+      secrets     = local.setting_secrets
 
       logConfiguration = {
         logDriver = "awslogs"
