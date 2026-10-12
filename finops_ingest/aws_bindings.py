@@ -26,6 +26,7 @@ from finops_ingest.collectors.budgets import BudgetCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
 from finops_ingest.collectors.container_usage import ContainerUsageCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
+from finops_ingest.collectors.gpu_utilization import GpuUtilizationCollector
 from finops_ingest.collectors.iac_state import IacStateCollector
 from finops_ingest.collectors.instance_catalog import InstanceCatalogCollector
 from finops_ingest.collectors.inventory import InventoryCollector
@@ -49,6 +50,7 @@ from finops_providers.aws.config_inventory import ConfigAggregatorInventory
 from finops_providers.aws.container_insights import ContainerInsightsSource
 from finops_providers.aws.credentials import AwsCredentialBroker
 from finops_providers.aws.cur import AthenaCostExport
+from finops_providers.aws.gpu_metrics import CloudWatchGpuMetrics
 from finops_providers.aws.health import AccountHealthCheck
 from finops_providers.aws.instance_types import AwsInstanceCatalog
 from finops_providers.aws.invoices import AwsInvoices
@@ -168,6 +170,12 @@ def _cost_focus(context: CollectorContext) -> CollectorRunner:
     return CostFocusCollector(export)
 
 
+def _gpu_utilization(context: CollectorContext) -> CollectorRunner:
+    session = _assumed(context, "gpu_utilization")
+    metrics = CloudWatchGpuMetrics(context.settings, context.unit.tenant_id, session=session)
+    return GpuUtilizationCollector(metrics)
+
+
 def _iac_state(context: CollectorContext) -> CollectorRunner:
     settings = context.settings
     state = S3TerraformState(client=hub_client(settings, "s3"), locations=settings.iac_locations)
@@ -272,6 +280,7 @@ AWS_BUILDERS: Final[dict[str, Build]] = {
     "commitment": _commitment,
     "container_usage": _container_usage,
     "cost_focus": _cost_focus,
+    "gpu_utilization": _gpu_utilization,
     "iac_state": _iac_state,
     "instance_catalog": _instance_catalog,
     "inventory": _inventory,

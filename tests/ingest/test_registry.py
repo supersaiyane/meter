@@ -132,7 +132,10 @@ def test_the_migration_installs_the_cadence_the_registry_declares(
     assert installed == declared
 
 
-@pytest.mark.parametrize("revision", ["0050_ai_collector_schedules", "0051_anthropic_schedule"])
+@pytest.mark.parametrize(
+    "revision",
+    ["0050_ai_collector_schedules", "0051_anthropic_schedule", "0052_gpu_utilization_daily"],
+)
 def test_a_migration_installing_several_cadences_copies_each_from_the_registry(
     revision: str,
 ) -> None:

@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 29 of 31 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 55 in 20 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 37 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 51 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 256 | test_*.py under tests/ |
-| Test functions | 3105 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 38 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 52 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 259 | test_*.py under tests/ |
+| Test functions | 3119 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -489,9 +489,10 @@ meter/
 │       │                      groups tests/core/test_ports.py checks. A protocol
 │       │                      in no group is imported from its own module, and
 │       │                      that test never reaches it, ISS-239
-│       ├── ai.py              InvocationLogs and AiProviderReports, AI_PORTS, P13.
-│       │                      Who spent tokens on which model, read as aggregates
-│       │                      and never a prompt, and what a provider billed
+│       ├── ai.py              InvocationLogs, AiProviderReports and GpuMetrics,
+│       │                      AI_PORTS, P13. Who spent tokens on which model, read as
+│       │                      aggregates and never a prompt, what a provider billed,
+│       │                      and how busy each GPU instance was
 │       ├── accounts.py        AccountDiscovery
 │       ├── budget.py          BudgetSource, the payer's budgets
 │       ├── catalog.py         PriceCatalog and InstanceCatalog, CATALOG_PORTS, P9
@@ -614,6 +615,9 @@ meter/
 │   │   │                      GetProducts a page at a time for the prices, EC2
 │   │   │                      narrowed at the source; a nought or unreadable term
 │   │   │                      is SchemaDrift. Unproved, ISS-002, ISS-261
+│   │   ├── gpu_metrics.py     FEAT-084, TASK-P13-006. Each instance's NVIDIA metrics
+│   │   │                      listed, then read: the mean of its accelerators'
+│   │   │                      averages and the highest peak, per day
 │   │   ├── reach.py           TASK-P12-002. How the hub reaches AWS for a collector:
 │   │   │                      its own clients made on first use, an assumed session,
 │   │   │                      a member account through the broker, the relay, and the
@@ -1148,8 +1152,9 @@ meter/
 │   ├── ai.py              the estate's invocation logs, P13: fake-platform-a read,
 │   │                      fake-product-a to S3 only and the rest nowhere, both
 │   │                      NotOptedIn; three callers of the support assistant;
-│   │                      and the fake OpenAI and Anthropic organizations' daily
-│   │                      cost and usage, FakeProviderReports
+│   │                      the fake OpenAI and Anthropic organizations' daily
+│   │                      cost and usage, FakeProviderReports; and the fake bill's
+│   │                      two GPU instances, one publishing, FakeGpuMetrics
 │   ├── ownership.py       owners beyond the tags, planted in fake-product-b:
 │   │                      an application owner, a person and a pipeline as
 │   │                      creators, and resources older than the 90 day record
@@ -1272,6 +1277,8 @@ meter/
 │       │                      each connected organization, the period to date; one
 │       │                      failing typed under its own scope, never another
 │       ├── anthropic_usage.py the provider collector named for Anthropic, daily
+│       ├── gpu_utilization.py FEAT-084, TASK-P13-006. Daily per account and Region; the
+│       │                      GPU instances the bill names, and none it does not
 │       ├── openai_usage.py    the provider collector named for OpenAI, daily
 │       ├── ownership.py       FEAT-077, TASK-P11-002 to 004. Daily; each resource's
 │       │                      suggested owners into resource_owner: tags, the catalogue,
@@ -1601,6 +1608,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0052_gpu_utilization_daily.py  TASK-P13-006. A day's GPU utilization per
+│       │                      instance, and the collector's cadence
 │       ├── 0051_anthropic_schedule.py  TASK-P13-005. anthropic_usage's cadence for
 │       │                      existing tenants
 │       ├── 0050_ai_collector_schedules.py  TASK-P13-004. Four cadences for existing
@@ -1856,8 +1865,9 @@ meter/
 │   │                          a compass point lands in a picture is the picture's
 │   │                          business
 │   ├── ai.py                  FEAT-081, in finops_core/domain/. The four token types a
-│   │                          cost row can carry, input, output, cache read and cache
-│   │                          write, and nothing that names a vendor, ADR-0028
+│   │                          cost row can carry, and nothing that names a vendor,
+│   │                          ADR-0028; AiUsage, ProviderAccount, GpuUtilization; and
+│   │                          accelerated_instance_type, read from the family
 │   ├── iac.py                 FEAT-057, in finops_core/domain/. Three answers to what
 │   │                          manages a resource, and the default is the honest one.
 │   │                          Reading state tells you what is managed and never what is

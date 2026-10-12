@@ -631,7 +631,7 @@ features:
 - id: FEAT-084
   name: GPU hours, cost and utilization
   subproject: P13
-  status: Specified
+  status: In build
   detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) section 5.6, [P13 plan](docs/plans/P13-implementation-plan.md)'
   doc: docs/features/FEAT-084-gpu-hours-cost-and-utilization.md
 - id: FEAT-085
@@ -2520,6 +2520,12 @@ changes:
   what: TASK-P13-005, Anthropic's cost and usage beside the bill and OpenAI's
   commit: pending
   detail: 'finops_providers/anthropic/reports.py reads the Admin API''s cost report, whose amounts are in cents and are divided by a hundred, and its messages usage report, which counts tokens and not requests, so requests is None and never a zero; the model and token type come from the report''s own fields. The anthropic_usage collector over the shared provider collector, in both compositions, with a fake organization of two workspaces, the default one among them. The connect script takes --provider anthropic, and migration 0051 installs the cadence for existing tenants. A test runs the bill, OpenAI and Anthropic into one period and finds each source''s rows intact'
+- id: CHG-0178
+  date: '2026-10-13'
+  type: Feature
+  what: TASK-P13-006, GPU utilization from the CloudWatch agent's NVIDIA metrics
+  commit: pending
+  detail: 'Migration 0052 creates gpu_utilization_daily, an instance''s accelerators'' average, peak and readings per day, constrained to percentages and at least one reading, and installs the gpu_utilization cadence for existing tenants. accelerated_instance_type reads the p, g, gr, trn, inf and dl families from a usage type, SageMaker''s ml. form among them. The GpuMetrics port and finops_providers/aws/gpu_metrics.py, which lists each instance''s nvidia_smi_utilization_gpu metrics before reading three statistics of each. The collector asks only about the accelerated instances the bill names in the account and Region, so an instance nobody paid for is never asked about and no new permission is needed; one that publishes nothing has no row, read as not published. METER_GPU_METRICS_NAMESPACE names the agent''s namespace, CWAgent by default. The fake bill carries two GPU instances, one publishing and one not'
 issues:
 - id: ISS-189
   severity: LOW

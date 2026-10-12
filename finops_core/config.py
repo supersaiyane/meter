@@ -187,6 +187,9 @@ class Settings(BaseSettings):
     # default, and usage is grouped by caller and model only. Checked to be a key, letters,
     # digits, hyphens and underscores, before it is written into a query.
     ai_request_metadata_key: str = ""
+    #: The CloudWatch namespace the agent publishes NVIDIA metrics in, P13 spec section 5.6. The
+    #: agent's own default; a deployment whose agents are configured otherwise names theirs here.
+    gpu_metrics_namespace: str = "CWAgent"
 
     # Blast radius, FEAT-044. How many reachable resources count as wide. A number in code
     # deciding what is wide is a number nobody can argue with, which is ADR-0012's argument

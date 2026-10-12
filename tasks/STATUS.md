@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 85 total, 13 specified, 16 in build, 53 delivered |
+| Features | 85 total, 12 specified, 17 in build, 53 delivered |
 | Decisions | 36 architecture decision records |
-| Changes | 177 recorded |
+| Changes | 178 recorded |
 | Issues | 178 fixed, 106 open, 0 parked |
 | Open questions | 34 awaiting a decision |
 
@@ -129,7 +129,8 @@ cost collector's restatement on its source. TASK-P13-003 read Bedrock usage per 
 invocation logs, through one aggregate query a day that never names a prompt or a response. TASK-P13-004
 connected OpenAI: provider accounts, its cost beside the bill and its usage beside Bedrock's, the key read only
 from the AI path and never kept; it found ISS-287, a retention job that never ran for existing tenants, and fixed it. On 2026-10-13
-TASK-P13-005 added Anthropic beside OpenAI, its cents read as cents and its missing request count as missing.
+TASK-P13-005 added Anthropic beside OpenAI, its cents read as cents and its missing request count as missing. TASK-P13-006 read
+GPU utilization for the GPU instances the bill names, and an instance that publishes nothing reads as not published.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -306,7 +307,7 @@ ISS-003.
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 | P11 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
 | P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
-| P13 | 5 | 0 | 0 | 0 | 4 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
+| P13 | 6 | 0 | 0 | 0 | 3 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -591,6 +592,7 @@ ISS-003.
 | `TASK-P13-003` | Done 2026-10-12 | Bedrock usage per caller from invocation logs |
 | `TASK-P13-004` | Done 2026-10-12 | provider accounts and OpenAI |
 | `TASK-P13-005` | Done 2026-10-13 | Anthropic |
+| `TASK-P13-006` | Done 2026-10-13 | GPU utilization |
 
 <!-- generated:task-status end -->
 

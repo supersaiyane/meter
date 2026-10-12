@@ -529,6 +529,8 @@ def test_the_flag_stops_every_retention_job_and_nothing_else(
         # P13, TASK-P13-004 and 005. OpenAI's and Anthropic's cost and usage, daily.
         "openai_usage",
         "anthropic_usage",
+        # P13, TASK-P13-006. How busy each GPU instance was, daily.
+        "gpu_utilization",
         # P1 and P3. All six were missing from the default schedule until
         # 2026-09-21, which meant the dispatcher never returned them and none of
         # them ever ran. ISS-190.

@@ -10,12 +10,12 @@ it further: an adapter reads aggregates, so nothing a caller sent a model ever r
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from datetime import datetime
 from typing import Protocol, runtime_checkable
 
 from finops_core.domain.account import AccountKey
-from finops_core.domain.ai import AiUsage, ProviderAccount
+from finops_core.domain.ai import AiUsage, GpuUtilization, ProviderAccount
 from finops_core.domain.cost import CostRecord
 
 
@@ -64,5 +64,26 @@ class AiProviderReports(Protocol):
 
         Raises the same causes as `costs`: AccessDenied, Throttled, Unreachable, Misconfigured
         and SchemaDrift.
+        """
+        ...
+
+
+@runtime_checkable
+class GpuMetrics(Protocol):
+    """The accelerator utilization an instance's monitoring agent published, TASK-P13-006."""
+
+    def utilization(
+        self,
+        account: AccountKey,
+        region: str,
+        instances: Sequence[str],
+        start: datetime,
+        end: datetime,
+    ) -> Iterable[GpuUtilization]:
+        """One row per instance and day in `[start, end)` for the instances that published.
+
+        An instance that published nothing has no row, which is not published and never a zero.
+        Raises AccessDenied when the role may not list or read the metrics, Throttled when the
+        metrics service asks to slow down, and SchemaDrift when a reading is not a percentage.
         """
         ...

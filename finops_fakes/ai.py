@@ -16,14 +16,21 @@ random: a fake whose numbers move between runs cannot be asserted against.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator, Mapping
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from types import MappingProxyType
 
 from finops_core.domain.account import AccountKey
-from finops_core.domain.ai import CACHE_READ, INPUT, OUTPUT, AiUsage, ProviderAccount
+from finops_core.domain.ai import (
+    CACHE_READ,
+    INPUT,
+    OUTPUT,
+    AiUsage,
+    GpuUtilization,
+    ProviderAccount,
+)
 from finops_core.domain.cost import CostRecord, source_fingerprint
 from finops_core.errors import NotOptedIn
 from finops_fakes import fixtures
@@ -408,3 +415,51 @@ def _provider_cost(
         x_ai_model=use.model,
         x_ai_token_type=_KIND[kind],
     )
+
+
+# --- GPU utilization, TASK-P13-006 ---------------------------------------------------------
+
+#: What each fake GPU instance's agent published: one busy a fifth of the day, the other nothing,
+#: because nobody installed the agent on it. Average, peak, accelerators and readings a day.
+GPU_PUBLISHED: Mapping[str, tuple[Decimal, Decimal, int, int]] = MappingProxyType(
+    {"i-fakegpu0001": (Decimal("18.50"), Decimal("64.00"), 1, 1440)}
+)
+
+
+class FakeGpuMetrics:
+    """`GpuMetrics` in memory: the fake bill's GPU instances, one published and one not."""
+
+    def __init__(self, *, at: datetime = fixtures.AS_OF) -> None:
+        self._at = at
+
+    def utilization(
+        self,
+        account: AccountKey,
+        region: str,
+        instances: Sequence[str],
+        start: datetime,
+        end: datetime,
+    ) -> Iterable[GpuUtilization]:
+        rows: list[GpuUtilization] = []
+        for day, day_end in _days(start, end):
+            for instance in instances:
+                published = GPU_PUBLISHED.get(instance)
+                if published is None:
+                    continue
+                average, peak, gpus, samples = published
+                rows.append(
+                    GpuUtilization(
+                        tenant_id=fixtures.TENANT_ID,
+                        account_id=account.account_id,
+                        region_id=region,
+                        instance_id=instance,
+                        usage_date=day.date(),
+                        gpu_count=gpus,
+                        average_percent=average,
+                        peak_percent=peak,
+                        samples=samples,
+                        as_of=day_end,
+                        collected_at=max(self._at, day_end),
+                    )
+                )
+        return tuple(rows)

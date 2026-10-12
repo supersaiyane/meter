@@ -97,6 +97,7 @@ Archive rule: at 50 entries, move the oldest 30 to
 | 2026-10-12 | TASK-P13-003, Bedrock usage per caller from invocation logs, CHG-0175 | Done | ai_usage_daily, migration 0048; InvocationLogs port; one aggregate Logs Insights query a day, held to aggregates by a test; NotOptedIn where logs do not reach CloudWatch Logs; StartQuery scoped to InvocationLogGroupPattern; retention_ai_usage at 13 months; Bedrock endpoints in both Regions | finops_providers/aws/bedrock_invocations.py:74, finops_ingest/collectors/ai_usage.py:139, tests/providers/aws/test_bedrock_invocations.py:116, infra/terraform/member/collector_role.yaml:164 |
 | 2026-10-12 | TASK-P13-004, provider accounts and OpenAI, CHG-0176 | Done | ai_provider_account, migration 0049; AiProviderReports port; shared paged client; OpenAI adapter; key reader refusing any path but meter/<env>/ai/; provider collector restating per organization; connect script; migration 0050 installs four cadences for existing tenants, ISS-287 fixed; ISS-286 raised | finops_providers/openai/reports.py:53, finops_ingest/collectors/ai_providers.py:61, scripts/ops/connect_ai_provider.py:74, migrations/versions/0050_ai_collector_schedules.py:1 |
 | 2026-10-13 | TASK-P13-005, Anthropic, CHG-0177 | Done | Anthropic adapter: cents divided by a hundred, model and token type from the report's fields, no request count; anthropic_usage collector and fake; connect script and migration 0051 | finops_providers/anthropic/reports.py:62, finops_ingest/collectors/anthropic_usage.py:24, migrations/versions/0051_anthropic_schedule.py:1, tests/providers/test_anthropic_reports.py:78 |
+| 2026-10-13 | TASK-P13-006, GPU utilization, CHG-0178 | Done | gpu_utilization_daily and its cadence, migration 0052; accelerated_instance_type; GpuMetrics port; CloudWatch adapter listing then reading each accelerator; collector asking only about billed GPU instances; fake bill with one publishing and one silent | finops_providers/aws/gpu_metrics.py:48, finops_ingest/collectors/gpu_utilization.py:64, finops_core/domain/ai.py:99, migrations/versions/0052_gpu_utilization_daily.py:1 |
 
 ## Next action
 
@@ -105,7 +106,7 @@ answered: `docs/specs/2026-10-12-p13-finops-for-ai-design.md` and `docs/plans/P1
 nine tasks, each on its own branch from `next-build` in a worktree, merged once `make verify` is green.
 The owner asked for the tasks to run one after another without stopping, except for an owner decision.
 
-1. **TASK-P13-006**, GPU utilization, then 007 to 009 in order. TASK-P13-001 to 005 are done; 001 to 003 are merged.
+1. **TASK-P13-007**, the AI endpoints, then 008 and 009. TASK-P13-001 to 006 are done; 001 to 003 are merged.
 2. Never read a prompt or a response from an invocation log, and never let a provider key leave
    Secrets Manager: the plan's two rules, each held by a test.
 

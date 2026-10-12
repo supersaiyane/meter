@@ -53,6 +53,7 @@ PER_ACCOUNT: Final = frozenset(
         "account_health",
         "bedrock_invocations",
         "container_usage",
+        "gpu_utilization",
         "quotas",
         "waste_cloudwatch",
         "waste_compute",

@@ -21,7 +21,13 @@ from decimal import Decimal
 from typing import Any, Final
 
 from finops_fakes import estate_shape as shape
-from finops_fakes.ai import FAKE_ANTHROPIC, FAKE_OPENAI, FakeInvocationLogs, FakeProviderReports
+from finops_fakes.ai import (
+    FAKE_ANTHROPIC,
+    FAKE_OPENAI,
+    FakeGpuMetrics,
+    FakeInvocationLogs,
+    FakeProviderReports,
+)
 from finops_fakes.budgets import FakeBudgets
 from finops_fakes.catalog import (
     FakeInstanceCatalog,
@@ -55,6 +61,7 @@ from finops_ingest.collectors.container_usage import ContainerUsageCollector
 from finops_ingest.collectors.cost_anomaly import CostAnomalyCollector
 from finops_ingest.collectors.cost_focus import CostFocusCollector
 from finops_ingest.collectors.digests import DigestCollector
+from finops_ingest.collectors.gpu_utilization import GpuUtilizationCollector
 from finops_ingest.collectors.iac_state import IacStateCollector
 from finops_ingest.collectors.instance_catalog import InstanceCatalogCollector
 from finops_ingest.collectors.inventory import InventoryCollector
@@ -178,6 +185,9 @@ def builders(clock: Clock) -> dict[str, Callable[[CollectorContext], Any]]:
         "cost_anomaly": lambda _c: CostAnomalyCollector(clock=clock),
         "cost_focus": lambda _c: CostFocusCollector(FakeCostExport(), clock=clock),
         "finops_score": lambda _c: ScoreCollector(clock=clock),
+        "gpu_utilization": lambda _c: GpuUtilizationCollector(
+            FakeGpuMetrics(at=clock()), clock=clock
+        ),
         "iac_state": lambda _c: IacStateCollector(FakeTerraformState(), clock=clock),
         "instance_catalog": lambda _c: InstanceCatalogCollector(
             FakeInstanceCatalog(), hub_region=shape.REGIONS[0], clock=clock

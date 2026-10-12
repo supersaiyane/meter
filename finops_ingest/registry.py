@@ -534,6 +534,19 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0",
     ),
     ScheduleEntry(
+        collector="gpu_utilization",
+        cadence_seconds=DAILY,
+        reason=(
+            "How busy each GPU instance's accelerators were, P13 spec section 5.6. Daily, for the "
+            "day before: the table holds a day's average and peak, so reading more often reads "
+            "the same day again. The cost is GetMetricData's, USD 0.01 per 1,000 metrics at the "
+            "list price, three a day for each accelerator of each GPU instance the bill names: "
+            "modelled at 0.001 USD a run for one instance of eight accelerators, and not measured "
+            "until an account is read, ISS-002. ADR-0012 and constraint 9."
+        ),
+        est_cost_per_run="0.001",
+    ),
+    ScheduleEntry(
         collector="bedrock_invocations",
         cadence_seconds=DAILY,
         reason=(

@@ -202,7 +202,7 @@ period and finds each source's rows intact after the others' runs.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec section 5.6, OPEN-33 |
 | Delivers | FEAT-084 |
 | Depends on | TASK-P13-002 |
@@ -210,11 +210,21 @@ period and finds each source's rows intact after the others' runs.
 
 **Acceptance criteria.**
 
-- [ ] A migration creates `gpu_utilization_daily`
-- [ ] A query finds GPU instances in the bill with their hours and cost
-- [ ] An adapter reads `nvidia_smi_utilization_gpu` for each EC2 GPU instance the bill names, in
+- [x] A migration creates `gpu_utilization_daily`
+- [x] The collector finds GPU instances in the bill; their hours and cost on the screen are
+      TASK-P13-007's query
+- [x] An adapter reads `nvidia_smi_utilization_gpu` for each EC2 GPU instance the bill names, in
       the namespace `gpu_metrics_namespace` names, and an instance that publishes nothing has no row
-- [ ] The collector is scheduled, composed in both modes and has a fake
+- [x] The collector is scheduled, composed in both modes and has a fake
+
+**Delivered 2026-10-13.** Migration `0052_gpu_utilization_daily`, with the collector's cadence for
+existing tenants; `accelerated_instance_type` and `GpuUtilization` in `finops_core/domain/ai.py`;
+the `GpuMetrics` port; `finops_providers/aws/gpu_metrics.py`, which lists each instance's
+accelerator metrics before reading them, because the dimensions besides the instance are not known
+in advance, and gives the instance the mean of its accelerators' averages and the highest peak;
+`finops_ingest/collectors/gpu_utilization.py`, which asks only about the accelerated instances the
+bill names, so it needs no permission the role did not have; the `METER_GPU_METRICS_NAMESPACE`
+setting; a fake bill with two GPU instances, one publishing and one not; and both compositions.
 
 ---
 
