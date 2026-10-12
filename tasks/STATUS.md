@@ -22,11 +22,11 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 78 total, 11 specified, 13 in build, 51 delivered |
+| Features | 80 total, 11 specified, 13 in build, 51 delivered |
 | Decisions | 35 architecture decision records |
-| Changes | 158 recorded |
+| Changes | 159 recorded |
 | Issues | 161 fixed, 106 open, 0 parked |
-| Open questions | 27 awaiting a decision |
+| Open questions | 30 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
 
@@ -86,7 +86,9 @@ Optimize, teams ranked and nobody named in the ranking; TASK-P11-009 the proof, 
 criteria held against the seeded demo, and P11 delivered on 2026-10-11. The same day source-map-js
 moved to 1.2.2, fixing the one high advisory the scan had accepted, and the scan report now reads an
 npm fix with no named version as a fix, ISS-269; and two test order leaks and the reporting
-journey's types were fixed, ISS-267, ISS-268 and ISS-270. The repository has no git remote, so nothing has been pushed.
+journey's types were fixed, ISS-267, ISS-268 and ISS-270. On 2026-10-12 the owner chose deployment readiness
+as P12, then the security and correctness highs, then the rest of next-in-scope.txt; P12 is specified and
+planned, nine tasks, with OPEN-28 and OPEN-29 answered. The repository has no git remote, so nothing has been pushed.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -262,6 +264,7 @@ ISS-003.
 | P9 | 13 | 0 | 0 | 0 | 0 | 13 | [plan](../docs/plans/P9-implementation-plan.md) |
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 | P11 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
+| P12 | 0 | 0 | 0 | 0 | 9 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
 
 **P0, not in the default state**
 

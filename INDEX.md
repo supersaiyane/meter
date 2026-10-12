@@ -87,7 +87,7 @@ block is caught by `make check-docs`. See
 <!-- generated:features start -->
 <!-- This block is GENERATED from docs/registry.yaml by scripts/docs/sync.py. Edit docs/registry.yaml, then run make doc-sync. Hand edits here are overwritten and make check-docs will fail. See ADR-0014. -->
 
-78 features across 12 sub projects. 11 specified, 3 planned, 13 in build, 51 delivered.
+80 features across 13 sub projects. 11 specified, 5 planned, 13 in build, 51 delivered.
 
 **Every feature has its own document.** The identifier links to it.
 
@@ -148,6 +148,13 @@ block is caught by `make check-docs`. See
 | --- | --- | --- | --- |
 | [FEAT-077](docs/features/FEAT-077-owners-from-tags-catalogue-and-cloudtrail.md) | Owners from tags, the service catalogue and CloudTrail | Delivered | [P11 spec](docs/specs/2026-10-08-p11-owners-and-savings-ledger-design.md) sections 5.1 to 5.4, [P11 plan](docs/plans/P11-implementation-plan.md) |
 | [FEAT-078](docs/features/FEAT-078-savings-ledger.md) | The savings ledger, verified savings credited and re-measured | Delivered | [P11 spec](docs/specs/2026-10-08-p11-owners-and-savings-ledger-design.md) sections 5.5 and 5.6, [P11 plan](docs/plans/P11-implementation-plan.md) |
+
+### P12 Deployment readiness
+
+| ID | Feature | Status | Detail |
+| --- | --- | --- | --- |
+| [FEAT-079](docs/features/FEAT-079-ingest-that-runs.md) | Ingest that runs, one composition and the dispatcher and worker processes | Planned | [P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.1 to 5.3 and 5.6, [P12 plan](docs/plans/P12-implementation-plan.md) |
+| [FEAT-080](docs/features/FEAT-080-deployed-settings.md) | Deployed settings from SSM Parameter Store, and a pipeline that applies its own plan | Planned | [P12 spec](docs/specs/2026-10-12-p12-deployment-readiness-design.md) sections 5.4 and 5.5, [P12 plan](docs/plans/P12-implementation-plan.md) |
 
 ### P3 Utilization and Rightsizing
 
@@ -447,6 +454,7 @@ Index of records: [docs/adr/README.md](docs/adr/README.md)
 | CHG-0156 | 2026-10-11 | Feature | TASK-P11-009, P11 proved and delivered | `pending` | tests/scripts/test_p11_exit_criteria.py seeds the demo and holds all five exit criteria of spec section 13 across the whole estate, among them a run with the catalogue refused and the event history throttled that keeps every row; FEAT-077 and FEAT-078 and P11 delivered, the evidence per criterion in the plan; ISS-021 narrowed to query findings and anomalies |
 | CHG-0157 | 2026-10-11 | Fix | source-map-js 1.2.2, and npm's fix read as npm states it, ISS-269 | `pending` | source-map-js moves from 1.2.1 to 1.2.2, which fixes GHSA-68fv-2mgg-jv7q, admitted through make dep-check; npm audit reports no vulnerability. The scan report now reads npm's fixAvailable of true as a fix that exists, with npm update as its remedy, so a fixable finding fails the gate rather than being absorbed by an acceptance. The acceptance is withdrawn, and check_dev_only.py keeps no rule, since no accepted npm finding depends on a package never shipping |
 | CHG-0158 | 2026-10-11 | Fix | Two test order leaks and the reporting journey's types, ISS-267, ISS-268, ISS-270 | `pending` | The healthz healthy path test pauses other tenants' schedules while it runs, the modules that seed the demo give their partitions back, and the reporting journey typechecks on its own project. Both orders that failed now pass, and tsc over tsconfig.e2e.json exits 0 |
+| CHG-0159 | 2026-10-12 | Scope | P12, deployment readiness, specified and planned | `pending` | The owner chose deployment readiness as the next priority, then the security and correctness highs, then the rest of next-in-scope.txt. The spec makes the platform run outside its tests: one composition of the 33 scheduled collectors, fake or AWS by METER_PROVIDERS, OPEN-28; a dispatcher and a worker with entry points over SQS; the local stack end to end; deployed settings in SSM Parameter Store, OPEN-29, ISS-250; a deploy that applies its own plan, ISS-260; and the first account's runbook with make first-contact. Nine tasks; FEAT-079 and FEAT-080 planned; OPEN-30 open |
 
 <!-- generated:changes end -->
 
@@ -771,6 +779,9 @@ FIXED means the design decision is recorded, not that code exists. Implementatio
 | OPEN-25 | Which service catalogue names owners, AWS AppRegistry, a Backstage catalogue, or a list kept in Meter? ANSWERED 2026-10-08 as recommended: AWS AppRegistry | ANSWERED | TASK-P11-003 | Raised 2026-10-08 by the P11 spec, section 5.3. Recommended: AWS AppRegistry, the store behind myApplications, read only through four calls in the botocore 1.43.108 model, the owner read from the application's attribute group under a configurable key. Backstage waits on OPEN-13, the code host; a list kept in Meter would be a second source of truth. |
 | OPEN-26 | Are creators read from CloudTrail's event history, or from CloudTrail Lake or the organization trail through Athena? ANSWERED 2026-10-08 as recommended: the event history | ANSWERED | TASK-P11-004 | Raised 2026-10-08 by the P11 spec, section 5.4. Recommended: the event history through LookupEvents by resource name, which needs no new infrastructure and reuses the paging the query evidence adapter has, read once per resource; a resource older than the history says so. Lake or the organization trail reach further back and need infrastructure no account has yet, ISS-122, and either can replace the adapter behind the same port. |
 | OPEN-27 | May the savings ledger rank individual engineers, or teams only? ANSWERED 2026-10-08 as recommended: teams only | ANSWERED | TASK-P11-008 | Raised 2026-10-08 by the P11 spec, section 5.6. Recommended: teams only, a person named only as the owner on a team's credits, because a leaderboard of named engineers is a performance review nobody asked Meter to run. Ranking individuals is a change to the screen and its route, not to the data. |
+| OPEN-28 | What do the dispatcher and worker run against before an AWS account is connected? ANSWERED 2026-10-12 as recommended: fakes by a setting | ANSWERED | TASK-P12-001 | Raised 2026-10-12 by the P12 spec, section 5.1. Recommended: METER_PROVIDERS, fake or aws with no default, so the local stack and any deploy before an account run end to end on the fakes and a deployed environment says aws. The alternative, AWS only, would leave the local stack unable to run end to end. |
+| OPEN-29 | Where do a deployed Meter's settings live? ANSWERED 2026-10-12: SSM Parameter Store | ANSWERED | TASK-P12-006 | Raised 2026-10-12 by the P12 spec, section 5.4, for ISS-250. Recommended was a Terraform map per environment written into the task definitions with secrets in Secrets Manager; the owner chose SSM Parameter Store, one parameter per setting under /meter/<env>/, injected through each task definition's secrets, the secret ones created with a placeholder and set by the owner. |
+| OPEN-30 | Which git host takes the remote, and so where does the first pipeline run happen? | OPEN | ISS-179 | Raised 2026-10-12 by the P12 spec, section 3. The pipeline is written for GitLab, .gitlab-ci.yml, and has never run because the repository has no remote. Choosing the host and adding the remote is the owner's; the first push runs the pipeline for the first time, and a push to main runs deploy:dev. |
 
 <!-- generated:open-questions end -->
 
