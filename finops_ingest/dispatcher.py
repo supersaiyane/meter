@@ -4,10 +4,11 @@ The dispatcher enumerates units and publishes them. It does no collection and
 holds no credentials, which is what keeps a fan out over three hundred accounts
 cheap and what stops a bug here from being able to read anything.
 
-The dedup key is the same key the run ledger claims on. That matters: it means a
-redispatch inside the same window is a no operation at both ends, once at the
-queue and once at the database, and neither end has to trust the other to have
-got it right.
+The dedup key is the same key the run ledger claims on. That matters: a unit
+published twice in one dispatch is refused by the publisher, and a unit sent
+again by a later dispatch, or delivered twice by the queue, is a no operation at
+the database, so neither end has to trust the other to have got it right. The
+hub's queue is a standard SQS queue and deduplicates nothing itself.
 """
 
 from __future__ import annotations
@@ -66,10 +67,11 @@ class Publisher(Protocol):
 class InMemoryPublisher:
     """A publisher for the local stack and for tests.
 
-    It remembers the dedup keys it has seen, which is what a FIFO queue does
-    inside its deduplication window. The real queue is configured with the same
-    window, so behaviour here and in deployment differ in durability rather than
-    in semantics.
+    It remembers the dedup keys it has seen, as `finops_ingest.sqs.SqsPublisher`
+    does for one dispatch, so behaviour here and in deployment differ in
+    durability rather than in semantics. Neither is the queue deduplicating: the
+    hub's is a standard queue, and the ledger's claim is what makes a unit sent
+    twice free.
     """
 
     def __init__(self) -> None:

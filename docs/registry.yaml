@@ -2339,6 +2339,16 @@ changes:
     Savings Plans rates, and the payer from the org reader role ARN. Settings gained relay_function_name and
     config_aggregator, empty by default and failing typed when empty. Four stay failing typed, ISS-240 and
     ISS-272. ISS-273 found: a role the worker cannot assume never reaches the account health collector'
+- id: CHG-0162
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-003, the queue published and consumed
+  commit: pending
+  detail: 'finops_ingest/sqs.py: SqsPublisher sends one versioned JSON message per unit and refuses one it already
+    sent in the dispatch; SqsConsumer long polls up to ten, reports each unit with its receive count, deletes
+    in batches of ten and returns what SQS refused. A message it cannot decode is logged and left for the
+    redrive, proven under moto to reach the dead letter queue intact. The dispatcher docstrings said the queue
+    deduplicates within a window; the hub queue is standard, so they now say the ledger claim does'
 issues:
 - id: ISS-189
   severity: LOW

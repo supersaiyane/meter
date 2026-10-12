@@ -495,6 +495,7 @@
     "finops_ingest/metrics.py",
     "finops_ingest/registry.py",
     "finops_ingest/remediation.py",
+    "finops_ingest/sqs.py",
     "finops_ingest/worker.py",
     "finops_mcp/__init__.py",
     "finops_mcp/api.py",
@@ -821,6 +822,7 @@
     "tests/ingest/test_query_audit.py",
     "tests/ingest/test_registry.py",
     "tests/ingest/test_remediation.py",
+    "tests/ingest/test_sqs.py",
     "tests/ingest/test_worker.py",
     "tests/mcp/__init__.py",
     "tests/mcp/test_contract.py",
@@ -10723,6 +10725,16 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/sqs.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/sqs.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/worker.py",
       "t": "finops_core/constants.py",
       "k": "python"
@@ -14410,6 +14422,26 @@
     {
       "s": "tests/ingest/test_remediation.py",
       "t": "finops_ingest/remediation.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_sqs.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_sqs.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_sqs.py",
+      "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/test_sqs.py",
+      "t": "finops_ingest/sqs.py",
       "k": "python"
     },
     {
