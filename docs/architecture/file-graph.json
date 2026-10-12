@@ -2204,6 +2204,11 @@
       "k": "typescript"
     },
     {
+      "s": "finops-web/src/components/__tests__/shell.test.tsx",
+      "t": "finops-web/src/shell/metaStore.ts",
+      "k": "typescript"
+    },
+    {
       "s": "finops-web/src/components/__tests__/surface.test.ts",
       "t": "finops-web/src/components/index.ts",
       "k": "typescript"

@@ -2424,6 +2424,14 @@ changes:
     failing tool message by the same gitleaks rules, replaces each hit with its rule''s name, and returns the hits
     as withheld; finops_api records them in redaction_event with found_in tool_result, migration 0046, and the
     redactions route says where each was found. FEAT-046''s Not doing amended'
+- id: CHG-0170
+  date: '2026-10-12'
+  type: Fix
+  what: ISS-136 closed, a failed request states no coverage figure
+  commit: pending
+  detail: 'The interface pass, 514ae5e, already dropped coverage lines counting nothing, so a failed request''s 0
+    of 0 reads Coverage not yet reported rather than Showing all 0 accounts. Nothing held it. A components test
+    now renders that case beside its failure, and fails when the filter is removed'
 issues:
 - id: ISS-189
   severity: LOW
@@ -3214,8 +3222,11 @@ issues:
     docs/12-UI-DESIGN.md requires complete coverage to say so, and section 4 requires an unknown
     state to suppress the figure rather than default it. Observed on 2026-09-06 running the P0
     frontend with no API reachable
-  status: OPEN
-  detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) sections 4 and 6, `finops-web/src/shell/AppShell.tsx`'
+  status: FIXED
+  detail: '[docs/12-UI-DESIGN.md](docs/12-UI-DESIGN.md) sections 4 and 6, `finops-web/src/shell/AppShell.tsx`.
+    Fixed by the interface pass, 514ae5e: a coverage line counting nothing is dropped, and an empty banner says
+    Coverage not yet reported. Pinned 2026-10-12 by a test that renders a failed request''s 0 of 0 beside its
+    failure and fails if the filter goes'
 - id: ISS-001
   severity: CRITICAL
   summary: Nine requirement areas as one project would produce a shallow scaffold of everything
