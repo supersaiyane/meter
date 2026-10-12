@@ -625,7 +625,7 @@ features:
 - id: FEAT-083
   name: OpenAI and Anthropic cost and usage beside the AWS bill
   subproject: P13
-  status: Specified
+  status: In build
   detail: '[P13 spec](docs/specs/2026-10-12-p13-finops-for-ai-design.md) sections 5.1, 5.3 and 5.5, [P13 plan](docs/plans/P13-implementation-plan.md)'
   doc: docs/features/FEAT-083-openai-and-anthropic.md
 - id: FEAT-084
@@ -2490,6 +2490,12 @@ changes:
   what: The P13 spec and plan, FinOps for AI, with OPEN-31 to OPEN-34 answered and ADR-0036
   commit: pending
   detail: 'Chosen by the owner on 2026-10-12, proposal 2 of next-in-scope.txt. docs/specs/2026-10-12-p13-finops-for-ai-design.md and docs/plans/P13-implementation-plan.md, nine tasks, FEAT-081 to FEAT-085. The owner chose a NAT gateway to reach OpenAI and Anthropic, OPEN-31, recorded in ADR-0036 with the gateway usable by the worker only; Bedrock per user and agent from invocation logs where enabled, OPEN-32; GPU utilization as well as hours and cost, OPEN-33; and x_ columns for token fields until FOCUS 1.5, OPEN-34. Reading the cost collector found its restatement delete would remove any second source''s rows, so cost_focus_daily gains ingest_source. ISS-285 raised: the provider adapters are unverified until a key exists'
+- id: CHG-0173
+  date: '2026-10-12'
+  type: Infrastructure
+  what: TASK-P13-001, a NAT gateway the worker alone may use, ADR-0036
+  commit: pending
+  detail: 'infra/terraform/hub/network.tf adds one NAT gateway with an Elastic IP in the first public subnet and the private route table''s one default route to it, tagged finops:module ai so the platform''s own cost shows it; alb.tf adds worker_internet, one egress rule, TCP 443 to anywhere, and ecs.tf gives it to the worker service alone. tests/contract/test_network_paths.py, which held that there was no NAT, now holds one gateway, three private routes, one rule to the internet in the hub and one service carrying it, and fails on any host outside AWS in the production code but the two providers''. trivy''s AWS-0104 on the rule is accepted with that enforcement, and AWS-0053''s argument no longer says no task has a route out. docs/04-DEPLOYMENT.md and docs/05-SECURITY.md amended. Modelled at about 38.69 USD a month; nothing applied, ISS-002'
 issues:
 - id: ISS-189
   severity: LOW

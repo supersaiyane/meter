@@ -172,8 +172,9 @@ applying another.
 
 ## Network
 
-Workers run in private subnets with no NAT Gateway and no default route. Every
-call leaves through one of three paths, ADR-0035, TASK-P9-001:
+Tasks run in private subnets. Every AWS call leaves through one of three paths,
+ADR-0035, TASK-P9-001, and the worker alone may also reach the internet through a
+fourth, ADR-0036, TASK-P13-001:
 
 - An interface endpoint in the hub's Region for each service the tasks call
   there, sixteen of them, plus the S3 gateway endpoint.
@@ -185,6 +186,12 @@ call leaves through one of three paths, ADR-0035, TASK-P9-001:
 - The relay, a Lambda function outside the VPC invoked through the Lambda
   endpoint, for Budgets, Support and Invoicing, which have no interface endpoint,
   and for spot prices and Savings Plans rates in every Region.
+- One NAT gateway in the first public subnet, the private route table's one
+  default route, for OpenAI's and Anthropic's usage and cost reports, which have
+  no endpoint, P13. Only the worker's security group, `worker_internet`, has a
+  rule that uses it, HTTPS to anywhere; the API, the web, the MCP server and the
+  dispatcher keep no rule to the internet, and the flow logs record every
+  attempt. Modelled at about 38.69 USD a month from eu-west-1's list prices.
 
 **Correction, 2026-10-08.** This section once named a Cost Explorer interface
 endpoint among the hub's own. None can be made in the hub's Region: Cost
@@ -219,6 +226,14 @@ The decision stands, on a different and honest basis:
 Recorded as ISS-080. The lesson generalises: a decision justified on cost
 should have the arithmetic next to it, or it is a preference wearing a
 justification.
+
+**Amended, 2026-10-12.** The third ground no longer holds for the worker. P13
+reads two AI providers that have no endpoint, and the owner chose a NAT gateway
+for them, OPEN-31, ADR-0036. A compromised worker container can now reach any
+host on 443; every other task still cannot reach the internet at all, because no
+other security group has a rule that leads there, which
+`tests/contract/test_network_paths.py` holds. The first two grounds hold for
+every AWS call, which still never uses the gateway.
 
 ## What it costs to run
 

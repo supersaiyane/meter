@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P13 |
-| Status | Specified |
+| Status | In build |
 | Specification | [P13 spec](../specs/2026-10-12-p13-finops-for-ai-design.md), sections 5.1, 5.3 and 5.5 |
 | Tasks | TASK-P13-001, TASK-P13-004 and TASK-P13-005 |
 | Decisions | ADR-0036, OPEN-31 |
@@ -22,6 +22,10 @@ Model API spend is billed outside AWS, so Meter never saw it, and a view of AI s
 shows a fraction of the money.
 
 ## How it works
+
+Built so far: the path, TASK-P13-001. One NAT gateway in the hub's first public subnet is the
+private route table's one default route, and only the worker's security group, `worker_internet`,
+has a rule that uses it, HTTPS to anywhere. Every other task still reaches nothing outside AWS.
 
 `ai_provider_account` names each organization a tenant connects and the Secrets Manager secret,
 under `meter/<env>/ai/`, that holds its admin key. An httpx adapter per provider reads the period

@@ -75,7 +75,7 @@ reach the internet, and the flow logs record any attempt. One gateway rather tha
 a lost zone stops the provider reads until it returns, typed Unreachable, and nothing else.
 Modelled at USD 35.04 a month for the gateway at eu-west-1's list price of USD 0.048 an hour, USD
 3.65 for its public IPv4 address, and USD 0.048 per GB processed; a day of usage reports is
-kilobytes. Tagged `finops:module = network` like the rest of the hub, so the platform meters it.
+kilobytes. Tagged `finops:module = ai`, so the platform's own cost shows what reading the providers costs.
 Recorded in ADR-0036. Answered by the owner on 2026-10-12: NAT gateway.
 
 ### 5.2 FOCUS has no token columns yet, so Meter adds `x_` columns, OPEN-34

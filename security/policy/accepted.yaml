@@ -112,13 +112,33 @@ accepted:
     reachability: >
       The load balancer is internet facing because Meter is a web product that
       people sign into from a browser. It is the only resource in the hub with a
-      public address, every task sits in a private subnet with no route to the
-      internet, and the tasks accept traffic from this security group only.
+      public address, every task sits in a private subnet, only the worker may
+      reach the internet, through the NAT gateway of ADR-0036, and the tasks
+      accept traffic from this security group only.
       Making it internal would mean the product is not reachable, which is not a
       fix.
     owner: PLACEHOLDER-security
     added: 2026-08-27
     review: 2026-11-27
+
+  - id: AWS-0104
+    package: hub/alb.tf
+    target: terraform
+    unfixable: true
+    reachability: >
+      The rule is worker_internet_https, HTTPS to 0.0.0.0/0 for the worker only,
+      which the owner chose on 2026-10-12, OPEN-31, ADR-0036: OpenAI's and
+      Anthropic's usage reports have no VPC endpoint and no fixed address range,
+      so no narrower destination exists for a security group to name. It is
+      port 443 only, on a group only the worker service carries, and every AWS
+      call still leaves through an endpoint. Enforced by
+      tests/contract/test_network_paths.py, which fails on any second rule to the
+      internet, on any port but 443, or on any other service carrying the group.
+      The narrower fix is a domain allow list in Network Firewall, which
+      ADR-0036 prices and declines.
+    owner: PLACEHOLDER-security
+    added: 2026-10-12
+    review: 2027-01-12
 
   - id: AWS-0054
     package: hub/alb.tf
