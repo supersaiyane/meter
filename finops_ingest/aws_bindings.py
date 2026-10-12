@@ -21,6 +21,7 @@ from finops_core.domain.account import AccountKey
 from finops_core.errors import Misconfigured, SchemaDrift
 from finops_ingest.accounts import active_accounts
 from finops_ingest.collectors.account_health import AccountHealthCollector
+from finops_ingest.collectors.ai_usage import BedrockInvocationsCollector
 from finops_ingest.collectors.budgets import BudgetCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
 from finops_ingest.collectors.container_usage import ContainerUsageCollector
@@ -40,6 +41,7 @@ from finops_ingest.collectors.spot_prices import SpotPricesCollector
 from finops_ingest.collectors.topology import CompositeTopologySource
 from finops_ingest.registry import CollectorContext, CollectorRunner
 from finops_providers.aws.accounts import AwsAccountDiscovery
+from finops_providers.aws.bedrock_invocations import BedrockInvocationLogs
 from finops_providers.aws.budgets import AwsBudgets
 from finops_providers.aws.cloudtrail_creators import AwsResourceCreators
 from finops_providers.aws.commitment import CostExplorerCommitmentReport
@@ -136,6 +138,12 @@ def enrolled(context: CollectorContext) -> tuple[tuple[AccountKey, str | None], 
 
 def _account_health(context: CollectorContext) -> CollectorRunner:
     return AccountHealthCollector(AccountHealthCheck(AwsCredentialBroker(context.settings)))
+
+
+def _bedrock_invocations(context: CollectorContext) -> CollectorRunner:
+    session = _assumed(context, "bedrock_invocations")
+    logs = BedrockInvocationLogs(context.settings, context.unit.tenant_id, session=session)
+    return BedrockInvocationsCollector(logs)
 
 
 def _budgets(context: CollectorContext) -> CollectorRunner:
@@ -259,6 +267,7 @@ def _spot_prices(context: CollectorContext) -> CollectorRunner:
 #: Each collector the worker runs that has an AWS composition, built from its adapters.
 AWS_BUILDERS: Final[dict[str, Build]] = {
     "account_health": _account_health,
+    "bedrock_invocations": _bedrock_invocations,
     "budgets": _budgets,
     "commitment": _commitment,
     "container_usage": _container_usage,

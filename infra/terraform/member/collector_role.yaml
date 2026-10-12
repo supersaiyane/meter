@@ -53,6 +53,16 @@ Parameters:
     Default: FinOpsCollectorRole
     Description: Must match METER_COLLECTOR_ROLE_NAME on the hub side.
 
+  InvocationLogGroupPattern:
+    Type: String
+    Default: /aws/bedrock/*
+    AllowedPattern: "^[A-Za-z0-9_./#*-]{1,512}$"
+    Description: >-
+      The CloudWatch Logs groups Bedrock model invocation logging writes to, P13 and FEAT-082.
+      The role may start a Logs Insights query on these and on no other group, because the logs
+      hold every prompt and response: Meter runs one aggregate query on them and reads no body,
+      and this is what keeps its reach into the account's logs to the groups the owner chose.
+
 Resources:
   CollectorRole:
     Type: AWS::IAM::Role
@@ -141,7 +151,21 @@ Resources:
                   # publishes it. See COUNTERS in finops_providers/aws/quotas.py.
                   - ec2:DescribeVpcs
                   - ec2:DescribeAddresses
+                  # P13 bedrock_invocations, TASK-P13-003. Where the account's invocation logs go,
+                  # and the results of the one aggregate query below. Neither names a log group,
+                  # so neither can be narrowed by one.
+                  - bedrock:GetModelInvocationLoggingConfiguration
+                  - logs:GetQueryResults
                 Resource: "*"
+              # P13 bedrock_invocations. Starting a query is the one action that reads a log
+              # group, and the invocation logs hold every prompt and response, so it is granted
+              # on the groups the owner names and nothing else. The query Meter runs returns
+              # aggregates only, held by tests/providers/aws/test_bedrock_invocations.py.
+              - Sid: MeterQueriesInvocationLogsOnly
+                Effect: Allow
+                Action:
+                  - logs:StartQuery
+                Resource: !Sub "arn:${AWS::Partition}:logs:*:${AWS::AccountId}:log-group:${InvocationLogGroupPattern}"
 
 Outputs:
   RoleArn:

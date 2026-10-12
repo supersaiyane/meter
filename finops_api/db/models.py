@@ -1868,6 +1868,44 @@ redaction_event = Table(
     Index("ix_redaction_event__principal", "tenant_id", "principal_id", "occurred_at"),
 )
 
+#: P13, 0048. Tokens and requests per day, model and caller, from every AI source, FEAT-082.
+#: Which sources exist is held by the migration's `ck_ai_usage_daily__provider` and not
+#: mirrored here: ADR-0028 keeps every vendor's name out of `finops_api`.
+ai_usage_daily = Table(
+    "ai_usage_daily",
+    metadata,
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), primary_key=True),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("provider", Text, primary_key=True),
+    #: An AWS account, or the provider's organization.
+    Column("account_id", Text, primary_key=True),
+    Column("usage_date", Date, primary_key=True),
+    Column("model", Text, primary_key=True),
+    #: An empty string in a key column means the source does not report that dimension.
+    Column("workspace", Text, primary_key=True, server_default=""),
+    Column("api_key_id", Text, primary_key=True, server_default=""),
+    #: An IAM ARN or a provider's user identifier, which can name a person: class P.
+    Column("caller", Text, primary_key=True, server_default=""),
+    Column("application", Text, primary_key=True, server_default=""),
+    Column("input_tokens", BigInteger, nullable=False),
+    Column("output_tokens", BigInteger, nullable=False),
+    Column("cache_read_tokens", BigInteger, nullable=False),
+    Column("cache_write_tokens", BigInteger, nullable=False),
+    #: Null where a source counts tokens and not requests, never a zero.
+    Column("requests", BigInteger),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint("model <> ''", name="ck_ai_usage_daily__model_named"),
+    CheckConstraint(
+        "input_tokens >= 0 AND output_tokens >= 0 "
+        "AND cache_read_tokens >= 0 AND cache_write_tokens >= 0",
+        name="ck_ai_usage_daily__tokens_not_negative",
+    ),
+    CheckConstraint("requests >= 0", name="ck_ai_usage_daily__requests_not_negative"),
+    CheckConstraint("collected_at >= as_of", name="ck_ai_usage_daily__collected_after_true"),
+    Index("ix_ai_usage_daily__tenant_date", "tenant_id", "usage_date"),
+)
+
 #: P8, 0026. The two formats an export is written in, mirrored by the migration's constraint.
 REPORT_FORMATS = ("xlsx", "csv")
 #: P8, 0029. What became of a run: streamed to whoever pressed Export, rendered and kept, kept

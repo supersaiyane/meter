@@ -87,3 +87,9 @@ variable "failure_tolerance_percentage" {
   type        = number
   default     = 5
 }
+
+variable "invocation_log_group_pattern" {
+  description = "The CloudWatch Logs groups Bedrock invocation logging writes to, the only groups the collector role may query. P13, FEAT-082."
+  type        = string
+  default     = "/aws/bedrock/*"
+}

@@ -115,13 +115,17 @@ Invocation logs name the caller's ARN and carry up to 16 key value pairs the cal
 `requestMetadata`, which is where an application names itself. They also carry the prompt and the
 response, so Meter reads them only through a CloudWatch Logs Insights query whose every output is
 an aggregate: requests and the four token counts, summed by caller, model and, when the setting
-`bedrock_request_metadata_key` names one, that key's value. A test holds the query to aggregates
+`ai_request_metadata_key` names one, that key's value. A test holds the query to aggregates
 and fails if it names a body field. The collector reads each account and collection Region once a
 day for the day before. An account whose logging configuration names no CloudWatch log group is
 NotOptedIn, with the step that enables it; logs delivered only to S3 read the same, because Meter
 reads CloudWatch Logs. The collector role may start a query only on log groups matching the
 StackSet parameter `InvocationLogGroupPattern`, default `/aws/bedrock/*`, so the reach into a
-member account's logs is one the owner chose. Cost per caller is modelled: the caller's tokens
+member account's logs is one the owner chose. Amended 2026-10-12, TASK-P13-003: the setting is
+`ai_request_metadata_key`, because ADR-0028 keeps a vendor's name out of `finops_core`; the role
+is not granted `logs:StopQuery`, so a query that outruns the collector's wait is left to end on its
+own; and the hub reaches the Bedrock control plane through an interface endpoint in each collection
+Region, as ADR-0035 requires of every AWS call, modelled at 16.06 USD a month each. Cost per caller is modelled: the caller's tokens
 priced at that day's unit cost of the same model and token type in the bill. Answered by the owner
 on 2026-10-12: invocation logs where enabled.
 

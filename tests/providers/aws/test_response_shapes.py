@@ -33,6 +33,15 @@ from botocore.model import ListShape, MapShape, StructureShape
 #: What each adapter reads, per operation. Service, operation, then every response key it touches
 #: at any depth, because the checker walks the shape rather than only its top level.
 READS: dict[tuple[str, str], set[str]] = {
+    # FEAT-082, TASK-P13-003. Where the invocation logs go, and one aggregate query's answer.
+    ("bedrock", "GetModelInvocationLoggingConfiguration"): {
+        "loggingConfig",
+        "cloudWatchConfig",
+        "logGroupName",
+        "s3Config",
+    },
+    ("logs", "StartQuery"): {"queryId"},
+    ("logs", "GetQueryResults"): {"results", "status", "nextToken", "field", "value"},
     # FEAT-030, ISS-200. The inventory, one advanced query against the aggregator.
     ("config", "SelectAggregateResourceConfig"): {"Results", "NextToken"},
     # FEAT-031, ISS-202. Three EC2 reads and one IAM read.
@@ -401,6 +410,10 @@ def test_the_continuation_token_is_the_one_the_service_uses(service: str, operat
 #: What each adapter sends. The check below is the other half of a first call failing: a shape
 #: check passes an adapter that reads the right fields from a request the service will refuse.
 SENDS: dict[tuple[str, str], set[str]] = {
+    # The configuration takes nothing; the query its window, its text and the one log group.
+    ("bedrock", "GetModelInvocationLoggingConfiguration"): set(),
+    ("logs", "StartQuery"): {"logGroupName", "startTime", "endTime", "queryString"},
+    ("logs", "GetQueryResults"): {"queryId"},
     ("config", "SelectAggregateResourceConfig"): {"ConfigurationAggregatorName", "Expression"},
     ("ec2", "DescribeTransitGatewayAttachments"): set(),
     ("ec2", "DescribeVpcPeeringConnections"): set(),
@@ -606,6 +619,23 @@ FALLS_THROUGH: dict[tuple[str, str], set[str]] = {
         "InternalServerException",
         "ResourceNotFoundException",
         "ValidationException",
+    },
+    # Bedrock's invocation logging configuration, TASK-P13-003: the service failing, loud.
+    ("bedrock", "GetModelInvocationLoggingConfiguration"): {"InternalServerException"},
+    # Logs Insights. LimitExceeded, too many queries already running, is Throttled and a group the
+    # configuration names that does not exist is Misconfigured, both in the adapter itself; the
+    # rest is a query this adapter builds wrong or the service failing, loud, ISS-215.
+    ("logs", "StartQuery"): {
+        "InvalidParameterException",
+        "LimitExceededException",
+        "MalformedQueryException",
+        "ResourceNotFoundException",
+        "ServiceUnavailableException",
+    },
+    ("logs", "GetQueryResults"): {
+        "InvalidParameterException",
+        "ResourceNotFoundException",
+        "ServiceUnavailableException",
     },
     # CloudTrail's event history. Each is a request this adapter builds wrong or a trail the
     # account cannot look up in, and fails the account and Region loud, never as nobody.

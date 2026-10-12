@@ -32,10 +32,10 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Screens built | 29 of 31 | `arrives: null` in finops-web/src/shell/sections.ts |
 | Playwright journeys | 55 in 20 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
-| Collectors | 33 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 47 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 248 | test_*.py under tests/ |
-| Test functions | 3046 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Collectors | 34 | modules in finops_ingest/collectors, excluding __init__ |
+| Migration revisions | 48 | files in migrations/versions, all of which are listed below in this file |
+| Test files | 250 | test_*.py under tests/ |
+| Test functions | 3065 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -486,6 +486,8 @@ meter/
 │       │                      groups tests/core/test_ports.py checks. A protocol
 │       │                      in no group is imported from its own module, and
 │       │                      that test never reaches it, ISS-239
+│       ├── ai.py              InvocationLogs, AI_PORTS, P13. Who spent tokens on which
+│       │                      model, read as aggregates and never a prompt
 │       ├── accounts.py        AccountDiscovery
 │       ├── budget.py          BudgetSource, the payer's budgets
 │       ├── catalog.py         PriceCatalog and InstanceCatalog, CATALOG_PORTS, P9
@@ -587,6 +589,10 @@ meter/
 │   │   │                      one window a Region, every zone. ISS-264
 │   │   ├── appregistry.py     FEAT-077, TASK-P11-003. AWS AppRegistry's applications,
 │   │   │                      their owners and the tags that mark their resources
+│   │   ├── bedrock_invocations.py  FEAT-082, TASK-P13-003. Who called which Bedrock
+│   │   │                      model, from the invocation logs: the logging configuration,
+│   │   │                      then one Logs Insights stats query a day, every output a
+│   │   │                      count or a sum. No CloudWatch Logs group is NotOptedIn
 │   │   ├── cloudtrail_creators.py  FEAT-077, TASK-P11-004. Who created a resource,
 │   │   │                      from CloudTrail's event history, paced and asked once
 │   │   ├── savings_plans.py   FEAT-071, TASK-P9-012. Savings Plans rates through the
@@ -1119,6 +1125,9 @@ meter/
 │   ├── catalog.py         AWS's price list and instance types for the estate:
 │   │                      structure from the real extracts, prices from the
 │   │                      estate's own table, so a saving and the bill agree
+│   ├── ai.py              the estate's invocation logs, P13: fake-platform-a read,
+│   │                      fake-product-a to S3 only and the rest nowhere, both
+│   │                      NotOptedIn; three callers of the support assistant
 │   ├── ownership.py       owners beyond the tags, planted in fake-product-b:
 │   │                      an application owner, a person and a pipeline as
 │   │                      creators, and resources older than the 90 day record
@@ -1229,6 +1238,9 @@ meter/
 │       ├── savings_ledger.py  FEAT-078, TASK-P11-006 and 007. Daily; a credit per
 │       │                      verified saving, names fixed, and every closed month
 │       │                      after it judged held, regressed or unobserved
+│       ├── ai_usage.py        FEAT-082, TASK-P13-003. Daily per account and Region;
+│       │                      tokens and requests per caller into ai_usage_daily, a
+│       │                      rerun restating only its own window, Region and source
 │       ├── ownership.py       FEAT-077, TASK-P11-002 to 004. Daily; each resource's
 │       │                      suggested owners into resource_owner: tags, the catalogue,
 │       │                      and the creator of the unnamed, asked once, creator_lookup
@@ -1557,6 +1569,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0048_ai_usage_daily.py  TASK-P13-003. Tokens and requests per day, model and
+│       │                      caller, from every AI source; class P, 13 months
 │       ├── 0047_cost_ai_columns.py  TASK-P13-002. ingest_source and the five x_ columns
 │       │                      on cost_focus_daily: what a line of AI spend bought
 │       ├── 0046_redaction_found_in.py  ISS-085. Where a redaction fired: the

@@ -70,6 +70,8 @@ PER_COLLECTION_REGION = frozenset(
         "compute-optimizer",
         # FEAT-077, TASK-P11-003. Applications live in each member account.
         "servicecatalog-appregistry",
+        # FEAT-082, TASK-P13-003. Where each account's invocation logs go.
+        "bedrock",
     }
 )
 

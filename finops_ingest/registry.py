@@ -201,6 +201,15 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
         est_cost_per_run="0",
     ),
     ScheduleEntry(
+        collector="retention_ai_usage",
+        cadence_seconds=DAILY,
+        reason=(
+            "Tokens and requests per caller are kept 13 months, P13 spec section 6, because a "
+            "caller can name a person. Daily, so a day's usage leaves within a day of its window."
+        ),
+        est_cost_per_run="0",
+    ),
+    ScheduleEntry(
         collector="retention_audit",
         cadence_seconds=DAILY,
         reason=(
@@ -497,6 +506,21 @@ DEFAULT_SCHEDULE: tuple[ScheduleEntry, ...] = (
             "and it reads rows already in the database, so that costs nothing."
         ),
         est_cost_per_run="0",
+    ),
+    ScheduleEntry(
+        collector="bedrock_invocations",
+        cadence_seconds=DAILY,
+        reason=(
+            "Who called which Bedrock model, from the invocation logs, P13 spec section 5.4. "
+            "Daily, for the day before: the logs are complete for a day once it has ended, a "
+            "cost per caller is modelled from the bill, which is itself daily, and reading more "
+            "often would scan the same log events again. The cost is the bytes Logs Insights "
+            "scans in the member account, USD 0.005 per GB at the list price, and the logs hold "
+            "every prompt and response, so a busy account's day can be gigabytes: modelled at two "
+            "GB a run, 0.01 USD, and not measured until an account is read, ISS-002. ADR-0012 "
+            "and constraint 9."
+        ),
+        est_cost_per_run="0.01",
     ),
     ScheduleEntry(
         collector="container_usage",

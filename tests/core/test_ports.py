@@ -62,6 +62,8 @@ EXPECTED_PORTS = {
     # catalogue and who created it, read from different places and failing apart.
     "ServiceCatalogue",
     "ResourceCreators",
+    # P13, TASK-P13-003. Bedrock's invocation logs, read as daily aggregates and never a body.
+    "InvocationLogs",
 }
 
 FORBIDDEN_IMPORTS = {"boto3", "botocore", "fastapi", "sqlalchemy", "httpx", "requests"}
@@ -84,9 +86,9 @@ def port_methods(port: type) -> list[tuple[str, object]]:
 # --- shape -------------------------------------------------------------------
 
 
-def test_there_are_exactly_nineteen_ports() -> None:
+def test_there_are_exactly_twenty_ports() -> None:
     """The provider ports, the three P2 surface ports, the P7 model port, the four P9 catalog
-    ports and the two P11 ownership ports.
+    ports, the two P11 ownership ports and the P13 AI port.
 
     `__all__` also carries the two grouping tuples, so the comparison is against
     the protocols rather than against every name the package exports. Adding a
@@ -98,7 +100,7 @@ def test_there_are_exactly_nineteen_ports() -> None:
     assert exported == EXPECTED_PORTS
 
 
-def test_the_five_groups_together_are_every_port() -> None:
+def test_the_six_groups_together_are_every_port() -> None:
     """The groups exist so a test can ask for provider ports without filtering
     by hand, and a port left out of all of them would be invisible to every
     caller that uses them."""
@@ -110,6 +112,7 @@ def test_the_five_groups_together_are_every_port() -> None:
             *ports.MODEL_PORTS,
             *ports.CATALOG_PORTS,
             *ports.OWNERSHIP_PORTS,
+            *ports.AI_PORTS,
         )
     }
 
@@ -119,6 +122,7 @@ def test_the_five_groups_together_are_every_port() -> None:
     assert len(ports.MODEL_PORTS) == 1
     assert len(ports.CATALOG_PORTS) == 4
     assert len(ports.OWNERSHIP_PORTS) == 2
+    assert len(ports.AI_PORTS) == 1
 
 
 def test_all_ports_are_protocols() -> None:

@@ -135,16 +135,33 @@ def test_nothing_else_in_the_hub_grants_a_bedrock_action() -> None:
     assert named == [("iam.tf", name) for name in (*INVOKE, *INVOKE, THROUGH_THE_PROFILE)]
 
 
-def test_no_member_or_management_role_gains_anything() -> None:
+#: The one Bedrock action a role outside the hub holds, P13 and TASK-P13-003: where a member
+#: account's invocation logs go, so FEAT-082 can read who called which model. It reads a
+#: configuration and invokes nothing.
+MEMBER_BEDROCK_READS = (("collector_role.yaml", "bedrock:GetModelInvocationLoggingConfiguration"),)
+
+
+def test_no_member_or_management_role_can_invoke_a_model() -> None:
     """The model runs in the hub. A member account role that could invoke one would be a
-    second place the assistant could run, with nobody's cost screen watching it."""
-    elsewhere = [
-        str(path.relative_to(ROOT))
-        for stack in sorted(p for p in TERRAFORM.iterdir() if p.is_dir() and p.name != "hub")
-        for path, source in _sources(stack).items()
-        if "bedrock" in source.lower()
+    second place the assistant could run, with nobody's cost screen watching it.
+
+    Until P13 this held that no stack outside the hub mentioned Bedrock at all. FEAT-082 reads
+    where each account's invocation logs go, so the member role holds that one read, and the
+    property is now stated as what it always meant: no Bedrock action but that read."""
+    stacks = sorted(p for p in TERRAFORM.iterdir() if p.is_dir() and p.name != "hub")
+    # The Terraform and the CloudFormation a stack deploys, which is where the member role is.
+    templates = {
+        path: path.read_text(encoding="utf-8") for s in stacks for path in s.rglob("*.yaml")
+    }
+    granted = [
+        (path.name, action)
+        for path, source in {
+            **{p: t for s in stacks for p, t in _sources(s).items()},
+            **templates,
+        }.items()
+        for action in re.findall(r"bedrock:[A-Za-z*]+", source, re.IGNORECASE)
     ]
-    assert elsewhere == []
+    assert granted == list(MEMBER_BEDROCK_READS)
 
 
 # --- the profile and its tag -----------------------------------------------------------

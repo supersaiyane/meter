@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P13 |
-| Status | Specified |
+| Status | In build |
 | Specification | [P13 spec](../specs/2026-10-12-p13-finops-for-ai-design.md), section 5.4 |
 | Tasks | TASK-P13-003 and TASK-P13-007 |
 | Decisions | OPEN-32 |
@@ -24,10 +24,13 @@ attaches, which is where an application or an agent names itself.
 
 ## How it works
 
+Built so far: the collection, TASK-P13-003. The modelled cost per caller and its endpoint follow in
+TASK-P13-007.
+
 For each account and collection Region the collector reads the invocation logging configuration.
 Where it names a CloudWatch log group, it runs one Logs Insights query whose every output is an
 aggregate, requests and four token counts by caller, model and the request metadata key the
-setting `bedrock_request_metadata_key` names, and writes the result to `ai_usage_daily`.
+setting `ai_request_metadata_key` names, and writes the result to `ai_usage_daily`.
 
 ## Data sources and freshness
 

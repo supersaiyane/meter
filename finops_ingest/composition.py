@@ -50,6 +50,7 @@ Build = Callable[[CollectorContext], CollectorRunner]
 PER_ACCOUNT: Final = frozenset(
     {
         "account_health",
+        "bedrock_invocations",
         "container_usage",
         "quotas",
         "waste_cloudwatch",

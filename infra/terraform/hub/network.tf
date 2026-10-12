@@ -52,10 +52,13 @@ locals {
     "config",
     "grafana",
     "bedrock-runtime",
+    # Where each member account's Bedrock invocation logs go, P13 and TASK-P13-003. The control
+    # plane, which bedrock-runtime above is not.
+    "bedrock",
     # Owners from AWS AppRegistry, read in each member account, TASK-P11-003. AWS lists it
     # among the PrivateLink services as com.amazonaws.<region>.servicecatalog-appregistry.
     "servicecatalog-appregistry",
-    # The relay is invoked through this one, so the hub still has no route out.
+    # The relay is invoked through this one, so a relayed call never needs the NAT gateway.
     "lambda",
   ]
 

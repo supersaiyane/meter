@@ -22,9 +22,9 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 
 | Register | Counts |
 | --- | --- |
-| Features | 85 total, 14 specified, 15 in build, 53 delivered |
+| Features | 85 total, 13 specified, 16 in build, 53 delivered |
 | Decisions | 36 architecture decision records |
-| Changes | 174 recorded |
+| Changes | 175 recorded |
 | Issues | 177 fixed, 105 open, 0 parked |
 | Open questions | 34 awaiting a decision |
 
@@ -125,7 +125,8 @@ FEAT-085. Reading the cost collector found its restatement delete would remove a
 so `cost_focus_daily` gains `ingest_source`. ISS-285 raised: the provider adapters are unverified until
 a key exists. TASK-P13-001 added the NAT gateway the worker alone may use, held by the network contract tests. TASK-P13-002 read
 the bill's AI columns into five `x_` columns, model and token type parsed from Bedrock's usage type, and keyed the
-cost collector's restatement on its source.
+cost collector's restatement on its source. TASK-P13-003 read Bedrock usage per caller from the
+invocation logs, through one aggregate query a day that never names a prompt or a response.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
@@ -302,7 +303,7 @@ ISS-003.
 | P10 | 6 | 0 | 0 | 0 | 0 | 6 | [plan](../docs/plans/P10-implementation-plan.md) |
 | P11 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P11-implementation-plan.md) |
 | P12 | 9 | 0 | 0 | 0 | 0 | 9 | [plan](../docs/plans/P12-implementation-plan.md) |
-| P13 | 2 | 0 | 0 | 0 | 7 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
+| P13 | 3 | 0 | 0 | 0 | 6 | 9 | [plan](../docs/plans/P13-implementation-plan.md) |
 
 **P0, not in the default state**
 
@@ -584,6 +585,7 @@ ISS-003.
 | --- | --- | --- |
 | `TASK-P13-001` | Done 2026-10-12 | the NAT gateway, for the worker only |
 | `TASK-P13-002` | Done 2026-10-12 | the bill's AI columns |
+| `TASK-P13-003` | Done 2026-10-12 | Bedrock usage per caller from invocation logs |
 
 <!-- generated:task-status end -->
 

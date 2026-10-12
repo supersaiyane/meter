@@ -48,6 +48,8 @@ locals {
     "servicequotas",
     "compute-optimizer",
     "servicecatalog-appregistry",
+    # Bedrock's invocation logging configuration, P13 and TASK-P13-003.
+    "bedrock",
   ]
   second_endpoints = {
     for service in local.collection_services : service => {

@@ -21,6 +21,7 @@ from decimal import Decimal
 from typing import Any, Final
 
 from finops_fakes import estate_shape as shape
+from finops_fakes.ai import FakeInvocationLogs
 from finops_fakes.budgets import FakeBudgets
 from finops_fakes.catalog import (
     FakeInstanceCatalog,
@@ -45,6 +46,7 @@ from finops_fakes.surface import FakeQuerySurface
 from finops_fakes.terraform_state import FakeTerraformState
 from finops_fakes.topology import FakeTopologySource
 from finops_ingest.collectors.account_health import AccountHealthCollector
+from finops_ingest.collectors.ai_usage import BedrockInvocationsCollector
 from finops_ingest.collectors.budgets import BudgetCollector
 from finops_ingest.collectors.commitment import CommitmentCollector
 from finops_ingest.collectors.commitment_actions import CommitmentActionsCollector
@@ -155,6 +157,9 @@ def builders(clock: Clock) -> dict[str, Callable[[CollectorContext], Any]]:
     return {
         "account_health": lambda _c: AccountHealthCollector(
             FakeRoleHealth(at=clock()), clock=clock
+        ),
+        "bedrock_invocations": lambda _c: BedrockInvocationsCollector(
+            FakeInvocationLogs(at=clock()), clock=clock
         ),
         "budgets": lambda _c: BudgetCollector(FakeBudgets(), clock=clock),
         "commitment": lambda _c: CommitmentCollector(FakeCommitmentReport(at=clock()), clock=clock),
