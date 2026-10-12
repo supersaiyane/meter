@@ -2361,6 +2361,18 @@ changes:
     dispatcher and worker on the fakes. The flag resolver moved to finops_core; the worker stop timeout is 120
     seconds. Fixed ISS-274, the images missing finops_relay, and ISS-275, publishers deduplicating across
     tenants. ISS-182 closed'
+- id: CHG-0164
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-005, the local stack end to end
+  commit: pending
+  detail: 'make up runs the deployed dispatcher and worker image with finops_fakes mounted from the checkout,
+    against LocalStack''s queue, made with its dead letter queue by a ready hook as the hub''s is shaped; one
+    dispatch after the migrations, make dispatch for more. Run on 2026-10-12 after make seed: the queue drained
+    and 52 runs over 34 collectors were recorded in 39 seconds, one a planted Throttled (measured). A test runs
+    one collector from dispatch to ingest_run through the local entry points. finops_core/logs.py makes both
+    processes log JSON with each unit''s fields; the API and MCP server do not yet, ISS-276. Runbook
+    docs/runbooks/local-collection.md'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4899,6 +4911,15 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-276
+  severity: MEDIUM
+  status: OPEN
+  summary: The API and the MCP server write plain text logs, where the observability document says JSON
+  detail: 'Found 2026-10-12 running the local stack for TASK-P12-005. docs/10-OBSERVABILITY.md lists structured
+    JSON logs in CloudWatch, and nothing configured them: the dispatcher and the worker wrote the message alone
+    and dropped every field passed in extra, so a line never said which collector or account it meant. Both
+    processes log through finops_core/logs.py since that task. The API and the MCP server still log through
+    uvicorn''s default text format, and need a log config that uses the same formatter'
 - id: ISS-275
   severity: HIGH
   status: FIXED

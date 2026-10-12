@@ -402,6 +402,7 @@
     "finops_core/domain/waste.py",
     "finops_core/errors.py",
     "finops_core/flags.py",
+    "finops_core/logs.py",
     "finops_core/ports/__init__.py",
     "finops_core/ports/accounts.py",
     "finops_core/ports/budget.py",
@@ -759,6 +760,7 @@
     "tests/core/test_insight.py",
     "tests/core/test_invoice.py",
     "tests/core/test_llm_port.py",
+    "tests/core/test_logs.py",
     "tests/core/test_ownership_domain.py",
     "tests/core/test_ports.py",
     "tests/core/test_quota.py",
@@ -10782,6 +10784,11 @@
     },
     {
       "s": "finops_ingest/processes.py",
+      "t": "finops_core/logs.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/processes.py",
       "t": "finops_ingest/accounts.py",
       "k": "python"
     },
@@ -13308,6 +13315,11 @@
     {
       "s": "tests/core/test_llm_port.py",
       "t": "finops_core/ports/llm.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/core/test_logs.py",
+      "t": "finops_core/logs.py",
       "k": "python"
     },
     {

@@ -39,6 +39,7 @@ from sqlalchemy.engine import Connection
 
 from finops_core.config import ConfigurationError, Settings, load_settings
 from finops_core.flags import FlagResolver
+from finops_core.logs import configure as configure_logging
 from finops_ingest.accounts import active_accounts
 from finops_ingest.composition import production_registry
 from finops_ingest.dispatcher import Dispatcher
@@ -220,7 +221,7 @@ def _start(name: str) -> Settings | None:
     except ConfigurationError as error:
         print(f"{name} cannot start: {error}", file=sys.stderr)
         return None
-    logging.basicConfig(level=settings.log_level)
+    configure_logging(settings.log_level)
     return settings
 
 

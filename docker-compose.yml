@@ -80,8 +80,12 @@ services:
       DEBUG: 0
     ports:
       - "9734:4566"
+    # The work queue and its dead letter queue, created once LocalStack is ready. TASK-P12-005.
+    volumes:
+      - ./docker/localstack/ready.d:/etc/localstack/init/ready.d:ro
+    # Healthy only once that script has run, so the worker never polls a queue that is missing.
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:4566/_localstack/health || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:4566/_localstack/init/ready | grep -q '\"completed\": *true'"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -146,13 +150,21 @@ services:
     depends_on:
       - api
 
+  # The dispatcher and the worker run the deployed image on the fakes, TASK-P12-005. ADR-0022
+  # keeps finops_fakes out of every image, so it is mounted from this checkout and its own entry
+  # points are the command: the image is the one a deployment runs, and only this file, which
+  # nothing deployed reads, puts it on fakes. The dispatcher is one shot, as on the hub's schedule,
+  # so it starts only when run: `make up` runs it once after the migrations, `make dispatch` again.
   dispatcher:
     build:
       context: .
       dockerfile: docker/Dockerfile.worker
+    profiles: ["dispatch"]
     # The runtime image has no shell, so the role is a command argument rather
     # than an environment variable the entrypoint expands. See ADR-0010.
-    command: ["finops_ingest.dispatcher"]
+    command: ["finops_fakes.dispatcher"]
+    volumes:
+      - ./finops_fakes:/app/finops_fakes:ro
     # Every setting, so a new one does not have to be added here as well as
     # in .env. The explicit block below still wins, which is what keeps the
     # in network database URL pointing at the postgres service. ISS-143.
@@ -166,6 +178,7 @@ services:
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
       AWS_DEFAULT_REGION: eu-west-1
+      PYTHONPATH: /app
     depends_on:
       postgres:
         condition: service_healthy
@@ -176,7 +189,9 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.worker
-    command: ["finops_ingest.worker"]
+    command: ["finops_fakes.worker"]
+    volumes:
+      - ./finops_fakes:/app/finops_fakes:ro
     # Every setting, so a new one does not have to be added here as well as
     # in .env. The explicit block below still wins, which is what keeps the
     # in network database URL pointing at the postgres service. ISS-143.
@@ -190,6 +205,7 @@ services:
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
       AWS_DEFAULT_REGION: eu-west-1
+      PYTHONPATH: /app
     depends_on:
       postgres:
         condition: service_healthy

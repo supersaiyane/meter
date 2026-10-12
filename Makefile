@@ -322,6 +322,8 @@ up: local-auth.yaml .env ## Start the full local stack, then run migrations
 	$(MAKE) migrate
 	@# FEAT-069. The data bucket scheduled reports are kept in, made in LocalStack and never in AWS.
 	@$(COMPOSE) run --rm -T api python scripts/ops/local_bucket.py
+	@# TASK-P12-005. One dispatch on the fakes, now the tables exist; the worker is already polling.
+	@$(COMPOSE) run --rm -T dispatcher
 	@echo "API  http://localhost:9731/docs"
 	@echo "Web  http://localhost:9732        the built bundle, which is what this target starts"
 	@echo "     http://localhost:9735        the development server, if npm run dev is running"
@@ -338,6 +340,10 @@ up: local-auth.yaml .env ## Start the full local stack, then run migrations
 local-auth.yaml:
 	@cp local-auth.example.yaml local-auth.yaml
 	@echo "Created local-auth.yaml from the example. It is gitignored."
+
+.PHONY: dispatch
+dispatch: ## Dispatch every tenant's due collectors once, on the local stack's fakes. TASK-P12-005
+	$(COMPOSE) run --rm -T dispatcher
 
 .PHONY: down
 down: ## Stop the local stack, keep the database volume

@@ -129,7 +129,7 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-12 |
 | Implements | Spec sections 2 and 5.2 |
 | Delivers | FEAT-079 |
 | Depends on | TASK-P12-004 |
@@ -137,9 +137,16 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 **Acceptance criteria.**
 
-- [ ] `make up` runs the dispatcher and the worker on fakes against LocalStack's queue
-- [ ] A test proves one collector dispatched, queued, claimed, run and recorded in `ingest_run`
-- [ ] The runbook for the local stack says how to watch it
+- [x] `make up` runs the dispatcher and the worker on fakes against LocalStack's queue: the deployed
+      image with `finops_fakes` mounted, the queue made by a LocalStack ready hook, one dispatch
+      after the migrations and `make dispatch` for more. Run on 2026-10-12: after `make seed` and
+      `make dispatch` the queue drained and 52 runs over 34 collectors were recorded in 39 seconds,
+      one a planted Throttled (measured)
+- [x] A test proves one collector dispatched, queued, claimed, run and recorded in `ingest_run`:
+      `tests/ingest/test_process_mains.py`, through the local stack's own entry points
+- [x] The runbook for the local stack says how to watch it: `docs/runbooks/local-collection.md`;
+      both processes now log JSON lines with each unit's fields, which the observability document
+      promised and nothing did, ISS-276
 
 ---
 

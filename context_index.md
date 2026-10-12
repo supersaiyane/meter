@@ -24,7 +24,7 @@ an over broad caller list. That is deliberate: a reader who checks one extra
 call site loses a minute, a reader who misses an existing implementation writes
 a duplicate.
 
-1096 public symbols across 5 packages.
+1099 public symbols across 5 packages.
 
 ## finops_core
 
@@ -211,6 +211,9 @@ a duplicate.
 | `SchemaDrift` | class | `finops_core/errors.py:136` | The response did not match the shape this adapter expects. | `finops_api/exports/scheduled.py`, `finops_api/identity/local_config.py`, `finops_ingest/aws_bindings.py`, `finops_ingest/collectors/account_health.py`, and 19 more |
 | `FlagResolver` | class | `finops_core/flags.py:42` | Reads a flag for a tenant, caching the per tenant override briefly. | `finops_ingest/processes.py` |
 | `FlagResolver.is_enabled` | method | `finops_core/flags.py:58` |  | `finops_ingest/registry.py` |
+| `JsonFormatter` | class | `finops_core/logs.py:20` | One record as one JSON object: the caller's fields, then the record's own. | nothing in this tree |
+| `JsonFormatter.format` | method | `finops_core/logs.py:23` |  | `finops_api/exports/writers.py`, `finops_ingest/collectors/cost_rollup.py`, `finops_ingest/collectors/recommendations.py`, `finops_providers/aws/cur.py`, and 1 more |
+| `configure` | function | `finops_core/logs.py:38` | Every logger in the process writes JSON lines to standard error, from `level` up. | nothing in this tree |
 | `AccountDiscovery` | class | `finops_core/ports/accounts.py:19` | Reads which accounts exist and how they are arranged. | nothing in this tree |
 | `AccountDiscovery.list_accounts` | method | `finops_core/ports/accounts.py:22` | Every account this organization contains. | `finops_ingest/collectors/org_tree.py` |
 | `AccountDiscovery.describe_organization` | method | `finops_core/ports/accounts.py:35` | Every node of the organization tree, roots and units included. | `finops_ingest/collectors/org_tree.py` |
@@ -572,17 +575,17 @@ a duplicate.
 | `freshness_measurements` | function | `finops_ingest/metrics.py:118` | The three SLO 1 metrics, from one pass over the watermarks. | nothing in this tree |
 | `publish` | function | `finops_ingest/metrics.py:146` | Send the measurements. Returns how many were sent. | `finops_ingest/dispatcher.py` |
 | `screen_and_alert_thresholds` | function | `finops_ingest/metrics.py:175` | The two multiples, returned together so a test can hold them apart. | nothing in this tree |
-| `system_clock` | function | `finops_ingest/processes.py:71` | The wall clock, which an entry point hands to whatever must not read it itself. | nothing in this tree |
-| `window` | function | `finops_ingest/processes.py:76` | The cadence period that ended last at or before `now`, aligned to the epoch. | nothing in this tree |
-| `DispatchSummary` | class | `finops_ingest/processes.py:83` | What one dispatch did, across every tenant. | nothing in this tree |
-| `dispatch_tenant` | function | `finops_ingest/processes.py:92` | Publish one tenant's due units. Returns (published, deduplicated). | nothing in this tree |
-| `dispatch_all` | function | `finops_ingest/processes.py:118` | Every tenant's due units. One tenant failing is logged and never stops the others. | nothing in this tree |
-| `Stop` | class | `finops_ingest/processes.py:149` | Whether the process has been asked to stop, by SIGTERM or SIGINT. | nothing in this tree |
-| `Stop.install` | method | `finops_ingest/processes.py:156` |  | nothing in this tree |
-| `WorkerSummary` | class | `finops_ingest/processes.py:173` | What the worker did before it stopped. | nothing in this tree |
-| `run_worker` | function | `finops_ingest/processes.py:181` | Receive, run and settle batches until `stopping` says to stop. | nothing in this tree |
-| `dispatcher_main` | function | `finops_ingest/processes.py:227` | Run one dispatch and exit: 0, EXIT_PARTIAL when a tenant failed, or EXIT_CONFIGURATION. | `finops_ingest/dispatcher.py` |
-| `worker_main` | function | `finops_ingest/processes.py:245` | Run the worker until SIGTERM: 0 after a clean stop, or EXIT_CONFIGURATION. | `finops_ingest/worker.py` |
+| `system_clock` | function | `finops_ingest/processes.py:72` | The wall clock, which an entry point hands to whatever must not read it itself. | nothing in this tree |
+| `window` | function | `finops_ingest/processes.py:77` | The cadence period that ended last at or before `now`, aligned to the epoch. | nothing in this tree |
+| `DispatchSummary` | class | `finops_ingest/processes.py:84` | What one dispatch did, across every tenant. | nothing in this tree |
+| `dispatch_tenant` | function | `finops_ingest/processes.py:93` | Publish one tenant's due units. Returns (published, deduplicated). | nothing in this tree |
+| `dispatch_all` | function | `finops_ingest/processes.py:119` | Every tenant's due units. One tenant failing is logged and never stops the others. | nothing in this tree |
+| `Stop` | class | `finops_ingest/processes.py:150` | Whether the process has been asked to stop, by SIGTERM or SIGINT. | nothing in this tree |
+| `Stop.install` | method | `finops_ingest/processes.py:157` |  | nothing in this tree |
+| `WorkerSummary` | class | `finops_ingest/processes.py:174` | What the worker did before it stopped. | nothing in this tree |
+| `run_worker` | function | `finops_ingest/processes.py:182` | Receive, run and settle batches until `stopping` says to stop. | nothing in this tree |
+| `dispatcher_main` | function | `finops_ingest/processes.py:228` | Run one dispatch and exit: 0, EXIT_PARTIAL when a tenant failed, or EXIT_CONFIGURATION. | `finops_ingest/dispatcher.py` |
+| `worker_main` | function | `finops_ingest/processes.py:246` | Run the worker until SIGTERM: 0 after a clean stop, or EXIT_CONFIGURATION. | `finops_ingest/worker.py` |
 | `CollectorScope` | class | `finops_ingest/registry.py:25` | What one unit of this collector's work covers. | nothing in this tree |
 | `CollectorOutcome` | class | `finops_ingest/registry.py:35` | What a collector did, for the run ledger to record. | `finops_ingest/collectors/account_health.py`, `finops_ingest/collectors/budgets.py`, `finops_ingest/collectors/commitment.py`, `finops_ingest/collectors/commitment_actions.py`, and 25 more |
 | `CollectorContext` | class | `finops_ingest/registry.py:48` | Everything a collector is given, and nothing it is not. | `finops_ingest/worker.py` |
