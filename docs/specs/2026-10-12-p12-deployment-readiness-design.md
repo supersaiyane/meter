@@ -117,6 +117,13 @@ environment's path. A test holds every field of the settings model to a paramete
 added without one fails the build, which is the drift ISS-250 describes. Answered by the owner on
 2026-10-12: SSM Parameter Store.
 
+Amended 2026-10-12, TASK-P12-006. SSM refuses an empty value, so a setting that is empty on purpose
+reaches the task as an empty environment value from the same map, and becomes a parameter once it
+is given one. The database URL is derived without a password and the password comes from the
+secret RDS manages, as `PGPASSWORD`: that secret holds a username and a password, and the key the
+task definitions asked it for never existed, ISS-278. The placeholder is one the settings model
+refuses, `UNSET_SECRET`, so a task cannot start on it.
+
 ### 5.5 Each deploy applies its own plan
 
 The plan job writes one plan file per environment, and each deploy job needs the plan job of its

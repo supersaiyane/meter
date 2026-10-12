@@ -34,8 +34,8 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 33 | modules in finops_ingest/collectors, excluding __init__ |
 | Migration revisions | 45 | files in migrations/versions, all of which are listed below in this file |
-| Test files | 242 | test_*.py under tests/ |
-| Test functions | 2993 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test files | 243 | test_*.py under tests/ |
+| Test functions | 3000 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1863,6 +1863,9 @@ meter/
     │                          modelled 1,440 USD a month and says which assumption is
     │                          least certain. Validated, never planned. ISS-203
     └── hub/                   the VPC with no NAT, Aurora, SQS, ECR, ECS, ALB, alarms.
+                               settings.tf, TASK-P12-006: every setting an SSM
+                               parameter under /meter/<env>/, from the derived names,
+                               envs/<env>.tfvars and one placeholder secret.
                                cost_exports.tf is P1's export bucket, Glue database
                                and Athena workgroup. The workgroup carries the result
                                location and a bytes scanned cutoff, which is what

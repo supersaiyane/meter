@@ -2373,6 +2373,16 @@ changes:
     one collector from dispatch to ingest_run through the local entry points. finops_core/logs.py makes both
     processes log JSON with each unit''s fields; the API and MCP server do not yet, ISS-276. Runbook
     docs/runbooks/local-collection.md'
+- id: CHG-0165
+  date: '2026-10-12'
+  type: Feature
+  what: TASK-P12-006, deployed settings in SSM Parameter Store
+  commit: pending
+  detail: 'infra/terraform/hub/settings.tf makes one SSM parameter per setting under /meter/<env>/: 13 the stack
+    derives, 79 from a committed map per environment and 1 SecureString made with a placeholder the settings
+    refuse, of 93 (measured). The api, worker and dispatcher read them through secrets, the execution role only
+    its own path; an empty setting is an empty environment value. A test holds them to the settings model.
+    Closes ISS-250 and fixes ISS-277 and ISS-278; opens ISS-279 and ISS-280'
 issues:
 - id: ISS-189
   severity: LOW
@@ -4675,7 +4685,7 @@ issues:
     P7 tables. Found 2026-10-05 while classifying the table.'
 - id: ISS-250
   severity: HIGH
-  status: OPEN
+  status: FIXED
   summary: The hub's task definitions pass 6 of the 74 settings the API requires, so a deployed
     API refuses to start
   detail: '`finops_core/config.py` reads every setting from the environment, with no defaults
@@ -4687,7 +4697,8 @@ issues:
     from TASK-P8-009 among them. `.env.example` is the one complete description and `make up`
     holds a local `.env` to it; nothing holds the hub to it. Found while checking where the
     export row limit would come from in AWS. Where deployed settings live is a decision for the
-    owner.'
+    owner. Fixed 2026-10-12, TASK-P12-006: every setting is an SSM parameter, settings.tf, and a test holds
+    them to the settings model'
 - id: ISS-251
   severity: LOW
   status: OPEN
@@ -4911,6 +4922,40 @@ issues:
     into a Record is possibly undefined, its own fallback VALUES.service included, so firsts was too.
     No gate runs that project alone, which is why it stood. Fixed the same day, CHG-0158: the fallback is
     a named SERVICE constant, and tsc over the e2e project exits 0.'
+- id: ISS-280
+  severity: HIGH
+  status: OPEN
+  summary: No identity provider can run in a deployed environment, so a deployed API authenticates nobody
+  detail: 'Found 2026-10-12 writing the per environment settings for TASK-P12-006. finops_api/main.py refuses any
+    identity provider but local_config, TASK-P0-012 built that one only, and the settings model refuses
+    local_config and local auth in prod, ISS-017. So prod cannot start, and a deployed dev task would look for
+    /app/local-auth.yaml, which no image carries. envs/prod.tfvars names this rather than inventing a provider.
+    Choosing one, SSO through IAM Identity Center or another OIDC provider, is the owner''s decision'
+- id: ISS-279
+  severity: HIGH
+  status: OPEN
+  summary: RDS rotates the managed database password, and a password injected at task start does not follow it
+  detail: 'Found 2026-10-12 building TASK-P12-006. database.tf sets manage_master_user_password, and RDS rotates a
+    managed master secret every seven days by default. The tasks are given the password once, as PGPASSWORD, when
+    they start, so after a rotation every new connection a running task opens is refused until the task is
+    replaced. The fix is one of: IAM database authentication, a connection that reads the secret when it
+    connects, or a deploy that follows each rotation; which is the owner''s choice'
+- id: ISS-278
+  severity: HIGH
+  status: FIXED
+  summary: Every deployed Python task asked the RDS managed secret for a METER_DATABASE_URL key it does not have
+  detail: 'Found 2026-10-12 building TASK-P12-006. The api, worker and dispatcher task definitions set
+    METER_DATABASE_URL from the cluster''s master_user_secret with the JSON key METER_DATABASE_URL. RDS writes that
+    secret itself, with a username and a password and nothing else, so ECS would have failed every task at start.
+    Fixed the same day: the URL is derived without a password and the password is injected as PGPASSWORD from the
+    password key, which libpq reads'
+- id: ISS-277
+  severity: HIGH
+  status: FIXED
+  summary: The scheduled dispatcher ran python -m /opt/venv/bin/python, so no dispatch would ever have run
+  detail: 'Found 2026-10-12 building TASK-P12-006. The worker image''s entrypoint is python -m, and the dispatcher
+    task definition in scheduler.tf set its command to the interpreter, -m and the module, so ECS ran the
+    interpreter''s path as a module name. Fixed the same day: the command is the module alone, and a test holds it'
 - id: ISS-276
   severity: MEDIUM
   status: OPEN

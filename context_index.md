@@ -31,12 +31,12 @@ a duplicate.
 | Symbol | Kind | Location | Purpose | Called by |
 | --- | --- | --- | --- | --- |
 | `ConfigurationError` | class | `finops_core/config.py:40` | The process cannot start with the configuration it was given. | nothing in this tree |
-| `Settings` | class | `finops_core/config.py:44` | Every `METER_` variable in `.env.example`, typed, with no hidden defaults. | nothing in this tree |
-| `Settings.iac_locations` | method | `finops_core/config.py:290` | The configured state locations, split. | nothing in this tree |
-| `Settings.owner_tag_key_list` | method | `finops_core/config.py:301` | The owner tag keys, split, in the order a resource's tags are tried. | nothing in this tree |
-| `Settings.iac_exhaustive` | method | `finops_core/config.py:306` | Accounts whose infrastructure as code the configured backends wholly describe. | nothing in this tree |
-| `Settings.region_list` | method | `finops_core/config.py:353` | `regions` is held as text because a comma separated list from the | nothing in this tree |
-| `load_settings` | function | `finops_core/config.py:373` | Build the settings, or refuse to start and say which variable is at fault. | `finops_api/deps.py`, `finops_api/main.py`, `finops_ingest/processes.py` |
+| `Settings` | class | `finops_core/config.py:50` | Every `METER_` variable in `.env.example`, typed, with no hidden defaults. | nothing in this tree |
+| `Settings.iac_locations` | method | `finops_core/config.py:296` | The configured state locations, split. | nothing in this tree |
+| `Settings.owner_tag_key_list` | method | `finops_core/config.py:307` | The owner tag keys, split, in the order a resource's tags are tried. | nothing in this tree |
+| `Settings.iac_exhaustive` | method | `finops_core/config.py:312` | Accounts whose infrastructure as code the configured backends wholly describe. | nothing in this tree |
+| `Settings.region_list` | method | `finops_core/config.py:369` | `regions` is held as text because a comma separated list from the | nothing in this tree |
+| `load_settings` | function | `finops_core/config.py:389` | Build the settings, or refuse to start and say which variable is at fault. | `finops_api/deps.py`, `finops_api/main.py`, `finops_ingest/processes.py` |
 | `Provider` | class | `finops_core/domain/account.py:18` | The clouds this project can name. Only AWS is implemented in P0. | `finops_api/deps.py`, `finops_api/identity/session.py`, `finops_api/routes/accounts.py`, `finops_ingest/collectors/org_tree.py`, and 1 more |
 | `AccountStatus` | class | `finops_core/domain/account.py:26` | What the provider says about the account, not what we infer. | nothing in this tree |
 | `RoleHealth` | class | `finops_core/domain/account.py:47` | Whether the collector role in a member account is actually usable. | `finops_ingest/collectors/account_health.py` |
@@ -1155,11 +1155,11 @@ a duplicate.
 Each is an entry point, part of a public interface, or dead. Check each one, and delete what is dead. Rung zero of ADR-0013.
 
 - `ConfigurationError` in `finops_core/config.py:40`
-- `Settings` in `finops_core/config.py:44`
-- `Settings.iac_locations` in `finops_core/config.py:290`
-- `Settings.owner_tag_key_list` in `finops_core/config.py:301`
-- `Settings.iac_exhaustive` in `finops_core/config.py:306`
-- `Settings.region_list` in `finops_core/config.py:353`
+- `Settings` in `finops_core/config.py:50`
+- `Settings.iac_locations` in `finops_core/config.py:296`
+- `Settings.owner_tag_key_list` in `finops_core/config.py:307`
+- `Settings.iac_exhaustive` in `finops_core/config.py:312`
+- `Settings.region_list` in `finops_core/config.py:369`
 - `AccountStatus` in `finops_core/domain/account.py:26`
 - `CloudAccount.provider` in `finops_core/domain/account.py:90`
 - `AccountHealth.is_usable` in `finops_core/domain/account.py:105`
