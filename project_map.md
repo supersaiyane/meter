@@ -33,9 +33,9 @@ Update trigger: any new module, moved module, or changed responsibility.
 | Playwright journeys | 55 in 20 spec files | `test(` calls in finops-web/e2e/*.spec.ts |
 | Inventory routes | 8 | `@router.` in finops_api/routes/inventory.py |
 | Collectors | 33 | modules in finops_ingest/collectors, excluding __init__ |
-| Migration revisions | 45 | files in migrations/versions, all of which are listed below in this file |
+| Migration revisions | 46 | files in migrations/versions, all of which are listed below in this file |
 | Test files | 245 | test_*.py under tests/ |
-| Test functions | 3015 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
+| Test functions | 3019 | functions named test_* under tests/. Not the pytest collected total, which counts every parametrised expansion and which only `make verify` can report |
 
 No prose line in this file repeats a figure from this table. That is the rule, and it
 exists because the figures in the prose were wrong on three consecutive sweeps.
@@ -1551,6 +1551,8 @@ meter/
 │       │                      declaration about our own configuration and is never
 │       │                      stored, because a stored judgement outlives the
 │       │                      configuration it was made under
+│       ├── 0046_redaction_found_in.py  ISS-085. Where a redaction fired: the
+│       │                      question, or what a tool returned to the model
 │       ├── 0045_ledger_screen.py  TASK-P11-008. /optimize/ledger admitted as a
 │       │                      saved view's screen
 │       ├── 0044_savings_credit_month.py  TASK-P11-007. Each closed month after a

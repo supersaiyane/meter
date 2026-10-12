@@ -127,8 +127,13 @@ def record_redactions(
     exchange_id: UUID,
     hits: Sequence[Hit],
     at: datetime,
+    found_in: str = "question",
 ) -> int:
-    """One row per rule that fired. The rule and the action, and nothing of the secret."""
+    """One row per rule that fired. The rule and the action, and nothing of the secret.
+
+    `found_in` is `question` or `tool_result`, ISS-085: where the secret was, so a hit in the
+    estate's data is never read as something the asker typed.
+    """
     for hit in hits:
         connection.execute(
             models.redaction_event.insert().values(
@@ -139,6 +144,7 @@ def record_redactions(
                 rule_id=hit.rule_id,
                 action=hit.action.value,
                 occurred_at=at,
+                found_in=found_in,
             )
         )
     return len(hits)

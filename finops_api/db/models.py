@@ -1827,6 +1827,8 @@ Index(
 
 #: P7, 0025. What redaction did on finding a secret, mirrored from `finops_query.redaction`.
 REDACTION_ACTIONS = ("BLOCKED", "REDACTED")
+#: Where a rule fired: the question the asker typed, or what a tool returned to the model. 0046.
+REDACTION_SOURCES = ("question", "tool_result")
 
 redaction_event = Table(
     "redaction_event",
@@ -1847,7 +1849,11 @@ redaction_event = Table(
     Column("rule_id", Text, nullable=False),
     Column("action", Text, nullable=False),
     Column("occurred_at", DateTime(timezone=True), nullable=False),
+    #: The question, or a tool's result, 0046. A tool's result is the estate's data, not
+    #: something the asker typed, ISS-085.
+    Column("found_in", Text, nullable=False, server_default="question"),
     CheckConstraint(_in_list("action", REDACTION_ACTIONS), name="ck_redaction_event__action"),
+    CheckConstraint(_in_list("found_in", REDACTION_SOURCES), name="ck_redaction_event__found_in"),
     CheckConstraint(
         "length(trim(rule_id)) > 0 AND length(trim(principal_id)) > 0",
         name="ck_redaction_event__named",

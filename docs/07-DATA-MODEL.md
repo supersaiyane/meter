@@ -735,7 +735,8 @@ CREATE TABLE redaction_event (
     principal_id    TEXT         NOT NULL,
     rule_id         TEXT         NOT NULL,      -- the gitleaks rule identifier
     action          TEXT         NOT NULL,      -- BLOCKED or REDACTED
-    occurred_at     TIMESTAMPTZ  NOT NULL
+    occurred_at     TIMESTAMPTZ  NOT NULL,
+    found_in        TEXT         NOT NULL DEFAULT 'question'  -- or tool_result, 0046, ISS-085
 );
 ```
 

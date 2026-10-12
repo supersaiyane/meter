@@ -645,8 +645,8 @@ a duplicate.
 | `RedactionRepository.redactions` | method | `finops_api/db/repositories/assistant.py:107` | The asker's events, newest first. | `finops_api/routes/assistant.py` |
 | `RedactionRepository.count` | method | `finops_api/db/repositories/assistant.py:112` | How many the asker has, so a list cut at its limit says it was cut. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/catalog.py`, `finops_api/db/repositories/containers.py`, `finops_api/db/repositories/cost.py`, and 13 more |
 | `record_redactions` | function | `finops_api/db/repositories/assistant.py:122` | One row per rule that fired. The rule and the action, and nothing of the secret. | `finops_api/assistant.py` |
-| `tokens_spent` | function | `finops_api/db/repositories/assistant.py:147` | Every token the tenant's exchanges recorded since `since`. Zero is the truth when | `finops_api/assistant.py` |
-| `record_exchange` | function | `finops_api/db/repositories/assistant.py:159` | Write the one row a question produces, and return its id. | `finops_api/assistant.py` |
+| `tokens_spent` | function | `finops_api/db/repositories/assistant.py:153` | Every token the tenant's exchanges recorded since `since`. Zero is the truth when | `finops_api/assistant.py` |
+| `record_exchange` | function | `finops_api/db/repositories/assistant.py:165` | Write the one row a question produces, and return its id. | `finops_api/assistant.py` |
 | `AccessContext` | class | `finops_api/db/repositories/base.py:31` | Who is reading, and under which request. Both land in the audit row. | `finops_api/deps.py`, `finops_api/exports/scheduled.py` |
 | `ScopedRepository` | class | `finops_api/db/repositories/base.py:38` | Base for every repository that touches tenant data. | nothing in this tree |
 | `ScopedRepository.scoped_select` | method | `finops_api/db/repositories/base.py:49` | A select already confined to the scope. There is no unconfined variant. | `finops_api/db/repositories/accounts.py`, `finops_api/db/repositories/assistant.py`, `finops_api/db/repositories/catalog.py`, `finops_api/db/repositories/containers.py`, and 15 more |
@@ -914,9 +914,9 @@ a duplicate.
 | `exchanges` | function | `finops_api/routes/assistant.py:152` | What the asker has asked and what came back, newest first. Their own and no one else's. | nothing in this tree |
 | `digests` | function | `finops_api/routes/assistant.py:173` | The weekly digests, newest first, each saying whether it was sent. FEAT-041. | nothing in this tree |
 | `redactions` | function | `finops_api/routes/assistant.py:204` | What was blocked or redacted in the asker's own questions, and by which rule. | nothing in this tree |
-| `digest_out` | function | `finops_api/routes/assistant.py:239` | One stored digest, with its citations and whether it went anywhere. | nothing in this tree |
-| `citation_out` | function | `finops_api/routes/assistant.py:255` | One stored citation, as it is sent. | nothing in this tree |
-| `exchange_out` | function | `finops_api/routes/assistant.py:282` | One stored exchange, in the one of three shapes its outcome names. | nothing in this tree |
+| `digest_out` | function | `finops_api/routes/assistant.py:240` | One stored digest, with its citations and whether it went anywhere. | nothing in this tree |
+| `citation_out` | function | `finops_api/routes/assistant.py:256` | One stored citation, as it is sent. | nothing in this tree |
+| `exchange_out` | function | `finops_api/routes/assistant.py:283` | One stored exchange, in the one of three shapes its outcome names. | nothing in this tree |
 | `instance_types` | function | `finops_api/routes/catalog.py:56` | The types that match, filtered by family, architecture, vCPUs and memory. | `finops_ingest/collectors/instance_catalog.py` |
 | `prices` | function | `finops_api/routes/catalog.py:121` | The prices that match, from the version named or each Region's newest. | `finops_ingest/collectors/price_catalog.py`, `finops_ingest/collectors/spot_prices.py`, `finops_providers/aws/price_list.py` |
 | `cost_containers` | function | `finops_api/routes/cost.py:183` | Cost by cluster, namespace and workload. FEAT-035, under Cost per ADR-0020. | nothing in this tree |
@@ -1095,33 +1095,33 @@ a duplicate.
 | `ExchangeOut` | class | `finops_api/schemas.py:1937` | One question and which of three things came back, as three different shapes. | `finops_api/routes/assistant.py` |
 | `DigestOut` | class | `finops_api/schemas.py:1971` | One week's digest, its citations, and whether it went anywhere. FEAT-041. | `finops_api/routes/assistant.py` |
 | `RedactionOut` | class | `finops_api/schemas.py:1990` | What redaction did to one question: the rule and the action. FEAT-046. | `finops_api/routes/assistant.py` |
-| `ExploreGroupingOut` | class | `finops_api/schemas.py:2007` | What one Cost Explorer axis groups by: a FOCUS column, or `tag` and one tag key. | `finops_api/routes/explore.py` |
-| `ExploreWindowOut` | class | `finops_api/schemas.py:2016` | A run of days, inclusive at both ends. | `finops_api/routes/explore.py` |
-| `ExplorePointOut` | class | `finops_api/schemas.py:2025` | What one named group cost in one day or month. A null series is everything else. | `finops_api/routes/explore.py` |
-| `GeographyRefOut` | class | `finops_api/schemas.py:2035` | Which geography a region is in, by the rule the geography map uses. FEAT-061. | `finops_api/routes/explore.py` |
-| `ExploreRowOut` | class | `finops_api/schemas.py:2044` | One row of the explorer's table: a value of each grouping, this period and the last. | `finops_api/routes/explore.py` |
-| `ExploreOut` | class | `finops_api/schemas.py:2059` | FEAT-065. Cost grouped two ways over a period, set against the period before it. | `finops_api/routes/explore.py` |
-| `ForecastRangeOut` | class | `finops_api/schemas.py:2102` | A forecast: a low and a high. Never a point, which is ADR-0015's second condition. | `finops_api/routes/forecast.py` |
-| `ForecastMonthOut` | class | `finops_api/schemas.py:2111` | One month's forecast, or the sentence saying why there is none. | `finops_api/routes/forecast.py` |
-| `ForecastDayOut` | class | `finops_api/schemas.py:2127` | One day of this month: cost billed to date, cumulative, or the band. Never both. | `finops_api/routes/forecast.py` |
-| `ForecastTestOut` | class | `finops_api/schemas.py:2138` | One held out month of the month end backtest. | `finops_api/routes/forecast.py` |
-| `ForecastOut` | class | `finops_api/schemas.py:2156` | FEAT-066. This month's total and the next three months', each a range or the reason. | `finops_api/routes/forecast.py` |
-| `view_name` | function | `finops_api/schemas.py:2200` | A view's name without its surrounding space, refused when nothing else is left. | nothing in this tree |
-| `bounded_query` | function | `finops_api/schemas.py:2210` | The query, refused when it holds more than any screen's parameters could. | nothing in this tree |
-| `SavedViewIn` | class | `finops_api/schemas.py:2227` | A screen and its query, named, kept for oneself or shared with the tenant. FEAT-068. | nothing in this tree |
-| `SavedViewPatchIn` | class | `finops_api/schemas.py:2260` | A new name, a new visibility, or both, for a view the reader saved. | nothing in this tree |
-| `SavedViewOut` | class | `finops_api/schemas.py:2284` | One saved view, as the person reading it sees it. FEAT-068. | `finops_api/routes/views.py` |
-| `recipients_of` | function | `finops_api/schemas.py:2316` | Each person once, in the order given, without surrounding space, refused when blank. | nothing in this tree |
-| `ScheduleIn` | class | `finops_api/schemas.py:2330` | A saved view, one route its screen exports, a format, a cadence and who it is for. | nothing in this tree |
-| `SchedulePatchIn` | class | `finops_api/schemas.py:2351` | Pause or resume a schedule, or change its format, cadence or recipients. | nothing in this tree |
-| `ScheduleOut` | class | `finops_api/schemas.py:2383` | One of the reader's schedules. A schedule is its owner's alone, ADR-0029. | `finops_api/routes/schedules.py` |
-| `SchedulesOut` | class | `finops_api/schemas.py:2404` | The reader's schedules, and what the deployment does with what they render. | `finops_api/routes/schedules.py` |
-| `ReportRunOut` | class | `finops_api/schemas.py:2418` | One run made for the reader: a file they exported, or one a schedule rendered for them. | `finops_api/routes/schedules.py` |
-| `LedgerMonthOut` | class | `finops_api/schemas.py:2443` | One closed month after a credited saving verified. FEAT-078, TASK-P11-008. | `finops_api/routes/ledger.py` |
-| `LedgerCreditOut` | class | `finops_api/schemas.py:2459` | One verified saving, credited to its owner and team, with the months it held. FEAT-078. | `finops_api/routes/ledger.py` |
-| `LedgerCreditsOut` | class | `finops_api/schemas.py:2490` | One team's credits, or every credit the reader can see. FEAT-078. | `finops_api/routes/ledger.py` |
-| `LedgerTeamOut` | class | `finops_api/schemas.py:2501` | A team by the savings it holds. FEAT-078. A team, never a person, OPEN-27. | `finops_api/routes/ledger.py` |
-| `LedgerOut` | class | `finops_api/schemas.py:2519` | Teams by the savings they hold, most first. FEAT-078, TASK-P11-008. | `finops_api/routes/ledger.py` |
+| `ExploreGroupingOut` | class | `finops_api/schemas.py:2009` | What one Cost Explorer axis groups by: a FOCUS column, or `tag` and one tag key. | `finops_api/routes/explore.py` |
+| `ExploreWindowOut` | class | `finops_api/schemas.py:2018` | A run of days, inclusive at both ends. | `finops_api/routes/explore.py` |
+| `ExplorePointOut` | class | `finops_api/schemas.py:2027` | What one named group cost in one day or month. A null series is everything else. | `finops_api/routes/explore.py` |
+| `GeographyRefOut` | class | `finops_api/schemas.py:2037` | Which geography a region is in, by the rule the geography map uses. FEAT-061. | `finops_api/routes/explore.py` |
+| `ExploreRowOut` | class | `finops_api/schemas.py:2046` | One row of the explorer's table: a value of each grouping, this period and the last. | `finops_api/routes/explore.py` |
+| `ExploreOut` | class | `finops_api/schemas.py:2061` | FEAT-065. Cost grouped two ways over a period, set against the period before it. | `finops_api/routes/explore.py` |
+| `ForecastRangeOut` | class | `finops_api/schemas.py:2104` | A forecast: a low and a high. Never a point, which is ADR-0015's second condition. | `finops_api/routes/forecast.py` |
+| `ForecastMonthOut` | class | `finops_api/schemas.py:2113` | One month's forecast, or the sentence saying why there is none. | `finops_api/routes/forecast.py` |
+| `ForecastDayOut` | class | `finops_api/schemas.py:2129` | One day of this month: cost billed to date, cumulative, or the band. Never both. | `finops_api/routes/forecast.py` |
+| `ForecastTestOut` | class | `finops_api/schemas.py:2140` | One held out month of the month end backtest. | `finops_api/routes/forecast.py` |
+| `ForecastOut` | class | `finops_api/schemas.py:2158` | FEAT-066. This month's total and the next three months', each a range or the reason. | `finops_api/routes/forecast.py` |
+| `view_name` | function | `finops_api/schemas.py:2202` | A view's name without its surrounding space, refused when nothing else is left. | nothing in this tree |
+| `bounded_query` | function | `finops_api/schemas.py:2212` | The query, refused when it holds more than any screen's parameters could. | nothing in this tree |
+| `SavedViewIn` | class | `finops_api/schemas.py:2229` | A screen and its query, named, kept for oneself or shared with the tenant. FEAT-068. | nothing in this tree |
+| `SavedViewPatchIn` | class | `finops_api/schemas.py:2262` | A new name, a new visibility, or both, for a view the reader saved. | nothing in this tree |
+| `SavedViewOut` | class | `finops_api/schemas.py:2286` | One saved view, as the person reading it sees it. FEAT-068. | `finops_api/routes/views.py` |
+| `recipients_of` | function | `finops_api/schemas.py:2318` | Each person once, in the order given, without surrounding space, refused when blank. | nothing in this tree |
+| `ScheduleIn` | class | `finops_api/schemas.py:2332` | A saved view, one route its screen exports, a format, a cadence and who it is for. | nothing in this tree |
+| `SchedulePatchIn` | class | `finops_api/schemas.py:2353` | Pause or resume a schedule, or change its format, cadence or recipients. | nothing in this tree |
+| `ScheduleOut` | class | `finops_api/schemas.py:2385` | One of the reader's schedules. A schedule is its owner's alone, ADR-0029. | `finops_api/routes/schedules.py` |
+| `SchedulesOut` | class | `finops_api/schemas.py:2406` | The reader's schedules, and what the deployment does with what they render. | `finops_api/routes/schedules.py` |
+| `ReportRunOut` | class | `finops_api/schemas.py:2420` | One run made for the reader: a file they exported, or one a schedule rendered for them. | `finops_api/routes/schedules.py` |
+| `LedgerMonthOut` | class | `finops_api/schemas.py:2445` | One closed month after a credited saving verified. FEAT-078, TASK-P11-008. | `finops_api/routes/ledger.py` |
+| `LedgerCreditOut` | class | `finops_api/schemas.py:2461` | One verified saving, credited to its owner and team, with the months it held. FEAT-078. | `finops_api/routes/ledger.py` |
+| `LedgerCreditsOut` | class | `finops_api/schemas.py:2492` | One team's credits, or every credit the reader can see. FEAT-078. | `finops_api/routes/ledger.py` |
+| `LedgerTeamOut` | class | `finops_api/schemas.py:2503` | A team by the savings it holds. FEAT-078. A team, never a person, OPEN-27. | `finops_api/routes/ledger.py` |
+| `LedgerOut` | class | `finops_api/schemas.py:2521` | Teams by the savings they hold, most first. FEAT-078, TASK-P11-008. | `finops_api/routes/ledger.py` |
 | `Transport` | class | `finops_api/toolbox.py:33` | What the toolbox needs of an HTTP client, and nothing more. | nothing in this tree |
 | `Transport.get` | method | `finops_api/toolbox.py:36` |  | `finops_api/db/repositories/__init__.py`, `finops_api/db/repositories/explore.py`, `finops_api/db/repositories/forecast.py`, `finops_api/deps.py`, and 76 more |
 | `ApiToolbox` | class | `finops_api/toolbox.py:39` | The asker's tools, each one a route called with the asker's token. | `finops_api/main.py` |

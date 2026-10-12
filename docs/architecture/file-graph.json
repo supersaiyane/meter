@@ -653,6 +653,7 @@
     "migrations/versions/0043_savings_credit.py",
     "migrations/versions/0044_savings_credit_month.py",
     "migrations/versions/0045_ledger_screen.py",
+    "migrations/versions/0046_redaction_found_in.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",

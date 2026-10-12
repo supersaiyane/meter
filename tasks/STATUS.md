@@ -24,8 +24,8 @@ Legend: `[x]` done, `[~]` in progress, `[ ]` not started, `[!]` blocked.
 | --- | --- |
 | Features | 80 total, 11 specified, 13 in build, 53 delivered |
 | Decisions | 35 architecture decision records |
-| Changes | 168 recorded |
-| Issues | 171 fixed, 110 open, 0 parked |
+| Changes | 169 recorded |
+| Issues | 172 fixed, 109 open, 0 parked |
 | Open questions | 30 awaiting a decision |
 
 Generated from `docs/registry.yaml`. Change a status there, then run `make doc-sync`.
@@ -112,7 +112,8 @@ first account's runbook and `make first-contact`, 19 AWS reads made once each an
 TASK-P12-009 proved the four exit criteria and P12 is delivered. A first deployment waits on three
 owner decisions, ISS-279, ISS-280 and ISS-283. Next, in the owner's order: the security and
 correctness highs, ISS-085, ISS-136 and the erasure gaps ISS-226, ISS-249, ISS-255 and ISS-256,
-then the next proposal in next-in-scope.txt.
+then the next proposal in next-in-scope.txt. ISS-085 is fixed: what the tools return is screened for
+secrets before the model reads it, as the question already was.
 
 P9 was widened on 2026-10-07 to the data instances.vantage.sh shows: every commercial Region,
 four price types and five services, polled every 8 hours. Spec section 14. OPEN-17 and OPEN-18 were
