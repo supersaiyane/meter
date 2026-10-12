@@ -160,3 +160,11 @@ def test_an_organization_another_tenant_holds_is_not_taken(
 def test_it_needs_a_database(monkeypatch: pytest.MonkeyPatch, tenant_id: UUID) -> None:
     monkeypatch.delenv("METER_DATABASE_URL", raising=False)
     assert main(args(tenant_id, "org-x"), secrets=Secrets(), factory=Reports) == 2
+
+
+def test_an_anthropic_organization_connects_the_same_way(database: Engine, tenant_id: UUID) -> None:
+    organization = f"org-anthropic-{tenant_id}"
+    argv = args(tenant_id, organization, "meter/test/ai/anthropic")
+    argv[argv.index("openai")] = "anthropic"
+    assert main(argv, secrets=Secrets(), factory=Reports, clock=lambda: NOW) == 0
+    assert [tuple(row)[2] for row in rows(database, organization)] == ["meter/test/ai/anthropic"]

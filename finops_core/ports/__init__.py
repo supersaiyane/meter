@@ -16,7 +16,7 @@ adding it needed a new file and one line here, and changed nothing else.
 """
 
 from finops_core.ports.accounts import AccountDiscovery
-from finops_core.ports.ai import AiProviderReports, InvocationLogs
+from finops_core.ports.ai import AiProviderReports, GpuMetrics, InvocationLogs
 from finops_core.ports.catalog import (
     InstanceCatalog,
     PriceCatalog,
@@ -75,7 +75,7 @@ OWNERSHIP_PORTS = (ServiceCatalogue, ResourceCreators)
 
 #: Who spent tokens on which model, P13 and TASK-P13-003. Their own group, because the cloud fake
 #: does not implement them: their fakes plant the AI estate in `finops_fakes/ai.py`.
-AI_PORTS = (InvocationLogs, AiProviderReports)
+AI_PORTS = (InvocationLogs, AiProviderReports, GpuMetrics)
 
 __all__ = [
     "AI_PORTS",
@@ -90,6 +90,7 @@ __all__ = [
     "CostExport",
     "CredentialBroker",
     "EntitlementResolver",
+    "GpuMetrics",
     "IdentityProvider",
     "InstanceCatalog",
     "InvocationLogs",

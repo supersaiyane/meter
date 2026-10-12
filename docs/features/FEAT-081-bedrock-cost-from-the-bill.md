@@ -24,8 +24,8 @@ the fields that would give one.
 
 ## How it works
 
-Built so far: the columns, TASK-P13-002. The endpoint and the screen follow in TASK-P13-007 and
-TASK-P13-008.
+Built so far: the columns, TASK-P13-002, and `GET /ai/spend`, TASK-P13-007, which groups the bill's
+AI lines by model, token type, feature or IAM principal. The screen follows in TASK-P13-008.
 
 `finops_providers/aws/cur.py` asks the export's catalog for `x_usagetype` and
 `line_item_iam_principal` the way it asks for the split cost columns, and reads them where they

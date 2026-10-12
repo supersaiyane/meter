@@ -1160,6 +1160,42 @@ rerun of a window removes that window's rows it no longer reports, keyed on the 
 account, the dates and, for Bedrock, the Region, and on the run id like the bill's restatement.
 Kept 13 months by `retention_ai_usage`, because a caller can name a person.
 
+### GPU utilization, P13
+
+```sql
+-- P13, FEAT-084, migration 0052. How busy each GPU instance's accelerators were in a day, from
+-- the CloudWatch agent's NVIDIA metrics. The instances are the ones the bill names; hours and
+-- cost come from the bill itself, cost_focus_daily, by the x_usage_type.
+CREATE TABLE gpu_utilization_daily (
+    tenant_id        UUID          NOT NULL REFERENCES tenant(tenant_id),
+    ingest_run_id    UUID          NOT NULL,
+    account_id       TEXT          NOT NULL,
+    region_id        TEXT          NOT NULL,
+    instance_id      TEXT          NOT NULL,
+    usage_date       DATE          NOT NULL,
+    gpu_count        INTEGER       NOT NULL,   -- accelerators that published
+    average_percent  NUMERIC(5, 2) NOT NULL,   -- the mean of their daily averages
+    peak_percent     NUMERIC(5, 2) NOT NULL,   -- the highest of their peaks
+    samples          INTEGER       NOT NULL,   -- the readings they came from
+    as_of            TIMESTAMPTZ   NOT NULL,
+    collected_at     TIMESTAMPTZ   NOT NULL,
+    CONSTRAINT pk_gpu_utilization_daily
+        PRIMARY KEY (tenant_id, account_id, region_id, instance_id, usage_date),
+    CONSTRAINT ck_gpu_utilization_daily__measured CHECK (gpu_count > 0 AND samples > 0),
+    CONSTRAINT ck_gpu_utilization_daily__percentages CHECK (
+        average_percent BETWEEN 0 AND 100 AND peak_percent BETWEEN 0 AND 100),
+    CONSTRAINT ck_gpu_utilization_daily__peak_at_least_average
+        CHECK (peak_percent >= average_percent),
+    CONSTRAINT ck_gpu_utilization_daily__collected_after_true CHECK (collected_at >= as_of)
+);
+```
+
+An instance whose agent published nothing has no row, so the screen reads it as not published,
+never as nought percent; the constraints are why a row cannot say less than one reading. A rerun of
+a day replaces that day's rows for its account and Region. Which usage types are accelerated is
+`accelerated_instance_type` in `finops_core/domain/ai.py`: the p, g, gr, trn, inf and dl families,
+SageMaker's `ml.` form among them, read from the family so a new size is recognised.
+
 ### AI provider organizations, P13
 
 ```sql

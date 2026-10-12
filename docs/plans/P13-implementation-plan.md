@@ -174,7 +174,7 @@ shared with the API, ISS-286.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec section 5.5 |
 | Delivers | FEAT-083 |
 | Depends on | TASK-P13-004 |
@@ -182,10 +182,19 @@ shared with the API, ISS-286.
 
 **Acceptance criteria.**
 
-- [ ] An httpx adapter reads Anthropic's cost report and messages usage report, paginated, every
+- [x] An httpx adapter reads Anthropic's cost report and messages usage report, paginated, every
       failure typed
-- [ ] The collector writes FOCUS rows with `ingest_source` anthropic and usage rows, the same way
-- [ ] An AWS cost run leaves both providers' rows, and each provider's run leaves the bill's
+- [x] The collector writes FOCUS rows with `ingest_source` anthropic and usage rows, the same way
+- [x] An AWS cost run leaves both providers' rows, and each provider's run leaves the bill's
+
+**Delivered 2026-10-13.** `finops_providers/anthropic/reports.py`: the cost report's amounts are in
+cents and are divided by a hundred, its model and token type are fields of their own rather than
+read out of the description, and the messages usage report counts no requests, so a row's
+`requests` is None and never a zero. The default workspace, which the report names with no id,
+reads as the empty workspace. `anthropic_usage` in both compositions over the shared provider
+collector; the connect script takes `--provider anthropic`; migration `0051_anthropic_schedule`
+installs its cadence for existing tenants. A test runs the bill, OpenAI and Anthropic into one
+period and finds each source's rows intact after the others' runs.
 
 ---
 
@@ -193,7 +202,7 @@ shared with the API, ISS-286.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec section 5.6, OPEN-33 |
 | Delivers | FEAT-084 |
 | Depends on | TASK-P13-002 |
@@ -201,11 +210,21 @@ shared with the API, ISS-286.
 
 **Acceptance criteria.**
 
-- [ ] A migration creates `gpu_utilization_daily`
-- [ ] A query finds GPU instances in the bill with their hours and cost
-- [ ] An adapter reads `nvidia_smi_utilization_gpu` for each EC2 GPU instance the bill names, in
+- [x] A migration creates `gpu_utilization_daily`
+- [x] The collector finds GPU instances in the bill; their hours and cost on the screen are
+      TASK-P13-007's query
+- [x] An adapter reads `nvidia_smi_utilization_gpu` for each EC2 GPU instance the bill names, in
       the namespace `gpu_metrics_namespace` names, and an instance that publishes nothing has no row
-- [ ] The collector is scheduled, composed in both modes and has a fake
+- [x] The collector is scheduled, composed in both modes and has a fake
+
+**Delivered 2026-10-13.** Migration `0052_gpu_utilization_daily`, with the collector's cadence for
+existing tenants; `accelerated_instance_type` and `GpuUtilization` in `finops_core/domain/ai.py`;
+the `GpuMetrics` port; `finops_providers/aws/gpu_metrics.py`, which lists each instance's
+accelerator metrics before reading them, because the dimensions besides the instance are not known
+in advance, and gives the instance the mean of its accelerators' averages and the highest peak;
+`finops_ingest/collectors/gpu_utilization.py`, which asks only about the accelerated instances the
+bill names, so it needs no permission the role did not have; the `METER_GPU_METRICS_NAMESPACE`
+setting; a fake bill with two GPU instances, one publishing and one not; and both compositions.
 
 ---
 
@@ -213,7 +232,7 @@ shared with the API, ISS-286.
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-13 |
 | Implements | Spec sections 5.5, 5.7 and 8 |
 | Delivers | FEAT-081, FEAT-082, FEAT-084 |
 | Depends on | TASK-P13-002 to TASK-P13-006 |
@@ -221,11 +240,22 @@ shared with the API, ISS-286.
 
 **Acceptance criteria.**
 
-- [ ] `GET /v1/ai/spend`, `GET /v1/ai/callers` and `GET /v1/ai/gpu`, each through the scope
+- [x] `GET /v1/ai/spend`, `GET /v1/ai/callers` and `GET /v1/ai/gpu`, each through the scope
       dependency and the repository guard, each figure with its basis and both timestamps
-- [ ] A provider row is visible at global scope only, held by a test
-- [ ] Cost per thousand tokens and per request are measured where cost and count come from the
+- [x] A provider row is visible at global scope only, held by a test
+- [x] Cost per thousand tokens and per request are measured where cost and count come from the
       same rows and modelled where they do not
+
+**Delivered 2026-10-13.** `finops_query/ai.py`, pure: spend grouped five ways, tokens measured from
+the bill where its line counts them and modelled from the provider's usage report where it does
+not, each line's share of a shared count split by cost so a count is never doubled; a caller's
+cost at the bill's unit cost for the same source, account, model, token type and day; and the GPU
+fleet. `model_key` matches a log's model identifier to the bill's usage type name. A usage source
+is matched to its bill through the connected providers, so nothing in the query or the API names a
+vendor, ADR-0028. `finops_api/db/repositories/ai.py`, every read scoped and audited, with
+`ai_usage_daily` and `gpu_utilization_daily` scoped by account and `ai_provider_account` payer
+wide; `finops_api/routes/ai.py`, three routes, each exportable. A narrowed reader sees the bill's
+AI lines for its accounts and nothing of a provider's, which no grant names.
 
 ---
 

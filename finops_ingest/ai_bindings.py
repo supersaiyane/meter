@@ -14,9 +14,12 @@ from typing import Final
 
 from finops_core.domain.ai import ProviderAccount
 from finops_core.ports.ai import AiProviderReports
+from finops_ingest.collectors.anthropic_usage import COLLECTOR as ANTHROPIC_COLLECTOR
+from finops_ingest.collectors.anthropic_usage import anthropic_collector
 from finops_ingest.collectors.openai_usage import COLLECTOR as OPENAI_COLLECTOR
 from finops_ingest.collectors.openai_usage import openai_collector
 from finops_ingest.registry import CollectorContext, CollectorRunner
+from finops_providers.anthropic.reports import AnthropicReports
 from finops_providers.aws.reach import hub_client
 from finops_providers.aws.secrets import AiKeyReader
 from finops_providers.openai.reports import OpenAiReports, scope_of
@@ -38,7 +41,22 @@ def _openai_usage(context: CollectorContext) -> CollectorRunner:
     return openai_collector(reports_for)
 
 
+def _anthropic_usage(context: CollectorContext) -> CollectorRunner:
+    settings = context.settings
+    keys = AiKeyReader(settings.env, hub_client(settings, "secretsmanager"))
+    tenant, run = context.unit.tenant_id, context.run_id
+
+    def reports_for(_context: CollectorContext, account: ProviderAccount) -> AiProviderReports:
+        key = keys.reader(
+            account.key_secret_name, scope_key=scope_of(account), collector=ANTHROPIC_COLLECTOR
+        )
+        return AnthropicReports(tenant, run, key)
+
+    return anthropic_collector(reports_for)
+
+
 #: Each AI provider's collector, built from its adapter and the key reader.
 AI_PROVIDER_BUILDERS: Final[dict[str, Build]] = {
+    ANTHROPIC_COLLECTOR: _anthropic_usage,
     OPENAI_COLLECTOR: _openai_usage,
 }

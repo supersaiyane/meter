@@ -880,6 +880,101 @@ def _bedrock_line(
     )
 
 
+#: The GPU half of the AI bill, TASK-P13-006, opt in with the Bedrock lines. Two accelerated
+#: instances in one account: a small one running all day, and a large one six hours a day whose
+#: agent publishes nothing, so the screen shows one measured and one not published.
+@dataclass(frozen=True, kw_only=True)
+class GpuInstance:
+    account: str
+    instance_id: str
+    instance_type: str
+    hours: Decimal
+    #: USD an hour, the fake's, shaped like a price rather than copied from one.
+    hourly: Decimal
+
+
+GPU_INSTANCES: tuple[GpuInstance, ...] = (
+    GpuInstance(
+        account="fake-platform-a",
+        instance_id="i-fakegpu0001",
+        instance_type="g5.xlarge",
+        hours=Decimal("24"),
+        hourly=Decimal("1.006"),
+    ),
+    GpuInstance(
+        account="fake-platform-a",
+        instance_id="i-fakegpu0002",
+        instance_type="p4d.24xlarge",
+        hours=Decimal("6"),
+        hourly=Decimal("32.77"),
+    ),
+)
+
+
+def gpu_rows(base: Iterable[CostRecord]) -> tuple[CostRecord, ...]:
+    """Each GPU instance's hours, on every day the given bill has a line for."""
+    days = sorted({(row.billing_period_start, row.charge_period_start) for row in base})
+    out: list[CostRecord] = []
+    for period, start in days:
+        for gpu in GPU_INSTANCES:
+            end = start + timedelta(days=1)
+            usage_type = f"{BEDROCK_REGION_CODE}-BoxUsage:{gpu.instance_type}"
+            cost = (gpu.hours * gpu.hourly).quantize(Decimal("0.0001"))
+            out.append(
+                CostRecord(
+                    tenant_id=fixtures.TENANT_ID,
+                    ingest_run_id=fixtures.INGEST_RUN_ID,
+                    source_fingerprint=source_fingerprint(
+                        billing_account_id=fixtures.ACCOUNT_IDS[0],
+                        sub_account_id=gpu.account,
+                        charge_period_start=start,
+                        charge_period_end=end,
+                        service_name="AmazonEC2",
+                        resource_id=gpu.instance_id,
+                        sku_id=usage_type,
+                        charge_category="Usage",
+                        commitment_discount_id=None,
+                    ),
+                    as_of=end,
+                    collected_at=fixtures.COLLECTED_AT,
+                    billing_account_id=fixtures.ACCOUNT_IDS[0],
+                    sub_account_id=gpu.account,
+                    billing_period_start=period,
+                    billing_period_end=_period_end(period),
+                    charge_period_start=start,
+                    charge_period_end=end,
+                    provider_name="Fake",
+                    publisher_name="Fake",
+                    invoice_issuer_name="Fake",
+                    service_name="AmazonEC2",
+                    service_category="Compute",
+                    resource_id=gpu.instance_id,
+                    resource_name=gpu.instance_id,
+                    region_id=fixtures.REGION,
+                    availability_zone=None,
+                    charge_category="Usage",
+                    charge_description=f"{gpu.instance_type} on demand",
+                    sku_id=usage_type,
+                    pricing_quantity=gpu.hours,
+                    consumed_quantity=gpu.hours,
+                    consumed_unit="Hrs",
+                    billed_cost=cost,
+                    effective_cost=cost,
+                    list_cost=cost,
+                    contracted_cost=None,
+                    commitment_discount_id=None,
+                    commitment_discount_type=None,
+                    commitment_discount_status=None,
+                    tags=dict(_tags(gpu.account, "AmazonEC2")),
+                    billing_account_name="Fake payer",
+                    billing_currency=CURRENCY,
+                    pricing_unit="Hrs",
+                    x_usage_type=usage_type,
+                )
+            )
+    return tuple(out)
+
+
 #: The line item AWS retracts when the closed period is restated, and the one
 #: it corrects. Named so a test can assert on them rather than on a position in
 #: a list that changes the moment a service is added.
@@ -929,7 +1024,7 @@ class FakeCostExport:
         base = ESTATE if rows is None else rows
         if ai:
             # Opt in, as the split lines are, and derived from the same bill so its days match.
-            base = (*base, *bedrock_rows(base))
+            base = (*base, *bedrock_rows(base), *gpu_rows(base))
         if split:
             # Derived from the rows actually being exported, so the split lines always
             # re-attribute charges this bill really carries, whatever clock it was built

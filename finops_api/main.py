@@ -252,6 +252,17 @@ def p5_routers() -> tuple[APIRouter, ...]:
     return (quotas.router,)
 
 
+def p13_routers() -> tuple[APIRouter, ...]:
+    """The AI spend routes, from the P13 spec's section 8: spend, callers and the GPU fleet.
+
+    All three read tables the P13 collectors write, TASK-P13-002 to 006, so none answers a question
+    with a confident nothing.
+    """
+    from finops_api.routes import ai
+
+    return (ai.router,)
+
+
 def p7_routers() -> tuple[APIRouter, ...]:
     """The assistant routes, from the P7 spec's section 8 table.
 
@@ -412,6 +423,7 @@ def create_app(
         *(p9_routers() if include_p0_routes else ()),
         *(p10_routers() if include_p0_routes else ()),
         *(p11_routers() if include_p0_routes else ()),
+        *(p13_routers() if include_p0_routes else ()),
         *extra_routers,
     )
     # Checked before anything is registered, so a broken contract fails at

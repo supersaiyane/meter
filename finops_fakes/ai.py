@@ -16,14 +16,21 @@ random: a fake whose numbers move between runs cannot be asserted against.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator, Mapping
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from types import MappingProxyType
 
 from finops_core.domain.account import AccountKey
-from finops_core.domain.ai import CACHE_READ, INPUT, OUTPUT, AiUsage, ProviderAccount
+from finops_core.domain.ai import (
+    CACHE_READ,
+    INPUT,
+    OUTPUT,
+    AiUsage,
+    GpuUtilization,
+    ProviderAccount,
+)
 from finops_core.domain.cost import CostRecord, source_fingerprint
 from finops_core.errors import NotOptedIn
 from finops_fakes import fixtures
@@ -204,6 +211,82 @@ PROJECTS: tuple[ProjectUse, ...] = (
 )
 
 
+#: The fake estate's Anthropic organization, TASK-P13-005: two workspaces, the default one among
+#: them, which Anthropic reports with no id.
+FAKE_ANTHROPIC = ProviderAccount(
+    provider="anthropic",
+    organization_id="org-fake-anthropic",
+    name="Fake Anthropic organization",
+    key_secret_name="meter/local/ai/anthropic-fake",
+)
+
+WORKSPACES: tuple[ProjectUse, ...] = (
+    ProjectUse(
+        project="wrkspc-fake-agents",
+        model="claude-fake-sonnet",
+        input_tokens=3_000_000,
+        cached_tokens=1_500_000,
+        output_tokens=400_000,
+        requests=0,
+        users=("",),
+        price=MappingProxyType(
+            {
+                "input": Decimal("0.000003"),
+                "cached input": Decimal("0.0000003"),
+                "output": Decimal("0.000015"),
+            }
+        ),
+    ),
+    ProjectUse(
+        project="",
+        model="claude-fake-haiku",
+        input_tokens=1_000_000,
+        cached_tokens=0,
+        output_tokens=200_000,
+        requests=0,
+        users=("",),
+        price=MappingProxyType(
+            {
+                "input": Decimal("0.0000008"),
+                "cached input": Decimal("0"),
+                "output": Decimal("0.000004"),
+            }
+        ),
+    ),
+)
+
+
+@dataclass(frozen=True, kw_only=True)
+class ProviderShape:
+    """How one provider names what it bills: its own name, its service, its lines and counts."""
+
+    provider_name: str
+    service_name: str
+    uses: tuple[ProjectUse, ...]
+    #: Whether the provider's usage report counts requests. Anthropic's does not.
+    counts_requests: bool
+
+    def line(self, use: ProjectUse, kind: str) -> str:
+        if self.provider_name == "OpenAI":
+            return f"{use.model}, {kind}"
+        return f"{use.model} Usage - {kind.title()} Tokens"
+
+
+SHAPES: Mapping[str, ProviderShape] = MappingProxyType(
+    {
+        "openai": ProviderShape(
+            provider_name="OpenAI", service_name="OpenAI API", uses=PROJECTS, counts_requests=True
+        ),
+        "anthropic": ProviderShape(
+            provider_name="Anthropic",
+            service_name="Claude API",
+            uses=WORKSPACES,
+            counts_requests=False,
+        ),
+    }
+)
+
+
 class FakeProviderReports:
     """`AiProviderReports` in memory: the fake organization's daily cost and usage."""
 
@@ -213,10 +296,11 @@ class FakeProviderReports:
     def costs(
         self, account: ProviderAccount, start: datetime, end: datetime
     ) -> Iterable[CostRecord]:
+        shape = SHAPES[account.provider]
         rows: list[CostRecord] = []
         for day, day_end in _days(start, end):
             drift = DRIFT_CEILING + Decimal((day.date() - self._at.date()).days) / DRIFT_DIVISOR
-            for use in PROJECTS:
+            for use in shape.uses:
                 uncached = use.input_tokens - use.cached_tokens
                 for kind, tokens in (
                     ("input", uncached),
@@ -226,14 +310,17 @@ class FakeProviderReports:
                     if not tokens:
                         continue
                     amount = (Decimal(tokens) * use.price[kind] * drift).quantize(Decimal("0.0001"))
-                    rows.append(_provider_cost(account, day, day_end, use, kind, amount, self._at))
+                    rows.append(
+                        _provider_cost(account, shape, day, day_end, use, kind, amount, self._at)
+                    )
         return tuple(rows)
 
     def usage(self, account: ProviderAccount, start: datetime, end: datetime) -> Iterable[AiUsage]:
+        shape = SHAPES[account.provider]
         rows: list[AiUsage] = []
         for day, day_end in _days(start, end):
             drift = DRIFT_CEILING + Decimal((day.date() - self._at.date()).days) / DRIFT_DIVISOR
-            for use in PROJECTS:
+            for use in shape.uses:
                 share = Decimal(1) / len(use.users)
                 for user in use.users:
                     rows.append(
@@ -251,7 +338,9 @@ class FakeProviderReports:
                             ),
                             cache_read_tokens=int(use.cached_tokens * drift * share),
                             output_tokens=int(use.output_tokens * drift * share),
-                            requests=int(use.requests * drift * share),
+                            requests=(
+                                int(use.requests * drift * share) if shape.counts_requests else None
+                            ),
                             as_of=day_end,
                             collected_at=max(self._at, day_end),
                         )
@@ -264,6 +353,7 @@ _KIND = {"input": INPUT, "cached input": CACHE_READ, "output": OUTPUT}
 
 def _provider_cost(
     account: ProviderAccount,
+    shape: ProviderShape,
     day: datetime,
     day_end: datetime,
     use: ProjectUse,
@@ -271,17 +361,18 @@ def _provider_cost(
     amount: Decimal,
     at: datetime,
 ) -> CostRecord:
-    line = f"{use.model}, {kind}"
+    line = shape.line(use, kind)
+    workspace = use.project or None
     period = date(day.year, day.month, 1)
     return CostRecord(
         tenant_id=fixtures.TENANT_ID,
         ingest_run_id=fixtures.INGEST_RUN_ID,
         source_fingerprint=source_fingerprint(
             billing_account_id=account.organization_id,
-            sub_account_id=use.project,
+            sub_account_id=workspace,
             charge_period_start=day,
             charge_period_end=day_end,
-            service_name="OpenAI API",
+            service_name=shape.service_name,
             resource_id=None,
             sku_id=line,
             charge_category="Usage",
@@ -290,15 +381,15 @@ def _provider_cost(
         as_of=day_end,
         collected_at=max(at, day_end),
         billing_account_id=account.organization_id,
-        sub_account_id=use.project,
+        sub_account_id=workspace,
         billing_period_start=period,
         billing_period_end=date(period.year + (period.month == 12), period.month % 12 + 1, 1),
         charge_period_start=day,
         charge_period_end=day_end,
-        provider_name="OpenAI",
-        publisher_name="OpenAI",
-        invoice_issuer_name="OpenAI",
-        service_name="OpenAI API",
+        provider_name=shape.provider_name,
+        publisher_name=shape.provider_name,
+        invoice_issuer_name=shape.provider_name,
+        service_name=shape.service_name,
         service_category="AI and Machine Learning",
         resource_id=None,
         resource_name=None,
@@ -324,3 +415,51 @@ def _provider_cost(
         x_ai_model=use.model,
         x_ai_token_type=_KIND[kind],
     )
+
+
+# --- GPU utilization, TASK-P13-006 ---------------------------------------------------------
+
+#: What each fake GPU instance's agent published: one busy a fifth of the day, the other nothing,
+#: because nobody installed the agent on it. Average, peak, accelerators and readings a day.
+GPU_PUBLISHED: Mapping[str, tuple[Decimal, Decimal, int, int]] = MappingProxyType(
+    {"i-fakegpu0001": (Decimal("18.50"), Decimal("64.00"), 1, 1440)}
+)
+
+
+class FakeGpuMetrics:
+    """`GpuMetrics` in memory: the fake bill's GPU instances, one published and one not."""
+
+    def __init__(self, *, at: datetime = fixtures.AS_OF) -> None:
+        self._at = at
+
+    def utilization(
+        self,
+        account: AccountKey,
+        region: str,
+        instances: Sequence[str],
+        start: datetime,
+        end: datetime,
+    ) -> Iterable[GpuUtilization]:
+        rows: list[GpuUtilization] = []
+        for day, day_end in _days(start, end):
+            for instance in instances:
+                published = GPU_PUBLISHED.get(instance)
+                if published is None:
+                    continue
+                average, peak, gpus, samples = published
+                rows.append(
+                    GpuUtilization(
+                        tenant_id=fixtures.TENANT_ID,
+                        account_id=account.account_id,
+                        region_id=region,
+                        instance_id=instance,
+                        usage_date=day.date(),
+                        gpu_count=gpus,
+                        average_percent=average,
+                        peak_percent=peak,
+                        samples=samples,
+                        as_of=day_end,
+                        collected_at=max(self._at, day_end),
+                    )
+                )
+        return tuple(rows)

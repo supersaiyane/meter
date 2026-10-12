@@ -9,7 +9,7 @@ secret's name. Running it again for a connected organization updates its name an
 makes it active.
 
     METER_DATABASE_URL=... AWS_REGION=<hub Region> python scripts/ops/connect_ai_provider.py \\
-        --env dev --tenant <uuid> --provider openai --organization org-... \\
+        --env dev --tenant <uuid> --provider openai|anthropic --organization org-... \\
         --name "Platform team" --secret meter/dev/ai/openai-platform
 
 Exit codes: 0 connected, 2 a setting or an argument is missing or wrong, 3 the key could not be
@@ -31,6 +31,8 @@ from sqlalchemy import text
 from finops_core.domain.ai import ProviderAccount
 from finops_core.errors import CollectionError
 from finops_core.ports.ai import AiProviderReports
+from finops_providers.anthropic.reports import COLLECTOR as ANTHROPIC_COLLECTOR
+from finops_providers.anthropic.reports import AnthropicReports
 from finops_providers.aws.secrets import AiKeyReader, ai_key_prefix
 from finops_providers.openai.reports import COLLECTOR as OPENAI_COLLECTOR
 from finops_providers.openai.reports import OpenAiReports, scope_of
@@ -38,6 +40,7 @@ from finops_providers.openai.reports import OpenAiReports, scope_of
 #: How each provider's reports are made from a key, and the collector its failures are named for.
 Factory = Callable[[Callable[[], str]], AiProviderReports]
 PROVIDERS: Final[dict[str, tuple[Factory, str]]] = {
+    "anthropic": (lambda key: AnthropicReports(uuid4(), uuid4(), key), ANTHROPIC_COLLECTOR),
     "openai": (lambda key: OpenAiReports(uuid4(), uuid4(), key), OPENAI_COLLECTOR),
 }
 

@@ -136,7 +136,7 @@ PROBES: Final[tuple[Probe, ...]] = (
     ),
     Probe(
         "CloudWatch metrics",
-        "container_usage",
+        "container_usage and gpu_utilization",
         "member",
         "cloudwatch",
         lambda c, _t: c.list_metrics(Namespace="AWS/EC2", RecentlyActive="PT3H"),

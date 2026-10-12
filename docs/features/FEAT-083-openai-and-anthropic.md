@@ -25,7 +25,9 @@ shows a fraction of the money.
 
 Built so far: the path, TASK-P13-001, and OpenAI, TASK-P13-004: `ai_provider_account`, the key
 reader, `finops_providers/openai/reports.py` over the costs and completions usage reports, the
-`openai_usage` collector and `scripts/ops/connect_ai_provider.py`. Anthropic follows in TASK-P13-005. One NAT gateway in the hub's first public subnet is the
+`openai_usage` collector and `scripts/ops/connect_ai_provider.py`; and Anthropic, TASK-P13-005:
+`finops_providers/anthropic/reports.py` over the cost report, whose amounts are cents, and the
+messages usage report, which counts no requests, and the `anthropic_usage` collector. One NAT gateway in the hub's first public subnet is the
 private route table's one default route, and only the worker's security group, `worker_internet`,
 has a rule that uses it, HTTPS to anywhere. Every other task still reaches nothing outside AWS.
 

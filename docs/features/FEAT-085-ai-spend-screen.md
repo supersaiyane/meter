@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Sub project | P13 |
-| Status | Specified |
+| Status | In build |
 | Specification | [P13 spec](../specs/2026-10-12-p13-finops-for-ai-design.md), sections 5.7 and 8 |
 | Tasks | TASK-P13-007 and TASK-P13-008 |
 | Decisions | OPEN-31 to OPEN-34 |
@@ -21,6 +21,8 @@ Each source answers part of the question, and a person asking what the AI spend 
 parts side by side, each figure saying how it was arrived at.
 
 ## How it works
+
+Built so far: the three endpoints, TASK-P13-007. The screen follows in TASK-P13-008.
 
 The screen reads `GET /v1/ai/spend`, `GET /v1/ai/callers` and `GET /v1/ai/gpu`. Each figure carries
 its basis, measured or modelled, and each panel its freshness from `as_of` and `collected_at`.

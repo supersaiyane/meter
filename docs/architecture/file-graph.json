@@ -313,6 +313,7 @@
     "finops_api/db/models.py",
     "finops_api/db/repositories/__init__.py",
     "finops_api/db/repositories/accounts.py",
+    "finops_api/db/repositories/ai.py",
     "finops_api/db/repositories/assistant.py",
     "finops_api/db/repositories/base.py",
     "finops_api/db/repositories/catalog.py",
@@ -349,6 +350,7 @@
     "finops_api/middleware.py",
     "finops_api/routes/__init__.py",
     "finops_api/routes/accounts.py",
+    "finops_api/routes/ai.py",
     "finops_api/routes/assistant.py",
     "finops_api/routes/catalog.py",
     "finops_api/routes/cost.py",
@@ -469,6 +471,7 @@
     "finops_ingest/collectors/account_health.py",
     "finops_ingest/collectors/ai_providers.py",
     "finops_ingest/collectors/ai_usage.py",
+    "finops_ingest/collectors/anthropic_usage.py",
     "finops_ingest/collectors/budgets.py",
     "finops_ingest/collectors/catalog_reads.py",
     "finops_ingest/collectors/commitment.py",
@@ -478,6 +481,7 @@
     "finops_ingest/collectors/cost_focus.py",
     "finops_ingest/collectors/cost_rollup.py",
     "finops_ingest/collectors/digests.py",
+    "finops_ingest/collectors/gpu_utilization.py",
     "finops_ingest/collectors/iac_state.py",
     "finops_ingest/collectors/instance_catalog.py",
     "finops_ingest/collectors/inventory.py",
@@ -517,6 +521,8 @@
     "finops_mcp/server.py",
     "finops_providers/__init__.py",
     "finops_providers/ai_reports.py",
+    "finops_providers/anthropic/__init__.py",
+    "finops_providers/anthropic/reports.py",
     "finops_providers/aws/__init__.py",
     "finops_providers/aws/accounts.py",
     "finops_providers/aws/appregistry.py",
@@ -532,6 +538,7 @@
     "finops_providers/aws/container_insights.py",
     "finops_providers/aws/credentials.py",
     "finops_providers/aws/cur.py",
+    "finops_providers/aws/gpu_metrics.py",
     "finops_providers/aws/health.py",
     "finops_providers/aws/instance_types.py",
     "finops_providers/aws/invoices.py",
@@ -557,6 +564,7 @@
     "finops_providers/openai/reports.py",
     "finops_query/__init__.py",
     "finops_query/actions.py",
+    "finops_query/ai.py",
     "finops_query/anomaly.py",
     "finops_query/blast_radius.py",
     "finops_query/classify.py",
@@ -672,6 +680,8 @@
     "migrations/versions/0048_ai_usage_daily.py",
     "migrations/versions/0049_ai_provider_account.py",
     "migrations/versions/0050_ai_collector_schedules.py",
+    "migrations/versions/0051_anthropic_schedule.py",
+    "migrations/versions/0052_gpu_utilization_daily.py",
     "scripts/ci/check_dashboards.py",
     "scripts/ci/check_dev_only.py",
     "scripts/ci/check_docs_only.py",
@@ -703,6 +713,7 @@
     "scripts/ops/restore_drill.py",
     "tests/__init__.py",
     "tests/api/__init__.py",
+    "tests/api/test_ai_routes.py",
     "tests/api/test_assistant_budget.py",
     "tests/api/test_assistant_limit.py",
     "tests/api/test_assistant_redaction.py",
@@ -779,6 +790,7 @@
     "tests/core/test_errors.py",
     "tests/core/test_explore_periods.py",
     "tests/core/test_geography.py",
+    "tests/core/test_gpu.py",
     "tests/core/test_iac.py",
     "tests/core/test_insight.py",
     "tests/core/test_invoice.py",
@@ -822,6 +834,7 @@
     "tests/ingest/collectors/test_cost_focus_sources.py",
     "tests/ingest/collectors/test_cost_rollup.py",
     "tests/ingest/collectors/test_digests.py",
+    "tests/ingest/collectors/test_gpu_utilization.py",
     "tests/ingest/collectors/test_iac_state.py",
     "tests/ingest/collectors/test_instance_catalog.py",
     "tests/ingest/collectors/test_inventory.py",
@@ -886,6 +899,7 @@
     "tests/providers/aws/test_container_insights.py",
     "tests/providers/aws/test_credentials.py",
     "tests/providers/aws/test_cur.py",
+    "tests/providers/aws/test_gpu_metrics.py",
     "tests/providers/aws/test_health.py",
     "tests/providers/aws/test_instance_types.py",
     "tests/providers/aws/test_invoices.py",
@@ -912,6 +926,7 @@
     "tests/providers/fake/test_utilization_estates.py",
     "tests/providers/test_ai_reports.py",
     "tests/providers/test_amg_surface.py",
+    "tests/providers/test_anthropic_reports.py",
     "tests/providers/test_fake.py",
     "tests/providers/test_fake_surface.py",
     "tests/providers/test_grafana_client.py",
@@ -925,6 +940,7 @@
     "tests/query/insight/test_injection_set.py",
     "tests/query/insight/test_refusal_set.py",
     "tests/query/test_actions.py",
+    "tests/query/test_ai.py",
     "tests/query/test_anomaly.py",
     "tests/query/test_blast_radius.py",
     "tests/query/test_classify.py",
@@ -7248,6 +7264,26 @@
       "k": "python"
     },
     {
+      "s": "finops_api/db/repositories/ai.py",
+      "t": "finops_api/db/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/ai.py",
+      "t": "finops_api/db/repositories/base.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/ai.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/db/repositories/ai.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
       "s": "finops_api/db/repositories/assistant.py",
       "t": "finops_api/db/__init__.py",
       "k": "python"
@@ -8005,6 +8041,56 @@
     {
       "s": "finops_api/routes/accounts.py",
       "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ai.py",
+      "t": "finops_api/db/repositories/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ai.py",
+      "t": "finops_api/db/repositories/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ai.py",
+      "t": "finops_api/deps.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ai.py",
+      "t": "finops_api/exports/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ai.py",
+      "t": "finops_api/routes/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ai.py",
+      "t": "finops_api/schemas.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ai.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ai.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ai.py",
+      "t": "finops_core/domain/tenant.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_api/routes/ai.py",
+      "t": "finops_query/__init__.py",
       "k": "python"
     },
     {
@@ -9374,6 +9460,11 @@
     },
     {
       "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/anthropic_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
       "t": "finops_ingest/collectors/budgets.py",
       "k": "python"
     },
@@ -9405,6 +9496,11 @@
     {
       "s": "finops_fakes/composition.py",
       "t": "finops_ingest/collectors/digests.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_fakes/composition.py",
+      "t": "finops_ingest/collectors/gpu_utilization.py",
       "k": "python"
     },
     {
@@ -9884,12 +9980,22 @@
     },
     {
       "s": "finops_ingest/ai_bindings.py",
+      "t": "finops_ingest/collectors/anthropic_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/ai_bindings.py",
       "t": "finops_ingest/collectors/openai_usage.py",
       "k": "python"
     },
     {
       "s": "finops_ingest/ai_bindings.py",
       "t": "finops_ingest/registry.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/ai_bindings.py",
+      "t": "finops_providers/anthropic/reports.py",
       "k": "python"
     },
     {
@@ -9950,6 +10056,11 @@
     {
       "s": "finops_ingest/aws_bindings.py",
       "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_ingest/collectors/gpu_utilization.py",
       "k": "python"
     },
     {
@@ -10065,6 +10176,11 @@
     {
       "s": "finops_ingest/aws_bindings.py",
       "t": "finops_providers/aws/cur.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/aws_bindings.py",
+      "t": "finops_providers/aws/gpu_metrics.py",
       "k": "python"
     },
     {
@@ -10218,6 +10334,11 @@
       "k": "python"
     },
     {
+      "s": "finops_ingest/collectors/anthropic_usage.py",
+      "t": "finops_ingest/collectors/ai_providers.py",
+      "k": "python"
+    },
+    {
       "s": "finops_ingest/collectors/budgets.py",
       "t": "finops_core/domain/budget.py",
       "k": "python"
@@ -10360,6 +10481,26 @@
     {
       "s": "finops_ingest/collectors/digests.py",
       "t": "finops_query/digest.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/gpu_utilization.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/gpu_utilization.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/gpu_utilization.py",
+      "t": "finops_core/ports/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_ingest/collectors/gpu_utilization.py",
+      "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {
@@ -11118,6 +11259,26 @@
       "k": "python"
     },
     {
+      "s": "finops_providers/anthropic/reports.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/anthropic/reports.py",
+      "t": "finops_core/domain/cost.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/anthropic/reports.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/anthropic/reports.py",
+      "t": "finops_providers/ai_reports.py",
+      "k": "python"
+    },
+    {
       "s": "finops_providers/aws/__init__.py",
       "t": "finops_providers/aws/accounts.py",
       "k": "python"
@@ -11389,6 +11550,31 @@
     },
     {
       "s": "finops_providers/aws/cur.py",
+      "t": "finops_providers/aws/client.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/gpu_metrics.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/gpu_metrics.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/gpu_metrics.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/gpu_metrics.py",
+      "t": "finops_core/errors.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_providers/aws/gpu_metrics.py",
       "t": "finops_providers/aws/client.py",
       "k": "python"
     },
@@ -11755,6 +11941,11 @@
     {
       "s": "finops_query/actions.py",
       "t": "finops_core/domain/waste.py",
+      "k": "python"
+    },
+    {
+      "s": "finops_query/ai.py",
+      "t": "finops_core/domain/ai.py",
       "k": "python"
     },
     {
@@ -12139,6 +12330,11 @@
     },
     {
       "s": "scripts/ops/connect_ai_provider.py",
+      "t": "finops_providers/anthropic/reports.py",
+      "k": "python"
+    },
+    {
+      "s": "scripts/ops/connect_ai_provider.py",
       "t": "finops_providers/aws/secrets.py",
       "k": "python"
     },
@@ -12220,6 +12416,51 @@
     {
       "s": "scripts/ops/restore_drill.py",
       "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_ai_routes.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_ai_routes.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_ai_routes.py",
+      "t": "finops_ingest/collectors/ai_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_ai_routes.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_ai_routes.py",
+      "t": "finops_ingest/collectors/gpu_utilization.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_ai_routes.py",
+      "t": "finops_ingest/collectors/openai_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_ai_routes.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_ai_routes.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/api/test_ai_routes.py",
+      "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {
@@ -13643,6 +13884,11 @@
       "k": "python"
     },
     {
+      "s": "tests/core/test_gpu.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
       "s": "tests/core/test_iac.py",
       "t": "finops_core/domain/iac.py",
       "k": "python"
@@ -13905,6 +14151,16 @@
     {
       "s": "tests/ingest/collectors/test_ai_providers.py",
       "t": "finops_ingest/collectors/ai_providers.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_providers.py",
+      "t": "finops_ingest/collectors/anthropic_usage.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_ai_providers.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
       "k": "python"
     },
     {
@@ -14175,6 +14431,41 @@
     {
       "s": "tests/ingest/collectors/test_digests.py",
       "t": "finops_query/digest.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_gpu_utilization.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_gpu_utilization.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_gpu_utilization.py",
+      "t": "finops_ingest/collectors/cost_focus.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_gpu_utilization.py",
+      "t": "finops_ingest/collectors/gpu_utilization.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_gpu_utilization.py",
+      "t": "finops_ingest/collectors/partitions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_gpu_utilization.py",
+      "t": "finops_ingest/dispatcher.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/ingest/collectors/test_gpu_utilization.py",
+      "t": "finops_ingest/registry.py",
       "k": "python"
     },
     {
@@ -15563,6 +15854,26 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/aws/test_gpu_metrics.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_gpu_metrics.py",
+      "t": "finops_core/config.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_gpu_metrics.py",
+      "t": "finops_core/domain/account.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/aws/test_gpu_metrics.py",
+      "t": "finops_providers/aws/gpu_metrics.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/aws/test_health.py",
       "t": "finops_core/domain/account.py",
       "k": "python"
@@ -15948,6 +16259,21 @@
       "k": "python"
     },
     {
+      "s": "tests/providers/test_anthropic_reports.py",
+      "t": "finops_core/__init__.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_anthropic_reports.py",
+      "t": "finops_core/domain/ai.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/providers/test_anthropic_reports.py",
+      "t": "finops_providers/anthropic/reports.py",
+      "k": "python"
+    },
+    {
       "s": "tests/providers/test_fake.py",
       "t": "finops_core/__init__.py",
       "k": "python"
@@ -16090,6 +16416,11 @@
     {
       "s": "tests/query/test_actions.py",
       "t": "finops_query/actions.py",
+      "k": "python"
+    },
+    {
+      "s": "tests/query/test_ai.py",
+      "t": "finops_query/__init__.py",
       "k": "python"
     },
     {

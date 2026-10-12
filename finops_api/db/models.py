@@ -1930,6 +1930,34 @@ ai_provider_account = Table(
     Index("ix_ai_provider_account__tenant", "tenant_id", "provider"),
 )
 
+#: P13, 0052. How busy each GPU instance's accelerators were per day, FEAT-084. An instance that
+#: published nothing has no row, which reads as not published and never as nought percent.
+gpu_utilization_daily = Table(
+    "gpu_utilization_daily",
+    metadata,
+    Column("tenant_id", UUID(as_uuid=True), ForeignKey("tenant.tenant_id"), primary_key=True),
+    Column("ingest_run_id", UUID(as_uuid=True), nullable=False),
+    Column("account_id", Text, primary_key=True),
+    Column("region_id", Text, primary_key=True),
+    Column("instance_id", Text, primary_key=True),
+    Column("usage_date", Date, primary_key=True),
+    Column("gpu_count", Integer, nullable=False),
+    Column("average_percent", Numeric(5, 2), nullable=False),
+    Column("peak_percent", Numeric(5, 2), nullable=False),
+    Column("samples", Integer, nullable=False),
+    Column("as_of", DateTime(timezone=True), nullable=False),
+    Column("collected_at", DateTime(timezone=True), nullable=False),
+    CheckConstraint("gpu_count > 0 AND samples > 0", name="ck_gpu_utilization_daily__measured"),
+    CheckConstraint(
+        "average_percent BETWEEN 0 AND 100 AND peak_percent BETWEEN 0 AND 100",
+        name="ck_gpu_utilization_daily__percentages",
+    ),
+    CheckConstraint(
+        "peak_percent >= average_percent", name="ck_gpu_utilization_daily__peak_at_least_average"
+    ),
+    CheckConstraint("collected_at >= as_of", name="ck_gpu_utilization_daily__collected_after_true"),
+)
+
 #: P8, 0026. The two formats an export is written in, mirrored by the migration's constraint.
 REPORT_FORMATS = ("xlsx", "csv")
 #: P8, 0029. What became of a run: streamed to whoever pressed Export, rendered and kept, kept

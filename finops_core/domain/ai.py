@@ -8,8 +8,10 @@ which is why nothing here names a vendor, ADR-0028.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import date
+from decimal import Decimal
 from typing import Final
 from uuid import UUID
 
@@ -86,3 +88,55 @@ class AiUsage(Fact):
         )
         if min(counts) < 0:
             raise ValueError("a token or request count is never negative")
+
+
+#: An accelerated instance type: the p and g families of GPUs, gr for graphics, trn and inf for
+#: AWS's own training and inference chips, and dl for Gaudi, P13 spec section 5.6. Read from the
+#: type's family, so a size AWS adds next year is still recognised, `p5e.48xlarge` as `p4d`.
+ACCELERATED_FAMILIES: Final = ("p", "g", "gr", "trn", "inf", "dl")
+_ACCELERATED: Final = re.compile(
+    r"(?:ml\.)?((?:" + "|".join(ACCELERATED_FAMILIES) + r")\d+[a-z]*\.[0-9a-z]+)"
+)
+
+
+def accelerated_instance_type(usage_type: str | None) -> str | None:
+    """The accelerated instance type a usage type bills for, or None for any other.
+
+    `USE1-BoxUsage:g5.xlarge` and `EUW1-SpotUsage:p4d.24xlarge` are EC2's, and
+    `USE1-Notebk:ml.g5.xlarge` is a SageMaker instance of the same type. The type is what follows
+    the last colon, so a usage type that bills by the hour for something else names nothing.
+    """
+    if not usage_type or ":" not in usage_type:
+        return None
+    match = _ACCELERATED.fullmatch(usage_type.rsplit(":", 1)[1].strip().lower())
+    return match.group(1) if match else None
+
+
+@dataclass(frozen=True, kw_only=True)
+class GpuUtilization(Fact):
+    """How busy one instance's accelerators were in one day, P13 spec section 5.6, FEAT-084.
+
+    The average and the peak across every accelerator the instance published, and how many
+    readings they came from. An instance that published none has no row, which the screen reads
+    as not published: an unmeasured GPU is never a GPU at nought percent.
+    """
+
+    tenant_id: UUID
+    account_id: str
+    region_id: str
+    instance_id: str
+    usage_date: date
+    #: How many accelerators published a reading.
+    gpu_count: int
+    average_percent: Decimal
+    peak_percent: Decimal
+    samples: int
+
+    def __post_init__(self) -> None:
+        if self.gpu_count <= 0 or self.samples <= 0:
+            raise ValueError("a utilization row is read from at least one accelerator and reading")
+        for percent in (self.average_percent, self.peak_percent):
+            if not Decimal(0) <= percent <= Decimal(100):
+                raise ValueError(f"{percent} is not a percentage")
+        if self.peak_percent < self.average_percent:
+            raise ValueError("the peak is never below the average")

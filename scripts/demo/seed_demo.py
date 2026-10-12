@@ -152,6 +152,8 @@ DEMO_TABLES = (
     "ai_usage_daily",
     # P13, FEAT-083. The AI provider organizations a tenant connected; the tenant only.
     "ai_provider_account",
+    # P13, FEAT-084. How busy each GPU instance was; the tenant only.
+    "gpu_utilization_daily",
     "graph_coverage",
     # P6, FEAT-035 and FEAT-036. Above `ingest_run` like the P4 and P5 tables,
     # because both carry the run that wrote them. Neither references the other, so

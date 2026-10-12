@@ -24,8 +24,10 @@ attaches, which is where an application or an agent names itself.
 
 ## How it works
 
-Built so far: the collection, TASK-P13-003. The modelled cost per caller and its endpoint follow in
-TASK-P13-007.
+Built so far: the collection, TASK-P13-003, and `GET /ai/callers`, TASK-P13-007, each caller's tokens
+priced at the bill's unit cost for the same model, token type and day, matched by
+`finops_query.ai.model_key` because a log names a model by its identifier and the bill by its
+usage type.
 
 For each account and collection Region the collector reads the invocation logging configuration.
 Where it names a CloudWatch log group, it runs one Logs Insights query whose every output is an

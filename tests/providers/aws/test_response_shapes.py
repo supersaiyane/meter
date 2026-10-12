@@ -44,6 +44,8 @@ READS: dict[tuple[str, str], set[str]] = {
     ("logs", "GetQueryResults"): {"results", "status", "nextToken", "field", "value"},
     # FEAT-083, TASK-P13-004. An AI provider organization's admin key, by the secret's name.
     ("secretsmanager", "GetSecretValue"): {"SecretString"},
+    # FEAT-084, TASK-P13-006, and FEAT-036 before it. The metrics an instance publishes, listed.
+    ("cloudwatch", "ListMetrics"): {"Metrics", "Dimensions", "Name", "Value", "NextToken"},
     # FEAT-030, ISS-200. The inventory, one advanced query against the aggregator.
     ("config", "SelectAggregateResourceConfig"): {"Results", "NextToken"},
     # FEAT-031, ISS-202. Three EC2 reads and one IAM read.
@@ -417,6 +419,7 @@ SENDS: dict[tuple[str, str], set[str]] = {
     ("logs", "StartQuery"): {"logGroupName", "startTime", "endTime", "queryString"},
     ("logs", "GetQueryResults"): {"queryId"},
     ("secretsmanager", "GetSecretValue"): {"SecretId"},
+    ("cloudwatch", "ListMetrics"): set(),
     ("config", "SelectAggregateResourceConfig"): {"ConfigurationAggregatorName", "Expression"},
     ("ec2", "DescribeTransitGatewayAttachments"): set(),
     ("ec2", "DescribeVpcPeeringConnections"): set(),
