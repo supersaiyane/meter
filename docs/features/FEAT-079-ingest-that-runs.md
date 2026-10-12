@@ -33,7 +33,8 @@ the runtime image, so they run only in the local stack and no setting is needed.
 
 ## How it works
 
-Built so far: the two compositions, TASK-P12-001, and the AWS binders, TASK-P12-002.
+Built so far: the two compositions, TASK-P12-001, the AWS binders, TASK-P12-002, and the queue,
+TASK-P12-003.
 
 - `finops_ingest/composition.py` declares a `Binding` per collector: its name, its scope, and a
   builder that constructs it from one unit's context. `compose` registers each binding behind a
@@ -52,6 +53,11 @@ Built so far: the two compositions, TASK-P12-001, and the AWS binders, TASK-P12-
   `query_audit`, ISS-272.
 - `finops_providers/aws/reach.py` makes every client on the adapter's first call, so building a
   collector makes none, and a failure arrives where the adapter types it.
+- `finops_ingest/sqs.py` carries units between the processes: `SqsPublisher` sends one versioned
+  JSON message per unit and refuses one it already sent in this dispatch, and `SqsConsumer`
+  long polls up to ten, reports each unit with how often it has been received, and deletes what
+  was settled. The hub's queue is a standard queue, so a unit sent twice by two dispatches, or
+  delivered twice, is made free by the ledger's claim on the same key.
 - `finops_fakes/composition.py` binds the same 27 collectors from the fakes, on a clock it is
   handed rather than one it reads, and hands a per account collector only the candidates of the
   unit's own account, as the demo seed does. `fake_registry(clock)` is what the local stack's
@@ -65,6 +71,10 @@ Built so far: the two compositions, TASK-P12-001, and the AWS binders, TASK-P12-
   setting that is not a role ARN, fails the same way naming the setting. The worker records it
   as a typed failure in `sync_error`, so it shows on the freshness screen and never as zero.
 - A builder that raises fails only its own unit; the worker's per unit isolation is unchanged.
+- A message the worker cannot decode, including one of a version it does not read, is logged with
+  its id and receive count and left on the queue, so the redrive moves it to the dead letter queue
+  after the hub's three receives. A delete SQS refuses is logged and returned; the unit comes back
+  and its claim makes the second run a skip.
 - A collector missing from either composition, or bound twice, fails
   `tests/ingest/test_composition.py`, which holds both to the collectors the schedule runs in the
   worker.
@@ -88,6 +98,8 @@ Built so far: the two compositions, TASK-P12-001, and the AWS binders, TASK-P12-
 - `finops_fakes.composition.fake_registry(clock) -> CollectorRegistry`
 - `finops_fakes.composition.fake_bindings(clock) -> tuple[Binding, ...]`
 - `finops_ingest.aws_bindings.AWS_BUILDERS` and `UNBUILT`
+- `finops_ingest.sqs.SqsPublisher(client, queue_url)` and `SqsConsumer(client, queue_url)`, message
+  version 1
 - Settings `relay_function_name` (`METER_RELAY_FUNCTION_NAME`) and `config_aggregator`
   (`METER_CONFIG_AGGREGATOR`), empty by default
 
@@ -100,8 +112,8 @@ Built so far: the two compositions, TASK-P12-001, and the AWS binders, TASK-P12-
 
 ## Status of this document
 
-In build. TASK-P12-001 built the two compositions and TASK-P12-002 the AWS binders on 2026-10-12;
-the queue, the entry points and the local stack end to end follow in TASK-P12-003 to
-TASK-P12-005.
+In build. TASK-P12-001 built the two compositions, TASK-P12-002 the AWS binders and TASK-P12-003
+the queue on 2026-10-12; the entry points and the local stack end to end follow in TASK-P12-004
+and TASK-P12-005.
 
 See [docs/01-ROADMAP.md](../01-ROADMAP.md), sub project P12.

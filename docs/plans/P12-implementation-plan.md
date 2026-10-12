@@ -84,7 +84,7 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-12 |
 | Implements | Spec section 5.3 |
 | Delivers | FEAT-079 |
 | Depends on | Nothing |
@@ -92,9 +92,11 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 **Acceptance criteria.**
 
-- [ ] An SQS publisher for the dispatcher and a consumer for the worker, over boto3
-- [ ] A unit survives the round trip unchanged, tested under moto
-- [ ] A message the worker cannot decode is left for the redrive and logged, never dropped
+- [x] An SQS publisher for the dispatcher and a consumer for the worker, over boto3:
+      `finops_ingest/sqs.py`, handed its client, with a versioned message
+- [x] A unit survives the round trip unchanged, tested under moto
+- [x] A message the worker cannot decode is left for the redrive and logged, never dropped:
+      under moto it is received again and then moved to the dead letter queue intact
 
 ---
 
