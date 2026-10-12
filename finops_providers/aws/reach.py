@@ -20,6 +20,7 @@ from collections.abc import Callable, Iterable
 from typing import Any, Final
 
 import boto3
+from botocore.config import Config
 
 from finops_core.config import Settings
 from finops_core.domain.account import AccountKey, Provider
@@ -53,6 +54,19 @@ def hub_client(settings: Settings, service: str, region: str | None = None) -> L
     return LazyClient(
         lambda: boto3.client(service, region_name=region, config=botocore_config(settings))
     )
+
+
+def queue_client(settings: Settings, long_poll_seconds: int) -> Any:
+    """The hub's SQS client, its read timeout outlasting the long poll it is used for.
+
+    A receive holds the connection open for up to `long_poll_seconds`, so a read timeout shorter
+    than that would fail every empty poll. Made at once: a worker that cannot make its queue
+    client has nothing to do, and should fail at start rather than on its first receive.
+    """
+    config = botocore_config(settings).merge(
+        Config(read_timeout=max(settings.aws_read_timeout_seconds, long_poll_seconds + 10))
+    )
+    return boto3.client("sqs", config=config)
 
 
 def session_clients(settings: Settings, session: Any) -> Callable[[str, str], Any]:

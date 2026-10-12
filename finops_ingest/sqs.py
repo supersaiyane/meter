@@ -144,14 +144,14 @@ class SqsPublisher:
     def __init__(self, client: Any, queue_url: str) -> None:
         self._client = client
         self._queue_url = queue_url
-        self._sent: set[str] = set()
+        self._sent: set[tuple[UUID, str]] = set()
 
     def publish(self, unit: WorkUnit) -> bool:
         """Send the unit, or return False for one this dispatch has already sent."""
-        if unit.dedup_key in self._sent:
+        if unit.publish_key in self._sent:
             return False
         self._client.send_message(QueueUrl=self._queue_url, MessageBody=encode(unit))
-        self._sent.add(unit.dedup_key)
+        self._sent.add(unit.publish_key)
         return True
 
 

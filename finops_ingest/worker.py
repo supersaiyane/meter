@@ -197,3 +197,9 @@ class Worker:
             extra={**log_fields(unit, None), "delivery_attempt": delivery_attempt},
         )
         return Outcome.DEAD_LETTERED
+
+
+if __name__ == "__main__":  # pragma: no cover - run as a process, and tested as one
+    from finops_ingest.processes import worker_main
+
+    raise SystemExit(worker_main())

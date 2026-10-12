@@ -54,6 +54,17 @@ class WorkUnit:
         """Identical to the key the ledger claims on, deliberately."""
         return idempotency_key(self.collector, self.scope_key, self.window_start, self.window_end)
 
+    @property
+    def publish_key(self) -> tuple[UUID, str]:
+        """What a publisher refuses a second of: the tenant, and the ledger's key.
+
+        The ledger's key holds no tenant because the ledger is one tenant's, unique on
+        (tenant_id, idempotency_key). A publisher sees every tenant in one dispatch, and keyed on
+        `dedup_key` alone it refused a second tenant's organization wide unit as a duplicate of
+        the first's, ISS-275.
+        """
+        return self.tenant_id, self.dedup_key
+
 
 class Publisher(Protocol):
     """Somewhere to put a unit of work.
@@ -76,12 +87,12 @@ class InMemoryPublisher:
 
     def __init__(self) -> None:
         self.published: list[WorkUnit] = []
-        self._seen: set[str] = set()
+        self._seen: set[tuple[UUID, str]] = set()
 
     def publish(self, unit: WorkUnit) -> bool:
-        if unit.dedup_key in self._seen:
+        if unit.publish_key in self._seen:
             return False
-        self._seen.add(unit.dedup_key)
+        self._seen.add(unit.publish_key)
         self.published.append(unit)
         return True
 
@@ -143,3 +154,9 @@ class Dispatcher:
             else:
                 deduplicated += 1
         return DispatchResult(published=published, deduplicated=deduplicated)
+
+
+if __name__ == "__main__":  # pragma: no cover - run as a process, and tested as one
+    from finops_ingest.processes import dispatcher_main
+
+    raise SystemExit(dispatcher_main())

@@ -104,7 +104,7 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 | Field | Value |
 | --- | --- |
-| Status | Not started |
+| Status | Done 2026-10-12 |
 | Implements | Spec section 5.2 |
 | Delivers | FEAT-079 |
 | Depends on | TASK-P12-001, TASK-P12-003 |
@@ -112,10 +112,16 @@ Modelled at the pace of P11: eight tasks of size M and one of size S, about eigh
 
 **Acceptance criteria.**
 
-- [ ] `python -m finops_ingest.dispatcher` publishes each tenant's due units, then exits
-- [ ] `python -m finops_ingest.worker` long polls, runs each batch, deletes what succeeded, and
-      stops between batches on SIGTERM
-- [ ] Both refuse to start without `METER_PROVIDERS`, tested by running the entry points
+- [x] `python -m finops_ingest.dispatcher` publishes each tenant's due units, then exits: windows
+      aligned to each collector's cadence, one tenant failing logged and the rest dispatched
+- [x] `python -m finops_ingest.worker` long polls, runs each batch, deletes what succeeded, and
+      stops between units on SIGTERM; the worker's ECS stop timeout is 120 seconds
+- [x] Both refuse to start when their settings are incomplete, naming what is missing, tested by
+      running the entry points; the local stack runs the same two processes on the fakes through
+      `python -m finops_fakes.dispatcher` and `.worker`. Amended 2026-10-12: TASK-P12-001 removed
+      `METER_PROVIDERS`, so the entry point, not a setting, chooses the composition
+- [x] Found and fixed on the way: the runtime images did not copy `finops_relay`, ISS-274, and a
+      dispatch refused a second tenant's units as duplicates of the first's, ISS-275
 
 ---
 

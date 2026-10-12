@@ -295,6 +295,10 @@ resource "aws_ecs_task_definition" "worker" {
       name      = "worker"
       image     = "${local.registry}/meter-worker:${var.image_tag}"
       essential = true
+      # The worker stops between units on SIGTERM, TASK-P12-004. ECS waits 30 seconds by
+      # default before it kills the task, less than one Athena backed unit can take, so it
+      # waits the most Fargate allows and the unit in hand finishes its transaction.
+      stopTimeout = 120
 
       environment = local.common_environment
       secrets = [

@@ -23,7 +23,7 @@ from finops_core.config import Settings
 from finops_core.domain.account import AccountKey, AccountStatus, Provider
 from finops_core.errors import Misconfigured, SchemaDrift
 from finops_fakes.composition import builders as fake_builders
-from finops_ingest import aws_bindings
+from finops_ingest import accounts
 from finops_ingest.aws_bindings import AWS_BUILDERS, UNBUILT, enrolled
 from finops_ingest.composition import (
     _FROM_METER,
@@ -223,7 +223,7 @@ def test_the_inventory_reads_every_active_account_in_every_region_and_globally(
         for region in regions
     )
     ((statement, params),) = unit.connection.asked
-    assert statement == aws_bindings.ENROLLED
+    assert statement == accounts.ACTIVE
     assert params == {
         "tenant": TENANT,
         "provider": Provider.AWS.value,

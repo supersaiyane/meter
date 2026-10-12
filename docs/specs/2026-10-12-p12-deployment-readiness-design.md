@@ -92,6 +92,14 @@ worker is a long running process: it long polls the queue, hands each batch to `
 deletes what succeeded, leaves a failure for the queue's redrive, and stops cleanly on SIGTERM
 between batches, so an ECS deploy never kills a unit halfway through its transaction.
 
+Amended 2026-10-12, TASK-P12-004. The worker checks for SIGTERM between units rather than only
+between batches, and its ECS stop timeout is 120 seconds, the most Fargate allows, because a
+batch of ten can outlast the default 30. A unit's window is the cadence period that ended last,
+aligned to the epoch, so two dispatches inside one period name the same window and the ledger
+makes the second a skip. Both processes live in `finops_ingest/processes.py`; the local stack
+runs them on the fakes through `python -m finops_fakes.dispatcher` and `.worker`. The flag
+resolver moved to `finops_core` so the dispatcher honours the same kill switches as the API.
+
 ### 5.3 The queue is SQS
 
 A publisher and a consumer over SQS through boto3, the queue named by `queue_url`. Locally the
